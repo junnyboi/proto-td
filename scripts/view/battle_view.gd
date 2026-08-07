@@ -50,6 +50,10 @@ const OP_CLASS_COLORS := {
 	OperatorDef.OpClass.CASTER: Color("5d275d"),
 }
 const CHEVRON_COLOR := Color("f4f4f4")
+const TRAP_SPIKE_COLOR := Color("f4b41b")
+const TRAP_SPIKE_CORE := Color("1a1c2c")
+const TRAP_SPIKE_PX := 24.0
+const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
 
 var model: BattleModel = null
 var ticks_per_frame_scale: float = 1.0
@@ -64,6 +68,8 @@ var _skill_seen_tick: Dictionary = {}
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _op_defs: Dictionary = {}
+var _trap_defs: Dictionary = {}
+var _trap_rects: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
 var _pushed: Dictionary = {
@@ -74,6 +80,8 @@ var _pushed: Dictionary = {
 	"retreats": "retreated",
 	"dp_spent": "dp_spent",
 	"skills_fired": "skills_fired",
+	"traps_placed": "traps_placed",
+	"trap_triggers": "trap_triggers",
 }
 var _pushed_last: Dictionary = {}
 var _result_reported := false
@@ -87,7 +95,10 @@ func _ready() -> void:
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_op_defs = _load_operator_defs(Game.default_squad)
-	model = BattleModel.create(stage, Game.default_squad, Game.run_seed, config, defs, _op_defs)
+	_trap_defs = _load_trap_defs()
+	model = BattleModel.create(
+		stage, Game.default_squad, Game.run_seed, config, defs, _op_defs, _trap_defs
+	)
 	Game.current_battle = model
 	Game.content = self
 	_build_grid(stage)
@@ -104,7 +115,7 @@ func _ready() -> void:
 	var bar := DeployBar.new()
 	bar.name = "DeployBar"
 	add_child(bar)
-	bar.setup(model, self, _op_defs)
+	bar.setup(model, self, _op_defs, _trap_defs)
 
 
 ## Screen-space center of a grid cell (no camera: world == screen). The
@@ -134,6 +145,21 @@ func _load_enemy_defs(stage: StageDef) -> Dictionary:
 		var enemy_id: StringName = w["enemy_id"]
 		if not defs.has(enemy_id):
 			defs[enemy_id] = load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
+	return defs
+
+
+## Full catalog by directory scan — the model validates against the catalog,
+## not a loadout (td-phase-6-7.md §2.1); Phase 10 gates loadouts in the UI.
+func _load_trap_defs() -> Dictionary:
+	var defs: Dictionary = {}
+	var dir := DirAccess.open("res://data/traps")
+	if dir == null:
+		return defs
+	for file: String in dir.get_files():
+		if file.ends_with(".tres"):
+			var def := load("res://data/traps/" + file) as TrapDef
+			if def != null:
+				defs[def.id] = def
 	return defs
 
 
@@ -185,6 +211,7 @@ func _project() -> void:
 			var rect: ColorRect = _enemy_rects[e.id]
 			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
+	_project_traps()
 	_project_units()
 	_project_tracers()
 	var s := model.snapshot()
@@ -214,6 +241,44 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 		shadow.show_behind_parent = true
 		rect.add_child(shadow)
 	_add_hp_bar(rect, body_px)
+	_grid_root.add_child(rect)
+	return rect
+
+
+## Traps project as cell glyphs: armed spike = amber plate with a dark core
+## (visibly distinct from 44px units and full tiles), tar = dark translucent
+## overlay covering the cell. A trap removed from the model (exhausted
+## charges) drops its node the same frame.
+func _project_traps() -> void:
+	var live: Dictionary = {}
+	for t: TrapState in model.traps:
+		live[t.id] = true
+		if not _trap_rects.has(t.id):
+			_trap_rects[t.id] = _make_trap_rect(t)
+	for trap_id: int in _trap_rects.keys():
+		if not live.has(trap_id):
+			(_trap_rects[trap_id] as ColorRect).queue_free()
+			_trap_rects.erase(trap_id)
+
+
+func _make_trap_rect(t: TrapState) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cell_origin := Vector2(t.cell) * TILE_PX
+	if t.trigger == TrapDef.Trigger.CELL_AURA:
+		rect.color = TAR_OVERLAY_COLOR
+		rect.size = Vector2.ONE * (TILE_PX - 2.0)
+		rect.position = cell_origin + Vector2.ONE
+	else:
+		rect.color = TRAP_SPIKE_COLOR
+		rect.size = Vector2.ONE * TRAP_SPIKE_PX
+		rect.position = cell_origin + Vector2.ONE * ((TILE_PX - TRAP_SPIKE_PX) * 0.5)
+		var core := ColorRect.new()
+		core.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		core.color = TRAP_SPIKE_CORE
+		core.size = Vector2.ONE * (TRAP_SPIKE_PX * 0.35)
+		core.position = (rect.size - core.size) * 0.5
+		rect.add_child(core)
 	_grid_root.add_child(rect)
 	return rect
 

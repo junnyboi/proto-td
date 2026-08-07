@@ -1,21 +1,26 @@
 class_name DeployBar
 extends Control
 
-## Raw-input adapter for the deploy/retreat verbs (architecture rule 3: a thin
-## adapter over apply_action, validated once per verb by deploy_flow.gd).
+## Raw-input adapter for the deploy/retreat/place_trap verbs (architecture
+## rule 3: a thin adapter over apply_action, validated once per verb by
+## deploy_flow.gd / trap_flow.gd).
 ## Interaction (td-phase-2-3.md D21): press a slot -> drag with valid-cell
 ## highlights -> release on a cell -> facing chooser (4 arrows) -> click one
-## -> deploy verb fires. Release on an invalid cell or ui_cancel/right-click
-## cancels. Clicking an alive unit opens a chip with a Retreat button.
-## Enabled state of every slot reads model.is_deployable (single source of
-## truth); highlight queries read model.can_deploy_at (the verb's own
-## validation, never a copy).
+## -> deploy verb fires. Trap slots share the drag but place on release
+## directly (traps have no facing) under AMBER highlights, distinct from the
+## unit green (td-phase-6-7.md §3.5). Release on an invalid cell or
+## ui_cancel/right-click cancels. Clicking an alive unit opens a chip with a
+## Retreat button. Enabled state of every slot reads model.is_deployable /
+## model.is_trap_placeable (single source of truth); highlight queries read
+## model.can_deploy_at / model.can_place_trap_at (the verb's own validation,
+## never a copy).
 
 const FONT_SIZE := 32
 const BAR_HEIGHT := 88.0
 const CELL_PX := 64.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
+const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
 
 const FACING_BUTTONS := {
 	UnitState.Facing.RIGHT: {"name": "FacingRight", "text": ">", "offset": Vector2i(1, 0)},
@@ -28,7 +33,10 @@ var model: BattleModel = null
 var view: Node2D = null
 
 var _slots: Dictionary = {}
+var _trap_slots: Dictionary = {}
+var _trap_defs: Dictionary = {}
 var _placement_op: StringName = &""
+var _placement_trap: StringName = &""
 var _pending_cell := Vector2i(-1, -1)
 var _pointer := Vector2.ZERO
 var _highlight_root: Control = null
@@ -40,9 +48,15 @@ var _retreat_unit_id: int = -1
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
 ## under a Node2D parent gets no anchor-based layout).
-func setup(battle_model: BattleModel, battle_view: Node2D, op_defs: Dictionary) -> void:
+func setup(
+	battle_model: BattleModel,
+	battle_view: Node2D,
+	op_defs: Dictionary,
+	trap_defs: Dictionary = {},
+) -> void:
 	model = battle_model
 	view = battle_view
+	_trap_defs = trap_defs
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -56,12 +70,15 @@ func _process(_delta: float) -> void:
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
 		slot.disabled = not model.is_deployable(op_id)
+	for trap_id: StringName in _trap_slots:
+		var slot: Button = _trap_slots[trap_id]
+		slot.disabled = not model.is_trap_placeable(trap_id)
 
 
 func _input(event: InputEvent) -> void:
 	# Placement drag: track the pointer from motion events (injected motion
 	# never moves get_mouse_position) and end placement on left release.
-	if _placement_op == &"":
+	if _placement_op == &"" and _placement_trap == &"":
 		return
 	if event is InputEventMouseMotion:
 		_pointer = (event as InputEventMouseMotion).position
@@ -79,7 +96,7 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Idle-state grid clicks: select an alive unit -> retreat chip.
-	if _placement_op != &"" or model == null:
+	if _placement_op != &"" or _placement_trap != &"" or model == null:
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -104,6 +121,17 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.button_down.connect(_start_placement.bind(op_id))
 		box.add_child(slot)
 		_slots[op_id] = slot
+	var trap_ids: Array = _trap_defs.keys()
+	trap_ids.sort()
+	for trap_id: StringName in trap_ids:
+		var def: TrapDef = _trap_defs[trap_id]
+		var slot := Button.new()
+		slot.name = "Slot_%s" % trap_id
+		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
+		slot.add_theme_font_size_override("font_size", FONT_SIZE)
+		slot.button_down.connect(_start_trap_placement.bind(trap_id))
+		box.add_child(slot)
+		_trap_slots[trap_id] = slot
 
 
 func _build_overlays() -> void:
@@ -146,30 +174,57 @@ func _start_placement(op_id: StringName) -> void:
 	_hide_retreat_chip()
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
+	_show_valid_highlights()
+
+
+func _start_trap_placement(trap_id: StringName) -> void:
+	_hide_retreat_chip()
+	_placement_trap = trap_id
+	_pending_cell = Vector2i(-1, -1)
+	_show_valid_highlights()
+
+
+## One highlight pass for both placement modes; the query is the verb's own
+## validation (can_deploy_at / can_place_trap_at), never a copy.
+func _show_valid_highlights() -> void:
 	var grid_size: Vector2i = model.stage.grid_size()
 	for y: int in grid_size.y:
 		for x: int in grid_size.x:
 			var cell := Vector2i(x, y)
-			if model.can_deploy_at(op_id, cell):
-				var rect := _make_overlay_rect(VALID_COLOR)
+			if _placement_valid_at(cell):
+				var rect := _make_overlay_rect(_valid_color())
 				rect.visible = true
 				rect.position = view.call("cell_center", cell) - rect.size * 0.5
 				_highlight_root.add_child(rect)
+
+
+func _placement_valid_at(cell: Vector2i) -> bool:
+	if _placement_trap != &"":
+		return model.can_place_trap_at(_placement_trap, cell)
+	return model.can_deploy_at(_placement_op, cell)
+
+
+func _valid_color() -> Color:
+	return TRAP_VALID_COLOR if _placement_trap != &"" else VALID_COLOR
 
 
 func _update_placement_hover() -> void:
 	if _pending_cell.x >= 0:
 		return
 	var cell: Vector2i = view.call("cell_at", _pointer)
-	var valid: bool = model.can_deploy_at(_placement_op, cell)
-	_cursor_rect.color = VALID_COLOR if valid else INVALID_COLOR
+	_cursor_rect.color = _valid_color() if _placement_valid_at(cell) else INVALID_COLOR
 	_cursor_rect.position = view.call("cell_center", cell) - _cursor_rect.size * 0.5
 	_cursor_rect.visible = true
 
 
 func _end_placement_drag() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
-	if not model.can_deploy_at(_placement_op, cell):
+	if not _placement_valid_at(cell):
+		_cancel_placement()
+		return
+	if _placement_trap != &"":
+		# traps have no facing: the release IS the placement
+		model.apply_action([&"place_trap", _placement_trap, cell])
 		_cancel_placement()
 		return
 	_pending_cell = cell
@@ -190,6 +245,7 @@ func _confirm_deploy(facing: UnitState.Facing) -> void:
 
 func _cancel_placement() -> void:
 	_placement_op = &""
+	_placement_trap = &""
 	_pending_cell = Vector2i(-1, -1)
 	_cursor_rect.visible = false
 	for facing: UnitState.Facing in _facing_buttons:

@@ -12,7 +12,17 @@ extends RefCounted
 ##
 ## A battle is fully described by (stage_id, squad, seed, [[tick, verb,
 ## args...]]) — that tuple is the replay format, the bot format, and the
-## test format. Phase 2 verbs: deploy(op_id, cell, facing), retreat(unit_id).
+## test format. Verbs: deploy(op_id, cell, facing), retreat(unit_id),
+## trigger_skill(unit_id), place_trap(trap_id, cell).
+##
+## Traps (td-phase-6-7.md §2.2/§3.3): placed on GROUND path cells, one per
+## cell, DP through the ledger's spent bucket, no refund. ON_ENTER entrants
+## are recorded during the advance pass (an "entry" is a cell_of transition
+## between consecutive ticks) and resolved after it, before combat, in
+## path-progress-descending order (tie: lower id) — a trap-killed enemy
+## never attacks that tick. CELL_AURA slow samples the cell an enemy
+## occupies at the START of its tick; strongest source applies; aerial
+## enemies ignore traps entirely.
 ##
 ## DP ledger (td-phase-2-3.md D4/D5, extended by Phase 5's skill bucket):
 ## regen/generation/refunds/bursts accrue gross; points that would exceed
@@ -50,13 +60,18 @@ var dp_skill_granted: int = 0
 var retreated: int = 0
 var skills_fired: int = 0
 var units: Array[UnitState] = []
+var traps: Array[TrapState] = []
+var traps_triggered: int = 0
 
 var _defs: Dictionary = {}
 var _op_defs: Dictionary = {}
+var _trap_defs: Dictionary = {}
 var _paths: Array = []
 var _path_lengths: Array[int] = []
+var _path_cell_set: Dictionary = {}
 var _next_enemy_id: int = 0
 var _next_unit_id: int = 0
+var _next_trap_id: int = 0
 
 
 static func create(
@@ -66,6 +81,7 @@ static func create(
 	game_config: GameConfig,
 	enemy_defs: Dictionary,
 	operator_defs: Dictionary = {},
+	trap_defs: Dictionary = {},
 ) -> BattleModel:
 	var model := BattleModel.new()
 	model.stage = stage_def
@@ -76,11 +92,14 @@ static func create(
 	model.dp = game_config.dp_start
 	model._defs = enemy_defs
 	model._op_defs = operator_defs
+	model._trap_defs = trap_defs
 	model.timeline = WaveTimeline.from_waves(stage_def.waves)
 	for i: int in stage_def.paths.size():
 		var cells := stage_def.path_cells(i)
 		model._paths.append(cells)
 		model._path_lengths.append(Pathing.length_units(cells))
+		for cell: Vector2i in cells:
+			model._path_cell_set[cell] = true
 	return model
 
 
@@ -120,7 +139,10 @@ func apply_action(action: Array) -> bool:
 		return _apply_retreat(int(action[1]))
 	if verb == &"trigger_skill" and action.size() == 2:
 		return _apply_trigger_skill(int(action[1]))
-	if verb != &"deploy" and verb != &"retreat" and verb != &"trigger_skill":
+	if verb == &"place_trap" and action.size() == 3:
+		return _apply_place_trap(action[1], action[2])
+	var known := [&"deploy", &"retreat", &"trigger_skill", &"place_trap"]
+	if not known.has(verb):
 		push_warning("apply_action: unknown verb '%s'" % [verb])
 	return false
 
@@ -256,6 +278,56 @@ func _apply_retreat(unit_id: int) -> bool:
 	return true
 
 
+## A trap is placeable iff its def exists, the battle is running, and DP
+## covers its cost. Trap slots in the deploy bar read exactly this.
+func is_trap_placeable(trap_id: StringName) -> bool:
+	if result != Result.RUNNING or not _trap_defs.has(trap_id):
+		return false
+	var def: TrapDef = _trap_defs[trap_id]
+	return dp >= def.dp_cost
+
+
+## Full placement validation (the highlight query IS the verb's validation):
+## GROUND tile, member of >= 1 stage path, no living trap on the cell.
+## Trap/unit occupancy is independent — the two classes never contend.
+func can_place_trap_at(trap_id: StringName, cell: Vector2i) -> bool:
+	if not is_trap_placeable(trap_id):
+		return false
+	if stage.tile_at(cell) != StageDef.Tile.GROUND:
+		return false
+	if not _path_cell_set.has(cell):
+		return false
+	return alive_trap_at(cell) == null
+
+
+func alive_trap_at(cell: Vector2i) -> TrapState:
+	for t: TrapState in traps:
+		if t.cell == cell:
+			return t
+	return null
+
+
+func _apply_place_trap(trap_id: StringName, cell: Vector2i) -> bool:
+	if not can_place_trap_at(trap_id, cell):
+		return false
+	var def: TrapDef = _trap_defs[trap_id]
+	var t := TrapState.new()
+	t.id = _next_trap_id
+	_next_trap_id += 1
+	t.def_id = def.id
+	t.cell = cell
+	t.charges_left = def.charges
+	t.trigger = def.trigger
+	t.effect = def.effect
+	t.damage = def.damage
+	t.slow_permille = def.slow_permille
+	t.dp_cost = def.dp_cost
+	traps.append(t)
+	dp -= def.dp_cost
+	dp_spent += def.dp_cost
+	return true
+
+
 func alive_count() -> int:
 	var n := 0
 	for e: EnemyState in enemies:
@@ -329,6 +401,14 @@ func state_hash() -> int:
 		_append_int(bytes, e.blocked_by)
 		_append_int(bytes, e.stunned_until_tick)
 		_append_int(bytes, 1 if e.alive else 0)
+	_append_int(bytes, traps_triggered)
+	_append_int(bytes, _next_trap_id)
+	for t: TrapState in traps:
+		_append_int(bytes, t.id)
+		_append_int(bytes, t.def_id.hash())
+		_append_int(bytes, t.cell.x)
+		_append_int(bytes, t.cell.y)
+		_append_int(bytes, t.charges_left)
 	return _fnv1a64(bytes)
 
 
@@ -349,12 +429,15 @@ func snapshot() -> Dictionary:
 		"retreated": retreated,
 		"dp_spent": dp_spent,
 		"skills_fired": skills_fired,
+		"traps_placed": _next_trap_id,
+		"trap_triggers": traps_triggered,
 	}
 
 
 ## Sub-step order pinned in td-phase-2-3.md D9: (1) DP regen + vanguard
 ## generation (Phase 5 prepends effect expiry and appends SP accrual inside
 ## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
+## (2.5) ON_ENTER trap resolution (Phase 6, td-phase-6-7.md M2),
 ## (3) combat — units strike first, then enemies, deaths resolve immediately,
 ## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
 ## Expiry runs before combat so a timed effect is active for exactly
@@ -365,7 +448,8 @@ func _step_one() -> void:
 		return
 	_expire_effects()
 	_tick_dp()
-	_advance_enemies()
+	var entrants := _advance_enemies()
+	_resolve_trap_triggers(entrants)
 	_tick_combat()
 	for entry: Dictionary in timeline.due(tick):
 		_spawn(entry)
@@ -377,14 +461,27 @@ func _step_one() -> void:
 ## order. An enemy that finds no spare capacity keeps walking (overflow rule);
 ## a blocked enemy can never leak. Aerial enemies bypass block assignment
 ## entirely (the absolute-counter pin, td-phase-4-5.md §2): they never freeze,
-## never occupy capacity, and only leak or die to ranged damage.
-func _advance_enemies() -> void:
+## never occupy capacity, and only leak or die to ranged damage — and they
+## ignore traps (no ON_ENTER, no aura slow). For ground enemies the
+## start-of-tick cell is sampled once, before advancing: it decides this
+## tick's aura slow AND anchors the entry transition for ON_ENTER recording.
+## Returns the entrant list ({trap, enemy}) for _resolve_trap_triggers.
+func _advance_enemies() -> Array[Dictionary]:
+	var entrants: Array[Dictionary] = []
 	for e: EnemyState in enemies:
 		if not e.alive or e.blocked_by >= 0 or tick < e.stunned_until_tick:
 			continue
-		e.progress_units += e.step_units
-		if not e.aerial:
-			var cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
+		if e.aerial:
+			e.progress_units += e.step_units
+		else:
+			var path := path_for(e.path_idx)
+			var start_cell := Pathing.cell_of(path, e.progress_units)
+			e.progress_units += _effective_step(e, start_cell)
+			var cell := Pathing.cell_of(path, e.progress_units)
+			if cell != start_cell:
+				var trap := alive_trap_at(cell)
+				if trap != null and trap.trigger == TrapDef.Trigger.ON_ENTER:
+					entrants.append({"trap": trap, "enemy": e})
 			var unit := alive_unit_at(cell)
 			if unit != null and _block_capacity_left(unit) >= e.block_weight:
 				e.blocked_by = unit.id
@@ -394,6 +491,59 @@ func _advance_enemies() -> void:
 			e.alive = false
 			leaked += 1
 			base_hp -= e.leak_damage
+	return entrants
+
+
+## Aura slow, strongest-applies, integer permille (td-phase-6-7.md §2.1):
+## effective step = step_units * (1000 - slow) / 1000, floored once per tick.
+func _effective_step(e: EnemyState, start_cell: Vector2i) -> int:
+	var slow := _slow_permille_at(start_cell)
+	if slow <= 0:
+		return e.step_units
+	@warning_ignore("integer_division")
+	var stepped := e.step_units * (1000 - slow) / 1000
+	return stepped
+
+
+func _slow_permille_at(cell: Vector2i) -> int:
+	var strongest := 0
+	for t: TrapState in traps:
+		if t.cell == cell and t.trigger == TrapDef.Trigger.CELL_AURA:
+			strongest = maxi(strongest, t.slow_permille)
+	return strongest
+
+
+## ON_ENTER resolution (M2): after the advance pass, before combat — a
+## trap-killed enemy never attacks its entry tick. Entrants resolve in
+## path-progress-descending order (tie: lower id); each trigger costs one
+## charge; an exhausted trap is removed, so a same-tick second entrant
+## crosses unharmed and the cell is placeable again.
+func _resolve_trap_triggers(entrants: Array[Dictionary]) -> void:
+	if entrants.is_empty():
+		return
+	entrants.sort_custom(_entrant_order)
+	for entry: Dictionary in entrants:
+		var trap: TrapState = entry["trap"]
+		var e: EnemyState = entry["enemy"]
+		if not e.alive or trap.charges_left == 0:
+			continue
+		traps_triggered += 1
+		if trap.effect == TrapDef.Effect.DAMAGE:
+			e.hp -= trap.damage
+			if e.hp <= 0:
+				_kill_enemy(e)
+		if trap.charges_left > 0:
+			trap.charges_left -= 1
+			if trap.charges_left == 0:
+				traps.erase(trap)
+
+
+static func _entrant_order(a: Dictionary, b: Dictionary) -> bool:
+	var ea: EnemyState = a["enemy"]
+	var eb: EnemyState = b["enemy"]
+	if ea.progress_units != eb.progress_units:
+		return ea.progress_units > eb.progress_units
+	return ea.id < eb.id
 
 
 ## D14/D15 + Phase 4 targeting: ready-at-contact cadence — fire when the
