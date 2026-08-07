@@ -31,6 +31,7 @@ func run(h: SelfTestHarness) -> void:
 		return
 	var view := game.get("content") as Node2D
 	var hud := view.find_child("BattleHud", true, false) as Label
+	h.expect_done()
 	var telemetry := h.autoload("Telemetry")
 
 	# deploy the guard at ~180 and the wiring-check vanguard at ~455
@@ -78,7 +79,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check_pixels(
 		"flash pixels fill the PortraitFlash region", img_flash,
 		func(im: Image) -> bool:
-			return h.probe_color_in_rect(im, flash_rect, flash_color, 0.05) > 2_000,
+			return SelfTestProbes.color_in_rect(im, flash_rect, flash_color, 0.05) > 2_000,
 	)
 	var unit_nodes: Dictionary = view.get("_unit_nodes")
 	var sp_fill := (unit_nodes[guard.id] as Node2D).get_node("Body/SpBarBg/SpBarFill") as ColorRect
@@ -88,7 +89,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check_pixels(
 		"flash gone after its frame budget", img_decay,
 		func(im: Image) -> bool:
-			return h.probe_color_in_rect(im, flash_rect, flash_color, 0.05) < 100,
+			return SelfTestProbes.color_in_rect(im, flash_rect, flash_color, 0.05) < 100,
 	)
 
 	# WIRING CHECK: one click on the full-SP vanguard fires Rally
@@ -122,3 +123,4 @@ func run(h: SelfTestHarness) -> void:
 	h.check("HUD shows CLEAR", hud != null and hud_text.contains("CLEAR"), hud_text)
 	await h.frames(2)
 	await h.shot("battle_end")
+	h.done()

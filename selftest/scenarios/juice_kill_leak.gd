@@ -35,6 +35,7 @@ func run(h: SelfTestHarness) -> void:
 	var juice := view.find_child("JuiceLayer", true, false)
 	var grid := view.find_child("GridRoot", true, false) as Node2D
 	var grid_base: Vector2 = grid.position
+	h.expect_done()
 	var telemetry := h.autoload("Telemetry")
 
 	# --- item 4: the runner leaks ---
@@ -51,14 +52,14 @@ func run(h: SelfTestHarness) -> void:
 	h.check_pixels(
 		"vignette red at the screen edge on the leak", img_leak,
 		func(im: Image) -> bool:
-			return h.probe_color_in_rect(im, edge, VIGNETTE_COLOR, 0.08) > 2_000,
+			return SelfTestProbes.color_in_rect(im, edge, VIGNETTE_COLOR, 0.08) > 2_000,
 	)
 	await h.frames(20)
 	var img_clear := await h.shot_grab("leak_clear")
 	h.check_pixels(
 		"vignette gone 20 frames later", img_clear,
 		func(im: Image) -> bool:
-			return h.probe_color_in_rect(im, edge, VIGNETTE_COLOR, 0.08) < 100,
+			return SelfTestProbes.color_in_rect(im, edge, VIGNETTE_COLOR, 0.08) < 100,
 	)
 	h.check(
 		"grid position restored after the leak shake",
@@ -92,7 +93,7 @@ func run(h: SelfTestHarness) -> void:
 	var img_burst := await h.shot_grab("kill_burst")
 	h.check_pixels(
 		"spark pixels at the burst cells", img_burst,
-		func(im: Image) -> bool: return h.probe_color_in_rect(im, probe, SPARK_COLOR, 0.05) > 10,
+		func(im: Image) -> bool: return SelfTestProbes.color_in_rect(im, probe, SPARK_COLOR, 0.05) > 10,
 	)
 	for _i: int in cfg.kill_spark_frames + 2:
 		h.check(
@@ -117,3 +118,4 @@ func run(h: SelfTestHarness) -> void:
 		"events=%d killed=%d" % [kill_events, model.killed],
 	)
 	h.check("sfx_played:leak == 1", leak_events == 1, "events=%d" % leak_events)
+	h.done()

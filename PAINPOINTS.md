@@ -82,3 +82,29 @@
   (cosmetic, debug-only): slots are an unwrapped HBox sized for
   squad_size-bounded rosters. Phase 10's loadout gating bounds it again;
   revisit only if debug play needs the full strip.
+
+## Phase 9 (juice pass)
+
+- **Correct-but-invisible effects are a real defect class** (art/VFX
+  generation). The spike's sprung frame was implemented exactly to spec and
+  fully covered by the triggering enemy's larger rect — only the pixel
+  probe caught it (headless and node-level checks were green). Placeholder
+  VFX that must be *seen* need a draw-order plan, not just a spawn call;
+  the fix (overlay flash in the juice layer, above entities) is the
+  reusable pattern.
+- **Two frame clocks, one convention** (scene debuggability). Transients
+  aged in _physics_process while scenarios awaited process frames: at 120Hz
+  every lifetime silently halved and one decay probe flaked. All juice now
+  ages in _process; SceneTree.process_frame fires BEFORE node _process, so
+  "await 1 frame then read a detection" is off by one — await 2.
+- **A scenario abort can masquerade as a pass** (harness integrity). A null
+  node access killed run() mid-way; every recorded check had passed and
+  the remaining pixel checks skipped headless → vacuous green. Harness now
+  has an opt-in expect_done()/done() completion sentinel; juice scenarios
+  use it. Related trap: view rects for model entities don't exist until a
+  projection frame has run — never fetch them at verb time.
+- **Raw-input helpers are wall-clock hogs at high refresh** (level
+  authoring / testing). click_view's press/release physics holds consume
+  ~most of a 10-frame transient window on ProMotion — pixel probes anchor
+  to seam-triggered events; raw input keeps proving the adapter only
+  (rule 3's once-per-verb discipline pays again).

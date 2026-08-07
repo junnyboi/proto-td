@@ -26,6 +26,7 @@ func run(h: SelfTestHarness) -> void:
 	var view := game.get("content") as Node2D
 	var cfg: JuiceConfig = view.get("cfg")
 	var telemetry := h.autoload("Telemetry")
+	h.expect_done()
 	var bar := view.find_child("DeployBar", true, false)
 	var slot := bar.find_child("Slot_vanguard_1", true, false) as Button
 
@@ -58,28 +59,33 @@ func run(h: SelfTestHarness) -> void:
 	await h.frames(2)
 	h.check("unit deployed", model.alive_unit_at(DEPLOY_CELL) != null)
 
-	# dust present at the landing cell, gone after deploy_dust_frames + 4
-	var center: Vector2 = view.call("cell_center", DEPLOY_CELL)
-	var probe := Rect2i(int(center.x) - 44, int(center.y) - 44, 88, 88)
-	var img := await h.shot_grab("deploy_land")
-	h.check_pixels(
-		"dust pixels at the landing cell", img,
-		func(im: Image) -> bool: return h.probe_color_in_rect(im, probe, DUST_COLOR, 0.05) > 30,
-	)
-	await h.frames(cfg.deploy_dust_frames + 4)
-	var img_settled := await h.shot_grab("deploy_settled")
-	h.check_pixels(
-		"dust gone after its frame budget", img_settled,
-		func(im: Image) -> bool: return h.probe_color_in_rect(im, probe, DUST_COLOR, 0.05) < 8,
-	)
-
-	# seam deploy: landing juice keys off the model edge, no mouse involved
+	# seam deploy: landing juice keys off the model edge, no mouse involved —
+	# and the dust probes anchor HERE, where the trigger-to-shot distance is
+	# exactly controlled (the raw path's click_view holds consume most of the
+	# dust window at high refresh rates; the raw deploy above still proves
+	# the adapter, this one proves the pixels)
 	h.check("dp funded via debug verb", model.apply_action([&"debug_set_dp", 99]))
 	var seam_ok := model.apply_action(
 		[&"deploy", &"defender_1", SEAM_CELL, int(UnitState.Facing.RIGHT)]
 	)
 	h.check("seam deploy accepted", seam_ok)
-	await h.frames(3)
+	await h.frames(2)
+	var center: Vector2 = view.call("cell_center", SEAM_CELL)
+	var probe := Rect2i(int(center.x) - 44, int(center.y) - 44, 88, 88)
+	var img := await h.shot_grab("deploy_land")
+	h.check_pixels(
+		"dust pixels at the landing cell", img,
+		func(im: Image) -> bool:
+			return SelfTestProbes.color_in_rect(im, probe, DUST_COLOR, 0.05) > 30,
+	)
+	await h.frames(cfg.deploy_dust_frames + 4)
+	var img_settled := await h.shot_grab("deploy_settled")
+	h.check_pixels(
+		"dust gone after its frame budget", img_settled,
+		func(im: Image) -> bool:
+			return SelfTestProbes.color_in_rect(im, probe, DUST_COLOR, 0.05) < 8,
+	)
+	await h.frames(1)
 	var deploy_events := 0
 	for ev: Dictionary in telemetry.get("_events"):
 		if ev["name"] == "sfx_played" and String(ev["data"]["id"]) == "deploy":
@@ -89,3 +95,4 @@ func run(h: SelfTestHarness) -> void:
 		deploy_events == 2 and model.units.size() == 2,
 		"events=%d units=%d" % [deploy_events, model.units.size()],
 	)
+	h.done()

@@ -200,6 +200,15 @@ func sprung(trap_rect: ColorRect, adopt: bool) -> void:
 		"node": trap_rect, "left": cfg.trap_sprung_frames, "total": cfg.trap_sprung_frames,
 		"kind": "sprung_adopted" if adopt else "sprung",
 	})
+	# the triggering enemy's 40px rect draws over the 24px plate at exactly
+	# the trigger moment — flash an overlay in this layer (above enemies) so
+	# the sprung frame is actually visible (and probe-able)
+	var flash := _make_rect(SPRUNG_COLOR, Vector2(28, 28))
+	flash.position = trap_rect.get_global_rect().get_center() - Vector2(14, 14)
+	_transients.append({
+		"node": flash, "left": cfg.trap_sprung_frames, "total": cfg.trap_sprung_frames,
+		"kind": "dust",
+	})
 
 
 ## item 6: tar shimmer phase — half-period square wave over render frames

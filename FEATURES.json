@@ -126,12 +126,13 @@
       "acceptance": [
         "all seven checklists green in the render lane"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "juice_deploy",
         "juice_kill_leak",
         "juice_trap_charm",
-        "wave_banner_victory"
+        "wave_banner_victory",
+        "skill_timing"
       ],
       "commits": []
     },

@@ -27,6 +27,8 @@ var _frames_used := 0
 var _checks: Array[Dictionary] = []
 var _shots: Array[String] = []
 var _pixel_skipped: Array[String] = []
+var _done_expected := false
+var _done_called := false
 var _finished := false
 
 
@@ -159,6 +161,18 @@ func check(check_name: String, ok: bool, detail: String = "") -> void:
 	print("[%s] %s %s" % ["PASS" if ok else "FAIL", check_name, detail])
 
 
+## Completion sentinel (opt-in): a scenario whose run() aborts on a script
+## error resumes the harness normally, and if every check recorded so far
+## passed the report reads as a vacuous green. Scenarios call expect_done()
+## first and done() last; _finish fails the run if the pair is broken.
+func expect_done() -> void:
+	_done_expected = true
+
+
+func done() -> void:
+	_done_called = true
+
+
 func shot(shot_name: String) -> void:
 	await shot_grab(shot_name)
 
@@ -177,27 +191,6 @@ func shot_grab(shot_name: String) -> Image:
 	_shots.append(shot_name + ".png")
 	print("[SHOT] " + file)
 	return img
-
-
-## Count of pixels in rect within per-channel tolerance of color. Probe
-## rects come from live node rects / cell_center, never hardcoded pixels.
-func probe_color_in_rect(img: Image, rect: Rect2i, color: Color, tolerance := 0.05) -> int:
-	var n := 0
-	var x0 := maxi(rect.position.x, 0)
-	var y0 := maxi(rect.position.y, 0)
-	var x1 := mini(rect.end.x, img.get_width())
-	var y1 := mini(rect.end.y, img.get_height())
-	for y: int in range(y0, y1):
-		for x: int in range(x0, x1):
-			var c := img.get_pixel(x, y)
-			var close := (
-				absf(c.r - color.r) <= tolerance
-				and absf(c.g - color.g) <= tolerance
-				and absf(c.b - color.b) <= tolerance
-			)
-			if close:
-				n += 1
-	return n
 
 
 ## Pixel check with the headless-skip discipline: img == null records a
@@ -284,6 +277,8 @@ func _finish() -> void:
 	# defensive teardown: a scenario that failed mid-drag/mid-beat must not
 	# poison the next run's wall clock (td-phase-9.md §2.1.3)
 	Engine.time_scale = 1.0
+	if _done_expected and not _done_called:
+		check("scenario ran to completion", false, "run() aborted before done()")
 	var all_ok := true
 	for c: Dictionary in _checks:
 		if not c["ok"]:
