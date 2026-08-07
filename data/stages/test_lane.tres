@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"test_lane"
+title = "Test Lane"
+grid_rows = PackedStringArray("GGGGGGGG", "GGGGGGGG", "SGGGGGB.", "GGGGGGGG", "GGGGGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2)])
+waves = Array[Dictionary]([{
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 30
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 90
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 150
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 210
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 270
+}])
+leak_limit = 3
+squad_size = 0
+reward = {}
+intro_hint = "Enemies march the lane; every leak costs the base."

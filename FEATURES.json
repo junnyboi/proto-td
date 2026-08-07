@@ -12,7 +12,9 @@
       "scenarios": [
         "boot"
       ],
-      "commits": []
+      "commits": [
+        "1afa105"
+      ]
     },
     {
       "id": "P1",
@@ -23,7 +25,7 @@
         "leak_limit -> DEFEAT exactness on the exact tick",
         "boot scenario: enemies visibly traverse the path"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "boot"
       ],
