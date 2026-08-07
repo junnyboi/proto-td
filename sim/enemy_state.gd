@@ -21,3 +21,4 @@ var blocked_by: int = -1
 var alive: bool = true
 var aerial: bool = false
 var atk_range_cells: int = 0
+var stunned_until_tick: int = 0

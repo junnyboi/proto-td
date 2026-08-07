@@ -204,6 +204,12 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 	if unit == null:
 		_hide_retreat_chip()
 		return
+	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
+	# its skill; the retreat chip only opens while the skill is not ready.
+	if unit.sp_cost > 0 and unit.sp == unit.sp_cost:
+		model.apply_action([&"trigger_skill", unit.id])
+		_hide_retreat_chip()
+		return
 	_retreat_unit_id = unit.id
 	var center: Vector2 = view.call("cell_center", cell)
 	_retreat_chip.position = center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)

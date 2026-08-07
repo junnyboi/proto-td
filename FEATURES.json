@@ -75,7 +75,7 @@
       "acceptance": [
         "skill-timing win/loss pair"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "skill_timing"
       ],

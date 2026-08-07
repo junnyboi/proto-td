@@ -37,6 +37,11 @@ const UNIT_PX := 44.0
 const HP_BAR_HEIGHT := 5.0
 const HP_BAR_BG := Color("3a2026")
 const HP_BAR_FILL := Color("a7f070")
+const SP_BAR_BG := Color("20263a")
+const SP_BAR_FILL := Color("f4b41b")
+const SP_FULL_FLASH := Color("f4f4f4")
+const PORTRAIT_FLASH_PX := 96.0
+const PORTRAIT_FLASH_FRAMES := 24
 const OP_CLASS_COLORS := {
 	OperatorDef.OpClass.VANGUARD: Color("38b764"),
 	OperatorDef.OpClass.GUARD: Color("a7f070"),
@@ -55,6 +60,9 @@ var _unit_nodes: Dictionary = {}
 var _tracer_lines: Dictionary = {}
 var _tracer_seen_tick: Dictionary = {}
 var _tracer_frames_left: Dictionary = {}
+var _skill_seen_tick: Dictionary = {}
+var _portrait_flash: ColorRect = null
+var _portrait_flash_frames := 0
 var _op_defs: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
@@ -65,6 +73,7 @@ var _pushed: Dictionary = {
 	"deploys": "deploys",
 	"retreats": "retreated",
 	"dp_spent": "dp_spent",
+	"skills_fired": "skills_fired",
 }
 var _pushed_last: Dictionary = {}
 var _result_reported := false
@@ -83,6 +92,15 @@ func _ready() -> void:
 	Game.content = self
 	_build_grid(stage)
 	_build_hud()
+	_portrait_flash = ColorRect.new()
+	_portrait_flash.name = "PortraitFlash"
+	_portrait_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_flash.size = Vector2.ONE * PORTRAIT_FLASH_PX
+	_portrait_flash.position = Vector2(
+		(get_viewport_rect().size.x - PORTRAIT_FLASH_PX) * 0.5, 56.0
+	)
+	_portrait_flash.visible = false
+	add_child(_portrait_flash)
 	var bar := DeployBar.new()
 	bar.name = "DeployBar"
 	add_child(bar)
@@ -241,6 +259,41 @@ func _project_units() -> void:
 		if u.alive:
 			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
 			_update_hp_bar(body, UNIT_PX, u.hp, u.hp_max)
+			_update_sp_bar(body, u)
+		_detect_skill_trigger(u)
+	if _portrait_flash_frames > 0:
+		_portrait_flash_frames -= 1
+		if _portrait_flash_frames == 0 and _portrait_flash != null:
+			_portrait_flash.visible = false
+
+
+## SP pip under the unit: fills toward sp_cost, flashes while full (the
+## trigger-ready state is a checkable pixel).
+func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
+	if u.sp_cost <= 0:
+		return
+	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
+	fill.size.x = UNIT_PX * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
+	if u.sp == u.sp_cost:
+		var blink := (Engine.get_process_frames() / 8) % 2 == 0
+		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
+	else:
+		fill.color = SP_BAR_FILL
+
+
+## A trigger flashes a portrait-placeholder quad (class-colored, top center)
+## and emits the sfx_played wiring event (audible SFX is Phase 9 / Lane A).
+func _detect_skill_trigger(u: UnitState) -> void:
+	var seen := int(_skill_seen_tick.get(u.id, -1))
+	if u.skill_triggered_tick <= seen:
+		return
+	_skill_seen_tick[u.id] = u.skill_triggered_tick
+	Telemetry.event("sfx_played", {"id": String(u.skill_id)})
+	var def: OperatorDef = _op_defs.get(u.op_id)
+	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
+	_portrait_flash.color = OP_CLASS_COLORS[op_class]
+	_portrait_flash.visible = true
+	_portrait_flash_frames = PORTRAIT_FLASH_FRAMES
 
 
 func _add_hp_bar(body: ColorRect, width: float) -> void:
@@ -264,6 +317,22 @@ func _update_hp_bar(body: ColorRect, width: float, hp: int, hp_max: int) -> void
 	fill.size.x = width * clampf(float(hp) / float(maxi(hp_max, 1)), 0.0, 1.0)
 
 
+func _add_sp_bar(body: ColorRect) -> void:
+	var bg := ColorRect.new()
+	bg.name = "SpBarBg"
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.color = SP_BAR_BG
+	bg.size = Vector2(UNIT_PX, HP_BAR_HEIGHT)
+	bg.position = Vector2(0, UNIT_PX + 3.0)
+	body.add_child(bg)
+	var fill := ColorRect.new()
+	fill.name = "SpBarFill"
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fill.color = SP_BAR_FILL
+	fill.size = Vector2(0, HP_BAR_HEIGHT)
+	bg.add_child(fill)
+
+
 func _make_unit_node(u: UnitState) -> Node2D:
 	var node := Node2D.new()
 	node.position = (Vector2(u.cell) + Vector2.ONE * 0.5) * TILE_PX
@@ -276,6 +345,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.size = Vector2(UNIT_PX, UNIT_PX)
 	rect.position = -rect.size * 0.5
 	_add_hp_bar(rect, UNIT_PX)
+	if u.sp_cost > 0:
+		_add_sp_bar(rect)
 	node.add_child(rect)
 	var chevron := Polygon2D.new()
 	chevron.color = CHEVRON_COLOR

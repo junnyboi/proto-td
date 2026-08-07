@@ -14,9 +14,10 @@ extends RefCounted
 ## args...]]) — that tuple is the replay format, the bot format, and the
 ## test format. Phase 2 verbs: deploy(op_id, cell, facing), retreat(unit_id).
 ##
-## DP ledger (td-phase-2-3.md D4/D5): regen/generation/refunds accrue gross;
-## points that would exceed dp_cap land in dp_lost_to_cap, so at every tick
-## dp == dp_start + regen + vanguard + refunded - spent - lost_to_cap exactly.
+## DP ledger (td-phase-2-3.md D4/D5, extended by Phase 5's skill bucket):
+## regen/generation/refunds/bursts accrue gross; points that would exceed
+## dp_cap land in dp_lost_to_cap, so at every tick dp == dp_start + regen +
+## vanguard + refunded + skill_granted - spent - lost_to_cap exactly.
 ##
 ## Adding a mutable field here without extending state_hash() is a defect
 ## (CLAUDE.md ban list).
@@ -45,7 +46,9 @@ var dp_vanguard_generated: int = 0
 var dp_refunded: int = 0
 var dp_spent: int = 0
 var dp_lost_to_cap: int = 0
+var dp_skill_granted: int = 0
 var retreated: int = 0
+var skills_fired: int = 0
 var units: Array[UnitState] = []
 
 var _defs: Dictionary = {}
@@ -105,8 +108,8 @@ func run_to_terminal(max_ticks: int) -> void:
 
 
 ## Verb dispatcher (architecture rule 3). Every rejection path returns false
-## before any mutation; any verb after a terminal state rejects. trigger_skill/
-## place_trap/cast arrive in Phases 5-7.
+## before any mutation; any verb after a terminal state rejects. place_trap/
+## cast arrive in Phases 6-7.
 func apply_action(action: Array) -> bool:
 	if action.is_empty() or result != Result.RUNNING:
 		return false
@@ -115,7 +118,9 @@ func apply_action(action: Array) -> bool:
 		return _apply_deploy(action[1], action[2], int(action[3]))
 	if verb == &"retreat" and action.size() == 2:
 		return _apply_retreat(int(action[1]))
-	if verb != &"deploy" and verb != &"retreat":
+	if verb == &"trigger_skill" and action.size() == 2:
+		return _apply_trigger_skill(int(action[1]))
+	if verb != &"deploy" and verb != &"retreat" and verb != &"trigger_skill":
 		push_warning("apply_action: unknown verb '%s'" % [verb])
 	return false
 
@@ -193,9 +198,48 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.dp_generation_interval_ticks = def.dp_generation_interval_ticks
 	u.op_class = def.op_class
 	u.range_offsets = def.range_offsets.duplicate()
+	if def.skill != null:
+		u.skill_id = def.skill.id
+		u.sp_cost = def.skill.sp_cost
+		u.skill_effect = def.skill.effect
+		u.skill_params = def.skill.params.duplicate()
+		u.skill_duration_ticks = def.skill.duration_ticks
 	units.append(u)
 	dp -= def.dp_cost
 	dp_spent += def.dp_cost
+	return true
+
+
+## trigger_skill (td-phase-4-5.md §2): valid iff the unit exists, is alive,
+## has a skill, and SP is exactly full; any rejection is zero state change.
+## Instant effects (DP_BURST through the ledger, STUN_IN_RANGE on non-aerial
+## enemies in the square around the unit) apply now; timed effects join
+## active_effects until tick + duration_ticks.
+func _apply_trigger_skill(unit_id: int) -> bool:
+	var u := unit_by_id(unit_id)
+	if u == null or not u.alive or u.sp_cost <= 0 or u.sp != u.sp_cost:
+		return false
+	u.sp = 0
+	u.skill_triggered_tick = tick
+	skills_fired += 1
+	match u.skill_effect:
+		SkillDef.Effect.DP_BURST:
+			var amount := int(u.skill_params["amount"])
+			dp_skill_granted += amount
+			_grant_dp(amount)
+		SkillDef.Effect.STUN_IN_RANGE:
+			var cells := Targeting.splash_cells(u.cell, int(u.skill_params["dim"]))
+			for e: EnemyState in enemies:
+				if not e.alive or e.aerial:
+					continue
+				if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
+					e.stunned_until_tick = tick + int(u.skill_params["stun_ticks"])
+		_:
+			u.active_effects.append({
+				"effect": u.skill_effect,
+				"params": u.skill_params,
+				"expires_tick": tick + u.skill_duration_ticks,
+			})
 	return true
 
 
@@ -244,7 +288,9 @@ func state_hash() -> int:
 	_append_int(bytes, dp_refunded)
 	_append_int(bytes, dp_spent)
 	_append_int(bytes, dp_lost_to_cap)
+	_append_int(bytes, dp_skill_granted)
 	_append_int(bytes, retreated)
+	_append_int(bytes, skills_fired)
 	for u: UnitState in units:
 		_append_int(bytes, u.id)
 		_append_int(bytes, u.op_id.hash())
@@ -258,6 +304,18 @@ func state_hash() -> int:
 		_append_int(bytes, u.last_attack_tick)
 		_append_int(bytes, u.last_attack_cell.x)
 		_append_int(bytes, u.last_attack_cell.y)
+		_append_int(bytes, u.sp)
+		_append_int(bytes, u.sp_progress)
+		_append_int(bytes, u.skill_triggered_tick)
+		_append_int(bytes, u.active_effects.size())
+		for fx: Dictionary in u.active_effects:
+			_append_int(bytes, int(fx["effect"]))
+			_append_int(bytes, int(fx["expires_tick"]))
+			var keys: Array = (fx["params"] as Dictionary).keys()
+			keys.sort()
+			for key: String in keys:
+				_append_int(bytes, key.hash())
+				_append_int(bytes, int(round(float(fx["params"][key]) * 1000.0)))
 		_append_int(bytes, u.blocked_ids.size())
 		for bid: int in u.blocked_ids:
 			_append_int(bytes, bid)
@@ -269,6 +327,7 @@ func state_hash() -> int:
 		_append_int(bytes, e.hp)
 		_append_int(bytes, e.atk_counter)
 		_append_int(bytes, e.blocked_by)
+		_append_int(bytes, e.stunned_until_tick)
 		_append_int(bytes, 1 if e.alive else 0)
 	return _fnv1a64(bytes)
 
@@ -289,16 +348,22 @@ func snapshot() -> Dictionary:
 		"deploys": units.size(),
 		"retreated": retreated,
 		"dp_spent": dp_spent,
+		"skills_fired": skills_fired,
 	}
 
 
 ## Sub-step order pinned in td-phase-2-3.md D9: (1) DP regen + vanguard
-## generation, (2) advance unblocked enemies + block assignment + leaks,
+## generation (Phase 5 prepends effect expiry and appends SP accrual inside
+## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
 ## (3) combat — units strike first, then enemies, deaths resolve immediately,
 ## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
+## Expiry runs before combat so a timed effect is active for exactly
+## duration_ticks ticks (exclusive end at expires_tick); enemies a lapsed
+## BLOCK_PLUS can no longer hold resume walking in this same tick's sub-step 2.
 func _step_one() -> void:
 	if result != Result.RUNNING:
 		return
+	_expire_effects()
 	_tick_dp()
 	_advance_enemies()
 	_tick_combat()
@@ -315,7 +380,7 @@ func _step_one() -> void:
 ## never occupy capacity, and only leak or die to ranged damage.
 func _advance_enemies() -> void:
 	for e: EnemyState in enemies:
-		if not e.alive or e.blocked_by >= 0:
+		if not e.alive or e.blocked_by >= 0 or tick < e.stunned_until_tick:
 			continue
 		e.progress_units += e.step_units
 		if not e.aerial:
@@ -358,6 +423,8 @@ func _tick_combat() -> void:
 	for e: EnemyState in enemies:
 		if not e.alive:
 			continue
+		if tick < e.stunned_until_tick:
+			continue
 		if e.atk_counter > 0:
 			e.atk_counter -= 1
 			continue
@@ -397,15 +464,16 @@ func _fire_ranged(u: UnitState) -> void:
 	var primary := enemies[target_id]
 	var primary_cell := Pathing.cell_of(path_for(primary.path_idx), primary.progress_units)
 	if u.op_class == OperatorDef.OpClass.CASTER:
-		u.atk_counter = u.atk_interval_ticks - 1
+		u.atk_counter = u.effective_interval() - 1
 		u.last_attack_tick = tick
 		u.last_attack_cell = primary_cell
-		var cells := Targeting.splash_cells(primary_cell, 3)
+		var cells := Targeting.splash_cells(primary_cell, u.splash_dim())
+		var damage := u.effective_atk()
 		for e: EnemyState in enemies:
 			if not e.alive or e.aerial:
 				continue
 			if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
-				e.hp -= u.atk
+				e.hp -= damage
 				if e.hp <= 0:
 					_kill_enemy(e)
 	else:
@@ -413,8 +481,8 @@ func _fire_ranged(u: UnitState) -> void:
 
 
 func _strike_enemy(u: UnitState, target: EnemyState) -> void:
-	target.hp -= u.atk
-	u.atk_counter = u.atk_interval_ticks - 1
+	target.hp -= u.effective_atk()
+	u.atk_counter = u.effective_interval() - 1
 	u.last_attack_tick = tick
 	u.last_attack_cell = Pathing.cell_of(path_for(target.path_idx), target.progress_units)
 	if target.hp <= 0:
@@ -439,7 +507,7 @@ func _block_capacity_left(u: UnitState) -> int:
 	var held := 0
 	for enemy_id: int in u.blocked_ids:
 		held += enemies[enemy_id].block_weight
-	return u.block - held
+	return u.effective_block() - held
 
 
 func _first_blocked_alive(u: UnitState) -> EnemyState:
@@ -480,13 +548,47 @@ func _tick_dp() -> void:
 		dp_regen_accrued += 1
 		_grant_dp(1)
 	for u: UnitState in units:
-		if not u.alive or u.dp_generation_interval_ticks <= 0:
+		if not u.alive:
 			continue
-		u.dp_generation_counter += 1
-		if u.dp_generation_counter >= u.dp_generation_interval_ticks:
-			u.dp_generation_counter = 0
-			dp_vanguard_generated += 1
-			_grant_dp(1)
+		if u.dp_generation_interval_ticks > 0:
+			u.dp_generation_counter += 1
+			if u.dp_generation_counter >= u.dp_generation_interval_ticks:
+				u.dp_generation_counter = 0
+				dp_vanguard_generated += 1
+				_grant_dp(1)
+		if u.sp_cost > 0 and u.sp < u.sp_cost:
+			u.sp_progress += 1
+			if u.sp_progress >= config.sp_progress_interval_ticks:
+				u.sp_progress = 0
+				u.sp += 1
+
+
+## Timed effects lapse when tick reaches their expires_tick — derived stats
+## fall back to base by construction. A lapsed BLOCK_PLUS may leave a unit
+## over capacity: release most-recently-blocked first until the held weight
+## fits (the pinned edge rule); released enemies resume from frozen progress.
+func _expire_effects() -> void:
+	for u: UnitState in units:
+		if not u.alive or u.active_effects.is_empty():
+			continue
+		var had_block_plus := false
+		var kept: Array[Dictionary] = []
+		for fx: Dictionary in u.active_effects:
+			if int(fx["expires_tick"]) <= tick:
+				if int(fx["effect"]) == SkillDef.Effect.BLOCK_PLUS:
+					had_block_plus = true
+			else:
+				kept.append(fx)
+		u.active_effects = kept
+		if had_block_plus:
+			_release_block_overflow(u)
+
+
+func _release_block_overflow(u: UnitState) -> void:
+	while not u.blocked_ids.is_empty() and _block_capacity_left(u) < 0:
+		var last_idx := u.blocked_ids.size() - 1
+		enemies[u.blocked_ids[last_idx]].blocked_by = -1
+		u.blocked_ids.remove_at(last_idx)
 
 
 ## Single cap-clamp point (D4): callers bump their gross ledger bucket, then

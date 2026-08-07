@@ -10,3 +10,4 @@ dp_start = 10
 dp_regen_interval_ticks = 30
 dp_cap = 99
 retreat_refund_percent = 50
+sp_progress_interval_ticks = 30

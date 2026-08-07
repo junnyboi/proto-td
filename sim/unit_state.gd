@@ -6,6 +6,11 @@ extends RefCounted
 ## re-reads Resources mid-battle. The units array in BattleModel is
 ## append-only: retreated and dead units stay in it (alive = false) for hash
 ## stability and history; redeploying creates a fresh UnitState.
+##
+## Phase 5 skill effects live in active_effects ({effect, params,
+## expires_tick}); combat reads the effective_* getters, which fold active
+## effects over base stats — base stats are NEVER mutated in place, so
+## "expiry restores base exactly" holds by construction.
 
 enum Facing { RIGHT, DOWN, LEFT, UP }
 
@@ -28,3 +33,44 @@ var op_class: OperatorDef.OpClass = OperatorDef.OpClass.GUARD
 var range_offsets: Array[Vector2i] = []
 var last_attack_tick: int = -1
 var last_attack_cell: Vector2i = Vector2i(-1, -1)
+var sp: int = 0
+var sp_progress: int = 0
+var active_effects: Array[Dictionary] = []
+var skill_id: StringName = &""
+var sp_cost: int = 0
+var skill_effect: int = 0
+var skill_params: Dictionary = {}
+var skill_duration_ticks: int = 0
+var skill_triggered_tick: int = -1
+
+
+func effective_atk() -> int:
+	var mult := 1.0
+	for fx: Dictionary in active_effects:
+		if int(fx["effect"]) == SkillDef.Effect.ATK_MULT:
+			mult *= float(fx["params"]["mult"])
+	return floori(atk * mult)
+
+
+func effective_interval() -> int:
+	var mult := 1.0
+	for fx: Dictionary in active_effects:
+		if int(fx["effect"]) == SkillDef.Effect.ATK_INTERVAL_MULT:
+			mult *= float(fx["params"]["mult"])
+	return maxi(1, floori(atk_interval_ticks * mult))
+
+
+func effective_block() -> int:
+	var bonus := 0
+	for fx: Dictionary in active_effects:
+		if int(fx["effect"]) == SkillDef.Effect.BLOCK_PLUS:
+			bonus += int(fx["params"]["amount"])
+	return block + bonus
+
+
+func splash_dim() -> int:
+	var dim := 3
+	for fx: Dictionary in active_effects:
+		if int(fx["effect"]) == SkillDef.Effect.SPLASH_RADIUS_PLUS:
+			dim = maxi(dim, int(fx["params"]["dim"]))
+	return dim

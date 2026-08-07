@@ -2,9 +2,9 @@ class_name OperatorDef
 extends Resource
 
 ## Operator archetype (all balance is data — architecture rule 4). Full schema
-## declared from Phase 2; range_offsets/facing rotation activate in Phase 4.
-## Pinned deviation (td-phase-2-3.md §3.2): the skill field is deferred to
-## Phase 5 with the SkillDef class.
+## declared from Phase 2; range_offsets/facing rotation activate in Phase 4;
+## the skill field lands in Phase 5 with the SkillDef class (as pinned in
+## td-phase-2-3.md §3.2).
 
 enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER }
 enum Placement { GROUND, ELEVATED }
@@ -21,5 +21,6 @@ enum Placement { GROUND, ELEVATED }
 @export var range_offsets: Array[Vector2i] = []
 @export var placement: Placement = Placement.GROUND
 @export var dp_generation_interval_ticks: int = 0
+@export var skill: SkillDef = null
 @export var sprite_id: StringName = &""
 @export var portrait_id: StringName = &""

@@ -10,3 +10,4 @@ extends Resource
 @export var dp_regen_interval_ticks: int = 30
 @export var dp_cap: int = 99
 @export var retreat_refund_percent: int = 50
+@export var sp_progress_interval_ticks: int = 30
