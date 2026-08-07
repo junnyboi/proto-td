@@ -42,6 +42,9 @@ repeated mistake and never shrinks.
   (`get_viewport().get_visible_rect()`), and only after it is inside the tree.
 - View-projection CanvasItems (`ColorRect` tiles/units/enemies) must set
   `MOUSE_FILTER_IGNORE` — default STOP eats GUI clicks meant for `_unhandled_input`.
+- A pinned "event at tick T" lands during the step whose **entry** tick is T and is
+  observable at `model.tick == T+1` — `step(T)` shows the before-state, one more `step()`
+  shows the event. Asserting at `model.tick == T` is an off-by-one against a correct model.
 
 ## Architecture rules (numbered — violation = rework)
 

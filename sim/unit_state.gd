@@ -14,6 +14,7 @@ var op_id: StringName = &""
 var cell: Vector2i = Vector2i.ZERO
 var facing: Facing = Facing.RIGHT
 var hp: int = 1
+var hp_max: int = 1
 var alive: bool = true
 var block: int = 0
 var dp_cost: int = 0

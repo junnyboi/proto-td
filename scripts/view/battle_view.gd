@@ -21,6 +21,9 @@ const TILE_COLORS := {
 }
 const ENEMY_COLOR := Color("ef7d57")
 const UNIT_PX := 44.0
+const HP_BAR_HEIGHT := 5.0
+const HP_BAR_BG := Color("3a2026")
+const HP_BAR_FILL := Color("a7f070")
 const OP_CLASS_COLORS := {
 	OperatorDef.OpClass.VANGUARD: Color("38b764"),
 	OperatorDef.OpClass.GUARD: Color("a7f070"),
@@ -143,6 +146,7 @@ func _project() -> void:
 			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			rect.color = ENEMY_COLOR
 			rect.size = Vector2(ENEMY_PX, ENEMY_PX)
+			_add_hp_bar(rect, ENEMY_PX)
 			_grid_root.add_child(rect)
 			_enemy_rects[e.id] = rect
 		elif not e.alive and _enemy_rects.has(e.id):
@@ -152,11 +156,12 @@ func _project() -> void:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var rect: ColorRect = _enemy_rects[e.id]
 			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
+			_update_hp_bar(rect, ENEMY_PX, e.hp, e.hp_max)
 	_project_units()
 	var s := model.snapshot()
 	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(s["result"])]
-	_hud.text = "Base HP %d   DP %d   tick %d   %s" % [
-		s["base_hp"], s["dp"], s["tick"], result_text,
+	_hud.text = "Base HP %d   DP %d   kills %d   tick %d   %s" % [
+		s["base_hp"], s["dp"], s["killed"], s["tick"], result_text,
 	]
 	if int(s["result"]) == BattleModel.Result.CLEAR:
 		_hud.text += "  %d*" % int(s["stars"])
@@ -169,18 +174,44 @@ func _project_units() -> void:
 		elif not u.alive and _unit_nodes.has(u.id):
 			_unit_nodes[u.id].queue_free()
 			_unit_nodes.erase(u.id)
+		if u.alive:
+			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
+			_update_hp_bar(body, UNIT_PX, u.hp, u.hp_max)
+
+
+func _add_hp_bar(body: ColorRect, width: float) -> void:
+	var bg := ColorRect.new()
+	bg.name = "HpBarBg"
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.color = HP_BAR_BG
+	bg.size = Vector2(width, HP_BAR_HEIGHT)
+	bg.position = Vector2(0, -HP_BAR_HEIGHT - 3.0)
+	body.add_child(bg)
+	var fill := ColorRect.new()
+	fill.name = "HpBarFill"
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fill.color = HP_BAR_FILL
+	fill.size = Vector2(width, HP_BAR_HEIGHT)
+	bg.add_child(fill)
+
+
+func _update_hp_bar(body: ColorRect, width: float, hp: int, hp_max: int) -> void:
+	var fill := body.get_node("HpBarBg/HpBarFill") as ColorRect
+	fill.size.x = width * clampf(float(hp) / float(maxi(hp_max, 1)), 0.0, 1.0)
 
 
 func _make_unit_node(u: UnitState) -> Node2D:
 	var node := Node2D.new()
 	node.position = (Vector2(u.cell) + Vector2.ONE * 0.5) * TILE_PX
 	var rect := ColorRect.new()
+	rect.name = "Body"
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
 	rect.color = OP_CLASS_COLORS[op_class]
 	rect.size = Vector2(UNIT_PX, UNIT_PX)
 	rect.position = -rect.size * 0.5
+	_add_hp_bar(rect, UNIT_PX)
 	node.add_child(rect)
 	var chevron := Polygon2D.new()
 	chevron.color = CHEVRON_COLOR

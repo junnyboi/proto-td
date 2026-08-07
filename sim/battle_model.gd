@@ -185,6 +185,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.cell = cell
 	u.facing = facing as UnitState.Facing
 	u.hp = def.hp
+	u.hp_max = def.hp
 	u.block = def.block
 	u.dp_cost = def.dp_cost
 	u.atk = def.atk
@@ -201,6 +202,7 @@ func _apply_retreat(unit_id: int) -> bool:
 	if u == null or not u.alive:
 		return false
 	u.alive = false
+	_release_all_blocked(u)
 	retreated += 1
 	var refund := floori(u.dp_cost * config.retreat_refund_percent / 100.0)
 	dp_refunded += refund
@@ -260,6 +262,8 @@ func state_hash() -> int:
 		_append_int(bytes, e.path_idx)
 		_append_int(bytes, e.progress_units)
 		_append_int(bytes, e.hp)
+		_append_int(bytes, e.atk_counter)
+		_append_int(bytes, e.blocked_by)
 		_append_int(bytes, 1 if e.alive else 0)
 	return _fnv1a64(bytes)
 
@@ -284,24 +288,110 @@ func snapshot() -> Dictionary:
 
 
 ## Sub-step order pinned in td-phase-2-3.md D9: (1) DP regen + vanguard
-## generation, (2) advance enemies + leaks, (3) combat (Phase 3), (4) spawn,
-## (5) terminal check. Later phases append sub-steps, never reorder.
+## generation, (2) advance unblocked enemies + block assignment + leaks,
+## (3) combat — units strike first, then enemies, deaths resolve immediately,
+## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
 func _step_one() -> void:
 	if result != Result.RUNNING:
 		return
 	_tick_dp()
-	for e: EnemyState in enemies:
-		if not e.alive:
-			continue
-		e.progress_units += e.step_units
-		if e.progress_units >= _path_lengths[e.path_idx]:
-			e.alive = false
-			leaked += 1
-			base_hp -= e.leak_damage
+	_advance_enemies()
+	_tick_combat()
 	for entry: Dictionary in timeline.due(tick):
 		_spawn(entry)
 	_check_terminal()
 	tick += 1
+
+
+## D12: blocked enemies skip; the block check runs after the advance, in spawn
+## order. An enemy that finds no spare capacity keeps walking (overflow rule);
+## a blocked enemy can never leak.
+func _advance_enemies() -> void:
+	for e: EnemyState in enemies:
+		if not e.alive or e.blocked_by >= 0:
+			continue
+		e.progress_units += e.step_units
+		var cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
+		var unit := alive_unit_at(cell)
+		if unit != null and _block_capacity_left(unit) >= e.block_weight:
+			e.blocked_by = unit.id
+			unit.blocked_ids.append(e.id)
+			continue
+		if e.progress_units >= _path_lengths[e.path_idx]:
+			e.alive = false
+			leaked += 1
+			base_hp -= e.leak_damage
+
+
+## D14/D15: ready-at-contact cadence — fire when the counter is 0 and a target
+## exists (counter then resets to interval - 1 so shots land exactly
+## atk_interval_ticks apart); otherwise the counter ticks down and holds at 0.
+## Units strike before enemies, so an enemy killed on its ready-tick never
+## lands that hit. A unit targets its lowest-spawn-id blocked enemy; an enemy
+## targets its blocker.
+func _tick_combat() -> void:
+	for u: UnitState in units:
+		if not u.alive:
+			continue
+		var target := _first_blocked_alive(u)
+		if u.atk_counter == 0:
+			if target != null and u.atk > 0:
+				target.hp -= u.atk
+				u.atk_counter = u.atk_interval_ticks - 1
+				if target.hp <= 0:
+					_kill_enemy(target)
+		else:
+			u.atk_counter -= 1
+	for e: EnemyState in enemies:
+		if not e.alive or e.blocked_by < 0:
+			continue
+		var blocker := unit_by_id(e.blocked_by)
+		if e.atk_counter == 0:
+			if e.atk > 0 and blocker != null and blocker.alive:
+				blocker.hp -= e.atk
+				e.atk_counter = e.atk_interval_ticks - 1
+				if blocker.hp <= 0:
+					_kill_unit(blocker)
+		else:
+			e.atk_counter -= 1
+
+
+func _block_capacity_left(u: UnitState) -> int:
+	var held := 0
+	for enemy_id: int in u.blocked_ids:
+		held += enemies[enemy_id].block_weight
+	return u.block - held
+
+
+func _first_blocked_alive(u: UnitState) -> EnemyState:
+	for enemy_id: int in u.blocked_ids:
+		var e := enemies[enemy_id]
+		if e.alive:
+			return e
+	return null
+
+
+func _kill_enemy(e: EnemyState) -> void:
+	e.alive = false
+	killed += 1
+	if e.blocked_by >= 0:
+		var blocker := unit_by_id(e.blocked_by)
+		if blocker != null:
+			blocker.blocked_ids.erase(e.id)
+		e.blocked_by = -1
+
+
+## D13/D16: death releases every held enemy (each resumes from its frozen
+## progress on the next tick's advance); no DP refund on death.
+func _kill_unit(u: UnitState) -> void:
+	u.alive = false
+	_release_all_blocked(u)
+
+
+func _release_all_blocked(u: UnitState) -> void:
+	for enemy_id: int in u.blocked_ids:
+		enemies[enemy_id].blocked_by = -1
+	u.blocked_ids.clear()
 
 
 func _tick_dp() -> void:
@@ -335,10 +425,14 @@ func _spawn(entry: Dictionary) -> void:
 	_next_enemy_id += 1
 	e.def_id = def.id
 	e.hp = def.hp
+	e.hp_max = def.hp
 	e.path_idx = int(entry["path_idx"])
 	e.progress_units = 0
 	e.step_units = Pathing.step_units_for(def.speed_tiles_per_s, config.ticks_per_second)
 	e.leak_damage = def.leak_damage
+	e.block_weight = def.block_weight
+	e.atk = def.atk
+	e.atk_interval_ticks = def.atk_interval_ticks
 	enemies.append(e)
 	spawned += 1
 

@@ -51,7 +51,7 @@
         "full conservation invariant with kills",
         "2-block holds two, third walks past"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "blocking"
       ],
