@@ -10,6 +10,9 @@ extends Node2D
 const TILE_PX := 64.0
 const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
+const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
+const IDLE_BOB_FRAMES := 24
+const ATTACK_POSE_FRAMES := 8
 
 const TILE_COLORS := {
 	StageDef.Tile.VOID: Color("1a1c2c"),
@@ -32,7 +35,7 @@ const AERIAL_PX := 24.0
 const AERIAL_SHADOW_OFFSET := Vector2(2.0, 2.0)
 const AERIAL_SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.45)
 const TRACER_COLOR := Color("f4f4f4")
-const UNIT_PX := 44.0
+const UNIT_PX := 64.0  # 32px art at the pinned 2x scale
 const HP_BAR_HEIGHT := 5.0
 const HP_BAR_BG := Color("3a2026")
 const HP_BAR_FILL := Color("a7f070")
@@ -105,6 +108,9 @@ var _pushed: Dictionary = {
 }
 var _pushed_last: Dictionary = {}
 var _result_reported := false
+var _enemy_defs: Dictionary = {}
+var _attack_pose_left: Dictionary = {}
+var _unit_attack_seen: Dictionary = {}
 
 
 func _ready() -> void:
@@ -114,6 +120,7 @@ func _ready() -> void:
 		return
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
+	_enemy_defs = defs
 	# operators load as a full catalog too (squad stays the model's loadout
 	# filter) so debug grants can resolve any operator on disk (Phase 8)
 	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
@@ -419,11 +426,29 @@ func _build_grid(stage: StageDef) -> void:
 	var viewport := get_viewport_rect().size
 	_grid_root.position = (viewport - Vector2(size) * TILE_PX) * 0.5
 	add_child(_grid_root)
+	var tile_art := {
+		StageDef.Tile.VOID: &"tile_void",
+		StageDef.Tile.GROUND: &"tile_ground",
+		StageDef.Tile.ELEVATED: &"tile_elevated",
+		StageDef.Tile.SPAWN: &"tile_spawn",
+		StageDef.Tile.BASE: &"tile_base",
+		StageDef.Tile.BLOCKED: &"tile_blocked",
+	}
 	for y: int in size.y:
 		for x: int in size.x:
 			var tile := stage.tile_at(Vector2i(x, y))
+			var tex := Art.texture(tile_art[tile])
+			if tex != null:
+				var sprite := TextureRect.new()
+				# projection only: never intercept GUI input meant for the grid
+				sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				sprite.texture = tex
+				sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				sprite.position = Vector2(x, y) * TILE_PX
+				sprite.size = Vector2(TILE_PX, TILE_PX)
+				_grid_root.add_child(sprite)
+				continue
 			var rect := ColorRect.new()
-			# projection only: never intercept GUI input meant for the grid
 			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			rect.color = TILE_COLORS[tile]
 			rect.position = Vector2(x, y) * TILE_PX + Vector2.ONE
@@ -450,8 +475,7 @@ func _project() -> void:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var rect: ColorRect = _enemy_rects[e.id]
 			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
-			if e.faction == EnemyState.Faction.CHARMED:
-				rect.color = CHARMED_COLOR
+			_refresh_enemy_sprite(e, rect)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()
@@ -465,14 +489,29 @@ func _project() -> void:
 		_hud.text += "  %d*" % int(s["stars"])
 
 
-## Enemy rects are colored per type; aerial enemies render smaller with an
+## Enemy bodies: a transparent ColorRect holder (keeps every existing cast
+## and HP-bar seam) with a manifest-resolved sprite child at the pinned 2x
+## scale; color-rect fallback when an id has no art. Aerial enemies keep the
 ## offset shadow behind the body so they read as airborne over a blocker.
 func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	var rect := ColorRect.new()
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
+	var tex := Art.texture(_enemy_sprite_id(e), 0)
 	var body_px := AERIAL_PX if e.aerial else ENEMY_PX
-	rect.size = Vector2(body_px, body_px)
+	if tex != null:
+		rect.color = Color(0, 0, 0, 0)
+		body_px = tex.get_width() * SPRITE_SCALE
+		rect.size = Vector2(body_px, body_px)
+		var sprite := TextureRect.new()
+		sprite.name = "Sprite"
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = rect.size
+		rect.add_child(sprite)
+	else:
+		rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
+		rect.size = Vector2(body_px, body_px)
 	if e.aerial:
 		var shadow := ColorRect.new()
 		shadow.name = "AerialShadow"
@@ -485,6 +524,32 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	_add_hp_bar(rect, body_px)
 	_grid_root.add_child(rect)
 	return rect
+
+
+func _enemy_sprite_id(e: EnemyState) -> StringName:
+	var def: EnemyDef = _enemy_defs.get(e.def_id)
+	var sprite_id := def.sprite_id if def != null else e.def_id
+	if e.faction == EnemyState.Faction.CHARMED:
+		return StringName("%s_charmed" % sprite_id)
+	return sprite_id
+
+
+## Walk bob / charmed swap: the sprite child re-resolves its manifest frame
+## each projection (cached loads). Falls back to the flat recolor when no
+## sprite child exists.
+func _refresh_enemy_sprite(e: EnemyState, rect: ColorRect) -> void:
+	var sprite := rect.get_node_or_null("Sprite") as TextureRect
+	if sprite == null:
+		if e.faction == EnemyState.Faction.CHARMED:
+			rect.color = CHARMED_COLOR
+		return
+	var sprite_id := _enemy_sprite_id(e)
+	var frame := 0
+	if Art.frame_count(sprite_id) > 1:
+		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + e.id) % 2
+	var tex := Art.texture(sprite_id, frame)
+	if tex != null and sprite.texture != tex:
+		sprite.texture = tex
 
 
 ## Traps project as cell glyphs: armed spike = amber plate with a dark core
@@ -504,6 +569,10 @@ func _project_traps() -> void:
 			# charge — the sprung frame must outlive the model entry (J11),
 			# so the juice layer adopts the rect and frees it after
 			if int(_trap_kinds.get(trap_id, -1)) == TrapDef.Trigger.ON_ENTER and _juice != null:
+				var sprite := rect.get_node_or_null("Sprite") as TextureRect
+				var sprung_tex := Art.texture(&"trap_spike_sprung")
+				if sprite != null and sprung_tex != null:
+					sprite.texture = sprung_tex
 				_juice.sprung(rect, true)
 			else:
 				rect.queue_free()
@@ -516,7 +585,20 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 	rect.name = "Trap%d" % t.id
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var cell_origin := Vector2(t.cell) * TILE_PX
-	if t.trigger == TrapDef.Trigger.CELL_AURA:
+	var art_id := &"trap_tar" if t.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
+	var tex := Art.texture(art_id)
+	if tex != null:
+		rect.color = Color(0, 0, 0, 0)
+		rect.size = Vector2.ONE * TILE_PX
+		rect.position = cell_origin
+		var sprite := TextureRect.new()
+		sprite.name = "Sprite"
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = rect.size
+		rect.add_child(sprite)
+	elif t.trigger == TrapDef.Trigger.CELL_AURA:
 		rect.color = TAR_OVERLAY_COLOR
 		rect.size = Vector2.ONE * (TILE_PX - 2.0)
 		rect.position = cell_origin + Vector2.ONE
@@ -574,9 +656,35 @@ func _project_units() -> void:
 			_unit_nodes.erase(u.id)
 		if u.alive:
 			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
+			_refresh_unit_sprite(u, body)
 			_update_hp_bar(body, UNIT_PX, u.hp, u.hp_max)
 			_update_sp_bar(body, u)
 		_detect_skill_trigger(u)
+
+
+## Idle bob / attack pose: frame 0-1 bob on a render-frame clock, frame 2
+## for a short pose window on each last_attack_tick edge (all classes; the
+## ranged tracer keeps its own edge-detect).
+func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
+	var sprite := body.get_node_or_null("Sprite") as TextureRect
+	if sprite == null:
+		return
+	var def: OperatorDef = _op_defs.get(u.op_id)
+	if def == null:
+		return
+	if u.last_attack_tick >= 0 and u.last_attack_tick != int(_unit_attack_seen.get(u.id, -1)):
+		_unit_attack_seen[u.id] = u.last_attack_tick
+		_attack_pose_left[u.id] = ATTACK_POSE_FRAMES
+	var pose_left := int(_attack_pose_left.get(u.id, 0))
+	var frame := 0
+	if pose_left > 0:
+		_attack_pose_left[u.id] = pose_left - 1
+		frame = 2
+	else:
+		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + u.id) % 2
+	var tex := Art.texture(def.sprite_id, frame)
+	if tex != null and sprite.texture != tex:
+		sprite.texture = tex
 
 
 ## SP pip under the unit: fills toward sp_cost, flashes while full (the
@@ -656,10 +764,23 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	rect.color = OP_CLASS_COLORS[op_class]
-	rect.size = Vector2(UNIT_PX, UNIT_PX)
+	var tex := Art.texture(def.sprite_id, 0) if def != null else null
+	if tex != null:
+		rect.color = Color(0, 0, 0, 0)
+		rect.size = Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
+		var sprite := TextureRect.new()
+		sprite.name = "Sprite"
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = rect.size
+		sprite.flip_h = u.facing == 2
+		rect.add_child(sprite)
+	else:
+		rect.color = OP_CLASS_COLORS[op_class]
+		rect.size = Vector2(UNIT_PX, UNIT_PX)
 	rect.position = -rect.size * 0.5
-	_add_hp_bar(rect, UNIT_PX)
+	_add_hp_bar(rect, rect.size.x)
 	if u.sp_cost > 0:
 		_add_sp_bar(rect)
 	node.add_child(rect)

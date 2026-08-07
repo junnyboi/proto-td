@@ -1,0 +1,213 @@
+[gd_resource type="Resource" script_class="AssetManifest" format=3]
+
+[ext_resource type="Script" path="res://assets/asset_manifest.gd" id="1_g6syk"]
+
+[resource]
+script = ExtResource("1_g6syk")
+entries = {
+&"caster_1": {
+"frames": 5,
+"pattern": "res://assets/sprites/caster_1_%d.png",
+"placeholder": false
+},
+&"caster_2": {
+"frames": 5,
+"pattern": "res://assets/sprites/caster_2_%d.png",
+"placeholder": false
+},
+&"defender_1": {
+"frames": 5,
+"pattern": "res://assets/sprites/defender_1_%d.png",
+"placeholder": false
+},
+&"defender_2": {
+"frames": 5,
+"pattern": "res://assets/sprites/defender_2_%d.png",
+"placeholder": false
+},
+&"drone": {
+"frames": 2,
+"pattern": "res://assets/sprites/drone_%d.png",
+"placeholder": false
+},
+&"grunt": {
+"frames": 2,
+"pattern": "res://assets/sprites/grunt_%d.png",
+"placeholder": false
+},
+&"grunt_charmed": {
+"frames": 2,
+"pattern": "res://assets/sprites/grunt_charmed_%d.png",
+"placeholder": false
+},
+&"guard_1": {
+"frames": 5,
+"pattern": "res://assets/sprites/guard_1_%d.png",
+"placeholder": false
+},
+&"guard_2": {
+"frames": 5,
+"pattern": "res://assets/sprites/guard_2_%d.png",
+"placeholder": false
+},
+&"heavy": {
+"frames": 2,
+"pattern": "res://assets/sprites/heavy_%d.png",
+"placeholder": false
+},
+&"heavy_charmed": {
+"frames": 2,
+"pattern": "res://assets/sprites/heavy_charmed_%d.png",
+"placeholder": false
+},
+&"icon_bolt": {
+"frames": 1,
+"pattern": "res://assets/sprites/icon_bolt.png",
+"placeholder": false
+},
+&"icon_charm": {
+"frames": 1,
+"pattern": "res://assets/sprites/icon_charm.png",
+"placeholder": false
+},
+&"mini_boss": {
+"frames": 2,
+"pattern": "res://assets/sprites/mini_boss_%d.png",
+"placeholder": false
+},
+&"portrait_caster_1": {
+"frames": 1,
+"pattern": "res://assets/portraits/caster_1.png",
+"placeholder": true
+},
+&"portrait_caster_2": {
+"frames": 1,
+"pattern": "res://assets/portraits/caster_2.png",
+"placeholder": true
+},
+&"portrait_defender_1": {
+"frames": 1,
+"pattern": "res://assets/portraits/defender_1.png",
+"placeholder": true
+},
+&"portrait_defender_2": {
+"frames": 1,
+"pattern": "res://assets/portraits/defender_2.png",
+"placeholder": true
+},
+&"portrait_guard_1": {
+"frames": 1,
+"pattern": "res://assets/portraits/guard_1.png",
+"placeholder": true
+},
+&"portrait_guard_2": {
+"frames": 1,
+"pattern": "res://assets/portraits/guard_2.png",
+"placeholder": true
+},
+&"portrait_sniper_1": {
+"frames": 1,
+"pattern": "res://assets/portraits/sniper_1.png",
+"placeholder": true
+},
+&"portrait_sniper_2": {
+"frames": 1,
+"pattern": "res://assets/portraits/sniper_2.png",
+"placeholder": true
+},
+&"portrait_vanguard_1": {
+"frames": 1,
+"pattern": "res://assets/portraits/vanguard_1.png",
+"placeholder": true
+},
+&"portrait_vanguard_2": {
+"frames": 1,
+"pattern": "res://assets/portraits/vanguard_2.png",
+"placeholder": true
+},
+&"runner": {
+"frames": 2,
+"pattern": "res://assets/sprites/runner_%d.png",
+"placeholder": false
+},
+&"runner_charmed": {
+"frames": 2,
+"pattern": "res://assets/sprites/runner_charmed_%d.png",
+"placeholder": false
+},
+&"sniper_1": {
+"frames": 5,
+"pattern": "res://assets/sprites/sniper_1_%d.png",
+"placeholder": false
+},
+&"sniper_2": {
+"frames": 5,
+"pattern": "res://assets/sprites/sniper_2_%d.png",
+"placeholder": false
+},
+&"spellcaster": {
+"frames": 2,
+"pattern": "res://assets/sprites/spellcaster_%d.png",
+"placeholder": false
+},
+&"spellcaster_charmed": {
+"frames": 2,
+"pattern": "res://assets/sprites/spellcaster_charmed_%d.png",
+"placeholder": false
+},
+&"tile_base": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_base.png",
+"placeholder": false
+},
+&"tile_blocked": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_blocked.png",
+"placeholder": false
+},
+&"tile_elevated": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_elevated.png",
+"placeholder": false
+},
+&"tile_ground": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_ground.png",
+"placeholder": false
+},
+&"tile_spawn": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_spawn.png",
+"placeholder": false
+},
+&"tile_void": {
+"frames": 1,
+"pattern": "res://assets/sprites/tile_void.png",
+"placeholder": false
+},
+&"trap_spike_armed": {
+"frames": 1,
+"pattern": "res://assets/sprites/trap_spike_armed.png",
+"placeholder": false
+},
+&"trap_spike_sprung": {
+"frames": 1,
+"pattern": "res://assets/sprites/trap_spike_sprung.png",
+"placeholder": false
+},
+&"trap_tar": {
+"frames": 1,
+"pattern": "res://assets/sprites/trap_tar.png",
+"placeholder": false
+},
+&"vanguard_1": {
+"frames": 5,
+"pattern": "res://assets/sprites/vanguard_1_%d.png",
+"placeholder": false
+},
+&"vanguard_2": {
+"frames": 5,
+"pattern": "res://assets/sprites/vanguard_2_%d.png",
+"placeholder": false
+}
+}

@@ -133,6 +133,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var slot := Button.new()
 		slot.name = "Slot_%s" % op_id
 		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
+		slot.icon = Art.texture(def.sprite_id, 0)
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		slot.button_down.connect(_start_placement.bind(op_id))
 		box.add_child(slot)
@@ -144,6 +145,9 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
 		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
+		slot.icon = Art.texture(
+			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
+		)
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		slot.button_down.connect(_start_trap_placement.bind(trap_id))
 		box.add_child(slot)

@@ -166,7 +166,7 @@
       "acceptance": [
         "assets_floor contact-sheet checklist green"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "assets_floor"
       ],

@@ -65,6 +65,7 @@ func _build_buttons() -> void:
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id
 		slot.text = _label_for(def)
+		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		slot.button_down.connect(_start_targeting.bind(spell_id))
 		box.add_child(slot)

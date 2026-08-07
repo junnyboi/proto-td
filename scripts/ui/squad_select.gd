@@ -42,6 +42,10 @@ func _ready() -> void:
 		pick.name = "Pick_%s" % op_id
 		pick.toggle_mode = true
 		pick.text = "%s\n%d DP" % [def.display_name, def.dp_cost]
+		pick.icon = Art.texture(StringName("portrait_%s" % def.portrait_id))
+		pick.add_theme_constant_override("icon_max_width", 96)
+		pick.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		pick.add_theme_font_size_override("font_size", HINT_FONT_SIZE)
 		pick.toggled.connect(_on_pick_toggled.bind(op_id))
 		grid.add_child(pick)

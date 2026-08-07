@@ -128,3 +128,18 @@
   completion sentinel caught it. Re-confirms the CLAUDE.md rule: the
   compile gate for autoload-referencing scripts is boot + GUT, never
   --check-only alone.
+
+## Lane A (art pipeline v1)
+
+- **Exact-color juice probes and art palettes share one namespace** (art
+  generation). The grunt's white eyes/teeth were exact f4f4f4 — the same
+  color the sprung-flash absence probe asserts < 5 px of in the trap cell,
+  and the 4th grunt walks that cell during the trap_gone shot. Enemy
+  sprites now use PALE (c7d6e8) for whites; rule of thumb: probe-asserted
+  colors (SPRUNG/DUST/CHARMED) are reserved words for sprite palettes —
+  build the charmed ramp ON the probed color, keep everything else off it.
+- **Button.expand_icon on a min-sized button collapses the icon to zero**
+  (scene debuggability). Squad-select portraits silently vanished while
+  every behavioral check stayed green — only the shot review caught it.
+  icon_max_width alone is the right tool; expand_icon needs a button that
+  is larger than its minimum size.
