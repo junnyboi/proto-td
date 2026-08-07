@@ -22,6 +22,7 @@ const CURSOR_INVALID := Color(0.9, 0.2, 0.2, 0.4)
 var model: BattleModel = null
 var view: Node2D = null
 
+var _allowed: Array[StringName] = []
 var _buttons: Dictionary = {}
 var _sweeps: Dictionary = {}
 var _targeting: StringName = &""
@@ -30,10 +31,17 @@ var _cursor_rect: ColorRect = null
 
 
 ## Call after add_child: sized from the viewport (a Control under a Node2D
-## parent gets no anchor-based layout).
-func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
+## parent gets no anchor-based layout). spell_ids filters the buttons to the
+## caller's loadout (Phase 10, UI-only gating — the model stays
+## catalog-validated); empty means the full spell book.
+func setup(
+	battle_model: BattleModel,
+	battle_view: Node2D,
+	spell_ids: Array[StringName] = [],
+) -> void:
 	model = battle_model
 	view = battle_view
+	_allowed = spell_ids
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -51,6 +59,8 @@ func _build_buttons() -> void:
 	box.add_theme_constant_override("separation", 16)
 	add_child(box)
 	for spell_id: StringName in model.spell_book.ids:
+		if not _allowed.is_empty() and not _allowed.has(spell_id):
+			continue
 		var def := model.spell_book.def_of(spell_id)
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id

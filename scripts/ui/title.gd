@@ -32,6 +32,13 @@ func _ready() -> void:
 	button.pressed.connect(_on_start_pressed)
 	vbox.add_child(button)
 
+	var campaign := Button.new()
+	campaign.name = "CampaignButton"
+	campaign.text = "Campaign"
+	campaign.add_theme_font_size_override("font_size", FONT_SIZE_BUTTON)
+	campaign.pressed.connect(_on_campaign_pressed)
+	vbox.add_child(campaign)
+
 	var footer := Label.new()
 	footer.name = "FooterLabel"
 	footer.text = "seed %d" % Game.run_seed
@@ -44,3 +51,8 @@ func _ready() -> void:
 
 func _on_start_pressed() -> void:
 	Game.start_battle(Game.default_stage_id)
+
+
+func _on_campaign_pressed() -> void:
+	Sfx.play("ui_click")
+	Game.start_campaign()

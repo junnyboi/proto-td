@@ -108,3 +108,23 @@
   ~most of a 10-frame transient window on ProMotion — pixel probes anchor
   to seam-triggered events; raw input keeps proving the adapter only
   (rule 3's once-per-verb discipline pays again).
+
+## Phase 10 (campaign assembly, lanes B+C folded in)
+
+- **Stage/timeline tuning converged in 4 data-edit rounds** (balance
+  tuning — acceptance #10's richest sample). The loop that made it cheap:
+  clearability as GUT (milliseconds per full battle) + rejected timeline
+  actions failing loudly WITH the live DP value in the message. Every
+  verdict resolved as a stage-data or timeline edit; zero code changes.
+  Paper DP estimates ran consistently ~2-4 DP hot — trust the printed
+  number, not the derivation, from round 2 on.
+- **Freshly swapped-in Controls have unsettled rects for a frame or two**
+  (scene debuggability): clicking a grid button straight after the screen
+  appears can land on overlapping at-origin rects — one batch-lane flake,
+  fixed by settling frames inside the screen-await helper. Same family as
+  P9's "rects don't exist until a projection frame".
+- **--check-only passed a real parse error in an autoload script** (the
+  HFlowContainer return-type mismatch) — the boot lane and the P9
+  completion sentinel caught it. Re-confirms the CLAUDE.md rule: the
+  compile gate for autoload-referencing scripts is boot + GUT, never
+  --check-only alone.

@@ -144,7 +144,7 @@
         "S6 bot minus charm cast loses",
         "bot_idle loses every stage"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "campaign_flow"
       ],

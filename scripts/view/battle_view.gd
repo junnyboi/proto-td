@@ -141,14 +141,21 @@ func _ready() -> void:
 	)
 	_portrait_flash.visible = false
 	add_child(_portrait_flash)
+	# loadout gating is UI-only (td-phase-6-7 §2.1): the bars see the
+	# unlocked sets while a campaign runs, the full catalogs otherwise —
+	# the model stays catalog-validated either way
+	var bar_traps: Dictionary = {}
+	for trap_id: StringName in Game.loadout_trap_ids():
+		if _trap_defs.has(trap_id):
+			bar_traps[trap_id] = _trap_defs[trap_id]
 	var bar := DeployBar.new()
 	bar.name = "DeployBar"
 	add_child(bar)
-	bar.setup(model, self, _op_defs, _trap_defs)
+	bar.setup(model, self, _op_defs, bar_traps)
 	var spells := SpellBar.new()
 	spells.name = "SpellBar"
 	add_child(spells)
-	spells.setup(model, self)
+	spells.setup(model, self, Game.loadout_spell_ids())
 
 
 ## Screen-space center of a grid cell (no camera: world == screen). The
@@ -304,6 +311,25 @@ func _detect_result_stamp() -> void:
 	else:
 		_juice.stamp("DEFEAT", 0)
 		Sfx.play("defeat")
+	# campaign flow: a real Button (the juice layer is MOUSE_FILTER_IGNORE
+	# territory) under the stamp band; no auto-swap — scenarios and bots
+	# must be able to inspect the terminal state (td-phase-10.md §2.6)
+	if Game.campaign_active:
+		var next := Button.new()
+		next.name = "ContinueButton"
+		next.text = "Continue"
+		next.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
+		add_child(next)
+		var viewport := get_viewport_rect().size
+		next.position = Vector2(
+			(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
+		)
+		next.pressed.connect(_on_continue_pressed)
+
+
+func _on_continue_pressed() -> void:
+	Sfx.play("ui_click")
+	Game.open_results()
 
 
 ## item 6: snap SFX keys off the triggers counter (exact); the sprung frame

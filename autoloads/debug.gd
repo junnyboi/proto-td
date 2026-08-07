@@ -158,7 +158,7 @@ func _build() -> void:
 		column.add_child(row)
 
 
-func _build_stage_row() -> HBoxContainer:
+func _build_stage_row() -> HFlowContainer:
 	var row := _make_row("StageRow")
 	row.add_child(_make_label("stage"))
 	for stage_id: StringName in Game.stage_ids():
@@ -182,7 +182,7 @@ func _build_op_grid() -> GridContainer:
 	return grid
 
 
-func _build_dp_hp_row() -> HBoxContainer:
+func _build_dp_hp_row() -> HFlowContainer:
 	var row := _make_row("DpHpRow")
 	var specs: Array[Dictionary] = [
 		{"name": "DpPlus", "text": "DP +10"},
@@ -194,10 +194,14 @@ func _build_dp_hp_row() -> HBoxContainer:
 		var btn := _make_button(spec["name"], spec["text"])
 		btn.pressed.connect(_on_dp_hp_pressed.bind(spec["name"] as String))
 		row.add_child(btn)
+	# the P8 "session-unlock strip" pointer lands here (td-phase-10.md §2.3.5)
+	var unlock := _make_button("UnlockAll", "Unlock all")
+	unlock.pressed.connect(func() -> void: Game.debug_unlock_all())
+	row.add_child(unlock)
 	return row
 
 
-func _build_spell_row() -> HBoxContainer:
+func _build_spell_row() -> HFlowContainer:
 	var row := _make_row("SpellRow")
 	row.add_child(_make_label("reset"))
 	for spell_id: StringName in _scan_ids("res://data/spells"):
@@ -207,7 +211,7 @@ func _build_spell_row() -> HBoxContainer:
 	return row
 
 
-func _build_speed_row() -> HBoxContainer:
+func _build_speed_row() -> HFlowContainer:
 	var row := _make_row("SpeedRow")
 	row.add_child(_make_label("speed"))
 	for option: float in SPEED_OPTIONS:
@@ -248,10 +252,13 @@ func _on_spell_reset(spell_id: StringName) -> void:
 		model.apply_action([&"debug_reset_spell", spell_id])
 
 
-func _make_row(row_name: String) -> HBoxContainer:
-	var row := HBoxContainer.new()
+## Flow container so 11 stage buttons wrap instead of running off 1280 px
+## (Phase 10, K14 — a layout edit, never a check weakening).
+func _make_row(row_name: String) -> HFlowContainer:
+	var row := HFlowContainer.new()
 	row.name = row_name
-	row.add_theme_constant_override("separation", 8)
+	row.custom_minimum_size = Vector2(980, 0)
+	row.add_theme_constant_override("h_separation", 8)
 	return row
 
 
