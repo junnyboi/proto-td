@@ -16,3 +16,7 @@ var effect: int = 0
 var damage: int = 0
 var slow_permille: int = 0
 var dp_cost: int = 0
+# tick of the most recent ON_ENTER trigger (-1 = never) — the sprung frame
+# keys off this; on the final charge the trap leaves the model the same
+# tick, so callers holding the ref still read the trigger tick
+var last_trigger_tick: int = -1

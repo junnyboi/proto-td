@@ -672,6 +672,7 @@ func _resolve_trap_triggers(entrants: Array[Dictionary]) -> void:
 		if not e.alive or trap.charges_left == 0:
 			continue
 		traps_triggered += 1
+		trap.last_trigger_tick = tick
 		if trap.effect == TrapDef.Effect.DAMAGE:
 			e.hp -= trap.damage
 			if e.hp <= 0:
@@ -859,6 +860,7 @@ func _first_blocked_alive(u: UnitState) -> EnemyState:
 
 func _kill_enemy(e: EnemyState) -> void:
 	e.alive = false
+	e.died_at_tick = tick
 	killed += 1
 	if e.blocked_by >= 0:
 		var blocker := unit_by_id(e.blocked_by)
@@ -874,6 +876,7 @@ func _kill_enemy(e: EnemyState) -> void:
 ## the enemy resumes toward the base on the next advance pass.
 func _kill_charmed(ally: EnemyState) -> void:
 	ally.alive = false
+	ally.died_at_tick = tick
 	charmed_dead += 1
 	if ally.engaged_with >= 0:
 		enemies[ally.engaged_with].engaged_with = -1

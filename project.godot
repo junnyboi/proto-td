@@ -21,6 +21,7 @@ Telemetry="*res://autoloads/telemetry.gd"
 PlaytestRunner="*res://autoloads/playtest_runner.gd"
 Game="*res://autoloads/game.gd"
 Debug="*res://autoloads/debug.gd"
+Sfx="*res://autoloads/sfx.gd"
 
 [debug]
 

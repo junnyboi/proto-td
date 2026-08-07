@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="JuiceConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/juice_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+deploy_drag_time_scale = 0.3
+deploy_crouch_frames = 6
+deploy_dust_frames = 10
+skill_flash_frames = 24
+skill_burst_frames = 8
+kill_spark_frames = 4
+kill_spark_cap = 12
+leak_vignette_frames = 12
+leak_shake_amplitude_px = 6.0
+leak_shake_frames = 8
+leak_hit_stop_frames = 0
+wave_banner_frames = 45
+star_burst_stagger_frames = 10
+trap_sprung_frames = 8
+tar_shimmer_period_frames = 16
+charm_swirl_frames = 16
+charm_beat_time_scale = 0.5
+charm_beat_frames = 12
+charm_shake_amplitude_px = 0.0
+charm_shake_frames = 0
+charm_hit_stop_frames = 0
+tracer_frames = 4
+shake_events = PackedStringArray("leak", "charm_beat", "boss_hit")

@@ -30,3 +30,7 @@ var stunned_until_tick: int = 0
 var charm_immune: bool = false
 var faction: Faction = Faction.ENEMY
 var engaged_with: int = -1
+# tick of death via a kill path (units/traps/Bolt/duels, either faction);
+# stays -1 for leaks and charmed exits — kill juice keys off this because
+# `alive == false` alone is reachable four ways (td-phase-9.md §2.1.7)
+var died_at_tick: int = -1

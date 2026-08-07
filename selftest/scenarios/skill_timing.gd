@@ -68,7 +68,28 @@ func run(h: SelfTestHarness) -> void:
 	h.check("SP bar resets after trigger", guard.sp == 0)
 	h.check("effect applied", guard.active_effects.size() == 1)
 	await h.frames(4)
-	await h.shot("skill_flash")
+	# Phase 9 item 2 upgrade (td-phase-9.md §4.5): pixel probes on the flash
+	# quad + SP-fill node read + decay probe. Existing checks untouched.
+	var cfg: JuiceConfig = view.get("cfg")
+	var flash := view.find_child("PortraitFlash", true, false) as ColorRect
+	var flash_rect := Rect2i(flash.get_global_rect())
+	var flash_color := flash.color
+	var img_flash := await h.shot_grab("skill_flash")
+	h.check_pixels(
+		"flash pixels fill the PortraitFlash region", img_flash,
+		func(im: Image) -> bool:
+			return h.probe_color_in_rect(im, flash_rect, flash_color, 0.05) > 2_000,
+	)
+	var unit_nodes: Dictionary = view.get("_unit_nodes")
+	var sp_fill := (unit_nodes[guard.id] as Node2D).get_node("Body/SpBarBg/SpBarFill") as ColorRect
+	h.check("SP fill rect reset to zero width", sp_fill.size.x == 0.0, "w=%f" % sp_fill.size.x)
+	await h.frames(cfg.skill_flash_frames + 4)
+	var img_decay := await h.shot_grab("skill_flash_decay")
+	h.check_pixels(
+		"flash gone after its frame budget", img_decay,
+		func(im: Image) -> bool:
+			return h.probe_color_in_rect(im, flash_rect, flash_color, 0.05) < 100,
+	)
 
 	# WIRING CHECK: one click on the full-SP vanguard fires Rally
 	view.set("ticks_per_frame_scale", 4.0)

@@ -65,6 +65,11 @@ static func of(m: BattleModel) -> int:
 	_append_int(bytes, m.squad.size())
 	for op_id: StringName in m.squad:
 		_append_int(bytes, op_id.hash())
+	# Phase 9: the two juice-facing sim records (td-phase-9.md §2.1.6)
+	for e: EnemyState in m.enemies:
+		_append_int(bytes, e.died_at_tick)
+	for t: TrapState in m.traps:
+		_append_int(bytes, t.last_trigger_tick)
 	return _fnv1a64(bytes)
 
 

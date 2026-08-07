@@ -26,6 +26,7 @@ var _shots_dir := "res://artifacts/misc"
 var _frames_used := 0
 var _checks: Array[Dictionary] = []
 var _shots: Array[String] = []
+var _pixel_skipped: Array[String] = []
 var _finished := false
 
 
@@ -159,15 +160,55 @@ func check(check_name: String, ok: bool, detail: String = "") -> void:
 
 
 func shot(shot_name: String) -> void:
+	await shot_grab(shot_name)
+
+
+## shot() that also returns the captured Image for pixel probes (null in the
+## headless lane, where pixels don't exist — G2). Callers pass the Image to
+## check_pixels; a skipped probe is recorded, never counted as a pass.
+func shot_grab(shot_name: String) -> Image:
 	if DisplayServer.get_name() == "headless":
 		print("[SHOT-SKIPPED] " + shot_name)
-		return
+		return null
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
 	var file := "%s/%s.png" % [_shots_dir, shot_name]
 	img.save_png(ProjectSettings.globalize_path(file))
 	_shots.append(shot_name + ".png")
 	print("[SHOT] " + file)
+	return img
+
+
+## Count of pixels in rect within per-channel tolerance of color. Probe
+## rects come from live node rects / cell_center, never hardcoded pixels.
+func probe_color_in_rect(img: Image, rect: Rect2i, color: Color, tolerance := 0.05) -> int:
+	var n := 0
+	var x0 := maxi(rect.position.x, 0)
+	var y0 := maxi(rect.position.y, 0)
+	var x1 := mini(rect.end.x, img.get_width())
+	var y1 := mini(rect.end.y, img.get_height())
+	for y: int in range(y0, y1):
+		for x: int in range(x0, x1):
+			var c := img.get_pixel(x, y)
+			var close := (
+				absf(c.r - color.r) <= tolerance
+				and absf(c.g - color.g) <= tolerance
+				and absf(c.b - color.b) <= tolerance
+			)
+			if close:
+				n += 1
+	return n
+
+
+## Pixel check with the headless-skip discipline: img == null records a
+## [PIXEL-SKIPPED] entry in report.json (NOT a pass — the juice gate is only
+## judged from a windowed run with zero skips, td-phase-9.md §2.1.8).
+func check_pixels(check_name: String, img: Image, predicate: Callable, detail := "") -> void:
+	if img == null:
+		_pixel_skipped.append(check_name)
+		print("[PIXEL-SKIPPED] " + check_name)
+		return
+	check(check_name, bool(predicate.call(img)), detail)
 
 
 func _send_view_motion(view_pos: Vector2) -> void:
@@ -240,6 +281,9 @@ func _finish() -> void:
 	if _finished:
 		return
 	_finished = true
+	# defensive teardown: a scenario that failed mid-drag/mid-beat must not
+	# poison the next run's wall clock (td-phase-9.md §2.1.3)
+	Engine.time_scale = 1.0
 	var all_ok := true
 	for c: Dictionary in _checks:
 		if not c["ok"]:
@@ -249,6 +293,7 @@ func _finish() -> void:
 		"seed": seed_value,
 		"checks": _checks,
 		"shots": _shots,
+		"pixel_skipped": _pixel_skipped,
 		"frames_used": _frames_used,
 		"result": "pass" if all_ok else "fail",
 	}

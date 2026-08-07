@@ -191,6 +191,7 @@ func _start_placement(op_id: StringName) -> void:
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
 	_show_valid_highlights()
+	view.call("deploy_drag_started")
 
 
 func _start_trap_placement(trap_id: StringName) -> void:
@@ -198,6 +199,7 @@ func _start_trap_placement(trap_id: StringName) -> void:
 	_placement_trap = trap_id
 	_pending_cell = Vector2i(-1, -1)
 	_show_valid_highlights()
+	view.call("deploy_drag_started")
 
 
 ## One highlight pass for both placement modes; the query is the verb's own
@@ -245,6 +247,8 @@ func _end_placement_drag() -> void:
 		return
 	_pending_cell = cell
 	_cursor_rect.visible = false
+	# the drag itself ends here; the facing chooser is not part of the ritual
+	view.call("deploy_drag_ended")
 	for facing: UnitState.Facing in _facing_buttons:
 		var spec: Dictionary = FACING_BUTTONS[facing]
 		var btn: Button = _facing_buttons[facing]
@@ -260,6 +264,7 @@ func _confirm_deploy(facing: UnitState.Facing) -> void:
 
 
 func _cancel_placement() -> void:
+	view.call("deploy_drag_ended")
 	_placement_op = &""
 	_placement_trap = &""
 	_pending_cell = Vector2i(-1, -1)
