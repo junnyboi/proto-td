@@ -178,7 +178,7 @@
       "acceptance": [
         "stage_lint green over all eight stages"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [],
       "commits": []
     },
@@ -189,7 +189,7 @@
         "bot_stage_01..08 clear within leak bands",
         "bot_stage_06_no_charm loses"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [],
       "commits": []
     }

@@ -1,0 +1,80 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"s4"
+title = "Air Raid"
+grid_rows = PackedStringArray("GGGGGGGGGG", "SGGGGGGGGB", "GGEGGEGGGG", "GGGGGGGGGG", "SGGGGGGGGB", "GGEGGEGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1), PackedVector2Array(0, 4, 1, 4, 2, 4, 3, 4, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4)])
+waves = Array[Dictionary]([{
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 60
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 150
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 240
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 305
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 330
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 420
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 425
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 510
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 545
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 600
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 665
+}, {
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 700
+}, {
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 760
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 785
+}])
+wave_starts = PackedInt32Array(0, 290)
+leak_limit = 3
+squad_size = 5
+rewards = Array[Dictionary]([{
+"id": &"sniper_2",
+"kind": &"operator"
+}, {
+"id": &"bolt",
+"kind": &"spell"
+}])
+campaign_index = 4
+requires = Array[StringName]([&"sniper_1"])
+intro_hint = "Drones ignore your blockers. Only Snipers answer the air."

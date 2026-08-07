@@ -30,7 +30,14 @@ const TILE_CHARS := {
 @export var wave_starts: PackedInt32Array = []
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
-@export var reward: Dictionary = {}
+# campaign metadata (Phase 10, td-phase-10.md §2.1): rewards granted on
+# first clear ({kind: operator|trap|spell, id}); campaign_index -1 = not a
+# campaign stage (campaign order = ascending index, never scan order);
+# requires = unlockable ids this stage's lesson depends on (lint-enforced
+# teach-before-use)
+@export var rewards: Array[Dictionary] = []
+@export var campaign_index: int = -1
+@export var requires: Array[StringName] = []
 @export var intro_hint: String = ""
 
 

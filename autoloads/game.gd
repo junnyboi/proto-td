@@ -6,6 +6,9 @@ extends Node
 ## selftest harness (which parents the main scene to root itself).
 
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
+const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
+const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
+const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -14,29 +17,157 @@ var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null
 
+# campaign session (Phase 10, td-phase-10.md §2.2 — session-only, resets
+# every start_campaign; campaign_active == false preserves the full-catalog
+# loadout behavior for every pre-campaign entry path)
+var campaign: CampaignState = null
+var campaign_active: bool = false
+var selected_stage_id: StringName = &""
+var selected_squad: Array[StringName] = []
+var last_result: Dictionary = {}
+
 
 func set_run_seed(value: int) -> void:
 	run_seed = value
 	seed(value)
 
 
-## Every stage id on disk, sorted (deterministic). The debug overlay's jump
-## list and the debug_reach sweep both read this scan, so Lane B stages
-## appear in both with zero code changes.
-func stage_ids() -> Array[StringName]:
+## Fresh campaign run (always from scratch — no persistence by design).
+## Bots pass open_stage_select = false and drive start_stage directly.
+func start_campaign(open_stage_select: bool = true) -> void:
+	campaign = CampaignState.create(_catalogs(), _all_stage_defs())
+	campaign_active = true
+	selected_squad = []
+	last_result = {}
+	if open_stage_select:
+		_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
+
+
+## Lock enforcement lives in the stage-select UI (and is asserted by the
+## campaign bot/scenario) — the seam trusts its caller so per-stage bots
+## can run standalone (§2.2.6).
+func start_stage(stage_id: StringName, squad: Array[StringName]) -> void:
+	selected_stage_id = stage_id
+	selected_squad = squad.duplicate()
+	start_battle(stage_id)
+
+
+## The squad the next battle boots with: an explicit start_stage selection
+## wins (campaign runs AND standalone per-stage bots — §2.2.6 lets bots run
+## without clearing predecessors); every start_battle-only path (title
+## StartButton, debug jumps, scenarios) never sets one and keeps the
+## default squad.
+func battle_squad() -> Array[StringName]:
+	if not selected_squad.is_empty():
+		return selected_squad
+	return default_squad
+
+
+func is_stage_unlocked(stage_id: StringName) -> bool:
+	if campaign == null:
+		return true
+	return campaign.is_stage_unlocked(stage_id)
+
+
+func campaign_stage_ids() -> Array[StringName]:
+	if campaign == null:
+		return []
+	return campaign.campaign_stage_ids()
+
+
+## Loadout sets for the UI (model stays catalog-validated — td-phase-6-7
+## §2.1): unlocked sets while a campaign runs, full catalogs otherwise.
+func loadout_operator_ids() -> Array[StringName]:
+	if campaign_active and campaign != null:
+		return campaign.unlocked_operators
+	return _scan_ids("res://data/operators")
+
+
+func loadout_trap_ids() -> Array[StringName]:
+	if campaign_active and campaign != null:
+		return campaign.unlocked_traps
+	return _scan_ids("res://data/traps")
+
+
+func loadout_spell_ids() -> Array[StringName]:
+	if campaign_active and campaign != null:
+		return campaign.unlocked_spells
+	return _scan_ids("res://data/spells")
+
+
+## Records a terminal battle result (called once per battle by the view's
+## result edge); grants first-clear rewards and stores last_result for the
+## results screen. Idempotent by CampaignState construction.
+func record_result(result: int, stars: int) -> void:
+	if current_battle == null:
+		return
+	var stage := current_battle.stage
+	var granted: Array[Dictionary] = []
+	if campaign != null:
+		granted = campaign.record_result(stage, result, stars)
+	last_result = {
+		"stage_id": stage.id,
+		"result": result,
+		"stars": stars,
+		"leaks": current_battle.leaked,
+		"kills": current_battle.killed,
+		"rewards_granted": granted,
+	}
+
+
+func debug_unlock_all() -> void:
+	if campaign != null:
+		campaign.unlock_everything(_catalogs())
+
+
+func open_stage_select() -> void:
+	_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
+
+
+func open_squad_select() -> void:
+	_swap_content.call_deferred(SQUAD_SELECT_SCENE_PATH)
+
+
+func open_results() -> void:
+	_swap_content.call_deferred(RESULTS_SCENE_PATH)
+
+
+func _catalogs() -> Dictionary:
+	return {
+		"operators": _scan_ids("res://data/operators"),
+		"traps": _scan_ids("res://data/traps"),
+		"spells": _scan_ids("res://data/spells"),
+	}
+
+
+func _all_stage_defs() -> Array:
+	var defs: Array = []
+	for stage_id: StringName in stage_ids():
+		defs.append(load("res://data/stages/%s.tres" % stage_id) as StageDef)
+	return defs
+
+
+func _scan_ids(dir_path: String) -> Array[StringName]:
 	var names: Array[String] = []
-	var dir := DirAccess.open("res://data/stages")
+	var dir := DirAccess.open(dir_path)
 	if dir == null:
 		return []
 	for file: String in dir.get_files():
 		if file.ends_with(".tres"):
 			names.append(file.trim_suffix(".tres"))
-	# sort as String: StringName's own ordering is interning-order, not text
 	names.sort()
 	var ids: Array[StringName] = []
-	for stage_name: String in names:
-		ids.append(StringName(stage_name))
+	for item_name: String in names:
+		ids.append(StringName(item_name))
 	return ids
+
+
+## Every stage id on disk, sorted (deterministic). The debug overlay's jump
+## list and the debug_reach sweep both read this scan, so Lane B stages
+## appear in both with zero code changes.
+func stage_ids() -> Array[StringName]:
+	# sort as String: StringName's own ordering is interning-order, not text
+	return _scan_ids("res://data/stages")
 
 
 func start_battle(stage_id: StringName) -> void:

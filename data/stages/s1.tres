@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"s1"
+title = "First Stand"
+grid_rows = PackedStringArray("GGGGGGGG", "GGGEGGGG", "SGGGGGGB", "GGGEGGGG", "GGGGGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2)])
+waves = Array[Dictionary]([{
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 60
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 180
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 300
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 420
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 540
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 660
+}])
+wave_starts = PackedInt32Array(0, 360)
+leak_limit = 3
+squad_size = 3
+rewards = Array[Dictionary]([{
+"id": &"guard_2",
+"kind": &"operator"
+}])
+campaign_index = 1
+requires = Array[StringName]([])
+intro_hint = "Deploy on the path and block. Two melee fighters hold a lane."

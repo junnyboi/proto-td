@@ -3,11 +3,21 @@ extends SceneTree
 ## Stage data lint (verify.sh rung R2.5). Phase 1 checks: path contiguity
 ## (4-connected, unit steps), starts on SPAWN, ends on BASE, every path cell
 ## enemy-walkable, wave enemy ids resolve, path_idx in range, sane limits.
-## Phase 10 adds: reward id resolution, difficulty monotonicity,
-## teach-before-use.
+## Phase 10 (td-phase-10.md §2.7): reward id resolution + no double grants,
+## dense campaign_index 1..8, teach-before-use (requires ⊆ starting set ∪
+## earlier rewards — the STARTING SET comes from the same CampaignState
+## derivation the runtime uses, so the two can't drift), difficulty
+## monotonicity (Σ wave hp non-decreasing in campaign order), campaign
+## hygiene (intro_hint, squad_size vs available operators, wave_starts ≥ 2).
 
 const STAGES_DIR := "res://data/stages"
 const ENEMIES_DIR := "res://data/enemies"
+const CAMPAIGN_COUNT := 8
+const KIND_DIRS := {
+	&"operator": "res://data/operators",
+	&"trap": "res://data/traps",
+	&"spell": "res://data/spells",
+}
 
 
 func _initialize() -> void:
@@ -15,8 +25,12 @@ func _initialize() -> void:
 	var stage_files := _list_tres(STAGES_DIR)
 	if stage_files.is_empty():
 		failures.append("no stages found under %s" % STAGES_DIR)
+	var stages: Array = []
 	for path: String in stage_files:
-		_lint_stage(path, failures)
+		var stage := _lint_stage(path, failures)
+		if stage != null:
+			stages.append(stage)
+	_lint_campaign(stages, failures)
 	if failures.is_empty():
 		print("[stage-lint] OK (%d stages)" % stage_files.size())
 		quit(0)
@@ -24,6 +38,109 @@ func _initialize() -> void:
 		for f: String in failures:
 			printerr("[stage-lint] FAIL: " + f)
 		quit(1)
+
+
+## §2.7 campaign rules (key off campaign_index >= 1 — test stages opt out).
+func _lint_campaign(stages: Array, failures: Array[String]) -> void:
+	var campaign: Array = []
+	for stage: StageDef in stages:
+		if stage.campaign_index >= 1:
+			campaign.append(stage)
+	if campaign.is_empty():
+		return
+	campaign.sort_custom(func(a: StageDef, b: StageDef) -> bool:
+		return a.campaign_index < b.campaign_index)
+	if campaign.size() != CAMPAIGN_COUNT:
+		failures.append("campaign: expected %d stages, found %d" % [CAMPAIGN_COUNT, campaign.size()])
+	for i: int in campaign.size():
+		if (campaign[i] as StageDef).campaign_index != i + 1:
+			failures.append("campaign: indices not dense/unique at position %d" % i)
+			return
+	var granted: Dictionary = {}
+	for stage: StageDef in campaign:
+		var tag := String(stage.id)
+		for reward: Dictionary in stage.rewards:
+			var kind: StringName = reward.get("kind", &"")
+			var item_id: StringName = reward.get("id", &"")
+			if not KIND_DIRS.has(kind):
+				failures.append("%s: reward kind '%s' unknown" % [tag, kind])
+				continue
+			var item_path := "%s/%s.tres" % [KIND_DIRS[kind], item_id]
+			if not ResourceLoader.exists(item_path):
+				failures.append("%s: reward id has no def: %s" % [tag, item_path])
+			if granted.has(item_id):
+				failures.append("%s: reward '%s' granted twice in the campaign" % [tag, item_id])
+			granted[item_id] = true
+	_lint_teach_before_use(campaign, failures)
+	_lint_monotonic_and_hygiene(campaign, failures)
+
+
+func _lint_teach_before_use(campaign: Array, failures: Array[String]) -> void:
+	var catalogs := {
+		"operators": _scan_ids(KIND_DIRS[&"operator"]),
+		"traps": _scan_ids(KIND_DIRS[&"trap"]),
+		"spells": _scan_ids(KIND_DIRS[&"spell"]),
+	}
+	var starting := CampaignState.derive_starting_unlocks(catalogs, campaign)
+	var available: Dictionary = {}
+	for kind: String in starting:
+		for item_id: StringName in starting[kind]:
+			available[item_id] = true
+	for stage: StageDef in campaign:
+		var tag := String(stage.id)
+		for req: StringName in stage.requires:
+			if not available.has(req):
+				failures.append("%s: requires '%s' but nothing earlier unlocks it" % [tag, req])
+		for reward: Dictionary in stage.rewards:
+			available[reward.get("id", &"")] = true
+
+
+func _lint_monotonic_and_hygiene(campaign: Array, failures: Array[String]) -> void:
+	var enemy_hp: Dictionary = {}
+	var prev_total := -1
+	var available_ops := (CampaignState.derive_starting_unlocks({
+		"operators": _scan_ids(KIND_DIRS[&"operator"]),
+		"traps": [], "spells": [],
+	}, campaign)["operators"] as Array).size()
+	for stage: StageDef in campaign:
+		var tag := String(stage.id)
+		var total := 0
+		for w: Dictionary in stage.waves:
+			var enemy_id: StringName = w.get("enemy_id", &"")
+			if not enemy_hp.has(enemy_id):
+				var def := load("%s/%s.tres" % [ENEMIES_DIR, enemy_id]) as EnemyDef
+				enemy_hp[enemy_id] = def.hp if def != null else 0
+			total += int(enemy_hp[enemy_id])
+		if total < prev_total:
+			failures.append(
+				"%s: difficulty not monotonic (hp %d < previous %d)" % [tag, total, prev_total]
+			)
+		prev_total = total
+		if stage.intro_hint.strip_edges().is_empty():
+			failures.append("%s: campaign stage needs an intro_hint" % tag)
+		if stage.squad_size < 1:
+			failures.append("%s: campaign stage needs squad_size >= 1" % tag)
+		if stage.wave_starts.size() < 2:
+			failures.append("%s: campaign stage needs wave_starts.size() >= 2" % tag)
+		if available_ops < stage.squad_size:
+			failures.append(
+				"%s: only %d operators available for squad_size %d"
+				% [tag, available_ops, stage.squad_size]
+			)
+		for reward: Dictionary in stage.rewards:
+			if reward.get("kind", &"") == &"operator":
+				available_ops += 1
+
+
+func _scan_ids(dir_path: String) -> Array[StringName]:
+	var ids: Array[StringName] = []
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return ids
+	for f: String in dir.get_files():
+		if f.ends_with(".tres"):
+			ids.append(StringName(f.trim_suffix(".tres")))
+	return ids
 
 
 func _list_tres(dir_path: String) -> Array[String]:
@@ -38,15 +155,15 @@ func _list_tres(dir_path: String) -> Array[String]:
 	return out
 
 
-func _lint_stage(path: String, failures: Array[String]) -> void:
+func _lint_stage(path: String, failures: Array[String]) -> StageDef:
 	var stage := load(path) as StageDef
 	if stage == null:
 		failures.append("%s: not a StageDef" % path)
-		return
+		return null
 	var tag := String(stage.id)
 	if stage.grid_rows.is_empty():
 		failures.append("%s: empty grid" % tag)
-		return
+		return stage
 	var width := stage.grid_rows[0].length()
 	for row: String in stage.grid_rows:
 		if row.length() != width:
@@ -67,6 +184,7 @@ func _lint_stage(path: String, failures: Array[String]) -> void:
 	if stage.leak_limit < 0:
 		failures.append("%s: leak_limit < 0" % tag)
 	_lint_wave_starts(stage, failures, tag)
+	return stage
 
 
 ## wave_starts (td-phase-6-7.md §4.4): empty is valid (one window); a

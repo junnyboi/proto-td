@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"s2"
+title = "Tempo"
+grid_rows = PackedStringArray("GGGGGGGGGG", "GGGEGGGGGG", "SGGGGGGGGB", "GGGEGGGGGG", "GGGGGGGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2, 8, 2, 9, 2)])
+waves = Array[Dictionary]([{
+"enemy_id": &"runner",
+"path_idx": 0,
+"tick": 60
+}, {
+"enemy_id": &"runner",
+"path_idx": 0,
+"tick": 105
+}, {
+"enemy_id": &"runner",
+"path_idx": 0,
+"tick": 150
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 400
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 490
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 580
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 670
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 760
+}])
+wave_starts = PackedInt32Array(0, 380)
+leak_limit = 3
+squad_size = 4
+rewards = Array[Dictionary]([{
+"id": &"spike_plate",
+"kind": &"trap"
+}])
+campaign_index = 2
+requires = Array[StringName]([])
+intro_hint = "Runners rush early — open with your Vanguard or drown."

@@ -120,7 +120,8 @@ func _ready() -> void:
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
 	model = BattleModel.create(
-		stage, Game.default_squad, Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
+		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs,
+		_spell_defs
 	)
 	Game.current_battle = model
 	Game.content = self
@@ -289,11 +290,14 @@ func _detect_wave() -> void:
 	Sfx.play("wave")
 
 
-## item 5: terminal stamp, one-shot on the result flip
+## item 5: terminal stamp, one-shot on the result flip. The same edge feeds
+## the campaign unlock flow (Phase 10) — it runs per render frame, so it
+## fires identically under normal play and under 0x-scale bot driving.
 func _detect_result_stamp() -> void:
 	if _stamp_shown or model.result == BattleModel.Result.RUNNING:
 		return
 	_stamp_shown = true
+	Game.record_result(model.result, model.stars)
 	if model.result == BattleModel.Result.CLEAR:
 		_juice.stamp("CLEAR", model.stars)
 		Sfx.play("victory")

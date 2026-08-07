@@ -35,5 +35,4 @@ waves = Array[Dictionary]([{
 }])
 leak_limit = 2
 squad_size = 4
-reward = {}
 intro_hint = "Drones fly over blockers; only snipers shoot them down."

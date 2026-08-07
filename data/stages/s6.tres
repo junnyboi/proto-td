@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"s6"
+title = "Turncoat"
+grid_rows = PackedStringArray("GGGGGGGGGGGG", "GGGGGEGGEGGG", "SGGGGGGGGGGB", "GGGGGGGGGGGG", "SGGGGGGGGGGB", "GGGGGEGGGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2, 8, 2, 9, 2, 10, 2, 11, 2), PackedVector2Array(0, 4, 1, 4, 2, 4, 3, 4, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4, 10, 4, 11, 4)])
+waves = Array[Dictionary]([{
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 60
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 150
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 240
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 305
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 330
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 420
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 425
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 510
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 545
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 600
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 665
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 690
+}])
+wave_starts = PackedInt32Array(0, 500, 900)
+leak_limit = 3
+squad_size = 6
+rewards = Array[Dictionary]([{
+"id": &"vanguard_2",
+"kind": &"operator"
+}])
+campaign_index = 6
+requires = Array[StringName]([&"charm"])
+intro_hint = "You cannot afford to fight every heavy. Charm the leader and let it break its own wave."

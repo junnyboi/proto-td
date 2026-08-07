@@ -1,0 +1,98 @@
+[gd_resource type="Resource" script_class="StageDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/stage_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"s7"
+title = "Full Kit"
+grid_rows = PackedStringArray("GGGGGGGGGGGG", "GGGGGEGGEGGG", "SGGGGGGGGGGB", "GGGGGGGGGGGG", "SGGGGGGGGGGB", "GGGGGEGGGGGG")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2, 8, 2, 9, 2, 10, 2, 11, 2), PackedVector2Array(0, 4, 1, 4, 2, 4, 3, 4, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4, 10, 4, 11, 4)])
+waves = Array[Dictionary]([{
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 60
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 150
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 240
+}, {
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 255
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 505
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 330
+}, {
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 345
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 410
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 625
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 500
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 745
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 590
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 865
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 680
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 770
+}, {
+"enemy_id": &"drone",
+"path_idx": 0,
+"tick": 985
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 800
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 860
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 1000
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 1200
+}])
+wave_starts = PackedInt32Array(0, 700)
+leak_limit = 3
+squad_size = 6
+rewards = Array[Dictionary]([])
+campaign_index = 7
+requires = Array[StringName]([])
+intro_hint = "Everything at once. Spend every tool you own, on time."

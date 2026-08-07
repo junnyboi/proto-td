@@ -19,5 +19,4 @@ waves = Array[Dictionary]([{
 }])
 leak_limit = 0
 squad_size = 2
-reward = {}
 intro_hint = "Two heavies against one guard: only a well-timed Overpower holds."
