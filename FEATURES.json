@@ -1,0 +1,194 @@
+{
+  "features": [
+    {
+      "id": "P0",
+      "title": "Repo bootstrap + harness (verify.sh, telemetry, bots, gate, ledger)",
+      "acceptance": [
+        "verify.sh green in <15s on the scaffold",
+        "boot scenario passes headless and windowed",
+        "playtest.sh bot_idle writes telemetry.json; quality_gate GO"
+      ],
+      "status": "passing",
+      "scenarios": [
+        "boot"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P1",
+      "title": "Battle model core: grid, paths, waves, base HP, win/loss",
+      "acceptance": [
+        "determinism oracle: same stage+seed+timeline twice -> identical state_hash every 100th tick and identical outcome",
+        "spawn conservation: spawned == alive + leaked (+ killed) at every tick",
+        "leak_limit -> DEFEAT exactness on the exact tick",
+        "boot scenario: enemies visibly traverse the path"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "boot"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P2",
+      "title": "DP economy: deploy, retreat, facing",
+      "acceptance": [
+        "DP ledger property",
+        "deploy/retreat round-trip scenario"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "deploy_flow"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P3",
+      "title": "Blocking, leaks, combat ticks",
+      "acceptance": [
+        "full conservation invariant with kills",
+        "2-block holds two, third walks past"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "blocking"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P4",
+      "title": "Five classes, absolute counters, full enemy roster",
+      "acceptance": [
+        "composition proof: all-Defender loses drone stage, +1 Sniper wins"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "drone_counter"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P5",
+      "title": "SP + operator active skills",
+      "acceptance": [
+        "skill-timing win/loss pair"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "skill_timing"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P6",
+      "title": "Traps on the path (twist)",
+      "acceptance": [
+        "trap exactness (charges, tar slow)",
+        "extended DP ledger"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "trap_flow"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P7",
+      "title": "Player spells + Charm (twist)",
+      "acceptance": [
+        "cooldown ledger",
+        "extended conservation with charm bucket",
+        "charm win/loss pair"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "charm_runback"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P8",
+      "title": "Debug mode",
+      "acceptance": [
+        "every stage reachable; every operator/trap/spell grantable"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "debug_reach"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P9",
+      "title": "Juice pass: 7 items, data-driven, falsifiable checklists",
+      "acceptance": [
+        "all seven checklists green in the render lane"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "juice_deploy",
+        "juice_kill_leak",
+        "juice_trap_charm",
+        "wave_banner_victory"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P10",
+      "title": "Campaign assembly: stages, unlock flow, squad select",
+      "acceptance": [
+        "full-campaign bot clear",
+        "S6 bot minus charm cast loses",
+        "bot_idle loses every stage"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "campaign_flow"
+      ],
+      "commits": []
+    },
+    {
+      "id": "P11",
+      "title": "Final audit: FINAL_REPORT.md, PLAYTEST.md, PAINPOINTS.md, JUICE_VERDICT.md",
+      "acceptance": [
+        "all rungs green vs final build with fresh evidence"
+      ],
+      "status": "failing",
+      "scenarios": [],
+      "commits": []
+    },
+    {
+      "id": "LA",
+      "title": "Lane A: pixel-art pipeline (pass 1 all assets; pass 2 portrait iteration)",
+      "acceptance": [
+        "assets_floor contact-sheet checklist green"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "assets_floor"
+      ],
+      "commits": []
+    },
+    {
+      "id": "LB",
+      "title": "Lane B: stage data authoring S1-S8 (layouts, waves, rewards)",
+      "acceptance": [
+        "stage_lint green over all eight stages"
+      ],
+      "status": "failing",
+      "scenarios": [],
+      "commits": []
+    },
+    {
+      "id": "LC",
+      "title": "Lane C: bot timeline authoring S1-S8 + differentials",
+      "acceptance": [
+        "bot_stage_01..08 clear within leak bands",
+        "bot_stage_06_no_charm loses"
+      ],
+      "status": "failing",
+      "scenarios": [],
+      "commits": []
+    }
+  ]
+}

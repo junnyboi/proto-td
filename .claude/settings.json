@@ -1,0 +1,13 @@
+{
+  "enabledMcpjsonServers": ["godot"],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/check-gd.sh" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "godot": {
+      "command": "/Users/poseidon/bin/node",
+      "args": ["/Users/poseidon/tools/godot-mcp/build/index.js"],
+      "env": {
+        "GODOT_PATH": "/Users/poseidon/bin/godot"
+      }
+    }
+  }
+}
