@@ -38,7 +38,7 @@
         "DP ledger property",
         "deploy/retreat round-trip scenario"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "deploy_flow"
       ],

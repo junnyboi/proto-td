@@ -9,6 +9,7 @@ const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
+var default_squad: Array[StringName] = [&"vanguard_1", &"defender_1"]
 var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null

@@ -6,3 +6,7 @@
 script = ExtResource("1")
 base_hp_start = 10
 ticks_per_second = 30
+dp_start = 10
+dp_regen_interval_ticks = 30
+dp_cap = 99
+retreat_refund_percent = 50

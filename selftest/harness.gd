@@ -107,6 +107,29 @@ func click_view(view_pos: Vector2, button: MouseButton = MOUSE_BUTTON_LEFT) -> v
 		await frames(1)
 
 
+## Press/release halves of a drag at raw viewport coordinates (drags that
+## start on a UI control and end on the game grid). Motion precedes each half
+## so pointer-tracking adapters stay current (injected motion never moves
+## get_mouse_position); presses are held across PHYSICS frames (see click_view).
+func press_mouse_at(view_pos: Vector2) -> void:
+	_send_view_motion(view_pos)
+	await frames(2)
+	_send_view_button(view_pos, MOUSE_BUTTON_LEFT, true)
+	await physics_frames(3)
+	await frames(1)
+
+
+func release_mouse_at(view_pos: Vector2) -> void:
+	_send_view_motion(view_pos)
+	await frames(2)
+	_send_view_button(view_pos, MOUSE_BUTTON_LEFT, false)
+	await frames(2)
+
+
+func move_mouse_to_view(view_pos: Vector2) -> void:
+	_send_view_motion(view_pos)
+
+
 func press_mouse_on_cell(cell: Vector2i, button: MouseButton = MOUSE_BUTTON_LEFT) -> void:
 	var world_pos := Vector2(cell) * TILE_SIZE + Vector2(TILE_SIZE, TILE_SIZE) * 0.5
 	move_mouse_to(world_pos)
@@ -147,6 +170,26 @@ func shot(shot_name: String) -> void:
 	print("[SHOT] " + file)
 
 
+func _send_view_motion(view_pos: Vector2) -> void:
+	var ev := InputEventMouseMotion.new()
+	ev.device = SYNTHETIC_DEVICE
+	ev.position = view_pos
+	ev.global_position = view_pos
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+
+
+func _send_view_button(view_pos: Vector2, button: MouseButton, pressed: bool) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.device = SYNTHETIC_DEVICE
+	ev.position = view_pos
+	ev.global_position = view_pos
+	ev.button_index = button
+	ev.pressed = pressed
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+
+
 func _send_mouse_button(world_pos: Vector2, button: MouseButton, pressed: bool) -> void:
 	var ev := InputEventMouseButton.new()
 	ev.device = SYNTHETIC_DEVICE
@@ -159,6 +202,15 @@ func _send_mouse_button(world_pos: Vector2, button: MouseButton, pressed: bool) 
 
 
 func _run() -> void:
+	# The headless dummy window boots 64x64 regardless of project display
+	# settings and silently drops GUI events beyond that rect. Pinning the
+	# design size only sticks after the first frame (earlier sets are
+	# clobbered during engine setup), so it happens here, pre-scene-load.
+	await process_frame
+	root.size = Vector2i(
+		ProjectSettings.get_setting("display/window/size/viewport_width"),
+		ProjectSettings.get_setting("display/window/size/viewport_height"),
+	)
 	var game := root.get_node_or_null("Game")
 	if game != null and game.has_method("set_run_seed"):
 		game.call("set_run_seed", seed_value)

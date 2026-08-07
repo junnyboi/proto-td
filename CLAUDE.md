@@ -18,6 +18,10 @@ repeated mistake and never shrinks.
   events under the harness.
 - Hold synthetic presses across **physics** frames, not render frames.
 - A human on the machine races injected input: batch-fail + isolated-pass ⇒ environment, not code.
+- Under `-s script.gd` headless, the dummy window boots **64×64** regardless of project display
+  settings, and GUI events outside the window rect are silently dropped. The harness pins
+  `root.size` to the design resolution after the first frame (`_run()`); earlier sets are
+  clobbered during engine setup.
 
 ## NOT-do list
 
@@ -34,6 +38,10 @@ repeated mistake and never shrinks.
   no `OS.get_ticks_msec()` (`Time.get_ticks_msec()`).
 - No gameplay numbers in logic code — balance lives in `res://data/*.tres` (rule 4 below).
 - Adding a mutable field to `BattleModel` without extending `state_hash()` is a defect.
+- A `Control` parented to a `Node2D` gets **no anchor-based layout** — size it explicitly
+  (`get_viewport().get_visible_rect()`), and only after it is inside the tree.
+- View-projection CanvasItems (`ColorRect` tiles/units/enemies) must set
+  `MOUSE_FILTER_IGNORE` — default STOP eats GUI clicks meant for `_unhandled_input`.
 
 ## Architecture rules (numbered — violation = rework)
 
