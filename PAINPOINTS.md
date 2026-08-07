@@ -34,3 +34,13 @@
   check already PASS). Scenarios that play a battle to terminal must set
   `h.max_frames` themselves; the default budget really means "~15-30s", not
   "60s".
+
+## Phases 4-5 (classes/counters + skills)
+
+- **An enemy-free battle terminates CLEAR on its very first step** (timeline
+  exhausted + nothing alive), and `step()` no-ops after terminal, so a
+  `while model.tick < N: model.step()` loop over such a model never advances —
+  the first `test_skills.gd` draft hung GUT forever. Pure-economy tests pin
+  the battle open with one never-reached wave entry (`tick: 100_000`) and
+  tick-bounded while-loops also guard on `result == RUNNING`. Rule added to
+  CLAUDE.md.

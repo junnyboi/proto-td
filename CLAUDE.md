@@ -45,6 +45,10 @@ repeated mistake and never shrinks.
 - A pinned "event at tick T" lands during the step whose **entry** tick is T and is
   observable at `model.tick == T+1` — `step(T)` shows the before-state, one more `step()`
   shows the event. Asserting at `model.tick == T` is an off-by-one against a correct model.
+- An enemy-free battle terminates CLEAR on its **first step** (timeline exhausted + nothing
+  alive), and `step()` no-ops after terminal — so a `while model.tick < N` loop over a
+  terminal model hangs forever. Pure-economy tests pin the battle open with one never-reached
+  wave entry (`tick: 100_000`); tick-bounded loops also guard on `result == RUNNING`.
 
 ## Architecture rules (numbered — violation = rework)
 
