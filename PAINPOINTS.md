@@ -44,3 +44,19 @@
   the battle open with one never-reached wave entry (`tick: 100_000`) and
   tick-bounded while-loops also guard on `result == RUNNING`. Rule added to
   CLAUDE.md.
+
+## Phase 7 (spells + charm)
+
+- **Two grid-coordinate conventions between harness and view cost a debug
+  cycle** (scene debuggability). `SelfTestHarness.click_cell` maps cells
+  from a zero origin, but `battle_view` centers `GridRoot` in the viewport
+  — the scenario's bolt click landed ~5 cells off and the cast rejected
+  silently (adapter exits targeting on an invalid press, by design, so
+  nothing errored). trap_flow had implicitly avoided this by always going
+  through `view.cell_center`; the convention is now a CLAUDE.md rule
+  instead of tribal knowledge.
+- **`gdlint max-file-lines` (1000) tripped mid-phase on battle_model.gd**
+  (code organization). The fix that preserved the check was extracting the
+  full-state hash enumeration to `sim/battle_hash.gd` (a pure serialization
+  concern, append-only field order). Expect the same pressure again around
+  Phase 10; the next natural seam is the combat pass.

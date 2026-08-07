@@ -66,6 +66,21 @@ func _lint_stage(path: String, failures: Array[String]) -> void:
 			failures.append("%s: wave tick < 0" % tag)
 	if stage.leak_limit < 0:
 		failures.append("%s: leak_limit < 0" % tag)
+	_lint_wave_starts(stage, failures, tag)
+
+
+## wave_starts (td-phase-6-7.md §4.4): empty is valid (one window); a
+## non-empty list must start at 0 and ascend strictly.
+func _lint_wave_starts(stage: StageDef, failures: Array[String], tag: String) -> void:
+	if stage.wave_starts.is_empty():
+		return
+	if stage.wave_starts[0] != 0:
+		failures.append("%s: wave_starts must start at 0 (got %d)" % [tag, stage.wave_starts[0]])
+	for i: int in stage.wave_starts.size():
+		if stage.wave_starts[i] < 0:
+			failures.append("%s: wave_starts[%d] < 0" % [tag, i])
+		if i > 0 and stage.wave_starts[i] <= stage.wave_starts[i - 1]:
+			failures.append("%s: wave_starts not strictly ascending at index %d" % [tag, i])
 
 
 func _lint_path(stage: StageDef, idx: int, failures: Array[String], tag: String) -> void:

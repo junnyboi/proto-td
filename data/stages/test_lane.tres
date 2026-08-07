@@ -29,6 +29,7 @@ waves = Array[Dictionary]([{
 "path_idx": 0,
 "tick": 270
 }])
+wave_starts = PackedInt32Array(0)
 leak_limit = 3
 squad_size = 4
 reward = {}

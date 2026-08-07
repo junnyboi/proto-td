@@ -49,6 +49,10 @@ repeated mistake and never shrinks.
   alive), and `step()` no-ops after terminal — so a `while model.tick < N` loop over a
   terminal model hangs forever. Pure-economy tests pin the battle open with one never-reached
   wave entry (`tick: 100_000`); tick-bounded loops also guard on `result == RUNNING`.
+- Scenario grid clicks go through `view.cell_center(cell)` + `click_view`/
+  `press_mouse_at` — never the harness's `click_cell` (it assumes an
+  origin-anchored grid; `GridRoot` is centered in the viewport, so
+  `click_cell` lands cells off-target and adapters cancel silently).
 
 ## Architecture rules (numbered — violation = rework)
 

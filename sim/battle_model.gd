@@ -29,6 +29,14 @@ extends RefCounted
 ## dp_cap land in dp_lost_to_cap, so at every tick dp == dp_start + regen +
 ## vanguard + refunded + skill_granted - spent - lost_to_cap exactly.
 ##
+## Spells + Charm (td-phase-6-7.md §2.3/§2.4, M1/M4/M5): cast(spell_id,
+## target) validates against the SpellBook (readiness = arithmetic over
+## tick). Charm flips a non-aerial, non-immune ENEMY to CHARMED at current
+## HP; it reverses along its own path, duels walking enemies (the only
+## ally<->enemy combat), and despawns at progress <= 0. Conservation:
+## spawned == alive_enemy + killed + leaked + charmed and
+## charmed == alive_charmed + charmed_dead + charmed_exited, every tick.
+##
 ## Adding a mutable field here without extending state_hash() is a defect
 ## (CLAUDE.md ban list).
 
@@ -62,6 +70,10 @@ var skills_fired: int = 0
 var units: Array[UnitState] = []
 var traps: Array[TrapState] = []
 var traps_triggered: int = 0
+var charmed: int = 0
+var charmed_dead: int = 0
+var charmed_exited: int = 0
+var spell_book: SpellBook = null
 
 var _defs: Dictionary = {}
 var _op_defs: Dictionary = {}
@@ -82,6 +94,7 @@ static func create(
 	enemy_defs: Dictionary,
 	operator_defs: Dictionary = {},
 	trap_defs: Dictionary = {},
+	spell_defs: Dictionary = {},
 ) -> BattleModel:
 	var model := BattleModel.new()
 	model.stage = stage_def
@@ -93,6 +106,7 @@ static func create(
 	model._defs = enemy_defs
 	model._op_defs = operator_defs
 	model._trap_defs = trap_defs
+	model.spell_book = SpellBook.create(spell_defs, stage_def.wave_starts)
 	model.timeline = WaveTimeline.from_waves(stage_def.waves)
 	for i: int in stage_def.paths.size():
 		var cells := stage_def.path_cells(i)
@@ -127,24 +141,28 @@ func run_to_terminal(max_ticks: int) -> void:
 
 
 ## Verb dispatcher (architecture rule 3). Every rejection path returns false
-## before any mutation; any verb after a terminal state rejects. place_trap/
-## cast arrive in Phases 6-7.
+## before any mutation; any verb after a terminal state or with the wrong
+## arity rejects.
 func apply_action(action: Array) -> bool:
 	if action.is_empty() or result != Result.RUNNING:
 		return false
 	var verb: StringName = action[0]
-	if verb == &"deploy" and action.size() == 4:
-		return _apply_deploy(action[1], action[2], int(action[3]))
-	if verb == &"retreat" and action.size() == 2:
-		return _apply_retreat(int(action[1]))
-	if verb == &"trigger_skill" and action.size() == 2:
-		return _apply_trigger_skill(int(action[1]))
-	if verb == &"place_trap" and action.size() == 3:
-		return _apply_place_trap(action[1], action[2])
-	var known := [&"deploy", &"retreat", &"trigger_skill", &"place_trap"]
-	if not known.has(verb):
-		push_warning("apply_action: unknown verb '%s'" % [verb])
-	return false
+	var n := action.size()
+	var ok := false
+	match verb:
+		&"deploy":
+			ok = n == 4 and _apply_deploy(action[1], action[2], int(action[3]))
+		&"retreat":
+			ok = n == 2 and _apply_retreat(int(action[1]))
+		&"trigger_skill":
+			ok = n == 2 and _apply_trigger_skill(int(action[1]))
+		&"place_trap":
+			ok = n == 3 and _apply_place_trap(action[1], action[2])
+		&"cast":
+			ok = n == 3 and _apply_cast(action[1], action[2])
+		_:
+			push_warning("apply_action: unknown verb '%s'" % [verb])
+	return ok
 
 
 ## An operator can be deployed iff it is in the squad, has a def, is not
@@ -252,7 +270,7 @@ func _apply_trigger_skill(unit_id: int) -> bool:
 		SkillDef.Effect.STUN_IN_RANGE:
 			var cells := Targeting.splash_cells(u.cell, int(u.skill_params["dim"]))
 			for e: EnemyState in enemies:
-				if not e.alive or e.aerial:
+				if not e.alive or e.aerial or e.faction != EnemyState.Faction.ENEMY:
 					continue
 				if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
 					e.stunned_until_tick = tick + int(u.skill_params["stun_ticks"])
@@ -328,10 +346,122 @@ func _apply_place_trap(trap_id: StringName, cell: Vector2i) -> bool:
 	return true
 
 
+## Spell readiness for the spell bar (single source of truth, like
+## is_deployable). Target validity lives in cast_target_valid.
+func is_castable(spell_id: StringName) -> bool:
+	if result != Result.RUNNING:
+		return false
+	return spell_book.can_cast(spell_id, tick)
+
+
+## Full target validation (the targeting cursor's query IS the verb's
+## validation — never a copy). CELL spells take any in-grid Vector2i; ENEMY
+## spells take an alive ENEMY-faction entity id; CHARM additionally requires
+## non-aerial and not charm_immune (§2.4.1 — blocked or dueling targets ARE
+## eligible).
+func cast_target_valid(spell_id: StringName, target: Variant) -> bool:
+	if not spell_book.has_spell(spell_id):
+		return false
+	var def: SpellDef = spell_book.def_of(spell_id)
+	if def.target_kind == SpellDef.TargetKind.CELL:
+		return _cell_target_valid(target)
+	return _enemy_target_valid(def, target)
+
+
+func _cell_target_valid(target: Variant) -> bool:
+	if typeof(target) != TYPE_VECTOR2I:
+		return false
+	var cell: Vector2i = target
+	var size := stage.grid_size()
+	return cell.x >= 0 and cell.y >= 0 and cell.x < size.x and cell.y < size.y
+
+
+func _enemy_target_valid(def: SpellDef, target: Variant) -> bool:
+	if typeof(target) != TYPE_INT:
+		return false
+	var enemy_id: int = target
+	if enemy_id < 0 or enemy_id >= enemies.size():
+		return false
+	var e := enemies[enemy_id]
+	if not e.alive or e.faction != EnemyState.Faction.ENEMY:
+		return false
+	if def.effect == SpellDef.Effect.CHARM:
+		return not e.aerial and not e.charm_immune
+	return true
+
+
+func _apply_cast(spell_id: StringName, target: Variant) -> bool:
+	if not is_castable(spell_id):
+		return false
+	if not cast_target_valid(spell_id, target):
+		return false
+	var def: SpellDef = spell_book.def_of(spell_id)
+	match def.effect:
+		SpellDef.Effect.BURST_DAMAGE:
+			_resolve_burst(target, def)
+		SpellDef.Effect.CHARM:
+			_resolve_charm(enemies[int(target)])
+		_:
+			return false
+	spell_book.mark_cast(spell_id, tick)
+	return true
+
+
+## Burst hits every alive ENEMY (aerial included — a burst is area denial;
+## charmed allies are never hit) whose current cell is within the Chebyshev
+## radius, through the one death path. Collect first, then damage: array
+## order = id order, deterministic.
+func _resolve_burst(center: Vector2i, def: SpellDef) -> void:
+	var victims: Array[EnemyState] = []
+	for e: EnemyState in enemies:
+		if not e.alive or e.faction != EnemyState.Faction.ENEMY:
+			continue
+		var c := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
+		if maxi(absi(c.x - center.x), absi(c.y - center.y)) <= def.radius:
+			victims.append(e)
+	for v: EnemyState in victims:
+		v.hp -= def.damage
+		if v.hp <= 0:
+			_kill_enemy(v)
+
+
+## Charm conversion (§2.4 steps 1-4): faction flip at current HP, stats
+## kept. A blocked target is released (freed capacity re-blocks on the next
+## assignment pass); a target dueling another ally dissolves that duel —
+## both walk. Reversal/duel behavior lives in the per-tick passes.
+func _resolve_charm(e: EnemyState) -> void:
+	e.faction = EnemyState.Faction.CHARMED
+	if e.blocked_by >= 0:
+		var blocker := unit_by_id(e.blocked_by)
+		if blocker != null:
+			blocker.blocked_ids.erase(e.id)
+		e.blocked_by = -1
+	if e.engaged_with >= 0:
+		enemies[e.engaged_with].engaged_with = -1
+		e.engaged_with = -1
+	charmed += 1
+
+
 func alive_count() -> int:
 	var n := 0
 	for e: EnemyState in enemies:
 		if e.alive:
+			n += 1
+	return n
+
+
+func alive_enemy_count() -> int:
+	var n := 0
+	for e: EnemyState in enemies:
+		if e.alive and e.faction == EnemyState.Faction.ENEMY:
+			n += 1
+	return n
+
+
+func alive_charmed_count() -> int:
+	var n := 0
+	for e: EnemyState in enemies:
+		if e.alive and e.faction == EnemyState.Faction.CHARMED:
 			n += 1
 	return n
 
@@ -341,75 +471,10 @@ func path_for(path_idx: int) -> Array[Vector2i]:
 	return cells
 
 
-## FNV-1a 64-bit over the canonical field order (ints only). Every mutable
-## model field appears here.
+## Full-state FNV-1a 64-bit digest; field enumeration lives in
+## sim/battle_hash.gd (append-only order, every mutable field).
 func state_hash() -> int:
-	var bytes := PackedByteArray()
-	_append_int(bytes, tick)
-	_append_int(bytes, base_hp)
-	_append_int(bytes, result)
-	_append_int(bytes, stars)
-	_append_int(bytes, spawned)
-	_append_int(bytes, leaked)
-	_append_int(bytes, killed)
-	_append_int(bytes, timeline.next_index)
-	_append_int(bytes, dp)
-	_append_int(bytes, dp_regen_counter)
-	_append_int(bytes, dp_regen_accrued)
-	_append_int(bytes, dp_vanguard_generated)
-	_append_int(bytes, dp_refunded)
-	_append_int(bytes, dp_spent)
-	_append_int(bytes, dp_lost_to_cap)
-	_append_int(bytes, dp_skill_granted)
-	_append_int(bytes, retreated)
-	_append_int(bytes, skills_fired)
-	for u: UnitState in units:
-		_append_int(bytes, u.id)
-		_append_int(bytes, u.op_id.hash())
-		_append_int(bytes, u.cell.x)
-		_append_int(bytes, u.cell.y)
-		_append_int(bytes, u.facing)
-		_append_int(bytes, u.hp)
-		_append_int(bytes, 1 if u.alive else 0)
-		_append_int(bytes, u.atk_counter)
-		_append_int(bytes, u.dp_generation_counter)
-		_append_int(bytes, u.last_attack_tick)
-		_append_int(bytes, u.last_attack_cell.x)
-		_append_int(bytes, u.last_attack_cell.y)
-		_append_int(bytes, u.sp)
-		_append_int(bytes, u.sp_progress)
-		_append_int(bytes, u.skill_triggered_tick)
-		_append_int(bytes, u.active_effects.size())
-		for fx: Dictionary in u.active_effects:
-			_append_int(bytes, int(fx["effect"]))
-			_append_int(bytes, int(fx["expires_tick"]))
-			var keys: Array = (fx["params"] as Dictionary).keys()
-			keys.sort()
-			for key: String in keys:
-				_append_int(bytes, key.hash())
-				_append_int(bytes, int(round(float(fx["params"][key]) * 1000.0)))
-		_append_int(bytes, u.blocked_ids.size())
-		for bid: int in u.blocked_ids:
-			_append_int(bytes, bid)
-	for e: EnemyState in enemies:
-		_append_int(bytes, e.id)
-		_append_int(bytes, e.def_id.hash())
-		_append_int(bytes, e.path_idx)
-		_append_int(bytes, e.progress_units)
-		_append_int(bytes, e.hp)
-		_append_int(bytes, e.atk_counter)
-		_append_int(bytes, e.blocked_by)
-		_append_int(bytes, e.stunned_until_tick)
-		_append_int(bytes, 1 if e.alive else 0)
-	_append_int(bytes, traps_triggered)
-	_append_int(bytes, _next_trap_id)
-	for t: TrapState in traps:
-		_append_int(bytes, t.id)
-		_append_int(bytes, t.def_id.hash())
-		_append_int(bytes, t.cell.x)
-		_append_int(bytes, t.cell.y)
-		_append_int(bytes, t.charges_left)
-	return _fnv1a64(bytes)
+	return BattleHash.of(self)
 
 
 ## Debug/telemetry projection (views read this; the hash does not).
@@ -422,7 +487,7 @@ func snapshot() -> Dictionary:
 		"spawned": spawned,
 		"leaked": leaked,
 		"killed": killed,
-		"alive": alive_count(),
+		"alive": alive_enemy_count(),
 		"dp": dp,
 		"deployed": deployed_count(),
 		"deploys": units.size(),
@@ -431,6 +496,11 @@ func snapshot() -> Dictionary:
 		"skills_fired": skills_fired,
 		"traps_placed": _next_trap_id,
 		"trap_triggers": traps_triggered,
+		"charmed": charmed,
+		"charmed_alive": alive_charmed_count(),
+		"charmed_dead": charmed_dead,
+		"charmed_exited": charmed_exited,
+		"spells_cast": spell_book.total_casts(),
 	}
 
 
@@ -438,11 +508,14 @@ func snapshot() -> Dictionary:
 ## generation (Phase 5 prepends effect expiry and appends SP accrual inside
 ## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
 ## (2.5) ON_ENTER trap resolution (Phase 6, td-phase-6-7.md M2),
-## (3) combat — units strike first, then enemies, deaths resolve immediately,
+## (2.6) duel assignment (Phase 7 — after movement + traps, before combat),
+## (3) combat — units strike first, then charmed allies, then enemies;
+## deaths resolve immediately,
 ## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
 ## Expiry runs before combat so a timed effect is active for exactly
 ## duration_ticks ticks (exclusive end at expires_tick); enemies a lapsed
 ## BLOCK_PLUS can no longer hold resume walking in this same tick's sub-step 2.
+## Spell readiness needs no sub-step (M1: arithmetic over tick).
 func _step_one() -> void:
 	if result != Result.RUNNING:
 		return
@@ -450,6 +523,7 @@ func _step_one() -> void:
 	_tick_dp()
 	var entrants := _advance_enemies()
 	_resolve_trap_triggers(entrants)
+	_assign_duels()
 	_tick_combat()
 	for entry: Dictionary in timeline.due(tick):
 		_spawn(entry)
@@ -466,10 +540,21 @@ func _step_one() -> void:
 ## start-of-tick cell is sampled once, before advancing: it decides this
 ## tick's aura slow AND anchors the entry transition for ON_ENTER recording.
 ## Returns the entrant list ({trap, enemy}) for _resolve_trap_triggers.
+## CHARMED entities reverse along their own path at full speed — no block,
+## no leak, no trap, no slow, no stun (M5/M6); engaged entities of either
+## faction are frozen; despawn at progress <= 0 is charmed_exited.
 func _advance_enemies() -> Array[Dictionary]:
 	var entrants: Array[Dictionary] = []
 	for e: EnemyState in enemies:
-		if not e.alive or e.blocked_by >= 0 or tick < e.stunned_until_tick:
+		if not e.alive or e.engaged_with >= 0:
+			continue
+		if e.faction == EnemyState.Faction.CHARMED:
+			e.progress_units -= e.step_units
+			if e.progress_units <= 0:
+				e.alive = false
+				charmed_exited += 1
+			continue
+		if e.blocked_by >= 0 or tick < e.stunned_until_tick:
 			continue
 		if e.aerial:
 			e.progress_units += e.step_units
@@ -546,6 +631,29 @@ static func _entrant_order(a: Dictionary, b: Dictionary) -> bool:
 	return ea.id < eb.id
 
 
+## Duel assignment (§2.4.7, M4): each unengaged charmed ally in ascending id
+## order engages the lowest-id unengaged, UNBLOCKED alive ENEMY sharing its
+## grid cell (one holder at a time — blocked enemies already have one; the
+## duel intercepts walking enemies only). Engaged entities skip the advance
+## pass, so an engaged enemy can never be block-assigned mid-duel.
+func _assign_duels() -> void:
+	for ally: EnemyState in enemies:
+		if not ally.alive or ally.faction != EnemyState.Faction.CHARMED:
+			continue
+		if ally.engaged_with >= 0:
+			continue
+		var ally_cell := Pathing.cell_of(path_for(ally.path_idx), ally.progress_units)
+		for e: EnemyState in enemies:
+			if not e.alive or e.faction != EnemyState.Faction.ENEMY:
+				continue
+			if e.engaged_with >= 0 or e.blocked_by >= 0 or e.aerial:
+				continue
+			if Pathing.cell_of(path_for(e.path_idx), e.progress_units) == ally_cell:
+				ally.engaged_with = e.id
+				e.engaged_with = ally.id
+				break
+
+
 ## D14/D15 + Phase 4 targeting: ready-at-contact cadence — fire when the
 ## counter is 0 and a target exists (counter then resets to interval - 1 so
 ## shots land exactly atk_interval_ticks apart); otherwise the counter ticks
@@ -570,13 +678,35 @@ func _tick_combat() -> void:
 			var target := _first_blocked_alive(u)
 			if target != null and u.atk > 0:
 				_strike_enemy(u, target)
+	for a: EnemyState in enemies:
+		if not a.alive or a.faction != EnemyState.Faction.CHARMED:
+			continue
+		if a.atk_counter > 0:
+			a.atk_counter -= 1
+			continue
+		if a.engaged_with < 0:
+			continue
+		var foe := enemies[a.engaged_with]
+		if a.atk > 0 and foe.alive:
+			foe.hp -= a.atk
+			a.atk_counter = a.atk_interval_ticks - 1
+			if foe.hp <= 0:
+				_kill_enemy(foe)
 	for e: EnemyState in enemies:
-		if not e.alive:
+		if not e.alive or e.faction != EnemyState.Faction.ENEMY:
 			continue
 		if tick < e.stunned_until_tick:
 			continue
 		if e.atk_counter > 0:
 			e.atk_counter -= 1
+			continue
+		if e.engaged_with >= 0:
+			var ally := enemies[e.engaged_with]
+			if e.atk > 0 and ally.alive:
+				ally.hp -= e.atk
+				e.atk_counter = e.atk_interval_ticks - 1
+				if ally.hp <= 0:
+					_kill_charmed(ally)
 			continue
 		var victim: UnitState = null
 		if e.blocked_by >= 0:
@@ -598,7 +728,7 @@ func _fire_ranged(u: UnitState) -> void:
 		return
 	var candidates: Array[Dictionary] = []
 	for e: EnemyState in enemies:
-		if e.alive:
+		if e.alive and e.faction == EnemyState.Faction.ENEMY:
 			candidates.append({
 				"id": e.id,
 				"cell": Pathing.cell_of(path_for(e.path_idx), e.progress_units),
@@ -620,7 +750,7 @@ func _fire_ranged(u: UnitState) -> void:
 		var cells := Targeting.splash_cells(primary_cell, u.splash_dim())
 		var damage := u.effective_atk()
 		for e: EnemyState in enemies:
-			if not e.alive or e.aerial:
+			if not e.alive or e.aerial or e.faction != EnemyState.Faction.ENEMY:
 				continue
 			if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
 				e.hp -= damage
@@ -676,6 +806,19 @@ func _kill_enemy(e: EnemyState) -> void:
 		if blocker != null:
 			blocker.blocked_ids.erase(e.id)
 		e.blocked_by = -1
+	if e.engaged_with >= 0:
+		enemies[e.engaged_with].engaged_with = -1
+		e.engaged_with = -1
+
+
+## Duel loss (§2.4.10): the ally's death frees its partner the same tick;
+## the enemy resumes toward the base on the next advance pass.
+func _kill_charmed(ally: EnemyState) -> void:
+	ally.alive = false
+	charmed_dead += 1
+	if ally.engaged_with >= 0:
+		enemies[ally.engaged_with].engaged_with = -1
+		ally.engaged_with = -1
 
 
 ## D13/D16: death releases every held enemy (each resumes from its frozen
@@ -766,29 +909,18 @@ func _spawn(entry: Dictionary) -> void:
 	e.atk_interval_ticks = def.atk_interval_ticks
 	e.aerial = def.aerial
 	e.atk_range_cells = def.atk_range_cells
+	e.charm_immune = def.charm_immune
 	enemies.append(e)
 	spawned += 1
 
 
+## CLEAR reads alive_enemy_count (M5): a charmed ally still walking back
+## never delays the victory (§2.4.11) — it freezes with the terminal state.
 func _check_terminal() -> void:
 	if leaked > stage.leak_limit or base_hp <= 0:
 		result = Result.DEFEAT
 		stars = 0
 		return
-	if timeline.exhausted() and alive_count() == 0:
+	if timeline.exhausted() and alive_enemy_count() == 0:
 		result = Result.CLEAR
 		stars = StarCalc.star_for(leaked, stage.leak_limit)
-
-
-static func _append_int(bytes: PackedByteArray, v: int) -> void:
-	for i: int in 8:
-		bytes.append((v >> (i * 8)) & 0xFF)
-
-
-static func _fnv1a64(bytes: PackedByteArray) -> int:
-	# FNV-1a 64-bit; offset basis 14695981039346656037 as a signed literal.
-	var h := -3750763034362895579
-	for b: int in bytes:
-		h ^= b
-		h *= 1099511628211
-	return h

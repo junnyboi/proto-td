@@ -102,7 +102,7 @@
         "extended conservation with charm bucket",
         "charm win/loss pair"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "charm_runback"
       ],

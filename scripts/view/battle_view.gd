@@ -50,6 +50,7 @@ const OP_CLASS_COLORS := {
 	OperatorDef.OpClass.CASTER: Color("5d275d"),
 }
 const CHEVRON_COLOR := Color("f4f4f4")
+const CHARMED_COLOR := Color("41a6f6")
 const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
 const TRAP_SPIKE_PX := 24.0
@@ -69,7 +70,10 @@ var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
+var _spell_defs: Dictionary = {}
 var _trap_rects: Dictionary = {}
+var _spell_casts_last: Dictionary = {}
+var _charm_events_last: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
 var _pushed: Dictionary = {
@@ -82,6 +86,10 @@ var _pushed: Dictionary = {
 	"skills_fired": "skills_fired",
 	"traps_placed": "traps_placed",
 	"trap_triggers": "trap_triggers",
+	"enemies_charmed": "charmed",
+	"charmed_dead": "charmed_dead",
+	"charmed_exited": "charmed_exited",
+	"spells_cast": "spells_cast",
 }
 var _pushed_last: Dictionary = {}
 var _result_reported := false
@@ -95,9 +103,10 @@ func _ready() -> void:
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_op_defs = _load_operator_defs(Game.default_squad)
-	_trap_defs = _load_trap_defs()
+	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
+	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
 	model = BattleModel.create(
-		stage, Game.default_squad, Game.run_seed, config, defs, _op_defs, _trap_defs
+		stage, Game.default_squad, Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
 	)
 	Game.current_battle = model
 	Game.content = self
@@ -116,6 +125,10 @@ func _ready() -> void:
 	bar.name = "DeployBar"
 	add_child(bar)
 	bar.setup(model, self, _op_defs, _trap_defs)
+	var spells := SpellBar.new()
+	spells.name = "SpellBar"
+	add_child(spells)
+	spells.setup(model, self)
 
 
 ## Screen-space center of a grid cell (no camera: world == screen). The
@@ -148,18 +161,20 @@ func _load_enemy_defs(stage: StageDef) -> Dictionary:
 	return defs
 
 
-## Full catalog by directory scan — the model validates against the catalog,
-## not a loadout (td-phase-6-7.md §2.1); Phase 10 gates loadouts in the UI.
-func _load_trap_defs() -> Dictionary:
+## Full catalogs by directory scan — the model validates against the
+## catalog, not a loadout (td-phase-6-7.md §2.1); Phase 10 gates loadouts
+## in the UI.
+func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	var defs: Dictionary = {}
-	var dir := DirAccess.open("res://data/traps")
+	var dir := DirAccess.open(dir_path)
 	if dir == null:
 		return defs
 	for file: String in dir.get_files():
 		if file.ends_with(".tres"):
-			var def := load("res://data/traps/" + file) as TrapDef
-			if def != null:
-				defs[def.id] = def
+			var def: Resource = load(dir_path + "/" + file)
+			if def != null and def.get_script() != null \
+					and (def.get_script() as Script).get_global_name() == StringName(script_class):
+				defs[def.get("id")] = def
 	return defs
 
 
@@ -210,6 +225,8 @@ func _project() -> void:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var rect: ColorRect = _enemy_rects[e.id]
 			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
+			if e.faction == EnemyState.Faction.CHARMED:
+				rect.color = CHARMED_COLOR
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()
@@ -432,8 +449,31 @@ func _push_telemetry() -> void:
 		if delta > 0:
 			Telemetry.count(counter_name, delta)
 			_pushed_last[counter_name] = value
+	_push_spell_telemetry()
 	Telemetry.sample("base_hp", float(model.base_hp))
 	Telemetry.sample("dp", float(model.dp))
 	if model.result != BattleModel.Result.RUNNING and not _result_reported:
 		_result_reported = true
 		Telemetry.event("result", {"result": model.result, "stars": model.stars})
+
+
+## Per-spell cast counters + the Phase 9 wiring events: sfx_played fires at
+## each cast, and each charm lifecycle transition emits its own event.
+func _push_spell_telemetry() -> void:
+	for spell_id: StringName in model.spell_book.ids:
+		var casts := model.spell_book.casts(spell_id)
+		var delta := casts - int(_spell_casts_last.get(spell_id, 0))
+		if delta > 0:
+			_spell_casts_last[spell_id] = casts
+			Telemetry.count("spells_cast_%s" % spell_id, delta)
+			Telemetry.event("sfx_played", {"id": String(spell_id)})
+	var transitions := {
+		"charm_convert": model.charmed,
+		"charm_dead": model.charmed_dead,
+		"charm_exit": model.charmed_exited,
+	}
+	for event_name: String in transitions:
+		var value := int(transitions[event_name])
+		if value > int(_charm_events_last.get(event_name, 0)):
+			_charm_events_last[event_name] = value
+			Telemetry.event(event_name, {"count": value})

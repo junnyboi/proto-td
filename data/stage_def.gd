@@ -7,6 +7,9 @@ extends Resource
 ## paths: flat Vector2 lists (converted to cells via path_cells());
 ## waves: {tick, enemy_id, path_idx}. Full schema from Phase 1; reward and
 ## squad_size activate in later phases.
+## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
+## (td-phase-6-7.md §2.3). Empty means one window covering the whole battle;
+## non-empty must be strictly ascending and start at 0 (stage_lint).
 
 enum Tile { VOID, GROUND, ELEVATED, SPAWN, BASE, BLOCKED }
 
@@ -24,6 +27,7 @@ const TILE_CHARS := {
 @export var grid_rows: PackedStringArray = []
 @export var paths: Array[PackedVector2Array] = []
 @export var waves: Array[Dictionary] = []
+@export var wave_starts: PackedInt32Array = []
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
 @export var reward: Dictionary = {}
