@@ -20,6 +20,25 @@ func set_run_seed(value: int) -> void:
 	seed(value)
 
 
+## Every stage id on disk, sorted (deterministic). The debug overlay's jump
+## list and the debug_reach sweep both read this scan, so Lane B stages
+## appear in both with zero code changes.
+func stage_ids() -> Array[StringName]:
+	var names: Array[String] = []
+	var dir := DirAccess.open("res://data/stages")
+	if dir == null:
+		return []
+	for file: String in dir.get_files():
+		if file.ends_with(".tres"):
+			names.append(file.trim_suffix(".tres"))
+	# sort as String: StringName's own ordering is interning-order, not text
+	names.sort()
+	var ids: Array[StringName] = []
+	for stage_name: String in names:
+		ids.append(StringName(stage_name))
+	return ids
+
+
 func start_battle(stage_id: StringName) -> void:
 	var stage_path := "res://data/stages/%s.tres" % stage_id
 	if not ResourceLoader.exists(stage_path):

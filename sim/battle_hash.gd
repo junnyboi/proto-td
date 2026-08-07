@@ -59,6 +59,12 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, m.spell_book.ready_at(spell_id))
 		_append_int(bytes, m.spell_book.used_in_wave(spell_id))
 		_append_int(bytes, m.spell_book.casts(spell_id))
+	# Phase 8: squad is mutable now (debug grant/remove) and the set-DP
+	# bucket is model state — both hash or the oracle goes vacuously green.
+	_append_int(bytes, m.dp_debug_adjusted)
+	_append_int(bytes, m.squad.size())
+	for op_id: StringName in m.squad:
+		_append_int(bytes, op_id.hash())
 	return _fnv1a64(bytes)
 
 

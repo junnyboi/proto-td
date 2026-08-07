@@ -72,6 +72,16 @@ func mark_cast(spell_id: StringName, t: int) -> void:
 	_casts[spell_id] = int(_casts[spell_id]) + 1
 
 
+## Debug re-arm (Phase 8, rule 5): castable immediately at tick t, and a
+## ONCE_PER_WAVE spell becomes usable again within the wave containing t.
+## Callers validate the id (BattleModel's debug_reset_spell verb).
+func debug_reset(spell_id: StringName, t: int) -> void:
+	_ready_at[spell_id] = t
+	var def: SpellDef = _defs[spell_id]
+	if def.availability == SpellDef.Availability.ONCE_PER_WAVE:
+		_used_in_wave[spell_id] = wave_index_of(t) - 1
+
+
 func ready_at(spell_id: StringName) -> int:
 	return int(_ready_at[spell_id])
 

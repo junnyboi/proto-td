@@ -114,7 +114,7 @@
       "acceptance": [
         "every stage reachable; every operator/trap/spell grantable"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "debug_reach"
       ],

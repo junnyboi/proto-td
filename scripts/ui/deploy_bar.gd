@@ -34,7 +34,9 @@ var view: Node2D = null
 
 var _slots: Dictionary = {}
 var _trap_slots: Dictionary = {}
+var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
+var _slot_box: HBoxContainer = null
 var _placement_op: StringName = &""
 var _placement_trap: StringName = &""
 var _pending_cell := Vector2i(-1, -1)
@@ -56,17 +58,22 @@ func setup(
 ) -> void:
 	model = battle_model
 	view = battle_view
+	_op_defs = op_defs
 	_trap_defs = trap_defs
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
-	_build_slots(op_defs)
+	_build_slots(_op_defs)
 	_build_overlays()
 
 
 func _process(_delta: float) -> void:
 	if model == null:
 		return
+	# squad is mutable now (Phase 8 debug grants): rebuild the strip when it
+	# changes so granted operators get slots
+	if _slots.size() != model.squad.size():
+		_rebuild_slots()
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
 		slot.disabled = not model.is_deployable(op_id)
@@ -104,12 +111,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			_handle_grid_click(mb.position)
 
 
+func _rebuild_slots() -> void:
+	if _slot_box != null:
+		_slot_box.queue_free()
+	_slots.clear()
+	_trap_slots.clear()
+	_build_slots(_op_defs)
+
+
 func _build_slots(op_defs: Dictionary) -> void:
 	var box := HBoxContainer.new()
 	box.name = "SlotBox"
 	box.add_theme_constant_override("separation", 16)
 	box.position = Vector2(16, size.y - BAR_HEIGHT)
 	add_child(box)
+	_slot_box = box
 	for op_id: StringName in model.squad:
 		if not op_defs.has(op_id):
 			continue

@@ -13,7 +13,11 @@ extends RefCounted
 ## A battle is fully described by (stage_id, squad, seed, [[tick, verb,
 ## args...]]) — that tuple is the replay format, the bot format, and the
 ## test format. Verbs: deploy(op_id, cell, facing), retreat(unit_id),
-## trigger_skill(unit_id), place_trap(trap_id, cell).
+## trigger_skill(unit_id), place_trap(trap_id, cell), cast(spell_id, target),
+## plus the debug verbs (Phase 8, rule 5 — the overlay is a client of this
+## dispatcher, never a parallel path): debug_grant_operator(op_id),
+## debug_remove_operator(op_id), debug_set_dp(value),
+## debug_set_base_hp(value), debug_reset_spell(spell_id).
 ##
 ## Traps (td-phase-6-7.md §2.2/§3.3): placed on GROUND path cells, one per
 ## cell, DP through the ledger's spent bucket, no refund. ON_ENTER entrants
@@ -27,7 +31,9 @@ extends RefCounted
 ## DP ledger (td-phase-2-3.md D4/D5, extended by Phase 5's skill bucket):
 ## regen/generation/refunds/bursts accrue gross; points that would exceed
 ## dp_cap land in dp_lost_to_cap, so at every tick dp == dp_start + regen +
-## vanguard + refunded + skill_granted - spent - lost_to_cap exactly.
+## vanguard + refunded + skill_granted - spent - lost_to_cap +
+## debug_adjusted exactly (dp_debug_adjusted is the signed Phase 8 bucket —
+## zero on any timeline that never uses debug_set_dp).
 ##
 ## Spells + Charm (td-phase-6-7.md §2.3/§2.4, M1/M4/M5): cast(spell_id,
 ## target) validates against the SpellBook (readiness = arithmetic over
@@ -65,6 +71,7 @@ var dp_refunded: int = 0
 var dp_spent: int = 0
 var dp_lost_to_cap: int = 0
 var dp_skill_granted: int = 0
+var dp_debug_adjusted: int = 0
 var retreated: int = 0
 var skills_fired: int = 0
 var units: Array[UnitState] = []
@@ -160,6 +167,16 @@ func apply_action(action: Array) -> bool:
 			ok = n == 3 and _apply_place_trap(action[1], action[2])
 		&"cast":
 			ok = n == 3 and _apply_cast(action[1], action[2])
+		&"debug_grant_operator":
+			ok = n == 2 and _apply_debug_grant_operator(action[1])
+		&"debug_remove_operator":
+			ok = n == 2 and _apply_debug_remove_operator(action[1])
+		&"debug_set_dp":
+			ok = n == 2 and _apply_debug_set_dp(int(action[1]))
+		&"debug_set_base_hp":
+			ok = n == 2 and _apply_debug_set_base_hp(int(action[1]))
+		&"debug_reset_spell":
+			ok = n == 2 and _apply_debug_reset_spell(action[1])
 		_:
 			push_warning("apply_action: unknown verb '%s'" % [verb])
 	return ok
@@ -440,6 +457,48 @@ func _resolve_charm(e: EnemyState) -> void:
 		enemies[e.engaged_with].engaged_with = -1
 		e.engaged_with = -1
 	charmed += 1
+
+
+## Debug verbs (Phase 8, td-phase-8.md §2.2). Same reject discipline as the
+## player verbs: false + zero state change. A granted operator deploys
+## through the untouched can_deploy_at; removal only edits the squad (an
+## already-deployed unit stays — retreat is the verb for the field); set-DP
+## keeps the ledger exact via the signed dp_debug_adjusted bucket; set-HP
+## reaches DEFEAT only through the untouched _check_terminal.
+func _apply_debug_grant_operator(op_id: StringName) -> bool:
+	if not _op_defs.has(op_id) or squad.has(op_id):
+		return false
+	squad.append(op_id)
+	return true
+
+
+func _apply_debug_remove_operator(op_id: StringName) -> bool:
+	if not squad.has(op_id):
+		return false
+	squad.erase(op_id)
+	return true
+
+
+func _apply_debug_set_dp(value: int) -> bool:
+	if value < 0 or value > config.dp_cap:
+		return false
+	dp_debug_adjusted += value - dp
+	dp = value
+	return true
+
+
+func _apply_debug_set_base_hp(value: int) -> bool:
+	if value < 0:
+		return false
+	base_hp = value
+	return true
+
+
+func _apply_debug_reset_spell(spell_id: StringName) -> bool:
+	if not spell_book.has_spell(spell_id):
+		return false
+	spell_book.debug_reset(spell_id, tick)
+	return true
 
 
 func alive_count() -> int:

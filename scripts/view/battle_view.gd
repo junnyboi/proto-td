@@ -102,7 +102,9 @@ func _ready() -> void:
 		return
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
-	_op_defs = _load_operator_defs(Game.default_squad)
+	# operators load as a full catalog too (squad stays the model's loadout
+	# filter) so debug grants can resolve any operator on disk (Phase 8)
+	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
 	model = BattleModel.create(
@@ -175,15 +177,6 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 			if def != null and def.get_script() != null \
 					and (def.get_script() as Script).get_global_name() == StringName(script_class):
 				defs[def.get("id")] = def
-	return defs
-
-
-func _load_operator_defs(squad: Array[StringName]) -> Dictionary:
-	var defs: Dictionary = {}
-	for op_id: StringName in squad:
-		var path := "res://data/operators/%s.tres" % op_id
-		if ResourceLoader.exists(path):
-			defs[op_id] = load(path) as OperatorDef
 	return defs
 
 

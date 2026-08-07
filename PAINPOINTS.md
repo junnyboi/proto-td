@@ -60,3 +60,25 @@
   full-state hash enumeration to `sim/battle_hash.gd` (a pure serialization
   concern, append-only field order). Expect the same pressure again around
   Phase 10; the next natural seam is the combat pass.
+
+## Phase 8 (debug mode)
+
+- **A default-visible CanvasLayer inverted every toggle observation** (scene
+  debuggability). `toggle()` lazily builds the overlay then flips
+  `visible` — CanvasLayer is born visible, so the first toggle built it
+  and immediately hid it, and all six scenario checks read inverted. The
+  symptom looked exactly like "injected key events don't reach _input
+  headless", and a 20-line probe was what separated the two hypotheses
+  (instrument, don't speculate — again). Lazily-built UI that a toggle
+  flips must be born hidden.
+- **StringName's `sort()` is interning-order, not lexicographic** (level
+  authoring / API trap). `Array[StringName].sort()` rendered the stage
+  buttons as test_drone, test_skill, test_lane — stable within a process,
+  arbitrary across binaries. Catalog scans now sort String copies. Note:
+  `SpellBook.ids.sort()` (Phase 7) shares the trap; harmless there because
+  hash order only needs same-process stability, but worth knowing at
+  Phase 10 when replays cross sessions.
+- **The deploy bar overflows 1280px with a 10-operator debug squad**
+  (cosmetic, debug-only): slots are an unwrapped HBox sized for
+  squad_size-bounded rosters. Phase 10's loadout gating bounds it again;
+  revisit only if debug play needs the full strip.
