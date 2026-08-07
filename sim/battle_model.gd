@@ -191,6 +191,8 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.atk = def.atk
 	u.atk_interval_ticks = def.atk_interval_ticks
 	u.dp_generation_interval_ticks = def.dp_generation_interval_ticks
+	u.op_class = def.op_class
+	u.range_offsets = def.range_offsets.duplicate()
 	units.append(u)
 	dp -= def.dp_cost
 	dp_spent += def.dp_cost
@@ -253,6 +255,9 @@ func state_hash() -> int:
 		_append_int(bytes, 1 if u.alive else 0)
 		_append_int(bytes, u.atk_counter)
 		_append_int(bytes, u.dp_generation_counter)
+		_append_int(bytes, u.last_attack_tick)
+		_append_int(bytes, u.last_attack_cell.x)
+		_append_int(bytes, u.last_attack_cell.y)
 		_append_int(bytes, u.blocked_ids.size())
 		for bid: int in u.blocked_ids:
 			_append_int(bytes, bid)
@@ -305,55 +310,129 @@ func _step_one() -> void:
 
 ## D12: blocked enemies skip; the block check runs after the advance, in spawn
 ## order. An enemy that finds no spare capacity keeps walking (overflow rule);
-## a blocked enemy can never leak.
+## a blocked enemy can never leak. Aerial enemies bypass block assignment
+## entirely (the absolute-counter pin, td-phase-4-5.md §2): they never freeze,
+## never occupy capacity, and only leak or die to ranged damage.
 func _advance_enemies() -> void:
 	for e: EnemyState in enemies:
 		if not e.alive or e.blocked_by >= 0:
 			continue
 		e.progress_units += e.step_units
-		var cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
-		var unit := alive_unit_at(cell)
-		if unit != null and _block_capacity_left(unit) >= e.block_weight:
-			e.blocked_by = unit.id
-			unit.blocked_ids.append(e.id)
-			continue
+		if not e.aerial:
+			var cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
+			var unit := alive_unit_at(cell)
+			if unit != null and _block_capacity_left(unit) >= e.block_weight:
+				e.blocked_by = unit.id
+				unit.blocked_ids.append(e.id)
+				continue
 		if e.progress_units >= _path_lengths[e.path_idx]:
 			e.alive = false
 			leaked += 1
 			base_hp -= e.leak_damage
 
 
-## D14/D15: ready-at-contact cadence — fire when the counter is 0 and a target
-## exists (counter then resets to interval - 1 so shots land exactly
-## atk_interval_ticks apart); otherwise the counter ticks down and holds at 0.
-## Units strike before enemies, so an enemy killed on its ready-tick never
-## lands that hit. A unit targets its lowest-spawn-id blocked enemy; an enemy
-## targets its blocker.
+## D14/D15 + Phase 4 targeting: ready-at-contact cadence — fire when the
+## counter is 0 and a target exists (counter then resets to interval - 1 so
+## shots land exactly atk_interval_ticks apart); otherwise the counter ticks
+## down and holds at 0. Units strike before enemies, so an enemy killed on its
+## ready-tick never lands that hit. Melee classes (VG/GD/DF) target their
+## lowest-spawn-id blocked enemy; SNIPER/CASTER select via Targeting over the
+## rotated range pattern (sniper prioritizes aerial, caster excludes it and
+## splashes 3x3 around the primary). An enemy targets its blocker; an
+## unblocked ranged enemy (atk_range_cells > 0) targets the nearest deployed
+## unit within Chebyshev range while it keeps walking (pinned v1 deviation:
+## it never stops to attack).
 func _tick_combat() -> void:
 	for u: UnitState in units:
 		if not u.alive:
 			continue
-		var target := _first_blocked_alive(u)
-		if u.atk_counter == 0:
-			if target != null and u.atk > 0:
-				target.hp -= u.atk
-				u.atk_counter = u.atk_interval_ticks - 1
-				if target.hp <= 0:
-					_kill_enemy(target)
-		else:
+		if u.atk_counter > 0:
 			u.atk_counter -= 1
-	for e: EnemyState in enemies:
-		if not e.alive or e.blocked_by < 0:
 			continue
-		var blocker := unit_by_id(e.blocked_by)
-		if e.atk_counter == 0:
-			if e.atk > 0 and blocker != null and blocker.alive:
-				blocker.hp -= e.atk
-				e.atk_counter = e.atk_interval_ticks - 1
-				if blocker.hp <= 0:
-					_kill_unit(blocker)
+		if u.op_class == OperatorDef.OpClass.SNIPER or u.op_class == OperatorDef.OpClass.CASTER:
+			_fire_ranged(u)
 		else:
+			var target := _first_blocked_alive(u)
+			if target != null and u.atk > 0:
+				_strike_enemy(u, target)
+	for e: EnemyState in enemies:
+		if not e.alive:
+			continue
+		if e.atk_counter > 0:
 			e.atk_counter -= 1
+			continue
+		var victim: UnitState = null
+		if e.blocked_by >= 0:
+			victim = unit_by_id(e.blocked_by)
+		elif e.atk_range_cells > 0:
+			victim = _nearest_unit_in_range(e)
+		if e.atk > 0 and victim != null and victim.alive:
+			victim.hp -= e.atk
+			e.atk_counter = e.atk_interval_ticks - 1
+			if victim.hp <= 0:
+				_kill_unit(victim)
+
+
+## Deterministic ranged attack (td-phase-4-5.md §2): candidates by current
+## cell, class filter, max progress then lowest id. Caster damage is full atk
+## to every alive non-aerial enemy in the splash square around the primary.
+func _fire_ranged(u: UnitState) -> void:
+	if u.atk <= 0:
+		return
+	var candidates: Array[Dictionary] = []
+	for e: EnemyState in enemies:
+		if e.alive:
+			candidates.append({
+				"id": e.id,
+				"cell": Pathing.cell_of(path_for(e.path_idx), e.progress_units),
+				"progress_units": e.progress_units,
+				"aerial": e.aerial,
+			})
+	var filter := Targeting.Filter.ANTI_AIR_PRIORITY
+	if u.op_class == OperatorDef.OpClass.CASTER:
+		filter = Targeting.Filter.GROUND_ONLY
+	var target_id := Targeting.select(candidates, u.cell, u.range_offsets, int(u.facing), filter)
+	if target_id < 0:
+		return
+	var primary := enemies[target_id]
+	var primary_cell := Pathing.cell_of(path_for(primary.path_idx), primary.progress_units)
+	if u.op_class == OperatorDef.OpClass.CASTER:
+		u.atk_counter = u.atk_interval_ticks - 1
+		u.last_attack_tick = tick
+		u.last_attack_cell = primary_cell
+		var cells := Targeting.splash_cells(primary_cell, 3)
+		for e: EnemyState in enemies:
+			if not e.alive or e.aerial:
+				continue
+			if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
+				e.hp -= u.atk
+				if e.hp <= 0:
+					_kill_enemy(e)
+	else:
+		_strike_enemy(u, primary)
+
+
+func _strike_enemy(u: UnitState, target: EnemyState) -> void:
+	target.hp -= u.atk
+	u.atk_counter = u.atk_interval_ticks - 1
+	u.last_attack_tick = tick
+	u.last_attack_cell = Pathing.cell_of(path_for(target.path_idx), target.progress_units)
+	if target.hp <= 0:
+		_kill_enemy(target)
+
+
+func _nearest_unit_in_range(e: EnemyState) -> UnitState:
+	var e_cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
+	var best: UnitState = null
+	var best_dist := e.atk_range_cells + 1
+	for u: UnitState in units:
+		if not u.alive:
+			continue
+		var dist := maxi(absi(u.cell.x - e_cell.x), absi(u.cell.y - e_cell.y))
+		if dist < best_dist:
+			best = u
+			best_dist = dist
+	return best
 
 
 func _block_capacity_left(u: UnitState) -> int:
@@ -433,6 +512,8 @@ func _spawn(entry: Dictionary) -> void:
 	e.block_weight = def.block_weight
 	e.atk = def.atk
 	e.atk_interval_ticks = def.atk_interval_ticks
+	e.aerial = def.aerial
+	e.atk_range_cells = def.atk_range_cells
 	enemies.append(e)
 	spawned += 1
 

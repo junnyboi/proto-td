@@ -24,3 +24,7 @@ var atk_counter: int = 0
 var dp_generation_interval_ticks: int = 0
 var dp_generation_counter: int = 0
 var blocked_ids: Array[int] = []
+var op_class: OperatorDef.OpClass = OperatorDef.OpClass.GUARD
+var range_offsets: Array[Vector2i] = []
+var last_attack_tick: int = -1
+var last_attack_cell: Vector2i = Vector2i(-1, -1)

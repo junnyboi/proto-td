@@ -63,7 +63,7 @@
       "acceptance": [
         "composition proof: all-Defender loses drone stage, +1 Sniper wins"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "drone_counter"
       ],

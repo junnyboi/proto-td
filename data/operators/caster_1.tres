@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="OperatorDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/operator_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"caster_1"
+display_name = "Emberweaver"
+op_class = 4
+rarity = 2
+dp_cost = 16
+block = 0
+hp = 90
+atk = 9
+atk_interval_ticks = 45
+range_offsets = Array[Vector2i]([Vector2i(1, -1), Vector2i(1, 0), Vector2i(1, 1), Vector2i(2, -1), Vector2i(2, 0), Vector2i(2, 1), Vector2i(3, -1), Vector2i(3, 0), Vector2i(3, 1)])
+placement = 1
+dp_generation_interval_ticks = 0
+sprite_id = &"caster_1"
+portrait_id = &"caster_1"

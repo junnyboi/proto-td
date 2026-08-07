@@ -19,3 +19,5 @@ var atk_interval_ticks: int = 30
 var atk_counter: int = 0
 var blocked_by: int = -1
 var alive: bool = true
+var aerial: bool = false
+var atk_range_cells: int = 0

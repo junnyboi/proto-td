@@ -20,6 +20,19 @@ const TILE_COLORS := {
 	StageDef.Tile.BLOCKED: Color("333c57"),
 }
 const ENEMY_COLOR := Color("ef7d57")
+const ENEMY_TYPE_COLORS := {
+	&"grunt": Color("ef7d57"),
+	&"runner": Color("f4d35e"),
+	&"heavy": Color("b13e53"),
+	&"drone": Color("73eff7"),
+	&"spellcaster": Color("c964cf"),
+	&"mini_boss": Color("94216a"),
+}
+const AERIAL_PX := 24.0
+const AERIAL_SHADOW_OFFSET := Vector2(2.0, 2.0)
+const AERIAL_SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.45)
+const TRACER_COLOR := Color("f4f4f4")
+const TRACER_FRAMES := 4
 const UNIT_PX := 44.0
 const HP_BAR_HEIGHT := 5.0
 const HP_BAR_BG := Color("3a2026")
@@ -39,6 +52,9 @@ var ticks_per_frame_scale: float = 1.0
 var _grid_root: Node2D = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
+var _tracer_lines: Dictionary = {}
+var _tracer_seen_tick: Dictionary = {}
+var _tracer_frames_left: Dictionary = {}
 var _op_defs: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
@@ -142,13 +158,7 @@ func _build_hud() -> void:
 func _project() -> void:
 	for e: EnemyState in model.enemies:
 		if e.alive and not _enemy_rects.has(e.id):
-			var rect := ColorRect.new()
-			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			rect.color = ENEMY_COLOR
-			rect.size = Vector2(ENEMY_PX, ENEMY_PX)
-			_add_hp_bar(rect, ENEMY_PX)
-			_grid_root.add_child(rect)
-			_enemy_rects[e.id] = rect
+			_enemy_rects[e.id] = _make_enemy_rect(e)
 		elif not e.alive and _enemy_rects.has(e.id):
 			_enemy_rects[e.id].queue_free()
 			_enemy_rects.erase(e.id)
@@ -156,8 +166,9 @@ func _project() -> void:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var rect: ColorRect = _enemy_rects[e.id]
 			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
-			_update_hp_bar(rect, ENEMY_PX, e.hp, e.hp_max)
+			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_units()
+	_project_tracers()
 	var s := model.snapshot()
 	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(s["result"])]
 	_hud.text = "Base HP %d   DP %d   kills %d   tick %d   %s" % [
@@ -165,6 +176,59 @@ func _project() -> void:
 	]
 	if int(s["result"]) == BattleModel.Result.CLEAR:
 		_hud.text += "  %d*" % int(s["stars"])
+
+
+## Enemy rects are colored per type; aerial enemies render smaller with an
+## offset shadow behind the body so they read as airborne over a blocker.
+func _make_enemy_rect(e: EnemyState) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
+	var body_px := AERIAL_PX if e.aerial else ENEMY_PX
+	rect.size = Vector2(body_px, body_px)
+	if e.aerial:
+		var shadow := ColorRect.new()
+		shadow.name = "AerialShadow"
+		shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		shadow.color = AERIAL_SHADOW_COLOR
+		shadow.size = rect.size
+		shadow.position = AERIAL_SHADOW_OFFSET
+		shadow.show_behind_parent = true
+		rect.add_child(shadow)
+	_add_hp_bar(rect, body_px)
+	_grid_root.add_child(rect)
+	return rect
+
+
+## Ranged attacks leave a short-lived tracer line unit -> target cell (a
+## checkable pixel for "the sniper shot the drone").
+func _project_tracers() -> void:
+	for u: UnitState in model.units:
+		var is_ranged := (
+			u.op_class == OperatorDef.OpClass.SNIPER or u.op_class == OperatorDef.OpClass.CASTER
+		)
+		if not is_ranged:
+			continue
+		if u.alive and u.last_attack_tick >= 0 \
+				and u.last_attack_tick != int(_tracer_seen_tick.get(u.id, -1)):
+			_tracer_seen_tick[u.id] = u.last_attack_tick
+			_tracer_frames_left[u.id] = TRACER_FRAMES
+			var line: Line2D = _tracer_lines.get(u.id)
+			if line == null:
+				line = Line2D.new()
+				line.width = 3.0
+				line.default_color = TRACER_COLOR
+				_grid_root.add_child(line)
+				_tracer_lines[u.id] = line
+			line.points = PackedVector2Array([
+				(Vector2(u.cell) + Vector2.ONE * 0.5) * TILE_PX,
+				(Vector2(u.last_attack_cell) + Vector2.ONE * 0.5) * TILE_PX,
+			])
+		var frames_left := int(_tracer_frames_left.get(u.id, 0))
+		if _tracer_lines.has(u.id):
+			(_tracer_lines[u.id] as Line2D).visible = frames_left > 0
+		if frames_left > 0:
+			_tracer_frames_left[u.id] = frames_left - 1
 
 
 func _project_units() -> void:

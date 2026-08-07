@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="OperatorDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/operator_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"defender_2"
+display_name = "Aegiswall"
+op_class = 2
+rarity = 4
+dp_cost = 18
+block = 3
+hp = 250
+atk = 9
+atk_interval_ticks = 30
+range_offsets = Array[Vector2i]([Vector2i(0, 0)])
+placement = 0
+dp_generation_interval_ticks = 0
+sprite_id = &"defender_2"
+portrait_id = &"defender_2"
