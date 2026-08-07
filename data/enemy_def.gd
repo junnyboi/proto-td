@@ -14,4 +14,6 @@ extends Resource
 @export var block_weight: int = 1
 @export var leak_damage: int = 1
 @export var charm_immune: bool = false
+## Chebyshev range for ranged enemies (spellcaster); 0 = melee-only.
+@export var atk_range_cells: int = 0
 @export var sprite_id: StringName = &""
