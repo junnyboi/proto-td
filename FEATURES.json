@@ -156,7 +156,7 @@
       "acceptance": [
         "all rungs green vs final build with fresh evidence"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [],
       "commits": []
     },

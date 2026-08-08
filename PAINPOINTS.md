@@ -143,3 +143,24 @@
   every behavioral check stayed green — only the shot review caught it.
   icon_max_width alone is the right tool; expand_icon needs a button that
   is larger than its minimum size.
+
+---
+
+## Category index (acceptance #11 — final audit, 2026-08-09)
+
+Entries stay verbatim above; this index maps them to the five acceptance categories.
+
+- **Art / VFX generation**: P9 "correct-but-invisible effects" (draw-order); Lane A entries
+  (palette reservation — WHITE probes vs sprite whites; ASCII-map authoring throughput).
+- **Audio generation**: *no entries.* The P9 synth-SFX pipeline (11 WAVs, fixed-seed,
+  byte-idempotent) landed without logged pain — reported honestly as empty, not padded.
+- **Scene debuggability**: P7 grid-coordinate conventions; P8 CanvasLayer born-visible toggle
+  inversion; P9 two-frame-clocks + view-rects-need-a-projection-frame + scenario-abort
+  vacuous green; P10 unsettled Control rects.
+- **Level authoring**: P8 StringName sort order; P9 raw-input helpers vs transient windows;
+  P10 filename⇔id invariant (audit fix).
+- **Balance tuning**: P10 "4 data-edit rounds; print the budget in the rejection; paper DP
+  estimates run 2–4 hot".
+
+Harness-integrity entries (P3/P4-5 loops, watchdog budgets) sit outside the five categories
+but carried the most method value — they are the learnings doc's spine.

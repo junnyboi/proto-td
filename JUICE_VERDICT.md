@@ -90,3 +90,16 @@ for human-round verdicts (don't change numbers before diagnosing — learnings �
 - **Shake/hit-stop whitelist**: `boss_hit` entry unwired until a boss-attack record exists
   (Phase 10); hit-stop config defaults to 0 frames everywhere (wired, reserved).
 - **Music**: silent by design (Lane A / polish).
+
+## Post-P10 / final-audit status pass (2026-08-09, frozen at `218aaea`)
+
+- `boss_hit` — **still a hole**: P10's mini-boss attacks through the ordinary enemy combat
+  path with no boss-attack model record; the whitelist slot waits for the polish round.
+- Item 5 addendum: the banner now runs on real campaign `wave_starts` data (2–3 windows per
+  stage) — cadence unchanged mechanically; rhythm is an L7 question (PLAYTEST.md §3).
+- Item 7 addendum: with Lane A landed, the conversion palette-swap is a real sprite swap
+  (ally-blue ramp centered on the probed CHARMED_COLOR) — the recolor-of-record note below
+  is superseded; the swirl/hearts remain juice-layer rects by scope.
+- Items 1/3/4/6: unchanged by P10/Lane A; all pixel checks re-proven at the frozen hash with
+  zero skips (FINAL_REPORT §3).
+- The **final verdict slot stays open** for the polish round (acceptance #12).
