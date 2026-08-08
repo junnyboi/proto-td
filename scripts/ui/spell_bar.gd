@@ -31,13 +31,16 @@ var _cursor_rect: ColorRect = null
 
 
 ## Call after add_child: sized from the viewport (a Control under a Node2D
-## parent gets no anchor-based layout). spell_ids filters the buttons to the
-## caller's loadout (Phase 10, UI-only gating — the model stays
-## catalog-validated); empty means the full spell book.
+## parent gets no anchor-based layout). spell_ids is the caller's loadout
+## and filters STRICTLY (Phase 10 UI-only gating — the model stays
+## catalog-validated): an empty loadout means an empty bar. There is no
+## show-everything sentinel — the campaign's starting spell set is
+## legitimately empty, and a fail-open default let Bolt/Charm be cast from
+## S1 (P10 audit finding F1).
 func setup(
 	battle_model: BattleModel,
 	battle_view: Node2D,
-	spell_ids: Array[StringName] = [],
+	spell_ids: Array[StringName],
 ) -> void:
 	model = battle_model
 	view = battle_view
@@ -59,7 +62,7 @@ func _build_buttons() -> void:
 	box.add_theme_constant_override("separation", 16)
 	add_child(box)
 	for spell_id: StringName in model.spell_book.ids:
-		if not _allowed.is_empty() and not _allowed.has(spell_id):
+		if not _allowed.has(spell_id):
 			continue
 		var def := model.spell_book.def_of(spell_id)
 		var slot := Button.new()

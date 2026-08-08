@@ -161,6 +161,17 @@ func _lint_stage(path: String, failures: Array[String]) -> StageDef:
 		failures.append("%s: not a StageDef" % path)
 		return null
 	var tag := String(stage.id)
+	# P10 audit F4: filename<->id agreement is load-bearing (Game loads defs
+	# by filename, CampaignState/screens load by stage.id — a mismatch is
+	# lint-green but breaks the campaign at runtime)
+	if path.get_file().trim_suffix(".tres") != tag:
+		failures.append("%s: file name does not match stage id '%s'" % [path, tag])
+	# P10 audit F3: campaign metadata on non-campaign stages is dead data the
+	# runtime silently skips; index 0 is neither campaign nor the -1 opt-out
+	if stage.campaign_index == 0:
+		failures.append("%s: campaign_index 0 (use -1 for non-campaign, 1..N for campaign)" % tag)
+	if stage.campaign_index < 1 and (not stage.rewards.is_empty() or not stage.requires.is_empty()):
+		failures.append("%s: rewards/requires on a non-campaign stage are dead data" % tag)
 	if stage.grid_rows.is_empty():
 		failures.append("%s: empty grid" % tag)
 		return stage

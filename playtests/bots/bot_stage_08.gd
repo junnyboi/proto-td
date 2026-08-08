@@ -20,6 +20,6 @@ func timeline() -> Array:
 		[700, &"deploy", &"sniper_1", Vector2i(5, 1), 0],
 		[960, &"deploy", &"defender_2", Vector2i(8, 2), 0],
 		[1200, &"cast", &"charm", 9],
-		[1560, &"deploy", &"caster_2", Vector2i(8, 1), 1],
 		[1520, &"cast", &"bolt", Vector2i(8, 2)],
+		[1560, &"deploy", &"caster_2", Vector2i(8, 1), 1],
 	]

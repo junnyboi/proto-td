@@ -89,6 +89,14 @@ func _battle_and_progress(h: SelfTestHarness, game: Node, start_btn: Button) -> 
 		return
 	h.check("model squad == picked squad", model.squad == PICKS, str(model.squad))
 	var view := game.get("content") as Node2D
+	# loadout gating in the battle itself (audit F1): no spells unlocked at
+	# S1 -> the spell bar must be EMPTY, not fail open to the full catalog
+	var spell_box := view.find_child("SpellBox", true, false)
+	h.check(
+		"S1 spell bar empty (nothing unlocked)",
+		spell_box != null and spell_box.get_child_count() == 0,
+		"buttons=%d" % (spell_box.get_child_count() if spell_box != null else -1),
+	)
 	view.set("ticks_per_frame_scale", 0.0)
 	var bot: StageBot = (load("res://playtests/bots/bot_stage_01.gd") as GDScript).new()
 	var rows_tl: Array = bot.timeline()

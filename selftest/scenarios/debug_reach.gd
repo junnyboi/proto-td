@@ -14,6 +14,9 @@ const TRAP_IDS: Array[StringName] = [&"spike_plate", &"tar_pit"]
 
 
 func run(h: SelfTestHarness) -> void:
+	# budget re-derived for the 11-stage sweep (P10): 11 x (<=120-frame
+	# swap poll + ~15 frames of asserts) ~= 1500 worst case + grants and
+	# speed checks ~300 -> 3600 keeps a 2x margin
 	h.max_frames = 3600
 	await h.frames(10)
 	var game := h.autoload("Game")
