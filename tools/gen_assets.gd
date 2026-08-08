@@ -56,13 +56,12 @@ func _initialize() -> void:
 			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
 			"%s/%s.png" % [OUT_PORTRAITS, op_id]
 		)
-		# portraits carry the honest placeholder flag until the polish round's
-		# fidelity pass signs them off (parent §6.3)
+		# fidelity pass (art v2) signed off: card backdrop + glint/blush on
+		# the roster-spread archetypes — placeholder flag retired (§6.3)
 		_record(
 			StringName("portrait_%s" % def.portrait_id),
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
-			1,
-			true
+			1
 		)
 		portrait_cells.append(portrait)
 

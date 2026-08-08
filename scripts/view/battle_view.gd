@@ -434,10 +434,19 @@ func _build_grid(stage: StageDef) -> void:
 		StageDef.Tile.BASE: &"tile_base",
 		StageDef.Tile.BLOCKED: &"tile_blocked",
 	}
+	# path GROUND cells render as the warm dirt road (art v2): the enemy
+	# lane reads as a different material without any overlay or legend
+	var path_cells: Dictionary = {}
+	for i: int in stage.paths.size():
+		for cell: Vector2i in stage.path_cells(i):
+			path_cells[cell] = true
 	for y: int in size.y:
 		for x: int in size.x:
 			var tile := stage.tile_at(Vector2i(x, y))
-			var tex := Art.texture(tile_art[tile])
+			var art_id: StringName = tile_art[tile]
+			if tile == StageDef.Tile.GROUND and path_cells.has(Vector2i(x, y)):
+				art_id = &"tile_road"
+			var tex := Art.texture(art_id)
 			if tex != null:
 				var sprite := TextureRect.new()
 				# projection only: never intercept GUI input meant for the grid

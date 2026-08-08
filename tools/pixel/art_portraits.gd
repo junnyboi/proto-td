@@ -256,18 +256,23 @@ const SIGNIFIERS := {
 }
 
 ## Per-operator identity sheets: expression keyword -> feature picks.
+## blush (v2 fidelity pass) warms the younger/softer archetypes.
 const SHEETS := {
 	&"vanguard_1": {"eyes": "lidded", "brows": "flat", "mouth": "firm"},
-	&"vanguard_2": {"eyes": "open", "brows": "raised", "mouth": "grin"},
+	&"vanguard_2": {"eyes": "open", "brows": "raised", "mouth": "grin", "blush": true},
 	&"guard_1": {"eyes": "sharp", "brows": "raised", "mouth": "smirk"},
-	&"guard_2": {"eyes": "soft", "brows": "gentle", "mouth": "smile"},
+	&"guard_2": {"eyes": "soft", "brows": "gentle", "mouth": "smile", "blush": true},
 	&"defender_1": {"eyes": "soft", "brows": "gentle", "mouth": "soft"},
 	&"defender_2": {"eyes": "stern", "brows": "angled", "mouth": "firm"},
 	&"sniper_1": {"eyes": "lidded", "brows": "flat", "mouth": "soft"},
 	&"sniper_2": {"eyes": "sharp", "brows": "angled", "mouth": "frown"},
-	&"caster_1": {"eyes": "open", "brows": "raised", "mouth": "smile"},
+	&"caster_1": {"eyes": "open", "brows": "raised", "mouth": "smile", "blush": true},
 	&"caster_2": {"eyes": "lidded", "brows": "flat", "mouth": "firm"},
 }
+
+const GLINT_EYES: Array[String] = ["open", "sharp", "stern"]
+const LEFT_CHEEK_AT := Vector2i(9, 13)
+const RIGHT_CHEEK_AT := Vector2i(20, 13)
 
 const LEFT_EYE_AT := Vector2i(9, 9)
 const RIGHT_EYE_AT := Vector2i(17, 9)
@@ -327,7 +332,39 @@ static func build(op_id: StringName, op_class: OperatorDef.OpClass, sheet: Dicti
 		"C": family[2],
 	}
 	_stamp(img, _typed(SIGNIFIERS[op_class]), sig_legend, SIGNIFIER_AT)
-	return Pix.upscale(Pix.outline(img), UPSCALE)
+	# v2 fidelity pass: eye glint (life), optional blush (warmth), and the
+	# bust composed onto a class-colored card so it never floats on UI gray
+	if GLINT_EYES.has(String(picks["eyes"])):
+		img.set_pixel(LEFT_EYE_AT.x + 1, LEFT_EYE_AT.y + 1, Palette.WHITE)
+		img.set_pixel(RIGHT_EYE_AT.x + 1, RIGHT_EYE_AT.y + 1, Palette.WHITE)
+	if picks.get("blush", false):
+		for at: Vector2i in [LEFT_CHEEK_AT, RIGHT_CHEEK_AT]:
+			img.set_pixel(at.x, at.y, Palette.ROSE)
+			img.set_pixel(at.x + 1, at.y, Palette.ROSE)
+	var card := _card(family)
+	Pix.blend(card, Pix.outline(img), Vector2i.ZERO)
+	return Pix.upscale(card, UPSCALE)
+
+
+## Class-colored roster card: dusk field, family diagonal pinstripe, ink
+## footer band, hairline frame — quiet enough to keep the face the subject.
+static func _card(family: Array) -> Image:
+	var img := Image.create(SIZE.x, SIZE.y, false, Image.FORMAT_RGBA8)
+	for y: int in SIZE.y:
+		for x: int in SIZE.x:
+			var c: Color = Palette.DUSK
+			if (x + y) % 8 < 2:
+				c = family[0]
+			if y >= 28:
+				c = Palette.INK
+			img.set_pixel(x, y, c)
+	for x: int in SIZE.x:
+		img.set_pixel(x, 0, Palette.INK)
+		img.set_pixel(x, SIZE.y - 1, Palette.VOID)
+	for y: int in SIZE.y:
+		img.set_pixel(0, y, Palette.INK)
+		img.set_pixel(SIZE.x - 1, y, Palette.INK)
+	return img
 
 
 static func _typed(rows: Array) -> Array[String]:
