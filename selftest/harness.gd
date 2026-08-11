@@ -245,6 +245,17 @@ func _run() -> void:
 		ProjectSettings.get_setting("display/window/size/viewport_width"),
 		ProjectSettings.get_setting("display/window/size/viewport_height"),
 	)
+	if DisplayServer.get_name() != "headless":
+		# quiet window (PAINPOINTS Phase 13): never take focus (creation-time
+		# no_focus comes from verify.sh's transient override.cfg; this covers
+		# focus-taking after boot) and park bottom-right, out of the human's
+		# way. Never minimize/hide instead — macOS stops drawing hidden
+		# windows and shot_grab stalls on frame_post_draw.
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
+		var usable := DisplayServer.screen_get_usable_rect()
+		var park := usable.position + usable.size \
+			- DisplayServer.window_get_size() - Vector2i(8, 8)
+		DisplayServer.window_set_position(park)
 	var shield := SelfTestInputShield.new()
 	shield.name = "RealInputShield"
 	root.add_child(shield)

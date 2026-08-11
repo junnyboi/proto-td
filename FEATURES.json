@@ -202,12 +202,15 @@
         "in-battle controls drive only the ticks_per_frame_scale seam and the resign verb: paused dtick == 0 exactly, speed readbacks exact, cancel leaves RUNNING",
         "verify.sh --full green: controls eat no grid clicks, no outcome or telemetry band drifts"
       ],
-      "status": "failing",
+      "status": "passing",
       "scenarios": [
         "resign_flow",
         "battle_controls"
       ],
-      "commits": []
+      "commits": [
+        "bbf4759",
+        "8dfbfa3"
+      ]
     }
   ]
 }

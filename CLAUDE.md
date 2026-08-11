@@ -22,6 +22,13 @@ repeated mistake and never shrinks.
   settings, and GUI events outside the window rect are silently dropped. The harness pins
   `root.size` to the design resolution after the first frame (`_run()`); earlier sets are
   clobbered during engine setup.
+- Windowed runs on a human's machine are **quiet windows**: focus theft is creation-time, so
+  `verify.sh` writes a transient `override.cfg` (`no_focus=true`) around windowed rungs and the
+  harness parks the window bottom-right; `selftest/input_shield.gd` eats untagged
+  (device != 4242) input. Never launch a bare windowed preview during dev — headless first,
+  pixels via `verify.sh --full` or `verify.sh --scenario=X --windowed`. Never minimize/hide the
+  preview window: macOS stops drawing it and `shot_grab` stalls on `frame_post_draw` until the
+  watchdog.
 
 ## NOT-do list
 

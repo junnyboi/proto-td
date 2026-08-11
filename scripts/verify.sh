@@ -3,6 +3,7 @@
 #   verify.sh              R2 import -> stage lint -> R3 GUT -> R4a scenarios headless
 #   verify.sh --full       + R4b scenarios windowed w/ shots -> R5 bots -> R6 gate
 #   verify.sh --scenario=X R2 -> R4 for one scenario (inner-loop iteration)
+#   verify.sh --scenario=X --windowed   ... + the windowed lane for that scenario
 # Stops at the first red rung, prints its native error text, exit = rung
 # result. Writes artifacts/verify.json: one line per rung.
 set -u
@@ -13,13 +14,34 @@ mkdir -p artifacts
 
 FULL=0
 ONLY=""
+WINDOWED=0
 for arg in "$@"; do
   case "$arg" in
     --full) FULL=1 ;;
     --scenario=*) ONLY="${arg#--scenario=}" ;;
+    --windowed) WINDOWED=1 ;;
     *) echo "unknown arg: $arg" >&2; exit 2 ;;
   esac
 done
+if [[ $WINDOWED -eq 1 && -z "$ONLY" ]]; then
+  echo "--windowed requires --scenario=X (the full windowed lane is --full)" >&2
+  exit 2
+fi
+
+# Quiet windows (PAINPOINTS Phase 13): windowed rungs on a human's machine
+# must never steal keyboard/mouse focus. override.cfg applies the no_focus
+# flag at window CREATION (a runtime flag is too late — the steal already
+# happened); it exists only while harness windows run, so human playtests
+# keep normal focus. The trap removes it on every exit path.
+QUIET=0
+quiet_windows() {
+  if [[ $QUIET -eq 0 ]]; then
+    printf '[display]\nwindow/size/no_focus=true\n' > override.cfg
+    QUIET=1
+  fi
+}
+cleanup_quiet() { [[ $QUIET -eq 1 ]] && rm -f override.cfg; }
+trap cleanup_quiet EXIT
 
 RESULTS="[]"
 record() { # rung status seconds artifact
@@ -87,8 +109,15 @@ done
 for s in "${SCENARIOS[@]}"; do
   scenario_cmd headless "$s"
 done
+if [[ $WINDOWED -eq 1 ]]; then
+  quiet_windows
+  for s in "${SCENARIOS[@]}"; do
+    scenario_cmd windowed "$s"
+  done
+fi
 
 if [[ $FULL -eq 1 ]]; then
+  quiet_windows
   for s in "${SCENARIOS[@]}"; do
     scenario_cmd windowed "$s"
   done
