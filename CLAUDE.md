@@ -116,6 +116,7 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
    red, fixing it *is* the session.
 2. **Pick ONE** failing feature. Never two.
 3. Inner loop: write → hook checks per write → `verify.sh --scenario=X` → `verify.sh --full`.
-4. Flip ledger status; commit feature + ledger (+ baselines) in one commit.
+4. Flip ledger status; commit feature + ledger (+ baselines) in one commit; push to
+   `origin/master` when the work is done (standing instruction, 2026-08-11).
 5. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
