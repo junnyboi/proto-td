@@ -17,7 +17,6 @@ extends Control
 
 const FONT_SIZE := 32
 const BAR_HEIGHT := 88.0
-const CELL_PX := 64.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
@@ -184,7 +183,8 @@ func _build_overlays() -> void:
 func _make_overlay_rect(color: Color) -> ColorRect:
 	var rect := ColorRect.new()
 	rect.color = color
-	rect.size = Vector2.ONE * CELL_PX
+	# P12.0 stand-in: the face's bounding box (diamond footprint in P12.2)
+	rect.size = Vector2(IsoProjection.TILE_W, IsoProjection.TILE_H)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect.visible = false
 	return rect

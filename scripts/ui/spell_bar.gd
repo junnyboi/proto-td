@@ -13,7 +13,6 @@ extends Control
 ## spells show a "1/wave" label and dim while used.
 
 const FONT_SIZE := 32
-const CELL_PX := 64.0
 const SWEEP_HEIGHT := 8.0
 const SWEEP_COLOR := Color(0.96, 0.71, 0.2, 0.85)
 const CURSOR_VALID := Color(0.55, 0.75, 1.0, 0.4)
@@ -166,6 +165,7 @@ func _update_cursor() -> void:
 		span = def.radius * 2 + 1
 	var valid := model.cast_target_valid(_targeting, _target_for(_targeting, cell))
 	_cursor_rect.color = CURSOR_VALID if valid else CURSOR_INVALID
-	_cursor_rect.size = Vector2.ONE * (CELL_PX * span)
+	# P12.0 stand-in: the footprint's bounding box (diamond outline in P12.2)
+	_cursor_rect.size = Vector2(IsoProjection.TILE_W, IsoProjection.TILE_H) * span
 	_cursor_rect.position = Vector2(view.call("cell_center", cell)) - _cursor_rect.size * 0.5
 	_cursor_rect.visible = true
