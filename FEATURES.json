@@ -29,7 +29,9 @@
    "scenarios": [
     "boot"
    ],
-   "commits": []
+   "commits": [
+    "3f21539"
+   ]
   },
   {
    "id": "P2",
@@ -42,7 +44,9 @@
    "scenarios": [
     "deploy_flow"
    ],
-   "commits": []
+   "commits": [
+    "daf6f3a"
+   ]
   },
   {
    "id": "P3",
@@ -55,7 +59,9 @@
    "scenarios": [
     "blocking"
    ],
-   "commits": []
+   "commits": [
+    "1c2f5be"
+   ]
   },
   {
    "id": "P4",
@@ -67,7 +73,10 @@
    "scenarios": [
     "drone_counter"
    ],
-   "commits": []
+   "commits": [
+    "257edad",
+    "4c1a763"
+   ]
   },
   {
    "id": "P5",
@@ -79,7 +88,10 @@
    "scenarios": [
     "skill_timing"
    ],
-   "commits": []
+   "commits": [
+    "394aea1",
+    "d2e34b0"
+   ]
   },
   {
    "id": "P6",
@@ -92,7 +104,9 @@
    "scenarios": [
     "trap_flow"
    ],
-   "commits": []
+   "commits": [
+    "16f9091"
+   ]
   },
   {
    "id": "P7",
@@ -106,7 +120,9 @@
    "scenarios": [
     "charm_runback"
    ],
-   "commits": []
+   "commits": [
+    "44630f4"
+   ]
   },
   {
    "id": "P8",
@@ -118,7 +134,9 @@
    "scenarios": [
     "debug_reach"
    ],
-   "commits": []
+   "commits": [
+    "d31dc36"
+   ]
   },
   {
    "id": "P9",
@@ -134,7 +152,10 @@
     "wave_banner_victory",
     "skill_timing"
    ],
-   "commits": []
+   "commits": [
+    "70299bd",
+    "b9d1b2f"
+   ]
   },
   {
    "id": "P10",
@@ -148,7 +169,11 @@
    "scenarios": [
     "campaign_flow"
    ],
-   "commits": []
+   "commits": [
+    "0eaf9ad",
+    "13f5251",
+    "83b7368"
+   ]
   },
   {
    "id": "P11",
@@ -158,7 +183,9 @@
    ],
    "status": "passing",
    "scenarios": [],
-   "commits": []
+   "commits": [
+    "79c965e"
+   ]
   },
   {
    "id": "LA",
@@ -170,7 +197,10 @@
    "scenarios": [
     "assets_floor"
    ],
-   "commits": []
+   "commits": [
+    "c8ee84d",
+    "218aaea"
+   ]
   },
   {
    "id": "LB",
@@ -180,7 +210,9 @@
    ],
    "status": "passing",
    "scenarios": [],
-   "commits": []
+   "commits": [
+    "0eaf9ad"
+   ]
   },
   {
    "id": "LC",
@@ -191,7 +223,9 @@
    ],
    "status": "passing",
    "scenarios": [],
-   "commits": []
+   "commits": [
+    "0eaf9ad"
+   ]
   },
   {
    "id": "P13",
@@ -232,6 +266,21 @@
     "27c95c7",
     "84026cc"
    ]
+  },
+  {
+   "id": "P14",
+   "title": "Audit remediation round (td-phase-14): model determinism, resize correctness, harness integrity, content/docs",
+   "acceptance": [
+    "14.0 model: timeline same-tick order tie-break + 24-row exactness test, spell_book String-sorted hash iteration (PB1), splash_dim to data (PB2), is_skill_ready seam, paranoia twin-hash table over every hashed group; cross-process replay identical",
+    "14.1 view: resize relayout sweep (juice shake base, battle controls, deploy overlays, continue button; tracer/pose aging in _process) + resize_relayout scenario green both lanes",
+    "14.2 harness: completion sentinels on the seven legacy scenarios, measured watchdog budgets, all-class probe-reservation lint with differential proof + PNG sweep, quality-gate stamp honesty",
+    "14.3 content/docs: deviation D-SFX recorded, s6 wave_starts retune + bot_stage_06 rewrite + no-charm differential proof, PLAYTEST.md build re-pin + audio N/A, ledger commit backfill; merged-tree verify.sh --full ALL GREEN"
+   ],
+   "status": "building",
+   "scenarios": [
+    "resize_relayout"
+   ],
+   "commits": []
   }
  ],
  "deviations": [
