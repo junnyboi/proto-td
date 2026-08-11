@@ -41,6 +41,18 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	_build_confirm()
 
 
+## Dynamic canvas fit (P14): keep the strip pinned top-right and the
+## confirm panel centered; called by battle_view._relayout() (one resize
+## owner — self-owned listeners raced the grid recompute).
+func relayout() -> void:
+	size = get_viewport().get_visible_rect().size
+	var box := get_node_or_null("ControlsBox") as HBoxContainer
+	if box != null:
+		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
+	if _confirm != null and _confirm.visible:
+		_confirm.position = (size - _confirm.size) * 0.5
+
+
 func _build_row() -> void:
 	var box := HBoxContainer.new()
 	box.name = "ControlsBox"

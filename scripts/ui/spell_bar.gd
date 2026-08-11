@@ -48,7 +48,6 @@ func setup(
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
 	_build_buttons()
-	get_viewport().size_changed.connect(_relayout)
 	_cursor_rect = Polygon2D.new()
 	_cursor_rect.name = "SpellCursor"
 	_cursor_rect.visible = false
@@ -84,8 +83,9 @@ func _build_buttons() -> void:
 	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
 
 
-## Dynamic canvas fit: keep the strip pinned top-right on viewport resize.
-func _relayout() -> void:
+## Dynamic canvas fit: keep the strip pinned top-right; called by
+## battle_view._relayout() after the grid recompute (P14 ordering).
+func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	var box := get_node_or_null("SpellBox") as HBoxContainer
 	if box != null:

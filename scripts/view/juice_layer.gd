@@ -51,6 +51,15 @@ func setup(juice_config: JuiceConfig, grid_root: Node2D) -> void:
 	_grid_base_pos = grid_root.position
 
 
+## P14: the shake oscillates around (and finally restores) a cached grid
+## origin; battle_view._relayout() calls this after every viewport-resize
+## recompute so the base never goes stale (a shake-in-progress re-anchors
+## to the new base the same frame).
+func refresh_base() -> void:
+	if _grid_root != null:
+		_grid_base_pos = _grid_root.position
+
+
 func _process(_delta: float) -> void:
 	_age_transients()
 	_age_vignette()
