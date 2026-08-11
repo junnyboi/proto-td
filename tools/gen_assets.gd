@@ -29,17 +29,26 @@ func _initialize() -> void:
 	var sheet_cells: Array[Image] = []
 	var portrait_cells: Array[Image] = []
 
-	# tiles (32x16 iso diamonds; elevated 32x24). Probe reservation is a
-	# hard lint here: exact WHITE and SKY are banned from every tile.
-	var tile_allowed: Array[Color] = []
+	# Probe reservation is a hard lint across EVERY sprite class (P14.2):
+	# exact WHITE (sprung-flash probe) and SKY (charm probe) are banned from
+	# tiles, props, operators, portraits, and enemy frames. Two sanctioned
+	# exemptions: icon_* chips keep the full palette (UI-only, never
+	# probed) and charmed variants keep SKY (it IS the probed charm signal).
+	var reserved_free: Array[Color] = []
 	for c: Color in Palette.ALL:
 		if c != Palette.WHITE and c != Palette.SKY:
-			tile_allowed.append(c)
+			reserved_free.append(c)
+	var charm_allowed: Array[Color] = []
+	for c: Color in Palette.ALL:
+		if c != Palette.WHITE:
+			charm_allowed.append(c)
+
+	# tiles (32x16 iso diamonds; elevated 32x24)
 	var tiles := ArtTiles.build()
 	for tile_id: StringName in tiles:
 		var img: Image = tiles[tile_id]
 		var tile_size := ArtTiles.size_of(tile_id)
-		_lint_and_save(img, tile_size, "%s/%s.png" % [OUT_SPRITES, tile_id], tile_allowed)
+		_lint_and_save(img, tile_size, "%s/%s.png" % [OUT_SPRITES, tile_id], reserved_free)
 		_record(tile_id, "%s/%s.png" % [OUT_SPRITES, tile_id], 1, tile_size)
 		sheet_cells.append(Pix.upscale(img, 4))
 
@@ -49,7 +58,8 @@ func _initialize() -> void:
 		var frames := ArtOperators.build(op_id, def.op_class)
 		for i: int in frames.size():
 			_lint_and_save(
-				frames[i], ArtOperators.SIZE, "%s/%s_%d.png" % [OUT_SPRITES, op_id, i]
+				frames[i], ArtOperators.SIZE, "%s/%s_%d.png" % [OUT_SPRITES, op_id, i],
+				reserved_free
 			)
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
@@ -63,7 +73,8 @@ func _initialize() -> void:
 		_lint_and_save(
 			portrait,
 			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
-			"%s/%s.png" % [OUT_PORTRAITS, op_id]
+			"%s/%s.png" % [OUT_PORTRAITS, op_id],
+			reserved_free
 		)
 		# fidelity pass (art v2) signed off: card backdrop + glint/blush on
 		# the roster-spread archetypes — placeholder flag retired (§6.3)
@@ -81,7 +92,10 @@ func _initialize() -> void:
 		var art: Dictionary = ArtEnemies.ENEMY_ART[enemy_id]
 		var enemy_size: Vector2i = art["size"]
 		for i: int in frames.size():
-			_lint_and_save(frames[i], enemy_size, "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i])
+			_lint_and_save(
+				frames[i], enemy_size, "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i],
+				reserved_free
+			)
 		var def := load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size
@@ -90,12 +104,14 @@ func _initialize() -> void:
 		if not def.charm_immune:
 			var charmed := Pix.charmed_variant(frames[0])
 			_lint_and_save(
-				charmed, enemy_size, "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id]
+				charmed, enemy_size, "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id],
+				charm_allowed
 			)
 			_lint_and_save(
 				Pix.shifted(charmed, Vector2i(0, 1)),
 				enemy_size,
-				"%s/%s_charmed_1.png" % [OUT_SPRITES, enemy_id]
+				"%s/%s_charmed_1.png" % [OUT_SPRITES, enemy_id],
+				charm_allowed
 			)
 			_record(
 				StringName("%s_charmed" % def.sprite_id),
@@ -105,9 +121,8 @@ func _initialize() -> void:
 			)
 			sheet_cells.append(Pix.upscale(charmed, 4))
 
-	# traps + spell icons. Traps share the tile probe reservation (exact
-	# WHITE is the sprung-flash probe color, SKY the charm color): the
-	# ground-prop lint bans both; icon chips keep the full palette.
+	# traps + spell icons: traps carry the reservation lint, icon chips
+	# keep the full palette (sanctioned exemption above)
 	var props := ArtProps.build()
 	for prop_id: StringName in props:
 		var img: Image = props[prop_id]
@@ -115,7 +130,7 @@ func _initialize() -> void:
 		var size: Vector2i = ArtProps.ICON_SIZE if is_icon else ArtProps.TRAP_SIZE
 		_lint_and_save(
 			img, size, "%s/%s.png" % [OUT_SPRITES, prop_id],
-			Palette.ALL if is_icon else tile_allowed
+			Palette.ALL if is_icon else reserved_free
 		)
 		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
 		sheet_cells.append(Pix.upscale(img, 4))
