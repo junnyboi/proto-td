@@ -765,7 +765,8 @@ func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 		return
 	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
 	fill.size.x = UNIT_PX * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
-	if u.sp == u.sp_cost:
+	# readiness from the verb's own validator (rule 7, P14)
+	if u.is_skill_ready():
 		var blink := (Engine.get_process_frames() / 8) % 2 == 0
 		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
 	else:

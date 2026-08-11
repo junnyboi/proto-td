@@ -130,13 +130,20 @@ func step(n: int = 1) -> void:
 
 
 ## Runs a scripted action timeline (replay/bot/test format) up to until_tick.
+## Same-tick entries apply in AUTHORED order via an index tie-break internal
+## to this sort (introsort is unstable past ~16 elements — P14); the row
+## format [tick, verb, args...] is unchanged.
 func run_timeline(actions: Array, until_tick: int) -> void:
-	var sorted := actions.duplicate()
-	sorted.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	var sorted: Array = []
+	for i: int in actions.size():
+		sorted.append([int((actions[i] as Array)[0]), i, actions[i]])
+	var by_tick_then_index := func(a: Array, b: Array) -> bool:
+		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1])
+	sorted.sort_custom(by_tick_then_index)
 	var idx := 0
 	while tick < until_tick and result == Result.RUNNING:
 		while idx < sorted.size() and int(sorted[idx][0]) == tick:
-			var entry: Array = sorted[idx]
+			var entry: Array = sorted[idx][2]
 			apply_action(entry.slice(1))
 			idx += 1
 		step()
@@ -256,6 +263,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.atk_interval_ticks = def.atk_interval_ticks
 	u.dp_generation_interval_ticks = def.dp_generation_interval_ticks
 	u.op_class = def.op_class
+	u.splash_dim_base = def.splash_dim
 	u.range_offsets = def.range_offsets.duplicate()
 	if def.skill != null:
 		u.skill_id = def.skill.id
@@ -276,7 +284,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 ## active_effects until tick + duration_ticks.
 func _apply_trigger_skill(unit_id: int) -> bool:
 	var u := unit_by_id(unit_id)
-	if u == null or not u.alive or u.sp_cost <= 0 or u.sp != u.sp_cost:
+	if u == null or not u.is_skill_ready():
 		return false
 	u.sp = 0
 	u.skill_triggered_tick = tick
@@ -547,31 +555,10 @@ func state_hash() -> int:
 	return BattleHash.of(self)
 
 
-## Debug/telemetry projection (views read this; the hash does not).
+## Debug/telemetry projection (views read this; the hash does not); the
+## field map lives in sim/battle_snapshot.gd (P14 file-size seam).
 func snapshot() -> Dictionary:
-	return {
-		"tick": tick,
-		"base_hp": base_hp,
-		"result": result,
-		"stars": stars,
-		"spawned": spawned,
-		"leaked": leaked,
-		"killed": killed,
-		"alive": alive_enemy_count(),
-		"dp": dp,
-		"deployed": deployed_count(),
-		"deploys": units.size(),
-		"retreated": retreated,
-		"dp_spent": dp_spent,
-		"skills_fired": skills_fired,
-		"traps_placed": _next_trap_id,
-		"trap_triggers": traps_triggered,
-		"charmed": charmed,
-		"charmed_alive": alive_charmed_count(),
-		"charmed_dead": charmed_dead,
-		"charmed_exited": charmed_exited,
-		"spells_cast": spell_book.total_casts(),
-	}
+	return BattleSnapshot.of(self)
 
 
 ## Sub-step order pinned in td-phase-2-3.md D9: (1) DP regen + vanguard

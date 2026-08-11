@@ -30,6 +30,8 @@ var dp_generation_interval_ticks: int = 0
 var dp_generation_counter: int = 0
 var blocked_ids: Array[int] = []
 var op_class: OperatorDef.OpClass = OperatorDef.OpClass.GUARD
+# def-resolved constant copied at deploy (pinned by op_id, outside the hash)
+var splash_dim_base: int = 0
 var range_offsets: Array[Vector2i] = []
 var last_attack_tick: int = -1
 var last_attack_cell: Vector2i = Vector2i(-1, -1)
@@ -68,8 +70,16 @@ func effective_block() -> int:
 	return block + bonus
 
 
+## trigger_skill readiness — the verb's own guard AND the UI's query (rule
+## 7, P14): adapters and the SP-flash read this, never a copy.
+func is_skill_ready() -> bool:
+	return alive and sp_cost > 0 and sp == sp_cost
+
+
 func splash_dim() -> int:
-	var dim := 3
+	# base comes from data (OperatorDef.splash_dim, P14 — rule 4); effects
+	# may only enlarge it
+	var dim := splash_dim_base
 	for fx: Dictionary in active_effects:
 		if int(fx["effect"]) == SkillDef.Effect.SPLASH_RADIUS_PLUS:
 			dim = maxi(dim, int(fx["params"]["dim"]))

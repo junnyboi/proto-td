@@ -187,6 +187,9 @@ func test_effect_table_timed() -> void:
 		var op := _skilled_op(
 			&"fx_op", int(case["effect"]), case["params"], 150, 5
 		)
+		# P14 PB2: splash base moved to data (OperatorDef.splash_dim);
+		# mirror the caster defs so the splash case keeps base 3
+		op.splash_dim = 3
 		var extra: Array[OperatorDef] = [op]
 		var model := _make_model(_idle_stage(), extra)
 		assert_true(model.apply_action([&"deploy", &"fx_op", LANE_CELL, RIGHT]))

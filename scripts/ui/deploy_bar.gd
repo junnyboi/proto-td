@@ -145,9 +145,14 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.button_down.connect(_start_placement.bind(op_id))
 		box.add_child(slot)
 		_slots[op_id] = slot
-	var trap_ids: Array = _trap_defs.keys()
-	trap_ids.sort()
-	for trap_id: StringName in trap_ids:
+	# String-copy sort (P14): StringName sort is interning-ordered — slot
+	# order would vary across launches
+	var trap_names: Array = []
+	for key: StringName in _trap_defs:
+		trap_names.append(String(key))
+	trap_names.sort()
+	for trap_name: String in trap_names:
+		var trap_id := StringName(trap_name)
 		var def: TrapDef = _trap_defs[trap_id]
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
@@ -296,7 +301,8 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		return
 	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
 	# its skill; the retreat chip only opens while the skill is not ready.
-	if unit.sp_cost > 0 and unit.sp == unit.sp_cost:
+	# Readiness comes from the verb's own validator (rule 7, P14).
+	if unit.is_skill_ready():
 		model.apply_action([&"trigger_skill", unit.id])
 		_hide_retreat_chip()
 		return

@@ -23,9 +23,15 @@ static func create(spell_defs: Dictionary, stage_wave_starts: PackedInt32Array) 
 	var book := SpellBook.new()
 	book._defs = spell_defs
 	book.wave_starts = stage_wave_starts
+	# String-copy sort (P14, PB1): Array[StringName].sort() orders by
+	# interning — process-local — and the state hash iterates ids, so the
+	# order must be text-stable across processes (learnings §12.2.2)
+	var names: Array = []
 	for key: StringName in spell_defs:
-		book.ids.append(key)
-	book.ids.sort()
+		names.append(String(key))
+	names.sort()
+	for n: String in names:
+		book.ids.append(StringName(n))
 	for spell_id: StringName in book.ids:
 		book._ready_at[spell_id] = 0
 		book._used_in_wave[spell_id] = -1
