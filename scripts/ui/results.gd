@@ -1,10 +1,12 @@
 extends Control
 
-## Campaign results screen (Phase 10, td-phase-10.md §2.6): headline +
-## stars + tallies from Game.last_result, one "Unlocked:" line per granted
-## reward (the reveal), Continue (CLEAR -> stage select) and Retry (-> squad
-## select, same stage). The battle's stamp edge owns victory/defeat SFX —
-## this screen only clicks (L3).
+## Results screen (Phase 10, td-phase-10.md §2.6; mode-aware since Phase
+## 13): headline + stars + tallies from Game.last_result, one "Unlocked:"
+## line per granted reward (the reveal). Actions route by mode — campaign:
+## Retry -> squad select, Continue (CLEAR only) -> stage select; quick
+## battle: Retry -> restart the same stage; Back to Title always present.
+## The battle's stamp edge owns victory/defeat SFX — this screen only
+## clicks (L3).
 
 const FONT_SIZE := 32
 const HEADLINE_FONT_SIZE := 64
@@ -52,13 +54,19 @@ func _ready() -> void:
 	retry.add_theme_font_size_override("font_size", FONT_SIZE)
 	retry.pressed.connect(_on_retry)
 	actions.add_child(retry)
-	if cleared:
+	if cleared and Game.campaign_active:
 		var next := Button.new()
 		next.name = "ContinueToMap"
 		next.text = "Continue"
 		next.add_theme_font_size_override("font_size", FONT_SIZE)
 		next.pressed.connect(_on_continue)
 		actions.add_child(next)
+	var title := Button.new()
+	title.name = "BackToTitle"
+	title.text = "Back to Title"
+	title.add_theme_font_size_override("font_size", FONT_SIZE)
+	title.pressed.connect(_on_back_to_title)
+	actions.add_child(title)
 
 
 func _on_continue() -> void:
@@ -68,7 +76,15 @@ func _on_continue() -> void:
 
 func _on_retry() -> void:
 	Sfx.play("ui_click")
-	Game.open_squad_select()
+	if Game.campaign_active:
+		Game.open_squad_select()
+	else:
+		Game.start_battle(StringName(String(Game.last_result.get("stage_id", ""))))
+
+
+func _on_back_to_title() -> void:
+	Sfx.play("ui_click")
+	Game.open_title()
 
 
 func _label(label_name: String, text: String, size_px: int) -> Label:

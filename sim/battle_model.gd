@@ -167,6 +167,8 @@ func apply_action(action: Array) -> bool:
 			ok = n == 3 and _apply_place_trap(action[1], action[2])
 		&"cast":
 			ok = n == 3 and _apply_cast(action[1], action[2])
+		&"resign":
+			ok = n == 1 and _apply_resign()
 		&"debug_grant_operator":
 			ok = n == 2 and _apply_debug_grant_operator(action[1])
 		&"debug_remove_operator":
@@ -457,6 +459,15 @@ func _resolve_charm(e: EnemyState) -> void:
 		enemies[e.engaged_with].engaged_with = -1
 		e.engaged_with = -1
 	charmed += 1
+
+
+## Player concedes (Phase 13, DC1): an immediate result write — DEFEAT is
+## observable at the current tick and the next step() no-ops via the
+## terminal early-return. Writes only already-hashed fields (result), so
+## BattleHash needs no extension; stars stays 0 like any defeat.
+func _apply_resign() -> bool:
+	result = Result.DEFEAT
+	return true
 
 
 ## Debug verbs (Phase 8, td-phase-8.md §2.2). Same reject discipline as the

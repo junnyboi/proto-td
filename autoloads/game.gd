@@ -5,6 +5,7 @@ extends Node
 ## manually so it works both under the normal main-scene boot and under the
 ## selftest harness (which parents the main scene to root itself).
 
+const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
@@ -103,7 +104,9 @@ func record_result(result: int, stars: int) -> void:
 		return
 	var stage := current_battle.stage
 	var granted: Array[Dictionary] = []
-	if campaign != null:
+	# campaign_active guard (Phase 13, Q4): a quick battle after a campaign
+	# session must never grant rewards through the stale CampaignState
+	if campaign != null and campaign_active:
 		granted = campaign.record_result(stage, result, stars)
 	last_result = {
 		"stage_id": stage.id,
@@ -118,6 +121,17 @@ func record_result(result: int, stars: int) -> void:
 func debug_unlock_all() -> void:
 	if campaign != null:
 		campaign.unlock_everything(_catalogs())
+
+
+## Back to the starting menu (Phase 13). Resets the campaign session —
+## battle_squad() returns any non-empty selected_squad, so without the reset
+## a post-campaign quick battle silently inherits the campaign loadout.
+func open_title() -> void:
+	campaign = null
+	campaign_active = false
+	selected_stage_id = &""
+	selected_squad = []
+	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
 func open_stage_select() -> void:

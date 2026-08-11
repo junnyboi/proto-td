@@ -192,6 +192,22 @@
       "status": "passing",
       "scenarios": [],
       "commits": []
+    },
+    {
+      "id": "P13",
+      "title": "Battle QoL: pause/speed/resign controls + universal terminal results flow",
+      "acceptance": [
+        "resign is a model verb: immediate DEFEAT (DC1), terminal reject with zero state change, determinism oracle green on a resign timeline",
+        "terminal Continue button on every battle end (campaign AND quick); results screen mode-aware Retry/Continue + Back to Title with session reset",
+        "in-battle controls drive only the ticks_per_frame_scale seam and the resign verb: paused dtick == 0 exactly, speed readbacks exact, cancel leaves RUNNING",
+        "verify.sh --full green: controls eat no grid clicks, no outcome or telemetry band drifts"
+      ],
+      "status": "failing",
+      "scenarios": [
+        "resign_flow",
+        "battle_controls"
+      ],
+      "commits": []
     }
   ]
 }

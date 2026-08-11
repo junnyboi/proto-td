@@ -318,20 +318,20 @@ func _detect_result_stamp() -> void:
 	else:
 		_juice.stamp("DEFEAT", 0)
 		Sfx.play("defeat")
-	# campaign flow: a real Button (the juice layer is MOUSE_FILTER_IGNORE
-	# territory) under the stamp band; no auto-swap — scenarios and bots
-	# must be able to inspect the terminal state (td-phase-10.md §2.6)
-	if Game.campaign_active:
-		var next := Button.new()
-		next.name = "ContinueButton"
-		next.text = "Continue"
-		next.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
-		add_child(next)
-		var viewport := get_viewport_rect().size
-		next.position = Vector2(
-			(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
-		)
-		next.pressed.connect(_on_continue_pressed)
+	# a real Button (the juice layer is MOUSE_FILTER_IGNORE territory) under
+	# the stamp band; no auto-swap — scenarios and bots must be able to
+	# inspect the terminal state (td-phase-10.md §2.6). Every terminal gets
+	# one (Phase 13): quick battles used to dead-end on the stamp.
+	var next := Button.new()
+	next.name = "ContinueButton"
+	next.text = "Continue"
+	next.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
+	add_child(next)
+	var viewport := get_viewport_rect().size
+	next.position = Vector2(
+		(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
+	)
+	next.pressed.connect(_on_continue_pressed)
 
 
 func _on_continue_pressed() -> void:
