@@ -276,11 +276,20 @@
     "14.2 harness: completion sentinels on the seven legacy scenarios, measured watchdog budgets, all-class probe-reservation lint with differential proof + PNG sweep, quality-gate stamp honesty",
     "14.3 content/docs: deviation D-SFX recorded, s6 wave_starts retune + bot_stage_06 rewrite + no-charm differential proof, PLAYTEST.md build re-pin + audio N/A, ledger commit backfill; merged-tree verify.sh --full ALL GREEN"
    ],
-   "status": "building",
+   "status": "passing",
    "scenarios": [
     "resize_relayout"
    ],
-   "commits": []
+   "commits": [
+    "401a489",
+    "8946e55",
+    "1836307",
+    "29ac575",
+    "2235c0d",
+    "2d6263f",
+    "6a2fb06",
+    "84a5cd2"
+   ]
   }
  ],
  "deviations": [
@@ -290,8 +299,8 @@
    "owner": "human",
    "record": "Audio intentionally absent by owner decision: no SFX, no music. The presentation-floor audio rule (SFX per action) is waived until audio returns. The sfx_played telemetry seam stays wired as event-wiring evidence. Restoration recipe: git show 81ec642^:tools/gen_sfx.gd",
    "docs": [
-    "FINAL_REPORT.md §9",
-    "PLAYTEST.md §1/§3",
+    "FINAL_REPORT.md \u00a79",
+    "PLAYTEST.md \u00a71/\u00a73",
     "JUICE_VERDICT.md Phase 14 note",
     "CLAUDE.md audio section"
    ]
