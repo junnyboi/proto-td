@@ -40,6 +40,12 @@ static func unproject(local: Vector2) -> Vector2:
 ## cell_at(cell_center(c)) == c holds for EVERY cell.
 static func pick(local: Vector2, is_lifted: Callable) -> Vector2i:
 	var p := unproject(local)
+	# grid-scale division roundoff can push seam-generated lattice points
+	# (face centers, corners) off by an ulp — floor() then jumps a whole
+	# cell. Snap to the half-cell lattice within 1e-4 before flooring.
+	var snapped := (p * 2.0).round() * 0.5
+	if absf(p.x - snapped.x) < 0.0001 and absf(p.y - snapped.y) < 0.0001:
+		p = snapped
 	var p_lift := p + Vector2(0.5, 0.5)
 	var lifted_cell := Vector2i(p_lift.floor())
 	var exact_corner := (
@@ -55,6 +61,18 @@ static func face_center(cell: Vector2i, lifted: bool = false) -> Vector2:
 	if lifted:
 		center.y -= ELEV_LIFT_PX
 	return center
+
+
+## An origin-centered face diamond (top, right, bottom, left) at the given
+## uniform scale — one shape serves every screen-space footprint overlay
+## (hover cursor, valid-cell highlights, spell footprint = scale * span).
+static func face_polygon(scale: float = 1.0) -> PackedVector2Array:
+	return PackedVector2Array([
+		Vector2(0.0, -TILE_H * 0.5 * scale),
+		Vector2(TILE_W * 0.5 * scale, 0.0),
+		Vector2(0.0, TILE_H * 0.5 * scale),
+		Vector2(-TILE_W * 0.5 * scale, 0.0),
+	])
 
 
 ## The four projected corners of a cell's top face (top, right, bottom,
@@ -86,14 +104,27 @@ static func entity_z(p: Vector2) -> int:
 	return 2 * depth(p) + 1
 
 
-## Grid-root position that centers the stage's diamond content box in the
-## viewport. Content box (pinned): horizontal = the diamond's exact span;
-## vertical from -ELEV_LIFT_PX - 64 (sprite headroom, top-padded only) to
-## span * TILE_H / 2 + 8.
-static func origin_for(grid_size: Vector2i, viewport: Vector2) -> Vector2:
+## The stage's diamond content box in grid-local space (pinned): horizontal
+## = the diamond's exact span; vertical from -ELEV_LIFT_PX - 64 (sprite
+## headroom, top-padded only) to span * TILE_H / 2 + 8.
+static func content_box(grid_size: Vector2i) -> Rect2:
 	var span := float(grid_size.x + grid_size.y)
-	var origin_x := viewport.x * 0.5 - (float(grid_size.x) - float(grid_size.y)) * TILE_W * 0.25
+	var left := -float(grid_size.y) * TILE_W * 0.5
 	var top := -ELEV_LIFT_PX - 64.0
-	var bottom := span * TILE_H * 0.5 + 8.0
-	var origin_y := viewport.y * 0.5 - (top + bottom) * 0.5
-	return Vector2(origin_x, origin_y)
+	var width := span * TILE_W * 0.5
+	var height := span * TILE_H * 0.5 + 8.0 - top
+	return Rect2(left, top, width, height)
+
+
+## Uniform grid scale that fills the available canvas box, snapped DOWN to
+## 0.25 steps (uneven pixel-art scaling stays tolerable), clamped [1, 3].
+static func fit_scale(grid_size: Vector2i, avail: Vector2) -> float:
+	var box := content_box(grid_size)
+	var s := minf(avail.x / box.size.x, avail.y / box.size.y)
+	return clampf(floorf(s * 4.0) * 0.25, 1.0, 3.0)
+
+
+## Grid-root position centering the scaled content box in the viewport.
+static func origin_for(grid_size: Vector2i, viewport: Vector2, scale: float = 1.0) -> Vector2:
+	var box := content_box(grid_size)
+	return viewport * 0.5 - box.get_center() * scale

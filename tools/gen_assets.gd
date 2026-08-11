@@ -29,12 +29,18 @@ func _initialize() -> void:
 	var sheet_cells: Array[Image] = []
 	var portrait_cells: Array[Image] = []
 
-	# tiles (32x32, shown at 2x in the sheet)
+	# tiles (32x16 iso diamonds; elevated 32x24). Probe reservation is a
+	# hard lint here: exact WHITE and SKY are banned from every tile.
+	var tile_allowed: Array[Color] = []
+	for c: Color in Palette.ALL:
+		if c != Palette.WHITE and c != Palette.SKY:
+			tile_allowed.append(c)
 	var tiles := ArtTiles.build()
 	for tile_id: StringName in tiles:
 		var img: Image = tiles[tile_id]
-		_lint_and_save(img, ArtTiles.SIZE, "%s/%s.png" % [OUT_SPRITES, tile_id])
-		_record(tile_id, "%s/%s.png" % [OUT_SPRITES, tile_id], 1)
+		var tile_size := ArtTiles.size_of(tile_id)
+		_lint_and_save(img, tile_size, "%s/%s.png" % [OUT_SPRITES, tile_id], tile_allowed)
+		_record(tile_id, "%s/%s.png" % [OUT_SPRITES, tile_id], 1, tile_size)
 		sheet_cells.append(Pix.upscale(img, 4))
 
 	# operators: battle frames + portrait bust
@@ -45,7 +51,10 @@ func _initialize() -> void:
 			_lint_and_save(
 				frames[i], ArtOperators.SIZE, "%s/%s_%d.png" % [OUT_SPRITES, op_id, i]
 			)
-		_record(def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size())
+		_record(
+			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
+			ArtOperators.SIZE
+		)
 		for i: int in [0, 2, 4]:
 			sheet_cells.append(Pix.upscale(frames[i], 4))
 		var portrait := ArtPortraits.build(
@@ -61,7 +70,8 @@ func _initialize() -> void:
 		_record(
 			StringName("portrait_%s" % def.portrait_id),
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
-			1
+			1,
+			ArtPortraits.SIZE * ArtPortraits.UPSCALE
 		)
 		portrait_cells.append(portrait)
 
@@ -69,41 +79,50 @@ func _initialize() -> void:
 	for enemy_id: StringName in ArtEnemies.ENEMY_ART:
 		var frames := ArtEnemies.build(enemy_id)
 		var art: Dictionary = ArtEnemies.ENEMY_ART[enemy_id]
+		var enemy_size: Vector2i = art["size"]
 		for i: int in frames.size():
-			_lint_and_save(frames[i], art["size"], "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i])
+			_lint_and_save(frames[i], enemy_size, "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i])
 		var def := load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
-		_record(def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size())
+		_record(
+			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size
+		)
 		sheet_cells.append(Pix.upscale(frames[0], 4))
 		if not def.charm_immune:
 			var charmed := Pix.charmed_variant(frames[0])
 			_lint_and_save(
-				charmed, art["size"], "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id]
+				charmed, enemy_size, "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id]
 			)
 			_lint_and_save(
 				Pix.shifted(charmed, Vector2i(0, 1)),
-				art["size"],
+				enemy_size,
 				"%s/%s_charmed_1.png" % [OUT_SPRITES, enemy_id]
 			)
 			_record(
 				StringName("%s_charmed" % def.sprite_id),
 				"%s/%s_charmed_%%d.png" % [OUT_SPRITES, enemy_id],
-				2
+				2,
+				enemy_size
 			)
 			sheet_cells.append(Pix.upscale(charmed, 4))
 
-	# traps + spell icons
+	# traps + spell icons. Traps share the tile probe reservation (exact
+	# WHITE is the sprung-flash probe color, SKY the charm color): the
+	# ground-prop lint bans both; icon chips keep the full palette.
 	var props := ArtProps.build()
 	for prop_id: StringName in props:
 		var img: Image = props[prop_id]
-		var size: Vector2i = ArtProps.ICON_SIZE if String(prop_id).begins_with(
-			"icon_"
-		) else ArtProps.TRAP_SIZE
-		_lint_and_save(img, size, "%s/%s.png" % [OUT_SPRITES, prop_id])
-		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1)
+		var is_icon := String(prop_id).begins_with("icon_")
+		var size: Vector2i = ArtProps.ICON_SIZE if is_icon else ArtProps.TRAP_SIZE
+		_lint_and_save(
+			img, size, "%s/%s.png" % [OUT_SPRITES, prop_id],
+			Palette.ALL if is_icon else tile_allowed
+		)
+		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
 		sheet_cells.append(Pix.upscale(img, 4))
 
 	_write_sheet(sheet_cells, "calibration.png")
 	_write_sheet(portrait_cells, "portraits.png")
+	_write_stage_collage(tiles)
 	if _failed:
 		quit(1)
 		return
@@ -116,14 +135,24 @@ func _initialize() -> void:
 	quit(0)
 
 
-func _record(id: StringName, pattern: String, frames: int, placeholder := false) -> void:
+## Every entry carries its native size (P12.1 manifest schema pin) — a
+## zero size is a generator red, so no asset ships unsized.
+func _record(
+	id: StringName, pattern: String, frames: int, size: Vector2i, placeholder := false
+) -> void:
+	if size == Vector2i.ZERO:
+		push_error("[gen_assets] RECORD %s: missing size" % id)
+		_failed = true
+		return
 	_manifest.entries[id] = {
-		"pattern": pattern, "frames": frames, "placeholder": placeholder
+		"pattern": pattern, "frames": frames, "size": size, "placeholder": placeholder
 	}
 
 
-func _lint_and_save(img: Image, expected: Vector2i, path: String) -> void:
-	var verdict := Pix.lint(img, expected, Palette.ALL)
+func _lint_and_save(
+	img: Image, expected: Vector2i, path: String, allowed: Array[Color] = Palette.ALL
+) -> void:
+	var verdict := Pix.lint(img, expected, allowed)
 	if verdict != "":
 		push_error("[gen_assets] LINT %s: %s" % [path, verdict])
 		_failed = true
@@ -157,3 +186,31 @@ func _write_sheet(cells: Array[Image], file_name: String) -> void:
 					sheet.set_pixel(at.x + x, at.y + y, Color("2c3044"))
 		Pix.blend(sheet, cells[i], at)
 	sheet.save_png(ProjectSettings.globalize_path(OUT_SHEET + "/" + file_name))
+
+
+## Mock-stage collage (P12.1): a 4x4 iso arrangement — an elevated cluster,
+## a road strip from spawn gate to base, plus the backdrop/void/blocked
+## fillers — so the human review sees composition, not isolated tiles.
+func _write_stage_collage(tiles: Dictionary) -> void:
+	var layout: Array[String] = ["ggEg", "gEEg", "srrb", "wvxg"]
+	var ids := {
+		"g": &"tile_ground", "E": &"tile_elevated", "r": &"tile_road",
+		"s": &"tile_spawn", "b": &"tile_base", "w": &"tile_backdrop",
+		"v": &"tile_void", "x": &"tile_blocked",
+	}
+	var pad := 4
+	var origin := Vector2i(pad + 64, pad + 8)
+	var sheet := Image.create(128 + 2 * pad, 72 + 2 * pad, false, Image.FORMAT_RGBA8)
+	sheet.fill(Color("242836"))
+	# row-major blend = painter's order here (a tile only ever overdraws
+	# strictly lower-depth neighbors)
+	for cy: int in layout.size():
+		for cx: int in layout[cy].length():
+			var img: Image = tiles[ids[layout[cy][cx]]]
+			var at := origin + Vector2i((cx - cy) * 16 - 16, (cx + cy) * 8)
+			if layout[cy][cx] == "E":
+				at.y -= 8
+			Pix.blend(sheet, img, at)
+	Pix.upscale(sheet, 4).save_png(
+		ProjectSettings.globalize_path(OUT_SHEET + "/stage_collage.png")
+	)

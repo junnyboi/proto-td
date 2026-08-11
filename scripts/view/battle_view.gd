@@ -13,25 +13,18 @@ const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
 
-const TILE_COLORS := {
-	StageDef.Tile.VOID: Color("1a1c2c"),
-	StageDef.Tile.GROUND: Color("566c86"),
-	StageDef.Tile.ELEVATED: Color("94b0c2"),
-	StageDef.Tile.SPAWN: Color("b13e53"),
-	StageDef.Tile.BASE: Color("3b5dc9"),
-	StageDef.Tile.BLOCKED: Color("333c57"),
-}
-## P12.0 flat-diamond stand-in for the road material (TILE_COLORS has no
-## road key — road is an art-id swap on GROUND); distinct from the GROUND
-## stand-in so the iso_projection_floor probes are pinnable. TD32 warm dirt;
-## not a probe-reserved color.
-const ROAD_STANDIN_COLOR := Color("b86f50")
 ## Z bands (td-phase-12 pin): grid content 0-40, UI overlays 50, juice 60,
 ## HUD/flash/continue 70. z_index beats tree order, so siblings left at 0
 ## would sink under the grid.
 const UI_OVERLAY_Z := 50
 const JUICE_Z := 60
 const HUD_Z := 70
+## Dynamic canvas fit: margins reserved for HUD (top) + deploy bar (bottom)
+## + side breathing room when fitting the grid to the viewport.
+const FIT_MARGIN := Vector2(48.0, 170.0)
+## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
+## no bare empty canvas.
+const BACKDROP_COLOR := Color("11131f")
 const ENEMY_COLOR := Color("ef7d57")
 const ENEMY_TYPE_COLORS := {
 	&"grunt": Color("ef7d57"),
@@ -42,8 +35,11 @@ const ENEMY_TYPE_COLORS := {
 	&"mini_boss": Color("94216a"),
 }
 const AERIAL_PX := 24.0
-const AERIAL_SHADOW_OFFSET := Vector2(2.0, 2.0)
-const AERIAL_SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.45)
+const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
+## grounded shadow = 20x10 face diamond (0.3125 of a face); aerial casts
+## the same diamond 10px further down (td-phase-12 pin)
+const SHADOW_FACE_SCALE := 0.3125
+const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
 const UNIT_PX := 64.0  # 32px art at the pinned 2x scale
 const HP_BAR_HEIGHT := 5.0
@@ -72,6 +68,8 @@ var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
+var _grid_scale := 1.0
+var _backdrop: ColorRect = null
 var _stage: StageDef = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
@@ -179,6 +177,7 @@ func _ready() -> void:
 	spells.z_index = UI_OVERLAY_Z
 	add_child(spells)
 	spells.setup(model, self, Game.loadout_spell_ids())
+	get_viewport().size_changed.connect(_relayout)
 
 
 ## Screen-space center of a grid cell's visible top face (no camera: world
@@ -187,17 +186,25 @@ func _ready() -> void:
 ## the projection seam (td-phase-12): all picking and synthetic input
 ## migrate with it.
 func cell_center(cell: Vector2i) -> Vector2:
-	return _grid_root.position + IsoProjection.face_center(cell, _is_lifted_cell(cell))
+	var local := IsoProjection.face_center(cell, _is_lifted_cell(cell))
+	return _grid_root.position + local * _grid_scale
 
 
 func cell_at(screen_pos: Vector2) -> Vector2i:
-	return IsoProjection.pick(screen_pos - _grid_root.position, _is_lifted_cell)
+	var local := (screen_pos - _grid_root.position) / _grid_scale
+	return IsoProjection.pick(local, _is_lifted_cell)
 
 
 ## Screen point of a continuous cell-space position (interpolated enemy
 ## centers, VFX anchors). Enemies never walk ELEVATED, so no lift here.
 func screen_of(p: Vector2) -> Vector2:
-	return _grid_root.position + IsoProjection.project(p)
+	return _grid_root.position + IsoProjection.project(p) * _grid_scale
+
+
+## Current uniform grid scale (dynamic canvas fit) — overlay footprints in
+## the UI bars size themselves by this.
+func grid_scale() -> float:
+	return _grid_scale
 
 
 func _is_lifted_cell(cell: Vector2i) -> bool:
@@ -450,54 +457,41 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 
 
 func _build_grid(stage: StageDef) -> void:
+	_backdrop = ColorRect.new()
+	_backdrop.name = "Backdrop"
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backdrop.color = BACKDROP_COLOR
+	_backdrop.z_index = -20
+	_backdrop.size = get_viewport_rect().size
+	add_child(_backdrop)
 	_grid_root = Node2D.new()
 	_grid_root.name = "GridRoot"
 	var size := stage.grid_size()
-	_grid_root.position = IsoProjection.origin_for(size, get_viewport_rect().size)
+	var viewport := get_viewport_rect().size
+	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
 	add_child(_grid_root)
-	# P12.0: flat-color Polygon2D diamond stand-ins (tile art returns in
-	# P12.1 as diamond textures). Path GROUND cells keep the road material
-	# split (art v2 lesson) via the pinned road stand-in color.
-	var path_cells: Dictionary = {}
-	for i: int in stage.paths.size():
-		for cell: Vector2i in stage.path_cells(i):
-			path_cells[cell] = true
-	for y: int in size.y:
-		for x: int in size.x:
-			var cell := Vector2i(x, y)
-			var tile := stage.tile_at(cell)
-			var lifted := tile == StageDef.Tile.ELEVATED
-			var color: Color = TILE_COLORS[tile]
-			if tile == StageDef.Tile.GROUND and path_cells.has(cell):
-				color = ROAD_STANDIN_COLOR
-			if lifted:
-				_add_tile_walls(cell, color)
-			var poly := Polygon2D.new()
-			poly.name = "Tile_%d_%d" % [x, y]
-			poly.color = color
-			poly.polygon = IsoProjection.cell_polygon(cell, lifted)
-			poly.z_index = IsoProjection.tile_z(cell)
-			_grid_root.add_child(poly)
+	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
+	IsoGridBuilder.build_terrain(_grid_root, stage)
 
 
-## Cliff walls for a lifted face: left and right side quads dropping
-## ELEV_LIFT_PX to the flat footprint; the right wall reads one step darker
-## for form. Flat-color stand-ins until P12.1's wall art.
-func _add_tile_walls(cell: Vector2i, face_color: Color) -> void:
-	var pts := IsoProjection.cell_polygon(cell, true)
-	var drop := Vector2(0.0, IsoProjection.ELEV_LIFT_PX)
-	var corners := [
-		[pts[3], pts[2], face_color.darkened(0.35)],
-		[pts[2], pts[1], face_color.darkened(0.5)],
-	]
-	for c: Array in corners:
-		var a: Vector2 = c[0]
-		var b: Vector2 = c[1]
-		var wall := Polygon2D.new()
-		wall.color = c[2]
-		wall.polygon = PackedVector2Array([a, b, b + drop, a + drop])
-		wall.z_index = IsoProjection.tile_z(cell)
-		_grid_root.add_child(wall)
+## Dynamic canvas fit (td-phase-12 + browser-resize requirement): refit the
+## grid whenever the window/viewport size changes. Entities live in
+## grid-local space, so repositioning + rescaling the root relayouts the
+## whole battle for free; the UI bars own their layout and listen too.
+func _relayout() -> void:
+	if _stage == null or _grid_root == null:
+		return
+	var viewport := get_viewport_rect().size
+	var size := _stage.grid_size()
+	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
+	if _backdrop != null:
+		_backdrop.size = viewport
+	if _portrait_flash != null:
+		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 
 
 func _build_hud() -> void:
@@ -563,18 +557,23 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	else:
 		rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
 		rect.size = Vector2(body_px, body_px)
-	if e.aerial:
-		var shadow := ColorRect.new()
-		shadow.name = "AerialShadow"
-		shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		shadow.color = AERIAL_SHADOW_COLOR
-		shadow.size = rect.size
-		shadow.position = AERIAL_SHADOW_OFFSET
-		shadow.show_behind_parent = true
-		rect.add_child(shadow)
+	_add_ground_shadow(rect, e.aerial)
 	_add_hp_bar(rect, body_px)
 	_grid_root.add_child(rect)
 	return rect
+
+
+## Depth cue (P12.2): every body drops a small face-diamond shadow at its
+## feet; aerial bodies cast it lower so they read as airborne.
+func _add_ground_shadow(body: ColorRect, aerial: bool) -> void:
+	var shadow := Polygon2D.new()
+	shadow.name = "Shadow"
+	shadow.color = SHADOW_COLOR
+	shadow.polygon = IsoProjection.face_polygon(SHADOW_FACE_SCALE)
+	var drop := AERIAL_SHADOW_DROP if aerial else 0.0
+	shadow.position = Vector2(body.size.x * 0.5, body.size.y + drop)
+	shadow.show_behind_parent = true
+	body.add_child(shadow)
 
 
 func _enemy_sprite_id(e: EnemyState) -> StringName:
@@ -641,7 +640,10 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 	var tex := Art.texture(art_id)
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
-		rect.size = Vector2(IsoProjection.TILE_W, IsoProjection.TILE_H)
+		var art_size := Art.size(art_id)
+		if art_size == Vector2i.ZERO:
+			art_size = Vector2i(tex.get_width(), tex.get_height())
+		rect.size = Vector2(art_size) * SPRITE_SCALE
 		rect.position = face - rect.size * 0.5
 		var sprite := TextureRect.new()
 		sprite.name = "Sprite"
@@ -837,6 +839,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
 	# feet on the face: bottom-center anchored at the node origin
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
+	_add_ground_shadow(rect, false)
 	_add_hp_bar(rect, rect.size.x)
 	if u.sp_cost > 0:
 		_add_sp_bar(rect)

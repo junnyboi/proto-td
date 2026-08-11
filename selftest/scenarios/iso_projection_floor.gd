@@ -10,7 +10,6 @@ extends RefCounted
 const ROAD_PROBE := Vector2i(16, 8)
 const TARGET_CELL := Vector2i(3, 2)
 const ELEV_CELL := Vector2i(2, 1)
-const BattleViewScript := preload("res://scripts/view/battle_view.gd")
 
 
 func run(h: SelfTestHarness) -> void:
@@ -39,8 +38,14 @@ func run(h: SelfTestHarness) -> void:
 	var old_origin := (viewport - Vector2(stage.grid_size()) * 64.0) * 0.5
 	var road_cells: Dictionary = {}
 	for cell: Vector2i in stage.path_cells(0):
-		if stage.tile_at(cell) == StageDef.Tile.GROUND:
-			road_cells[cell] = true
+		if stage.tile_at(cell) != StageDef.Tile.GROUND:
+			continue
+		# skip cells under a cliff's cast shade (the NW neighbor is
+		# ELEVATED): the shade polygon darkens the face colors and the
+		# road-material probe needs an unshaded sample
+		if stage.tile_at(cell - Vector2i(1, 1)) == StageDef.Tile.ELEVATED:
+			continue
+		road_cells[cell] = true
 	var road_cell := Vector2i(-1, -1)
 	var old_pt := Vector2.ZERO
 	for cell: Vector2i in road_cells:
@@ -54,24 +59,37 @@ func run(h: SelfTestHarness) -> void:
 	if road_cell.x < 0:
 		return
 
-	var road_color: Color = BattleViewScript.ROAD_STANDIN_COLOR
+	# road material = the palette actually present in the road art's face
+	# interior (P12.1 re-baseline: the road is a multi-color dirt texture,
+	# not one stand-in color; the fallback lane still uses the stand-in)
+	var road_set: Dictionary = {}
+	var road_tex := Art.texture(&"tile_road")
+	if road_tex != null:
+		var road_img := road_tex.get_image()
+		for ay: int in range(6, 10):
+			for ax: int in range(12, 20):
+				road_set[road_img.get_pixelv(Vector2i(ax, ay)).to_html(false)] = true
+	else:
+		road_set[IsoGridBuilder.ROAD_STANDIN_COLOR.to_html(false)] = true
+	var count_road := func(im: Image, at: Vector2) -> int:
+		var n := 0
+		for dy: int in ROAD_PROBE.y:
+			for dx: int in ROAD_PROBE.x:
+				var px := im.get_pixel(int(at.x) - 8 + dx, int(at.y) - 4 + dy)
+				if road_set.has(px.to_html(false)):
+					n += 1
+		return n
 	var new_center: Vector2 = view.call("cell_center", road_cell)
 	var img_flat := await h.shot_grab("iso_grid")
 	h.check_pixels(
-		"road color present at the iso face center", img_flat,
+		"road material present at the iso face center", img_flat,
 		func(im: Image) -> bool:
-			var rect := Rect2i(
-				int(new_center.x) - 8, int(new_center.y) - 4, ROAD_PROBE.x, ROAD_PROBE.y
-			)
-			return SelfTestProbes.color_in_rect(im, rect, road_color, 0.02) > 80,
+			return int(count_road.call(im, new_center)) > 80,
 	)
 	h.check_pixels(
-		"road color ABSENT at the old square-grid center", img_flat,
+		"road material ABSENT at the old square-grid center", img_flat,
 		func(im: Image) -> bool:
-			var rect := Rect2i(
-				int(old_pt.x) - 8, int(old_pt.y) - 4, ROAD_PROBE.x, ROAD_PROBE.y
-			)
-			return SelfTestProbes.color_in_rect(im, rect, road_color, 0.02) < 5,
+			return int(count_road.call(im, old_pt)) < 10,
 	)
 
 	# --- deploy through the raw-input path on the iso projection ---

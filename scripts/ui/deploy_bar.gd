@@ -41,7 +41,7 @@ var _placement_trap: StringName = &""
 var _pending_cell := Vector2i(-1, -1)
 var _pointer := Vector2.ZERO
 var _highlight_root: Control = null
-var _cursor_rect: ColorRect = null
+var _cursor_rect: Polygon2D = null
 var _facing_buttons: Dictionary = {}
 var _retreat_chip: Button = null
 var _retreat_unit_id: int = -1
@@ -64,6 +64,14 @@ func setup(
 	size = get_viewport().get_visible_rect().size
 	_build_slots(_op_defs)
 	_build_overlays()
+	get_viewport().size_changed.connect(_relayout)
+
+
+## Dynamic canvas fit: the bar owns its layout on window/viewport resize.
+func _relayout() -> void:
+	size = get_viewport().get_visible_rect().size
+	if _slot_box != null:
+		_slot_box.position = Vector2(16, size.y - BAR_HEIGHT)
 
 
 func _process(_delta: float) -> void:
@@ -180,14 +188,14 @@ func _build_overlays() -> void:
 	add_child(_retreat_chip)
 
 
-func _make_overlay_rect(color: Color) -> ColorRect:
-	var rect := ColorRect.new()
-	rect.color = color
-	# P12.0 stand-in: the face's bounding box (diamond footprint in P12.2)
-	rect.size = Vector2(IsoProjection.TILE_W, IsoProjection.TILE_H)
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rect.visible = false
-	return rect
+## Footprints are origin-centered face diamonds (P12.2) sized by the live
+## grid scale (dynamic canvas fit); position them at cell_center directly.
+func _make_overlay_rect(color: Color) -> Polygon2D:
+	var poly := Polygon2D.new()
+	poly.color = color
+	poly.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
+	poly.visible = false
+	return poly
 
 
 func _start_placement(op_id: StringName) -> void:
@@ -216,7 +224,7 @@ func _show_valid_highlights() -> void:
 			if _placement_valid_at(cell):
 				var rect := _make_overlay_rect(_valid_color())
 				rect.visible = true
-				rect.position = view.call("cell_center", cell) - rect.size * 0.5
+				rect.position = view.call("cell_center", cell)
 				_highlight_root.add_child(rect)
 
 
@@ -235,7 +243,7 @@ func _update_placement_hover() -> void:
 		return
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	_cursor_rect.color = _valid_color() if _placement_valid_at(cell) else INVALID_COLOR
-	_cursor_rect.position = view.call("cell_center", cell) - _cursor_rect.size * 0.5
+	_cursor_rect.position = view.call("cell_center", cell)
 	_cursor_rect.visible = true
 
 

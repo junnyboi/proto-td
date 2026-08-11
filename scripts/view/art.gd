@@ -23,6 +23,16 @@ static func frame_count(id: StringName) -> int:
 	return int(_entry(id).get("frames", 0))
 
 
+## Native pixel size from the manifest (P12.1: tiles are no longer a
+## uniform canvas). Vector2i.ZERO for unknown ids or entries without a
+## size, so callers can keep their fallback sizing.
+static func size(id: StringName) -> Vector2i:
+	var stored: Variant = _entry(id).get("size", Vector2i.ZERO)
+	if stored is Vector2i:
+		return stored
+	return Vector2i.ZERO
+
+
 static func texture(id: StringName, frame := 0) -> Texture2D:
 	var key := "%s/%d" % [id, frame]
 	if _cache.has(key):

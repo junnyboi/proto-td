@@ -128,6 +128,34 @@ func test_z_bands_stay_inside_grid_band() -> void:
 	assert_true(IsoProjection.entity_z(Vector2(11.5, 5.5)) <= 40)
 
 
+## The scaled seam (dynamic canvas fit) divides by the grid scale before
+## picking — an ulp of roundoff there once jumped floor() a whole cell. The
+## lattice snap in pick() must absorb it, including the corner-tie case.
+func test_scaled_seam_survives_roundoff() -> void:
+	var flat := Vector2i(2, 0)
+	var elev := flat + Vector2i(1, 1)
+	var is_lifted := func(c: Vector2i) -> bool:
+		return c == elev
+	for s: float in [1.25, 1.5, 1.75, 2.5]:
+		var local := IsoProjection.face_center(flat) * s
+		assert_eq(
+			IsoProjection.pick(local / s, is_lifted), flat, "flat center at scale %f" % s
+		)
+		var lifted_local := IsoProjection.face_center(elev, true) * s
+		assert_eq(
+			IsoProjection.pick(lifted_local / s, is_lifted), elev, "lifted center at scale %f" % s
+		)
+
+
+func test_fit_scale_snaps_down_and_clamps() -> void:
+	# 12x6 content box is 576 x 376; avail (1232, 550) -> min(2.13, 1.46)
+	# -> snapped down to 1.25
+	assert_eq(IsoProjection.fit_scale(Vector2i(12, 6), Vector2(1232.0, 550.0)), 1.25)
+	# tiny avail clamps up to 1.0; huge avail clamps at 3.0
+	assert_eq(IsoProjection.fit_scale(Vector2i(12, 6), Vector2(100.0, 100.0)), 1.0)
+	assert_eq(IsoProjection.fit_scale(Vector2i(8, 5), Vector2(4000.0, 4000.0)), 3.0)
+
+
 func test_origin_centers_diamond_bbox() -> void:
 	# 12x6 stage in 1280x720: horizontal span = (12+6)*32 = 576; the
 	# diamond's left-most x is origin.x - 6*32, right-most origin.x + 12*32.
