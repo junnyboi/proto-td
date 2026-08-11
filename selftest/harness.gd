@@ -245,6 +245,9 @@ func _run() -> void:
 		ProjectSettings.get_setting("display/window/size/viewport_width"),
 		ProjectSettings.get_setting("display/window/size/viewport_height"),
 	)
+	var shield := SelfTestInputShield.new()
+	shield.name = "RealInputShield"
+	root.add_child(shield)
 	var game := root.get_node_or_null("Game")
 	if game != null and game.has_method("set_run_seed"):
 		game.call("set_run_seed", seed_value)

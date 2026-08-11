@@ -7,6 +7,7 @@ extends SceneTree
 
 func _initialize() -> void:
 	_add_key_action("ui_debug_overlay", KEY_F12)
+	_add_key_action("battle_pause", KEY_SPACE)
 	ProjectSettings.save()
 	print("[input-actions] saved")
 	quit(0)
