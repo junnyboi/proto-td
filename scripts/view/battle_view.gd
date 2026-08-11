@@ -459,8 +459,11 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	if dir == null:
 		return defs
 	for file: String in dir.get_files():
-		if file.ends_with(".tres"):
-			var def: Resource = load(dir_path + "/" + file)
+		# exported builds list "<name>.tres.remap" (text->binary conversion);
+		# loading by the original .tres path resolves through the remap
+		var res_name := file.trim_suffix(".remap")
+		if res_name.ends_with(".tres"):
+			var def: Resource = load(dir_path + "/" + res_name)
 			if def != null and def.get_script() != null \
 					and (def.get_script() as Script).get_global_name() == StringName(script_class):
 				defs[def.get("id")] = def

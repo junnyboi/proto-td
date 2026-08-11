@@ -167,8 +167,10 @@ func _scan_ids(dir_path: String) -> Array[StringName]:
 	if dir == null:
 		return []
 	for file: String in dir.get_files():
-		if file.ends_with(".tres"):
-			names.append(file.trim_suffix(".tres"))
+		# exported builds list "<name>.tres.remap" (text->binary conversion)
+		var res_name := file.trim_suffix(".remap")
+		if res_name.ends_with(".tres"):
+			names.append(res_name.trim_suffix(".tres"))
 	names.sort()
 	var ids: Array[StringName] = []
 	for item_name: String in names:

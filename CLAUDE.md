@@ -60,6 +60,10 @@ repeated mistake and never shrinks.
   `press_mouse_at` — never the harness's `click_cell` (it assumes an
   origin-anchored grid; `GridRoot` is centered in the viewport, so
   `click_cell` lands cells off-target and adapters cancel silently).
+- `DirAccess` catalog scans must strip a `.remap` suffix before the `.tres` filter — exported
+  builds convert text resources to binary and list `<name>.tres.remap`, so a bare
+  `ends_with(".tres")` scan ships EMPTY catalogs (operators/traps/spells/stages) while running
+  fine from source. Load by the original `.tres` path; it resolves through the remap.
 
 ## Architecture rules (numbered — violation = rework)
 
