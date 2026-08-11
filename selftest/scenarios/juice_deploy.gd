@@ -52,12 +52,19 @@ func run(h: SelfTestHarness) -> void:
 	await h.shot("deploy_drag")
 	await h.release_mouse_at(view.call("cell_center", DEPLOY_CELL))
 	await h.frames(2)
-	h.check("drag end restores 1.0 at the facing chooser", Engine.time_scale == 1.0)
+	# L7 verdict 2026-08-11: the slowdown holds while the player aims the
+	# facing — only the confirm (or cancel) restores full speed
+	h.check(
+		"slowdown holds at the facing chooser",
+		Engine.time_scale == cfg.deploy_drag_time_scale,
+		"scale=%f" % Engine.time_scale,
+	)
 	var facing := bar.find_child("FacingRight", true, false) as Button
 	h.check("facing chooser open", facing != null and facing.visible)
 	await h.click_view(facing.get_global_rect().get_center())
 	await h.frames(2)
 	h.check("unit deployed", model.alive_unit_at(DEPLOY_CELL) != null)
+	h.check("facing confirm restores 1.0", Engine.time_scale == 1.0)
 
 	# seam deploy: landing juice keys off the model edge, no mouse involved —
 	# and the dust probes anchor HERE, where the trigger-to-shot distance is

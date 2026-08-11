@@ -259,8 +259,9 @@ func _end_placement_drag() -> void:
 		return
 	_pending_cell = cell
 	_cursor_rect.visible = false
-	# the drag itself ends here; the facing chooser is not part of the ritual
-	view.call("deploy_drag_ended")
+	# the slowdown HOLDS through the facing chooser (L7 verdict 2026-08-11:
+	# full-speed enemies charging while the player aims felt punishing);
+	# _confirm_deploy / _cancel_placement restore normal speed
 	for facing: UnitState.Facing in _facing_buttons:
 		var spec: Dictionary = FACING_BUTTONS[facing]
 		var btn: Button = _facing_buttons[facing]
