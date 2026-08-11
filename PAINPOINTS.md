@@ -164,3 +164,28 @@ Entries stay verbatim above; this index maps them to the five acceptance categor
 
 Harness-integrity entries (P3/P4-5 loops, watchdog budgets) sit outside the five categories
 but carried the most method value — they are the learnings doc's spine.
+
+## Phase 13 (battle QoL: pause/speed/resign + terminal flow)
+
+- **The plan's "top-center is free" HUD fact was wrong as-built.** The HUD
+  status line (`Base HP … tick N RESULT`) reaches past center-x at 1280 wide,
+  so the controls row planned for top-center rendered on top of it — every
+  check green, shot obviously wrong (the looks-wrong channel worked). Row
+  moved right-aligned under the spell bar (D5). Lesson: free-real-estate
+  claims need a pixel look at the LONGEST live text, not the _ready() text.
+- **A human on the machine breaks the windowed lane two new ways once
+  gameplay hotkeys exist.** (a) Real zero-mask mouse motion mid-synthetic-
+  press makes the Viewport drop GUI mouse focus — the press's release never
+  fires (3 batch runs, a different lost click each). (b) The scenario window
+  takes keyboard focus, so live typing lands in the game — Space (the new
+  pause hotkey) toggled pause mid-measurement. Both fixed for good by
+  `selftest/input_shield.gd`: a harness-only root `_input` node that eats
+  every untagged (device != 4242) mouse/key event. (c) Unfixable remainder:
+  hiding/fully covering the window stops macOS draws — `shot_grab`'s
+  `frame_post_draw` await stalls until the frame watchdog; a pre-existing
+  scenario (blocking) hit it too. R4b needs ~3 undisturbed minutes; that is
+  an environment contract, not code.
+- **`physics_frames(n)` measures n-1..n stepped frames, not n.** The 4x
+  speed exactness band derived as 20s±1 (residue only) missed the await-
+  boundary frame: at 4x the observable is [78, 80]. Derive dtick bands as
+  [floor(19.5s), 20s], never 20s±1.
