@@ -163,6 +163,10 @@ func _ready() -> void:
 	spells.name = "SpellBar"
 	add_child(spells)
 	spells.setup(model, self, Game.loadout_spell_ids())
+	var controls := BattleControls.new()
+	controls.name = "BattleControls"
+	add_child(controls)
+	controls.setup(model, self)
 
 
 ## Screen-space center of a grid cell (no camera: world == screen). The
@@ -325,13 +329,18 @@ func _detect_result_stamp() -> void:
 	var next := Button.new()
 	next.name = "ContinueButton"
 	next.text = "Continue"
-	next.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
+	# Phase 13b prominence: the largest button on screen, focused so Enter
+	# (and Space, once terminal) also proceeds — the "what do I click now"
+	# fix from the playtest screenshot
+	next.custom_minimum_size = Vector2(260.0, 64.0)
+	next.add_theme_font_size_override("font_size", 40)
 	add_child(next)
 	var viewport := get_viewport_rect().size
 	next.position = Vector2(
 		(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
 	)
 	next.pressed.connect(_on_continue_pressed)
+	next.grab_focus()
 
 
 func _on_continue_pressed() -> void:
