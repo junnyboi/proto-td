@@ -7,6 +7,9 @@ extends RefCounted
 
 
 func run(h: SelfTestHarness) -> void:
+	# measured 876 render frames @60 for the full run (defeat ~tick 421);
+	# x2 for 120 Hz = 1752, +25% headroom (td-phase-14.md pin)
+	h.max_frames = 2200
 	await h.frames(10)
 	var title := h.scene as Control
 	h.check("title scene is a Control", title != null)
@@ -41,6 +44,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 
 	# spawn check: first grunt at tick 30, second at 90 -> exactly 1 by tick 40
 	while model.tick < 40:
@@ -76,3 +80,4 @@ func run(h: SelfTestHarness) -> void:
 	h.check("all five grunts spawned by then", model.spawned == 5, "spawned=%d" % model.spawned)
 	await h.frames(5)
 	await h.shot("battle_end")
+	h.done()
