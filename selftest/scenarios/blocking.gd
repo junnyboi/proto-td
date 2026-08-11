@@ -32,6 +32,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 	var view := game.get("content") as Node2D
 	var hud := view.find_child("BattleHud", true, false) as Label
 
@@ -75,3 +76,4 @@ func run(h: SelfTestHarness) -> void:
 	h.check("conservation at terminal", model.spawned == books)
 	await h.frames(2)
 	await h.shot("battle_end")
+	h.done()

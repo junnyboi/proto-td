@@ -407,7 +407,7 @@ const OPERATOR_SHEETS := {
 	},
 	&"guard_1":
 	{
-		"hair_light": Palette.WHITE,
+		"hair_light": Palette.PALE,
 		"hair_dark": Palette.STEEL,
 		"skin": Palette.SKIN_LIGHT,
 		"skin_shadow": Palette.SKIN,
@@ -442,7 +442,7 @@ const OPERATOR_SHEETS := {
 	},
 	&"sniper_2":
 	{
-		"hair_light": Palette.WHITE,
+		"hair_light": Palette.PALE,
 		"hair_dark": Palette.STEEL,
 		"skin": Palette.SKIN_LIGHT,
 		"skin_shadow": Palette.SKIN,
@@ -479,7 +479,9 @@ static func legend_for(op_class: OperatorDef.OpClass, sheet: Dictionary) -> Dict
 		"M": Palette.PALE,
 		"m": Palette.STEEL,
 		"n": Palette.DUSK,
-		"W": Palette.WHITE,
+		# probe reservation (P14.2): glints use PALE — exact WHITE is the
+		# sprung-flash probe color, banned from every sprite class
+		"W": Palette.PALE,
 		"w": Palette.PALE,
 		"G": Palette.GOLD,
 		"g": Palette.BRONZE,

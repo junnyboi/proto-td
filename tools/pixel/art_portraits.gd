@@ -299,7 +299,9 @@ static func build(op_id: StringName, op_class: OperatorDef.OpClass, sheet: Dicti
 	var picks: Dictionary = SHEETS[op_id]
 	var feature_legend := {
 		"o": Palette.VOID,
-		"W": Palette.WHITE,
+		# probe reservation (P14.2): eye whites/glints use PALE — exact
+		# WHITE is the sprung-flash probe color, banned from portraits
+		"W": Palette.PALE,
 		"I": family[2],
 		"i": family[1],
 	}
@@ -316,14 +318,14 @@ static func build(op_id: StringName, op_class: OperatorDef.OpClass, sheet: Dicti
 	var hair_legend := {
 		"H": sheet["hair_light"],
 		"h": sheet["hair_dark"],
-		"G": Palette.WHITE,
+		"G": Palette.PALE,
 		"a": family[1],
 		"A": family[2],
 	}
 	_stamp(img, _typed(HAIR[op_id]), hair_legend, Vector2i.ZERO)
 	var sig_legend := {
 		"o": Palette.VOID,
-		"W": Palette.WHITE,
+		"W": Palette.PALE,
 		"w": Palette.PALE,
 		"M": Palette.STEEL,
 		"G": Palette.GOLD,
@@ -335,8 +337,8 @@ static func build(op_id: StringName, op_class: OperatorDef.OpClass, sheet: Dicti
 	# v2 fidelity pass: eye glint (life), optional blush (warmth), and the
 	# bust composed onto a class-colored card so it never floats on UI gray
 	if GLINT_EYES.has(String(picks["eyes"])):
-		img.set_pixel(LEFT_EYE_AT.x + 1, LEFT_EYE_AT.y + 1, Palette.WHITE)
-		img.set_pixel(RIGHT_EYE_AT.x + 1, RIGHT_EYE_AT.y + 1, Palette.WHITE)
+		img.set_pixel(LEFT_EYE_AT.x + 1, LEFT_EYE_AT.y + 1, Palette.PALE)
+		img.set_pixel(RIGHT_EYE_AT.x + 1, RIGHT_EYE_AT.y + 1, Palette.PALE)
 	if picks.get("blush", false):
 		for at: Vector2i in [LEFT_CHEEK_AT, RIGHT_CHEEK_AT]:
 			img.set_pixel(at.x, at.y, Palette.ROSE)

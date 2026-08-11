@@ -26,6 +26,7 @@ func run(h: SelfTestHarness) -> void:
 	_send_f12()
 	await h.frames(3)
 	h.check("F12 opens the overlay", debug.call("is_open"))
+	h.expect_done()
 	debug.call("toggle")
 	await h.frames(2)
 	h.check("seam toggle closes it", not debug.call("is_open"))
@@ -129,6 +130,7 @@ func run(h: SelfTestHarness) -> void:
 	await h.physics_frames(10)
 	h.check("4x is ticking", model.tick > frozen_tick)
 	debug.call("set_speed", 1.0)
+	h.done()
 
 
 func _send_f12() -> void:
