@@ -9,7 +9,13 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: tag `poc-v1-audit` (commit `218aaea`).
+- Build under test: **`master` ≥ `56f8001`** (2026-08-11 lineage — includes the P12 iso view,
+  the P13 battle controls, and the phase-14 remediation; the comprehensive build audit ran at
+  `200aec5`). The original pin `poc-v1-audit` (`218aaea`) is superseded — do not playtest the
+  old tag; it predates the iso conversion this script's shot references assume.
+- **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
+  music. Every audio question in this script is N/A — judge visuals only, and do not log the
+  silence as a defect.
 
 ## 2. The run
 
@@ -21,11 +27,11 @@ fair vs cheap. Per stage, three passes:
 | Stage | The lesson that should land | Juice moments to notice |
 |---|---|---|
 | S1 First Stand | blocking is the game — melee ON the road stops them | deploy ritual (drag slowdown, landing dust), wave banners, kill sparks |
-| S2 Tempo | you feel DP-poor; opening with the Vanguard matters | leak alarm (red frame + alarm) when the rush gets through |
+| S2 Tempo | you feel DP-poor; opening with the Vanguard matters | leak alarm (red frame + shake) when the rush gets through |
 | S3 The Choke | the 1-wide choke begs for a Spike Plate | trap snap on trigger |
 | S4 Air Raid | drones sail over your blockers — Snipers or lose | tracer fire; drone kill cadence |
-| S5 High Ground | spellcasters cluster; one Bolt erases a cluster | bolt zap + burst; elevated Casters |
-| S6 Turncoat | **the charm moment**: charm the lead heavy, watch it turn and fight its own wave | conversion swirl + hearts + slow-beat + chime |
+| S5 High Ground | spellcasters cluster; one Bolt erases a cluster | bolt burst; elevated Casters |
+| S6 Turncoat | **the charm moment**: charm the lead heavy, watch it turn and fight its own wave | conversion swirl + hearts + slow-beat |
 | S7 Full Kit | everything at once; spend every tool on time | overlapping juice under pressure |
 | S8 The Gatecrasher | the boss is charm-immune — try to charm it anyway and watch it refuse; mastery, not the panic button | victory stamp + stars on the final clear |
 
@@ -53,11 +59,14 @@ fair vs cheap. Per stage, three passes:
 
 - Deploy: is the 0.3× drag slowdown deliberate or annoying? Dust/crouch readable?
 - Skill flash: placement/read? Does the burst ring register?
-- Kill sparks: readable at 1×? Too much at 12 concurrent? Kill-audio spam at high rates?
+- Kill sparks: readable at 1×? Too much at 12 concurrent?
 - Leak alarm: does it read as "my fault, fix the hole" urgency? Shake amplitude ok?
 - Banner rhythm: does WAVE N landing feel like a beat? Star stagger on the stamp?
 - Trap snap: sharp enough? Tar shimmer visible without being noisy?
-- Charm beat: is the 0.5× beat + swirl + chime a *moment*? Chime warmth?
+- Charm beat: is the 0.5× beat + swirl a *moment*?
+- Audio (deploy thump, kill ticks, leak alarm sound, trap snap, charm chime, wave/victory
+  stings): **N/A by design** — the build is deliberately silent (deviation D-SFX). Skip every
+  audio judgment; the original questions return with the audio.
 - Art v2: does the warm road read as "their lane"? Do operators vs enemies separate cleanly
   in a messy fight (flagged from the audit's shot review)? Portrait cards charming?
 
@@ -86,7 +95,8 @@ JUICE_VERDICT.md.
 
 ## Phase 12 note (iso view conversion, 2026-08-11)
 
-The battle renders in 2:1 isometric from P12 on: shot references in the
+The battle renders in 2:1 isometric from P12 on (included in the §1 build pin): shot
+references in the
 round script now correspond to the iso baselines under `artifacts/`
 (diamond terrain, lifted ELEVATED tiles with cliff walls, feet-anchored
 sprites, diamond footprint overlays). The grid auto-fits the window and
