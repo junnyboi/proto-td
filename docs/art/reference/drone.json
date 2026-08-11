@@ -1,0 +1,6 @@
+{
+ "generator": "tools/artgen/gen_drone.py",
+ "iterations": 7,
+ "lint": "clean",
+ "spec_name": "The Unblinking"
+}

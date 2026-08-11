@@ -1,0 +1,6 @@
+{
+  "generator": "tools/artgen/gen_grunt.py",
+  "iterations": 5,
+  "lint": "clean",
+  "spec_name": "Gnarl"
+}

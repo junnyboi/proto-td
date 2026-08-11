@@ -1,0 +1,6 @@
+{
+  "generator": "tools/artgen/gen_mini_boss.py",
+  "iterations": 4,
+  "lint": "clean",
+  "spec_name": "The Warden"
+}

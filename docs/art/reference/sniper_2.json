@@ -1,0 +1,6 @@
+{
+  "generator": "tools/artgen/gen_sniper_2.py",
+  "iterations": 9,
+  "lint": "clean",
+  "spec_name": "Liriel Vess"
+}
