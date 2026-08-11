@@ -103,3 +103,13 @@ for human-round verdicts (don't change numbers before diagnosing — learnings �
 - Items 1/3/4/6: unchanged by P10/Lane A; all pixel checks re-proven at the frozen hash with
   zero skips (FINAL_REPORT §3).
 - The **final verdict slot stays open** for the polish round (acceptance #12).
+
+## Phase 12 note (iso view conversion, 2026-08-11)
+
+All juice anchors moved with the view's projection seam (kill spark, charm
+swirl, deploy dust, skill burst now anchor via `cell_center`/`screen_of`;
+the juice layer draws in its own z band above the grid). Magnitudes,
+lifetimes, and every pinned frame count are UNCHANGED — the model-untouched
+oracle (cross-process replay vs the merge-base baseline) is byte-identical.
+Feel verdicts remain open for L7; the iso re-read adds one question: do the
+leak shake (x-only) and the charm beat still land on the diamond grid?

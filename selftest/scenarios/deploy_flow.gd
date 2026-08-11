@@ -135,12 +135,20 @@ func run(h: SelfTestHarness) -> void:
 	h.check("ELEVATED op deploys on the E cell", ok_elev)
 	h.check("sniper on the field", model.alive_unit_at(ELEV_CELL) != null)
 	await h.frames(3)
-	# HP bar rides the lifted body (P12.2: assert, don't assume)
+	# HP bar rides the lifted body (P12.2: assert, don't assume). The whole
+	# unit column scales with the grid: bar local y is [-66, -61] from the
+	# face point, so the band must be s-scaled or it probes below the bar
+	# (the unscaled version passed only when a passing enemy's bar drifted
+	# through it — wrong pixels, right color).
+	var s := float(view.call("grid_scale"))
 	var img_sniper := await h.shot_grab("elevated_sniper")
 	h.check_pixels(
 		"HP fill visible above the lifted sniper", img_sniper,
 		func(im: Image) -> bool:
-			var band := Rect2i(int(lifted_pt.x) - 32, int(lifted_pt.y) - 96, 64, 96)
+			var band := Rect2i(
+				int(lifted_pt.x - 32.0 * s), int(lifted_pt.y - 70.0 * s),
+				int(64.0 * s), int(70.0 * s)
+			)
 			return SelfTestProbes.color_in_rect(im, band, Color("a7f070"), 0.05) > 10,
 	)
 	# raw click on the LIFTED face opens the retreat chip: real-input proof

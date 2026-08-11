@@ -219,12 +219,16 @@
     "cross-process replay identical vs fresh merge-base baseline; sim/ data/ diff empty",
     "verify.sh --full ALL GREEN, zero pixel skips"
    ],
-   "status": "building",
+   "status": "passing",
    "scenarios": [
     "iso_projection_floor",
-    "deploy_flow"
+    "deploy_flow",
+    "assets_floor"
    ],
-   "commits": []
+   "commits": [
+    "27c95c7",
+    "84026cc"
+   ]
   }
  ]
 }

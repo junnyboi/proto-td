@@ -145,7 +145,25 @@ func shot_grab(shot_name: String) -> Image:
 	if DisplayServer.get_name() == "headless":
 		print("[SHOT-SKIPPED] " + shot_name)
 		return null
-	await RenderingServer.frame_post_draw
+	# macOS suspends drawing for fully-occluded windows (batch verify opens
+	# each scenario's window behind the active app), so a bare
+	# frame_post_draw can wait forever while process_frame spins uncapped —
+	# the watchdog then reds out at the first late shot. Force a draw, but
+	# never await the signal unbounded: after a frame deadline, grab the
+	# last-rendered texture (best effort beats an infinite hang; the
+	# foregrounding in _run makes the deadline path rare).
+	var drawn := [false]
+	var on_draw := func() -> void: drawn[0] = true
+	RenderingServer.frame_post_draw.connect(on_draw, CONNECT_ONE_SHOT)
+	RenderingServer.force_draw()
+	var deadline := 30
+	while not drawn[0] and deadline > 0:
+		deadline -= 1
+		await process_frame
+	if not drawn[0]:
+		if RenderingServer.frame_post_draw.is_connected(on_draw):
+			RenderingServer.frame_post_draw.disconnect(on_draw)
+		print("[SHOT-STALE] %s (no draw within deadline — occluded window?)" % shot_name)
 	var img := root.get_texture().get_image()
 	var file := "%s/%s.png" % [_shots_dir, shot_name]
 	img.save_png(ProjectSettings.globalize_path(file))
@@ -195,6 +213,11 @@ func _run() -> void:
 		ProjectSettings.get_setting("display/window/size/viewport_width"),
 		ProjectSettings.get_setting("display/window/size/viewport_height"),
 	)
+	# occlusion guard: batch runs spawn each scenario's window behind the
+	# active app and macOS suspends drawing for fully-covered windows;
+	# foreground the test window so shots and pixel probes see live frames
+	if DisplayServer.get_name() != "headless":
+		DisplayServer.window_move_to_foreground(DisplayServer.MAIN_WINDOW_ID)
 	var shield := SelfTestInputShield.new()
 	shield.name = "RealInputShield"
 	root.add_child(shield)
