@@ -64,6 +64,12 @@ repeated mistake and never shrinks.
   builds convert text resources to binary and list `<name>.tres.remap`, so a bare
   `ends_with(".tres")` scan ships EMPTY catalogs (operators/traps/spells/stages) while running
   fine from source. Load by the original `.tres` path; it resolves through the remap.
+- `editor/export/convert_text_resources_to_binary` stays **false** (pinned in project.godot):
+  the 4.7.1 export-time converter silently drops `PackedStringArray` @export fields from
+  `script_class` .tres (StageDef.grid_rows shipped empty — no terrain, no deployable tiles —
+  while paths/waves survived; a runtime `ResourceSaver` round-trip keeps the field, so only
+  the exporter is broken). Localize exported-data bugs natively, no browser needed:
+  `godot --main-pack <exported.pck> -s res://tools/<probe>.gd`.
 
 ## Architecture rules (numbered — violation = rework)
 
