@@ -7,6 +7,10 @@ extends RefCounted
 ## constants (step_units, atk, aerial, charm_immune...) are pinned by
 ## def_id and stay out. Extracted from battle_model.gd at the Phase 7
 ## file-size budget; the field order is append-only.
+## Float channel (P14 doc): skill-effect params are the ONE non-integer
+## input — quantized x1000 at hash time in _append_unit; params must stay
+## within that resolution or the hash under-reads them (covered by the
+## paranoia table in test_hash_paranoia.gd).
 
 
 static func of(m: BattleModel) -> int:

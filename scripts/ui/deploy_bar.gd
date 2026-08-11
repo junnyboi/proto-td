@@ -64,14 +64,30 @@ func setup(
 	size = get_viewport().get_visible_rect().size
 	_build_slots(_op_defs)
 	_build_overlays()
-	get_viewport().size_changed.connect(_relayout)
 
 
-## Dynamic canvas fit: the bar owns its layout on window/viewport resize.
-func _relayout() -> void:
+## Dynamic canvas fit: CALLED BY battle_view._relayout() after the grid
+## scale recomputes (P14 — a self-owned size_changed listener raced the
+## view's recompute and re-derived footprints from the STALE scale).
+## Mid-placement overlays re-derive from the live grid scale.
+func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	if _slot_box != null:
 		_slot_box.position = Vector2(16, size.y - BAR_HEIGHT)
+	if _cursor_rect != null:
+		_cursor_rect.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
+		if _cursor_rect.visible:
+			_update_placement_hover()
+	if _placement_op != &"" or _placement_trap != &"":
+		for child: Node in _highlight_root.get_children():
+			child.queue_free()
+		_show_valid_highlights()
+	if _pending_cell.x >= 0:
+		for facing: UnitState.Facing in _facing_buttons:
+			var spec: Dictionary = FACING_BUTTONS[facing]
+			var btn: Button = _facing_buttons[facing]
+			var center: Vector2 = view.call("cell_center", _pending_cell + (spec["offset"] as Vector2i))
+			btn.position = center - btn.get_combined_minimum_size() * 0.5
 
 
 func _process(_delta: float) -> void:
@@ -145,9 +161,14 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.button_down.connect(_start_placement.bind(op_id))
 		box.add_child(slot)
 		_slots[op_id] = slot
-	var trap_ids: Array = _trap_defs.keys()
-	trap_ids.sort()
-	for trap_id: StringName in trap_ids:
+	# String-copy sort (P14): StringName sort is interning-ordered — slot
+	# order would vary across launches
+	var trap_names: Array = []
+	for key: StringName in _trap_defs:
+		trap_names.append(String(key))
+	trap_names.sort()
+	for trap_name: String in trap_names:
+		var trap_id := StringName(trap_name)
 		var def: TrapDef = _trap_defs[trap_id]
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
@@ -296,7 +317,8 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		return
 	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
 	# its skill; the retreat chip only opens while the skill is not ready.
-	if unit.sp_cost > 0 and unit.sp == unit.sp_cost:
+	# Readiness comes from the verb's own validator (rule 7, P14).
+	if unit.is_skill_ready():
 		model.apply_action([&"trigger_skill", unit.id])
 		_hide_retreat_chip()
 		return

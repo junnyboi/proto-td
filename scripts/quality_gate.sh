@@ -33,8 +33,15 @@ done
 [[ $OK -eq 1 ]] || fail "tier1: quit_reason '$QUIT_REASON' not in allowed set [$(echo $ALLOWED | tr ' ' ',')]"
 [[ "$TICKS" -ge "$MIN_TICKS" ]] || fail "tier1: ticks $TICKS < min_ticks $MIN_TICKS"
 
+# Tier 2 stamp honesty (P14.2): the gate reports how many bands are DEFINED,
+# never that they were evaluated — no evaluator exists yet (human round 1
+# writes the bands; the evaluator is that round's companion work). Defined
+# bands without an evaluator must red, not silently GO.
 BAND_COUNT=$(jq -r '.tier2_balance.bands | length' "$THRESHOLDS")
+if [[ "$BAND_COUNT" -gt 0 ]]; then
+  fail "tier2: $BAND_COUNT bands defined but no evaluator implemented — refusing to stamp an unevaluated GO"
+fi
 jq -n --arg verdict "GO" --argjson bands "$BAND_COUNT" \
-  '{verdict: $verdict, failures: [], tier2_bands_evaluated: $bands}' > "$GATE_OUT"
+  '{verdict: $verdict, failures: [], tier2_bands_defined: $bands}' > "$GATE_OUT"
 echo "[GATE] GO (tier1 pass; $BAND_COUNT tier-2 bands defined)"
 exit 0

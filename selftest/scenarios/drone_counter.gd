@@ -28,6 +28,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 	var view := game.get("content") as Node2D
 	var hud := view.find_child("BattleHud", true, false) as Label
 	var drones_ever_blocked := false
@@ -96,6 +97,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("HUD shows CLEAR", hud != null and hud_text.contains("CLEAR"), hud_text)
 	await h.frames(2)
 	await h.shot("battle_end")
+	h.done()
 
 
 func _enemy_or_null(model: BattleModel, enemy_id: int) -> EnemyState:

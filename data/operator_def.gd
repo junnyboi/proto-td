@@ -21,6 +21,9 @@ enum Placement { GROUND, ELEVATED }
 @export var range_offsets: Array[Vector2i] = []
 @export var placement: Placement = Placement.GROUND
 @export var dp_generation_interval_ticks: int = 0
+## square splash side length for basic attacks; 0 = single target (P14:
+## moved out of unit_state logic — rule 4)
+@export var splash_dim: int = 0
 @export var skill: SkillDef = null
 @export var sprite_id: StringName = &""
 @export var portrait_id: StringName = &""

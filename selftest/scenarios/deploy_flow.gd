@@ -14,6 +14,9 @@ const SEAM_CELL := Vector2i(1, 0)
 
 
 func run(h: SelfTestHarness) -> void:
+	# measured 169 frames used in the audit artifact; x2 for 120 Hz ~= 340,
+	# x2 margin (td-phase-14.md pin)
+	h.max_frames = 700
 	await h.frames(10)
 	var game := h.autoload("Game")
 	game.call("start_battle", game.get("default_stage_id"))
@@ -22,6 +25,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 	var view := game.get("content") as Node2D
 
 	var bar := view.find_child("DeployBar", true, false)
@@ -157,3 +161,4 @@ func run(h: SelfTestHarness) -> void:
 	await h.click_view(view.call("cell_center", ELEV_CELL))
 	await h.frames(3)
 	h.check("lifted-face click selects the sniper", chip != null and chip.visible)
+	h.done()

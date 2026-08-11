@@ -43,7 +43,8 @@ for human-round verdicts (don't change numbers before diagnosing — learnings �
   parent's ≥0.9× band holds with slack). Not expressible: whether 12 concurrent sparks read as
   "a lot" or as noise.
 - Escalations: none.
-- Open for L7: spark size at 1×, audio spam feel at high kill rates (audio throttle is 1/frame).
+- Open for L7: spark size at 1×. (Kill-audio spam question **waived by D-SFX** — the 1/frame
+  throttle and the `sfx_played` counts stay wired for the day audio returns.)
 
 ## Item 4 — Leak alarm
 - Specced before implementation: yes
@@ -73,7 +74,7 @@ for human-round verdicts (don't change numbers before diagnosing — learnings �
   a period apart differ while occupied, constant while empty. `sfx_played:trap_snap` ==
   `trap_triggers` exactly.
 - Escalations: none.
-- Open for L7: shimmer subtlety, snap audio sharpness.
+- Open for L7: shimmer subtlety. (Snap-audio sharpness question **waived by D-SFX**.)
 
 ## Item 7 — Charm conversion
 - Specced before implementation: yes
@@ -82,14 +83,19 @@ for human-round verdicts (don't change numbers before diagnosing — learnings �
   1.0 after `charm_beat_frames`; `sfx_played:charm` == `spells_cast_charm`. The CHARMED_COLOR
   recolor is the palette swap of record until Lane A's sprite.
 - Escalations: none.
-- Open for L7: swirl+hearts charm (pun intended), beat length, chime warmth.
+- Open for L7: swirl+hearts charm (pun intended), beat length. (Chime-warmth question
+  **waived by D-SFX**.)
 
 ## Known holes (deliberate)
-- **Bolt impact visual**: no gated checklist row (§2.1.11) — SFX only (`bolt_zap`). If human
-  rounds flag the cast as unreadable, a target-cell burst needs a cast-target model record.
+- **Bolt impact visual**: no gated checklist row (§2.1.11). Originally mitigated by SFX only
+  (`bolt_zap`); that mitigation **no longer exists** — the SFX were removed and the silence
+  recorded as deviation D-SFX, so the hole is now **fully unmitigated**: a Bolt cast has no
+  dedicated impact feedback at all. If human rounds flag the cast as unreadable, a target-cell
+  burst needs a cast-target model record.
 - **Shake/hit-stop whitelist**: `boss_hit` entry unwired until a boss-attack record exists
   (Phase 10); hit-stop config defaults to 0 frames everywhere (wired, reserved).
-- **Music**: silent by design (Lane A / polish).
+- **Audio (SFX + music)**: silent by owner decision — deviation D-SFX (phase 14); the
+  `sfx_played` telemetry seam stays wired.
 
 ## Post-P10 / final-audit status pass (2026-08-09, frozen at `218aaea`)
 
@@ -113,3 +119,17 @@ lifetimes, and every pinned frame count are UNCHANGED — the model-untouched
 oracle (cross-process replay vs the merge-base baseline) is byte-identical.
 Feel verdicts remain open for L7; the iso re-read adds one question: do the
 leak shake (x-only) and the charm beat still land on the diamond grid?
+
+## Phase 14 note — audio waived by owner decision (D-SFX, 2026-08-11)
+
+The placeholder synth SFX were removed at `81ec642`; the owner then ruled the silence
+deliberate: no SFX, no music, until real audio exists. Recorded as numbered deviation
+**D-SFX** (FEATURES.json `deviations` + FINAL_REPORT.md §9). Consequences for this file:
+
+- Every open audio question above (kill-audio spam, snap sharpness, chime warmth, and the
+  audio halves of the item entries) is **closed as waived-by-decision**, not answered — the
+  questions return verbatim when audio does.
+- The `sfx_played` machine checks in items 1/3/4/5/6/7 remain **true and green**: `Sfx.play(id)`
+  is a telemetry-only stub, so the counts still prove event wiring. They are wiring evidence,
+  not audibility evidence.
+- Restoration recipe: `git show 81ec642^:tools/gen_sfx.gd`.

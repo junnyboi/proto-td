@@ -79,6 +79,10 @@ var _tracer_frames_left: Dictionary = {}
 var _skill_seen_tick: Dictionary = {}
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
+var _continue_btn: Button = null
+var _deploy_bar: DeployBar = null
+var _spell_bar: SpellBar = null
+var _controls: BattleControls = null
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
@@ -167,21 +171,23 @@ func _ready() -> void:
 	for trap_id: StringName in Game.loadout_trap_ids():
 		if _trap_defs.has(trap_id):
 			bar_traps[trap_id] = _trap_defs[trap_id]
-	var bar := DeployBar.new()
-	bar.name = "DeployBar"
-	bar.z_index = UI_OVERLAY_Z
-	add_child(bar)
-	bar.setup(model, self, _op_defs, bar_traps)
-	var spells := SpellBar.new()
-	spells.name = "SpellBar"
-	spells.z_index = UI_OVERLAY_Z
-	add_child(spells)
-	spells.setup(model, self, Game.loadout_spell_ids())
-	var controls := BattleControls.new()
-	controls.name = "BattleControls"
-	controls.z_index = UI_OVERLAY_Z
-	add_child(controls)
-	controls.setup(model, self)
+	_deploy_bar = DeployBar.new()
+	_deploy_bar.name = "DeployBar"
+	_deploy_bar.z_index = UI_OVERLAY_Z
+	add_child(_deploy_bar)
+	_deploy_bar.setup(model, self, _op_defs, bar_traps)
+	_spell_bar = SpellBar.new()
+	_spell_bar.name = "SpellBar"
+	_spell_bar.z_index = UI_OVERLAY_Z
+	add_child(_spell_bar)
+	_spell_bar.setup(model, self, Game.loadout_spell_ids())
+	_controls = BattleControls.new()
+	_controls.name = "BattleControls"
+	_controls.z_index = UI_OVERLAY_Z
+	add_child(_controls)
+	_controls.setup(model, self)
+	# the view is the ONE resize owner: it recomputes the grid scale first,
+	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
 
 
@@ -259,6 +265,22 @@ func _process(_delta: float) -> void:
 		_portrait_flash_frames -= 1
 		if _portrait_flash_frames == 0 and _portrait_flash != null:
 			_portrait_flash.visible = false
+	_age_view_transients()
+
+
+## Rule 10 (P14): tracer and attack-pose countdowns age here in RENDER
+## frames — the physics-paced _project() only edge-detects and draws, so
+## lifetimes match every other juice item at any refresh rate and keep
+## aging through hit-stop consistently.
+func _age_view_transients() -> void:
+	for uid: int in _tracer_frames_left.keys():
+		var left := int(_tracer_frames_left[uid])
+		if left > 0:
+			_tracer_frames_left[uid] = left - 1
+	for uid: int in _attack_pose_left.keys():
+		var left := int(_attack_pose_left[uid])
+		if left > 0:
+			_attack_pose_left[uid] = left - 1
 
 
 ## Single owner of Engine.time_scale (§2.1.3): overlapping juice slowdowns
@@ -365,6 +387,7 @@ func _detect_result_stamp() -> void:
 	# one (Phase 13): quick battles used to dead-end on the stamp.
 	var next := Button.new()
 	next.name = "ContinueButton"
+	_continue_btn = next
 	next.text = "Continue"
 	# Phase 13b prominence: the largest button on screen, focused so Enter
 	# (and Space, once terminal) also proceeds — the "what do I click now"
@@ -502,10 +525,25 @@ func _relayout() -> void:
 	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
 	_grid_root.scale = Vector2.ONE * _grid_scale
 	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
+	# the shake oscillates around a cached origin — re-anchor it or the
+	# next shake teleports the grid to the pre-resize spot (P14)
+	if _juice != null:
+		_juice.refresh_base()
 	if _backdrop != null:
 		_backdrop.size = viewport
 	if _portrait_flash != null:
 		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
+	if _continue_btn != null and is_instance_valid(_continue_btn):
+		_continue_btn.position = Vector2(
+			(viewport.x - _continue_btn.get_combined_minimum_size().x) * 0.5,
+			viewport.y * 0.5 + 120.0
+		)
+	if _deploy_bar != null:
+		_deploy_bar.relayout()
+	if _spell_bar != null:
+		_spell_bar.relayout()
+	if _controls != null:
+		_controls.relayout()
 
 
 func _build_hud() -> void:
@@ -711,11 +749,9 @@ func _project_tracers() -> void:
 				IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)),
 				IsoProjection.face_center(u.last_attack_cell),
 			])
-		var frames_left := int(_tracer_frames_left.get(u.id, 0))
+		# aging happens in _process (rule 10, P14) — here we only project
 		if _tracer_lines.has(u.id):
-			(_tracer_lines[u.id] as Line2D).visible = frames_left > 0
-		if frames_left > 0:
-			_tracer_frames_left[u.id] = frames_left - 1
+			(_tracer_lines[u.id] as Line2D).visible = int(_tracer_frames_left.get(u.id, 0)) > 0
 
 
 func _project_units() -> void:
@@ -746,10 +782,9 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	if u.last_attack_tick >= 0 and u.last_attack_tick != int(_unit_attack_seen.get(u.id, -1)):
 		_unit_attack_seen[u.id] = u.last_attack_tick
 		_attack_pose_left[u.id] = ATTACK_POSE_FRAMES
-	var pose_left := int(_attack_pose_left.get(u.id, 0))
+	# aging happens in _process (rule 10, P14) — here we only pick the frame
 	var frame := 0
-	if pose_left > 0:
-		_attack_pose_left[u.id] = pose_left - 1
+	if int(_attack_pose_left.get(u.id, 0)) > 0:
 		frame = 2
 	else:
 		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + u.id) % 2
@@ -765,7 +800,8 @@ func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 		return
 	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
 	fill.size.x = UNIT_PX * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
-	if u.sp == u.sp_cost:
+	# readiness from the verb's own validator (rule 7, P14)
+	if u.is_skill_ready():
 		var blink := (Engine.get_process_frames() / 8) % 2 == 0
 		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
 	else:

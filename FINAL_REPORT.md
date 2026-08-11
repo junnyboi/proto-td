@@ -122,10 +122,12 @@ session's own three:
 
 - **Juice VFX are still rect placeholders** (dust/sparks/vignette/swirl/banner/stamp) — Lane A
   deviation 5, deliberate scope; polish round owns sprite-frame VFX.
-- **Bolt has no impact visual** (P9 §2.1.11) — SFX only.
+- **Bolt has no impact visual** (P9 §2.1.11) — was mitigated by SFX only; with audio removed
+  under deviation D-SFX (§9) the hole is fully unmitigated.
 - **`boss_hit` shake whitelist entry unwired** — P10 added no boss-attack model record; the
   slot waits in `juice_config.tres`.
-- **Music silent by design** — no `MusicPlayer` yet (Lane A §6.8 / polish).
+- **All audio silent by owner decision** — deviation D-SFX (§9): no SFX playback, no
+  `MusicPlayer`; the `sfx_played` telemetry seam stays wired.
 - **`--render` Movie Maker lane not re-proven this audit** (proven once in P9; not in
   per-commit verify by design).
 - **Juice durations are render-frame counts** — visual lifetimes halve at 120 Hz vs 60 Hz
@@ -139,3 +141,29 @@ session's own three:
   td-phase-11 §6 and lands *after* this tag.
 - **Polish round** owns: Lane A VFX/portrait fidelity beyond v2, music, Bolt visual,
   `boss_hit` wiring, final `JUICE_VERDICT.md` entry.
+
+## 9. Phase 14 addendum (2026-08-11) — post-audit remediation
+
+Sections 1–8 above are the frozen record of the Phase 11 audit at `218aaea` and are preserved
+as written. Since that freeze: P12 (iso view), P13 (battle QoL), the web-export fixes, and the
+2026-08-11 **comprehensive build audit at `200aec5`** (fresh evidence ALL GREEN — verify
+`--full` 119 s, GUT twice-identical 120/22,358, cross-process replay IDENTICAL, zero pixel
+skips — plus 25 verifier-confirmed findings). Phase 14 (td-phase-14.md) is the remediation
+round for those findings. This round's entries in this file:
+
+1. **Deviation D-SFX** (owner decision, 2026-08-11): **audio is intentionally absent** — the
+   placeholder synth SFX were removed at `81ec642` and the owner ruled the silence deliberate;
+   the presentation-floor audio rule is **waived** until audio returns. The `sfx_played`
+   telemetry seam stays wired (event-wiring evidence). Restoration recipe:
+   `git show 81ec642^:tools/gen_sfx.gd`. Recorded in FEATURES.json `deviations`; PLAYTEST.md
+   audio questions struck N/A-by-design; JUICE_VERDICT.md open audio questions closed as
+   waived. The defect the audit flagged was the *unrecorded* silence, not the silence.
+2. **s6 wave-window retune** (phase 14.3): `wave_starts` `(0, 500, 900)` → `(0, 500)` — the
+   last spawn is tick 690, so the 900 boundary produced a ghost "WAVE 3" banner with zero
+   spawns and a phantom third Charm window. `bot_stage_06`'s timeline was rewritten to one
+   charm per remaining window (tick 320 → heavy 3 in window 0; tick 700 → heavy 8 in
+   window 1). New terminal readout (supersedes the s6 row in §3's frozen-build table):
+   **CLEAR, 1 leak, 2 stars, terminal tick 1319**; `bot_stage_06_no_charm` still DEFEATs at
+   4 leaks — the charm differential holds untouched.
+3. **Ledger backfill**: the 14 hollow `commits` rows in FEATURES.json (P1–P11, LA, LB, LC)
+   now point at their phase commits; a P14 row tracks this round.

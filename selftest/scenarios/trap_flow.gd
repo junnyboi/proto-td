@@ -25,6 +25,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 	var view := game.get("content") as Node2D
 	var telemetry := h.autoload("Telemetry")
 
@@ -112,3 +113,4 @@ func run(h: SelfTestHarness) -> void:
 	h.check("tar is permanent", model.alive_trap_at(TAR_CELL) != null)
 	await h.frames(2)
 	await h.shot("spike_after")
+	h.done()

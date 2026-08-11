@@ -25,6 +25,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("battle model exists", model != null)
 	if model == null:
 		return
+	h.expect_done()
 	var view := game.get("content") as Node2D
 	var telemetry := h.autoload("Telemetry")
 
@@ -149,3 +150,4 @@ func run(h: SelfTestHarness) -> void:
 	h.check("charm_convert lifecycle event fired", lifecycle.has("charm_convert"))
 	await h.frames(2)
 	await h.shot("charm_victory")
+	h.done()
