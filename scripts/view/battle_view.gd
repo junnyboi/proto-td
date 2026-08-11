@@ -7,21 +7,24 @@ extends Node2D
 ## outcomes). Phase 1 renders ColorRect placeholders; Lane A sprites replace
 ## them via the asset manifest without touching this flow.
 
-const TILE_PX := 64.0
 const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
 
-const TILE_COLORS := {
-	StageDef.Tile.VOID: Color("1a1c2c"),
-	StageDef.Tile.GROUND: Color("566c86"),
-	StageDef.Tile.ELEVATED: Color("94b0c2"),
-	StageDef.Tile.SPAWN: Color("b13e53"),
-	StageDef.Tile.BASE: Color("3b5dc9"),
-	StageDef.Tile.BLOCKED: Color("333c57"),
-}
+## Z bands (td-phase-12 pin): grid content 0-40, UI overlays 50, juice 60,
+## HUD/flash/continue 70. z_index beats tree order, so siblings left at 0
+## would sink under the grid.
+const UI_OVERLAY_Z := 50
+const JUICE_Z := 60
+const HUD_Z := 70
+## Dynamic canvas fit: margins reserved for HUD (top) + deploy bar (bottom)
+## + side breathing room when fitting the grid to the viewport.
+const FIT_MARGIN := Vector2(48.0, 170.0)
+## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
+## no bare empty canvas.
+const BACKDROP_COLOR := Color("11131f")
 const ENEMY_COLOR := Color("ef7d57")
 const ENEMY_TYPE_COLORS := {
 	&"grunt": Color("ef7d57"),
@@ -32,8 +35,11 @@ const ENEMY_TYPE_COLORS := {
 	&"mini_boss": Color("94216a"),
 }
 const AERIAL_PX := 24.0
-const AERIAL_SHADOW_OFFSET := Vector2(2.0, 2.0)
-const AERIAL_SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.45)
+const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
+## grounded shadow = 20x10 face diamond (0.3125 of a face); aerial casts
+## the same diamond 10px further down (td-phase-12 pin)
+const SHADOW_FACE_SCALE := 0.3125
+const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
 const UNIT_PX := 64.0  # 32px art at the pinned 2x scale
 const HP_BAR_HEIGHT := 5.0
@@ -62,6 +68,9 @@ var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
+var _grid_scale := 1.0
+var _backdrop: ColorRect = null
+var _stage: StageDef = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
 var _tracer_lines: Dictionary = {}
@@ -132,10 +141,12 @@ func _ready() -> void:
 	)
 	Game.current_battle = model
 	Game.content = self
+	_stage = stage
 	_build_grid(stage)
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
 	_juice = JuiceLayer.new()
 	_juice.name = "JuiceLayer"
+	_juice.z_index = JUICE_Z
 	add_child(_juice)
 	_juice.setup(cfg, _grid_root)
 	_build_hud()
@@ -147,6 +158,7 @@ func _ready() -> void:
 		(get_viewport_rect().size.x - PORTRAIT_FLASH_PX) * 0.5, 56.0
 	)
 	_portrait_flash.visible = false
+	_portrait_flash.z_index = HUD_Z
 	add_child(_portrait_flash)
 	# loadout gating is UI-only (td-phase-6-7 §2.1): the bars see the
 	# unlocked sets while a campaign runs, the full catalogs otherwise —
@@ -157,26 +169,51 @@ func _ready() -> void:
 			bar_traps[trap_id] = _trap_defs[trap_id]
 	var bar := DeployBar.new()
 	bar.name = "DeployBar"
+	bar.z_index = UI_OVERLAY_Z
 	add_child(bar)
 	bar.setup(model, self, _op_defs, bar_traps)
 	var spells := SpellBar.new()
 	spells.name = "SpellBar"
+	spells.z_index = UI_OVERLAY_Z
 	add_child(spells)
 	spells.setup(model, self, Game.loadout_spell_ids())
 	var controls := BattleControls.new()
 	controls.name = "BattleControls"
+	controls.z_index = UI_OVERLAY_Z
 	add_child(controls)
 	controls.setup(model, self)
+	get_viewport().size_changed.connect(_relayout)
 
 
-## Screen-space center of a grid cell (no camera: world == screen). The
-## deploy adapter and scenarios use these instead of assuming a zero origin.
+## Screen-space center of a grid cell's visible top face (no camera: world
+## == screen; ELEVATED faces return the LIFTED center). The deploy adapter
+## and scenarios use these instead of assuming a zero origin — this pair is
+## the projection seam (td-phase-12): all picking and synthetic input
+## migrate with it.
 func cell_center(cell: Vector2i) -> Vector2:
-	return _grid_root.position + (Vector2(cell) + Vector2.ONE * 0.5) * TILE_PX
+	var local := IsoProjection.face_center(cell, _is_lifted_cell(cell))
+	return _grid_root.position + local * _grid_scale
 
 
 func cell_at(screen_pos: Vector2) -> Vector2i:
-	return Vector2i(((screen_pos - _grid_root.position) / TILE_PX).floor())
+	var local := (screen_pos - _grid_root.position) / _grid_scale
+	return IsoProjection.pick(local, _is_lifted_cell)
+
+
+## Screen point of a continuous cell-space position (interpolated enemy
+## centers, VFX anchors). Enemies never walk ELEVATED, so no lift here.
+func screen_of(p: Vector2) -> Vector2:
+	return _grid_root.position + IsoProjection.project(p) * _grid_scale
+
+
+## Current uniform grid scale (dynamic canvas fit) — overlay footprints in
+## the UI bars size themselves by this.
+func grid_scale() -> float:
+	return _grid_scale
+
+
+func _is_lifted_cell(cell: Vector2i) -> bool:
+	return _stage != null and _stage.tile_at(cell) == StageDef.Tile.ELEVATED
 
 
 func _physics_process(delta: float) -> void:
@@ -278,7 +315,7 @@ func _detect_kills() -> void:
 			continue
 		_spark_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.spark(_grid_root.position + (pos + Vector2.ONE * 0.5) * TILE_PX)
+		_juice.spark(screen_of(pos + Vector2.ONE * 0.5))
 		Sfx.play("kill")
 
 
@@ -331,9 +368,11 @@ func _detect_result_stamp() -> void:
 	next.text = "Continue"
 	# Phase 13b prominence: the largest button on screen, focused so Enter
 	# (and Space, once terminal) also proceeds — the "what do I click now"
-	# fix from the playtest screenshot
+	# fix from the playtest screenshot. HUD z band so it never sinks under
+	# the iso grid (td-phase-12).
 	next.custom_minimum_size = Vector2(260.0, 64.0)
 	next.add_theme_font_size_override("font_size", 40)
+	next.z_index = HUD_Z
 	add_child(next)
 	var viewport := get_viewport_rect().size
 	next.position = Vector2(
@@ -394,7 +433,7 @@ func _detect_charms() -> void:
 			continue
 		_charm_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.swirl(_grid_root.position + (pos + Vector2.ONE * 0.5) * TILE_PX)
+		_juice.swirl(screen_of(pos + Vector2.ONE * 0.5))
 		juice_time_push(&"charm_beat", cfg.charm_beat_time_scale)
 		_beat_frames_left = cfg.charm_beat_frames
 		_juice.shake("charm_beat", cfg.charm_shake_amplitude_px, cfg.charm_shake_frames)
@@ -429,49 +468,41 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 
 
 func _build_grid(stage: StageDef) -> void:
+	_backdrop = ColorRect.new()
+	_backdrop.name = "Backdrop"
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backdrop.color = BACKDROP_COLOR
+	_backdrop.z_index = -20
+	_backdrop.size = get_viewport_rect().size
+	add_child(_backdrop)
 	_grid_root = Node2D.new()
 	_grid_root.name = "GridRoot"
 	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
-	_grid_root.position = (viewport - Vector2(size) * TILE_PX) * 0.5
+	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
 	add_child(_grid_root)
-	var tile_art := {
-		StageDef.Tile.VOID: &"tile_void",
-		StageDef.Tile.GROUND: &"tile_ground",
-		StageDef.Tile.ELEVATED: &"tile_elevated",
-		StageDef.Tile.SPAWN: &"tile_spawn",
-		StageDef.Tile.BASE: &"tile_base",
-		StageDef.Tile.BLOCKED: &"tile_blocked",
-	}
-	# path GROUND cells render as the warm dirt road (art v2): the enemy
-	# lane reads as a different material without any overlay or legend
-	var path_cells: Dictionary = {}
-	for i: int in stage.paths.size():
-		for cell: Vector2i in stage.path_cells(i):
-			path_cells[cell] = true
-	for y: int in size.y:
-		for x: int in size.x:
-			var tile := stage.tile_at(Vector2i(x, y))
-			var art_id: StringName = tile_art[tile]
-			if tile == StageDef.Tile.GROUND and path_cells.has(Vector2i(x, y)):
-				art_id = &"tile_road"
-			var tex := Art.texture(art_id)
-			if tex != null:
-				var sprite := TextureRect.new()
-				# projection only: never intercept GUI input meant for the grid
-				sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				sprite.texture = tex
-				sprite.stretch_mode = TextureRect.STRETCH_SCALE
-				sprite.position = Vector2(x, y) * TILE_PX
-				sprite.size = Vector2(TILE_PX, TILE_PX)
-				_grid_root.add_child(sprite)
-				continue
-			var rect := ColorRect.new()
-			rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			rect.color = TILE_COLORS[tile]
-			rect.position = Vector2(x, y) * TILE_PX + Vector2.ONE
-			rect.size = Vector2(TILE_PX, TILE_PX) - Vector2.ONE * 2.0
-			_grid_root.add_child(rect)
+	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
+	IsoGridBuilder.build_terrain(_grid_root, stage)
+
+
+## Dynamic canvas fit (td-phase-12 + browser-resize requirement): refit the
+## grid whenever the window/viewport size changes. Entities live in
+## grid-local space, so repositioning + rescaling the root relayouts the
+## whole battle for free; the UI bars own their layout and listen too.
+func _relayout() -> void:
+	if _stage == null or _grid_root == null:
+		return
+	var viewport := get_viewport_rect().size
+	var size := _stage.grid_size()
+	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
+	if _backdrop != null:
+		_backdrop.size = viewport
+	if _portrait_flash != null:
+		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 
 
 func _build_hud() -> void:
@@ -479,6 +510,7 @@ func _build_hud() -> void:
 	_hud.name = "BattleHud"
 	_hud.position = Vector2(16, 8)
 	_hud.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
+	_hud.z_index = HUD_Z
 	add_child(_hud)
 
 
@@ -491,8 +523,14 @@ func _project() -> void:
 			_enemy_rects.erase(e.id)
 		if e.alive:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
+			var center_p := pos + Vector2.ONE * 0.5
 			var rect: ColorRect = _enemy_rects[e.id]
-			rect.position = (pos + Vector2.ONE * 0.5) * TILE_PX - rect.size * 0.5
+			# feet on the face: bottom-center anchored at the projected point
+			rect.position = (
+				IsoProjection.project(center_p)
+				+ Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
+			)
+			rect.z_index = IsoProjection.entity_z(center_p)
 			_refresh_enemy_sprite(e, rect)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
@@ -530,18 +568,23 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	else:
 		rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
 		rect.size = Vector2(body_px, body_px)
-	if e.aerial:
-		var shadow := ColorRect.new()
-		shadow.name = "AerialShadow"
-		shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		shadow.color = AERIAL_SHADOW_COLOR
-		shadow.size = rect.size
-		shadow.position = AERIAL_SHADOW_OFFSET
-		shadow.show_behind_parent = true
-		rect.add_child(shadow)
+	_add_ground_shadow(rect, e.aerial)
 	_add_hp_bar(rect, body_px)
 	_grid_root.add_child(rect)
 	return rect
+
+
+## Depth cue (P12.2): every body drops a small face-diamond shadow at its
+## feet; aerial bodies cast it lower so they read as airborne.
+func _add_ground_shadow(body: ColorRect, aerial: bool) -> void:
+	var shadow := Polygon2D.new()
+	shadow.name = "Shadow"
+	shadow.color = SHADOW_COLOR
+	shadow.polygon = IsoProjection.face_polygon(SHADOW_FACE_SCALE)
+	var drop := AERIAL_SHADOW_DROP if aerial else 0.0
+	shadow.position = Vector2(body.size.x * 0.5, body.size.y + drop)
+	shadow.show_behind_parent = true
+	body.add_child(shadow)
 
 
 func _enemy_sprite_id(e: EnemyState) -> StringName:
@@ -602,13 +645,17 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 	var rect := ColorRect.new()
 	rect.name = "Trap%d" % t.id
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var cell_origin := Vector2(t.cell) * TILE_PX
+	# traps sit on GROUND path cells only — never lifted
+	var face := IsoProjection.face_center(t.cell)
 	var art_id := &"trap_tar" if t.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
 	var tex := Art.texture(art_id)
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
-		rect.size = Vector2.ONE * TILE_PX
-		rect.position = cell_origin
+		var art_size := Art.size(art_id)
+		if art_size == Vector2i.ZERO:
+			art_size = Vector2i(tex.get_width(), tex.get_height())
+		rect.size = Vector2(art_size) * SPRITE_SCALE
+		rect.position = face - rect.size * 0.5
 		var sprite := TextureRect.new()
 		sprite.name = "Sprite"
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -618,18 +665,19 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 		rect.add_child(sprite)
 	elif t.trigger == TrapDef.Trigger.CELL_AURA:
 		rect.color = TAR_OVERLAY_COLOR
-		rect.size = Vector2.ONE * (TILE_PX - 2.0)
-		rect.position = cell_origin + Vector2.ONE
+		rect.size = Vector2(IsoProjection.TILE_W - 2.0, IsoProjection.TILE_H - 2.0)
+		rect.position = face - rect.size * 0.5
 	else:
 		rect.color = TRAP_SPIKE_COLOR
 		rect.size = Vector2.ONE * TRAP_SPIKE_PX
-		rect.position = cell_origin + Vector2.ONE * ((TILE_PX - TRAP_SPIKE_PX) * 0.5)
+		rect.position = face - rect.size * 0.5
 		var core := ColorRect.new()
 		core.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		core.color = TRAP_SPIKE_CORE
 		core.size = Vector2.ONE * (TRAP_SPIKE_PX * 0.35)
 		core.position = (rect.size - core.size) * 0.5
 		rect.add_child(core)
+	rect.z_index = IsoProjection.tile_z(t.cell) + 1
 	_grid_root.add_child(rect)
 	return rect
 
@@ -654,9 +702,11 @@ func _project_tracers() -> void:
 				line.default_color = TRACER_COLOR
 				_grid_root.add_child(line)
 				_tracer_lines[u.id] = line
+			# depth from the shooter's cell (td-phase-12 pin)
+			line.z_index = IsoProjection.entity_z(Vector2(u.cell) + Vector2.ONE * 0.5)
 			line.points = PackedVector2Array([
-				(Vector2(u.cell) + Vector2.ONE * 0.5) * TILE_PX,
-				(Vector2(u.last_attack_cell) + Vector2.ONE * 0.5) * TILE_PX,
+				IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)),
+				IsoProjection.face_center(u.last_attack_cell),
 			])
 		var frames_left := int(_tracer_frames_left.get(u.id, 0))
 		if _tracer_lines.has(u.id):
@@ -776,7 +826,8 @@ func _add_sp_bar(body: ColorRect) -> void:
 
 func _make_unit_node(u: UnitState) -> Node2D:
 	var node := Node2D.new()
-	node.position = (Vector2(u.cell) + Vector2.ONE * 0.5) * TILE_PX
+	node.position = IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
+	node.z_index = IsoProjection.entity_z(Vector2(u.cell) + Vector2.ONE * 0.5)
 	var rect := ColorRect.new()
 	rect.name = "Body"
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -797,7 +848,9 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	else:
 		rect.color = OP_CLASS_COLORS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
-	rect.position = -rect.size * 0.5
+	# feet on the face: bottom-center anchored at the node origin
+	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
+	_add_ground_shadow(rect, false)
 	_add_hp_bar(rect, rect.size.x)
 	if u.sp_cost > 0:
 		_add_sp_bar(rect)
@@ -805,8 +858,11 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	var chevron := Polygon2D.new()
 	chevron.color = CHEVRON_COLOR
 	chevron.polygon = PackedVector2Array([Vector2(-5, -7), Vector2(-5, 7), Vector2(7, 0)])
-	chevron.position = Vector2.RIGHT.rotated(u.facing * PI * 0.5) * (UNIT_PX * 0.5 + 6.0)
-	chevron.rotation = u.facing * PI * 0.5
+	# grid-cardinal facing projected into iso screen space: the arrow points
+	# along the grid axis, not the screen axis (td-phase-12 pin)
+	var dir := IsoProjection.project(Vector2.RIGHT.rotated(u.facing * PI * 0.5)).normalized()
+	chevron.position = dir * (UNIT_PX * 0.5 + 6.0)
+	chevron.rotation = dir.angle()
 	node.add_child(chevron)
 	_grid_root.add_child(node)
 	return node

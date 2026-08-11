@@ -1,216 +1,237 @@
 {
-  "features": [
-    {
-      "id": "P0",
-      "title": "Repo bootstrap + harness (verify.sh, telemetry, bots, gate, ledger)",
-      "acceptance": [
-        "verify.sh green in <15s on the scaffold",
-        "boot scenario passes headless and windowed",
-        "playtest.sh bot_idle writes telemetry.json; quality_gate GO"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "boot"
-      ],
-      "commits": [
-        "1afa105"
-      ]
-    },
-    {
-      "id": "P1",
-      "title": "Battle model core: grid, paths, waves, base HP, win/loss",
-      "acceptance": [
-        "determinism oracle: same stage+seed+timeline twice -> identical state_hash every 100th tick and identical outcome",
-        "spawn conservation: spawned == alive + leaked (+ killed) at every tick",
-        "leak_limit -> DEFEAT exactness on the exact tick",
-        "boot scenario: enemies visibly traverse the path"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "boot"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P2",
-      "title": "DP economy: deploy, retreat, facing",
-      "acceptance": [
-        "DP ledger property",
-        "deploy/retreat round-trip scenario"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "deploy_flow"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P3",
-      "title": "Blocking, leaks, combat ticks",
-      "acceptance": [
-        "full conservation invariant with kills",
-        "2-block holds two, third walks past"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "blocking"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P4",
-      "title": "Five classes, absolute counters, full enemy roster",
-      "acceptance": [
-        "composition proof: all-Defender loses drone stage, +1 Sniper wins"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "drone_counter"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P5",
-      "title": "SP + operator active skills",
-      "acceptance": [
-        "skill-timing win/loss pair"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "skill_timing"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P6",
-      "title": "Traps on the path (twist)",
-      "acceptance": [
-        "trap exactness (charges, tar slow)",
-        "extended DP ledger"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "trap_flow"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P7",
-      "title": "Player spells + Charm (twist)",
-      "acceptance": [
-        "cooldown ledger",
-        "extended conservation with charm bucket",
-        "charm win/loss pair"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "charm_runback"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P8",
-      "title": "Debug mode",
-      "acceptance": [
-        "every stage reachable; every operator/trap/spell grantable"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "debug_reach"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P9",
-      "title": "Juice pass: 7 items, data-driven, falsifiable checklists",
-      "acceptance": [
-        "all seven checklists green in the render lane"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "juice_deploy",
-        "juice_kill_leak",
-        "juice_trap_charm",
-        "wave_banner_victory",
-        "skill_timing"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P10",
-      "title": "Campaign assembly: stages, unlock flow, squad select",
-      "acceptance": [
-        "full-campaign bot clear",
-        "S6 bot minus charm cast loses",
-        "bot_idle loses every stage"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "campaign_flow"
-      ],
-      "commits": []
-    },
-    {
-      "id": "P11",
-      "title": "Final audit: FINAL_REPORT.md, PLAYTEST.md, PAINPOINTS.md, JUICE_VERDICT.md",
-      "acceptance": [
-        "all rungs green vs final build with fresh evidence"
-      ],
-      "status": "passing",
-      "scenarios": [],
-      "commits": []
-    },
-    {
-      "id": "LA",
-      "title": "Lane A: pixel-art pipeline (pass 1 all assets; pass 2 portrait iteration)",
-      "acceptance": [
-        "assets_floor contact-sheet checklist green"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "assets_floor"
-      ],
-      "commits": []
-    },
-    {
-      "id": "LB",
-      "title": "Lane B: stage data authoring S1-S8 (layouts, waves, rewards)",
-      "acceptance": [
-        "stage_lint green over all eight stages"
-      ],
-      "status": "passing",
-      "scenarios": [],
-      "commits": []
-    },
-    {
-      "id": "LC",
-      "title": "Lane C: bot timeline authoring S1-S8 + differentials",
-      "acceptance": [
-        "bot_stage_01..08 clear within leak bands",
-        "bot_stage_06_no_charm loses"
-      ],
-      "status": "passing",
-      "scenarios": [],
-      "commits": []
-    },
-    {
-      "id": "P13",
-      "title": "Battle QoL: pause/speed/resign controls + universal terminal results flow",
-      "acceptance": [
-        "resign is a model verb: immediate DEFEAT (DC1), terminal reject with zero state change, determinism oracle green on a resign timeline",
-        "terminal Continue button on every battle end (campaign AND quick); results screen mode-aware Retry/Continue + Back to Title with session reset",
-        "in-battle controls drive only the ticks_per_frame_scale seam and the resign verb: paused dtick == 0 exactly, speed readbacks exact, cancel leaves RUNNING",
-        "verify.sh --full green: controls eat no grid clicks, no outcome or telemetry band drifts"
-      ],
-      "status": "passing",
-      "scenarios": [
-        "resign_flow",
-        "battle_controls"
-      ],
-      "commits": [
-        "bbf4759",
-        "8dfbfa3"
-      ]
-    }
-  ]
+ "features": [
+  {
+   "id": "P0",
+   "title": "Repo bootstrap + harness (verify.sh, telemetry, bots, gate, ledger)",
+   "acceptance": [
+    "verify.sh green in <15s on the scaffold",
+    "boot scenario passes headless and windowed",
+    "playtest.sh bot_idle writes telemetry.json; quality_gate GO"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "boot"
+   ],
+   "commits": [
+    "1afa105"
+   ]
+  },
+  {
+   "id": "P1",
+   "title": "Battle model core: grid, paths, waves, base HP, win/loss",
+   "acceptance": [
+    "determinism oracle: same stage+seed+timeline twice -> identical state_hash every 100th tick and identical outcome",
+    "spawn conservation: spawned == alive + leaked (+ killed) at every tick",
+    "leak_limit -> DEFEAT exactness on the exact tick",
+    "boot scenario: enemies visibly traverse the path"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "boot"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P2",
+   "title": "DP economy: deploy, retreat, facing",
+   "acceptance": [
+    "DP ledger property",
+    "deploy/retreat round-trip scenario"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "deploy_flow"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P3",
+   "title": "Blocking, leaks, combat ticks",
+   "acceptance": [
+    "full conservation invariant with kills",
+    "2-block holds two, third walks past"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "blocking"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P4",
+   "title": "Five classes, absolute counters, full enemy roster",
+   "acceptance": [
+    "composition proof: all-Defender loses drone stage, +1 Sniper wins"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "drone_counter"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P5",
+   "title": "SP + operator active skills",
+   "acceptance": [
+    "skill-timing win/loss pair"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "skill_timing"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P6",
+   "title": "Traps on the path (twist)",
+   "acceptance": [
+    "trap exactness (charges, tar slow)",
+    "extended DP ledger"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "trap_flow"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P7",
+   "title": "Player spells + Charm (twist)",
+   "acceptance": [
+    "cooldown ledger",
+    "extended conservation with charm bucket",
+    "charm win/loss pair"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "charm_runback"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P8",
+   "title": "Debug mode",
+   "acceptance": [
+    "every stage reachable; every operator/trap/spell grantable"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "debug_reach"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P9",
+   "title": "Juice pass: 7 items, data-driven, falsifiable checklists",
+   "acceptance": [
+    "all seven checklists green in the render lane"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "juice_deploy",
+    "juice_kill_leak",
+    "juice_trap_charm",
+    "wave_banner_victory",
+    "skill_timing"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P10",
+   "title": "Campaign assembly: stages, unlock flow, squad select",
+   "acceptance": [
+    "full-campaign bot clear",
+    "S6 bot minus charm cast loses",
+    "bot_idle loses every stage"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "campaign_flow"
+   ],
+   "commits": []
+  },
+  {
+   "id": "P11",
+   "title": "Final audit: FINAL_REPORT.md, PLAYTEST.md, PAINPOINTS.md, JUICE_VERDICT.md",
+   "acceptance": [
+    "all rungs green vs final build with fresh evidence"
+   ],
+   "status": "passing",
+   "scenarios": [],
+   "commits": []
+  },
+  {
+   "id": "LA",
+   "title": "Lane A: pixel-art pipeline (pass 1 all assets; pass 2 portrait iteration)",
+   "acceptance": [
+    "assets_floor contact-sheet checklist green"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "assets_floor"
+   ],
+   "commits": []
+  },
+  {
+   "id": "LB",
+   "title": "Lane B: stage data authoring S1-S8 (layouts, waves, rewards)",
+   "acceptance": [
+    "stage_lint green over all eight stages"
+   ],
+   "status": "passing",
+   "scenarios": [],
+   "commits": []
+  },
+  {
+   "id": "LC",
+   "title": "Lane C: bot timeline authoring S1-S8 + differentials",
+   "acceptance": [
+    "bot_stage_01..08 clear within leak bands",
+    "bot_stage_06_no_charm loses"
+   ],
+   "status": "passing",
+   "scenarios": [],
+   "commits": []
+  },
+  {
+   "id": "P13",
+   "title": "Battle QoL: pause/speed/resign controls + universal terminal results flow",
+   "acceptance": [
+    "resign is a model verb: immediate DEFEAT (DC1), terminal reject with zero state change, determinism oracle green on a resign timeline",
+    "terminal Continue button on every battle end (campaign AND quick); results screen mode-aware Retry/Continue + Back to Title with session reset",
+    "in-battle controls drive only the ticks_per_frame_scale seam and the resign verb: paused dtick == 0 exactly, speed readbacks exact, cancel leaves RUNNING",
+    "verify.sh --full green: controls eat no grid clicks, no outcome or telemetry band drifts"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "resign_flow",
+    "battle_controls"
+   ],
+   "commits": [
+    "bbf4759",
+    "8dfbfa3"
+   ]
+  },
+  {
+   "id": "P12",
+   "title": "Isometric view conversion: projection seam, depth bands, iso terrain, elevation read",
+   "acceptance": [
+    "test_iso_projection paper constants + round-trip over all stages green",
+    "iso_projection_floor: road present at iso center, absent at old square center, highlight above tiles, drag-deploy lands",
+    "positive elevated deploy scenario + lifted/unlifted probe pair",
+    "cross-process replay identical vs fresh merge-base baseline; sim/ data/ diff empty",
+    "verify.sh --full ALL GREEN, zero pixel skips"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "iso_projection_floor",
+    "deploy_flow",
+    "assets_floor"
+   ],
+   "commits": [
+    "27c95c7",
+    "84026cc"
+   ]
+  }
+ ]
 }

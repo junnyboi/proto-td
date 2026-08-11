@@ -83,3 +83,14 @@ commit first baselines; apply the data edits row by row; re-run the full ladder;
 **Round 2**: same protocol against the fixed build; confirm or reopen each round-1 row;
 close the #10 numerator/denominator. The POC review packet = FINAL_REPORT.md + this ledger +
 JUICE_VERDICT.md.
+
+## Phase 12 note (iso view conversion, 2026-08-11)
+
+The battle renders in 2:1 isometric from P12 on: shot references in the
+round script now correspond to the iso baselines under `artifacts/`
+(diamond terrain, lifted ELEVATED tiles with cliff walls, feet-anchored
+sprites, diamond footprint overlays). The grid auto-fits the window and
+relayouts live on resize; the playfield sits on a backdrop ring (no bare
+canvas). Two added L7 questions: (1) does high ground read at a glance
+(lift + walls + cast shade), and (2) does the wall-band click behavior
+(cliff selects the high ground) ever surprise you during deploys?

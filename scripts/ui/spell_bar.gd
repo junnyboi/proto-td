@@ -13,7 +13,6 @@ extends Control
 ## spells show a "1/wave" label and dim while used.
 
 const FONT_SIZE := 32
-const CELL_PX := 64.0
 const SWEEP_HEIGHT := 8.0
 const SWEEP_COLOR := Color(0.96, 0.71, 0.2, 0.85)
 const CURSOR_VALID := Color(0.55, 0.75, 1.0, 0.4)
@@ -27,7 +26,7 @@ var _buttons: Dictionary = {}
 var _sweeps: Dictionary = {}
 var _targeting: StringName = &""
 var _pointer := Vector2.ZERO
-var _cursor_rect: ColorRect = null
+var _cursor_rect: Polygon2D = null
 
 
 ## Call after add_child: sized from the viewport (a Control under a Node2D
@@ -49,9 +48,9 @@ func setup(
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
 	_build_buttons()
-	_cursor_rect = ColorRect.new()
+	get_viewport().size_changed.connect(_relayout)
+	_cursor_rect = Polygon2D.new()
 	_cursor_rect.name = "SpellCursor"
-	_cursor_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cursor_rect.visible = false
 	add_child(_cursor_rect)
 
@@ -83,6 +82,14 @@ func _build_buttons() -> void:
 	# top-right strip; the box knows its width only after buttons exist
 	box.reset_size()
 	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
+
+
+## Dynamic canvas fit: keep the strip pinned top-right on viewport resize.
+func _relayout() -> void:
+	size = get_viewport().get_visible_rect().size
+	var box := get_node_or_null("SpellBox") as HBoxContainer
+	if box != null:
+		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
 
 
 func _label_for(def: SpellDef) -> String:
@@ -166,6 +173,9 @@ func _update_cursor() -> void:
 		span = def.radius * 2 + 1
 	var valid := model.cast_target_valid(_targeting, _target_for(_targeting, cell))
 	_cursor_rect.color = CURSOR_VALID if valid else CURSOR_INVALID
-	_cursor_rect.size = Vector2.ONE * (CELL_PX * span)
-	_cursor_rect.position = Vector2(view.call("cell_center", cell)) - _cursor_rect.size * 0.5
+	# the Chebyshev (2r+1)^2 block IS a diamond footprint of span x the face
+	# (P12.2), sized by the live grid scale (dynamic canvas fit)
+	var s: float = view.call("grid_scale")
+	_cursor_rect.polygon = IsoProjection.face_polygon(s * span)
+	_cursor_rect.position = Vector2(view.call("cell_center", cell))
 	_cursor_rect.visible = true

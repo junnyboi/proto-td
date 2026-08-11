@@ -129,6 +129,9 @@ func run(h: SelfTestHarness) -> void:
 			func(im: Image) -> bool:
 				return SelfTestProbes.color_in_rect(im, q_rect, LABEL_TEXT_COLOR, 0.12) > 100,
 		)
+	# freshly-shown panel: settle before reading button rects (unsettled
+	# Control rects for 2-3 frames are a batch-only click-miss flake)
+	await h.frames(3)
 	var cancel_btn := controls.find_child("CancelResign", true, false) as Button
 	await h.click_view(cancel_btn.get_global_rect().get_center())
 	h.check("cancel hides the panel", not confirm.visible)
@@ -137,6 +140,7 @@ func run(h: SelfTestHarness) -> void:
 
 	# resign for real: DEFEAT + the prominent focused Continue button
 	await h.click_view(resign_btn.get_global_rect().get_center())
+	await h.frames(3)
 	var confirm_btn := controls.find_child("ConfirmResign", true, false) as Button
 	await h.click_view(confirm_btn.get_global_rect().get_center())
 	h.check("resign lands DEFEAT", model.result == BattleModel.Result.DEFEAT)

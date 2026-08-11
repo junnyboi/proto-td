@@ -24,6 +24,7 @@ const GUARD_IDLE: Array[String] = [
 	"",
 	"",
 	"",
+	"",
 	"..........H...H",
 	".........HHH.HHH.hh......Ww",
 	".........HHHHHHHHHhh.....Ww",
@@ -52,10 +53,10 @@ const GUARD_IDLE: Array[String] = [
 	"........MMm...MMm",
 	"........nnn...nnn",
 	"",
-	"",
 ]
 
 const GUARD_ATTACK: Array[String] = [
+	"",
 	"",
 	"",
 	"",
@@ -87,12 +88,12 @@ const GUARD_ATTACK: Array[String] = [
 	"........MMm....MMm",
 	"........nnn....nnn",
 	"",
-	"",
 ]
 
 # --- VANGUARD: spear + banner pennant, light leather armor ------------------
 
 const VANGUARD_IDLE: Array[String] = [
+	"",
 	"",
 	"",
 	".........................M",
@@ -124,10 +125,10 @@ const VANGUARD_IDLE: Array[String] = [
 	"........LLl...LLl",
 	"........nnn...nnn",
 	"",
-	"",
 ]
 
 const VANGUARD_ATTACK: Array[String] = [
+	"",
 	"",
 	"",
 	"",
@@ -159,12 +160,15 @@ const VANGUARD_ATTACK: Array[String] = [
 	"........LLl....LLl",
 	"........nnn....nnn",
 	"",
-	"",
 ]
 
 # --- DEFENDER: tower shield + heavy helm, mace at the ready -----------------
 
 const DEFENDER_IDLE: Array[String] = [
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -193,13 +197,13 @@ const DEFENDER_IDLE: Array[String] = [
 	"...nmmmmmmnnMMm..MMm",
 	"...nnnnnnnnnnnn..nnn",
 	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const DEFENDER_ATTACK: Array[String] = [
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -228,15 +232,13 @@ const DEFENDER_ATTACK: Array[String] = [
 	"...nmmmmmmnnMMm..MMm",
 	"...nnnnnnnnnnnn..nnn",
 	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 # --- SNIPER: cap + scarf, long rifle ----------------------------------------
 
 const SNIPER_IDLE: Array[String] = [
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -267,11 +269,12 @@ const SNIPER_IDLE: Array[String] = [
 	"........LLl...LLl",
 	"........nnn...nnn",
 	"",
-	"",
-	"",
 ]
 
 const SNIPER_ATTACK: Array[String] = [
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -301,14 +304,13 @@ const SNIPER_ATTACK: Array[String] = [
 	"........LLl...LLl",
 	"........nnn...nnn",
 	"",
-	"",
-	"",
-	"",
 ]
 
 # --- CASTER: pointed hat, robe, staff with orb -------------------------------
 
 const CASTER_IDLE: Array[String] = [
+	"",
+	"",
 	"",
 	"",
 	"..............aa.......CC",
@@ -339,11 +341,10 @@ const CASTER_IDLE: Array[String] = [
 	".......bbbbbbbbbbbb",
 	".........nn....nn",
 	"",
-	"",
-	"",
 ]
 
 const CASTER_ATTACK: Array[String] = [
+	"",
 	"",
 	".......................WCCW",
 	"......................CCCCCC",
@@ -374,7 +375,6 @@ const CASTER_ATTACK: Array[String] = [
 	"......bbaWaaaaWabb",
 	"......bbbbbbbbbbbb",
 	"........nn....nn",
-	"",
 	"",
 ]
 

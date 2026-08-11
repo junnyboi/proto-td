@@ -23,6 +23,11 @@ const GRUNT: Array[String] = [
 	"",
 	"",
 	"",
+	"",
+	"",
+	"",
+	"",
+	"",
 	"........N........N",
 	"........NN......NN",
 	".........BBBBBBBB",
@@ -42,11 +47,6 @@ const GRUNT: Array[String] = [
 	".....DDDD.....DDDD",
 	".....DDDD.....DDDD",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const GRUNT_LEGEND := {
@@ -64,6 +64,12 @@ const GRUNT_LEGEND := {
 # --- RUNNER: lean imp mid-sprint, swept back, speed dashes ------------------
 
 const RUNNER: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -90,12 +96,6 @@ const RUNNER: Array[String] = [
 	".....DDd.......DDDd",
 	"......DD........DDD",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const RUNNER_LEGEND := {
@@ -111,6 +111,11 @@ const RUNNER_LEGEND := {
 # --- HEAVY: wide armored brute, steel banded shoulders ----------------------
 
 const HEAVY: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -138,11 +143,6 @@ const HEAVY: Array[String] = [
 	".........DDDd....DDDd",
 	".........nnnn....nnnn",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const HEAVY_LEGEND := {
@@ -159,6 +159,11 @@ const HEAVY_LEGEND := {
 # --- DRONE: 24x24 aerial pod, rotor frames alternate X / + ------------------
 
 const DRONE_A: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"..ww..............ww",
@@ -178,14 +183,14 @@ const DRONE_A: Array[String] = [
 	".........t..t",
 	"........tt..tt",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const DRONE_B: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -205,11 +210,6 @@ const DRONE_B: Array[String] = [
 	".........t..t",
 	"........tt..tt",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const DRONE_LEGEND := {
@@ -223,6 +223,13 @@ const DRONE_LEGEND := {
 # --- SPELLCASTER: hooded robe, glowing eyes, floating orb -------------------
 
 const SPELLCASTER: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -248,13 +255,6 @@ const SPELLCASTER: Array[String] = [
 	".......OppppppppppppppO",
 	".......pppppppppppppppp",
 	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
 ]
 
 const SPELLCASTER_LEGEND := {
@@ -268,6 +268,11 @@ const SPELLCASTER_LEGEND := {
 # --- MINI-BOSS: 48x48 horned magenta juggernaut ------------------------------
 
 const MINI_BOSS: Array[String] = [
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 	"",
 	"",
@@ -310,11 +315,6 @@ const MINI_BOSS: Array[String] = [
 	"..........nnddd........nnddd",
 	"..........nnnnnn......nnnnnn",
 	".........nnnnnnnn....nnnnnnnn",
-	"",
-	"",
-	"",
-	"",
-	"",
 	"",
 ]
 

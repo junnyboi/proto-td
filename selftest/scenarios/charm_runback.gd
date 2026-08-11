@@ -48,8 +48,8 @@ func run(h: SelfTestHarness) -> void:
 	var g0: EnemyState = model.enemies[0]
 	var g0_cell := Pathing.cell_of(model.path_for(g0.path_idx), g0.progress_units)
 	# grid clicks go through the view's cell_center seam (grid_root is
-	# centered in the viewport; the harness's origin-anchored click_cell
-	# would land ~5 cells off — same convention as trap_flow)
+	# centered in the viewport and the projection is isometric from P12.0 —
+	# harness-side cell math was deleted with the old click_cell family)
 	await h.click_view(view.call("cell_center", g0_cell))
 	await h.frames(3)
 	h.check("bolt killed the grunt under the cursor", not g0.alive and model.killed >= 1)

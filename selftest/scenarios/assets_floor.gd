@@ -12,6 +12,8 @@ const CELL := 72.0
 
 func run(h: SelfTestHarness) -> void:
 	h.expect_done()
+	# P12.1: previous budget (the 3600 default) + 120 for the added checks
+	h.max_frames = 3720
 	var manifest := load("res://assets/manifest.tres") as AssetManifest
 	h.check("manifest loads", manifest != null)
 	if manifest == null:
@@ -21,6 +23,16 @@ func run(h: SelfTestHarness) -> void:
 		"manifest carries the full inventory",
 		manifest.entries.size() >= 40,
 		"entries=%d" % manifest.entries.size()
+	)
+
+	# manifest schema (P12.1): every entry carries a nonzero native size
+	var missing_size := 0
+	for id: StringName in manifest.entries:
+		var stored: Variant = manifest.entries[id].get("size")
+		if not (stored is Vector2i) or stored == Vector2i.ZERO:
+			missing_size += 1
+	h.check(
+		"every manifest entry carries a size", missing_size == 0, "missing=%d" % missing_size
 	)
 
 	# every entry's every frame loads at a sane native size
@@ -55,11 +67,17 @@ func run(h: SelfTestHarness) -> void:
 		)
 	h.check("enemy frames + charmed variants match charm_immune", charm_ok)
 
-	# tiles for every StageDef.Tile value; icons for every spell
+	# tiles: every StageDef.Tile value + the road overlay + the P12.1
+	# backdrop ring, each resolving with a nonzero manifest size
+	var tile_names: Array[String] = [
+		"void", "ground", "road", "elevated", "spawn", "base", "blocked", "backdrop"
+	]
 	var tile_ok := true
-	for tile_name: String in ["void", "ground", "elevated", "spawn", "base", "blocked"]:
-		tile_ok = tile_ok and Art.texture(StringName("tile_%s" % tile_name)) != null
-	h.check("all six tile arts resolve", tile_ok)
+	for tile_name: String in tile_names:
+		var tile_id := StringName("tile_%s" % tile_name)
+		var sized := Art.texture(tile_id) != null and Art.size(tile_id) != Vector2i.ZERO
+		tile_ok = tile_ok and sized
+	h.check("all eight tile arts resolve with a size", tile_ok)
 	var icon_ok := true
 	for spell_id: StringName in _scan("res://data/spells"):
 		icon_ok = icon_ok and Art.texture(StringName("icon_%s" % spell_id)) != null

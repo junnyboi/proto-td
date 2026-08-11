@@ -122,9 +122,11 @@ func run(h: SelfTestHarness) -> void:
 	h.check("heavy alive and uncharmed", heavy.alive and heavy.faction == EnemyState.Faction.ENEMY)
 	await h.frames(2)
 	var pos := Pathing.position_of(model.path_for(heavy.path_idx), heavy.progress_units)
-	var grid := view.find_child("GridRoot", true, false) as Node2D
-	var center: Vector2 = grid.position + (pos + Vector2.ONE * 0.5) * 64.0
-	var heavy_probe := Rect2i(int(center.x) - 26, int(center.y) - 26, 52, 52)
+	# projected through the view seam (P12.0 — never hand-rolled cell math);
+	# the body is feet-anchored on the iso face, so the probe sits fully
+	# inside the sprite: 52x52 in the band just above the face point
+	var center: Vector2 = view.call("screen_of", pos + Vector2.ONE * 0.5)
+	var heavy_probe := Rect2i(int(center.x) - 26, int(center.y) - 52, 52, 52)
 	var img_before := await h.shot_grab("charm_before")
 	h.check_pixels(
 		"no ally palette before the cast", img_before,

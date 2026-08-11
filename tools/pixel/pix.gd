@@ -101,10 +101,56 @@ static func charmed_variant(img: Image) -> Image:
 
 
 static func _stamp_heart(img: Image, at: Vector2i) -> void:
-	for p: Vector2i in [Vector2i(0, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)]:
+	var pixels: Array[Vector2i] = [
+		Vector2i(0, 0), Vector2i(2, 0), Vector2i(0, 1),
+		Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2),
+	]
+	for p: Vector2i in pixels:
 		var q := at + p
 		if q.x >= 0 and q.y >= 0 and q.x < img.get_width() and q.y < img.get_height():
 			img.set_pixel(q.x, q.y, Palette.CHARM_HEART)
+
+
+## Which pixels of a w x h canvas lie inside the 2:1 iso diamond footprint
+## (P12.1). Membership is the half-open unit-cell test in exact integer
+## arithmetic, so diamonds placed on the iso lattice partition the plane —
+## no seam gaps, no double-covered pixels. Row-major PackedByteArray,
+## 1 = inside, 0 = outside (transparent corner).
+static func iso_diamond_mask(w: int, h: int) -> PackedByteArray:
+	var mask := PackedByteArray()
+	mask.resize(w * h)
+	var span := 2 * w * h
+	for y: int in h:
+		for x: int in w:
+			var u := (2 * x + 1 - w) * h + (2 * y + 1) * w
+			var v := (2 * y + 1) * w - (2 * x + 1 - w) * h
+			if u >= 0 and u < span and v >= 0 and v < span:
+				mask[y * w + x] = 1
+	return mask
+
+
+## Top face + cliff walls (P12.1): copies `top_face` onto a canvas extended
+## by wall_h rows and drops a wall column under the lowest opaque pixel of
+## every x — left half wall_left_color, right half wall_right_color (right
+## darker than left, for form). Pure and byte-idempotent like every helper.
+static func iso_extrude(
+	top_face: Image, wall_h: int, wall_left_color: Color, wall_right_color: Color
+) -> Image:
+	var w := top_face.get_width()
+	var h := top_face.get_height()
+	var out := Image.create(w, h + wall_h, false, Image.FORMAT_RGBA8)
+	out.blend_rect(top_face, Rect2i(Vector2i.ZERO, top_face.get_size()), Vector2i.ZERO)
+	for x: int in w:
+		var bottom := -1
+		for y: int in h:
+			if top_face.get_pixel(x, y).a > 0.0:
+				bottom = y
+		if bottom < 0:
+			continue
+		var color := wall_left_color if x < w / 2 else wall_right_color
+		for dy: int in wall_h:
+			out.set_pixel(x, bottom + 1 + dy, color)
+	return out
 
 
 static func mirror_x(img: Image) -> Image:

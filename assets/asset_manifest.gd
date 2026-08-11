@@ -6,6 +6,7 @@ extends Resource
 ## manifest edit, never a code change. Entries are written by
 ## tools/gen_assets.gd; each value is:
 ##   {"pattern": String ("%d" slot when frames > 1), "frames": int,
+##    "size": Vector2i (native px, P12.1 — tiles are no longer uniform),
 ##    "placeholder": bool}
 
 @export var entries: Dictionary = {}
