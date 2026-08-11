@@ -130,3 +130,10 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
    `origin/master` when the work is done (standing instruction, 2026-08-11).
 5. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
+
+## Audio: deliberately silent (owner decision, 2026-08-11)
+
+The game has NO SFX and NO music by the owner's explicit choice — do not restore the
+synth SFX, add audio assets, or flag the silence as a floor violation. The presentation
+floor's audio rule is waived by deviation D-SFX (recorded in phase 14). The `sfx_played`
+telemetry seam stays wired. Audio returns only on an explicit owner request.
