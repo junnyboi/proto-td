@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-006 — Add en-US / zh-CN localization and language settings
+
+- Status: in_progress
+- Owner: AGENT 8
+- Branch: `agent-8/localization-settings`
+- Base: `master` at `690f7617acdc710855c3c8e169ad673b1fa8fec0`
+- Dependencies: TD-005 integrated and released; Manus GitHub connector authenticated; post-union baseline green
+- Owned files: `autoloads/i18n.gd`, `autoloads/i18n.gd.uid`, `autoloads/game.gd`, `autoloads/debug.gd`, `project.godot`, `export_presets.cfg`, `localization/**`, `assets/fonts/**`, `assets/ui/prototype_td_theme.tres`, `tools/build_font_subset.sh`, `tools/i18n_lint.gd`, `tools/i18n_lint.gd.uid`, `scenes/settings.tscn`, `scripts/ui/{settings,title,staging,stage_select,squad_select,results,battle_controls,deploy_bar,spell_bar}.gd`, `scripts/ui/settings.gd.uid`, `scripts/view/{battle_view,juice_layer}.gd`, `test/test_i18n.gd`, `test/test_i18n.gd.uid`, `test/test_music_catalog.gd`, `selftest/scenarios/{localization_flow,battle_controls,blocking,campaign_flow,charm_runback,debug_reach,drone_counter,resign_flow,resize_relayout,skill_timing,staging_flow,wave_banner_victory}.gd`, `selftest/scenarios/localization_flow.gd.uid`, `scripts/verify.sh`, `FEATURES.json`, `PLAYTEST.md`, `docs/plans/TD-006-localization-settings.md`, `docs/handoffs/TD-006-agent-8-localization.md`, `docs/media/TD-006-verification.json`, and TD-006 claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Do not touch: `sim/**`, gameplay `data/*.tres` values, gameplay/tick/action semantics, telemetry ids/schema, bots, audio/music bytes or provenance, unrelated art, `playtests/thresholds.json`, human verdict wording
+- Acceptance: every current in-game text surface resolves through `I18n.t(stable_key, exact English fallback, named params)`; the exact 121-key en-US/zh-CN catalogs are complete and placeholder-parity checked; title Settings exposes a mutually exclusive English (US)/简体中文 toggle; live switching refreshes persistent title/Staging/campaign/squad/battle/results/debug UI by the next render frame without changing model hash, ids, routes, or save/replay state; both locales render through a bundled CJK Theme at 1280×720 and 960×640 without tofu, clipping, or control overlap
+- Required evidence: focused GUT schema/fallback/format/hash tests; i18n source/resource/font lint; migrated semantic-plus-localized scenario assertions; `localization_flow` headless/windowed with fresh en-US/zh-CN screenshots; font/glyph/layout probes; cross-process campaign replay diff; one uninterrupted fresh `scripts/verify.sh --full`; independent PNG and diff-vs-pins audits; human-playtestable verified Web build
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
