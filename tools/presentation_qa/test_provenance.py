@@ -80,6 +80,18 @@ class ProvenanceContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.validate_document(REPO, mutated, "tile_backdrop", entry)
 
+    def test_s1_ai_assisted_document_is_exact_and_human_final(self) -> None:
+        path = REPO / "assets/provenance/world.s1.core_landmark.provenance.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        entry = {"pattern": "res://assets/world/s1/s1-core-landmark.png", "frames": 1}
+        MODULE.validate_schema(document, self.schema, self.schema)
+        MODULE.validate_document(REPO, document, "world.s1.core_landmark", entry)
+        self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
+        self.assertEqual(document["generation"]["model"], "gpt-image-2")
+        self.assertEqual(document["acceptance"]["state"], "human_final_accepted")
+        self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
+        self.assertEqual(document["acceptance"]["accepting_commit"], MODULE.S1_APPROVED_CANDIDATE)
+
 
 if __name__ == "__main__":
     unittest.main()

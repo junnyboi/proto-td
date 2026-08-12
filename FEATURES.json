@@ -377,6 +377,59 @@
     "f08ee08",
     "924f360"
    ]
+  },
+  {
+	   "id": "P16",
+	   "title": "Persistent heroes: recruitment, Muster Ledger, duplicate-safe battles, permadeath, and one durable campaign slot",
+	   "acceptance": [
+	    "a campaign owns stable deterministic hero instances distinct from OperatorDef identity, with exact hash/save/replay coverage",
+	    "Contract Board recruitment and emergency recovery preserve deterministic economy and prevent roster soft locks",
+	    "Muster Ledger supports callsign-only customization and READY/DEAD history without mutating combat definitions",
+	    "campaign battle tickets bind hero IDs to immutable definitions; terminal casualties resolve exactly once and remain dead after Continue",
+	    "one corruption-safe autosave slot, Continue, overwrite confirmation, Retry Save, and Abandon preserve durable strategic truth",
+	    "localized player-facing surfaces provide stable keys, English fallbacks, en-US default, selector, parity, glyph, and layout proof",
+	    "fresh RELEASE verification, independent audit, Web preview, and human verdict cover identity, death fairness, recovery clarity, and save trust"
+	   ],
+	   "evidence_classes": [
+	    "logic",
+	    "integration",
+	    "visual",
+	    "feel"
+	   ],
+	   "status": "pending",
+	   "scenarios": [
+	    "p16_contract_probe",
+	    "model_roster_probe",
+	    "strategic_verbs",
+	    "hero_result_flow",
+	    "barracks_recruit_death",
+	    "save_roundtrip",
+	    "p16_strategic_campaign"
+	   ],
+	   "commits": [
+	    "cd35d19"
+	   ]
+	  },
+	  {
+	    "id": "AUI-10R",
+    "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
+    "acceptance": [
+      "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and Poseidon-approved human-final flags bound to candidate 60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+    "the Cloud-Seal Orrery replaces the rejected pressure-tank Core while preserving final-route clearance and input semantics",
+    "one continuous Alpine Escarpment renders behind S1 with no repeated outside-map grid or deployable-tile affordance",
+    "s1_world_art, assets_floor, iso_projection_floor, full RELEASE, independent diff-vs-pins, localization review, and Poseidon visual verdict are green"
+   ],
+    "status": "passing",
+   "scenarios": [
+    "s1_world_art",
+    "assets_floor",
+    "iso_projection_floor"
+   ],
+    "commits": [
+      "879c488",
+      "3c5cc50",
+      "60b69a6"
+	    ]
   }
  ],
  "deviations": [

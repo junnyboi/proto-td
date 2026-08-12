@@ -3,13 +3,13 @@
 - Status: accepted
 - Decision owner: Poseidon
 - Effective date: 2026-08-12
-- Scope: Aetheria D/E/F design gate, AUI-00, AUI-34, and serialized AUI-12 presentation ownership
+- Scope: Aetheria D/E/F design gate, AUI-00, AUI-10R human-final acceptance, AUI-34, and serialized AUI-12 presentation ownership
 
 ## Frozen facts
 
 - `AUI-DESIGN-F` is approved at manifest SHA-256 `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`.
-- `AUI-DESIGN-D` is approved by Poseidon's attestation. The authenticated `AUI-10-Agent-D-Handoff.zip` arrived at SHA-256 `64a1bb4b87f09762a6f20fa77f289d158c91fa9c384ecd3c67b94a1266ef9e43`, and its 40-file internal manifest verifies. It is a source/staging handoff—not the exact approved design packet/accepted manifest hash—and its own `HANDOFF.json` requires that missing evidence before runtime ingestion. D runtime ingestion therefore remains blocked.
-- Agent D's staged world package is present on `master` at `3b7ba225c90add20924b5a3aef99133162f64531` / tree `bf80de76a3298882d384a6669b67301e66f72862`; all eight candidates remain `STAGED_UNBOUND` and human-final unset.
+- `AUI-DESIGN-D` is approved. The exact parent manifest is checked in at `docs/media/AUI-DESIGN-D-approved-manifest.json`; Poseidon's revision-2 selection is checked in at `docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json`.
+- Agent D's source/staging package landed at `3b7ba225c90add20924b5a3aef99133162f64531`. AUI-10R promoted and revised it into twelve S1 runtime assets without changing stage geometry or deterministic model state.
 - `AUI-DESIGN-E` is approved by Poseidon's exact Round 5 token, authenticated at SHA-256 `5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b`. The accepted hashes are: roster `f3c338ec52a394e3e02a92bad65ca00e881fd340673ee6c120dec09c86b3b883`; Vanguard `db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9`; enemies `f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8`; portraits `d6db376800af86f300f6fa8ea7c62865ce4c8bb05dadd9dbe9d470776fa22ee9`; Charm `64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3`; VFX `0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667`. This approves the concept packet for deterministic pipeline use; it does not flip `human_final_art`, bind runtime assets, or claim player-facing acceptance.
 
 ## Narrow amendment
@@ -22,13 +22,19 @@ Poseidon explicitly authorized AGENT 6 to integrate the terminal Agent E lane wi
 
 AUI-00 may land additive presentation contracts, compatibility APIs, truthful provenance migration, probe ownership, tests, and current-build baselines. It may not ingest D runtime assets, consume E work, create visible Aetheria UI, or claim a player-facing milestone.
 
+## AUI-10R human-final amendment
+
+Poseidon explicitly approved **AUI-10R revision 2** on exact candidate `60b69a6004a9c843851d9f6c9aee84c88389cb1f` after reviewing fresh in-game overview, Cloud-Seal Orrery, and Alpine Escarpment captures. The machine-readable receipt is `docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json`.
+
+This verdict clears final-art placeholders only for the twelve `world.s1.*` manifest entries and binds all staging/runtime provenance to Poseidon, the verdict timestamp, receipt hash, and accepted candidate. It does not approve Agent E assets, AUI-12 UI, other stages, gameplay, stage geometry, save/hash/replay, localization, or thresholds. Because the verdict changes repository bytes, landing remains conditional on a fresh cache-cleared RELEASE, cross-process replay identity, independent audit, localization-impact review, and exact merged-union verification.
+
 ## Method enforcement
 
-Poseidon activated MGS METHOD v2 `DEFAULT` project-wide with immediate effect. AUI-00 routes to `RELEASE` because it changes `test/**` and `selftest/**`; RELEASE evidence is fresh-only and cannot be reused.
+Poseidon activated MGS METHOD v2 `DEFAULT` project-wide with immediate effect. AUI-00, AUI-10R, and AUI-34 route to `RELEASE`; RELEASE evidence is fresh-only and cannot be reused.
 
 ## Coordination
 
-Active Agent 8 lane `TD-006` owns `docs/todo.md` and `docs/completed.md`. AUI-00 excludes both shared hot files. Its canonical lease is external and mirrored in `docs/plans/AUI-IMPLEMENTATION-STATUS.md` until the Agent 8 lease releases.
+Shared ledgers and `FEATURES.json` remain serial integration surfaces. The current union preserves AUI-10R's human-final record, Agent F's exact AUI-12 row and owned paths, and Agent E's exact AUI-34 approval/runtime-unbound boundary.
 
 ## AUI-12 serialized ownership amendment
 

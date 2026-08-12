@@ -33,7 +33,7 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_placeholder_and_png
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size())
+	assert_eq(manifest.entries.size(), expected.size() + 12)
 	for raw_id: Variant in expected:
 		var id := StringName(raw_id)
 		assert_true(manifest.entries.has(id), "manifest retains %s" % id)
@@ -361,9 +361,19 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 		assert_eq(document["logical_id"], id)
 		assert_eq(document["migration"]["baseline_commit"], BASE_COMMIT)
 		assert_eq(document["migration"]["baseline_tree"], BASE_TREE)
-		assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
-		assert_null(document["acceptance"]["human_accepter"])
-		assert_null(document["acceptance"]["accepting_commit"])
+		if id.begins_with("world.s1."):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["model"], "gpt-image-2")
+			assert_eq(document["acceptance"]["state"], "human_final_accepted")
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_eq(
+				document["acceptance"]["accepting_commit"],
+				"60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+			)
+		else:
+			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
+			assert_null(document["acceptance"]["human_accepter"])
+			assert_null(document["acceptance"]["accepting_commit"])
 		assert_eq(FileAccess.get_sha256(path), Art.provenance_sha256(StringName(id)))
 		var actual_sources: Array[String] = []
 		for source: Dictionary in document["source_files"]:
@@ -455,6 +465,23 @@ func _character() -> CharacterVisualDef:
 
 
 func _expected_sources(id: String) -> Array[String]:
+	if id.begins_with("world.s1."):
+		var world_sources: Array[String] = [
+			"res://art-src/world/s1/gpt-image-2-source-ledger.json",
+			"res://art-src/world/s1/s1-derived-palette.json",
+			"res://art-src/world/s1/s1-world-asset-contract.json",
+			"res://art-src/world/s1/s1-world-gpt-image-2-prompts.md",
+			"res://docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+			"res://docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+			"res://docs/media/AUI-DESIGN-D-approved-manifest.json",
+			"res://tools/art_pipeline/world/generate_s1_revision_v2.py",
+			"res://tools/art_pipeline/world/normalize_s1_world.py",
+		]
+		if id == "world.s1.backdrop_panorama":
+			world_sources.append("res://art-src/world/s1/s1-alpine-escarpment-source.png")
+			world_sources.append("res://tools/art_pipeline/world/prepare_s1_revision_source.py")
+		world_sources.sort()
+		return world_sources
 	var result: Array[String] = [
 		"res://assets/asset_manifest.gd",
 		"res://tools/gen_assets.gd",

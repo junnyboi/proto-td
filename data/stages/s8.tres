@@ -74,6 +74,7 @@ music_act = 2
 music_boss_wave_index = 2
 leak_limit = 2
 squad_size = 6
+recovery_roster = Array[StringName]([&"vanguard_1", &"guard_1", &"guard_2", &"defender_2", &"sniper_1", &"caster_2"])
 rewards = Array[Dictionary]([])
 campaign_index = 8
 requires = Array[StringName]([])

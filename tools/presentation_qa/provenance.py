@@ -16,6 +16,19 @@ COMMON_SOURCES = {
     "res://tools/pixel/pix.gd",
     "res://tools/pixel/palette.gd",
 }
+S1_PREFIX = "world.s1."
+S1_COMMON_SOURCES = {
+    "res://art-src/world/s1/gpt-image-2-source-ledger.json",
+    "res://art-src/world/s1/s1-derived-palette.json",
+    "res://art-src/world/s1/s1-world-asset-contract.json",
+    "res://art-src/world/s1/s1-world-gpt-image-2-prompts.md",
+    "res://docs/media/AUI-DESIGN-D-approved-manifest.json",
+    "res://docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+    "res://docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+    "res://tools/art_pipeline/world/generate_s1_revision_v2.py",
+    "res://tools/art_pipeline/world/normalize_s1_world.py",
+}
+S1_APPROVED_CANDIDATE = "60b69a6004a9c843851d9f6c9aee84c88389cb1f"
 
 
 def validate_schema(value: Any, schema: dict[str, Any], root: dict[str, Any], path: str = "$") -> None:
@@ -27,6 +40,17 @@ def validate_schema(value: Any, schema: dict[str, Any], root: dict[str, Any], pa
         for part in reference.removeprefix("#/").split("/"):
             resolved = resolved[part]
         validate_schema(value, resolved, root, path)
+        return
+    if "oneOf" in schema:
+        matches = 0
+        for branch in schema["oneOf"]:
+            try:
+                validate_schema(value, branch, root, path)
+                matches += 1
+            except ValueError:
+                pass
+        if matches != 1:
+            raise ValueError(f"schema oneOf mismatch at {path}: {matches} branches matched")
         return
     if "const" in schema and value != schema["const"]:
         raise ValueError(f"schema const mismatch at {path}")
@@ -91,6 +115,16 @@ def digest_row(repo: Path, resource_path: str) -> dict[str, Any]:
 
 
 def source_paths(logical_id: str) -> list[str]:
+    if logical_id.startswith(S1_PREFIX):
+        result = set(S1_COMMON_SOURCES)
+        if logical_id == "world.s1.backdrop_panorama":
+            result.update(
+                {
+                    "res://art-src/world/s1/s1-alpine-escarpment-source.png",
+                    "res://tools/art_pipeline/world/prepare_s1_revision_source.py",
+                }
+            )
+        return sorted(result)
     result = set(COMMON_SOURCES)
     if logical_id.startswith("tile_"):
         result.add("res://tools/pixel/art_tiles.gd")
@@ -144,6 +178,48 @@ def final_paths(entry: dict[str, Any]) -> list[str]:
 
 
 def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[str, Any]:
+    if logical_id.startswith(S1_PREFIX):
+        generator_path = "res://tools/art_pipeline/world/generate_s1_revision_v2.py"
+        generator = digest_row(repo, generator_path)
+        return {
+            "schema_version": 1,
+            "logical_id": logical_id,
+            "source_type": "ai_assisted_deterministic_normalization",
+            "final_files": [digest_row(repo, path) for path in sorted(final_paths(entry))],
+            "source_files": [digest_row(repo, path) for path in source_paths(logical_id)],
+            "recipe": {
+                "command": "python3 tools/art_pipeline/world/normalize_s1_world.py && python3 tools/art_pipeline/world/generate_s1_revision_v2.py",
+                "godot_version": GODOT_VERSION,
+                "generator_path": generator_path,
+                "generator_sha256": generator["sha256"],
+            },
+            "generation": {
+                "provider": "OpenAI",
+                "model": "gpt-image-2",
+                "generation_id": None,
+                "seed": None,
+                "unsupported_reason": "service does not expose a stable seed; accepted concepts and production source are hash-pinned",
+            },
+            "migration": {
+                "baseline_commit": BASELINE_COMMIT,
+                "baseline_tree": BASELINE_TREE,
+                "migrated_at_utc": None,
+                "status": "new_runtime_asset_authenticated",
+            },
+            "acceptance": {
+                "state": "human_final_accepted",
+                "human_accepter": "Poseidon",
+                "accepted_at_utc": "2026-08-12T19:49:51Z",
+                "accepting_commit": S1_APPROVED_CANDIDATE,
+                "source": "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+                "reason": "Poseidon approved the exact AUI-10R revision-2 in-game candidate after overview and focused visual review",
+            },
+            "license": {
+                "spdx": "LicenseRef-Project-Owned",
+                "source": "original GPT Image 2 concepts and project-controlled deterministic normalization",
+                "human_contribution": "direction, selection, revision verdicts, pixel normalization contracts, and exact-candidate final-art acceptance",
+            },
+        }
     generator = digest_row(repo, "res://tools/gen_assets.gd")
     return {
         "schema_version": 1,

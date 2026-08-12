@@ -20,7 +20,7 @@
 
 ### Dependency boundary
 
-- D: owner-approved by attestation; authenticated AUI-10 staging handoff at archive SHA-256 `64a1bb4b87f09762a6f20fa77f289d158c91fa9c384ecd3c67b94a1266ef9e43` and `master` commit `3b7ba225c90add20924b5a3aef99133162f64531`; exact approved design manifest/hash still absent, so runtime ingestion remains blocked.
+- D: exact parent/revision manifests are checked in; AUI-10R separately owns and verifies the S1 runtime successor. AUI-00 itself still consumed no D runtime bytes.
 - F: approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`.
 - E: exact Round 5 concept packet approved; AUI-34 terminal lane receipt authenticated for the owner-authorized aggregate integration described below.
 - Shared-ledger exclusion ended after implementation landed; this dedicated closure branch owns only the compact AUI-00 completion transaction.
@@ -62,7 +62,7 @@ Exact contract GUT, generator double-run byte identity, `assets_floor`, `present
 
 ## Successor locks
 
-AUI-00 is durably closed. AUI-10 source/staging closure and AUI-12 may proceed as separate packages. AUI-34 closes in the containing aggregate commit after its fresh union evidence qualifies; AUI-11 may be claimed only after that exact commit is published to `master`.
+AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the independent Agent D runtime successor, and AUI-12 remains Agent F's active UI lane. AUI-34 closes in the containing aggregate commit after fresh merged-union evidence qualifies; AUI-11 may be claimed only after that exact commit is remote-equal on `master`.
 
 ## AUI-34 — Deterministic character/VFX pipeline aggregate
 
@@ -72,19 +72,30 @@ AUI-00 is durably closed. AUI-10 source/staging closure and AUI-12 may proceed a
 - Terminal lane: `ff64367e1991299fbecf3e517dc554443d819e73` / tree `2e7b85bb2347068779b4c37c0295a383344045fb`; immutable receipt SHA-256 `109a8e76846e25a8a58ba97f0c102f2c8f00a4a60b4d0366857a9da67f65a9bd`.
 - Delivered scope: offline Python/Pillow canonical normalizer, Godot `Image` fallback, strict schema/path contracts, deterministic synthetic fixtures, independent semantic oracle, same-backend byte proof, cross-backend decoded-RGBA differential, atomic publication, rollback salvage, runbook, and staging provenance fragments.
 - Reconciliation: AUI-00 closure is present; all six exact Round 5 hashes match; reserved colors remain exact `#F4F4F4` and `#41A6F6`; current provenance fragments are staging contracts rather than runtime sidecars; no manifest, runtime asset, gameplay, simulation, localization, test, harness, threshold, or final-art surface is changed.
-- Assurance: the aggregate is publishable only after a fresh cache-bypassed 562-check-or-higher differential, unchanged full repository gate, fresh image review, and non-implementer diff-vs-pins PASS are bound to the exact aggregate commit in external `mgs.final-union.v1` evidence.
+- Assurance: the aggregate is publishable only after a fresh cache-bypassed 600-check-or-higher differential, full repository gate, fresh image review, and non-implementer diff-vs-pins PASS are bound to the exact aggregate commit in external `mgs.final-union.v1` evidence.
 - Preserved boundary: `runtime_binding = UNBOUND_AGENT_F_SEAM`, `human_final_art = UNSET_HUMAN_ONLY`, and no production Aetheria character/VFX asset is emitted or installed.
 - Successor: AUI-11 may start after the exact aggregate commit is remote-equal on `master`; production content still requires its own claims, generated packets, QA, runtime-binding integration, and human final-art decisions.
 
 ## AUI-10 — Agent D S1 world source/staging closure
 
-- Status: `landed_staging_closed`; runtime binding remains blocked.
+- Status: `landed_staging_closed`; runtime binding moved to the separately approved AUI-10R successor.
 - Source owner: `AGENT D`; closure owner: `AGENT F`.
 - Closure branch/base: `agent-f/aui-10-closure` from `ec56def391269f96a1e596ec4245bcd940ebdcdc`.
 - Landed validator: PASS with 8 assets, 8 provenance sidecars, 16 source records, stage-resource SHA-256 `c8d041bff7ce9a2b570997cbc2d09ee6ff0487c7666ff68875314cc39df0a1d9`, and all staged measurements within their pinned ranges.
-- Preserved blocker: exact approved `AUI-DESIGN-D` packet/accepted manifest hash is absent. `runtime_binding` remains `UNBOUND_AGENT_F_SEAM`; `human_final_art` remains `UNSET`.
+- Superseded blocker: the exact parent/revision manifests and Poseidon's human-final receipt now exist under `docs/media/`; AUI-10R binds them without rewriting this historical source packet.
 - No runtime manifest, view, scene, model, stage, harness, test, threshold, localization, feature-ledger, or import-guard surface changes in closure.
-- Next independent Agent F package: AUI-12. AUI-20 remains blocked on AUI-12 closure and the exact D runtime approval artifact; AUI-11 remains blocked on Agent E AUI-34 closure.
+- Next independent Agent F package: AUI-12. AUI-20 remains blocked on AUI-12 closure; its former D-artifact blocker is satisfied by AUI-10R. AUI-11 remains blocked on Agent E AUI-34 closure.
+
+## AUI-10R — Agent D S1 runtime integration and revision 2
+
+- Status: `human_final_approved`; landing is conditional on the exact post-verdict union passing fresh RELEASE and default-branch verification.
+- Owner: `AGENT D`.
+- Owner-approved candidate: `60b69a6004a9c843851d9f6c9aee84c88389cb1f`.
+- Human verdict: Poseidon approved Cloud-Seal Orrery + Alpine Escarpment on 2026-08-13; receipt `docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json`.
+- Runtime scope: twelve exact `world.s1.*` assets; one continuous panorama; S1-only typed theme; fail-closed required-theme loading; no simulation/stage/save/hash/replay/localization/threshold change.
+- Final-art state: all twelve manifest placeholders cleared; staging/runtime provenance binds the verdict owner, timestamp, receipt hash, and accepted candidate.
+- Mandatory landing evidence: byte-idempotent base+revision regeneration, art validator, GUT, headless/windowed scenarios, cache-cleared `scripts/verify.sh --full`, separate-process replay identity, independent diff-vs-pins audit, localization-impact review, and merged-union default-branch verification.
+- Agent F AUI-12 and all Agent E work remain outside this lane.
 
 ## AUI-12 — Protos Theme, components, localization, and compatible shells
 

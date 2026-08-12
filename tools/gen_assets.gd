@@ -137,6 +137,10 @@ func _initialize() -> void:
 		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
 		sheet_cells.append(Pix.upscale(img, 4))
 
+	# AUI-10R uses its own deterministic Python pipeline. Import its
+	# contract-backed runtime inventory before canonical provenance/manifest save.
+	_record_s1_world_assets()
+
 	_write_sheet(sheet_cells, "calibration.png")
 	_write_sheet(portrait_cells, "portraits.png")
 	_write_stage_collage(tiles)
@@ -173,6 +177,38 @@ func _record(
 		"animations": AssetManifest.legacy_animations(frames),
 		"provenance_sha256": "0".repeat(64),
 	}
+
+
+func _record_s1_world_assets() -> void:
+	var contract_path := "res://art-src/world/s1/s1-world-asset-contract.json"
+	var file := FileAccess.open(contract_path, FileAccess.READ)
+	if file == null:
+		push_error("[gen_assets] missing S1 world contract")
+		_failed = true
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not parsed is Dictionary or not parsed.has("assets") or not parsed["assets"] is Array:
+		push_error("[gen_assets] malformed S1 world contract")
+		_failed = true
+		return
+	for row: Variant in parsed["assets"]:
+		if not row is Dictionary or not row.has("id") or not row.has("native_size"):
+			push_error("[gen_assets] malformed S1 world asset row")
+			_failed = true
+			continue
+		var id := StringName(row["id"])
+		var native_size: Array = row["native_size"]
+		if native_size.size() != 2:
+			push_error("[gen_assets] invalid S1 native size for %s" % id)
+			_failed = true
+			continue
+		var file_stem := String(id).trim_prefix("world.s1.").replace("_", "-")
+		var path := "res://assets/world/s1/s1-%s.png" % file_stem
+		if not FileAccess.file_exists(path):
+			push_error("[gen_assets] missing S1 runtime asset %s" % path)
+			_failed = true
+			continue
+		_record(id, path, 1, Vector2i(int(native_size[0]), int(native_size[1])), false)
 
 
 func _generate_provenance() -> bool:
