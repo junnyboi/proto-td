@@ -1,4 +1,4 @@
-# TD-014 — Six-cue retro Japanese lo-fi score replacement
+# TD-015 — Six-cue retro Japanese lo-fi score replacement
 
 ## Authority and scope
 
@@ -75,7 +75,7 @@ Instrumental only, no vocals. Create a complete 180-second seamless-loop-oriente
 
 ## Rollback
 
-Revert TD-014 implementation and closure commits. Revision-3 sources, prompts, catalog metadata, transcriptions, and shipping assets remain recoverable from `08ff849aa555f6676099c14d9e2f740353c20de2` and its descendants.
+Revert TD-015 implementation and closure commits. Revision-3 sources, prompts, catalog metadata, transcriptions, and shipping assets remain recoverable from `08ff849aa555f6676099c14d9e2f740353c20de2` and its descendants.
 
 ## Generation outcome — revision 4
 
