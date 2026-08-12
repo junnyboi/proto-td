@@ -1,72 +1,149 @@
 extends Control
 
-## Results screen: headline + stars + tallies from Game.last_result, one
-## "Unlocked:" line per granted reward (the reveal). The prototype has one
-## player flow: Retry -> squad select, Return to Staging for either outcome,
-## and Back to Title resets the campaign session. Harness/debug battles have
-## no CampaignState and receive only the safe Back to Title projection.
-## The battle's stamp edge owns victory/defeat SFX — this screen only
-## clicks (L3).
+## Results projection over Game.last_result. Outcome and route semantics remain
+## unchanged; this package only upgrades presentation and localization.
 
-const FONT_SIZE := 32
-const HEADLINE_FONT_SIZE := 64
+const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const KIND_DIRS := {
 	&"operator": "res://data/operators",
 	&"trap": "res://data/traps",
 	&"spell": "res://data/spells",
 }
+const LANDSCAPE_SIZE := Vector2(900.0, 600.0)
+const PORTRAIT_SIZE := Vector2(640.0, 900.0)
+
+var _actions: GridContainer = null
+var _shell: AetheriaScreenShell = null
 
 
 func _ready() -> void:
 	Game.content = self
 	var result: Dictionary = Game.last_result
 	var cleared := int(result.get("result", 0)) == BattleModel.Result.CLEAR
+	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShell
+	_shell.name = "ResultsShell"
+	_shell.preferred_size = LANDSCAPE_SIZE
+	add_child(_shell)
+	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "ResultsScroll"
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_shell.content_host().add_child(scroll)
+
 	var column := VBoxContainer.new()
 	column.name = "ResultsColumn"
-	column.set_anchors_preset(Control.PRESET_CENTER)
-	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	column.grow_vertical = Control.GROW_DIRECTION_BOTH
-	column.add_theme_constant_override("separation", 14)
-	add_child(column)
-	column.add_child(_label("Headline", "CLEAR" if cleared else "DEFEAT", HEADLINE_FONT_SIZE))
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 14)
+	scroll.add_child(column)
+	column.add_child(_label(
+		"Headline",
+		UiCopy.text(
+			&"ui.results.clear" if cleared else &"ui.results.defeat",
+			"CLEAR" if cleared else "DEFEAT",
+		),
+		&"title",
+	))
 	if cleared:
-		column.add_child(_label("StarLine", "*".repeat(int(result.get("stars", 0))), HEADLINE_FONT_SIZE))
+		column.add_child(_label(
+			"StarLine", "*".repeat(int(result.get("stars", 0))), &"title",
+		))
 	column.add_child(_label(
 		"TallyLine",
-		"kills %d   leaks %d" % [int(result.get("kills", 0)), int(result.get("leaks", 0))],
-		FONT_SIZE,
+		UiCopy.format_text(
+			&"ui.results.tally", "kills {kills}   leaks {leaks}",
+			{
+				&"kills": int(result.get("kills", 0)),
+				&"leaks": int(result.get("leaks", 0)),
+			},
+		),
+		&"body",
 	))
 	var granted: Array = result.get("rewards_granted", [])
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
-		var def: Resource = load("%s/%s.tres" % [KIND_DIRS[reward["kind"]], reward["id"]])
+		var reward_name := _reward_name(reward)
 		column.add_child(_label(
-			"Reward%d" % i, "Unlocked: %s" % def.get("display_name"), FONT_SIZE,
+			"Reward%d" % i,
+			UiCopy.format_text(
+				&"ui.results.reward", "Unlocked: {name}", {&"name": reward_name},
+			),
+			&"body",
 		))
-	var actions := HBoxContainer.new()
-	actions.name = "ActionRow"
-	actions.add_theme_constant_override("separation", 16)
-	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(actions)
+
+	_actions = GridContainer.new()
+	_actions.name = "ActionRow"
+	_actions.columns = 3
+	_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_actions.add_theme_constant_override(&"h_separation", 16)
+	_actions.add_theme_constant_override(&"v_separation", 16)
+	column.add_child(_actions)
+	var focusable: Array[Button] = []
+	var retry: AetheriaButton = null
+	var next: AetheriaButton = null
 	if Game.campaign_active and Game.campaign != null:
-		var retry := Button.new()
-		retry.name = "RetryButton"
-		retry.text = "Retry"
-		retry.add_theme_font_size_override("font_size", FONT_SIZE)
+		retry = _button(
+			"RetryButton", UiCopy.text(&"ui.results.retry", "Retry"), &"secondary",
+		)
 		retry.pressed.connect(_on_retry)
-		actions.add_child(retry)
-		var next := Button.new()
-		next.name = "ReturnToStaging"
-		next.text = "Return to Staging"
-		next.add_theme_font_size_override("font_size", FONT_SIZE)
+		_actions.add_child(retry)
+		next = _button(
+			"ReturnToStaging",
+			UiCopy.text(&"ui.results.return_to_staging", "Return to Staging"), &"primary",
+		)
 		next.pressed.connect(_on_return_to_staging)
-		actions.add_child(next)
-	var title := Button.new()
-	title.name = "BackToTitle"
-	title.text = "Back to Title"
-	title.add_theme_font_size_override("font_size", FONT_SIZE)
+		_actions.add_child(next)
+		focusable.append(next)
+		focusable.append(retry)
+	var title := _button(
+		"BackToTitle", UiCopy.text(&"ui.common.back_to_title", "Back to Title"),
+		&"secondary" if not focusable.is_empty() else &"primary",
+	)
 	title.pressed.connect(_on_back_to_title)
-	actions.add_child(title)
+	_actions.add_child(title)
+	focusable.append(title)
+	_wire_focus(focusable)
+	_on_layout_mode_changed(_shell.layout_mode())
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_back_to_title()
+
+
+func _on_layout_mode_changed(mode: StringName) -> void:
+	if _actions != null:
+		_actions.columns = 1 if mode == &"portrait" else 3
+	if _shell != null:
+		_shell.preferred_size = PORTRAIT_SIZE if mode == &"portrait" else LANDSCAPE_SIZE
+
+
+func _reward_name(reward: Dictionary) -> String:
+	var kind := StringName(reward.get("kind", &""))
+	var identifier := StringName(reward.get("id", &""))
+	if not KIND_DIRS.has(kind):
+		return ""
+	var definition: Resource = load("%s/%s.tres" % [KIND_DIRS[kind], identifier])
+	if definition is OperatorDef:
+		return UiCopy.operator_name(definition)
+	if definition is TrapDef:
+		return UiCopy.trap_name(definition)
+	if definition is SpellDef:
+		return UiCopy.spell_name(definition)
+	return ""
+
+
+func _wire_focus(focusable: Array[Button]) -> void:
+	for index: int in focusable.size():
+		var current: Button = focusable[index]
+		var previous: Button = focusable[(index - 1 + focusable.size()) % focusable.size()]
+		var next: Button = focusable[(index + 1) % focusable.size()]
+		current.focus_previous = current.get_path_to(previous)
+		current.focus_next = current.get_path_to(next)
+	focusable[0].grab_focus.call_deferred()
 
 
 func _on_return_to_staging() -> void:
@@ -84,10 +161,20 @@ func _on_back_to_title() -> void:
 	Game.open_title()
 
 
-func _label(label_name: String, text: String, size_px: int) -> Label:
-	var label := Label.new()
+func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabel:
+	var label := AetheriaLabel.new()
 	label.name = label_name
-	label.text = text
-	label.add_theme_font_size_override("font_size", size_px)
+	label.text = label_text
+	label.apply_role(role)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
+
+
+func _button(
+		button_name: String, button_text: String, role: StringName,
+	) -> AetheriaButton:
+	var button := AetheriaButton.new()
+	button.name = button_name
+	button.text = button_text
+	button.apply_role(role)
+	return button

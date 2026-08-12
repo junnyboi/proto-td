@@ -76,14 +76,15 @@ AUI-00 is durably closed. AUI-10 source/staging closure and AUI-12 may now proce
 
 ## AUI-12 — Protos Theme, components, localization, and compatible shells
 
-- Status: `claimed`; implementation not started at this claim commit.
+- Status: implementation candidate complete; candidate commit, exact-union RELEASE evidence, independent build audit, and Poseidon L7 remain pending.
 - Owner: `AGENT F`.
 - Claim branch/base: `agent-f/aui-12-claim` from `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`.
 - Implementation branch: `agent-f/aui-12` after the verified claim lands on master.
 - Effective lane: MGS v2 `RELEASE` because the package is player-visible and changes `test/**` plus `selftest/**`.
-- Immutable plan SHA-256: `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`.
-- Normative copy/component/inventory/scenario hashes: `d7afa360523ad915aaa25f95d30fd0054d23078cd7a79ed3d25ce8d02d6dc37c`, `16e3f18ac23ecb846b288b7dbe4de454f3581faa3b27386885dd3d1e624285d4`, `78b57390c35343966b971cdcfe951f23950299ed78c03a44da3db0e347fc2a12`, `bca4ebd9c0ac364b3ca290896a0a54d005713a402c2d57cb4c1d5d5cbd18d01f`.
-- Independent preflight: PASS with zero critical/warning findings.
+- Final plan SHA-256: `55e7daf91097e476719242203a6d3943e5db4e7a979f129cda0e08f6f3ba608b`.
+- Normative copy/component/inventory/scenario hashes: `0061b4e08b7c27bd3ed38ceb88897da2d3032369cfbfbaf92ef543f8ffb70c83`, `70efb6f83b1c59d45d7a5a6cfb7e4cea4dd5058827b2f908fa290e7beaecab90`, `177ee1e6c5e1e49357bb54263f0659c3bc50f213f4d544bfc1f6ef9f5fa50a2f`, `692f7f492cb94ed28d8f8c8a44b738846ef9037d6c923841b72388d099505a01`.
+- Independent final preflight: PASS with zero critical/warning findings after authoritative roster, exact sixteen-variation text200, Theme-owner/reflow/restoration, and locale semantic-overlay closure.
+- Implemented: script-backed Theme and material Resource; reusable Button/Panel/Label/ScreenShell/locale selector/UiCopy; duplicate-safe atomic en-US catalog; Title/Staging/Campaign/Squad/Results shell adoption; exact focused tests; and a 62-shot scenario with 65 headless checks plus 142 windowed checks.
 - Serialized ownership amendment: AUI-12 owns `autoloads/i18n.gd`, `localization/en-US.json`, and `test/test_i18n.gd` because current project policy requires localization from the first visible AUI phase. The complete exact file lease is in `docs/todo.md`.
 - Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-20 remains blocked on AUI-12 closure and exact D runtime approval; AUI-11 remains blocked on AUI-34 closure.
 - Human gate: implementation cannot land until fresh exact-candidate RELEASE/audit passes and Poseidon completes the commit-bound Web route/focus/cancel/locale/compact/portrait/en-US review.
