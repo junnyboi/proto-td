@@ -98,10 +98,13 @@ func _lint_teach_before_use(campaign: Array, failures: Array[String]) -> void:
 func _lint_monotonic_and_hygiene(campaign: Array, failures: Array[String]) -> void:
 	var enemy_hp: Dictionary = {}
 	var prev_total := -1
-	var available_ops := (CampaignState.derive_starting_unlocks({
+	var starting_ops: Array = CampaignState.derive_starting_unlocks({
 		"operators": _scan_ids(KIND_DIRS[&"operator"]),
 		"traps": [], "spells": [],
-	}, campaign)["operators"] as Array).size()
+	}, campaign)["operators"] as Array
+	var available: Dictionary = {}
+	for operator_id: StringName in starting_ops:
+		available[operator_id] = true
 	for stage: StageDef in campaign:
 		var tag := String(stage.id)
 		var total := 0
@@ -122,14 +125,41 @@ func _lint_monotonic_and_hygiene(campaign: Array, failures: Array[String]) -> vo
 			failures.append("%s: campaign stage needs squad_size >= 1" % tag)
 		if stage.wave_starts.size() < 2:
 			failures.append("%s: campaign stage needs wave_starts.size() >= 2" % tag)
-		if available_ops < stage.squad_size:
+		if available.size() < stage.squad_size:
 			failures.append(
 				"%s: only %d operators available for squad_size %d"
-				% [tag, available_ops, stage.squad_size]
+				% [tag, available.size(), stage.squad_size]
 			)
+		_lint_recovery_roster(stage, available, failures)
 		for reward: Dictionary in stage.rewards:
 			if reward.get("kind", &"") == &"operator":
-				available_ops += 1
+				available[reward.get("id", &"")] = true
+
+
+func _lint_recovery_roster(
+	stage: StageDef,
+	available: Dictionary,
+	failures: Array[String],
+) -> void:
+	var tag := String(stage.id)
+	if stage.recovery_roster.is_empty():
+		failures.append("%s: campaign stage needs a recovery_roster" % tag)
+		return
+	if stage.recovery_roster.size() > stage.squad_size:
+		failures.append(
+			"%s: recovery_roster size %d exceeds squad_size %d"
+			% [tag, stage.recovery_roster.size(), stage.squad_size]
+		)
+	var seen := {}
+	for operator_id: StringName in stage.recovery_roster:
+		if seen.has(operator_id):
+			failures.append("%s: recovery_roster duplicates '%s'" % [tag, operator_id])
+		seen[operator_id] = true
+		if not available.has(operator_id):
+			failures.append(
+				"%s: recovery operator '%s' is not available before this stage"
+				% [tag, operator_id]
+			)
 
 
 func _scan_ids(dir_path: String) -> Array[StringName]:
@@ -138,8 +168,11 @@ func _scan_ids(dir_path: String) -> Array[StringName]:
 	if dir == null:
 		return ids
 	for f: String in dir.get_files():
-		if f.ends_with(".tres"):
-			ids.append(StringName(f.trim_suffix(".tres")))
+		var source := f.trim_suffix(".remap")
+		if source.ends_with(".tres"):
+			var item_id := StringName(source.trim_suffix(".tres"))
+			if not ids.has(item_id):
+				ids.append(item_id)
 	return ids
 
 
@@ -149,8 +182,11 @@ func _list_tres(dir_path: String) -> Array[String]:
 	if dir == null:
 		return out
 	for f: String in dir.get_files():
-		if f.ends_with(".tres"):
-			out.append(dir_path + "/" + f)
+		var source := f.trim_suffix(".remap")
+		if source.ends_with(".tres"):
+			var path := dir_path + "/" + source
+			if not out.has(path):
+				out.append(path)
 	out.sort()
 	return out
 

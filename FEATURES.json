@@ -348,6 +348,36 @@
     "f08ee08",
     "924f360"
    ]
+  },
+  {
+   "id": "P16",
+   "title": "Persistent heroes: recruitment, Muster Ledger, duplicate-safe battles, permadeath, and one durable campaign slot",
+   "acceptance": [
+    "a campaign owns stable deterministic hero instances distinct from OperatorDef identity, with exact hash/save/replay coverage",
+    "Contract Board recruitment and emergency recovery preserve deterministic economy and prevent roster soft locks",
+    "Muster Ledger supports callsign-only customization and READY/DEAD history without mutating combat definitions",
+    "campaign battle tickets bind hero IDs to immutable definitions; terminal casualties resolve exactly once and remain dead after Continue",
+    "one corruption-safe autosave slot, Continue, overwrite confirmation, Retry Save, and Abandon preserve durable strategic truth",
+    "localized player-facing surfaces provide stable keys, English fallbacks, en-US default, selector, parity, glyph, and layout proof",
+    "fresh RELEASE verification, independent audit, Web preview, and human verdict cover identity, death fairness, recovery clarity, and save trust"
+   ],
+   "evidence_classes": [
+    "logic",
+    "integration",
+    "visual",
+    "feel"
+   ],
+   "status": "pending",
+   "scenarios": [
+    "p16_contract_probe",
+    "model_roster_probe",
+    "strategic_verbs",
+    "hero_result_flow",
+    "barracks_recruit_death",
+    "save_roundtrip",
+    "p16_strategic_campaign"
+   ],
+   "commits": []
   }
  ],
  "deviations": [

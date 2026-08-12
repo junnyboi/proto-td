@@ -60,6 +60,7 @@ waves = Array[Dictionary]([{
 wave_starts = PackedInt32Array(0, 500)
 leak_limit = 3
 squad_size = 6
+recovery_roster = Array[StringName]([&"vanguard_1", &"guard_1", &"guard_2", &"defender_1", &"caster_1", &"defender_2"])
 rewards = Array[Dictionary]([{
 "id": &"vanguard_2",
 "kind": &"operator"

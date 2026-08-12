@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-008 — Freeze P16 deterministic personnel contracts
+
+- Status: in_progress
+- Owner: AGENT A
+- Branch: `agent-a/p16-contracts`
+- Base: `master` at `a6bae9c24f4e6239da0821ef81107198bbf011c2`
+- Dependencies: approved P16 plan; TD-007/FLOW-1 integrated
+- Owned files: `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, `docs/plans/TD-008-p16-contracts.md`, `docs/handoffs/TD-008-agent-a-p16-contracts.md`, `data/stage_def.gd`, `data/game_config.gd`, `data/names/hero_names_v1.gd`, `data/stages/s1.tres` through `s8.tres`, P16 pure contract modules under `sim/`, shared authoritative action-domain predicates in `sim/battle_model.gd`, P16 fixtures under `test/fixtures/p16/` and `playtests/replays/v1/`, P16 focused tests, `tools/stage_lint.gd`, `tools/replay_runner.gd`, `scripts/replay_check.sh`, `tools/probe_filesystem.gd`, `scripts/probe_filesystem.sh`, `scripts/verify.sh`, and `selftest/scenarios/p16_contract_probe.gd` plus generated UID sidecars
+- Do not touch: `autoloads/game.gd`, current UI/scenes, battle tick order or mutable state, existing bots, telemetry, thresholds, localization runtime, music/audio assets, or player-facing P16 behavior
+- Acceptance: lock exact seed-42 identity/name/save/SHA/FNV vectors; strict v1 replay fixtures match current S1–S8 bots and diff identically across processes; recovery rosters are authored and lint-valid; isolated main/tmp/bak filesystem probe passes; every rejection is zero-state; no P16 gameplay is exposed
+- Required evidence: focused GUT twice, import/boot, `p16_contract_probe`, replay two-process diff, filesystem probe, unchanged existing regression, fresh uninterrupted full gate, independent diff-vs-contract audit, merged-master full gate
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
