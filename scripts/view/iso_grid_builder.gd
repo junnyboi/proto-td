@@ -37,6 +37,7 @@ const TILE_ART := {
 
 
 static func build_terrain(grid_root: Node2D, stage: StageDef) -> void:
+	var theme := StageArtTheme.load_for(stage)
 	var size := stage.grid_size()
 	var path_cells: Dictionary = {}
 	for i: int in stage.paths.size():
@@ -48,7 +49,9 @@ static func build_terrain(grid_root: Node2D, stage: StageDef) -> void:
 			var tile := stage.tile_at(cell)
 			var lifted := tile == StageDef.Tile.ELEVATED
 			var is_road := tile == StageDef.Tile.GROUND and path_cells.has(cell)
-			var art_id: StringName = &"tile_road" if is_road else TILE_ART[tile]
+			var art_id: StringName = theme.tile_id(tile, path_cells.has(cell)) if theme != null else &""
+			if art_id == &"":
+				art_id = &"tile_road" if is_road else TILE_ART[tile]
 			if _add_tile_sprite(grid_root, stage, cell, art_id, lifted):
 				continue
 			var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
@@ -60,11 +63,16 @@ static func build_terrain(grid_root: Node2D, stage: StageDef) -> void:
 			poly.polygon = IsoProjection.cell_polygon(cell, lifted)
 			poly.z_index = IsoProjection.tile_z(cell)
 			grid_root.add_child(poly)
+	if theme != null:
+		_add_theme_decor(grid_root, stage, theme)
 
 
-static func build_backdrop_ring(grid_root: Node2D, size: Vector2i) -> void:
-	var tex := Art.texture(&"tile_backdrop")
-	var art_size := Art.size(&"tile_backdrop")
+static func build_backdrop_ring(grid_root: Node2D, stage: StageDef) -> void:
+	var theme := StageArtTheme.load_for(stage)
+	var size := stage.grid_size()
+	var backdrop_id: StringName = theme.backdrop_id if theme != null else &"tile_backdrop"
+	var tex := Art.texture(backdrop_id)
+	var art_size := Art.size(backdrop_id)
 	if art_size == Vector2i.ZERO and tex != null:
 		art_size = Vector2i(tex.get_width(), tex.get_height())
 	for y: int in range(-BACKDROP_RING, size.y + BACKDROP_RING):
@@ -75,6 +83,7 @@ static func build_backdrop_ring(grid_root: Node2D, size: Vector2i) -> void:
 			if tex != null:
 				var top: Vector2 = IsoProjection.cell_polygon(cell)[0]
 				var sprite := TextureRect.new()
+				sprite.name = "Backdrop_%d_%d" % [x, y]
 				sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				sprite.texture = tex
 				sprite.stretch_mode = TextureRect.STRETCH_SCALE
@@ -115,6 +124,78 @@ static func _add_tile_sprite(
 	if lifted:
 		_add_cliff_shade(grid_root, stage, cell)
 	return true
+
+
+static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArtTheme) -> void:
+	for cell: Vector2i in theme.route_notch_cells:
+		_add_face_overlay(grid_root, cell, theme.route_notch_id, "RouteNotch")
+	_add_landmark(
+		grid_root,
+		stage,
+		theme.spawn_cell,
+		theme.spawn_landmark_id,
+		theme.spawn_pivot,
+		theme.spawn_offset,
+		"SpawnLandmark",
+	)
+	_add_landmark(
+		grid_root,
+		stage,
+		theme.core_cell,
+		theme.core_landmark_id,
+		theme.core_pivot,
+		theme.core_offset,
+		"CoreLandmark",
+	)
+	# world.s1.rain_measure intentionally remains manifest-backed but unplaced.
+
+
+static func _add_face_overlay(
+	grid_root: Node2D, cell: Vector2i, art_id: StringName, node_prefix: String
+) -> void:
+	var tex := Art.texture(art_id)
+	if tex == null:
+		return
+	var art_size := Art.size(art_id)
+	if art_size == Vector2i.ZERO:
+		art_size = Vector2i(tex.get_width(), tex.get_height())
+	var top: Vector2 = IsoProjection.cell_polygon(cell)[0]
+	var sprite := TextureRect.new()
+	sprite.name = "%s_%d_%d" % [node_prefix, cell.x, cell.y]
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.texture = tex
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y)
+	sprite.z_index = IsoProjection.tile_z(cell) + 1
+	grid_root.add_child(sprite)
+
+
+static func _add_landmark(
+	grid_root: Node2D,
+	stage: StageDef,
+	cell: Vector2i,
+	art_id: StringName,
+	pivot: Vector2i,
+	offset: Vector2i,
+	node_name: String,
+) -> void:
+	var tex := Art.texture(art_id)
+	if tex == null:
+		return
+	var art_size := Art.size(art_id)
+	if art_size == Vector2i.ZERO:
+		art_size = Vector2i(tex.get_width(), tex.get_height())
+	var center := IsoProjection.face_center(cell, stage.tile_at(cell) == StageDef.Tile.ELEVATED)
+	var sprite := TextureRect.new()
+	sprite.name = node_name
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.texture = tex
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.position = center - Vector2(pivot) * SPRITE_SCALE + Vector2(offset) * SPRITE_SCALE
+	sprite.z_index = IsoProjection.tile_z(cell) + 1
+	grid_root.add_child(sprite)
 
 
 ## Cliff walls for a lifted face in the FALLBACK lane (textured tiles bake

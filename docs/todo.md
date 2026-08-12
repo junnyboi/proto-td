@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## AUI-10R — Integrate Agent D's approved S1 world assets at runtime
+
+- Status: in_progress
+- Owner: AGENT D
+- Branch: `agent-d/s1-world-runtime`
+- Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
+- Dependencies: Poseidon's explicit owner override; exact `AUI-DESIGN-D` receipt/metadata and all six approved hashes verified; Agent F's remote branch is fully contained in master, its external lease expired, and it has no worktree, PR, process, or queue claim; Agent E is unrelated
+- Owned files: `assets/world/s1/**`, `assets/provenance/world/s1/**`, `assets/manifest.tres`, `data/presentation/stage_art_theme.gd`, `data/presentation/s1_world_theme.tres`, `scripts/view/iso_grid_builder.gd`, `scripts/view/battle_view.gd`, `test/test_stage_art_theme.gd`, `selftest/scenarios/s1_world_art.gd`, `docs/media/AUI-DESIGN-D-approved-manifest.json`, the AUI decision/status/art/handoff docs, this row, and `FEATURES.json`
+- Do not touch: simulation/model state, stage geometry/data, save/hash/replay, existing probe reservations, thresholds, `scripts/verify.sh`, localization catalogs, unrelated UI/assets, or Agent E work
+- Acceptance: S1 alone resolves and renders eight manifest-backed world assets; ground/route/elevation/backdrop replace generic tiles; three cadence notches and Spawn/Core landmarks render with mouse-ignore semantics; rain measure remains unplaced; non-S1 stages retain generic art; model hash/replay surface and S1 geometry are unchanged
+- Required evidence: exact approval-packet hash manifest, asset/provenance gate, theme GUT, headless/windowed `s1_world_art`, existing `assets_floor` and `iso_projection_floor`, fresh `scripts/verify.sh --full`, clean-artifact RELEASE rerun, independent diff-vs-pins audit, localization-impact review, and Poseidon visual review before final-art acceptance
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked

@@ -262,5 +262,53 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_2_%d.png",
 "placeholder": false,
 "size": Vector2i(32, 32)
+},
+&"world.s1.backdrop": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-backdrop.png",
+"placeholder": true,
+"size": Vector2i(32, 24)
+},
+&"world.s1.core_landmark": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-core-landmark.png",
+"placeholder": true,
+"size": Vector2i(32, 48)
+},
+&"world.s1.elevated": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-elevated.png",
+"placeholder": true,
+"size": Vector2i(32, 24)
+},
+&"world.s1.ground": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-ground.png",
+"placeholder": true,
+"size": Vector2i(32, 16)
+},
+&"world.s1.rain_measure": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-rain-measure.png",
+"placeholder": true,
+"size": Vector2i(32, 32)
+},
+&"world.s1.route": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-route.png",
+"placeholder": true,
+"size": Vector2i(32, 16)
+},
+&"world.s1.route_notch": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-route-notch.png",
+"placeholder": true,
+"size": Vector2i(32, 16)
+},
+&"world.s1.spawn_landmark": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-spawn-landmark.png",
+"placeholder": true,
+"size": Vector2i(32, 48)
 }
 }

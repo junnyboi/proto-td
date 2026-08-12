@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="StageArtTheme" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/stage_art_theme.gd" id="1_theme"]
+
+[resource]
+script = ExtResource("1_theme")
+stage_id = &"s1"
+theme_id = &"world.act1.windward_muster"
+approval_token = &"AUI-DESIGN-D"
+approval_manifest_sha256 = "91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51"
+human_final_art = false
+ground_id = &"world.s1.ground"
+route_id = &"world.s1.route"
+elevated_id = &"world.s1.elevated"
+backdrop_id = &"world.s1.backdrop"
+route_notch_id = &"world.s1.route_notch"
+route_notch_cells = Array[Vector2i]([Vector2i(2, 2), Vector2i(4, 2), Vector2i(6, 2)])
+spawn_landmark_id = &"world.s1.spawn_landmark"
+spawn_cell = Vector2i(0, 2)
+spawn_pivot = Vector2i(16, 30)
+spawn_offset = Vector2i(-12, -4)
+core_landmark_id = &"world.s1.core_landmark"
+core_cell = Vector2i(7, 2)
+core_pivot = Vector2i(16, 30)
+core_offset = Vector2i(12, 4)
+rain_measure_id = &"world.s1.rain_measure"
+rain_measure_placed = false

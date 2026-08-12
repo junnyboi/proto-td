@@ -1,39 +1,35 @@
-# AUI-10 — S1 Civic-Weatherworks World Assets
+# AUI-10/AUI-10R — S1 Civic-Weatherworks World Assets
 
-**Status:** staged in Agent D's independent ART lane; runtime-unbound
-**Branch base:** `975261e8e00a20a0b25fe17e7976d743d509c14b`
+**Status:** runtime-integrated RELEASE candidate on `agent-d/s1-world-runtime`; human final-art acceptance unset
+**Runtime base:** `3936eeda3e25c5f45def229b168fd11c41a048d9`
 **Owner:** AGENT D
-**Concept authority:** owner-approved `AUI-DESIGN-D`, including the focused S1 mannequin revision
+**Concept authority:** `AUI-DESIGN-D`, accepted manifest `91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51`
 
-## Parallel boundary
+## Runtime boundary
 
-Agent D owns source-generation records, native asset generation, provenance, presentation data, QA boards, and this handoff. Agent F does **not** block those artifacts. Agent F's later integration seam owns the shared runtime manifest and view binding; this lane deliberately does not edit `assets/manifest.tres`, `assets/asset_manifest.gd`, `scripts/view/**`, scenes, stage data, harness/core APIs, tests, thresholds, `FEATURES.json`, or `scripts/verify.sh`.
+Poseidon explicitly authorized Agent D to integrate its own approved S1 world assets. Agent F's remote checkpoint is contained in master, its lease expired, and it holds no active worktree, PR, process, or queue claim. Agent E remains unrelated and blocked.
 
-The staged presentation payload is `STAGED_UNBOUND` and `non_authoritative`. A runtime consumer must validate its logical IDs, stage-resource hash, offsets, input pass-through, and asset dimensions before binding anything.
-
-`staging/.gdignore` is load-bearing: it prevents Godot from auto-importing unbound candidates and generating `.import` sidecars during unrelated verification. Agent F must copy the accepted eight PNGs into the runtime manifest-owned asset path; removing the staging guard or resolving `res://staging/**` directly is forbidden.
+The eight staged PNGs were copied byte-for-byte into `assets/world/s1/`; runtime code never resolves `res://staging/**`. The logical manifest owns the import paths, and `data/presentation/s1_world_theme.tres` owns S1-only role and placement data. `BattleView` validates the resource and manifest IDs, then passes it to `IsoGridBuilder` as a disposable presentation projection. No model, stage geometry, save/hash/replay state, or threshold changes are part of this lane.
 
 ## Asset set
 
-| Logical ID | Native geometry | Purpose | Current state |
+| Logical ID | Native geometry | Runtime role | Acceptance state |
 |---|---:|---|---|
-| `world.s1.ground` | 32×16 | quiet shell-lime passive floor | machine-conformant, human-final unset |
-| `world.s1.route` | 32×16 | warm west→east service route | machine-conformant, human-final unset |
-| `world.s1.elevated` | 32×24 | 32×16 top plus exactly eight wall rows | machine-conformant, human-final unset |
-| `world.s1.backdrop` | 32×16 | broken non-playable court-edge fragments | machine-conformant, human-final unset |
-| `world.s1.spawn_landmark` | 32×32, pivot 16×30 | canvas/intake Spawn identity | machine-conformant, human-final unset |
-| `world.s1.core_landmark` | 32×32, pivot 16×30 | squat regulator Core identity | machine-conformant, human-final unset |
-| `world.s1.rain_measure` | 16×16, pivot 8×14 | low decor candidate | conformant but intentionally unplaced |
-| `world.s1.route_notch` | 32×16 | exactly three neutral cadence notches | machine-conformant, human-final unset |
+| `world.s1.ground` | 32×16 | quiet shell-lime passive floor | integrated, human-final unset |
+| `world.s1.route` | 32×16 | warm west→east service route | integrated, human-final unset |
+| `world.s1.elevated` | 32×24 | 32×16 top plus exactly eight wall rows | integrated, human-final unset |
+| `world.s1.backdrop` | 32×24 | broken non-playable court-edge fragments | integrated, human-final unset |
+| `world.s1.spawn_landmark` | 32×48, pivot `(16,30)` | canvas/intake Spawn identity | integrated, human-final unset |
+| `world.s1.core_landmark` | 32×48, pivot `(16,30)` | squat regulator Core identity | integrated, human-final unset |
+| `world.s1.rain_measure` | 32×32 | reserved low-decor candidate | manifested and deliberately unplaced |
+| `world.s1.route_notch` | 32×16 | exactly three neutral cadence notches | integrated, human-final unset |
 
-## Reproduction and provenance
+All eight manifest entries retain `placeholder = true`. Their runtime provenance sidecars retain the exact GPT Image 2 model/prompt/reference chain, final byte hashes, the approval receipt and accepted-manifest hashes, and `human_acceptance.final_art = false`.
 
-`python3 tools/art_pipeline/world/normalize_s1_world.py` deterministically rebuilds every native PNG, provenance sidecar, contact sheet, staged composition, playable-surface mask, and normalization report from checked-in contract/palette/source-ledger facts. `python3 tools/art_pipeline/world/validate_s1_world.py` rejects geometry drift, soft alpha, reserved probe colors, missing/duplicate provenance, source-model drift, accidental human-final claims, stage-hash drift, guessed anchors, internal absolute paths, and common secret markers.
+## Reproduction and proof
 
-The 16 large GPT Image 2 source rasters remain in the external owner-approval archive and are represented in Git by exact SHA-256, dimensions, mode, prompt hash, and approved-reference hashes. This avoids approximately 59 MB of duplicate binary churn while preserving auditable identity and regeneration inputs.
+`python3 tools/art_pipeline/world/normalize_s1_world.py` deterministically rebuilds the staged native candidates and QA boards. `python3 tools/art_pipeline/world/validate_s1_world.py` rejects geometry drift, soft alpha, reserved probe colors, missing provenance, source-model drift, accidental human-final claims, stage-hash drift, guessed anchors, internal absolute paths, and common secret markers. The runtime unit test additionally pins every promoted PNG SHA-256 and verifies all eight manifest bindings.
 
-## Measured staged feasibility
+The `s1_world_art` scenario proves the live S1 grid uses the new ground, route, elevation, and backdrop textures; exactly three notches; exact Spawn/Core placements; ignored input; unplaced rain measure; and cell-picking round trips. Its windowed lane produces `s1_world_integrated.png` after the startup banner clears. Existing `assets_floor` and `iso_projection_floor` remain required regression gates.
 
-The current deterministic mock preserves the authoritative 8×5 S1 geometry, path `(0,2)`→`(7,2)`, and elevated cells `(3,1)`/`(3,3)`. Median playable-surface CIE L* is `52.124` within `[48,58]`; warm/direct share is `0.6670` within `[0.55,0.70]`. These are staged-raster measurements, not runtime proof.
-
-Runtime viewport fit, picking, endpoint attachment clearance, asset import, Web budget, unit/trap/overlay recognition, and human final-art acceptance remain explicitly unclaimed until the integration lane produces fresh runtime evidence.
+The staged value board remains median playable-surface CIE L* `52.124` within `[48,58]` and warm/direct share `0.6670` within `[0.55,0.70]`. Runtime visual acceptance, Web performance, and final-art promotion remain pending fresh RELEASE evidence, independent review, and Poseidon's verdict.

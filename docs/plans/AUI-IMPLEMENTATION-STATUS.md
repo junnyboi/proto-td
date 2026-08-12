@@ -1,51 +1,47 @@
-# Aetheria UI Implementation Status
+# Aetheria Art/UI Implementation Status
 
 ## AUI-00 — Presentation contracts and baselines
 
+- Repository checkpoint: `a46fe9c` (`AGENT F - Claim AUI presentation contracts`), fully contained in current master.
+- Ownership state: Agent F's external lease expired at `2026-08-12T20:42:17.172134Z`; no Agent F worktree, pull request, process, or active `docs/todo.md` claim exists.
+- Owner decision: Poseidon explicitly ruled that Agent F is not a blocker for Agent D's approved S1 world assets.
+- Residual boundary: AUI-00's additive contracts remain available; they do not retain exclusive ownership of the manifest/view seam.
+
+## AUI-10 — Agent D S1 world source and staging packet
+
+- Status: merged to master and machine-conformant.
+- Commits: `817408a` implementation and `3b7ba22` final fail-closed handoff pin.
+- Contents: eight deterministic native S1 assets, GPT Image 2 source ledger, portable normalizer, staged provenance, value-board/contact-sheet QA, and an unbound presentation payload.
+- Human final art: unset.
+
+## AUI-10R — Agent D S1 runtime integration
+
 - Status: `in_progress`
-- Owner: `AGENT F`
-- Branch: `agent-f/aui-00`
-- Base: `master` at `975261e8e00a20a0b25fe17e7976d743d509c14b`
-- Base tree: `cf4b3e1c0d8ae826c668765d994a032acbb8c0ad`
-- Isolated worktree: `/home/ubuntu/Projects/prototype-td-agent-f-aui00`
-- Lease acquired: `2026-08-12T12:42:17.172134Z`
-- Lease expiry: `2026-08-12T20:42:17.172134Z`
-- Plan SHA-256: `d62f55e07376354c2b1ddcc214cbb03a9c581f480eaa7401ac349b4f623285bd`
-- Independent preflight: `PASS`, build-ready, zero blocker/major findings
-- Enforcement: MGS v2 `DEFAULT`; effective lane `RELEASE`
+- Owner: `AGENT D`
+- Branch: `agent-d/s1-world-runtime`
+- Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
+- Effective lane: `RELEASE`
+- Lease: active from `2026-08-12T13:58:39.473748Z` through `2026-08-12T23:58:39.473748Z`
 
 ### Dependency boundary
 
-- D: approved by owner attestation; packet/hash absent; runtime ingestion blocked.
-- F: approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`.
-- E: iterating; all E-dependent packages remain blocked.
-- Agent 8 `TD-006` owns `docs/todo.md` and `docs/completed.md`; AUI-00 excludes both.
+- D: exact `AUI-DESIGN-D` manifest is available at `docs/media/AUI-DESIGN-D-approved-manifest.json`; receipt, accepted manifest, focused S1 revision, and all six canonical image hashes are verified.
+- F: owner-superseded for this S1 seam; the remote branch is fully contained in master and its lease is expired.
+- E: still iterating; no E asset, approval, or E-dependent successor work is consumed.
 
-### Exact external lease mirror
+### Runtime scope
 
-- `assets/asset_manifest.gd`
-- `assets/manifest.tres`
-- `assets/sprites/**` — temporary generator-output write ownership; tracked bytes must remain unchanged
-- `assets/portraits/**` — temporary generator-output write ownership; tracked bytes must remain unchanged
-- `assets/provenance/**`
-- `scripts/view/art.gd` and `.uid`
-- `data/presentation/**`
-- `tools/gen_assets.gd`
-- `tools/presentation_qa/**`
-- `test/test_presentation_contracts.gd` and `.uid`
-- `selftest/scenarios/presentation_contract_floor.gd` and `.uid`
-- `docs/decisions/AUI-DESIGN-APPROVALS.md`
-- `docs/plans/AUI-IMPLEMENTATION-STATUS.md`
-- `docs/handoffs/AUI-00-agent-f-contracts.md`
+AUI-10R may promote only Agent D's eight S1 PNGs into `assets/world/s1/`, add truthful runtime provenance, extend the logical manifest, add an S1 `StageArtTheme`, project it through `BattleView`/`IsoGridBuilder`, and add exact tests/scenarios/evidence. It may not change simulation, stage geometry, save/hash/replay state, thresholds, localization catalogs, unrelated UI, or Agent E content.
 
-### Non-goals
+### Acceptance state
 
-No simulation, gameplay data, route, tick, hash/save/replay, BattleView, JuiceLayer, MapNavigator, IsoProjection, audio, threshold, export-preset, `scripts/verify.sh`, localization, Theme, visible copy, D/E runtime asset, or player-facing feature-status change.
-
-### Required exit evidence
-
-Exact contract GUT, generator double-run byte identity, `assets_floor`, `presentation_contract_floor` headless/windowed at seed 42 with ten fresh images and zero required skips, local Web/browser baseline, complete externalized `scripts/verify.sh --full` RELEASE union, secret/provenance scan, independent diff review, merged-master verification, and clean local/remote SHA equality.
+- S1 tile and backdrop roles resolve through manifest IDs.
+- Three route cadence notches and typed Spawn/Core landmarks render with input ignored.
+- Rain measure remains manifest-backed but deliberately unplaced.
+- Non-S1 stages retain the generic art lane.
+- All runtime assets retain `placeholder = true` and provenance `human_final_art = false` until Poseidon reviews the live screenshot/build.
+- RELEASE requires a frozen candidate, fresh clean-artifact full gate, independent diff-vs-pins audit, localization-impact review, and human visual verdict before merge.
 
 ## Successor locks
 
-AUI-10 and every E-dependent package remain blocked while E is unapproved. No successor claim occurs before AUI-00 durable closure.
+Agent D S1 runtime integration is no longer blocked by F or E. Every Agent E asset and E-dependent successor package remains blocked until the separate `AUI-DESIGN-E` approval token and accepted hash exist.

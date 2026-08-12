@@ -554,12 +554,11 @@ func _build_grid(stage: StageDef) -> void:
 	add_child(_backdrop)
 	_grid_root = Node2D.new()
 	_grid_root.name = "GridRoot"
-	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
 	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
-	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
+	IsoGridBuilder.build_backdrop_ring(_grid_root, stage)
 	IsoGridBuilder.build_terrain(_grid_root, stage)
 
 
