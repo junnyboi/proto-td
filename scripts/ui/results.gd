@@ -3,7 +3,8 @@ extends Control
 ## Results screen: headline + stars + tallies from Game.last_result, one
 ## "Unlocked:" line per granted reward (the reveal). The prototype has one
 ## player flow: Retry -> squad select, Return to Staging for either outcome,
-## and Back to Title resets the campaign session.
+## and Back to Title resets the campaign session. Harness/debug battles have
+## no CampaignState and receive only the safe Back to Title projection.
 ## The battle's stamp edge owns victory/defeat SFX — this screen only
 ## clicks (L3).
 
@@ -47,18 +48,19 @@ func _ready() -> void:
 	actions.add_theme_constant_override("separation", 16)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(actions)
-	var retry := Button.new()
-	retry.name = "RetryButton"
-	retry.text = "Retry"
-	retry.add_theme_font_size_override("font_size", FONT_SIZE)
-	retry.pressed.connect(_on_retry)
-	actions.add_child(retry)
-	var next := Button.new()
-	next.name = "ReturnToStaging"
-	next.text = "Return to Staging"
-	next.add_theme_font_size_override("font_size", FONT_SIZE)
-	next.pressed.connect(_on_return_to_staging)
-	actions.add_child(next)
+	if Game.campaign_active and Game.campaign != null:
+		var retry := Button.new()
+		retry.name = "RetryButton"
+		retry.text = "Retry"
+		retry.add_theme_font_size_override("font_size", FONT_SIZE)
+		retry.pressed.connect(_on_retry)
+		actions.add_child(retry)
+		var next := Button.new()
+		next.name = "ReturnToStaging"
+		next.text = "Return to Staging"
+		next.add_theme_font_size_override("font_size", FONT_SIZE)
+		next.pressed.connect(_on_return_to_staging)
+		actions.add_child(next)
 	var title := Button.new()
 	title.name = "BackToTitle"
 	title.text = "Back to Title"

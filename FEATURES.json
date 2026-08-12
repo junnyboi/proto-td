@@ -295,7 +295,7 @@
    "id": "P15",
    "title": "Campaign Staging Area: strategic hub shell and mode-correct routing",
    "acceptance": [
-    "interactive Campaign opens Staging; Mission Control opens stage select; stage-select Back preserves the campaign session",
+    "the sole Start action opens Staging; Mission Control opens stage select; stage-select Back preserves the campaign session",
     "campaign CLEAR and DEFEAT results return to Staging while preserving the active campaign session",
     "five future personnel operations are visible, disabled, and explicitly unavailable; initial campaign summary reads 0/8",
     "staging_flow passes headless and windowed with completion sentinel, three fresh screenshots, and falsifiable text/layout checks",

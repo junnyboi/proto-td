@@ -164,6 +164,26 @@ func run(h: SelfTestHarness) -> void:
 	await h.click_view(continue_btn.get_global_rect().get_center())
 	var results := await _await_screen(h, game, "ResultsColumn")
 	h.check("results reached", results != null)
+	if results == null:
+		return
+	h.check(
+		"harness Results has no campaign Retry",
+		results.find_child("RetryButton", true, false) == null,
+	)
+	h.check(
+		"harness Results has no Staging route",
+		results.find_child("ReturnToStaging", true, false) == null,
+	)
+	var back := results.find_child("BackToTitle", true, false) as Button
+	h.check("harness Results offers safe Back to Title", back != null)
+	if back == null:
+		return
+	await h.click_view(back.get_global_rect().get_center())
+	var title := await _await_screen(h, game, "TitleBox")
+	h.check("harness Results returns to title", title != null)
+	if title != null:
+		var start := title.find_child("StartButton", true, false) as Button
+		h.check("returned title exposes Start", start != null and start.text == "Start")
 	h.done()
 
 
