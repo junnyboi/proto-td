@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-014 — Rename the game to Protos
-
-- Status: in_progress
-- Owner: AGENT 2
-- Branch: `agent-2/protos-title`
-- Base: `master` at `3447024e25f0438e51295ec98fdfa02112c7e41a`
-- Dependencies: TD-013 integrated; supersede its product name while preserving its historical records
-- Owned files: `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-014-agent-2-protos-title.md`, `project.godot`, `autoloads/i18n.gd`, `localization/en-US.json`, `localization/README.md`, `scripts/ui/title.gd`, `selftest/scenarios/boot.gd`, `test/test_i18n.gd`, `CLAUDE.md`, `FINAL_REPORT.md`, `PLAYTEST.md`, `assets/music/README.md`, `docs/README.md`
-- Do not touch: TD-013 completed row/handoff/branch/evidence, repository paths, hosted URLs, deterministic state, saves, replays, gameplay data, locale-selector UX, verifier scripts, thresholds, or unrelated presentation lanes
-- Acceptance: Godot application metadata, desktop window title, live localized title, TITLE-1 acceptance, and current identity headers resolve exactly to `Protos`; no unexpected `Proto Defense` references remain outside immutable TD-013 history; sole Start behavior is unchanged
-- Required evidence: updated `test_i18n.gd`; seeded `boot` headless/windowed; fresh title PNG; historical-reference allowlist; STANDARD and repository-required full verification
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked

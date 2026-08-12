@@ -336,13 +336,14 @@
     "the title remains centered and unclipped at 1280x720 while the sole Start action and campaign initialization remain unchanged",
     "current product-facing document headers use Protos while TD-013 history, URLs, and repository paths remain immutable"
    ],
-   "status": "pending",
+   "status": "passing",
    "scenarios": [
     "boot"
    ],
    "commits": [
     "17017cf",
-    "366a430"
+    "366a430",
+    "2d61131"
    ]
   },
   {
