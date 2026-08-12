@@ -81,8 +81,11 @@ def validate_relative_path(value: Any, label: str) -> str:
         raise SpecError(f"{label} expected=non-empty-posix-relative-path")
     if "\\" in value or ":" in value:
         raise SpecError(f"{label} forbidden-separator-or-colon value={value!r}")
+    segments = value.split("/")
+    if any(segment in {"", ".", ".."} for segment in segments):
+        raise SpecError(f"{label} path-escape value={value!r}")
     pure = PurePosixPath(value)
-    if pure.is_absolute() or any(part in {".", "..", ""} for part in pure.parts):
+    if pure.is_absolute():
         raise SpecError(f"{label} path-escape value={value!r}")
     return value
 

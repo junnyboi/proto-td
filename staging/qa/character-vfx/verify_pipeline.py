@@ -206,6 +206,10 @@ def negative_checks(valid_packet: Path, root: Path, timeout_seconds: int, counte
         ("threshold_float_int", lambda value: value["normalization"].update({"alpha_threshold": 26.0}), "normalization.alpha_threshold"),
         ("absolute", lambda value: value["frames"][0].update({"path": "/tmp/frame.png"}), "path-escape"),
         ("dotdot", lambda value: value["frames"][0].update({"path": "../frame.png"}), "path-escape"),
+        ("leading_dot", lambda value: value["frames"][0].update({"path": "./frame_00.png"}), "path-escape"),
+        ("middle_dot", lambda value: value["frames"][0].update({"path": "sub/./frame_00.png"}), "path-escape"),
+        ("double_separator", lambda value: value["frames"][0].update({"path": "sub//frame_00.png"}), "path-escape"),
+        ("trailing_separator", lambda value: value["frames"][0].update({"path": "frame_00.png/"}), "path-escape"),
         ("backslash", lambda value: value["frames"][0].update({"path": "folder\\frame.png"}), "forbidden-separator"),
         ("colon", lambda value: value["frames"][0].update({"path": "C:frame.png"}), "forbidden-separator"),
         ("missing_source", lambda value: value["frames"][0].update({"path": "absent.png"}), "FileNotFoundError"),
@@ -372,7 +376,7 @@ def negative_checks(valid_packet: Path, root: Path, timeout_seconds: int, counte
         [sys.executable, "-B", str(HERE / "publication_faults.py"), "--root", str(root / "publication-faults")],
         timeout_seconds,
     )
-    counter.true("publication.fault_matrix", "cases=3" in result.stdout, f"stdout={result.stdout!r}")
+    counter.true("publication.fault_matrix", "cases=7" in result.stdout, f"stdout={result.stdout!r}")
 
 
 def python_lane(root: Path, input_root: Path, timeout_seconds: int, expected: dict[str, Any], counter: Counter) -> tuple[Path, Path]:

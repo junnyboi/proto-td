@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import base64
 import os
 import platform
 import shutil
+import stat
 import sys
 from itertools import count
 from io import BytesIO
@@ -35,6 +37,19 @@ class PipelineError(ValueError):
 
 
 _PUBLISH_SEQUENCE = count()
+PINNED_PYTHON_VERSION = "3.12.3"
+PINNED_PILLOW_VERSION = "12.3.0"
+
+
+def _require_backend_versions() -> None:
+    actual_python = platform.python_version()
+    actual_pillow = PIL.__version__
+    if actual_python != PINNED_PYTHON_VERSION or actual_pillow != PINNED_PILLOW_VERSION:
+        raise PipelineError(
+            "backend.version "
+            f"expected=python-{PINNED_PYTHON_VERSION},pillow-{PINNED_PILLOW_VERSION} "
+            f"actual=python-{actual_python},pillow-{actual_pillow}"
+        )
 
 
 def _backend_info() -> dict[str, str]:
@@ -200,6 +215,7 @@ def _require_exact(label: str, recorded: Any, measured: Any) -> None:
 
 
 def prepare_packet(spec_path: Path, input_root: Path, candidate_dir: Path, backend: str = "python") -> dict[str, Any]:
+    _require_backend_versions()
     if backend != "python":
         raise PipelineError(f"backend expected=python actual={backend!r}")
     if candidate_dir.exists():
@@ -231,6 +247,7 @@ def prepare_packet(spec_path: Path, input_root: Path, candidate_dir: Path, backe
 
 
 def validate_packet(packet_dir: Path, spec_path: Path, input_root: Path) -> dict[str, Any]:
+    _require_backend_versions()
     spec, sources = load_and_validate(spec_path, input_root)
     expected_names = set(spec["outputs"].values())
     entries = list(packet_dir.iterdir())
@@ -288,6 +305,95 @@ def validate_packet(packet_dir: Path, spec_path: Path, input_root: Path) -> dict
     return {"checks_executed": expected_report["checks_executed"], "metadata": metadata}
 
 
+def _preflight_removable_tree(path: Path) -> None:
+    try:
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return
+    if stat.S_ISLNK(mode) or stat.S_ISREG(mode):
+        return
+    if not stat.S_ISDIR(mode):
+        raise PipelineError(f"cleanup.preflight unsupported-entry name={path.name!r}")
+    if not os.access(path, os.R_OK | os.W_OK | os.X_OK):
+        raise PermissionError(f"cleanup.preflight inaccessible-directory name={path.name!r}")
+    with os.scandir(path) as entries:
+        for entry in entries:
+            if entry.is_symlink():
+                continue
+            child = Path(entry.path)
+            if entry.is_dir(follow_symlinks=False):
+                _preflight_removable_tree(child)
+            elif not entry.is_file(follow_symlinks=False):
+                raise PipelineError(f"cleanup.preflight unsupported-entry name={entry.name!r}")
+
+
+def _remove_tree(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.exists():
+        shutil.rmtree(path)
+
+
+def _salvage_payload(root: Path) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+
+    def visit(directory: Path) -> None:
+        with os.scandir(directory) as children:
+            ordered = sorted(children, key=lambda child: child.name)
+        for child in ordered:
+            path = Path(child.path)
+            relative = path.relative_to(root).as_posix()
+            if child.is_symlink():
+                entries.append({"path": relative, "type": "symlink", "target": os.readlink(path)})
+            elif child.is_dir(follow_symlinks=False):
+                entries.append({"path": relative, "type": "directory"})
+                visit(path)
+            elif child.is_file(follow_symlinks=False):
+                entries.append(
+                    {
+                        "path": relative,
+                        "type": "file",
+                        "data_base64": base64.b64encode(path.read_bytes()).decode("ascii"),
+                    }
+                )
+            else:
+                raise PipelineError(f"cleanup.salvage unsupported-entry name={child.name!r}")
+
+    mode = root.lstat().st_mode
+    if stat.S_ISLNK(mode):
+        entries.append({"path": ".", "type": "symlink", "target": os.readlink(root)})
+    elif stat.S_ISREG(mode):
+        entries.append(
+            {
+                "path": ".",
+                "type": "file",
+                "data_base64": base64.b64encode(root.read_bytes()).decode("ascii"),
+            }
+        )
+    elif stat.S_ISDIR(mode):
+        visit(root)
+    else:
+        raise PipelineError(f"cleanup.salvage unsupported-root name={root.name!r}")
+    return {"schema_version": 1, "entries": entries}
+
+
+def _write_salvage(root: Path, salvage: Path) -> dict[str, Any]:
+    expected = _salvage_payload(root)
+    temporary = salvage.with_name(f".{salvage.name}.candidate")
+    if temporary.exists() or salvage.exists():
+        raise PipelineError(f"cleanup.salvage expected=absent actual=exists name={salvage.name!r}")
+    try:
+        temporary.write_bytes(canonical_json_bytes(expected))
+        os.replace(temporary, salvage)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    measured = load_json(salvage)
+    if not _strictly_equal(measured, expected):
+        raise PipelineError(f"cleanup.salvage verification-failed name={salvage.name!r}")
+    return expected
+
+
 def _publish(candidate: Path, output_dir: Path, clean: bool) -> None:
     if not output_dir.exists():
         os.replace(candidate, output_dir)
@@ -314,15 +420,39 @@ def _publish(candidate: Path, output_dir: Path, clean: bool) -> None:
                 f"publication cutover-and-rollback failed; accepted packet preserved as {backup.name!r}"
             ) from rollback_error
         raise cutover_error
+    salvage = backup.with_name(f"{backup.name}.salvage.json")
     try:
-        shutil.rmtree(backup)
-    except OSError:
-        # The validated new packet is committed. Stale backup cleanup is recoverable
-        # housekeeping and must not falsely report that publication failed.
-        pass
+        _write_salvage(backup, salvage)
+    except (OSError, PipelineError, ValueError) as error:
+        raise PipelineError(
+            "publication committed but backup salvage failed; "
+            f"accepted packet preserved as {backup.name!r}"
+        ) from error
+    try:
+        _preflight_removable_tree(backup)
+    except (OSError, PipelineError) as error:
+        raise PipelineError(
+            "publication committed but backup cleanup failed preflight; "
+            f"complete rollback retained as {salvage.name!r}"
+        ) from error
+    try:
+        _remove_tree(backup)
+    except OSError as error:
+        raise PipelineError(
+            "publication committed but backup cleanup failed; "
+            f"complete rollback retained as {salvage.name!r}"
+        ) from error
+    try:
+        salvage.unlink()
+    except OSError as error:
+        raise PipelineError(
+            "publication committed but salvage cleanup failed; "
+            f"complete rollback retained as {salvage.name!r}"
+        ) from error
 
 
 def build_packet(spec_path: Path, input_root: Path, output_dir: Path, clean: bool) -> dict[str, Any]:
+    _require_backend_versions()
     if output_dir.exists() and not clean:
         raise PipelineError(f"output expected=absent-or-clean actual=exists name={output_dir.name!r}")
     candidate = output_dir.with_name(f".{output_dir.name}.candidate.{os.getpid()}")
