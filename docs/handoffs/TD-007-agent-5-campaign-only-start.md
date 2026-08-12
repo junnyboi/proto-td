@@ -66,6 +66,10 @@ Three independent read-only diff-vs-plan passes found and drove fixes for:
 
 The final independent audit of `924f360` versus base `690f761` returned **clean**, with no findings or pin breaks at confidence ≥80.
 
+## Concurrent integration reconciliation
+
+While the first merged-master gate was running, Agent 4 integrated its separately claimed soundtrack regeneration as `TD-006`. The push correctly rejected as non-fast-forward. This lane was therefore renumbered from its stale-base `TD-006` claim to `TD-007` before merging `origin/master`; Agent 4's completed TD-006 record and every music artifact were preserved. The only textual merge conflict was `docs/completed.md`, resolved by retaining both TD-006 and TD-007 lines. No force-push was used.
+
 ## Integration protocol
 
 Autonomous integration follows repository policy: fetch and merge current `origin/master` into the feature branch if it moved, resolve without force-push, re-run the required merged-tree gates, fast-forward `master`, push normally, and confirm local/remote SHA equality. No deviations are recorded.
