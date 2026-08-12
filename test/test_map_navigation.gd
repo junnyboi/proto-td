@@ -15,8 +15,21 @@ const STAGE_PATHS := [
 	"res://data/stages/s7.tres",
 	"res://data/stages/s8.tres",
 ]
+const BATTLE_VIEW_PATH := "res://scripts/view/battle_view.gd"
+const MAP_NAVIGATOR_PATH := "res://scripts/view/map_navigator.gd"
+const BATTLE_VIEW_SCRIPT: GDScript = preload("res://scripts/view/battle_view.gd")
 const S1: StageDef = preload("res://data/stages/s1.tres")
 const VIEWPORTS := [Vector2(960.0, 640.0), Vector2(1280.0, 720.0), Vector2(1920.0, 1080.0)]
+
+
+func test_battle_view_pins_map_navigator_as_an_explicit_resource_dependency() -> void:
+	assert_not_null(BATTLE_VIEW_SCRIPT)
+	var source := FileAccess.get_file_as_string(BATTLE_VIEW_PATH)
+	assert_false(source.is_empty(), BATTLE_VIEW_PATH)
+	assert_true(
+		source.contains('preload("%s")' % MAP_NAVIGATOR_PATH),
+		"BattleView must parse without relying on a pre-populated MapNavigator class cache",
+	)
 
 
 func test_s1_rendered_terrain_box_matches_independent_constants() -> void:

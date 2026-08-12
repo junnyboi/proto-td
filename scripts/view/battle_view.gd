@@ -7,6 +7,8 @@ extends Node2D
 ## outcomes). Phase 1 renders ColorRect placeholders; Lane A sprites replace
 ## them via the asset manifest without touching this flow.
 
+const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+
 const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -66,7 +68,7 @@ var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
 var _grid_scale := 1.0
-var _map_nav := MapNavigator.new()
+var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
 var _enemy_rects: Dictionary = {}
