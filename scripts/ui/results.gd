@@ -3,7 +3,7 @@ extends Control
 ## Results screen (Phase 10, td-phase-10.md §2.6; mode-aware since Phase
 ## 13): headline + stars + tallies from Game.last_result, one "Unlocked:"
 ## line per granted reward (the reveal). Actions route by mode — campaign:
-## Retry -> squad select, Continue (CLEAR only) -> stage select; quick
+## Retry -> squad select, Return to Staging for either outcome; quick
 ## battle: Retry -> restart the same stage; Back to Title always present.
 ## The battle's stamp edge owns victory/defeat SFX — this screen only
 ## clicks (L3).
@@ -54,12 +54,12 @@ func _ready() -> void:
 	retry.add_theme_font_size_override("font_size", FONT_SIZE)
 	retry.pressed.connect(_on_retry)
 	actions.add_child(retry)
-	if cleared and Game.campaign_active:
+	if Game.campaign_active:
 		var next := Button.new()
-		next.name = "ContinueToMap"
-		next.text = "Continue"
+		next.name = "ReturnToStaging"
+		next.text = "Return to Staging"
 		next.add_theme_font_size_override("font_size", FONT_SIZE)
-		next.pressed.connect(_on_continue)
+		next.pressed.connect(_on_return_to_staging)
 		actions.add_child(next)
 	var title := Button.new()
 	title.name = "BackToTitle"
@@ -69,9 +69,9 @@ func _ready() -> void:
 	actions.add_child(title)
 
 
-func _on_continue() -> void:
+func _on_return_to_staging() -> void:
 	Sfx.play("ui_click")
-	Game.open_stage_select()
+	Game.open_staging()
 
 
 func _on_retry() -> void:

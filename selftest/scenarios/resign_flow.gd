@@ -85,6 +85,10 @@ func run(h: SelfTestHarness) -> void:
 		"no ContinueToMap outside a campaign",
 		results.find_child("ContinueToMap", true, false) == null,
 	)
+	h.check(
+		"no ReturnToStaging outside a campaign",
+		results.find_child("ReturnToStaging", true, false) == null,
+	)
 	await h.shot("results_defeat")
 	if back_btn == null:
 		return

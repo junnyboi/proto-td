@@ -1,8 +1,10 @@
-# TD-005 — P15 Staging Area routing and three-lane contract
+# TD-005 — P15 Staging Area vertical-slice contract
 
 ## Goal
 
-Insert a plain Staging Area as the campaign home without changing campaign progression, battle semantics, balance, hashes, quick battle, or persistence. Final player flow:
+One top-level owner, **AGENT A**, implements and verifies the entire plain Staging Area vertical slice. Wide Research parallelizes read-only discovery and adversarial review; repository mutation remains single-owner.
+
+Final player flow:
 
 ```text
 Title → Campaign → Staging → Mission Control → Stage Select
@@ -11,31 +13,40 @@ Battle → Results → Staging
 
 ## Base and ownership
 
-- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
-- Integration owner: AGENT A / `agent-a/p15-integration`
-- UX dependency: AGENT B / `agent-b/p15-staging-ux`
-- Verification dependency: AGENT C / `agent-c/p15-staging-verification`
+- Original base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
+- Reconciled contract tip: `af28022c71d7f7786f08a62393cfc53627caeff4`
+- Owner/Integrator: AGENT A / `agent-a/p15-integration`
 - Engine: Godot 4.7.1 stable regular
 - Seed: 42
 
-## Research synthesis
+Agents B and C were unassigned by the human owner on 2026-08-12. Their incomplete lanes are absorbed here; no external handoff is required.
 
-### Accepted
+## Scope
 
-- Current campaign routing is autoload-owned and session-only; P15 adds no model state.
-- Existing campaign unlocks, rewards, stars, selected squad, quick battle, debug behavior, battle/replay IDs, and hashes remain unchanged.
-- `Game.start_campaign()` must create the same fresh `CampaignState` and then enter Staging for interactive launches; bots still pass `false` and drive stages directly.
-- The only Agent A production file is `autoloads/game.gd`.
-- Agent B and C receive observable methods and exact node names, not line-number promises.
+### Production
 
-### Rejected as scope creep
+- `autoloads/game.gd`
+- `scenes/staging.tscn`
+- `scripts/ui/staging.gd`
+- `scripts/ui/stage_select.gd`
+- `scripts/ui/results.gd`
 
-- No `BattleHeroSpec`, hero IDs, profile/roster model, campaign hash, result transaction, persistence, reset redesign, duplicate-archetype behavior, stage-cap tuning, or debug-policy change in P15.
-- No changes to `sim/`, battle creation, deploy/debug verbs, `BattleHash`, bots, thresholds, or data resources.
+### Verification
 
-## Observable dependency contract
+- `selftest/scenarios/staging_flow.gd`
+- `selftest/scenarios/campaign_flow.gd`
+- `selftest/scenarios/resign_flow.gd`
 
-Agent A publishes:
+### Coordination and closure
+
+- `FEATURES.json`
+- `docs/todo.md`
+- `docs/completed.md`
+- `PLAYTEST.md`
+- `docs/handoffs/TD-005-agent-a-p15-staging.md`
+- this plan
+
+## Observable contract
 
 ```text
 Game.open_staging()
@@ -45,9 +56,9 @@ Game.start_campaign() → Staging when interactive
 STAGING_SCENE_PATH = res://scenes/staging.tscn
 ```
 
-During the dependency-only commit, `open_staging()` temporarily falls back to stage select if `staging.tscn` is absent so the pre-existing suite remains green. Agent A removes that fallback after merging Agent B and before Agent C’s acceptance run. The final build must hard-route to Staging.
+Final implementation hard-routes `open_staging()` to the scene. The temporary missing-scene fallback in the dependency commit must be removed before acceptance.
 
-Agent B exposes these exact node names:
+Required node names:
 
 ```text
 StagingRoot
@@ -66,46 +77,58 @@ BackToStaging
 ReturnToStaging
 ```
 
-## Exclusive files
+## UI contract
 
-| Lane | Owned files |
-|---|---|
-| Agent A | `autoloads/game.gd`, `FEATURES.json`, `docs/todo.md`, final `docs/completed.md`, final `PLAYTEST.md`, final handoff |
-| Agent B | `scenes/staging.tscn`, `scripts/ui/staging.gd`, `scripts/ui/stage_select.gd`, `scripts/ui/results.gd` |
-| Agent C | `selftest/scenarios/staging_flow.gd`, `selftest/scenarios/campaign_flow.gd`, `selftest/scenarios/resign_flow.gd` |
-
-Never parallelize `scripts/verify.sh`, simulation/model files, tick semantics, thresholds, or shared ledgers. No two agents edit one file.
+- Plain original tactical hub using current project colors and UI conventions; no new art and no copied XCOM layout.
+- Fixed 1280×720 presentation with a centered 1080×620 shell.
+- Heading ≥48px; operation labels ≥32px; detail/status text ≥24px.
+- Mission Control and Back to Title are enabled.
+- Barracks, Recruit, Training, Armory, and Memorial are visible, disabled, and explicitly labeled as future personnel operations.
+- Campaign summary is nonblank and initially reports `0/8` cleared.
+- Next-mission summary identifies the first unlocked campaign stage.
+- Stage select includes `BackToStaging`.
+- Campaign CLEAR and DEFEAT results expose `ReturnToStaging`; quick results remain mode-correct.
 
 ## Ordered implementation
 
-1. Agent A publishes the route contract from the frozen green base.
-2. Agent B branches from the exact contract SHA and implements the plain staging UX.
-3. Agent C may research while Agent B works; it branches from the contract and tests only after Agent B’s commit is available.
-4. Agent A merges Agent B, removes the temporary route fallback, and performs import/boot smoke checks.
-5. Agent A merges Agent C and runs `staging_flow` headless/windowed.
-6. Agent A runs one full union gate, reads fresh PNGs, updates ledgers, integrates master, reruns full, exports Web, browser-smokes, and delivers the URL.
+1. Run Wide Research over repository UI conventions, staging information architecture, scenario proof, and routing regressions.
+2. Synthesize accepted/rejected findings; update this plan only if repository facts require it.
+3. Consolidate ledgers under Agent A.
+4. Implement `staging.gd` and `staging.tscn`; import before cross-file references settle.
+5. Remove the temporary route fallback; add Back/Return controls without changing campaign model semantics.
+6. Add `staging_flow`; update campaign/resign scenarios minimally.
+7. Run per-write lint, import, GUT, targeted headless/windowed scenario, then the full gate.
+8. Read fresh P15 PNGs against the checklist.
+9. Run independent adversarial diff review; fix any finding without weakening tests.
+10. Close ledgers, reconcile current master, verify the branch and merged master, push normally.
+11. Export the verified Web build, host through Manus WebDev, browser-smoke title → staging → mission control, inspect console, and deliver the playable URL.
 
 ## Acceptance and evidence
 
-- `staging_flow` proves title → staging → mission control, stage-select Back, campaign result returns, and quick-mode separation.
-- Five future operation controls exist and are disabled.
-- Initial summary is nonblank and reports `0/8`.
-- Required fresh shots: `staging_initial.png`, `staging_to_missions.png`, `results_return_to_staging.png`.
-- Text measures at least 48px heading, 32px operation labels, and 24px detail text.
-- No HUD/stage bleed or void strips.
-- `scripts/verify.sh --full` is green on the union and again on merged master.
-- Final candidate is exported to Web, hosted through Manus WebDev, browser-smoke-tested, and delivered for L7.
+- Title Campaign opens `StagingRoot`.
+- All operation controls exist.
+- Five future operations are disabled and visibly unavailable.
+- Mission Control opens stage select.
+- Stage-select Back returns to the same campaign Staging state.
+- Campaign CLEAR and DEFEAT results return to Staging.
+- Quick battle never enters an active campaign Staging state.
+- Completion sentinel is called.
+- Fresh shots: `staging_initial.png`, `staging_to_missions.png`, `results_return_to_staging.png`.
+- L5 checklist: labels fit 1280×720; measured text floor passes; enabled/disabled states are distinguishable; `0/8` summary is legible; no battle HUD/stage-row bleed; no void strips.
+- `scripts/verify.sh --full` green on final branch and merged master.
+- Final Web candidate is hosted and browser-smoke-tested.
 
 ## Non-goals
 
-Hero instances, recruiting, points, field-cap retuning, permadeath, XP, equipment, specialization, save/load, new art, and audio are deferred to P16+.
+Hero instances, recruiting mechanics, points, five-unit retuning, permadeath, XP, equipment, specialization, save/load, new art, and new audio behavior remain P16+.
+
+No changes to `sim/**`, `data/**`, battle/replay semantics, `BattleHash`, bots, `scripts/verify.sh`, tick semantics, or human-owned thresholds.
 
 ## Assumptions and deviations
 
 - A1: `start_campaign(false)` remains the bot/non-UI path and does not swap scenes.
-- A2: Existing campaign model behavior is unchanged.
-- A3: The temporary missing-scene fallback exists only in the dependency commit and is removed before final acceptance.
-- D-P15-01: If Agent B cannot satisfy the fixed node-name contract, stop and revise this contract rather than silently renaming test seams.
+- A2: Existing campaign unlock, reward, star, squad, debug, quick battle, and result semantics remain unchanged.
+- D-P15-01: If current scene structure makes a required node name impossible, record a numbered deviation before changing the observable contract.
 
 ## Integrity
 
@@ -113,4 +136,4 @@ Hero instances, recruiting, points, field-cap retuning, permadeath, XP, equipmen
 
 ## Integration responsibility
 
-Agent A inspects and serially merges both lane diffs, independently reruns every required gate, reconciles current master on the feature branch, fast-forwards master only after green, pushes normally, and confirms local/remote SHA equality. Force-push is forbidden.
+Agent A owns implementation through merged-tree verification and hosted playtest delivery. It must merge current `origin/master` into the feature branch, resolve semantically, rerun required gates, fast-forward local master only after green, rerun full on master, push normally, and confirm local/remote SHA equality. Force-push is forbidden.

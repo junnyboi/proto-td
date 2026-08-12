@@ -135,13 +135,9 @@ func open_title() -> void:
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
-## P15 campaign-home seam. The stage-select fallback exists only so this
-## dependency-contract commit remains standalone-green before Agent B lands
-## staging.tscn; Agent A removes it before the final P15 acceptance run.
+## P15 campaign-home seam. Returning here only swaps the projection; the
+## existing CampaignState object remains authoritative and unchanged.
 func open_staging() -> void:
-	if not ResourceLoader.exists(STAGING_SCENE_PATH):
-		_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
-		return
 	_swap_content.call_deferred(STAGING_SCENE_PATH)
 
 

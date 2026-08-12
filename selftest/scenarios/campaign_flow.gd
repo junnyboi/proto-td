@@ -1,6 +1,6 @@
 extends RefCounted
 
-## Phase 10 scenario (td-phase-10.md §5): title -> Campaign -> stage select
+## Phase 10 + P15 scenario: title -> Campaign -> Staging -> stage select
 ## (locks) -> squad select (picks, counter, empty loadout) -> S1 battle
 ## (bot_stage_01's timeline through the seam) -> Continue -> results (stars,
 ## reward reveal) -> stage select (progress) -> s2 squad select (guard_2
@@ -24,6 +24,12 @@ func run(h: SelfTestHarness) -> void:
 	if campaign_btn == null:
 		return
 	await h.click_view(campaign_btn.get_global_rect().get_center())
+	var staging := await _await_screen(h, game, "StagingRoot")
+	h.check("campaign opens Staging", staging != null)
+	if staging == null:
+		return
+	var campaign_ref: CampaignState = game.get("campaign")
+	game.call("open_stage_select")
 	var select := await _await_screen(h, game, "StageColumn")
 	h.check("stage select opened", select != null)
 	if select == null:
@@ -71,12 +77,14 @@ func run(h: SelfTestHarness) -> void:
 	h.check("loadout strip empty pre-unlocks", strip.text.contains("nothing unlocked"))
 	h.check("StartBattle enabled after picks", not start_btn.disabled)
 	await h.shot("squad_select")
-	await _battle_and_progress(h, game, start_btn)
+	await _battle_and_progress(h, game, start_btn, campaign_ref)
 
 
 ## Second half (own function to keep run() within the lint's return
 ## budget): S1 battle -> Continue -> results -> progress -> s2 gate.
-func _battle_and_progress(h: SelfTestHarness, game: Node, start_btn: Button) -> void:
+func _battle_and_progress(
+		h: SelfTestHarness, game: Node, start_btn: Button, campaign_ref: CampaignState,
+) -> void:
 	await h.click_view(start_btn.get_global_rect().get_center())
 	var budget := 120
 	while budget > 0 and game.get("current_battle") == null:
@@ -140,10 +148,8 @@ func _battle_and_progress(h: SelfTestHarness, game: Node, start_btn: Button) -> 
 	)
 	await h.shot("results_reward")
 
-	# back to stage select: progress visible, s2 open
-	var to_map := results.find_child("ContinueToMap", true, false) as Button
-	await h.click_view(to_map.get_global_rect().get_center())
-	var select2 := await _await_screen(h, game, "StageColumn")
+	# back through Staging: progress visible there, then s2 open in Mission Control
+	var select2 := await _return_to_stage_select(h, game, results, campaign_ref)
 	h.check("stage select re-opened", select2 != null)
 	if select2 == null:
 		return
@@ -174,14 +180,36 @@ func _battle_and_progress(h: SelfTestHarness, game: Node, start_btn: Button) -> 
 	h.done()
 
 
+func _return_to_stage_select(
+		h: SelfTestHarness, game: Node, results: Control, campaign_ref: CampaignState,
+) -> Control:
+	var to_staging := results.find_child("ReturnToStaging", true, false) as Button
+	h.check("campaign CLEAR offers Return to Staging", to_staging != null)
+	if to_staging == null:
+		return null
+	await h.click_view(to_staging.get_global_rect().get_center())
+	var staging := await _await_screen(h, game, "StagingRoot")
+	h.check("Staging re-opened after clear", staging != null)
+	if staging == null:
+		return null
+	h.check("campaign session preserved through Staging", game.get("campaign") == campaign_ref)
+	var summary := staging.find_child("CampaignSummary", true, false) as Label
+	h.check("Staging summary exists", summary != null)
+	if summary == null:
+		return null
+	h.check("Staging summary advances to 1/8", summary.text.contains("1/8"), summary.text)
+	game.call("open_stage_select")
+	return await _await_screen(h, game, "StageColumn")
+
+
 ## Awaits the deferred content swap and returns the new screen (null on
 ## timeout) — nodes are only fetched after the swap lands (L4).
 func _await_screen(h: SelfTestHarness, game: Node, marker: String) -> Control:
 	var budget := 120
 	while budget > 0:
 		var content := game.get("content") as Node
-		if content != null and is_instance_valid(content) \
-				and content is Control and content.find_child(marker, true, false) != null:
+		if content != null and is_instance_valid(content) and content is Control \
+				and (content.name == marker or content.find_child(marker, true, false) != null):
 			# let a layout pass position the fresh Controls before anyone
 			# reads get_global_rect() for a click (unsettled rects overlap
 			# at origin and rapid clicks land on the wrong button)

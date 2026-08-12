@@ -31,43 +31,17 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-005A — Publish P15 Staging routing contract and integrate the union
+## TD-005 — Implement and publish the P15 Staging vertical slice
 
 - Status: in_progress
 - Owner: AGENT A
 - Branch: `agent-a/p15-integration`
 - Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
-- Dependencies: `TD-005B`, then `TD-005C`, before final closure
-- Owned files: `autoloads/game.gd`, `FEATURES.json`, `docs/todo.md`, final `docs/completed.md`, final `PLAYTEST.md`, `docs/plans/TD-005-p15-staging-routing.md`, final Agent A handoff
-- Do not touch: Agent B/C files; `sim/**`; `data/**`; `scripts/verify.sh`; tick semantics; tests; bots; human-owned thresholds
-- Acceptance: publish the route contract; serially merge B then C; hard-route interactive campaigns and campaign results through Staging; preserve quick mode; full-green union and master; host and smoke-test Web build
-- Required evidence: contract commit SHA; `staging_flow` headless/windowed; fresh P15 PNG checklist; `scripts/verify.sh --full` on union and master; WebDev URL
-- Last update: 2026-08-12
-
-## TD-005B — Build the plain P15 Staging UX
-
-- Status: blocked
-- Owner: AGENT B
-- Branch: `agent-b/p15-staging-ux`
-- Base: Agent A dependency-contract commit, SHA pending publication
-- Dependencies: `TD-005A` contract commit
-- Owned files: `scenes/staging.tscn`, `scripts/ui/staging.gd`, `scripts/ui/stage_select.gd`, `scripts/ui/results.gd`
-- Do not touch: `autoloads/game.gd`; `sim/**`; shared ledgers; `FEATURES.json`; tests/scenarios; bots; `scripts/verify.sh`; thresholds
-- Acceptance: plain 1280×720 Staging shell; enabled Mission Control/Back; five visibly disabled future operations; Back/Return routes; quick results remain mode-correct
-- Required evidence: Agent B lint/import/boot checks and exact branch handoff to Agent A
-- Last update: 2026-08-12
-
-## TD-005C — Prove P15 Staging routing and presentation
-
-- Status: blocked
-- Owner: AGENT C
-- Branch: `agent-c/p15-staging-verification`
-- Base: Agent A dependency-contract commit plus Agent B UX commit, SHAs pending publication
-- Dependencies: `TD-005A` contract and `TD-005B` implementation
-- Owned files: `selftest/scenarios/staging_flow.gd`, `selftest/scenarios/campaign_flow.gd`, `selftest/scenarios/resign_flow.gd`
-- Do not touch: production files; shared ledgers; `FEATURES.json`; bots/data during P15; `scripts/verify.sh`; thresholds
-- Acceptance: real-input route checks, disabled-operation anti-vacuity, campaign CLEAR/DEFEAT returns, quick-mode separation, completion sentinel, fresh falsifiable shots
-- Required evidence: targeted headless/windowed `staging_flow`, fresh `report.json`, three named PNGs, lane handoff to Agent A
+- Dependencies: none; Agents B and C were unassigned and their scopes were absorbed by Agent A
+- Owned files: `autoloads/game.gd`, `scenes/staging.tscn`, `scripts/ui/staging.gd`, `scripts/ui/stage_select.gd`, `scripts/ui/results.gd`, `selftest/scenarios/staging_flow.gd`, `selftest/scenarios/campaign_flow.gd`, `selftest/scenarios/resign_flow.gd`, `FEATURES.json`, `docs/todo.md`, final `docs/completed.md`, final `PLAYTEST.md`, `docs/plans/TD-005-p15-staging-routing.md`, final Agent A handoff
+- Do not touch: `sim/**`; `data/**`; battle/replay semantics; `scripts/verify.sh`; tick semantics; bots; human-owned thresholds
+- Acceptance: hard-route interactive campaigns and campaign results through a plain Staging hub; preserve quick mode and campaign semantics; full-green branch and master; host and smoke-test Web build
+- Required evidence: `staging_flow` headless/windowed; fresh three-PNG checklist; `scripts/verify.sh --full` on feature branch and master; browser-smoked WebDev URL
 - Last update: 2026-08-12
 
 ## TD-004 — Complete human soundtrack acceptance
