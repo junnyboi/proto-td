@@ -1,10 +1,15 @@
 # AUI-00 — Agent F Presentation Contracts Handoff
 
-**State:** candidate implemented; fresh frozen RELEASE verification and independent diff audit pending
+**State:** landed and durably closed; frozen RELEASE, independent audit, and merged-master union pass
 **Owner:** AGENT F
-**Branch:** `agent-f/aui-00`
+**Implementation branch:** `agent-f/aui-00`
+**Closure branch:** `agent-f/aui-00-closure`
 **Original base:** `975261e8e00a20a0b25fe17e7976d743d509c14b`
 **Plan:** SHA-256 `d62f55e07376354c2b1ddcc214cbb03a9c581f480eaa7401ac349b4f623285bd`
+**Final base:** `709781b596c0a3f21494a1be91713952f99d94e3`
+**Landed commit/tree:** `1a28721d23183bf9755ba6c90ba7c578cebc5850` / `59a76fac697b7b0c610eefe241e905bf6928841a`
+**Immutable evidence:** external `release-1a28721d-final7`
+**Independent audit:** PASS, zero critical findings or warnings
 
 ## Delivered contracts
 
@@ -35,3 +40,7 @@ The packet also contains a documentary inconsistency: `AUI-10-agent-d.md` names 
 ## Successor seams
 
 A later Agent F integration package may adapt approved D/E assets to these contracts without changing their visual semantics. D runtime work requires its missing approved design manifest/hash and fresh player-facing union evidence. E-dependent packages remain blocked while E iterates. AUI-00 itself changes no gameplay, stage geometry, route, simulation, hash/save/replay, Theme, production screen, localization catalog, audio, threshold, or export preset.
+
+## Closure proof
+
+The frozen final union passed all 67 RELEASE rungs and all 21 scenario reports, with nonzero checks, zero failed checks, and zero pixel skips. Focused presentation contracts passed with nonzero tests/assertions; both empty-cache generator worktrees matched all frozen outputs; the two-process campaign replay normalized to an empty diff; targeted presentation and asset lanes passed; the Web export reached the real localized `Protos` title with zero console errors; protected-value and stale-marker scans were explicitly falsifiable and empty. The exact landed master commit then passed `scripts/verify.sh --full` again, with local and remote master equal and the tested tree clean.
