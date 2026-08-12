@@ -129,14 +129,15 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 
 ## VERIFY-MOVIE — Decide and, if retained, re-prove Movie Maker lane
 
-- Status: pending
-- Owner: unassigned
-- Branch: N/A until claimed
-- Dependencies: explicit decision that the lane remains required
-- Owned files: none until claimed; candidate paths are verification documentation and movie-lane scripts only
-- Do not touch: human-owned thresholds; existing render-lane checks
-- Acceptance: either record a decision that Xvfb screenshots supersede this lane, or execute a bounded Movie Maker proof against the current build
-- Required evidence: `docs/decisions/` record and, if retained, reproducible command plus artifact
+- Status: in_progress
+- Owner: AGENT 8
+- Branch: `agent-8/retire-movie-maker`
+- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
+- Dependencies: current MGS visual-assessment rule and existing Xvfb screenshot/pixel lane
+- Owned files: `scripts/playtest.sh`, `docs/plans/VERIFY-MOVIE-agent-8.md`, `docs/decisions/D-002-retire-movie-maker.md`, `docs/handoffs/VERIFY-MOVIE-agent-8.md`, `docs/media/VERIFY-MOVIE-verification.json`, and claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Do not touch: `scripts/verify.sh`, harness/scenarios, gameplay/model/view/data/assets, bots, human-owned thresholds/verdicts, or AGENT 7's `POLISH-BOLT` files
+- Acceptance: record that direct Xvfb scenario screenshots and pixel probes supersede the unsupported Movie Maker bot lane; retire `--render` and its render-only `--out` argument fail-closed while preserving the headless bot path
+- Required evidence: shell syntax, positive `bot_idle` smoke, negative retired-flag checks, cross-process campaign replay diff, fresh `scripts/verify.sh --full`, and `docs/decisions/D-002-retire-movie-maker.md`
 - Last update: 2026-08-12
 
 ## L7-DURATION — Judge frame-counted juice durations
