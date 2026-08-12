@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "generated_at": "2026-08-12",
-  "owner_lane": "AGENT 4",
-  "catalog_revision": 4,
+  "owner_lane": "AGENT 4 / TD-014 boss adrenaline revision",
+  "catalog_revision": 5,
   "generator": {
     "tool": "Manus built-in generate_music",
     "backend": "latest available",
@@ -17,11 +17,11 @@
   "human_feedback": {
     "date": "2026-08-12",
     "classification": "prompt-change",
-    "revision": 4,
-    "supersedes_revision": 3,
-    "request": "Replace all six BGM/boss candidates with an original retro mid-to-late-1990s Japanese lo-fi score while preserving each act location's charm and emotional descent.",
+    "revision": 5,
+    "supersedes_revision": 4,
+    "request": "Regenerate all boss music to be more consistently epic, battle-oriented, and adrenaline-driven while preserving the retro Japanese console-RPG lo-fi score and each act location identity.",
     "style_reference_url": "https://www.youtube.com/watch?v=VnYNkajvZE4",
-    "anti_copy": "Only abstract production traits were extracted. No melody, chord loop, recording, break, sample, lyric, title, or protected compositional identity was copied or requested.",
+    "anti_copy": "Only abstract production traits were retained. No melody, progression, break, sample, recording, arrangement, lyric, title, or artist signature was copied or requested.",
     "final_acceptance_complete": false
   },
   "post_processing": {
@@ -45,8 +45,8 @@
   },
   "quality_evidence": {
     "structural_gate": "res://tools/music/verify_music.sh",
-    "speech_detection": "Raw manus-speech-to-text JSON is retained under res://assets/music/evidence/transcriptions/; every selected source has zero segments and empty full_text, and the structural gate validates the file hash and source-duration linkage.",
-    "source_retention": "Selected generator outputs and the rejected short attempt are retained under res://assets/music/sources/ with a non-importable .mp3.source suffix.",
+    "speech_detection": "Raw manus-speech-to-text JSON is retained for every selected source; all six current cues have zero segments and empty full_text, and the structural gate validates exact hashes and source-duration linkage.",
+    "source_retention": "Selected generator outputs are retained under res://assets/music/sources/ with non-importable .mp3.source suffixes. The rejected 109.949333-second TD-014 Act III attempt is retained only in external candidate evidence and bound by SHA-256.",
     "human_acceptance_required": true,
     "commercial_terms_review_required_before_shipping": true
   },
@@ -78,6 +78,13 @@
     {
       "id": "D-MUSIC-10",
       "record": "The owner requested Lyria 3 Pro or the latest available music model. The Manus generate_music tool exposes neither a model selector nor backend identifier; all six revision-4 sources were generated with its latest available backend. Provenance records 'not exposed by tool' rather than making an unverifiable Lyria version claim. All first-call sources met the duration, uniqueness, integrity, and speech constraints; no generation retry was used."
+    },
+    {
+      "id": "D-MUSIC-11",
+      "record": "The first revision-five Act III boss source measured 109.949333 seconds, below the predeclared 164-second minimum. It was rejected without processing and regenerated once with an explicit full-duration contract. The selected source measures 179.382792 seconds. No other revision-five cue required a retry or tonal post-processing.",
+      "rejected_source_sha256": "096991ca299e6b61fcca4091cdb929f2fcf472f2ee3ca835e6649bfa486dbc17",
+      "rejected_source_duration_seconds": 109.949333,
+      "retention": "external TD-014 candidate evidence; not shipped or imported"
     }
   ],
   "tracks": [
@@ -110,23 +117,23 @@
       "act": 1,
       "role": "boss",
       "title": "Broken Aqueduct Showdown",
-      "revision": 4,
+      "revision": 5,
       "prompt_path": "res://assets/music/prompts/act_1_guild_threshold_boss.txt",
-      "prompt_sha256": "bf124fdfa5ca0e5c3610e4f7aace6432ca6f024494b39faadc391a6e6e5495e4",
+      "prompt_sha256": "18af2dec073efbd06610a7f50353942e8585ac56239ebda80b9260bddf528ab1",
       "source_path": "res://assets/music/sources/act_1_guild_threshold_boss.mp3.source",
-      "source_sha256": "3676bc3c685e7ef2aa12d63aafee0effd7459faca48b2e9e016e1b8bf9ae4947",
-      "source_duration_seconds": 167.470958,
+      "source_sha256": "105066a9775ff551095582e8eaa6fecf888a39e1abe04ea0ff89b62eb3a1522f",
+      "source_duration_seconds": 177.998292,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_1_guild_threshold_boss.json",
-      "transcription_sha256": "12e6b574c40825d225899956f7aec0e812bb2575e72429dc594967f195e40829",
+      "transcription_sha256": "d36ebaaf537c0a7487ef0fac13203826350348fc85be407ad0acf8818576b8d8",
       "asset_path": "res://assets/music/act_1_guild_threshold_boss.ogg",
-      "asset_sha256": "b1491a9bc5b9df060bb4d6ac6ffe4b1437f1f8cf2e994bc0a2494b322c2fb9b7",
-      "duration_seconds": 163.470958,
+      "asset_sha256": "5327a7fb2dd31fa06a563c8e4265d831cf068334c336ddce3c6adb5e1b713d74",
+      "duration_seconds": 173.998313,
       "integrated_loudness_lufs": -18.0,
-      "true_peak_dbfs": -5.3,
-      "full_mean_dbfs": -20.0,
-      "low_220_mean_dbfs": -21.5,
-      "supersedes_asset_sha256": "18a61cc77adc10f502e7cbc21d1af9d5075c472be2348bc390d67b45ad175109",
-      "supersedes_source_sha256": "94f93e0cc28d18c5f2e87464c38cb77fc74b7f9928024af6dd000e75530afb17",
+      "true_peak_dbfs": -4.8,
+      "full_mean_dbfs": -19.3,
+      "low_220_mean_dbfs": -20.6,
+      "supersedes_asset_sha256": "b1491a9bc5b9df060bb4d6ac6ffe4b1437f1f8cf2e994bc0a2494b322c2fb9b7",
+      "supersedes_source_sha256": "3676bc3c685e7ef2aa12d63aafee0effd7459faca48b2e9e016e1b8bf9ae4947",
       "placeholder": true
     },
     {
@@ -158,23 +165,23 @@
       "act": 2,
       "role": "boss",
       "title": "Orrery in Fracture",
-      "revision": 4,
+      "revision": 5,
       "prompt_path": "res://assets/music/prompts/act_2_twilight_grotto_boss.txt",
-      "prompt_sha256": "6b1341011c4423e397077e82408260efb0f851d024e9d59efbd7f2b79c1fc9b1",
+      "prompt_sha256": "d74cc41ced30f1edb779ff2100bb0ebb51da8f3390e72b71d17e51a126593db4",
       "source_path": "res://assets/music/sources/act_2_twilight_grotto_boss.mp3.source",
-      "source_sha256": "8097e06f3b1a20520e734725e9b9b585b3ad5efe75c1abd8d6e2daa4419f6bf3",
-      "source_duration_seconds": 175.934625,
+      "source_sha256": "7b000f859191bbd5d963e697be6f63c47edec958411dec0ef9e06eb3fc51dbd9",
+      "source_duration_seconds": 175.281583,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_2_twilight_grotto_boss.json",
-      "transcription_sha256": "6761d694f7274279253faf14fca662db1c4dfc833a5a8899b8638c2da5b3638e",
+      "transcription_sha256": "341b0d9c9cf27400ce2e01b4b7d3f167801fc6f9e922f502e4a96923a09e5452",
       "asset_path": "res://assets/music/act_2_twilight_grotto_boss.ogg",
-      "asset_sha256": "83909e91e765d7d3a3cc29ebe4d0dbd9610b01bb805c170112f8a8895d636147",
-      "duration_seconds": 171.934646,
+      "asset_sha256": "29b2b570be54e838b4181a69966a325788e508070f3da103f5ba104843f40630",
+      "duration_seconds": 171.281604,
       "integrated_loudness_lufs": -18.0,
-      "true_peak_dbfs": -4.7,
-      "full_mean_dbfs": -19.6,
-      "low_220_mean_dbfs": -21.0,
-      "supersedes_asset_sha256": "43892acb139a1917605293071fad7f3525ecb2f31a2f4337fc81e54da8729c34",
-      "supersedes_source_sha256": "94dc792bd7cd4800d51363eb1ac59fe87fd0dea76258ca387535ce42d817670b",
+      "true_peak_dbfs": -4.8,
+      "full_mean_dbfs": -19.4,
+      "low_220_mean_dbfs": -20.9,
+      "supersedes_asset_sha256": "83909e91e765d7d3a3cc29ebe4d0dbd9610b01bb805c170112f8a8895d636147",
+      "supersedes_source_sha256": "8097e06f3b1a20520e734725e9b9b585b3ad5efe75c1abd8d6e2daa4419f6bf3",
       "placeholder": true
     },
     {
@@ -206,131 +213,226 @@
       "act": 3,
       "role": "boss",
       "title": "Primordial Break Sequence",
-      "revision": 4,
+      "revision": 5,
       "prompt_path": "res://assets/music/prompts/act_3_abyssal_vault_boss.txt",
-      "prompt_sha256": "43dafd4fc93ff363527af105b24c27b00e37480b14df1c1b4c48d7094a7542b6",
+      "prompt_sha256": "b7d0b7bd4cc3bc9cb6fc7a11ba61e0e776e00a7b17cc24e98e93ccea727bf17e",
       "source_path": "res://assets/music/sources/act_3_abyssal_vault_boss.mp3.source",
-      "source_sha256": "6683627943beb02b052f0991d6c7bac6efa5bc53adbcde7a443f47b88354a708",
-      "source_duration_seconds": 179.330542,
+      "source_sha256": "68c6e8d2a1c2a12fa609bba2f5dd9fb98250e24078a09ba8fbb885b162226fe4",
+      "source_duration_seconds": 179.382792,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_3_abyssal_vault_boss.json",
-      "transcription_sha256": "b3963083b267dd1a1788cb47799be007262babe52ec4cd91ebb2251d1b70bcb6",
+      "transcription_sha256": "45e833fc1f06211ff62ae1e1b9f7e1e5695717308c67370908082c939fc05321",
       "asset_path": "res://assets/music/act_3_abyssal_vault_boss.ogg",
-      "asset_sha256": "03c2be8f3e477cd4cfd5cb619071ebc3554ddab4f1809536e4624e8c51584969",
-      "duration_seconds": 175.330563,
+      "asset_sha256": "7f660cc8e81522493beab90b71b2954490f49b7c8c68911353bec20bdacbe14f",
+      "duration_seconds": 175.382792,
       "integrated_loudness_lufs": -18.0,
-      "true_peak_dbfs": -4.7,
-      "full_mean_dbfs": -19.9,
-      "low_220_mean_dbfs": -21.8,
-      "supersedes_asset_sha256": "7cd26cd66c780de810a7300179c5ae65e284501ce6aa5d96e48c991743c5244a",
-      "supersedes_source_sha256": "6a83e7b9984198ce66ccb950d63250ac3633929694611578a0027a0744a7aab4",
+      "true_peak_dbfs": -4.8,
+      "full_mean_dbfs": -19.2,
+      "low_220_mean_dbfs": -20.2,
+      "supersedes_asset_sha256": "03c2be8f3e477cd4cfd5cb619071ebc3554ddab4f1809536e4624e8c51584969",
+      "supersedes_source_sha256": "6683627943beb02b052f0991d6c7bac6efa5bc53adbcde7a443f47b88354a708",
       "placeholder": true
     }
   ],
   "revision_analysis": {
-    "method": "Deterministic ffmpeg decode plus NumPy frame analysis; objective signal proxies only, never style, charm, originality, or instrument recognition.",
-    "tool_sha256": "96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
-    "result_sha256": "9b2ba330717fd6a7563d388964b675bce33305d5faf2b39cc0430a0fc1ba0fc7",
-    "tracks": {
-      "act_1_bgm": {
-        "duration_seconds": 171.882404,
-        "dynamic_range_p90_minus_p10_db": 12.508257,
-        "high_2000_plus_ratio": 0.00718129,
-        "low_20_220_ratio": 0.69485607,
-        "low_mid_220_2000_ratio": 0.29796265,
-        "mean_spectral_flux": 0.94936227,
-        "onset_proxy_per_minute": 258.316146,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_1_guild_threshold_bgm.ogg",
-        "side_to_mid_rms_ratio": 0.27284577,
-        "spectral_centroid_hz": 350.649,
-        "stereo_correlation": 0.86139831
+    "revision": 5,
+    "method": "Deterministic ffmpeg decode plus NumPy frame analysis; objective signal proxies only, never epicness, battle feel, adrenaline, style, originality, or instrument recognition.",
+    "tool_sha256": "cb9c1573be3581f81301d1715c58bfef105120989070d5d2aa7491593e58cbbf",
+    "result_sha256": "5a43b120e8b4823546b50b059ba153902154e76072d2b0fb852582a9f9b65ab8",
+    "boss_v5_tracks": {
+      "act_1_boss_v5": {
+        "crest_factor_db": 14.298927,
+        "duration_seconds": 173.998322,
+        "longest_below_median_minus_12db_seconds": 1.486077,
+        "low_20_220_ratio": 0.79585667,
+        "mean_spectral_flux": 2.62056631,
+        "path": "/home/ubuntu/work/agent4-music-boss-v5/processed/act_1_guild_threshold_boss.ogg",
+        "rms_median_db": -21.154941,
+        "rms_p10_db": -33.446912,
+        "rms_p10_minus_median_db": -12.291971,
+        "spectral_centroid_hz": 696.352,
+        "transient_proxy_per_minute": 395.865887
       },
-      "act_1_boss": {
-        "duration_seconds": 163.470975,
-        "dynamic_range_p90_minus_p10_db": 15.224155,
-        "high_2000_plus_ratio": 0.0342522,
-        "low_20_220_ratio": 0.78517654,
-        "low_mid_220_2000_ratio": 0.18057126,
-        "mean_spectral_flux": 1.70729875,
-        "onset_proxy_per_minute": 258.394495,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_1_guild_threshold_boss.ogg",
-        "side_to_mid_rms_ratio": 0.2876462,
-        "spectral_centroid_hz": 438.199,
-        "stereo_correlation": 0.84751521
+      "act_2_boss_v5": {
+        "crest_factor_db": 14.905766,
+        "duration_seconds": 171.281633,
+        "longest_below_median_minus_12db_seconds": 0.743039,
+        "low_20_220_ratio": 0.76851413,
+        "mean_spectral_flux": 2.26610159,
+        "path": "/home/ubuntu/work/agent4-music-boss-v5/processed/act_2_twilight_grotto_boss.ogg",
+        "rms_median_db": -20.287163,
+        "rms_p10_db": -32.971828,
+        "rms_p10_minus_median_db": -12.684665,
+        "spectral_centroid_hz": 644.816,
+        "transient_proxy_per_minute": 281.291107
       },
-      "act_2_bgm": {
-        "duration_seconds": 176.088163,
-        "dynamic_range_p90_minus_p10_db": 14.508384,
-        "high_2000_plus_ratio": 0.00611158,
-        "low_20_220_ratio": 0.77829088,
-        "low_mid_220_2000_ratio": 0.21559754,
-        "mean_spectral_flux": 1.19635316,
-        "onset_proxy_per_minute": 258.279711,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_2_twilight_grotto_bgm.ogg",
-        "side_to_mid_rms_ratio": 0.24382444,
-        "spectral_centroid_hz": 404.089,
-        "stereo_correlation": 0.88766523
-      },
-      "act_2_boss": {
-        "duration_seconds": 171.934649,
-        "dynamic_range_p90_minus_p10_db": 16.943431,
-        "high_2000_plus_ratio": 0.03198958,
-        "low_20_220_ratio": 0.81012491,
-        "low_mid_220_2000_ratio": 0.15788551,
-        "mean_spectral_flux": 1.93261905,
-        "onset_proxy_per_minute": 258.237652,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_2_twilight_grotto_boss.ogg",
-        "side_to_mid_rms_ratio": 0.30086347,
-        "spectral_centroid_hz": 518.952,
-        "stereo_correlation": 0.83395765
-      },
-      "act_3_bgm": {
-        "duration_seconds": 163.52322,
-        "dynamic_range_p90_minus_p10_db": 16.772275,
-        "high_2000_plus_ratio": 0.02122751,
-        "low_20_220_ratio": 0.87478015,
-        "low_mid_220_2000_ratio": 0.10399234,
-        "mean_spectral_flux": 1.67373246,
-        "onset_proxy_per_minute": 258.311939,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_3_abyssal_vault_bgm.ogg",
-        "side_to_mid_rms_ratio": 0.28320342,
-        "spectral_centroid_hz": 453.406,
-        "stereo_correlation": 0.85138135
-      },
-      "act_3_boss": {
-        "duration_seconds": 175.330567,
-        "dynamic_range_p90_minus_p10_db": 15.482362,
-        "high_2000_plus_ratio": 0.04419314,
-        "low_20_220_ratio": 0.73667191,
-        "low_mid_220_2000_ratio": 0.21913494,
-        "mean_spectral_flux": 2.44640772,
-        "onset_proxy_per_minute": 258.369096,
-        "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_3_abyssal_vault_boss.ogg",
-        "side_to_mid_rms_ratio": 0.38212958,
-        "spectral_centroid_hz": 636.798,
-        "stereo_correlation": 0.74503574
+      "act_3_boss_v5": {
+        "crest_factor_db": 14.777831,
+        "duration_seconds": 175.382812,
+        "longest_below_median_minus_12db_seconds": 1.439637,
+        "low_20_220_ratio": 0.8597995,
+        "mean_spectral_flux": 2.6254632,
+        "path": "/home/ubuntu/work/agent4-music-boss-v5/processed/act_3_abyssal_vault_boss.ogg",
+        "rms_median_db": -20.582872,
+        "rms_p10_db": -39.123011,
+        "rms_p10_minus_median_db": -18.540139,
+        "spectral_centroid_hz": 759.613,
+        "transient_proxy_per_minute": 324.661233
       }
     },
-    "pair_contrast": {
+    "comparisons": {
       "act_1": {
-        "boss_minus_bgm_centroid_hz": 87.55,
-        "boss_minus_bgm_low_ratio": 0.09032047,
-        "boss_to_bgm_flux_ratio": 1.798364,
-        "boss_to_bgm_onset_proxy_ratio": 1.000303
+        "at_least_one_forward_motion_proxy_improved": true,
+        "no_sustained_low_energy_collapse": true,
+        "proxy_passes": {
+          "flux_at_least_5_percent_higher": true,
+          "p10_floor_at_least_1db_higher": false,
+          "transient_rate_at_least_5_percent_higher": true
+        },
+        "v5_longest_energy_collapse_seconds": 1.486077,
+        "v5_minus_bgm_centroid_hz": 345.703,
+        "v5_minus_v4_p10_floor_db": -1.292212,
+        "v5_to_bgm_flux_ratio": 2.760344,
+        "v5_to_v4_flux_ratio": 1.53492,
+        "v5_to_v4_transient_rate_ratio": 1.574515
       },
       "act_2": {
-        "boss_minus_bgm_centroid_hz": 114.863,
-        "boss_minus_bgm_low_ratio": 0.03183403,
-        "boss_to_bgm_flux_ratio": 1.615425,
-        "boss_to_bgm_onset_proxy_ratio": 0.999837
+        "at_least_one_forward_motion_proxy_improved": true,
+        "no_sustained_low_energy_collapse": true,
+        "proxy_passes": {
+          "flux_at_least_5_percent_higher": true,
+          "p10_floor_at_least_1db_higher": false,
+          "transient_rate_at_least_5_percent_higher": false
+        },
+        "v5_longest_energy_collapse_seconds": 0.743039,
+        "v5_minus_bgm_centroid_hz": 240.727,
+        "v5_minus_v4_p10_floor_db": -0.157125,
+        "v5_to_bgm_flux_ratio": 1.894174,
+        "v5_to_v4_flux_ratio": 1.172555,
+        "v5_to_v4_transient_rate_ratio": 0.848486
       },
       "act_3": {
-        "boss_minus_bgm_centroid_hz": 183.392,
-        "boss_minus_bgm_low_ratio": -0.13810824,
-        "boss_to_bgm_flux_ratio": 1.461648,
-        "boss_to_bgm_onset_proxy_ratio": 1.000221
+        "at_least_one_forward_motion_proxy_improved": true,
+        "no_sustained_low_energy_collapse": true,
+        "proxy_passes": {
+          "flux_at_least_5_percent_higher": true,
+          "p10_floor_at_least_1db_higher": false,
+          "transient_rate_at_least_5_percent_higher": true
+        },
+        "v5_longest_energy_collapse_seconds": 1.439637,
+        "v5_minus_bgm_centroid_hz": 306.207,
+        "v5_minus_v4_p10_floor_db": -7.20864,
+        "v5_to_bgm_flux_ratio": 1.568628,
+        "v5_to_v4_flux_ratio": 1.073191,
+        "v5_to_v4_transient_rate_ratio": 1.098052
       }
     },
-    "interpretation": "All three boss cues have materially higher mean spectral flux and spectral centroid than their paired BGMs; objective proxies do not establish nostalgia, location charm, instrument identity, originality, or loop feel."
+    "interpretation": "Every revision-five boss improves at least one predeclared forward-motion proxy over revision four, has no eight-second low-energy collapse, and remains spectrally more active/brighter than its paired BGM. Objective proxies do not establish epicness, battle feel, adrenaline, act identity, style, originality, instrument identity, fatigue, or loop feel.",
+    "prior_revision_analysis": {
+      "method": "Deterministic ffmpeg decode plus NumPy frame analysis; objective signal proxies only, never style, charm, originality, or instrument recognition.",
+      "tool_sha256": "96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "result_sha256": "9b2ba330717fd6a7563d388964b675bce33305d5faf2b39cc0430a0fc1ba0fc7",
+      "tracks": {
+        "act_1_bgm": {
+          "duration_seconds": 171.882404,
+          "dynamic_range_p90_minus_p10_db": 12.508257,
+          "high_2000_plus_ratio": 0.00718129,
+          "low_20_220_ratio": 0.69485607,
+          "low_mid_220_2000_ratio": 0.29796265,
+          "mean_spectral_flux": 0.94936227,
+          "onset_proxy_per_minute": 258.316146,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_1_guild_threshold_bgm.ogg",
+          "side_to_mid_rms_ratio": 0.27284577,
+          "spectral_centroid_hz": 350.649,
+          "stereo_correlation": 0.86139831
+        },
+        "act_1_boss": {
+          "duration_seconds": 163.470975,
+          "dynamic_range_p90_minus_p10_db": 15.224155,
+          "high_2000_plus_ratio": 0.0342522,
+          "low_20_220_ratio": 0.78517654,
+          "low_mid_220_2000_ratio": 0.18057126,
+          "mean_spectral_flux": 1.70729875,
+          "onset_proxy_per_minute": 258.394495,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_1_guild_threshold_boss.ogg",
+          "side_to_mid_rms_ratio": 0.2876462,
+          "spectral_centroid_hz": 438.199,
+          "stereo_correlation": 0.84751521
+        },
+        "act_2_bgm": {
+          "duration_seconds": 176.088163,
+          "dynamic_range_p90_minus_p10_db": 14.508384,
+          "high_2000_plus_ratio": 0.00611158,
+          "low_20_220_ratio": 0.77829088,
+          "low_mid_220_2000_ratio": 0.21559754,
+          "mean_spectral_flux": 1.19635316,
+          "onset_proxy_per_minute": 258.279711,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_2_twilight_grotto_bgm.ogg",
+          "side_to_mid_rms_ratio": 0.24382444,
+          "spectral_centroid_hz": 404.089,
+          "stereo_correlation": 0.88766523
+        },
+        "act_2_boss": {
+          "duration_seconds": 171.934649,
+          "dynamic_range_p90_minus_p10_db": 16.943431,
+          "high_2000_plus_ratio": 0.03198958,
+          "low_20_220_ratio": 0.81012491,
+          "low_mid_220_2000_ratio": 0.15788551,
+          "mean_spectral_flux": 1.93261905,
+          "onset_proxy_per_minute": 258.237652,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_2_twilight_grotto_boss.ogg",
+          "side_to_mid_rms_ratio": 0.30086347,
+          "spectral_centroid_hz": 518.952,
+          "stereo_correlation": 0.83395765
+        },
+        "act_3_bgm": {
+          "duration_seconds": 163.52322,
+          "dynamic_range_p90_minus_p10_db": 16.772275,
+          "high_2000_plus_ratio": 0.02122751,
+          "low_20_220_ratio": 0.87478015,
+          "low_mid_220_2000_ratio": 0.10399234,
+          "mean_spectral_flux": 1.67373246,
+          "onset_proxy_per_minute": 258.311939,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_3_abyssal_vault_bgm.ogg",
+          "side_to_mid_rms_ratio": 0.28320342,
+          "spectral_centroid_hz": 453.406,
+          "stereo_correlation": 0.85138135
+        },
+        "act_3_boss": {
+          "duration_seconds": 175.330567,
+          "dynamic_range_p90_minus_p10_db": 15.482362,
+          "high_2000_plus_ratio": 0.04419314,
+          "low_20_220_ratio": 0.73667191,
+          "low_mid_220_2000_ratio": 0.21913494,
+          "mean_spectral_flux": 2.44640772,
+          "onset_proxy_per_minute": 258.369096,
+          "path": "/home/ubuntu/work/agent4-music-retro-lofi-v4/processed/act_3_abyssal_vault_boss.ogg",
+          "side_to_mid_rms_ratio": 0.38212958,
+          "spectral_centroid_hz": 636.798,
+          "stereo_correlation": 0.74503574
+        }
+      },
+      "pair_contrast": {
+        "act_1": {
+          "boss_minus_bgm_centroid_hz": 87.55,
+          "boss_minus_bgm_low_ratio": 0.09032047,
+          "boss_to_bgm_flux_ratio": 1.798364,
+          "boss_to_bgm_onset_proxy_ratio": 1.000303
+        },
+        "act_2": {
+          "boss_minus_bgm_centroid_hz": 114.863,
+          "boss_minus_bgm_low_ratio": 0.03183403,
+          "boss_to_bgm_flux_ratio": 1.615425,
+          "boss_to_bgm_onset_proxy_ratio": 0.999837
+        },
+        "act_3": {
+          "boss_minus_bgm_centroid_hz": 183.392,
+          "boss_minus_bgm_low_ratio": -0.13810824,
+          "boss_to_bgm_flux_ratio": 1.461648,
+          "boss_to_bgm_onset_proxy_ratio": 1.000221
+        }
+      },
+      "interpretation": "All three boss cues have materially higher mean spectral flux and spectral centroid than their paired BGMs; objective proxies do not establish nostalgia, location charm, instrument identity, originality, or loop feel."
+    }
   },
   "style_contract": {
     "era": "mid-to-late-1990s Japanese 32-bit console-RPG lo-fi",

@@ -1,6 +1,6 @@
 # Aetheria Tactics — Luminous Descent Music Catalog
 
-This directory contains six original instrumental candidates: one exploration BGM and one boss cue for each planned act. Revision 4 replaces every prior candidate with a shared mid-to-late-1990s Japanese 32-bit console-RPG lo-fi production language, then specializes it to the location, emotional read, and light descent of each act.
+This directory contains six original instrumental candidates: one exploration BGM and one boss cue for each planned act. Revision 4 established a shared mid-to-late-1990s Japanese 32-bit console-RPG lo-fi production language for all six slots. Revision 5 keeps the three exploration cues byte-identical and replaces every boss cue with a consistently epic, battle-forward, adrenaline-driven transformation of its act palette.
 
 The supplied reference was used only to extract general traits—sparse ROMpler/sampler arrangements, FM/Rhodes color, jazz extensions, warm mono bass, crunchy original drums, restrained cassette drift, grainy early-digital reverb, and discrete L/C/R sequencing. No reference melody, chord loop, hook, recording, commercial break, sample, lyric, title, or protected compositional identity was copied or requested.
 
@@ -9,11 +9,11 @@ The supplied reference was used only to extract general traits—sparse ROMpler/
 | Logical ID | Title | Role | Act/location identity | BPM | Duration |
 |---|---|---|---|---:|---:|
 | `act_1_bgm` | Cloister Tape at First Light | Exploration | Warm cloisters, aqueducts, garden ruins, and expedition preparation; welcoming/capable/adventurous | 72 | 171.882 s |
-| `act_1_boss` | Broken Aqueduct Showdown | Boss | The same guild palette mobilized through an original crunchy breakbeat, muted digital brass, and tactical courage | 112 | 163.471 s |
+| `act_1_boss` | Broken Aqueduct Showdown | Boss | The guild palette mobilized immediately through heroic motif variations, driving original breaks, bright FM brass, and buoyant tactical courage | 129 | 173.998 s |
 | `act_2_bgm` | Observatory Reflections | Exploration | Crystal aquifers, fragmented observatory, submerged archaeology, and mounting threat | 80 | 176.088 s |
-| `act_2_boss` | Orrery in Fracture | Boss | The same crystal palette fractured into metallic broken beats, marimba, FM stabs, and flat-second danger | 126 | 171.935 s |
+| `act_2_boss` | Orrery in Fracture | Boss | The crystal palette fractured into relentless displaced breaks, rotating FM-mallet figures, brass punches, and accelerating observatory pressure | 135 | 171.282 s |
 | `act_3_bgm` | Vault on Worn Tape | Exploration | Obsidian vaults, chains, primordial mechanisms, and lava pressure in near-total darkness | 74 | 163.523 s |
-| `act_3_boss` | Primordial Break Sequence | Boss | The same vault pressure accelerated into an original high-speed sampler break, clipped brass, and final-boss momentum | 148 | 175.331 s |
+| `act_3_boss` | Primordial Break Sequence | Boss | The vault pressure escalated into relentless original breaks, sub-bass ostinato, chain percussion, sampled brass/tom impacts, and final-boss momentum | 141 | 175.383 s |
 
 All six files are stereo 48 kHz Ogg Vorbis, loudness-normalized to approximately −18 LUFS integrated, loop-enabled by Godot import metadata, and treated with the unchanged four-second end-to-start crossfade. Exact prompts live under `prompts/`; selected generator outputs live under `sources/` with a non-importable `.mp3.source` suffix; raw empty speech-transcription records live under `evidence/transcriptions/`; hashes and generation facts live in `provenance.json`; logical resolution lives in `catalog.tres`.
 
@@ -23,7 +23,7 @@ All six files are stereo 48 kHz Ogg Vorbis, loudness-normalized to approximately
 - BGM arrangements target 4–6 simultaneous voices. Boss cues may peak at 7–8 clearly separated voices.
 - Rhodes/FM keys, warm centered mono FM/electric bass, original generated 12-bit-style drums, restrained wow/flutter, sampler aliasing, limited high-frequency bandwidth, and grainy early-digital spaces.
 - Act I is the warmest and most open; Act II is refractive and increasingly unstable; Act III is darkest, lowest, and most claustrophobic.
-- Every boss cue preserves its act's palette and motif while materially increasing spectral movement and brightness. Deterministic analysis measured boss-to-BGM mean spectral-flux ratios of 1.798, 1.615, and 1.462 for Acts I–III. These are signal proxies, not judgments of quality or style.
+- Every revision-five boss cue preserves its act palette while sustaining a higher combat-motion floor. Deterministic analysis measured boss-to-BGM mean spectral-flux ratios of 2.760, 1.894, and 1.569 and centroid increases of 345.703 Hz, 240.727 Hz, and 306.207 Hz for Acts I–III. Relative to revision four, spectral flux increased by factors of 1.535, 1.173, and 1.073; every selected cue improved at least one forward-motion proxy and had no eight-second low-energy collapse. These are signal proxies, not judgments of epicness, battle feel, adrenaline, quality, or style.
 
 ## Acceptance state
 
@@ -42,6 +42,7 @@ Listen to each cue at normal gameplay volume for at least ninety seconds, then c
 | Act II identity | Both cues suggest crystal-fed aquifers, fragmented observatory machinery, archaeology, wonder, and mounting threat. Crystal/delay colors remain legible without becoming piercing or watery mush. |
 | Act III identity | Both cues suggest near-lightless obsidian vaults, chained platforms, primordial architecture, and lava pressure. The BGM is oppressive and vast; the boss is climactic and forceful without losing lo-fi identity. |
 | Pair coherence | Each BGM/boss pair clearly belongs to the same act through motif, harmony, timbre, and space; the boss cue has materially higher rhythmic pressure without becoming a different genre. |
+| Boss adrenaline floor | Every boss cue establishes combat urgency within the opening eight seconds, remains epic and battle-forward through its tactical contrast, and contains no ambient, sleepy, exploratory, or energy-killing valley. |
 | Cross-act descent | Moving I → II → III audibly reduces warmth and openness while increasing darkness, pressure, scale, and threat. |
 | Loop seam | No click, silence, obvious restart, smeared downbeat, or doubled transient is audible at either tested boundary. |
 | Gameplay space | Exploration cues do not monopolize attention; boss cues remain rhythmically legible under future combat SFX. |
