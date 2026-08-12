@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "logical_id": "world.s1.rain_measure",
+  "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET",
+  "final_file": "staging/assets/world/s1/s1-rain-measure.png",
+  "final_file_sha256": "fc8d346c0f129ea912fa216aa9ee53b4c78f32be68ff2cb9a1c771f8a9051dcf",
+  "raw_source": {
+    "retention": "external owner-approval archive",
+    "file": "s1-rain-measure.png",
+    "sha256": "e6b55662a43b0c29af479adf542896761849bd236aca0d8264d4102fbfd5eeba",
+    "original_file": "s1-rain-measure_original.png",
+    "original_sha256": "6421493c28342d55cf5733ce462d103b7a527733931fb6a37b98a16372358807",
+    "acceptance_state": "ACCEPTED_AS_IDENTITY_MATERIAL_SOURCE"
+  },
+  "placement_state": "UNPLACED_PENDING_VALIDATED_MASK",
+  "generator": {
+    "tool": "Manus generate_image",
+    "model": "gpt-image-2",
+    "seed": null,
+    "seed_reason": "unsupported/not returned by generator",
+    "prompt_contract": "art-src/world/s1/s1-world-gpt-image-2-prompts.md",
+    "prompt_contract_sha256": "a4096a65b44eaaf9fb5066244912c7f0e4ebd4c85da9a72fe76a0e805aeaed68",
+    "prompt_section": "Rain measure",
+    "approved_reference_hashes": [
+      {
+        "id": "d-world-style-board",
+        "sha256": "da7fb17af23c06a7b7e9bfbd78a6b0ac8727da9a42daade1c12bc6c537d1c7d3"
+      },
+      {
+        "id": "d-act-i-material-prop-sheet",
+        "sha256": "246a7802d6a8d43a143246212815cb8eb7f88a5deea1f5a826ed5d8b59655373"
+      },
+      {
+        "id": "d-s1-guild-threshold-keyframe-approved-revision",
+        "sha256": "991f2c3d03da7160aa53c760645f69a0a9dea3bdf554f17275f74d120ac1335d"
+      }
+    ]
+  },
+  "normalization": {
+    "recipe": "source palette derivation + contract-authored native geometry + hard alpha + no-dither fixed palette",
+    "tool": "tools/art_pipeline/world/normalize_s1_world.py",
+    "tool_sha256": "3ff303db2aac77f49ebb8632e0fe445d83bc469df36c4eb7436fbcf93a805c04",
+    "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
+    "asset_contract_sha256": "9b8d67bbed8e0ec94ad48f807c30fed766e74cc50c5f38c80a9e80a89fe5ecf5",
+    "derived_palette": "art-src/world/s1/s1-derived-palette.json",
+    "derived_palette_sha256": "0311300b3a8cb3f7ce7d971db4c66ffe24c810cc2127f44286cde4c6640e6795",
+    "python": "3.12.3",
+    "pillow": "12.3.0"
+  },
+  "reserved_colors": {
+    "forbidden": [
+      "#F4F4F4",
+      "#41A6F6"
+    ],
+    "gate": "PASS"
+  },
+  "human_acceptance": {
+    "final_art": false,
+    "acceptor": null,
+    "timestamp_utc": null,
+    "accepting_commit": null
+  },
+  "license_source": "original AI-assisted source under project-controlled prompt/reference set; approved concepts only"
+}
