@@ -368,16 +368,18 @@
     "feel"
    ],
    "status": "pending",
-   "scenarios": [
-    "p16_contract_probe",
-    "model_roster_probe",
-    "strategic_verbs",
-    "hero_result_flow",
-    "barracks_recruit_death",
-    "save_roundtrip",
-    "p16_strategic_campaign"
-   ],
-   "commits": []
+	   "scenarios": [
+	    "p16_contract_probe",
+	    "model_roster_probe",
+	    "strategic_verbs",
+	    "hero_result_flow",
+	    "barracks_recruit_death",
+	    "save_roundtrip",
+	    "p16_strategic_campaign"
+	   ],
+	   "commits": [
+	    "cd35d19"
+	   ]
   }
  ],
  "deviations": [

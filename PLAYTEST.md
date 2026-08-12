@@ -9,9 +9,11 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `f08ee08`** (TD-007 campaign-only Start candidate — includes
-  the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
-  Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
+- Build under test: **`master` ≥ `cd35d19`** (includes TD-007 campaign-only Start, the P12 iso
+  view, P13 battle controls, phase-14 remediation, P15 Staging hub, and P16.0 deterministic
+  personnel contracts). P16.0 is deliberately non-player-facing: recruitment, persistence,
+  Barracks, Continue, and permadeath are not expected yet. The original `poc-v1-audit` tag and
+  two-flow P15 build are
   superseded; do not playtest an older build.
 - **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
   music. Every audio question in this script is N/A — judge visuals only, and do not log the
@@ -109,3 +111,10 @@ relayouts live on resize; the playfield sits on a backdrop ring (no bare
 canvas). Two added L7 questions: (1) does high ground read at a glance
 (lift + walls + cast shade), and (2) does the wall-band click behavior
 (cliff selects the high ground) ever surprise you during deploys?
+
+## P16.0 note (deterministic personnel contracts, 2026-08-13)
+
+P16.0 changes no visible screen or battle behavior. Its save/hash/replay/hero identity contracts
+are groundwork for P16.1–P16.5. Continue to use the existing session-only campaign protocol in
+this document; do not record the absence of Continue, Barracks customization, recruitment, or
+permadeath as a defect until their scheduled player-facing phases land.
