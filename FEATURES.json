@@ -330,13 +330,13 @@
   },
   {
    "id": "TITLE-1",
-   "title": "Proto Defense product identity",
+   "title": "Protos product identity",
    "acceptance": [
-    "Godot application metadata and the live title label resolve exactly to Proto Defense",
+    "Godot application metadata and the live title label resolve exactly to Protos",
     "the visible title uses stable key ui.game_title with exact English fallback and en-US catalog parity",
     "missing-key fallback and locale selection remain outside simulation, save, hash, and replay state",
     "the title remains centered and unclipped at 1280x720 while the sole Start action and campaign initialization remain unchanged",
-    "current product-facing document headers use Proto Defense while TD-012 history, URLs, and repository paths remain immutable"
+    "current product-facing document headers use Protos while TD-013 history, URLs, and repository paths remain immutable"
    ],
    "status": "passing",
    "scenarios": [
@@ -344,7 +344,8 @@
    ],
    "commits": [
     "17017cf",
-    "366a430"
+    "366a430",
+    "2d61131"
    ]
   },
   {

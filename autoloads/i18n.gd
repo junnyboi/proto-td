@@ -14,9 +14,9 @@ var _entries: Dictionary = {}
 
 func _ready() -> void:
 	var loaded := reload_catalog()
-	assert(loaded, "Proto Defense en-US catalog must load")
+	assert(loaded, "Protos en-US catalog must load")
 	TranslationServer.set_locale(String(DEFAULT_LOCALE))
-	DisplayServer.window_set_title(t(&"ui.game_title", "Proto Defense"))
+	DisplayServer.window_set_title(t(&"ui.game_title", "Protos"))
 
 
 func t(key: StringName, fallback: String) -> String:
