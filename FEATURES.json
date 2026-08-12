@@ -290,6 +290,22 @@
     "6a2fb06",
     "84a5cd2"
    ]
+  },
+  {
+   "id": "P15",
+   "title": "Campaign Staging Area: strategic hub shell and mode-correct routing",
+   "acceptance": [
+    "interactive Campaign opens Staging; Mission Control opens stage select; stage-select Back preserves the campaign session",
+    "campaign CLEAR and DEFEAT results return to Staging while quick-battle results remain mode-correct",
+    "five future personnel operations are visible, disabled, and explicitly unavailable; initial campaign summary reads 0/8",
+    "staging_flow passes headless and windowed with completion sentinel, three fresh screenshots, and falsifiable text/layout checks",
+    "verify.sh --full green on the merged union and merged master; verified WebDev build is browser-smoke-tested"
+   ],
+   "status": "failing",
+   "scenarios": [
+    "staging_flow"
+   ],
+   "commits": []
   }
  ],
  "deviations": [

@@ -7,6 +7,7 @@ extends Node
 
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
+const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -34,14 +35,14 @@ func set_run_seed(value: int) -> void:
 
 
 ## Fresh campaign run (always from scratch — no persistence by design).
-## Bots pass open_stage_select = false and drive start_stage directly.
-func start_campaign(open_stage_select: bool = true) -> void:
+## Bots pass open_campaign_ui = false and drive start_stage directly.
+func start_campaign(open_campaign_ui: bool = true) -> void:
 	campaign = CampaignState.create(_catalogs(), _all_stage_defs())
 	campaign_active = true
 	selected_squad = []
 	last_result = {}
-	if open_stage_select:
-		_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
+	if open_campaign_ui:
+		open_staging()
 
 
 ## Lock enforcement lives in the stage-select UI (and is asserted by the
@@ -132,6 +133,16 @@ func open_title() -> void:
 	selected_stage_id = &""
 	selected_squad = []
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
+
+
+## P15 campaign-home seam. The stage-select fallback exists only so this
+## dependency-contract commit remains standalone-green before Agent B lands
+## staging.tscn; Agent A removes it before the final P15 acceptance run.
+func open_staging() -> void:
+	if not ResourceLoader.exists(STAGING_SCENE_PATH):
+		_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
+		return
+	_swap_content.call_deferred(STAGING_SCENE_PATH)
 
 
 func open_stage_select() -> void:
