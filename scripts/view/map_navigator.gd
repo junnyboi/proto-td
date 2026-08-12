@@ -1,7 +1,7 @@
 class_name MapNavigator
 extends RefCounted
 
-## TD-006 view-only map navigation. Owns height-fill layout, bounded pan state,
+## TD-008 view-only map navigation. Owns height-fill layout, bounded pan state,
 ## and mouse/trackpad gesture interpretation; it never reads or writes the model.
 
 const WHEEL_STEP_PX := 96.0

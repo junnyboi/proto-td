@@ -188,7 +188,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: ledger lint over every row, adversarial mapping review, and unchanged gameplay verification
 - Last update: 2026-08-12
 
-## TD-006 — Fill the viewport with the map and add bounded two-axis panning
+## TD-008 — Fill the viewport with the map and add bounded two-axis panning
 
 - Status: in_progress
 - Owner: AGENT 2

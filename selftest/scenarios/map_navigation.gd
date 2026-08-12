@@ -1,10 +1,10 @@
 extends RefCounted
 
-## TD-006 map navigation: real middle-drag and wheel events drive the view-only
+## TD-008 map navigation: real middle-drag and wheel events drive the view-only
 ## adapter. Runtime checks independently measure rendered tile nodes, exercise
 ## release-over-UI recovery, and prove targeting/VFX/layout after pan + resize.
 ## Budget: boot + input batches + resize + targeting rituals + three shots,
-## doubled for 120 Hz with generous headroom -> 900 render frames.
+## doubled for 120 Hz with generous headroom -> 1100 render frames.
 
 const TARGET_CELL := Vector2i(3, 2)
 const EDGE_DEPLOY_CELL := Vector2i(0, 0)
@@ -428,18 +428,24 @@ func _check_screen_effect_relayout(
 		Rect2(0, 0, VIGNETTE_THICKNESS, viewport.y),
 		Rect2(viewport.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, viewport.y),
 	]
-	var matched := 0
-	for rect: ColorRect in vignette_rects:
+	var vignette_ok := vignette_rects.size() == expected.size()
+	var measured: Array[Rect2] = []
+	for i: int in mini(vignette_rects.size(), expected.size()):
+		var rect := vignette_rects[i]
 		var actual := Rect2(rect.position, rect.size)
-		for spec: Rect2 in expected:
-			if actual.position.distance_to(spec.position) < EPS \
-				and actual.size.distance_to(spec.size) < EPS:
-				matched += 1
-				break
+		var spec: Rect2 = expected[i]
+		measured.append(actual)
+		vignette_ok = vignette_ok and rect.visible \
+			and actual.position.distance_to(spec.position) < EPS \
+			and actual.size.distance_to(spec.size) < EPS
 	h.check(
-		"active vignette relayouts all four viewport edges",
-		vignette_rects.size() == 4 and matched == 4,
-		"count %d matched %d viewport %s" % [vignette_rects.size(), matched, viewport],
+		"active vignette visibly relayouts top bottom left right one-to-one",
+		vignette_ok,
+		"visible %s measured %s expected %s" % [
+			vignette_rects.map(func(rect: ColorRect) -> bool: return rect.visible),
+			measured,
+			expected,
+		],
 	)
 	var stamp := view.find_child("ResultStamp", true, false) as Control
 	var label := view.find_child("ResultStampLabel", true, false) as Label

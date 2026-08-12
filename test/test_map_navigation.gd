@@ -1,6 +1,6 @@
 extends GutTest
 
-## TD-006 paper exactness properties. S1 is 8x5 and no elevated cell touches
+## TD-008 paper exactness properties. S1 is 8x5 and no elevated cell touches
 ## its projected outer edge, so its rendered terrain spans x=[-5*32, 8*32]
 ## and y=[0, 13*16]. The expected constants below are independent of the
 ## production helper implementation.

@@ -56,7 +56,7 @@ func setup(juice_config: JuiceConfig, grid_root: Node2D) -> void:
 	_sync_map_transient_transform()
 
 
-## P14/TD-006: re-anchor shake and every grid-local transient after map pan,
+## P14/TD-008: re-anchor shake and every grid-local transient after map pan,
 ## zoom, or viewport resize.
 func refresh_base() -> void:
 	if _grid_root != null:
@@ -190,7 +190,7 @@ func banner(text: String) -> void:
 		var view_size := get_viewport_rect().size
 		var back := _make_rect(BANNER_BACK, Vector2(view_size.x, 72))
 		back.name = "WaveBannerBack"
-		# TD-006 height-fill enlarges the playable terrain through the old 32%
+		# TD-008 height-fill enlarges the playable terrain through the old 32%
 		# strip. Keep the transient centered lower so the upper road remains
 		# readable while the banner is present.
 		back.position = Vector2(0, view_size.y * 0.48)
