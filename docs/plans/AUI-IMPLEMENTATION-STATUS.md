@@ -73,3 +73,17 @@ AUI-00 is durably closed. AUI-10 source/staging closure and AUI-12 may now proce
 - Preserved blocker: exact approved `AUI-DESIGN-D` packet/accepted manifest hash is absent. `runtime_binding` remains `UNBOUND_AGENT_F_SEAM`; `human_final_art` remains `UNSET`.
 - No runtime manifest, view, scene, model, stage, harness, test, threshold, localization, feature-ledger, or import-guard surface changes in closure.
 - Next independent Agent F package: AUI-12. AUI-20 remains blocked on AUI-12 closure and the exact D runtime approval artifact; AUI-11 remains blocked on Agent E AUI-34 closure.
+
+## AUI-12 — Protos Theme, components, localization, and compatible shells
+
+- Status: `claimed`; implementation not started at this claim commit.
+- Owner: `AGENT F`.
+- Claim branch/base: `agent-f/aui-12-claim` from `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`.
+- Implementation branch: `agent-f/aui-12` after the verified claim lands on master.
+- Effective lane: MGS v2 `RELEASE` because the package is player-visible and changes `test/**` plus `selftest/**`.
+- Immutable plan SHA-256: `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`.
+- Normative copy/component/inventory/scenario hashes: `d7afa360523ad915aaa25f95d30fd0054d23078cd7a79ed3d25ce8d02d6dc37c`, `16e3f18ac23ecb846b288b7dbe4de454f3581faa3b27386885dd3d1e624285d4`, `78b57390c35343966b971cdcfe951f23950299ed78c03a44da3db0e347fc2a12`, `bca4ebd9c0ac364b3ca290896a0a54d005713a402c2d57cb4c1d5d5cbd18d01f`.
+- Independent preflight: PASS with zero critical/warning findings.
+- Serialized ownership amendment: AUI-12 owns `autoloads/i18n.gd`, `localization/en-US.json`, and `test/test_i18n.gd` because current project policy requires localization from the first visible AUI phase. The complete exact file lease is in `docs/todo.md`.
+- Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-20 remains blocked on AUI-12 closure and exact D runtime approval; AUI-11 remains blocked on AUI-34 closure.
+- Human gate: implementation cannot land until fresh exact-candidate RELEASE/audit passes and Poseidon completes the commit-bound Web route/focus/cancel/locale/compact/portrait/en-US review.

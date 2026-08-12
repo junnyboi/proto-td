@@ -176,6 +176,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: linked L7 verdict; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/verify.sh --full`
 - Last update: 2026-08-12
 
+## AUI-12 — Build Protos Theme, components, localization, and compatible shells
+
+- Status: in_progress
+- Owner: AGENT F
+- Branch: `agent-f/aui-12` after the serialized `agent-f/aui-12-claim` transaction
+- Base: `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`
+- Dependencies: AUI-00 closed; AUI-10 source/staging closed; AUI-DESIGN-F approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`; independent plan preflight PASS at plan SHA-256 `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`; no Agent D/E runtime bytes are consumed
+- Owned files: `autoloads/i18n.gd`; `localization/en-US.json`; `scripts/ui/components/**`; `scenes/ui/components/**`; `data/presentation/ui/**`; `scripts/ui/title.gd`; `scripts/ui/staging.gd`; `scripts/ui/stage_select.gd`; `scripts/ui/squad_select.gd`; `scripts/ui/results.gd`; `test/test_i18n.gd`; `test/test_ui_components.gd*`; `selftest/scenarios/ui_shell_floor.gd*`; `docs/handoffs/AUI-12-agent-f-ui-foundation.md`; this exact AUI-12 row; AUI-12 sections in `docs/decisions/AUI-DESIGN-APPROVALS.md` and `docs/plans/AUI-IMPLEMENTATION-STATUS.md`
+- Do not touch: simulation/model/hash/save/replay/telemetry; battle HUD/world/VFX; Agent D source/staging/runtime paths; Agent E AUI-34 paths; `scripts/verify.sh`; thresholds; unrelated tests/scenarios; `FEATURES.json` before the dedicated closure transaction
+- Acceptance: all 23 exact Theme variations/components, 72 en-US keys with stable fallbacks and named placeholder types, locale selector, five route-compatible shells, 32 rendered-pixel normal text, >=44x44 enabled targets, exact focus/cancel behavior, and source/runtime inventory parity pass at 1920x1080, 1280x720, 960x720, and 720x1280 under standard, 200%-text, and +35%-expansion modes without clipping
+- Required evidence: exact component/copy/inventory GUT; unchanged campaign/staging/resign/battle-control scenarios; `ui_shell_floor` with 62 fresh PNGs/zero skips/completion sentinel; cross-process replay equality; Web build; fresh cache-bypassed RELEASE union; independent diff-vs-pins audit; Poseidon commit-bound playable-Web and en-US review before landing
+- Last update: 2026-08-12
+
 ## PROC-FEATURE-EVIDENCE — Add explicit evidence classes to the feature ledger
 
 - Status: pending
