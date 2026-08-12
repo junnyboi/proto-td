@@ -15,6 +15,7 @@ const DUST_COLOR := Color("efe1a7")
 const SPARK_COLOR := Color("ffcd75")
 const VIGNETTE_COLOR := Color(0.9, 0.1, 0.1, 1.0)
 const VIGNETTE_THICKNESS := 10.0
+const VIGNETTE_NAMES := [&"VignetteTop", &"VignetteBottom", &"VignetteLeft", &"VignetteRight"]
 const KNOCK_COLOR := Color(1.0, 0.3, 0.3)
 const BANNER_BACK := Color("1a1c2c")
 const BANNER_TEXT_SIZE := 48
@@ -167,8 +168,10 @@ func vignette() -> void:
 			Rect2(0, 0, VIGNETTE_THICKNESS, view_size.y),
 			Rect2(view_size.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, view_size.y),
 		]
-		for spec: Rect2 in specs:
+		for i: int in specs.size():
+			var spec: Rect2 = specs[i]
 			var rect := _make_rect(VIGNETTE_COLOR, spec.size)
+			rect.name = VIGNETTE_NAMES[i]
 			rect.position = spec.position
 			rect.visible = false
 			_vignette_rects.append(rect)

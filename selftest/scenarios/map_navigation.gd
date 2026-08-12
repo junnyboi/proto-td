@@ -12,6 +12,7 @@ const EPS := 0.01
 const HEART_COLOR := Color("ef7d57")
 const VIGNETTE_COLOR := Color(0.9, 0.1, 0.1, 1.0)
 const VIGNETTE_THICKNESS := 10.0
+const VIGNETTE_NAMES := [&"VignetteTop", &"VignetteBottom", &"VignetteLeft", &"VignetteRight"]
 
 
 func run(h: SelfTestHarness) -> void:
@@ -148,6 +149,16 @@ func run(h: SelfTestHarness) -> void:
 		resize_offset_before = resize_heart.get_global_rect().get_center() \
 			- Vector2(view.call("cell_center", TARGET_CELL))
 	juice.call("vignette")
+	var vignette_refs := _named_vignette_rects(juice)
+	h.check(
+		"four stable named vignette nodes exist before resize",
+		vignette_refs.size() == VIGNETTE_NAMES.size()
+			and vignette_refs.all(func(rect: ColorRect) -> bool: return rect.visible),
+		"names %s ids %s" % [
+			vignette_refs.map(func(rect: ColorRect) -> String: return rect.name),
+			vignette_refs.map(func(rect: ColorRect) -> int: return rect.get_instance_id()),
+		],
+	)
 	juice.call("stamp", "CLEAR", 3)
 
 	# Resize preserves the pixel pan exactly where legal, clamps only impossible
@@ -183,7 +194,7 @@ func run(h: SelfTestHarness) -> void:
 				and resize_offset_after.distance_to(resize_offset_before) < EPS,
 			"before %s after %s" % [resize_offset_before, resize_offset_after],
 		)
-	_check_screen_effect_relayout(h, view, viewport)
+	_check_screen_effect_relayout(h, view, viewport, vignette_refs)
 
 	# The same live heart must follow a whitelisted shake and return to exactly
 	# the unshaken map anchor after the effect settles.
@@ -415,36 +426,40 @@ func _check_polygon_fallback_bounds(h: SelfTestHarness, view: Node2D) -> void:
 
 
 func _check_screen_effect_relayout(
-	h: SelfTestHarness, view: Node2D, viewport: Vector2
+	h: SelfTestHarness, view: Node2D, viewport: Vector2, vignette_rects: Array[ColorRect]
 ) -> void:
 	var juice := view.find_child("JuiceLayer", true, false)
-	var vignette_rects: Array[ColorRect] = []
-	for child: Node in juice.get_children():
-		if child is ColorRect and (child as ColorRect).color.is_equal_approx(VIGNETTE_COLOR):
-			vignette_rects.append(child as ColorRect)
 	var expected := [
 		Rect2(0, 0, viewport.x, VIGNETTE_THICKNESS),
 		Rect2(0, viewport.y - VIGNETTE_THICKNESS, viewport.x, VIGNETTE_THICKNESS),
 		Rect2(0, 0, VIGNETTE_THICKNESS, viewport.y),
 		Rect2(viewport.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, viewport.y),
 	]
-	var vignette_ok := vignette_rects.size() == expected.size()
+	var named_after := _named_vignette_rects(juice)
+	var wildcard_after := juice.find_children("Vignette*", "ColorRect", false, false)
+	var vignette_ok := vignette_rects.size() == expected.size() \
+		and named_after.size() == expected.size() \
+		and wildcard_after.size() == expected.size()
 	var measured: Array[Rect2] = []
 	for i: int in mini(vignette_rects.size(), expected.size()):
 		var rect := vignette_rects[i]
 		var actual := Rect2(rect.position, rect.size)
 		var spec: Rect2 = expected[i]
 		measured.append(actual)
-		vignette_ok = vignette_ok and rect.visible \
+		vignette_ok = vignette_ok and is_instance_valid(rect) \
+			and rect == named_after[i] and rect.name == VIGNETTE_NAMES[i] \
+			and rect.color.is_equal_approx(VIGNETTE_COLOR) and rect.visible \
 			and actual.position.distance_to(spec.position) < EPS \
 			and actual.size.distance_to(spec.size) < EPS
 	h.check(
-		"active vignette visibly relayouts top bottom left right one-to-one",
+		"same named vignette nodes visibly relayout top bottom left right one-to-one",
 		vignette_ok,
-		"visible %s measured %s expected %s" % [
+		"ids %s visible %s measured %s expected %s wildcard_count %d" % [
+			vignette_rects.map(func(rect: ColorRect) -> int: return rect.get_instance_id()),
 			vignette_rects.map(func(rect: ColorRect) -> bool: return rect.visible),
 			measured,
 			expected,
+			wildcard_after.size(),
 		],
 	)
 	var stamp := view.find_child("ResultStamp", true, false) as Control
@@ -464,6 +479,16 @@ func _check_screen_effect_relayout(
 			stars.position if stars != null else Vector2.INF,
 		],
 	)
+
+
+func _named_vignette_rects(juice: Node) -> Array[ColorRect]:
+	var result: Array[ColorRect] = []
+	for node_name: StringName in VIGNETTE_NAMES:
+		var rect := juice.get_node_or_null(NodePath(node_name)) as ColorRect
+		if rect == null:
+			return []
+		result.append(rect)
+	return result
 
 
 func _spawn_heart(juice: Node, local_center: Vector2) -> ColorRect:
