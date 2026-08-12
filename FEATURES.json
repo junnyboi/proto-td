@@ -319,7 +319,7 @@
     "one global catalog-backed AudioStreamPlayer starts the stage BGM once, hard-switches once at the data-owned act-final boss boundary, never layers cues, and never restarts the current logical id",
     "all non-battle screens stop music while synthesized SFX remains deliberately silent"
    ],
-   "status": "pending",
+   "status": "passing",
    "scenarios": [
     "music_routing"
    ],
@@ -329,7 +329,9 @@
     "a58e2d5",
     "08ff849",
     "61eefbb",
-    "92f9bbc"
+    "92f9bbc",
+    "49a79d7",
+    "bb5c384"
    ]
   },
   {
