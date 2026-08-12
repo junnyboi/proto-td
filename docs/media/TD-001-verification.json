@@ -1,0 +1,610 @@
+{
+  "agent": "AGENT 2",
+  "base_commit": "7babf28646fbc16c531a03ecdb44dd81f642677e",
+  "branch": "agent-2/collaboration-docs",
+  "candidate_commit": "8f90a376d865fc37bcac1c1c37bf3d28e280229a",
+  "commands": {
+    "full_gate": "xvfb-run -a scripts/verify.sh --full",
+    "replay": "scripts/playtest.sh bot_campaign --ticks 3600 (two fresh processes)"
+  },
+  "cross_process_replay": {
+    "bot": "bot_campaign",
+    "normalized_diff_bytes": 0,
+    "normalized_sha256_run_1": "81e68ba071f794e4b02db2243c97d5c961fe73b2b384d06695d7ed2269c71d26",
+    "normalized_sha256_run_2": "81e68ba071f794e4b02db2243c97d5c961fe73b2b384d06695d7ed2269c71d26",
+    "seed": 42,
+    "verdict": "identical"
+  },
+  "full_gate": {
+    "bots": 11,
+    "headless_scenarios": 18,
+    "quality_gates": 11,
+    "rung_results": [
+      {
+        "artifact": "",
+        "rung": "R2-import",
+        "seconds": 5,
+        "status": "pass"
+      },
+      {
+        "artifact": "",
+        "rung": "R2.5-stage-lint",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "",
+        "rung": "R3-gut",
+        "seconds": 3,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/assets_floor/report.json",
+        "rung": "R4a-assets_floor",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/battle_controls/report.json",
+        "rung": "R4a-battle_controls",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/blocking/report.json",
+        "rung": "R4a-blocking",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/boot/report.json",
+        "rung": "R4a-boot",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/campaign_flow/report.json",
+        "rung": "R4a-campaign_flow",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/charm_runback/report.json",
+        "rung": "R4a-charm_runback",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/debug_reach/report.json",
+        "rung": "R4a-debug_reach",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/deploy_flow/report.json",
+        "rung": "R4a-deploy_flow",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/drone_counter/report.json",
+        "rung": "R4a-drone_counter",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/iso_projection_floor/report.json",
+        "rung": "R4a-iso_projection_floor",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_deploy/report.json",
+        "rung": "R4a-juice_deploy",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_kill_leak/report.json",
+        "rung": "R4a-juice_kill_leak",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_trap_charm/report.json",
+        "rung": "R4a-juice_trap_charm",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/resign_flow/report.json",
+        "rung": "R4a-resign_flow",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/resize_relayout/report.json",
+        "rung": "R4a-resize_relayout",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/skill_timing/report.json",
+        "rung": "R4a-skill_timing",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/trap_flow/report.json",
+        "rung": "R4a-trap_flow",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/wave_banner_victory/report.json",
+        "rung": "R4a-wave_banner_victory",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/assets_floor/report.json",
+        "rung": "R4b-assets_floor",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/battle_controls/report.json",
+        "rung": "R4b-battle_controls",
+        "seconds": 5,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/blocking/report.json",
+        "rung": "R4b-blocking",
+        "seconds": 19,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/boot/report.json",
+        "rung": "R4b-boot",
+        "seconds": 15,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/campaign_flow/report.json",
+        "rung": "R4b-campaign_flow",
+        "seconds": 3,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/charm_runback/report.json",
+        "rung": "R4b-charm_runback",
+        "seconds": 4,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/debug_reach/report.json",
+        "rung": "R4b-debug_reach",
+        "seconds": 5,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/deploy_flow/report.json",
+        "rung": "R4b-deploy_flow",
+        "seconds": 4,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/drone_counter/report.json",
+        "rung": "R4b-drone_counter",
+        "seconds": 13,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/iso_projection_floor/report.json",
+        "rung": "R4b-iso_projection_floor",
+        "seconds": 2,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_deploy/report.json",
+        "rung": "R4b-juice_deploy",
+        "seconds": 3,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_kill_leak/report.json",
+        "rung": "R4b-juice_kill_leak",
+        "seconds": 4,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/juice_trap_charm/report.json",
+        "rung": "R4b-juice_trap_charm",
+        "seconds": 7,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/resign_flow/report.json",
+        "rung": "R4b-resign_flow",
+        "seconds": 3,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/resize_relayout/report.json",
+        "rung": "R4b-resize_relayout",
+        "seconds": 2,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/skill_timing/report.json",
+        "rung": "R4b-skill_timing",
+        "seconds": 13,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/trap_flow/report.json",
+        "rung": "R4b-trap_flow",
+        "seconds": 3,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/wave_banner_victory/report.json",
+        "rung": "R4b-wave_banner_victory",
+        "seconds": 8,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_campaign",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_campaign",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_idle",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_idle",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_01",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_01",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_02",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_02",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_03",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_03",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_04",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_04",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_05",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_05",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_06",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_06",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_06_no_charm",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_06_no_charm",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_07",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_07",
+        "seconds": 0,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/telemetry.json",
+        "rung": "R5-bot_stage_08",
+        "seconds": 1,
+        "status": "pass"
+      },
+      {
+        "artifact": "artifacts/gate.json",
+        "rung": "R6-gate-bot_stage_08",
+        "seconds": 0,
+        "status": "pass"
+      }
+    ],
+    "rungs": 61,
+    "verdict": "pass",
+    "verify_json_sha256": "f2691a7e5d4616d58e1129ef11c3a80df7c966724e603ebf286e770eac4342ad",
+    "wall_seconds": 139,
+    "windowed_scenarios": 18
+  },
+  "generated_at_utc": "2026-08-12T07:17:14+00:00",
+  "render_evidence": {
+    "pixel_skips": 0,
+    "reports": 18,
+    "scenario_reports": [
+      {
+        "checks": 11,
+        "report_sha256": "39c9ca5f19c2e7baa69d88ef2ef01e41547bc61ad9b10f4c12d1f069037d6ec2",
+        "result": "pass",
+        "scenario": "assets_floor",
+        "shots": 1
+      },
+      {
+        "checks": 29,
+        "report_sha256": "e4c2c48a978df9a341a9a6333e6c165b0fb072f5f08c1ac04041a99199e641c7",
+        "result": "pass",
+        "scenario": "battle_controls",
+        "shots": 5
+      },
+      {
+        "checks": 9,
+        "report_sha256": "973c2075a6e2354e2324479031b86639e1f307051381b0491dd946fede1842d5",
+        "result": "pass",
+        "scenario": "blocking",
+        "shots": 3
+      },
+      {
+        "checks": 11,
+        "report_sha256": "aa0772a02278641224cce2d86c2bc22bb2e68a1210e9d3d94060f4bedb28d18e",
+        "result": "pass",
+        "scenario": "boot",
+        "shots": 3
+      },
+      {
+        "checks": 39,
+        "report_sha256": "afd89b43e77a906216ba81bb6bd7ad23c01f95a0bd830cd5038ceefd3a914409",
+        "result": "pass",
+        "scenario": "campaign_flow",
+        "shots": 4
+      },
+      {
+        "checks": 22,
+        "report_sha256": "2b3e85dc7897b8599b599a2c1c95e23762ecc75c6cb1281bd3d90f16bd082590",
+        "result": "pass",
+        "scenario": "charm_runback",
+        "shots": 4
+      },
+      {
+        "checks": 60,
+        "report_sha256": "2056a90acc453cbe989ae2153302a4fcd6f73ca72ebbd8f262a0888b15592942",
+        "result": "pass",
+        "scenario": "debug_reach",
+        "shots": 3
+      },
+      {
+        "checks": 25,
+        "report_sha256": "d97b80ea5aed4787df5c961cf45556811b55cad741a0e1785c175644d3813723",
+        "result": "pass",
+        "scenario": "deploy_flow",
+        "shots": 6
+      },
+      {
+        "checks": 11,
+        "report_sha256": "14ffbd58dd7b15a543a5d9653cf58adae163c13b2677231476072fff1a32a6ce",
+        "result": "pass",
+        "scenario": "drone_counter",
+        "shots": 3
+      },
+      {
+        "checks": 11,
+        "report_sha256": "eb3742b084c71b5ed692dd582f163e6c5edc9d0e537f8d6a8a5c72738bb6c8c5",
+        "result": "pass",
+        "scenario": "iso_projection_floor",
+        "shots": 3
+      },
+      {
+        "checks": 13,
+        "report_sha256": "ec165113e7ba88ad8ae60ff193ff07a6246df6204dffcc4acd78f13b9283a483",
+        "result": "pass",
+        "scenario": "juice_deploy",
+        "shots": 3
+      },
+      {
+        "checks": 18,
+        "report_sha256": "04a9e02f1122299020ed34714450dc0c153a072ad0b6b40bccb0af27c213f5ee",
+        "result": "pass",
+        "scenario": "juice_kill_leak",
+        "shots": 3
+      },
+      {
+        "checks": 18,
+        "report_sha256": "f5dc5399b740b3e1d52861794efdd6ecf39a3fae2c349a3b9d7ff1333e9bee88",
+        "result": "pass",
+        "scenario": "juice_trap_charm",
+        "shots": 5
+      },
+      {
+        "checks": 19,
+        "report_sha256": "56f91dcbcc731cf12709d0ce5d0c29d403754b71fc4189a05b65a5bc57774ff7",
+        "result": "pass",
+        "scenario": "resign_flow",
+        "shots": 3
+      },
+      {
+        "checks": 18,
+        "report_sha256": "199dd2f0b7731583f01e0b3687672e686ca7701c03548bdfd1dac165e5c8dfe2",
+        "result": "pass",
+        "scenario": "resize_relayout",
+        "shots": 0
+      },
+      {
+        "checks": 19,
+        "report_sha256": "8f28d036bfb615641a2140250a491758946fdabd75229ea09dbaca6dc6d7c8b5",
+        "result": "pass",
+        "scenario": "skill_timing",
+        "shots": 5
+      },
+      {
+        "checks": 17,
+        "report_sha256": "c5039050713dbcf418b7bdfe581a1234960c876107fdc0551805401b8786cd5a",
+        "result": "pass",
+        "scenario": "trap_flow",
+        "shots": 4
+      },
+      {
+        "checks": 13,
+        "report_sha256": "dab93ce8f5a0119106ab7ab2e5eef809973c8d99e3d0da8df53938a695a6bc20",
+        "result": "pass",
+        "scenario": "wave_banner_victory",
+        "shots": 3
+      }
+    ],
+    "screenshot_sha256": {
+      "artifacts/assets_floor/assets_contact_sheet.png": "461bce9e5b81a3281f91a5e9f4ee8fd66df11bfc13723b0f2c57a13d6e3d3571",
+      "artifacts/battle_controls/controls_idle.png": "1bd0230b9afae02ce01ca13a0be7bc2733b3602ee227c250f7a607b66f1e922a",
+      "artifacts/battle_controls/paused.png": "811ce4f2327b7f5ae1d0efc3de88f2fabeee728c7cc5e96c45a521efacbd60c8",
+      "artifacts/battle_controls/resign_confirm.png": "15d0a7156c6d0f6f65486a6eba5ac15b078919f0d4a5b52f7a7b8adcc0be7877",
+      "artifacts/battle_controls/speed_4x.png": "0e519c88769c819ffd7e26fed5f823b953722b781027661e065d80c7691b8e1a",
+      "artifacts/battle_controls/terminal_continue.png": "776cf7cc335e261181780dc317e9ca2db10b1c1043e5137f94cf9beb9dab1538",
+      "artifacts/blocking/battle_end.png": "5266556f2aa017248038c5c1428d47ea850edf59d06bda102e66e5ae77681db3",
+      "artifacts/blocking/block_cluster.png": "843ab9cf4aa0036d5cbcdeb2930bd8130b9035da170937bdc2d7fe491f8b284a",
+      "artifacts/blocking/first_kill.png": "043587b9251629b455d359a37629863009c2a69f57ac4f6f475cc1dbd4a41ad1",
+      "artifacts/boot/battle_early.png": "f2c2bcd5f3b03bc7796101acf9007381c150c3d97106a60f958b6b343db45ba7",
+      "artifacts/boot/battle_end.png": "f9bcdddda9dcf140423ab315f1561c307f5282d5355a6f10ae8b7adcc6b1e939",
+      "artifacts/boot/boot.png": "d991559f196430ccdd74c69e22e222ca7172c0927a68ea75f0a81918edbfb07b",
+      "artifacts/campaign_flow/results_reward.png": "a11d8666171cfaed0258d403bc05699b0a3936b2d35a4e57120ec98608184a25",
+      "artifacts/campaign_flow/squad_select.png": "abcba70f7922993306a5b484189670df28569a7cfff3382f56ef2ba9e44d1180",
+      "artifacts/campaign_flow/stage_select_locked.png": "a1cb2f3cdc6951d0de2707d8b6ab22dc1f91995cf78d3ea430d98c49dfa0d754",
+      "artifacts/campaign_flow/stage_select_progress.png": "6f00a8fb48dd7183cdf9ead4e517af4b8622b66fd9a1b660556e0bdf4533851a",
+      "artifacts/charm_runback/bolt_cast.png": "ebb4298a4f2b539882d7f1e36cffd10e72c8b7af5fa4a40fe3848fd302dc7278",
+      "artifacts/charm_runback/charm_convert.png": "9a5dc3d9e50c7b37dd2e79041f2d1669b8ba0a532aab2b16d2bfe4423af6baaf",
+      "artifacts/charm_runback/charm_duel.png": "c5a203fa7e420dbb88bbd347c54b855fa831dff70264d378488049466958e6ec",
+      "artifacts/charm_runback/charm_victory.png": "5726479cc4a3ca2a51d0f0a34cee8f911465047612ad24462df3e5aa54263f94",
+      "artifacts/debug_reach/overlay_battle.png": "ac24519b83a808e22302648804e8d2332ab0168fde610985ed31926d2b8f84af",
+      "artifacts/debug_reach/overlay_granted.png": "343c01aaffba0de7b7a51f63c3e79313d6b9171bf06fa655ca1d291d108caa4c",
+      "artifacts/debug_reach/overlay_open.png": "2f231adaa7395f07063e7fe7d0ef9ec8ff153144dffa5d24afba0892f18ca00f",
+      "artifacts/deploy_flow/after_retreat.png": "50e6fe8fecedbfb0fe3f73ab587f7b70c7400100d0a631f6516911e6514b11e2",
+      "artifacts/deploy_flow/deployed.png": "4d3d48039910e79ef261630b35620b3b1b15158cf679b3b8d89dbeb7821e98b2",
+      "artifacts/deploy_flow/elevated_lift.png": "50e6fe8fecedbfb0fe3f73ab587f7b70c7400100d0a631f6516911e6514b11e2",
+      "artifacts/deploy_flow/elevated_sniper.png": "c9548e7bb788385c1911ac7fd7a7f41b27b7c28c261233737b3a5cf9f9e4bd42",
+      "artifacts/deploy_flow/facing_chooser.png": "502a5d92d97cc3d48be1ce2c7bce41f1b4b08489bde9959cecc22a6d9e5a1383",
+      "artifacts/deploy_flow/placement_mode.png": "0e2cce50a181a0605e8caf77c348a4f4a33b486aec55b9d695d4e468540dbb6f",
+      "artifacts/drone_counter/battle_end.png": "0991f5cc5cfc5543e5c7cc527684996c6b42a91e3eaafb99b5ae74ebbdeeac13",
+      "artifacts/drone_counter/drones_over_defenders.png": "f6d3ea6be9fdb10eec10f16612fbaa7b07c2ff9cbc970991781be10d555e231e",
+      "artifacts/drone_counter/sniper_shot.png": "890cb63db416f02f1ca1d37b0f1f4d88133add6cdcdfca13903b3770ae2456dc",
+      "artifacts/iso_projection_floor/iso_deployed.png": "de48dc305c18680c22ab5946f8268639cbc6491950593af358dab055f7abfc11",
+      "artifacts/iso_projection_floor/iso_grid.png": "d72297bce8a134cd38fd6b3e39f759ccd04649e4a107a0039031eae88338a51d",
+      "artifacts/iso_projection_floor/iso_placement_highlights.png": "56a1f2d5bfb91728ef2f4eb6dc1d03c42ad11d5beff706f7a2e9cc52a786b688",
+      "artifacts/juice_deploy/deploy_drag.png": "2e0c66939b506bb46e7e4847656bd03b8206dbc7b729ddd5ff697fa15b7481a0",
+      "artifacts/juice_deploy/deploy_land.png": "655ee2e5e427d466e91c2a0ccb5a794c942548fd650cd3aa67899546becf6d34",
+      "artifacts/juice_deploy/deploy_settled.png": "4e2ed281949a0e076392cf3e56ac96e4b1a8782443f316fb52ef090c71916112",
+      "artifacts/juice_kill_leak/kill_burst.png": "c3c4d6e7b738ed98741c87947cd58423c52f02101f6e5aa2b97f08bc73508d9c",
+      "artifacts/juice_kill_leak/leak_clear.png": "0d9a1c3fda55c8e09c9db5898d451729bed806241cbe9cdb679031891acbda2c",
+      "artifacts/juice_kill_leak/leak_vignette.png": "0a94a34f827a45951549281c1aae5a1917c752e04a06aee94d734d8320bf4374",
+      "artifacts/juice_trap_charm/charm_after.png": "56996a2e096ff6c1c533af826aeb016fe06eb4ebd007a41a71f28cb1897e5f41",
+      "artifacts/juice_trap_charm/charm_before.png": "d32d4cdf6f5380dab0b58bb9e0237e43e781deb0cba7296b01624fd6089b7686",
+      "artifacts/juice_trap_charm/trap_gone.png": "45f3ef7096b41fda8580c0e6d437569dda1b2076628f1fe3de2156d528fa0bbd",
+      "artifacts/juice_trap_charm/trap_sprung.png": "e22caf01607aecf976ec6a70f0b2063699d2383f0ecdb7c3ccf457b4b2c1f6e1",
+      "artifacts/juice_trap_charm/trap_sprung_final.png": "0bd331448089a22e4b3a11c8dcbe7d63e3c1d3151cd7e3f86a6990b6676ef997",
+      "artifacts/resign_flow/back_at_title.png": "d991559f196430ccdd74c69e22e222ca7172c0927a68ea75f0a81918edbfb07b",
+      "artifacts/resign_flow/defeat_stamp.png": "e378857cbb31f02c565c300d8b6fe73a3ab67e6d4373dd29dd1eb676e16f0fdb",
+      "artifacts/resign_flow/results_defeat.png": "9abc7caab96bffc755a9dd10fa3a139d06869c1c37b481c31637db7e30c709c6",
+      "artifacts/skill_timing/battle_end.png": "4e2f92da907e0a10010ae350edb54ab0fbcabb79e37aca33d67a5d1f95b9f117",
+      "artifacts/skill_timing/skill_flash.png": "03c3ed9a2d1420ad97dfc72636e4b4ec4daacc94e33e1fedc868387fcb3bcdaa",
+      "artifacts/skill_timing/skill_flash_decay.png": "d3865bb921255f18d9ec559238f575960fa72d410dce3ff4fe0da9c3da2631fb",
+      "artifacts/skill_timing/sp_fill.png": "a41c51c0e111eb6159fda76e02db2f7def8d4247212bd7135cb950f998215f51",
+      "artifacts/skill_timing/sp_full.png": "230a3c09ea1b888510d28a37f90b05295d800b989a0a14ff2b0e9d0a1b5e52d0",
+      "artifacts/trap_flow/spike_after.png": "5a4f79030df0d22dd46fc5f628034874aa4b8b94d28f0b776b4f5a56d80dd11a",
+      "artifacts/trap_flow/spike_armed.png": "a8d2a061ddaaeb79716961160b3978fc318818a5bcd2d718e8803d9606eed363",
+      "artifacts/trap_flow/tar_overlay.png": "a8d2a061ddaaeb79716961160b3978fc318818a5bcd2d718e8803d9606eed363",
+      "artifacts/trap_flow/traps_placed.png": "a39203f3ce796e2382c805b8e2f43776308815554987ed0e80959a6f93369fb8",
+      "artifacts/wave_banner_victory/victory_stamp.png": "d0ee7ac951f149664b6f495a9d10a7fe7c91d44bcd1ca92a35ce979da2d3138e",
+      "artifacts/wave_banner_victory/wave_banner_1.png": "2563c59454b6a4ddedd5764ff1389fe20f653dfe3bf1f77832c22ca9df1687b0",
+      "artifacts/wave_banner_victory/wave_banner_2.png": "268edaf9c722e7589e4fe46f93bad9d0b5f7fb0ab1ae1c357e2c525c24872196"
+    },
+    "screenshots": 61,
+    "verdict": "pass",
+    "visual_review": "All 61 fresh PNGs reviewed in four contact sheets against named scenario checklists; no contradiction or docs-lane regression found."
+  },
+  "schema": "mgs.td001.verification.v1",
+  "source_scope": {
+    "changed_paths": [
+      "docs/README.md",
+      "docs/completed.md",
+      "docs/decisions/README.md",
+      "docs/handoffs/README.md",
+      "docs/media/README.md",
+      "docs/plans/README.md",
+      "docs/plans/TD-001-collaboration-onboarding.md",
+      "docs/todo.md"
+    ],
+    "docs_art_changed": false,
+    "sim_or_data_changed": false
+  }
+}

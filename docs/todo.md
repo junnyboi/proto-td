@@ -8,12 +8,28 @@ This is the authoritative multi-agent coordination queue. It contains **incomple
 - `PLAYTEST.md` owns human verdict capture; `FINAL_REPORT.md` is an audit record, not the queue.
 - Before claiming an item, pull the default branch and confirm no other item owns the same files.
 - Allowed statuses: `pending`, `blocked`, `in_progress`.
+- Existing domain IDs remain valid; new general coordination items use `TD-###`.
 - Completed items move to `docs/completed.md`; they never remain in both files.
+- Preserve every valid concurrent entry during merges; never resolve a shared-ledger conflict by dropping the other lane wholesale.
 - Shared hot files (`FEATURES.json`, these ledgers, `scripts/verify.sh`, tick semantics, thresholds) are serial integration surfaces.
 
 ## Claiming an item
 
-Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, change the status to `in_progress`, and replace candidate paths with the exact exclusive file set before editing. Never claim a file already owned by another active item.
+Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, add `Base: <default branch> at <full SHA>`, change the status to `in_progress`, and replace candidate paths with the exact exclusive file set before editing. Never claim a file already owned by another active item.
+
+```markdown
+## TD-### — Imperative work title
+- Status: pending | blocked | in_progress
+- Owner: AGENT N
+- Branch: `agent-N/lane-name`
+- Base: `<default branch>` at `<full SHA>`
+- Dependencies: none | <stable ID>
+- Owned files: exact paths or non-overlapping globs
+- Do not touch: shared or externally owned paths
+- Acceptance: falsifiable behavior and measurable exit conditions
+- Required evidence: named tests, scenarios, screenshots, replay diffs, or documents
+- Last update: YYYY-MM-DD
+```
 
 ## L7-R1 — Human playtest round 1
 

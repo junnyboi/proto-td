@@ -1,5 +1,10 @@
-# Coordination Media
+# Collaboration Media Policy
 
-Keep only small, durable collaboration references or evidence here. Large generated images, audio, videos, Web bundles, and transient verification artifacts belong in manifest-backed assets, managed storage, or ignored `artifacts/` paths as defined by the project.
+Store only small, durable collaboration evidence or references that materially help another agent reproduce a decision. Generated game assets belong in the manifest-driven asset pipeline; large images, audio, video, Web bundles, and transient runtime artifacts remain outside Git unless a plan explicitly requires a compact baseline.
 
-Never hand-craft or reuse verification evidence. Screenshots cited as gate evidence must come from the run just executed and remain traceable to its report and commit.
+- Evidence identifies the candidate commit, command, run date, and originating scenario or gate.
+- Screenshots come from the run just executed; never reuse or hand-craft evidence.
+- Prefer handoff links to `artifacts/` outputs or committed baselines instead of duplicating files.
+- Never commit credentials, tokens, signed URLs, local caches, `.godot/`, or unrelated binary output.
+- For intentionally committed player-facing media, record source, license, generation prompt, transformations, placeholder/final state, and human contribution.
+- Delete superseded scratch media; preserve historical decisions through Git and decision records.
