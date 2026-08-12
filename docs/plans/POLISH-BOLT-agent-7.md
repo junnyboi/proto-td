@@ -1,4 +1,9 @@
-# POLISH-BOLT — AGENT 7 Lane Contract
+# POLISH-BOLT — AGENT 7 Lane Contract (ABANDONED)
+
+> Released by Poseidon on 2026-08-12 before presentation integration. This
+> branch is intentionally unmerged, claims no files, and is not an active
+> implementation contract. A successor may inspect individual commits but
+> must create a fresh claim and must not merge this branch wholesale.
 
 - Branch: `agent-7/polish-bolt`
 - Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
