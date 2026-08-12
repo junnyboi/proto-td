@@ -39,6 +39,9 @@ func set_run_seed(value: int) -> void:
 func start_campaign(open_campaign_ui: bool = true) -> void:
 	campaign = CampaignState.create(_catalogs(), _all_stage_defs())
 	campaign_active = true
+	pending_stage = null
+	current_battle = null
+	selected_stage_id = &""
 	selected_squad = []
 	last_result = {}
 	if open_campaign_ui:
@@ -127,10 +130,13 @@ func debug_unlock_all() -> void:
 ## Back to the starting menu (Phase 13). Resets the campaign session so the
 ## next Start always creates a fresh campaign with no stale selection.
 func open_title() -> void:
+	pending_stage = null
+	current_battle = null
 	campaign = null
 	campaign_active = false
 	selected_stage_id = &""
 	selected_squad = []
+	last_result = {}
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 

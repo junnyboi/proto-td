@@ -136,8 +136,11 @@ func _return_to_title(
 	h.check("title reached", title != null)
 	h.check("campaign cleared", game.get("campaign") == null)
 	h.check("campaign mode cleared", not bool(game.get("campaign_active")))
+	h.check("pending stage cleared", game.get("pending_stage") == null)
+	h.check("battle model cleared", game.get("current_battle") == null)
 	h.check("selected stage cleared", game.get("selected_stage_id") == &"")
 	h.check("selected squad cleared", (game.get("selected_squad") as Array).is_empty())
+	h.check("last result cleared", (game.get("last_result") as Dictionary).is_empty())
 	if title == null:
 		return false
 	var start := title.find_child("StartButton", true, false) as Button

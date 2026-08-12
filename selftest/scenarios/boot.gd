@@ -41,12 +41,20 @@ func run(h: SelfTestHarness) -> void:
 		return
 
 	# Input-adapter wiring check: one synthetic click on the sole live action.
+	# Dirty every resettable route field first so freshness checks cannot pass
+	# from constructor defaults.
+	var stale_squad: Array[StringName] = [&"vanguard_1"]
+	game.set("pending_stage", load("res://data/stages/test_lane.tres") as StageDef)
+	game.set("selected_stage_id", &"stale_stage")
+	game.set("selected_squad", stale_squad)
+	game.set("last_result", {"stale": true})
 	await h.click_view(rect.get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("Start opens Staging", staging != null)
 	h.check("Start does not open a battle", game.get("current_battle") == null)
 	h.check("Start creates a campaign", game.get("campaign") != null)
 	h.check("Start activates campaign flow", bool(game.get("campaign_active")))
+	h.check("Start clears pending stage", game.get("pending_stage") == null)
 	h.check("Start clears selected stage", game.get("selected_stage_id") == &"")
 	h.check("Start clears selected squad", (game.get("selected_squad") as Array).is_empty())
 	h.check("Start clears last result", (game.get("last_result") as Dictionary).is_empty())
