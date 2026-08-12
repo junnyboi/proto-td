@@ -1,4 +1,4 @@
-# Aetheria Tactics — Human Playtest Protocol (L7, rounds 1–2)
+# Proto Defense — Human Playtest Protocol (L7, rounds 1–2)
 
 You are the first human to play this build. Machines have proven it *correct*; only you can
 say whether it is *fun*. Trust your gut, write everything down, and don't be polite about it.

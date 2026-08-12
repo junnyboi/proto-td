@@ -1,4 +1,4 @@
-# Aetheria Tactics — Final Audit Report (Phase 11)
+# Proto Defense — Final Audit Report (Phase 11)
 
 ## 1. The frozen build
 

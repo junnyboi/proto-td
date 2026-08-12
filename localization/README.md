@@ -1,4 +1,4 @@
-# Aetheria Tactics Localization
+# Proto Defense Localization
 
 `en-US.json` is the development-default product catalog. Player-visible text uses a stable key plus an exact English fallback through the `I18n` autoload.
 
