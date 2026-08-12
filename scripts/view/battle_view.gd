@@ -146,7 +146,8 @@ func _ready() -> void:
 	Game.current_battle = model
 	Game.content = self
 	_stage = stage
-	_build_grid(stage)
+	if not _build_grid(stage):
+		return
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
 	_juice = JuiceLayer.new()
 	_juice.name = "JuiceLayer"
@@ -544,7 +545,7 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	return defs
 
 
-func _build_grid(stage: StageDef) -> void:
+func _build_grid(stage: StageDef) -> bool:
 	_backdrop = ColorRect.new()
 	_backdrop.name = "Backdrop"
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -558,8 +559,9 @@ func _build_grid(stage: StageDef) -> void:
 	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
-	IsoGridBuilder.build_backdrop_ring(_grid_root, stage)
-	IsoGridBuilder.build_terrain(_grid_root, stage)
+	if not IsoGridBuilder.build_stage(_grid_root, stage):
+		return false
+	return true
 
 
 func _apply_map_transform() -> void:

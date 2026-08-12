@@ -18,10 +18,10 @@ The eight staged PNGs were copied byte-for-byte into `assets/world/s1/`; runtime
 | `world.s1.ground` | 32×16 | quiet shell-lime passive floor | integrated, human-final unset |
 | `world.s1.route` | 32×16 | warm west→east service route | integrated, human-final unset |
 | `world.s1.elevated` | 32×24 | 32×16 top plus exactly eight wall rows | integrated, human-final unset |
-| `world.s1.backdrop` | 32×24 | broken non-playable court-edge fragments | integrated, human-final unset |
-| `world.s1.spawn_landmark` | 32×48, pivot `(16,30)` | canvas/intake Spawn identity | integrated, human-final unset |
-| `world.s1.core_landmark` | 32×48, pivot `(16,30)` | squat regulator Core identity | integrated, human-final unset |
-| `world.s1.rain_measure` | 32×32 | reserved low-decor candidate | manifested and deliberately unplaced |
+| `world.s1.backdrop` | 32×16 | broken non-playable court-edge fragments | integrated, human-final unset |
+| `world.s1.spawn_landmark` | 32×32, pivot `(16,30)` | canvas/intake Spawn identity | integrated, human-final unset |
+| `world.s1.core_landmark` | 32×32, pivot `(16,30)` | squat regulator Core identity | integrated, human-final unset |
+| `world.s1.rain_measure` | 16×16, pivot `(8,14)` | reserved low-decor candidate | manifested and deliberately unplaced |
 | `world.s1.route_notch` | 32×16 | exactly three neutral cadence notches | integrated, human-final unset |
 
 All eight manifest entries retain `placeholder = true`. Their runtime provenance sidecars retain the exact GPT Image 2 model/prompt/reference chain, final byte hashes, the approval receipt and accepted-manifest hashes, and `human_acceptance.final_art = false`.

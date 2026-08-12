@@ -36,8 +36,27 @@ const TILE_ART := {
 }
 
 
-static func build_terrain(grid_root: Node2D, stage: StageDef) -> void:
-	var theme := StageArtTheme.load_for(stage)
+static func build_stage(
+	grid_root: Node2D,
+	stage: StageDef,
+	theme_resolver: Callable = Callable(),
+	report_error: bool = true,
+) -> bool:
+	var result := StageArtTheme.resolve_for(stage, theme_resolver)
+	var error := String(result["error"])
+	if not error.is_empty():
+		if report_error:
+			push_error("iso_grid_builder: %s" % error)
+		return false
+	var theme := result["theme"] as StageArtTheme
+	_build_backdrop_ring(grid_root, stage.grid_size(), theme)
+	_build_terrain(grid_root, stage, theme)
+	return true
+
+
+static func _build_terrain(
+	grid_root: Node2D, stage: StageDef, theme: StageArtTheme
+) -> void:
 	var size := stage.grid_size()
 	var path_cells: Dictionary = {}
 	for i: int in stage.paths.size():
@@ -67,9 +86,9 @@ static func build_terrain(grid_root: Node2D, stage: StageDef) -> void:
 		_add_theme_decor(grid_root, stage, theme)
 
 
-static func build_backdrop_ring(grid_root: Node2D, stage: StageDef) -> void:
-	var theme := StageArtTheme.load_for(stage)
-	var size := stage.grid_size()
+static func _build_backdrop_ring(
+	grid_root: Node2D, size: Vector2i, theme: StageArtTheme
+) -> void:
 	var backdrop_id: StringName = theme.backdrop_id if theme != null else &"tile_backdrop"
 	var tex := Art.texture(backdrop_id)
 	var art_size := Art.size(backdrop_id)

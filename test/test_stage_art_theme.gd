@@ -10,6 +10,16 @@ const EXPECTED_ASSET_HASHES := {
 	&"world.s1.route": "c852a1ed7de5b81d4890afa7c2b077f354b57c2d0956ff9f29d1c3890c276ecd",
 	&"world.s1.spawn_landmark": "e4172fc2a33d68e063a742b44ae221159762dee74b6a20874395690e73f3a22d",
 }
+const EXPECTED_ASSET_SIZES := {
+	&"world.s1.backdrop": Vector2i(32, 16),
+	&"world.s1.core_landmark": Vector2i(32, 32),
+	&"world.s1.elevated": Vector2i(32, 24),
+	&"world.s1.ground": Vector2i(32, 16),
+	&"world.s1.rain_measure": Vector2i(16, 16),
+	&"world.s1.route_notch": Vector2i(32, 16),
+	&"world.s1.route": Vector2i(32, 16),
+	&"world.s1.spawn_landmark": Vector2i(32, 32),
+}
 
 var theme: StageArtTheme
 var s1: StageDef
@@ -58,8 +68,9 @@ func test_all_s1_manifest_entries_are_runtime_backed_but_human_unaccepted() -> v
 		assert_eq(int(entry["frames"]), 1, "%s frame count" % id)
 		assert_true(bool(entry["placeholder"]), "%s must remain placeholder until owner review" % id)
 		assert_true(String(entry["pattern"]).begins_with("res://assets/world/s1/"), "%s path" % id)
+		assert_eq(entry["size"], EXPECTED_ASSET_SIZES[id], "%s manifest size" % id)
 		assert_not_null(Art.texture(id), "%s texture" % id)
-		assert_ne(Art.size(id), Vector2i.ZERO, "%s size" % id)
+		assert_eq(Art.size(id), EXPECTED_ASSET_SIZES[id], "%s runtime size" % id)
 
 
 func test_runtime_asset_bytes_match_the_verified_staged_candidates() -> void:
@@ -81,3 +92,28 @@ func test_runtime_provenance_covers_every_asset_without_inferring_human_acceptan
 		assert_eq(sidecar["generator"]["model"], "gpt-image-2", "%s model" % id)
 		assert_eq(sidecar["approval_packet"]["token"], "AUI-DESIGN-D", "%s approval" % id)
 		assert_false(bool(sidecar["human_acceptance"]["final_art"]), "%s human final" % id)
+
+
+func test_missing_required_s1_theme_fails_closed_while_s2_stays_generic() -> void:
+	var missing_resolver := func(_path: String) -> Resource: return null
+	var s1_result := StageArtTheme.resolve_for(s1, missing_resolver)
+	assert_true(bool(s1_result["required"]))
+	assert_null(s1_result["theme"])
+	assert_string_contains(String(s1_result["error"]), "required stage art theme")
+	var s1_root := Node2D.new()
+	assert_false(IsoGridBuilder.build_stage(s1_root, s1, missing_resolver, false))
+	assert_eq(s1_root.get_child_count(), 0, "broken required S1 must not draw generic art")
+	s1_root.free()
+
+	var s2_result := StageArtTheme.resolve_for(s2, missing_resolver)
+	assert_false(bool(s2_result["required"]))
+	assert_null(s2_result["theme"])
+	assert_eq(String(s2_result["error"]), "")
+	var s2_root := Node2D.new()
+	assert_true(IsoGridBuilder.build_stage(s2_root, s2, missing_resolver, false))
+	assert_gt(s2_root.get_child_count(), 0, "explicitly unthemed S2 keeps generic art")
+	var s2_tile := s2_root.get_node_or_null("Tile_0_0") as TextureRect
+	assert_not_null(s2_tile)
+	if s2_tile != null:
+		assert_eq(s2_tile.texture, Art.texture(&"tile_ground"))
+	s2_root.free()

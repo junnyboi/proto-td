@@ -5,6 +5,8 @@ extends Resource
 ## model, save, hash, or replay lanes; the disposable view consumes it to map
 ## stage roles to manifest IDs and typed decorative anchors.
 
+const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1"]
+
 @export var stage_id: StringName = &""
 @export var theme_id: StringName = &""
 @export var approval_token: StringName = &""
@@ -33,24 +35,47 @@ extends Resource
 @export var rain_measure_placed: bool = false
 
 
-static func load_for(stage: StageDef) -> StageArtTheme:
+static func expects_theme(stage: StageDef) -> bool:
+	return stage != null and stage.id in REQUIRED_THEME_STAGE_IDS
+
+
+static func resolve_for(stage: StageDef, resolver: Callable = Callable()) -> Dictionary:
+	var required := expects_theme(stage)
 	if stage == null:
-		return null
+		return {"required": false, "theme": null, "error": ""}
+	if not required:
+		return {"required": false, "theme": null, "error": ""}
 	var path := "res://data/presentation/%s_world_theme.tres" % stage.id
-	if not ResourceLoader.exists(path):
-		return null
-	var theme := load(path) as StageArtTheme
+	var theme: StageArtTheme = null
+	if resolver.is_valid():
+		theme = resolver.call(path) as StageArtTheme
+	elif ResourceLoader.exists(path):
+		theme = load(path) as StageArtTheme
 	if theme == null:
-		push_error("stage_art_theme: resource failed to load: %s" % path)
-		return null
+		return {
+			"required": true,
+			"theme": null,
+			"error": "required stage art theme failed to load: %s" % path,
+		}
 	var errors := theme.validation_errors(stage)
 	for id: StringName in theme.required_manifest_ids():
 		if Art.texture(id) == null or Art.size(id) == Vector2i.ZERO:
 			errors.append("manifest asset missing or unsized: %s" % id)
 	if not errors.is_empty():
-		push_error("stage_art_theme: invalid resource: %s" % "; ".join(errors))
-		return null
-	return theme
+		return {
+			"required": true,
+			"theme": null,
+			"error": "required stage art theme is invalid: %s" % "; ".join(errors),
+		}
+	return {"required": true, "theme": theme, "error": ""}
+
+
+static func load_for(stage: StageDef) -> StageArtTheme:
+	var result := resolve_for(stage)
+	var error := String(result["error"])
+	if not error.is_empty():
+		push_error("stage_art_theme: %s" % error)
+	return result["theme"] as StageArtTheme
 
 
 func applies_to(stage: StageDef) -> bool:
