@@ -1,4 +1,4 @@
-# TD-012 — Six-cue retro Japanese lo-fi score handoff
+# TD-013 — Six-cue retro Japanese lo-fi score handoff
 
 - Agent / branch: AGENT 4 / `agent-4/retro-lofi-score`
 - Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
@@ -14,7 +14,7 @@ All logical IDs and import loop flags remain stable. Exact prompts, selected sou
 
 ## Frozen evidence
 
-- Candidate evidence: `docs/media/TD-012-verification.json` (`mgs.verification-evidence.v2`, PASS, fresh, STANDARD)
+- Candidate evidence: `docs/media/TD-013-verification.json` (`mgs.verification-evidence.v2`, PASS, fresh, STANDARD)
 - Music structural gate: six unique 48 kHz stereo Ogg Vorbis cues, 160–180 seconds, approximately −18 LUFS, loop-enabled, exact prompt/source/transcription hash parity, zero long digital silence, all green
 - Focused catalog GUT: 3/3 tests, 239 assertions
 - Raw speech detection: six sources, zero segments, empty `full_text`
@@ -26,6 +26,7 @@ All logical IDs and import loop flags remain stable. Exact prompts, selected sou
 - `D-MUSIC-10`: the owner requested Lyria 3 Pro or the latest available music model. The current built-in `generate_music` interface exposes neither model selection nor backend identifier. It used its latest available backend; provenance records `not exposed by tool` instead of asserting an unverifiable Lyria version.
 - All six first attempts met machine acceptance; no generation retry and no per-track EQ were used.
 - Objective signal analysis confirms stronger spectral movement/brightness in each boss cue versus its paired BGM, but cannot judge retro character, location charm, instrument identity, originality, reference distance, fatigue, or loop feel.
+- Integration renumber: Agent 2 independently integrated the Aetheria Tactics identity as TD-012 after this lane branched. Mandatory current-master reconciliation detected the collision before merge, so this music lane was renumbered to the next free stable ID, TD-013. Candidate audio commit `61eefbb` and its evidence identity are unchanged.
 
 ## Remaining human gate
 
@@ -33,4 +34,4 @@ TD-004 owns the mandatory listening verdict. Listen to every cue for at least ni
 
 ## Released surfaces after integration
 
-All TD-012 music, prompt, source, transcription, catalog, provenance, guide, plan, handoff, evidence, and serial-ledger reservations may be released after verified master integration. Runtime playback remains a separately scoped future seam.
+All TD-013 music, prompt, source, transcription, catalog, provenance, guide, plan, handoff, evidence, and serial-ledger reservations may be released after verified master integration. Runtime playback remains a separately scoped future seam.
