@@ -130,21 +130,26 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
    files, do-not-touch surfaces, dependencies, acceptance, and evidence. Never two agents on one
    file; never write into a worktree another agent is verifying.
 3. Inner loop: write → hook checks per write → `verify.sh --scenario=X` → `verify.sh --full`.
-4. Commit feature + ledgers (+ baselines) atomically. Every new commit starts
+4. Commit feature + ledgers (+ baselines) atomically on the feature branch. Every new commit starts
    `AGENT N - ` where N is the assigned number/code. Apply prospectively; never rewrite history
    merely to add prefixes.
-5. Before push/integration, fetch and merge the current default branch. **Never force-push.**
-   Resolve conflicts semantically, preserving both branches' valid features; if requirements
-   conflict, stop for the owner rather than deleting another lane. Push the agent branch, not
-   directly to `origin/master`, unless the user explicitly assigns the serial integration role.
-   After that merge, run `git diff --check` + `scripts/verify.sh` before every push; run
-   `scripts/verify.sh --full` after any substantive conflict resolution.
-6. The integration agent reruns `scripts/verify.sh --full` on the merged tree. A lane green does
-   not prove the union green.
-7. On closure, move the item from `docs/todo.md` to one compact line in `docs/completed.md`:
+5. On closure, move the item from `docs/todo.md` to one compact line in `docs/completed.md`:
    ID | agent | outcome | commit | evidence. Compact redundant prose without deleting stable
    IDs, SHAs, deviations, or evidence.
-8. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
+6. **The feature owner integrates completed work.** Fetch current remote state and merge
+   `origin/master` into the feature branch first. Resolve conflicts semantically on that branch,
+   preserving both valid behaviors; never accept all of `ours` or `theirs` blindly. If
+   requirements conflict, stop for the owner rather than deleting another lane. Run
+   `git diff --check` + `scripts/verify.sh` before every push and `scripts/verify.sh --full` after
+   substantive conflict resolution, then push the feature branch normally.
+7. Switch to local `master`, pull `origin/master` with `--ff-only`, then fast-forward to the
+   verified feature branch. If fast-forward is impossible because master moved, return to the
+   feature branch, merge the new master, resolve, and reverify; never resolve drift on master.
+   Run `scripts/verify.sh --full` on merged master, push master normally, and confirm local and
+   remote master share the same SHA. A lane green does not prove the union green.
+8. **Never force-push in any form**: `--force`, `-f`, and `--force-with-lease` are forbidden.
+   See `docs/decisions/D-001-autonomous-feature-integration.md`.
+9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
 ## Audio: deliberately silent (owner decision, 2026-08-11)
