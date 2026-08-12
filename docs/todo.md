@@ -80,16 +80,16 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: 2026-08-12
 
 ## POLISH-BOLT — Add a readable Bolt impact visual
-
-- Status: pending
+- Status: pending; prior implementation checkpoint exists but final audit is incomplete
 - Owner: unassigned
-- Branch: N/A until claimed
-- Dependencies: coordinate with `POLISH-VFX`; audio remains waived by `D-SFX`
-- Owned files: none until claimed; pin exact presentation, manifest, asset, and scenario paths first
-- Do not touch: spell damage/cooldown semantics, audio policy, thresholds
-- Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing authoritative combat state
-- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, and `scripts/verify.sh --full`
+- Branch: N/A until claimed; prior unmerged checkpoints include `agent-7/polish-bolt` and `agent-10/bolt-impact` at `cf16ca2`
+- Dependencies: coordinate with `POLISH-VFX`; audio remains waived by `D-SFX`; read `docs/handoffs/POLISH-BOLT-agent-10.md` before adopting or replacing the checkpoint
+- Owned files: none until claimed; next owner must pin exact presentation, model-record, manifest, asset, test, and scenario paths before editing
+- Do not touch: spell damage/cooldown/targeting semantics, audio policy, verification thresholds, or unrelated presentation lanes
+- Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing combat outcomes; any adopted deterministic event record must remain hash-covered and zero-state-change on rejection
+- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, cross-process campaign replay diff, independent adversarial review, and a fresh uninterrupted `scripts/verify.sh --full`
 - Last release: 2026-08-12 — Poseidon reassigned AGENT 7 before integration. `agent-7/polish-bolt` remains intentionally unmerged and owns no active files or contracts.
+- Last release: 2026-08-12 — Poseidon unassigned AGENT 10 during final audit. `agent-10/bolt-impact` remains intentionally unmerged and owns no active files or contracts; partial audit artifacts were deleted.
 - Last update: 2026-08-12
 
 ## POLISH-BOSS-HIT — Wire the boss-hit presentation event
