@@ -31,25 +31,12 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-012 — Replace all six cues with an original retro Japanese lo-fi score
-
-- Status: in_progress
-- Owner: AGENT 4
-- Branch: `agent-4/retro-lofi-score`
-- Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
-- Dependencies: owner-requested full MUSIC-1 prompt change; TD-004 remains the separate human acceptance gate
-- Owned files: all six `assets/music/*.ogg` cue files; the matching six prompt, retained-source, and transcription paths; `assets/music/{catalog.tres,provenance.json,README.md}`; `docs/{plans,handoffs,media}/TD-012*`; MUSIC-1 commit linkage in `FEATURES.json`; and TD-012 rows in `docs/{todo,completed}.md`
-- Do not touch: runtime playback/routing, SFX, D-SFX meaning, simulation, stages, engine/export, localization, tests, harness, `scripts/verify.sh`, or thresholds
-- Acceptance: six unique 160–180-second loopable instrumental candidates form coherent BGM/boss pairs in an original mid-to-late-1990s Japanese console-RPG lo-fi language; Act I is warm/welcoming/adventurous, Act II crystalline/archaeological/threatening, Act III oppressive/vast/climactic; prompts and sources are fully provenance-linked; no detected speech; all placeholders remain true
-- Required evidence: exact pre-generation plan, six-cue structural gate, raw empty transcriptions, Godot import, focused catalog GUT, mandatory headless gate, frozen STANDARD full ladder, schema-valid candidate evidence, current-master reconciliation, and fresh merged-union verification; mood/style/originality remain TD-004 human evidence
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
 - Owner: human
 - Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-003 integrated into `master`; TD-006 and TD-009 replacement cues integrated and presented for listening
+- Dependencies: TD-012 revision-four score integrated into `master` and presented for listening
 - Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
 - Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
 - Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping

@@ -1,0 +1,1523 @@
+{
+  "artifacts": [
+    {
+      "bytes": 18905,
+      "created_at": "2026-08-12T14:18:19.437174Z",
+      "path": "repo://assets/music/provenance.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826"
+    },
+    {
+      "bytes": 8440,
+      "created_at": "2026-08-12T14:18:19.437587Z",
+      "path": "repo://assets/music/catalog.tres",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "1ddaf4d0ed930493f6e52a32e5781c4af6151bd37710102380e1e7063c18f3c8"
+    },
+    {
+      "bytes": 7111,
+      "created_at": "2026-08-12T14:16:43.157517Z",
+      "path": "repo://assets/music/README.md",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "198492906c3d9991f4089d9c7b9a0200ef4577763daea4be80fd014d7af6f4de"
+    },
+    {
+      "bytes": 22628,
+      "created_at": "2026-08-12T14:19:36.094669Z",
+      "path": "repo://docs/plans/TD-012-six-cue-retro-lofi-score.md",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "ef63905c55b7956d30de6ac906299bb426059ee68cad1ff007870d257862c75c"
+    },
+    {
+      "bytes": 3744589,
+      "created_at": "2026-08-12T14:14:36.333454Z",
+      "path": "repo://assets/music/act_1_guild_threshold_bgm.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "f0296d7acd2c23a424f3d6f4e0f45cdf17240af174e261e3a9ce1364bdd14943"
+    },
+    {
+      "bytes": 2418,
+      "created_at": "2026-08-12T14:13:32.310649Z",
+      "path": "repo://assets/music/prompts/act_1_guild_threshold_bgm.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "557b8fb387f22bffe4d2f218a357ab35aef1b2ec286700595c7a53e7520f1c65"
+    },
+    {
+      "bytes": 4221177,
+      "created_at": "2026-08-12T14:14:36.350652Z",
+      "path": "repo://assets/music/sources/act_1_guild_threshold_bgm.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "e6b0d80298e2235d283cd33a0c451b4c0513c4ddbf108c67350a0a23f862c164"
+    },
+    {
+      "bytes": 87,
+      "created_at": "2026-08-12T14:14:36.361353Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_1_guild_threshold_bgm.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "e719ef6853dc419013df0930238cba845086ae9e1fa7d7a64ca1f5e27a705c83"
+    },
+    {
+      "bytes": 3532925,
+      "created_at": "2026-08-12T14:14:36.363380Z",
+      "path": "repo://assets/music/act_1_guild_threshold_boss.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "b1491a9bc5b9df060bb4d6ac6ffe4b1437f1f8cf2e994bc0a2494b322c2fb9b7"
+    },
+    {
+      "bytes": 2228,
+      "created_at": "2026-08-12T14:13:44.406810Z",
+      "path": "repo://assets/music/prompts/act_1_guild_threshold_boss.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "bf124fdfa5ca0e5c3610e4f7aace6432ca6f024494b39faadc391a6e6e5495e4"
+    },
+    {
+      "bytes": 4019303,
+      "created_at": "2026-08-12T14:14:36.367911Z",
+      "path": "repo://assets/music/sources/act_1_guild_threshold_boss.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "3676bc3c685e7ef2aa12d63aafee0effd7459faca48b2e9e016e1b8bf9ae4947"
+    },
+    {
+      "bytes": 83,
+      "created_at": "2026-08-12T14:14:36.377804Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_1_guild_threshold_boss.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "12e6b574c40825d225899956f7aec0e812bb2575e72429dc594967f195e40829"
+    },
+    {
+      "bytes": 3670938,
+      "created_at": "2026-08-12T14:14:36.379723Z",
+      "path": "repo://assets/music/act_2_twilight_grotto_bgm.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "81f72f769713977d3d49480dfb469ab9fbb75c55e5f95d6215a4338c7e9a03c2"
+    },
+    {
+      "bytes": 2411,
+      "created_at": "2026-08-12T14:13:54.303839Z",
+      "path": "repo://assets/music/prompts/act_2_twilight_grotto_bgm.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "bbed31d5329b19b057c49ec74710da2a117a6577cb7758e6caa880771786eb62"
+    },
+    {
+      "bytes": 4322115,
+      "created_at": "2026-08-12T14:14:36.384076Z",
+      "path": "repo://assets/music/sources/act_2_twilight_grotto_bgm.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "d01653731cd229cb3deccc6870ddd0108d2b723a2cfb76df482ffdce8f15571a"
+    },
+    {
+      "bytes": 87,
+      "created_at": "2026-08-12T14:14:36.392695Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_2_twilight_grotto_bgm.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "678de69f9843e917751fedbeabc51d8302f9468ca07a4e747b7b3acd45522c17"
+    },
+    {
+      "bytes": 3682684,
+      "created_at": "2026-08-12T14:14:36.394652Z",
+      "path": "repo://assets/music/act_2_twilight_grotto_boss.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "83909e91e765d7d3a3cc29ebe4d0dbd9610b01bb805c170112f8a8895d636147"
+    },
+    {
+      "bytes": 2278,
+      "created_at": "2026-08-12T14:14:04.402675Z",
+      "path": "repo://assets/music/prompts/act_2_twilight_grotto_boss.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "6b1341011c4423e397077e82408260efb0f851d024e9d59efbd7f2b79c1fc9b1"
+    },
+    {
+      "bytes": 4222431,
+      "created_at": "2026-08-12T14:14:36.398765Z",
+      "path": "repo://assets/music/sources/act_2_twilight_grotto_boss.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "8097e06f3b1a20520e734725e9b9b585b3ad5efe75c1abd8d6e2daa4419f6bf3"
+    },
+    {
+      "bytes": 87,
+      "created_at": "2026-08-12T14:14:36.408494Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_2_twilight_grotto_boss.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "6761d694f7274279253faf14fca662db1c4dfc833a5a8899b8638c2da5b3638e"
+    },
+    {
+      "bytes": 3438622,
+      "created_at": "2026-08-12T14:14:36.410652Z",
+      "path": "repo://assets/music/act_3_abyssal_vault_bgm.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "0351ddf2b26fc2f67ea4ae0e1ac8d8d4e639ed9b8fb9a2047856974e31bd53b2"
+    },
+    {
+      "bytes": 2492,
+      "created_at": "2026-08-12T14:14:13.564519Z",
+      "path": "repo://assets/music/prompts/act_3_abyssal_vault_bgm.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "a3a674047caf6b385576397f4f071de51d034aef28ff05bacb6a4ecee3705d4e"
+    },
+    {
+      "bytes": 4020557,
+      "created_at": "2026-08-12T14:14:36.414652Z",
+      "path": "repo://assets/music/sources/act_3_abyssal_vault_bgm.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "76ffa25ae1b5769a048d2af0d54e26254554e542603f9b8eb7e9648757759906"
+    },
+    {
+      "bytes": 85,
+      "created_at": "2026-08-12T14:14:36.422945Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_3_abyssal_vault_bgm.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "059060138cec58735778cfa61c5986863ba78a11d1b092cd9e80999a3f0e1c5e"
+    },
+    {
+      "bytes": 3656392,
+      "created_at": "2026-08-12T14:14:36.424647Z",
+      "path": "repo://assets/music/act_3_abyssal_vault_boss.ogg",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "03c2be8f3e477cd4cfd5cb619071ebc3554ddab4f1809536e4624e8c51584969"
+    },
+    {
+      "bytes": 2618,
+      "created_at": "2026-08-12T14:14:24.692043Z",
+      "path": "repo://assets/music/prompts/act_3_abyssal_vault_boss.txt",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "43dafd4fc93ff363527af105b24c27b00e37480b14df1c1b4c48d7094a7542b6"
+    },
+    {
+      "bytes": 4303933,
+      "created_at": "2026-08-12T14:14:36.429252Z",
+      "path": "repo://assets/music/sources/act_3_abyssal_vault_boss.mp3.source",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "6683627943beb02b052f0991d6c7bac6efa5bc53adbcde7a443f47b88354a708"
+    },
+    {
+      "bytes": 86,
+      "created_at": "2026-08-12T14:14:36.437494Z",
+      "path": "repo://assets/music/evidence/transcriptions/act_3_abyssal_vault_boss.json",
+      "provenance_hash": "sha256:81f0997bc1141942bba7020c4a6ac1a4199d37b99f3b38a74bc6e2b60023b826",
+      "sha256": "b3963083b267dd1a1788cb47799be007262babe52ec4cd91ebb2251d1b70bcb6"
+    },
+    {
+      "bytes": 31671,
+      "created_at": "2026-08-12T14:22:17.589949Z",
+      "path": "state://frozen-61eefbb/artifacts/assets_floor/assets_contact_sheet.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b8cb03ca8adb2365909c6fd1266e02eb5d1f174b4dc07c8290174326d91d55c2"
+    },
+    {
+      "bytes": 1311,
+      "created_at": "2026-08-12T14:22:17.590312Z",
+      "path": "state://frozen-61eefbb/artifacts/assets_floor/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "39c9ca5f19c2e7baa69d88ef2ef01e41547bc61ad9b10f4c12d1f069037d6ec2"
+    },
+    {
+      "bytes": 54858,
+      "created_at": "2026-08-12T14:22:19.224532Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/controls_idle.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "2e232c15833180dce66861f8703ab6bcacf8044a87f0df2de201a333a08deedb"
+    },
+    {
+      "bytes": 54184,
+      "created_at": "2026-08-12T14:22:19.885842Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/paused.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "945250684ccd2b2caaf55a23e34ed0eae88fd0ac8dc955923eb29d209ddbe051"
+    },
+    {
+      "bytes": 3412,
+      "created_at": "2026-08-12T14:22:22.796349Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "1b8d78539a241922d8424cfc98974389362be9b68a6678b6b2027542b9bddef1"
+    },
+    {
+      "bytes": 69695,
+      "created_at": "2026-08-12T14:22:21.965994Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/resign_confirm.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "87d9217664b77887d01882abcb1977dd70911c47971a038f0410306195801851"
+    },
+    {
+      "bytes": 52968,
+      "created_at": "2026-08-12T14:22:21.609366Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/speed_4x.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "2c6057ccd1cbf1bac670d9f9d43d55182b0b13fd6a382a84069fab227d44f349"
+    },
+    {
+      "bytes": 52327,
+      "created_at": "2026-08-12T14:22:22.543938Z",
+      "path": "state://frozen-61eefbb/artifacts/battle_controls/terminal_continue.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "d6636716a645d7267d22fcd4aabf64f14e13608dc95ef451aaaf660292cbd992"
+    },
+    {
+      "bytes": 54925,
+      "created_at": "2026-08-12T14:22:41.359325Z",
+      "path": "state://frozen-61eefbb/artifacts/blocking/battle_end.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "4ce3bc7c2544aef3deceae76f3a77a0b180482e13c1df3d311d6794ce930a0c7"
+    },
+    {
+      "bytes": 54220,
+      "created_at": "2026-08-12T14:22:30.429292Z",
+      "path": "state://frozen-61eefbb/artifacts/blocking/block_cluster.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "7be42595a9e5645fc022dd6de6a6dc5ef300a44e0571677c29c458539a8242ec"
+    },
+    {
+      "bytes": 54253,
+      "created_at": "2026-08-12T14:22:34.361713Z",
+      "path": "state://frozen-61eefbb/artifacts/blocking/first_kill.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f3cbb8ea3769231a1a4475f4f52d1c6215affc08ef12362069fa5825e9b00133"
+    },
+    {
+      "bytes": 1129,
+      "created_at": "2026-08-12T14:22:41.359518Z",
+      "path": "state://frozen-61eefbb/artifacts/blocking/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "196321d1d65c128d903660b179555c2f0cdd2d8e60cc361e56f761251d520459"
+    },
+    {
+      "bytes": 41929,
+      "created_at": "2026-08-12T14:22:46.255288Z",
+      "path": "state://frozen-61eefbb/artifacts/boot/battle_early.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "601a20bdab3b39fa2fb882469f6b784c28561e9ab04071f24d4944f1b402e0e3"
+    },
+    {
+      "bytes": 41237,
+      "created_at": "2026-08-12T14:22:57.127958Z",
+      "path": "state://frozen-61eefbb/artifacts/boot/battle_end.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "254b99c1e48573198ea8e7ab0ba1b10a2ff452d826bf03f159ceb32623187f15"
+    },
+    {
+      "bytes": 15319,
+      "created_at": "2026-08-12T14:22:42.698152Z",
+      "path": "state://frozen-61eefbb/artifacts/boot/boot.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "3a1b77514fde42ced25dfc8c848d82e25ab035907fcfe3d0b82d021e4b48b015"
+    },
+    {
+      "bytes": 2339,
+      "created_at": "2026-08-12T14:22:57.128218Z",
+      "path": "state://frozen-61eefbb/artifacts/boot/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "1cfb8605aa55fed2f30fdac3cd3dc21ff12f38334e09e7dfc99371fa3c138084"
+    },
+    {
+      "bytes": 4871,
+      "created_at": "2026-08-12T14:23:00.177201Z",
+      "path": "state://frozen-61eefbb/artifacts/campaign_flow/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "e0039ee4023362cb94808f9115dec496a2f3abfe45ad7cc1cd26d9e3112182cd"
+    },
+    {
+      "bytes": 25813,
+      "created_at": "2026-08-12T14:22:59.960070Z",
+      "path": "state://frozen-61eefbb/artifacts/campaign_flow/results_reward.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "c517db01b61d5ca258280155826b305b5dfa75c382b213efdb0549b4c8c24222"
+    },
+    {
+      "bytes": 48096,
+      "created_at": "2026-08-12T14:22:59.416947Z",
+      "path": "state://frozen-61eefbb/artifacts/campaign_flow/squad_select.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "abcba70f7922993306a5b484189670df28569a7cfff3382f56ef2ba9e44d1180"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T14:22:58.855363Z",
+      "path": "state://frozen-61eefbb/artifacts/campaign_flow/stage_select_locked.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 55047,
+      "created_at": "2026-08-12T14:23:00.144139Z",
+      "path": "state://frozen-61eefbb/artifacts/campaign_flow/stage_select_progress.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f01c05cc2e310778f5ff40d1c7d940d98864cf0edfdc30b8ab45031a5fa24bc9"
+    },
+    {
+      "bytes": 53180,
+      "created_at": "2026-08-12T14:23:02.529968Z",
+      "path": "state://frozen-61eefbb/artifacts/charm_runback/bolt_cast.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f58e9dc7e4054c095ed460ce65b0c805e8d0133cd5e90b0b151497d30049ec96"
+    },
+    {
+      "bytes": 52927,
+      "created_at": "2026-08-12T14:23:03.432247Z",
+      "path": "state://frozen-61eefbb/artifacts/charm_runback/charm_convert.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "48370f61aeb0db5bee9f0e441dbc842230710b6c5a769ac260b2d910411ebd07"
+    },
+    {
+      "bytes": 52743,
+      "created_at": "2026-08-12T14:23:03.716187Z",
+      "path": "state://frozen-61eefbb/artifacts/charm_runback/charm_duel.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f2b89df115c3df8f641068c50cef213fe781ed5be1a404e12ce490a77961a4de"
+    },
+    {
+      "bytes": 54553,
+      "created_at": "2026-08-12T14:23:04.609440Z",
+      "path": "state://frozen-61eefbb/artifacts/charm_runback/charm_victory.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b20e6d46187841a60947e65d8e9a82f12c191f270391a1ac2c2fe182adeb3193"
+    },
+    {
+      "bytes": 2495,
+      "created_at": "2026-08-12T14:23:04.609739Z",
+      "path": "state://frozen-61eefbb/artifacts/charm_runback/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "e960d556ac1365067f6a3f236925758d941e23f5e1f6c90b4cb71cfca96f37d8"
+    },
+    {
+      "bytes": 145040,
+      "created_at": "2026-08-12T14:23:06.497977Z",
+      "path": "state://frozen-61eefbb/artifacts/debug_reach/overlay_battle.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "288b2430771db9699777199cdd80ac30e6c3bbe06e80b545d2481b2c7bf4bbc6"
+    },
+    {
+      "bytes": 148295,
+      "created_at": "2026-08-12T14:23:08.173575Z",
+      "path": "state://frozen-61eefbb/artifacts/debug_reach/overlay_granted.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "9606e0994c1e5aff1e6ecc4124d0c20d8474c7248ffc39e74ccfd91ee2dea9db"
+    },
+    {
+      "bytes": 31977,
+      "created_at": "2026-08-12T14:23:06.014029Z",
+      "path": "state://frozen-61eefbb/artifacts/debug_reach/overlay_open.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "76f781a806cf8484173bce0251ef6eb22c7c8486d9c1549459562a36cce16892"
+    },
+    {
+      "bytes": 5404,
+      "created_at": "2026-08-12T14:23:08.862525Z",
+      "path": "state://frozen-61eefbb/artifacts/debug_reach/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "aa12abc9470d6436e11fa722a3903f922de68ff9f42446f32e5e556553c461a4"
+    },
+    {
+      "bytes": 53723,
+      "created_at": "2026-08-12T14:23:12.502339Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/after_retreat.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "255795337a37bc4597526d23caa44bc74b2c16474598c1faafd1671f0c204ea2"
+    },
+    {
+      "bytes": 51858,
+      "created_at": "2026-08-12T14:23:10.920485Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/deployed.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "8c4feab412291a2e68b2be717d3059887f45c36cc240d89f5265c5e8ea9bdb23"
+    },
+    {
+      "bytes": 53723,
+      "created_at": "2026-08-12T14:23:12.538916Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/elevated_lift.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "255795337a37bc4597526d23caa44bc74b2c16474598c1faafd1671f0c204ea2"
+    },
+    {
+      "bytes": 56246,
+      "created_at": "2026-08-12T14:23:12.622102Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/elevated_sniper.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "4a386a940e16f4d1b1d65bd2b273e9387894d86ee599df48c40bbad5d491d6fb"
+    },
+    {
+      "bytes": 63431,
+      "created_at": "2026-08-12T14:23:10.746757Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/facing_chooser.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "beddc161a0b78ac633c860fdcc39ff40d9d2b96d3cfa6618fae1c83eef4d9bae"
+    },
+    {
+      "bytes": 62575,
+      "created_at": "2026-08-12T14:23:10.602656Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/placement_mode.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "40910294ce68929adbc6e7259dfa8578938575d938d3a52c3d25dd7d04a1c5fe"
+    },
+    {
+      "bytes": 3315,
+      "created_at": "2026-08-12T14:23:12.755754Z",
+      "path": "state://frozen-61eefbb/artifacts/deploy_flow/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "72fcdb21e010f68c399dcc83a68c68263999486cd7882425f1efd491e34fdd76"
+    },
+    {
+      "bytes": 61809,
+      "created_at": "2026-08-12T14:23:26.492526Z",
+      "path": "state://frozen-61eefbb/artifacts/drone_counter/battle_end.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "feec86ec7922e751e1c5edf45e9d462d7dac42cb7ddc73fb106243f5c1a30e6d"
+    },
+    {
+      "bytes": 59990,
+      "created_at": "2026-08-12T14:23:19.698764Z",
+      "path": "state://frozen-61eefbb/artifacts/drone_counter/drones_over_defenders.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "e2ce4ef18754ce8cab064a78b0012ed7b45d3451afeff18c62551483b6a1a458"
+    },
+    {
+      "bytes": 1327,
+      "created_at": "2026-08-12T14:23:26.492761Z",
+      "path": "state://frozen-61eefbb/artifacts/drone_counter/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "4a002eb2d4eba92f23b0ef0f4cc7843fe7cf91b81a2dbf32bce9cbe7672c0c9c"
+    },
+    {
+      "bytes": 60292,
+      "created_at": "2026-08-12T14:23:23.277137Z",
+      "path": "state://frozen-61eefbb/artifacts/drone_counter/sniper_shot.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "13bb26528bbcd8392248ae7450dc7dd858ce8c6d6da2281c85876ed0641aaa60"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T14:24:25.526686Z",
+      "path": "state://frozen-61eefbb/artifacts/gate.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 51685,
+      "created_at": "2026-08-12T14:23:28.658963Z",
+      "path": "state://frozen-61eefbb/artifacts/iso_projection_floor/iso_deployed.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "2bcbc9e3a9cd5e93229cb3eb6eed44067b26f7bbeabad81d0eda9ece06902920"
+    },
+    {
+      "bytes": 54763,
+      "created_at": "2026-08-12T14:23:28.223871Z",
+      "path": "state://frozen-61eefbb/artifacts/iso_projection_floor/iso_grid.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "7732a84b4ec8a807dcc5a2e4b2f9d8056ad0e1ed368088b32f5dce2d12ea4eb8"
+    },
+    {
+      "bytes": 62708,
+      "created_at": "2026-08-12T14:23:28.357259Z",
+      "path": "state://frozen-61eefbb/artifacts/iso_projection_floor/iso_placement_highlights.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f0be508dbdee2e46a3131ac564520aa43999b5c5e0c30725722910fa7b72b255"
+    },
+    {
+      "bytes": 1407,
+      "created_at": "2026-08-12T14:23:28.659190Z",
+      "path": "state://frozen-61eefbb/artifacts/iso_projection_floor/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "8552dca14315ab625559c00b525df50245d18dc6862b405b4bf9b769301b7534"
+    },
+    {
+      "bytes": 62711,
+      "created_at": "2026-08-12T14:23:30.581470Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_deploy/deploy_drag.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "8f621d714f51a41a70524965e4a48b8f2d199264d242eeb55ea363fe84637e53"
+    },
+    {
+      "bytes": 54446,
+      "created_at": "2026-08-12T14:23:30.845581Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_deploy/deploy_land.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "279c33c4ba190cd59e250bae99a13aab6fe804c33ec2b8b6894347597c6fe1c2"
+    },
+    {
+      "bytes": 54119,
+      "created_at": "2026-08-12T14:23:31.017850Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_deploy/deploy_settled.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f58164e6548d2e878e623d58e594e1c2a48961c4b03f6a8c3356dc64fa5570da"
+    },
+    {
+      "bytes": 1518,
+      "created_at": "2026-08-12T14:23:31.030059Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_deploy/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "ec165113e7ba88ad8ae60ff193ff07a6246df6204dffcc4acd78f13b9283a483"
+    },
+    {
+      "bytes": 52571,
+      "created_at": "2026-08-12T14:23:35.908698Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_kill_leak/kill_burst.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "a9139c90d802c081c94d27cb446ebcea19757cf12af65651ff3e1ac6c4328dcd"
+    },
+    {
+      "bytes": 52578,
+      "created_at": "2026-08-12T14:23:34.566715Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_kill_leak/leak_clear.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "133faa7b249419243b4d2b72554cc460b7399b7e2a014486b0831d6d09d9c00b"
+    },
+    {
+      "bytes": 52976,
+      "created_at": "2026-08-12T14:23:34.339557Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_kill_leak/leak_vignette.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "dfe2e4bbe485bda003de815e5d06d6614b5e88a48fa6a6aa2f5dca9f36b888ec"
+    },
+    {
+      "bytes": 2177,
+      "created_at": "2026-08-12T14:23:35.970365Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_kill_leak/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "031226ca3e7f108fc2c295a7ad55b100ed666927bb6a81998f91b0e0d6ec25ad"
+    },
+    {
+      "bytes": 52785,
+      "created_at": "2026-08-12T14:23:42.045210Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/charm_after.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "3dcb081544aa89125aa6210270675cca9e77d42648695d83bbab561689bcd739"
+    },
+    {
+      "bytes": 53345,
+      "created_at": "2026-08-12T14:23:41.984367Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/charm_before.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "decc61493a7940e8ca0035db4673a78a62a2d9fdfd70a341145eaf6be31af362"
+    },
+    {
+      "bytes": 2101,
+      "created_at": "2026-08-12T14:23:42.200097Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "66fcd8d98dc5d932fc06032537e1dcc138f2c540c76cbfe33344bf38a40fb951"
+    },
+    {
+      "bytes": 54214,
+      "created_at": "2026-08-12T14:23:40.851873Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/trap_gone.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "33a111721488cea108b1ab4f3d83a7c684f9516bd37d909007139da8f389ed50"
+    },
+    {
+      "bytes": 54364,
+      "created_at": "2026-08-12T14:23:39.543134Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/trap_sprung.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "1528925d73435f9422bd8b894dbe8c984e13a6067a4b7262502ecd0881626a2c"
+    },
+    {
+      "bytes": 54744,
+      "created_at": "2026-08-12T14:23:40.684015Z",
+      "path": "state://frozen-61eefbb/artifacts/juice_trap_charm/trap_sprung_final.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "738da6a9155f2ab27246cf3a37429c692a4c0b7b6da98a5b82df8b32fc4f56b6"
+    },
+    {
+      "bytes": 54958,
+      "created_at": "2026-08-12T14:23:43.842666Z",
+      "path": "state://frozen-61eefbb/artifacts/map_navigation/map_height_fill.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "a369b39cfa30f743e3e0abb056c68c2d166df64efc536a20d7d5bdfdca87673a"
+    },
+    {
+      "bytes": 55935,
+      "created_at": "2026-08-12T14:23:43.962010Z",
+      "path": "state://frozen-61eefbb/artifacts/map_navigation/map_pan_far_edges.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "46086a2bf07cb56464e55e41d9446d3fb23eccfa91ee6d506ec506c5a4f906ff"
+    },
+    {
+      "bytes": 55515,
+      "created_at": "2026-08-12T14:23:44.104445Z",
+      "path": "state://frozen-61eefbb/artifacts/map_navigation/map_pan_near_edges.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "467f242d764091beb5fcd57b4c3dbf728f310fe3f5b5190fae80f411b4ff5ae1"
+    },
+    {
+      "bytes": 7581,
+      "created_at": "2026-08-12T14:23:44.780905Z",
+      "path": "state://frozen-61eefbb/artifacts/map_navigation/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "f0c66be621e09adc7921d7d47a47b893852d9c61cc02b11d17714d34d4cd06b4"
+    },
+    {
+      "bytes": 15319,
+      "created_at": "2026-08-12T14:23:48.446906Z",
+      "path": "state://frozen-61eefbb/artifacts/resign_flow/back_at_title.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "3a1b77514fde42ced25dfc8c848d82e25ab035907fcfe3d0b82d021e4b48b015"
+    },
+    {
+      "bytes": 46562,
+      "created_at": "2026-08-12T14:23:47.821314Z",
+      "path": "state://frozen-61eefbb/artifacts/resign_flow/defeat_stamp.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "c6fcbaecf0ddd3cddc0e39f2d6282ff1ed86a1204a39f0862e2b578e6e67ec80"
+    },
+    {
+      "bytes": 3607,
+      "created_at": "2026-08-12T14:23:48.447246Z",
+      "path": "state://frozen-61eefbb/artifacts/resign_flow/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "fed6240a864727670788c04f865f73356a05eb5758fa7dd223bb77b289381f3c"
+    },
+    {
+      "bytes": 17511,
+      "created_at": "2026-08-12T14:23:48.046498Z",
+      "path": "state://frozen-61eefbb/artifacts/resign_flow/results_defeat.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "a38c5004daabd5d4d62e586515f61cfbc8acd39d1e0820a0f8527a09e78b6e28"
+    },
+    {
+      "bytes": 2131,
+      "created_at": "2026-08-12T14:23:50.350871Z",
+      "path": "state://frozen-61eefbb/artifacts/resize_relayout/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "d7c595259489f50cd38a6dd131707f1afe55ae38b5fd008f5d2d72785a7bfd6c"
+    },
+    {
+      "bytes": 55532,
+      "created_at": "2026-08-12T14:24:03.306138Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/battle_end.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "baff85fbbea9a7b3869bd9cee535c3e4c771188877a4b1889d4f0ec0433ae5d6"
+    },
+    {
+      "bytes": 2207,
+      "created_at": "2026-08-12T14:24:03.306379Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "98b0fea264882d64ae46f8776193cec9641e577a4581b4bf25c62c26ae0698ff"
+    },
+    {
+      "bytes": 55186,
+      "created_at": "2026-08-12T14:23:59.543335Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/skill_flash.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "24778f1f29de4f6df5604efed9744c773d831f0f65f2c7849e64fa1b06ce811f"
+    },
+    {
+      "bytes": 54826,
+      "created_at": "2026-08-12T14:23:59.859790Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/skill_flash_decay.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "03079a1f67af8b15a169dd5ed2690e8a47604404d230266853ea081cc1bd62b9"
+    },
+    {
+      "bytes": 53198,
+      "created_at": "2026-08-12T14:23:55.987238Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/sp_fill.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "225004c47b9243bcdc235b73e85d53192289fbb0f4f9d24890aa8d3ecaaa01e2"
+    },
+    {
+      "bytes": 54627,
+      "created_at": "2026-08-12T14:23:59.465971Z",
+      "path": "state://frozen-61eefbb/artifacts/skill_timing/sp_full.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "2556f2da05ebf6f57cf5b8414bdd0482b8a01773f48ea388eec9bd0c53075c2a"
+    },
+    {
+      "bytes": 10352,
+      "created_at": "2026-08-12T14:24:06.050684Z",
+      "path": "state://frozen-61eefbb/artifacts/staging_flow/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "16593514f4312d5ca2f596e5d965a59ba48ea76391ce4b6c0a4a2b07e10411af"
+    },
+    {
+      "bytes": 18044,
+      "created_at": "2026-08-12T14:24:05.800925Z",
+      "path": "state://frozen-61eefbb/artifacts/staging_flow/results_return_to_staging.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "03d4e488118ff976f1a110a8906398459a22fc706dbee66c801842532192869f"
+    },
+    {
+      "bytes": 58430,
+      "created_at": "2026-08-12T14:24:05.467496Z",
+      "path": "state://frozen-61eefbb/artifacts/staging_flow/staging_initial.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "05e38dae6be8cea90fd28237f77be9664fa106cb74421b19b2f6caff36dd8054"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T14:24:05.617899Z",
+      "path": "state://frozen-61eefbb/artifacts/staging_flow/staging_to_missions.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 2666,
+      "created_at": "2026-08-12T14:24:25.360771Z",
+      "path": "state://frozen-61eefbb/artifacts/telemetry.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "a83aec0f98d204f3cfdf6e4e8e1674032109fe836eb7aa231f5d55106e0ef32c"
+    },
+    {
+      "bytes": 1901,
+      "created_at": "2026-08-12T14:24:09.207997Z",
+      "path": "state://frozen-61eefbb/artifacts/trap_flow/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b50402123f459e0f973f056c9b7dd33de0b9e669945e9f874885335ef346818b"
+    },
+    {
+      "bytes": 54749,
+      "created_at": "2026-08-12T14:24:09.207765Z",
+      "path": "state://frozen-61eefbb/artifacts/trap_flow/spike_after.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "9ee25befef2336f28f2efa22cc3ba8fc5cb95f071e3f8706aec14a21b6ec8ae9"
+    },
+    {
+      "bytes": 52495,
+      "created_at": "2026-08-12T14:24:07.922829Z",
+      "path": "state://frozen-61eefbb/artifacts/trap_flow/spike_armed.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "4cadb58d9755cfb33acbb2c6a9e6131f12550cf226a12751bfdb364dec66707f"
+    },
+    {
+      "bytes": 52495,
+      "created_at": "2026-08-12T14:24:07.958688Z",
+      "path": "state://frozen-61eefbb/artifacts/trap_flow/tar_overlay.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "4cadb58d9755cfb33acbb2c6a9e6131f12550cf226a12751bfdb364dec66707f"
+    },
+    {
+      "bytes": 56941,
+      "created_at": "2026-08-12T14:24:07.789167Z",
+      "path": "state://frozen-61eefbb/artifacts/trap_flow/traps_placed.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "19c5545919206d75b259b1d051f2ff23aa668f5e816da4515ddfbe561b837be5"
+    },
+    {
+      "bytes": 8425,
+      "created_at": "2026-08-12T14:24:25.537692Z",
+      "path": "state://frozen-61eefbb/artifacts/verify.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "5896702264f3710a5c0e4d1bc4c106bc2c5c1d6de2bac50d428e91a85eb3b018"
+    },
+    {
+      "bytes": 1493,
+      "created_at": "2026-08-12T14:24:16.977830Z",
+      "path": "state://frozen-61eefbb/artifacts/wave_banner_victory/report.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "9e585f69bfcb751516caa9e54ed6f8cf90851d2c5720a30ce27d61016c0393a7"
+    },
+    {
+      "bytes": 58086,
+      "created_at": "2026-08-12T14:24:16.976718Z",
+      "path": "state://frozen-61eefbb/artifacts/wave_banner_victory/victory_stamp.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "3dd7d51136216a095cefb0ccf85fa46435c07164d26ba4e9daad1d9e36b10ef6"
+    },
+    {
+      "bytes": 57857,
+      "created_at": "2026-08-12T14:24:10.922472Z",
+      "path": "state://frozen-61eefbb/artifacts/wave_banner_victory/wave_banner_1.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b350674332cc7d13f604da8b7fe7c9cbcba54a7a614a43d2de86c539be7dba32"
+    },
+    {
+      "bytes": 58458,
+      "created_at": "2026-08-12T14:24:13.938159Z",
+      "path": "state://frozen-61eefbb/artifacts/wave_banner_victory/wave_banner_2.png",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "637bbfeb0731171c34ce80fc86f9fac46c157c0389d6e575b662b9fb1f2a7fcd"
+    },
+    {
+      "bytes": 1266,
+      "created_at": "2026-08-12T14:21:53.110677Z",
+      "path": "state://frozen-61eefbb/import.log",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "644fc56f7291ca40876ccfcd2475d8903e1d4db45cfeef65ac734332a776c3b8"
+    },
+    {
+      "bytes": 1114,
+      "created_at": "2026-08-12T14:21:55.514677Z",
+      "path": "state://frozen-61eefbb/music-gut.log",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b35044a6929e89938c67ac2e842e426e45de565bd39cab5931ef9234a5cf0f6c"
+    },
+    {
+      "bytes": 1135,
+      "created_at": "2026-08-12T14:21:49.726677Z",
+      "path": "state://frozen-61eefbb/music-verify.log",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "1e1fe129a493fa8e12162748dc6ffbf1b157998bfb90e6d03b52dd765f130603"
+    },
+    {
+      "bytes": 12636,
+      "created_at": "2026-08-12T14:25:03.894688Z",
+      "path": "state://frozen-61eefbb/screenshot-sha256.txt",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "df8b8b737bb0561fe09afde10ec8658bf86c42986f993b75ae3fd31e00f88097"
+    },
+    {
+      "bytes": 2418,
+      "created_at": "2026-08-12T14:24:25.530686Z",
+      "path": "state://frozen-61eefbb/verify-full.log",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "b8aa8c6d077240865653c001cd9724bca37b1a881796e315f25e96d4e2bf7e9e"
+    },
+    {
+      "bytes": 4164,
+      "created_at": "2026-08-12T14:12:53.671666Z",
+      "path": "state://signal-analysis.json",
+      "provenance_hash": "sha256:96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "sha256": "9b2ba330717fd6a7563d388964b675bce33305d5faf2b39cc0430a0fc1ba0fc7"
+    },
+    {
+      "bytes": 4698,
+      "created_at": "2026-08-12T14:12:37.341489Z",
+      "path": "state://analyze_score.py",
+      "provenance_hash": "sha256:96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "sha256": "96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b"
+    },
+    {
+      "bytes": 11246,
+      "created_at": "2026-08-12T14:17:44.623364Z",
+      "path": "state://update_metadata.py",
+      "provenance_hash": "sha256:96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "sha256": "6a1a5d993fecff5a3421bd7818037fb904a64172f3f12ed8dcef95d093d32320"
+    },
+    {
+      "bytes": 8373,
+      "created_at": "2026-08-12T13:55:22.118587Z",
+      "path": "state://reference-analysis-v4.txt",
+      "provenance_hash": "sha256:96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "sha256": "e490e106eaad5075f6b13bde00baf4b4cb3d006ad6c62837bf428073e3a83221"
+    },
+    {
+      "bytes": 1755,
+      "created_at": "2026-08-12T13:56:40.873547Z",
+      "path": "state://three-act-reference-notes.md",
+      "provenance_hash": "sha256:96979135f48ed3de33498718c1792494115728284fb963fb18f9b3ddc6fe9a1b",
+      "sha256": "b7218b20f0741ffe6ab35552bb9d45babc05986ad02a59ac88eeef67b2efbc9d"
+    },
+    {
+      "bytes": 42409,
+      "created_at": "2026-08-12T14:26:20.897186Z",
+      "path": "state://artifact-manifest-candidate.json",
+      "provenance_hash": "sha256:5b1fda903b5b1d86d7a55e4bf1a1b52bb832e65bdf94f758b152e3bb99957e61",
+      "sha256": "1d56f9b3faedcdcd659405d42d78234588b06b767c7f77b9ac41b817ee6c5271"
+    }
+  ],
+  "commands": [
+    {
+      "digest": "sha256:f98a82cc88a4777ea1c35dcfb4890bbcdb8c60147d54a83d02c934ed5143b045",
+      "name": "music_asset_integrity",
+      "safe_args": [
+        "tools/music/verify_music.sh"
+      ]
+    },
+    {
+      "digest": "sha256:a627d473bbd68869f76e34f22d00ff7f6ad187d5e51abb7be0c6b43fb4f4c302",
+      "name": "godot_import",
+      "safe_args": [
+        "--headless",
+        "--path",
+        ".",
+        "--import"
+      ]
+    },
+    {
+      "digest": "sha256:fbb4c2b6a9f5364584925bd3874d2a7265dde342b49849cf89371a7ae7dc82a8",
+      "name": "focused_music_catalog",
+      "safe_args": [
+        "--headless",
+        "gut_cmdln.gd",
+        "test_music_catalog.gd"
+      ]
+    },
+    {
+      "digest": "sha256:0d3b5e07b729a21cabc432e1ae13649a08ff40c4b09ea5b09c576f42ae0acf19",
+      "name": "full_local_ladder",
+      "safe_args": [
+        "scripts/verify.sh",
+        "--full"
+      ]
+    }
+  ],
+  "duration_seconds": 155.811015,
+  "ended_at": "2026-08-12T14:24:25.537692Z",
+  "environment": {
+    "ARCH": "x86_64",
+    "CI": "false",
+    "DISPLAY_KIND": "sandbox-windowed-display",
+    "GODOT_VERSION": "4.7.1.stable.official.a13da4feb",
+    "LOCALE_CLASS": "C.UTF-8",
+    "OS": "linux",
+    "XVFB": "not-invoked-directly"
+  },
+  "fresh": true,
+  "gates": [
+    {
+      "detail": "Six unique cues and sources; exact prompt/source/transcription hashes; loop flags; formats; duration; loudness; peaks; silence; and provenance all green.",
+      "id": "music_asset_integrity",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "3/3 focused GUT tests passed with 239 assertions.",
+      "id": "focused_music_catalog",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "All six selected raw sources produced zero segments and empty full_text.",
+      "id": "raw_speech_detection",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Every boss cue has higher mean spectral flux and centroid than its paired BGM; style, charm, instrument identity, originality, reference distance, and loop feel remain human-only.",
+      "id": "score_signal_analysis",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "20 reports, 554 checks, 67 screenshots, zero failed checks, zero pixel skips, and all completion sentinels present.",
+      "id": "scenario_report_integrity",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Repository verification rung passed.",
+      "id": "R2-import",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "Repository verification rung passed.",
+      "id": "R2.5-stage-lint",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "Repository verification rung passed.",
+      "id": "R3-gut",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/assets_floor/report.json",
+      "id": "R4a-assets_floor",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/battle_controls/report.json",
+      "id": "R4a-battle_controls",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/blocking/report.json",
+      "id": "R4a-blocking",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/boot/report.json",
+      "id": "R4a-boot",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/campaign_flow/report.json",
+      "id": "R4a-campaign_flow",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/charm_runback/report.json",
+      "id": "R4a-charm_runback",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/debug_reach/report.json",
+      "id": "R4a-debug_reach",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/deploy_flow/report.json",
+      "id": "R4a-deploy_flow",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/drone_counter/report.json",
+      "id": "R4a-drone_counter",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/iso_projection_floor/report.json",
+      "id": "R4a-iso_projection_floor",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_deploy/report.json",
+      "id": "R4a-juice_deploy",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_kill_leak/report.json",
+      "id": "R4a-juice_kill_leak",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_trap_charm/report.json",
+      "id": "R4a-juice_trap_charm",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/map_navigation/report.json",
+      "id": "R4a-map_navigation",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resign_flow/report.json",
+      "id": "R4a-resign_flow",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resize_relayout/report.json",
+      "id": "R4a-resize_relayout",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/skill_timing/report.json",
+      "id": "R4a-skill_timing",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/staging_flow/report.json",
+      "id": "R4a-staging_flow",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/trap_flow/report.json",
+      "id": "R4a-trap_flow",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/wave_banner_victory/report.json",
+      "id": "R4a-wave_banner_victory",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/assets_floor/report.json",
+      "id": "R4b-assets_floor",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/battle_controls/report.json",
+      "id": "R4b-battle_controls",
+      "seconds": 6,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/blocking/report.json",
+      "id": "R4b-blocking",
+      "seconds": 18,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/boot/report.json",
+      "id": "R4b-boot",
+      "seconds": 16,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/campaign_flow/report.json",
+      "id": "R4b-campaign_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/charm_runback/report.json",
+      "id": "R4b-charm_runback",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/debug_reach/report.json",
+      "id": "R4b-debug_reach",
+      "seconds": 5,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/deploy_flow/report.json",
+      "id": "R4b-deploy_flow",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/drone_counter/report.json",
+      "id": "R4b-drone_counter",
+      "seconds": 13,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/iso_projection_floor/report.json",
+      "id": "R4b-iso_projection_floor",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_deploy/report.json",
+      "id": "R4b-juice_deploy",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_kill_leak/report.json",
+      "id": "R4b-juice_kill_leak",
+      "seconds": 5,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_trap_charm/report.json",
+      "id": "R4b-juice_trap_charm",
+      "seconds": 6,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/map_navigation/report.json",
+      "id": "R4b-map_navigation",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resign_flow/report.json",
+      "id": "R4b-resign_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resize_relayout/report.json",
+      "id": "R4b-resize_relayout",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/skill_timing/report.json",
+      "id": "R4b-skill_timing",
+      "seconds": 13,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/staging_flow/report.json",
+      "id": "R4b-staging_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/trap_flow/report.json",
+      "id": "R4b-trap_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/wave_banner_victory/report.json",
+      "id": "R4b-wave_banner_victory",
+      "seconds": 8,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_campaign",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_campaign",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_idle",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_idle",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_01",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_01",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_02",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_02",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_03",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_03",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_04",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_04",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_05",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_05",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_06",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_06",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_06_no_charm",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_06_no_charm",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_07",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_07",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_08",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_08",
+      "seconds": 0,
+      "status": "PASS"
+    }
+  ],
+  "identity": {
+    "affected_surfaces": [
+      "music_assets",
+      "music_catalog",
+      "music_provenance",
+      "coordination_records"
+    ],
+    "artifact_manifest_hash": "sha256:1d56f9b3faedcdcd659405d42d78234588b06b767c7f77b9ac41b817ee6c5271",
+    "commit_sha": "61eefbb9d0f2e7d897ffbcb25e0034121c0774bf",
+    "effective_lane": "STANDARD",
+    "environment_fingerprint": "sha256:fc964ee8012e2fceab92acb6fdcf14c5f357a70106c3c763a90fc2baddd8c89d",
+    "gate_hash": "sha256:4f8ceda0c90c991d6e0b96775d1dbbdd079a79b1ec5511f7e8f425f3f4a8a8dd",
+    "impact_map_hash": "sha256:91e8c8e832da6c8ddfcedcec789c93c80ffa484a8adfe53f4e8faf7d58768ce7",
+    "inputs": [
+      {
+        "digest": "sha256:557b8fb387f22bffe4d2f218a357ab35aef1b2ec286700595c7a53e7520f1c65",
+        "id": "act_1_guild_threshold_bgm",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:bf124fdfa5ca0e5c3610e4f7aace6432ca6f024494b39faadc391a6e6e5495e4",
+        "id": "act_1_guild_threshold_boss",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:bbed31d5329b19b057c49ec74710da2a117a6577cb7758e6caa880771786eb62",
+        "id": "act_2_twilight_grotto_bgm",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:6b1341011c4423e397077e82408260efb0f851d024e9d59efbd7f2b79c1fc9b1",
+        "id": "act_2_twilight_grotto_boss",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:a3a674047caf6b385576397f4f071de51d034aef28ff05bacb6a4ecee3705d4e",
+        "id": "act_3_abyssal_vault_bgm",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:43dafd4fc93ff363527af105b24c27b00e37480b14df1c1b4c48d7094a7542b6",
+        "id": "act_3_abyssal_vault_boss",
+        "kind": "music_prompt",
+        "seed": null
+      },
+      {
+        "digest": "sha256:bb65032519a1f93df610a7c4b3c22006583efb7179f317766ba02f47ac1fedc6",
+        "id": "td012",
+        "kind": "orientation_spec",
+        "seed": null
+      },
+      {
+        "digest": "sha256:a283363fdc3b1fb911c81a9de92ffb4cef9e0f854d4ee74b159042cdd6d1944a",
+        "id": "three-act-luminous-descent",
+        "kind": "visual_reference",
+        "seed": null
+      },
+      {
+        "digest": "sha256:e490e106eaad5075f6b13bde00baf4b4cb3d006ad6c62837bf428073e3a83221",
+        "id": "youtube-VnYNkajvZE4",
+        "kind": "style_reference_analysis",
+        "seed": null
+      }
+    ],
+    "policy_hash": "sha256:0c7fd9b4d84eb89c8cf9d1916ffb4f97d0e1e227fe59d96410eb23ac345a8764",
+    "requested_lane": "STANDARD",
+    "semantic_flags": [
+      "player_facing_output"
+    ],
+    "tree_sha": "5eb757c7e5abcccd22e8bc38566c540c962d0b50"
+  },
+  "integrity": {
+    "clean_end": true,
+    "clean_start": true,
+    "completion_sentinel": true,
+    "external_evidence": true,
+    "frozen_commit": true,
+    "required_render_skips": 0,
+    "source_unchanged": true,
+    "test_count": 3,
+    "watchdog": "ARMED_COMPLETED"
+  },
+  "release": null,
+  "routing": {
+    "changed_paths": [
+      "assets/music/README.md",
+      "assets/music/act_1_guild_threshold_bgm.ogg",
+      "assets/music/act_1_guild_threshold_boss.ogg",
+      "assets/music/act_2_twilight_grotto_bgm.ogg",
+      "assets/music/act_2_twilight_grotto_boss.ogg",
+      "assets/music/act_3_abyssal_vault_bgm.ogg",
+      "assets/music/act_3_abyssal_vault_boss.ogg",
+      "assets/music/catalog.tres",
+      "assets/music/evidence/transcriptions/act_1_guild_threshold_bgm.json",
+      "assets/music/evidence/transcriptions/act_1_guild_threshold_boss.json",
+      "assets/music/evidence/transcriptions/act_2_twilight_grotto_bgm.json",
+      "assets/music/evidence/transcriptions/act_2_twilight_grotto_boss.json",
+      "assets/music/evidence/transcriptions/act_3_abyssal_vault_bgm.json",
+      "assets/music/evidence/transcriptions/act_3_abyssal_vault_boss.json",
+      "assets/music/prompts/act_1_guild_threshold_bgm.txt",
+      "assets/music/prompts/act_1_guild_threshold_boss.txt",
+      "assets/music/prompts/act_2_twilight_grotto_bgm.txt",
+      "assets/music/prompts/act_2_twilight_grotto_boss.txt",
+      "assets/music/prompts/act_3_abyssal_vault_bgm.txt",
+      "assets/music/prompts/act_3_abyssal_vault_boss.txt",
+      "assets/music/provenance.json",
+      "assets/music/sources/act_1_guild_threshold_bgm.mp3.source",
+      "assets/music/sources/act_1_guild_threshold_boss.mp3.source",
+      "assets/music/sources/act_2_twilight_grotto_bgm.mp3.source",
+      "assets/music/sources/act_2_twilight_grotto_boss.mp3.source",
+      "assets/music/sources/act_3_abyssal_vault_bgm.mp3.source",
+      "assets/music/sources/act_3_abyssal_vault_boss.mp3.source",
+      "docs/plans/TD-012-six-cue-retro-lofi-score.md",
+      "docs/todo.md"
+    ],
+    "matched_rules": [
+      "player-facing",
+      "asset",
+      "documentation"
+    ],
+    "required_gates": [
+      "music_asset_integrity",
+      "import",
+      "affected_unit",
+      "affected_headless",
+      "windowed_scenarios",
+      "pixel_probes",
+      "all_bots",
+      "quality_gates",
+      "human_audio_review_pending"
+    ],
+    "unknown_paths": []
+  },
+  "run_id": "td012-61eefbb-20260812T142121Z",
+  "schema_version": "mgs.verification-evidence.v2",
+  "secret_scan": {
+    "matches": 0,
+    "seeded_values": 1
+  },
+  "started_at": "2026-08-12T14:21:49.726677Z",
+  "status": "PASS"
+}
