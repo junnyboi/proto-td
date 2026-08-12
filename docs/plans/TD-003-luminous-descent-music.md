@@ -19,6 +19,8 @@ A new four-note descending contour, scale degrees 5–4–flat-3–2, connects a
 | Surface | Contract |
 |---|---|
 | `assets/music/*.ogg` | Six stereo 48 kHz Ogg Vorbis cues, one BGM/boss pair per act |
+| `assets/music/sources/*.mp3.source` | Selected generator bytes plus the rejected short attempt; non-importable suffix keeps them out of Godot/Web exports |
+| `assets/music/evidence/transcriptions/*.json` | Raw per-source speech-to-text results with empty segments/text and duration linkage |
 | `assets/music/catalog.tres` | Logical IDs resolve paths and carry act, role, prompt, hashes, loop, and human acceptance metadata |
 | `assets/music/provenance.json` | Generator facts, exact hashes, processing recipe, speech result, deviations, and legal review flag |
 | `tools/music/process_track.sh` | Deterministic source decode, four-second loop crossfade, −18 LUFS normalization, Ogg export |
@@ -27,7 +29,7 @@ A new four-note descending contour, scale degrees 5–4–flat-3–2, connects a
 
 ## Pinned acceptance
 
-Exactly six unique cues must exist. Each act has one `bgm` and one `boss` logical ID. Every output is Vorbis, 48 kHz, stereo, 160–180 seconds, within −18.3 to −17.7 LUFS integrated, at or below −1.5 dBFS true peak, without at least two seconds of sub−50 dB digital silence, loop-enabled by Godot import metadata, and linked to a nonempty no-vocals prompt. Generated sources must produce empty speech transcription. Catalog entries remain `placeholder: true` until human listening verifies act fit, pair coherence, descent, seam, gameplay space, fatigue, vocal absence, and originality.
+Exactly six unique cues must exist. Each act has one `bgm` and one `boss` logical ID. Every output is Vorbis, 48 kHz, stereo, 160–180 seconds, within −18.3 to −17.7 LUFS integrated, at or below −1.5 dBFS true peak, without at least two seconds of sub−50 dB digital silence, loop-enabled by Godot import metadata, and linked to a nonempty no-vocals prompt. Generated sources, shipping assets, prompts, and raw transcription JSON must hash exactly to provenance; sources must probe as stereo 44.1 kHz MP3; every transcription must contain zero segments and empty text. Catalog/provenance fields must agree exactly. Catalog entries remain `placeholder: true` until human listening verifies act fit, pair coherence, descent, seam, gameplay space, fatigue, vocal absence, and originality.
 
 ## Non-goals
 

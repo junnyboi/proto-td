@@ -13,11 +13,11 @@ This directory contains six original instrumental orchestral cues: one explorati
 | `act_3_bgm` | Chains Across the Abyss | Exploration BGM | Slow C-Phrygian monumental descent | 173.633 s |
 | `act_3_boss` | Throne of the First Flame | Boss | Climactic 12/8 primordial orchestral battle | 168.042 s |
 
-All shipping assets are stereo 48 kHz Ogg Vorbis, loudness-normalized to approximately −18 LUFS integrated, loop-enabled by Godot import metadata, and treated with a four-second end-to-start crossfade. Exact prompts live under `prompts/`; hashes and generation facts live in `provenance.json`; logical resolution lives in `catalog.tres`.
+All shipping assets are stereo 48 kHz Ogg Vorbis, loudness-normalized to approximately −18 LUFS integrated, loop-enabled by Godot import metadata, and treated with a four-second end-to-start crossfade. Exact prompts live under `prompts/`; retained generator outputs live under `sources/` with the non-importable `.mp3.source` suffix so they are auditable without entering Godot/Web exports; raw empty speech-transcription results live under `evidence/transcriptions/`; hashes and generation facts live in `provenance.json`; logical resolution lives in `catalog.tres`.
 
 ## Acceptance State
 
-Every catalog entry remains `placeholder: true`. Structural gates establish that the files are distinct, loadable, loop-enabled, correctly formatted, within the pinned duration and loudness bands, free of detected speech, and fully provenance-linked. They do not establish taste. Only a human listening pass may flip a cue to final.
+Every catalog entry remains `placeholder: true`. Structural gates establish that the files are distinct, loadable, loop-enabled, correctly formatted, within the pinned duration and loudness bands, free of detected speech, and fully provenance-linked. `tools/music/verify_music.sh` hashes the prompts, shipping assets, retained sources, and raw transcription JSON; probes both source and shipping media; validates empty transcription content; and checks the rejected short source. They do not establish taste. Only a human listening pass may flip a cue to final.
 
 ## Human Listening Checklist
 
