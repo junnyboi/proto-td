@@ -1,4 +1,4 @@
-# Aetheria Tactics — Luminous Descent Music Catalog
+# Proto Defense — Luminous Descent Music Catalog
 
 This directory contains six original instrumental candidates: one exploration BGM and one boss cue for each planned act. Revision 4 established a shared mid-to-late-1990s Japanese 32-bit console-RPG lo-fi production language for all six slots. Revision 5 keeps the three exploration cues byte-identical and replaces every boss cue with a consistently epic, battle-forward, adrenaline-driven transformation of its act palette.
 

@@ -1,4 +1,4 @@
-# Aetheria Tactics Collaboration Area
+# Proto Defense Collaboration Area
 
 This directory is the Git-backed cold-resume surface for concurrent work. It records incomplete work, completed outcomes, implementation contracts, durable decisions, handoffs, and small evidence references. Runtime behavior and verification remain authoritative; a document never substitutes for a green build.
 

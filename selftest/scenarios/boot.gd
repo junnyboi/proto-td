@@ -18,18 +18,18 @@ func run(h: SelfTestHarness) -> void:
 	var label := title.find_child("TitleLabel", true, false) as Label
 	var i18n := h.autoload("I18n")
 	h.check(
-		"title label is Aetheria Tactics",
-		label != null and label.text == "Aetheria Tactics",
+		"title label is Proto Defense",
+		label != null and label.text == "Proto Defense",
 		"text=%s" % (label.text if label != null else "<missing>"),
 	)
 	h.check(
 		"title matches localized ui.game_title",
 		i18n != null and label != null
-			and label.text == str(i18n.call("t", &"ui.game_title", "Aetheria Tactics")),
+			and label.text == str(i18n.call("t", &"ui.game_title", "Proto Defense")),
 	)
 	h.check(
-		"project metadata is Aetheria Tactics",
-		str(ProjectSettings.get_setting("application/config/name", "")) == "Aetheria Tactics",
+		"project metadata is Proto Defense",
+		str(ProjectSettings.get_setting("application/config/name", "")) == "Proto Defense",
 	)
 	var title_rect := title.get_global_rect()
 	var label_rect := label.get_global_rect() if label != null else Rect2()

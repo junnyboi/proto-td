@@ -2,7 +2,7 @@ extends GutTest
 
 const I18nScript := preload("res://autoloads/i18n.gd")
 const TITLE_KEY := &"ui.game_title"
-const TITLE_FALLBACK := "Aetheria Tactics"
+const TITLE_FALLBACK := "Proto Defense"
 
 
 func test_en_us_catalog_resolves_exact_product_title() -> void:
@@ -42,5 +42,5 @@ func test_project_and_title_source_use_canonical_identity_seam() -> void:
 	var project_name := str(ProjectSettings.get_setting("application/config/name", ""))
 	assert_eq(project_name, TITLE_FALLBACK)
 	var source := FileAccess.get_file_as_string("res://scripts/ui/title.gd")
-	assert_true(source.contains('I18n.t(&"ui.game_title", "Aetheria Tactics")'))
+	assert_true(source.contains('I18n.t(&"ui.game_title", "Proto Defense")'))
 	assert_false(source.contains('label.text = "Prototype TD"'))
