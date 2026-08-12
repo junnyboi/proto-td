@@ -1,6 +1,6 @@
 extends Control
 
-## Prototype entry screen. The campaign is the only player-facing game flow;
+## Aetheria Tactics entry screen. The campaign is the only player-facing game flow;
 ## direct battle startup remains a harness/debug seam, never a title action.
 
 const FONT_SIZE_TITLE := 64
@@ -20,7 +20,7 @@ func _ready() -> void:
 
 	var label := Label.new()
 	label.name = "TitleLabel"
-	label.text = "Prototype TD"
+	label.text = I18n.t(&"ui.game_title", "Aetheria Tactics")
 	label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)

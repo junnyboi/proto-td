@@ -1,4 +1,4 @@
-# Prototype TD — Human Playtest Protocol (L7, rounds 1–2)
+# Aetheria Tactics — Human Playtest Protocol (L7, rounds 1–2)
 
 You are the first human to play this build. Machines have proven it *correct*; only you can
 say whether it is *fun*. Trust your gut, write everything down, and don't be polite about it.
@@ -20,7 +20,7 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 ## 2. The run
 
 Title → **Start** → **Staging Area** → **Mission Control** → play S1→S8 in order. Start is the
-prototype's only game flow; there is no separate quick battle. Expect to
+game's only flow; there is no separate quick battle. Expect to
 lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 
 **Watch for** (does the lesson land?)

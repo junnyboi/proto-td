@@ -1,4 +1,4 @@
-# Prototype TD — Final Audit Report (Phase 11)
+# Aetheria Tactics — Final Audit Report (Phase 11)
 
 ## 1. The frozen build
 
