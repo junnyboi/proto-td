@@ -27,7 +27,7 @@ All six files are stereo 48 kHz Ogg Vorbis, loudness-normalized to approximately
 
 ## Acceptance state
 
-Every catalog entry remains `placeholder: true`. Structural gates establish that the files are distinct, loadable, loop-enabled, correctly formatted, within duration and loudness bands, free of detected speech, and exactly provenance-linked. They do not establish nostalgia, charm, act identity, instrument recognition, originality, or whether the reference distance is sufficient. Only a human listening pass may flip a cue to final.
+Poseidon approved the six-cue revision-five score on 2026-08-12 and immediately requested runtime integration. Every catalog and provenance entry is therefore `placeholder: false` with the exact conversation review URI. Structural gates still establish only that the files are distinct, loadable, loop-enabled, correctly formatted, within duration and loudness bands, free of detected speech, and exactly provenance-linked; the human verdict owns nostalgia, charm, act identity, pair coherence, adrenaline, originality, and reference distance.
 
 The built-in generation tool uses its latest available backend but exposes neither a model selector nor a backend identifier. The owner requested Lyria 3 Pro or latest available; provenance records `not exposed by tool` rather than inventing a Lyria version claim. Commercial terms for the actual backend must be reviewed before shipping.
 
@@ -51,8 +51,8 @@ Listen to each cue at normal gameplay volume for at least ninety seconds, then c
 | Originality/reference distance | No listener recognizes a copied melody, hook, chord loop, breakbeat, or close imitation of the supplied reference or another composition. |
 | Commercial review | The actual latest-backend usage terms have been reviewed and recorded before shipping. |
 
-Record failures as `data-edit`, `asset-regeneration`, or `prompt-change`. Do not clear a placeholder merely because the file loads. A doorstop can also pass a file-existence check.
+Record future failures as `data-edit`, `asset-regeneration`, or `prompt-change`. Approval came from the owner, not from a file-existence check. A doorstop can still pass one of those.
 
-## Runtime integration boundary
+## Runtime integration
 
-This lane intentionally does not add a `MusicPlayer` or hardcode current stages to future acts. The planned three-act stage mapping and boss-transition signal are not yet stable in the repository. A later playback lane must consume `catalog.tres`, own volume/crossfade/pause behavior, and define an observable act/boss routing contract with tests. Until then the playable build remains silent under `D-SFX`.
+`/root/Music` is the sole catalog-backed runtime owner and contains exactly one `AudioStreamPlayer`. Stage resources provide `music_act` and `music_boss_wave_index`; S1–S4 use Act I, S5–S8 use Act II, and future Act III stages opt into Act III through the same data fields. S4 switches at wave window 1 and S8 at wave window 2. Repeating the current cue is a no-op, changing cues hard-replaces the stream on the same player, and every non-battle scene stops music. There is deliberately no crossfade because the owner forbids layering. SFX remains silent under `D-SFX`.

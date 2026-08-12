@@ -9,13 +9,13 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `f08ee08`** (TD-007 campaign-only Start candidate — includes
-  the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
-  Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
-  superseded; do not playtest an older build.
-- **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
-  music. Every audio question in this script is N/A — judge visuals only, and do not log the
-  silence as a defect.
+- Build under test: **the integrated TD-017 runtime-music commit or later** (includes
+	  the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
+	  Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
+	  superseded; do not playtest an older build.
+- **Music is active; SFX remains silent.** Expect Act I BGM in S1–S4 and Act II BGM in S5–S8.
+	  S4 and S8 hard-switch to their paired boss cues at the final wave. Only one cue may ever be
+	  audible; layering, duplicate restarts, or music continuing into menus/results is a defect.
 
 ## 2. The run
 
@@ -69,9 +69,10 @@ lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 - Banner rhythm: does WAVE N landing feel like a beat? Star stagger on the stamp?
 - Trap snap: sharp enough? Tar shimmer visible without being noisy?
 - Charm beat: is the 0.5× beat + swirl a *moment*?
-- Audio (deploy thump, kill ticks, leak alarm sound, trap snap, charm chime, wave/victory
-  stings): **N/A by design** — the build is deliberately silent (deviation D-SFX). Skip every
-  audio judgment; the original questions return with the audio.
+- Music: does each act BGM fit its location and leave tactical space? Do S4/S8 switch once into
+	  the correct boss cue without a doubled layer or obvious restart? Does music stop on results
+	  and menu screens? SFX questions (deploy, kill, leak, trap, charm, wave/victory stings) remain
+	  **N/A by design** under D-SFX.
 - Art v2: does the warm road read as "their lane"? Do operators vs enemies separate cleanly
   in a messy fight (flagged from the audit's shot review)? Portrait cards charming?
 

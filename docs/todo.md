@@ -31,16 +31,17 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-004 — Complete human soundtrack acceptance
+## TD-017 — Wire the accepted score through one idempotent runtime player
 
-- Status: blocked
-- Owner: human
-- Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-015 score and TD-016 revision-five boss candidates integrated into `master` and presented for listening
-- Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
-- Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
-- Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping
-- Required evidence: human-authored six-cue verdict matrix; accepted cues may clear `placeholder` only in a separately verified catalog/provenance update
+- Status: in_progress
+- Owner: AGENT 4
+- Branch: `agent-4/runtime-music`
+- Base: `master` at `709781b596c0a3f21494a1be91713952f99d94e3`
+- Dependencies: Poseidon approved the TD-015/016 score on 2026-08-12 and required exactly one non-layered, non-restarting player
+- Owned files: `autoloads/{music.gd,music.gd.uid,game.gd}`; `project.godot`; `scripts/view/battle_view.gd`; `data/stage_def.gd`; `data/stages/s1.tres`–`s8.tres`; `tools/{stage_lint.gd,music/verify_music.sh}`; `assets/music/{catalog.tres,provenance.json,README.md}`; `test/{test_music_catalog.gd,test_music_player.gd,test_music_player.gd.uid}`; `selftest/scenarios/{music_routing.gd,music_routing.gd.uid}`; `CLAUDE.md`; `docs/decisions/D-SFX.md`; `PLAYTEST.md`; MUSIC-1 in `FEATURES.json`; TD-004/017 rows in `docs/{todo,completed}.md`; `docs/{handoffs,media}/TD-017*`
+- Do not touch: Ogg/source/prompt/transcription bytes, SFX implementation, BattleModel/sim/hash/save/replay, non-music stage balance, thresholds, `scripts/verify.sh`, engine/export, or localization
+- Acceptance: one global catalog-backed `AudioStreamPlayer`; stage BGM starts once; data-owned act-final boss boundary hard-switches once; duplicate same-cue requests never restart; invalid requests change nothing; all non-battle screens stop once; six human-approved placeholders clear; SFX stays silent
+- Required evidence: extended stage lint; focused catalog/controller GUT; seeded `music_routing` scenario with sentinel and exact start/stop counters; frozen fresh RELEASE ladder; independent diff-vs-pins audit; exact merged-union RELEASE rerun
 - Last update: 2026-08-12
 
 ## L7-R1 — Human playtest round 1

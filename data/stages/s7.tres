@@ -90,6 +90,8 @@ waves = Array[Dictionary]([{
 "tick": 1200
 }])
 wave_starts = PackedInt32Array(0, 700)
+music_act = 2
+music_boss_wave_index = -1
 leak_limit = 3
 squad_size = 6
 rewards = Array[Dictionary]([])

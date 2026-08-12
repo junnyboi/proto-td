@@ -16,13 +16,14 @@
   "shared_motif": "Original five-note wayfinder contour: scale degrees 1-2-5-4-3 with the last two notes rhythmically delayed",
   "human_feedback": {
     "date": "2026-08-12",
-    "classification": "prompt-change",
+    "classification": "accepted",
     "revision": 5,
     "supersedes_revision": 4,
-    "request": "Regenerate all boss music to be more consistently epic, battle-oriented, and adrenaline-driven while preserving the retro Japanese console-RPG lo-fi score and each act location identity.",
-    "style_reference_url": "https://www.youtube.com/watch?v=VnYNkajvZE4",
-    "anti_copy": "Only abstract production traits were retained. No melody, progression, break, sample, recording, arrangement, lyric, title, or artist signature was copied or requested.",
-    "final_acceptance_complete": false
+    "approval": "ok approved",
+    "runtime_request": "Wire the BGM and boss music into the game through exactly one player; never layer cues and never fire the same cue multiple times.",
+    "review_uri": "user://conversation/2026-08-12T23:50:49+08:00",
+    "final_acceptance_complete": true,
+    "commercial_review_complete": false
   },
   "post_processing": {
     "script": "res://tools/music/process_track.sh",
@@ -110,7 +111,10 @@
       "low_220_mean_dbfs": -21.2,
       "supersedes_asset_sha256": "2ab32c051d0fd1661f2cae22ae31bc84976d7048dbbf47bb40b29152b37b2d86",
       "supersedes_source_sha256": "d3c7d97d554257dbf0f1919ea54995e1666fbf973491b6e31a1b0db874b5ab86",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     },
     {
       "id": "act_1_boss",
@@ -134,7 +138,10 @@
       "low_220_mean_dbfs": -20.6,
       "supersedes_asset_sha256": "b1491a9bc5b9df060bb4d6ac6ffe4b1437f1f8cf2e994bc0a2494b322c2fb9b7",
       "supersedes_source_sha256": "3676bc3c685e7ef2aa12d63aafee0effd7459faca48b2e9e016e1b8bf9ae4947",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     },
     {
       "id": "act_2_bgm",
@@ -158,7 +165,10 @@
       "low_220_mean_dbfs": -20.0,
       "supersedes_asset_sha256": "b3642eed59512d03ff14739c21419db318e21eec72b5446439d7a0a14158c887",
       "supersedes_source_sha256": "80a223c231ed7f4b10a536688699b39dda8caa4a3ab885630fd1172fc5b6fdbb",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     },
     {
       "id": "act_2_boss",
@@ -182,7 +192,10 @@
       "low_220_mean_dbfs": -20.9,
       "supersedes_asset_sha256": "83909e91e765d7d3a3cc29ebe4d0dbd9610b01bb805c170112f8a8895d636147",
       "supersedes_source_sha256": "8097e06f3b1a20520e734725e9b9b585b3ad5efe75c1abd8d6e2daa4419f6bf3",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     },
     {
       "id": "act_3_bgm",
@@ -206,7 +219,10 @@
       "low_220_mean_dbfs": -20.0,
       "supersedes_asset_sha256": "23deace1f122b3e9436fabcaa6da97b8bf723048fe251bbb1168cfbaf1795ce4",
       "supersedes_source_sha256": "8563c4924df87504012c3c55b9cf424c18fc3a2ab4f7d1bed2ac77d149efd57c",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     },
     {
       "id": "act_3_boss",
@@ -230,7 +246,10 @@
       "low_220_mean_dbfs": -20.2,
       "supersedes_asset_sha256": "03c2be8f3e477cd4cfd5cb619071ebc3554ddab4f1809536e4624e8c51584969",
       "supersedes_source_sha256": "6683627943beb02b052f0991d6c7bac6efa5bc53adbcde7a443f47b88354a708",
-      "placeholder": true
+      "placeholder": false,
+      "human_status": "accepted",
+      "human_accepted_at": "2026-08-12T23:50:49+08:00",
+      "human_review_uri": "user://conversation/2026-08-12T23:50:49+08:00"
     }
   ],
   "revision_analysis": {
@@ -441,5 +460,14 @@
     "act_2": "wonder, archaeology, mounting threat; crystal undercroft, aquifers, fragmented observatory, monumental ruins; 25-40 percent warm/direct light",
     "act_3": "oppressive, vast, climactic; obsidian vaults, chained platforms, primordial architecture, lava vents; 0-15 percent warm/direct light",
     "human_judgment_required": true
+  },
+  "runtime_integration": {
+    "status": "approved_for_runtime",
+    "controller_path": "res://autoloads/music.gd",
+    "catalog_path": "res://assets/music/catalog.tres",
+    "player_count": 1,
+    "layering": false,
+    "same_cue_restart": false,
+    "transition": "hard replacement on the same AudioStreamPlayer"
   }
 }

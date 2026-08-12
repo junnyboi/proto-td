@@ -1,10 +1,10 @@
-# D-SFX — Deliberately silent SFX and runtime audio
+# D-SFX — Deliberately silent SFX; approved music is active
 
 - Date: 2026-08-11
 - Owner: human
-- Status: partially superseded for music assets on 2026-08-12
+- Status: superseded for music assets and runtime music on 2026-08-12; SFX waiver remains active
 
-The original decision made the game intentionally silent: no SFX, no music, and no silence defect. On 2026-08-12 the owner explicitly reopened **music asset creation** and requested one BGM plus one boss cue for each of three planned acts. TD-003 may therefore add generated music, its logical catalog, provenance, and asset QA. This does **not** restore synthesized SFX and does not authorize provisional runtime playback before the act/boss routing contract exists. The current playable build remains silent until a separately scoped integration lane. The `sfx_played` telemetry seam remains event-wiring evidence.
+The original decision made the game intentionally silent: no SFX, no music, and no silence defect. On 2026-08-12 the owner first reopened music creation, then approved the current six-cue score and explicitly requested runtime integration with one invariant: exactly one cue may play, cues must never layer, and repeated requests must never restart the same cue. TD-017 therefore authorizes the catalog-backed `Music` singleton, data-owned act/boss routing, and hard replacement on one `AudioStreamPlayer`. This does **not** restore synthesized SFX. The `sfx_played` telemetry seam remains event-wiring evidence for the still-silent SFX layer.
 
 Authoritative references: `FEATURES.json` deviation `D-SFX`, `FINAL_REPORT.md` §9, `PLAYTEST.md` setup/audio notes, `JUICE_VERDICT.md`, `CLAUDE.md` audio section, and `assets/music/provenance.json`.
 

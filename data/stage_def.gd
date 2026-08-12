@@ -10,6 +10,9 @@ extends Resource
 ## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
 ## (td-phase-6-7.md §2.3). Empty means one window covering the whole battle;
 ## non-empty must be strictly ascending and start at 0 (stage_lint).
+## Music routing is presentation metadata: act selects the catalog pair;
+## boss_wave_index -1 means BGM for the whole battle, otherwise the view
+## hard-switches to the paired boss cue at that wave window.
 
 enum Tile { VOID, GROUND, ELEVATED, SPAWN, BASE, BLOCKED }
 
@@ -28,6 +31,8 @@ const TILE_CHARS := {
 @export var paths: Array[PackedVector2Array] = []
 @export var waves: Array[Dictionary] = []
 @export var wave_starts: PackedInt32Array = []
+@export_range(1, 3) var music_act: int = 1
+@export var music_boss_wave_index: int = -1
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
 # campaign metadata (Phase 10, td-phase-10.md §2.1): rewards granted on
