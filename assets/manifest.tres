@@ -262,5 +262,11 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_2_%d.png",
 "placeholder": false,
 "size": Vector2i(32, 32)
+},
+&"vfx_bolt_impact": {
+"frames": 4,
+"pattern": "res://assets/sprites/vfx_bolt_impact_%d.png",
+"placeholder": true,
+"size": Vector2i(32, 32)
 }
 }

@@ -18,6 +18,9 @@ const ArtProps := preload("res://tools/pixel/art_props.gd")
 const OUT_SPRITES := "res://assets/sprites"
 const OUT_PORTRAITS := "res://assets/portraits"
 const OUT_SHEET := "res://artifacts/lane_a"
+const BOLT_IMPACT_SOURCE := "res://docs/art/source/bolt-impact/bolt_impact_%d.png"
+const BOLT_IMPACT_SIZE := Vector2i(32, 32)
+const BOLT_IMPACT_FRAMES := 4
 
 var _failed := false
 var _manifest := AssetManifest.new()
@@ -42,6 +45,13 @@ func _initialize() -> void:
 	for c: Color in Palette.ALL:
 		if c != Palette.WHITE:
 			charm_allowed.append(c)
+	# Bolt owns exact WHITE as its present/absent probe signal, while SKY stays
+	# reserved exclusively for Charm. Its manifest flag remains placeholder
+	# until an L7 human accepts the generated sequence in game.
+	var bolt_allowed: Array[Color] = []
+	for c: Color in Palette.ALL:
+		if c != Palette.SKY:
+			bolt_allowed.append(c)
 
 	# tiles (32x16 iso diamonds; elevated 32x24)
 	var tiles := ArtTiles.build()
@@ -134,6 +144,32 @@ func _initialize() -> void:
 		)
 		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
 		sheet_cells.append(Pix.upscale(img, 4))
+
+	# GPT Image 2 Bolt masters, deterministically normalized and committed
+	# under docs/art/source. The generator is still the only runtime writer:
+	# it re-lints the accepted bytes and emits the manifest entry atomically.
+	for i: int in BOLT_IMPACT_FRAMES:
+		var source_path := BOLT_IMPACT_SOURCE % i
+		var impact := Image.new()
+		var load_err := impact.load(ProjectSettings.globalize_path(source_path))
+		if load_err != OK:
+			push_error("[gen_assets] LOAD %s: %s" % [source_path, load_err])
+			_failed = true
+			continue
+		_lint_and_save(
+			impact,
+			BOLT_IMPACT_SIZE,
+			"%s/vfx_bolt_impact_%d.png" % [OUT_SPRITES, i],
+			bolt_allowed,
+		)
+		sheet_cells.append(Pix.upscale(impact, 4))
+	_record(
+		&"vfx_bolt_impact",
+		"%s/vfx_bolt_impact_%%d.png" % OUT_SPRITES,
+		BOLT_IMPACT_FRAMES,
+		BOLT_IMPACT_SIZE,
+		true,
+	)
 
 	_write_sheet(sheet_cells, "calibration.png")
 	_write_sheet(portrait_cells, "portraits.png")

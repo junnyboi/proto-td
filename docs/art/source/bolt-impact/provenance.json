@@ -1,0 +1,55 @@
+{
+  "asset_id": "vfx_bolt_impact",
+  "version": 1,
+  "generated_at": "2026-08-12",
+  "generator": {
+    "tool": "Manus generate_image",
+    "model": "gpt-image-2",
+    "quality": "default",
+    "seed": null,
+    "reference": {
+      "path": "res://assets/sprites/icon_bolt.png",
+      "sha256": "042e19b5383ae97f5acfcf098e06aea036562627bfd5d4dffceab9af442d3055"
+    },
+    "shared_prompt_contract": "Four matched phases: inbound bolt, peak contact, recoil starburst, dissipating fragments. Centered isolated magical lightning effect; crisp 16-bit SNES-era pixel art; hard square pixels; dark navy outline; flat clusters; gold, pale gold, white, steel blue and cyan palette intent; no anti-aliasing, gradients, blur, bloom, semitransparent fringe, character, scenery, UI, text, logo, circle, card or shadow; readable after nearest-neighbor reduction to 32x32.",
+    "raw": [
+      {"frame": 0, "sha256": "ea20678aaea2b4361e3ad2246064d72a4bc70d715aae5bc3e068d8ebaed47fb1"},
+      {"frame": 1, "sha256": "d7eba953038c4e208212178fed57090ab479b3b8b41d741b417ba6544b45ec30"},
+      {"frame": 2, "sha256": "e72788a54646a1b4898fef59d8f1bb8af8f93d034ff6aff6f135e204dcfb9bd1"},
+      {"frame": 3, "sha256": "c55721c58384f6237a9abfa9b0aff1b7a22438703a009343cdc44df1ba7022de"}
+    ]
+  },
+  "normalization": {
+    "recipe": "res://docs/art/source/bolt-impact/normalize_bolt.py",
+    "steps": [
+      "remove temporary magenta and alpha below 128",
+      "drop disconnected components smaller than 256 source pixels",
+      "square-pad the surviving subject with six-percent margin",
+      "nearest-neighbor sample to 28x28 and center on transparent 32x32",
+      "hard-alpha threshold and nearest TD32-subset palette remap"
+    ],
+    "masters": [
+      {"frame": 0, "sha256": "11865bcae1aa54553bb327ff42c7f0f63a54a309429a8e2f9474b1fe6af82505", "opaque_pixels": 65, "white_probe_pixels": 13},
+      {"frame": 1, "sha256": "99bfb09dbeb93c61faa6cca2c13ef49cd99ce35ebdf0303322d582fc63091849", "opaque_pixels": 145, "white_probe_pixels": 25},
+      {"frame": 2, "sha256": "de46f9a68965f16887341efb299dc89dd1a5aff866831eb952d86bb1c2a88084", "opaque_pixels": 169, "white_probe_pixels": 16},
+      {"frame": 3, "sha256": "e55d6d1c5120a05683c8f7810a23489437e3a8ccb6733ff43414787abed1aae5", "opaque_pixels": 110, "white_probe_pixels": 5}
+    ],
+    "qa": {
+      "dimensions": "4/4 are 32x32 RGBA8",
+      "partial_alpha_pixels": 0,
+      "opaque_border_pixels": 0,
+      "palette": "TD32 subset; exact SKY excluded; exact WHITE intentionally reserved as the impact probe signal",
+      "contact_sheet_verdict": "accepted for engine integration on dark and light backgrounds"
+    }
+  },
+  "manifest": {
+    "logical_id": "vfx_bolt_impact",
+    "frames": 4,
+    "size": [32, 32],
+    "placeholder": true
+  },
+  "human_approval": {
+    "status": "pending",
+    "rule": "Keep placeholder=true until an L7 human accepts the in-game result without manual repair."
+  }
+}
