@@ -40,6 +40,7 @@ repeated mistake and never shrinks.
 - `--check-only` cannot resolve autoloads — the compile gate for autoload-referencing scripts is
   the boot check + GUT, not `--check-only`.
 - Never override `_process` on a `SceneTree` script — connect to `process_frame`.
+- Never force-push (`--force`, `-f`, or `--force-with-lease`). Remote movement is reconciled by merging current master into the feature branch and verifying the result; history is never rewritten to make integration convenient.
 - Godot 3 API ban: no `yield` (use `await`), no `onready var` without `@`, no `export` without
   `@`, no `KinematicBody2D` (`CharacterBody2D`), no `instance()` (`instantiate()`),
   no `OS.get_ticks_msec()` (`Time.get_ticks_msec()`).
@@ -126,10 +127,18 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
    red, fixing it *is* the session.
 2. **Pick ONE** failing feature. Never two.
 3. Inner loop: write → hook checks per write → `verify.sh --scenario=X` → `verify.sh --full`.
-4. Flip ledger status; commit feature + ledger (+ baselines) in one commit; push to
-   `origin/master` when the work is done (standing instruction, 2026-08-11).
-5. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
-   for this file. Log pain points to `PAINPOINTS.md` as they happen.
+4. Flip ledger status; commit feature + ledger (+ baselines) atomically on the feature branch.
+5. **Autonomously integrate every completed feature.** Fetch current remote state, merge
+   `origin/master` into the feature branch first, and resolve every conflict on that branch. Preserve
+   both valid behaviors; never accept all of `ours` or `theirs` blindly. Re-run the required branch
+   gates and push the feature branch normally.
+6. Switch to `master`, pull with `--ff-only`, and merge the verified feature branch. Because the
+   branch already contains current master, prefer `git merge --ff-only <feature-branch>`; if it
+   fails, return to the feature branch, merge the newly moved master, resolve, and reverify instead
+   of resolving on master. Run the required gates again on the merged master, then push master
+   normally. Never force-push.
+7. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), and any
+   new rule earned for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
 ## Audio: deliberately silent (owner decision, 2026-08-11)
 

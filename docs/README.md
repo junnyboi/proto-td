@@ -18,11 +18,12 @@ This directory is the repository-native coordination surface for concurrent work
 
 1. Pull the current default branch before development. Start from a clean, understood tree and establish a green baseline with `scripts/verify.sh`.
 2. Claim exactly one stable `TD-###` item in [`todo.md`](todo.md) before implementation. Record one owner, one branch, an exclusive file set, dependencies, non-owned files, acceptance criteria, and required evidence. Existing content under [`art/`](art/) retains its own provenance contract unless a lane names exact art paths.
-3. Branches use `agent-N/<lane>` and commits use the exact prefix `AGENT N - `. Never force-push.
+3. Branches use `agent-N/<lane>` and commits use the exact prefix `AGENT N - `. Completed agents remain integration owners: fetch, merge current `origin/master` into the feature branch, resolve conflicts there, rerun the required gates, and push the branch normally. Then fast-forward local `master` to the verified feature branch, rerun the gates on merged master, and push master normally. If master moved again, return to the feature branch and repeat reconciliation; never resolve integration drift directly on master.
 4. Parallelize only across disjoint file ownership. The simulation core, `scripts/verify.sh`, tick semantics, quality thresholds, and other shared hot files remain serial unless a coordinator explicitly sequences them.
 5. Never write any file into a checkout another agent is actively verifying. Auto-discovered tests, scenarios, and bots can invalidate an in-flight run even when the new file appears unrelated.
 6. Verify the lane locally. The integrating agent must independently rerun the merged union. A lane green is evidence for that lane, not for a future merge.
 7. On completion, remove the full item from [`todo.md`](todo.md), append one auditable line to [`completed.md`](completed.md), and write a handoff containing exact commits, commands, evidence, risks, and next action.
+8. Force-push is forbidden in every form, including `--force-with-lease`. The accepted integration sequence and conflict routing are recorded in [D-001](decisions/D-001-autonomous-feature-integration.md).
 
 ## Integrity contract
 
