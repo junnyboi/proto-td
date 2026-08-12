@@ -1,4 +1,4 @@
-# Prototype TD — Luminous Descent Music Catalog
+# Aetheria Tactics — Luminous Descent Music Catalog
 
 This directory contains six original instrumental candidates: one exploration BGM and one boss cue for each planned act. Revision 4 replaces every prior candidate with a shared mid-to-late-1990s Japanese 32-bit console-RPG lo-fi production language, then specializes it to the location, emotional read, and light descent of each act.
 

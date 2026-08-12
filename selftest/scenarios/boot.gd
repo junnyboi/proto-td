@@ -16,10 +16,28 @@ func run(h: SelfTestHarness) -> void:
 	var title := h.scene as Control
 	h.check("title scene is a Control", title != null)
 	var label := title.find_child("TitleLabel", true, false) as Label
+	var i18n := h.autoload("I18n")
 	h.check(
-		"title label present + non-empty",
-		label != null and not label.text.is_empty(),
+		"title label is Aetheria Tactics",
+		label != null and label.text == "Aetheria Tactics",
 		"text=%s" % (label.text if label != null else "<missing>"),
+	)
+	h.check(
+		"title matches localized ui.game_title",
+		i18n != null and label != null
+			and label.text == str(i18n.call("t", &"ui.game_title", "Aetheria Tactics")),
+	)
+	h.check(
+		"project metadata is Aetheria Tactics",
+		str(ProjectSettings.get_setting("application/config/name", "")) == "Aetheria Tactics",
+	)
+	var title_rect := title.get_global_rect()
+	var label_rect := label.get_global_rect() if label != null else Rect2()
+	h.check(
+		"title label is fully inside the usable viewport",
+		label != null and title_rect.encloses(label_rect) and label_rect.size.x > 0.0
+			and label_rect.size.y > 0.0,
+		"title=%s label=%s" % [title_rect, label_rect],
 	)
 	var button := title.find_child("StartButton", true, false) as Button
 	var rect := button.get_global_rect() if button != null else Rect2()
