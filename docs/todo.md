@@ -36,7 +36,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Status: blocked
 - Owner: human
 - Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-013 score and TD-014 revision-five boss candidates integrated into `master` and presented for listening
+- Dependencies: TD-014 score and TD-015 revision-five boss candidates integrated into `master` and presented for listening
 - Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
 - Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
 - Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping

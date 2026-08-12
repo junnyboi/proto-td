@@ -1,4 +1,4 @@
-# TD-014 — Boss adrenaline revision handoff
+# TD-015 — Boss adrenaline revision handoff
 
 - Agent / branch: AGENT 4 / `agent-4/retro-lofi-score`
 - Reconciled base: `302619ee95efb9572d1b34dc99c52ed983c92d8a`
@@ -14,7 +14,7 @@ Selected shipping cues are 173.998313, 171.281604, and 175.382792 seconds for Ac
 
 ## Frozen evidence
 
-Candidate evidence is `docs/media/TD-014-verification.json` (`mgs.verification-evidence.v2`, PASS, fresh, STANDARD). The unchanged full music gate is green. Focused catalog GUT reports 3/3 tests and 239 assertions. All three selected boss sources have zero speech segments and empty transcription text. All three BGM hashes match the reconciled base. The complete ladder has 65 passing rungs; 20 reports, 557 checks, 67 screenshots, zero failed checks, zero pixel skips, and all completion sentinels present.
+Candidate evidence is `docs/media/TD-015-verification.json` (`mgs.verification-evidence.v2`, PASS, fresh, STANDARD). The unchanged full music gate is green. Focused catalog GUT reports 3/3 tests and 239 assertions. All three selected boss sources have zero speech segments and empty transcription text. All three BGM hashes match the reconciled base. The complete ladder has 65 passing rungs; 20 reports, 557 checks, 67 screenshots, zero failed checks, zero pixel skips, and all completion sentinels present.
 
 Deterministic revision-five/revision-four spectral-flux ratios are 1.535, 1.173, and 1.073 for Acts I–III. Every selected cue improves at least one predeclared forward-motion proxy and has no eight-second low-energy collapse. These metrics support direction only; they do not certify epicness, battle feel, adrenaline, motif quality, act identity, style, originality, fatigue, or loop feel.
 
