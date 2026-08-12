@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-009 — Align deployment-facing controls to isometric diagonals
-
-- Status: in_progress
-- Owner: AGENT 2
-- Branch: `agent-2/isometric-facing-arrows`
-- Base: `master` at `3b7ba225c90add20924b5a3aef99133162f64531`
-- Dependencies: none; preserve the integrated S1 world-art staging work and TD-008 map navigation
-- Owned files: `scripts/ui/deploy_bar.gd`, `selftest/scenarios/deploy_flow.gd`, `docs/todo.md`
-- Do not touch: simulation/model facing semantics, stage data, art assets/manifests, `FEATURES.json`, `scripts/verify.sh`, harness core, tests, thresholds, or unrelated presentation lanes
-- Acceptance: the four facing buttons form one compact cell-centered isometric cluster; glyphs point top-left, top-right, bottom-left, and bottom-right; all four controls remain fully inside the live usable viewport; clicking the bottom-right control still deploys with model `Facing.RIGHT`
-- Required evidence: targeted headless/windowed `deploy_flow`; fresh `facing_chooser.png`; live-node checks for four unique diagonal glyphs, quadrant geometry, viewport containment, and real-input model facing; routed STANDARD union gate
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
