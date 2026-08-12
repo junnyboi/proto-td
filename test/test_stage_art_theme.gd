@@ -47,10 +47,10 @@ func test_theme_is_valid_only_for_s1() -> void:
 	assert_true(theme.applies_to(s1))
 	assert_false(theme.applies_to(s2))
 	assert_eq(theme.validation_errors(s1), PackedStringArray())
-	assert_eq(theme.approval_token, &"AUI-DESIGN-D")
+	assert_eq(theme.approval_token, StageArtTheme.S1_APPROVAL_TOKEN)
 	assert_eq(
 		theme.approval_manifest_sha256,
-		"91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51",
+		StageArtTheme.S1_APPROVAL_MANIFEST_SHA256,
 	)
 	assert_false(theme.human_final_art)
 
@@ -70,6 +70,20 @@ func test_theme_preserves_authoritative_s1_roles() -> void:
 		[&"world.s1.backdrop_ridge", &"world.s1.backdrop_peak", &"world.s1.backdrop_mist"],
 	)
 	assert_false(theme.rain_measure_placed)
+
+
+func test_parent_approval_cannot_authenticate_revision_theme() -> void:
+	var stale := theme.duplicate(true) as StageArtTheme
+	stale.approval_token = &"AUI-DESIGN-D"
+	stale.approval_manifest_sha256 = (
+		"91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51"
+	)
+	var errors := stale.validation_errors(s1)
+	assert_has(errors, "approval token is not the approved S1 revision")
+	assert_has(
+		errors,
+		"approval manifest SHA-256 is not the approved S1 revision receipt",
+	)
 
 
 func test_all_s1_manifest_entries_are_runtime_backed_but_human_unaccepted() -> void:

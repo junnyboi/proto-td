@@ -6,6 +6,10 @@ extends Resource
 ## stage roles to manifest IDs and typed decorative anchors.
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1"]
+const S1_APPROVAL_TOKEN: StringName = &"AUI-DESIGN-D-REVISION-2"
+const S1_APPROVAL_MANIFEST_SHA256 := (
+	"8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6"
+)
 
 @export var stage_id: StringName = &""
 @export var theme_id: StringName = &""
@@ -116,10 +120,10 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme stage_id does not match stage")
 	if theme_id == &"":
 		errors.append("theme_id is empty")
-	if approval_token != &"AUI-DESIGN-D":
-		errors.append("approval token is not AUI-DESIGN-D")
-	if approval_manifest_sha256.length() != 64:
-		errors.append("approval manifest SHA-256 is not 64 hex characters")
+	if approval_token != S1_APPROVAL_TOKEN:
+		errors.append("approval token is not the approved S1 revision")
+	if approval_manifest_sha256 != S1_APPROVAL_MANIFEST_SHA256:
+		errors.append("approval manifest SHA-256 is not the approved S1 revision receipt")
 	for id: StringName in required_manifest_ids():
 		if id == &"":
 			errors.append("required manifest id is empty")

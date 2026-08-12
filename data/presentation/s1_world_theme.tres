@@ -6,8 +6,8 @@
 script = ExtResource("1_theme")
 stage_id = &"s1"
 theme_id = &"world.act1.windward_muster"
-approval_token = &"AUI-DESIGN-D"
-approval_manifest_sha256 = "91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51"
+approval_token = &"AUI-DESIGN-D-REVISION-2"
+approval_manifest_sha256 = "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6"
 human_final_art = false
 ground_id = &"world.s1.ground"
 route_id = &"world.s1.route"
