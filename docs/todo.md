@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-003 — Generate the three-act Luminous Descent music catalog
+
+- Status: in_progress
+- Owner: AGENT 4
+- Branch: `agent-4/three-act-music`
+- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
+- Dependencies: explicit owner request on 2026-08-12 reopens music asset creation; runtime act/boss routing remains deferred
+- Owned files: `assets/music/**`; `tools/music/**`; `test/test_music_catalog.gd`; `test/test_music_catalog.gd.uid`; `FEATURES.json` entries `MUSIC-1` and `D-SFX` only; `docs/decisions/D-SFX.md`; `CLAUDE.md` audio section only; `docs/plans/TD-003-luminous-descent-music.md`; `docs/handoffs/TD-003-agent-4-luminous-descent-music.md`; `docs/media/TD-003-verification.json`; this queue entry and its closure line in `docs/completed.md`
+- Do not touch: simulation core, `scripts/verify.sh`, tick semantics, thresholds, stage data, `autoloads/sfx.gd`, historical audit wording, human verdict rows, or runtime music playback/routing
+- Acceptance: exactly six distinct original instrumental cues provide one loopable BGM and one loopable boss track per act; every cue is stereo 48 kHz Ogg Vorbis, 160–180 seconds, approximately −18 LUFS, loadable and loop-enabled through a logical catalog, provenance-linked, speech-free by transcription, and `placeholder: true` pending human listening
+- Required evidence: `tools/music/verify_music.sh` ALL GREEN; focused and full GUT; `scripts/verify.sh --full` on branch and merged master; fresh artifact integrity/checklist review; `assets/music/provenance.json`; `docs/media/TD-003-verification.json`
+- Last update: 2026-08-12
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

@@ -152,9 +152,11 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
-## Audio: deliberately silent (owner decision, 2026-08-11)
+## Audio: music assets reopened; runtime and SFX remain silent
 
-The game has NO SFX and NO music by the owner's explicit choice — do not restore the
-synth SFX, add audio assets, or flag the silence as a floor violation. The presentation
-floor's audio rule is waived by deviation D-SFX (recorded in phase 14). The `sfx_played`
-telemetry seam stays wired. Audio returns only on an explicit owner request.
+The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner explicitly
+reopened **music asset creation** for the three-act score, so generated music catalogs and
+their QA/provenance are allowed. Do not restore synth SFX or hardcode provisional runtime
+playback before the act/boss routing contract exists. The current playable build remains
+silent, the `sfx_played` telemetry seam stays wired, and any further audio scope requires an
+explicit owner request. See `docs/decisions/D-SFX.md`.
