@@ -116,6 +116,62 @@ static func content_box(grid_size: Vector2i) -> Rect2:
 	return Rect2(left, top, width, height)
 
 
+## Exact projected terrain bounds. Height-fill intentionally excludes unit
+## sprite headroom and UI margins: the human verdict is about the MAP, while
+## content_box() remains the larger edge clamp for sprites and effects.
+static func terrain_box(grid_size: Vector2i) -> Rect2:
+	var span := float(grid_size.x + grid_size.y)
+	var left := -float(grid_size.y) * TILE_W * 0.5
+	var top := -ELEV_LIFT_PX
+	var width := span * TILE_W * 0.5
+	var height := span * TILE_H * 0.5 - top
+	return Rect2(left, top, width, height)
+
+
+## Uniform scale whose transformed terrain height equals the live viewport
+## height exactly. Width is allowed to overflow and is recovered by panning.
+static func height_fill_scale(grid_size: Vector2i, viewport: Vector2) -> float:
+	return viewport.y / terrain_box(grid_size).size.y
+
+
+## Grid-root origin that centers the scaled terrain rectangle in the viewport.
+static func terrain_origin_for(grid_size: Vector2i, viewport: Vector2, scale: float) -> Vector2:
+	return viewport * 0.5 - terrain_box(grid_size).get_center() * scale
+
+
+## Screen-space visual-content rectangle after applying a pan offset to the
+## terrain-centered root. Kept pure so both the view and GUT share one truth.
+static func content_screen_rect(
+	grid_size: Vector2i, viewport: Vector2, scale: float, pan: Vector2 = Vector2.ZERO
+) -> Rect2:
+	var box := content_box(grid_size)
+	var origin := terrain_origin_for(grid_size, viewport, scale) + pan
+	return Rect2(origin + box.position * scale, box.size * scale)
+
+
+## Legal pan interval encoded as Rect2(position=min, end=max). An axis whose
+## visual content already fits is locked at zero; an overflowing axis can move
+## until either content edge meets the corresponding viewport edge exactly.
+static func pan_bounds(grid_size: Vector2i, viewport: Vector2, scale: float) -> Rect2:
+	var screen := content_screen_rect(grid_size, viewport, scale)
+	var min_pan := Vector2.ZERO
+	var max_pan := Vector2.ZERO
+	if screen.size.x > viewport.x:
+		min_pan.x = viewport.x - screen.end.x
+		max_pan.x = -screen.position.x
+	if screen.size.y > viewport.y:
+		min_pan.y = viewport.y - screen.end.y
+		max_pan.y = -screen.position.y
+	return Rect2(min_pan, max_pan - min_pan)
+
+
+static func clamp_pan(pan: Vector2, bounds: Rect2) -> Vector2:
+	return Vector2(
+		clampf(pan.x, bounds.position.x, bounds.end.x),
+		clampf(pan.y, bounds.position.y, bounds.end.y),
+	)
+
+
 ## Uniform grid scale that fills the available canvas box, snapped DOWN to
 ## 0.25 steps (uneven pixel-art scaling stays tolerable), clamped [1, 3].
 static func fit_scale(grid_size: Vector2i, avail: Vector2) -> float:

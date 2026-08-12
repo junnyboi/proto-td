@@ -19,9 +19,6 @@ const ATTACK_POSE_FRAMES := 8
 const UI_OVERLAY_Z := 50
 const JUICE_Z := 60
 const HUD_Z := 70
-## Dynamic canvas fit: margins reserved for HUD (top) + deploy bar (bottom)
-## + side breathing room when fitting the grid to the viewport.
-const FIT_MARGIN := Vector2(48.0, 170.0)
 ## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
 ## no bare empty canvas.
 const BACKDROP_COLOR := Color("11131f")
@@ -69,6 +66,7 @@ var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
 var _grid_scale := 1.0
+var _map_nav := MapNavigator.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
 var _enemy_rects: Dictionary = {}
@@ -216,6 +214,40 @@ func screen_of(p: Vector2) -> Vector2:
 ## the UI bars size themselves by this.
 func grid_scale() -> float:
 	return _grid_scale
+
+
+func map_screen_rect() -> Rect2:
+	var box := IsoProjection.terrain_box(_stage.grid_size())
+	return Rect2(_grid_root.position + box.position * _grid_scale, box.size * _grid_scale)
+
+
+func map_content_rect() -> Rect2:
+	return _map_nav.content_screen_rect()
+
+
+func map_pan() -> Vector2:
+	return _map_nav.pan
+
+
+func map_pan_bounds() -> Rect2:
+	return _map_nav.bounds
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _grid_root == null or _map_navigation_blocked():
+		return
+	if _map_nav.handle_input(event):
+		_apply_map_transform()
+		get_viewport().set_input_as_handled()
+
+
+func _map_navigation_blocked() -> bool:
+	var deploy_cursor := find_child("CursorRect", true, false) as CanvasItem
+	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
+	return (
+		(deploy_cursor != null and deploy_cursor.visible)
+		or (spell_cursor != null and spell_cursor.visible)
+	)
 
 
 func _is_lifted_cell(cell: Vector2i) -> bool:
@@ -505,30 +537,30 @@ func _build_grid(stage: StageDef) -> void:
 	_grid_root.name = "GridRoot"
 	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
-	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
-	_grid_root.scale = Vector2.ONE * _grid_scale
-	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
+	_map_nav.relayout(size, viewport)
+	_apply_map_transform()
 	add_child(_grid_root)
 	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
 	IsoGridBuilder.build_terrain(_grid_root, stage)
 
 
-## Dynamic canvas fit (td-phase-12 + browser-resize requirement): refit the
-## grid whenever the window/viewport size changes. Entities live in
-## grid-local space, so repositioning + rescaling the root relayouts the
-## whole battle for free; the UI bars own their layout and listen too.
+func _apply_map_transform() -> void:
+	_grid_scale = _map_nav.scale
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = _map_nav.root_position()
+	if _juice != null:
+		_juice.refresh_base()
+
+
+## Dynamic height-fill + bounded pan: refit to the live viewport height, keep
+## the current pan where legal, then drive all screen-owned UI relayouts.
 func _relayout() -> void:
 	if _stage == null or _grid_root == null:
 		return
 	var viewport := get_viewport_rect().size
 	var size := _stage.grid_size()
-	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
-	_grid_root.scale = Vector2.ONE * _grid_scale
-	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
-	# the shake oscillates around a cached origin — re-anchor it or the
-	# next shake teleports the grid to the pre-resize spot (P14)
-	if _juice != null:
-		_juice.refresh_base()
+	_map_nav.relayout(size, viewport)
+	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
 	if _portrait_flash != null:

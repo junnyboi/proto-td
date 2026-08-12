@@ -155,7 +155,10 @@ func banner(text: String) -> void:
 		var view_size := get_viewport_rect().size
 		var back := _make_rect(BANNER_BACK, Vector2(view_size.x, 72))
 		back.name = "WaveBannerBack"
-		back.position = Vector2(0, view_size.y * 0.32)
+		# TD-006 height-fill enlarges the playable terrain through the old 32%
+		# strip. Keep the transient centered lower so the upper road remains
+		# readable while the banner is present.
+		back.position = Vector2(0, view_size.y * 0.45)
 		_banner = Label.new()
 		_banner.name = "WaveBanner"
 		_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE

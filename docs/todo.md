@@ -195,7 +195,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Branch: `agent-2/map-height-fill-pan`
 - Base: `master` at `321abc25f5d4866909d837cd335ade9579deaa95`
 - Dependencies: none; preserve Agent A's P15 routing union during integration
-- Owned files: `scripts/view/iso_projection.gd`, `scripts/view/battle_view.gd`, `test/test_map_navigation.gd`, `test/test_map_navigation.gd.uid`, `selftest/scenarios/map_navigation.gd`, `selftest/scenarios/map_navigation.gd.uid`, `docs/todo.md`, `docs/completed.md`
+- Owned files: `scripts/view/iso_projection.gd`, `scripts/view/map_navigator.gd`, `scripts/view/map_navigator.gd.uid`, `scripts/view/battle_view.gd`, `scripts/view/juice_layer.gd`, `test/test_map_navigation.gd`, `test/test_map_navigation.gd.uid`, `selftest/scenarios/map_navigation.gd`, `selftest/scenarios/map_navigation.gd.uid`, `docs/todo.md`, `docs/completed.md`
 - Do not touch: `autoloads/**`, `sim/**`, `data/**`, existing tests/scenarios, `selftest/harness.gd`, `scripts/verify.sh`, `FEATURES.json`, `PLAYTEST.md`, thresholds, Agent A/C P15 files, active polish lanes
 - Acceptance: projected terrain height equals the live viewport height after boot and resize; middle-drag and wheel/Shift+wheel pan in both axes; pan clamps exactly at visual-content edges; grid picking, screen shake, UI layout, and model hash remain correct after pan and resize
 - Required evidence: new pure GUT properties, seeded `map_navigation` headless/windowed scenario, three fresh falsifiable PNGs with zero skips, cross-process replay diff, independent adversarial audit, `scripts/verify.sh --full` on feature branch and merged master
