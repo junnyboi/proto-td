@@ -11,6 +11,9 @@ extends RefCounted
 const TARGET_CELL := Vector2i(3, 2)
 const ELEV_CELL := Vector2i(2, 1)
 const SEAM_CELL := Vector2i(1, 0)
+const FACING_SAFE_MARGIN := 12.0
+const FACING_SAFE_TOP := 104.0
+const FACING_BAR_HEIGHT := 88.0
 
 
 func run(h: SelfTestHarness) -> void:
@@ -57,10 +60,64 @@ func run(h: SelfTestHarness) -> void:
 	await h.release_mouse_at(view.call("cell_center", TARGET_CELL))
 	await h.frames(3)
 	var right_btn := bar.find_child("FacingRight", true, false) as Button
-	h.check("facing chooser visible", right_btn != null and right_btn.visible)
+	var down_btn := bar.find_child("FacingDown", true, false) as Button
+	var left_btn := bar.find_child("FacingLeft", true, false) as Button
+	var up_btn := bar.find_child("FacingUp", true, false) as Button
+	var facing_buttons: Array[Button] = [right_btn, down_btn, left_btn, up_btn]
+	var all_buttons_present := true
+	for btn: Button in facing_buttons:
+		all_buttons_present = all_buttons_present and btn != null and btn.visible
+	h.check("four facing controls visible", all_buttons_present)
+	if not all_buttons_present:
+		h.done()
+		return
+	h.check(
+		"facing glyphs match isometric diagonals",
+		right_btn.text == "↘"
+			and down_btn.text == "↙"
+			and left_btn.text == "↖"
+			and up_btn.text == "↗",
+		"right=%s down=%s left=%s up=%s"
+			% [right_btn.text, down_btn.text, left_btn.text, up_btn.text],
+	)
+	var right_center := right_btn.get_global_rect().get_center()
+	var down_center := down_btn.get_global_rect().get_center()
+	var left_center := left_btn.get_global_rect().get_center()
+	var up_center := up_btn.get_global_rect().get_center()
+	var cluster_center := (right_center + down_center + left_center + up_center) * 0.25
+	h.check(
+		"facing controls occupy four screen diagonals",
+		right_center.x > cluster_center.x and right_center.y > cluster_center.y
+			and down_center.x < cluster_center.x and down_center.y > cluster_center.y
+			and left_center.x < cluster_center.x and left_center.y < cluster_center.y
+			and up_center.x > cluster_center.x and up_center.y < cluster_center.y,
+	)
+	var viewport_size := h.root.size
+	var usable_rect := Rect2(
+		Vector2(FACING_SAFE_MARGIN, FACING_SAFE_TOP),
+		Vector2(
+			viewport_size.x - FACING_SAFE_MARGIN * 2.0,
+			viewport_size.y - FACING_SAFE_TOP - FACING_BAR_HEIGHT - FACING_SAFE_MARGIN,
+		),
+	)
+	var controls_inside := true
+	var controls_separate := true
+	for i: int in facing_buttons.size():
+		var rect := facing_buttons[i].get_global_rect()
+		controls_inside = controls_inside and usable_rect.encloses(rect)
+		for j: int in range(i + 1, facing_buttons.size()):
+			controls_separate = controls_separate and not rect.intersects(
+				facing_buttons[j].get_global_rect()
+			)
+	h.check("facing controls stay inside the usable viewport", controls_inside)
+	h.check("facing controls have separate hitboxes", controls_separate)
+	var juice := view.find_child("JuiceLayer", true, false) as Node2D
+	h.check(
+		"facing controls draw above the active wave banner",
+		juice != null and bar.z_index + right_btn.z_index > juice.z_index,
+	)
 	await h.shot("facing_chooser")
-	if right_btn != null:
-		await h.click_view(right_btn.get_global_rect().get_center())
+	await h.click_view(right_btn.get_global_rect().get_center())
 	await h.frames(3)
 
 	var unit: UnitState = model.alive_unit_at(TARGET_CELL)
