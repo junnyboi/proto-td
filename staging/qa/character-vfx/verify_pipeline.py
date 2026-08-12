@@ -83,6 +83,25 @@ def python_command(spec: Path, input_root: Path, output: Path, clean: bool = Tru
     return command
 
 
+def godot_command(
+    godot: Path,
+    spec: Path,
+    input_root: Path,
+    output: Path,
+    clean: bool = True,
+    validate: bool = False,
+) -> list[str]:
+    command = [
+        str(godot), "--headless", "--path", str(REPO),
+        "-s", "res://tools/art_pipeline/character_vfx/godot/normalize.gd", "--",
+        "validate" if validate else "build", "--backend", "godot",
+        "--spec", str(spec), "--input-root", str(input_root), "--output", str(output),
+    ]
+    if clean and not validate:
+        command.append("--clean")
+    return command
+
+
 def pure_integer_checks(counter: Counter, expected: dict[str, Any]) -> None:
     cases = {"1_to_1": (1, 1), "1_to_9": (1, 9), "9_to_1": (9, 1), "2_to_3": (2, 3), "3_to_2": (3, 2), "4_to_7": (4, 7), "7_to_4": (7, 4)}
     for name, (source_size, destination_size) in cases.items():
@@ -148,6 +167,26 @@ def _custom_input_root(root: Path, name: str) -> Path:
     for source in sorted(FIXTURES.joinpath("source").glob("*.png")):
         shutil.copy2(source, destination / source.name)
     return destination
+
+
+def _snapshot_tree(root: Path) -> dict[str, tuple[str, bytes | str | None]]:
+    snapshot: dict[str, tuple[str, bytes | str | None]] = {}
+
+    def visit(directory: Path) -> None:
+        for path in sorted(directory.iterdir(), key=lambda candidate: candidate.name):
+            relative = path.relative_to(root).as_posix()
+            if path.is_symlink():
+                snapshot[relative] = ("symlink", os.readlink(path))
+            elif path.is_dir():
+                snapshot[relative] = ("directory", None)
+                visit(path)
+            elif path.is_file():
+                snapshot[relative] = ("file", path.read_bytes())
+            else:
+                snapshot[relative] = ("other", None)
+
+    visit(root)
+    return snapshot
 
 
 def negative_checks(valid_packet: Path, root: Path, timeout_seconds: int, counter: Counter) -> None:
@@ -357,9 +396,407 @@ def python_lane(root: Path, input_root: Path, timeout_seconds: int, expected: di
     return first, second
 
 
+def _expect_godot_failure(
+    godot: Path,
+    spec_path: Path,
+    input_root: Path,
+    output: Path,
+    timeout_seconds: int,
+    counter: Counter,
+    expected_detail: str,
+) -> None:
+    if output.exists():
+        shutil.rmtree(output)
+    result = run(
+        godot_command(godot, spec_path, input_root, output),
+        timeout_seconds,
+        expected_success=False,
+    )
+    combined = result.stdout + result.stderr
+    counter.true("godot.negative.nonzero", result.returncode != 0, f"actual={result.returncode}")
+    counter.true(
+        "godot.negative.detail",
+        expected_detail in combined,
+        f"needle={expected_detail!r} output={combined!r}",
+    )
+    counter.true("godot.negative.no_publication", not output.exists(), f"exists={output.exists()}")
+
+
+def godot_negative_checks(
+    valid_packet: Path,
+    root: Path,
+    input_root: Path,
+    timeout_seconds: int,
+    counter: Counter,
+    godot: Path,
+) -> None:
+    specs = root / "specs"
+    specs.mkdir(parents=True)
+    cases: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
+        ("unknown_key", lambda value: value.update({"unexpected": True}), "spec.keys"),
+        ("missing_frame", lambda value: value["frames"].pop(), "frames.count"),
+        ("duplicate_cell", lambda value: value["frames"][1].update({"row": 0, "column": 0}), "duplicate"),
+        ("wrong_grid", lambda value: value["atlas"].update({"width": 767}), "atlas.width"),
+        ("wrong_pivot", lambda value: value["atlas"].update({"pivot": [0.5, 0.93]}), "atlas.pivot"),
+        ("malformed_color", lambda value: value["palette"].__setitem__(0, "#ffffff"), "#RRGGBB-uppercase"),
+        ("version", lambda value: value.update({"schema_version": 2}), "schema_version"),
+        ("version_bool", lambda value: value.update({"schema_version": True}), "lexical-type"),
+        ("atlas_bool", lambda value: value["atlas"].update({"width": True}), "lexical-type"),
+        ("animation_float_int", lambda value: value["animations"][1].update({"fps": 8.0}), "lexical-type"),
+        ("threshold_float_int", lambda value: value["normalization"].update({"alpha_threshold": 26.0}), "lexical-type"),
+        ("absolute", lambda value: value["frames"][0].update({"path": "/tmp/frame.png"}), "forbidden-path"),
+        ("dotdot", lambda value: value["frames"][0].update({"path": "../frame.png"}), "path-escape"),
+        ("backslash", lambda value: value["frames"][0].update({"path": "folder\\frame.png"}), "forbidden-path"),
+        ("colon", lambda value: value["frames"][0].update({"path": "C:frame.png"}), "forbidden-path"),
+        ("missing_source", lambda value: value["frames"][0].update({"path": "absent.png"}), "component missing"),
+        ("bad_resize", lambda value: value["normalization"].update({"resize": [0, 96]}), "positive-integers"),
+        ("reserved_palette", lambda value: value["palette"].__setitem__(0, "#F4F4F4"), "reserved-collision"),
+    ]
+    for name, mutate, detail in cases:
+        spec_path = _mutated_spec(specs, name, mutate)
+        _expect_godot_failure(
+            godot, spec_path, input_root, root / f"out-{name}", timeout_seconds, counter, detail
+        )
+
+    duplicate_spec = specs / "duplicate-key.json"
+    original_spec = SPEC.read_text(encoding="utf-8")
+    duplicate_spec.write_text('{"schema_version":1,' + original_spec.lstrip()[1:], encoding="utf-8")
+    _expect_godot_failure(
+        godot, duplicate_spec, input_root, root / "out-duplicate-key",
+        timeout_seconds, counter, "duplicate-key",
+    )
+
+    nul_root = _custom_input_root(root, "nul-collision-root")
+    nul_collision_name = "frame_\ufffd00.png"
+    shutil.copy2(input_root / "frame_00.png", nul_root / nul_collision_name)
+    nul_spec = _mutated_spec(
+        specs,
+        "nul-path",
+        lambda value: value["frames"][0].update({"path": "frame_\x0000.png"}),
+    )
+    _expect_godot_failure(
+        godot, nul_spec, nul_root, root / "out-nul-path",
+        timeout_seconds, counter, "NUL-escape",
+    )
+
+    doubled_root = _custom_input_root(root, "doubled-separator-root")
+    (doubled_root / "sub").mkdir()
+    shutil.copy2(input_root / "frame_00.png", doubled_root / "sub/frame_00.png")
+    doubled_spec = _mutated_spec(
+        specs,
+        "doubled-separator",
+        lambda value: value["frames"][0].update({"path": "sub//frame_00.png"}),
+    )
+    _expect_godot_failure(
+        godot, doubled_spec, doubled_root, root / "out-doubled-separator",
+        timeout_seconds, counter, "path-escape",
+    )
+    trailing_spec = _mutated_spec(
+        specs,
+        "trailing-separator",
+        lambda value: value["frames"][0].update({"path": "frame_00.png/"}),
+    )
+    _expect_godot_failure(
+        godot, trailing_spec, input_root, root / "out-trailing-separator",
+        timeout_seconds, counter, "path-escape",
+    )
+
+    symlink_root = _custom_input_root(root, "symlink-root")
+    outside = root / "outside.png"
+    shutil.copy2(input_root / "frame_00.png", outside)
+    (symlink_root / "frame_00.png").unlink()
+    (symlink_root / "frame_00.png").symlink_to(outside)
+    _expect_godot_failure(
+        godot, SPEC, symlink_root, root / "out-symlink", timeout_seconds, counter, "path-escape"
+    )
+
+    def verify_inroot_chain(name: str, absolute: bool) -> None:
+        chain_root = _custom_input_root(root, f"{name}-root")
+        middle = chain_root / "middle.png"
+        first = chain_root / "first.png"
+        if absolute:
+            middle.symlink_to((chain_root / "frame_00.png").resolve())
+            first.symlink_to(middle.absolute())
+        else:
+            middle.symlink_to("frame_00.png")
+            first.symlink_to("middle.png")
+        chain_spec = _mutated_spec(
+            specs,
+            name,
+            lambda value: value["frames"][0].update({"path": "first.png"}),
+        )
+        chain_output = root / f"out-{name}"
+        run(godot_command(godot, chain_spec, chain_root, chain_output), timeout_seconds)
+        for image_name in ("fixture-aui34.png", "fixture-aui34.contact.png"):
+            with Image.open(valid_packet / image_name) as source:
+                expected_rgba = source.convert("RGBA")
+            with Image.open(chain_output / image_name) as source:
+                actual_rgba = source.convert("RGBA")
+            counter.equal(
+                f"godot.{name}.{image_name}", actual_rgba.tobytes(), expected_rgba.tobytes()
+            )
+
+    verify_inroot_chain("relative-inroot-chain", absolute=False)
+    verify_inroot_chain("absolute-inroot-chain", absolute=True)
+
+    relative_escape_root = _custom_input_root(root, "relative-escape-root")
+    relative_outside = root / "relative-outside.png"
+    shutil.copy2(input_root / "frame_00.png", relative_outside)
+    (relative_escape_root / "escape.png").symlink_to("../relative-outside.png")
+    relative_escape_spec = _mutated_spec(
+        specs,
+        "relative-escape",
+        lambda value: value["frames"][0].update({"path": "escape.png"}),
+    )
+    _expect_godot_failure(
+        godot, relative_escape_spec, relative_escape_root, root / "out-relative-escape",
+        timeout_seconds, counter, "path-escape",
+    )
+
+    loop_root = _custom_input_root(root, "loop-root")
+    (loop_root / "loop-a.png").symlink_to("loop-b.png")
+    (loop_root / "loop-b.png").symlink_to("loop-a.png")
+    loop_spec = _mutated_spec(
+        specs,
+        "symlink-loop",
+        lambda value: value["frames"][0].update({"path": "loop-a.png"}),
+    )
+    _expect_godot_failure(
+        godot, loop_spec, loop_root, root / "out-symlink-loop",
+        timeout_seconds, counter, "symlink loop",
+    )
+
+    prefix_root = _custom_input_root(root, "prefix-root")
+    prefix_evil = root / "prefix-root-evil"
+    prefix_evil.mkdir()
+    shutil.copy2(input_root / "frame_00.png", prefix_evil / "frame_00.png")
+    (prefix_root / "prefix-escape.png").symlink_to(prefix_evil / "frame_00.png")
+    prefix_spec = _mutated_spec(
+        specs,
+        "prefix-escape",
+        lambda value: value["frames"][0].update({"path": "prefix-escape.png"}),
+    )
+    _expect_godot_failure(
+        godot, prefix_spec, prefix_root, root / "out-prefix-escape",
+        timeout_seconds, counter, "path-escape",
+    )
+
+    empty_root = _custom_input_root(root, "empty-root")
+    Image.new("RGBA", (96, 96), (255, 0, 255, 255)).save(
+        empty_root / "frame_00.png", format="PNG"
+    )
+    _expect_godot_failure(
+        godot, SPEC, empty_root, root / "out-empty", timeout_seconds, counter, "opaque_pixels"
+    )
+
+    border_root = _custom_input_root(root, "border-root")
+    Image.new("RGBA", (96, 96), (27, 34, 48, 255)).save(
+        border_root / "frame_00.png", format="PNG"
+    )
+    border_spec = _mutated_spec(
+        specs, "border", lambda value: value["normalization"].update({"resize": [192, 192]})
+    )
+    _expect_godot_failure(
+        godot, border_spec, border_root, root / "out-border",
+        timeout_seconds, counter, "border-contact",
+    )
+
+    def validate_tamper(name: str, mutate: Callable[[Path], None], detail: str) -> None:
+        packet = root / f"tamper-{name}"
+        shutil.copytree(valid_packet, packet)
+        mutate(packet)
+        result = run(
+            godot_command(godot, SPEC, input_root, packet, validate=True),
+            timeout_seconds,
+            expected_success=False,
+        )
+        combined = result.stdout + result.stderr
+        counter.true(f"godot.tamper.{name}.nonzero", result.returncode != 0, f"actual={result.returncode}")
+        counter.true(f"godot.tamper.{name}.detail", detail in combined, f"output={combined!r}")
+
+    def semitransparent(packet: Path) -> None:
+        path = packet / "fixture-aui34.png"
+        with Image.open(path) as source:
+            image = source.convert("RGBA")
+        image.putpixel((0, 0), (0, 0, 0, 128))
+        image.save(path, format="PNG", optimize=False, compress_level=9)
+
+    def reserved(packet: Path) -> None:
+        path = packet / "fixture-aui34.png"
+        with Image.open(path) as source:
+            image = source.convert("RGBA")
+        image.putpixel((0, 0), (244, 244, 244, 255))
+        image.save(path, format="PNG", optimize=False, compress_level=9)
+
+    def wrong_dimensions(packet: Path) -> None:
+        path = packet / "fixture-aui34.png"
+        with Image.open(path) as source:
+            image = source.convert("RGBA").crop((0, 0, 767, 384))
+        image.save(path, format="PNG", optimize=False, compress_level=9)
+
+    def metadata_unknown(packet: Path) -> None:
+        path = packet / "fixture-aui34.asset.json"
+        value = load(path)
+        value["unknown"] = True
+        write_canonical_json(path, value)
+
+    validate_tamper("semitransparent", semitransparent, "binary_alpha")
+    validate_tamper("reserved", reserved, "palette_membership")
+    validate_tamper("wrong_dimensions", wrong_dimensions, "atlas_dimensions")
+    validate_tamper("metadata_unknown", metadata_unknown, "packet.metadata")
+
+    reencoded = root / "tamper-reencoded"
+    shutil.copytree(valid_packet, reencoded)
+    reencoded_atlas = reencoded / "fixture-aui34.png"
+    with Image.open(reencoded_atlas) as source:
+        image = source.convert("RGBA")
+    image.save(reencoded_atlas, format="PNG", optimize=False, compress_level=0)
+    result = run(
+        godot_command(godot, SPEC, input_root, reencoded, validate=True),
+        timeout_seconds,
+        expected_success=False,
+    )
+    counter.true(
+        "godot.tamper.reencoded",
+        "canonical-bytes" in result.stdout + result.stderr,
+        f"output={(result.stdout + result.stderr)!r}",
+    )
+
+    unknown_directory = root / "packet-unknown-directory"
+    shutil.copytree(valid_packet, unknown_directory)
+    (unknown_directory / "unknown-payload").mkdir()
+    result = run(
+        godot_command(godot, SPEC, input_root, unknown_directory, validate=True),
+        timeout_seconds,
+        expected_success=False,
+    )
+    counter.true(
+        "godot.packet.unknown_directory",
+        "non-regular-or-symlink" in result.stdout + result.stderr,
+        f"output={(result.stdout + result.stderr)!r}",
+    )
+
+    symlink_packet = root / "packet-symlink"
+    shutil.copytree(valid_packet, symlink_packet)
+    target = root / "symlink-target.png"
+    shutil.copy2(symlink_packet / "fixture-aui34.contact.png", target)
+    (symlink_packet / "fixture-aui34.contact.png").unlink()
+    (symlink_packet / "fixture-aui34.contact.png").symlink_to(target)
+    result = run(
+        godot_command(godot, SPEC, input_root, symlink_packet, validate=True),
+        timeout_seconds,
+        expected_success=False,
+    )
+    counter.true(
+        "godot.packet.symlink",
+        "non-regular-or-symlink" in result.stdout + result.stderr,
+        f"output={(result.stdout + result.stderr)!r}",
+    )
+
+    replacement = root / "replacement-preserved"
+    shutil.copytree(valid_packet, replacement)
+    before = {path.name: path.read_bytes() for path in replacement.iterdir() if path.is_file()}
+    bad_spec = _mutated_spec(specs, "replacement-failure", lambda value: value.update({"schema_version": 2}))
+    run(
+        godot_command(godot, bad_spec, input_root, replacement),
+        timeout_seconds,
+        expected_success=False,
+    )
+    after = {path.name: path.read_bytes() for path in replacement.iterdir() if path.is_file()}
+    counter.equal("godot.replacement.bytes_preserved", after, before)
+
+    cleanup_output = root / "cleanup-symlink-output"
+    shutil.copytree(valid_packet, cleanup_output)
+    external_target = root / "external-target"
+    external_target.mkdir()
+    directory_sentinel = external_target / "directory-sentinel.txt"
+    directory_sentinel.write_bytes(b"directory-must-survive-clean-publication\n")
+    file_sentinel = root / "file-sentinel.txt"
+    file_sentinel.write_bytes(b"file-must-survive-clean-publication\n")
+    directory_before = directory_sentinel.read_bytes()
+    file_before = file_sentinel.read_bytes()
+    (cleanup_output / "linked-dir").symlink_to(external_target, target_is_directory=True)
+    (cleanup_output / "linked-file").symlink_to(file_sentinel)
+    run(godot_command(godot, SPEC, input_root, cleanup_output), timeout_seconds)
+    counter.true(
+        "godot.cleanup.directory_sentinel_exists",
+        directory_sentinel.is_file(),
+        "directory sentinel was removed",
+    )
+    counter.equal(
+        "godot.cleanup.directory_sentinel_bytes", directory_sentinel.read_bytes(), directory_before
+    )
+    counter.true("godot.cleanup.file_sentinel_exists", file_sentinel.is_file(), "file sentinel was removed")
+    counter.equal("godot.cleanup.file_sentinel_bytes", file_sentinel.read_bytes(), file_before)
+    run(
+        godot_command(godot, SPEC, input_root, cleanup_output, validate=True),
+        timeout_seconds,
+    )
+    debris = sorted(
+        path.name
+        for path in cleanup_output.parent.iterdir()
+        if path.name.startswith(f"{cleanup_output.name}.candidate.")
+        or path.name.startswith(f"{cleanup_output.name}.rollback.")
+    )
+    counter.equal("godot.cleanup.no_debris", debris, [])
+
+    root_target = root / "root-symlink-target"
+    root_target.mkdir()
+    root_sentinel = root_target / "root-sentinel.txt"
+    root_sentinel.write_bytes(b"root-must-survive-clean-publication\n")
+    root_before = root_sentinel.read_bytes()
+    root_output = root / "root-symlink-output"
+    root_output.symlink_to(root_target, target_is_directory=True)
+    run(godot_command(godot, SPEC, input_root, root_output), timeout_seconds)
+    counter.true("godot.cleanup.root_sentinel_exists", root_sentinel.is_file(), "root sentinel was removed")
+    counter.equal("godot.cleanup.root_sentinel_bytes", root_sentinel.read_bytes(), root_before)
+    run(godot_command(godot, SPEC, input_root, root_output, validate=True), timeout_seconds)
+
+    permission_parent = root / "cleanup-error-parent"
+    permission_parent.mkdir()
+    permission_output = permission_parent / "accepted"
+    shutil.copytree(valid_packet, permission_output)
+    blocked = permission_output / "unreadable-old-payload"
+    blocked.mkdir()
+    (blocked / "sentinel.txt").write_bytes(b"cleanup-must-report-failure\n")
+    rollback_before = _snapshot_tree(permission_output)
+    blocked.chmod(0)
+    result = run(
+        godot_command(godot, SPEC, input_root, permission_output),
+        timeout_seconds,
+        expected_success=False,
+    )
+    combined = result.stdout + result.stderr
+    counter.true("godot.cleanup_error.nonzero", result.returncode != 0, f"actual={result.returncode}")
+    counter.true(
+        "godot.cleanup_error.measured_detail",
+        "backup cleanup failed" in combined,
+        f"output={combined!r}",
+    )
+    run(
+        godot_command(godot, SPEC, input_root, permission_output, validate=True),
+        timeout_seconds,
+    )
+    rollback_directories = sorted(permission_parent.glob("accepted.rollback.*"))
+    counter.equal("godot.cleanup_error.rollback_count", len(rollback_directories), 1)
+    for rollback in rollback_directories:
+        (rollback / "unreadable-old-payload").chmod(0o700)
+        rollback_after = _snapshot_tree(rollback)
+        counter.equal("godot.cleanup_error.rollback_complete", rollback_after, rollback_before)
+        shutil.rmtree(rollback)
+
+
 def godot_lane(root: Path, input_root: Path, timeout_seconds: int, expected: dict[str, Any], counter: Counter, godot: Path) -> tuple[Path, Path]:
-    del root, input_root, timeout_seconds, expected, counter, godot
-    raise VerificationError("Godot backend not implemented yet")
+    if not godot.is_file():
+        raise VerificationError(f"Godot executable missing name={godot.name!r}")
+    first, second = root / "run-a", root / "run-b"
+    run(godot_command(godot, SPEC, input_root, first), timeout_seconds)
+    run(godot_command(godot, SPEC, input_root, second), timeout_seconds)
+    compare_directories(first, second, counter, "godot.cross_process")
+    verify_packet(first, expected, counter, canonical_png=False)
+    verify_packet(second, expected, counter, canonical_png=False)
+    godot_negative_checks(first, root / "negative", input_root, timeout_seconds, counter, godot)
+    return first, second
 
 
 def main() -> int:
