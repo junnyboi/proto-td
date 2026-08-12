@@ -1,9 +1,9 @@
 # Prototype TD — Agent Rules
 
 Tactical tower defense POC (Arknights-benchmark + twist bundle), built agent-first on Godot
-4.7.1. Plan of record: `~/Documents/MGS docs/Prototype TD/prototype-td-implementation-plan.md`
-(+ `td-phase-0-1.md` for Phases 0–1). This file is the standing rule set — it grows one rule per
-repeated mistake and never shrinks.
+4.7.1. Canonical phase plans live in the Manus MGS project knowledge area; actionable
+collaboration contracts are mirrored under `docs/plans/`. This file is the standing rule set —
+it grows one rule per repeated mistake and never shrinks.
 
 ## Environment (verified facts — do not re-derive)
 
@@ -121,14 +121,30 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 
 ## Session protocol
 
-1. **Orient**: `git log --oneline -10`; read `FEATURES.json`;
+1. **Pull + orient**: fetch/pull the current default branch before development; `git log
+   --oneline -10`; read `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, and relevant
+   `docs/plans/`/`docs/decisions/`;
    `godot --headless --path . --import`; `scripts/verify.sh` — green **before** new work; if
    red, fixing it *is* the session.
-2. **Pick ONE** failing feature. Never two.
+2. **Claim ONE item** in `docs/todo.md`: assigned agent/code, `agent-N/<lane>` branch, exclusive
+   files, do-not-touch surfaces, dependencies, acceptance, and evidence. Never two agents on one
+   file; never write into a worktree another agent is verifying.
 3. Inner loop: write → hook checks per write → `verify.sh --scenario=X` → `verify.sh --full`.
-4. Flip ledger status; commit feature + ledger (+ baselines) in one commit; push to
-   `origin/master` when the work is done (standing instruction, 2026-08-11).
-5. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
+4. Commit feature + ledgers (+ baselines) atomically. Every new commit starts
+   `AGENT N - ` where N is the assigned number/code. Apply prospectively; never rewrite history
+   merely to add prefixes.
+5. Before push/integration, fetch and merge the current default branch. **Never force-push.**
+   Resolve conflicts semantically, preserving both branches' valid features; if requirements
+   conflict, stop for the owner rather than deleting another lane. Push the agent branch, not
+   directly to `origin/master`, unless the user explicitly assigns the serial integration role.
+   After that merge, run `git diff --check` + `scripts/verify.sh` before every push; run
+   `scripts/verify.sh --full` after any substantive conflict resolution.
+6. The integration agent reruns `scripts/verify.sh --full` on the merged tree. A lane green does
+   not prove the union green.
+7. On closure, move the item from `docs/todo.md` to one compact line in `docs/completed.md`:
+   ID | agent | outcome | commit | evidence. Compact redundant prose without deleting stable
+   IDs, SHAs, deviations, or evidence.
+8. Report: what shipped, gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
 ## Audio: deliberately silent (owner decision, 2026-08-11)
