@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import binascii
 import copy
 import hashlib
 import json
@@ -191,37 +192,104 @@ def _snapshot_tree(root: Path) -> dict[str, tuple[str, bytes | str | None]]:
 
 
 def _salvage_snapshot(path: Path) -> dict[str, tuple[str, bytes | str | None]]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if set(payload) != {"schema_version", "entries"} or payload["schema_version"] != 1:
+    def strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in value:
+                raise VerificationError(f"salvage duplicate member key={key!r}")
+            value[key] = item
+        return value
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=strict_object)
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise VerificationError("salvage payload invalid JSON") from error
+    if type(payload) is not dict or set(payload) != {"schema_version", "entries"}:
         raise VerificationError("salvage payload schema mismatch")
+    if type(payload["schema_version"]) is not int or payload["schema_version"] != 1:
+        raise VerificationError("salvage schema_version expected=integer-1")
     entries = payload["entries"]
-    if not isinstance(entries, list):
+    if type(entries) is not list:
         raise VerificationError("salvage entries expected=list")
-    paths = [entry.get("path") for entry in entries if isinstance(entry, dict)]
-    if len(paths) != len(entries) or paths != sorted(paths) or len(paths) != len(set(paths)):
+    if any(type(entry) is not dict for entry in entries):
+        raise VerificationError("salvage entry expected=object")
+    paths = [entry.get("path") for entry in entries]
+    if any(type(relative) is not str or not relative for relative in paths):
+        raise VerificationError("salvage entry path expected=nonempty-string")
+    if paths != sorted(paths) or len(paths) != len(set(paths)):
         raise VerificationError("salvage entry paths expected=unique-sorted")
     snapshot: dict[str, tuple[str, bytes | str | None]] = {}
     for entry in entries:
         entry_type = entry.get("type")
         relative = entry.get("path")
-        if not isinstance(relative, str) or not relative:
+        if type(relative) is not str or not relative:
             raise VerificationError("salvage entry path expected=nonempty-string")
         if entry_type == "directory" and set(entry) == {"path", "type"}:
             snapshot[relative] = ("directory", None)
         elif entry_type == "symlink" and set(entry) == {"path", "type", "target"}:
-            if not isinstance(entry["target"], str):
+            if type(entry["target"]) is not str:
                 raise VerificationError("salvage symlink target expected=string")
             snapshot[relative] = ("symlink", entry["target"])
         elif entry_type == "file" and set(entry) == {"path", "type", "data_base64"}:
-            if not isinstance(entry["data_base64"], str):
+            if type(entry["data_base64"]) is not str:
                 raise VerificationError("salvage file payload expected=string")
+            try:
+                encoded = entry["data_base64"].encode("ascii")
+                decoded = base64.b64decode(encoded, validate=True)
+            except (UnicodeEncodeError, binascii.Error, ValueError) as error:
+                raise VerificationError("salvage file payload invalid base64") from error
+            if base64.b64encode(decoded) != encoded:
+                raise VerificationError("salvage file payload expected=canonical-base64")
             snapshot[relative] = (
                 "file",
-                base64.b64decode(entry["data_base64"], validate=True),
+                decoded,
             )
         else:
             raise VerificationError(f"salvage entry invalid type={entry_type!r}")
     return snapshot
+
+
+def salvage_decoder_negative_checks(root: Path, counter: Counter) -> None:
+    root.mkdir(parents=True)
+    valid_file = {"path": "f", "type": "file", "data_base64": "Zg=="}
+    valid_directory = {"path": "d", "type": "directory"}
+    valid_link = {"path": "l", "type": "symlink", "target": "target"}
+    cases: dict[str, str] = {
+        "duplicate_top_member": '{"schema_version":1,"schema_version":1,"entries":[]}',
+        "duplicate_entry_member": '{"schema_version":1,"entries":[{"path":"d","path":"d","type":"directory"}]}',
+        "schema_bool": json.dumps({"schema_version": True, "entries": []}),
+        "schema_float": json.dumps({"schema_version": 1.0, "entries": []}),
+        "schema_string": json.dumps({"schema_version": "1", "entries": []}),
+        "top_unknown": json.dumps({"schema_version": 1, "entries": [], "extra": 0}),
+        "top_missing": json.dumps({"schema_version": 1}),
+        "entries_object": json.dumps({"schema_version": 1, "entries": {}}),
+        "entry_scalar": json.dumps({"schema_version": 1, "entries": [0]}),
+        "entry_unknown": json.dumps({"schema_version": 1, "entries": [{**valid_directory, "extra": 0}]}),
+        "entry_missing": json.dumps({"schema_version": 1, "entries": [{"path": "d"}]}),
+        "duplicate_path": json.dumps({"schema_version": 1, "entries": [valid_directory, valid_directory]}),
+        "unsorted_paths": json.dumps({"schema_version": 1, "entries": [valid_link, valid_directory]}),
+        "path_bool": json.dumps({"schema_version": 1, "entries": [{"path": True, "type": "directory"}]}),
+        "path_empty": json.dumps({"schema_version": 1, "entries": [{"path": "", "type": "directory"}]}),
+        "type_bool": json.dumps({"schema_version": 1, "entries": [{"path": "d", "type": True}]}),
+        "link_target_bool": json.dumps({"schema_version": 1, "entries": [{**valid_link, "target": True}]}),
+        "file_payload_bool": json.dumps({"schema_version": 1, "entries": [{**valid_file, "data_base64": True}]}),
+        "base64_invalid": json.dumps({"schema_version": 1, "entries": [{**valid_file, "data_base64": "!@=="}]}),
+        "base64_padbit_alias_h": json.dumps({"schema_version": 1, "entries": [{**valid_file, "data_base64": "Zh=="}]}),
+        "base64_padbit_alias_v": json.dumps({"schema_version": 1, "entries": [{**valid_file, "data_base64": "Zv=="}]}),
+    }
+    for name, text in cases.items():
+        path = root / f"{name}.json"
+        path.write_text(text + "\n", encoding="utf-8")
+        failed = False
+        try:
+            _salvage_snapshot(path)
+        except VerificationError:
+            failed = True
+        counter.true(
+            f"salvage_decoder.reject.{name}",
+            failed,
+            "malformed salvage was accepted",
+        )
 
 
 def negative_checks(valid_packet: Path, root: Path, timeout_seconds: int, counter: Counter) -> None:
@@ -469,6 +537,7 @@ def godot_negative_checks(
     counter: Counter,
     godot: Path,
 ) -> None:
+    salvage_decoder_negative_checks(root / "salvage-decoder", counter)
     specs = root / "specs"
     specs.mkdir(parents=True)
     cases: list[tuple[str, Callable[[dict[str, Any]], None], str]] = [
