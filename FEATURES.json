@@ -334,14 +334,19 @@
     "Back to Title clears campaign and selection state before the next Start",
     "direct battle startup remains available only to harness, bot, and debug seams"
    ],
-   "status": "pending",
+   "status": "passing",
    "scenarios": [
     "boot",
     "campaign_flow",
     "staging_flow",
     "resign_flow"
    ],
-   "commits": []
+   "commits": [
+    "ae6ee34",
+    "8a2f31e",
+    "f08ee08",
+    "924f360"
+   ]
   }
  ],
  "deviations": [
