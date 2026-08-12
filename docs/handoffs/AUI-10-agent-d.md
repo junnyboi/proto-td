@@ -13,6 +13,8 @@ Agent D staged eight deterministic native S1 world assets, a GPT Image 2 source 
 
 ## Agent F integration seam
 
+**Fail-closed prerequisite:** `docs/decisions/AUI-DESIGN-APPROVALS.md` records that the exact `AUI-DESIGN-D` approval packet and accepted manifest hash are not yet present in the repository/project handoff channel. This staged AUI-10 source ledger does not substitute for that approval manifest. Agent F must not bind any D runtime asset until the exact approved packet/hash is supplied and verified against the candidate bytes.
+
 Agent F may bind this lane only after verifying `staging/presentation/world/s1/stage-presentation.json` against the receiving commit. Integration must preserve the authoritative S1 geometry and stage hash; copy the accepted eight PNGs from non-importable `staging/` into Agent F's runtime manifest-owned asset path; resolve the eight logical IDs through the shared manifest; apply Spawn/Core as mouse-ignoring presentation owners with the declared pivots/offsets; instantiate route cadence only at the three declared cells; and leave `world.s1.rain_measure` unplaced until a validated non-protected anchor exists. Never remove `staging/.gdignore` or bind `res://staging/**` directly.
 
 The shared manifest/view binding is a serial integration surface. If Agent F's contract uses different schema or logical-ID conventions, reconcile mechanism to the landed convention without changing Agent D's approved visual semantics. Do not infer final-art acceptance: every sidecar remains `human_acceptance.final_art=false`.
