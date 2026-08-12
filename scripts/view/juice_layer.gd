@@ -28,6 +28,7 @@ var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
 var _grid_base_pos := Vector2.ZERO
+var _map_transient_root: Node2D = null
 var _transients: Array[Dictionary] = []
 var _spark_live := 0
 var _vignette_rects: Array[ColorRect] = []
@@ -49,15 +50,42 @@ func setup(juice_config: JuiceConfig, grid_root: Node2D) -> void:
 	cfg = juice_config
 	_grid_root = grid_root
 	_grid_base_pos = grid_root.position
+	_map_transient_root = Node2D.new()
+	_map_transient_root.name = "MapTransientRoot"
+	add_child(_map_transient_root)
+	_sync_map_transient_transform()
 
 
-## P14: the shake oscillates around (and finally restores) a cached grid
-## origin; battle_view._relayout() calls this after every viewport-resize
-## recompute so the base never goes stale (a shake-in-progress re-anchors
-## to the new base the same frame).
+## P14/TD-006: re-anchor shake and every grid-local transient after map pan,
+## zoom, or viewport resize.
 func refresh_base() -> void:
 	if _grid_root != null:
 		_grid_base_pos = _grid_root.position
+		_sync_map_transient_transform()
+
+
+func relayout(view_size: Vector2) -> void:
+	if _banner != null:
+		var banner_back := _banner.get_parent() as ColorRect
+		banner_back.size = Vector2(view_size.x, 72.0)
+		banner_back.position.y = view_size.y * 0.48
+		_banner.size = banner_back.size
+	if not _vignette_rects.is_empty():
+		var specs := [
+			Rect2(0, 0, view_size.x, VIGNETTE_THICKNESS),
+			Rect2(0, view_size.y - VIGNETTE_THICKNESS, view_size.x, VIGNETTE_THICKNESS),
+			Rect2(0, 0, VIGNETTE_THICKNESS, view_size.y),
+			Rect2(view_size.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, view_size.y),
+		]
+		for i: int in _vignette_rects.size():
+			_vignette_rects[i].position = specs[i].position
+			_vignette_rects[i].size = specs[i].size
+	if _stamp != null:
+		_stamp.size = Vector2(view_size.x, 200.0)
+		_stamp.position = Vector2(0, (view_size.y - 200.0) * 0.5)
+		var label := _stamp.get_node("ResultStampLabel") as Label
+		label.size = Vector2(view_size.x, 90.0)
+		_stamp_stars.position = Vector2(view_size.x * 0.5, 150.0)
 
 
 func _process(_delta: float) -> void:
@@ -69,15 +97,17 @@ func _process(_delta: float) -> void:
 	_age_shake()
 
 
-## item 1: dust ring at the landing cell (6 rects radiating outward)
-func dust(center: Vector2) -> void:
+## item 1: dust ring at the grid-local landing cell (6 rects outward)
+func dust(local_center: Vector2) -> void:
 	for i: int in 6:
-		var rect := _make_rect(DUST_COLOR, Vector2(6, 6))
-		rect.position = center - Vector2(3, 3)
+		var rect := _make_map_rect(DUST_COLOR, Vector2(6, 6), "MapTransientDust")
+		rect.position = local_center - Vector2(3, 3) / _grid_root.scale.x
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 6.0)
 		_transients.append({
-			"node": rect, "left": cfg.deploy_dust_frames, "total": cfg.deploy_dust_frames,
-			"velocity": dir * 4.0, "kind": "dust",
+			"node": rect, "left": cfg.deploy_dust_frames,
+			"total": cfg.deploy_dust_frames, "velocity_screen": dir * 4.0,
+			"map_anchor": local_center, "offset_screen": Vector2(-3, -3),
+			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
 
 
@@ -90,31 +120,36 @@ func crouch(unit_node: Node2D) -> void:
 	})
 
 
-## item 2: radial burst ring at the triggering unit's cell
-func skill_burst(center: Vector2) -> void:
+## item 2: radial burst ring at the triggering unit's grid-local cell
+func skill_burst(local_center: Vector2) -> void:
 	for i: int in 8:
-		var rect := _make_rect(SPARK_COLOR, Vector2(5, 5))
-		rect.position = center - Vector2(2.5, 2.5)
+		var rect := _make_map_rect(SPARK_COLOR, Vector2(5, 5), "MapTransientSkill")
+		rect.position = local_center - Vector2(2.5, 2.5) / _grid_root.scale.x
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 8.0)
 		_transients.append({
-			"node": rect, "left": cfg.skill_burst_frames, "total": cfg.skill_burst_frames,
-			"velocity": dir * 7.0, "kind": "dust",
+			"node": rect, "left": cfg.skill_burst_frames,
+			"total": cfg.skill_burst_frames, "velocity_screen": dir * 7.0,
+			"map_anchor": local_center, "offset_screen": Vector2(-2.5, -2.5),
+			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
 
 
-## item 3: expanding spark at a corpse; capped concurrent instances
-func spark(center: Vector2) -> void:
+## item 3: expanding grid-local spark at a corpse; capped instances
+func spark(local_center: Vector2) -> void:
 	if _spark_live >= cfg.kill_spark_cap:
 		return
 	_spark_live += 1
 	for i: int in 4:
-		var rect := _make_rect(SPARK_COLOR, Vector2(5, 5))
-		rect.position = center - Vector2(2.5, 2.5)
+		var rect := _make_map_rect(SPARK_COLOR, Vector2(5, 5), "MapTransientSpark")
+		rect.position = local_center - Vector2(2.5, 2.5) / _grid_root.scale.x
 		var dir := Vector2.RIGHT.rotated(TAU * (0.125 + float(i) / 4.0))
 		var owner_flag := i == 0
 		_transients.append({
 			"node": rect, "left": cfg.kill_spark_frames, "total": cfg.kill_spark_frames,
-			"velocity": dir * 6.0, "kind": "spark_owner" if owner_flag else "dust",
+			"velocity_screen": dir * 6.0,
+			"map_anchor": local_center, "offset_screen": Vector2(-2.5, -2.5),
+			"travel_screen": Vector2.ZERO,
+			"kind": "spark_owner" if owner_flag else "dust",
 		})
 
 
@@ -158,7 +193,7 @@ func banner(text: String) -> void:
 		# TD-006 height-fill enlarges the playable terrain through the old 32%
 		# strip. Keep the transient centered lower so the upper road remains
 		# readable while the banner is present.
-		back.position = Vector2(0, view_size.y * 0.45)
+		back.position = Vector2(0, view_size.y * 0.48)
 		_banner = Label.new()
 		_banner.name = "WaveBanner"
 		_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -215,11 +250,13 @@ func sprung(trap_rect: ColorRect, adopt: bool) -> void:
 	# the triggering enemy's 40px rect draws over the 24px plate at exactly
 	# the trigger moment — flash an overlay in this layer (above enemies) so
 	# the sprung frame is actually visible (and probe-able)
-	var flash := _make_rect(SPRUNG_COLOR, Vector2(28, 28))
-	flash.position = trap_rect.get_global_rect().get_center() - Vector2(14, 14)
+	var flash := _make_map_rect(SPRUNG_COLOR, Vector2(28, 28), "MapTransientSprung")
+	var local_center := _grid_root.to_local(trap_rect.get_global_rect().get_center())
+	flash.position = local_center - Vector2(14, 14) / _grid_root.scale.x
 	_transients.append({
 		"node": flash, "left": cfg.trap_sprung_frames, "total": cfg.trap_sprung_frames,
-		"kind": "dust",
+		"map_anchor": local_center, "offset_screen": Vector2(-14, -14),
+		"travel_screen": Vector2.ZERO, "kind": "dust",
 	})
 
 
@@ -231,22 +268,27 @@ func shimmer_on() -> bool:
 	return (Engine.get_process_frames() / half) % 2 == 0
 
 
-## item 7: conversion swirl — rotating quads + heart pixels above the rect
-func swirl(center: Vector2) -> void:
+## item 7: grid-local conversion swirl — rotating quads + heart pixels
+func swirl(local_center: Vector2) -> void:
 	for i: int in 4:
-		var rect := _make_rect(SWIRL_COLOR, Vector2(7, 7))
-		rect.position = center - Vector2(3.5, 3.5)
+		var rect := _make_map_rect(SWIRL_COLOR, Vector2(7, 7), "MapTransientSwirl")
+		rect.position = local_center - Vector2(3.5, 3.5) / _grid_root.scale.x
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 4.0)
 		_transients.append({
 			"node": rect, "left": cfg.charm_swirl_frames, "total": cfg.charm_swirl_frames,
-			"velocity": dir * 3.0, "orbit": true, "kind": "dust",
+			"velocity_screen": dir * 3.0, "orbit": true,
+			"map_anchor": local_center, "offset_screen": Vector2(-3.5, -3.5),
+			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
 	for i: int in 3:
-		var heart := _make_rect(HEART_COLOR, Vector2(4, 4))
-		heart.position = center + Vector2(-8.0 + 8.0 * i, -34.0)
+		var heart := _make_map_rect(HEART_COLOR, Vector2(4, 4), "MapTransientHeart")
+		heart.position = local_center + Vector2(-8.0 + 8.0 * i, -34.0) \
+			/ _grid_root.scale.x
 		_transients.append({
 			"node": heart, "left": cfg.charm_swirl_frames, "total": cfg.charm_swirl_frames,
-			"kind": "dust",
+			"map_anchor": local_center,
+			"offset_screen": Vector2(-8.0 + 8.0 * i, -34.0),
+			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
 
 
@@ -269,6 +311,36 @@ func _make_rect(color: Color, rect_size: Vector2) -> ColorRect:
 	return rect
 
 
+func _make_map_rect(color: Color, rect_size: Vector2, node_name: String) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.name = node_name
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.color = color
+	rect.size = rect_size
+	rect.scale = Vector2.ONE / _grid_root.scale.x
+	_map_transient_root.add_child(rect)
+	return rect
+
+
+func _sync_map_transient_transform() -> void:
+	if _map_transient_root == null or _grid_root == null:
+		return
+	_map_transient_root.position = _grid_root.position
+	_map_transient_root.scale = _grid_root.scale
+	for tr: Dictionary in _transients:
+		if tr.has("map_anchor") and is_instance_valid(tr["node"]):
+			_position_map_transient(tr)
+
+
+func _position_map_transient(tr: Dictionary) -> void:
+	var node := tr["node"] as Control
+	node.scale = Vector2.ONE / _grid_root.scale.x
+	var screen_offset: Vector2 = tr["offset_screen"]
+	var screen_travel: Vector2 = tr["travel_screen"]
+	node.position = tr["map_anchor"] as Vector2 \
+		+ (screen_offset + screen_travel) / _grid_root.scale.x
+
+
 func _age_transients() -> void:
 	var kept: Array[Dictionary] = []
 	for tr: Dictionary in _transients:
@@ -282,13 +354,13 @@ func _age_transients() -> void:
 		if int(tr["left"]) <= 0:
 			_expire_transient(tr, kind)
 			continue
-		if tr.has("velocity"):
-			var rect := tr["node"] as ColorRect
-			var vel: Vector2 = tr["velocity"]
+		if tr.has("velocity_screen"):
+			var vel: Vector2 = tr["velocity_screen"]
 			if tr.get("orbit", false):
 				vel = vel.rotated(0.35)
-				tr["velocity"] = vel
-			rect.position += vel
+				tr["velocity_screen"] = vel
+			tr["travel_screen"] = (tr["travel_screen"] as Vector2) + vel
+			_position_map_transient(tr)
 		if kind == "crouch":
 			var node := tr["node"] as Node2D
 			var t := 1.0 - float(tr["left"]) / float(tr["total"])
@@ -376,7 +448,9 @@ func _age_shake() -> void:
 	_shake_frames_left -= 1
 	if _shake_frames_left == 0:
 		_grid_root.position = _grid_base_pos
+		_sync_map_transient_transform()
 		return
 	var sign_flip := 1.0 if _shake_frames_left % 2 == 0 else -1.0
 	var decay := float(_shake_frames_left) / float(maxi(_shake_total, 1))
 	_grid_root.position = _grid_base_pos + Vector2(_shake_amplitude * decay * sign_flip, 0)
+	_sync_map_transient_transform()

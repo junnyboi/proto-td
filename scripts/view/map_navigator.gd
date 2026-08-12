@@ -10,18 +10,18 @@ var scale := 1.0
 var origin := Vector2.ZERO
 var pan := Vector2.ZERO
 var bounds := Rect2()
-var _grid_size := Vector2i.ZERO
+var _stage: StageDef = null
 var _viewport := Vector2.ZERO
 var _middle_dragging := false
 var _initialized := false
 
 
-func relayout(grid_size: Vector2i, viewport: Vector2) -> void:
-	_grid_size = grid_size
+func relayout(stage: StageDef, viewport: Vector2) -> void:
+	_stage = stage
 	_viewport = viewport
-	scale = IsoProjection.height_fill_scale(grid_size, viewport)
-	origin = IsoProjection.terrain_origin_for(grid_size, viewport, scale)
-	bounds = IsoProjection.pan_bounds(grid_size, viewport, scale)
+	scale = IsoProjection.height_fill_scale(stage, viewport)
+	origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
+	bounds = IsoProjection.pan_bounds(stage, viewport, scale)
 	if not _initialized:
 		# TD stages terminate at the base on the right: boot with that critical
 		# edge visible, while Y stays centered until the player scrolls.
@@ -36,7 +36,44 @@ func root_position() -> Vector2:
 
 
 func content_screen_rect() -> Rect2:
-	return IsoProjection.content_screen_rect(_grid_size, _viewport, scale, pan)
+	return IsoProjection.content_screen_rect(_stage, _viewport, scale, pan)
+
+
+func is_dragging() -> bool:
+	return _middle_dragging
+
+
+func ensure_local_rect_visible(local_rect: Rect2) -> bool:
+	var screen := Rect2(
+		origin + pan + local_rect.position * scale,
+		local_rect.size * scale,
+	)
+	var next_pan := pan
+	if screen.position.x < 0.0:
+		next_pan.x -= screen.position.x
+	elif screen.end.x > _viewport.x:
+		next_pan.x -= screen.end.x - _viewport.x
+	if screen.position.y < 0.0:
+		next_pan.y -= screen.position.y
+	elif screen.end.y > _viewport.y:
+		next_pan.y -= screen.end.y - _viewport.y
+	next_pan = IsoProjection.clamp_pan(next_pan, bounds)
+	var changed := not next_pan.is_equal_approx(pan)
+	pan = next_pan
+	return changed
+
+
+func recover_missed_release(event: InputEvent) -> void:
+	if not _middle_dragging:
+		return
+	if event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		if button.button_index == MOUSE_BUTTON_MIDDLE and not button.pressed:
+			_middle_dragging = false
+	elif event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		if motion.button_mask & MOUSE_BUTTON_MASK_MIDDLE == 0:
+			_middle_dragging = false
 
 
 ## Returns true only for a consumed map-navigation event. BattleView applies
@@ -46,6 +83,9 @@ func handle_input(event: InputEvent) -> bool:
 		return _handle_button(event as InputEventMouseButton)
 	if event is InputEventMouseMotion and _middle_dragging:
 		var motion := event as InputEventMouseMotion
+		if motion.button_mask & MOUSE_BUTTON_MASK_MIDDLE == 0:
+			_middle_dragging = false
+			return false
 		pan = IsoProjection.clamp_pan(pan + motion.relative, bounds)
 		return true
 	return false

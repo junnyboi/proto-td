@@ -217,7 +217,7 @@ func grid_scale() -> float:
 
 
 func map_screen_rect() -> Rect2:
-	var box := IsoProjection.terrain_box(_stage.grid_size())
+	var box := IsoProjection.terrain_box(_stage)
 	return Rect2(_grid_root.position + box.position * _grid_scale, box.size * _grid_scale)
 
 
@@ -231,6 +231,14 @@ func map_pan() -> Vector2:
 
 func map_pan_bounds() -> Rect2:
 	return _map_nav.bounds
+
+
+func map_dragging() -> bool:
+	return _map_nav.is_dragging()
+
+
+func _input(event: InputEvent) -> void:
+	_map_nav.recover_missed_release(event)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -355,7 +363,16 @@ func _detect_deploys() -> void:
 		if _deploy_seen.has(u.id):
 			continue
 		_deploy_seen[u.id] = true
-		_juice.dust(cell_center(u.cell))
+		var local_center := IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
+		var unit_top := IsoProjection.FEET_OFFSET - UNIT_PX - HP_BAR_HEIGHT - 3.0
+		var unit_bottom := IsoProjection.FEET_OFFSET + HP_BAR_HEIGHT + 3.0
+		var unit_rect := Rect2(
+			local_center + Vector2(-UNIT_PX * 0.5, unit_top),
+			Vector2(UNIT_PX, unit_bottom - unit_top),
+		)
+		if _map_nav.ensure_local_rect_visible(unit_rect):
+			_apply_map_transform()
+		_juice.dust(local_center)
 		var node: Node2D = _unit_nodes.get(u.id)
 		if node != null:
 			_juice.crouch(node)
@@ -369,7 +386,7 @@ func _detect_kills() -> void:
 			continue
 		_spark_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.spark(screen_of(pos + Vector2.ONE * 0.5))
+		_juice.spark(IsoProjection.project(pos + Vector2.ONE * 0.5))
 		Sfx.play("kill")
 
 
@@ -488,7 +505,7 @@ func _detect_charms() -> void:
 			continue
 		_charm_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.swirl(screen_of(pos + Vector2.ONE * 0.5))
+		_juice.swirl(IsoProjection.project(pos + Vector2.ONE * 0.5))
 		juice_time_push(&"charm_beat", cfg.charm_beat_time_scale)
 		_beat_frames_left = cfg.charm_beat_frames
 		_juice.shake("charm_beat", cfg.charm_shake_amplitude_px, cfg.charm_shake_frames)
@@ -537,7 +554,7 @@ func _build_grid(stage: StageDef) -> void:
 	_grid_root.name = "GridRoot"
 	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
-	_map_nav.relayout(size, viewport)
+	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
 	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
@@ -558,8 +575,7 @@ func _relayout() -> void:
 	if _stage == null or _grid_root == null:
 		return
 	var viewport := get_viewport_rect().size
-	var size := _stage.grid_size()
-	_map_nav.relayout(size, viewport)
+	_map_nav.relayout(_stage, viewport)
 	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
@@ -576,6 +592,8 @@ func _relayout() -> void:
 		_spell_bar.relayout()
 	if _controls != null:
 		_controls.relayout()
+	if _juice != null:
+		_juice.relayout(viewport)
 
 
 func _build_hud() -> void:
@@ -850,7 +868,7 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	_skill_seen_tick[u.id] = u.skill_triggered_tick
 	Sfx.play(String(u.skill_id))
 	if _juice != null:
-		_juice.skill_burst(cell_center(u.cell))
+		_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
 	_portrait_flash.color = OP_CLASS_COLORS[op_class]
