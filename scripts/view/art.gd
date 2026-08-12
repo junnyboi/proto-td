@@ -23,6 +23,10 @@ static func frame_count(id: StringName) -> int:
 	return int(_entry(id).get("frames", 0))
 
 
+static func fps(id: StringName) -> float:
+	return float(_entry(id).get("fps", 0.0))
+
+
 ## Native pixel size from the manifest (P12.1: tiles are no longer a
 ## uniform canvas). Vector2i.ZERO for unknown ids or entries without a
 ## size, so callers can keep their fallback sizing.
@@ -40,8 +44,22 @@ static func texture(id: StringName, frame := 0) -> Texture2D:
 	var entry := _entry(id)
 	if entry.is_empty():
 		return null
+	var frames := int(entry.get("frames", 0))
+	if frame < 0 or frame >= frames:
+		return null
 	var pattern: String = entry["pattern"]
-	var path := pattern % frame if int(entry["frames"]) > 1 else pattern
-	var tex := load(path) as Texture2D
+	var frame_size: Variant = entry.get("frame_size")
+	var tex: Texture2D = null
+	if frame_size is Vector2i:
+		var atlas_source := load(pattern) as Texture2D
+		if atlas_source != null:
+			var atlas := AtlasTexture.new()
+			atlas.atlas = atlas_source
+			atlas.region = Rect2i(frame * frame_size.x, 0, frame_size.x, frame_size.y)
+			atlas.filter_clip = true
+			tex = atlas
+	else:
+		var path := pattern % frame if frames > 1 else pattern
+		tex = load(path) as Texture2D
 	_cache[key] = tex
 	return tex

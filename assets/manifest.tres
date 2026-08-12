@@ -47,6 +47,134 @@ entries = {
 "placeholder": false,
 "size": Vector2i(32, 32)
 },
+&"grunt_anim_attack_ne": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_ne.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_ne_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_ne_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_nw": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_nw.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_nw_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_nw_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_se": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_se.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_se_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_se_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_sw": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_sw.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_attack_sw_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_attack_sw_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_ne": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_ne.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_ne_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_ne_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_nw": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_nw.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_nw_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_nw_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_se": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_se.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_se_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_se_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_sw": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_sw.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
+&"grunt_anim_walk_sw_charmed": {
+"fps": 12.0,
+"frame_size": Vector2i(256, 256),
+"frames": 25,
+"pattern": "res://assets/sprites/grunt_anim_walk_sw_charmed.png",
+"placeholder": true,
+"size": Vector2i(256, 256)
+},
 &"guard_1": {
 "frames": 5,
 "pattern": "res://assets/sprites/guard_1_%d.png",

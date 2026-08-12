@@ -7,6 +7,7 @@ extends Resource
 ## tools/gen_assets.gd; each value is:
 ##   {"pattern": String ("%d" slot when frames > 1), "frames": int,
 ##    "size": Vector2i (native px, P12.1 — tiles are no longer uniform),
-##    "placeholder": bool}
+##    "placeholder": bool, optional "frame_size": Vector2i for a horizontal
+##    atlas and optional "fps": float for animation playback}
 
 @export var entries: Dictionary = {}
