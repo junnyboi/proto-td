@@ -1,9 +1,9 @@
 extends RefCounted
 
-## Boot scenario: title boots -> Start button (input-adapter wiring check)
-## -> battle loads -> enemies spawn and advance (model-state asserts, per
-## learnings: never assert node transforms against injected-input races)
-## -> battle reaches a terminal state. Shots: boot, battle_early, battle_end.
+## Boot scenario: title boots with exactly one Start action -> real input opens
+## a fresh campaign Staging session. The battle engine is then exercised through
+## its explicit harness/debug seam: enemies spawn, advance, and reach terminal.
+## Shots: boot, battle_early, battle_end.
 
 
 func run(h: SelfTestHarness) -> void:
@@ -11,40 +11,62 @@ func run(h: SelfTestHarness) -> void:
 	# x2 for 120 Hz = 1752, +25% headroom (td-phase-14.md pin)
 	h.max_frames = 2200
 	await h.frames(10)
+	h.expect_done()
+	var game := h.autoload("Game")
 	var title := h.scene as Control
 	h.check("title scene is a Control", title != null)
-	var label := h.scene.find_child("TitleLabel", true, false) as Label
+	var label := title.find_child("TitleLabel", true, false) as Label
 	h.check(
 		"title label present + non-empty",
 		label != null and not label.text.is_empty(),
 		"text=%s" % (label.text if label != null else "<missing>"),
 	)
-	var button := h.scene.find_child("StartButton", true, false) as Button
+	var button := title.find_child("StartButton", true, false) as Button
 	var rect := button.get_global_rect() if button != null else Rect2()
 	h.check(
 		"start button has a visible rect",
 		button != null and rect.size.x > 0.0 and rect.size.y > 0.0,
 		"rect=%s" % rect,
 	)
+	h.check("start button label is Start", button != null and button.text == "Start")
+	h.check("Campaign button is absent", title.find_child("CampaignButton", true, false) == null)
+	var title_buttons: Array[Node] = title.find_children("*", "Button", true, false)
+	h.check(
+		"title exposes exactly one action",
+		title_buttons.size() == 1,
+		"buttons=%d" % title_buttons.size(),
+	)
 	await h.shot("boot")
+	if button == null:
+		return
 
-	# Input-adapter wiring check: one synthetic click on the live button rect
-	# (never hardcoded positions). The seam (Game.start_battle) is what every
-	# later scenario uses; the raw input path is validated once, here.
-	var game := h.autoload("Game")
+	# Input-adapter wiring check: one synthetic click on the sole live action.
+	# Dirty every resettable route field first so freshness checks cannot pass
+	# from constructor defaults.
+	var stale_squad: Array[StringName] = [&"vanguard_1"]
+	game.set("pending_stage", load("res://data/stages/test_lane.tres") as StageDef)
+	game.set("selected_stage_id", &"stale_stage")
+	game.set("selected_squad", stale_squad)
+	game.set("last_result", {"stale": true})
 	await h.click_view(rect.get_center())
-	await h.frames(5)
-	var started_by_click: bool = game.get("current_battle") != null
-	h.check("start button click starts a battle", started_by_click)
-	if not started_by_click:
-		game.call("start_battle", game.get("default_stage_id"))
-		await h.frames(5)
+	var staging := await _await_screen(h, game, "StagingRoot")
+	h.check("Start opens Staging", staging != null)
+	h.check("Start does not open a battle", game.get("current_battle") == null)
+	h.check("Start creates a campaign", game.get("campaign") != null)
+	h.check("Start activates campaign flow", bool(game.get("campaign_active")))
+	h.check("Start clears pending stage", game.get("pending_stage") == null)
+	h.check("Start clears selected stage", game.get("selected_stage_id") == &"")
+	h.check("Start clears selected squad", (game.get("selected_squad") as Array).is_empty())
+	h.check("Start clears last result", (game.get("last_result") as Dictionary).is_empty())
+	if staging == null:
+		return
 
-	var model: BattleModel = game.get("current_battle")
-	h.check("battle model exists", model != null)
+	# Direct battle startup is retained only as a harness/debug seam.
+	game.call("start_battle", game.get("default_stage_id"))
+	var model := await _await_battle(h, game)
+	h.check("harness battle seam starts a model", model != null)
 	if model == null:
 		return
-	h.expect_done()
 
 	# spawn check: first grunt at tick 30, second at 90 -> exactly 1 by tick 40
 	while model.tick < 40:
@@ -81,3 +103,29 @@ func run(h: SelfTestHarness) -> void:
 	await h.frames(5)
 	await h.shot("battle_end")
 	h.done()
+
+
+func _await_battle(h: SelfTestHarness, game: Node) -> BattleModel:
+	var budget := 120
+	while budget > 0:
+		var model: BattleModel = game.get("current_battle")
+		var content := game.get("content") as Node
+		if model != null and content != null and content is Node2D:
+			await h.frames(3)
+			return model
+		budget -= 1
+		await h.frames(1)
+	return null
+
+
+func _await_screen(h: SelfTestHarness, game: Node, marker: String) -> Control:
+	var budget := 120
+	while budget > 0:
+		var content := game.get("content") as Node
+		if content != null and is_instance_valid(content) and content is Control \
+				and (content.name == marker or content.find_child(marker, true, false) != null):
+			await h.frames(3)
+			return content
+		budget -= 1
+		await h.frames(1)
+	return null

@@ -35,8 +35,9 @@ func run(h: SelfTestHarness) -> void:
 	var game := h.autoload("Game")
 	h.expect_done()
 
-	# quick battle pinned open (seam start; StartButton raw input is already
-	# validated by resign_flow — the new raw surfaces here are the controls)
+	# Harness-only battle pinned open through the direct seam. Player Start
+	# routing is campaign-only and validated by boot/staging/campaign_flow;
+	# the new raw surfaces here are the controls.
 	game.call("start_battle", game.get("default_stage_id"))
 	var stage := (game.get("pending_stage") as StageDef).duplicate(true) as StageDef
 	var waves: Array[Dictionary] = [{"tick": 100_000, "enemy_id": &"grunt", "path_idx": 0}]
@@ -163,6 +164,26 @@ func run(h: SelfTestHarness) -> void:
 	await h.click_view(continue_btn.get_global_rect().get_center())
 	var results := await _await_screen(h, game, "ResultsColumn")
 	h.check("results reached", results != null)
+	if results == null:
+		return
+	h.check(
+		"harness Results has no campaign Retry",
+		results.find_child("RetryButton", true, false) == null,
+	)
+	h.check(
+		"harness Results has no Staging route",
+		results.find_child("ReturnToStaging", true, false) == null,
+	)
+	var back := results.find_child("BackToTitle", true, false) as Button
+	h.check("harness Results offers safe Back to Title", back != null)
+	if back == null:
+		return
+	await h.click_view(back.get_global_rect().get_center())
+	var title := await _await_screen(h, game, "TitleBox")
+	h.check("harness Results returns to title", title != null)
+	if title != null:
+		var start := title.find_child("StartButton", true, false) as Button
+		h.check("returned title exposes Start", start != null and start.text == "Start")
 	h.done()
 
 

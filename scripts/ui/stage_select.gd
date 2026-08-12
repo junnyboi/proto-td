@@ -46,6 +46,12 @@ func _ready() -> void:
 		hint.add_theme_font_size_override("font_size", HINT_FONT_SIZE)
 		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(hint)
+	var back := Button.new()
+	back.name = "BackToStaging"
+	back.text = "Back to Staging"
+	back.add_theme_font_size_override("font_size", FONT_SIZE)
+	back.pressed.connect(_on_back_to_staging)
+	column.add_child(back)
 
 
 func _row_text(stage: StageDef, unlocked: bool) -> String:
@@ -62,3 +68,8 @@ func _on_stage_pressed(stage_id: StringName) -> void:
 	Sfx.play("ui_click")
 	Game.selected_stage_id = stage_id
 	Game.open_squad_select()
+
+
+func _on_back_to_staging() -> void:
+	Sfx.play("ui_click")
+	Game.open_staging()

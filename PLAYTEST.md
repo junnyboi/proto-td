@@ -9,18 +9,19 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `56f8001`** (2026-08-11 lineage — includes the P12 iso view,
-  the P13 battle controls, and the phase-14 remediation; the comprehensive build audit ran at
-  `200aec5`). The original pin `poc-v1-audit` (`218aaea`) is superseded — do not playtest the
-  old tag; it predates the iso conversion this script's shot references assume.
+- Build under test: **`master` ≥ `f08ee08`** (TD-007 campaign-only Start candidate — includes
+  the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
+  Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
+  superseded; do not playtest an older build.
 - **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
   music. Every audio question in this script is N/A — judge visuals only, and do not log the
   silence as a defect.
 
 ## 2. The run
 
-Title → **Campaign** → play S1→S8 in order. Expect to lose sometimes — note when a loss felt
-fair vs cheap. Per stage, three passes:
+Title → **Start** → **Staging Area** → **Mission Control** → play S1→S8 in order. Start is the
+prototype's only game flow; there is no separate quick battle. Expect to
+lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 
 **Watch for** (does the lesson land?)
 
@@ -44,6 +45,10 @@ fair vs cheap. Per stage, three passes:
 - S8: charm the escort heavy (legal) after the boss rejects.
 - Screens: can you read cost/class from the squad cards at a glance? Does the loadout strip
   make sense? Stage stars? The reward reveal after a clear?
+- Staging: does the `0/8` campaign summary and next mission read immediately? Are Barracks,
+  Recruit, Training, Armory, and Memorial unmistakably unavailable without feeling broken?
+  Confirm Mission Control opens the stage list, Back to Staging preserves progress, and both
+  campaign CLEAR and DEFEAT results offer Return to Staging.
 - Retreat a unit; retry a stage from the results screen.
 
 **Judge** (the acceptance questions — answer per stage or at the end)

@@ -232,7 +232,7 @@
    "title": "Battle QoL: pause/speed/resign controls + universal terminal results flow",
    "acceptance": [
     "resign is a model verb: immediate DEFEAT (DC1), terminal reject with zero state change, determinism oracle green on a resign timeline",
-    "terminal Continue button on every battle end (campaign AND quick); results screen mode-aware Retry/Continue + Back to Title with session reset",
+    "terminal Continue button on every battle end; player-facing Results provide campaign Retry, Return to Staging, and Back to Title with session reset",
     "in-battle controls drive only the ticks_per_frame_scale seam and the resign verb: paused dtick == 0 exactly, speed readbacks exact, cancel leaves RUNNING",
     "verify.sh --full green: controls eat no grid clicks, no outcome or telemetry band drifts"
    ],
@@ -292,6 +292,24 @@
    ]
   },
   {
+   "id": "P15",
+   "title": "Campaign Staging Area: strategic hub shell and mode-correct routing",
+   "acceptance": [
+    "the sole Start action opens Staging; Mission Control opens stage select; stage-select Back preserves the campaign session",
+    "campaign CLEAR and DEFEAT results return to Staging while preserving the active campaign session",
+    "five future personnel operations are visible, disabled, and explicitly unavailable; initial campaign summary reads 0/8",
+    "staging_flow passes headless and windowed with completion sentinel, three fresh screenshots, and falsifiable text/layout checks",
+    "verify.sh --full green on the merged union and merged master; verified WebDev build is browser-smoke-tested"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "staging_flow"
+   ],
+   "commits": [
+    "7714b19"
+   ]
+  },
+  {
    "id": "MUSIC-1",
    "title": "Three-act Luminous Descent candidate score: one BGM and boss cue per act",
    "acceptance": [
@@ -303,7 +321,32 @@
    "scenarios": [],
    "commits": [
     "be1c50b",
-    "97f5b3b"
+    "97f5b3b",
+    "a58e2d5"
+   ]
+  },
+  {
+   "id": "FLOW-1",
+   "title": "Campaign-only Start flow",
+   "acceptance": [
+    "title exposes exactly one StartButton labeled Start and no CampaignButton",
+    "real Start input initializes a fresh campaign and opens Staging instead of a direct battle",
+    "campaign CLEAR and DEFEAT Results expose Retry, Return to Staging, and Back to Title",
+    "Back to Title clears campaign and selection state before the next Start",
+    "direct battle startup remains available only to harness, bot, and debug seams"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "boot",
+    "campaign_flow",
+    "staging_flow",
+    "resign_flow"
+   ],
+   "commits": [
+    "ae6ee34",
+    "8a2f31e",
+    "f08ee08",
+    "924f360"
    ]
   }
  ],

@@ -1,7 +1,7 @@
 extends Control
 
-## Title screen (main scene until the stage-select map lands in Phase 10).
-## UI is built in code — programmatic-everything keeps .tscn files trivial.
+## Prototype entry screen. The campaign is the only player-facing game flow;
+## direct battle startup remains a harness/debug seam, never a title action.
 
 const FONT_SIZE_TITLE := 64
 const FONT_SIZE_BUTTON := 32
@@ -25,19 +25,12 @@ func _ready() -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)
 
-	var button := Button.new()
-	button.name = "StartButton"
-	button.text = "Start"
-	button.add_theme_font_size_override("font_size", FONT_SIZE_BUTTON)
-	button.pressed.connect(_on_start_pressed)
-	vbox.add_child(button)
-
-	var campaign := Button.new()
-	campaign.name = "CampaignButton"
-	campaign.text = "Campaign"
-	campaign.add_theme_font_size_override("font_size", FONT_SIZE_BUTTON)
-	campaign.pressed.connect(_on_campaign_pressed)
-	vbox.add_child(campaign)
+	var start := Button.new()
+	start.name = "StartButton"
+	start.text = "Start"
+	start.add_theme_font_size_override("font_size", FONT_SIZE_BUTTON)
+	start.pressed.connect(_on_start_pressed)
+	vbox.add_child(start)
 
 	var footer := Label.new()
 	footer.name = "FooterLabel"
@@ -50,9 +43,5 @@ func _ready() -> void:
 
 
 func _on_start_pressed() -> void:
-	Game.start_battle(Game.default_stage_id)
-
-
-func _on_campaign_pressed() -> void:
 	Sfx.play("ui_click")
 	Game.start_campaign()
