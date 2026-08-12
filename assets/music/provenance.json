@@ -2,7 +2,7 @@
   "schema_version": 1,
   "generated_at": "2026-08-12",
   "owner_lane": "AGENT 4",
-  "catalog_revision": 2,
+  "catalog_revision": 3,
   "generator": {
     "tool": "Manus built-in generate_music",
     "backend": "latest available",
@@ -17,10 +17,17 @@
   "human_feedback": {
     "date": "2026-08-12",
     "classification": "prompt-change",
-    "replacements": {
+    "revision": 3,
+    "supersedes_revision": 2,
+    "previous_replacements": {
       "act_1_bgm": "Preserve the warm fantasy identity but make the cue more peaceful, pastoral, patient, and intimate.",
       "act_3_bgm": "Reduce depressive/funereal character; add deliberate cavern echoes and controlled acoustic bass weight.",
       "act_3_boss": "Reduce depressive/funereal character; add deliberate cavern echoes, controlled acoustic bass weight, and epic martial war energy."
+    },
+    "replacements": {
+      "act_1_bgm": "There is too much going on; keep it lighthearted, simple, peaceful, and slower in BPM.",
+      "act_3_bgm": "Make it more droning, with oppressive bass and more pressure.",
+      "act_3_boss": "Use the Act III BGM pressure identity but make it more epic with brass instruments and taiko drums."
     },
     "final_acceptance_complete": false
   },
@@ -36,8 +43,8 @@
     "vorbis_quality": 6,
     "per_track_preprocessing": {
       "act_1_bgm": "none",
-      "act_3_bgm": "ffmpeg bass=g=4:f=180:w=0.7 before the shared loop/loudness pipeline",
-      "act_3_boss": "ffmpeg bass=g=3:f=180:w=0.7 before the shared loop/loudness pipeline"
+      "act_3_bgm": "ffmpeg bass=g=12:f=180:w=0.7 before the shared loop/loudness pipeline",
+      "act_3_boss": "ffmpeg bass=g=7:f=180:w=0.7 before the shared loop/loudness pipeline"
     }
   },
   "quality_evidence": {
@@ -67,6 +74,10 @@
     {
       "id": "D-MUSIC-8",
       "record": "The selected Act III generator sources had the requested acoustic low-register orchestration but did not independently exceed the predecessor's normalized low-band balance. A deterministic documented low shelf was applied before the shared loop/loudness pipeline: +4 dB at 180 Hz for Act III BGM and +3 dB at 180 Hz for Act III boss. Final sub-220 Hz mean levels are -21.1 and -21.3 dBFS respectively, versus predecessor values -22.1 and -24.7 dBFS after normalization."
+    },
+    {
+      "id": "D-MUSIC-9",
+      "record": "The selected revision-3 Act III generator sources followed the requested acoustic low-register palette but, after common loop/loudness normalization, the first bounded shelves (+6 dB BGM, +5 dB boss at 180 Hz) did not both exceed revision-2 low-band measurements. Processing was not accepted. The smallest subsequent tested settings that cleared the predeclared stronger-bass criterion were +12 dB for BGM and +7 dB for boss at 180 Hz, recorded in catalog and provenance. Final sub-220 Hz means are -20.8 and -21.0 dBFS versus revision-2 -21.1 and -21.3 dBFS; spectral low-band shares increased 22.0% and 4.0%."
     }
   ],
   "tracks": [
@@ -75,23 +86,23 @@
       "act": 1,
       "role": "bgm",
       "title": "Lanterns Beneath the Guild",
-      "revision": 2,
+      "revision": 3,
       "prompt_path": "res://assets/music/prompts/act_1_guild_threshold_bgm.txt",
-      "prompt_sha256": "f758c2704361b42b875e1145be104d7c3fc37a10f19a2abda649c793ff3d4bf3",
+      "prompt_sha256": "7f6542a4649fe7a7364d7017c6ad0d646a1fab6942e418ab175af60f4f082189",
       "source_path": "res://assets/music/sources/act_1_guild_threshold_bgm.mp3.source",
-      "source_sha256": "a526a24409bf27a32528d4c25efa1337e6262312012a0142fde489bdfec3b6df",
-      "source_duration_seconds": 178.155042,
+      "source_sha256": "d3c7d97d554257dbf0f1919ea54995e1666fbf973491b6e31a1b0db874b5ab86",
+      "source_duration_seconds": 172.434208,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_1_guild_threshold_bgm.json",
-      "transcription_sha256": "28460f1f533c35d39359dbf5a055d77e5b842173b5d4e316905193ab4d3e2215",
+      "transcription_sha256": "924f1b472b39c41d7b531c9d76212d07904b80a1c6a10455184a5e3738a1a1dc",
       "asset_path": "res://assets/music/act_1_guild_threshold_bgm.ogg",
-      "asset_sha256": "e5fcbc36c998bf7937881b3c03c2a4eb4881c8739a2554b60beff7b17a9a1892",
-      "duration_seconds": 174.155042,
+      "asset_sha256": "2ab32c051d0fd1661f2cae22ae31bc84976d7048dbbf47bb40b29152b37b2d86",
+      "duration_seconds": 168.434229,
       "integrated_loudness_lufs": -17.9,
-      "true_peak_dbfs": -6.1,
-      "full_mean_dbfs": -20.8,
-      "low_220_mean_dbfs": -26.6,
-      "supersedes_asset_sha256": "e2a85df574637147b35227c2b4eefa223208b77c4b6a32f4a10051929ddd57a0",
-      "supersedes_source_sha256": "4a20371b3acbfeac6db0a0884babf75509f7640f4a96a41ce7640853354f8277",
+      "true_peak_dbfs": -6.4,
+      "full_mean_dbfs": -20.6,
+      "low_220_mean_dbfs": -24.8,
+      "supersedes_asset_sha256": "e5fcbc36c998bf7937881b3c03c2a4eb4881c8739a2554b60beff7b17a9a1892",
+      "supersedes_source_sha256": "a526a24409bf27a32528d4c25efa1337e6262312012a0142fde489bdfec3b6df",
       "placeholder": true
     },
     {
@@ -156,25 +167,25 @@
       "act": 3,
       "role": "bgm",
       "title": "Chains Across the Abyss",
-      "revision": 2,
+      "revision": 3,
       "prompt_path": "res://assets/music/prompts/act_3_abyssal_vault_bgm.txt",
-      "prompt_sha256": "b36efc11a229adbec37f60ae2f20acc037774158bca072f86de702d31cec94d5",
+      "prompt_sha256": "c5a61e44d21d8e3e1949ad48d4c0261fa0c11aa2412d648f37382442fc32297d",
       "source_path": "res://assets/music/sources/act_3_abyssal_vault_bgm.mp3.source",
-      "source_sha256": "2d2137307e7ec91d40eec90f37501b501d1e043276551e76d0df3f863144e4cb",
-      "source_duration_seconds": 167.575458,
+      "source_sha256": "8563c4924df87504012c3c55b9cf424c18fc3a2ab4f7d1bed2ac77d149efd57c",
+      "source_duration_seconds": 179.435042,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_3_abyssal_vault_bgm.json",
-      "transcription_sha256": "ece6cceb0d2446a5d842f29618e785a2b0c371f2341ce1bb8b3b9f019a866f28",
+      "transcription_sha256": "19bebc0d2f50ab879c8f58d5549f747880d5277f4d9c576007ed36ff4d74c502",
       "asset_path": "res://assets/music/act_3_abyssal_vault_bgm.ogg",
-      "asset_sha256": "096396b15457afbde3b1de0e6245b0edc2aa53138278d1b954da2138ed688bd8",
-      "duration_seconds": 163.575521,
+      "asset_sha256": "23deace1f122b3e9436fabcaa6da97b8bf723048fe251bbb1168cfbaf1795ce4",
+      "duration_seconds": 175.435104,
       "integrated_loudness_lufs": -17.9,
-      "true_peak_dbfs": -6.8,
-      "full_mean_dbfs": -19.5,
-      "low_220_mean_dbfs": -21.1,
-      "preprocess": "bass=g=4:f=180:w=0.7",
-      "supersedes_low_220_mean_dbfs": -22.1,
-      "supersedes_asset_sha256": "01cc2ace80870c3c752b2a38ac8c1216708a510252b0499faa78f151aa5152cd",
-      "supersedes_source_sha256": "4d00cc57da43c5833cc46f5612bcd36063665d9cb4661049b8feb65723c2b104",
+      "true_peak_dbfs": -9.9,
+      "full_mean_dbfs": -19.6,
+      "low_220_mean_dbfs": -20.8,
+      "preprocess": "bass=g=12:f=180:w=0.7",
+      "supersedes_low_220_mean_dbfs": -21.1,
+      "supersedes_asset_sha256": "096396b15457afbde3b1de0e6245b0edc2aa53138278d1b954da2138ed688bd8",
+      "supersedes_source_sha256": "2d2137307e7ec91d40eec90f37501b501d1e043276551e76d0df3f863144e4cb",
       "placeholder": true
     },
     {
@@ -182,26 +193,50 @@
       "act": 3,
       "role": "boss",
       "title": "Throne of the First Flame",
-      "revision": 2,
+      "revision": 3,
       "prompt_path": "res://assets/music/prompts/act_3_abyssal_vault_boss.txt",
-      "prompt_sha256": "974827fa68248be7c38a1b7cc16ce6c387f3cb0dc938f257fbd71bc440145787",
+      "prompt_sha256": "32925264d2d8cea55410680eceab31b63b458607f3add5d47ecd10d668f396eb",
       "source_path": "res://assets/music/sources/act_3_abyssal_vault_boss.mp3.source",
-      "source_sha256": "a1a3b8735baa81a41ddf83e68a23418beda69bebcda1589fd797605f9b526e43",
-      "source_duration_seconds": 176.639958,
+      "source_sha256": "6a83e7b9984198ce66ccb950d63250ac3633929694611578a0027a0744a7aab4",
+      "source_duration_seconds": 176.326458,
       "transcription_path": "res://assets/music/evidence/transcriptions/act_3_abyssal_vault_boss.json",
-      "transcription_sha256": "50dc0ce9ced3ae926b99b5d9219709164fae422486b312d0598ca160cd1acbe4",
+      "transcription_sha256": "0e53bd9e8d3956eb6a78baac2994b630854cc9bc4854b03037c63fb9cf238f09",
       "asset_path": "res://assets/music/act_3_abyssal_vault_boss.ogg",
-      "asset_sha256": "86985843e0eca716bac80a5fc19a259ecb2ec6ede1e66702940bbdb19788e69a",
-      "duration_seconds": 172.64,
+      "asset_sha256": "7cd26cd66c780de810a7300179c5ae65e284501ce6aa5d96e48c991743c5244a",
+      "duration_seconds": 172.326542,
       "integrated_loudness_lufs": -17.9,
-      "true_peak_dbfs": -6.6,
-      "full_mean_dbfs": -19.7,
-      "low_220_mean_dbfs": -21.3,
-      "preprocess": "bass=g=3:f=180:w=0.7",
-      "supersedes_low_220_mean_dbfs": -24.7,
-      "supersedes_asset_sha256": "c0522c9b2e3932996477ce54a51b40d7eac0a7f29f05c0da81205cad72f4d5f4",
-      "supersedes_source_sha256": "779097b7c84ff81854122808ca5c4cf018f90018fd69fb73939b82928c3a063e",
+      "true_peak_dbfs": -7.7,
+      "full_mean_dbfs": -19.5,
+      "low_220_mean_dbfs": -21.0,
+      "preprocess": "bass=g=7:f=180:w=0.7",
+      "supersedes_low_220_mean_dbfs": -21.3,
+      "supersedes_asset_sha256": "86985843e0eca716bac80a5fc19a259ecb2ec6ede1e66702940bbdb19788e69a",
+      "supersedes_source_sha256": "a1a3b8735baa81a41ddf83e68a23418beda69bebcda1589fd797605f9b526e43",
       "placeholder": true
     }
-  ]
+  ],
+  "revision_analysis": {
+    "method": "External deterministic NumPy/ffmpeg comparison over revision-2 and revision-3 normalized shipping cues; metrics are objective proxies, not human judgments of mood or instrument identity.",
+    "tool_sha256": "71f6b819623d49fc5ce48e68e2b52f07682984e6799131e789ef6735ba39045f",
+    "result_sha256": "99c56de7ce9090310d5b67d89d7ba19b461e8f1e4b6cfa2b0431fa7be5fe15f6",
+    "act_1_bgm": {
+      "spectral_flux_ratio_vs_revision_2": 0.806903,
+      "onset_proxy_per_minute_delta_vs_revision_2": -44.239959,
+      "upper_band_ratio_delta_vs_revision_2": -0.018746,
+      "interpretation": "Lower spectral change, fewer onset proxies, and less upper-band activity support the requested simpler and less busy arrangement; peacefulness remains human-only."
+    },
+    "act_3_bgm": {
+      "low_20_220_ratio_gain_vs_revision_2": 1.220164,
+      "low_band_variability_delta_db_vs_revision_2": -0.722176,
+      "low_band_floor_delta_db_vs_revision_2": 6.958379,
+      "interpretation": "A larger, steadier low-band share and substantially raised low-band floor support the requested continuous oppressive drone; emotional pressure remains human-only."
+    },
+    "act_3_boss": {
+      "low_20_220_ratio_gain_vs_revision_2": 1.040427,
+      "onset_proxy_gain_vs_revision_2": 1.093689,
+      "onset_proxy_gain_vs_revision_3_bgm": 1.156862,
+      "low_mid_band_gain_vs_revision_3_bgm": 1.074935,
+      "interpretation": "More low-band weight than revision 2 plus greater transient and low-mid activity than the paired BGM support a heavier martial transformation; brass, taiko, and epic character remain human listening judgments."
+    }
+  }
 }
