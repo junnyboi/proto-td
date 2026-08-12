@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import hashlib
 import json
@@ -186,6 +187,40 @@ def _snapshot_tree(root: Path) -> dict[str, tuple[str, bytes | str | None]]:
                 snapshot[relative] = ("other", None)
 
     visit(root)
+    return snapshot
+
+
+def _salvage_snapshot(path: Path) -> dict[str, tuple[str, bytes | str | None]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if set(payload) != {"schema_version", "entries"} or payload["schema_version"] != 1:
+        raise VerificationError("salvage payload schema mismatch")
+    entries = payload["entries"]
+    if not isinstance(entries, list):
+        raise VerificationError("salvage entries expected=list")
+    paths = [entry.get("path") for entry in entries if isinstance(entry, dict)]
+    if len(paths) != len(entries) or paths != sorted(paths) or len(paths) != len(set(paths)):
+        raise VerificationError("salvage entry paths expected=unique-sorted")
+    snapshot: dict[str, tuple[str, bytes | str | None]] = {}
+    for entry in entries:
+        entry_type = entry.get("type")
+        relative = entry.get("path")
+        if not isinstance(relative, str) or not relative:
+            raise VerificationError("salvage entry path expected=nonempty-string")
+        if entry_type == "directory" and set(entry) == {"path", "type"}:
+            snapshot[relative] = ("directory", None)
+        elif entry_type == "symlink" and set(entry) == {"path", "type", "target"}:
+            if not isinstance(entry["target"], str):
+                raise VerificationError("salvage symlink target expected=string")
+            snapshot[relative] = ("symlink", entry["target"])
+        elif entry_type == "file" and set(entry) == {"path", "type", "data_base64"}:
+            if not isinstance(entry["data_base64"], str):
+                raise VerificationError("salvage file payload expected=string")
+            snapshot[relative] = (
+                "file",
+                base64.b64decode(entry["data_base64"], validate=True),
+            )
+        else:
+            raise VerificationError(f"salvage entry invalid type={entry_type!r}")
     return snapshot
 
 
@@ -741,6 +776,7 @@ def godot_negative_checks(
         for path in cleanup_output.parent.iterdir()
         if path.name.startswith(f"{cleanup_output.name}.candidate.")
         or path.name.startswith(f"{cleanup_output.name}.rollback.")
+        or path.name.startswith(f"{cleanup_output.name}.rollback.") and path.name.endswith(".salvage.json")
     )
     counter.equal("godot.cleanup.no_debris", debris, [])
 
@@ -774,7 +810,7 @@ def godot_negative_checks(
     counter.true("godot.cleanup_error.nonzero", result.returncode != 0, f"actual={result.returncode}")
     counter.true(
         "godot.cleanup_error.measured_detail",
-        "backup cleanup failed" in combined,
+        "backup salvage failed" in combined,
         f"output={combined!r}",
     )
     run(
@@ -782,12 +818,114 @@ def godot_negative_checks(
         timeout_seconds,
     )
     rollback_directories = sorted(permission_parent.glob("accepted.rollback.*"))
+    rollback_directories = [path for path in rollback_directories if path.is_dir()]
+    salvages = sorted(permission_parent.glob("accepted.rollback.*.salvage.json"))
     counter.equal("godot.cleanup_error.rollback_count", len(rollback_directories), 1)
+    counter.equal("godot.cleanup_error.salvage_count", len(salvages), 0)
     for rollback in rollback_directories:
         (rollback / "unreadable-old-payload").chmod(0o700)
         rollback_after = _snapshot_tree(rollback)
         counter.equal("godot.cleanup_error.rollback_complete", rollback_after, rollback_before)
         shutil.rmtree(rollback)
+
+    fault_parent = root / "cleanup-mid-removal"
+    fault_parent.mkdir()
+    fault_output = fault_parent / "accepted"
+    fault_output.mkdir()
+    (fault_output / "a-old.bin").write_bytes(b"old-a\n")
+    ordering_directory = fault_output / "a"
+    ordering_directory.mkdir()
+    (ordering_directory / "z-old.bin").write_bytes(b"nested-before-punctuation\n")
+    (fault_output / "a-").write_bytes(b"punctuation-sibling\n")
+    nested = fault_output / "nested"
+    nested.mkdir()
+    (nested / "b-old.bin").write_bytes(b"old-b\n")
+    external = fault_parent / "external-target"
+    external.mkdir()
+    (external / "sentinel.txt").write_bytes(b"external-must-survive\n")
+    (fault_output / "linked-directory").symlink_to(external, target_is_directory=True)
+    (fault_output / "linked-file").symlink_to(external / "sentinel.txt")
+    fault_before = _snapshot_tree(fault_output)
+    fault_candidate = fault_parent / "candidate"
+    fault_candidate.mkdir()
+    (fault_candidate / "new.bin").write_bytes(b"new-packet\n")
+    candidate_before = _snapshot_tree(fault_candidate)
+    result = run(
+        [
+            str(godot), "--headless", "--path", str(REPO),
+            "-s", "res://staging/qa/character-vfx/godot_publication_fault_probe.gd", "--",
+            str(fault_candidate), str(fault_output), "1", "backup cleanup failed",
+        ],
+        timeout_seconds,
+    )
+    payload_lines = [line for line in result.stdout.splitlines() if line.startswith("{")]
+    counter.equal("godot.cleanup_mid_removal.payload_count", len(payload_lines), 1)
+    payload = json.loads(payload_lines[0])
+    counter.equal("godot.cleanup_mid_removal.status", payload["ok"], False)
+    counter.true(
+        "godot.cleanup_mid_removal.measured_detail",
+        "backup cleanup failed" in payload["detail"],
+        f"detail={payload['detail']!r}",
+    )
+    counter.equal(
+        "godot.cleanup_mid_removal.new_output_complete",
+        _snapshot_tree(fault_output),
+        candidate_before,
+    )
+    fault_rollbacks = sorted(
+        path for path in fault_parent.glob("accepted.rollback.*") if path.is_dir()
+    )
+    fault_salvages = sorted(fault_parent.glob("accepted.rollback.*.salvage.json"))
+    counter.equal("godot.cleanup_mid_removal.rollback_count", len(fault_rollbacks), 1)
+    counter.equal("godot.cleanup_mid_removal.salvage_count", len(fault_salvages), 1)
+    counter.true(
+        "godot.cleanup_mid_removal.rollback_is_partial",
+        _snapshot_tree(fault_rollbacks[0]) != fault_before,
+        "rollback unexpectedly remained complete; fault did not occur after partial deletion",
+    )
+    counter.equal(
+        "godot.cleanup_mid_removal.salvage_complete",
+        _salvage_snapshot(fault_salvages[0]),
+        fault_before,
+    )
+    counter.equal(
+        "godot.cleanup_mid_removal.external_sentinel",
+        (external / "sentinel.txt").read_bytes(),
+        b"external-must-survive\n",
+    )
+
+    cutover_parent = root / "cutover-failure"
+    cutover_parent.mkdir()
+    cutover_output = cutover_parent / "accepted"
+    shutil.copytree(valid_packet, cutover_output)
+    cutover_before = _snapshot_tree(cutover_output)
+    missing_candidate = cutover_parent / "missing-candidate"
+    result = run(
+        [
+            str(godot), "--headless", "--path", str(REPO),
+            "-s", "res://staging/qa/character-vfx/godot_publication_fault_probe.gd", "--",
+            str(missing_candidate), str(cutover_output), "-1", "publication cutover failed",
+        ],
+        timeout_seconds,
+    )
+    payload_lines = [line for line in result.stdout.splitlines() if line.startswith("{")]
+    counter.equal("godot.cutover_failure.payload_count", len(payload_lines), 1)
+    payload = json.loads(payload_lines[0])
+    counter.equal("godot.cutover_failure.status", payload["ok"], False)
+    counter.true(
+        "godot.cutover_failure.measured_detail",
+        "publication cutover failed" in payload["detail"],
+        f"detail={payload['detail']!r}",
+    )
+    counter.equal(
+        "godot.cutover_failure.accepted_preserved",
+        _snapshot_tree(cutover_output),
+        cutover_before,
+    )
+    cutover_debris = sorted(
+        path.name for path in cutover_parent.iterdir() if path.name != cutover_output.name
+    )
+    counter.equal("godot.cutover_failure.no_debris", cutover_debris, [])
 
 
 def godot_contract_checks(

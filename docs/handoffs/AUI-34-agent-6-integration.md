@@ -38,6 +38,10 @@ The aggregate contains current master first, the exact terminal AUI-34 lane seco
 
 Before publication, the containing aggregate commit must produce one fresh external union record binding its commit/tree, this base, the exact lane commit/tree and terminal-receipt hash, the owner-override hash, a clean cache-bypassed differential, the unchanged full repository gate, fresh atlas/contact/scenario image reviews, and a non-implementer diff-vs-pins PASS. Lane evidence does not prove the aggregate.
 
+## Final-audit remediation
+
+Initial aggregate `677e0f190f76db89a1c34ec446837ddc50b2bddc` remained unpublished after its independent audit found that Godot rollback cleanup could fail after partial deletion without a complete salvage archive. The containing remediation commit adds canonical non-following salvage before any destructive deletion, atomic write/read-back verification, salvage lifecycle errors, and a separate-process injected failure after one successful deletion. The independent Python oracle requires the new output to remain complete, the live rollback to be observably partial, external link targets to survive, and the salvage to decode type-for-type and byte-for-byte to the entire old tree. The prior aggregate and its red audit remain retained evidence; publication requires a new exact-union identity and complete fresh RELEASE/audit cycle.
+
 ## Preserved boundary
 
 AUI-34 is pipeline infrastructure. It does not put the approved roster, portraits, enemies, Charm variants, or VFX into gameplay. `runtime_binding` remains `UNBOUND_AGENT_F_SEAM`; the label is retained as an immutable downstream seam, not as a requirement that Agent F perform this aggregate. AUI-11 and later production packages require separate claims, generated packets, QA, runtime integration, and human final-art decisions.

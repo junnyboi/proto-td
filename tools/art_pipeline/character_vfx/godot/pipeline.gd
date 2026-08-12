@@ -7,6 +7,8 @@ const SpecContract = preload("res://tools/art_pipeline/character_vfx/godot/spec_
 
 static var _publish_sequence := 0
 static var _preflight_sequence := 0
+static var _remove_fault_after := -1
+static var _remove_operations := 0
 
 
 static func _failure(detail: String) -> Dictionary:
@@ -600,11 +602,140 @@ static func _preflight_removable_tree(path: String) -> Error:
 	return OK
 
 
+static func _read_link(path: String) -> Dictionary:
+	var parent := DirAccess.open(path.get_base_dir())
+	if parent == null or not parent.is_link(path.get_file()):
+		return _failure("cleanup.salvage link expected name=%s" % path.get_file())
+	return {"ok": true, "target": parent.read_link(path.get_file())}
+
+
+static func _read_file_base64(path: String) -> Dictionary:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return _failure(
+			"cleanup.salvage read failed name=%s error=%d"
+			% [path.get_file(), FileAccess.get_open_error()]
+		)
+	var bytes := file.get_buffer(file.get_length())
+	file.close()
+	return {"ok": true, "data_base64": Marshalls.raw_to_base64(bytes)}
+
+
+static func _append_salvage_entries(
+	root: String, current: String, entries: Array[Dictionary]
+) -> Dictionary:
+	var directory := DirAccess.open(current)
+	if directory == null:
+		return _failure("cleanup.salvage open failed name=%s" % current.get_file())
+	var names: Array[String] = []
+	directory.list_dir_begin()
+	var name := directory.get_next()
+	while not name.is_empty():
+		if name != "." and name != "..":
+			names.append(name)
+		name = directory.get_next()
+	directory.list_dir_end()
+	names.sort()
+	for child_name: String in names:
+		var child := current.path_join(child_name)
+		var relative := child.trim_prefix(root.rstrip("/") + "/")
+		if directory.is_link(child_name):
+			var link := _read_link(child)
+			if not link["ok"]:
+				return link
+			entries.append({"path": relative, "type": "symlink", "target": link["target"]})
+		elif directory.dir_exists(child_name):
+			entries.append({"path": relative, "type": "directory"})
+			var nested := _append_salvage_entries(root, child, entries)
+			if not nested["ok"]:
+				return nested
+		elif directory.file_exists(child_name):
+			var file_payload := _read_file_base64(child)
+			if not file_payload["ok"]:
+				return file_payload
+			entries.append({
+				"path": relative,
+				"type": "file",
+				"data_base64": file_payload["data_base64"],
+			})
+		else:
+			return _failure("cleanup.salvage unsupported-entry name=%s" % child_name)
+	return {"ok": true}
+
+
+static func _salvage_entry_before(left: Dictionary, right: Dictionary) -> bool:
+	return String(left["path"]) < String(right["path"])
+
+
+static func _salvage_payload(root: String) -> Dictionary:
+	var entries: Array[Dictionary] = []
+	if _is_link(root):
+		var link := _read_link(root)
+		if not link["ok"]:
+			return link
+		entries.append({"path": ".", "type": "symlink", "target": link["target"]})
+	elif FileAccess.file_exists(root):
+		var file_payload := _read_file_base64(root)
+		if not file_payload["ok"]:
+			return file_payload
+		entries.append({
+			"path": ".",
+			"type": "file",
+			"data_base64": file_payload["data_base64"],
+		})
+	elif DirAccess.dir_exists_absolute(root):
+		var appended := _append_salvage_entries(root, root, entries)
+		if not appended["ok"]:
+			return appended
+		entries.sort_custom(_salvage_entry_before)
+	else:
+		return _failure("cleanup.salvage root missing name=%s" % root.get_file())
+	return {"ok": true, "payload": {"schema_version": 1, "entries": entries}}
+
+
+static func _write_salvage(root: String, salvage: String) -> Dictionary:
+	var payload_result := _salvage_payload(root)
+	if not payload_result["ok"]:
+		return payload_result
+	var payload := payload_result["payload"] as Dictionary
+	var temporary := "%s.candidate.%d.%d" % [
+		salvage, OS.get_process_id(), _publish_sequence
+	]
+	_publish_sequence += 1
+	if (
+		FileAccess.file_exists(temporary)
+		or DirAccess.dir_exists_absolute(temporary)
+		or FileAccess.file_exists(salvage)
+		or DirAccess.dir_exists_absolute(salvage)
+	):
+		return _failure("cleanup.salvage expected=absent actual=exists")
+	var encoded := _canonical_json(payload)
+	var written := _write_text(temporary, encoded)
+	if not written["ok"]:
+		return written
+	var renamed := DirAccess.rename_absolute(temporary, salvage)
+	if renamed != OK:
+		DirAccess.remove_absolute(temporary)
+		return _failure("cleanup.salvage rename failed error=%d" % renamed)
+	if FileAccess.get_file_as_string(salvage) != encoded:
+		return _failure("cleanup.salvage verification-failed")
+	return {"ok": true}
+
+
+static func _remove_entry(path: String) -> Error:
+	if _remove_fault_after >= 0 and _remove_operations >= _remove_fault_after:
+		return ERR_BUSY
+	var error := DirAccess.remove_absolute(path)
+	if error == OK:
+		_remove_operations += 1
+	return error
+
+
 static func _remove_tree(path: String) -> Error:
 	if _is_link(path):
-		return DirAccess.remove_absolute(path)
+		return _remove_entry(path)
 	if FileAccess.file_exists(path):
-		return DirAccess.remove_absolute(path)
+		return _remove_entry(path)
 	if not DirAccess.dir_exists_absolute(path):
 		return OK
 	var directory := DirAccess.open(path)
@@ -617,17 +748,17 @@ static func _remove_tree(path: String) -> Error:
 			var child := path.path_join(name)
 			var error: Error
 			if directory.is_link(name):
-				error = DirAccess.remove_absolute(child)
+				error = _remove_entry(child)
 			elif directory.current_is_dir():
 				error = _remove_tree(child)
 			else:
-				error = DirAccess.remove_absolute(child)
+				error = _remove_entry(child)
 			if error != OK:
 				directory.list_dir_end()
 				return error
 		name = directory.get_next()
 	directory.list_dir_end()
-	return DirAccess.remove_absolute(path)
+	return _remove_entry(path)
 
 
 static func _publish(candidate: String, output: String, clean: bool) -> Dictionary:
@@ -652,18 +783,42 @@ static func _publish(candidate: String, output: String, clean: bool) -> Dictiona
 		if rollback != OK:
 			return _failure("publication cutover-and-rollback failed backup=%s" % backup.get_file())
 		return _failure("publication cutover failed error=%d" % move_new)
+	var salvage := "%s.salvage.json" % backup
+	var salvage_result := _write_salvage(backup, salvage)
+	if not salvage_result["ok"]:
+		return _failure(
+			"publication committed but backup salvage failed; accepted packet preserved"
+		)
 	var cleanup_error := _preflight_removable_tree(backup)
 	if cleanup_error != OK:
 		return _failure(
-			"publication committed but backup cleanup failed preflight error=%d"
-			% cleanup_error
+			"publication committed but backup cleanup failed preflight error=%d; "
+			+ "complete rollback retained as %s" % [cleanup_error, salvage.get_file()]
 		)
 	cleanup_error = _remove_tree(backup)
 	if cleanup_error != OK:
 		return _failure(
-			"publication committed but backup cleanup failed error=%d" % cleanup_error
+			"publication committed but backup cleanup failed error=%d; "
+			+ "complete rollback retained as %s" % [cleanup_error, salvage.get_file()]
+		)
+	var salvage_cleanup := DirAccess.remove_absolute(salvage)
+	if salvage_cleanup != OK:
+		return _failure(
+			"publication committed but salvage cleanup failed error=%d; "
+			+ "complete rollback retained as %s" % [salvage_cleanup, salvage.get_file()]
 		)
 	return {"ok": true}
+
+
+static func publish_with_fault_for_test(
+	candidate: String, output: String, clean: bool, fault_after: int
+) -> Dictionary:
+	_remove_fault_after = fault_after
+	_remove_operations = 0
+	var result := _publish(candidate, output, clean)
+	_remove_fault_after = -1
+	_remove_operations = 0
+	return result
 
 
 static func build_packet(

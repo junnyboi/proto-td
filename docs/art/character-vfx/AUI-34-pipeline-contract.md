@@ -130,7 +130,7 @@ The evidence root must be outside the repository for a RELEASE run. Reusing a st
 
 The independent verifier does not derive expectations from production output. It pins source hashes, integer primitive cases, all eight anchor translations, per-cell opaque counts and bounds, semantic sample pixels, palette inventory, decoded RGBA hashes, contact-sheet samples, and Python canonical PNG hashes. [4] [5]
 
-The current fixture matrix covers same-backend cross-process whole-directory byte identity, Python/Godot decoded-RGBA differential, canonical sidecars, malformed schema and path cases, empty and border-contact frames, emitted alpha/palette/dimension/hash corruption, unknown packet entries, PNG re-encoding, replacement preservation, late-candidate corruption, injected Python publication faults, Godot in-root symlink chains, escape/loop/prefix collision cases, root/child symlink cleanup, and non-destructive rollback retention after a forced cleanup-preflight failure.
+The current fixture matrix covers same-backend cross-process whole-directory byte identity, Python/Godot decoded-RGBA differential, canonical sidecars, malformed schema and path cases, empty and border-contact frames, emitted alpha/palette/dimension/hash corruption, unknown packet entries, PNG re-encoding, replacement preservation, late-candidate corruption, injected Python publication faults, Godot in-root symlink chains, escape/loop/prefix collision cases, root/child symlink cleanup, unreadable-backup retention, and complete salvage recovery after a forced Godot failure following partial rollback deletion.
 
 A pass requires a positive `checks_executed` value. A hang, timeout, missing summary, malformed report, stale packet, skip, or zero checks is red.
 
@@ -138,9 +138,9 @@ A pass requires a positive `checks_executed` value. A hang, timeout, missing sum
 
 Each backend writes to a sibling candidate directory, emits all files, reopens both PNGs, recomputes hashes and measured checks, validates the exact inventory, and publishes only after the immutable candidate passes.
 
-When replacing an accepted output with `--clean`, the old packet moves to a unique rollback sibling before the candidate moves into place. Cleanup never follows file, directory, or root symlinks. Godot preflights the entire rollback tree non-destructively before deleting any old entry. If backup cleanup cannot be proven safe, the command returns non-zero, the new packet remains valid, and the complete old packet remains byte-for-byte intact in the rollback sibling.
+When replacing an accepted output with `--clean`, the old packet moves to a unique rollback sibling before the candidate moves into place. Before any destructive rollback cleanup, each backend writes a canonical sibling salvage JSON that records every directory, exact file byte payload, and symlink target without following links; the file is atomically renamed and read back byte-for-byte. If salvage creation fails, the command returns non-zero and the complete rollback remains intact. After verified salvage, Godot preflights the entire rollback tree and deletes it without following links. If deletion fails after partial progress, the command returns non-zero, the new packet remains valid, and the complete prior packet remains independently recoverable from the salvage. Salvage is removed only after rollback cleanup succeeds; a salvage-removal failure is also red and deliberately leaves the complete archive.
 
-Operators must treat that state as **failed publication cleanup**, not success. Validate the new packet, preserve the rollback, resolve the filesystem permission problem, and remove or restore the rollback deliberately. Never delete an unknown rollback blindly.
+Operators must treat any retained rollback or salvage as **failed publication cleanup**, not success. Validate the new packet, preserve both recovery forms, resolve the filesystem problem, and decode or restore the complete salvage deliberately. Never delete an unknown rollback or salvage blindly.
 
 ## 9. Troubleshooting
 
@@ -150,7 +150,9 @@ Operators must treat that state as **failed publication cleanup**, not success. 
 | `lexical-type` or duplicate-key error | Spec token or exact-key contract failed | Fix the source spec; do not normalize it silently |
 | `border-contact`, foot, center, alpha, palette, or reserved-color error | Measured pixel contract failed | Correct source art/normalization inputs; do not retune the gate |
 | `canonical-bytes mismatch` | Sidecar or backend PNG was changed/re-encoded | Regenerate the complete packet through the same backend |
-| `backup cleanup failed preflight` | New packet committed; complete old rollback retained | Treat run as red, validate new packet, recover deliberately |
+| `backup salvage failed` | New packet committed; complete old rollback retained before deletion | Treat run as red, validate new packet, recover deliberately |
+| `backup cleanup failed` | New packet committed; rollback may be partial; complete verified salvage retained | Treat run as red, validate new packet, recover from salvage deliberately |
+| `salvage cleanup failed` | New packet and complete salvage remain after rollback cleanup | Treat run as red and remove the verified salvage deliberately |
 | Child process timeout | Missing proof | Investigate the hang; never extend a pinned threshold merely to pass |
 | Python and Godot file hashes differ but RGBA matches | Expected encoder distinction | Require same-backend byte identity and cross-backend RGBA identity |
 
