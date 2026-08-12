@@ -74,6 +74,11 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, e.died_at_tick)
 	for t: TrapState in m.traps:
 		_append_int(bytes, t.last_trigger_tick)
+	# POLISH-BOLT: append-only presentation seam for the latest accepted
+	# CELL spell. SpellBook.casts(id) supplies the accepted-cast serial.
+	_append_int(bytes, m.last_cell_spell_id.hash())
+	_append_int(bytes, m.last_cell_spell_target.x)
+	_append_int(bytes, m.last_cell_spell_target.y)
 	return _fnv1a64(bytes)
 
 

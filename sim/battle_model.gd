@@ -81,6 +81,11 @@ var charmed: int = 0
 var charmed_dead: int = 0
 var charmed_exited: int = 0
 var spell_book: SpellBook = null
+## Deterministic presentation seam: the latest accepted CELL spell only.
+## Fail-closed sentinels mean no cast. Written after full validation + effect
+## resolution, so every rejected verb remains a hash-equal no-op.
+var last_cell_spell_id: StringName = &""
+var last_cell_spell_target := Vector2i(-1, -1)
 
 var _defs: Dictionary = {}
 var _op_defs: Dictionary = {}
@@ -431,6 +436,9 @@ func _apply_cast(spell_id: StringName, target: Variant) -> bool:
 		_:
 			return false
 	spell_book.mark_cast(spell_id, tick)
+	if def.target_kind == SpellDef.TargetKind.CELL:
+		last_cell_spell_id = spell_id
+		last_cell_spell_target = target
 	return true
 
 

@@ -112,6 +112,8 @@ func test_every_hashed_field_group_flips_the_hash() -> void:
 		"spell.casts": func() -> void: m.spell_book._casts[m.spell_book.ids[0]] += 1,
 		"dp_debug_adjusted": func() -> void: m.dp_debug_adjusted += 1,
 		"squad": func() -> void: m.squad.append(&"guard_1"),
+		"last_cell_spell_id": func() -> void: m.last_cell_spell_id = &"bolt",
+		"last_cell_spell_target": func() -> void: m.last_cell_spell_target.x += 1,
 	}
 	var prev := BattleHash.of(m)
 	for case_name: String in cases:

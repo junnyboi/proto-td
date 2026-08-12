@@ -82,6 +82,30 @@ func test_cooldown_ledger() -> void:
 	assert_eq(model.spell_book.casts(&"bolt"), 2)
 
 
+## POLISH-BOLT: cast is an immediate-write verb, so the presentation seam is
+## observable at the SAME model tick T. Rejected casts preserve both fields
+## and the complete hash exactly; they cannot replay a stale or fake impact.
+func test_cell_cast_records_target_immediately_and_rejects_preserve_it() -> void:
+	var model := _make_model(_stage_with_waves([FAR_WAVE] as Array[Dictionary]))
+	var accepted_target := Vector2i(3, 2)
+	var rejected_target := Vector2i(4, 2)
+	assert_eq(model.last_cell_spell_id, &"")
+	assert_eq(model.last_cell_spell_target, Vector2i(-1, -1))
+	var cast_tick := model.tick
+	assert_true(model.apply_action([&"cast", &"bolt", accepted_target]))
+	assert_eq(model.tick, cast_tick, "immediate cast record stays at entry tick T")
+	assert_eq(model.last_cell_spell_id, &"bolt")
+	assert_eq(model.last_cell_spell_target, accepted_target)
+	var accepted_hash := model.state_hash()
+	assert_false(
+		model.apply_action([&"cast", &"bolt", rejected_target]),
+		"cooldown-rejected cast cannot replace the accepted target",
+	)
+	assert_eq(model.state_hash(), accepted_hash, "rejection leaves the entire state hash equal")
+	assert_eq(model.last_cell_spell_id, &"bolt")
+	assert_eq(model.last_cell_spell_target, accepted_target)
+
+
 ## §4.5.2: Bolt hits exactly the Chebyshev-1 square around the target cell —
 ## grunts staged into seven distinct cells of the 3x3 (incl. diagonals) each
 ## take exactly 60 and die through the killed path; an aerial drone inside
