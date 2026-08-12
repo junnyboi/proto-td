@@ -54,6 +54,17 @@ track_count="$(jq '.tracks | length' "$provenance")"
 unique_ids="$(jq -r '.tracks[].id' "$provenance" | sort -u | wc -l | tr -d ' ')"
 [[ "$track_count" -eq 6 ]] || fail "provenance tracks=$track_count expected=6"
 [[ "$unique_ids" -eq 6 ]] || fail "provenance unique_ids=$unique_ids expected=6"
+jq -e '
+  .human_feedback.classification == "accepted"
+  and .human_feedback.final_acceptance_complete == true
+  and (.human_feedback.review_uri | startswith("user://conversation/"))
+' "$provenance" >/dev/null || fail "human acceptance record is incomplete"
+jq -e '
+  .runtime_integration.status == "approved_for_runtime"
+  and .runtime_integration.player_count == 1
+  and .runtime_integration.layering == false
+  and .runtime_integration.same_cue_restart == false
+' "$provenance" >/dev/null || fail "single-player runtime contract is incomplete"
 
 while IFS= read -r name; do
   case "$name" in
@@ -96,9 +107,13 @@ while IFS= read -r name; do
     continue
   fi
 
-  grep -q 'Instrumental only, no vocals' "$prompt" || fail "$id prompt does not ban vocals"
-  grep -q '^loop=true$' "$import_file" || fail "$id import is not loop-enabled"
-  jq -e '.placeholder == true' <<< "$track" >/dev/null || fail "$id placeholder must remain true"
+	grep -q 'Instrumental only, no vocals' "$prompt" || fail "$id prompt does not ban vocals"
+	grep -q '^loop=true$' "$import_file" || fail "$id import is not loop-enabled"
+	jq -e '
+	  .placeholder == false
+	  and .human_status == "accepted"
+	  and (.human_review_uri | startswith("user://conversation/"))
+	' <<< "$track" >/dev/null || fail "$id accepted human state is incomplete"
   [[ "$(jq -r '.act' <<< "$track")" == "$expected_act" ]] || fail "$id act mismatch"
   [[ "$(jq -r '.role' <<< "$track")" == "$expected_role" ]] || fail "$id role mismatch"
 

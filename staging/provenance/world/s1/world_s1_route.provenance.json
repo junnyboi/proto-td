@@ -1,0 +1,66 @@
+{
+  "final_file": "staging/assets/world/s1/s1-route.png",
+  "final_file_sha256": "c852a1ed7de5b81d4890afa7c2b077f354b57c2d0956ff9f29d1c3890c276ecd",
+  "generator": {
+    "approved_reference_hashes": [
+      {
+        "id": "d-world-style-board",
+        "sha256": "da7fb17af23c06a7b7e9bfbd78a6b0ac8727da9a42daade1c12bc6c537d1c7d3"
+      },
+      {
+        "id": "d-act-i-material-prop-sheet",
+        "sha256": "246a7802d6a8d43a143246212815cb8eb7f88a5deea1f5a826ed5d8b59655373"
+      },
+      {
+        "id": "d-s1-guild-threshold-keyframe-approved-revision",
+        "sha256": "991f2c3d03da7160aa53c760645f69a0a9dea3bdf554f17275f74d120ac1335d"
+      }
+    ],
+    "model": "gpt-image-2",
+    "prompt_contract": "art-src/world/s1/s1-world-gpt-image-2-prompts.md",
+    "prompt_contract_sha256": "a4096a65b44eaaf9fb5066244912c7f0e4ebd4c85da9a72fe76a0e805aeaed68",
+    "prompt_section": "Route",
+    "seed": null,
+    "seed_reason": "unsupported/not returned by generator",
+    "tool": "Manus generate_image"
+  },
+  "human_acceptance": {
+    "accepting_commit": "60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+    "acceptor": "Poseidon",
+    "final_art": true,
+    "receipt": "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+    "receipt_sha256": "a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83",
+    "timestamp_utc": "2026-08-12T19:49:51Z"
+  },
+  "license_source": "original AI-assisted source under project-controlled prompt/reference set; approved concepts only",
+  "logical_id": "world.s1.route",
+  "normalization": {
+    "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
+    "asset_contract_sha256": "3c151deb528a68769d0a06268abe5117d15bcee8c04222024c8ba73cac21bc3e",
+    "derived_palette": "art-src/world/s1/s1-derived-palette.json",
+    "derived_palette_sha256": "0311300b3a8cb3f7ce7d971db4c66ffe24c810cc2127f44286cde4c6640e6795",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "recipe": "source palette derivation + contract-authored native geometry + hard alpha + no-dither fixed palette",
+    "tool": "tools/art_pipeline/world/normalize_s1_world.py",
+    "tool_sha256": "9b79d433f6d690549ca276947fe02b3cd06b49e4c41074fe8e683592b00c7b27"
+  },
+  "placement_state": "STAGED_PRESENTATION_ROLE_DEFINED",
+  "raw_source": {
+    "acceptance_state": "ACCEPTED_AS_IDENTITY_MATERIAL_SOURCE",
+    "file": "s1-route.png",
+    "original_file": "s1-route_original.png",
+    "original_sha256": "96b6758173d2577025ac15097884ec83d58bd51167d86d8a2b399bd25fad4e36",
+    "retention": "external owner-approval archive",
+    "sha256": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9"
+  },
+  "reserved_colors": {
+    "forbidden": [
+      "#F4F4F4",
+      "#41A6F6"
+    ],
+    "gate": "PASS"
+  },
+  "schema_version": 1,
+  "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
+}

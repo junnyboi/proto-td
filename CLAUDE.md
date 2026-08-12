@@ -1,4 +1,4 @@
-# Prototype TD — Agent Rules
+# Protos — Agent Rules
 
 Tactical tower defense POC (Arknights-benchmark + twist bundle), built agent-first on Godot
 4.7.1. Canonical phase plans live in the Manus MGS project knowledge area; actionable
@@ -152,11 +152,11 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
-## Audio: music assets reopened; runtime and SFX remain silent
+## Audio: approved runtime music; SFX remains silent
 
-The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner explicitly
-reopened **music asset creation** for the three-act score, so generated music catalogs and
-their QA/provenance are allowed. Do not restore synth SFX or hardcode provisional runtime
-playback before the act/boss routing contract exists. The current playable build remains
-silent, the `sfx_played` telemetry seam stays wired, and any further audio scope requires an
-explicit owner request. See `docs/decisions/D-SFX.md`.
+The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner approved the
+six-cue score and explicitly authorized runtime music. `Music` is the sole catalog-backed
+owner and must retain exactly one `AudioStreamPlayer`: never layer cues, never restart the
+current logical ID, and hard-replace only when the ID changes. Stage act/boss routing lives
+in `StageDef` data. Do not restore synth SFX; the `sfx_played` telemetry seam stays wired.
+See `docs/decisions/D-SFX.md`.

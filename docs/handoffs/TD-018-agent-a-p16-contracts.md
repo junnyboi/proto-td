@@ -1,4 +1,4 @@
-# TD-008 — P16.0 deterministic personnel contracts handoff
+# TD-018 — P16.0 deterministic personnel contracts handoff
 
 ## Identity
 
@@ -8,7 +8,7 @@
 - Base: `a6bae9c24f4e6239da0821ef81107198bbf011c2`
 - Route: RELEASE
 - Canonical plan: `td-phase-16-persistent-heroes-barracks-permadeath.md`, including owner-approved D16-07
-- Repository contract: `docs/plans/TD-008-p16-contracts.md`
+- Repository contract: `docs/plans/TD-018-p16-contracts.md`
 
 ## Outcome
 

@@ -18,6 +18,8 @@ const ArtProps := preload("res://tools/pixel/art_props.gd")
 const OUT_SPRITES := "res://assets/sprites"
 const OUT_PORTRAITS := "res://assets/portraits"
 const OUT_SHEET := "res://artifacts/lane_a"
+const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
+const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
 
 var _failed := false
 var _manifest := AssetManifest.new()
@@ -135,10 +137,17 @@ func _initialize() -> void:
 		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
 		sheet_cells.append(Pix.upscale(img, 4))
 
+	# AUI-10R uses its own deterministic Python pipeline. Import its
+	# contract-backed runtime inventory before canonical provenance/manifest save.
+	_record_s1_world_assets()
+
 	_write_sheet(sheet_cells, "calibration.png")
 	_write_sheet(portrait_cells, "portraits.png")
 	_write_stage_collage(tiles)
 	if _failed:
+		quit(1)
+		return
+	if not _generate_provenance():
 		quit(1)
 		return
 	var err := ResourceSaver.save(_manifest, "res://assets/manifest.tres")
@@ -160,8 +169,91 @@ func _record(
 		_failed = true
 		return
 	_manifest.entries[id] = {
-		"pattern": pattern, "frames": frames, "size": size, "placeholder": placeholder
+		"pattern": pattern,
+		"frames": frames,
+		"size": size,
+		"placeholder": placeholder,
+		"pivot": AssetManifest.legacy_pivot(id, frames),
+		"animations": AssetManifest.legacy_animations(frames),
+		"provenance_sha256": "0".repeat(64),
 	}
+
+
+func _record_s1_world_assets() -> void:
+	var contract_path := "res://art-src/world/s1/s1-world-asset-contract.json"
+	var file := FileAccess.open(contract_path, FileAccess.READ)
+	if file == null:
+		push_error("[gen_assets] missing S1 world contract")
+		_failed = true
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not parsed is Dictionary or not parsed.has("assets") or not parsed["assets"] is Array:
+		push_error("[gen_assets] malformed S1 world contract")
+		_failed = true
+		return
+	for row: Variant in parsed["assets"]:
+		if not row is Dictionary or not row.has("id") or not row.has("native_size"):
+			push_error("[gen_assets] malformed S1 world asset row")
+			_failed = true
+			continue
+		var id := StringName(row["id"])
+		var native_size: Array = row["native_size"]
+		if native_size.size() != 2:
+			push_error("[gen_assets] invalid S1 native size for %s" % id)
+			_failed = true
+			continue
+		var file_stem := String(id).trim_prefix("world.s1.").replace("_", "-")
+		var path := "res://assets/world/s1/s1-%s.png" % file_stem
+		if not FileAccess.file_exists(path):
+			push_error("[gen_assets] missing S1 runtime asset %s" % path)
+			_failed = true
+			continue
+		_record(id, path, 1, Vector2i(int(native_size[0]), int(native_size[1])), false)
+
+
+func _generate_provenance() -> bool:
+	var inventory: Dictionary = {}
+	var ids: Array[StringName] = []
+	for raw_id: Variant in _manifest.entries:
+		ids.append(raw_id)
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	for id: StringName in ids:
+		var entry: Dictionary = _manifest.entries[id]
+		inventory[String(id)] = {
+			"pattern": String(entry["pattern"]),
+			"frames": int(entry["frames"]),
+		}
+	var file := FileAccess.open(PROVENANCE_INVENTORY, FileAccess.WRITE)
+	if file == null:
+		push_error("[gen_assets] failed to write provenance inventory")
+		return false
+	file.store_string(JSON.stringify({"entries": inventory}, "\t", true) + "\n")
+	file.close()
+	var output: Array = []
+	var code := OS.execute(
+		"/usr/bin/python3",
+		[
+			ProjectSettings.globalize_path(PROVENANCE_TOOL),
+			"--repo",
+			ProjectSettings.globalize_path("res://"),
+			"--inventory",
+			ProjectSettings.globalize_path(PROVENANCE_INVENTORY),
+			"--write",
+		],
+		output,
+		true,
+	)
+	if code != 0:
+		push_error("[gen_assets] provenance failed (%d): %s" % [code, "\n".join(output)])
+		return false
+	for id: StringName in ids:
+		var sidecar := "res://assets/provenance/%s.provenance.json" % id
+		var digest := FileAccess.get_sha256(sidecar)
+		if digest.length() != 64:
+			push_error("[gen_assets] missing provenance digest for %s" % id)
+			return false
+		_manifest.entries[id]["provenance_sha256"] = digest
+	return true
 
 
 func _lint_and_save(

@@ -20,12 +20,17 @@ const BAR_HEIGHT := 88.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
+const FACING_BUTTON_SIZE := Vector2(56.0, 56.0)
+const FACING_BUTTON_GAP := 12.0
+const FACING_SAFE_MARGIN := 12.0
+const FACING_SAFE_TOP := 104.0
+const FACING_BUTTON_Z := 15
 
 const FACING_BUTTONS := {
-	UnitState.Facing.RIGHT: {"name": "FacingRight", "text": ">", "offset": Vector2i(1, 0)},
-	UnitState.Facing.DOWN: {"name": "FacingDown", "text": "v", "offset": Vector2i(0, 1)},
-	UnitState.Facing.LEFT: {"name": "FacingLeft", "text": "<", "offset": Vector2i(-1, 0)},
-	UnitState.Facing.UP: {"name": "FacingUp", "text": "^", "offset": Vector2i(0, -1)},
+	UnitState.Facing.RIGHT: {"name": "FacingRight", "text": "↘", "slot": Vector2i(1, 1)},
+	UnitState.Facing.DOWN: {"name": "FacingDown", "text": "↙", "slot": Vector2i(0, 1)},
+	UnitState.Facing.LEFT: {"name": "FacingLeft", "text": "↖", "slot": Vector2i(0, 0)},
+	UnitState.Facing.UP: {"name": "FacingUp", "text": "↗", "slot": Vector2i(1, 0)},
 }
 
 var model: BattleModel = null
@@ -83,11 +88,7 @@ func relayout() -> void:
 			child.queue_free()
 		_show_valid_highlights()
 	if _pending_cell.x >= 0:
-		for facing: UnitState.Facing in _facing_buttons:
-			var spec: Dictionary = FACING_BUTTONS[facing]
-			var btn: Button = _facing_buttons[facing]
-			var center: Vector2 = view.call("cell_center", _pending_cell + (spec["offset"] as Vector2i))
-			btn.position = center - btn.get_combined_minimum_size() * 0.5
+		_layout_facing_buttons(_pending_cell)
 
 
 func _process(_delta: float) -> void:
@@ -195,7 +196,9 @@ func _build_overlays() -> void:
 		var btn := Button.new()
 		btn.name = spec["name"]
 		btn.text = spec["text"]
+		btn.custom_minimum_size = FACING_BUTTON_SIZE
 		btn.add_theme_font_size_override("font_size", FONT_SIZE)
+		btn.z_index = FACING_BUTTON_Z
 		btn.visible = false
 		btn.pressed.connect(_confirm_deploy.bind(facing))
 		add_child(btn)
@@ -283,12 +286,39 @@ func _end_placement_drag() -> void:
 	# the slowdown HOLDS through the facing chooser (L7 verdict 2026-08-11:
 	# full-speed enemies charging while the player aims felt punishing);
 	# _confirm_deploy / _cancel_placement restore normal speed
+	_layout_facing_buttons(cell)
+	for facing: UnitState.Facing in _facing_buttons:
+		var btn: Button = _facing_buttons[facing]
+		btn.visible = true
+
+
+## Model cardinal facings project to screen diagonals. Keep all four controls
+## in one fixed-size screen-space cluster instead of scattering them across
+## full neighboring cells (which scales with camera zoom and collides with
+## overlays). Edge cells translate the cluster as one rigid unit.
+func _layout_facing_buttons(cell: Vector2i) -> void:
+	var button_size := FACING_BUTTON_SIZE
+	for facing: UnitState.Facing in _facing_buttons:
+		var minimum: Vector2 = (_facing_buttons[facing] as Button).get_combined_minimum_size()
+		button_size.x = maxf(button_size.x, minimum.x)
+		button_size.y = maxf(button_size.y, minimum.y)
+	var cluster_size := button_size * 2.0 + Vector2.ONE * FACING_BUTTON_GAP
+	var desired_origin: Vector2 = view.call("cell_center", cell) - cluster_size * 0.5
+	var safe_min := Vector2(FACING_SAFE_MARGIN, FACING_SAFE_TOP)
+	var safe_max := Vector2(
+		maxf(safe_min.x, size.x - FACING_SAFE_MARGIN - cluster_size.x),
+		maxf(safe_min.y, size.y - BAR_HEIGHT - FACING_SAFE_MARGIN - cluster_size.y),
+	)
+	var cluster_origin := Vector2(
+		clampf(desired_origin.x, safe_min.x, safe_max.x),
+		clampf(desired_origin.y, safe_min.y, safe_max.y),
+	)
 	for facing: UnitState.Facing in _facing_buttons:
 		var spec: Dictionary = FACING_BUTTONS[facing]
 		var btn: Button = _facing_buttons[facing]
-		var center: Vector2 = view.call("cell_center", cell + (spec["offset"] as Vector2i))
-		btn.position = center - btn.get_combined_minimum_size() * 0.5
-		btn.visible = true
+		var slot: Vector2i = spec["slot"]
+		btn.size = button_size
+		btn.position = cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
 
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:

@@ -208,6 +208,15 @@ func _lint_stage(path: String, failures: Array[String]) -> StageDef:
 		failures.append("%s: campaign_index 0 (use -1 for non-campaign, 1..N for campaign)" % tag)
 	if stage.campaign_index < 1 and (not stage.rewards.is_empty() or not stage.requires.is_empty()):
 		failures.append("%s: rewards/requires on a non-campaign stage are dead data" % tag)
+	if stage.music_act < 1 or stage.music_act > 3:
+		failures.append("%s: music_act must be 1..3 (got %d)" % [tag, stage.music_act])
+	if stage.campaign_index >= 1 and stage.campaign_index <= 8:
+		var expected_act := 1 if stage.campaign_index <= 4 else 2
+		if stage.music_act != expected_act:
+			failures.append(
+				"%s: campaign index %d must route to music act %d (got %d)"
+				% [tag, stage.campaign_index, expected_act, stage.music_act]
+			)
 	if stage.grid_rows.is_empty():
 		failures.append("%s: empty grid" % tag)
 		return stage
@@ -231,7 +240,27 @@ func _lint_stage(path: String, failures: Array[String]) -> StageDef:
 	if stage.leak_limit < 0:
 		failures.append("%s: leak_limit < 0" % tag)
 	_lint_wave_starts(stage, failures, tag)
+	_lint_music_route(stage, failures, tag)
 	return stage
+
+
+func _lint_music_route(stage: StageDef, failures: Array[String], tag: String) -> void:
+	var boss_wave := stage.music_boss_wave_index
+	if boss_wave < -1:
+		failures.append("%s: music_boss_wave_index must be -1 or a wave index" % tag)
+	elif boss_wave >= stage.wave_starts.size():
+		failures.append(
+			"%s: music boss wave %d out of range for %d wave windows"
+			% [tag, boss_wave, stage.wave_starts.size()]
+		)
+	# The shipped campaign currently ends Acts I and II at S4 and S8.
+	var expected_boss_wave: int = int({4: 1, 8: 2}.get(stage.campaign_index, -1))
+	if stage.campaign_index >= 1 and stage.campaign_index <= 8 \
+			and boss_wave != expected_boss_wave:
+		failures.append(
+			"%s: campaign index %d must use boss wave %d (got %d)"
+			% [tag, stage.campaign_index, expected_boss_wave, boss_wave]
+		)
 
 
 ## wave_starts (td-phase-6-7.md §4.4): empty is valid (one window); a

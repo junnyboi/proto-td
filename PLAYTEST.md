@@ -1,4 +1,4 @@
-# Prototype TD — Human Playtest Protocol (L7, rounds 1–2)
+# Protos — Human Playtest Protocol (L7, rounds 1–2)
 
 You are the first human to play this build. Machines have proven it *correct*; only you can
 say whether it is *fun*. Trust your gut, write everything down, and don't be polite about it.
@@ -9,20 +9,20 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `cd35d19`** (includes TD-007 campaign-only Start, the P12 iso
-  view, P13 battle controls, phase-14 remediation, P15 Staging hub, and P16.0 deterministic
-  personnel contracts). P16.0 is deliberately non-player-facing: recruitment, persistence,
-  Barracks, Continue, and permadeath are not expected yet. The original `poc-v1-audit` tag and
-  two-flow P15 build are
-  superseded; do not playtest an older build.
-- **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
-  music. Every audio question in this script is N/A — judge visuals only, and do not log the
-  silence as a defect.
+- Build under test: **the integrated P16.0/master union or later** (includes the P12 iso view,
+  P13 battle controls, phase-14 remediation, P15 Staging hub, single Start → campaign route,
+  TD-017 runtime music, current Protos presentation work, and deterministic P16.0 personnel
+  contracts). P16.0 is deliberately non-player-facing: recruitment, persistence, Barracks,
+  Continue, and permadeath are not expected yet. The original `poc-v1-audit` tag and two-flow
+  P15 build are superseded; do not playtest an older build.
+- **Music is active; SFX remains silent.** Expect Act I BGM in S1–S4 and Act II BGM in S5–S8.
+  S4 and S8 hard-switch to their paired boss cues at the final wave. Only one cue may ever be
+  audible; layering, duplicate restarts, or music continuing into menus/results is a defect.
 
 ## 2. The run
 
 Title → **Start** → **Staging Area** → **Mission Control** → play S1→S8 in order. Start is the
-prototype's only game flow; there is no separate quick battle. Expect to
+game's only flow; there is no separate quick battle. Expect to
 lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 
 **Watch for** (does the lesson land?)
@@ -71,9 +71,10 @@ lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 - Banner rhythm: does WAVE N landing feel like a beat? Star stagger on the stamp?
 - Trap snap: sharp enough? Tar shimmer visible without being noisy?
 - Charm beat: is the 0.5× beat + swirl a *moment*?
-- Audio (deploy thump, kill ticks, leak alarm sound, trap snap, charm chime, wave/victory
-  stings): **N/A by design** — the build is deliberately silent (deviation D-SFX). Skip every
-  audio judgment; the original questions return with the audio.
+- Music: does each act BGM fit its location and leave tactical space? Do S4/S8 switch once into
+	  the correct boss cue without a doubled layer or obvious restart? Does music stop on results
+	  and menu screens? SFX questions (deploy, kill, leak, trap, charm, wave/victory stings) remain
+	  **N/A by design** under D-SFX.
 - Art v2: does the warm road read as "their lane"? Do operators vs enemies separate cleanly
   in a messy fight (flagged from the audit's shot review)? Portrait cards charming?
 

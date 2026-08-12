@@ -7,6 +7,8 @@ extends Node2D
 ## outcomes). Phase 1 renders ColorRect placeholders; Lane A sprites replace
 ## them via the asset manifest without touching this flow.
 
+const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+
 const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -19,9 +21,6 @@ const ATTACK_POSE_FRAMES := 8
 const UI_OVERLAY_Z := 50
 const JUICE_Z := 60
 const HUD_Z := 70
-## Dynamic canvas fit: margins reserved for HUD (top) + deploy bar (bottom)
-## + side breathing room when fitting the grid to the viewport.
-const FIT_MARGIN := Vector2(48.0, 170.0)
 ## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
 ## no bare empty canvas.
 const BACKDROP_COLOR := Color("11131f")
@@ -69,6 +68,7 @@ var cfg: JuiceConfig = null
 
 var _grid_root: Node2D = null
 var _grid_scale := 1.0
+var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
 var _enemy_rects: Dictionary = {}
@@ -146,7 +146,8 @@ func _ready() -> void:
 	Game.current_battle = model
 	Game.content = self
 	_stage = stage
-	_build_grid(stage)
+	if not _build_grid(stage):
+		return
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
 	_juice = JuiceLayer.new()
 	_juice.name = "JuiceLayer"
@@ -216,6 +217,48 @@ func screen_of(p: Vector2) -> Vector2:
 ## the UI bars size themselves by this.
 func grid_scale() -> float:
 	return _grid_scale
+
+
+func map_screen_rect() -> Rect2:
+	var box := IsoProjection.terrain_box(_stage)
+	return Rect2(_grid_root.position + box.position * _grid_scale, box.size * _grid_scale)
+
+
+func map_content_rect() -> Rect2:
+	return _map_nav.content_screen_rect()
+
+
+func map_pan() -> Vector2:
+	return _map_nav.pan
+
+
+func map_pan_bounds() -> Rect2:
+	return _map_nav.bounds
+
+
+func map_dragging() -> bool:
+	return _map_nav.is_dragging()
+
+
+func _input(event: InputEvent) -> void:
+	_map_nav.recover_missed_release(event)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _grid_root == null or _map_navigation_blocked():
+		return
+	if _map_nav.handle_input(event):
+		_apply_map_transform()
+		get_viewport().set_input_as_handled()
+
+
+func _map_navigation_blocked() -> bool:
+	var deploy_cursor := find_child("CursorRect", true, false) as CanvasItem
+	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
+	return (
+		(deploy_cursor != null and deploy_cursor.visible)
+		or (spell_cursor != null and spell_cursor.visible)
+	)
 
 
 func _is_lifted_cell(cell: Vector2i) -> bool:
@@ -323,7 +366,16 @@ func _detect_deploys() -> void:
 		if _deploy_seen.has(u.id):
 			continue
 		_deploy_seen[u.id] = true
-		_juice.dust(cell_center(u.cell))
+		var local_center := IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
+		var unit_top := IsoProjection.FEET_OFFSET - UNIT_PX - HP_BAR_HEIGHT - 3.0
+		var unit_bottom := IsoProjection.FEET_OFFSET + HP_BAR_HEIGHT + 3.0
+		var unit_rect := Rect2(
+			local_center + Vector2(-UNIT_PX * 0.5, unit_top),
+			Vector2(UNIT_PX, unit_bottom - unit_top),
+		)
+		if _map_nav.ensure_local_rect_visible(unit_rect):
+			_apply_map_transform()
+		_juice.dust(local_center)
 		var node: Node2D = _unit_nodes.get(u.id)
 		if node != null:
 			_juice.crouch(node)
@@ -337,7 +389,7 @@ func _detect_kills() -> void:
 			continue
 		_spark_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.spark(screen_of(pos + Vector2.ONE * 0.5))
+		_juice.spark(IsoProjection.project(pos + Vector2.ONE * 0.5))
 		Sfx.play("kill")
 
 
@@ -456,7 +508,7 @@ func _detect_charms() -> void:
 			continue
 		_charm_seen[e.id] = true
 		var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
-		_juice.swirl(screen_of(pos + Vector2.ONE * 0.5))
+		_juice.swirl(IsoProjection.project(pos + Vector2.ONE * 0.5))
 		juice_time_push(&"charm_beat", cfg.charm_beat_time_scale)
 		_beat_frames_left = cfg.charm_beat_frames
 		_juice.shake("charm_beat", cfg.charm_shake_amplitude_px, cfg.charm_shake_frames)
@@ -493,7 +545,7 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	return defs
 
 
-func _build_grid(stage: StageDef) -> void:
+func _build_grid(stage: StageDef) -> bool:
 	_backdrop = ColorRect.new()
 	_backdrop.name = "Backdrop"
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -503,32 +555,31 @@ func _build_grid(stage: StageDef) -> void:
 	add_child(_backdrop)
 	_grid_root = Node2D.new()
 	_grid_root.name = "GridRoot"
-	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
-	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
-	_grid_root.scale = Vector2.ONE * _grid_scale
-	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
+	_map_nav.relayout(stage, viewport)
+	_apply_map_transform()
 	add_child(_grid_root)
-	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
-	IsoGridBuilder.build_terrain(_grid_root, stage)
+	if not IsoGridBuilder.build_stage(_grid_root, stage):
+		return false
+	return true
 
 
-## Dynamic canvas fit (td-phase-12 + browser-resize requirement): refit the
-## grid whenever the window/viewport size changes. Entities live in
-## grid-local space, so repositioning + rescaling the root relayouts the
-## whole battle for free; the UI bars own their layout and listen too.
+func _apply_map_transform() -> void:
+	_grid_scale = _map_nav.scale
+	_grid_root.scale = Vector2.ONE * _grid_scale
+	_grid_root.position = _map_nav.root_position()
+	if _juice != null:
+		_juice.refresh_base()
+
+
+## Dynamic height-fill + bounded pan: refit to the live viewport height, keep
+## the current pan where legal, then drive all screen-owned UI relayouts.
 func _relayout() -> void:
 	if _stage == null or _grid_root == null:
 		return
 	var viewport := get_viewport_rect().size
-	var size := _stage.grid_size()
-	_grid_scale = IsoProjection.fit_scale(size, viewport - FIT_MARGIN)
-	_grid_root.scale = Vector2.ONE * _grid_scale
-	_grid_root.position = IsoProjection.origin_for(size, viewport, _grid_scale)
-	# the shake oscillates around a cached origin — re-anchor it or the
-	# next shake teleports the grid to the pre-resize spot (P14)
-	if _juice != null:
-		_juice.refresh_base()
+	_map_nav.relayout(_stage, viewport)
+	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
 	if _portrait_flash != null:
@@ -544,6 +595,8 @@ func _relayout() -> void:
 		_spell_bar.relayout()
 	if _controls != null:
 		_controls.relayout()
+	if _juice != null:
+		_juice.relayout(viewport)
 
 
 func _build_hud() -> void:
@@ -818,7 +871,7 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	_skill_seen_tick[u.id] = u.skill_triggered_tick
 	Sfx.play(String(u.skill_id))
 	if _juice != null:
-		_juice.skill_burst(cell_center(u.cell))
+		_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
 	_portrait_flash.color = OP_CLASS_COLORS[op_class]

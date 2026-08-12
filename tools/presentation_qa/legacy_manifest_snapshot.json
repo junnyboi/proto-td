@@ -1,0 +1,851 @@
+{
+  "base_commit": "975261e8e00a20a0b25fe17e7976d743d509c14b",
+  "base_tree": "cf4b3e1c0d8ae826c668765d994a032acbb8c0ad",
+  "entries": {
+    "caster_1": {
+      "files": [
+        {
+          "path": "res://assets/sprites/caster_1_0.png",
+          "sha256": "187089776a489e025f60affefb5ff1cbe47406beb7baa296b773f6b101981cd3"
+        },
+        {
+          "path": "res://assets/sprites/caster_1_1.png",
+          "sha256": "aff538319c985520eb257b35473ee3520fefb0f6364423169b40922afc2193e0"
+        },
+        {
+          "path": "res://assets/sprites/caster_1_2.png",
+          "sha256": "e2bc4cb34a407f5d9dea94a1319cf2683bf67fcc27192ab77ae46f2b370c43bd"
+        },
+        {
+          "path": "res://assets/sprites/caster_1_3.png",
+          "sha256": "c6cd6d9f3dc8a6597185484469ba2f794ac24adf1d27f01ae56af81891e6d3c8"
+        },
+        {
+          "path": "res://assets/sprites/caster_1_4.png",
+          "sha256": "b1a266aaa83b5bfb7a6f98e4bb07f6110ff7a0491ee0e8753115d7a619488285"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/caster_1_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "caster_2": {
+      "files": [
+        {
+          "path": "res://assets/sprites/caster_2_0.png",
+          "sha256": "d428ac64f38175fde28e03b851939f1588080b0dd5efa9356aaea8a573f97b47"
+        },
+        {
+          "path": "res://assets/sprites/caster_2_1.png",
+          "sha256": "21d81f93de5b8566393c7aa2cde52bb6515d45ec6aadfa4d4c4288cf7dd86db1"
+        },
+        {
+          "path": "res://assets/sprites/caster_2_2.png",
+          "sha256": "8844314ea74b14753982986657f19d6d4e7ef4d60d07eb73d12a07ad5d01c61d"
+        },
+        {
+          "path": "res://assets/sprites/caster_2_3.png",
+          "sha256": "5f946424d99262dc05ec37f9a89a36fe19336110cbbd0d4e23a1c49402e7b322"
+        },
+        {
+          "path": "res://assets/sprites/caster_2_4.png",
+          "sha256": "73a605fa5c64cf923da6870aefb38288337cc3fcb4a172ced3b81c7a3df212f3"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/caster_2_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "defender_1": {
+      "files": [
+        {
+          "path": "res://assets/sprites/defender_1_0.png",
+          "sha256": "32ff2bcffe10fe78818bcb25c1f0a77987a0beca9fe273ce08942a211d6052fa"
+        },
+        {
+          "path": "res://assets/sprites/defender_1_1.png",
+          "sha256": "9dedee17cf38cd7dc54801505926ed9ea1dadbec10fcf46b1ac337cd0fb9610b"
+        },
+        {
+          "path": "res://assets/sprites/defender_1_2.png",
+          "sha256": "354bdc80db1bc4c24fc1cd2c7104e8fe910a2776559606f75df50ff6ca93f9a8"
+        },
+        {
+          "path": "res://assets/sprites/defender_1_3.png",
+          "sha256": "8fe968ccd766411ab487da9c7089db510366543707e7187d28a05ff9a11fd4a2"
+        },
+        {
+          "path": "res://assets/sprites/defender_1_4.png",
+          "sha256": "d121c6f2a4657366e0e06999267df6bfd43706f922643a17b020dbf4d94e00ef"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/defender_1_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "defender_2": {
+      "files": [
+        {
+          "path": "res://assets/sprites/defender_2_0.png",
+          "sha256": "79708275e05b54afad937c8fc9eb6ca1587969e983b01257568b02a77a7b060e"
+        },
+        {
+          "path": "res://assets/sprites/defender_2_1.png",
+          "sha256": "e05f3646005fdbc688836f731b9bed8f9df59b8b653ff42b9d3b0a512dfce9ec"
+        },
+        {
+          "path": "res://assets/sprites/defender_2_2.png",
+          "sha256": "291557d8096642f9700c9e46cad573f059638837c8fcb1b89bee0f75aa04ea9a"
+        },
+        {
+          "path": "res://assets/sprites/defender_2_3.png",
+          "sha256": "be92bf226f6de0460c9906cbcc855f61d1b718ab1bbe7917bc41c28be5922b86"
+        },
+        {
+          "path": "res://assets/sprites/defender_2_4.png",
+          "sha256": "f68d68ca8de59769c51c58de1b55e3fc83cc1b63045476303e4e9576ae06a4a9"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/defender_2_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "drone": {
+      "files": [
+        {
+          "path": "res://assets/sprites/drone_0.png",
+          "sha256": "9a4156fddc657df40967af8b196724dbbb0529a9a95786b228cf4dcdcdd1ef43"
+        },
+        {
+          "path": "res://assets/sprites/drone_1.png",
+          "sha256": "22bf17356a263d9a49509c90841c4076f8e39c6771b2368de51e4ba481aa7e4b"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/drone_%d.png",
+      "placeholder": false,
+      "size": [
+        24,
+        24
+      ]
+    },
+    "grunt": {
+      "files": [
+        {
+          "path": "res://assets/sprites/grunt_0.png",
+          "sha256": "9271904d24d8d4caaf0da94e54f239edf199d4afb491e73aa896130923c29dc3"
+        },
+        {
+          "path": "res://assets/sprites/grunt_1.png",
+          "sha256": "637b753f783452029e389b8260095ac3fec49ee084ffaa25199858ed160d9921"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/grunt_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "grunt_charmed": {
+      "files": [
+        {
+          "path": "res://assets/sprites/grunt_charmed_0.png",
+          "sha256": "da7c11c81223c4668a7b105c3349ce71015591eb3711e7ed7be78faaeec0d8a3"
+        },
+        {
+          "path": "res://assets/sprites/grunt_charmed_1.png",
+          "sha256": "6972ddd2c6424c1d79a404f85cc9720832f957e62367f5ef9b2a3611bcd2af25"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/grunt_charmed_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "guard_1": {
+      "files": [
+        {
+          "path": "res://assets/sprites/guard_1_0.png",
+          "sha256": "50e283c32564235350db8643a269f52a102ce9d9ca01b1a5778da369b083db74"
+        },
+        {
+          "path": "res://assets/sprites/guard_1_1.png",
+          "sha256": "29295eb1db8e63daf8af586067a0b5ca2c669f98f2ddc4ddf871f91c270a5424"
+        },
+        {
+          "path": "res://assets/sprites/guard_1_2.png",
+          "sha256": "456d4f2b92644398a80c49565cbe5977767956e4236a2e3ccfd861b88448b60a"
+        },
+        {
+          "path": "res://assets/sprites/guard_1_3.png",
+          "sha256": "2646f5b14be52b09f1a9b199652f8b92f790703712858669b9d995484a66dd29"
+        },
+        {
+          "path": "res://assets/sprites/guard_1_4.png",
+          "sha256": "4a5a2ad04be3a8a1bdd66590014d7523de36efcd493076da8002787dec9d9ec1"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/guard_1_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "guard_2": {
+      "files": [
+        {
+          "path": "res://assets/sprites/guard_2_0.png",
+          "sha256": "2a83ff6e2f5697526b086b997657d4058335af31f7f31d74db1d8b292b9a0da6"
+        },
+        {
+          "path": "res://assets/sprites/guard_2_1.png",
+          "sha256": "e25c48f2b84ebc6301e84789ecd1b6637facfea5f41d7ac36f76935412937145"
+        },
+        {
+          "path": "res://assets/sprites/guard_2_2.png",
+          "sha256": "1741608ca0d0c8382298b58969f435a5dd84aec77086d86bf2ecb77cbe185859"
+        },
+        {
+          "path": "res://assets/sprites/guard_2_3.png",
+          "sha256": "f866501520f5e633d0c485b22c6c2b4cc2d11f12c592676d5744fffacfeb6db3"
+        },
+        {
+          "path": "res://assets/sprites/guard_2_4.png",
+          "sha256": "30bd99cbf917e02535f5181687191cf00c88ac0bcc0900daca1e8a10c768ddf1"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/guard_2_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "heavy": {
+      "files": [
+        {
+          "path": "res://assets/sprites/heavy_0.png",
+          "sha256": "eafe5f1f0da103e2d2a23cf4875dac3ab42cdab90dfc953f4969716219eeb667"
+        },
+        {
+          "path": "res://assets/sprites/heavy_1.png",
+          "sha256": "2fa85c43b77435ab4cb23f56f55dea703ee4bc36d4231197b75804eed758472d"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/heavy_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "heavy_charmed": {
+      "files": [
+        {
+          "path": "res://assets/sprites/heavy_charmed_0.png",
+          "sha256": "0308fc26d9a772b0e25634d583788bbbbbd245318cb40ff1576cc2582381bdbe"
+        },
+        {
+          "path": "res://assets/sprites/heavy_charmed_1.png",
+          "sha256": "7ff6c56de394087a10028cf06d58dcb420454cee2c28af39d5df8ff3afbfb614"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/heavy_charmed_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "icon_bolt": {
+      "files": [
+        {
+          "path": "res://assets/sprites/icon_bolt.png",
+          "sha256": "042e19b5383ae97f5acfcf098e06aea036562627bfd5d4dffceab9af442d3055"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/icon_bolt.png",
+      "placeholder": false,
+      "size": [
+        24,
+        24
+      ]
+    },
+    "icon_charm": {
+      "files": [
+        {
+          "path": "res://assets/sprites/icon_charm.png",
+          "sha256": "ffe88a7544208ad227e5d1b96f926792a85acb0a2553be6088dba6f87998c9e4"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/icon_charm.png",
+      "placeholder": false,
+      "size": [
+        24,
+        24
+      ]
+    },
+    "mini_boss": {
+      "files": [
+        {
+          "path": "res://assets/sprites/mini_boss_0.png",
+          "sha256": "efed97d6fafab51f9b6515c58de6a124aaad1920f44dd9f1f4d1b74778fd369d"
+        },
+        {
+          "path": "res://assets/sprites/mini_boss_1.png",
+          "sha256": "7103d8ec229914e0f4297fee3853699b77c41f1fcf0a10fd12f165ef3919825d"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/mini_boss_%d.png",
+      "placeholder": false,
+      "size": [
+        48,
+        48
+      ]
+    },
+    "portrait_caster_1": {
+      "files": [
+        {
+          "path": "res://assets/portraits/caster_1.png",
+          "sha256": "0b659a36833a3345ee148226fea5a39c17d1016293dc28a5ab7fde103ab3cece"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/caster_1.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_caster_2": {
+      "files": [
+        {
+          "path": "res://assets/portraits/caster_2.png",
+          "sha256": "321fee37d90a46153e1476c0315e5992369c4a8d06368dd12354fec0926cbc7c"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/caster_2.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_defender_1": {
+      "files": [
+        {
+          "path": "res://assets/portraits/defender_1.png",
+          "sha256": "2b0540a83c092725f3d7f69f5ddc6df630c9bcdd03b6466ee9c1c67108e94088"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/defender_1.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_defender_2": {
+      "files": [
+        {
+          "path": "res://assets/portraits/defender_2.png",
+          "sha256": "83819108f383f24205a0799a1c41bddc996d1562e2fc4d3a2d83393d9ee7379d"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/defender_2.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_guard_1": {
+      "files": [
+        {
+          "path": "res://assets/portraits/guard_1.png",
+          "sha256": "f2ba37af2b526567b91d655cf4cf7002314820b54c4cf5285ea1022c2300ce6a"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/guard_1.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_guard_2": {
+      "files": [
+        {
+          "path": "res://assets/portraits/guard_2.png",
+          "sha256": "3bd29a78fde2c5d3d8e172e4a175964e8a4740523de5e5826370385a1c520817"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/guard_2.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_sniper_1": {
+      "files": [
+        {
+          "path": "res://assets/portraits/sniper_1.png",
+          "sha256": "eebbc364789de39b4c711041e1dc35bbfc15668db59de26141abca8ed7227d01"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/sniper_1.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_sniper_2": {
+      "files": [
+        {
+          "path": "res://assets/portraits/sniper_2.png",
+          "sha256": "2287f030f441e6ae90da4c60dd4e7f93be8898e4a7004dc79c8da097f0bcd7f7"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/sniper_2.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_vanguard_1": {
+      "files": [
+        {
+          "path": "res://assets/portraits/vanguard_1.png",
+          "sha256": "6c34844eb12baa9d5f959d34a865641999d55312f9db35241aabe5bb153ba034"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/vanguard_1.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "portrait_vanguard_2": {
+      "files": [
+        {
+          "path": "res://assets/portraits/vanguard_2.png",
+          "sha256": "8ce6144f894ea973ea66d09ddc04c808bac6f1f4d911e54d1ef82dbcad6395dd"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/portraits/vanguard_2.png",
+      "placeholder": false,
+      "size": [
+        128,
+        128
+      ]
+    },
+    "runner": {
+      "files": [
+        {
+          "path": "res://assets/sprites/runner_0.png",
+          "sha256": "174a98d04b82b374a4b1495840104e323a3c84ebedd3bd26a646030147019807"
+        },
+        {
+          "path": "res://assets/sprites/runner_1.png",
+          "sha256": "476010dde98cdb7827fc140b6c77b198418221d05a42a2c6c34278fbb3cce4d6"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/runner_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "runner_charmed": {
+      "files": [
+        {
+          "path": "res://assets/sprites/runner_charmed_0.png",
+          "sha256": "65e0624637263c6709eaffdc4e7e381559b6f861eea01a46224a3ea9345212ee"
+        },
+        {
+          "path": "res://assets/sprites/runner_charmed_1.png",
+          "sha256": "c78066b01a93f9bfde2320cb4ecf51fdd40149a45d5633d0429e4be5cf2680ef"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/runner_charmed_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "sniper_1": {
+      "files": [
+        {
+          "path": "res://assets/sprites/sniper_1_0.png",
+          "sha256": "5eaff803ac767b44d216054894da84ef5e238ed3e16ec8d3e8c3a8892f611892"
+        },
+        {
+          "path": "res://assets/sprites/sniper_1_1.png",
+          "sha256": "a24bcaa5830c7b6e70bca986469308e352d10e43a59f685d2f030ce0511cf6ac"
+        },
+        {
+          "path": "res://assets/sprites/sniper_1_2.png",
+          "sha256": "84485e59fdb42b698b571a68740b6d2a2c7bd0726cbbb33a01aebe33eab7b7ae"
+        },
+        {
+          "path": "res://assets/sprites/sniper_1_3.png",
+          "sha256": "f6901f1166c8a57f9c534d22ee0ce7583b317a7ddb4379447ea7fee171e04270"
+        },
+        {
+          "path": "res://assets/sprites/sniper_1_4.png",
+          "sha256": "387e831427955b8321694ec5c2d7c55115be654abbb547d5a74c8c1ac57b2a27"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/sniper_1_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "sniper_2": {
+      "files": [
+        {
+          "path": "res://assets/sprites/sniper_2_0.png",
+          "sha256": "d4558b938636bc6ca2ed637e41d13bf95acfbec85a0a6ce76e12e848b182f7f0"
+        },
+        {
+          "path": "res://assets/sprites/sniper_2_1.png",
+          "sha256": "1975790771e067aff3f8e1976da045a18c57309c4211d4488adbf138abca1a1e"
+        },
+        {
+          "path": "res://assets/sprites/sniper_2_2.png",
+          "sha256": "f3737270db1e6c97e20478a3adbe06c7a0c1c1e04f53a365c6514c9cccbd4000"
+        },
+        {
+          "path": "res://assets/sprites/sniper_2_3.png",
+          "sha256": "6d2f32664eb22f4724f31c1bda0dcdea8453ee9f4dafa306839972bb7f78f75e"
+        },
+        {
+          "path": "res://assets/sprites/sniper_2_4.png",
+          "sha256": "54eed56a9fab54b722d5354257f6071cf71d52ba3509519b40ecdddb88589fdb"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/sniper_2_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "spellcaster": {
+      "files": [
+        {
+          "path": "res://assets/sprites/spellcaster_0.png",
+          "sha256": "4dde09b194a506c68d1bfb3e893f154bf70839a4bc64145b48fc7bfe0be533d6"
+        },
+        {
+          "path": "res://assets/sprites/spellcaster_1.png",
+          "sha256": "db04b46c4d4ed93a8fdc98c89712203f40a4878bd7f40bf348cb4b28da32c569"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/spellcaster_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "spellcaster_charmed": {
+      "files": [
+        {
+          "path": "res://assets/sprites/spellcaster_charmed_0.png",
+          "sha256": "3260e16c2c4579f1b55376a38f9012d3a10e4912f0bf7a26fa6d0778eced1ceb"
+        },
+        {
+          "path": "res://assets/sprites/spellcaster_charmed_1.png",
+          "sha256": "61b1cdef0b7a62b011b5bf2eced400379069f1e4f7bf079d995bb32e75900079"
+        }
+      ],
+      "frames": 2,
+      "pattern": "res://assets/sprites/spellcaster_charmed_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "tile_backdrop": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_backdrop.png",
+          "sha256": "48f0a33a0c7484322c250dc10e385af49251ffdf2124091d67940288be09bf87"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_backdrop.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_base": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_base.png",
+          "sha256": "0663c3672f41e924a96c34fb1802ac6b42f61097924f99b5228a032f687dfe2b"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_base.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_blocked": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_blocked.png",
+          "sha256": "b476b25230e3745b0e8eefaff3b2cf0c653e3e698876a64a4b17e08ac43e8987"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_blocked.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_elevated": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_elevated.png",
+          "sha256": "c5b2ad2ff3796ad114b1face15f5b815e3b0ee8fb9df70b3559576b054f9eeac"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_elevated.png",
+      "placeholder": false,
+      "size": [
+        32,
+        24
+      ]
+    },
+    "tile_ground": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_ground.png",
+          "sha256": "6b3540803dfa3d74e36cab57f80a7e6d21b3dc163109b6304fd1cd696ef064b0"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_ground.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_road": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_road.png",
+          "sha256": "2f10178f2b2f8091fde736390e067d0d7227eb309a2006b36fa7fc405f16d931"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_road.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_spawn": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_spawn.png",
+          "sha256": "88b6c8f9d3586f3eeec1e9ffa73f778a6b8c2d30861f3a3ddc5679215a6330d5"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_spawn.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "tile_void": {
+      "files": [
+        {
+          "path": "res://assets/sprites/tile_void.png",
+          "sha256": "263f3bfe6cc9f50c0a70b3c034f1584a1f75bbd913756725a015809b9300b4d2"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/tile_void.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "trap_spike_armed": {
+      "files": [
+        {
+          "path": "res://assets/sprites/trap_spike_armed.png",
+          "sha256": "6ca38a77b4d6caa8f2ead3a81ad9b0504d4c7093301fb5c365a4274e71e5b057"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/trap_spike_armed.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "trap_spike_sprung": {
+      "files": [
+        {
+          "path": "res://assets/sprites/trap_spike_sprung.png",
+          "sha256": "9d535a1f82de856d6f84e4507ef85bb09a78ed9469b64c777fb01dc8b431c893"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/trap_spike_sprung.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "trap_tar": {
+      "files": [
+        {
+          "path": "res://assets/sprites/trap_tar.png",
+          "sha256": "e4cb98b3f09a0e176e583a19826b2088c60dc960955a61b7ac983d0ff57f31e3"
+        }
+      ],
+      "frames": 1,
+      "pattern": "res://assets/sprites/trap_tar.png",
+      "placeholder": false,
+      "size": [
+        32,
+        16
+      ]
+    },
+    "vanguard_1": {
+      "files": [
+        {
+          "path": "res://assets/sprites/vanguard_1_0.png",
+          "sha256": "19f8f392884b5d260bbb2178e392ed126ecf78f1b0a76a177843c40d0255345d"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_1_1.png",
+          "sha256": "47e962e9386609182543ea8018c9c12ddcc50ec6588f6abebf65f917722a3282"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_1_2.png",
+          "sha256": "dcb324145818ef3858d0c6661921166cc911443c59de9c6adf08737eac08b58e"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_1_3.png",
+          "sha256": "1e3cc6b96d86b399a6eefabdea4cdaaba577fa954ac024e207bad6d44a925955"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_1_4.png",
+          "sha256": "4e515b5b9a55a772f24321a24ef22dfd49a048eaee2fef4c694e1c326cd6c9c9"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/vanguard_1_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    },
+    "vanguard_2": {
+      "files": [
+        {
+          "path": "res://assets/sprites/vanguard_2_0.png",
+          "sha256": "4e24204fa304fe9602f4d0d9530ddbad522796c071783ab9e7e848e98824baa6"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_2_1.png",
+          "sha256": "607a57066994fce681a6f655755fd15393be87369d11faef91e45001c434d66d"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_2_2.png",
+          "sha256": "996d5fe12cf17dff643cd4e2fa85607a0448b82f7893bcc3a25867b4b6815673"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_2_3.png",
+          "sha256": "d1d6934a787cead1a173f621b045e3b5adb5380da84c311e417182ef7d2bd1b8"
+        },
+        {
+          "path": "res://assets/sprites/vanguard_2_4.png",
+          "sha256": "7e7186c351ea7116466d5eafa1d7e8244f204d8cb15d3cbf837d6b53e3ab2ebf"
+        }
+      ],
+      "frames": 5,
+      "pattern": "res://assets/sprites/vanguard_2_%d.png",
+      "placeholder": false,
+      "size": [
+        32,
+        32
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# TD-008 — Height-Fill Map and Bounded Pan Handoff
+
+- Agent / branch: AGENT 2 / `agent-2/map-height-fill-pan`
+- Base: `master` at `321abc25f5d4866909d837cd335ade9579deaa95`
+- Current-master union: `a6bae9c24f4e6239da0821ef81107198bbf011c2` merged as `7fa2cbb2a13ea3be2b4375eb9e7cdf62dce47a0e`
+- Commits:
+  - `1e995718839927cbac66da599f043aed4fb24831` — claim the map-navigation lane
+  - `41a4d079dae928c85857b495974128f11759a2d4` — height-fill the viewport and add bounded panning
+  - `dcc4abd2dbd8edf202b95ceda1ad74af1aa391e9` — correct geometry, VFX, drag-release, resize, and deployment audit gaps
+  - `d3774e43cba2f57b33fd01b342e4147f81c19dde` — close runtime acceptance gaps
+  - `ded00eb069ca9cb60f86f0ee70591a37b0affb02` — renumber the lane to TD-008 and harden vignette geometry/visibility proof
+  - `3989689ae987d407d7c9d971d47529b04720dc66` — name and prove stable vignette instances; frozen release candidate
+- Scope: rendered terrain height now equals the live viewport height at boot and resize; middle-drag, vertical wheel, Shift+wheel, and native horizontal-wheel input pan the map in both axes; panning clamps to transformed visual-content edges. Grid picking, spell targeting, deployment, active VFX, screen shake, overlays, and model hashes remain correct after pan/resize. Newly deployed units receive only the minimum legal camera correction needed to expose their body and HP/SP presentation rectangle.
+- Non-goals: no simulation, balance, stage data, input-map, save/load, hash, replay, localization, threshold, verifier, harness-core, `FEATURES.json`, or `PLAYTEST.md` changes; no inertia, minimap, touch, keyboard-pan, or player-controlled zoom.
+- File ownership: `scripts/view/iso_projection.gd`, `scripts/view/map_navigator.gd`, `scripts/view/map_navigator.gd.uid`, `scripts/view/battle_view.gd`, `scripts/view/juice_layer.gd`, `test/test_map_navigation.gd`, `test/test_map_navigation.gd.uid`, `selftest/scenarios/map_navigation.gd`, `selftest/scenarios/map_navigation.gd.uid`, `docs/todo.md`, `docs/completed.md`, and this handoff. All TD-008 reservations release after integration.
+- Verification: frozen candidate `3989689ae987d407d7c9d971d47529b04720dc66`; fresh cache-bypassed `xvfb-run -a scripts/verify.sh --full` emitted `ALL GREEN` in 145 wall seconds with 65/65 verifier rungs, 20/20 scenario reports, 549 checks, 67 fresh screenshots, and zero skips. L5 reviewed all 67 screenshots PASS. Two independent `bot_campaign` processes produced byte-identical normalized telemetry SHA-256 `3eef210dcea1635d1ef85cabe777c37abe6b103804986e4ca7c7ee5359e468d1`. Independent Half B verdict: PASS, zero findings, safe to integrate. External evidence: `td008-release-evidence/manifest.json` under the Prototype TD project-docs area.
+- Verification wrapper note: the verifier itself completed every rung and printed its final sentinel; the outer evidence wrapper then returned 2 because it read `PIPESTATUS` after later shell assignments. Immutable `verify.json`, all reports, sentinels, timestamps, and the clean frozen hash were validated directly. No gate failed, hung, timed out, skipped render proof, or reused stale evidence.
+- Docs: TD-008 moved from `docs/todo.md` to `docs/completed.md`. Plans/orientation are external: `td-map-height-fill-and-pan-companion.md`, `td008-review-remediation-companion.md`, and `td008-orientation-v2.json`.
+- Deviations: `MGS-CTX-1` records that the updated context manifest references skill hashes/resources absent from the installed/exported package; work defaulted upward to RELEASE. `TD-ID-1` records renumbering from stale TD-006 to globally unused TD-008 while preserving Agent 4 TD-006 and Agent 5 TD-007 history.
+- Risks: no machine blocker remains. Human-only residual: during the next L7 playtest, judge whether the authored star-field headroom visible at the near vertical clamp feels excessive. Do not preemptively reduce the exact height-fill pin or weaken pan bounds.
+- Next action: `git fetch --all --prune && git merge --no-edit origin/master` on the feature branch if master advanced; verify that union, push the feature branch normally, fast-forward local `master`, run the repository-required merged-master gate, then push `master` normally. Never force-push.

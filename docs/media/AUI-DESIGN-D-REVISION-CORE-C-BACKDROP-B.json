@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "approval_token": "AUI-DESIGN-D-REVISION-2",
+  "owner": "Poseidon",
+  "approved_at": "2026-08-12T23:09:51+08:00",
+  "decision": "Approve Core C + Backdrop B",
+  "scope": {
+    "core": "Cloud-Seal Orrery",
+    "backdrop": "Alpine Escarpment",
+    "supersedes": [
+      "pressure-tank Core silhouette",
+      "repetitive floating-fragment void ring"
+    ],
+    "does_not_approve": [
+      "final native game assets",
+      "final in-game composition",
+      "human final-art acceptance"
+    ]
+  },
+  "gpt_image_2_concepts": {
+    "core_c": {
+      "external_filename": "core-option-c-cloud-seal-orrery.png",
+      "sha256": "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3"
+    },
+    "backdrop_b": {
+      "external_filename": "backdrop-option-b-alpine-escarpment.png",
+      "sha256": "7dbf33396d72757c399071b78ecf17b270a2f4308055857fb093e36deb0a66bd"
+    },
+    "backdrop_b_production": {
+      "external_filename": "s1-alpine-escarpment-panorama-source.png",
+      "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
+      "repository_source": "art-src/world/s1/s1-alpine-escarpment-source.png",
+      "repository_source_sha256": "f80620ae7410b2c0e5c07455d4c5e9cba40abb2f35e327fa972f9ebee1da335d"
+    },
+    "prompt_contract": {
+      "external_filename": "concept-prompts.md",
+      "sha256": "5539e8380e1b2a5bcee43859f70e56819e3209d11d25857c132c9e12fa01e85e"
+    }
+  },
+  "production_contract": {
+    "core_native_size": [32, 32],
+    "core_pivot": [16, 30],
+    "backdrop_variants": [
+      {"id": "world.s1.backdrop", "role": "low foothill", "native_size": [32, 16]},
+      {"id": "world.s1.backdrop_ridge", "role": "mid ridge", "native_size": [32, 24]},
+      {"id": "world.s1.backdrop_peak", "role": "high peak", "native_size": [32, 32]},
+      {"id": "world.s1.backdrop_mist", "role": "mist ravine", "native_size": [32, 16]},
+      {"id": "world.s1.backdrop_panorama", "role": "continuous alpine escarpment", "native_size": [208, 104]}
+    ],
+    "outside_map_grid_lines": false,
+    "outside_map_playable_affordance": false,
+    "route_clearance_unchanged": true,
+    "simulation_or_stage_geometry_change": false
+  },
+  "human_final_art_acceptance": false
+}

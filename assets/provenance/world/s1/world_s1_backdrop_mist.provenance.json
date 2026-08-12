@@ -1,0 +1,62 @@
+{
+  "approval_packet": {
+    "receipt": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+    "receipt_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
+    "revision_token": "AUI-DESIGN-D-REVISION-2",
+    "token": "AUI-DESIGN-D",
+    "verified": true
+  },
+  "final_file": "assets/world/s1/s1-backdrop-mist.png",
+  "final_file_sha256": "d2c16aa40595619b487e494531036ab95964b4ac9647c6be6ba7d09dadb89800",
+  "generator": {
+    "approval_manifest": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+    "approval_manifest_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
+    "approved_reference_hashes": [
+      "7dbf33396d72757c399071b78ecf17b270a2f4308055857fb093e36deb0a66bd"
+    ],
+    "model": "gpt-image-2",
+    "prompt_contract": "concept-prompts.md",
+    "prompt_contract_sha256": "5539e8380e1b2a5bcee43859f70e56819e3209d11d25857c132c9e12fa01e85e",
+    "prompt_section": "Alpine Escarpment",
+    "seed": null,
+    "seed_reason": "service does not expose a stable seed; accepted concept is hash-pinned",
+    "tool": "manus-tools/generate_image"
+  },
+  "human_acceptance": {
+    "accepting_commit": "60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+    "acceptor": "Poseidon",
+    "final_art": true,
+    "receipt": "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+    "receipt_sha256": "a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83",
+    "timestamp_utc": "2026-08-12T19:49:51Z"
+  },
+  "license_source": "original AI-assisted concept under project-controlled prompt/reference set; deterministic native synthesis",
+  "logical_id": "world.s1.backdrop_mist",
+  "normalization": {
+    "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
+    "asset_contract_sha256": "3c151deb528a68769d0a06268abe5117d15bcee8c04222024c8ba73cac21bc3e",
+    "derived_palette": "art-src/world/s1/s1-derived-palette.json",
+    "derived_palette_sha256": "0311300b3a8cb3f7ce7d971db4c66ffe24c810cc2127f44286cde4c6640e6795",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "recipe": "owner-approved GPT Image 2 concept -> contract-authored native pixel synthesis -> hard alpha",
+    "tool": "tools/art_pipeline/world/generate_s1_revision_v2.py",
+    "tool_sha256": "1bfd3a2d2dcd35627a3f5d97462e06a8155100823b18cd0cbf19b330273a42db"
+  },
+  "placement_state": "RUNTIME_BOUND_PRESENTATION_ONLY",
+  "raw_source": {
+    "acceptance_state": "POSEIDON_APPROVED_CONCEPT_DIRECTION",
+    "file": "backdrop-option-b-alpine-escarpment.png",
+    "retention": "external owner-approval archive",
+    "sha256": "7dbf33396d72757c399071b78ecf17b270a2f4308055857fb093e36deb0a66bd"
+  },
+  "reserved_colors": {
+    "forbidden": [
+      "#F4F4F4",
+      "#41A6F6"
+    ],
+    "gate": "PASS"
+  },
+  "schema_version": 1,
+  "state": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
+}

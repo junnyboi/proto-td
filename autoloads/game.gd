@@ -208,6 +208,8 @@ func start_battle(stage_id: StringName) -> void:
 
 
 func _swap_content(scene_path: String) -> void:
+	if scene_path != BATTLE_SCENE_PATH:
+		Music.stop()
 	if content != null and is_instance_valid(content):
 		content.queue_free()
 	var packed: PackedScene = load(scene_path)
