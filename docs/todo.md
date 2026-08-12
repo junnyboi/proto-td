@@ -81,14 +81,15 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 
 ## POLISH-BOLT — Add a readable Bolt impact visual
 
-- Status: pending
-- Owner: unassigned
-- Branch: N/A until claimed
+- Status: in_progress
+- Owner: AGENT 7
+- Branch: `agent-7/polish-bolt`
+- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
 - Dependencies: coordinate with `POLISH-VFX`; audio remains waived by `D-SFX`
-- Owned files: none until claimed; pin exact presentation, manifest, asset, and scenario paths first
-- Do not touch: spell damage/cooldown semantics, audio policy, thresholds
-- Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing authoritative combat state
-- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, and `scripts/verify.sh --full`
+- Owned files: `sim/battle_model.gd`, `sim/battle_hash.gd`, `test/test_spells.gd`, `test/test_hash_paranoia.gd`, `data/juice_config.gd`, `data/juice_config.tres`, `scripts/view/battle_view.gd`, `scripts/view/juice_layer.gd`, `tools/gen_assets.gd`, `assets/manifest.tres`, `assets/sprites/vfx_bolt_impact_{0..3}.png` plus `.import`, `docs/art/source/bolt-impact/bolt_impact_{0..3}.png` plus `.import`, `docs/art/source/bolt-impact/provenance.json`, `selftest/scenarios/charm_runback.gd`, `docs/plans/POLISH-BOLT-agent-7.md`, `docs/handoffs/POLISH-BOLT-agent-7.md`, `docs/media/POLISH-BOLT-verification.json`, and claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Do not touch: `scripts/verify.sh`, spell damage/radius/cooldown semantics, tick order, Charm, boss-hit behavior, audio policy/assets, bots, human verdict wording, or `playtests/thresholds.json`
+- Acceptance: an accepted Bolt records one deterministic hashed target seam and creates a manifest-resolved four-frame impact centered on that cell for 12 render frames; it is visually identifiable at normal 1× game zoom without audio or authoritative outcome changes; rejected casts remain hash-equal no-ops
+- Required evidence: focused spell/hash tests, seeded `charm_runback` headless + windowed, live-count and exact-WHITE present/absent probes, fresh `bolt_cast` / expiry PNG review, and `scripts/verify.sh --full`
 - Last update: 2026-08-12
 
 ## POLISH-BOSS-HIT — Wire the boss-hit presentation event
