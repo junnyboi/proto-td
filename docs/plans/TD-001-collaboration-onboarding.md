@@ -4,7 +4,7 @@
 
 | Field | Pin |
 |---|---|
-| Status | In progress |
+| Status | Completed |
 | Owner | AGENT 2 |
 | Branch | `agent-2/collaboration-docs` |
 | Base | `master` at `7babf28646fbc16c531a03ecdb44dd81f642677e` |
@@ -73,3 +73,7 @@ If scope pressure appears, omit optional examples before removing any required f
 - A3: historical work remains represented by Git, `FEATURES.json`, and phase reports; this lane does not manufacture retrospective collaboration entries.
 - A4: `docs/art/**` predates this lane and remains unchanged under its own provenance contract.
 - D1: if `master` moves, merge it into the Agent 2 branch, revalidate links and scope, and rerun the full headless gate before push.
+
+## As-built evidence
+
+Implementation commit `c83c4d80b9aff8076235fdb74954c8cc57378af7` adds the eight planned coordination files without changing `docs/art/**` or any runtime surface. The deterministic docs validator passed all required-file, schema, verbatim-integrity, relative-link, and exact-path checks. At that frozen commit, `xvfb-run -a scripts/verify.sh --full` completed ALL GREEN in 144 seconds: 18 headless and 18 windowed scenarios, 11 bots plus quality gates, 61 fresh PNGs, and zero pixel skips. Agent visual review found no regression against the named scenario checklists. Two separate `bot_campaign` processes produced identical normalized telemetry with SHA-256 `81e68ba071f794e4b02db2243c97d5c961fe73b2b384d06695d7ed2269c71d26`.
