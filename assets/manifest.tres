@@ -269,6 +269,30 @@ entries = {
 "placeholder": true,
 "size": Vector2i(32, 16)
 },
+&"world.s1.backdrop_mist": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-backdrop-mist.png",
+"placeholder": true,
+"size": Vector2i(32, 16)
+},
+&"world.s1.backdrop_peak": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-backdrop-peak.png",
+"placeholder": true,
+"size": Vector2i(32, 32)
+},
+&"world.s1.backdrop_panorama": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-backdrop-panorama.png",
+"placeholder": true,
+"size": Vector2i(208, 104)
+},
+&"world.s1.backdrop_ridge": {
+"frames": 1,
+"pattern": "res://assets/world/s1/s1-backdrop-ridge.png",
+"placeholder": true,
+"size": Vector2i(32, 24)
+},
 &"world.s1.core_landmark": {
 "frames": 1,
 "pattern": "res://assets/world/s1/s1-core-landmark.png",

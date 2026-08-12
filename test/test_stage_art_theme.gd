@@ -1,8 +1,12 @@
 extends GutTest
 
 const EXPECTED_ASSET_HASHES := {
-	&"world.s1.backdrop": "592b2295edab8ced4958d5e3dff5a09bfd0efef7e2a7bba550591dfaa5f34bb4",
-	&"world.s1.core_landmark": "805e7ee2f01ba4e8770f27bbfdccf8ffbbcaff90791b849bbf915b93ecdd111b",
+	&"world.s1.backdrop": "6a1cb0457a2fa6b33a2039c34092c17a026a14e86127021b3a870e782df6c2bf",
+	&"world.s1.backdrop_mist": "d2c16aa40595619b487e494531036ab95964b4ac9647c6be6ba7d09dadb89800",
+	&"world.s1.backdrop_panorama": "b5027513bf0607f0a741fbcd0e38663d6dbef84cc99013f81dbe8386da584f81",
+	&"world.s1.backdrop_peak": "5f0b38d4706b1575e190476a2a2b1966af483f8a92cfc5d9a9e8aeef2b80b27d",
+	&"world.s1.backdrop_ridge": "6864786e058b4158ec40bba9521cf80df2213c1a7a0f7b75b4d5ca5f46241625",
+	&"world.s1.core_landmark": "8d6276cc05dc04c78cb62b6b998388962d657cc417f28dbeeb3b715a08446787",
 	&"world.s1.elevated": "e25f601d850f8fb5ae5b32b840415dbad31171731579da430a701b00f36ed43d",
 	&"world.s1.ground": "1dad2adea323d311f0afb0526a2d9f7195f807055a13842dae07638c1425d7af",
 	&"world.s1.rain_measure": "fc8d346c0f129ea912fa216aa9ee53b4c78f32be68ff2cb9a1c771f8a9051dcf",
@@ -12,6 +16,10 @@ const EXPECTED_ASSET_HASHES := {
 }
 const EXPECTED_ASSET_SIZES := {
 	&"world.s1.backdrop": Vector2i(32, 16),
+	&"world.s1.backdrop_mist": Vector2i(32, 16),
+	&"world.s1.backdrop_panorama": Vector2i(208, 104),
+	&"world.s1.backdrop_peak": Vector2i(32, 32),
+	&"world.s1.backdrop_ridge": Vector2i(32, 24),
 	&"world.s1.core_landmark": Vector2i(32, 32),
 	&"world.s1.elevated": Vector2i(32, 24),
 	&"world.s1.ground": Vector2i(32, 16),
@@ -56,12 +64,17 @@ func test_theme_preserves_authoritative_s1_roles() -> void:
 	assert_eq(theme.route_notch_cells, [Vector2i(2, 2), Vector2i(4, 2), Vector2i(6, 2)])
 	assert_eq(theme.spawn_cell, Vector2i(0, 2))
 	assert_eq(theme.core_cell, Vector2i(7, 2))
+	assert_eq(theme.backdrop_panorama_id, &"world.s1.backdrop_panorama")
+	assert_eq(
+		theme.backdrop_variant_ids,
+		[&"world.s1.backdrop_ridge", &"world.s1.backdrop_peak", &"world.s1.backdrop_mist"],
+	)
 	assert_false(theme.rain_measure_placed)
 
 
 func test_all_s1_manifest_entries_are_runtime_backed_but_human_unaccepted() -> void:
 	assert_not_null(manifest)
-	assert_eq(theme.required_manifest_ids().size(), 8)
+	assert_eq(theme.required_manifest_ids().size(), 12)
 	for id: StringName in theme.required_manifest_ids():
 		assert_true(manifest.entries.has(id), "missing %s" % id)
 		var entry: Dictionary = manifest.entries[id]
@@ -91,7 +104,38 @@ func test_runtime_provenance_covers_every_asset_without_inferring_human_acceptan
 		assert_eq(sidecar["final_file_sha256"], EXPECTED_ASSET_HASHES[id], "%s final hash" % id)
 		assert_eq(sidecar["generator"]["model"], "gpt-image-2", "%s model" % id)
 		assert_eq(sidecar["approval_packet"]["token"], "AUI-DESIGN-D", "%s approval" % id)
+		if id in [
+			&"world.s1.backdrop",
+			&"world.s1.backdrop_mist",
+			&"world.s1.backdrop_panorama",
+			&"world.s1.backdrop_peak",
+			&"world.s1.backdrop_ridge",
+			&"world.s1.core_landmark",
+		]:
+			assert_eq(
+				sidecar["approval_packet"]["revision_token"],
+				"AUI-DESIGN-D-REVISION-2",
+				"%s revision approval" % id,
+			)
 		assert_false(bool(sidecar["human_acceptance"]["final_art"]), "%s human final" % id)
+
+
+func test_s1_backdrop_is_one_continuous_noninteractive_panorama() -> void:
+	var root := Node2D.new()
+	assert_true(IsoGridBuilder.build_stage(root, s1, Callable(), false))
+	var backdrop_count := 0
+	for child: Node in root.get_children():
+		if child.name.begins_with("Backdrop"):
+			backdrop_count += 1
+	assert_eq(backdrop_count, 1, "S1 must render one backdrop, not a repeated tile ring")
+	var panorama := root.get_node_or_null("BackdropPanorama") as TextureRect
+	assert_not_null(panorama)
+	if panorama != null:
+		assert_eq(panorama.texture, Art.texture(theme.backdrop_panorama_id))
+		assert_eq(panorama.size, Vector2(416, 208))
+		assert_eq(panorama.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+		assert_eq(panorama.z_index, -10)
+	root.free()
 
 
 func test_missing_required_s1_theme_fails_closed_while_s2_stays_generic() -> void:

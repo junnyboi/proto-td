@@ -17,6 +17,8 @@ const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1"]
 @export var route_id: StringName = &""
 @export var elevated_id: StringName = &""
 @export var backdrop_id: StringName = &""
+@export var backdrop_variant_ids: Array[StringName] = []
+@export var backdrop_panorama_id: StringName = &""
 
 @export var route_notch_id: StringName = &""
 @export var route_notch_cells: Array[Vector2i] = []
@@ -93,16 +95,19 @@ func tile_id(tile: StageDef.Tile, is_route: bool) -> StringName:
 
 
 func required_manifest_ids() -> Array[StringName]:
-	return [
+	var ids: Array[StringName] = [
 		ground_id,
 		route_id,
 		elevated_id,
 		backdrop_id,
+		backdrop_panorama_id,
 		route_notch_id,
 		spawn_landmark_id,
 		core_landmark_id,
 		rain_measure_id,
 	]
+	ids.append_array(backdrop_variant_ids)
+	return ids
 
 
 func validation_errors(stage: StageDef) -> PackedStringArray:
@@ -118,6 +123,8 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 	for id: StringName in required_manifest_ids():
 		if id == &"":
 			errors.append("required manifest id is empty")
+	if backdrop_variant_ids.size() != 3:
+		errors.append("S1 requires exactly three additional backdrop variants")
 	if route_notch_cells.size() != 3:
 		errors.append("S1 requires exactly three route-notch cells")
 	if rain_measure_placed:

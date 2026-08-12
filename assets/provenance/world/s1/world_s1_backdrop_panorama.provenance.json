@@ -6,13 +6,13 @@
     "token": "AUI-DESIGN-D",
     "verified": true
   },
-  "final_file": "staging/assets/world/s1/s1-backdrop.png",
-  "final_file_sha256": "6a1cb0457a2fa6b33a2039c34092c17a026a14e86127021b3a870e782df6c2bf",
+  "final_file": "assets/world/s1/s1-backdrop-panorama.png",
+  "final_file_sha256": "b5027513bf0607f0a741fbcd0e38663d6dbef84cc99013f81dbe8386da584f81",
   "generator": {
     "approval_manifest": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
     "approval_manifest_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
     "approved_reference_hashes": [
-      "7dbf33396d72757c399071b78ecf17b270a2f4308055857fb093e36deb0a66bd"
+      "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b"
     ],
     "model": "gpt-image-2",
     "prompt_contract": "concept-prompts.md",
@@ -29,7 +29,7 @@
     "timestamp_utc": null
   },
   "license_source": "original AI-assisted concept under project-controlled prompt/reference set; deterministic native synthesis",
-  "logical_id": "world.s1.backdrop",
+  "logical_id": "world.s1.backdrop_panorama",
   "normalization": {
     "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
     "asset_contract_sha256": "0e4649b00c16a97d552d2ca83f39f8dbb3ef88134bb60195820808a9b4dd5f6e",
@@ -41,12 +41,14 @@
     "tool": "tools/art_pipeline/world/generate_s1_revision_v2.py",
     "tool_sha256": "55e52132b29e2fe3b7c99fa46aaeff6590d09134f167381abeea82db4a07a819"
   },
-  "placement_state": "STAGED_PRESENTATION_ROLE_DEFINED",
+  "placement_state": "RUNTIME_BOUND_PRESENTATION_ONLY",
   "raw_source": {
     "acceptance_state": "POSEIDON_APPROVED_CONCEPT_DIRECTION",
-    "file": "backdrop-option-b-alpine-escarpment.png",
+    "file": "s1-alpine-escarpment-panorama-source.png",
+    "repository_source": "art-src/world/s1/s1-alpine-escarpment-source.png",
+    "repository_source_sha256": "f80620ae7410b2c0e5c07455d4c5e9cba40abb2f35e327fa972f9ebee1da335d",
     "retention": "external owner-approval archive",
-    "sha256": "7dbf33396d72757c399071b78ecf17b270a2f4308055857fb093e36deb0a66bd"
+    "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b"
   },
   "reserved_colors": {
     "forbidden": [
@@ -56,5 +58,5 @@
     "gate": "PASS"
   },
   "schema_version": 1,
-  "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
+  "state": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
 }

@@ -37,7 +37,22 @@ func run(h: SelfTestHarness) -> void:
 	_check_texture(h, grid, "Tile_0_2", &"world.s1.route")
 	_check_texture(h, grid, "Tile_7_2", &"world.s1.route")
 	_check_texture(h, grid, "Tile_3_1", &"world.s1.elevated")
-	_check_texture(h, grid, "Backdrop_-1_-1", &"world.s1.backdrop")
+	var backdrop_count := 0
+	for child: Node in grid.get_children():
+		if child.name.begins_with("Backdrop"):
+			backdrop_count += 1
+	h.check("exactly one mountain panorama renders", backdrop_count == 1)
+	var panorama := grid.get_node_or_null("BackdropPanorama") as TextureRect
+	h.check("mountain panorama renders", panorama != null)
+	if panorama != null:
+		h.check(
+			"panorama uses approved texture",
+			panorama.texture == Art.texture(theme.backdrop_panorama_id),
+		)
+		h.check(
+			"panorama ignores input",
+			panorama.mouse_filter == Control.MOUSE_FILTER_IGNORE,
+		)
 
 	var notch_count := 0
 	for child: Node in grid.get_children():

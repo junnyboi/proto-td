@@ -4,24 +4,35 @@
 **Branch:** `agent-d/s1-world-runtime`
 **Base:** `3936eeda3e25c5f45def229b168fd11c41a048d9`
 **Assurance lane:** RELEASE
-**Current state:** implemented and machine-green; human visual verdict and final RELEASE freeze remain pending
+**Current state:** Core-C/Backdrop-B revision implemented and focused-green; frozen full RELEASE and human visual verdict remain pending
 
 ## What changed
 
-The eight validated S1 civic-weatherworks PNGs are promoted byte-for-byte into `assets/world/s1/` and registered under `world.s1.*` manifest IDs. Runtime provenance lives in `assets/provenance/world/s1/`. The typed `StageArtTheme` resource binds only stage `s1`; other stages continue through the generic terrain lane.
+Twelve S1 world assets are runtime-backed under `world.s1.*`. The selected player-facing changes are:
 
-`BattleView` loads and validates the theme through `data/presentation/<stage_id>_world_theme.tres`. `IsoGridBuilder` projects the themed ground, route, elevation, backdrop ring, exactly three route notches, and the typed Spawn/Core landmarks. The rain measure remains manifest-backed but unplaced. Every decoration ignores input; picking still uses the existing projection seam.
+- the rejected pressure-tank Core is replaced by the 32×32 **Cloud-Seal Orrery**, with open brass arcs, a suspended cloudstone, bottom-center pivot, and unchanged route clearance;
+- the rejected repeated outside-map fragments are replaced in the live view by one 208×104 **Alpine Escarpment panorama**, derived from a dedicated GPT Image 2 environment-only source and normalized to a fixed no-dither palette;
+- four modular foothill/ridge/peak/mist components remain manifest/provenance-backed as deterministic revision-source material, but S1 renders one continuous panorama rather than a tiled ring.
+
+`StageArtTheme` fails closed if any required ID is unavailable. `IsoGridBuilder` places the panorama at z=-10—above BattleView's flat canvas at -20, below all terrain—and ignores input. Ground, route, elevation, three route notches, Spawn, Core, and rain-measure rules remain presentation-only. Other stages keep the generic terrain lane.
 
 No simulation, StageDef geometry, save/hash/replay state, gameplay data, threshold, localization catalog, or verification entrypoint changed.
 
 ## Approval and provenance
 
-The exact approved concept record is `docs/media/AUI-DESIGN-D-approved-manifest.json`. The accepted manifest SHA-256 is `91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51`; the approval-receipt SHA-256 is `d7bdbb4b3401932a20fd1cfdf66b7ba3b05e3bab4b7b2133b9958162271781e1`. All six canonical image hashes were reverified before implementation. The approved focused S1 keyframe hash is `991f2c3d03da7160aa53c760645f69a0a9dea3bdf554f17275f74d120ac1335d`.
+The parent approval is `docs/media/AUI-DESIGN-D-approved-manifest.json`. Poseidon's exact revision selection and GPT Image 2 concept/production hashes are in `docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json` under token `AUI-DESIGN-D-REVISION-2`.
 
-Runtime art remains `placeholder = true` and `human_acceptance.final_art = false` until Poseidon accepts the live result. Agent E content remains wholly excluded.
+The committed bounded panorama source is `art-src/world/s1/s1-alpine-escarpment-source.png`; its hash is pinned by the revision receipt and every panorama provenance sidecar. Runtime and staged final bytes must remain identical. All runtime manifest entries remain `placeholder = true`, and all sidecars retain `human_acceptance.final_art = false` until Poseidon accepts fresh in-game evidence.
 
-## Required evidence and review
+## Verification contract
 
-Before merge, freeze one commit and run the existing staging art gate on that clean commit, GUT including `test_stage_art_theme.gd`, `s1_world_art` headless/windowed, `assets_floor`, `iso_projection_floor`, a fresh uninterrupted `scripts/verify.sh --full`, then one cache-bypassed clean-artifact RELEASE rerun. The exact frozen diff must receive an independent diff-vs-pins audit. Localization review must confirm the lane adds no visible copy or catalog delta. Poseidon must review the unobscured `s1_world_integrated.png`; only that verdict may clear final-art placeholder/provenance flags in a later verified commit.
+Before merge:
 
-If human review requests a visual adjustment, change presentation data/assets only, preserve all tests and thresholds, rerun the complete RELEASE protocol, and present a fresh screenshot. The verification fleet has no mercy, which is why it remains useful.
+1. Run the canonical base generator, revision generator, and twelve-asset validator twice; all generated tracked bytes must be identical.
+2. Freeze the exact candidate commit.
+3. Run GUT, `s1_world_art` headless/windowed, existing `assets_floor` and `iso_projection_floor`, then uninterrupted `scripts/verify.sh --full`.
+4. Delete generated artifacts/caches prescribed by the repository and run one fresh cache-bypassed clean-artifact RELEASE at the same frozen hash.
+5. Obtain a non-implementer diff-vs-pins audit and localization-impact review.
+6. Show Poseidon fresh unobscured in-game captures. Only Poseidon's explicit verdict may clear final-art placeholder/provenance flags.
+
+If visual feedback requests another change, modify presentation data/assets only, preserve every check and threshold, restart RELEASE assurance from rung one, and show new captures. The verification fleet remains unsentimental. Sensible machine.

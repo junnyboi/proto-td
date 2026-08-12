@@ -89,16 +89,21 @@ static func _build_terrain(
 static func _build_backdrop_ring(
 	grid_root: Node2D, size: Vector2i, theme: StageArtTheme
 ) -> void:
-	var backdrop_id: StringName = theme.backdrop_id if theme != null else &"tile_backdrop"
-	var tex := Art.texture(backdrop_id)
-	var art_size := Art.size(backdrop_id)
-	if art_size == Vector2i.ZERO and tex != null:
-		art_size = Vector2i(tex.get_width(), tex.get_height())
+	if theme != null and theme.backdrop_panorama_id != &"":
+		_add_backdrop_panorama(grid_root, size, theme.backdrop_panorama_id)
+		return
 	for y: int in range(-BACKDROP_RING, size.y + BACKDROP_RING):
 		for x: int in range(-BACKDROP_RING, size.x + BACKDROP_RING):
 			if x >= 0 and x < size.x and y >= 0 and y < size.y:
 				continue
 			var cell := Vector2i(x, y)
+			var backdrop_id := _backdrop_art_id(cell, size, theme)
+			if backdrop_id == &"":
+				continue
+			var tex := Art.texture(backdrop_id)
+			var art_size := Art.size(backdrop_id)
+			if art_size == Vector2i.ZERO and tex != null:
+				art_size = Vector2i(tex.get_width(), tex.get_height())
 			if tex != null:
 				var top: Vector2 = IsoProjection.cell_polygon(cell)[0]
 				var sprite := TextureRect.new()
@@ -107,8 +112,9 @@ static func _build_backdrop_ring(
 				sprite.texture = tex
 				sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				sprite.size = Vector2(art_size) * SPRITE_SCALE
-				sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y)
-				sprite.z_index = -2
+				var rise := float(art_size.y - 16) * SPRITE_SCALE
+				sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y - rise)
+				sprite.z_index = -10 - _backdrop_distance(cell, size)
 				grid_root.add_child(sprite)
 				continue
 			var poly := Polygon2D.new()
@@ -116,6 +122,69 @@ static func _build_backdrop_ring(
 			poly.polygon = IsoProjection.cell_polygon(cell)
 			poly.z_index = -2
 			grid_root.add_child(poly)
+
+
+static func _add_backdrop_panorama(
+	grid_root: Node2D, size: Vector2i, art_id: StringName
+) -> void:
+	var tex := Art.texture(art_id)
+	var art_size := Art.size(art_id)
+	if tex == null or art_size == Vector2i.ZERO:
+		return
+	var stage_center := IsoProjection.project(Vector2(size) * 0.5)
+	var sprite := TextureRect.new()
+	sprite.name = "BackdropPanorama"
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.texture = tex
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.position = stage_center - sprite.size * 0.5
+	# BattleView's flat canvas lives at -20; panorama must sit above it while
+	# every terrain tile remains in the non-negative grid bands.
+	sprite.z_index = -10
+	grid_root.add_child(sprite)
+
+
+static func _backdrop_distance(cell: Vector2i, size: Vector2i) -> int:
+	var dx := maxi(maxi(-cell.x, cell.x - size.x + 1), 0)
+	var dy := maxi(maxi(-cell.y, cell.y - size.y + 1), 0)
+	return maxi(dx, dy)
+
+
+static func _backdrop_art_id(
+	cell: Vector2i, size: Vector2i, theme: StageArtTheme
+) -> StringName:
+	if theme == null:
+		return &"tile_backdrop"
+	var distance := _backdrop_distance(cell, size)
+	var variants: Array[StringName] = [theme.backdrop_id]
+	variants.append_array(theme.backdrop_variant_ids)
+	if cell == Vector2i(-1, -1):
+		return variants[0]
+	if cell == Vector2i(-3, -3):
+		return variants[1]
+	if cell == Vector2i(-6, -6):
+		return variants[2]
+	if cell == Vector2i(size.x + 1, size.y + 1):
+		return variants[3]
+	var pools: Array[Array] = [
+		[variants[0], variants[0], variants[3]],
+		[variants[0], variants[1], variants[3]],
+		[variants[1], variants[2], variants[2], variants[3]],
+	]
+	var hashed: int = absi(cell.x * 374761393 + cell.y * 668265263 + distance * 1274126177)
+	# A complete low foothill/mist rim sells the platform edge. Mid and far
+	# layers deliberately contain ravine gaps; peaks are sparse horizon marks,
+	# not one sprite per coordinate.
+	if distance == 2 and hashed % 4 == 0:
+		return &""
+	if distance >= 3 and distance <= 5 and hashed % 3 == 0:
+		return &""
+	if distance >= 6 and hashed % 4 != 0:
+		return &""
+	var band := 0 if distance <= 1 else (1 if distance <= 5 else 2)
+	var pool: Array = pools[band]
+	return StringName(pool[hashed % pool.size()])
 
 
 ## Manifest-sized tile sprite anchored at the face's TOP corner (the canvas

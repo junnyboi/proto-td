@@ -1,51 +1,52 @@
 {
-  "schema_version": 1,
-  "logical_id": "world.s1.core_landmark",
-  "state": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET",
+  "approval_packet": {
+    "receipt": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+    "receipt_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
+    "revision_token": "AUI-DESIGN-D-REVISION-2",
+    "token": "AUI-DESIGN-D",
+    "verified": true
+  },
   "final_file": "assets/world/s1/s1-core-landmark.png",
-  "final_file_sha256": "805e7ee2f01ba4e8770f27bbfdccf8ffbbcaff90791b849bbf915b93ecdd111b",
-  "raw_source": {
-    "retention": "external owner-approval archive",
-    "file": "s1-core-landmark.png",
-    "sha256": "a230c71e3a258da51a3bbc82ee1a9658bd24964eb27b10607d2520e98510c4f9",
-    "original_file": "s1-core-landmark_original.png",
-    "original_sha256": "90e6aa6ad815248d26f108bbf9373011fc3d310a9e70f0fa6ac4de0f25e8ac56",
-    "acceptance_state": "ACCEPTED_AS_IDENTITY_MATERIAL_SOURCE"
-  },
-  "placement_state": "RUNTIME_S1_THEME_BOUND",
+  "final_file_sha256": "8d6276cc05dc04c78cb62b6b998388962d657cc417f28dbeeb3b715a08446787",
   "generator": {
-    "tool": "Manus generate_image",
-    "model": "gpt-image-2",
-    "seed": null,
-    "seed_reason": "unsupported/not returned by generator",
-    "prompt_contract": "art-src/world/s1/s1-world-gpt-image-2-prompts.md",
-    "prompt_contract_sha256": "a4096a65b44eaaf9fb5066244912c7f0e4ebd4c85da9a72fe76a0e805aeaed68",
-    "prompt_section": "Core landmark",
+    "approval_manifest": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
+    "approval_manifest_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
     "approved_reference_hashes": [
-      {
-        "id": "d-world-style-board",
-        "sha256": "da7fb17af23c06a7b7e9bfbd78a6b0ac8727da9a42daade1c12bc6c537d1c7d3"
-      },
-      {
-        "id": "d-act-i-material-prop-sheet",
-        "sha256": "246a7802d6a8d43a143246212815cb8eb7f88a5deea1f5a826ed5d8b59655373"
-      },
-      {
-        "id": "d-s1-guild-threshold-keyframe-approved-revision",
-        "sha256": "991f2c3d03da7160aa53c760645f69a0a9dea3bdf554f17275f74d120ac1335d"
-      }
-    ]
+      "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3"
+    ],
+    "model": "gpt-image-2",
+    "prompt_contract": "concept-prompts.md",
+    "prompt_contract_sha256": "5539e8380e1b2a5bcee43859f70e56819e3209d11d25857c132c9e12fa01e85e",
+    "prompt_section": "Cloud-Seal Orrery",
+    "seed": null,
+    "seed_reason": "service does not expose a stable seed; accepted concept is hash-pinned",
+    "tool": "manus-tools/generate_image"
   },
+  "human_acceptance": {
+    "accepting_commit": null,
+    "acceptor": null,
+    "final_art": false,
+    "timestamp_utc": null
+  },
+  "license_source": "original AI-assisted concept under project-controlled prompt/reference set; deterministic native synthesis",
+  "logical_id": "world.s1.core_landmark",
   "normalization": {
-    "recipe": "source palette derivation + contract-authored native geometry + hard alpha + no-dither fixed palette",
-    "tool": "tools/art_pipeline/world/normalize_s1_world.py",
-    "tool_sha256": "3ff303db2aac77f49ebb8632e0fe445d83bc469df36c4eb7436fbcf93a805c04",
     "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
-    "asset_contract_sha256": "9b8d67bbed8e0ec94ad48f807c30fed766e74cc50c5f38c80a9e80a89fe5ecf5",
+    "asset_contract_sha256": "0e4649b00c16a97d552d2ca83f39f8dbb3ef88134bb60195820808a9b4dd5f6e",
     "derived_palette": "art-src/world/s1/s1-derived-palette.json",
     "derived_palette_sha256": "0311300b3a8cb3f7ce7d971db4c66ffe24c810cc2127f44286cde4c6640e6795",
+    "pillow": "12.3.0",
     "python": "3.12.3",
-    "pillow": "12.3.0"
+    "recipe": "owner-approved GPT Image 2 concept -> contract-authored native pixel synthesis -> hard alpha",
+    "tool": "tools/art_pipeline/world/generate_s1_revision_v2.py",
+    "tool_sha256": "55e52132b29e2fe3b7c99fa46aaeff6590d09134f167381abeea82db4a07a819"
+  },
+  "placement_state": "RUNTIME_BOUND_PRESENTATION_ONLY",
+  "raw_source": {
+    "acceptance_state": "POSEIDON_APPROVED_CONCEPT_DIRECTION",
+    "file": "core-option-c-cloud-seal-orrery.png",
+    "retention": "external owner-approval archive",
+    "sha256": "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3"
   },
   "reserved_colors": {
     "forbidden": [
@@ -54,20 +55,6 @@
     ],
     "gate": "PASS"
   },
-  "human_acceptance": {
-    "final_art": false,
-    "acceptor": null,
-    "timestamp_utc": null,
-    "accepting_commit": null
-  },
-  "license_source": "original AI-assisted source under project-controlled prompt/reference set; approved concepts only",
-  "approval_packet": {
-    "token": "AUI-DESIGN-D",
-    "owner": "Poseidon",
-    "receipt_sha256": "d7bdbb4b3401932a20fd1cfdf66b7ba3b05e3bab4b7b2133b9958162271781e1",
-    "metadata_sha256": "91cfda9a1c5b199b5c69d42c82d58fbe4a186b270b828180b16ad7c1cb811e51",
-    "focused_s1_token": "AUI-DESIGN-D-S1-REVISION-1",
-    "focused_s1_sha256": "991f2c3d03da7160aa53c760645f69a0a9dea3bdf554f17275f74d120ac1335d",
-    "verification": "six canonical image hashes matched generation-metadata.json byte-for-byte on 2026-08-12"
-  }
+  "schema_version": 1,
+  "state": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
 }

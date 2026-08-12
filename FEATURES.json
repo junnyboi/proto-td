@@ -349,6 +349,25 @@
     "f08ee08",
     "924f360"
    ]
+  },
+  {
+   "id": "AUI-10R",
+   "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
+   "acceptance": [
+    "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and human-final flags unset until owner review",
+    "the Cloud-Seal Orrery replaces the rejected pressure-tank Core while preserving final-route clearance and input semantics",
+    "one continuous Alpine Escarpment renders behind S1 with no repeated outside-map grid or deployable-tile affordance",
+    "s1_world_art, assets_floor, iso_projection_floor, full RELEASE, independent diff-vs-pins, localization review, and Poseidon visual verdict are green"
+   ],
+   "status": "pending",
+   "scenarios": [
+    "s1_world_art",
+    "assets_floor",
+    "iso_projection_floor"
+   ],
+   "commits": [
+    "879c488"
+   ]
   }
  ],
  "deviations": [

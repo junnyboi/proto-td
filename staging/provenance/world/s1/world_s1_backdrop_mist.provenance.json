@@ -6,8 +6,8 @@
     "token": "AUI-DESIGN-D",
     "verified": true
   },
-  "final_file": "staging/assets/world/s1/s1-backdrop.png",
-  "final_file_sha256": "6a1cb0457a2fa6b33a2039c34092c17a026a14e86127021b3a870e782df6c2bf",
+  "final_file": "staging/assets/world/s1/s1-backdrop-mist.png",
+  "final_file_sha256": "d2c16aa40595619b487e494531036ab95964b4ac9647c6be6ba7d09dadb89800",
   "generator": {
     "approval_manifest": "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json",
     "approval_manifest_sha256": "8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6",
@@ -29,7 +29,7 @@
     "timestamp_utc": null
   },
   "license_source": "original AI-assisted concept under project-controlled prompt/reference set; deterministic native synthesis",
-  "logical_id": "world.s1.backdrop",
+  "logical_id": "world.s1.backdrop_mist",
   "normalization": {
     "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
     "asset_contract_sha256": "0e4649b00c16a97d552d2ca83f39f8dbb3ef88134bb60195820808a9b4dd5f6e",
