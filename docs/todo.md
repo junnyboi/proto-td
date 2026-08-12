@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-013 — Rename the game to Proto Defense
-
-- Status: in_progress
-- Owner: AGENT 2
-- Branch: `agent-2/proto-defense-title`
-- Base: `master` at `5a106efe703fffe0dadcf72d314c90a722c1b510`
-- Dependencies: TD-012 integrated; supersede its product name while preserving its historical records
-- Owned files: `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-013-agent-2-proto-defense-title.md`, `project.godot`, `autoloads/i18n.gd`, `localization/en-US.json`, `localization/README.md`, `scripts/ui/title.gd`, `selftest/scenarios/boot.gd`, `test/test_i18n.gd`, `CLAUDE.md`, `FINAL_REPORT.md`, `PLAYTEST.md`, `assets/music/README.md`, `docs/README.md`
-- Do not touch: TD-012 completed row/handoff/branch/evidence, repository paths, hosted URLs, simulation/save/hash/replay identifiers, gameplay data, locale-selector UX, non-English copy, verifier scripts, thresholds, or unrelated presentation lanes
-- Acceptance: Godot application metadata, desktop window title, live localized title, TITLE-1 acceptance, and current identity headers resolve exactly to `Proto Defense`; no unexpected `Aetheria Tactics` references remain outside immutable TD-012 history; the sole Start flow remains unchanged
-- Required evidence: updated `test_i18n.gd`; seeded `boot` headless/windowed with exact title and viewport assertions; fresh title PNG; historical-reference allowlist; STANDARD and repository-required full verification
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
