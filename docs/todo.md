@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-006 — Make campaign the only player Start flow
+
+- Status: in_progress
+- Owner: AGENT 5
+- Branch: `agent-5/campaign-only-start`
+- Base: `master` at `690f7617acdc710855c3c8e169ad673b1fa8fec0`
+- Dependencies: `TD-005`
+- Owned files: `scripts/ui/title.gd`, `scripts/ui/results.gd`, `autoloads/game.gd`, `selftest/scenarios/boot.gd`, `selftest/scenarios/campaign_flow.gd`, `selftest/scenarios/staging_flow.gd`, `selftest/scenarios/resign_flow.gd`, `selftest/scenarios/battle_controls.gd`, `PLAYTEST.md`, `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-006-agent-5-campaign-only-start.md`
+- Do not touch: `sim/**`, `data/**`, bots, `scripts/verify.sh`, harness internals, tests, human-owned thresholds, music/audio policy, or concurrent polish lanes
+- Acceptance: title exposes exactly one `StartButton` labeled Start; `CampaignButton` is absent; a real Start click initializes a fresh campaign and reaches Staging; campaign CLEAR/DEFEAT Results expose only campaign routes; Back to Title resets the session; direct battle startup remains harness/debug-only
+- Required evidence: affected headless/windowed scenarios, fresh one-button title PNG review, `scripts/verify.sh --full`, cross-process campaign replay diff, independent diff-vs-plan audit, merged-master verification
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked

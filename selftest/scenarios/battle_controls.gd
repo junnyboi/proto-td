@@ -35,8 +35,9 @@ func run(h: SelfTestHarness) -> void:
 	var game := h.autoload("Game")
 	h.expect_done()
 
-	# quick battle pinned open (seam start; StartButton raw input is already
-	# validated by resign_flow — the new raw surfaces here are the controls)
+	# Harness-only battle pinned open through the direct seam. Player Start
+	# routing is campaign-only and validated by boot/staging/campaign_flow;
+	# the new raw surfaces here are the controls.
 	game.call("start_battle", game.get("default_stage_id"))
 	var stage := (game.get("pending_stage") as StageDef).duplicate(true) as StageDef
 	var waves: Array[Dictionary] = [{"tick": 100_000, "enemy_id": &"grunt", "path_idx": 0}]

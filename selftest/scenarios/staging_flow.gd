@@ -1,8 +1,8 @@
 extends RefCounted
 
-## P15 focused route/UI proof. Raw input validates each new surface once;
-## campaign_flow retains the real CLEAR/progression proof and resign_flow keeps
-## quick-mode separation.
+## P15 + TD-006 focused route/UI proof. Raw input validates each new surface
+## once; campaign_flow retains the real CLEAR/progression proof and resign_flow
+## covers campaign DEFEAT routing.
 
 const FUTURE_BUTTONS: Array[String] = [
 	"BarracksButton",
@@ -38,13 +38,14 @@ func run(h: SelfTestHarness) -> void:
 
 func _open_initial_staging(h: SelfTestHarness, game: Node) -> Control:
 	var title := game.get("content") as Control
-	var campaign_button := title.find_child("CampaignButton", true, false) as Button
-	h.check("Campaign button exists", campaign_button != null)
-	if campaign_button == null:
+	var start_button := title.find_child("StartButton", true, false) as Button
+	h.check("Start button exists", start_button != null and start_button.text == "Start")
+	h.check("Campaign button is absent", title.find_child("CampaignButton", true, false) == null)
+	if start_button == null:
 		return null
-	await h.click_view(campaign_button.get_global_rect().get_center())
+	await h.click_view(start_button.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
-	h.check("Campaign opens Staging", staging != null)
+	h.check("Start opens Staging", staging != null)
 	return staging
 
 

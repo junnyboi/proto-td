@@ -19,9 +19,9 @@ var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null
 
-# campaign session (Phase 10, td-phase-10.md §2.2 — session-only, resets
-# every start_campaign; campaign_active == false preserves the full-catalog
-# loadout behavior for every pre-campaign entry path)
+# Campaign session (Phase 10, td-phase-10.md §2.2 — session-only, resets
+# every start_campaign). campaign_active == false preserves full-catalog
+# loadouts for harness/debug direct-battle seams; it is not a player mode.
 var campaign: CampaignState = null
 var campaign_active: bool = false
 var selected_stage_id: StringName = &""
@@ -56,9 +56,8 @@ func start_stage(stage_id: StringName, squad: Array[StringName]) -> void:
 
 ## The squad the next battle boots with: an explicit start_stage selection
 ## wins (campaign runs AND standalone per-stage bots — §2.2.6 lets bots run
-## without clearing predecessors); every start_battle-only path (title
-## StartButton, debug jumps, scenarios) never sets one and keeps the
-## default squad.
+## without clearing predecessors); start_battle-only harness/debug paths
+## never set one and keep the default squad.
 func battle_squad() -> Array[StringName]:
 	if not selected_squad.is_empty():
 		return selected_squad
@@ -78,7 +77,8 @@ func campaign_stage_ids() -> Array[StringName]:
 
 
 ## Loadout sets for the UI (model stays catalog-validated — td-phase-6-7
-## §2.1): unlocked sets while a campaign runs, full catalogs otherwise.
+## §2.1): unlocked sets while a campaign runs, full catalogs for internal
+## harness/debug direct-battle seams.
 func loadout_operator_ids() -> Array[StringName]:
 	if campaign_active and campaign != null:
 		return campaign.unlocked_operators
@@ -105,8 +105,8 @@ func record_result(result: int, stars: int) -> void:
 		return
 	var stage := current_battle.stage
 	var granted: Array[Dictionary] = []
-	# campaign_active guard (Phase 13, Q4): a quick battle after a campaign
-	# session must never grant rewards through the stale CampaignState
+	# campaign_active guard (Phase 13, Q4): a harness/debug direct battle
+	# must never grant rewards through a stale CampaignState.
 	if campaign != null and campaign_active:
 		granted = campaign.record_result(stage, result, stars)
 	last_result = {
@@ -124,9 +124,8 @@ func debug_unlock_all() -> void:
 		campaign.unlock_everything(_catalogs())
 
 
-## Back to the starting menu (Phase 13). Resets the campaign session —
-## battle_squad() returns any non-empty selected_squad, so without the reset
-## a post-campaign quick battle silently inherits the campaign loadout.
+## Back to the starting menu (Phase 13). Resets the campaign session so the
+## next Start always creates a fresh campaign with no stale selection.
 func open_title() -> void:
 	campaign = null
 	campaign_active = false

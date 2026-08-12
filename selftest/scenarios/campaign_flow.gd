@@ -1,6 +1,6 @@
 extends RefCounted
 
-## Phase 10 + P15 scenario: title -> Campaign -> Staging -> stage select
+## Phase 10 + P15 + TD-006 scenario: title -> Start -> Staging -> stage select
 ## (locks) -> squad select (picks, counter, empty loadout) -> S1 battle
 ## (bot_stage_01's timeline through the seam) -> Continue -> results (stars,
 ## reward reveal) -> stage select (progress) -> s2 squad select (guard_2
@@ -17,15 +17,19 @@ func run(h: SelfTestHarness) -> void:
 	var game := h.autoload("Game")
 	h.expect_done()
 
-	# title -> Campaign (raw click)
+	# title -> Start campaign (raw click)
 	var title := game.get("content") as Control
-	var campaign_btn := title.find_child("CampaignButton", true, false) as Button
-	h.check("campaign button on the title", campaign_btn != null)
-	if campaign_btn == null:
+	var title_start := title.find_child("StartButton", true, false) as Button
+	h.check("Start button on the title", title_start != null and title_start.text == "Start")
+	h.check(
+		"Campaign button removed from the title",
+		title.find_child("CampaignButton", true, false) == null,
+	)
+	if title_start == null:
 		return
-	await h.click_view(campaign_btn.get_global_rect().get_center())
+	await h.click_view(title_start.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
-	h.check("campaign opens Staging", staging != null)
+	h.check("Start opens Staging", staging != null)
 	if staging == null:
 		return
 	var campaign_ref: CampaignState = game.get("campaign")

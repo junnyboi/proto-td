@@ -18,7 +18,8 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 
 ## 2. The run
 
-Title → **Campaign** → **Staging Area** → **Mission Control** → play S1→S8 in order. Expect to
+Title → **Start** → **Staging Area** → **Mission Control** → play S1→S8 in order. Start is the
+prototype's only game flow; there is no separate quick battle. Expect to
 lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 
 **Watch for** (does the lesson land?)

@@ -1,10 +1,9 @@
 extends Control
 
-## Results screen (Phase 10, td-phase-10.md §2.6; mode-aware since Phase
-## 13): headline + stars + tallies from Game.last_result, one "Unlocked:"
-## line per granted reward (the reveal). Actions route by mode — campaign:
-## Retry -> squad select, Return to Staging for either outcome; quick
-## battle: Retry -> restart the same stage; Back to Title always present.
+## Results screen: headline + stars + tallies from Game.last_result, one
+## "Unlocked:" line per granted reward (the reveal). The prototype has one
+## player flow: Retry -> squad select, Return to Staging for either outcome,
+## and Back to Title resets the campaign session.
 ## The battle's stamp edge owns victory/defeat SFX — this screen only
 ## clicks (L3).
 
@@ -54,13 +53,12 @@ func _ready() -> void:
 	retry.add_theme_font_size_override("font_size", FONT_SIZE)
 	retry.pressed.connect(_on_retry)
 	actions.add_child(retry)
-	if Game.campaign_active:
-		var next := Button.new()
-		next.name = "ReturnToStaging"
-		next.text = "Return to Staging"
-		next.add_theme_font_size_override("font_size", FONT_SIZE)
-		next.pressed.connect(_on_return_to_staging)
-		actions.add_child(next)
+	var next := Button.new()
+	next.name = "ReturnToStaging"
+	next.text = "Return to Staging"
+	next.add_theme_font_size_override("font_size", FONT_SIZE)
+	next.pressed.connect(_on_return_to_staging)
+	actions.add_child(next)
 	var title := Button.new()
 	title.name = "BackToTitle"
 	title.text = "Back to Title"
@@ -76,10 +74,7 @@ func _on_return_to_staging() -> void:
 
 func _on_retry() -> void:
 	Sfx.play("ui_click")
-	if Game.campaign_active:
-		Game.open_squad_select()
-	else:
-		Game.start_battle(StringName(String(Game.last_result.get("stage_id", ""))))
+	Game.open_squad_select()
 
 
 func _on_back_to_title() -> void:
