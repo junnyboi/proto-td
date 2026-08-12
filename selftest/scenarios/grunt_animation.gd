@@ -152,16 +152,14 @@ func run(h: SelfTestHarness) -> void:
 	await h.shot("grunt_attack_mid")
 
 	# Charm reverses the same path tangent and swaps to the derived ally-blue
-	# NW atlas; the same six-frame blend contract applies.
+	# NW atlas immediately: faction readability must hold on the first post-cast
+	# capture, while direction/state changes within one faction use the blend.
 	grunt.blocked_by = -1
 	grunt.atk_counter = 0
 	grunt.progress_units = 0
 	grunt.faction = EnemyState.Faction.CHARMED
 	await h.physics_frames(1)
-	await h.frames(3)
-	_check_mid_blend(h, view, grunt.id, &"grunt_anim_walk_nw_charmed")
-	await h.shot("grunt_charmed_reverse_blend")
-	await h.frames(5)
+	await h.frames(2)
 	_check_settled(h, view, grunt.id, &"grunt_anim_walk_nw_charmed")
 	await h.shot("grunt_charmed_reverse_settled")
 	h.done()

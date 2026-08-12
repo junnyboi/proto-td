@@ -56,6 +56,25 @@ func test_logical_ids_cover_state_direction_and_charm() -> void:
 	)
 
 
+func test_only_faction_palette_changes_bypass_cross_fade() -> void:
+	assert_true(
+		EnemyAnimator.faction_palette_changed(&"grunt_anim_walk_se", &"grunt_anim_walk_nw_charmed")
+	)
+	assert_true(
+		EnemyAnimator.faction_palette_changed(
+			&"grunt_anim_attack_ne_charmed", &"grunt_anim_walk_sw"
+		)
+	)
+	assert_false(
+		EnemyAnimator.faction_palette_changed(&"grunt_anim_walk_se", &"grunt_anim_walk_sw")
+	)
+	assert_false(
+		EnemyAnimator.faction_palette_changed(
+			&"grunt_anim_walk_ne_charmed", &"grunt_anim_attack_ne_charmed"
+		)
+	)
+
+
 func test_blend_weights_are_complementary_and_settle_in_six_frames() -> void:
 	assert_eq(EnemyAnimator.blend_alpha(6), Vector2(1.0, 0.0))
 	assert_eq(EnemyAnimator.blend_alpha(3), Vector2(0.5, 0.5))

@@ -90,6 +90,10 @@ static func animation_id(state: StringName, direction: StringName, charmed := fa
 	return StringName("grunt_anim_%s_%s%s" % [state, direction, suffix])
 
 
+static func faction_palette_changed(old_id: StringName, new_id: StringName) -> bool:
+	return String(old_id).ends_with("_charmed") != String(new_id).ends_with("_charmed")
+
+
 ## Returns (old_alpha, new_alpha) for the current frames-left value.
 static func blend_alpha(frames_left: int, total_frames := BLEND_FRAMES) -> Vector2:
 	if total_frames <= 0:
@@ -214,11 +218,15 @@ static func refresh(
 	var old_key: StringName = keys.get(enemy.id, &"")
 	if old_key != sprite_id:
 		var blend := body.get_node_or_null("BlendSprite") as TextureRect
-		if old_key != &"" and blend != null and sprite.texture != null:
+		var immediate := old_key != &"" and faction_palette_changed(old_key, sprite_id)
+		if old_key != &"" and not immediate and blend != null and sprite.texture != null:
 			blend.texture = sprite.texture
 			blend.visible = true
 			blend_frames[enemy.id] = BLEND_FRAMES
 			apply_blend(body, BLEND_FRAMES)
+		elif immediate:
+			blend_frames.erase(enemy.id)
+			apply_blend(body, 0)
 		keys[enemy.id] = sprite_id
 	if sprite.texture != texture:
 		sprite.texture = texture
