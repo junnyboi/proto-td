@@ -18,6 +18,67 @@ SHEET_SIZE = (FRAME_SIZE * FRAME_COUNT, FRAME_SIZE)
 STATES = ("walk", "attack")
 DIRECTIONS = ("se", "sw", "ne", "nw")
 CORE_MIRRORS = (("se", "sw"), ("ne", "nw"))
+IDENTITY_LOCK = (
+    "Preserve the supplied chibi robot grunt identity: ivory cracked ceramic shell, dark metal "
+    "skeleton and joints, brass fittings, three vertical amber chest lenses, oversized rectangular "
+    "hammer-palms, compact armored legs, painterly tactical-game rendering. Keep every part present "
+    "and structurally consistent. Static orthographic/isometric camera, flat neutral lighting, "
+    "uniform #D3D3D3 background, full body in frame, no floor shadow, no text, no extra objects."
+)
+DIRECTION_LOCKS = {
+    "se": "South-East front-right three-quarter isometric facing; chest lenses visible.",
+    "ne": "North-East back-right three-quarter isometric facing; rear silhouette readable.",
+}
+STAGE_OPERATIONS = {
+    "keyframe": (
+        "Create one full-body loop-start game-animation keyframe. Edit pose and facing only; "
+        "retain exact character identity and art style."
+    ),
+    "video": (
+        "Animate the keyframe through the complete locked action for the backend-supported "
+        "four-second clip, two identical cycles, first frame equal to last frame, fixed camera, "
+        "no audio, no scene motion, no identity drift."
+    ),
+    "fallback_phase": (
+        "Edit only the pose of the supplied North-East attack guard into the requested locked "
+        "attack phase; retain exact identity, facing, camera, framing, background, and style."
+    ),
+}
+FALLBACK_PHASES = {
+    1: "early synchronized double-arm wind-up",
+    2: "full synchronized wind-up",
+    3: "midpoint of synchronized forward-down swing",
+    4: "synchronized double-hammer impact",
+    5: "early synchronized recoil",
+    6: "full synchronized recoil toward guard",
+    7: "near-guard synchronized recovery",
+}
+SOURCE_DERIVATIONS = {
+    "walk_se": "full-cycle compression of video_walk_se",
+    "walk_sw": "exact per-cell horizontal mirror of walk_se",
+    "walk_ne": "full-cycle compression of video_walk_ne",
+    "walk_nw": "exact per-cell horizontal mirror of walk_ne",
+    "attack_se": "full-cycle compression of video_attack_se",
+    "attack_sw": "exact per-cell horizontal mirror of attack_se",
+    "attack_ne": "deterministic interpolation of seven gpt-image-2 fallback phases plus guard",
+    "attack_nw": "exact per-cell horizontal mirror of attack_ne",
+}
+ORIGINAL_PROMPT_STATUS = (
+    "not_retained_verbatim; canonical prompt reconstructed from the persisted confirmed job "
+    "spec and byte-exact action contract; this receipt does not claim prompt byte identity"
+)
+SEED_STATUS = "not exposed by the Manus MCP tool schema; no seed invented"
+PROVIDER_ID_STATUS = (
+    "not surfaced in retained MCP result metadata; local content-addressed receipt ID used; "
+    "no provider ID invented"
+)
+EXPECTED_GENERATION_RECEIPT_SHA256 = (
+    "99f1d093b3e1f23a129c4774138d365420047f25865bdef0178593ee595bf7cc"
+)
+FORBIDDEN_PROMPT = (
+    "FORBIDDEN: travel, turn, camera movement, zoom, morphing, missing or appearing parts, "
+    "secondary action, particles, text, props, background variation."
+)
 
 PALETTE_HEX = (
     "1a1c2c", "5d275d", "b13e53", "ef7d57", "ffcd75", "a7f070", "38b764", "257179",
@@ -115,9 +176,30 @@ def require_bundle_artifact(
     return record
 
 
+def canonical_reproduction_prompt(
+    request_id: str, stage: str, state: str, direction: str, action_contract: str
+) -> str:
+    phase_text = ""
+    if stage == "fallback_phase":
+        phase_index = int(request_id.rsplit("_", maxsplit=1)[1])
+        phase_text = f"\nREQUESTED_PHASE: {FALLBACK_PHASES[phase_index]}"
+    return (
+        f"OPERATION: {STAGE_OPERATIONS[stage]}\n"
+        f"IDENTITY_LOCK: {IDENTITY_LOCK}\n"
+        f"DIRECTION_LOCK: {DIRECTION_LOCKS[direction]}\n"
+        f"ACTION_CONTRACT:\n{action_contract}{phase_text}\n"
+        f"{FORBIDDEN_PROMPT}"
+    )
+
+
 def validate_generation_receipt(
-    path: Path, bundle_path: Path, source_paths: dict[tuple[str, str], Path]
+    path: Path,
+    bundle_path: Path,
+    source_paths: dict[tuple[str, str], Path],
+    expected_receipt_sha256: str = EXPECTED_GENERATION_RECEIPT_SHA256,
 ) -> dict[str, object]:
+    if sha256(path) != expected_receipt_sha256:
+        raise RuntimeError(f"{path}: generation receipt identity mismatch")
     receipt = json.loads(path.read_text(encoding="utf-8"))
     if receipt.get("schema") != "mgs.ai-generation-receipt.v1":
         raise RuntimeError(f"{path}: unsupported generation receipt schema")
@@ -230,20 +312,22 @@ def validate_generation_receipt(
         prompt = request.get("canonical_reproduction_prompt")
         prompt_hash = request.get("canonical_reproduction_prompt_sha256")
         action_content = action_contracts[state]["content"]
+        expected_prompt = canonical_reproduction_prompt(
+            request_id, stage, state, direction, action_content
+        )
         if (
             not isinstance(prompt, str)
+            or prompt != expected_prompt
             or hashlib.sha256(prompt.encode("utf-8")).hexdigest() != prompt_hash
-            or action_content not in prompt
-            or "IDENTITY_LOCK:" not in prompt
-            or "DIRECTION_LOCK:" not in prompt
         ):
             raise RuntimeError(f"{path}: prompt contract mismatch {request_id}")
-        if request.get("seed") is not None or "no seed invented" not in str(
-            request.get("seed_status")
-        ):
+        if request.get("original_wrapper_prompt_status") != ORIGINAL_PROMPT_STATUS:
+            raise RuntimeError(f"{path}: original prompt disclosure mismatch {request_id}")
+        if request.get("seed") is not None or request.get("seed_status") != SEED_STATUS:
             raise RuntimeError(f"{path}: seed disclosure missing {request_id}")
-        if request.get("provider_request_id") is not None or "no provider ID invented" not in str(
-            request.get("provider_request_id_status")
+        if (
+            request.get("provider_request_id") is not None
+            or request.get("provider_request_id_status") != PROVIDER_ID_STATUS
         ):
             raise RuntimeError(f"{path}: provider request disclosure missing {request_id}")
         references = request.get("references")
@@ -295,7 +379,11 @@ def validate_generation_receipt(
             manifest,
             f"source_sheet_{state}_{direction}",
         )
-        if record.get("sha256") != sha256(source_path) or not record.get("derivation"):
+        key = f"{state}_{direction}"
+        if (
+            record.get("sha256") != sha256(source_path)
+            or record.get("derivation") != SOURCE_DERIVATIONS[key]
+        ):
             raise RuntimeError(f"{path}: source-sheet receipt mismatch for {state}_{direction}")
     return receipt
 
