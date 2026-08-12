@@ -71,39 +71,231 @@ def validate_source(path: Path) -> Image.Image:
     return sheet
 
 
+def bundle_manifest(bundle_path: Path) -> dict[str, str]:
+    manifest_path = bundle_path / "sha256.txt"
+    manifest: dict[str, str] = {}
+    for line in manifest_path.read_text(encoding="utf-8").splitlines():
+        digest, relative = line.split(maxsplit=1)
+        relative = relative.removeprefix("*").removeprefix("./")
+        artifact_path = (bundle_path / relative).resolve()
+        if not artifact_path.is_relative_to(bundle_path.resolve()) or not artifact_path.is_file():
+            raise RuntimeError(f"{manifest_path}: invalid artifact path {relative}")
+        if digest != sha256(artifact_path):
+            raise RuntimeError(f"{manifest_path}: artifact hash mismatch {relative}")
+        manifest[relative] = digest
+    actual = {
+        path.relative_to(bundle_path).as_posix()
+        for path in bundle_path.rglob("*")
+        if path.is_file() and path != manifest_path
+    }
+    if set(manifest) != actual:
+        raise RuntimeError(f"{manifest_path}: manifest/file-set mismatch")
+    return manifest
+
+
+def require_bundle_artifact(
+    record: object, bundle_path: Path, manifest: dict[str, str], label: str
+) -> dict[str, object]:
+    if not isinstance(record, dict):
+        raise RuntimeError(f"generation receipt: malformed artifact {label}")
+    filename = record.get("filename")
+    digest = record.get("sha256")
+    byte_count = record.get("bytes")
+    if not isinstance(filename, str) or not isinstance(digest, str) or not isinstance(byte_count, int):
+        raise RuntimeError(f"generation receipt: incomplete artifact {label}")
+    matches = [
+        relative
+        for relative, recorded_digest in manifest.items()
+        if recorded_digest == digest
+        and Path(relative).name == filename
+        and (bundle_path / relative).stat().st_size == byte_count
+    ]
+    if not matches:
+        raise RuntimeError(f"generation receipt: unbound bundle artifact {label}")
+    return record
+
+
 def validate_generation_receipt(
-    path: Path, source_paths: dict[tuple[str, str], Path]
+    path: Path, bundle_path: Path, source_paths: dict[tuple[str, str], Path]
 ) -> dict[str, object]:
     receipt = json.loads(path.read_text(encoding="utf-8"))
     if receipt.get("schema") != "mgs.ai-generation-receipt.v1":
         raise RuntimeError(f"{path}: unsupported generation receipt schema")
     if receipt.get("receipt_mode") != "retrospective_content_addressed_with_disclosures":
         raise RuntimeError(f"{path}: missing retrospective receipt disclosure mode")
+    if receipt.get("status") != "source_bytes_and_reproduction_contract_bound":
+        raise RuntimeError(f"{path}: invalid receipt status")
+    disclosures = receipt.get("disclosures")
+    disclosure_text = " ".join(disclosures) if isinstance(disclosures, list) else ""
+    for required_phrase in ("seeds", "request/job IDs", "Original wrapper prompts", "byte-reproduced"):
+        if required_phrase not in disclosure_text:
+            raise RuntimeError(f"{path}: incomplete disclosure {required_phrase}")
+
+    manifest = bundle_manifest(bundle_path)
+    contract = receipt.get("bundle_contract")
+    expected_contract = {
+        "manifest": "sha256.txt",
+        "receipt_copy": "grunt_animation.generation_receipt.json",
+        "reference": "reference/pasted_file_t5MkIH_image.png",
+        "all_recorded_references_outputs_builders_specs_and_source_sheets_required": True,
+    }
+    if contract != expected_contract:
+        raise RuntimeError(f"{path}: invalid bundle contract")
+    receipt_copy = bundle_path / expected_contract["receipt_copy"]
+    if sha256(receipt_copy) != sha256(path):
+        raise RuntimeError(f"{path}: external receipt copy mismatch")
+
+    character_reference = require_bundle_artifact(
+        receipt.get("character_reference"), bundle_path, manifest, "character_reference"
+    )
+    reference_path = bundle_path / expected_contract["reference"]
+    if sha256(reference_path) != character_reference["sha256"]:
+        raise RuntimeError(f"{path}: character reference path/hash mismatch")
+
+    confirmed_spec = receipt.get("confirmed_job_spec")
+    spec_path = bundle_path / "spec/job-spec.json"
+    if (
+        not isinstance(confirmed_spec, dict)
+        or confirmed_spec.get("sha256") != sha256(spec_path)
+        or confirmed_spec.get("content") != json.loads(spec_path.read_text(encoding="utf-8"))
+    ):
+        raise RuntimeError(f"{path}: confirmed job spec mismatch")
+
+    action_contracts = receipt.get("action_contracts")
+    if not isinstance(action_contracts, dict) or set(action_contracts) != set(STATES):
+        raise RuntimeError(f"{path}: action-contract set mismatch")
+    for state in STATES:
+        contract_path = bundle_path / f"spec/{state}-action-contract.txt"
+        record = action_contracts[state]
+        if (
+            not isinstance(record, dict)
+            or record.get("sha256") != sha256(contract_path)
+            or record.get("content") != contract_path.read_text(encoding="utf-8").rstrip()
+        ):
+            raise RuntimeError(f"{path}: {state} action contract mismatch")
+
+    postprocess = receipt.get("deterministic_postprocess")
+    expected_builders = {
+        "walk_builder": "rebuild_video_state_full_cycle.py",
+        "attack_fallback_builder": "build_attack_fallback.py",
+        "final_qa": "final_qa.py",
+    }
+    if not isinstance(postprocess, dict):
+        raise RuntimeError(f"{path}: deterministic postprocess missing")
+    for field, filename in expected_builders.items():
+        record = require_bundle_artifact(postprocess.get(field), bundle_path, manifest, field)
+        if record.get("sha256") != sha256(bundle_path / f"spec/{filename}"):
+            raise RuntimeError(f"{path}: deterministic builder mismatch {field}")
+    if postprocess.get("sampling") != (
+        "full backend action compressed to 24 motion frames; frame 24 exact frame 0"
+    ) or postprocess.get("mirror_policy") != (
+        "SE->SW and NE->NW by exact per-cell horizontal mirror"
+    ):
+        raise RuntimeError(f"{path}: deterministic postprocess policy mismatch")
+
+    expected_requests: dict[str, tuple[str, str, str, str, str]] = {}
+    for state in STATES:
+        for direction in ("se", "ne"):
+            expected_requests[f"keyframe_{state}_{direction}"] = (
+                "keyframe", state, direction, "manus-tools/generate_image_variation", "gpt-image-2"
+            )
+    for state, direction in (("walk", "se"), ("walk", "ne"), ("attack", "se")):
+        expected_requests[f"video_{state}_{direction}"] = (
+            "video", state, direction, "manus-tools/generate_video", "veo3.1-fast"
+        )
+    expected_requests["video_attack_ne_quota_failure"] = (
+        "video", "attack", "ne", "manus-tools/generate_video", "veo3.1-fast"
+    )
+    for index in range(1, 8):
+        expected_requests[f"fallback_attack_ne_phase_{index:02d}"] = (
+            "fallback_phase", "attack", "ne", "manus-tools/generate_image_variation", "gpt-image-2"
+        )
+
     requests = receipt.get("requests")
-    if not isinstance(requests, list) or not requests:
-        raise RuntimeError(f"{path}: no generation requests")
-    for request in requests:
-        if not isinstance(request, dict):
-            raise RuntimeError(f"{path}: malformed generation request")
+    if not isinstance(requests, list):
+        raise RuntimeError(f"{path}: generation request list missing")
+    by_id = {
+        request.get("request_id"): request for request in requests if isinstance(request, dict)
+    }
+    if set(by_id) != set(expected_requests) or len(requests) != len(expected_requests):
+        raise RuntimeError(f"{path}: generation request graph mismatch")
+    for request_id, expected in expected_requests.items():
+        request = by_id[request_id]
+        stage, state, direction, tool, model = expected
+        if tuple(request.get(field) for field in ("stage", "state", "direction", "tool", "model")) != expected:
+            raise RuntimeError(f"{path}: request contract mismatch {request_id}")
+        expected_result = "quota_exhausted_no_output" if request_id.endswith("quota_failure") else "success"
+        if request.get("result") != expected_result:
+            raise RuntimeError(f"{path}: request result mismatch {request_id}")
         prompt = request.get("canonical_reproduction_prompt")
         prompt_hash = request.get("canonical_reproduction_prompt_sha256")
+        action_content = action_contracts[state]["content"]
         if (
             not isinstance(prompt, str)
             or hashlib.sha256(prompt.encode("utf-8")).hexdigest() != prompt_hash
+            or action_content not in prompt
+            or "IDENTITY_LOCK:" not in prompt
+            or "DIRECTION_LOCK:" not in prompt
         ):
-            raise RuntimeError(f"{path}: prompt hash mismatch")
-        if request.get("seed") is not None or not request.get("seed_status"):
-            raise RuntimeError(f"{path}: seed disclosure missing")
-        if request.get("provider_request_id") is not None or not request.get(
-            "provider_request_id_status"
+            raise RuntimeError(f"{path}: prompt contract mismatch {request_id}")
+        if request.get("seed") is not None or "no seed invented" not in str(
+            request.get("seed_status")
         ):
-            raise RuntimeError(f"{path}: provider request disclosure missing")
+            raise RuntimeError(f"{path}: seed disclosure missing {request_id}")
+        if request.get("provider_request_id") is not None or "no provider ID invented" not in str(
+            request.get("provider_request_id_status")
+        ):
+            raise RuntimeError(f"{path}: provider request disclosure missing {request_id}")
+        references = request.get("references")
+        if not isinstance(references, list) or len(references) != 1:
+            raise RuntimeError(f"{path}: reference graph mismatch {request_id}")
+        reference = require_bundle_artifact(
+            references[0], bundle_path, manifest, f"{request_id}.reference"
+        )
+        if stage == "keyframe":
+            expected_reference_hash = character_reference["sha256"]
+        elif stage == "video":
+            expected_reference_hash = by_id[f"keyframe_{state}_{direction}"]["output"]["sha256"]
+        else:
+            expected_reference_hash = by_id["keyframe_attack_ne"]["output"]["sha256"]
+        if reference.get("sha256") != expected_reference_hash:
+            raise RuntimeError(f"{path}: wrong request reference {request_id}")
+        output = request.get("output")
+        if expected_result == "success":
+            output = require_bundle_artifact(output, bundle_path, manifest, f"{request_id}.output")
+            output_hash = output["sha256"]
+        elif output is None:
+            output_hash = None
+        else:
+            raise RuntimeError(f"{path}: quota failure has an output {request_id}")
+        local_basis = json.dumps(
+            {
+                "request_id": request_id,
+                "tool": tool,
+                "model": model,
+                "prompt_sha256": prompt_hash,
+                "references": [reference["sha256"]],
+                "output_sha256": output_hash,
+                "result": expected_result,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        if request.get("local_receipt_id") != hashlib.sha256(local_basis.encode("utf-8")).hexdigest():
+            raise RuntimeError(f"{path}: local receipt ID mismatch {request_id}")
+
     sheet_records = receipt.get("compiled_source_sheets")
-    if not isinstance(sheet_records, dict):
-        raise RuntimeError(f"{path}: source-sheet records missing")
+    expected_sheet_keys = {f"{state}_{direction}" for state, direction in iter_keys()}
+    if not isinstance(sheet_records, dict) or set(sheet_records) != expected_sheet_keys:
+        raise RuntimeError(f"{path}: source-sheet record set mismatch")
     for (state, direction), source_path in source_paths.items():
-        record = sheet_records.get(f"{state}_{direction}")
-        if not isinstance(record, dict) or record.get("sha256") != sha256(source_path):
+        record = require_bundle_artifact(
+            sheet_records[f"{state}_{direction}"],
+            bundle_path,
+            manifest,
+            f"source_sheet_{state}_{direction}",
+        )
+        if record.get("sha256") != sha256(source_path) or not record.get("derivation"):
             raise RuntimeError(f"{path}: source-sheet receipt mismatch for {state}_{direction}")
     return receipt
 
@@ -232,11 +424,13 @@ def main() -> None:
         default=Path("assets/sprites/grunt_animation.generation_receipt.json"),
         type=Path,
     )
+    parser.add_argument("--generation-bundle", required=True, type=Path)
     args = parser.parse_args()
     input_dir = args.input_dir.resolve()
     output_dir = args.output_dir.resolve()
     provenance_path = args.provenance.resolve()
     receipt_path = args.generation_receipt.resolve()
+    bundle_path = args.generation_bundle.resolve()
 
     sources: dict[tuple[str, str], Image.Image] = {}
     source_paths: dict[tuple[str, str], Path] = {}
@@ -251,7 +445,7 @@ def main() -> None:
                 sources[(state, target_direction)],
                 f"source {state} {source_direction}->{target_direction}",
             )
-    generation_receipt = validate_generation_receipt(receipt_path, source_paths)
+    generation_receipt = validate_generation_receipt(receipt_path, bundle_path, source_paths)
 
     base: dict[tuple[str, str], Image.Image] = {}
     charmed: dict[tuple[str, str], Image.Image] = {}

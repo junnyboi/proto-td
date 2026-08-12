@@ -31,7 +31,7 @@
   },
   "generation_receipt": {
     "path": "assets/sprites/grunt_animation.generation_receipt.json",
-    "sha256": "b2bb2fcd418c03ba0cc6b3ac437121531bea01209543c7dc5195f9fdba64a5b1",
+    "sha256": "99f1d093b3e1f23a129c4774138d365420047f25865bdef0178593ee595bf7cc",
     "schema": "mgs.ai-generation-receipt.v1",
     "receipt_mode": "retrospective_content_addressed_with_disclosures",
     "disclosures": [

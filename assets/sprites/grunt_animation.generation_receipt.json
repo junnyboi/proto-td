@@ -10,6 +10,12 @@
     }
   },
   "asset_family": "grunt_directional_animation",
+  "bundle_contract": {
+    "all_recorded_references_outputs_builders_specs_and_source_sheets_required": true,
+    "manifest": "sha256.txt",
+    "receipt_copy": "grunt_animation.generation_receipt.json",
+    "reference": "reference/pasted_file_t5MkIH_image.png"
+  },
   "character_reference": {
     "bytes": 89314,
     "filename": "pasted_file_t5MkIH_image.png",
@@ -169,6 +175,7 @@
           "sha256": "b323b4c2cb63ab9603021539b624ae064c1c63e2ccd393b97d45740219ffb388"
         }
       ],
+      "request_id": "keyframe_walk_se",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -199,6 +206,7 @@
           "sha256": "b323b4c2cb63ab9603021539b624ae064c1c63e2ccd393b97d45740219ffb388"
         }
       ],
+      "request_id": "keyframe_walk_ne",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -229,6 +237,7 @@
           "sha256": "b323b4c2cb63ab9603021539b624ae064c1c63e2ccd393b97d45740219ffb388"
         }
       ],
+      "request_id": "keyframe_attack_se",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -259,6 +268,7 @@
           "sha256": "b323b4c2cb63ab9603021539b624ae064c1c63e2ccd393b97d45740219ffb388"
         }
       ],
+      "request_id": "keyframe_attack_ne",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -289,6 +299,7 @@
           "sha256": "1f9fe43cc31c2e7e1b1fe153d79ad6c50e86f9e85f9dba1320d8a70322a98eb5"
         }
       ],
+      "request_id": "video_walk_se",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -319,6 +330,7 @@
           "sha256": "37e890aac8b9f3e126100deb55ef6dc97f7cda448d634bbfcb8c938d9a2c0d12"
         }
       ],
+      "request_id": "video_walk_ne",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -349,6 +361,7 @@
           "sha256": "eddc399497f50e4943cb95a1137e732e584b0941b2298ea7cd8d4a6edcd0ed26"
         }
       ],
+      "request_id": "video_attack_se",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -374,6 +387,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "video_attack_ne_quota_failure",
       "result": "quota_exhausted_no_output",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -404,6 +418,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_01",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -434,6 +449,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_02",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -464,6 +480,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_03",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -494,6 +511,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_04",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -524,6 +542,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_05",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -554,6 +573,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_06",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
@@ -584,6 +604,7 @@
           "sha256": "487f96a7faee562d3fa7840b6cd57507c4bd365ab2e08d0250a76875a5d40ebb"
         }
       ],
+      "request_id": "fallback_attack_ne_phase_07",
       "result": "success",
       "seed": null,
       "seed_status": "not exposed by the Manus MCP tool schema; no seed invented",
