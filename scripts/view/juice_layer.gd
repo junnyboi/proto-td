@@ -102,6 +102,31 @@ func skill_burst(center: Vector2) -> void:
 		})
 
 
+## POLISH-BOLT: one manifest-backed target-cell impact. The caller provides
+## the live grid scale; timing and display scale remain authored data.
+func bolt_impact(center: Vector2, grid_scale: float) -> void:
+	var tex := Art.texture(&"effect_bolt_impact")
+	var native_size := Vector2(Art.size(&"effect_bolt_impact"))
+	if tex == null or native_size == Vector2.ZERO:
+		return
+	var impact := TextureRect.new()
+	impact.name = "BoltImpact"
+	impact.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	impact.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	impact.texture = tex
+	impact.stretch_mode = TextureRect.STRETCH_SCALE
+	impact.size = native_size
+	impact.pivot_offset = native_size * 0.5
+	impact.position = center - native_size * 0.5
+	var base_scale := cfg.bolt_impact_scale * grid_scale
+	impact.scale = Vector2.ONE * base_scale
+	add_child(impact)
+	_transients.append({
+		"node": impact, "left": cfg.bolt_impact_frames, "total": cfg.bolt_impact_frames,
+		"base_scale": base_scale, "kind": "bolt_impact",
+	})
+
+
 ## item 3: expanding spark at a corpse; capped concurrent instances
 func spark(center: Vector2) -> void:
 	if _spark_live >= cfg.kill_spark_cap:
@@ -290,6 +315,13 @@ func _age_transients() -> void:
 			var node := tr["node"] as Node2D
 			var t := 1.0 - float(tr["left"]) / float(tr["total"])
 			node.scale = Vector2(1.15, 0.7).lerp(Vector2.ONE, t)
+		elif kind == "bolt_impact":
+			var impact := tr["node"] as TextureRect
+			var t := 1.0 - float(tr["left"]) / float(maxi(int(tr["total"]), 1))
+			var base_scale := float(tr["base_scale"])
+			impact.scale = Vector2.ONE * base_scale * lerpf(1.15, 0.9, t)
+			if t > 0.6:
+				impact.modulate.a = 1.0 - (t - 0.6) / 0.4
 		kept.append(tr)
 	_transients = kept
 
@@ -310,6 +342,10 @@ func _expire_transient(tr: Dictionary, kind: String) -> void:
 				var core := rect.get_child(0) as ColorRect
 				if core != null:
 					core.color = Color("1a1c2c")
+		"bolt_impact":
+			# Exact render-frame expiry: remove the standalone visual now rather
+			# than leaving a queue_free survivor visible to same-frame observers.
+			(tr["node"] as CanvasItem).free()
 		_:
 			(tr["node"] as CanvasItem).queue_free()
 

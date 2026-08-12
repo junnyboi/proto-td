@@ -81,14 +81,15 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 
 ## POLISH-BOLT — Add a readable Bolt impact visual
 
-- Status: pending
-- Owner: unassigned
-- Branch: N/A until claimed
-- Dependencies: coordinate with `POLISH-VFX`; audio remains waived by `D-SFX`
-- Owned files: none until claimed; pin exact presentation, manifest, asset, and scenario paths first
-- Do not touch: spell damage/cooldown semantics, audio policy, thresholds
-- Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing authoritative combat state
-- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, and `scripts/verify.sh --full`
+- Status: in_progress
+- Owner: AGENT 10
+- Branch: `agent-10/bolt-impact`
+- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
+- Dependencies: none; `POLISH-VFX` must not claim the Bolt-specific paths below while this lane is active; audio remains waived by `D-SFX`
+- Owned files: `FEATURES.json`; `docs/todo.md`; `docs/completed.md`; `docs/plans/POLISH-BOLT-agent-10.md`; `docs/handoffs/POLISH-BOLT-agent-10.md`; `docs/media/POLISH-BOLT-verification.json`; `docs/art/reference/bolt_impact_master.png`; `docs/art/reference/bolt_impact_master.png.import`; `docs/art/reference/bolt_impact_master.json`; `sim/battle_model.gd`; `sim/battle_hash.gd`; `test/test_spells.gd`; `test/test_hash_paranoia.gd`; `data/juice_config.gd`; `data/juice_config.tres`; `scripts/view/battle_view.gd`; `scripts/view/juice_layer.gd`; `assets/manifest.tres`; `assets/sprites/effect_bolt_impact.png`; `assets/sprites/effect_bolt_impact.png.import`; `assets/sprites/effect_bolt_impact.provenance.json`; `tools/artgen/normalize_bolt_impact.py`; `selftest/scenarios/bolt_impact.gd`; `selftest/scenarios/bolt_impact.gd.uid`
+- Do not touch: spell damage/cooldown/targeting semantics; `scripts/verify.sh`; audio policy/assets; `playtests/thresholds.json`; non-Bolt VFX or scenarios
+- Acceptance: an accepted Bolt cast records one deterministic hashed target-cell event; the view renders a manifest-backed, data-timed impact centered above that cell and visually identifiable at 1× without audio; rejected casts change neither event nor hash; combat outcomes remain unchanged
+- Required evidence: GUT record/rejection/hash-paranoia coverage; seeded `bolt_impact` scenario in headless and windowed lanes; present/absent pixel proof; fresh PNG checklist review; cross-process campaign replay diff; `scripts/verify.sh --full`
 - Last update: 2026-08-12
 
 ## POLISH-BOSS-HIT — Wire the boss-hit presentation event

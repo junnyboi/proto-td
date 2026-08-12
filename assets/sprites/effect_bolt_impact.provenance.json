@@ -1,0 +1,22 @@
+{
+  "asset_id": "effect_bolt_impact",
+  "shipping_path": "res://assets/sprites/effect_bolt_impact.png",
+  "shipping_sha256": "59050cfe745b010c432b24cc996c6f654d2e9df5eb74a5f1d2157c5281bcfa5e",
+  "master_path": "res://docs/art/reference/bolt_impact_master.png",
+  "master_sha256": "08e89a43dc88675606b6365e963861a24a3e59f5f0945a82f07768c00bad8141",
+  "metadata_path": "res://docs/art/reference/bolt_impact_master.json",
+  "normalizer_path": "res://tools/artgen/normalize_bolt_impact.py",
+  "normalizer_sha256": "5e2fb695aea6e1822a62ac3fdb485c8243c0a22e399ed876f4f40e03cc4190ac",
+  "dimensions": [48, 48],
+  "alpha_values": [0, 255],
+  "opaque_bbox": [11, 3, 37, 45],
+  "opaque_pixels": 260,
+  "palette_counts": {
+    "#5d275d": 2,
+    "#a3702b": 23,
+    "#ffcd75": 163,
+    "#ffe9b0": 72
+  },
+  "placeholder": false,
+  "verification_contract": "Import, manifest resolution, seeded present/absent pixel checks, fresh PNG review, and scripts/verify.sh --full must all pass before integration."
+}

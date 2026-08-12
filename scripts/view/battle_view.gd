@@ -104,6 +104,7 @@ var _stamp_shown := false
 var _snaps_seen := 0
 var _trap_trigger_seen: Dictionary = {}
 var _charm_seen: Dictionary = {}
+var _bolt_seen_tick := -1
 var _pushed: Dictionary = {
 	"enemies_spawned": "spawned",
 	"enemies_leaked": "leaked",
@@ -253,6 +254,7 @@ func _process(_delta: float) -> void:
 	_detect_result_stamp()
 	_detect_trap_juice()
 	_detect_charms()
+	_detect_bolt_impact()
 	if _beat_frames_left > 0:
 		_beat_frames_left -= 1
 		if _beat_frames_left == 0:
@@ -462,6 +464,15 @@ func _detect_charms() -> void:
 		_juice.shake("charm_beat", cfg.charm_shake_amplitude_px, cfg.charm_shake_frames)
 		if cfg.charm_hit_stop_frames > 0:
 			_hit_stop_frames = cfg.charm_hit_stop_frames
+
+
+## POLISH-BOLT: the event is accepted-cast state, so direct seam calls,
+## bots, replays, and player input all reach the same presentation path.
+func _detect_bolt_impact() -> void:
+	if model.last_bolt_cast_tick <= _bolt_seen_tick:
+		return
+	_bolt_seen_tick = model.last_bolt_cast_tick
+	_juice.bolt_impact(cell_center(model.last_bolt_cast_cell), _grid_scale)
 
 
 func _load_enemy_defs(stage: StageDef) -> Dictionary:

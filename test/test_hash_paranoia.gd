@@ -110,6 +110,8 @@ func test_every_hashed_field_group_flips_the_hash() -> void:
 		"spell.ready_at": func() -> void: m.spell_book._ready_at[m.spell_book.ids[0]] = 123,
 		"spell.used_in_wave": func() -> void: m.spell_book._used_in_wave[m.spell_book.ids[0]] = 3,
 		"spell.casts": func() -> void: m.spell_book._casts[m.spell_book.ids[0]] += 1,
+		"last_bolt_cast_tick": func() -> void: m.last_bolt_cast_tick += 1,
+		"last_bolt_cast_cell": func() -> void: m.last_bolt_cast_cell.x += 1,
 		"dp_debug_adjusted": func() -> void: m.dp_debug_adjusted += 1,
 		"squad": func() -> void: m.squad.append(&"guard_1"),
 	}

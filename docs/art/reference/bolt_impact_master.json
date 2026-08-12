@@ -1,0 +1,19 @@
+{
+  "asset_id": "effect_bolt_impact",
+  "status": "selected_generated_master",
+  "generated_at": "2026-08-12T16:45:06+08:00",
+  "generator": "Manus built-in image generation",
+  "model": "gpt-image-2",
+  "quality": "default",
+  "aspect_ratio": "1:1",
+  "transparent_background_key": "#00FF00",
+  "source_path": "res://docs/art/reference/bolt_impact_master.png",
+  "source_sha256": "08e89a43dc88675606b6365e963861a24a3e59f5f0945a82f07768c00bad8141",
+  "reference": {
+    "path": "res://assets/sprites/icon_bolt.png",
+    "sha256": "042e19b5383ae97f5acfcf098e06aea036562627bfd5d4dffceab9af442d3055"
+  },
+  "prompt": "Create one isolated reusable game VFX sprite for a tactical isometric tower-defense game. Subject: a compact jagged lightning bolt striking straight downward into a small angular four-point impact burst, with only six short thick sparks clustered immediately around the impact point. Composition: perfectly centered and vertically balanced inside the middle 60% of a square transparent canvas; all marks terminate close to the center; complete silhouette visible with generous padding on every edge. Style: crisp chunky 16-bit pixel art matching the provided 24x24 Bolt icon, hard stepped edges, dark navy/plum outline, gold body, pale-gold hot core, readable after nearest-neighbor reduction to 48x48. Constraints: one compact glyph only; transparent background; absolutely no horizontal speed lines, motion trails, long rays, stripes, beams, background decoration, ground plane, text, logo, watermark, glow fog, gradient, blur, antialiasing, or semitransparent fringe. Avoid every mark extending farther than the compact impact silhouette; avoid circles, squares, badges, UI buttons, scenes, characters, and cropped sparks.",
+  "selection": "Candidate D selected after candidates A-C were rejected for long magenta horizontal trail artifacts. Candidate D retained the clearest compact vertical strike, local impact crown, and six clustered sparks. Its dark field and key-fringe are intentionally removed by the deterministic normalizer.",
+  "normalization_recipe": "res://tools/artgen/normalize_bolt_impact.py"
+}

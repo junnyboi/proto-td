@@ -81,6 +81,8 @@ var charmed: int = 0
 var charmed_dead: int = 0
 var charmed_exited: int = 0
 var spell_book: SpellBook = null
+var last_bolt_cast_tick: int = -1
+var last_bolt_cast_cell := Vector2i(-1, -1)
 
 var _defs: Dictionary = {}
 var _op_defs: Dictionary = {}
@@ -425,7 +427,11 @@ func _apply_cast(spell_id: StringName, target: Variant) -> bool:
 	var def: SpellDef = spell_book.def_of(spell_id)
 	match def.effect:
 		SpellDef.Effect.BURST_DAMAGE:
-			_resolve_burst(target, def)
+			var center: Vector2i = target
+			_resolve_burst(center, def)
+			if spell_id == &"bolt":
+				last_bolt_cast_tick = tick
+				last_bolt_cast_cell = center
 		SpellDef.Effect.CHARM:
 			_resolve_charm(enemies[int(target)])
 		_:

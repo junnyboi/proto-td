@@ -16,6 +16,9 @@ extends Resource
 @export var skill_flash_frames: int = 24
 @export var skill_burst_frames: int = 8
 
+@export var bolt_impact_frames: int = 12
+@export var bolt_impact_scale: float = 2.0
+
 @export var kill_spark_frames: int = 4
 @export var kill_spark_cap: int = 12
 

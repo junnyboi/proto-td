@@ -74,6 +74,11 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, e.died_at_tick)
 	for t: TrapState in m.traps:
 		_append_int(bytes, t.last_trigger_tick)
+	# POLISH-BOLT: one deterministic presentation record. The view edge-detects
+	# this pair; both fields hash so replay equality covers the visual trigger.
+	_append_int(bytes, m.last_bolt_cast_tick)
+	_append_int(bytes, m.last_bolt_cast_cell.x)
+	_append_int(bytes, m.last_bolt_cast_cell.y)
 	return _fnv1a64(bytes)
 
 

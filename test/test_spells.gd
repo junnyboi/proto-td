@@ -71,6 +71,8 @@ func test_cooldown_ledger() -> void:
 	var model := _make_model(_stage_with_waves([FAR_WAVE] as Array[Dictionary]))
 	var target := Vector2i(3, 2)
 	assert_true(model.apply_action([&"cast", &"bolt", target]), "bolt ready at tick 0")
+	assert_eq(model.last_bolt_cast_tick, 0, "accepted cast records its entry tick")
+	assert_eq(model.last_bolt_cast_cell, target, "accepted cast records its exact target cell")
 	assert_eq(model.spell_book.ready_at(&"bolt"), 900, "ready_at = cast tick + cooldown")
 	model.step()
 	_assert_rejected(model, [&"cast", &"bolt", target], "re-cast at cast + 1")
@@ -78,7 +80,10 @@ func test_cooldown_ledger() -> void:
 	_assert_rejected(model, [&"cast", &"bolt", target], "re-cast at cast + 899")
 	model.step()
 	assert_eq(model.tick, 900)
-	assert_true(model.apply_action([&"cast", &"bolt", target]), "accepted exactly at cast + 900")
+	var second_target := Vector2i(4, 2)
+	assert_true(model.apply_action([&"cast", &"bolt", second_target]), "accepted at cast + 900")
+	assert_eq(model.last_bolt_cast_tick, 900, "second accepted cast replaces the event tick")
+	assert_eq(model.last_bolt_cast_cell, second_target, "second cast replaces the event cell")
 	assert_eq(model.spell_book.casts(&"bolt"), 2)
 
 

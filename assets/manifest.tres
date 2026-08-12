@@ -77,6 +77,12 @@ entries = {
 "placeholder": false,
 "size": Vector2i(24, 24)
 },
+&"effect_bolt_impact": {
+"frames": 1,
+"pattern": "res://assets/sprites/effect_bolt_impact.png",
+"placeholder": false,
+"size": Vector2i(48, 48)
+},
 &"icon_charm": {
 "frames": 1,
 "pattern": "res://assets/sprites/icon_charm.png",
