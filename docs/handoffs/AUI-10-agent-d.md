@@ -4,6 +4,8 @@
 **Agent:** AGENT D
 **Branch:** `agent-d/aui-10-s1-world`
 **Base:** `master` at `975261e8e00a20a0b25fe17e7976d743d509c14b`
+**Implementation commit:** `817408afd31ce8020678f2fb9837cf96870d212f`
+**Implementation tree:** `89208d693517051bbf95e47254b6845984be10fd`
 
 ## Delivered by Agent D
 
@@ -27,3 +29,7 @@ python3 tools/art_pipeline/world/validate_s1_world.py
 ```
 
 Both commands are deterministic after generation. The lane's runtime-binding status must remain `UNBOUND_AGENT_F_SEAM` until the integration commit and its fresh evidence exist.
+
+## Frozen feature evidence
+
+At the implementation commit above, `tools/art_pipeline/world/validate_s1_world.py` passed before and after an uninterrupted `scripts/verify.sh --full`; the repository full gate ended `[verify] ALL GREEN`, and the worktree remained clean at the same commit/tree. External evidence digests: AUI-10 gate `5992dbcf27ea4b5432606d29d60b511321ae29ecd975a10508b81a2ec94d4379`, full log `adce1a1b8ce2193f254714a9a2ccd47714027f8b70f9f2117cb3f0c5c2e3c852`, and `verify.json` `b2fb2a7b4196bda0b4c07886021823f9e20166218d36d577cdb75687b327b05d`.
