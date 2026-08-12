@@ -57,11 +57,12 @@ The frozen contract includes:
 
 ## Next implementation sequence
 
-1. **P16.1** — CampaignSave autosave adapter and atomic slot recovery using the frozen codec/probe result.
-2. **P16.2** — Title Continue state and overwrite confirmation.
-3. **P16.3** — Muster Ledger/Barracks callsign-only customization.
-4. **P16.4** — Localized Contract Board recruitment and emergency recovery.
-5. **P16.5** — Hero-ID battle tickets, terminal casualty resolution, durable permadeath, and the first player-facing P16 milestone/human review.
+1. **P16.1 — Hero/Roster model:** implement HeroState/RosterState, CampaignState personnel/economy projection, reward allocation, and strategic hash properties.
+2. **P16.2 — Strategic verbs and exactly-once resolution:** implement recruit, rename, begin-attempt, resolve-attempt, typed tickets/outcomes/receipts, paid/recovery contracts, and the minimal durable SaveStore plus Retry/Abandon seam.
+3. **P16.3 — Dual-identity battle integration:** route immutable hero manifests and battle IDs through BattleModel, sticky falls, terminal outcomes, Game ticket ownership, and replay v2 compatibility. This checkpoint is internal-only and unreleasable.
+4. **P16.4 — Contract Board and Muster Ledger:** enable localized Recruit/Barracks surfaces, callsign-only customization, READY hero-ID squad selection, casualty Results, emergency contracts, and transaction telemetry. This checkpoint remains unreleasable until P16.5 durability is green.
+5. **P16.5 — Canonical saves, Continue, and durable terminal boundary:** complete one-slot startup recovery, title state table, overwrite, visible autosave failure UI, backup recovery, Continue-to-Staging, and exhaustive fault/cross-process proof. This is the earliest permissible player-facing P16 release boundary.
+6. **P16.6 — Closure, audit, and human loop:** finish accessibility/overflow/error copy, strategic bot summary, ledgers, PLAYTEST, Web export/browser smoke, merged-master RELEASE evidence, and the human verdict on recruitment, duplicate identity, death fairness, recovery clarity, and save trust.
 
 Every later contract mutation requires a new differential/cross-process oracle and RELEASE routing. P16.4 is the first visible P16 phase and activates PRESENT localization obligations from its first screen.
 
