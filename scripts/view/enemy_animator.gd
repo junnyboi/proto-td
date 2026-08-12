@@ -56,10 +56,11 @@ static func direction_for_path(
 ) -> StringName:
 	if path.size() < 2:
 		return &"se"
+	var clamped_progress := clampi(progress_units, 0, Pathing.length_units(path) - 1)
 	@warning_ignore("integer_division")
-	var segment := (
-		clampi(progress_units, 0, Pathing.length_units(path) - 1) / Pathing.PROGRESS_SCALE
-	)
+	var segment := clamped_progress / Pathing.PROGRESS_SCALE
+	if reverse and clamped_progress > 0 and clamped_progress % Pathing.PROGRESS_SCALE == 0:
+		segment -= 1
 	segment = mini(segment, path.size() - 2)
 	return direction_from_tangent(path[segment + 1] - path[segment], reverse)
 

@@ -71,6 +71,43 @@ def validate_source(path: Path) -> Image.Image:
     return sheet
 
 
+def validate_generation_receipt(
+    path: Path, source_paths: dict[tuple[str, str], Path]
+) -> dict[str, object]:
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    if receipt.get("schema") != "mgs.ai-generation-receipt.v1":
+        raise RuntimeError(f"{path}: unsupported generation receipt schema")
+    if receipt.get("receipt_mode") != "retrospective_content_addressed_with_disclosures":
+        raise RuntimeError(f"{path}: missing retrospective receipt disclosure mode")
+    requests = receipt.get("requests")
+    if not isinstance(requests, list) or not requests:
+        raise RuntimeError(f"{path}: no generation requests")
+    for request in requests:
+        if not isinstance(request, dict):
+            raise RuntimeError(f"{path}: malformed generation request")
+        prompt = request.get("canonical_reproduction_prompt")
+        prompt_hash = request.get("canonical_reproduction_prompt_sha256")
+        if (
+            not isinstance(prompt, str)
+            or hashlib.sha256(prompt.encode("utf-8")).hexdigest() != prompt_hash
+        ):
+            raise RuntimeError(f"{path}: prompt hash mismatch")
+        if request.get("seed") is not None or not request.get("seed_status"):
+            raise RuntimeError(f"{path}: seed disclosure missing")
+        if request.get("provider_request_id") is not None or not request.get(
+            "provider_request_id_status"
+        ):
+            raise RuntimeError(f"{path}: provider request disclosure missing")
+    sheet_records = receipt.get("compiled_source_sheets")
+    if not isinstance(sheet_records, dict):
+        raise RuntimeError(f"{path}: source-sheet records missing")
+    for (state, direction), source_path in source_paths.items():
+        record = sheet_records.get(f"{state}_{direction}")
+        if not isinstance(record, dict) or record.get("sha256") != sha256(source_path):
+            raise RuntimeError(f"{path}: source-sheet receipt mismatch for {state}_{direction}")
+    return receipt
+
+
 def nearest_base_rgba(source: Image.Image) -> Image.Image:
     array = np.asarray(source.convert("RGBA"), dtype=np.uint8)
     alpha = np.where(array[..., 3] >= 128, 255, 0).astype(np.uint8)
@@ -190,10 +227,16 @@ def main() -> None:
     parser.add_argument(
         "--provenance", default=Path("assets/sprites/grunt_animation.provenance.json"), type=Path
     )
+    parser.add_argument(
+        "--generation-receipt",
+        default=Path("assets/sprites/grunt_animation.generation_receipt.json"),
+        type=Path,
+    )
     args = parser.parse_args()
     input_dir = args.input_dir.resolve()
     output_dir = args.output_dir.resolve()
     provenance_path = args.provenance.resolve()
+    receipt_path = args.generation_receipt.resolve()
 
     sources: dict[tuple[str, str], Image.Image] = {}
     source_paths: dict[tuple[str, str], Path] = {}
@@ -208,6 +251,7 @@ def main() -> None:
                 sources[(state, target_direction)],
                 f"source {state} {source_direction}->{target_direction}",
             )
+    generation_receipt = validate_generation_receipt(receipt_path, source_paths)
 
     base: dict[tuple[str, str], Image.Image] = {}
     charmed: dict[tuple[str, str], Image.Image] = {}
@@ -272,6 +316,13 @@ def main() -> None:
             "video": "veo3.1-fast for Walk SE/NE and Attack SE",
             "approved_fallback": "Attack NE uses phase-locked gpt-image-2 image sequence after video quota exhaustion",
             "postprocess": "full-cycle temporal compression, endpoint preservation, exact closure, bottom anchoring, transparent extraction, exact mirroring",
+        },
+        "generation_receipt": {
+            "path": receipt_path.relative_to(output_dir.parent.parent).as_posix(),
+            "sha256": sha256(receipt_path),
+            "schema": generation_receipt["schema"],
+            "receipt_mode": generation_receipt["receipt_mode"],
+            "disclosures": generation_receipt["disclosures"],
         },
         "compile": {
             "script": "tools/artgen/compile_grunt_animations.py",

@@ -29,7 +29,18 @@ func test_corner_path_changes_direction_at_the_segment_boundary() -> void:
 	assert_eq(EnemyAnimator.direction_for_path(path, 999_999), &"se")
 	assert_eq(EnemyAnimator.direction_for_path(path, 1_000_000), &"sw")
 	assert_eq(EnemyAnimator.direction_for_path(path, 2_000_000), &"se")
-	assert_eq(EnemyAnimator.direction_for_path(path, 1_000_000, true), &"ne")
+	for progress: int in [1_000_000, 2_000_000]:
+		var current := Pathing.position_of(path, progress)
+		var next_reverse := Pathing.position_of(path, progress - 1)
+		var displacement := next_reverse - current
+		var authoritative_tangent := Vector2i(
+			int(signf(displacement.x)), int(signf(displacement.y))
+		)
+		assert_eq(
+			EnemyAnimator.direction_for_path(path, progress, true),
+			EnemyAnimator.direction_from_tangent(authoritative_tangent),
+			"reverse progress=%d displacement=%s" % [progress, displacement],
+		)
 
 
 func test_walk_uses_twenty_four_motion_frames_and_loops_at_twelve_fps() -> void:

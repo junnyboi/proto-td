@@ -151,16 +151,37 @@ func run(h: SelfTestHarness) -> void:
 	)
 	await h.shot("grunt_attack_mid")
 
-	# Charm reverses the same path tangent and swaps to the derived ally-blue
-	# NW atlas immediately: faction readability must hold on the first post-cast
-	# capture, while direction/state changes within one faction use the blend.
+	# Charm at an unoccupied exact interior corner selects the previous reverse
+	# segment and swaps to the derived ally-blue atlas immediately: faction
+	# readability must hold while same-faction direction/state changes blend.
 	grunt.blocked_by = -1
 	grunt.atk_counter = 0
-	grunt.progress_units = 0
+	grunt.progress_units = 12 * Pathing.PROGRESS_SCALE
 	grunt.faction = EnemyState.Faction.CHARMED
 	await h.physics_frames(1)
 	await h.frames(2)
-	_check_settled(h, view, grunt.id, &"grunt_anim_walk_nw_charmed")
+	var corner_path := model.path_for(grunt.path_idx)
+	var corner_position := Pathing.position_of(corner_path, grunt.progress_units)
+	var next_reverse := Pathing.position_of(corner_path, grunt.progress_units - 1)
+	var reverse_displacement := next_reverse - corner_position
+	var authoritative_tangent := Vector2i(
+		int(signf(reverse_displacement.x)), int(signf(reverse_displacement.y))
+	)
+	var expected_corner_key := EnemyAnimator.animation_id(
+		&"walk", EnemyAnimator.direction_from_tangent(authoritative_tangent), true
+	)
+	(
+		h
+		. check(
+			"exact-corner charm faces the previous reverse segment",
+			(view.get("_enemy_anim_keys") as Dictionary).get(grunt.id) == expected_corner_key,
+			(
+				"displacement=%s key=%s"
+				% [reverse_displacement, (view.get("_enemy_anim_keys") as Dictionary).get(grunt.id)]
+			),
+		)
+	)
+	_check_settled(h, view, grunt.id, expected_corner_key)
 	await h.shot("grunt_charmed_reverse_settled")
 	h.done()
 

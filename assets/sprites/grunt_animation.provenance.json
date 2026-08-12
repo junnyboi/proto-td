@@ -29,6 +29,18 @@
     "approved_fallback": "Attack NE uses phase-locked gpt-image-2 image sequence after video quota exhaustion",
     "postprocess": "full-cycle temporal compression, endpoint preservation, exact closure, bottom anchoring, transparent extraction, exact mirroring"
   },
+  "generation_receipt": {
+    "path": "assets/sprites/grunt_animation.generation_receipt.json",
+    "sha256": "b2bb2fcd418c03ba0cc6b3ac437121531bea01209543c7dc5195f9fdba64a5b1",
+    "schema": "mgs.ai-generation-receipt.v1",
+    "receipt_mode": "retrospective_content_addressed_with_disclosures",
+    "disclosures": [
+      "Provider seeds were not exposed by the Manus MCP media tool schema; null is recorded and no seed is invented.",
+      "Provider request/job IDs were not surfaced in retained result metadata; null is recorded and no provider ID is invented.",
+      "Original wrapper prompts were not persisted verbatim before generation. Canonical reproduction prompts are reconstructed from the byte-exact confirmed job spec and action contracts and are explicitly not represented as byte-identical originals.",
+      "Stochastic outputs cannot be byte-reproduced without provider seeds. This receipt instead binds retained request contracts, references, generated intermediates, deterministic postprocessing, and final source sheets by SHA-256."
+    ]
+  },
   "compile": {
     "script": "tools/artgen/compile_grunt_animations.py",
     "td32_quantization": true,
