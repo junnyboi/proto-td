@@ -15,18 +15,6 @@ This is the authoritative multi-agent coordination queue. It contains **incomple
 
 Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, change the status to `in_progress`, and replace candidate paths with the exact exclusive file set before editing. Never claim a file already owned by another active item.
 
-## PROC-MULTIAGENT-BOOTSTRAP — Establish repository coordination controls
-
-- Status: in_progress
-- Owner: AGENT 1
-- Branch: `agent-1/process-ledgers`
-- Dependencies: none
-- Owned files: `CLAUDE.md`, `docs/README.md`, `docs/todo.md`, `docs/completed.md`, `docs/plans/README.md`, `docs/decisions/D-SFX.md`, `docs/handoffs/README.md`, `docs/media/README.md`
-- Do not touch: gameplay code, scenes, resources, tests, harness scripts, thresholds, `FEATURES.json`, or verification artifacts
-- Acceptance: create the coordination structure; seed truthful active/completed records; adopt agent branches, prefixed commits, pull/merge discipline, semantic conflict handling, no force-push, and serial merged-tree verification
-- Required evidence: process-structure lint, independent diff review, `scripts/verify.sh`, `scripts/verify.sh --full`, and pushed branch commit(s)
-- Last update: 2026-08-12
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
