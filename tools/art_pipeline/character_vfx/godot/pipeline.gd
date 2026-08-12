@@ -717,7 +717,7 @@ static func _write_salvage(root: String, salvage: String) -> Dictionary:
 	if renamed != OK:
 		DirAccess.remove_absolute(temporary)
 		return _failure("cleanup.salvage rename failed error=%d" % renamed)
-	if FileAccess.get_file_as_string(salvage) != encoded:
+	if FileAccess.get_file_as_bytes(salvage) != encoded.to_utf8_buffer():
 		return _failure("cleanup.salvage verification-failed")
 	return {"ok": true}
 

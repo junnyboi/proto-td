@@ -37,6 +37,6 @@ timeout 180 python3 -B staging/qa/character-vfx/verify_pipeline.py \
   --godot "$GODOT"
 ```
 
-Every failure exits non-zero with a measured diagnostic. Each candidate packet is reopened and validated before atomic publication. Replacement writes and verifies a complete canonical salvage of the old packet before any destructive rollback cleanup. A salvage failure leaves the complete rollback intact; a cleanup failure may leave a partial rollback but retains the complete independently decodable salvage. Both are red and require deliberate operator recovery. A timeout, missing report, stale output, zero checks, or dirty tested worktree is red.
+Every failure exits non-zero with a measured diagnostic. Each candidate packet is reopened and validated before atomic publication. Replacement writes and verifies the raw bytes of a complete canonical salvage of the old packet before any destructive rollback cleanup. A salvage failure leaves the complete rollback intact; a cleanup failure may leave a partial rollback but retains the complete independently decodable salvage. Both are red and require deliberate operator recovery. A timeout, missing report, stale output, zero checks, or dirty tested worktree is red.
 
 See [`docs/art/character-vfx/AUI-34-pipeline-contract.md`](../../../docs/art/character-vfx/AUI-34-pipeline-contract.md) for the complete operator contract.

@@ -1001,8 +1001,23 @@ def godot_contract_checks(
     timeout_seconds: int, counter: Counter, godot: Path
 ) -> None:
     pixel_source = (TOOLS / "godot/pixel_ops.gd").read_text(encoding="utf-8")
+
     pipeline_source = (TOOLS / "godot/pipeline.gd").read_text(encoding="utf-8")
-    counter.true("godot.integer_math.no_float", "float(" not in pixel_source, "float conversion remains")
+    counter.true(
+        "godot.integer_math.no_float",
+        "float(" not in pixel_source,
+        "float conversion remains",
+    )
+    counter.true(
+        "godot.salvage.raw_byte_readback",
+        "FileAccess.get_file_as_bytes(salvage)" in pipeline_source,
+        "raw salvage readback missing",
+    )
+    counter.true(
+        "godot.salvage.no_text_readback",
+        "FileAccess.get_file_as_string(salvage)" not in pipeline_source,
+        "text salvage readback remains",
+    )
     counter.true(
         "godot.integer_math.no_floor",
         "floori(" not in pixel_source and "floori(" not in pipeline_source,

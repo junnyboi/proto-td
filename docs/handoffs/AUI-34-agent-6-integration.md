@@ -44,6 +44,8 @@ Initial aggregate `677e0f190f76db89a1c34ec446837ddc50b2bddc` remained unpublishe
 
 Remediated aggregate `bbf82dd433b642c3b219b3d9728f7972af60cfb5` also remained unpublished: its full-diff audit verified the production salvage behavior but found the independent decoder accepted `schema_version: true` and noncanonical base64 pad-bit aliases. The containing correction makes JSON duplicate-safe and type-exact, requires strict base64 decode plus byte-identical canonical re-encoding, and adds an explicit malformed-archive rejection matrix. This is evidence-integrity hardening, not a product-semantic change, and again requires a new exact-union identity and complete fresh RELEASE/audit cycle.
 
+Strict-oracle aggregate `161d743eaddb179a093c2f07d8b53932f528a780` remained unpublished after its final audit found that Godot compared the atomically renamed salvage through decoded `String` equality rather than the contract's raw-byte equality. The containing correction uses `FileAccess.get_file_as_bytes()` versus the canonical JSON UTF-8 `PackedByteArray`, bans the text-readback form in the verifier, and adds a direct binary-payload Godot contract probe. This is bounded contract conformance and again requires a new exact-union identity and complete fresh RELEASE/audit cycle.
+
 ## Preserved boundary
 
 AUI-34 is pipeline infrastructure. It does not put the approved roster, portraits, enemies, Charm variants, or VFX into gameplay. `runtime_binding` remains `UNBOUND_AGENT_F_SEAM`; the label is retained as an immutable downstream seam, not as a requirement that Agent F perform this aggregate. AUI-11 and later production packages require separate claims, generated packets, QA, runtime integration, and human final-art decisions.
