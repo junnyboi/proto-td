@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-006 — Regenerate three soundtrack cues from human feedback
-
-- Status: in_progress
-- Owner: AGENT 4
-- Branch: `agent-4/three-cue-regen`
-- Base: `master` at `690f7617acdc710855c3c8e169ad673b1fa8fec0`
-- Dependencies: human prompt-change verdict on 2026-08-12 for Act I BGM, Act III BGM, and Act III boss
-- Owned files: `assets/music/act_1_guild_threshold_bgm.ogg`; `assets/music/act_3_abyssal_vault_bgm.ogg`; `assets/music/act_3_abyssal_vault_boss.ogg`; their matching `.ogg.import`, `prompts/*.txt`, `sources/*.mp3.source`, and `evidence/transcriptions/*.json` files; `assets/music/sources/rejected_act_3_abyssal_vault_bgm_short.mp3.source`; `assets/music/catalog.tres`; `assets/music/provenance.json`; `assets/music/README.md`; `tools/music/verify_td006.sh`; `docs/plans/TD-006-three-cue-regeneration.md`; `docs/handoffs/TD-006-agent-4-three-cue-regeneration.md`; `docs/media/TD-006-verification.json`; `FEATURES.json` entry `MUSIC-1` only; this queue entry and its closure line in `docs/completed.md`
-- Do not touch: the other three cue slots; runtime playback/routing; synth SFX; simulation; stages; scenes; autoloads; `scripts/verify.sh`; existing tests; thresholds; human-authored final acceptance
-- Acceptance: Act I BGM remains an original warm near-surface cue but is materially more peaceful and pastoral; Act III BGM and boss reject funereal despair, add controlled acoustic low-end weight and deliberate cavern echoes, and the boss reads as epic martial war music; all three remain loopable, provenance-linked, speech-free 48 kHz Vorbis placeholders pending final human listening
-- Required evidence: exact untouched-cue hashes; `tools/music/verify_music.sh` ALL GREEN without verifier edits; focused/full GUT; fresh `scripts/verify.sh --full`; raw transcription evidence; independent adversarial audit; `docs/media/TD-006-verification.json`
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
