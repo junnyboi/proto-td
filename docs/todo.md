@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-012 — Rename the game to Aetheria Tactics
-
-- Status: in_progress
-- Owner: AGENT 2
-- Branch: `agent-2/aetheria-tactics-title`
-- Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
-- Dependencies: none; preserve integrated TD-009 music, TD-010 cold-cache repair, and TD-011 facing controls
-- Owned files: `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-012-agent-2-aetheria-tactics-title.md`, `project.godot`, `autoloads/i18n.gd`, `autoloads/i18n.gd.uid`, `localization/en-US.json`, `localization/README.md`, `scripts/ui/title.gd`, `selftest/scenarios/boot.gd`, `test/test_i18n.gd`, `test/test_i18n.gd.uid`, `CLAUDE.md`, `FINAL_REPORT.md`, `PLAYTEST.md`, `assets/music/README.md`, `docs/README.md`
-- Do not touch: repository/worktree paths, hosted URLs, historical plans/handoffs/evidence, simulation or save identifiers, gameplay data, locale selector UX, non-English copy, verifier scripts, thresholds, or unrelated presentation lanes
-- Acceptance: Godot application name and live title resolve exactly to `Aetheria Tactics`; title uses stable key `ui.game_title` with exact English fallback and `en-US` catalog parity; missing-key fallback is deterministic; title remains centered/unclipped; the sole Start action and campaign initialization are unchanged; current product document headers use the new name
-- Required evidence: `test_i18n.gd`; seeded `boot` headless/windowed with exact live-text and viewport assertions; fresh `boot.png`; stale-title audit with explicit historical/path allowlist; routed STANDARD plus repository-required full verification
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
