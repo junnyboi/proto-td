@@ -137,3 +137,14 @@ No changes to `sim/**`, `data/**`, battle/replay semantics, `BattleHash`, bots, 
 ## Integration responsibility
 
 Agent A owns implementation through merged-tree verification and hosted playtest delivery. It must merge current `origin/master` into the feature branch, resolve semantically, rerun required gates, fast-forward local master only after green, rerun full on master, push normally, and confirm local/remote SHA equality. Force-push is forbidden.
+
+## Completion evidence — 2026-08-12
+
+- Implementation commit: `7714b194c1fd83148e30c6e39f13c46e3703d8bc`.
+- Fresh uninterrupted `scripts/verify.sh --full`: 63/63 rungs passed in 151 seconds; 19 scenario reports, 64 PNGs, zero pixel skips.
+- Focused `staging_flow`: 94/94 checks and three fresh 1280×720 shots.
+- Cross-process campaign replay: identical normalized telemetry, SHA-256 `3eef210dcea1635d1ef85cabe777c37abe6b103804986e4ca7c7ee5359e468d1`.
+- Independent adversarial diff review: clean, no findings or pin breaks.
+- Web export: official Godot 4.7.1 no-thread template; browser smoke passed Title → Campaign → Staging → Mission Control with no runtime console errors.
+- WebDev checkpoint: `085c9c75`; public host: `https://prototype-td.manus.space`.
+- Deviations: none.

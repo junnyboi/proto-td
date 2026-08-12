@@ -301,11 +301,13 @@
     "staging_flow passes headless and windowed with completion sentinel, three fresh screenshots, and falsifiable text/layout checks",
     "verify.sh --full green on the merged union and merged master; verified WebDev build is browser-smoke-tested"
    ],
-   "status": "failing",
+   "status": "passing",
    "scenarios": [
     "staging_flow"
    ],
-   "commits": []
+   "commits": [
+    "7714b19"
+   ]
   },
   {
    "id": "MUSIC-1",

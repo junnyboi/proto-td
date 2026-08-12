@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-005 — Implement and publish the P15 Staging vertical slice
-
-- Status: in_progress
-- Owner: AGENT A
-- Branch: `agent-a/p15-integration`
-- Base: `master` at `f65498a15a2375f3d71450441a372c0705cbf7ce`
-- Dependencies: none; Agents B and C were unassigned and their scopes were absorbed by Agent A
-- Owned files: `autoloads/game.gd`, `scenes/staging.tscn`, `scripts/ui/staging.gd`, `scripts/ui/stage_select.gd`, `scripts/ui/results.gd`, `selftest/scenarios/staging_flow.gd`, `selftest/scenarios/campaign_flow.gd`, `selftest/scenarios/resign_flow.gd`, `FEATURES.json`, `docs/todo.md`, final `docs/completed.md`, final `PLAYTEST.md`, `docs/plans/TD-005-p15-staging-routing.md`, final Agent A handoff
-- Do not touch: `sim/**`; `data/**`; battle/replay semantics; `scripts/verify.sh`; tick semantics; bots; human-owned thresholds
-- Acceptance: hard-route interactive campaigns and campaign results through a plain Staging hub; preserve quick mode and campaign semantics; full-green branch and master; host and smoke-test Web build
-- Required evidence: `staging_flow` headless/windowed; fresh three-PNG checklist; `scripts/verify.sh --full` on feature branch and master; browser-smoked WebDev URL
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
