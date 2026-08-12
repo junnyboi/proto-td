@@ -24,7 +24,7 @@ func run(h: SelfTestHarness) -> void:
 	if theme == null:
 		h.done()
 		return
-	h.check("theme remains human-unaccepted", not theme.human_final_art)
+	h.check("theme carries Poseidon's human-final verdict", theme.human_final_art)
 
 	var grid := view.get_node_or_null("GridRoot") as Node2D
 	h.check("GridRoot exists", grid != null)
