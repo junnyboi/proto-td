@@ -9,6 +9,15 @@ static func parse_hex(value: String) -> PackedInt32Array:
 	])
 
 
+@warning_ignore("integer_division")
+static func integer_quotient(numerator: int, denominator: int) -> int:
+	return numerator / denominator
+
+
+static func integer_midpoint(left: int, right: int) -> int:
+	return integer_quotient(left + right, 2)
+
+
 static func nearest_source_index(
 	destination_index: int, source_size: int, destination_size: int
 ) -> int:
@@ -16,7 +25,10 @@ static func nearest_source_index(
 		return -1
 	if destination_index < 0 or destination_index >= destination_size:
 		return -1
-	return mini(source_size - 1, floori(float(destination_index * source_size) / destination_size))
+	return mini(
+		source_size - 1,
+		integer_quotient(destination_index * source_size, destination_size)
+	)
 
 
 static func resize_nearest(source: Image, width: int, height: int) -> Image:
@@ -118,7 +130,7 @@ static func remove_small_components(source: Image, minimum_size: int) -> Image:
 				cursor += 1
 				component.append(current)
 				var current_x := current % width
-				var current_y := current / width
+				var current_y := integer_quotient(current, width)
 				for direction: Vector2i in directions:
 					var neighbor_x := current_x + direction.x
 					var neighbor_y := current_y + direction.y
@@ -171,7 +183,7 @@ static func anchor_in_cell(
 	var bounds := opaque_bounds(source_image)
 	if not bool(bounds["valid"]):
 		return {"error": "frame opaque_pixels expected=>0 actual=0"}
-	var center_x := floori(float(int(bounds["left"]) + int(bounds["right"])) / 2.0)
+	var center_x := integer_midpoint(int(bounds["left"]), int(bounds["right"]))
 	var dx := anchor_x - center_x
 	var dy := foot_y - int(bounds["bottom"])
 	var result_data := PackedByteArray()
@@ -216,9 +228,9 @@ static func anchor_in_cell(
 			"anchored_top": anchored["top"],
 			"anchored_right": anchored["right"],
 			"anchored_bottom": anchored["bottom"],
-			"anchored_center_x": floori(
-				float(int(anchored["left"]) + int(anchored["right"])) / 2.0
-			),
+				"anchored_center_x": integer_midpoint(
+					int(anchored["left"]), int(anchored["right"])
+				),
 		},
 	}
 
@@ -243,8 +255,8 @@ static func composite_atlas(cells: Array[Dictionary]) -> Image:
 	return Image.create_from_data(width, height, false, Image.FORMAT_RGBA8, data)
 
 
-static func _grayscale(red: int, green: int, blue: int) -> int:
-	return floori(float(77 * red + 150 * green + 29 * blue + 128) / 256.0)
+static func grayscale(red: int, green: int, blue: int) -> int:
+	return integer_quotient(77 * red + 150 * green + 29 * blue + 128, 256)
 
 
 static func build_contact_sheet(atlas: Image) -> Image:
@@ -280,7 +292,7 @@ static func build_contact_sheet(atlas: Image) -> Image:
 						if source_data[source_offset + 3] == 0:
 							continue
 						if panel == 2:
-							var gray := _grayscale(
+							var gray := grayscale(
 								source_data[source_offset],
 								source_data[source_offset + 1],
 								source_data[source_offset + 2]

@@ -308,8 +308,10 @@ static func _validate_normalization(value: Variant) -> Dictionary:
 		return _failure("normalization.minimum_component_size expected=integer")
 	if int(normalization["minimum_component_size"]) < 0:
 		return _failure("normalization.minimum_component_size expected=>=0")
+	if normalization["resize"] == null:
+		return {"ok": true}
 	if typeof(normalization["resize"]) != TYPE_ARRAY:
-		return _failure("normalization.resize expected=[positive-int,positive-int]")
+		return _failure("normalization.resize expected=null-or-[positive-int,positive-int]")
 	var resize := normalization["resize"] as Array
 	if resize.size() != 2:
 		return _failure("normalization.resize expected=two-values")

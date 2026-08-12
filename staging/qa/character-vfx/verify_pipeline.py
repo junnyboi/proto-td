@@ -790,9 +790,62 @@ def godot_negative_checks(
         shutil.rmtree(rollback)
 
 
+def godot_contract_checks(
+    timeout_seconds: int, counter: Counter, godot: Path
+) -> None:
+    pixel_source = (TOOLS / "godot/pixel_ops.gd").read_text(encoding="utf-8")
+    pipeline_source = (TOOLS / "godot/pipeline.gd").read_text(encoding="utf-8")
+    counter.true("godot.integer_math.no_float", "float(" not in pixel_source, "float conversion remains")
+    counter.true(
+        "godot.integer_math.no_floor",
+        "floori(" not in pixel_source and "floori(" not in pipeline_source,
+        "floor conversion remains",
+    )
+    result = run(
+        [
+            str(godot), "--headless", "--path", str(REPO),
+            "-s", "res://staging/qa/character-vfx/godot_contract_probe.gd",
+        ],
+        timeout_seconds,
+    )
+    payload_lines = [line for line in result.stdout.splitlines() if line.startswith("{")]
+    counter.equal("godot.contract_probe.payload_count", len(payload_lines), 1)
+    payload = json.loads(payload_lines[0])
+    counter.equal("godot.contract_probe.status", payload["status"], "PASS")
+    counter.true(
+        "godot.contract_probe.nonzero",
+        int(payload["checks_executed"]) > 0,
+        f"measured={payload['checks_executed']}",
+    )
+
+
+def no_resize_differential(
+    root: Path,
+    input_root: Path,
+    timeout_seconds: int,
+    expected: dict[str, Any],
+    counter: Counter,
+    godot: Path,
+) -> None:
+    root.mkdir(parents=True)
+    spec = _mutated_spec(
+        root,
+        "no-resize",
+        lambda value: value["normalization"].update({"resize": None}),
+    )
+    python_output = root / "python"
+    godot_output = root / "godot"
+    run(python_command(spec, input_root, python_output), timeout_seconds)
+    run(godot_command(godot, spec, input_root, godot_output), timeout_seconds)
+    verify_packet(python_output, expected, counter, canonical_png=True)
+    verify_packet(godot_output, expected, counter, canonical_png=False)
+    compare_backend_content(python_output, godot_output, counter)
+
+
 def godot_lane(root: Path, input_root: Path, timeout_seconds: int, expected: dict[str, Any], counter: Counter, godot: Path) -> tuple[Path, Path]:
     if not godot.is_file():
         raise VerificationError(f"Godot executable missing name={godot.name!r}")
+    godot_contract_checks(timeout_seconds, counter, godot)
     first, second = root / "run-a", root / "run-b"
     run(godot_command(godot, SPEC, input_root, first), timeout_seconds)
     run(godot_command(godot, SPEC, input_root, second), timeout_seconds)
@@ -825,6 +878,14 @@ def main() -> int:
             python_packet, _ = python_lane(evidence_root / "python", input_root, args.process_timeout_seconds, expected, counter)
             godot_packet, _ = godot_lane(evidence_root / "godot", input_root, args.process_timeout_seconds, expected, counter, args.godot)
             compare_backend_content(python_packet, godot_packet, counter)
+            no_resize_differential(
+                evidence_root / "no-resize",
+                input_root,
+                args.process_timeout_seconds,
+                expected,
+                counter,
+                args.godot,
+            )
         if counter.checks <= 0:
             raise VerificationError("zero checks executed")
         summary = {

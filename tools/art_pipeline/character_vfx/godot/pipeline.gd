@@ -1,6 +1,7 @@
 extends RefCounted
 
 const PIPELINE_VERSION := "1.0.0"
+const PINNED_GODOT_VERSION := "4.7.1-stable (official)"
 const PixelOps = preload("res://tools/art_pipeline/character_vfx/godot/pixel_ops.gd")
 const SpecContract = preload("res://tools/art_pipeline/character_vfx/godot/spec_contract.gd")
 
@@ -10,6 +11,27 @@ static var _preflight_sequence := 0
 
 static func _failure(detail: String) -> Dictionary:
 	return {"ok": false, "detail": detail}
+
+
+static func check_backend_version(version_info: Dictionary) -> Dictionary:
+	var actual := String(version_info.get("string", "missing"))
+	var exact: bool = (
+		version_info.get("major") == 4
+		and version_info.get("minor") == 7
+		and version_info.get("patch") == 1
+		and version_info.get("status") == "stable"
+		and version_info.get("build") == "official"
+		and actual == PINNED_GODOT_VERSION
+	)
+	if not exact:
+		return _failure(
+			"backend.version expected=%s actual=%s" % [PINNED_GODOT_VERSION, actual]
+		)
+	return {"ok": true}
+
+
+static func _require_backend_version() -> Dictionary:
+	return check_backend_version(Engine.get_version_info())
 
 
 static func _canonical_json(value: Variant) -> String:
@@ -51,14 +73,18 @@ static func _normalized_atlas(spec: Dictionary, sources: Array[String]) -> Dicti
 	for value: Variant in spec["palette"]:
 		palette.append(PixelOps.parse_hex(String(value)))
 	var normalization := spec["normalization"] as Dictionary
-	var resize := normalization["resize"] as Array
+	var resize: Variant = normalization["resize"]
 	var cells: Array[Dictionary] = []
 	var anchors: Array[Dictionary] = []
 	for index: int in range(sources.size()):
 		var image := Image.load_from_file(sources[index])
 		if image == null or image.is_empty():
 			return _failure("source decode failed frame=%d" % index)
-		image = PixelOps.resize_nearest(image, int(resize[0]), int(resize[1]))
+		if resize != null:
+			var resize_values := resize as Array
+			image = PixelOps.resize_nearest(
+				image, int(resize_values[0]), int(resize_values[1])
+			)
 		image = PixelOps.key_and_threshold(
 			image,
 			PixelOps.parse_hex(String(normalization["background_key"])),
@@ -156,8 +182,8 @@ static func _inspect_atlas(atlas: Image, spec: Dictionary) -> Dictionary:
 			)
 			if not check["ok"]:
 				return check
-			var center_x := floori(
-				float(int(bounds["left"]) + int(bounds["right"])) / 2.0
+			var center_x := PixelOps.integer_midpoint(
+				int(bounds["left"]), int(bounds["right"])
 			)
 			var cell_data := cell.get_data()
 			var border_count := 0
@@ -413,6 +439,9 @@ static func _packet_entries(packet_dir: String) -> Dictionary:
 static func validate_packet(
 	packet_dir: String, spec_path: String, input_root: String
 ) -> Dictionary:
+	var version_check := _require_backend_version()
+	if not version_check["ok"]:
+		return version_check
 	var contract := SpecContract.load_and_validate(spec_path, input_root)
 	if not contract["ok"]:
 		return contract
@@ -481,6 +510,9 @@ static func validate_packet(
 static func prepare_packet(
 	spec_path: String, input_root: String, candidate_dir: String
 ) -> Dictionary:
+	var version_check := _require_backend_version()
+	if not version_check["ok"]:
+		return version_check
 	if DirAccess.dir_exists_absolute(candidate_dir) or FileAccess.file_exists(candidate_dir):
 		return _failure("candidate expected=absent")
 	var contract := SpecContract.load_and_validate(spec_path, input_root)
@@ -637,6 +669,9 @@ static func _publish(candidate: String, output: String, clean: bool) -> Dictiona
 static func build_packet(
 	spec_path: String, input_root: String, output: String, clean: bool
 ) -> Dictionary:
+	var version_check := _require_backend_version()
+	if not version_check["ok"]:
+		return version_check
 	if DirAccess.dir_exists_absolute(output) and not clean:
 		return _failure("output expected=absent-or-clean actual=exists")
 	var candidate := "%s.candidate.%d" % [output, OS.get_process_id()]
