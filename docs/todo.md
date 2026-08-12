@@ -31,25 +31,12 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-009 — Regenerate three soundtrack cues from second human prompt feedback
-
-- Status: in_progress
-- Owner: AGENT 4
-- Branch: `agent-4/music-revision-v3`
-- Base: `master` at `a46fe9ca0e18abafaf011c8f1f1d487d9c65cfa3`
-- Dependencies: TD-006 integrated; Poseidon supplied a second `prompt-change` verdict on 2026-08-12
-- Owned files: three selected shipping Ogg files, exact prompts, retained selected sources, raw transcription evidence, `assets/music/{catalog.tres,provenance.json,README.md}`, `docs/{plans,handoffs,media}/TD-009*`, `FEATURES.json` entry `MUSIC-1`, and TD-009 rows in `docs/{todo,completed}.md`
-- Do not touch: the other three cue bytes/prompts/sources/transcriptions, runtime playback, SFX, simulation, stages, engine/export, tests, harness, `scripts/verify.sh`, or thresholds
-- Acceptance: Act I BGM is materially slower, simpler, lighter, and more peaceful; Act III BGM is more droning, bass-oppressive, and pressurized; Act III boss preserves that identity while clearly adding epic brass and taiko; machine conformance and provenance are green; every revised cue remains `placeholder: true`
-- Required evidence: full music structural gate, empty raw transcriptions, predecessor/untouched hash proof, objective tempo/density/low-band/taiko-brass analysis where measurable, focused catalog GUT, full headless verification, and merged-union STANDARD rerun; taste remains TD-004 human evidence
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
 - Owner: human
 - Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-003 integrated into `master`; TD-006 replacement cues integrated and presented for listening
+- Dependencies: TD-003 integrated into `master`; TD-006 and TD-009 replacement cues integrated and presented for listening
 - Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
 - Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
 - Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping
