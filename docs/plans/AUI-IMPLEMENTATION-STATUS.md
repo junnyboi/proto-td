@@ -63,3 +63,13 @@ Exact contract GUT, generator double-run byte identity, `assets_floor`, `present
 ## Successor locks
 
 AUI-00 is durably closed. AUI-10 source/staging closure and AUI-12 may now proceed as separate serial Agent F packages from the closure commit. AUI-34 remains Agent E's lane; AUI-11 and every later E-dependent package remain blocked until AUI-34 durably closes.
+
+## AUI-10 — Agent D S1 world source/staging closure
+
+- Status: `landed_staging_closed`; runtime binding remains blocked.
+- Source owner: `AGENT D`; closure owner: `AGENT F`.
+- Closure branch/base: `agent-f/aui-10-closure` from `ec56def391269f96a1e596ec4245bcd940ebdcdc`.
+- Landed validator: PASS with 8 assets, 8 provenance sidecars, 16 source records, stage-resource SHA-256 `c8d041bff7ce9a2b570997cbc2d09ee6ff0487c7666ff68875314cc39df0a1d9`, and all staged measurements within their pinned ranges.
+- Preserved blocker: exact approved `AUI-DESIGN-D` packet/accepted manifest hash is absent. `runtime_binding` remains `UNBOUND_AGENT_F_SEAM`; `human_final_art` remains `UNSET`.
+- No runtime manifest, view, scene, model, stage, harness, test, threshold, localization, feature-ledger, or import-guard surface changes in closure.
+- Next independent Agent F package: AUI-12. AUI-20 remains blocked on AUI-12 closure and the exact D runtime approval artifact; AUI-11 remains blocked on Agent E AUI-34 closure.
