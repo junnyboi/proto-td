@@ -63,8 +63,8 @@ func run(h: SelfTestHarness) -> void:
 	)
 	h.check("test reset stops one active cue", bool(music.call("stop")))
 
-	# Start a real BattleView for S4. Its _ready() owns the BGM request and its
-	# render-frame detector owns the final-wave boss transition.
+	# Start a real BattleView for S4. Music._process observes the live battle
+	# projection and owns both the BGM request and final-wave boss transition.
 	game.call("start_battle", &"s4")
 	var model := await _await_battle(h, game)
 	h.check("S4 battle starts", model != null)
@@ -72,13 +72,13 @@ func run(h: SelfTestHarness) -> void:
 		return
 	var view := game.get("content") as Node
 	view.set("ticks_per_frame_scale", 0.0)
-	h.check("S4 BattleView starts Act I BGM", music.call("current_id") == &"act_1_bgm")
+	h.check("S4 Music route starts Act I BGM", music.call("current_id") == &"act_1_bgm")
 	var starts_after_s4_bgm := int(music.call("start_count"))
 	await h.frames(8)
 	(
 		h
 		. check(
-			"S4 repeated render frames do not restart BGM",
+			"S4 repeated controller frames do not restart BGM",
 			int(music.call("start_count")) == starts_after_s4_bgm,
 			"starts=%d" % int(music.call("start_count")),
 		)
@@ -100,7 +100,7 @@ func run(h: SelfTestHarness) -> void:
 	(
 		h
 		. check(
-			"S4 boss render frames never fire multiple times",
+			"S4 boss controller frames never fire multiple times",
 			int(music.call("start_count")) == starts_after_s4_boss,
 			"starts=%d" % int(music.call("start_count")),
 		)
