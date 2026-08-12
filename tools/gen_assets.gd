@@ -18,6 +18,8 @@ const ArtProps := preload("res://tools/pixel/art_props.gd")
 const OUT_SPRITES := "res://assets/sprites"
 const OUT_PORTRAITS := "res://assets/portraits"
 const OUT_SHEET := "res://artifacts/lane_a"
+const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
+const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
 
 var _failed := false
 var _manifest := AssetManifest.new()
@@ -141,6 +143,9 @@ func _initialize() -> void:
 	if _failed:
 		quit(1)
 		return
+	if not _generate_provenance():
+		quit(1)
+		return
 	var err := ResourceSaver.save(_manifest, "res://assets/manifest.tres")
 	if err != OK:
 		push_error("[gen_assets] manifest save failed: %s" % err)
@@ -160,8 +165,59 @@ func _record(
 		_failed = true
 		return
 	_manifest.entries[id] = {
-		"pattern": pattern, "frames": frames, "size": size, "placeholder": placeholder
+		"pattern": pattern,
+		"frames": frames,
+		"size": size,
+		"placeholder": placeholder,
+		"pivot": AssetManifest.legacy_pivot(id, frames),
+		"animations": AssetManifest.legacy_animations(frames),
+		"provenance_sha256": "0".repeat(64),
 	}
+
+
+func _generate_provenance() -> bool:
+	var inventory: Dictionary = {}
+	var ids: Array[StringName] = []
+	for raw_id: Variant in _manifest.entries:
+		ids.append(raw_id)
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	for id: StringName in ids:
+		var entry: Dictionary = _manifest.entries[id]
+		inventory[String(id)] = {
+			"pattern": String(entry["pattern"]),
+			"frames": int(entry["frames"]),
+		}
+	var file := FileAccess.open(PROVENANCE_INVENTORY, FileAccess.WRITE)
+	if file == null:
+		push_error("[gen_assets] failed to write provenance inventory")
+		return false
+	file.store_string(JSON.stringify({"entries": inventory}, "\t", true) + "\n")
+	file.close()
+	var output: Array = []
+	var code := OS.execute(
+		"/usr/bin/python3",
+		[
+			ProjectSettings.globalize_path(PROVENANCE_TOOL),
+			"--repo",
+			ProjectSettings.globalize_path("res://"),
+			"--inventory",
+			ProjectSettings.globalize_path(PROVENANCE_INVENTORY),
+			"--write",
+		],
+		output,
+		true,
+	)
+	if code != 0:
+		push_error("[gen_assets] provenance failed (%d): %s" % [code, "\n".join(output)])
+		return false
+	for id: StringName in ids:
+		var sidecar := "res://assets/provenance/%s.provenance.json" % id
+		var digest := FileAccess.get_sha256(sidecar)
+		if digest.length() != 64:
+			push_error("[gen_assets] missing provenance digest for %s" % id)
+			return false
+		_manifest.entries[id]["provenance_sha256"] = digest
+	return true
 
 
 func _lint_and_save(

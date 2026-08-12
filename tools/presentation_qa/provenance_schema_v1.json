@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mgs://prototype-td/provenance_schema_v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "logical_id", "source_type", "final_files", "source_files", "recipe", "generation", "migration", "acceptance", "license"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "logical_id": {"type": "string", "minLength": 1},
+    "source_type": {"const": "deterministic_project_generator"},
+    "final_files": {"$ref": "#/$defs/files"},
+    "source_files": {"$ref": "#/$defs/files"},
+    "recipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "godot_version", "generator_path", "generator_sha256"],
+      "properties": {
+        "command": {"const": "godot --headless --path . -s tools/gen_assets.gd"},
+        "godot_version": {"const": "4.7.1.stable.official.a13da4feb"},
+        "generator_path": {"const": "res://tools/gen_assets.gd"},
+        "generator_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model", "generation_id", "seed", "unsupported_reason"],
+      "properties": {
+        "provider": {"type": "null"},
+        "model": {"type": "null"},
+        "generation_id": {"type": "null"},
+        "seed": {"type": "null"},
+        "unsupported_reason": {"const": "deterministic hand-authored project generator; stochastic provider fields do not apply"}
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_commit", "baseline_tree", "migrated_at_utc", "status"],
+      "properties": {
+        "baseline_commit": {"const": "975261e8e00a20a0b25fe17e7976d743d509c14b"},
+        "baseline_tree": {"const": "cf4b3e1c0d8ae826c668765d994a032acbb8c0ad"},
+        "migrated_at_utc": {"type": "null"},
+        "status": {"const": "current_bytes_authenticated"}
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "human_accepter", "accepted_at_utc", "accepting_commit", "source", "reason"],
+      "properties": {
+        "state": {"const": "unknown_per_current_byte"},
+        "human_accepter": {"type": "null"},
+        "accepted_at_utc": {"type": "null"},
+        "accepting_commit": {"type": "null"},
+        "source": {"const": "FEATURES.json:LA records family-level Lane A acceptance at c8ee84d and 218aaea but does not prove every current byte"},
+        "reason": {"const": "current inventory includes later additions or modifications, so no immutable per-asset human acceptance fact was inferred"}
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "source", "human_contribution"],
+      "properties": {
+        "spdx": {"const": "LicenseRef-Project-Owned"},
+        "source": {"const": "hand-authored deterministic pixel recipes in repository"},
+        "human_contribution": {"const": "selection, pixel recipes, palette, normalization, and accepted Lane A arrangement"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^res://"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/file"}
+    }
+  }
+}
