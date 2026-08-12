@@ -95,6 +95,8 @@ After three distinct implementation failures, trim only optional prose duplicati
 
 The single work package is implemented. `scripts/playtest.sh` now exposes only the bounded headless bot contract, and D-002 records the supersession, consequences, rollback path, and motion-specific reopen criteria. Targeted verification is green: shell syntax passed; `bot_idle` completed seed 42 / 100 ticks with exit 0 and a fresh 586-byte telemetry artifact; `--render` and `--out` each rejected before engine launch with exit 2 and the exact unknown-argument diagnostic. The headless/full/replay/merged-union gates remain pending until the candidate is frozen.
 
+**Ownership release:** On 2026-08-12, the user instructed AGENT 8 to unassign all existing tasks. `VERIFY-MOVIE` is therefore pending and unassigned. The implementation and evidence remain preserved on `agent-8/retire-movie-maker` for a future owner to inspect, adopt, revise, or discard; nothing from this branch has been integrated into `master`.
+
 ## Deviations and rollback
 
 - **D1 candidate:** if a live repository consumer of `--render` appears before merge, stop retirement, retain the lane, and re-scope to a bounded qualification proof rather than deleting that consumer.
