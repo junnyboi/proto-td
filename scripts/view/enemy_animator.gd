@@ -149,6 +149,7 @@ static func _texture_rect(
 	sprite.name = sprite_name
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = sprite_texture
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.size = sprite_size
