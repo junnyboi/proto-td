@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-009 — Remove MapNavigator cold-cache parser dependency
+
+- Status: in_progress
+- Owner: AGENT 9
+- Branch: `agent-9/mapnav-cold-cache-crash`
+- Base: `master` at `3b7ba225c90add20924b5a3aef99133162f64531`
+- Dependencies: TD-008 integrated; user-provided macOS runtime crash at `battle_view.gd:69`
+- Owned files: `scripts/view/battle_view.gd`, `test/test_map_navigation.gd`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-009-agent-9-mapnav-cold-cache-crash.md`
+- Do not touch: `scripts/view/map_navigator.gd`, simulation/model state, map behavior, tests/thresholds unrelated to loadability, `scripts/verify.sh`, AUI presentation contracts
+- Acceptance: `battle_view.gd` loads `map_navigator.gd` by explicit resource path rather than requiring a pre-populated global script-class cache; direct parse/import/boot and map-navigation behavior remain green
+- Required evidence: focused GUT regression, direct `battle_view.gd` parse check, fresh import/boot, map-navigation scenario, and repository STANDARD gate
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
