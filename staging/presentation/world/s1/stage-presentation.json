@@ -3,7 +3,7 @@
   "status": "STAGED_UNBOUND",
   "stage_id": "s1",
   "theme_id": "world.act1.windward_muster",
-  "authoritative_stage_resource_sha256": "c8d041bff7ce9a2b570997cbc2d09ee6ff0487c7666ff68875314cc39df0a1d9",
+  "authoritative_stage_resource_sha256": "17a618aeff760129d1dcbfeb4aef0364005e4577131ef2078b26329273119b4a",
   "authoritative_geometry": {
     "grid_size": [
       8,

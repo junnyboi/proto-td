@@ -25,23 +25,25 @@
     "tool": "Manus generate_image"
   },
   "human_acceptance": {
-    "accepting_commit": null,
-    "acceptor": null,
-    "final_art": false,
-    "timestamp_utc": null
+    "accepting_commit": "60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+    "acceptor": "Poseidon",
+    "final_art": true,
+    "receipt": "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+    "receipt_sha256": "a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83",
+    "timestamp_utc": "2026-08-12T19:49:51Z"
   },
   "license_source": "original AI-assisted source under project-controlled prompt/reference set; approved concepts only",
   "logical_id": "world.s1.route",
   "normalization": {
     "asset_contract": "art-src/world/s1/s1-world-asset-contract.json",
-    "asset_contract_sha256": "0e4649b00c16a97d552d2ca83f39f8dbb3ef88134bb60195820808a9b4dd5f6e",
+    "asset_contract_sha256": "3c151deb528a68769d0a06268abe5117d15bcee8c04222024c8ba73cac21bc3e",
     "derived_palette": "art-src/world/s1/s1-derived-palette.json",
     "derived_palette_sha256": "0311300b3a8cb3f7ce7d971db4c66ffe24c810cc2127f44286cde4c6640e6795",
     "pillow": "12.3.0",
     "python": "3.12.3",
     "recipe": "source palette derivation + contract-authored native geometry + hard alpha + no-dither fixed palette",
     "tool": "tools/art_pipeline/world/normalize_s1_world.py",
-    "tool_sha256": "3ff303db2aac77f49ebb8632e0fe445d83bc469df36c4eb7436fbcf93a805c04"
+    "tool_sha256": "9b79d433f6d690549ca276947fe02b3cd06b49e4c41074fe8e683592b00c7b27"
   },
   "placement_state": "STAGED_PRESENTATION_ROLE_DEFINED",
   "raw_source": {
@@ -60,5 +62,5 @@
     "gate": "PASS"
   },
   "schema_version": 1,
-  "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
+  "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
 }

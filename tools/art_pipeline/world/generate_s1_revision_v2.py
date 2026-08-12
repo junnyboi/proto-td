@@ -19,6 +19,7 @@ QA = REPO / "staging/qa/world/s1"
 CONTRACT = ART_SRC / "s1-world-asset-contract.json"
 PALETTE = ART_SRC / "s1-derived-palette.json"
 APPROVAL = REPO / "docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json"
+HUMAN_APPROVAL = REPO / "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json"
 PANORAMA_SOURCE = ART_SRC / "s1-alpine-escarpment-source.png"
 NORMALIZATION_REPORT = QA / "normalization-report.json"
 REVISION_REPORT = QA / "revision-v2-report.json"
@@ -316,6 +317,7 @@ def inspect(path: Path, expected: tuple[int, int]) -> dict[str, object]:
 
 def provenance(logical_id: str, path: Path, runtime: bool) -> dict[str, object]:
     approval = read_json(APPROVAL)
+    human_approval = read_json(HUMAN_APPROVAL)
     _, _, concept_key = SPECS[logical_id]
     concept = approval["gpt_image_2_concepts"][concept_key]
     prompt = approval["gpt_image_2_concepts"]["prompt_contract"]
@@ -335,9 +337,9 @@ def provenance(logical_id: str, path: Path, runtime: bool) -> dict[str, object]:
         "schema_version": 1,
         "logical_id": logical_id,
         "state": (
-            "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
+            "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
             if runtime
-            else "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
+            else "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
         ),
         "final_file": repo_path(path),
         "final_file_sha256": sha256(path),
@@ -382,10 +384,12 @@ def provenance(logical_id: str, path: Path, runtime: bool) -> dict[str, object]:
             "gate": "PASS",
         },
         "human_acceptance": {
-            "final_art": False,
-            "acceptor": None,
-            "timestamp_utc": None,
-            "accepting_commit": None,
+            "final_art": True,
+            "acceptor": human_approval["owner"],
+            "timestamp_utc": human_approval["decision_received_utc"],
+            "accepting_commit": human_approval["approved_candidate"],
+            "receipt": repo_path(HUMAN_APPROVAL),
+            "receipt_sha256": sha256(HUMAN_APPROVAL),
         },
         "license_source": "original AI-assisted concept under project-controlled prompt/reference set; deterministic native synthesis",
     }
@@ -393,6 +397,7 @@ def provenance(logical_id: str, path: Path, runtime: bool) -> dict[str, object]:
 
 def refresh_existing_sidecars() -> None:
     contract_hash = sha256(CONTRACT)
+    human_approval = read_json(HUMAN_APPROVAL)
     for root in (STAGING_PROVENANCE, RUNTIME_PROVENANCE):
         if not root.is_dir():
             continue
@@ -403,6 +408,19 @@ def refresh_existing_sidecars() -> None:
             normalization = sidecar.setdefault("normalization", {})
             normalization["asset_contract"] = repo_path(CONTRACT)
             normalization["asset_contract_sha256"] = contract_hash
+            sidecar["state"] = (
+                "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
+                if root == RUNTIME_PROVENANCE
+                else "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
+            )
+            sidecar["human_acceptance"] = {
+                "final_art": True,
+                "acceptor": human_approval["owner"],
+                "timestamp_utc": human_approval["decision_received_utc"],
+                "accepting_commit": human_approval["approved_candidate"],
+                "receipt": repo_path(HUMAN_APPROVAL),
+                "receipt_sha256": sha256(HUMAN_APPROVAL),
+            }
             write_json(path, sidecar)
 
 
@@ -473,7 +491,7 @@ def main() -> None:
         for data in inspected.values()
     )
     legacy = read_json(NORMALIZATION_REPORT)
-    legacy["status"] = "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET"
+    legacy["status"] = "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED"
     legacy["contract"] = {"path": repo_path(CONTRACT), "sha256": sha256(CONTRACT)}
     legacy["normalizer"] = {
         "path": repo_path(Path(__file__).resolve()),
@@ -483,7 +501,8 @@ def main() -> None:
     legacy["assets"] = inspected
     legacy["contact_sheet"] = contact_sheet(staging_paths)
     legacy["machine_gate"] = "PASS" if all_pass else "FAIL"
-    legacy["final_art_acceptance"] = "UNSET_HUMAN_ONLY"
+    legacy["final_art_acceptance"] = "POSEIDON_APPROVED_AUI_10R_REVISION_2"
+    legacy["human_approval"] = {"path": repo_path(HUMAN_APPROVAL), "sha256": sha256(HUMAN_APPROVAL)}
     legacy["runtime_binding"] = "BOUND_AGENT_D_S1_PRESENTATION"
     legacy["writes_owned_staging_only"] = False
     write_json(NORMALIZATION_REPORT, legacy)
@@ -491,14 +510,15 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "package": "AUI-10R-REVISION-2",
-        "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET",
+        "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
         "approval_manifest": {"path": repo_path(APPROVAL), "sha256": sha256(APPROVAL)},
         "asset_contract": {"path": repo_path(CONTRACT), "sha256": sha256(CONTRACT)},
         "generator": {"path": repo_path(Path(__file__).resolve()), "sha256": sha256(Path(__file__).resolve())},
         "assets": {logical_id: inspect(path, SPECS[logical_id][1]) for logical_id, path in staging_paths.items()},
         "contact_sheet": legacy["contact_sheet"],
         "machine_gate": "PASS" if all_pass else "FAIL",
-        "human_final_art": False,
+        "human_final_art": True,
+        "human_approval": {"path": repo_path(HUMAN_APPROVAL), "sha256": sha256(HUMAN_APPROVAL)},
     }
     write_json(REVISION_REPORT, report)
     print(json.dumps({"verdict": report["machine_gate"], "assets": report["assets"]}, indent=2))

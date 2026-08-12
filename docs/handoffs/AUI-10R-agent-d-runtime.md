@@ -4,7 +4,7 @@
 **Branch:** `agent-d/s1-world-runtime`
 **Base:** `3936eeda3e25c5f45def229b168fd11c41a048d9`
 **Assurance lane:** RELEASE
-**Current state:** Core-C/Backdrop-B revision implemented and focused-green; frozen full RELEASE and human visual verdict remain pending
+**Current state:** Core-C/Backdrop-B revision implemented; pre-verdict RELEASE/audit/replay green; Poseidon approved exact candidate `60b69a6004a9c843851d9f6c9aee84c88389cb1f`; post-verdict union verification is mandatory
 
 ## What changed
 
@@ -22,7 +22,7 @@ No simulation, StageDef geometry, save/hash/replay state, gameplay data, thresho
 
 The parent approval is `docs/media/AUI-DESIGN-D-approved-manifest.json`. Poseidon's exact revision selection and GPT Image 2 concept/production hashes are in `docs/media/AUI-DESIGN-D-REVISION-CORE-C-BACKDROP-B.json` under token `AUI-DESIGN-D-REVISION-2`.
 
-The committed bounded panorama source is `art-src/world/s1/s1-alpine-escarpment-source.png`; its hash is pinned by the revision receipt and every panorama provenance sidecar. Runtime and staged final bytes must remain identical. All runtime manifest entries remain `placeholder = true`, and all sidecars retain `human_acceptance.final_art = false` until Poseidon accepts fresh in-game evidence.
+The committed bounded panorama source is `art-src/world/s1/s1-alpine-escarpment-source.png`; its hash is pinned by the revision receipt and every panorama provenance sidecar. Runtime and staged final bytes must remain identical. Poseidon's exact-candidate final-art verdict is recorded at `docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json`; all twelve manifest placeholders are cleared and every sidecar binds that receipt, owner, timestamp, and accepted candidate.
 
 ## Verification contract
 
@@ -33,6 +33,7 @@ Before merge:
 3. Run GUT, `s1_world_art` headless/windowed, existing `assets_floor` and `iso_projection_floor`, then uninterrupted `scripts/verify.sh --full`.
 4. Delete generated artifacts/caches prescribed by the repository and run one fresh cache-bypassed clean-artifact RELEASE at the same frozen hash.
 5. Obtain a non-implementer diff-vs-pins audit and localization-impact review.
-6. Show Poseidon fresh unobscured in-game captures. Only Poseidon's explicit verdict may clear final-art placeholder/provenance flags.
+6. Show Poseidon fresh unobscured in-game captures. Poseidon approved AUI-10R revision 2 at candidate `60b69a6004a9c843851d9f6c9aee84c88389cb1f` on 2026-08-13.
+7. Because the verdict changes manifest/provenance/ledger bytes, freeze the post-verdict exact union with current master and repeat cache-cleared RELEASE, cross-process replay, independent diff-vs-pins audit, localization-impact review, and merged-master verification before pushing.
 
 If visual feedback requests another change, modify presentation data/assets only, preserve every check and threshold, restart RELEASE assurance from rung one, and show new captures. The verification fleet remains unsentimental. Sensible machine.

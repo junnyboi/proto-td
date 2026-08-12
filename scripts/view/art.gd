@@ -33,6 +33,56 @@ static func size(id: StringName) -> Vector2i:
 	return Vector2i.ZERO
 
 
+static func metadata(id: StringName) -> Dictionary:
+	return _entry(id).duplicate(true)
+
+
+static func pivot(id: StringName) -> Vector2:
+	var stored: Variant = _entry(id).get("pivot", Vector2.ZERO)
+	return stored if stored is Vector2 else Vector2.ZERO
+
+
+static func animation_names(id: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	var stored: Variant = _entry(id).get("animations", {})
+	if stored is not Dictionary:
+		return result
+	for raw_name: Variant in stored:
+		if typeof(raw_name) == TYPE_STRING_NAME:
+			result.append(raw_name)
+	result.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	return result
+
+
+static func animation_frame_index(
+	id: StringName, animation: StringName, local_frame: int
+) -> int:
+	if local_frame < 0:
+		return -1
+	var stored: Variant = _entry(id).get("animations", {})
+	if stored is not Dictionary or not stored.has(animation):
+		return -1
+	var raw_region: Variant = stored[animation]
+	if raw_region is not Dictionary:
+		return -1
+	var length := int(raw_region.get("length", 0))
+	if local_frame >= length:
+		return -1
+	return int(raw_region.get("start", -1)) + local_frame
+
+
+static func animation_texture(
+	id: StringName, animation: StringName, local_frame: int
+) -> Texture2D:
+	var frame := animation_frame_index(id, animation, local_frame)
+	return texture(id, frame) if frame >= 0 else null
+
+
+static func provenance_sha256(id: StringName) -> String:
+	var stored: Variant = _entry(id).get("provenance_sha256", "")
+	return stored if stored is String else ""
+
+
 static func texture(id: StringName, frame := 0) -> Texture2D:
 	var key := "%s/%d" % [id, frame]
 	if _cache.has(key):

@@ -10,14 +10,16 @@ config_version=5
 
 [application]
 
-config/name="Prototype TD"
+config/name="Protos"
 run/main_scene="res://scenes/title.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
+I18n="*res://autoloads/i18n.gd"
 Telemetry="*res://autoloads/telemetry.gd"
+Music="*res://autoloads/music.gd"
 PlaytestRunner="*res://autoloads/playtest_runner.gd"
 Game="*res://autoloads/game.gd"
 Debug="*res://autoloads/debug.gd"

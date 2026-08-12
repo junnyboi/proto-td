@@ -18,6 +18,7 @@ CONTRACT = ART_SRC / "s1-world-asset-contract.json"
 SOURCE_PALETTES = ART_SRC / "s1-source-palettes.json"
 SOURCE_LEDGER = ART_SRC / "gpt-image-2-source-ledger.json"
 REPORT = QA / "normalization-report.json"
+HUMAN_APPROVAL = REPO_ROOT / "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json"
 RESERVED = {(244, 244, 244): "#F4F4F4", (65, 166, 246): "#41A6F6"}
 
 ASSET_FILES = {
@@ -544,6 +545,7 @@ def write_json(path: Path, payload: object) -> None:
 
 def emit_provenance(paths: dict[str, Path], source_ledger: dict[str, object]) -> None:
     PROVENANCE.mkdir(parents=True, exist_ok=True)
+    human_approval = json.loads(HUMAN_APPROVAL.read_text(encoding="utf-8"))
     sources = {entry["file"]: entry for entry in source_ledger["sources"]}
     generator = source_ledger["generator"]
     references = source_ledger["approved_reference_hashes"]
@@ -553,7 +555,7 @@ def emit_provenance(paths: dict[str, Path], source_ledger: dict[str, object]) ->
         sidecar = {
             "schema_version": 1,
             "logical_id": logical_id,
-            "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET",
+            "state": "STAGED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
             "final_file": repo_path(final_path),
             "final_file_sha256": sha256(final_path),
             "raw_source": {
@@ -597,10 +599,12 @@ def emit_provenance(paths: dict[str, Path], source_ledger: dict[str, object]) ->
                 "gate": "PASS",
             },
             "human_acceptance": {
-                "final_art": False,
-                "acceptor": None,
-                "timestamp_utc": None,
-                "accepting_commit": None,
+                "final_art": True,
+                "acceptor": human_approval["owner"],
+                "timestamp_utc": human_approval["decision_received_utc"],
+                "accepting_commit": human_approval["approved_candidate"],
+                "receipt": repo_path(HUMAN_APPROVAL),
+                "receipt_sha256": sha256(HUMAN_APPROVAL),
             },
             "license_source": "original AI-assisted source under project-controlled prompt/reference set; approved concepts only",
         }
@@ -630,7 +634,7 @@ def main() -> None:
     result = {
         "schema_version": 1,
         "package": "AUI-10",
-        "status": "STAGED_IN_AGENT_D_LANE_RUNTIME_UNBOUND",
+        "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
         "repository_base_observed": contract["repository_base_observed"],
         "contract": {"path": repo_path(CONTRACT), "sha256": sha256(CONTRACT)},
         "source_ledger": {"path": repo_path(SOURCE_LEDGER), "sha256": sha256(SOURCE_LEDGER)},
@@ -647,9 +651,10 @@ def main() -> None:
             "s1-route-notch.png": "raw full-face/four-arrow silhouette rejected; deterministic exactly-three notch overlay used",
         },
         "machine_gate": "PASS" if all_asset_gates and stage["act_i_lstar_gate"] == "PASS" and stage["warm_direct_gate"] == "PASS" else "FAIL",
-        "final_art_acceptance": "UNSET_HUMAN_ONLY",
-        "runtime_binding": "UNBOUND_AGENT_F_SEAM",
-        "writes_owned_staging_only": True,
+        "final_art_acceptance": "POSEIDON_APPROVED_AUI_10R_REVISION_2",
+        "human_approval": {"path": repo_path(HUMAN_APPROVAL), "sha256": sha256(HUMAN_APPROVAL)},
+        "runtime_binding": "BOUND_AGENT_D_S1_PRESENTATION",
+        "writes_owned_staging_only": False,
     }
     write_json(REPORT, result)
     print(json.dumps({

@@ -1,6 +1,6 @@
 # AUI-10/AUI-10R — S1 Civic-Weatherworks World Assets
 
-**Status:** runtime-integrated revision-2 candidate on `agent-d/s1-world-runtime`; human final-art acceptance unset
+**Status:** runtime-integrated revision 2; Poseidon approved final art on exact candidate `60b69a6004a9c843851d9f6c9aee84c88389cb1f`
 **Runtime base:** `3936eeda3e25c5f45def229b168fd11c41a048d9`
 **Owner:** AGENT D
 **Concept authority:** `AUI-DESIGN-D` plus Poseidon's `AUI-DESIGN-D-REVISION-2` selection of Core C + Backdrop B
@@ -15,20 +15,20 @@ Runtime code never resolves `res://staging/**`. The logical manifest owns import
 
 | Logical ID | Native geometry | Runtime role | Acceptance state |
 |---|---:|---|---|
-| `world.s1.ground` | 32×16 | quiet shell-lime passive floor | integrated, human-final unset |
-| `world.s1.route` | 32×16 | warm west→east service route | integrated, human-final unset |
-| `world.s1.elevated` | 32×24 | 32×16 top plus eight wall rows | integrated, human-final unset |
-| `world.s1.backdrop` | 32×16 | low alpine foothill source component | manifested, revision source |
-| `world.s1.backdrop_ridge` | 32×24 | mid-ridge source component | manifested, revision source |
-| `world.s1.backdrop_peak` | 32×32 | high-peak source component | manifested, revision source |
-| `world.s1.backdrop_mist` | 32×16 | mist-ravine source component | manifested, revision source |
-| `world.s1.backdrop_panorama` | 208×104 | one continuous, noninteractive Alpine Escarpment behind S1 | integrated, human-final unset |
-| `world.s1.spawn_landmark` | 32×32, pivot `(16,30)` | canvas/intake Spawn identity | integrated, human-final unset |
-| `world.s1.core_landmark` | 32×32, pivot `(16,30)` | Cloud-Seal Orrery Core identity | integrated, human-final unset |
-| `world.s1.rain_measure` | 16×16, pivot `(8,14)` | reserved low-decor candidate | manifested and deliberately unplaced |
-| `world.s1.route_notch` | 32×16 | exactly three neutral cadence notches | integrated, human-final unset |
+| `world.s1.ground` | 32×16 | quiet shell-lime passive floor | integrated, human-final accepted |
+| `world.s1.route` | 32×16 | warm west→east service route | integrated, human-final accepted |
+| `world.s1.elevated` | 32×24 | 32×16 top plus eight wall rows | integrated, human-final accepted |
+| `world.s1.backdrop` | 32×16 | low alpine foothill source component | manifested, human-final accepted |
+| `world.s1.backdrop_ridge` | 32×24 | mid-ridge source component | manifested, human-final accepted |
+| `world.s1.backdrop_peak` | 32×32 | high-peak source component | manifested, human-final accepted |
+| `world.s1.backdrop_mist` | 32×16 | mist-ravine source component | manifested, human-final accepted |
+| `world.s1.backdrop_panorama` | 208×104 | one continuous, noninteractive Alpine Escarpment behind S1 | integrated, human-final accepted |
+| `world.s1.spawn_landmark` | 32×32, pivot `(16,30)` | canvas/intake Spawn identity | integrated, human-final accepted |
+| `world.s1.core_landmark` | 32×32, pivot `(16,30)` | Cloud-Seal Orrery Core identity | integrated, human-final accepted |
+| `world.s1.rain_measure` | 16×16, pivot `(8,14)` | reserved low-decor candidate | manifested, deliberately unplaced, human-final accepted |
+| `world.s1.route_notch` | 32×16 | exactly three neutral cadence notches | integrated, human-final accepted |
 
-All twelve manifest entries retain `placeholder = true`. Runtime provenance retains exact final bytes, the original and revision approval records, GPT Image 2 source hashes, deterministic tool/contract/palette hashes, and `human_acceptance.final_art = false`.
+All twelve manifest entries have `placeholder = false`. Runtime and staged provenance retain exact final bytes, original/revision approvals, GPT Image 2 source hashes, deterministic tool/contract/palette hashes, and Poseidon's exact-candidate verdict from `docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json`.
 
 ## Revision-2 production chain
 
@@ -50,4 +50,4 @@ The second command intentionally reapplies the owner-approved revision after the
 
 GUT pins all twelve sizes and SHA-256 values. `s1_world_art` proves one continuous panorama, exact themed tiles, three notches, Spawn/Orrery placements, ignored input, unplaced rain measure, and cell-picking round trips. Existing `assets_floor`, `iso_projection_floor`, full verification, fresh clean-artifact RELEASE, independent diff-vs-pins review, and Poseidon's in-game visual verdict remain mandatory.
 
-The playable-surface value board remains median CIE L* `52.124` within `[48,58]` and warm/direct share `0.6670` within `[0.55,0.70]`. The mountain field is cooler and darker than the playable platform. Final-art promotion remains pending Poseidon's verdict on fresh frozen-candidate captures.
+The playable-surface value board remains median CIE L* `52.124` within `[48,58]` and warm/direct share `0.6670` within `[0.55,0.70]`. The mountain field is cooler and darker than the playable platform. Poseidon reviewed the fresh frozen-candidate overview and focused Orrery/mountain crops, then approved AUI-10R revision 2 on 2026-08-13.

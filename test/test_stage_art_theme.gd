@@ -52,7 +52,7 @@ func test_theme_is_valid_only_for_s1() -> void:
 		theme.approval_manifest_sha256,
 		StageArtTheme.S1_APPROVAL_MANIFEST_SHA256,
 	)
-	assert_false(theme.human_final_art)
+	assert_true(theme.human_final_art)
 
 
 func test_theme_preserves_authoritative_s1_roles() -> void:
@@ -86,14 +86,14 @@ func test_parent_approval_cannot_authenticate_revision_theme() -> void:
 	)
 
 
-func test_all_s1_manifest_entries_are_runtime_backed_but_human_unaccepted() -> void:
+func test_all_s1_manifest_entries_are_runtime_backed_and_human_accepted() -> void:
 	assert_not_null(manifest)
 	assert_eq(theme.required_manifest_ids().size(), 12)
 	for id: StringName in theme.required_manifest_ids():
 		assert_true(manifest.entries.has(id), "missing %s" % id)
 		var entry: Dictionary = manifest.entries[id]
 		assert_eq(int(entry["frames"]), 1, "%s frame count" % id)
-		assert_true(bool(entry["placeholder"]), "%s must remain placeholder until owner review" % id)
+		assert_false(bool(entry["placeholder"]), "%s cleared by Poseidon's exact-candidate verdict" % id)
 		assert_true(String(entry["pattern"]).begins_with("res://assets/world/s1/"), "%s path" % id)
 		assert_eq(entry["size"], EXPECTED_ASSET_SIZES[id], "%s manifest size" % id)
 		assert_not_null(Art.texture(id), "%s texture" % id)
@@ -107,7 +107,7 @@ func test_runtime_asset_bytes_match_the_verified_staged_candidates() -> void:
 		assert_eq(FileAccess.get_sha256(path), EXPECTED_ASSET_HASHES[id], "%s bytes" % id)
 
 
-func test_runtime_provenance_covers_every_asset_without_inferring_human_acceptance() -> void:
+func test_runtime_provenance_covers_every_owner_accepted_asset() -> void:
 	for id: StringName in EXPECTED_ASSET_HASHES:
 		var sidecar_name := String(id).replace(".", "_") + ".provenance.json"
 		var sidecar_path := "res://assets/provenance/world/s1/" + sidecar_name
@@ -131,7 +131,13 @@ func test_runtime_provenance_covers_every_asset_without_inferring_human_acceptan
 				"AUI-DESIGN-D-REVISION-2",
 				"%s revision approval" % id,
 			)
-		assert_false(bool(sidecar["human_acceptance"]["final_art"]), "%s human final" % id)
+		assert_true(bool(sidecar["human_acceptance"]["final_art"]), "%s human final" % id)
+		assert_eq(sidecar["human_acceptance"]["acceptor"], "Poseidon", "%s acceptor" % id)
+		assert_eq(
+			sidecar["human_acceptance"]["accepting_commit"],
+			"60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+			"%s accepted candidate" % id,
+		)
 
 
 func test_s1_backdrop_is_one_continuous_noninteractive_panorama() -> void:

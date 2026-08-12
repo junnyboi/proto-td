@@ -31,31 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## AUI-10R — Integrate Agent D's approved S1 world assets at runtime
-
-- Status: in_progress
-- Owner: AGENT D
-- Branch: `agent-d/s1-world-runtime`
-- Base: `master` at `3936eeda3e25c5f45def229b168fd11c41a048d9`
-- Dependencies: Poseidon's explicit owner override plus approved `AUI-DESIGN-D-REVISION-2` selection of Cloud-Seal Orrery + Alpine Escarpment; parent and revision hashes verified; Agent F's remote branch is contained in master, its external lease expired, and it has no worktree, PR, process, or queue claim; Agent E is unrelated
-- Owned files: `art-src/world/s1/**`, `staging/assets/world/s1/**`, `staging/provenance/world/s1/**`, `staging/qa/world/s1/**`, `assets/world/s1/**`, `assets/provenance/world/s1/**`, `assets/manifest.tres`, `data/presentation/stage_art_theme.gd`, `data/presentation/s1_world_theme.tres`, `scripts/view/iso_grid_builder.gd`, `scripts/view/battle_view.gd`, `tools/art_pipeline/world/**`, `test/test_stage_art_theme.gd`, `selftest/scenarios/s1_world_art.gd`, the two AUI-DESIGN-D manifests, the AUI decision/status/art/handoff docs, this row, and `FEATURES.json`
-- Do not touch: simulation/model state, stage geometry/data, save/hash/replay, existing probe reservations, thresholds, `scripts/verify.sh`, localization catalogs, unrelated UI/assets, or Agent E work
-- Acceptance: S1 resolves twelve manifest-backed world assets; the Cloud-Seal Orrery replaces the rejected pressure-tank Core; one continuous Alpine Escarpment replaces the repeated outside-map tile ring; ground/route/elevation, three cadence notches, and Spawn/Core landmarks render with mouse-ignore semantics; rain measure remains unplaced; non-S1 stages retain generic art; model hash/replay surface and S1 geometry are unchanged
-- Required evidence: exact approval-packet hash manifest, asset/provenance gate, theme GUT, headless/windowed `s1_world_art`, existing `assets_floor` and `iso_projection_floor`, fresh `scripts/verify.sh --full`, clean-artifact RELEASE rerun, independent diff-vs-pins audit, localization-impact review, and Poseidon visual review before final-art acceptance
-- Last update: 2026-08-12
-
-## TD-004 — Complete human soundtrack acceptance
-
-- Status: blocked
-- Owner: human
-- Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-003 integrated into `master`; TD-006 and TD-009 replacement cues integrated and presented for listening
-- Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
-- Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
-- Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping
-- Required evidence: human-authored six-cue verdict matrix; accepted cues may clear `placeholder` only in a separately verified catalog/provenance update
-- Last update: 2026-08-12
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
@@ -187,6 +162,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Do not touch: gameplay semantics, unrelated art classes, probe-color reservations
 - Acceptance: human verdict confirms current separation or identifies exact classes/states needing palette adjustment
 - Required evidence: linked L7 verdict; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/verify.sh --full`
+- Last update: 2026-08-12
+
+## AUI-12 — Build Protos Theme, components, localization, and compatible shells
+
+- Status: in_progress
+- Owner: AGENT F
+- Branch: `agent-f/aui-12` after the serialized `agent-f/aui-12-claim` transaction
+- Base: `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`
+- Dependencies: AUI-00 closed; AUI-10 source/staging closed; AUI-DESIGN-F approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`; independent plan preflight PASS at plan SHA-256 `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`; no Agent D/E runtime bytes are consumed
+- Owned files: `autoloads/i18n.gd`; `localization/en-US.json`; `scripts/ui/components/**`; `scenes/ui/components/**`; `data/presentation/ui/**`; `scripts/ui/title.gd`; `scripts/ui/staging.gd`; `scripts/ui/stage_select.gd`; `scripts/ui/squad_select.gd`; `scripts/ui/results.gd`; `test/test_i18n.gd`; `test/test_ui_components.gd*`; `selftest/scenarios/ui_shell_floor.gd*`; `docs/handoffs/AUI-12-agent-f-ui-foundation.md`; this exact AUI-12 row; AUI-12 sections in `docs/decisions/AUI-DESIGN-APPROVALS.md` and `docs/plans/AUI-IMPLEMENTATION-STATUS.md`
+- Do not touch: simulation/model/hash/save/replay/telemetry; battle HUD/world/VFX; Agent D source/staging/runtime paths; Agent E AUI-34 paths; `scripts/verify.sh`; thresholds; unrelated tests/scenarios; `FEATURES.json` before the dedicated closure transaction
+- Acceptance: all 23 exact Theme variations/components, 72 en-US keys with stable fallbacks and named placeholder types, locale selector, five route-compatible shells, 32 rendered-pixel normal text, >=44x44 enabled targets, exact focus/cancel behavior, and source/runtime inventory parity pass at 1920x1080, 1280x720, 960x720, and 720x1280 under standard, 200%-text, and +35%-expansion modes without clipping
+- Required evidence: exact component/copy/inventory GUT; unchanged campaign/staging/resign/battle-control scenarios; `ui_shell_floor` with 62 fresh PNGs/zero skips/completion sentinel; cross-process replay equality; Web build; fresh cache-bypassed RELEASE union; independent diff-vs-pins audit; Poseidon commit-bound playable-Web and en-US review before landing
 - Last update: 2026-08-12
 
 ## PROC-FEATURE-EVIDENCE — Add explicit evidence classes to the feature ledger

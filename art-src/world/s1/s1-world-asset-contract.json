@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "AUI-10",
-  "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_UNSET",
+  "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
   "owner": "AGENT D",
   "repository_base_observed": "975261e8e00a20a0b25fe17e7976d743d509c14b",
   "stage": {
@@ -50,7 +50,7 @@
   "non_goals": [
     "stage-data edits",
     "simulation or route changes",
-    "human final-art acceptance",
+    "human final-art acceptance outside AUI-10R S1 revision 2",
     "Agent E character assumptions"
   ]
 }
