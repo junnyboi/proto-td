@@ -9,7 +9,7 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `f08ee08`** (TD-006 campaign-only Start candidate — includes
+- Build under test: **`master` ≥ `f08ee08`** (TD-007 campaign-only Start candidate — includes
   the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
   Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
   superseded; do not playtest an older build.
