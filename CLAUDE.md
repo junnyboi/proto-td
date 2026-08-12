@@ -1,4 +1,4 @@
-# Proto Defense — Agent Rules
+# Protos — Agent Rules
 
 Tactical tower defense POC (Arknights-benchmark + twist bundle), built agent-first on Godot
 4.7.1. Canonical phase plans live in the Manus MGS project knowledge area; actionable

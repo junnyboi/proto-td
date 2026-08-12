@@ -1,4 +1,4 @@
-# Proto Defense — Luminous Descent Music Catalog
+# Protos — Luminous Descent Music Catalog
 
 This directory contains six original instrumental orchestral cues: one exploration BGM and one boss cue for each planned act. They share a new four-note descending leitmotif and progress from peaceful pastoral warmth to crystalline archaeological tension and, finally, resonant abyssal resolve and war-scale orchestral weight.
 
