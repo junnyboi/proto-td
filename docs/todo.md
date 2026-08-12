@@ -31,25 +31,12 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-014 — Raise all three boss cues to a consistent adrenaline-driven battle floor
-
-- Status: in_progress
-- Owner: AGENT 4
-- Branch: `agent-4/retro-lofi-score`
-- Base: reconciled union at `302619ee95efb9572d1b34dc99c52ed983c92d8a`
-- Dependencies: TD-013 revision-four score; direct human `prompt-change` verdict on all three boss cues
-- Owned files: the three boss Ogg/prompt/source/transcription paths; `assets/music/{catalog.tres,provenance.json,README.md}`; `docs/{plans,handoffs,media}/TD-014*`; MUSIC-1 linkage in `FEATURES.json`; TD-014 rows in `docs/{todo,completed}.md`
-- Do not touch: all three BGM bytes/prompts/sources/transcriptions, runtime playback, SFX, localization, simulation, stages, tests, harness, `scripts/verify.sh`, or thresholds
-- Acceptance: every boss cue starts battle-ready, sustains an epic/adrenaline combat floor without ambient collapse, transforms its paired act/BGM identity, remains original retro console-RPG lo-fi, passes all structural/provenance gates, and remains `placeholder: true`
-- Required evidence: exact pre-generation prompts; three unique 160–180-second cues; empty raw transcriptions; unchanged BGM hashes; objective no-energy-collapse and boss-vs-v4 motion/transient proxies where measurable; focused catalog GUT; frozen and merged-union STANDARD ladders; TD-004 retains final human taste authority
-- Last update: 2026-08-12
-
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
 - Owner: human
 - Branch: N/A until a follow-up agent is assigned to capture the verdict
-- Dependencies: TD-013 revision-four score integrated into `master` and presented for listening
+- Dependencies: TD-013 score and TD-014 revision-five boss candidates integrated into `master` and presented for listening
 - Owned files: none until claimed; candidate paths are `assets/music/README.md` listening checklist, `assets/music/catalog.tres` placeholder flags, `assets/music/provenance.json`, and `FEATURES.json` entry `MUSIC-1`
 - Do not touch: runtime playback/routing, synth SFX, simulation, stage data, `scripts/verify.sh`, tests, or thresholds during listening
 - Acceptance: listen to all six cues and record pass/fail for act identity, BGM/boss pair coherence, I→III descent, two loop-boundary passes, gameplay space, fatigue, audible vocal absence, and originality; review model commercial terms before shipping
