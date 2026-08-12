@@ -1,0 +1,310 @@
+{
+  "schema_version": 1,
+  "package": "AUI-10",
+  "status": "STAGED_IN_AGENT_D_LANE_RUNTIME_UNBOUND",
+  "repository_base_observed": "975261e8e00a20a0b25fe17e7976d743d509c14b",
+  "contract": {
+    "path": "art-src/world/s1/s1-world-asset-contract.json",
+    "sha256": "9b8d67bbed8e0ec94ad48f807c30fed766e74cc50c5f38c80a9e80a89fe5ecf5"
+  },
+  "source_ledger": {
+    "path": "art-src/world/s1/gpt-image-2-source-ledger.json",
+    "sha256": "ab26c64e32a3d640d3569d7e2e314017ac3ee3cc686bb50fd5aa91457c49faf8"
+  },
+  "source_palette_report": {
+    "path": "art-src/world/s1/s1-source-palettes.json",
+    "sha256": "350bcf69b6d4585db52826d74c24a970c32490bdd8c38d69dad3158fd7cde4d6"
+  },
+  "normalizer": {
+    "path": "tools/art_pipeline/world/normalize_s1_world.py",
+    "sha256": "3ff303db2aac77f49ebb8632e0fe445d83bc469df36c4eb7436fbcf93a805c04"
+  },
+  "pipeline": "GPT Image 2 source identity -> deterministic source-palette derivation -> contract-authored native geometry -> hard alpha/native PNGs -> provenance + QA boards",
+  "raw_source_retention": {
+    "raw_rasters": "external owner-approval archive; intentionally excluded from Git to avoid 59 MB of duplicate binary churn",
+    "audit_key": "filename + exact SHA-256 + dimensions + source mode",
+    "regeneration": "use the checked-in prompt contract and approved reference hashes; stochastic source regeneration never overrides an accepted native asset without a new review"
+  },
+  "derived_palette": {
+    "outline": "#242420",
+    "metal_dark": "#31312D",
+    "metal_mid": "#494945",
+    "metal_light": "#666662",
+    "ground_dark": "#6F6454",
+    "ground_mid": "#867B69",
+    "ground_light": "#978D7C",
+    "ground_high": "#A69D8F",
+    "route_dark": "#715734",
+    "route_mid": "#8C704C",
+    "route_light": "#9F8463",
+    "canvas_dark": "#71604F",
+    "canvas_mid": "#958371",
+    "canvas_light": "#A8998A",
+    "timber_dark": "#5D4218",
+    "timber_mid": "#7B5E36",
+    "timber_light": "#967A55",
+    "ceramic_dark": "#5B5449",
+    "ceramic_mid": "#7B7469",
+    "ceramic_light": "#979086",
+    "bronze_dark": "#684B1F",
+    "bronze_mid": "#896A3F",
+    "bronze_light": "#A88962",
+    "water_dark": "#2C2C28",
+    "water_mid": "#474743",
+    "backdrop_void": "#181A1F"
+  },
+  "assets": {
+    "world.s1.ground": {
+      "path": "staging/assets/world/s1/s1-ground.png",
+      "sha256": "1dad2adea323d311f0afb0526a2d9f7195f807055a13842dae07638c1425d7af",
+      "size": [
+        32,
+        16
+      ],
+      "expected_size": [
+        32,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 256,
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.route": {
+      "path": "staging/assets/world/s1/s1-route.png",
+      "sha256": "c852a1ed7de5b81d4890afa7c2b077f354b57c2d0956ff9f29d1c3890c276ecd",
+      "size": [
+        32,
+        16
+      ],
+      "expected_size": [
+        32,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 256,
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.elevated": {
+      "path": "staging/assets/world/s1/s1-elevated.png",
+      "sha256": "e25f601d850f8fb5ae5b32b840415dbad31171731579da430a701b00f36ed43d",
+      "size": [
+        32,
+        24
+      ],
+      "expected_size": [
+        32,
+        24
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 501,
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        24
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.backdrop": {
+      "path": "staging/assets/world/s1/s1-backdrop.png",
+      "sha256": "592b2295edab8ced4958d5e3dff5a09bfd0efef7e2a7bba550591dfaa5f34bb4",
+      "size": [
+        32,
+        16
+      ],
+      "expected_size": [
+        32,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 136,
+      "opaque_bbox": [
+        1,
+        5,
+        32,
+        15
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.spawn_landmark": {
+      "path": "staging/assets/world/s1/s1-spawn-landmark.png",
+      "sha256": "e4172fc2a33d68e063a742b44ae221159762dee74b6a20874395690e73f3a22d",
+      "size": [
+        32,
+        32
+      ],
+      "expected_size": [
+        32,
+        32
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 448,
+      "opaque_bbox": [
+        3,
+        3,
+        32,
+        31
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.core_landmark": {
+      "path": "staging/assets/world/s1/s1-core-landmark.png",
+      "sha256": "805e7ee2f01ba4e8770f27bbfdccf8ffbbcaff90791b849bbf915b93ecdd111b",
+      "size": [
+        32,
+        32
+      ],
+      "expected_size": [
+        32,
+        32
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 547,
+      "opaque_bbox": [
+        4,
+        4,
+        31,
+        31
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.rain_measure": {
+      "path": "staging/assets/world/s1/s1-rain-measure.png",
+      "sha256": "fc8d346c0f129ea912fa216aa9ee53b4c78f32be68ff2cb9a1c771f8a9051dcf",
+      "size": [
+        16,
+        16
+      ],
+      "expected_size": [
+        16,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 100,
+      "opaque_bbox": [
+        2,
+        4,
+        14,
+        15
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    },
+    "world.s1.route_notch": {
+      "path": "staging/assets/world/s1/s1-route-notch.png",
+      "sha256": "b31be5a9a001c8c9662ce017ed7853f9872313204d4567a6f050dfa1bc12f8ba",
+      "size": [
+        32,
+        16
+      ],
+      "expected_size": [
+        32,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "partial_alpha_pixels": 0,
+      "opaque_pixels": 42,
+      "opaque_bbox": [
+        7,
+        4,
+        26,
+        15
+      ],
+      "reserved_exact_pixel_counts": {
+        "#F4F4F4": 0,
+        "#41A6F6": 0
+      },
+      "reserved_color_gate": "PASS"
+    }
+  },
+  "contact_sheet": {
+    "path": "staging/qa/world/s1/s1-world-contact-sheet.png",
+    "sha256": "c613a42cfe3d3f8972e4cbeca10e35ce3595239df7b524f96761c6c18afc7728",
+    "size": [
+      960,
+      440
+    ]
+  },
+  "stage_value_board": {
+    "stage_mock": {
+      "path": "staging/qa/world/s1/s1-stage-mock.png",
+      "sha256": "cbf7ba3ddff8622e7e8760642e28018b35172444fe6265d406f52fb726881bf5"
+    },
+    "surface_mask": {
+      "path": "staging/qa/world/s1/s1-playable-surface-mask.png",
+      "sha256": "eeffca2cd8830a66d234f10b14b9e93e2386143e247ad7c3bb3b55c6cbff2928",
+      "pixel_count_native": 10240
+    },
+    "median_cie_lstar": 52.124,
+    "act_i_lstar_gate": "PASS",
+    "warm_direct_share": 0.667,
+    "warm_direct_target": [
+      0.55,
+      0.7
+    ],
+    "warm_direct_gate": "PASS",
+    "measurement_note": "Concept/staged raster feasibility only; final runtime measurement remains required."
+  },
+  "source_only_rejections": {
+    "s1-backdrop.png": "raw silhouette rejected as false-playable affordance; deterministic non-diamond fragments used",
+    "s1-route-notch.png": "raw full-face/four-arrow silhouette rejected; deterministic exactly-three notch overlay used"
+  },
+  "machine_gate": "PASS",
+  "final_art_acceptance": "UNSET_HUMAN_ONLY",
+  "runtime_binding": "UNBOUND_AGENT_F_SEAM",
+  "writes_owned_staging_only": true
+}

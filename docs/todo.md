@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## AUI-10 — Stage S1 civic-weatherworks world assets
+
+- Status: in_progress
+- Owner: AGENT D
+- Branch: `agent-d/aui-10-s1-world`
+- Base: `master` at `975261e8e00a20a0b25fe17e7976d743d509c14b`
+- Dependencies: none for source/staging/provenance; Agent F owns the later serial runtime manifest/view integration seam
+- Owned files: `art-src/world/s1/**`, `staging/assets/world/s1/**`, `staging/presentation/world/s1/**`, `staging/provenance/world/s1/**`, `staging/qa/world/s1/**`, `tools/art_pipeline/world/**`, `docs/art/world/**`, and `docs/handoffs/AUI-10-agent-d.md`
+- Do not touch: `assets/manifest.tres`, `assets/asset_manifest.gd`, `scripts/view/**`, scenes, stage data, simulation, harness/core APIs, tests, thresholds, `FEATURES.json`, `scripts/verify.sh`, or localization surfaces
+- Acceptance: eight native assets regenerate byte-identically; dimensions, hard alpha, reserved colors, source/provenance coverage, S1 geometry/hash, fail-closed unbound presentation payload, and staged value bands pass; no runtime or human-final claim is inferred
+- Required evidence: `tools/art_pipeline/world/validate_s1_world.py`, two-run idempotency proof, reviewed `staging/qa/world/s1/s1-world-contact-sheet.png` and `s1-stage-mock.png`, routed STANDARD verification, and merged-union verification after integration
+- Last update: 2026-08-12
+
 ## TD-004 — Complete human soundtrack acceptance
 
 - Status: blocked
