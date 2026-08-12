@@ -89,6 +89,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Do not touch: spell damage/cooldown semantics, audio policy, thresholds
 - Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing authoritative combat state
 - Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, and `scripts/verify.sh --full`
+- Last release: 2026-08-12 — Poseidon reassigned AGENT 7 before integration. `agent-7/polish-bolt` remains intentionally unmerged and owns no active files or contracts.
 - Last update: 2026-08-12
 
 ## POLISH-BOSS-HIT — Wire the boss-hit presentation event
