@@ -31,4 +31,4 @@ The feature owner remains accountable through merged-tree verification rather th
 
 ## Verification
 
-The initial application is TD-002 on `agent-2/collaboration-docs`: merge current master into the feature branch, run the branch quality gates, push the branch normally, fast-forward master, run merged-master gates, push master normally, and compare local/remote master SHAs. Any conflict or red gate stops integration; no force-push is permitted as a recovery mechanism.
+The initial application is TD-002 on `agent-2/collaboration-docs`. Policy commit `369d3f82da3b356a265b718f52c6d82ceb557284` first merged current master into the feature branch (already contained; zero conflicts), then passed `xvfb-run -a scripts/verify.sh --full` in 155 seconds: 61 green rungs, 18 headless and 18 windowed scenarios, 11 bots, 11 quality gates, 61 fresh PNGs, and zero pixel skips. All screenshots passed checklist review. Candidate-bound evidence is retained in `docs/media/TD-002-branch-verification.json`. Integration still stops on any conflict or red gate; force-push is never a recovery mechanism.
