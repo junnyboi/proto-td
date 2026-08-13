@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## AUI-20 — Integrated S1 slice and kill-gate verdict
+
+- Status: in_progress
+- Owner: AGENT F (Agent 7)
+- Branch: claim `agent-f/aui-20-claim`; implementation `agent-f/aui-20` only after the independently preflighted package plan is frozen on landed claim master
+- Base: `master` at `38e3123f31188a5bb8b0093bc092940e424e5961` / tree `ea9a4e1b40afd5cf019610586725f5712468b312`
+- Dependencies: AUI-12 closed at approved player candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d`; approved AUI-10R runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9` is an ancestor of this base and its Poseidon receipt has SHA-256 `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`. Poseidon's 2026-08-13 exact-base claim directive makes AUI-11 a separate package; AUI-20 consumes and judges no unlanded Agent E runtime bytes.
+- Owned files: `selftest/scenarios/aetheria_s1_slice.gd*`; `selftest/scenarios/aetheria_s1_slice.gd.contract.json`; `test/test_presentation_s1_slice.gd*`; `tools/presentation_qa/s1_slice_audit.py`; `tools/presentation_qa/test_s1_slice_audit.py`; `scripts/view/battle_view.gd*`; `scripts/view/iso_grid_builder.gd*`; `scripts/ui/battle_controls.gd*`; `scripts/ui/deploy_bar.gd*`; `scripts/ui/spell_bar.gd*`; `scenes/battle.tscn`; `data/presentation/s1_world_theme.tres`; `data/presentation/s1_slice_cues.tres`; `docs/handoffs/AUI-20-agent-f-s1-slice.md`. Shared ledgers are owned only by this claim and the later closure transactions.
+- Do not touch: `assets/world/s1/**`, their manifest/provenance/approval bytes, AUI-12 UI shell/localization bytes, Agent D/E source or staging paths, production Agent E character/VFX runtime paths, simulation/model/hash/save/load/replay/telemetry, `scripts/view/iso_projection.gd*`, gameplay content/balance, bots, audio, `scripts/verify.sh`, human thresholds, or unrelated tests/scenarios.
+- Acceptance: author and freeze an independent package plan before implementation; then run `aetheria_s1_slice` at seed 42 with exact `9000 + 180 = 9180` frame budget, `done()`, zero render skips, and `<30 s` windowed; preserve replay, grid, picking, and display-anchor semantics; pass frozen Act-I value, route/Core, role/facing, cue-edge, primary-action, and `<18%` HUD protocols; pass local Chromium title-to-S1 with empty error arrays and all frozen load/memory/export/p95/p99/light ceilings. Emit `PROCEED` only if every native/Web/full gate passes; `PIVOT` may alter only presentation scale, batching, materials, or cue data; after three distinct documented failed fixes against a hard ceiling, `KILL` only the 192 px source approach and never a check or threshold.
+- Required evidence: plan-lint PASS; focused GUT and Python suites; fresh headless/windowed `aetheria_s1_slice` reports and exact-candidate images; code-blind recognition ballots; local-browser performance report; unchanged `scripts/verify.sh --full`; two-process normalized replay equality; independent non-implementer diff-vs-pins/evidence audit; inline fresh exact-candidate review captures and Poseidon milestone verdict before landing; guarded exact-union landing and docs-only closure.
+- Last update: 2026-08-13
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
