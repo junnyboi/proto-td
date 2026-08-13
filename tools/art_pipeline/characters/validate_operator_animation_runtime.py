@@ -20,6 +20,7 @@ EXPECTED_CLASSES = {
 EXPECTED_STATES = {"idle": 24, "attack": 13}
 EXPECTED_DIRECTIONS = {"se", "ne", "nw", "sw"}
 EXPECTED_CELL = (192, 192)
+EXPECTED_PIVOT = (0.5, 0.94)
 EXPECTED_PLACEHOLDERS = {
     ("sniper_2", "attack", "ne"): "se",
     ("sniper_2", "attack", "nw"): "sw",
@@ -37,6 +38,8 @@ def validate(repo: Path) -> None:
         raise ValueError("operator animation provenance schema mismatch")
     if tuple(document.get("runtime_cell", [])) != EXPECTED_CELL:
         raise ValueError("operator animation runtime cell mismatch")
+    if tuple(document.get("pivot", [])) != EXPECTED_PIVOT:
+        raise ValueError("operator animation runtime pivot mismatch")
     classes = document.get("classes")
     if not isinstance(classes, list):
         raise ValueError("operator animation class list missing")

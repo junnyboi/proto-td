@@ -15,16 +15,17 @@ func test_idle_loops_twenty_four_frames_at_twelve_fps() -> void:
 	assert_eq(OperatorAnimator.idle_frame(24.0 / 12.0), 0)
 
 
-func test_attack_age_mapping_matches_the_pinned_thirty_tick_window() -> void:
+func test_attack_age_mapping_is_twelve_fps_on_thirty_hz_ticks() -> void:
 	var expected: Array[int] = [
-		0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6,
-		6, 7, 7, 8, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12,
+		0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6,
+		6, 7, 7, 8, 8, 8, 9, 9, 10, 10, 10, 11, 11, 12, 12, 12,
 	]
-	assert_eq(OperatorAnimator.attack_frame(0), 0)
-	for age: int in range(1, 30):
-		assert_true(OperatorAnimator.attack_active(age), "age=%d" % age)
-		assert_eq(OperatorAnimator.attack_frame(age), expected[age - 1], "age=%d" % age)
-	assert_false(OperatorAnimator.attack_active(30))
+	assert_eq(OperatorAnimator.attack_window_ticks(13, 12.0), 34)
+	assert_eq(OperatorAnimator.attack_frame(0, 13, 12.0), 0)
+	for age: int in range(1, 34):
+		assert_true(OperatorAnimator.attack_active(age, 13, 12.0), "age=%d" % age)
+		assert_eq(OperatorAnimator.attack_frame(age, 13, 12.0), expected[age - 1], "age=%d" % age)
+	assert_false(OperatorAnimator.attack_active(34, 13, 12.0))
 
 
 func test_selection_reads_but_does_not_mutate_unit_state() -> void:
@@ -76,3 +77,6 @@ func test_runtime_body_sizes_preserve_pinned_relative_heights() -> void:
 	var defender := OperatorVisualCatalog.get_animation(&"defender_1")
 	var banner_guard := OperatorVisualCatalog.get_animation(&"vanguard_2")
 	assert_lt(OperatorAnimator.body_size(defender).y, OperatorAnimator.body_size(banner_guard).y)
+	var caster := OperatorVisualCatalog.get_animation(&"caster_1")
+	assert_eq(caster.normalized_subject_height_px, 158)
+	assert_almost_eq(OperatorAnimator.body_size(caster).y, 192.0 * 64.0 / 158.0, 0.0001)

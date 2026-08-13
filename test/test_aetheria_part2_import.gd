@@ -26,6 +26,7 @@ func test_source_inventory_and_placeholder_set_are_exact() -> void:
 func test_runtime_catalog_preserves_source_hashes_and_pinned_sampling() -> void:
 	var source := _load_json(SOURCE_PATH)
 	var runtime := _load_json(RUNTIME_PATH)
+	assert_eq(runtime.get("pivot"), [0.5, 0.94])
 	var source_by_key: Dictionary = {}
 	for raw_row: Variant in source.get("assets", []):
 		var row := raw_row as Dictionary
@@ -37,6 +38,11 @@ func test_runtime_catalog_preserves_source_hashes_and_pinned_sampling() -> void:
 	for hero: String in HEROES:
 		assert_true(runtime_by_id.has(hero), hero)
 		var class_row := runtime_by_id[hero] as Dictionary
+		assert_eq(class_row["normalized_subject_height_px"], 158)
+		assert_eq(
+			OperatorVisualCatalog.get_animation(StringName(hero)).normalized_subject_height_px,
+			158,
+		)
 		for state: String in ["idle", "attack"]:
 			var source_state := "idle" if state == "idle" else "attacking"
 			var expected_frames := PackedInt32Array(

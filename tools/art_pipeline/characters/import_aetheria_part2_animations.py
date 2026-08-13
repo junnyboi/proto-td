@@ -296,6 +296,7 @@ def build_compact_document(
             "manifest_sha256": source_manifest_sha,
         }
     ]
+    current["pivot"] = [PIVOT[0], PIVOT[1]]
     return current
 
 

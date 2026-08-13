@@ -17,7 +17,7 @@ static func _load_manifests() -> void:
 	if (_manifest != null and _supplemental_manifest != null) or _manifest_error:
 		return
 	_manifest = load("res://assets/manifest.tres") as AssetManifest
-	_supplemental_manifest = load("res://assets/act2_candidate_manifest.tres") as AssetManifest
+	_supplemental_manifest = load("res://assets/act1_shared_manifest.tres") as AssetManifest
 	if _manifest == null or _supplemental_manifest == null:
 		_manifest_error = true
 		push_error("Art: failed to load base or supplemental asset manifest")
@@ -31,7 +31,9 @@ static func _load_manifests() -> void:
 
 
 ## Pure test seam: base owns precedence, but overlap fails closed rather than shadowing.
-static func merge_manifest_entries(base_entries: Dictionary, supplemental_entries: Dictionary) -> Dictionary:
+static func merge_manifest_entries(
+	base_entries: Dictionary, supplemental_entries: Dictionary
+) -> Dictionary:
 	var entries := base_entries.duplicate(true)
 	for raw_id: Variant in supplemental_entries:
 		if entries.has(raw_id):

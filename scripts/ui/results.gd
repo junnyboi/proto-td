@@ -37,27 +37,24 @@ func _ready() -> void:
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "ResultsScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_shell.content_host().add_child(scroll)
+	var scroll_content := _shell.add_dialog_scroll(scroll)
 
 	var column := VBoxContainer.new()
 	column.name = "ResultsColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 14)
-	scroll.add_child(column)
+	scroll_content.add_child(column)
 	column.add_child(_label(
 		"Headline",
-		UiCopyType.text(
-			&"ui.results.clear" if cleared else &"ui.results.defeat",
-			"CLEAR" if cleared else "DEFEAT",
-		),
-		&"title",
-	))
+			UiCopyType.text(
+				&"ui.results.clear" if cleared else &"ui.results.defeat",
+				"CLEAR" if cleared else "DEFEAT",
+			),
+			&"heading",
+		))
 	if cleared:
 		column.add_child(_label(
-			"StarLine", "*".repeat(int(result.get("stars", 0))), &"title",
+			"StarLine", "*".repeat(int(result.get("stars", 0))), &"dense_heading",
 		))
 	column.add_child(_label(
 		"TallyLine",
@@ -65,30 +62,30 @@ func _ready() -> void:
 			&"ui.results.tally", "kills {kills}   leaks {leaks}",
 			{
 				&"kills": int(result.get("kills", 0)),
-				&"leaks": int(result.get("leaks", 0)),
-			},
-		),
-		&"body",
-	))
+					&"leaks": int(result.get("leaks", 0)),
+				},
+			),
+			&"dense_body",
+		))
 	var granted: Array = result.get("rewards_granted", [])
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
 		var reward_name := _reward_name(reward)
 		column.add_child(_label(
 			"Reward%d" % i,
-			UiCopyType.format_text(
-				&"ui.results.reward", "Unlocked: {name}", {&"name": reward_name},
-			),
-			&"body",
-		))
+				UiCopyType.format_text(
+					&"ui.results.reward", "Unlocked: {name}", {&"name": reward_name},
+				),
+				&"dense_body",
+			))
 
 	var stage_id := StringName(result.get("stage_id", &""))
 	var record: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id) if not String(stage_id).is_empty() else null
-	column.add_child(_label("ConsequenceHeading", UiCopyType.text(&"ui.results.consequence", "Consequence"), &"heading"))
+	column.add_child(_label("ConsequenceHeading", UiCopyType.text(&"ui.results.consequence", "Consequence"), &"dense_heading"))
 	var consequence := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
 	if record != null:
 		consequence = UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.CLEAR_DEBRIEF if cleared else StageNarrativeDefType.Field.DEFEAT_DEBRIEF)
-	var consequence_line := _label("ConsequenceLine", consequence, &"body")
+	var consequence_line := _label("ConsequenceLine", consequence, &"dense_body")
 	column.add_child(consequence_line)
 
 	_actions = GridContainer.new()

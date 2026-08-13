@@ -15,8 +15,7 @@ enum Phase {
 
 const MAX_PHASE_FRAMES := 180
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
-const NARRATIVE_CATALOG_PATH := \
-	"res://data/presentation/narrative/stage_narrative_catalog.tres"
+const NARRATIVE_CATALOG_PATH := "res://data/presentation/narrative/stage_narrative_catalog.tres"
 const S1_RECORD_PATH := "res://data/presentation/narrative/stages/s1.tres"
 const S1_OBJECTIVE := (
 	"Hold the Hearthcross water-works line while investigators trace "
@@ -25,8 +24,7 @@ const S1_OBJECTIVE := (
 const S1_THREAT := "Road-clearing Grunts treat people and barricades as blockages."
 const S1_HUMAN_REASON := "The town's pumps feed homes, shelters, and fields."
 const S1_CLUE := (
-	"Every attacking machine carries a two-hundred-year-old Great Flare "
-	+ "evacuation mark."
+	"Every attacking machine carries a two-hundred-year-old Great Flare " + "evacuation mark."
 )
 const S1_CLEAR_DEBRIEF := (
 	"Holding the line gives investigators time to recover a damaged evacuation seal. "
@@ -87,10 +85,6 @@ const REQUIRED_S2_GRID_NODES := [
 	"BackdropPanorama",
 	"SpawnLandmark",
 	"CoreLandmark",
-	"Cadence_2_2",
-	"Cadence_4_2",
-	"Cadence_6_2",
-	"Cadence_8_2",
 ]
 const REQUIRED_S3_GRID_NODES := [
 	"Tile_0_2",
@@ -101,10 +95,6 @@ const REQUIRED_S3_GRID_NODES := [
 	"BackdropPanorama",
 	"SpawnLandmark",
 	"CoreLandmark",
-	"Cadence_2_2",
-	"Cadence_4_2",
-	"Cadence_4_4",
-	"Cadence_7_4",
 ]
 const S1_RECORD_COPY := {
 	"objective": S1_OBJECTIVE,
@@ -122,13 +112,13 @@ const S1_UI_COPY := {
 	"BriefingClue": "Field note — %s" % S1_CLUE,
 	"ConsequenceLine": S1_CLEAR_DEBRIEF,
 }
-const EXPECTED_S2_CHILDREN := 59
+const EXPECTED_S2_CHILDREN := 55
 const EXPECTED_S2_TILES := 50
 const EXPECTED_S2_SHADES := 2
-const EXPECTED_S3_CHILDREN := 68
+const EXPECTED_S3_CHILDREN := 64
 const EXPECTED_S3_TILES := 60
 const EXPECTED_S3_SHADES := 1
-const EXPECTED_CADENCE := 4
+const EXPECTED_CADENCE := 0
 
 var _frames := 0
 var _phase := Phase.TITLE
@@ -233,19 +223,28 @@ func _try_s1_squad() -> void:
 	if content == null:
 		return
 	for node_name: String in [
-		"BriefingObjective", "BriefingThreat", "BriefingHumanReason", "BriefingClue",
+		"BriefingObjective",
+		"BriefingThreat",
+		"BriefingHumanReason",
+		"BriefingClue",
 	]:
 		if not _assert_text(content, node_name, String(S1_UI_COPY[node_name])):
 			return
 	_set_phase(Phase.S1_RESULTS)
-	_game.set("last_result", {
-		"stage_id": &"s1",
-		"result": 1,
-		"stars": 3,
-		"leaks": 0,
-		"kills": 12,
-		"rewards_granted": [],
-	})
+	(
+		_game
+		. set(
+			"last_result",
+			{
+				"stage_id": &"s1",
+				"result": 1,
+				"stars": 3,
+				"leaks": 0,
+				"kills": 12,
+				"rewards_granted": [],
+			}
+		)
+	)
 	_game.call("open_results")
 
 
@@ -274,9 +273,7 @@ func _try_s2_grid() -> void:
 	if grid == null or not _grid_has(grid, REQUIRED_S2_GRID_NODES):
 		return
 	var counts := _grid_counts(grid)
-	if not _counts_match(
-		counts, EXPECTED_S2_CHILDREN, EXPECTED_S2_TILES, EXPECTED_S2_SHADES
-	):
+	if not _counts_match(counts, EXPECTED_S2_CHILDREN, EXPECTED_S2_TILES, EXPECTED_S2_SHADES):
 		_fail("S2 grid count mismatch: %s" % counts)
 		return
 	_set_phase(Phase.S3_GRID)
@@ -288,16 +285,18 @@ func _try_s3_grid() -> void:
 	if grid == null or not _grid_has(grid, REQUIRED_S3_GRID_NODES):
 		return
 	var counts := _grid_counts(grid)
-	if not _counts_match(
-		counts, EXPECTED_S3_CHILDREN, EXPECTED_S3_TILES, EXPECTED_S3_SHADES
-	):
+	if not _counts_match(counts, EXPECTED_S3_CHILDREN, EXPECTED_S3_TILES, EXPECTED_S3_SHADES):
 		_fail("S3 grid count mismatch: %s" % counts)
 		return
 	print(
-		"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
-		+ "s1_squad=ready s1_results=ready s1=ready "
-		+ "s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
-		% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]
+		(
+			"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
+			+ "s1_squad=ready s1_results=ready s1=ready "
+			+ (
+				"s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
+				% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]
+			)
+		)
 	)
 	quit(0)
 
@@ -374,8 +373,10 @@ func _assert_text(content: Node, node_name: String, expected: String) -> bool:
 		return false
 	if String(node.get("text")) != expected:
 		_fail(
-			"%s copy mismatch: expected=%s actual=%s"
-			% [node_name, expected, String(node.get("text"))]
+			(
+				"%s copy mismatch: expected=%s actual=%s"
+				% [node_name, expected, String(node.get("text"))]
+			)
 		)
 		return false
 	return true
@@ -408,7 +409,10 @@ func _grid_counts(grid: Node2D) -> Dictionary:
 
 
 func _counts_match(
-		counts: Dictionary, expected_children: int, expected_tiles: int, expected_shades: int,
+	counts: Dictionary,
+	expected_children: int,
+	expected_tiles: int,
+	expected_shades: int,
 ) -> bool:
 	return (
 		int(counts["children"]) == expected_children
