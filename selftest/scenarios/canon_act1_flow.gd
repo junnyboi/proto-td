@@ -213,10 +213,10 @@ func _inspect_staging(h: SelfTestHarness, staging: Control, viewport: Vector2i, 
 	h.check("Company 33 visible", heading != null and heading.text.to_lower().contains("company 33"))
 	h.check("Staging canon terms visible", body != null and body.text.contains("Hearthcross") and body.text.contains("Great Flare") and body.text.contains("Custodian"))
 	h.check("Staging S1 next title", title != null and title.text == "NEXT 1: First Stand")
-	h.check("Staging dense heading exact", heading != null and heading.get_theme_font_size(&"font_size") == 32)
-	h.check("Staging dense body exact", body != null and body.get_theme_font_size(&"font_size") == 32)
-	h.check("Staging next title exact", title != null and title.get_theme_font_size(&"font_size") == 32)
-	h.check("Staging objective exact", objective != null and objective.get_theme_font_size(&"font_size") == 32)
+	h.check("Staging dense heading exact", heading != null and heading.get_theme_font_size(&"font_size") == 34)
+	h.check("Staging dense body exact", body != null and body.get_theme_font_size(&"font_size") == 34)
+	h.check("Staging next title exact", title != null and title.get_theme_font_size(&"font_size") == 34)
+	h.check("Staging objective exact", objective != null and objective.get_theme_font_size(&"font_size") == 34)
 	for node: Control in [heading, body, title, objective]:
 		_check_rect(h, node, scroll, "%s %s" % [shot, node.name if node != null else "missing"])
 	await _shot(h, shot, viewport)
@@ -234,11 +234,11 @@ func _check_squad_semantics(h: SelfTestHarness, squad: Control, stage_id: String
 		var label := _find(squad, specification[0]) as Label
 		var expected := UiCopyType.stage_narrative_text(record, specification[1])
 		h.check("%s %s full copy" % [stage_id, specification[0]], label != null and label.text.ends_with(expected), label.text if label != null else "missing")
-		h.check("%s %s dense font exact" % [stage_id, specification[0]], label != null and label.get_theme_font_size(&"font_size") == 32)
+		h.check("%s %s dense font exact" % [stage_id, specification[0]], label != null and label.get_theme_font_size(&"font_size") == 34)
 	var hint := _find(squad, "TacticalHint") as Label
 	var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 	h.check("%s full tactical hint" % stage_id, hint != null and hint.text.ends_with(UiCopyType.stage_hint(stage)))
-	h.check("%s tactical hint dense font exact" % stage_id, hint != null and hint.get_theme_font_size(&"font_size") == 32)
+	h.check("%s tactical hint dense font exact" % stage_id, hint != null and hint.get_theme_font_size(&"font_size") == 34)
 
 
 func _inspect_squad_geometry(h: SelfTestHarness, squad: Control, viewport: Vector2i, shot: String) -> void:
@@ -248,7 +248,7 @@ func _inspect_squad_geometry(h: SelfTestHarness, squad: Control, viewport: Vecto
 	var grid := _find(squad, "OperatorGrid") as Control
 	var start := _find(squad, "StartBattle") as Control
 	var heading := _find(squad, "SquadHeading") as Label
-	h.check("%s squad heading dense font exact" % shot, heading != null and heading.get_theme_font_size(&"font_size") == 32)
+	h.check("%s squad heading dense font exact" % shot, heading != null and heading.get_theme_font_size(&"font_size") == 34)
 	for node_name: String in ["BriefingObjective", "BriefingThreat", "BriefingHumanReason", "BriefingClue", "TacticalHint"]:
 		var node := _find(squad, node_name) as Control
 		_check_rect(h, node, scroll, "%s %s" % [shot, node_name])
@@ -264,7 +264,7 @@ func _check_result_semantics(h: SelfTestHarness, results: Control, stage_id: Str
 	var field := StageNarrativeDefType.Field.CLEAR_DEBRIEF if clear else StageNarrativeDefType.Field.DEFEAT_DEBRIEF
 	var consequence := _find(results, "ConsequenceLine") as Label
 	h.check("%s exact %s consequence" % [stage_id, "clear" if clear else "defeat"], consequence != null and consequence.text == UiCopyType.stage_narrative_text(record, field), consequence.text if consequence != null else "missing")
-	h.check("%s consequence dense font exact" % stage_id, consequence != null and consequence.get_theme_font_size(&"font_size") == 32)
+	h.check("%s consequence dense font exact" % stage_id, consequence != null and consequence.get_theme_font_size(&"font_size") == 34)
 	for action_name: String in ["RetryButton", "ReturnToStaging", "BackToTitle"]:
 		var action := _find(results, action_name) as Button
 		h.check("post-battle %s remains enabled" % action_name, action != null and not action.disabled)
@@ -277,7 +277,7 @@ func _inspect_results_geometry(h: SelfTestHarness, results: Control, shot: Strin
 	var heading := _find(results, "ConsequenceHeading") as Label
 	var line := _find(results, "ConsequenceLine") as Label
 	var actions := _find(results, "ActionRow") as Control
-	h.check("%s consequence heading dense font exact" % shot, heading != null and heading.get_theme_font_size(&"font_size") == 32)
+	h.check("%s consequence heading dense font exact" % shot, heading != null and heading.get_theme_font_size(&"font_size") == 34)
 	if scroll != null and line != null:
 		scroll.ensure_control_visible(line)
 		await h.frames(3)

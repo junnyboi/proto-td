@@ -818,17 +818,17 @@
       },
       "AuiDenseHeadingLabel": {
         "base": "Label",
-        "font_size": 32,
+        "font_size": 34,
         "font_color": "primary"
       },
       "AuiDenseBodyLabel": {
         "base": "Label",
-        "font_size": 32,
+        "font_size": 34,
         "font_color": "body"
       },
       "AuiDenseDetailLabel": {
         "base": "Label",
-        "font_size": 32,
+        "font_size": 34,
         "font_color": "muted"
       },
       "AuiLocaleLabel": {

@@ -36,8 +36,8 @@ const TEXT_COLOR_FLOOR := 0.10
 const BASE_FONT_SIZES := {
 	&"AuiTitleLabel": 64, &"AuiHeadingLabel": 48,
 	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44,
-	&"AuiDenseHeadingLabel": 32, &"AuiDenseBodyLabel": 32,
-	&"AuiDenseDetailLabel": 32,
+	&"AuiDenseHeadingLabel": 34, &"AuiDenseBodyLabel": 34,
+	&"AuiDenseDetailLabel": 34,
 	&"AuiLocaleLabel": 44, &"AuiLocaleList": 44,
 	&"AuiPrimaryButton": 44, &"AuiSecondaryButton": 44,
 	&"AuiSelectedButton": 44, &"AuiDestructiveButton": 44,
@@ -133,11 +133,16 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	var grid := GridContainer.new()
 	grid.name = "ProbeGrid"
 	grid.columns = 4
-	grid.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 32)
+	grid.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	grid.offset_left = 32.0
+	grid.offset_top = 32.0
+	grid.offset_right = -32.0
+	grid.offset_bottom = -32.0
 	grid.add_theme_constant_override(&"h_separation", 12)
 	grid.add_theme_constant_override(&"v_separation", 8)
 	fixture.add_child(grid)
 	var probes: Array[Dictionary] = []
+	var probe_size := Vector2(280.0, 120.0)
 	for role: StringName in [
 		&"title", &"heading", &"body", &"detail", &"dense_heading", &"dense_body",
 		&"dense_detail", &"locale", &"class_badge",
@@ -145,9 +150,9 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	]:
 		var label := AetheriaLabel.new()
 		label.name = "%sProbe" % String(role).to_pascal_case()
-		label.text = "Mg %s" % String(role).capitalize()
+		label.text = "Mg %s" % String(role).left(4).capitalize()
 		label.apply_role(role)
-		label.custom_minimum_size = Vector2(280.0, 112.0)
+		label.custom_minimum_size = probe_size
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		grid.add_child(label)
@@ -155,26 +160,32 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	for role: StringName in [&"primary", &"secondary", &"selected", &"destructive", &"disabled"]:
 		var button := AetheriaButton.new()
 		button.name = "%sButtonProbe" % String(role).to_pascal_case()
-		button.text = "Mg %s" % String(role).capitalize()
+		button.text = "Mg %s" % String(role).left(4).capitalize()
 		button.apply_role(role)
-		button.custom_minimum_size = Vector2(280.0, 112.0)
+		button.custom_minimum_size = probe_size
 		grid.add_child(button)
 		probes.append({"control": button, "item": &"font_color"})
 	var item_list := ItemList.new()
 	item_list.name = "LocaleListProbe"
 	item_list.theme_type_variation = &"AuiLocaleList"
-	item_list.custom_minimum_size = Vector2(280.0, 112.0)
-	item_list.add_item("Mg Locale")
+	item_list.custom_minimum_size = probe_size
+	item_list.add_item("Mg List")
 	item_list.select(0)
 	grid.add_child(item_list)
 	probes.append({"control": item_list, "item": &"font_selected_color"})
 	await h.frames(4)
 	var image := await h.shot_grab("text_style_probes")
 	if image != null:
+		var image_rect := Rect2(Vector2.ZERO, Vector2(image.get_size()))
 		for probe: Dictionary in probes:
 			var control := probe["control"] as Control
 			var item := probe["item"] as StringName
 			var color := control.get_theme_color(item)
+			h.check(
+				"text style probe in frame %s" % control.name,
+				image_rect.encloses(control.get_global_rect()),
+				"control=%s image=%s" % [control.get_global_rect(), image_rect],
+			)
 			var height := _rendered_text_height(image, control.get_global_rect(), color)
 			h.check(
 				"rendered glyph floor %s" % control.name,
@@ -339,14 +350,14 @@ func _check_responsive_shell(
 			var scaled_size := roundi(
 				float(label.get_theme_font_size(&"font_size")) * shell.content_scale(),
 			)
-			if label.theme_type_variation != expected_variation or scaled_size != 48:
+			if label.theme_type_variation != expected_variation or scaled_size != 51:
 				mismatches.append("%s:%s/%d" % [
 					selector, label.theme_type_variation, scaled_size,
 				])
 		h.check(
 			"%s large viewport flavor typography" % screen,
 			mismatches.is_empty(),
-			"mismatches=" + str(mismatches) + " expected_size=48",
+			"mismatches=" + str(mismatches) + " expected_size=51",
 		)
 	if screen == &"results" and viewport == Vector2i(1920, 1080):
 		var actions := content.find_child("ActionRow", true, false) as GridContainer
@@ -362,6 +373,47 @@ func _check_responsive_shell(
 			"results large viewport actions expand horizontally",
 			all_expand and measured_widths.size() == 3,
 			"widths=" + str(measured_widths),
+		)
+	if screen != &"title":
+		_check_dialog_scrollbar_gutter(h, content, shell, screen, viewport)
+
+
+func _check_dialog_scrollbar_gutter(
+		h: SelfTestHarness, content: Control, shell: AetheriaScreenShell,
+		screen: StringName, viewport: Vector2i,
+		) -> void:
+	var scroll: ScrollContainer = null
+	for node: Node in _all_nodes(content):
+		if node is ScrollContainer:
+			scroll = node as ScrollContainer
+			break
+	h.check(
+		"%s %s dialog scroll exists" % [screen, viewport], scroll != null,
+	)
+	if scroll == null:
+		return
+	var gutter := scroll.get_child(0) as MarginContainer
+	var body := gutter.get_child(0) as Control
+	var bar := scroll.get_v_scroll_bar()
+	var panel_right := shell.reading_plate().get_global_rect().end.x
+	var scroll_right := scroll.get_global_rect().end.x
+	h.check(
+		"%s %s scrollbar reaches dialog right edge" % [screen, viewport],
+		absf(scroll_right - panel_right) <= 0.5,
+		"scroll_right=%.2f panel_right=%.2f" % [scroll_right, panel_right],
+	)
+	if bar.visible:
+		var bar_rect := bar.get_global_rect()
+		var text_gap := bar_rect.position.x - body.get_global_rect().end.x
+		h.check(
+			"%s %s visible scrollbar at dialog right edge" % [screen, viewport],
+			absf(bar_rect.end.x - panel_right) <= 0.5,
+			"bar=%s panel_right=%.2f" % [bar_rect, panel_right],
+		)
+		h.check(
+			"%s %s scrollbar clears dialog content" % [screen, viewport],
+			text_gap >= 35.0 * shell.content_scale(),
+			"gap=%.2f scale=%.2f" % [text_gap, shell.content_scale()],
 		)
 
 
