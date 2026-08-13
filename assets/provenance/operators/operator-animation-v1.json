@@ -14,9 +14,14 @@
   },
   "classes": [
     {
-      "attack_to_idle_alpha_area_ratio": 1.2344779903203502,
-      "attack_to_idle_height_ratio": 1.2133333333333334,
+      "attack_to_idle_alpha_area_ratio": 1.2599772874756652,
+      "attack_to_idle_height_ratio": 1.226890756302521,
       "canon_class": "Defender",
+      "direction_scale_adjustments": {
+        "idle": {
+          "nw": 0.7228915662650602
+        }
+      },
       "display_height_px": 69,
       "families": {
         "attack": {
@@ -168,10 +173,10 @@
             "binary_alpha": true,
             "border_clear": true,
             "frame_count": 24,
-            "max_opaque_pixels": 11965,
-            "min_opaque_pixels": 11644,
+            "max_opaque_pixels": 6266,
+            "min_opaque_pixels": 6111,
             "path": "res://assets/sprites/operators/animated/defender_1/idle_nw.png",
-            "rgba_sha256": "bafc79b415c453cac59bdbad7784d584c71e5969b9fe3721a0a1509ccf4d9b8b",
+            "rgba_sha256": "6c62a945d20bebd3d9fac719530c860bb31cf7cfbb8320927c71bd6571bdaa89",
             "selected_source_frames": [
               0,
               1,
@@ -198,7 +203,7 @@
               22,
               23
             ],
-            "sha256": "30dae575c08a7a1271a0c1139c0942e348efc0958512f6c63aaa9b60d681bb9a"
+            "sha256": "6162a0600872607dd5b3daca75a9183f97f973f144fdafd8673125421e335821"
           },
           "se": {
             "asset_id": "operator_anim_defender_1_idle_se",
@@ -280,12 +285,12 @@
       "normalized_subject_height_px": 168,
       "state_geometry": {
         "attack": {
-          "median_alpha_area_px": 13391.0,
-          "median_height_px": 182.0
+          "median_alpha_area_px": 7766.5,
+          "median_height_px": 146.0
         },
         "idle": {
-          "median_alpha_area_px": 10847.5,
-          "median_height_px": 150.0
+          "median_alpha_area_px": 6164.0,
+          "median_height_px": 119.0
         }
       },
       "template_id": "defender_1"

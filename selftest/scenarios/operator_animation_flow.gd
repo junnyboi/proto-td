@@ -53,6 +53,9 @@ func run(h: SelfTestHarness) -> void:
 			_check_body(h, view, unit, &"idle")
 	if units.size() != 2:
 		return
+	# Presentation transients age in render frames. Let the Wave 1 banner clear
+	# before capturing operator feedback while the deterministic model is frozen.
+	await h.frames(60)
 	await h.shot("operator_animation_idle")
 
 	var budget := 600
@@ -125,7 +128,7 @@ func _placement(
 	occupied: Dictionary,
 ) -> Dictionary:
 	var size := stage.grid_size()
-	for y: int in size.y:
+	for y: int in range(size.y - 1, -1, -1):
 		for x: int in size.x:
 			var cell := Vector2i(x, y)
 			if occupied.has(cell) or not stage.operator_cell_in_domain(definition, cell):
