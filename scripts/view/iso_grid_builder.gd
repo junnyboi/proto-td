@@ -104,13 +104,16 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var art_id := StringName(resolved["tile_id"])
 			if art_id == &"":
 				art_id = &"tile_road" if is_road else TILE_ART[tile]
-			if not _add_tile_sprite(grid_root, stage, cell, art_id, lifted):
+			var surface_modulate := theme.surface_modulate if theme != null else Color.WHITE
+			if not _add_tile_sprite(
+				grid_root, stage, cell, art_id, lifted, surface_modulate
+			):
 				var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
 				if lifted:
 					_add_tile_walls(grid_root, stage, cell, color)
 				var poly := Polygon2D.new()
 				poly.name = "Tile_%d_%d" % [x, y]
-				poly.color = color
+				poly.color = color * surface_modulate
 				poly.polygon = IsoProjection.cell_polygon(cell, lifted)
 				poly.z_index = IsoProjection.tile_z(cell)
 				grid_root.add_child(poly)
@@ -224,7 +227,12 @@ static func _backdrop_art_id(
 ## is the face plus optional baked wall rows below, drawn at the pinned 2x).
 ## Returns false when the id has no art — the flat-color fallback lane runs.
 static func _add_tile_sprite(
-	grid_root: Node2D, stage: StageDef, cell: Vector2i, art_id: StringName, lifted: bool
+	grid_root: Node2D,
+	stage: StageDef,
+	cell: Vector2i,
+	art_id: StringName,
+	lifted: bool,
+	surface_modulate: Color,
 ) -> bool:
 	var tex := Art.texture(art_id)
 	if tex == null:
@@ -234,6 +242,7 @@ static func _add_tile_sprite(
 	sprite.name = "Tile_%d_%d" % [cell.x, cell.y]
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = tex
+	sprite.self_modulate = surface_modulate
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
 	var art_size := Art.size(art_id)
 	if art_size == Vector2i.ZERO:

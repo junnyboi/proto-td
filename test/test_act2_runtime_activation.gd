@@ -105,8 +105,18 @@ func test_battle_view_preflight_remains_before_catalogs_and_factory() -> void:
 	var resolve_pos := source.find("theme_resolver.call(stage)", ready_pos)
 	var catalog_pos := source.find('_load_catalog("res://data/operators"', ready_pos)
 	var create_pos := source.find("model_factory.call(", ready_pos)
-	assert_gte(source.find('const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")'), 0)
-	assert_gte(source.find('const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")'), 0)
+	assert_gte(
+		source.find(
+			'const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")'
+		),
+		0,
+	)
+	assert_gte(
+		source.find(
+			'const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")'
+		),
+		0,
+	)
 	assert_gt(resolve_pos, ready_pos)
 	assert_gt(catalog_pos, resolve_pos)
 	assert_gt(create_pos, catalog_pos)
@@ -116,6 +126,30 @@ func test_battle_view_preflight_remains_before_catalogs_and_factory() -> void:
 func test_real_act2_themes_render_exact_runtime_inventories() -> void:
 	_check_stage(s2, s2_theme, 59)
 	_check_stage(s3, s3_theme, 68)
+
+
+func test_act2_surface_modulation_is_pinned_and_fail_closed() -> void:
+	for spec: Array in [[s2, s2_theme], [s3, s3_theme]]:
+		var stage: StageDef = spec[0]
+		var theme: StageArtTheme = spec[1]
+		assert_eq(theme.surface_modulate, StageArtTheme.ACT2_SURFACE_MODULATE)
+		var root := _build(stage, theme)
+		for child: Node in root.get_children():
+			if child.name.begins_with("Tile_") and child is CanvasItem:
+				assert_eq(
+					(child as CanvasItem).self_modulate,
+					StageArtTheme.ACT2_SURFACE_MODULATE,
+					"%s has exact surface modulation" % child.name,
+				)
+		root.free()
+
+	var invalid := s2_theme.duplicate(true) as StageArtTheme
+	invalid.surface_modulate = Color.WHITE
+	assert_true(
+		invalid.validation_errors(s2).has(
+			"Act II surface modulation does not match the measured H1 calibration"
+		)
+	)
 
 
 func test_s2_exact_variants_cadence_and_endpoints() -> void:
@@ -188,7 +222,10 @@ func _check_stage(stage: StageDef, theme: StageArtTheme, expected_count: int) ->
 	assert_eq(panorama.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	for y: int in stage.grid_size().y:
 		for x: int in stage.grid_size().x:
-			assert_not_null(root.get_node_or_null("Tile_%d_%d" % [x, y]))
+			var tile := root.get_node_or_null("Tile_%d_%d" % [x, y]) as CanvasItem
+			assert_not_null(tile)
+			if tile != null:
+				assert_eq(tile.self_modulate, theme.surface_modulate)
 	root.free()
 
 
@@ -202,14 +239,30 @@ func _check_overlay(root: Node2D, cell: Vector2i, id: StringName) -> void:
 
 
 func _check_endpoints(root: Node2D, stage: StageDef, theme: StageArtTheme) -> void:
-	for spec: Array in [["SpawnLandmark", theme.spawn_cell, theme.spawn_landmark_id, theme.spawn_pivot, theme.spawn_offset], ["CoreLandmark", theme.core_cell, theme.core_landmark_id, theme.core_pivot, theme.core_offset]]:
+	var specs: Array = [
+		[
+			"SpawnLandmark", theme.spawn_cell, theme.spawn_landmark_id,
+			theme.spawn_pivot, theme.spawn_offset,
+		],
+		[
+			"CoreLandmark", theme.core_cell, theme.core_landmark_id,
+			theme.core_pivot, theme.core_offset,
+		],
+	]
+	for spec: Array in specs:
 		var node := root.get_node_or_null(spec[0]) as TextureRect
 		assert_not_null(node)
 		if node != null:
 			assert_eq(node.texture, Art.texture(spec[2]))
 			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE)
-			var center := IsoProjection.face_center(spec[1], stage.tile_at(spec[1]) == StageDef.Tile.ELEVATED)
-			assert_eq(node.position, center - Vector2(spec[3]) * IsoGridBuilder.SPRITE_SCALE + Vector2(spec[4]) * IsoGridBuilder.SPRITE_SCALE)
+			var lifted := stage.tile_at(spec[1]) == StageDef.Tile.ELEVATED
+			var center := IsoProjection.face_center(spec[1], lifted)
+			var expected := (
+				center
+				- Vector2(spec[3]) * IsoGridBuilder.SPRITE_SCALE
+				+ Vector2(spec[4]) * IsoGridBuilder.SPRITE_SCALE
+			)
+			assert_eq(node.position, expected)
 
 
 func _check_texture(root: Node2D, node_name: String, id: StringName) -> void:

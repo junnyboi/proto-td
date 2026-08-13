@@ -41,6 +41,7 @@ func _base_theme(id: StringName) -> StageArtTheme:
 	theme.theme_id = &"world.act2.pressure_descent"
 	theme.approval_token = StageArtTheme.ACT2_SEMANTIC_APPROVAL_TOKEN
 	theme.human_final_art = false
+	theme.surface_modulate = StageArtTheme.ACT2_SURFACE_MODULATE
 	theme.ground_id = SHARED_IDS[0]
 	theme.ground_variant_ids = [SHARED_IDS[1]]
 	theme.route_id = SHARED_IDS[2]
@@ -137,15 +138,30 @@ func test_exact_unique_nonempty_required_id_sets() -> void:
 
 func test_cell_aware_tile_and_cadence_resolution() -> void:
 	var s2 := _s2_theme()
-	assert_eq(s2.tile_id_at(Vector2i(3, 1), StageDef.Tile.ELEVATED, false), &"world.s2.elevated_manometer")
-	assert_eq(s2.tile_id_at(Vector2i(3, 3), StageDef.Tile.ELEVATED, false), &"world.s2.elevated_relief")
+	assert_eq(
+		s2.tile_id_at(Vector2i(3, 1), StageDef.Tile.ELEVATED, false),
+		&"world.s2.elevated_manometer",
+	)
+	assert_eq(
+		s2.tile_id_at(Vector2i(3, 3), StageDef.Tile.ELEVATED, false),
+		&"world.s2.elevated_relief",
+	)
 	assert_eq(s2.ground_id_at(Vector2i(0, 0)), &"world.pressure.ground_calm")
 	assert_eq(s2.ground_id_at(Vector2i(1, 0)), &"world.pressure.ground_runoff")
 	assert_eq(s2.cadence_id_at(Vector2i(4, 2)), StageArtTheme.ACT2_CADENCE_E)
 	var s3 := _s3_theme()
-	assert_eq(s3.tile_id_at(Vector2i(2, 3), StageDef.Tile.ELEVATED, false), &"world.s3.elevated_assay")
-	assert_eq(s3.tile_id_at(Vector2i(5, 2), StageDef.Tile.BLOCKED, false), &"world.s3.blocked_regulator")
-	assert_eq(s3.tile_id_at(Vector2i(5, 3), StageDef.Tile.BLOCKED, false), &"world.s3.blocked_pressure_jaw")
+	assert_eq(
+		s3.tile_id_at(Vector2i(2, 3), StageDef.Tile.ELEVATED, false),
+		&"world.s3.elevated_assay",
+	)
+	assert_eq(
+		s3.tile_id_at(Vector2i(5, 2), StageDef.Tile.BLOCKED, false),
+		&"world.s3.blocked_regulator",
+	)
+	assert_eq(
+		s3.tile_id_at(Vector2i(5, 3), StageDef.Tile.BLOCKED, false),
+		&"world.s3.blocked_pressure_jaw",
+	)
 	assert_eq(s3.cadence_id_at(Vector2i(4, 2)), StageArtTheme.ACT2_CADENCE_E_TO_S)
 	assert_eq(s3.cadence_id_at(Vector2i(4, 4)), StageArtTheme.ACT2_CADENCE_S_TO_E)
 	assert_eq(s3.resolve_cell(Vector2i(7, 4), StageDef.Tile.GROUND, true), {
@@ -168,19 +184,28 @@ func test_wrong_token_missing_and_duplicate_ids_fail() -> void:
 	var stage := _stage(&"s2")
 	var wrong_token := _s2_theme()
 	wrong_token.approval_token = &"ACT-II-S2-S3-H0-wrong"
-	assert_has(wrong_token.validation_errors(stage), "approval token is not the approved Act II semantic contract")
+	assert_has(
+		wrong_token.validation_errors(stage),
+		"approval token is not the approved Act II semantic contract",
+	)
 	var missing := _s2_theme()
 	missing.ground_id = &""
 	assert_has(missing.validation_errors(stage), "required manifest id is empty")
 	var duplicate := _s2_theme()
 	duplicate.ground_variant_ids = [&"world.pressure.ground_calm"]
-	assert_has(duplicate.validation_errors(stage), "required manifest id is duplicated: world.pressure.ground_calm")
+	assert_has(
+		duplicate.validation_errors(stage),
+		"required manifest id is duplicated: world.pressure.ground_calm",
+	)
 
 
 func test_mismatched_lengths_and_wrong_semantic_cells_fail() -> void:
 	var s2 := _s2_theme()
 	s2.elevated_variant_ids.pop_back()
-	assert_has(s2.validation_errors(_stage(&"s2")), "elevated cells and IDs must have matching lengths")
+	assert_has(
+		s2.validation_errors(_stage(&"s2")),
+		"elevated cells and IDs must have matching lengths",
+	)
 	var s3 := _s3_theme()
 	s3.blocked_cells = [Vector2i(5, 2)]
 	assert_has(s3.validation_errors(_stage(&"s3")), "blocked cells and IDs must have matching lengths")
@@ -199,7 +224,13 @@ func test_cadence_off_path_endpoint_mismatch_and_wrong_corner_ids_fail() -> void
 	assert_has(_s3_theme().validation_errors(stage), "cadence cell is not on path: (4, 4)")
 	var endpoint := _s3_theme()
 	endpoint.core_cell = Vector2i(9, 2)
-	assert_has(endpoint.validation_errors(_stage(&"s3")), "core endpoint does not match the approved topology")
+	assert_has(
+		endpoint.validation_errors(_stage(&"s3")),
+		"core endpoint does not match the approved topology",
+	)
 	var corner := _s3_theme()
 	corner.cadence_ids[1] = StageArtTheme.ACT2_CADENCE_E
-	assert_has(corner.validation_errors(_stage(&"s3")), "S3 requires dedicated E-to-S and S-to-E cadence IDs")
+	assert_has(
+		corner.validation_errors(_stage(&"s3")),
+		"S3 requires dedicated E-to-S and S-to-E cadence IDs",
+	)
