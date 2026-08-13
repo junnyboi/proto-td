@@ -57,6 +57,25 @@ GRUNT_ANIMATION_SOURCES = {
     "res://assets/sprites/grunt_animation.provenance.json",
     "res://tools/artgen/compile_grunt_animations.py",
 }
+OPERATOR_ANIMATION_PREFIX = "op_anim_"
+OPERATOR_ANIMATION_COMMAND = (
+    "python3 tools/art_pipeline/characters/generate_operator_animation_provenance.py --repo . --write"
+)
+OPERATOR_ANIMATION_GENERATOR = (
+    "res://tools/art_pipeline/characters/generate_operator_animation_provenance.py"
+)
+OPERATOR_ANIMATION_CLASSES = {"defender_1", "vanguard_2"}
+OPERATOR_ANIMATION_COMMON_SOURCES = {
+    "res://assets/provenance/operators/operator-animation-v1.json",
+    "res://data/presentation/operator_animation_def.gd",
+    "res://data/presentation/operator_visual_catalog.gd",
+    "res://scripts/view/operator_animator.gd",
+    "res://tools/art_pipeline/characters/validate_operator_animation_runtime.py",
+    "res://tools/presentation_qa/provenance.py",
+    "res://tools/presentation_qa/provenance_schema_v1.json",
+    OPERATOR_ANIMATION_GENERATOR,
+}
+OPERATOR_ANIMATION_APPROVED_AT_UTC = "2026-08-13T16:45:41Z"
 
 
 def is_round5_character(logical_id: str) -> bool:
@@ -66,6 +85,16 @@ def is_round5_character(logical_id: str) -> bool:
 
 def is_grunt_animation(logical_id: str) -> bool:
     return logical_id.startswith(GRUNT_ANIMATION_PREFIX)
+
+
+def operator_animation_class(logical_id: str) -> str | None:
+    if not logical_id.startswith(OPERATOR_ANIMATION_PREFIX):
+        return None
+    suffix = logical_id.removeprefix(OPERATOR_ANIMATION_PREFIX)
+    for class_id in sorted(OPERATOR_ANIMATION_CLASSES):
+        if suffix.startswith(f"{class_id}_"):
+            return class_id
+    return None
 
 
 def validate_schema(value: Any, schema: dict[str, Any], root: dict[str, Any], path: str = "$") -> None:
@@ -164,6 +193,11 @@ def source_paths(logical_id: str) -> list[str]:
         return sorted(result)
     if is_grunt_animation(logical_id):
         return sorted(GRUNT_ANIMATION_SOURCES)
+    animation_class = operator_animation_class(logical_id)
+    if animation_class is not None:
+        result = set(OPERATOR_ANIMATION_COMMON_SOURCES)
+        result.add(f"res://data/presentation/operator_visuals/{animation_class}.tres")
+        return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
         base_id = logical_id.removeprefix("portrait_").removesuffix("_charmed")
@@ -333,6 +367,60 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "human_contribution": (
                     "character reference, direction, animation specification, fallback approval, "
                     "selection, and runtime prototype review"
+                ),
+            },
+        }
+    animation_class = operator_animation_class(logical_id)
+    if animation_class is not None:
+        generator = digest_row(repo, OPERATOR_ANIMATION_GENERATOR)
+        return {
+            "schema_version": 1,
+            "logical_id": logical_id,
+            "source_type": "ai_assisted_deterministic_normalization",
+            "final_files": [digest_row(repo, path) for path in sorted(final_paths(entry))],
+            "source_files": [digest_row(repo, path) for path in source_paths(logical_id)],
+            "recipe": {
+                "command": OPERATOR_ANIMATION_COMMAND,
+                "godot_version": GODOT_VERSION,
+                "generator_path": OPERATOR_ANIMATION_GENERATOR,
+                "generator_sha256": generator["sha256"],
+            },
+            "generation": {
+                "provider": "Higgsfield",
+                "model": "Seedance 2.0 family",
+                "generation_id": None,
+                "seed": None,
+                "unsupported_reason": (
+                    "provider does not expose stable seeds; selected motion clips, runtime atlases, "
+                    "and compact class provenance are hash-pinned"
+                ),
+            },
+            "migration": {
+                "baseline_commit": BASELINE_COMMIT,
+                "baseline_tree": BASELINE_TREE,
+                "migrated_at_utc": None,
+                "status": "new_runtime_asset_authenticated",
+            },
+            "acceptance": {
+                "state": "human_concept_accepted_runtime_review_pending",
+                "human_accepter": "Poseidon",
+                "accepted_at_utc": OPERATOR_ANIMATION_APPROVED_AT_UTC,
+                "accepting_commit": None,
+                "source": "FEATURES.json:OPANIM-1",
+                "reason": (
+                    "Poseidon approved the class candidates and premium repair authority; the "
+                    "current runtime bytes are an internal canary pending exact final release review"
+                ),
+            },
+            "license": {
+                "spdx": "LicenseRef-Project-Owned",
+                "source": (
+                    "original GPT Image 2 keyframes and Higgsfield Seedance motion with "
+                    "deterministic runtime normalization"
+                ),
+                "human_contribution": (
+                    "character direction, class selection, model override approval, visual review, "
+                    "and runtime presentation calibration"
                 ),
             },
         }
