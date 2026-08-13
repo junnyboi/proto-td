@@ -5,6 +5,12 @@ extends Control
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const SHELL_SIZE := Vector2(1080.0, 620.0)
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
@@ -22,7 +28,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _build_screen() -> void:
-	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShell
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "StagingScreenShell"
 	shell.preferred_size = SHELL_SIZE
 	add_child(shell)
@@ -55,7 +61,7 @@ func _build_briefing() -> GridContainer:
 	_briefing.add_theme_constant_override(&"v_separation", 18)
 
 	var heading := _label(
-		"StagingHeading", UiCopy.text(&"ui.staging.heading", "STAGING"), &"heading",
+		"StagingHeading", UiCopyType.text(&"ui.staging.heading", "STAGING"), &"heading",
 	)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -85,7 +91,7 @@ func _build_operations() -> VBoxContainer:
 
 	var status := _label(
 		"OperationStatus",
-		UiCopy.text(
+		UiCopyType.text(
 			&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE",
 		),
 		&"detail",
@@ -94,7 +100,7 @@ func _build_operations() -> VBoxContainer:
 
 	var mission := _button(
 		"MissionControlButton",
-		UiCopy.text(&"ui.staging.mission_control", "Mission Control"),
+		UiCopyType.text(&"ui.staging.mission_control", "Mission Control"),
 		"Mission\nControl", true, &"primary",
 	)
 	mission.pressed.connect(_on_mission_control)
@@ -109,7 +115,7 @@ func _build_operations() -> VBoxContainer:
 	_operation_grid.add_child(mission)
 	var back := _button(
 		"BackToTitleButton",
-		UiCopy.text(&"ui.common.back_to_title", "Back to Title"),
+		UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
 		"Back to\nTitle", true, &"secondary",
 	)
 	back.pressed.connect(_on_back_to_title)
@@ -139,7 +145,7 @@ func _build_operations() -> VBoxContainer:
 	]:
 		_operation_grid.add_child(_button(
 			String(specification[0]),
-			UiCopy.text(StringName(specification[1]), String(specification[2])),
+			UiCopyType.text(StringName(specification[1]), String(specification[2])),
 			String(specification[3]), false, &"disabled",
 		))
 
@@ -162,7 +168,7 @@ func _campaign_summary_text() -> String:
 		for stage_id: StringName in stage_ids:
 			if Game.campaign.stage_stars.has(stage_id):
 				cleared += 1
-	return UiCopy.format_text(
+	return UiCopyType.format_text(
 		&"ui.staging.campaign_summary",
 		"{cleared}/{total} CLEARED",
 		{&"cleared": cleared, &"total": stage_ids.size()},
@@ -171,20 +177,20 @@ func _campaign_summary_text() -> String:
 
 func _next_mission_text() -> String:
 	if Game.campaign == null:
-		return UiCopy.text(
+		return UiCopyType.text(
 			&"ui.staging.next_none", "NEXT: No active campaign",
 		)
 	for stage_id: StringName in Game.campaign_stage_ids():
 		if Game.is_stage_unlocked(stage_id) and not Game.campaign.stage_stars.has(stage_id):
 			var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
-			return UiCopy.format_text(
+			return UiCopyType.format_text(
 				&"ui.staging.next_detail", "NEXT: {index}. {title}",
 				{
 					&"index": stage.campaign_index,
-					&"title": UiCopy.stage_title(stage),
+					&"title": UiCopyType.stage_title(stage),
 				},
 			)
-	return UiCopy.text(
+	return UiCopyType.text(
 		&"ui.staging.next_complete", "NEXT: Campaign complete",
 	)
 
@@ -206,8 +212,8 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_operation_grid.columns = 2 if mode == &"portrait" else 4
 
 
-func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabel:
-	var label := AetheriaLabel.new()
+func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabelType:
+	var label := AetheriaLabelType.new()
 	label.name = label_name
 	label.text = label_text
 	label.apply_role(role)
@@ -218,8 +224,8 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 func _button(
 		button_name: String, button_text: String, presentation_text: String,
 		enabled: bool, role: StringName,
-	) -> AetheriaButton:
-	var button := AetheriaButton.new()
+	) -> AetheriaButtonType:
+	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
 	button.custom_minimum_size = Vector2(44.0, 120.0)

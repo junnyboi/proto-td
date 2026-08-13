@@ -11,16 +11,22 @@ const KIND_DIRS := {
 }
 const LANDSCAPE_SIZE := Vector2(900.0, 600.0)
 const PORTRAIT_SIZE := Vector2(640.0, 900.0)
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _actions: GridContainer = null
-var _shell: AetheriaScreenShell = null
+var _shell: AetheriaScreenShellType = null
 
 
 func _ready() -> void:
 	Game.content = self
 	var result: Dictionary = Game.last_result
 	var cleared := int(result.get("result", 0)) == BattleModel.Result.CLEAR
-	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShell
+	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "ResultsShell"
 	_shell.preferred_size = LANDSCAPE_SIZE
 	add_child(_shell)
@@ -40,7 +46,7 @@ func _ready() -> void:
 	scroll.add_child(column)
 	column.add_child(_label(
 		"Headline",
-		UiCopy.text(
+		UiCopyType.text(
 			&"ui.results.clear" if cleared else &"ui.results.defeat",
 			"CLEAR" if cleared else "DEFEAT",
 		),
@@ -52,7 +58,7 @@ func _ready() -> void:
 		))
 	column.add_child(_label(
 		"TallyLine",
-		UiCopy.format_text(
+		UiCopyType.format_text(
 			&"ui.results.tally", "kills {kills}   leaks {leaks}",
 			{
 				&"kills": int(result.get("kills", 0)),
@@ -67,7 +73,7 @@ func _ready() -> void:
 		var reward_name := _reward_name(reward)
 		column.add_child(_label(
 			"Reward%d" % i,
-			UiCopy.format_text(
+			UiCopyType.format_text(
 				&"ui.results.reward", "Unlocked: {name}", {&"name": reward_name},
 			),
 			&"body",
@@ -81,24 +87,24 @@ func _ready() -> void:
 	_actions.add_theme_constant_override(&"v_separation", 16)
 	column.add_child(_actions)
 	var focusable: Array[Button] = []
-	var retry: AetheriaButton = null
-	var next: AetheriaButton = null
+	var retry: AetheriaButtonType = null
+	var next: AetheriaButtonType = null
 	if Game.campaign_active and Game.campaign != null:
 		retry = _button(
-			"RetryButton", UiCopy.text(&"ui.results.retry", "Retry"), &"secondary",
+			"RetryButton", UiCopyType.text(&"ui.results.retry", "Retry"), &"secondary",
 		)
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
 		next = _button(
 			"ReturnToStaging",
-			UiCopy.text(&"ui.results.return_to_staging", "Return to Staging"), &"primary",
+			UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), &"primary",
 		)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
 		focusable.append(retry)
 	var title := _button(
-		"BackToTitle", UiCopy.text(&"ui.common.back_to_title", "Back to Title"),
+		"BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
 		&"secondary" if not focusable.is_empty() else &"primary",
 	)
 	title.pressed.connect(_on_back_to_title)
@@ -128,11 +134,11 @@ func _reward_name(reward: Dictionary) -> String:
 		return ""
 	var definition: Resource = load("%s/%s.tres" % [KIND_DIRS[kind], identifier])
 	if definition is OperatorDef:
-		return UiCopy.operator_name(definition)
+		return UiCopyType.operator_name(definition)
 	if definition is TrapDef:
-		return UiCopy.trap_name(definition)
+		return UiCopyType.trap_name(definition)
 	if definition is SpellDef:
-		return UiCopy.spell_name(definition)
+		return UiCopyType.spell_name(definition)
 	return ""
 
 
@@ -161,8 +167,8 @@ func _on_back_to_title() -> void:
 	Game.open_title()
 
 
-func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabel:
-	var label := AetheriaLabel.new()
+func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabelType:
+	var label := AetheriaLabelType.new()
 	label.name = label_name
 	label.text = label_text
 	label.apply_role(role)
@@ -172,8 +178,8 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 
 func _button(
 		button_name: String, button_text: String, role: StringName,
-	) -> AetheriaButton:
-	var button := AetheriaButton.new()
+	) -> AetheriaButtonType:
+	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
 	button.apply_role(role)

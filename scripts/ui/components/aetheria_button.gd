@@ -1,6 +1,8 @@
 class_name AetheriaButton
 extends Button
 
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+
 const ROLE_VARIATIONS := {
 	&"primary": &"AuiPrimaryButton",
 	&"secondary": &"AuiSecondaryButton",
@@ -48,9 +50,9 @@ func set_presentation_text(logical_text: String, rendered_text: String) -> bool:
 		&"font_focus_color", &"font_disabled_color",
 	]:
 		add_theme_color_override(color_name, transparent)
-	var label := get_node_or_null("PresentationLabel") as AetheriaLabel
+	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType
 	if label == null:
-		label = AetheriaLabel.new()
+		label = AetheriaLabelType.new()
 		label.name = "PresentationLabel"
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE

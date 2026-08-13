@@ -4,13 +4,19 @@ extends Control
 ## through the existing Game seams. The model accepts the unchanged selected IDs.
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _stage: StageDef = null
 var _picked: Array[StringName] = []
 var _buttons: Dictionary = {}
 var _counter: Label = null
-var _start: AetheriaButton = null
-var _back: AetheriaButton = null
+var _start: AetheriaButtonType = null
+var _back: AetheriaButtonType = null
 var _grid: GridContainer = null
 var _footer: GridContainer = null
 var _header: BoxContainer = null
@@ -19,7 +25,7 @@ var _header: BoxContainer = null
 func _ready() -> void:
 	Game.content = self
 	_stage = load("res://data/stages/%s.tres" % Game.selected_stage_id) as StageDef
-	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShell
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "SquadShell"
 	shell.preferred_size = Vector2(1160.0, 640.0)
 	add_child(shell)
@@ -42,16 +48,16 @@ func _ready() -> void:
 	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_theme_constant_override(&"separation", 16)
 	column.add_child(_header)
-	var full_heading := UiCopy.format_text(
+	var full_heading := UiCopyType.format_text(
 		&"ui.squad.heading", "{stage} — pick your squad",
-		{&"stage": UiCopy.stage_title(_stage)},
+		{&"stage": UiCopyType.stage_title(_stage)},
 	)
-	var heading := _label("SquadHeading", UiCopy.stage_title(_stage), &"heading")
+	var heading := _label("SquadHeading", UiCopyType.stage_title(_stage), &"heading")
 	heading.tooltip_text = full_heading
 	heading.custom_minimum_size.x = 320.0
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_child(heading)
-	var full_hint := UiCopy.stage_hint(_stage)
+	var full_hint := UiCopyType.stage_hint(_stage)
 	var intro := _label("IntroHint", _compact_hint(full_hint), &"detail")
 	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	intro.tooltip_text = full_hint
@@ -66,17 +72,17 @@ func _ready() -> void:
 	column.add_child(_grid)
 	for op_id: StringName in Game.loadout_operator_ids():
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
-		var pick := AetheriaButton.new()
+		var pick := AetheriaButtonType.new()
 		pick.name = "Pick_%s" % op_id
 		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		pick.toggle_mode = true
 		pick.apply_role(&"secondary")
-		var card_text := UiCopy.format_text(
+		var card_text := UiCopyType.format_text(
 			&"ui.squad.operator_card", "{name}\n{cost} DP",
-			{&"name": UiCopy.operator_name(definition), &"cost": definition.dp_cost},
+			{&"name": UiCopyType.operator_name(definition), &"cost": definition.dp_cost},
 		)
 		var compact_card := "%s\n%d DP" % [
-			_compact_operator_name(UiCopy.operator_name(definition)), definition.dp_cost,
+			_compact_operator_name(UiCopyType.operator_name(definition)), definition.dp_cost,
 		]
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
@@ -114,17 +120,17 @@ func _ready() -> void:
 	actions.add_theme_constant_override(&"separation", 16)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	_footer.add_child(actions)
-	_back = AetheriaButton.new()
+	_back = AetheriaButtonType.new()
 	_back.name = "BackButton"
 	_back.apply_role(&"secondary")
-	_back.text = UiCopy.text(&"ui.common.back", "Back")
+	_back.text = UiCopyType.text(&"ui.common.back", "Back")
 	_back.custom_minimum_size = Vector2(140.0, 100.0)
 	_back.set_presentation_text(_back.text, _back.text)
 	_back.pressed.connect(_on_back)
 	actions.add_child(_back)
-	_start = AetheriaButton.new()
+	_start = AetheriaButtonType.new()
 	_start.name = "StartBattle"
-	_start.text = UiCopy.text(&"ui.squad.start_battle", "Start Battle")
+	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	_start.custom_minimum_size = Vector2(140.0, 100.0)
 	_start.set_presentation_text(_start.text, "Start\nBattle")
 	_start.pressed.connect(_on_start)
@@ -153,15 +159,15 @@ func _loadout_text() -> String:
 	var gear: Array[String] = []
 	for trap_id: StringName in Game.loadout_trap_ids():
 		var trap := load("res://data/traps/%s.tres" % trap_id) as TrapDef
-		gear.append(UiCopy.trap_name(trap))
+		gear.append(UiCopyType.trap_name(trap))
 	for spell_id: StringName in Game.loadout_spell_ids():
 		var spell := load("res://data/spells/%s.tres" % spell_id) as SpellDef
-		gear.append(UiCopy.spell_name(spell))
+		gear.append(UiCopyType.spell_name(spell))
 	if gear.is_empty():
-		return UiCopy.text(
+		return UiCopyType.text(
 			&"ui.squad.loadout_none", "Loadout: nothing unlocked yet",
 		)
-	return UiCopy.format_text(
+	return UiCopyType.format_text(
 		&"ui.squad.loadout_available", "Loadout (always available): {items}",
 		{&"items": ", ".join(gear)},
 	)
@@ -179,13 +185,13 @@ func _on_pick_toggled(pressed: bool, op_id: StringName) -> void:
 
 
 func _refresh() -> void:
-	_counter.text = UiCopy.format_text(
+	_counter.text = UiCopyType.format_text(
 		&"ui.squad.selected_count", "{selected}/{limit} selected",
 		{&"selected": _picked.size(), &"limit": _stage.squad_size},
 	)
 	for raw_id: Variant in _buttons:
 		var op_id := StringName(raw_id)
-		(_buttons[op_id] as AetheriaButton).apply_role(
+		(_buttons[op_id] as AetheriaButtonType).apply_role(
 			&"selected" if _picked.has(op_id) else &"secondary",
 		)
 	_start.disabled = _picked.is_empty()
@@ -251,8 +257,8 @@ func _on_start() -> void:
 	Game.start_stage(_stage.id, _picked)
 
 
-func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabel:
-	var label := AetheriaLabel.new()
+func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabelType:
+	var label := AetheriaLabelType.new()
 	label.name = label_name
 	label.text = label_text
 	label.apply_role(role)

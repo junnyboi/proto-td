@@ -3,7 +3,11 @@ extends BoxContainer
 
 signal locale_selected(locale_id: StringName)
 
-var _presentation: AetheriaLabel = null
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaThemeType := preload("res://scripts/ui/components/aetheria_theme.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
+var _presentation: AetheriaLabelType = null
 
 @onready var _label: Label = $LocaleLabel
 @onready var _list: ItemList = $LocaleList
@@ -19,11 +23,11 @@ func _ready() -> void:
 		&"font_hovered_selected_color",
 	]:
 		_list.add_theme_color_override(color_name, Color.TRANSPARENT)
-	_presentation = AetheriaLabel.new()
+	_presentation = AetheriaLabelType.new()
 	_presentation.name = "PresentationLabel"
 	_presentation.apply_role(&"body")
 	_presentation.add_theme_color_override(
-		&"font_color", AetheriaTheme.COLORS[&"dark_ink"],
+		&"font_color", AetheriaThemeType.COLORS[&"dark_ink"],
 	)
 	_presentation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_presentation.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -45,14 +49,14 @@ func refresh() -> bool:
 	var active := I18n.locale()
 	if locales.is_empty() or not locales.has(String(active)):
 		return false
-	_label.text = UiCopy.text(&"ui.locale.label", "Language")
+	_label.text = UiCopyType.text(&"ui.locale.label", "Language")
 	_list.clear()
 	var active_display := ""
 	for locale_text: String in locales:
 		var locale_id := StringName(locale_text)
 		var display := locale_text
 		if locale_id == &"en-US":
-			display = UiCopy.text(&"ui.locale.en_us", "English (US)")
+			display = UiCopyType.text(&"ui.locale.en_us", "English (US)")
 		_list.add_item(display)
 		_list.set_item_metadata(_list.item_count - 1, locale_id)
 		if locale_id == active:

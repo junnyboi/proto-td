@@ -4,6 +4,12 @@ extends Control
 ## remain projections of the existing campaign state.
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _rows: GridContainer = null
 var _header: GridContainer = null
@@ -11,7 +17,7 @@ var _header: GridContainer = null
 
 func _ready() -> void:
 	Game.content = self
-	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShell
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "CampaignShell"
 	shell.preferred_size = Vector2(900.0, 620.0)
 	add_child(shell)
@@ -37,14 +43,14 @@ func _ready() -> void:
 	_header.add_theme_constant_override(&"h_separation", 16)
 	_header.add_theme_constant_override(&"v_separation", 12)
 	column.add_child(_header)
-	var heading := AetheriaLabel.new()
+	var heading := AetheriaLabelType.new()
 	heading.name = "CampaignHeading"
 	heading.apply_role(&"heading")
-	heading.text = UiCopy.text(&"ui.campaign.heading", "Campaign")
+	heading.text = UiCopyType.text(&"ui.campaign.heading", "Campaign")
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_header.add_child(heading)
-	var hint := AetheriaLabel.new()
+	var hint := AetheriaLabelType.new()
 	hint.name = "NextHint"
 	hint.apply_role(&"detail")
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -66,7 +72,7 @@ func _ready() -> void:
 	for stage_id: StringName in Game.campaign_stage_ids():
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		var unlocked: bool = Game.is_stage_unlocked(stage_id)
-		var row := AetheriaButton.new()
+		var row := AetheriaButtonType.new()
 		row.name = "Stage_%s" % stage_id
 		row.text = _row_text(stage, unlocked)
 		row.custom_minimum_size = Vector2(44.0, 52.0)
@@ -82,20 +88,20 @@ func _ready() -> void:
 		row.pressed.connect(_on_stage_pressed.bind(stage_id))
 		_rows.add_child(row)
 		if unlocked and not Game.campaign.stage_stars.has(stage_id):
-			next_hint = UiCopy.stage_title(stage)
-			next_hint_tooltip = UiCopy.stage_hint(stage)
+			next_hint = UiCopyType.stage_title(stage)
+			next_hint_tooltip = UiCopyType.stage_hint(stage)
 
 	if next_hint.is_empty():
-		next_hint = UiCopy.text(&"ui.staging.next_complete", "Campaign complete")
+		next_hint = UiCopyType.text(&"ui.staging.next_complete", "Campaign complete")
 	hint.text = next_hint
 	hint.tooltip_text = next_hint_tooltip
 
-	var back := AetheriaButton.new()
+	var back := AetheriaButtonType.new()
 	back.name = "BackToStaging"
 	back.custom_minimum_size = Vector2(220.0, 81.0)
 	back.apply_role(&"secondary")
-	back.text = UiCopy.text(&"ui.campaign.back_to_staging", "Back to Staging")
-	back.set_presentation_text(back.text, UiCopy.text(&"ui.common.back", "Back"))
+	back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
+	back.set_presentation_text(back.text, UiCopyType.text(&"ui.common.back", "Back"))
 	back.tooltip_text = back.text
 	back.pressed.connect(_on_back_to_staging)
 	_header.add_child(back)
@@ -113,17 +119,17 @@ func _row_text(stage: StageDef, unlocked: bool) -> String:
 	var stars := int(Game.campaign.stage_stars.get(stage.id, 0))
 	var suffix := ""
 	if not unlocked:
-		suffix = UiCopy.text(&"ui.campaign.locked_suffix", "  LOCKED")
+		suffix = UiCopyType.text(&"ui.campaign.locked_suffix", "  LOCKED")
 	elif stars > 0:
-		suffix = UiCopy.format_text(
+		suffix = UiCopyType.format_text(
 			&"ui.campaign.cleared_suffix", "  {stars}",
 			{&"stars": "*".repeat(stars)},
 		)
-	return UiCopy.format_text(
+	return UiCopyType.format_text(
 		&"ui.campaign.row", "{index}. {title}{status}",
 		{
 			&"index": stage.campaign_index,
-			&"title": UiCopy.stage_title(stage),
+			&"title": UiCopyType.stage_title(stage),
 			&"status": suffix,
 		},
 	)
@@ -134,7 +140,7 @@ func _row_presentation_text(stage: StageDef) -> String:
 	var suffix := ""
 	if stars > 0:
 		suffix = " " + "*".repeat(stars)
-	var title := UiCopy.stage_title(stage)
+	var title := UiCopyType.stage_title(stage)
 	if title.begins_with("The "):
 		title = title.trim_prefix("The ")
 	return "%d. %s%s" % [stage.campaign_index, title, suffix]

@@ -8,6 +8,7 @@ signal locale_changed(locale_id: StringName)
 const DEFAULT_LOCALE := &"en-US"
 const CATALOG_PATH := "res://localization/en-US.json"
 const ROOT_KEYS := ["locale", "entries"]
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _locale := DEFAULT_LOCALE
 var _entries: Dictionary = {}
@@ -28,7 +29,7 @@ func t(key: StringName, fallback: String) -> String:
 
 
 func format_text(key: StringName, fallback: String, args: Dictionary) -> String:
-	var expected_all := UiCopy.placeholder_types()
+	var expected_all := UiCopyType.placeholder_types()
 	var expected: Dictionary = expected_all.get(key, {})
 	if not _valid_args(key, fallback, args, expected):
 		return fallback

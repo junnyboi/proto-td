@@ -5,12 +5,21 @@ extends Control
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const LOCALE_SCENE := preload("res://scenes/ui/components/aetheria_locale_selector.tscn")
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaLocaleSelectorType := preload(
+	"res://scripts/ui/components/aetheria_locale_selector.gd"
+)
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
-var _locale_selector: AetheriaLocaleSelector = null
+var _locale_selector: AetheriaLocaleSelectorType = null
 
 
 func _ready() -> void:
-	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShell
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "TitleShell"
 	shell.preferred_size = Vector2(720.0, 520.0)
 	add_child(shell)
@@ -24,30 +33,30 @@ func _ready() -> void:
 	vbox.add_theme_constant_override(&"separation", 24)
 	shell.content_host().add_child(vbox)
 
-	var label := AetheriaLabel.new()
+	var label := AetheriaLabelType.new()
 	label.name = "TitleLabel"
 	label.apply_role(&"title")
-	label.text = UiCopy.text(&"ui.game_title", "Protos")
+	label.text = UiCopyType.text(&"ui.game_title", "Protos")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)
 
-	var start := AetheriaButton.new()
+	var start := AetheriaButtonType.new()
 	start.name = "StartButton"
 	start.apply_role(&"primary")
-	start.text = UiCopy.text(&"ui.title.start", "Start")
+	start.text = UiCopyType.text(&"ui.title.start", "Start")
 	start.pressed.connect(_on_start_pressed)
 	vbox.add_child(start)
 
-	var footer := AetheriaLabel.new()
+	var footer := AetheriaLabelType.new()
 	footer.name = "FooterLabel"
 	footer.apply_role(&"detail")
-	footer.text = UiCopy.format_text(
+	footer.text = UiCopyType.format_text(
 		&"ui.title.seed", "seed {seed}", {&"seed": Game.run_seed},
 	)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(footer)
 
-	_locale_selector = LOCALE_SCENE.instantiate() as AetheriaLocaleSelector
+	_locale_selector = LOCALE_SCENE.instantiate() as AetheriaLocaleSelectorType
 	_locale_selector.name = "LocaleSelector"
 	_locale_selector.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(_locale_selector)
