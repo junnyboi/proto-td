@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s4"
+objective = "Hold the shelter approach while signal crews break the Drone survey link."
+threat = "Drones count survivors and mark positions from above."
+human_reason = "Marked shelters become targets for the damaged evacuation network."
+clue = "The network treats a person remaining on the surface as proof of shock or contamination."
+core_service = "Shelter registry"
+clear_debrief = "The defense gives signal crews time to break the link before the shelter list transmits."
+defeat_debrief = "The squad drives off the raid too late to stop every mark. Hearthcross must relocate exposed shelters."

@@ -1,0 +1,350 @@
+{
+  "schema": "mgs.generated-sprite-atlas.v1",
+  "asset_family": "grunt_directional_animation",
+  "status": "machine_conformant_human_review_required",
+  "source_contract": {
+    "character": "front-facing chibi robot grunt supplied by user",
+    "art_style": "reference-matched painterly tactical-game chibi",
+    "states": [
+      "walk",
+      "attack"
+    ],
+    "directions": [
+      "se",
+      "sw",
+      "ne",
+      "nw"
+    ],
+    "frame_size": [
+      256,
+      256
+    ],
+    "frames": 25,
+    "fps": 12,
+    "loop_closure": "frame 24 is exact frame 0"
+  },
+  "generation": {
+    "keyframes": "gpt-image-2 reference-guided variations",
+    "video": "veo3.1-fast for Walk SE/NE and Attack SE",
+    "approved_fallback": "Attack NE uses phase-locked gpt-image-2 image sequence after video quota exhaustion",
+    "postprocess": "full-cycle temporal compression, endpoint preservation, exact closure, bottom anchoring, transparent extraction, exact mirroring"
+  },
+  "generation_receipt": {
+    "path": "assets/sprites/grunt_animation.generation_receipt.json",
+    "sha256": "99f1d093b3e1f23a129c4774138d365420047f25865bdef0178593ee595bf7cc",
+    "schema": "mgs.ai-generation-receipt.v1",
+    "receipt_mode": "retrospective_content_addressed_with_disclosures",
+    "disclosures": [
+      "Provider seeds were not exposed by the Manus MCP media tool schema; null is recorded and no seed is invented.",
+      "Provider request/job IDs were not surfaced in retained result metadata; null is recorded and no provider ID is invented.",
+      "Original wrapper prompts were not persisted verbatim before generation. Canonical reproduction prompts are reconstructed from the byte-exact confirmed job spec and action contracts and are explicitly not represented as byte-identical originals.",
+      "Stochastic outputs cannot be byte-reproduced without provider seeds. This receipt instead binds retained request contracts, references, generated intermediates, deterministic postprocessing, and final source sheets by SHA-256."
+    ]
+  },
+  "compile": {
+    "script": "tools/artgen/compile_grunt_animations.py",
+    "td32_quantization": true,
+    "alpha": "hard 0/255",
+    "base_reserved_exclusions": [
+      "f4f4f4",
+      "41a6f6"
+    ],
+    "charmed_derivation": "ally-blue luminance ramp plus two rose hearts",
+    "mirror_pairs": {
+      "se": "sw",
+      "ne": "nw"
+    }
+  },
+  "sources": {
+    "walk_se": {
+      "file": "chibi_grunt_walk_se.png",
+      "sha256": "17e02cfbf6573abc4e54676bb213bffbc179b162a01d35e22259018e51d67501"
+    },
+    "walk_sw": {
+      "file": "chibi_grunt_walk_sw.png",
+      "sha256": "a17b58b62e67036aeaf65cc1165d3fd708f70f55088a274eaf0b6dbacd2cd486"
+    },
+    "walk_ne": {
+      "file": "chibi_grunt_walk_ne.png",
+      "sha256": "9dbbc0306485d2c69da2d711455c11d43b1ad7940e7927cd293926044ea0bca8"
+    },
+    "walk_nw": {
+      "file": "chibi_grunt_walk_nw.png",
+      "sha256": "88d00fd3cc26785ad3339753f10d9f22fdb93c15892520d53e3863e6f45c789e"
+    },
+    "attack_se": {
+      "file": "chibi_grunt_attack_se.png",
+      "sha256": "88a812e19878164b3f9977f86efc19f4a6629683ff960ca587114ca86a05f868"
+    },
+    "attack_sw": {
+      "file": "chibi_grunt_attack_sw.png",
+      "sha256": "99e473973713ac11a0a8bc5846f8a13acc44bfacb1b98db61aeba2f2257738c5"
+    },
+    "attack_ne": {
+      "file": "chibi_grunt_attack_ne.png",
+      "sha256": "df6fef451689fdaac21c0e25f2957714edf3da25fa6f3db6c57ce38cc68afea2"
+    },
+    "attack_nw": {
+      "file": "chibi_grunt_attack_nw.png",
+      "sha256": "ceb7dacd3f2f94d3e37f695ca46b18987ec26de707b2e33ebcbc261731565c5f"
+    }
+  },
+  "outputs": {
+    "grunt_anim_walk_se": {
+      "path": "assets/sprites/grunt_anim_walk_se.png",
+      "sha256": "e303443428b5f6e814287b567c5b92b1dbbe8b753a9382b872fec81b0eca0122",
+      "bytes": 389312,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_walk_se_charmed": {
+      "path": "assets/sprites/grunt_anim_walk_se_charmed.png",
+      "sha256": "2f0eef94699f742ae708a7e97092f1fdb70917b1df2eb59202855c6dc4011d67",
+      "bytes": 221270,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_walk_sw": {
+      "path": "assets/sprites/grunt_anim_walk_sw.png",
+      "sha256": "33f1413c0e231335385fe34b99320f3410d1d9d7cce12fb46ec7e639d5c09cb3",
+      "bytes": 382450,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_walk_sw_charmed": {
+      "path": "assets/sprites/grunt_anim_walk_sw_charmed.png",
+      "sha256": "c6a757132384d0767d8912afb0f37b71633faddefc449b0dbc7049e7d02b2994",
+      "bytes": 225193,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_walk_ne": {
+      "path": "assets/sprites/grunt_anim_walk_ne.png",
+      "sha256": "29a58dd144c5946fac7dcdc53413995be24d1aac87312a828f4ec6be307b5e70",
+      "bytes": 303067,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_walk_ne_charmed": {
+      "path": "assets/sprites/grunt_anim_walk_ne_charmed.png",
+      "sha256": "4ed654e84d0235fe1e67a6c9f820e2cb4b6e93f1fe0288c2c498da3d35bbe56f",
+      "bytes": 184447,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_walk_nw": {
+      "path": "assets/sprites/grunt_anim_walk_nw.png",
+      "sha256": "5e3277d17ffe6495b01e503f40399d08363e6a9fbd359d4c8c29eb157339d363",
+      "bytes": 307607,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_walk_nw_charmed": {
+      "path": "assets/sprites/grunt_anim_walk_nw_charmed.png",
+      "sha256": "5ea4889698f92779cebc3d9d896b9eee5741c97607e86a9443df823050d78664",
+      "bytes": 184161,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_attack_se": {
+      "path": "assets/sprites/grunt_anim_attack_se.png",
+      "sha256": "5929777de379438a5bead40e212ff68b6a319c678e36ba4f0e96d8e167cf90ad",
+      "bytes": 205537,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_attack_se_charmed": {
+      "path": "assets/sprites/grunt_anim_attack_se_charmed.png",
+      "sha256": "683bf3c28f3658f05382bf6e3315e9219299886570204174139f7c13a2e89c22",
+      "bytes": 121509,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_attack_sw": {
+      "path": "assets/sprites/grunt_anim_attack_sw.png",
+      "sha256": "ed0d8c6fa7bb4005bad092e4f05d3f29f1ddcbe9acd3d39688ccc5a44bf7d47d",
+      "bytes": 206841,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_attack_sw_charmed": {
+      "path": "assets/sprites/grunt_anim_attack_sw_charmed.png",
+      "sha256": "6424c1e8ccf4ad981c47924a4e977d1f676029ecedfacb2b29312c99a89cd559",
+      "bytes": 119514,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_attack_ne": {
+      "path": "assets/sprites/grunt_anim_attack_ne.png",
+      "sha256": "b2184a1c49f458a11dde951dac010d84586d7ed6ec6be82852f80e65b69abdc8",
+      "bytes": 110055,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_attack_ne_charmed": {
+      "path": "assets/sprites/grunt_anim_attack_ne_charmed.png",
+      "sha256": "28a35bc315f1896680338d1f7f6735aaccb40c2f8088dd7360ce3b85208eada9",
+      "bytes": 72369,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    },
+    "grunt_anim_attack_nw": {
+      "path": "assets/sprites/grunt_anim_attack_nw.png",
+      "sha256": "c841ea767a13e77a1b14cda26e671ae3edc0698be7aa6300b36b5ede392b1c28",
+      "bytes": 110080,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": false
+    },
+    "grunt_anim_attack_nw_charmed": {
+      "path": "assets/sprites/grunt_anim_attack_nw_charmed.png",
+      "sha256": "157c43dace4cb88ff5983cf383473e1c7704d471afae62d8e70d3a8f57a4f1bd",
+      "bytes": 71646,
+      "size": [
+        6400,
+        256
+      ],
+      "frame_size": [
+        256,
+        256
+      ],
+      "frames": 25,
+      "fps": 12,
+      "charmed": true
+    }
+  }
+}

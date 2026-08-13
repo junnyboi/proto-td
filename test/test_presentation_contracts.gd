@@ -33,7 +33,7 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_and_loadability() -
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size() + 14)
+	assert_eq(manifest.entries.size(), expected.size() + 46)
 	for healer_id: StringName in [&"witch_doctor_1", &"portrait_witch_doctor_1"]:
 		assert_true(manifest.entries.has(healer_id), "%s added through the manifest" % healer_id)
 		assert_true(manifest.entries[healer_id][&"placeholder"], "%s remains placeholder" % healer_id)
@@ -207,7 +207,7 @@ func test_all_six_resource_contracts_reject_defaults_and_roundtrip_valid_values(
 	var registry := load(REGISTRY_PATH) as ProbeColorOwnerRegistry
 	assert_not_null(registry)
 	if registry != null:
-		assert_eq(registry.entries.size(), 13)
+		assert_eq(registry.entries.size(), 20)
 		assert_eq(registry.entries, ProbeColorOwnerRegistry.expected_entries())
 		assert_eq(registry.validate_contract(), PackedStringArray())
 		var registry_path := "user://aui00_contract_roundtrip_registry.tres"
@@ -280,7 +280,7 @@ func test_reserved_stage_domains_and_malformed_nested_resources_fail_closed() ->
 	registry.entries[0]["owner_id"] = &"arbitrary.valid_type"
 	assert_true(registry.validate_contract().size() > 0, "wrong owner rejects")
 	registry = load(REGISTRY_PATH).duplicate(true) as ProbeColorOwnerRegistry
-	registry.entries[7]["negative_owner_id"] = &"heavy"
+	registry.entries[6]["negative_owner_id"] = &"heavy"
 	assert_true(registry.validate_contract().size() > 0, "wrong negative pair rejects")
 	registry = load(REGISTRY_PATH).duplicate(true) as ProbeColorOwnerRegistry
 	var first: Dictionary = registry.entries[0]
@@ -294,7 +294,7 @@ func test_probe_asset_owners_require_every_positive_frame_and_exact_negative_pai
 	assert_not_null(manifest)
 	if manifest == null:
 		return
-	for row: Dictionary in ProbeColorOwnerRegistry.EXPECTED_ENTRIES:
+	for row: Dictionary in ProbeColorOwnerRegistry.expected_entries():
 		if row["owner_kind"] != &"asset":
 			continue
 		var entry: Dictionary = manifest.entries[row["owner_id"]]
@@ -377,6 +377,24 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 				"441cb80b079ee89195ef751dbc26e67b426600d0",
 			)
 			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
+		elif id.begins_with("op_anim_"):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["provider"], "Higgsfield")
+			assert_eq(document["generation"]["model"], "Seedance 2.0 family")
+			assert_eq(
+				document["acceptance"]["state"],
+				"human_concept_accepted_runtime_review_pending",
+			)
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_null(document["acceptance"]["accepting_commit"])
+			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
+		elif id.begins_with("grunt_anim_"):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["model"], "gpt-image-2")
+			assert_eq(document["acceptance"]["state"], "human_concept_accepted_runtime_review_pending")
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_null(document["acceptance"]["accepting_commit"])
+			assert_true(bool(manifest.entries[StringName(id)]["placeholder"]))
 		else:
 			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
 			assert_null(document["acceptance"]["human_accepter"])
@@ -468,6 +486,22 @@ func _character() -> CharacterVisualDef:
 
 
 func _expected_sources(id: String) -> Array[String]:
+	if id.begins_with("op_anim_"):
+		var suffix := id.trim_prefix("op_anim_")
+		var class_id := "defender_1" if suffix.begins_with("defender_1_") else "vanguard_2"
+		var animation_sources: Array[String] = [
+			"res://assets/provenance/operators/operator-animation-v1.json",
+			"res://data/presentation/operator_animation_def.gd",
+			"res://data/presentation/operator_visual_catalog.gd",
+			"res://data/presentation/operator_visuals/%s.tres" % class_id,
+			"res://scripts/view/operator_animator.gd",
+			"res://tools/art_pipeline/characters/generate_operator_animation_provenance.py",
+			"res://tools/art_pipeline/characters/validate_operator_animation_runtime.py",
+			"res://tools/presentation_qa/provenance.py",
+			"res://tools/presentation_qa/provenance_schema_v1.json",
+		]
+		animation_sources.sort()
+		return animation_sources
 	if id.begins_with("world.s1."):
 		var world_sources: Array[String] = [
 			"res://art-src/world/s1/gpt-image-2-source-ledger.json",
@@ -485,6 +519,12 @@ func _expected_sources(id: String) -> Array[String]:
 			world_sources.append("res://tools/art_pipeline/world/prepare_s1_revision_source.py")
 		world_sources.sort()
 		return world_sources
+	if id.begins_with("grunt_anim_"):
+		return [
+			"res://assets/sprites/grunt_animation.generation_receipt.json",
+			"res://assets/sprites/grunt_animation.provenance.json",
+			"res://tools/artgen/compile_grunt_animations.py",
+		]
 	if _is_round5_character(id):
 		var base_id := id.trim_prefix("portrait_").trim_suffix("_charmed")
 		var character_sources: Array[String] = [

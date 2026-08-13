@@ -17,6 +17,9 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
+const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
+const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 
 var _actions: GridContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -78,6 +81,15 @@ func _ready() -> void:
 			),
 			&"body",
 		))
+
+	var stage_id := StringName(result.get("stage_id", &""))
+	var record: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id) if not String(stage_id).is_empty() else null
+	column.add_child(_label("ConsequenceHeading", UiCopyType.text(&"ui.results.consequence", "Consequence"), &"heading"))
+	var consequence := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
+	if record != null:
+		consequence = UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.CLEAR_DEBRIEF if cleared else StageNarrativeDefType.Field.DEFEAT_DEBRIEF)
+	var consequence_line := _label("ConsequenceLine", consequence, &"body")
+	column.add_child(consequence_line)
 
 	_actions = GridContainer.new()
 	_actions.name = "ActionRow"
@@ -182,5 +194,6 @@ func _button(
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.apply_role(role)
 	return button

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s1"
+objective = "Hold the Hearthcross water-works line while investigators trace the evacuation order carried by the attackers."
+threat = "Road-clearing Grunts treat people and barricades as blockages."
+human_reason = "The town's pumps feed homes, shelters, and fields."
+clue = "Every attacking machine carries a two-hundred-year-old Great Flare evacuation mark."
+core_service = "Hearthcross water Core"
+clear_debrief = "Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended."
+defeat_debrief = "Company 33 evacuates the exposed water works. People survive, but Hearthcross loses service capacity before the order can be traced."

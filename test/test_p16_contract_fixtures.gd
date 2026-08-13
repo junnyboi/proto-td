@@ -1,8 +1,10 @@
 extends GutTest
 
 const CONTRACT_PATH := "res://test/fixtures/p16/contract_vectors_v1.json"
-const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v1.json"
-const SAVE_PATH := "res://test/fixtures/p16/campaign_v1_seed42.json"
+const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v2.json"
+const LEGACY_TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v1.json"
+const LEGACY_SAVE_PATH := "res://test/fixtures/p16/campaign_v1_seed42.json"
+const SAVE_PATH := "res://test/fixtures/p16/campaign_v2_seed42.json"
 
 
 func test_identity_and_name_goldens() -> void:
@@ -61,17 +63,43 @@ func test_collision_ordinals_and_exhaustion_are_exact() -> void:
 	assert_eq(calls.size(), 32)
 
 
-func test_fresh_save_is_byte_exact_and_hash_exact() -> void:
-	var source := _text(SAVE_PATH)
+func test_v1_migrates_to_byte_exact_v2_save_and_hash() -> void:
+	var source := _text(LEGACY_SAVE_PATH)
 	var context := _context()
 	var decoded := CampaignCodec.decode_save(source, context)
 	assert_true(decoded["accepted"], str(decoded.get("error_code", &"")))
-	assert_eq(decoded["text"], source)
-	var root: Dictionary = JSON.parse_string(source)
-	assert_eq(root["checksum"], "516eb349d33fbb40408d742f86ef0784fc8ab9c473ab66893a730c28712f0c6a")
+	assert_eq(decoded["migrated_from_version"], 1)
+	assert_eq(decoded["text"], _text(SAVE_PATH))
+	var root: Dictionary = JSON.parse_string(decoded["text"])
+	assert_eq(int(root["version"]), 2)
+	assert_eq(root["checksum"], "55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa")
 	var strategic := CampaignHash.of_data(decoded["data"], context)
 	assert_true(strategic["accepted"])
-	assert_eq(strategic["hex"], "85f2c11018249153")
+	assert_eq(strategic["hex"], "baa4d62d418258a5")
+	var restored := CampaignCodec.decode_save(decoded["text"], context)
+	assert_true(restored["accepted"], str(restored.get("error_code", &"")))
+	assert_null(restored["migrated_from_version"])
+	assert_eq(restored["text"], decoded["text"])
+	assert_eq(restored["data"], decoded["data"])
+	assert_eq(restored["sha256"], "a31596c0d244e3cfb9c7ddab52b723e14a33602c32c8f80955cb1857730f46aa")
+
+	var legacy_resolved: Dictionary = _json(LEGACY_TRANSACTION_PATH)["resolved_save"]["value"]
+	assert_true(CampaignCodec.decode_save(_raw_save(legacy_resolved), context)["accepted"])
+	var forged_rows: Array[Dictionary] = []
+	for section: String in ["resolution_anchor", "last_resolution"]:
+		for field: String in ["strategic_body_hash_before", "strategic_body_hash_after"]:
+			var forged: Dictionary = legacy_resolved.duplicate(true)
+			forged[section][field] = "1111111111111111"
+			forged_rows.append(forged)
+	for field: String in ["strategic_body_hash_before", "strategic_body_hash_after"]:
+		var synchronized: Dictionary = legacy_resolved.duplicate(true)
+		synchronized["resolution_anchor"][field] = "2222222222222222"
+		synchronized["last_resolution"][field] = "2222222222222222"
+		forged_rows.append(synchronized)
+	for forged: Dictionary in forged_rows:
+		var rejected := CampaignCodec.decode_save(_raw_save(forged), context)
+		assert_false(rejected["accepted"])
+		assert_eq(rejected["error_code"], &"invalid_v1_integrity")
 
 
 func test_transaction_goldens_are_byte_exact() -> void:
@@ -101,26 +129,26 @@ func test_transaction_goldens_are_byte_exact() -> void:
 	)
 	assert_eq(
 		fixture["resolution"]["sha256"],
-		"f4e02e3036543b8b0e01e01893f713d1be7a56963cfaa8b55f82b01f26ffdd1b",
+		"841e5f97d01222671fe209e915923e9a85f23ec57e0ce134b6ceb384db096a44",
 	)
 	var resolved: Dictionary = fixture["resolved_save"]
 	var encoded_save := CampaignCodec.encode_save(resolved["value"], _context())
 	assert_true(encoded_save["accepted"])
 	assert_eq(
 		encoded_save["value"]["checksum"],
-		"5ac811665449d67382941e8218ca0b95acd6737cc914211729bf8f7f408dd983",
+		"bcd36b9349ba086ba543d1ca189af2c40beeb3f6c5ec573a67755596386ba10f",
 	)
 	assert_eq(
 		encoded_save["sha256"],
-		"1bb5d32ae1df9a5cb28997e30ab2d19d343f6456613cad14ae853b62d111a7e6",
+		"c04a0ba033f38f170148c76dd18a4e9c7f814689df2eb39457d3c69730cb8ed1",
 	)
 	var full_hash := CampaignHash.of_data(resolved["value"], _context())
-	assert_eq(full_hash["hex"], "9f25771019b780ff")
+	assert_eq(full_hash["hex"], "e293b40478a9771c")
 	var anchor: Dictionary = resolved["value"]["resolution_anchor"]
 	var before_hash := CampaignHash.of_core_snapshot(anchor["before_core"], _context())
 	var after_hash := CampaignHash.of_core_snapshot(anchor["after_core"], _context())
-	assert_eq(before_hash["hex"], "1d62ea3e4b4bea4e")
-	assert_eq(after_hash["hex"], "3d715c766d8f66ce")
+	assert_eq(before_hash["hex"], "39725890ee4a6a1a")
+	assert_eq(after_hash["hex"], "4942c92d813313ac")
 
 
 func test_campaign_transaction_oracle_accepts_exactly_one_transition() -> void:
@@ -507,13 +535,13 @@ func _hero_row(
 	source_id: String,
 	created_after: int = 0,
 ) -> Dictionary:
-	return {
+	return CampaignProgression.add_initial_fields({
 		"hero_id": hero_id, "operator_def_id": operator_id,
 		"recruitment_index": index,
 		"recruited_after_resolution_index": created_after,
 		"recruit_source": source, "source_id": source_id,
 		"name_version": 1, "custom_callsign": null, "life_status": "ready", "death": null,
-	}
+	})
 
 
 func _valid_transition_without_contract() -> Dictionary:
@@ -550,7 +578,7 @@ func _valid_transition() -> Dictionary:
 	before["next_recruitment_index"] = 6
 	before["marks"] = 40
 	before["offers"][0]["consumed"] = true
-	before["heroes"].append({
+	before["heroes"].append(CampaignProgression.add_initial_fields({
 		"hero_id": "e54c103e46898f5d",
 		"operator_def_id": "caster_1",
 		"recruitment_index": 5,
@@ -561,14 +589,18 @@ func _valid_transition() -> Dictionary:
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
-	})
+	}))
 	var ticket: Dictionary = vectors["ticket"]["value"].duplicate(true)
 	var outcome: Dictionary = vectors["outcome"]["value"].duplicate(true)
-	var resolution: Dictionary = vectors["resolution"]["value"].duplicate(true)
+	var resolution := _v2_resolution(vectors["resolution"]["value"])
 	resolution["marks_before"] = before["marks"]
 	resolution["marks_after"] = before["marks"]
 	resolution["strategic_body_hash_before"] = CampaignHash.of_core(before, _context())["hex"]
+	resolution["xp_awards"] = CampaignProgression.derive_xp_awards(
+		outcome["heroes"], before["heroes"],
+	)
 	var after: Dictionary = before.duplicate(true)
+	assert_true(CampaignProgression.apply_xp(after["heroes"], resolution["xp_awards"]))
 	after["save_revision"] = 4
 	after["next_resolution_index"] = 2
 	after["next_recruitment_index"] = 7
@@ -586,7 +618,7 @@ func _valid_transition() -> Dictionary:
 				"terminal_reason": "clear",
 				"terminal_tick": 1000,
 			}
-	after["heroes"].append({
+	after["heroes"].append(CampaignProgression.add_initial_fields({
 		"hero_id": "fe0ff2c1e3ecc49d",
 		"operator_def_id": "guard_2",
 		"recruitment_index": 6,
@@ -597,7 +629,7 @@ func _valid_transition() -> Dictionary:
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
-	})
+	}))
 	resolution["strategic_body_hash_after"] = "0000000000000000"
 	after["last_resolution"] = resolution.duplicate(true)
 	resolution["strategic_body_hash_after"] = CampaignHash.of_core_snapshot(
@@ -619,6 +651,18 @@ func _valid_transition() -> Dictionary:
 		"before": before,
 		"after": after,
 	}
+
+
+func _v2_resolution(source: Dictionary) -> Dictionary:
+	var result := {}
+	for key: String in CampaignCodec.RESOLUTION_KEYS:
+		if key == "schema_version":
+			result[key] = 2
+		elif key == "xp_awards":
+			result[key] = []
+		else:
+			result[key] = source[key]
+	return result
 
 
 func _transition_mutations(source: Dictionary) -> Array:

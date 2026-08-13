@@ -82,11 +82,11 @@ jq -e '
 	and ([.runs[] | .terminal.reason | IN("clear","leak_defeat","base_defeat","resign")] | all)
 	and ([.runs[] | .telemetry | has("counters") and has("series_last") and has("events")] | all)
 	and .campaign_contract == {
-		checksum:"5ac811665449d67382941e8218ca0b95acd6737cc914211729bf8f7f408dd983",
-		save_sha256:"1bb5d32ae1df9a5cb28997e30ab2d19d343f6456613cad14ae853b62d111a7e6",
-		full_strategic_hash:"9f25771019b780ff",
-		strategic_body_hash_before:"1d62ea3e4b4bea4e",
-		strategic_body_hash_after:"3d715c766d8f66ce"
+		checksum:"bcd36b9349ba086ba543d1ca189af2c40beeb3f6c5ec573a67755596386ba10f",
+		save_sha256:"c04a0ba033f38f170148c76dd18a4e9c7f814689df2eb39457d3c69730cb8ed1",
+		full_strategic_hash:"e293b40478a9771c",
+		strategic_body_hash_before:"39725890ee4a6a1a",
+		strategic_body_hash_after:"4942c92d813313ac"
 	}
 ' "$OUT_DIR/run-1.json" >/dev/null || {
   jq -n --arg run_token "$P16_REPLAY_RUN_TOKEN" \

@@ -1,7 +1,7 @@
 extends GutTest
 
-const SAVE_PATH := "res://test/fixtures/p16/campaign_v1_seed42.json"
-const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v1.json"
+const SAVE_PATH := "res://test/fixtures/p16/campaign_v2_seed42.json"
+const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v2.json"
 
 
 func test_fresh_factory_matches_frozen_fixture_checksum_and_hash() -> void:
@@ -10,8 +10,8 @@ func test_fresh_factory_matches_frozen_fixture_checksum_and_hash() -> void:
 	assert_true(fixture["accepted"])
 	assert_eq(state.data_copy(), fixture["data"])
 	assert_eq(state.encode_data()["sha256"],
-		"516eb349d33fbb40408d742f86ef0784fc8ab9c473ab66893a730c28712f0c6a")
-	assert_eq(state.strategic_hash()["hex"], "85f2c11018249153")
+		"55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa")
+	assert_eq(state.strategic_hash()["hex"], "baa4d62d418258a5")
 	assert_eq(state.campaign_uid(), "ce46150984346591")
 	assert_eq(state.next_recruitment_index(), 5)
 	assert_eq(state.next_attempt_id(), 1)
@@ -30,7 +30,7 @@ func test_factory_is_catalog_and_stage_order_independent() -> void:
 	assert_true(shuffled["accepted"], str(shuffled.get("error_code", &"")))
 	var state := shuffled["value"] as CampaignState
 	assert_eq(state.encode_data()["text"], _fresh().encode_data()["text"])
-	assert_eq(state.strategic_hash()["hex"], "85f2c11018249153")
+	assert_eq(state.strategic_hash()["hex"], "baa4d62d418258a5")
 
 
 func test_compatibility_projection_is_exact_and_defensive() -> void:
@@ -96,7 +96,7 @@ func test_locked_unknown_and_impossible_states_reject_without_shadow_hashes() ->
 	var rejected := CampaignState.restore(impossible, _definition(), _catalogs(), _stages())
 	assert_false(rejected["accepted"])
 	assert_eq(rejected["error_code"], &"recruitment_counter_mismatch")
-	assert_eq(state.strategic_hash()["hex"], "85f2c11018249153")
+	assert_eq(state.strategic_hash()["hex"], "baa4d62d418258a5")
 
 
 func test_malformed_catalog_stage_and_reward_environments_reject() -> void:
@@ -240,7 +240,7 @@ func test_valid_field_families_change_the_single_frozen_full_hash() -> void:
 		var value: String = candidate.strategic_hash()["hex"]
 		assert_false(hashes.has(value), "field-family hashes must be distinct: %s" % value)
 		hashes[value] = true
-	assert_eq(resolved.strategic_hash()["hex"], "9f25771019b780ff")
+	assert_eq(resolved.strategic_hash()["hex"], "e293b40478a9771c")
 
 
 func test_restore_encode_restore_is_byte_and_hash_exact() -> void:
@@ -295,7 +295,7 @@ func _restore(data: Dictionary) -> CampaignState:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

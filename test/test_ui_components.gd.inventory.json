@@ -202,12 +202,20 @@
       ],
       "text": [
         {
-          "selector": "StagingHeading",
+          "selector": "CompanyCommandHeading",
           "type": "Label",
           "variation": [
             "AuiHeadingLabel"
           ],
-          "owner": "StagingColumn"
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "CompanyCommandBody",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "BriefingRow"
         },
         {
           "selector": "CampaignSummary",
@@ -218,12 +226,20 @@
           "owner": "BriefingRow"
         },
         {
-          "selector": "NextMissionSummary",
+          "selector": "NextOperationTitle",
           "type": "Label",
           "variation": [
             "AuiBodyLabel"
           ],
-          "owner": "BriefingRow"
+          "owner": "NextOperationCard"
+        },
+        {
+          "selector": "NextOperationObjective",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "NextOperationCard"
         },
         {
           "selector": "OperationStatus",
@@ -295,7 +311,7 @@
         "BackToTitleButton"
       ],
       "target_count": 7,
-      "text_count": 11
+      "text_count": 13
     },
     "campaign_initial": {
       "screen_marker": "StageColumn",
@@ -468,12 +484,44 @@
           "owner": "SquadColumn"
         },
         {
-          "selector": "IntroHint",
+          "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
             "AuiDetailLabel"
           ],
-          "owner": "SquadColumn"
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingThreat",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingHumanReason",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingClue",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "TacticalHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
         },
         {
           "selector": "Pick_*",
@@ -527,7 +575,7 @@
         "BackButton"
       ],
       "target_count": 7,
-      "text_count": 11,
+      "text_count": 15,
       "focus_expansions": {
         "Pick_*": [
           "Pick_caster_1",
@@ -603,6 +651,22 @@
           "owner": "ResultsColumn"
         },
         {
+          "selector": "ConsequenceHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "ConsequenceLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
           "selector": "RetryButton",
           "type": "Button",
           "variation": [
@@ -633,7 +697,7 @@
         "BackToTitle"
       ],
       "target_count": 3,
-      "text_count": 7
+      "text_count": 9
     },
     "results_standalone_defeat": {
       "screen_marker": "ResultsColumn",
@@ -666,6 +730,22 @@
           "owner": "ResultsColumn"
         },
         {
+          "selector": "ConsequenceHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "ConsequenceLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
           "selector": "BackToTitle",
           "type": "Button",
           "variation": [
@@ -678,7 +758,7 @@
         "BackToTitle"
       ],
       "target_count": 1,
-      "text_count": 3
+      "text_count": 5
     },
     "campaign_advanced": {
       "screen_marker": "StageColumn",
@@ -886,12 +966,44 @@
           "owner": "SquadColumn"
         },
         {
-          "selector": "IntroHint",
+          "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
             "AuiDetailLabel"
           ],
-          "owner": "SquadColumn"
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingThreat",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingHumanReason",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingClue",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "TacticalHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
         },
         {
           "selector": "Pick_vanguard_1",
@@ -976,7 +1088,7 @@
         "StartBattle"
       ],
       "target_count": 7,
-      "text_count": 11
+      "text_count": 15
     },
     "squad_s2_expanded": {
       "screen_marker": "SquadColumn",
@@ -1064,12 +1176,44 @@
           "owner": "SquadColumn"
         },
         {
-          "selector": "IntroHint",
+          "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
             "AuiDetailLabel"
           ],
-          "owner": "SquadColumn"
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingThreat",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingHumanReason",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "BriefingClue",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
+        },
+        {
+          "selector": "TacticalHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "MissionBriefingPanel"
         },
         {
           "selector": "Pick_vanguard_1",
@@ -1162,7 +1306,7 @@
         "BackButton"
       ],
       "target_count": 8,
-      "text_count": 12
+      "text_count": 16
     },
     "results_campaign_rewardless_clear": {
       "screen_marker": "ResultsColumn",
@@ -1221,6 +1365,22 @@
           "owner": "ResultsColumn"
         },
         {
+          "selector": "ConsequenceHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "ConsequenceLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
           "selector": "RetryButton",
           "type": "Button",
           "variation": [
@@ -1251,7 +1411,7 @@
         "BackToTitle"
       ],
       "target_count": 3,
-      "text_count": 6
+      "text_count": 8
     },
     "results_campaign_defeat": {
       "screen_marker": "ResultsColumn",
@@ -1302,6 +1462,22 @@
           "owner": "ResultsColumn"
         },
         {
+          "selector": "ConsequenceHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "ConsequenceLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
           "selector": "RetryButton",
           "type": "Button",
           "variation": [
@@ -1332,7 +1508,7 @@
         "BackToTitle"
       ],
       "target_count": 3,
-      "text_count": 5
+      "text_count": 7
     },
     "results_standalone_clear": {
       "screen_marker": "ResultsColumn",
@@ -1373,6 +1549,22 @@
           "owner": "ResultsColumn"
         },
         {
+          "selector": "ConsequenceHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "ConsequenceLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
           "selector": "BackToTitle",
           "type": "Button",
           "variation": [
@@ -1385,7 +1577,7 @@
         "BackToTitle"
       ],
       "target_count": 1,
-      "text_count": 4
+      "text_count": 6
     }
   }
 }

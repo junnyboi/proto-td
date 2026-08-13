@@ -1,23 +1,27 @@
 extends Control
 
-## Campaign home. This view derives summaries and routes through Game; it never
-## mutates campaign state.
-
+## Campaign home. Narrative is a presentation-only projection; Game remains authoritative.
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
-const SHELL_SIZE := Vector2(1080.0, 620.0)
+const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
+const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
+const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
-const AetheriaScreenShellType := preload(
-	"res://scripts/ui/components/aetheria_screen_shell.gd"
-)
+const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const SHELL_SIZE := Vector2(1080.0, 620.0)
 
 var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
+var _mission: AetheriaButtonType = null
+var _next_record: StageNarrativeDefType = null
+var _next_stage: StageDef = null
+var _narrative_missing := false
 
 
 func _ready() -> void:
 	Game.content = self
+	_resolve_next_operation()
 	_build_screen()
 
 
@@ -27,21 +31,32 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_back_to_title()
 
 
+func _resolve_next_operation() -> void:
+	if Game.campaign == null:
+		return
+	for stage_id: StringName in Game.campaign_stage_ids():
+		if Game.is_stage_unlocked(stage_id) and not Game.campaign.stage_stars.has(stage_id):
+			_next_stage = load("res://data/stages/%s.tres" % stage_id) as StageDef
+			_next_record = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
+			_narrative_missing = _next_record == null
+			return
+
+
 func _build_screen() -> void:
 	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "StagingScreenShell"
 	shell.preferred_size = SHELL_SIZE
 	add_child(shell)
 	shell.layout_mode_changed.connect(_on_layout_mode_changed)
-	(shell.get_node("SafeMargin/Center/ReadingPlate") as PanelContainer).name = "StagingShell"
-
+	(
+		shell.get_node("SafeMargin/Center/ReadingFrame/ReadingPlate") as PanelContainer
+	).name = "StagingShell"
 	var scroll := ScrollContainer.new()
 	scroll.name = "StagingScroll"
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	shell.content_host().add_child(scroll)
-
 	var column := VBoxContainer.new()
 	column.name = "StagingColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -55,31 +70,28 @@ func _build_screen() -> void:
 func _build_briefing() -> GridContainer:
 	_briefing = GridContainer.new()
 	_briefing.name = "BriefingRow"
-	_briefing.columns = 3
+	_briefing.columns = 2
 	_briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_theme_constant_override(&"h_separation", 24)
-	_briefing.add_theme_constant_override(&"v_separation", 18)
-
-	var heading := _label(
-		"StagingHeading", UiCopyType.text(&"ui.staging.heading", "STAGING"), &"heading",
-	)
+	_briefing.add_theme_constant_override(&"v_separation", 8)
+	var heading := _label("CompanyCommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"), &"heading")
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_briefing.add_child(heading)
-
-	var campaign_summary := _label(
-		"CampaignSummary", _campaign_summary_text(), &"body",
-	)
-	campaign_summary.custom_minimum_size = Vector2(0.0, 92.0)
-	campaign_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	campaign_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_briefing.add_child(campaign_summary)
-
-	var next_summary := _label("NextMissionSummary", _next_mission_text(), &"body")
-	next_summary.custom_minimum_size = Vector2(0.0, 126.0)
-	next_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	next_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_briefing.add_child(next_summary)
+	var summary := _label("CampaignSummary", _campaign_summary_text(), &"body")
+	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_briefing.add_child(summary)
+	var body := _label("CompanyCommandBody", UiCopyType.text(&"ui.staging.command_body", "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation."), &"detail")
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.custom_minimum_size.y = 84.0
+	_briefing.add_child(body)
+	var next_box := VBoxContainer.new()
+	next_box.name = "NextOperationCard"
+	next_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var title := _label("NextOperationTitle", _next_operation_title(), &"body")
+	var objective := _label("NextOperationObjective", _next_operation_objective(), &"detail")
+	next_box.add_child(title)
+	next_box.add_child(objective)
+	_briefing.add_child(next_box)
 	return _briefing
 
 
@@ -88,23 +100,10 @@ func _build_operations() -> VBoxContainer:
 	operations.name = "OperationsColumn"
 	operations.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	operations.add_theme_constant_override(&"separation", 10)
-
-	var status := _label(
-		"OperationStatus",
-		UiCopyType.text(
-			&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE",
-		),
-		&"detail",
-	)
-	operations.add_child(status)
-
-	var mission := _button(
-		"MissionControlButton",
-		UiCopyType.text(&"ui.staging.mission_control", "Mission Control"),
-		"Mission\nControl", true, &"primary",
-	)
-	mission.pressed.connect(_on_mission_control)
-
+	operations.add_child(_label("OperationStatus", UiCopyType.text(&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE"), &"detail"))
+	_mission = _button("MissionControlButton", UiCopyType.text(&"ui.staging.mission_control", "Mission Control"), "Mission
+Control", not _narrative_missing, &"primary" if not _narrative_missing else &"disabled")
+	_mission.pressed.connect(_on_mission_control)
 	_operation_grid = GridContainer.new()
 	_operation_grid.name = "OperationGrid"
 	_operation_grid.columns = 4
@@ -112,52 +111,33 @@ func _build_operations() -> VBoxContainer:
 	_operation_grid.add_theme_constant_override(&"h_separation", 14)
 	_operation_grid.add_theme_constant_override(&"v_separation", 10)
 	operations.add_child(_operation_grid)
-	_operation_grid.add_child(mission)
-	var back := _button(
-		"BackToTitleButton",
-		UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
-		"Back to\nTitle", true, &"secondary",
-	)
+	_operation_grid.add_child(_mission)
+	var back := _button("BackToTitleButton", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), "Back to
+Title", true, &"secondary")
 	back.pressed.connect(_on_back_to_title)
 	_operation_grid.add_child(back)
-
 	for specification: Array in [
-		[
-			"BarracksButton", &"ui.staging.barracks_unavailable",
-			"Barracks — Unavailable", "Barracks\nUnavailable",
-		],
-		[
-			"RecruitButton", &"ui.staging.recruit_unavailable",
-			"Recruit — Unavailable", "Recruit\nUnavailable",
-		],
-		[
-			"TrainingButton", &"ui.staging.training_unavailable",
-			"Training — Unavailable", "Training\nUnavailable",
-		],
-		[
-			"ArmoryButton", &"ui.staging.armory_unavailable",
-			"Armory — Unavailable", "Armory\nUnavailable",
-		],
-		[
-			"MemorialButton", &"ui.staging.memorial_unavailable",
-			"Memorial — Unavailable", "Memorial\nUnavailable",
-		],
+		["BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable", "Barracks
+Unavailable"],
+		["RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable", "Recruit
+Unavailable"],
+		["TrainingButton", &"ui.staging.training_unavailable", "Training — Unavailable", "Training
+Unavailable"],
+		["ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable", "Armory
+Unavailable"],
+		["MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable", "Memorial
+Unavailable"],
 	]:
-		_operation_grid.add_child(_button(
-			String(specification[0]),
-			UiCopyType.text(StringName(specification[1]), String(specification[2])),
-			String(specification[3]), false, &"disabled",
-		))
-
-	mission.focus_neighbor_top = mission.get_path_to(back)
-	mission.focus_previous = mission.get_path_to(back)
-	mission.focus_neighbor_bottom = mission.get_path_to(back)
-	mission.focus_next = mission.get_path_to(back)
-	back.focus_neighbor_top = back.get_path_to(mission)
-	back.focus_previous = back.get_path_to(mission)
-	back.focus_neighbor_bottom = back.get_path_to(mission)
-	back.focus_next = back.get_path_to(mission)
-	mission.grab_focus.call_deferred()
+		_operation_grid.add_child(_button(String(specification[0]), UiCopyType.text(StringName(specification[1]), String(specification[2])), String(specification[3]), false, &"disabled"))
+	_mission.focus_neighbor_top = _mission.get_path_to(back)
+	_mission.focus_previous = _mission.get_path_to(back)
+	_mission.focus_neighbor_bottom = _mission.get_path_to(back)
+	_mission.focus_next = _mission.get_path_to(back)
+	back.focus_neighbor_top = back.get_path_to(_mission)
+	back.focus_previous = back.get_path_to(_mission)
+	back.focus_neighbor_bottom = back.get_path_to(_mission)
+	back.focus_next = back.get_path_to(_mission)
+	(back if _mission.disabled else _mission).grab_focus.call_deferred()
 	return operations
 
 
@@ -168,34 +148,28 @@ func _campaign_summary_text() -> String:
 		for stage_id: StringName in stage_ids:
 			if Game.campaign.stage_stars.has(stage_id):
 				cleared += 1
-	return UiCopyType.format_text(
-		&"ui.staging.campaign_summary",
-		"{cleared}/{total} CLEARED",
-		{&"cleared": cleared, &"total": stage_ids.size()},
-	)
+	return UiCopyType.format_text(&"ui.staging.campaign_summary", "{cleared}/{total} CLEARED", {&"cleared": cleared, &"total": stage_ids.size()})
 
 
-func _next_mission_text() -> String:
+func _next_operation_title() -> String:
 	if Game.campaign == null:
-		return UiCopyType.text(
-			&"ui.staging.next_none", "NEXT: No active campaign",
-		)
-	for stage_id: StringName in Game.campaign_stage_ids():
-		if Game.is_stage_unlocked(stage_id) and not Game.campaign.stage_stars.has(stage_id):
-			var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
-			return UiCopyType.format_text(
-				&"ui.staging.next_detail", "NEXT: {index}. {title}",
-				{
-					&"index": stage.campaign_index,
-					&"title": UiCopyType.stage_title(stage),
-				},
-			)
-	return UiCopyType.text(
-		&"ui.staging.next_complete", "NEXT: Campaign complete",
-	)
+		return UiCopyType.text(&"ui.staging.next_none", "NEXT: No active campaign")
+	if _next_stage == null:
+		return UiCopyType.text(&"ui.staging.next_complete", "NEXT: Campaign complete")
+	return UiCopyType.format_text(&"ui.staging.next_operation_title", "NEXT {index}: {title}", {&"index": _next_stage.campaign_index, &"title": UiCopyType.stage_title(_next_stage)})
+
+
+func _next_operation_objective() -> String:
+	if _narrative_missing:
+		return UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
+	if _next_record == null:
+		return ""
+	return UiCopyType.stage_narrative_text(_next_record, StageNarrativeDefType.Field.OBJECTIVE)
 
 
 func _on_mission_control() -> void:
+	if _narrative_missing:
+		return
 	Sfx.play("ui_click")
 	Game.open_stage_select()
 
@@ -207,7 +181,7 @@ func _on_back_to_title() -> void:
 
 func _on_layout_mode_changed(mode: StringName) -> void:
 	if _briefing != null:
-		_briefing.columns = 1 if mode == &"portrait" else 3
+		_briefing.columns = 1 if mode == &"portrait" else 2
 	if _operation_grid != null:
 		_operation_grid.columns = 2 if mode == &"portrait" else 4
 
@@ -217,14 +191,11 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 	label.name = label_name
 	label.text = label_text
 	label.apply_role(role)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	return label
 
 
-func _button(
-		button_name: String, button_text: String, presentation_text: String,
-		enabled: bool, role: StringName,
-	) -> AetheriaButtonType:
+func _button(button_name: String, button_text: String, presentation_text: String, enabled: bool, role: StringName) -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text

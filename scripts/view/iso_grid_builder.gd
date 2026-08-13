@@ -49,7 +49,35 @@ static func build_stage(
 		if report_error:
 			push_error("iso_grid_builder: %s" % error)
 		return false
-	var theme := result["theme"] as StageArtThemeType
+	return build_stage_with_theme(
+		grid_root, stage, result["theme"] as StageArtThemeType, report_error
+	)
+
+
+## Presentation-only seam for callers that already completed theme preflight.
+## Revalidation is deliberately fail-closed and happens before any child is added.
+static func build_stage_with_theme(
+	grid_root: Node2D,
+	stage: StageDef,
+	theme: StageArtThemeType,
+	report_error: bool = true,
+) -> bool:
+	var errors := PackedStringArray()
+	if grid_root == null:
+		errors.append("grid root is null")
+	if stage == null:
+		errors.append("stage is null")
+	elif StageArtThemeType.expects_theme(stage) and theme == null:
+		errors.append("required stage art theme was not provided for %s" % stage.id)
+	if stage != null and theme != null:
+		errors.append_array(theme.validation_errors(stage))
+		for id: StringName in theme.required_manifest_ids():
+			if Art.texture(id) == null or Art.size(id) == Vector2i.ZERO:
+				errors.append("manifest asset missing or unsized: %s" % id)
+	if not errors.is_empty():
+		if report_error:
+			push_error("iso_grid_builder: invalid explicit stage art theme: %s" % "; ".join(errors))
+		return false
 	_build_backdrop_ring(grid_root, stage.grid_size(), theme)
 	_build_terrain(grid_root, stage, theme)
 	return true
@@ -66,23 +94,32 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var cell := Vector2i(x, y)
 			var tile := stage.tile_at(cell)
 			var lifted := tile == StageDef.Tile.ELEVATED
-			var is_road := tile == StageDef.Tile.GROUND and path_cells.has(cell)
-			var art_id: StringName = (
-				theme.tile_id(tile, path_cells.has(cell)) if theme != null else &""
+			var is_route := path_cells.has(cell)
+			var is_road := tile == StageDef.Tile.GROUND and is_route
+			var resolved := (
+				theme.resolve_cell(cell, tile, is_route)
+				if theme != null
+				else {"tile_id": &"", "cadence_id": &""}
 			)
+			var art_id := StringName(resolved["tile_id"])
 			if art_id == &"":
 				art_id = &"tile_road" if is_road else TILE_ART[tile]
-			if _add_tile_sprite(grid_root, stage, cell, art_id, lifted):
-				continue
-			var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
-			if lifted:
-				_add_tile_walls(grid_root, stage, cell, color)
-			var poly := Polygon2D.new()
-			poly.name = "Tile_%d_%d" % [x, y]
-			poly.color = color
-			poly.polygon = IsoProjection.cell_polygon(cell, lifted)
-			poly.z_index = IsoProjection.tile_z(cell)
-			grid_root.add_child(poly)
+			var surface_modulate := theme.surface_modulate if theme != null else Color.WHITE
+			if not _add_tile_sprite(
+				grid_root, stage, cell, art_id, lifted, surface_modulate
+			):
+				var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
+				if lifted:
+					_add_tile_walls(grid_root, stage, cell, color)
+				var poly := Polygon2D.new()
+				poly.name = "Tile_%d_%d" % [x, y]
+				poly.color = color * surface_modulate
+				poly.polygon = IsoProjection.cell_polygon(cell, lifted)
+				poly.z_index = IsoProjection.tile_z(cell)
+				grid_root.add_child(poly)
+			var cadence_id := StringName(resolved["cadence_id"])
+			if cadence_id != &"":
+				_add_face_overlay(grid_root, cell, cadence_id, "Cadence")
 	if theme != null:
 		_add_theme_decor(grid_root, stage, theme)
 
@@ -190,7 +227,12 @@ static func _backdrop_art_id(
 ## is the face plus optional baked wall rows below, drawn at the pinned 2x).
 ## Returns false when the id has no art — the flat-color fallback lane runs.
 static func _add_tile_sprite(
-	grid_root: Node2D, stage: StageDef, cell: Vector2i, art_id: StringName, lifted: bool
+	grid_root: Node2D,
+	stage: StageDef,
+	cell: Vector2i,
+	art_id: StringName,
+	lifted: bool,
+	surface_modulate: Color,
 ) -> bool:
 	var tex := Art.texture(art_id)
 	if tex == null:
@@ -200,6 +242,7 @@ static func _add_tile_sprite(
 	sprite.name = "Tile_%d_%d" % [cell.x, cell.y]
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = tex
+	sprite.self_modulate = surface_modulate
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
 	var art_size := Art.size(art_id)
 	if art_size == Vector2i.ZERO:

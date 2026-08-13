@@ -10,9 +10,15 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
+const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
+const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 
 var _stage: StageDef = null
 var _picked: Array[StringName] = []
+var _narrative: StageNarrativeDefType = null
+var _narrative_missing := false
+var _briefing: GridContainer = null
 var _buttons: Dictionary = {}
 var _counter: Label = null
 var _start: AetheriaButtonType = null
@@ -25,6 +31,8 @@ var _header: BoxContainer = null
 func _ready() -> void:
 	Game.content = self
 	_stage = load("res://data/stages/%s.tres" % Game.selected_stage_id) as StageDef
+	_narrative = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(Game.selected_stage_id)
+	_narrative_missing = _narrative == null
 	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	shell.name = "SquadShell"
 	shell.preferred_size = Vector2(1160.0, 640.0)
@@ -57,11 +65,7 @@ func _ready() -> void:
 	heading.custom_minimum_size.x = 320.0
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_child(heading)
-	var full_hint := UiCopyType.stage_hint(_stage)
-	var intro := _label("IntroHint", _compact_hint(full_hint), &"detail")
-	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	intro.tooltip_text = full_hint
-	_header.add_child(intro)
+	column.add_child(_build_mission_briefing())
 
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
@@ -146,6 +150,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_back()
 
 
+func _build_mission_briefing() -> GridContainer:
+	_briefing = GridContainer.new()
+	_briefing.name = "MissionBriefingPanel"
+	_briefing.columns = 2
+	_briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_briefing.add_theme_constant_override(&"h_separation", 20)
+	_briefing.add_theme_constant_override(&"v_separation", 6)
+	_add_briefing_value("BriefingObjective", &"ui.squad.briefing.objective", "Objective", StageNarrativeDefType.Field.OBJECTIVE)
+	_add_briefing_value("BriefingThreat", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
+	_add_briefing_value("BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
+	_add_briefing_value("BriefingClue", &"ui.squad.briefing.clue", "Field note", StageNarrativeDefType.Field.CLUE)
+	var hint := _label("TacticalHint", "Tactical hint — %s" % UiCopyType.stage_hint(_stage), &"detail")
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_briefing.add_child(hint)
+	return _briefing
+
+
+func _add_briefing_value(node_name: String, key: StringName, fallback: String, field: StageNarrativeDefType.Field) -> void:
+	var heading := UiCopyType.text(key, fallback)
+	var value := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.") if _narrative_missing else UiCopyType.stage_narrative_text(_narrative, field)
+	var label := _label(node_name, "%s — %s" % [heading, value], &"detail")
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_briefing.add_child(label)
+
+
 func _prefill() -> void:
 	for op_id: StringName in Game.selected_squad:
 		if _picked.size() >= _stage.squad_size:
@@ -194,7 +223,7 @@ func _refresh() -> void:
 		(_buttons[op_id] as AetheriaButtonType).apply_role(
 			&"selected" if _picked.has(op_id) else &"secondary",
 		)
-	_start.disabled = _picked.is_empty()
+	_start.disabled = _picked.is_empty() or _narrative_missing
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
 	_start.apply_role(&"disabled" if _start.disabled else &"primary")
 	_wire_focus()
@@ -217,17 +246,6 @@ func _wire_focus() -> void:
 		focusable[0].grab_focus.call_deferred()
 
 
-func _compact_hint(full_hint: String) -> String:
-	const LIMIT := 18
-	if full_hint.length() <= LIMIT:
-		return full_hint
-	var prefix := full_hint.left(LIMIT).strip_edges()
-	var boundary := prefix.rfind(" ")
-	if boundary > 6:
-		prefix = prefix.left(boundary)
-	return prefix + "…"
-
-
 func _compact_operator_name(full_name: String) -> String:
 	const LIMIT := 4
 	if full_name.length() <= LIMIT:
@@ -238,6 +256,8 @@ func _compact_operator_name(full_name: String) -> String:
 func _on_layout_mode_changed(mode: StringName) -> void:
 	if _header != null:
 		_header.vertical = mode == &"portrait"
+	if _briefing != null:
+		_briefing.columns = 1 if mode == &"portrait" or mode == &"compact_landscape" else 2
 	if _grid == null:
 		return
 	_grid.columns = 2 if mode == &"portrait" else 5

@@ -124,12 +124,10 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 
 ## AUI-20 — Integrated S1 slice and kill-gate verdict
 
-- Status: `claimed_plan_in_progress`; no implementation byte has been written.
-- Owner: `AGENT F (Agent 7)`.
-- Claim branch/base: `agent-f/aui-20-claim` from `master` at `38e3123f31188a5bb8b0093bc092940e424e5961` / tree `ea9a4e1b40afd5cf019610586725f5712468b312`.
-- Base health: clean 33-rung default verification PASS; `verify.json` SHA-256 `4da359c0bfe6bb721877b9bbfbe68dedca323b2c96d7cd4bca4a1648338cd807`.
-- Landed dependencies: AUI-12 approved candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d`; AUI-10R approved runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9`; AUI-10R Poseidon receipt SHA-256 `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`.
-- Dependency amendment: Poseidon's exact-base claim directive supersedes only the older scheduling edge from AUI-11 to AUI-20. AUI-11 remains separate; this package consumes and judges no unlanded Agent E runtime bytes.
-- Frozen package boundary: one title-to-S1 integrated scenario plus focused native/Web/performance oracles and the `PROCEED | PIVOT | KILL source approach` verdict. No bulk content, full-screen redesign, Act II work, simulation, balance, projection, localization, audio, threshold, or verification-entrypoint change.
-- Effective implementation lane: MGS v2 `RELEASE`; claim lane: docs-only `STANDARD`.
-- Next transition: freeze the external package plan, obtain plan-lint PASS, land this claim, then create non-rewriting `agent-f/aui-20` from the exact landed claim commit with a new RELEASE orientation. `FEATURES.json` remains unchanged until closure evidence satisfies its declared boundary.
+- Status: `retired_superseded_pre_implementation` as of 2026-08-13 by Poseidon direction.
+- Runtime truth: no AUI-20 implementation byte was written. The retired package consists only of landed claim/decision history on `agent-f/aui-20-claim`, `agent-f/aui-20-fixture-amendment`, and `agent-f/aui-20-rebase-claim`.
+- Retirement base: clean master `8e6b0fa52faa935bc32f810c5048b43b61bb1132` / tree `1ef2e07cd9763725a91550e73b1c33e77fb5859a`; unchanged default verification passed 35/35 rungs. Baseline stdout SHA-256: `7709b69cc4360ef31c8ec3abdc2b334f562519f5a1cdffcfbe7a1c915a2fca95`; `verify.json` SHA-256: `75dd641a49ac1801e232271a848d97389abc50b707bdf1093f70a10f642d417a`.
+- Supersession: Protos canon 3.3 requires a broader Company 33/Act I comprehension tranche, and the owner has directed a separate turn-based tactical-combat proposal. The narrow S1 192 px source-approach kill gate is therefore no longer the next product question.
+- Ownership release: every AUI-20 path claim is released. The fixture authorization and prior rebase decision remain preserved as historical evidence, not active runtime authority; reuse requires a new current-base claim and plan.
+- Shared-state boundary: `FEATURES.json` remains unchanged because AUI-20 never became an implemented product feature. Canon comprehension and tactical combat will receive independent IDs only when implementation begins.
+- Durable decision: `docs/decisions/AUI-20-RETIREMENT.md`.

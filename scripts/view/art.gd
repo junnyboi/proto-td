@@ -7,20 +7,68 @@ extends RefCounted
 ## placeholder look instead of crashing a battle.
 
 static var _manifest: AssetManifest = null
+static var _supplemental_manifest: AssetManifest = null
+static var _manifest_entries: Dictionary = {}
+static var _manifest_error := false
 static var _cache: Dictionary = {}
 
 
+static func _load_manifests() -> void:
+	if (_manifest != null and _supplemental_manifest != null) or _manifest_error:
+		return
+	_manifest = load("res://assets/manifest.tres") as AssetManifest
+	_supplemental_manifest = load("res://assets/act2_candidate_manifest.tres") as AssetManifest
+	if _manifest == null or _supplemental_manifest == null:
+		_manifest_error = true
+		push_error("Art: failed to load base or supplemental asset manifest")
+		return
+	var merged := merge_manifest_entries(_manifest.entries, _supplemental_manifest.entries)
+	if not bool(merged[&"ok"]):
+		_manifest_error = true
+		push_error("Art: duplicate asset id across manifest layers: %s" % merged[&"duplicate_id"])
+		return
+	_manifest_entries = merged[&"entries"]
+
+
+## Pure test seam: base owns precedence, but overlap fails closed rather than shadowing.
+static func merge_manifest_entries(base_entries: Dictionary, supplemental_entries: Dictionary) -> Dictionary:
+	var entries := base_entries.duplicate(true)
+	for raw_id: Variant in supplemental_entries:
+		if entries.has(raw_id):
+			return {&"ok": false, &"entries": {}, &"duplicate_id": raw_id}
+		entries[raw_id] = supplemental_entries[raw_id]
+	return {&"ok": true, &"entries": entries, &"duplicate_id": &""}
+
+
+## Internal reset seam for focused tests; never returns mutable manifest state.
+static func _reset_manifests_for_test() -> void:
+	_manifest = null
+	_supplemental_manifest = null
+	_manifest_entries = {}
+	_manifest_error = false
+	_cache.clear()
+
+
 static func _entry(id: StringName) -> Dictionary:
-	if _manifest == null:
-		_manifest = load("res://assets/manifest.tres") as AssetManifest
-	if _manifest == null:
+	_load_manifests()
+	if _manifest_error:
 		return {}
-	var entry: Variant = _manifest.entries.get(id)
+	var entry: Variant = _manifest_entries.get(id)
 	return entry if entry is Dictionary else {}
 
 
 static func frame_count(id: StringName) -> int:
 	return int(_entry(id).get("frames", 0))
+
+
+static func fps(id: StringName) -> float:
+	var animations: Variant = _entry(id).get("animations", {})
+	if animations is not Dictionary or animations.is_empty():
+		return 0.0
+	var names: Array = animations.keys()
+	names.sort_custom(func(a: Variant, b: Variant) -> bool: return String(a) < String(b))
+	var region: Variant = animations[names[0]]
+	return float(region.get(&"fps", 0.0)) if region is Dictionary else 0.0
 
 
 ## Native pixel size from the manifest (P12.1: tiles are no longer a
@@ -54,9 +102,7 @@ static func animation_names(id: StringName) -> Array[StringName]:
 	return result
 
 
-static func animation_frame_index(
-	id: StringName, animation: StringName, local_frame: int
-) -> int:
+static func animation_frame_index(id: StringName, animation: StringName, local_frame: int) -> int:
 	if local_frame < 0:
 		return -1
 	var stored: Variant = _entry(id).get("animations", {})
@@ -71,9 +117,7 @@ static func animation_frame_index(
 	return int(raw_region.get("start", -1)) + local_frame
 
 
-static func animation_texture(
-	id: StringName, animation: StringName, local_frame: int
-) -> Texture2D:
+static func animation_texture(id: StringName, animation: StringName, local_frame: int) -> Texture2D:
 	var frame := animation_frame_index(id, animation, local_frame)
 	return texture(id, frame) if frame >= 0 else null
 
@@ -86,12 +130,58 @@ static func provenance_sha256(id: StringName) -> String:
 static func texture(id: StringName, frame := 0) -> Texture2D:
 	var key := "%s/%d" % [id, frame]
 	if _cache.has(key):
-		return _cache[key]
+		var cached: Variant = _cache[key]
+		if cached is Texture2D:
+			return cached
+		_cache.erase(key)
 	var entry := _entry(id)
 	if entry.is_empty():
 		return null
+	var frames := int(entry.get("frames", 0))
+	if frame < 0 or frame >= frames:
+		return null
 	var pattern: String = entry["pattern"]
-	var path := pattern % frame if int(entry["frames"]) > 1 else pattern
-	var tex := load(path) as Texture2D
-	_cache[key] = tex
+	var tex: Texture2D = null
+	if frames > 1 and not pattern.contains("%d"):
+		var frame_size := size(id)
+		var atlas_source := _load_texture(pattern)
+		if atlas_source != null and frame_size != Vector2i.ZERO:
+			var atlas := AtlasTexture.new()
+			atlas.atlas = atlas_source
+			atlas.region = Rect2i(frame * frame_size.x, 0, frame_size.x, frame_size.y)
+			atlas.filter_clip = true
+			tex = atlas
+	else:
+		var path := pattern % frame if frames > 1 else pattern
+		tex = _load_texture(path)
+	if tex != null:
+		_cache[key] = tex
 	return tex
+
+
+static func _load_texture(path: String) -> Texture2D:
+	if not _import_cache_missing(path):
+		var imported := ResourceLoader.load(path) as Texture2D
+		if imported != null:
+			return imported
+	return _load_source_png(path)
+
+
+static func _import_cache_missing(path: String) -> bool:
+	var import_path := path + ".import"
+	if not FileAccess.file_exists(import_path):
+		return false
+	var config := ConfigFile.new()
+	if config.load(import_path) != OK:
+		return false
+	var cache_path := String(config.get_value("remap", "path", ""))
+	return not cache_path.is_empty() and not FileAccess.file_exists(cache_path)
+
+
+static func _load_source_png(path: String) -> Texture2D:
+	if path.get_extension().to_lower() != "png" or not FileAccess.file_exists(path):
+		return null
+	var image := Image.load_from_file(ProjectSettings.globalize_path(path))
+	if image == null or image.is_empty():
+		return null
+	return ImageTexture.create_from_image(image)

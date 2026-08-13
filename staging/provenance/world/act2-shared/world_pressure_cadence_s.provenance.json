@@ -1,0 +1,41 @@
+{
+  "approval": {
+    "approved_content_hash_launch_dependency": false,
+    "human_final_art": false,
+    "token": "ACT-II-S2-S3-H0"
+  },
+  "final_file": "assets/world/act2-shared/cadence-s.png",
+  "final_file_sha256": "e308c3a9caa7fda02ae02953d56d2084192a20829bb01cefb7eb4a8872888569",
+  "generator": {
+    "generation_id": "UNAVAILABLE",
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": "UNAVAILABLE",
+    "tool": "Manus built-in image generation",
+    "unavailability_reason": "Generation tool exposed neither generation ID nor seed; neither is invented."
+  },
+  "human_final_art": false,
+  "logical_id": "world.pressure.cadence_s",
+  "normalization": {
+    "method": "deterministic source palette extraction + original programmatic pixel shape; hard alpha; no dithering",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "tool": "tools/art_pipeline/world/act2_shared/normalize.py",
+    "tool_sha256": "a0abd59e87ce273cbae63f5f64466fd0222d8740d58b008b83a2155ba0935344"
+  },
+  "reserved_colors": {
+    "forbidden": [
+      "#F4F4F4",
+      "#41A6F6"
+    ],
+    "gate": "PASS"
+  },
+  "schema_version": 1,
+  "source": {
+    "path": "art-src/world/act2-shared/act2-shared-production-source.png",
+    "sha256": "b7cd173a2bdb4341456b53eb3a0c919e8fe7696d22402194ea27d3c77fe48ca3",
+    "usage": "palette/material/provenance input only; not copied or resized"
+  },
+  "staged_file": "staging/assets/world/act2-shared/cadence-s.png",
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}

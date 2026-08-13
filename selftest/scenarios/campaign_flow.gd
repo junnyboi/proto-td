@@ -66,20 +66,30 @@ func run(h: SelfTestHarness) -> void:
 		return
 	var grid := squad_screen.find_child("OperatorGrid", true, false)
 	h.check("exactly the five starting operators", grid.get_child_count() == 5)
+	var squad_scroll := squad_screen.find_child("SquadScroll", true, false) as ScrollContainer
 	var start_btn := squad_screen.find_child("StartBattle", true, false) as Button
 	h.check("StartBattle disabled before any pick", start_btn.disabled)
 	for op_id: StringName in PICKS:
 		var pick := squad_screen.find_child("Pick_%s" % op_id, true, false) as Button
+		squad_scroll.ensure_control_visible(pick)
+		await h.frames(3)
+		h.check("%s visible for real pick input" % op_id, squad_scroll.get_global_rect().intersects(pick.get_global_rect()))
 		await h.click_view(pick.get_global_rect().get_center())
 	var counter := squad_screen.find_child("PickCounter", true, false) as Label
 	h.check("counter reads 3/3", counter.text.begins_with("3/3"), counter.text)
 	var fourth := squad_screen.find_child("Pick_caster_1", true, false) as Button
+	squad_scroll.ensure_control_visible(fourth)
+	await h.frames(3)
+	h.check("fourth pick visible for real input", squad_scroll.get_global_rect().intersects(fourth.get_global_rect()))
 	await h.click_view(fourth.get_global_rect().get_center())
 	h.check("a fourth pick rejects", counter.text.begins_with("3/3"), counter.text)
 	h.check("fourth button not stuck pressed", not fourth.button_pressed)
 	var strip := squad_screen.find_child("LoadoutStrip", true, false) as Label
 	h.check("loadout strip empty pre-unlocks", strip.text.contains("nothing unlocked"))
 	h.check("StartBattle enabled after picks", not start_btn.disabled)
+	squad_scroll.ensure_control_visible(start_btn)
+	await h.frames(3)
+	h.check("StartBattle visible for real input", squad_scroll.get_global_rect().intersects(start_btn.get_global_rect()))
 	await h.shot("squad_select")
 	await _battle_and_progress(h, game, start_btn, campaign_ref)
 
@@ -193,6 +203,10 @@ func _return_to_stage_select(
 	h.check("campaign CLEAR offers Return to Staging", to_staging != null)
 	if to_staging == null:
 		return null
+	var results_scroll := results.find_child("ResultsScroll", true, false) as ScrollContainer
+	results_scroll.ensure_control_visible(to_staging)
+	await h.frames(3)
+	h.check("Return to Staging visible for real input", results_scroll.get_global_rect().intersects(to_staging.get_global_rect()))
 	await h.click_view(to_staging.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("Staging re-opened after clear", staging != null)

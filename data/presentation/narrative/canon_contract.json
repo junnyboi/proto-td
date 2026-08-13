@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "bible": {
+    "version": "3.3",
+    "sha256": "da442ced518da9d4690e2dcb381120bb17aaf9d822ffc71b016ff74762e3e2aa"
+  },
+  "active_surface_sources": [
+    "UiCopy.STATIC_FALLBACKS",
+    "StageNarrativeCatalog.records",
+    "localization/en-US.json",
+    "scripts/ui/staging.gd",
+    "scripts/ui/squad_select.gd",
+    "scripts/ui/results.gd"
+  ],
+  "required_terms": [
+    "Company 33",
+    "Great Flare",
+    "the Fall",
+    "Custodian",
+    "Hearthcross",
+    "Goa Wey",
+    "Deep Gate"
+  ],
+  "word_bounded_terms": [
+    "the Fall"
+  ],
+  "s6_required_terms": [
+    "forced override",
+    "resisting",
+    "consent"
+  ],
+  "retired_terms": [
+    "Company Nine",
+    "Wayhouse Nine",
+    "Great Unanswering",
+    "Tavra Ohn",
+    "Sere Vey",
+    "Mera Vhal",
+    "Hodor"
+  ],
+  "forbidden_charm_descriptions": [
+    "tame",
+    "pet",
+    "willing turncoat",
+    "willing defection",
+    "friendship"
+  ],
+  "exclusions": [
+    "historical documentation",
+    "Git history",
+    "test fixtures quoting rejected strings",
+    "internal non-rendered Aetheria identifiers"
+  ]
+}

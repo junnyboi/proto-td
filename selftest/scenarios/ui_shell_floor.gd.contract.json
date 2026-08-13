@@ -138,6 +138,7 @@
       "font_size_mismatches",
       "base_resource_mismatches",
       "reflow_mismatches",
+      "scroll_reachability_mismatches",
       "locale_item_count",
       "locale_item_text",
       "locale_item_metadata_type",
@@ -148,6 +149,9 @@
       "locale_selected_fill",
       "locale_contrast",
       "locale_geometry_mismatches"
+    ],
+    "per_inventory_state_empty_fields": [
+      "scroll_reachability_mismatches"
     ]
   },
   "text200_contract": {
@@ -200,6 +204,7 @@
           "SquadHeader"
         ],
         "columns_one": [
+          "MissionBriefingPanel",
           "OperatorGrid",
           "SquadFooter"
         ]

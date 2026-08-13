@@ -1,6 +1,8 @@
 extends GutTest
 
 const I18nScript := preload("res://autoloads/i18n.gd")
+const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
+const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const TITLE_KEY := &"ui.game_title"
 const TITLE_FALLBACK := "Protos"
 const STAGE_IDS: Array[StringName] = [
@@ -53,7 +55,7 @@ func test_catalog_has_exact_generated_key_value_set_and_order() -> void:
 	var expected_keys: Array = expected.keys()
 	expected_keys.sort()
 	assert_eq(entries.keys(), expected_keys)
-	assert_eq(entries.size(), 72)
+	assert_eq(entries.size(), 137)
 	for key: Variant in expected_keys:
 		assert_eq(entries[key], expected[key], "catalog value %s" % key)
 	var i18n := I18nScript.new()
@@ -130,6 +132,9 @@ func test_ui_copy_dynamic_helpers_preserve_resource_fallbacks() -> void:
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		assert_eq(UiCopy.stage_title(stage), stage.title)
 		assert_eq(UiCopy.stage_hint(stage), stage.intro_hint)
+	for record: StageNarrativeDefType in NARRATIVE_CATALOG.records:
+		for field: StageNarrativeDefType.Field in _narrative_fields():
+			assert_eq(UiCopy.stage_narrative_text(record, field), record.fallback_for(field))
 	for operator_id: StringName in OPERATOR_IDS:
 		var definition := load(
 			"res://data/operators/%s.tres" % operator_id,
@@ -150,7 +155,7 @@ func test_every_catalog_fallback_and_formatted_codepoint_exists_in_active_font()
 		corpus += String(value)
 	for value: Variant in UiCopy.static_fallbacks().values():
 		corpus += String(value)
-	corpus += "seed 42NEXT MISSION\n8. Final Exam3/3 selected"
+	corpus += "seed 42NEXT 8: The Gatecrasher\n3/3 selected"
 	var checked: Dictionary = {}
 	for index: int in corpus.length():
 		var codepoint := corpus.unicode_at(index)
@@ -191,6 +196,9 @@ func _expected_catalog() -> Dictionary:
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		expected["data.stage.%s.title" % stage_id] = stage.title
 		expected["data.stage.%s.hint" % stage_id] = stage.intro_hint
+	for record: StageNarrativeDefType in NARRATIVE_CATALOG.records:
+		for field: StageNarrativeDefType.Field in _narrative_fields():
+			expected["data.stage.%s.narrative.%s" % [record.id, record.field_slug(field)]] = record.fallback_for(field)
 	for operator_id: StringName in OPERATOR_IDS:
 		var definition := load(
 			"res://data/operators/%s.tres" % operator_id,
@@ -223,3 +231,12 @@ func _gd_files(root_path: String) -> Array[String]:
 		entry = directory.get_next()
 	directory.list_dir_end()
 	return output
+
+
+func _narrative_fields() -> Array[StageNarrativeDefType.Field]:
+	return [
+		StageNarrativeDefType.Field.OBJECTIVE, StageNarrativeDefType.Field.THREAT,
+		StageNarrativeDefType.Field.HUMAN_REASON, StageNarrativeDefType.Field.CLUE,
+		StageNarrativeDefType.Field.CORE_SERVICE, StageNarrativeDefType.Field.CLEAR_DEBRIEF,
+		StageNarrativeDefType.Field.DEFEAT_DEBRIEF,
+	]

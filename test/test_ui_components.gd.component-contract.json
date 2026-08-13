@@ -1316,6 +1316,7 @@
         "Backdrop",
         "SafeMargin",
         "Center",
+        "ReadingFrame",
         "ReadingPlate",
         "ContentMargin",
         "ContentHost"
@@ -1332,6 +1333,7 @@
       "methods": {
         "set_preferred_size": "(Vector2)->bool; nonpositive returns false and preserves prior value",
         "content_host": "()->Control; returns exact ContentHost",
+        "reading_plate": "()->Control; returns the exact live reading panel independent of screen-specific node names",
         "relayout": "(Vector2i)->void; clamps plate inside viewport and emits only on mode change",
         "layout_mode": "()->StringName; one of regular_landscape, compact_landscape, portrait"
       },

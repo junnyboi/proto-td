@@ -26,8 +26,8 @@ func run(h: SelfTestHarness) -> void:
 		"errors=%s" % manifest.validate_contract(),
 	)
 	h.check(
-		"probe owner contract has exact 13 rows",
-		registry.validate_contract().is_empty() and registry.entries.size() == 13,
+		"probe owner contract has exact 20 rows",
+		registry.validate_contract().is_empty() and registry.entries.size() == 20,
 		"rows=%d errors=%s" % [registry.entries.size(), registry.validate_contract()],
 	)
 
