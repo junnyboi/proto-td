@@ -38,7 +38,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Branch: `agent-11/flavor-text`
 - Base: `master` at `d08819419631a7c330032f1a87f5ca16a4163c77`; reconciled with E1 at `6f2f8acb73eb3532247ade3f027cdc262ba99721`
 - Dependencies: TD-027 and landed E1 dense-role convention (`fdee506`)
-- Owned files: `scripts/ui/components/aetheria_theme.gd`, `test/test_ui_components.gd.component-contract.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `docs/todo.md`, `docs/completed.md`
+- Owned files: `scripts/ui/components/aetheria_theme.gd`, `test/test_ui_components.gd.component-contract.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `selftest/scenarios/canon_act1_flow.gd`, `docs/todo.md`, `docs/completed.md`
 - Do not touch: landed E1 role assignments, simulation, hash/save/replay, `scripts/verify.sh`, human-owned thresholds, or unrelated UI
 - Acceptance: every lore/narrative prose selector uses the landed Dense Body/Detail role at an unweakened 32px glyph floor; at the 1.5x large viewport the seven canonical flavor labels resolve to 48px; all text remains readable, contained, and scroll-reachable; Results flavor prose has a direct visible screenshot
 - Required evidence: exact Theme/role/inventory GUT, `ui_shell_floor` headless and windowed with fresh Staging/Squad/Results PNG review, and one green `scripts/verify.sh` STANDARD run on the reconciled union
