@@ -105,7 +105,7 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 - Web-remediation claim/base: `agent-f/aui-12-web-claim` from `master` at `6a578856d1893030011c557716bbb930559fa681`.
 - Successor implementation branch/base: `agent-f/aui-12-web-remediation` from claimed master `9b834f54a218e3eeb77e89e014476300180dc33a`; do not rewrite the red branch.
 - Successor implementation commits: byte-identical current-master reconstruction `40bec07056508cbd8f9a12b8539516fb61631228`; D-WEB-1 production/tool/test implementation `5441e27e47c6237541cb0a06dd3aeaaa02c3ddf9`.
-- Exact union reconciliation: merge commit `cd8298d01936c77b12c19e559ef67f0a748fab82` has first parent `6a1d65ac52d8e255c732e66fd3275485ec92119b` and exact current-master second parent `14b418bda8a9923ef3ad1ef0369e735f136b7df6`; the two side diffs had zero overlapping paths.
+- Exact union reconciliation: latest merge `930ff8965005ca81cd28c961b8fc3ab38451da0e` has first parent `02e3b54c4161df1b3b6dbd88e83db655fc112383` and exact current-master second parent `3376178219c4a9df94abfb24798a6ffe3d0c7aee`; the side diffs again had zero overlapping paths. Prior union merge `cd8298d01936c77b12c19e559ef67f0a748fab82` remains in history.
 - Effective lane: MGS v2 `RELEASE` because the package is player-visible and changes `test/**` plus `selftest/**`.
 - Final original implementation-plan SHA-256: `55e7daf91097e476719242203a6d3943e5db4e7a979f129cda0e08f6f3ba608b`.
 - Normative component/copy/scenario/inventory hashes: `70efb6f83b1c59d45d7a5a6cfb7e4cea4dd5058827b2f908fa290e7beaecab90`, `0061b4e08b7c27bd3ed38ceb88897da2d3032369cfbfbaf92ef543f8ffb70c83`, `692f7f492cb94ed28d8f8c8a44b738846ef9037d6c923841b72388d099505a01`, `177ee1e6c5e1e49357bb54263f0659c3bc50f213f4d544bfc1f6ef9f5fa50a2f`.

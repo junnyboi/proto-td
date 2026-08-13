@@ -5,7 +5,7 @@
 **Branch:** `agent-f/aui-12-web-remediation`
 **Original successor base:** `9b834f54a218e3eeb77e89e014476300180dc33a`
 **Implementation commits:** `40bec07056508cbd8f9a12b8539516fb61631228`, `5441e27e47c6237541cb0a06dd3aeaaa02c3ddf9`
-**Current-master union:** merge `cd8298d01936c77b12c19e559ef67f0a748fab82` with exact master parent `14b418bda8a9923ef3ad1ef0369e735f136b7df6`
+**Current-master union:** merge `930ff8965005ca81cd28c961b8fc3ab38451da0e` with exact master parent `3376178219c4a9df94abfb24798a6ffe3d0c7aee`; prior union `cd8298d01936c77b12c19e559ef67f0a748fab82` is preserved in history
 **Effective lane:** MGS v2 RELEASE
 
 ## Delivered contract
