@@ -15,6 +15,8 @@ extends Control
 ## model.can_deploy_at / model.can_place_trap_at (the verb's own validation,
 ## never a copy).
 
+const HealingRulesScript := preload("res://sim/healing_rules.gd")
+
 const FONT_SIZE := 32
 const BAR_HEIGHT := 88.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
@@ -377,7 +379,7 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 	var cell: Vector2i = view.call("cell_at", screen_pos)
 	var unit: UnitState = model.alive_unit_at(cell)
 	if _heal_source_unit_id >= 0:
-		if unit == null or not HealingRules.is_valid(model, _heal_source_unit_id, unit.id):
+		if unit == null or not HealingRulesScript.is_valid(model, _heal_source_unit_id, unit.id):
 			return
 		model.apply_action([&"mend", _heal_source_unit_id, unit.id])
 		_cancel_heal_targeting()
@@ -426,7 +428,7 @@ func _show_heal_highlights() -> void:
 	for child: Node in _highlight_root.get_children():
 		child.queue_free()
 	for target: UnitState in model.units:
-		if not HealingRules.is_valid(model, _heal_source_unit_id, target.id):
+		if not HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id):
 			continue
 		var rect := _make_overlay_rect(HEAL_VALID_COLOR)
 		rect.name = "HealTarget_%d" % target.id
@@ -440,7 +442,7 @@ func _update_heal_hover() -> void:
 	var target := model.alive_unit_at(cell)
 	var valid := (
 		target != null
-		and HealingRules.is_valid(model, _heal_source_unit_id, target.id)
+		and HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id)
 	)
 	_heal_cursor.color = HEAL_VALID_COLOR if valid else INVALID_COLOR
 	_heal_cursor.position = view.call("cell_center", cell)

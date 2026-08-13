@@ -62,6 +62,8 @@ After that focused seam passed, the restarted full GUT suite found one remaining
 
 The next restart passed all 230 tests but the separate integrity gate rejected 12/12 in `test_campaign_state_p16.gd` because P16 pins that suite to exactly 11/11. The new union assertion was moved intact into `test_witch_doctor.gd`; `scripts/verify.sh` and its exact P16 count remain unchanged. This preserves both the P16 evidence contract and the new catalog/reward differential.
 
+The first clean-artifact full union run then reached the stale-class upgrade gate and went red: a cache derived from pre-class baseline `7babf28` could not resolve the new global `HealingRules` identifier. Both runtime consumers now preload `res://sim/healing_rules.gd` under a local alias before calling its static methods, exactly following the repository's cold-cache rule. The failed full run is red history; release assurance restarts from a new commit and clean artifact directory.
+
 ## Current evidence state
 
 - Logic: green — 230-test latest-master union GUT suite, including exact Mend/clamp/reject/ordinal/hash/differential and P16 environment tests.

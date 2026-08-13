@@ -49,6 +49,8 @@ extends RefCounted
 
 enum Result { RUNNING, CLEAR, DEFEAT }
 
+const HealingRulesScript := preload("res://sim/healing_rules.gd")
+
 var stage: StageDef = null
 var squad: Array[StringName] = []
 var run_seed: int = 0
@@ -173,10 +175,10 @@ func apply_action(action: Array) -> bool:
 		&"mend":
 			if (
 				n == 3
-				and HealingRules.is_valid_id(action[1])
-				and HealingRules.is_valid_id(action[2])
+				and HealingRulesScript.is_valid_id(action[1])
+				and HealingRulesScript.is_valid_id(action[2])
 			):
-				ok = HealingRules.apply(self, int(action[1]), int(action[2]))
+				ok = HealingRulesScript.apply(self, int(action[1]), int(action[2]))
 		&"place_trap":
 			ok = n == 3 and _apply_place_trap(action[1], action[2])
 		&"cast":
