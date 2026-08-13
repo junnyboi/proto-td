@@ -11,6 +11,7 @@ const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
+const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -22,7 +23,7 @@ var content: Node = null
 # D16-08 runtime compatibility session. Canonical P16 CampaignState remains
 # model-only until real ticket/outcome production permits the P16.3 cutover.
 # campaign_active == false preserves full-catalog direct-battle seams.
-var campaign: LegacyCampaignAdapter = null
+var campaign: Variant = null
 var campaign_active: bool = false
 var selected_stage_id: StringName = &""
 var selected_squad: Array[StringName] = []
@@ -39,7 +40,7 @@ func set_run_seed(value: int) -> void:
 ## Bots pass open_campaign_ui = false and drive start_stage directly.
 func start_campaign(open_campaign_ui: bool = true) -> void:
 	_debug_catalog_override = false
-	campaign = LegacyCampaignAdapter.create(_catalogs(), _all_stage_defs())
+	campaign = LEGACY_CAMPAIGN_ADAPTER_SCRIPT.create(_catalogs(), _all_stage_defs())
 	campaign_active = true
 	pending_stage = null
 	current_battle = null
