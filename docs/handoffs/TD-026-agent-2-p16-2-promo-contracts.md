@@ -4,7 +4,11 @@
 
 **Branch:** `agent-2/td-026-p16-2-promo-core`
 
-**Status:** implementation complete; pending integration
+**Status:** complete and verified for integration
+
+**Implementation:** `afabc07f45abcb7d4f4db7000a00e1dae0e38ae8`
+
+**Verified union:** `0f91cc3b1cc2f150a7dd1fc7d39d2fb4487598bd`
 
 ## Delivered
 
@@ -40,7 +44,7 @@ Cross-process checks passed:
 
 The first save/economy audit found that migration rewrote forged legacy nested hashes after validating only the outer checksum. TD-026 added the exact v1 core-hash validator and fail-closed migration checks. A focused re-audit passed with zero findings.
 
-The final STANDARD result is recorded by the integration commit after the post-remediation run.
+The post-remediation implementation and the later union with TD-025 operator animations both completed `scripts/verify.sh` with import, stage lint, GUT, replay, model-roster, native/Web filesystem, and every registered R4a scenario green.
 
 ## Still deferred
 
