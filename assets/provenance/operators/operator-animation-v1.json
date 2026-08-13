@@ -22,7 +22,7 @@
           "nw": 0.7228915662650602
         }
       },
-      "display_height_px": 69,
+      "display_height_px": 60,
       "families": {
         "attack": {
           "ne": {
@@ -299,7 +299,7 @@
       "attack_to_idle_alpha_area_ratio": 0.8770662868122039,
       "attack_to_idle_height_ratio": 0.9294403892944039,
       "canon_class": "Banner Guard",
-      "display_height_px": 71,
+      "display_height_px": 62,
       "families": {
         "attack": {
           "ne": {

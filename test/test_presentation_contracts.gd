@@ -33,7 +33,7 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_and_loadability() -
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size() + 30)
+	assert_eq(manifest.entries.size(), expected.size() + 46)
 	for healer_id: StringName in [&"witch_doctor_1", &"portrait_witch_doctor_1"]:
 		assert_true(manifest.entries.has(healer_id), "%s added through the manifest" % healer_id)
 		assert_true(manifest.entries[healer_id][&"placeholder"], "%s remains placeholder" % healer_id)
@@ -377,6 +377,17 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 				"441cb80b079ee89195ef751dbc26e67b426600d0",
 			)
 			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
+		elif id.begins_with("op_anim_"):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["provider"], "Higgsfield")
+			assert_eq(document["generation"]["model"], "Seedance 2.0 family")
+			assert_eq(
+				document["acceptance"]["state"],
+				"human_concept_accepted_runtime_review_pending",
+			)
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_null(document["acceptance"]["accepting_commit"])
+			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
 		elif id.begins_with("grunt_anim_"):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
@@ -475,6 +486,22 @@ func _character() -> CharacterVisualDef:
 
 
 func _expected_sources(id: String) -> Array[String]:
+	if id.begins_with("op_anim_"):
+		var suffix := id.trim_prefix("op_anim_")
+		var class_id := "defender_1" if suffix.begins_with("defender_1_") else "vanguard_2"
+		var animation_sources: Array[String] = [
+			"res://assets/provenance/operators/operator-animation-v1.json",
+			"res://data/presentation/operator_animation_def.gd",
+			"res://data/presentation/operator_visual_catalog.gd",
+			"res://data/presentation/operator_visuals/%s.tres" % class_id,
+			"res://scripts/view/operator_animator.gd",
+			"res://tools/art_pipeline/characters/generate_operator_animation_provenance.py",
+			"res://tools/art_pipeline/characters/validate_operator_animation_runtime.py",
+			"res://tools/presentation_qa/provenance.py",
+			"res://tools/presentation_qa/provenance_schema_v1.json",
+		]
+		animation_sources.sort()
+		return animation_sources
 	if id.begins_with("world.s1."):
 		var world_sources: Array[String] = [
 			"res://art-src/world/s1/gpt-image-2-source-ledger.json",

@@ -124,6 +124,25 @@ class ProvenanceContractTests(unittest.TestCase):
         self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
         self.assertIsNone(document["acceptance"]["accepting_commit"])
 
+    def test_operator_animation_atlas_is_higgsfield_backed_and_review_pending(self) -> None:
+        logical_id = "op_anim_defender_1_idle_se"
+        path = REPO / f"assets/provenance/{logical_id}.provenance.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        entry = {
+            "pattern": "res://assets/sprites/operators/animated/defender_1/idle_se.png",
+            "frames": 24,
+        }
+        MODULE.validate_schema(document, self.schema, self.schema)
+        MODULE.validate_document(REPO, document, logical_id, entry)
+        self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
+        self.assertEqual(document["generation"]["provider"], "Higgsfield")
+        self.assertEqual(document["generation"]["model"], "Seedance 2.0 family")
+        self.assertEqual(
+            document["acceptance"]["state"],
+            "human_concept_accepted_runtime_review_pending",
+        )
+        self.assertIsNone(document["acceptance"]["accepting_commit"])
+
 
 if __name__ == "__main__":
     unittest.main()
