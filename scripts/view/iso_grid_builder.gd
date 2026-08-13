@@ -6,6 +6,7 @@ extends RefCounted
 ## walls + cast shade for ELEVATED cells, and the out-of-bounds backdrop
 ## ring. Pure scene construction — no model reads, no state; battle_view
 ## owns dynamic projection and relayout.
+const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 
 const TILE_COLORS := {
 	StageDef.Tile.VOID: Color("1a1c2c"),
@@ -42,20 +43,20 @@ static func build_stage(
 	theme_resolver: Callable = Callable(),
 	report_error: bool = true,
 ) -> bool:
-	var result := StageArtTheme.resolve_for(stage, theme_resolver)
+	var result := StageArtThemeType.resolve_for(stage, theme_resolver)
 	var error := String(result["error"])
 	if not error.is_empty():
 		if report_error:
 			push_error("iso_grid_builder: %s" % error)
 		return false
-	var theme := result["theme"] as StageArtTheme
+	var theme := result["theme"] as StageArtThemeType
 	_build_backdrop_ring(grid_root, stage.grid_size(), theme)
 	_build_terrain(grid_root, stage, theme)
 	return true
 
 
 static func _build_terrain(
-	grid_root: Node2D, stage: StageDef, theme: StageArtTheme
+	grid_root: Node2D, stage: StageDef, theme: StageArtThemeType
 ) -> void:
 	var size := stage.grid_size()
 	var path_cells: Dictionary = {}
@@ -87,7 +88,7 @@ static func _build_terrain(
 
 
 static func _build_backdrop_ring(
-	grid_root: Node2D, size: Vector2i, theme: StageArtTheme
+	grid_root: Node2D, size: Vector2i, theme: StageArtThemeType
 ) -> void:
 	if theme != null and theme.backdrop_panorama_id != &"":
 		_add_backdrop_panorama(grid_root, size, theme.backdrop_panorama_id)
@@ -152,7 +153,7 @@ static func _backdrop_distance(cell: Vector2i, size: Vector2i) -> int:
 
 
 static func _backdrop_art_id(
-	cell: Vector2i, size: Vector2i, theme: StageArtTheme
+	cell: Vector2i, size: Vector2i, theme: StageArtThemeType
 ) -> StringName:
 	if theme == null:
 		return &"tile_backdrop"
@@ -214,7 +215,9 @@ static func _add_tile_sprite(
 	return true
 
 
-static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArtTheme) -> void:
+static func _add_theme_decor(
+	grid_root: Node2D, stage: StageDef, theme: StageArtThemeType
+) -> void:
 	for cell: Vector2i in theme.route_notch_cells:
 		_add_face_overlay(grid_root, cell, theme.route_notch_id, "RouteNotch")
 	_add_landmark(

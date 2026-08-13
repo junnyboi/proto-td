@@ -1,4 +1,4 @@
-# TD-019 — P16.1 canonical hero/roster model handoff
+# TD-021 — P16.1 canonical hero/roster model handoff
 
 ## Identity
 
@@ -9,7 +9,7 @@
 - Route: RELEASE
 - Decision: owner-approved D16-08
 - Canonical plan: `td-phase-16-persistent-heroes-barracks-permadeath.md`
-- Repository contract: `docs/plans/TD-019-p16-1-roster.md`
+- Repository contract: `docs/plans/TD-021-p16-1-roster.md`
 
 ## Outcome
 

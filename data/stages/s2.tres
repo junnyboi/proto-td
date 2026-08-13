@@ -53,4 +53,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 2
 requires = Array[StringName]([])
-intro_hint = "Runners rush early — open with your Vanguard or drown."
+intro_hint = "Runners rush early — start with a Shock Trooper or the lane will break."

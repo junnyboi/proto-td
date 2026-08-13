@@ -44,3 +44,15 @@ Shared ledgers and `FEATURES.json` remain serial integration surfaces. The curre
 - Frozen pre-build authority: plan SHA-256 `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`; independent preflight PASS with zero critical/warning findings.
 - This amendment does not approve or ingest Agent D runtime assets, consume Agent E work, alter simulation/deterministic state, or authorize landing without fresh RELEASE evidence, independent audit, and Poseidon's exact-candidate playable-Web/en-US review.
 - The historical Agent 8 `TD-006` claim never modified localization/runtime paths and is no longer active in `docs/todo.md`; AUI-12 is the current serialized owner of the three localization paths above.
+
+## AUI-12 D-WEB-1 owner decision and remediation ownership
+
+- Effective base: clean `master` at `6a578856d1893030011c557716bbb930559fa681`.
+- Red history: candidate `28b0391ab78b326772c11d040ad75f333183233b` / tree `6d99e40f80768fac8d0cca3acd13af08351d8c41` remains a non-releasable immutable failure at remote `agent-f/aui-12-red-28b0391a`; its two red evidence roots are never relabeled or reused.
+- Owner decision: Poseidon approved D-WEB-1 at approval-manifest SHA-256 `0c7530b9bfa54bf8581d42596393cedfe3e06b410230c5c8565fe0a97520c200`; the external schema-valid decision record has SHA-256 `d616bc95eee2aeb3c226f167c2b45c71152d6856285b169af99eeabe7c1e3f17`.
+- Independent plan preflight 07: PASS with zero findings at or above 80 confidence against the exact manifest-bound remediation/oracle/schemas.
+- Decision scope: only explicit AUI-12 contract mode may replace the mathematically incompatible inherited corner-luma signal with the approved zero-tolerance challenge-bound native/Web categorical differential. Legacy/default behavior remains unchanged.
+- Assurance scope: the contract proves challenge-bound uninterrupted execution plus independently recomputed final-content consistency. Byte-identical PNG origin is intentionally not claimed; the exact content-equivalence positive fixture freezes that limit.
+- Added exclusive Agent F paths: `tools/presentation_qa/web_baseline.py` and `tools/presentation_qa/test_web_baseline.py`; existing AUI-12 ownership of `selftest/scenarios/ui_shell_floor.gd*` permits only optional release-challenge reporting that is absent in ordinary verification.
+- Implementation must use a new non-rewriting `agent-f/aui-12-web-remediation` successor from the exact claimed master. It may not alter `scripts/verify.sh`, thresholds, simulation/model/hash/save/replay/telemetry, Agent D/E bytes, or unrelated tests/scenarios.
+- Landing still requires one wholly fresh cache-bypassed RELEASE at the frozen successor, exact 38-test focused proof, 62-shot zero-skip scenario proof, two-process replay equality, independent diff-vs-pins audit, and Poseidon's exact-candidate playable-Web/en-US review.
