@@ -93,7 +93,7 @@ func _s3_theme() -> StageArtTheme:
 func test_s1_public_contract_is_unchanged() -> void:
 	var s1 := load("res://data/stages/s1.tres") as StageDef
 	var theme := load("res://data/presentation/s1_world_theme.tres") as StageArtTheme
-	assert_eq(StageArtTheme.REQUIRED_THEME_STAGE_IDS, [&"s1"])
+	assert_eq(StageArtTheme.REQUIRED_THEME_STAGE_IDS, [&"s1", &"s2", &"s3"])
 	assert_eq(theme.validation_errors(s1), PackedStringArray())
 	assert_eq(theme.required_manifest_ids(), [
 		&"world.s1.ground", &"world.s1.route", &"world.s1.elevated", &"world.s1.backdrop",
@@ -153,15 +153,15 @@ func test_cell_aware_tile_and_cadence_resolution() -> void:
 	})
 
 
-func test_s2_and_s3_remain_dormant_and_generic() -> void:
+func test_s2_and_s3_are_required_and_missing_themes_fail_closed() -> void:
 	var missing := func(_path: String) -> Resource: return null
 	for id: StringName in [&"s2", &"s3"]:
 		var stage := _stage(id)
-		assert_false(StageArtTheme.expects_theme(stage))
+		assert_true(StageArtTheme.expects_theme(stage))
 		var result := StageArtTheme.resolve_for(stage, missing)
-		assert_false(bool(result["required"]))
+		assert_true(bool(result["required"]))
 		assert_null(result["theme"])
-		assert_eq(String(result["error"]), "")
+		assert_string_contains(String(result["error"]), "required stage art theme failed to load")
 
 
 func test_wrong_token_missing_and_duplicate_ids_fail() -> void:

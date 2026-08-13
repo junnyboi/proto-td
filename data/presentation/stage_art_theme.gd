@@ -5,7 +5,7 @@ extends Resource
 ## model, save, hash, or replay lanes; the disposable view consumes it to map
 ## stage roles to manifest IDs and typed decorative anchors.
 
-const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1"]
+const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
 const S1_APPROVAL_TOKEN: StringName = &"AUI-DESIGN-D-REVISION-2"
 const S1_APPROVAL_MANIFEST_SHA256 := (
 	"8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6"

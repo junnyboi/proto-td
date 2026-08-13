@@ -10,6 +10,7 @@ extends Node2D
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -56,6 +57,7 @@ var _grid_scale := 1.0
 var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
+var _stage_theme: StageArtTheme = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
 var _tracer_lines: Dictionary = {}
@@ -119,6 +121,15 @@ func _ready() -> void:
 	if stage == null:
 		push_error("battle_view: no pending stage")
 		return
+	# Required world presentation is preflighted before any catalog or model load.
+	# Keep this explicit preload-backed call: stale global-class registries must not
+	# be able to bypass Act II activation.
+	var theme_result := StageArtThemeType.resolve_for(stage)
+	var theme_error := String(theme_result["error"])
+	if not theme_error.is_empty():
+		push_error("battle_view: stage art preflight failed: %s" % theme_error)
+		return
+	_stage_theme = theme_result["theme"] as StageArtTheme
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_enemy_defs = defs
@@ -562,7 +573,7 @@ func _build_grid(stage: StageDef) -> bool:
 	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
-	if not IsoGridBuilder.build_stage(_grid_root, stage):
+	if not IsoGridBuilder.build_stage_with_theme(_grid_root, stage, _stage_theme):
 		return false
 	return true
 
