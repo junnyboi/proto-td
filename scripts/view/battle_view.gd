@@ -6,6 +6,8 @@ const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const OperatorAnimatorType := preload("res://scripts/view/operator_animator.gd")
+const OperatorVisualCatalogType := preload("res://data/presentation/operator_visual_catalog.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 
 const HUD_FONT_SIZE := 32
@@ -820,10 +822,10 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
 		return
-	var animation := OperatorVisualCatalog.get_animation(u.op_id)
+	var animation := OperatorVisualCatalogType.get_animation(u.op_id)
 	var animated := (
 		animation != null
-		and OperatorAnimator.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
+		and OperatorAnimatorType.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
 	)
 	if animated:
 		return
@@ -930,8 +932,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	var animation := OperatorVisualCatalog.get_animation(u.op_id)
-	var direction := OperatorAnimator.direction_for_facing(u.facing)
+	var animation := OperatorVisualCatalogType.get_animation(u.op_id)
+	var direction := OperatorAnimatorType.direction_for_facing(u.facing)
 	var animation_id := (
 		StringName(animation.idle_by_direction.get(direction, &"")) if animation != null else &""
 	)
@@ -942,7 +944,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
 		rect.size = (
-			OperatorAnimator.body_size(animation)
+			OperatorAnimatorType.body_size(animation)
 			if animated
 			else Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
 		)

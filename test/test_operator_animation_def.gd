@@ -82,6 +82,18 @@ func test_resource_rejects_inexact_placeholder_source_map() -> void:
 	assert_true(_contains(errors, "expected admitted source direction"))
 
 
+func test_catalog_manifest_placeholder_check_is_not_fps_gated() -> void:
+	var admitted := OperatorVisualCatalog.get_animation(&"sniper_2")
+	assert_not_null(admitted)
+	if admitted == null:
+		return
+	var altered := admitted.duplicate(true) as OperatorAnimationDef
+	altered.placeholder = false
+	altered.placeholder_source_by_logical_id = {}
+	var errors := OperatorVisualCatalog.validate_definitions({&"sniper_2": altered}, true)
+	assert_true(_contains(errors, "placeholder mismatch"))
+
+
 func _valid_def() -> OperatorAnimationDef:
 	var value := OperatorAnimationDef.new()
 	value.visual_id = &"test_visual"

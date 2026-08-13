@@ -4,6 +4,7 @@ extends RefCounted
 ## View-only projection for admitted directional operator art. It reads UnitState
 ## and model tick but never mutates either object.
 
+const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
 const NORMALIZED_SUBJECT_HEIGHT := 168.0
 const SOURCE_CELL_PX := 192.0
 const ATTACK_WINDOW_TICKS := 30
@@ -44,7 +45,7 @@ static func idle_frame(idle_seconds: float) -> int:
 
 
 static func selection(
-	u: UnitState, model_tick: int, idle_seconds: float, animation: OperatorAnimationDef
+	u: UnitState, model_tick: int, idle_seconds: float, animation: OperatorAnimationDefType
 ) -> Dictionary:
 	var direction := direction_for_facing(u.facing)
 	var age := attack_age(model_tick, u.last_attack_tick)
@@ -63,7 +64,7 @@ static func selection(
 	}
 
 
-static func body_size(animation: OperatorAnimationDef) -> Vector2:
+static func body_size(animation: OperatorAnimationDefType) -> Vector2:
 	var scale := float(animation.display_height_px) / NORMALIZED_SUBJECT_HEIGHT
 	return Vector2.ONE * SOURCE_CELL_PX * scale
 
@@ -73,7 +74,7 @@ static func apply(
 	model_tick: int,
 	idle_seconds: float,
 	sprite: TextureRect,
-	animation: OperatorAnimationDef,
+	animation: OperatorAnimationDefType,
 ) -> bool:
 	if sprite == null or animation == null or not animation.validate_contract().is_empty():
 		return false
