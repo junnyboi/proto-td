@@ -8,6 +8,9 @@ const STATIC_FALLBACKS := {
 	&"ui.locale.label": "Language",
 	&"ui.locale.en_us": "English (US)",
 	&"ui.staging.heading": "STAGING",
+	&"ui.staging.command_heading": "COMPANY 33 COMMAND",
+	&"ui.staging.command_body": "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation.",
+	&"ui.staging.next_operation_title": "NEXT {index}: {title}",
 	&"ui.staging.campaign_summary": "{cleared}/{total} CLEARED",
 	&"ui.staging.next_none": "NEXT: No active campaign",
 	&"ui.staging.next_detail": "NEXT: {index}. {title}",
@@ -32,11 +35,17 @@ const STATIC_FALLBACKS := {
 	&"ui.squad.loadout_none": "Loadout: nothing unlocked yet",
 	&"ui.squad.loadout_available": "Loadout (always available): {items}",
 	&"ui.squad.start_battle": "Start Battle",
+	&"ui.squad.briefing.objective": "Objective",
+	&"ui.squad.briefing.threat": "Threat",
+	&"ui.squad.briefing.human_reason": "Why it matters",
+	&"ui.squad.briefing.clue": "Field note",
 	&"ui.results.clear": "CLEAR",
 	&"ui.results.defeat": "DEFEAT",
 	&"ui.results.tally": "kills {kills}   leaks {leaks}",
 	&"ui.results.reward": "Unlocked: {name}",
 	&"ui.results.retry": "Retry",
+	&"ui.results.consequence": "Consequence",
+	&"ui.error.missing_stage_narrative": "Mission record unavailable. Return to Mission Control.",
 	&"ui.results.return_to_staging": "Return to Staging",
 }
 
@@ -44,6 +53,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.title.seed": {&"seed": &"int"},
 	&"ui.staging.campaign_summary": {&"cleared": &"int", &"total": &"int"},
 	&"ui.staging.next_detail": {&"index": &"int", &"title": &"String"},
+	&"ui.staging.next_operation_title": {&"index": &"int", &"title": &"String"},
 	&"ui.campaign.row": {&"index": &"int", &"title": &"String", &"status": &"String"},
 	&"ui.campaign.cleared_suffix": {&"stars": &"String"},
 	&"ui.squad.heading": {&"stage": &"String"},
@@ -61,6 +71,19 @@ static func text(key: StringName, fallback: String) -> String:
 
 static func format_text(key: StringName, fallback: String, args: Dictionary) -> String:
 	return I18n.format_text(key, fallback, args)
+
+
+static func stage_narrative_text(record: Resource, field: int) -> String:
+	if record == null or not record.has_method("fallback_for") or not record.has_method("field_slug"):
+		push_error("UiCopy.stage_narrative_text: invalid record")
+		return ""
+	var record_id := StringName(record.get("id"))
+	var slug := StringName(record.call("field_slug", field))
+	var fallback := String(record.call("fallback_for", field))
+	if String(record_id).is_empty() or String(slug).is_empty() or fallback.is_empty():
+		push_error("UiCopy.stage_narrative_text: invalid record field")
+		return ""
+	return text(StringName("data.stage.%s.narrative.%s" % [record_id, slug]), fallback)
 
 
 static func stage_title(stage: StageDef) -> String:

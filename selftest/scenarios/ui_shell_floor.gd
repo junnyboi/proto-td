@@ -49,9 +49,9 @@ func run(h: SelfTestHarness) -> void:
 	await _capture_component_gallery(h)
 	await _capture_text_style_probes(h)
 	for mode: StringName in MODES:
-		for screen: StringName in SCREENS:
-			for viewport: Vector2i in VIEWPORTS:
-				await _capture_screen_state(h, screen, viewport, mode)
+			for screen: StringName in SCREENS:
+				for viewport: Vector2i in VIEWPORTS:
+					await _capture_screen_state(h, screen, viewport, mode)
 	_write_supplemental_report(h)
 	h.check("ui_shell_floor inventory state count", _inventory_reports.size() == 60)
 	h.check("ui_shell_floor required report fields", _reports_have_required_fields())
@@ -177,8 +177,8 @@ func _capture_screen_state(
 	var stress_evidence := _apply_stress_mode(content, mode, screen)
 	await h.frames(4)
 	var state_name := String(INVENTORY_STATES[screen])
-	var report := _inventory_report(
-		content, state_name, viewport, mode, screen, stress_evidence,
+	var report := await _inventory_report(
+		h, content, state_name, viewport, mode, screen, stress_evidence,
 	)
 	_inventory_reports.append(report)
 	h.check(
@@ -214,6 +214,7 @@ func _open_screen(h: SelfTestHarness, screen: StringName) -> Control:
 			game.call("start_campaign", false)
 			game.set("selected_stage_id", &"s1")
 			game.set("last_result", {
+				"stage_id": &"s1",
 				"result": BattleModel.Result.CLEAR,
 				"stars": 3,
 				"kills": 12,
@@ -222,7 +223,15 @@ func _open_screen(h: SelfTestHarness, screen: StringName) -> Control:
 			})
 			game.call("open_results")
 	await h.frames(5)
-	return game.get("content") as Control
+	var content := game.get("content") as Control
+	if screen == &"results" and content != null:
+		var consequence := content.find_child("ConsequenceLine", true, false) as Label
+		h.check(
+			"ui_shell_floor exact S1 clear consequence",
+			consequence != null and consequence.text == "Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended.",
+			consequence.text if consequence != null else "missing",
+		)
+	return content
 
 
 func _baseline_map_exact() -> bool:
@@ -239,9 +248,13 @@ func _baseline_map_exact() -> bool:
 func _reports_have_required_fields() -> bool:
 	var required := _contract["required_report"] as Dictionary
 	var fields := required["per_inventory_state_fields"] as Array
+	var empty_fields := required.get("per_inventory_state_empty_fields", []) as Array
 	for report: Dictionary in _inventory_reports:
 		for field: String in fields:
 			if not report.has(field):
+				return false
+		for field: String in empty_fields:
+			if not report.has(field) or not (report[field] as Array).is_empty():
 				return false
 	return true
 
@@ -454,7 +467,7 @@ func _apply_stress_mode(
 func _apply_text200_reflow(content: Control) -> void:
 	for node_name: String in [
 		"BriefingRow", "OperationGrid", "CampaignHeader", "StageRows",
-		"OperatorGrid", "SquadFooter", "ActionRow",
+		"MissionBriefingPanel", "OperatorGrid", "SquadFooter", "ActionRow",
 	]:
 		var grid := content.find_child(node_name, true, false) as GridContainer
 		if grid != null:
@@ -532,7 +545,7 @@ func _expanded_text(original: String) -> String:
 
 
 func _inventory_report(
-		content: Control, state_name: String, viewport: Vector2i,
+		h: SelfTestHarness, content: Control, state_name: String, viewport: Vector2i,
 		mode: StringName, screen: StringName, stress_evidence: Dictionary,
 		) -> Dictionary:
 	_active_mode = mode
@@ -544,10 +557,14 @@ func _inventory_report(
 	var focus_result := _check_focus_order(content, state.get("focus_order", []) as Array)
 	var marker := content.find_child(String(state["screen_marker"]), true, false)
 	var locale := stress_evidence["locale"] as Dictionary
+	var scroll_reachability_mismatches := await _scroll_reachability_mismatches(
+		h, target_nodes, text_nodes,
+	)
 	var ok := (
 		marker != null and bool(target_result["ok"])
 		and bool(text_result["ok"]) and bool(focus_result["ok"])
 		and bool(stress_evidence["ok"])
+		and scroll_reachability_mismatches.is_empty()
 	)
 	return {
 		"screen": String(screen),
@@ -573,6 +590,7 @@ func _inventory_report(
 		"font_size_mismatches": stress_evidence["font_size_mismatches"],
 		"base_resource_mismatches": stress_evidence["base_resource_mismatches"],
 		"reflow_mismatches": stress_evidence["reflow_mismatches"],
+		"scroll_reachability_mismatches": scroll_reachability_mismatches,
 		"locale_item_count": locale["item_count"],
 		"locale_item_text": locale["item_text"],
 		"locale_item_metadata_type": locale["metadata_type"],
@@ -585,6 +603,144 @@ func _inventory_report(
 		"locale_geometry_mismatches": locale["geometry_mismatches"],
 		"ok": ok,
 	}
+
+
+func _scroll_reachability_mismatches(
+		h: SelfTestHarness, target_nodes: Array[Control], text_nodes: Array[Control],
+		) -> Array[String]:
+	var controls: Array[Control] = []
+	var seen_controls: Dictionary = {}
+	for node: Control in target_nodes + text_nodes:
+		var instance_id := node.get_instance_id()
+		if _nearest_scroll(node) != null and not seen_controls.has(instance_id):
+			seen_controls[instance_id] = true
+			controls.append(node)
+	controls.sort_custom(func(first: Control, second: Control) -> bool:
+		return String(first.get_path()) < String(second.get_path())
+	)
+
+	var scroll_states: Array[Dictionary] = []
+	var seen_scrolls: Dictionary = {}
+	for control: Control in controls:
+		var scroll := _nearest_scroll(control)
+		var scroll_id := scroll.get_instance_id()
+		if not seen_scrolls.has(scroll_id):
+			seen_scrolls[scroll_id] = true
+			scroll_states.append({
+				"scroll": scroll,
+				"horizontal": scroll.scroll_horizontal,
+				"vertical": scroll.scroll_vertical,
+			})
+
+	var mismatches: Array[String] = []
+	for control: Control in controls:
+		var scroll := _nearest_scroll(control)
+		var before := Vector2i(scroll.scroll_horizontal, scroll.scroll_vertical)
+		scroll.ensure_control_visible(control)
+		await h.frames(2)
+		var after := Vector2i(scroll.scroll_horizontal, scroll.scroll_vertical)
+		var control_rect := control.get_global_rect()
+		var viewport_rect := scroll.get_global_rect()
+		var visible_rect := control_rect.intersection(viewport_rect)
+		var horizontal_enclosed := _axis_encloses(
+			viewport_rect.position.x, viewport_rect.end.x,
+			control_rect.position.x, control_rect.end.x,
+		)
+		var vertical_enclosed := _axis_encloses(
+			viewport_rect.position.y, viewport_rect.end.y,
+			control_rect.position.y, control_rect.end.y,
+		)
+		var issues: Array[String] = []
+		if not control.is_visible_in_tree() or control_rect.size.x <= 0.0 or control_rect.size.y <= 0.0:
+			issues.append("nonzero_control_rect")
+		if visible_rect.size.x <= 0.0 or visible_rect.size.y <= 0.0:
+			issues.append("nonzero_visible_rect")
+		var horizontal_disabled := (
+			scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED
+		)
+		if horizontal_disabled:
+			if not horizontal_enclosed:
+				issues.append("horizontal_overflow_disabled")
+		elif control_rect.size.x <= viewport_rect.size.x and not horizontal_enclosed:
+			issues.append("horizontal_not_enclosed")
+		elif control_rect.size.x > viewport_rect.size.x and visible_rect.size.x <= 0.0:
+			issues.append("horizontal_not_intersecting")
+		if control_rect.size.y <= viewport_rect.size.y and not vertical_enclosed:
+			issues.append("vertical_not_enclosed")
+		elif control_rect.size.y > viewport_rect.size.y and visible_rect.size.y <= 0.0:
+			issues.append("vertical_not_intersecting")
+
+		var horizontal_bar := scroll.get_h_scroll_bar()
+		var vertical_bar := scroll.get_v_scroll_bar()
+		var horizontal_max := _scroll_max_offset(horizontal_bar)
+		var vertical_max := _scroll_max_offset(vertical_bar)
+		if not _scroll_offset_valid(after.x, horizontal_bar):
+			issues.append("horizontal_offset_invalid")
+		if not _scroll_offset_valid(after.y, vertical_bar):
+			issues.append("vertical_offset_invalid")
+		if horizontal_disabled and after.x != int(horizontal_bar.min_value):
+			issues.append("horizontal_disabled_offset")
+		if not horizontal_enclosed and (
+			is_equal_approx(float(after.x), horizontal_bar.min_value)
+			or is_equal_approx(float(after.x), horizontal_max)
+		):
+			issues.append("horizontal_clamped_unreachable")
+		if not vertical_enclosed and control_rect.size.y <= viewport_rect.size.y and (
+			is_equal_approx(float(after.y), vertical_bar.min_value)
+			or is_equal_approx(float(after.y), vertical_max)
+		):
+			issues.append("vertical_clamped_unreachable")
+		if not issues.is_empty():
+			issues.sort()
+			mismatches.append(
+				"%s@%s:%s offsets=%d,%d->%d,%d ranges=%.0f,%.0f" % [
+					control.name, scroll.name, ",".join(issues),
+					before.x, before.y, after.x, after.y, horizontal_max, vertical_max,
+				]
+			)
+
+	for state: Dictionary in scroll_states:
+		var scroll := state["scroll"] as ScrollContainer
+		scroll.scroll_horizontal = int(state["horizontal"])
+		scroll.scroll_vertical = int(state["vertical"])
+	if not scroll_states.is_empty():
+		await h.frames(2)
+	for state: Dictionary in scroll_states:
+		var scroll := state["scroll"] as ScrollContainer
+		var expected := Vector2i(int(state["horizontal"]), int(state["vertical"]))
+		var restored := Vector2i(scroll.scroll_horizontal, scroll.scroll_vertical)
+		if restored != expected:
+			mismatches.append(
+				"%s:restore offsets=%d,%d->%d,%d" % [
+					scroll.name, expected.x, expected.y, restored.x, restored.y,
+				]
+			)
+	mismatches.sort()
+	return mismatches
+
+
+func _axis_encloses(
+		outer_start: float, outer_end: float, inner_start: float, inner_end: float,
+		) -> bool:
+	const GEOMETRY_EPSILON := 0.5
+	return (
+		inner_start >= outer_start - GEOMETRY_EPSILON
+		and inner_end <= outer_end + GEOMETRY_EPSILON
+	)
+
+
+func _scroll_max_offset(scroll_bar: ScrollBar) -> float:
+	return maxf(scroll_bar.min_value, scroll_bar.max_value - scroll_bar.page)
+
+
+func _scroll_offset_valid(offset: int, scroll_bar: ScrollBar) -> bool:
+	const OFFSET_EPSILON := 0.5
+	var maximum := _scroll_max_offset(scroll_bar)
+	return (
+		is_finite(scroll_bar.min_value) and is_finite(maximum)
+		and float(offset) >= scroll_bar.min_value - OFFSET_EPSILON
+		and float(offset) <= maximum + OFFSET_EPSILON
+	)
 
 
 func _compare_rows(nodes: Array[Control], rows: Array, targets: bool) -> Dictionary:
@@ -654,12 +810,11 @@ func _row_issues(node: Control, row: Dictionary, targets: bool) -> Array[String]
 		issues.append("empty_text")
 	var landscape := node.get_viewport_rect().size.x >= node.get_viewport_rect().size.y
 	if _active_mode == &"standard" and landscape:
-		var viewport_rect := Rect2(Vector2.ZERO, node.get_viewport_rect().size)
-		if not viewport_rect.encloses(node.get_global_rect()):
-			issues.append("outside_viewport")
 		var scroll := _nearest_scroll(node)
-		if scroll != null and not scroll.get_global_rect().encloses(node.get_global_rect()):
-			issues.append("outside_scroll=%s" % scroll.name)
+		if scroll == null:
+			var viewport_rect := Rect2(Vector2.ZERO, node.get_viewport_rect().size)
+			if not viewport_rect.encloses(node.get_global_rect()):
+				issues.append("outside_viewport")
 	if node is ItemList and not _item_list_text_fits(node as ItemList):
 		issues.append("item_text_clipped")
 	if node is AetheriaButton:

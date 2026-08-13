@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s7"
+objective = "Hold the convoy route while the assigned medicine and seed loads move; testimony has already been left behind."
+threat = "Mixed Custodian roles pressure every approach and punish delay."
+human_reason = "Medicine, seed, and testimony protect different parts of Hearthcross's future, but this operation begins after command has made the fixed sacrifice."
+clue = "The missing termination command should have ended the evacuation two centuries ago."
+core_service = "Medicine and seed convoy"
+clear_debrief = "The defense gets the assigned medicine and seed through. Testimony remains lost; the result is fixed story context, not an unimplemented player choice."
+defeat_debrief = "The convoy escapes with fewer vital stores. Company 33 records exactly what could not be saved."

@@ -23,8 +23,13 @@ func test_contract_fixtures_have_exact_schema_and_cardinality() -> void:
 	assert_eq((_inventory["states"] as Dictionary).size(), 12)
 	assert_eq(int(_inventory["states"]["title"]["target_count"]), 2)
 	assert_eq(int(_inventory["states"]["staging"]["target_count"]), 7)
+	assert_eq(int(_inventory["states"]["staging"]["text_count"]), 13)
 	assert_eq(int(_inventory["states"]["campaign_initial"]["target_count"]), 9)
 	assert_eq(int(_inventory["states"]["squad_s1_empty"]["target_count"]), 7)
+	assert_eq(int(_inventory["states"]["squad_s1_empty"]["text_count"]), 15)
+	assert_eq(int(_inventory["states"]["squad_s2_expanded"]["text_count"]), 16)
+	assert_eq(int(_inventory["states"]["results_campaign_clear"]["text_count"]), 9)
+	assert_eq(int(_inventory["states"]["results_standalone_defeat"]["text_count"]), 5)
 
 
 func test_theme_resource_has_exact_variations_items_and_values() -> void:
