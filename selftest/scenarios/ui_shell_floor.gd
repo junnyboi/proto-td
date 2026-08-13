@@ -295,6 +295,47 @@ func _check_responsive_shell(
 			all_expand and measured_widths.size() == 3,
 			"widths=" + str(measured_widths),
 		)
+	if screen != &"title":
+		_check_dialog_scrollbar_gutter(h, content, shell, screen, viewport)
+
+
+func _check_dialog_scrollbar_gutter(
+		h: SelfTestHarness, content: Control, shell: AetheriaScreenShell,
+		screen: StringName, viewport: Vector2i,
+		) -> void:
+	var scroll: ScrollContainer = null
+	for node: Node in _all_nodes(content):
+		if node is ScrollContainer:
+			scroll = node as ScrollContainer
+			break
+	h.check(
+		"%s %s dialog scroll exists" % [screen, viewport], scroll != null,
+	)
+	if scroll == null:
+		return
+	var gutter := scroll.get_child(0) as MarginContainer
+	var body := gutter.get_child(0) as Control
+	var bar := scroll.get_v_scroll_bar()
+	var panel_right := shell.reading_plate().get_global_rect().end.x
+	var scroll_right := scroll.get_global_rect().end.x
+	h.check(
+		"%s %s scrollbar reaches dialog right edge" % [screen, viewport],
+		absf(scroll_right - panel_right) <= 0.5,
+		"scroll_right=%.2f panel_right=%.2f" % [scroll_right, panel_right],
+	)
+	if bar.visible:
+		var bar_rect := bar.get_global_rect()
+		var text_gap := bar_rect.position.x - body.get_global_rect().end.x
+		h.check(
+			"%s %s visible scrollbar at dialog right edge" % [screen, viewport],
+			absf(bar_rect.end.x - panel_right) <= 0.5,
+			"bar=%s panel_right=%.2f" % [bar_rect, panel_right],
+		)
+		h.check(
+			"%s %s scrollbar clears dialog content" % [screen, viewport],
+			text_gap >= 35.0 * shell.content_scale(),
+			"gap=%.2f scale=%.2f" % [text_gap, shell.content_scale()],
+		)
 
 
 func _baseline_map_exact() -> bool:

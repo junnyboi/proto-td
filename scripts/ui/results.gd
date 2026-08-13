@@ -37,16 +37,13 @@ func _ready() -> void:
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "ResultsScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_shell.content_host().add_child(scroll)
+	var scroll_content := _shell.add_dialog_scroll(scroll)
 
 	var column := VBoxContainer.new()
 	column.name = "ResultsColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 14)
-	scroll.add_child(column)
+	scroll_content.add_child(column)
 	column.add_child(_label(
 		"Headline",
 		UiCopyType.text(
