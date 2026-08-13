@@ -9,8 +9,8 @@ extends Node2D
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
+const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
 
-const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
@@ -42,7 +42,6 @@ const SP_BAR_FILL := Color("f4b41b")
 const SP_FULL_FLASH := Color("f4f4f4")
 const PORTRAIT_FLASH_PX := 96.0
 const CHEVRON_COLOR := Color("f4f4f4")
-const CHARMED_COLOR := Color("41a6f6")
 const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
 const TRAP_SPIKE_PX := 24.0
@@ -108,6 +107,9 @@ var _pushed: Dictionary = {
 var _pushed_last: Dictionary = {}
 var _result_reported := false
 var _enemy_defs: Dictionary = {}
+var _enemy_anim_keys: Dictionary = {}
+var _enemy_blend_frames: Dictionary = {}
+var _enemy_anim_seconds := 0.0
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
 
@@ -126,8 +128,7 @@ func _ready() -> void:
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
 	model = BattleModel.create(
-		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs,
-		_spell_defs
+		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
 	)
 	Game.current_battle = model
 	Game.content = self
@@ -145,9 +146,7 @@ func _ready() -> void:
 	_portrait_flash.name = "PortraitFlash"
 	_portrait_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portrait_flash.size = Vector2.ONE * PORTRAIT_FLASH_PX
-	_portrait_flash.position = Vector2(
-		(get_viewport_rect().size.x - PORTRAIT_FLASH_PX) * 0.5, 56.0
-	)
+	_portrait_flash.position = Vector2((get_viewport_rect().size.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 	_portrait_flash.visible = false
 	_portrait_flash.z_index = HUD_Z
 	add_child(_portrait_flash)
@@ -274,9 +273,10 @@ func _physics_process(delta: float) -> void:
 ## that alignment is what makes the decay checks deterministic
 ## (td-phase-9.md §2.1.9). Every effect keys off exactly one unambiguous
 ## model record (§2.1.7) and every magnitude comes from cfg (rule 4).
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if model == null or _juice == null:
 		return
+	_enemy_anim_seconds += delta
 	_detect_deploys()
 	_detect_kills()
 	_detect_leaks()
@@ -312,6 +312,16 @@ func _age_view_transients() -> void:
 		var left := int(_attack_pose_left[uid])
 		if left > 0:
 			_attack_pose_left[uid] = left - 1
+	for enemy_id: int in _enemy_blend_frames.keys():
+		if not _enemy_rects.has(enemy_id):
+			_enemy_blend_frames.erase(enemy_id)
+			continue
+		var left := int(_enemy_blend_frames[enemy_id])
+		EnemyAnimator.apply_blend(_enemy_rects[enemy_id], left)
+		if left > 0:
+			_enemy_blend_frames[enemy_id] = left - 1
+		else:
+			_enemy_blend_frames.erase(enemy_id)
 
 
 ## Single owner of Engine.time_scale (§2.1.3): overlapping juice slowdowns
@@ -460,8 +470,10 @@ func _detect_trap_juice() -> void:
 			Sfx.play("trap_snap")
 		_snaps_seen = model.traps_triggered
 	for t: TrapState in model.traps:
-		if t.trigger == TrapDef.Trigger.ON_ENTER \
-				and t.last_trigger_tick > int(_trap_trigger_seen.get(t.id, -1)):
+		if (
+			t.trigger == TrapDef.Trigger.ON_ENTER
+			and t.last_trigger_tick > int(_trap_trigger_seen.get(t.id, -1))
+		):
 			_trap_trigger_seen[t.id] = t.last_trigger_tick
 			var rect: ColorRect = _trap_rects.get(t.id)
 			if rect != null:
@@ -488,8 +500,8 @@ func _shimmer_tar(t: TrapState) -> void:
 		rect.modulate = Color.WHITE
 
 
-## item 7: swirl + beat key off the faction flip (the CHARMED_COLOR recolor
-## in _project is the palette swap of record until Lane A)
+## item 7: swirl + beat key off the faction flip; EnemyAnimator projects the
+## deterministic ally-blue atlas derivative from that same authoritative fact.
 func _detect_charms() -> void:
 	for e: EnemyState in model.enemies:
 		if e.faction != EnemyState.Faction.CHARMED or _charm_seen.has(e.id):
@@ -527,8 +539,11 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 		var res_name := file.trim_suffix(".remap")
 		if res_name.ends_with(".tres"):
 			var def: Resource = load(dir_path + "/" + res_name)
-			if def != null and def.get_script() != null \
-					and (def.get_script() as Script).get_global_name() == StringName(script_class):
+			if (
+				def != null
+				and def.get_script() != null
+				and (def.get_script() as Script).get_global_name() == StringName(script_class)
+			):
 				defs[def.get("id")] = def
 	return defs
 
@@ -603,6 +618,8 @@ func _project() -> void:
 		elif not e.alive and _enemy_rects.has(e.id):
 			_enemy_rects[e.id].queue_free()
 			_enemy_rects.erase(e.id)
+			_enemy_anim_keys.erase(e.id)
+			_enemy_blend_frames.erase(e.id)
 		if e.alive:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var center_p := pos + Vector2.ONE * 0.5
@@ -613,86 +630,42 @@ func _project() -> void:
 				+ Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
 			)
 			rect.z_index = IsoProjection.entity_z(center_p)
-			_refresh_enemy_sprite(e, rect)
+			EnemyAnimator.refresh(
+				e,
+				model,
+				rect,
+				_enemy_anim_seconds,
+				_enemy_anim_keys,
+				_enemy_blend_frames,
+				_enemy_defs
+			)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()
 	_project_tracers()
 	var s := model.snapshot()
 	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(s["result"])]
-	_hud.text = "Base HP %d   DP %d   kills %d   tick %d   %s" % [
-		s["base_hp"], s["dp"], s["killed"], s["tick"], result_text,
-	]
+	_hud.text = (
+		"Base HP %d   DP %d   kills %d   tick %d   %s"
+		% [
+			s["base_hp"],
+			s["dp"],
+			s["killed"],
+			s["tick"],
+			result_text,
+		]
+	)
 	if int(s["result"]) == BattleModel.Result.CLEAR:
 		_hud.text += "  %d*" % int(s["stars"])
 
 
-## Enemy bodies: a transparent ColorRect holder (keeps every existing cast
-## and HP-bar seam) with a manifest-resolved sprite child at the pinned 2x
-## scale; color-rect fallback when an id has no art. Aerial enemies keep the
-## offset shadow behind the body so they read as airborne over a blocker.
+## EnemyAnimator owns body art, state, direction, and shadow presentation;
+## this view keeps the existing HP-bar and grid-parent seams.
 func _make_enemy_rect(e: EnemyState) -> ColorRect:
-	var rect := ColorRect.new()
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var tex := Art.texture(_enemy_sprite_id(e), 0)
-	var body_px := AERIAL_PX if e.aerial else ENEMY_PX
-	if tex != null:
-		rect.color = Color(0, 0, 0, 0)
-		body_px = tex.get_width() * SPRITE_SCALE
-		rect.size = Vector2(body_px, body_px)
-		var sprite := TextureRect.new()
-		sprite.name = "Sprite"
-		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		sprite.texture = tex
-		sprite.stretch_mode = TextureRect.STRETCH_SCALE
-		sprite.size = rect.size
-		rect.add_child(sprite)
-	else:
-		rect.color = BattlePalette.ENEMY_TYPE.get(e.def_id, ENEMY_COLOR)
-		rect.size = Vector2(body_px, body_px)
-	_add_ground_shadow(rect, e.aerial)
-	_add_hp_bar(rect, body_px)
+	var rect := EnemyAnimator.make_body(e, model, _enemy_defs)
+	_add_hp_bar(rect, rect.size.x)
 	_grid_root.add_child(rect)
 	return rect
-
-
-## Depth cue (P12.2): every body drops a small face-diamond shadow at its
-## feet; aerial bodies cast it lower so they read as airborne.
-func _add_ground_shadow(body: ColorRect, aerial: bool) -> void:
-	var shadow := Polygon2D.new()
-	shadow.name = "Shadow"
-	shadow.color = SHADOW_COLOR
-	shadow.polygon = IsoProjection.face_polygon(SHADOW_FACE_SCALE)
-	var drop := AERIAL_SHADOW_DROP if aerial else 0.0
-	shadow.position = Vector2(body.size.x * 0.5, body.size.y + drop)
-	shadow.show_behind_parent = true
-	body.add_child(shadow)
-
-
-func _enemy_sprite_id(e: EnemyState) -> StringName:
-	var def: EnemyDef = _enemy_defs.get(e.def_id)
-	var sprite_id := def.sprite_id if def != null else e.def_id
-	if e.faction == EnemyState.Faction.CHARMED:
-		return StringName("%s_charmed" % sprite_id)
-	return sprite_id
-
-
-## Walk bob / charmed swap: the sprite child re-resolves its manifest frame
-## each projection (cached loads). Falls back to the flat recolor when no
-## sprite child exists.
-func _refresh_enemy_sprite(e: EnemyState, rect: ColorRect) -> void:
-	var sprite := rect.get_node_or_null("Sprite") as TextureRect
-	if sprite == null:
-		if e.faction == EnemyState.Faction.CHARMED:
-			rect.color = CHARMED_COLOR
-		return
-	var sprite_id := _enemy_sprite_id(e)
-	var frame := 0
-	if Art.frame_count(sprite_id) > 1:
-		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + e.id) % 2
-	var tex := Art.texture(sprite_id, frame)
-	if tex != null and sprite.texture != tex:
-		sprite.texture = tex
 
 
 ## Traps project as cell glyphs: armed spike = amber plate with a dark core
@@ -773,8 +746,11 @@ func _project_tracers() -> void:
 		)
 		if not is_ranged:
 			continue
-		if u.alive and u.last_attack_tick >= 0 \
-				and u.last_attack_tick != int(_tracer_seen_tick.get(u.id, -1)):
+		if (
+			u.alive
+			and u.last_attack_tick >= 0
+			and u.last_attack_tick != int(_tracer_seen_tick.get(u.id, -1))
+		):
 			_tracer_seen_tick[u.id] = u.last_attack_tick
 			_tracer_frames_left[u.id] = cfg.tracer_frames
 			var line: Line2D = _tracer_lines.get(u.id)
@@ -786,10 +762,12 @@ func _project_tracers() -> void:
 				_tracer_lines[u.id] = line
 			# depth from the shooter's cell (td-phase-12 pin)
 			line.z_index = IsoProjection.entity_z(Vector2(u.cell) + Vector2.ONE * 0.5)
-			line.points = PackedVector2Array([
-				IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)),
-				IsoProjection.face_center(u.last_attack_cell),
-			])
+			line.points = PackedVector2Array(
+				[
+					IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)),
+					IsoProjection.face_center(u.last_attack_cell),
+				]
+			)
 		# aging happens in _process (rule 10, P14) — here we only project
 		if _tracer_lines.has(u.id):
 			(_tracer_lines[u.id] as Line2D).visible = int(_tracer_frames_left.get(u.id, 0)) > 0
@@ -937,7 +915,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
 	# feet on the face: bottom-center anchored at the node origin
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
-	_add_ground_shadow(rect, false)
+	EnemyAnimator.add_shadow(rect, false)
 	_add_hp_bar(rect, rect.size.x)
 	if u.sp_cost > 0:
 		_add_sp_bar(rect)

@@ -22,6 +22,7 @@ const ROUND5_IMPORTER := "res://tools/art_pipeline/characters/import_round5_shee
 const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
 const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
 const ROUND5_CHARACTER_PLACEHOLDER := false
+const GRUNT_ANIMATION_PROVENANCE := "res://assets/sprites/grunt_animation.provenance.json"
 
 var _failed := false
 var _manifest := AssetManifest.new()
@@ -63,18 +64,21 @@ func _initialize() -> void:
 		var frames := ArtOperators.build(op_id, def.op_class)
 		for i: int in frames.size():
 			_lint_and_save(
-				frames[i], ArtOperators.SIZE, "%s/%s_%d.png" % [OUT_SPRITES, op_id, i],
+				frames[i],
+				ArtOperators.SIZE,
+				"%s/%s_%d.png" % [OUT_SPRITES, op_id, i],
 				reserved_free
 			)
 			_record(
-				def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
-				ArtOperators.SIZE, is_placeholder
+				def.sprite_id,
+				"%s/%s_%%d.png" % [OUT_SPRITES, op_id],
+				frames.size(),
+				ArtOperators.SIZE,
+				is_placeholder
 			)
 		for i: int in [0, 2, 4]:
 			sheet_cells.append(Pix.upscale(frames[i], 4))
-		var portrait := ArtPortraits.build(
-			op_id, def.op_class, ArtOperators.OPERATOR_SHEETS[op_id]
-		)
+		var portrait := ArtPortraits.build(op_id, def.op_class, ArtOperators.OPERATOR_SHEETS[op_id])
 		_lint_and_save(
 			portrait,
 			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
@@ -84,11 +88,11 @@ func _initialize() -> void:
 		# Existing accepted art remains final; the new healer stays placeholder.
 		_record(
 			StringName("portrait_%s" % def.portrait_id),
-				"%s/%s.png" % [OUT_PORTRAITS, op_id],
-				1,
-				ArtPortraits.SIZE * ArtPortraits.UPSCALE,
-				is_placeholder
-			)
+			"%s/%s.png" % [OUT_PORTRAITS, op_id],
+			1,
+			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
+			is_placeholder
+		)
 		portrait_cells.append(portrait)
 
 	# enemies + derived charmed variants
@@ -98,20 +102,21 @@ func _initialize() -> void:
 		var enemy_size: Vector2i = art["size"]
 		for i: int in frames.size():
 			_lint_and_save(
-				frames[i], enemy_size, "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i],
-				reserved_free
+				frames[i], enemy_size, "%s/%s_%d.png" % [OUT_SPRITES, enemy_id, i], reserved_free
 			)
 		var def := load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 		_record(
-			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size,
+			def.sprite_id,
+			"%s/%s_%%d.png" % [OUT_SPRITES, enemy_id],
+			frames.size(),
+			enemy_size,
 			ROUND5_CHARACTER_PLACEHOLDER
 		)
 		sheet_cells.append(Pix.upscale(frames[0], 4))
 		if not def.charm_immune:
 			var charmed := Pix.charmed_variant(frames[0])
 			_lint_and_save(
-				charmed, enemy_size, "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id],
-				charm_allowed
+				charmed, enemy_size, "%s/%s_charmed_0.png" % [OUT_SPRITES, enemy_id], charm_allowed
 			)
 			_lint_and_save(
 				Pix.shifted(charmed, Vector2i(0, 1)),
@@ -134,6 +139,9 @@ func _initialize() -> void:
 	if not _import_round5_character_art():
 		quit(1)
 		return
+	if not _record_grunt_animation_assets():
+		quit(1)
+		return
 
 	# traps + spell icons: traps carry the reservation lint, icon chips
 	# keep the full palette (sanctioned exemption above)
@@ -143,7 +151,9 @@ func _initialize() -> void:
 		var is_icon := String(prop_id).begins_with("icon_")
 		var size: Vector2i = ArtProps.ICON_SIZE if is_icon else ArtProps.TRAP_SIZE
 		_lint_and_save(
-			img, size, "%s/%s.png" % [OUT_SPRITES, prop_id],
+			img,
+			size,
+			"%s/%s.png" % [OUT_SPRITES, prop_id],
 			Palette.ALL if is_icon else reserved_free
 		)
 		_record(prop_id, "%s/%s.png" % [OUT_SPRITES, prop_id], 1, size)
@@ -173,15 +183,20 @@ func _initialize() -> void:
 
 func _import_round5_character_art() -> bool:
 	var output: Array = []
-	var code := OS.execute(
-		"/usr/bin/python3",
-		[
-			ProjectSettings.globalize_path(ROUND5_IMPORTER),
-			"--repo", ProjectSettings.globalize_path("res://"),
-			"--review-dir", ProjectSettings.globalize_path(OUT_SHEET + "/round5"),
-		],
-		output,
-		true,
+	var code := (
+		OS
+		. execute(
+			"/usr/bin/python3",
+			[
+				ProjectSettings.globalize_path(ROUND5_IMPORTER),
+				"--repo",
+				ProjectSettings.globalize_path("res://"),
+				"--review-dir",
+				ProjectSettings.globalize_path(OUT_SHEET + "/round5"),
+			],
+			output,
+			true,
+		)
 	)
 	if code != 0:
 		push_error("[gen_assets] Round-5 import failed (%d): %s" % [code, "\n".join(output)])
@@ -241,6 +256,70 @@ func _record_s1_world_assets() -> void:
 		_record(id, path, 1, Vector2i(int(native_size[0]), int(native_size[1])), false)
 
 
+func _record_grunt_animation_assets() -> bool:
+	var file := FileAccess.open(GRUNT_ANIMATION_PROVENANCE, FileAccess.READ)
+	if file == null:
+		push_error("[gen_assets] missing grunt animation provenance")
+		return false
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not parsed is Dictionary or parsed.get("schema") != "mgs.generated-sprite-atlas.v1":
+		push_error("[gen_assets] malformed grunt animation provenance")
+		return false
+	var outputs: Variant = parsed.get("outputs")
+	if not outputs is Dictionary or outputs.size() != 16:
+		push_error("[gen_assets] grunt animation provenance must carry sixteen outputs")
+		return false
+	var ids: Array[String] = []
+	for raw_id: Variant in outputs:
+		ids.append(String(raw_id))
+	ids.sort_custom(func(a: String, b: String) -> bool: return a < b)
+	for id: String in ids:
+		var row: Variant = outputs[id]
+		if not _grunt_animation_row_valid(id, row):
+			return false
+		var expected_path := "assets/sprites/%s.png" % id
+		var resource_path := "res://%s" % expected_path
+		_manifest.entries[StringName(id)] = {
+			"pattern": resource_path,
+			"frames": 25,
+			"size": Vector2i(256, 256),
+			"placeholder": true,
+			"pivot": Vector2(0.5, 1.0),
+			"animations":
+			{
+				&"default": {&"start": 0, &"length": 25, &"fps": 12.0, &"loop": true},
+			},
+			"provenance_sha256": "0".repeat(64),
+		}
+	return true
+
+
+func _grunt_animation_row_valid(id: String, row: Variant) -> bool:
+	if not row is Dictionary:
+		push_error("[gen_assets] malformed grunt animation row %s" % id)
+		return false
+	var expected_path := "assets/sprites/%s.png" % id
+	if (
+		not id.begins_with("grunt_anim_")
+		or String(row.get("path", "")) != expected_path
+		or int(row.get("frames", 0)) != 25
+		or int(row.get("fps", 0)) != 12
+		or not _json_pair_equals(row.get("frame_size"), 256, 256)
+		or not _json_pair_equals(row.get("size"), 6400, 256)
+	):
+		push_error("[gen_assets] invalid grunt animation contract %s" % id)
+		return false
+	var resource_path := "res://%s" % expected_path
+	if FileAccess.get_sha256(resource_path) != String(row.get("sha256", "")):
+		push_error("[gen_assets] grunt animation digest mismatch %s" % id)
+		return false
+	return true
+
+
+func _json_pair_equals(value: Variant, x: int, y: int) -> bool:
+	return value is Array and value.size() == 2 and int(value[0]) == x and int(value[1]) == y
+
+
 func _generate_provenance() -> bool:
 	var inventory: Dictionary = {}
 	var ids: Array[StringName] = []
@@ -260,18 +339,21 @@ func _generate_provenance() -> bool:
 	file.store_string(JSON.stringify({"entries": inventory}, "\t", true) + "\n")
 	file.close()
 	var output: Array = []
-	var code := OS.execute(
-		"/usr/bin/python3",
-		[
-			ProjectSettings.globalize_path(PROVENANCE_TOOL),
-			"--repo",
-			ProjectSettings.globalize_path("res://"),
-			"--inventory",
-			ProjectSettings.globalize_path(PROVENANCE_INVENTORY),
-			"--write",
-		],
-		output,
-		true,
+	var code := (
+		OS
+		. execute(
+			"/usr/bin/python3",
+			[
+				ProjectSettings.globalize_path(PROVENANCE_TOOL),
+				"--repo",
+				ProjectSettings.globalize_path("res://"),
+				"--inventory",
+				ProjectSettings.globalize_path(PROVENANCE_INVENTORY),
+				"--write",
+			],
+			output,
+			true,
+		)
 	)
 	if code != 0:
 		push_error("[gen_assets] provenance failed (%d): %s" % [code, "\n".join(output)])
@@ -308,7 +390,9 @@ func _write_sheet(cells: Array[Image], file_name: String) -> void:
 	var columns := 8
 	var row_count := ceili(float(cells.size()) / float(columns))
 	var sheet := Image.create(
-		columns * (cell_px + pad) + pad, row_count * (cell_px + pad) + pad, false,
+		columns * (cell_px + pad) + pad,
+		row_count * (cell_px + pad) + pad,
+		false,
 		Image.FORMAT_RGBA8
 	)
 	sheet.fill(Color("242836"))
@@ -331,9 +415,14 @@ func _write_sheet(cells: Array[Image], file_name: String) -> void:
 func _write_stage_collage(tiles: Dictionary) -> void:
 	var layout: Array[String] = ["ggEg", "gEEg", "srrb", "wvxg"]
 	var ids := {
-		"g": &"tile_ground", "E": &"tile_elevated", "r": &"tile_road",
-		"s": &"tile_spawn", "b": &"tile_base", "w": &"tile_backdrop",
-		"v": &"tile_void", "x": &"tile_blocked",
+		"g": &"tile_ground",
+		"E": &"tile_elevated",
+		"r": &"tile_road",
+		"s": &"tile_spawn",
+		"b": &"tile_base",
+		"w": &"tile_backdrop",
+		"v": &"tile_void",
+		"x": &"tile_blocked",
 	}
 	var pad := 4
 	var origin := Vector2i(pad + 64, pad + 8)
@@ -348,6 +437,4 @@ func _write_stage_collage(tiles: Dictionary) -> void:
 			if layout[cy][cx] == "E":
 				at.y -= 8
 			Pix.blend(sheet, img, at)
-	Pix.upscale(sheet, 4).save_png(
-		ProjectSettings.globalize_path(OUT_SHEET + "/stage_collage.png")
-	)
+	Pix.upscale(sheet, 4).save_png(ProjectSettings.globalize_path(OUT_SHEET + "/stage_collage.png"))

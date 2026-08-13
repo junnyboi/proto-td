@@ -107,6 +107,23 @@ class ProvenanceContractTests(unittest.TestCase):
             MODULE.ROUND5_APPROVED_CANDIDATE,
         )
 
+    def test_single_file_atlas_path_is_not_expanded_as_printf_pattern(self) -> None:
+        entry = {"pattern": "res://assets/sprites/grunt_anim_walk_se.png", "frames": 25}
+        self.assertEqual(MODULE.final_paths(entry), [entry["pattern"]])
+
+    def test_grunt_animation_atlas_is_ai_assisted_and_review_pending(self) -> None:
+        logical_id = "grunt_anim_walk_se"
+        path = REPO / f"assets/provenance/{logical_id}.provenance.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        entry = {"pattern": f"res://assets/sprites/{logical_id}.png", "frames": 25}
+        MODULE.validate_schema(document, self.schema, self.schema)
+        MODULE.validate_document(REPO, document, logical_id, entry)
+        self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
+        self.assertEqual(document["generation"]["model"], "gpt-image-2")
+        self.assertEqual(document["acceptance"]["state"], "human_concept_accepted_runtime_review_pending")
+        self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
+        self.assertIsNone(document["acceptance"]["accepting_commit"])
+
 
 if __name__ == "__main__":
     unittest.main()

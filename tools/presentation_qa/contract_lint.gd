@@ -36,7 +36,7 @@ func _initialize() -> void:
 func _validate_registry(manifest: AssetManifest, registry: ProbeColorOwnerRegistry) -> void:
 	var expected := ProbeColorOwnerRegistry.expected_entries()
 	if registry.entries != expected:
-		_fail("registry: production rows do not match exact frozen 13-tuple table")
+		_fail("registry: production rows do not match exact frozen owner-tuple table")
 	var asset_owners: Dictionary = {}
 	var runtime_owners: Dictionary = {}
 	for row: Dictionary in registry.entries:
@@ -54,8 +54,10 @@ func _validate_registry(manifest: AssetManifest, registry: ProbeColorOwnerRegist
 		var id: StringName = raw_id
 		var entry: Dictionary = manifest.entries[id]
 		for color: String in RESERVED:
-			if entry_any_frame_contains_color(entry, color) \
-				and not asset_owners.has("%s|%s" % [id, color]):
+			if (
+				entry_any_frame_contains_color(entry, color)
+				and not asset_owners.has("%s|%s" % [id, color])
+			):
 				_fail("probe: unregistered asset color %s in %s" % [color, id])
 	_validate_runtime_literals(runtime_owners)
 
@@ -84,7 +86,7 @@ func _validate_runtime_owner(source: String, symbol: String, color: String) -> v
 	if file == null:
 		_fail("probe: missing runtime source %s" % source)
 		return
-	var needle := "const %s := Color(\"%s\")" % [symbol, color]
+	var needle := 'const %s := Color("%s")' % [symbol, color]
 	if not file.get_as_text().contains(needle):
 		_fail("probe: missing exact runtime owner %s in %s" % [symbol, source])
 
@@ -97,7 +99,7 @@ func _validate_runtime_literals(runtime_owners: Dictionary) -> void:
 		var lines := file.get_as_text().split("\n")
 		for line: String in lines:
 			for color: String in RESERVED:
-				if not line.contains("Color(\"%s\")" % color):
+				if not line.contains('Color("%s")' % color):
 					continue
 				var symbol := _constant_symbol(line)
 				if symbol.is_empty() or not runtime_owners.has("%s|%s|%s" % [path, symbol, color]):
@@ -133,6 +135,17 @@ func _validate_presentation_boundary() -> void:
 
 
 static func entry_all_frames_contain_color(entry: Dictionary, color_html: String) -> bool:
+	if _is_atlas_entry(entry):
+		var image := _atlas_image(entry)
+		var frame_size: Vector2i = entry.get(&"size", Vector2i.ZERO)
+		if image == null or frame_size == Vector2i.ZERO:
+			return false
+		for index: int in int(entry.get(&"frames", 0)):
+			if not _image_region_contains_color(
+				image, Rect2i(index * frame_size.x, 0, frame_size.x, frame_size.y), color_html
+			):
+				return false
+		return true
 	var paths := _entry_frame_paths(entry)
 	if paths.is_empty():
 		return false
@@ -143,6 +156,17 @@ static func entry_all_frames_contain_color(entry: Dictionary, color_html: String
 
 
 static func entry_any_frame_contains_color(entry: Dictionary, color_html: String) -> bool:
+	if _is_atlas_entry(entry):
+		var image := _atlas_image(entry)
+		var frame_size: Vector2i = entry.get(&"size", Vector2i.ZERO)
+		if image == null or frame_size == Vector2i.ZERO:
+			return false
+		for index: int in int(entry.get(&"frames", 0)):
+			if _image_region_contains_color(
+				image, Rect2i(index * frame_size.x, 0, frame_size.x, frame_size.y), color_html
+			):
+				return true
+		return false
 	for path: String in _entry_frame_paths(entry):
 		if _image_contains_color(path, color_html):
 			return true
@@ -153,6 +177,9 @@ static func _entry_frame_paths(entry: Dictionary) -> Array[String]:
 	var paths: Array[String] = []
 	var pattern := String(entry.get(&"pattern", ""))
 	var frames := int(entry.get(&"frames", 0))
+	if frames > 1 and not pattern.contains("%d"):
+		paths.append(pattern)
+		return paths
 	for index: int in frames:
 		paths.append(pattern % index if frames > 1 else pattern)
 	return paths
@@ -162,8 +189,28 @@ static func _image_contains_color(path: String, color_html: String) -> bool:
 	var image := Image.load_from_file(ProjectSettings.globalize_path(path))
 	if image == null or image.is_empty():
 		return false
-	for y: int in image.get_height():
-		for x: int in image.get_width():
+	return _image_region_contains_color(image, Rect2i(Vector2i.ZERO, image.get_size()), color_html)
+
+
+static func _is_atlas_entry(entry: Dictionary) -> bool:
+	return int(entry.get(&"frames", 0)) > 1 and not String(entry.get(&"pattern", "")).contains("%d")
+
+
+static func _atlas_image(entry: Dictionary) -> Image:
+	var image := Image.load_from_file(
+		ProjectSettings.globalize_path(String(entry.get(&"pattern", "")))
+	)
+	if image == null or image.is_empty():
+		return null
+	var frame_size: Vector2i = entry.get(&"size", Vector2i.ZERO)
+	if image.get_size() != Vector2i(frame_size.x * int(entry.get(&"frames", 0)), frame_size.y):
+		return null
+	return image
+
+
+static func _image_region_contains_color(image: Image, region: Rect2i, color_html: String) -> bool:
+	for y: int in range(region.position.y, region.end.y):
+		for x: int in range(region.position.x, region.end.x):
 			if image.get_pixel(x, y).to_html(false) == color_html:
 				return true
 	return false

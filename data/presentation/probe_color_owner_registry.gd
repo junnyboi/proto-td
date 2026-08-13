@@ -2,17 +2,32 @@ class_name ProbeColorOwnerRegistry
 extends Resource
 
 const ROW_KEYS: Array[String] = [
-	"color_html", "owner_kind", "owner_id", "source_path", "symbol", "semantic",
-	"status", "negative_owner_id", "differential_required",
+	"color_html",
+	"owner_kind",
+	"owner_id",
+	"source_path",
+	"symbol",
+	"semantic",
+	"status",
+	"negative_owner_id",
+	"differential_required",
 ]
 const COLORS: Array[String] = ["f4f4f4", "41a6f6"]
 const OWNER_KINDS: Array[StringName] = [&"asset", &"view_effect", &"ui_legacy_exception"]
 const SEMANTICS: Array[StringName] = [
-	&"trap_sprung_flash", &"charm_swirl", &"attack_tracer", &"skill_ready_flash",
-	&"route_chevron", &"charmed_unit_tint", &"staging_text", &"charmed_variant_signal",
+	&"trap_sprung_flash",
+	&"charm_swirl",
+	&"attack_tracer",
+	&"skill_ready_flash",
+	&"route_chevron",
+	&"charmed_unit_tint",
+	&"staging_text",
+	&"charmed_variant_signal",
 	&"spell_icon_highlight",
 ]
 const STATUSES: Array[StringName] = [&"probe_owner", &"legacy_exception"]
+const GRUNT_ANIMATION_STATES: Array[StringName] = [&"attack", &"walk"]
+const GRUNT_ANIMATION_DIRECTIONS: Array[StringName] = [&"ne", &"nw", &"se", &"sw"]
 const EXPECTED_ENTRIES: Array[Dictionary] = [
 	{
 		"color_html": "f4f4f4",
@@ -73,23 +88,12 @@ const EXPECTED_ENTRIES: Array[Dictionary] = [
 		"color_html": "41a6f6",
 		"differential_required": false,
 		"negative_owner_id": &"",
-		"owner_id": &"battle_view.charmed_unit_tint",
+		"owner_id": &"enemy_animator.charmed_unit_tint",
 		"owner_kind": &"view_effect",
 		"semantic": &"charmed_unit_tint",
-		"source_path": "res://scripts/view/battle_view.gd",
+		"source_path": "res://scripts/view/enemy_animator.gd",
 		"status": &"probe_owner",
 		"symbol": &"CHARMED_COLOR",
-	},
-	{
-		"color_html": "f4f4f4",
-		"differential_required": false,
-		"negative_owner_id": &"",
-		"owner_id": &"staging.text_color",
-		"owner_kind": &"ui_legacy_exception",
-		"semantic": &"staging_text",
-		"source_path": "res://scripts/ui/staging.gd",
-		"status": &"legacy_exception",
-		"symbol": &"TEXT_COLOR",
 	},
 	{
 		"color_html": "41a6f6",
@@ -167,6 +171,26 @@ static func expected_entries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for row: Dictionary in EXPECTED_ENTRIES:
 		result.append(row.duplicate(true))
+	for state: StringName in GRUNT_ANIMATION_STATES:
+		for direction: StringName in GRUNT_ANIMATION_DIRECTIONS:
+			var base_id := StringName("grunt_anim_%s_%s" % [state, direction])
+			var charmed_id := StringName("%s_charmed" % base_id)
+			(
+				result
+				. append(
+					{
+						"color_html": "41a6f6",
+						"differential_required": true,
+						"negative_owner_id": base_id,
+						"owner_id": charmed_id,
+						"owner_kind": &"asset",
+						"semantic": &"charmed_variant_signal",
+						"source_path": "res://assets/sprites/%s.png" % charmed_id,
+						"status": &"probe_owner",
+						"symbol": &"",
+					}
+				)
+			)
 	return result
 
 
@@ -180,18 +204,25 @@ func validate_contract() -> PackedStringArray:
 	for index: int in entries.size():
 		var row: Dictionary = entries[index]
 		_validate_row(index, row, errors)
-		var identity := "%s|%s|%s|%s|%s" % [
-			row.get(&"color_html", ""), row.get(&"owner_kind", &""),
-			row.get(&"owner_id", &""), row.get(&"source_path", ""), row.get(&"symbol", &""),
-		]
+		var identity := (
+			"%s|%s|%s|%s|%s"
+			% [
+				row.get(&"color_html", ""),
+				row.get(&"owner_kind", &""),
+				row.get(&"owner_id", &""),
+				row.get(&"source_path", ""),
+				row.get(&"symbol", &""),
+			]
+		)
 		if seen.has(identity):
 			errors.append("entries.%d: duplicate identity" % index)
 		seen[identity] = true
-	if entries.size() != EXPECTED_ENTRIES.size():
-		errors.append("entries: expected exact %d rows" % EXPECTED_ENTRIES.size())
+	var expected := expected_entries()
+	if entries.size() != expected.size():
+		errors.append("entries: expected exact %d rows" % expected.size())
 	else:
-		for index: int in EXPECTED_ENTRIES.size():
-			if entries[index] != EXPECTED_ENTRIES[index]:
+		for index: int in expected.size():
+			if entries[index] != expected[index]:
 				errors.append("entries.%d: does not match frozen owner tuple" % index)
 	return errors
 
@@ -203,11 +234,15 @@ func _validate_row(index: int, row: Dictionary, errors: PackedStringArray) -> vo
 		if not row.has(key):
 			errors.append("entries.%d: missing %s" % [index, key])
 	for raw_key: Variant in row:
-		if typeof(raw_key) not in [TYPE_STRING, TYPE_STRING_NAME] \
-			or not ROW_KEYS.has(String(raw_key)):
+		if (
+			typeof(raw_key) not in [TYPE_STRING, TYPE_STRING_NAME]
+			or not ROW_KEYS.has(String(raw_key))
+		):
 			errors.append("entries.%d: unexpected key %s" % [index, raw_key])
-	if typeof(row.get(&"color_html")) != TYPE_STRING \
-		or not COLORS.has(String(row.get(&"color_html", ""))):
+	if (
+		typeof(row.get(&"color_html")) != TYPE_STRING
+		or not COLORS.has(String(row.get(&"color_html", "")))
+	):
 		errors.append("entries.%d.color_html: invalid" % index)
 	_validate_enum(index, row, &"owner_kind", OWNER_KINDS, errors)
 	_validate_enum(index, row, &"semantic", SEMANTICS, errors)
@@ -217,8 +252,10 @@ func _validate_row(index: int, row: Dictionary, errors: PackedStringArray) -> vo
 			errors.append("entries.%d.%s: expected StringName" % [index, key])
 	if row.get(&"owner_id", &"") == &"":
 		errors.append("entries.%d.owner_id: required" % index)
-	if typeof(row.get(&"source_path")) != TYPE_STRING \
-		or not String(row.get(&"source_path", "")).begins_with("res://"):
+	if (
+		typeof(row.get(&"source_path")) != TYPE_STRING
+		or not String(row.get(&"source_path", "")).begins_with("res://")
+	):
 		errors.append("entries.%d.source_path: expected res:// path" % index)
 	if typeof(row.get(&"differential_required")) != TYPE_BOOL:
 		errors.append("entries.%d.differential_required: expected bool" % index)
@@ -233,7 +270,10 @@ func _validate_row(index: int, row: Dictionary, errors: PackedStringArray) -> vo
 
 
 func _validate_enum(
-	index: int, row: Dictionary, key: StringName, allowed: Array[StringName],
+	index: int,
+	row: Dictionary,
+	key: StringName,
+	allowed: Array[StringName],
 	errors: PackedStringArray
 ) -> void:
 	var value: Variant = row.get(key)

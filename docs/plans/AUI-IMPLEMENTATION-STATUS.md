@@ -124,12 +124,16 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 
 ## AUI-20 — Integrated S1 slice and kill-gate verdict
 
-- Status: `claimed_plan_in_progress`; no implementation byte has been written.
+- Status: `fixture_approved_current_master_rebase_preflight_pending`; no implementation byte has been written.
 - Owner: `AGENT F (Agent 7)`.
-- Claim branch/base: `agent-f/aui-20-claim` from `master` at `38e3123f31188a5bb8b0093bc092940e424e5961` / tree `ea9a4e1b40afd5cf019610586725f5712468b312`.
-- Base health: clean 33-rung default verification PASS; `verify.json` SHA-256 `4da359c0bfe6bb721877b9bbfbe68dedca323b2c96d7cd4bca4a1648338cd807`.
+- Claim/amendment boundary: landed `agent-f/aui-20-claim`, landed docs-only `agent-f/aui-20-fixture-amendment`, then current-master rebase claim `agent-f/aui-20-rebase-claim` from `b8a8474f1641980e9d056b39d727eea71e0f15d9` / tree `55a6a3c43a944cb0283956ceb7b9905b5645949a`.
+- Base health: fresh clean 35-rung default verification PASS in external `rebase-base-b8a8474-r2`; `verify.json` SHA-256 `c22dfca6ae95d997a37ad571629b29f4a0507df7fcce7cd81cc47559b0a5c739`. r1 is preserved as a procedure-only red because `/usr/bin/time` was absent before verification started.
 - Landed dependencies: AUI-12 approved candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d`; AUI-10R approved runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9`; AUI-10R Poseidon receipt SHA-256 `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`.
-- Dependency amendment: Poseidon's exact-base claim directive supersedes only the older scheduling edge from AUI-11 to AUI-20. AUI-11 remains separate; this package consumes and judges no unlanded Agent E runtime bytes.
-- Frozen package boundary: one title-to-S1 integrated scenario plus focused native/Web/performance oracles and the `PROCEED | PIVOT | KILL source approach` verdict. No bulk content, full-screen redesign, Act II work, simulation, balance, projection, localization, audio, threshold, or verification-entrypoint change.
+- Round-5 dependency: current master contains the human-final Round-5 source/runtime binding accepted at `441cb80b079ee89195ef751dbc26e67b426600d0`; decision SHA-256 `ea503dba5c14b9b966d18d3dda6e0325b0d1b28aed540401311bf23b89a04f4e`.
+- Preflight 01: FAIL, preserved externally; no implementation started. Its source-fixture blocker is resolved only by Poseidon's 2026-08-13 narrow 192 px packet authorization. All other findings remain mandatory inputs to plan v2.
+- Dependency amendment: AUI-11 remains separate and no unlanded Agent E bytes are consumed. The new representative fixture is additive, AUI-20-only, and must never overwrite approved Round-5 sources, runtime derivatives, logical IDs, provenance, or acceptance state.
+- Fixture verdict: Poseidon approved exact fixture contract `bd0f253b561a530905eb862dd1640ca53f940c9700fd4087a8592f018174f97f`; schema-valid record SHA-256 `05b37ab6d48ddcdd6e561c31699502fc53e0e70ecabd9eaa48b5e4323cc0cac6` authorizes only the AUI-20 experiment runtime binding.
+- Current-master impact: master advanced after preflight 05 with directional grunt animation. The exact overlap is `scripts/view/battle_view.gd`; AUI-20 now protects `EnemyAnimator`, `Art`, production manifest/directional assets/provenance, and incumbent tests, and permits only a narrow S1 fixture selector while preserving explicit animator delegation and fallbacks.
+- Frozen package boundary: one human-approved representative 192 px operator/enemy pair, one title-to-S1 integrated scenario, focused native/Web/performance oracles, and the `PROCEED | PIVOT | KILL source approach` verdict. No bulk content, full-screen redesign, Act II work, simulation, balance, projection, localization, audio, threshold, or verification-entrypoint change.
 - Effective implementation lane: MGS v2 `RELEASE`; claim lane: docs-only `STANDARD`.
-- Next transition: freeze the external package plan, obtain plan-lint PASS, land this claim, then create non-rewriting `agent-f/aui-20` from the exact landed claim commit with a new RELEASE orientation. `FEATURES.json` remains unchanged until closure evidence satisfies its declared boundary.
+- Next transition: land this docs-only rebase claim, obtain independent plan-v6 preflight PASS against exact current master, then create non-rewriting `agent-f/aui-20` from that landed claim with a new RELEASE orientation. `FEATURES.json` remains unchanged until closure evidence satisfies its declared boundary.
