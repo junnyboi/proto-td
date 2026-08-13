@@ -3,11 +3,14 @@ extends RefCounted
 const BACKGROUND := Color("151923")
 const FOREGROUND := Color("e8e3d5")
 const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
-const CLASSES: Array[StringName] = [&"defender_1", &"vanguard_2"]
+const CLASSES: Array[StringName] = [
+	&"caster_1", &"caster_2", &"defender_1", &"defender_2",
+	&"sniper_1", &"sniper_2", &"vanguard_2",
+]
 
 
 func run(h: SelfTestHarness) -> void:
-	h.max_frames = 300
+	h.max_frames = 900
 	h.expect_done()
 	await h.frames(2)
 	Art._reset_manifests_for_test()

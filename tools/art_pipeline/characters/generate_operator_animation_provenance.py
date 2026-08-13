@@ -25,7 +25,8 @@ def atlas_entries(repo: Path) -> dict[str, dict[str, object]]:
     compact_path = repo / "assets/provenance/operators/operator-animation-v1.json"
     compact = json.loads(compact_path.read_text(encoding="utf-8"))
     rows: dict[str, dict[str, object]] = {}
-    for class_row in compact.get("classes", []):
+    classes = compact.get("classes", [])
+    for class_row in classes:
         class_id = str(class_row.get("template_id", ""))
         families = class_row.get("families", {})
         for state in ("idle", "attack"):
@@ -37,9 +38,12 @@ def atlas_entries(repo: Path) -> dict[str, dict[str, object]]:
                 frames = int(asset.get("frame_count", 0))
                 if not path.startswith("res://") or frames < 1:
                     raise ValueError(f"{logical_id}: invalid compact atlas row")
+                if logical_id in rows:
+                    raise ValueError(f"{logical_id}: duplicate compact atlas row")
                 rows[logical_id] = {"pattern": path, "frames": frames}
-    if len(rows) != 16:
-        raise ValueError(f"expected 16 operator animation rows, got {len(rows)}")
+    expected = len(classes) * 8
+    if len(rows) != expected:
+        raise ValueError(f"expected {expected} operator animation rows, got {len(rows)}")
     return rows
 
 

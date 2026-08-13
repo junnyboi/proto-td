@@ -913,6 +913,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		sprite.name = "Sprite"
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		sprite.texture = tex
+		sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		sprite.stretch_mode = TextureRect.STRETCH_SCALE
 		sprite.size = rect.size
 		sprite.flip_h = false if animated else u.facing == UnitState.Facing.LEFT
