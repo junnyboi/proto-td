@@ -28,7 +28,7 @@ func run(h: SelfTestHarness) -> void:
 			available = model.apply_action([&"debug_grant_operator", template_id])
 		h.check("%s available in squad" % template_id, available)
 	h.check("grant deployment points", model.apply_action([&"debug_set_dp", 99]))
-	var placements := _find_pair(model)
+	var placements := _find_pair(model, view)
 	h.check("found sequential real-combat target geometry", not placements.is_empty())
 	if placements.is_empty():
 		return
@@ -102,7 +102,7 @@ func run(h: SelfTestHarness) -> void:
 	h.done()
 
 
-func _find_pair(model: BattleModel) -> Dictionary:
+func _find_pair(model: BattleModel, view: Node2D) -> Dictionary:
 	var stage := model.stage
 	var op_defs: Dictionary = model.get("_op_defs")
 	var path := stage.path_cells(0)
@@ -111,7 +111,7 @@ func _find_pair(model: BattleModel) -> Dictionary:
 	for template_id: StringName in [&"vanguard_2", &"defender_1"]:
 		var found: Dictionary = {}
 		for target: Vector2i in path:
-			found = _placement(stage, op_defs[template_id], target, occupied)
+			found = _placement(stage, op_defs[template_id], target, occupied, view)
 			if not found.is_empty():
 				break
 		if found.is_empty():
@@ -126,17 +126,30 @@ func _placement(
 	definition: OperatorDef,
 	target: Vector2i,
 	occupied: Dictionary,
+	view: Node2D,
 ) -> Dictionary:
 	var size := stage.grid_size()
-	for y: int in range(size.y - 1, -1, -1):
+	var viewport := view.get_viewport_rect().size
+	var best: Dictionary = {}
+	var best_score := INF
+	for y: int in size.y:
 		for x: int in size.x:
 			var cell := Vector2i(x, y)
 			if occupied.has(cell) or not stage.operator_cell_in_domain(definition, cell):
 				continue
+			var screen: Vector2 = view.call("cell_center", cell)
+			if screen.x < 96.0 or screen.x > viewport.x - 96.0:
+				continue
+			if screen.y < 150.0 or screen.y > viewport.y - 180.0:
+				continue
 			for facing: int in 4:
 				if Targeting.range_cells(cell, definition.range_offsets, facing).has(target):
-					return {"cell": cell, "facing": facing}
-	return {}
+					var score := absf(screen.y - viewport.y * 0.52)
+					score += absf(screen.x - viewport.x * 0.5) * 0.2
+					if score < best_score:
+						best_score = score
+						best = {"cell": cell, "facing": facing}
+	return best
 
 
 func _unit_for(model: BattleModel, template_id: StringName) -> UnitState:
