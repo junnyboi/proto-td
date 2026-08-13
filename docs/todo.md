@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-025 — Integrate canon-aligned operator animations
-
-- Status: in_progress
-- Owner: AGENT 5
-- Branch: `agent-5/td-025-operator-animations`
-- Base: `master` at `a26969770a5ed57206d0751c1d0f757ac576f733`
-- Dependencies: AUI-34 closed; AUI-20 retired at this base; exact class packets remain gated by per-class human approval under Gate H
-- Owned files: `docs/plans/TD-025-protos-animated-operator-sprites.md`; `staging/assets/characters/operator-animation-v1/**`; `staging/provenance/characters/operator-animation-v1/**`; `staging/qa/character-vfx/operator-animation-v1/**`; `tools/art_pipeline/characters/import_operator_animations.py`; `tools/art_pipeline/characters/test_import_operator_animations.py`; `assets/sprites/operators/animated/{vanguard_1,vanguard_2,guard_1,guard_2,defender_1}/**`; `assets/provenance/operators/operator-animation-v1.json`; `data/presentation/operator_animation_def.gd*`; `data/presentation/operator_visual_catalog.gd*`; `data/presentation/operator_visuals/{vanguard_1,vanguard_2,guard_1,guard_2,defender_1}.tres`; `scripts/view/operator_animator.gd*`; `assets/asset_manifest.gd`; `scripts/view/art.gd`; `assets/manifest.tres`; `scripts/view/battle_view.gd`; `test/test_operator_animator.gd*`; `test/test_operator_animation_def.gd*`; `selftest/harness.gd`; `selftest/scenarios/operator_animation_{smoke,catalog,flow}.gd*`; `scripts/verify.sh`; `FEATURES.json`; `docs/todo.md`; `docs/completed.md`; `docs/handoffs/TD-025-agent-5-operator-animations.md`
-- Do not touch: `defender_2`, both sniper, both caster, or Witch Doctor generated/runtime assets; any other agent's external generation workspace; simulation/model/hash/save/load/replay/telemetry; gameplay content/balance; audio; localization; human thresholds; unrelated tests/scenarios; AUI-20 historical fixture bytes
-- Acceptance: stage and hash all five class projections; publish runtime atlases only for classes whose idle and attack families both pass unchanged technical gates, canon/agent visual review, and exact-hash human approval; preserve explicit legacy fallback for every blocked/unapproved class; select four directions without mirroring; derive attack presentation solely from existing `last_attack_tick`; preserve model hash and all incumbent view seams; keep other-unit integrations out of scope
-- Required evidence: fresh detached STANDARD baseline; importer and catalog exactness tests; stale/missing/corrupt fail-closed tests; bounded smoke/catalog/real-battle scenarios in headless and windowed lanes; fresh exact-candidate contact and battle images with zero windowed render/pixel skips; decoded-RGBA differential; three-process memory checks; two-process replay equality; uninterrupted RELEASE; exact-hash human approval for every published class; independent non-implementer audit
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

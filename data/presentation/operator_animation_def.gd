@@ -1,0 +1,65 @@
+class_name OperatorAnimationDef
+extends Resource
+
+## View-only companion resource for one operator template. The simulation never
+## loads or hashes this presentation contract.
+
+const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
+
+@export var schema_version: int = 1
+@export var visual_id: StringName = &""
+@export var idle_by_direction: Dictionary = {}
+@export var attack_by_direction: Dictionary = {}
+@export var idle_frame_count: int = 24
+@export var attack_frame_count: int = 13
+@export var fps: float = 12.0
+@export var pivot: Vector2 = Vector2(0.5, 0.94)
+@export var display_height_px: int = 64
+@export var provenance_sha256: String = ""
+@export var placeholder: bool = true
+
+
+func validate_contract() -> PackedStringArray:
+	var errors := PackedStringArray()
+	if schema_version != 1:
+		errors.append("schema_version: expected 1")
+	if visual_id.is_empty():
+		errors.append("visual_id: expected nonempty StringName")
+	_validate_direction_map(&"idle", idle_by_direction, errors)
+	_validate_direction_map(&"attack", attack_by_direction, errors)
+	if idle_frame_count != 24:
+		errors.append("idle_frame_count: expected 24")
+	if attack_frame_count != 13:
+		errors.append("attack_frame_count: expected 13")
+	if not is_equal_approx(fps, 12.0):
+		errors.append("fps: expected 12.0")
+	if not pivot.is_finite() or pivot.x < 0.0 or pivot.x > 1.0 or pivot.y < 0.0 or pivot.y > 1.0:
+		errors.append("pivot: expected finite normalized Vector2")
+	if display_height_px <= 0:
+		errors.append("display_height_px: expected positive int")
+	if not provenance_sha256.is_valid_hex_number(false) or provenance_sha256.length() != 64:
+		errors.append("provenance_sha256: expected lowercase 64-hex")
+	return errors
+
+
+static func _validate_direction_map(
+	label: StringName, value: Dictionary, errors: PackedStringArray
+) -> void:
+	if value.size() != DIRECTIONS.size():
+		errors.append("%s_by_direction: expected exact four directions" % label)
+		return
+	var seen_ids: Dictionary = {}
+	for direction: StringName in DIRECTIONS:
+		if not value.has(direction):
+			errors.append("%s_by_direction: missing %s" % [label, direction])
+			continue
+		var logical_id: Variant = value[direction]
+		if typeof(logical_id) != TYPE_STRING_NAME or StringName(logical_id).is_empty():
+			errors.append("%s_by_direction.%s: expected nonempty StringName" % [label, direction])
+			continue
+		if seen_ids.has(logical_id):
+			errors.append("%s_by_direction: duplicate logical id %s" % [label, logical_id])
+		seen_ids[logical_id] = true
+	for raw_direction: Variant in value:
+		if typeof(raw_direction) != TYPE_STRING_NAME or raw_direction not in DIRECTIONS:
+			errors.append("%s_by_direction: unknown direction %s" % [label, raw_direction])

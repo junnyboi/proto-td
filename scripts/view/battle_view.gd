@@ -783,17 +783,23 @@ func _project_units() -> void:
 		if u.alive:
 			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
 			_refresh_unit_sprite(u, body)
-			_update_hp_bar(body, UNIT_PX, u.hp, u.hp_max)
+			_update_hp_bar(body, body.size.x, u.hp, u.hp_max)
 			_update_sp_bar(body, u)
 		_detect_skill_trigger(u)
 
 
-## Idle bob / attack pose: frame 0-1 bob on a render-frame clock, frame 2
-## for a short pose window on each last_attack_tick edge (all classes; the
-## ranged tracer keeps its own edge-detect).
+## Admitted templates use OperatorAnimator. Legacy fallbacks keep the pinned
+## frame 0-1 bob and frame 2 attack-pose window unchanged.
 func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
+		return
+	var animation := OperatorVisualCatalog.get_animation(u.op_id)
+	var animated := (
+		animation != null
+		and OperatorAnimator.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
+	)
+	if animated:
 		return
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	if def == null:
@@ -818,7 +824,7 @@ func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 	if u.sp_cost <= 0:
 		return
 	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
-	fill.size.x = UNIT_PX * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
+	fill.size.x = body.size.x * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
 	# readiness from the verb's own validator (rule 7, P14)
 	if u.is_skill_ready():
 		var blink := (Engine.get_process_frames() / 8) % 2 == 0
@@ -878,8 +884,8 @@ func _add_sp_bar(body: ColorRect) -> void:
 	bg.name = "SpBarBg"
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.color = SP_BAR_BG
-	bg.size = Vector2(UNIT_PX, HP_BAR_HEIGHT)
-	bg.position = Vector2(0, UNIT_PX + 3.0)
+	bg.size = Vector2(body.size.x, HP_BAR_HEIGHT)
+	bg.position = Vector2(0, body.size.y + 3.0)
 	body.add_child(bg)
 	var fill := ColorRect.new()
 	fill.name = "SpBarFill"
@@ -898,23 +904,40 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	var tex := Art.texture(def.sprite_id, 0) if def != null else null
+	var animation := OperatorVisualCatalog.get_animation(u.op_id)
+	var direction := OperatorAnimator.direction_for_facing(u.facing)
+	var animation_id := (
+		StringName(animation.idle_by_direction.get(direction, &"")) if animation != null else &""
+	)
+	var tex := Art.texture(animation_id, 0) if not animation_id.is_empty() else null
+	var animated := tex != null and animation != null
+	if not animated:
+		tex = Art.texture(def.sprite_id, 0) if def != null else null
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
-		rect.size = Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
+		rect.size = (
+			OperatorAnimator.body_size(animation)
+			if animated
+			else Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
+		)
 		var sprite := TextureRect.new()
 		sprite.name = "Sprite"
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		sprite.texture = tex
 		sprite.stretch_mode = TextureRect.STRETCH_SCALE
 		sprite.size = rect.size
-		sprite.flip_h = u.facing == 2
+		sprite.flip_h = false if animated else u.facing == UnitState.Facing.LEFT
 		rect.add_child(sprite)
+		if animated:
+			rect.set_meta(&"operator_animation", true)
+			rect.set_meta(&"operator_template_id", u.op_id)
 	else:
 		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
-	# feet on the face: bottom-center anchored at the node origin
-	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
+	# feet on the face: admitted animation cells carry a normalized 0.94 pivot;
+	# legacy sprites remain bottom-center anchored exactly as before.
+	var pivot_y := animation.pivot.y if animated else 1.0
+	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y * pivot_y)
 	EnemyAnimator.add_shadow(rect, false)
 	_add_hp_bar(rect, rect.size.x)
 	if u.sp_cost > 0:
@@ -926,7 +949,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	# grid-cardinal facing projected into iso screen space: the arrow points
 	# along the grid axis, not the screen axis (td-phase-12 pin)
 	var dir := IsoProjection.project(Vector2.RIGHT.rotated(u.facing * PI * 0.5)).normalized()
-	chevron.position = dir * (UNIT_PX * 0.5 + 6.0)
+	chevron.position = dir * (maxf(UNIT_PX, rect.size.x) * 0.5 + 6.0)
 	chevron.rotation = dir.angle()
 	node.add_child(chevron)
 	_grid_root.add_child(node)

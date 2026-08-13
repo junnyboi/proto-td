@@ -272,8 +272,6 @@ func _finish() -> void:
 		"shots": _shots,
 		"pixel_skipped": _pixel_skipped,
 		"frames_used": _frames_used,
-		"done_expected": _done_expected,
-		"done_called": _done_called,
 		"result": "pass" if all_ok else "fail",
 	}
 	var report_path := ProjectSettings.globalize_path(_shots_dir + "/report.json")
