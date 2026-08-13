@@ -1,0 +1,34 @@
+{
+  "approval": {
+    "content_hash_launch_dependency": false,
+    "token": "ACT-II-S2-S3-H0"
+  },
+  "approval_token": "ACT-II-S2-S3-H0",
+  "family": "s2",
+  "generator": {
+    "generation_id": {
+      "reason": "The tool returned no generation identifier; none is invented.",
+      "status": "UNAVAILABLE"
+    },
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": {
+      "reason": "The tool exposed no seed parameter or value; none is invented.",
+      "status": "UNAVAILABLE"
+    },
+    "tool": "Manus built-in image generation"
+  },
+  "human_final_art": false,
+  "production_method": "deterministic Pillow source-palette extraction plus independently authored programmatic pixel geometry; no source module copied/resized",
+  "prompt": {
+    "path": "art-src/world/s2/production-prompt-contract.md",
+    "sha256": "54c6912dd7505c6de316a166b6ed394e2e0a1358240cf96150380ac0331ad3de"
+  },
+  "schema_version": 1,
+  "source": {
+    "path": "art-src/world/s2/s2-production-source.png",
+    "runtime_usage": "PALETTE_MATERIAL_PROVENANCE_INPUT_ONLY_NOT_RUNTIME_RASTER",
+    "sha256": "d590f2d14fcb1efb4731abc93eef18cce39e9e4029f5ef520c67018b0299e5f3"
+  },
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}
