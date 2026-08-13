@@ -21,6 +21,8 @@ const TEXT_COLOR_FLOOR := 0.10
 const BASE_FONT_SIZES := {
 	&"AuiTitleLabel": 64, &"AuiHeadingLabel": 48,
 	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44,
+	&"AuiDenseHeadingLabel": 32, &"AuiDenseBodyLabel": 28,
+	&"AuiDenseDetailLabel": 26,
 	&"AuiLocaleLabel": 44, &"AuiLocaleList": 44,
 	&"AuiPrimaryButton": 44, &"AuiSecondaryButton": 44,
 	&"AuiSelectedButton": 44, &"AuiDestructiveButton": 44,
@@ -122,7 +124,8 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	fixture.add_child(grid)
 	var probes: Array[Dictionary] = []
 	for role: StringName in [
-		&"title", &"heading", &"body", &"detail", &"locale", &"class_badge",
+		&"title", &"heading", &"body", &"detail", &"dense_heading", &"dense_body",
+		&"dense_detail", &"locale", &"class_badge",
 		&"cost_badge", &"cooldown_badge", &"locked_badge", &"completed_badge",
 	]:
 		var label := AetheriaLabel.new()
@@ -158,10 +161,11 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 			var item := probe["item"] as StringName
 			var color := control.get_theme_color(item)
 			var height := _rendered_text_height(image, control.get_global_rect(), color)
+			var glyph_floor := 18 if String(control.name).begins_with("Dense") else 32
 			h.check(
 				"rendered glyph floor %s" % control.name,
-				height >= 32,
-				"rendered_height=%d" % height,
+				height >= glyph_floor,
+				"rendered_height=%d floor=%d" % [height, glyph_floor],
 			)
 
 
@@ -176,6 +180,8 @@ func _capture_screen_state(
 		return
 	var stress_evidence := _apply_stress_mode(content, mode, screen)
 	await h.frames(4)
+	if mode == &"standard":
+		_check_responsive_shell(h, content, screen, viewport)
 	var state_name := String(INVENTORY_STATES[screen])
 	var report := await _inventory_report(
 		h, content, state_name, viewport, mode, screen, stress_evidence,
@@ -232,6 +238,67 @@ func _open_screen(h: SelfTestHarness, screen: StringName) -> Control:
 			consequence.text if consequence != null else "missing",
 		)
 	return content
+
+
+func _check_responsive_shell(
+		h: SelfTestHarness, content: Control, screen: StringName, viewport: Vector2i,
+		) -> void:
+	var shell: AetheriaScreenShell = null
+	for node: Node in _all_nodes(content):
+		if node is AetheriaScreenShell:
+			shell = node as AetheriaScreenShell
+			break
+	h.check(
+		"%s %s responsive shell exists" % [screen, viewport], shell != null,
+		"viewport=%s" % viewport,
+	)
+	if shell == null:
+		return
+	var expected_scale := 1.5 if viewport == Vector2i(1920, 1080) else 1.0
+	h.check(
+		"%s %s responsive scale" % [screen, viewport],
+		is_equal_approx(shell.content_scale(), expected_scale),
+		"scale=%.3f expected=%.3f" % [shell.content_scale(), expected_scale],
+	)
+	var plate := shell.reading_plate()
+	var plate_rect := plate.get_global_rect()
+	var viewport_rect := Rect2(Vector2.ZERO, Vector2(viewport))
+	if shell.content_scale() > 1.0:
+		h.check(
+			"%s scaled plate inside viewport" % screen,
+			viewport_rect.encloses(plate_rect),
+			"plate=%s viewport=%s" % [plate_rect, viewport_rect],
+		)
+		var center_delta := plate_rect.get_center() - viewport_rect.get_center()
+		h.check(
+			"%s scaled plate centered" % screen,
+			absf(center_delta.x) <= 0.5 and absf(center_delta.y) <= 0.5,
+			"plate_center=%s viewport_center=%s" % [
+				plate_rect.get_center(), viewport_rect.get_center(),
+			],
+		)
+		h.check(
+			"%s large viewport grows actual plate" % screen,
+			plate_rect.size.is_equal_approx(plate.size * shell.content_scale()),
+			"rendered=%s layout=%s scale=%.3f" % [
+				plate_rect.size, plate.size, shell.content_scale(),
+			],
+		)
+	if screen == &"results" and viewport == Vector2i(1920, 1080):
+		var actions := content.find_child("ActionRow", true, false) as GridContainer
+		var all_expand := actions != null
+		var measured_widths: Array[float] = []
+		if actions != null:
+			for child: Node in actions.get_children():
+				if child is Button:
+					var button := child as Button
+					all_expand = all_expand and button.size_flags_horizontal == Control.SIZE_EXPAND_FILL
+					measured_widths.append(button.get_global_rect().size.x)
+		h.check(
+			"results large viewport actions expand horizontally",
+			all_expand and measured_widths.size() == 3,
+			"widths=" + str(measured_widths),
+		)
 
 
 func _baseline_map_exact() -> bool:
