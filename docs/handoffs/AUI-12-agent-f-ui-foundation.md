@@ -39,6 +39,8 @@ Protected `boot`, `staging_flow`, `campaign_flow`, `resize_relayout`, battle-con
 
 The pre-union `6a1d65ac52d8e255c732e66fd3275485ec92119b` RELEASE run passed all gates but became stale when `master` advanced. It is historical evidence only. The exact merged union above must receive a wholly fresh RELEASE, diff-vs-pins audit, and human review; no lane green substitutes for union proof.
 
+The first merged-union run correctly failed because current master renamed nine operator display names and the S2 hint after AUI-12's original candidate. The unchanged copy contract defines these catalog entries from each current resource's `fallback_property`, so the successor synchronizes only those ten dynamic en-US values. No static key, placeholder, catalog cardinality, test, source resource, or copy-contract byte changed.
+
 ## D-WEB-1 successor
 
 The original candidate `28b0391ab78b326772c11d040ad75f333183233b` remains immutable red history because AUI-12's approved dark Protos backdrop is mathematically incompatible with the inherited AUI-00 corner-luma visibility band. The successor does not weaken that legacy check: default invocation, signal equation, report fields, and pass/fail semantics remain unchanged.
