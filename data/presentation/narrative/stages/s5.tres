@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s5"
+objective = "Hold the ridge relay while Company 33 records the stored message inside it."
+threat = "Spellcasters retune shared systems and cover one another around the relay."
+human_reason = "The relay may explain why public machines are attacking the people they once served."
+clue = "A damaged stored memory repeats that the surface is still a fatal emergency zone."
+core_service = "Ridge communications relay"
+clear_debrief = "The secured interval yields a memory fragment: the Custodians are not one mind, and damaged public orders disagree inside the network."
+defeat_debrief = "The relay burns out before the full record is recovered. Company 33 keeps only a partial warning."

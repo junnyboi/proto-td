@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s6"
+objective = "Hold the repeater approach while command tests whether a forced override can interrupt the evacuation chain."
+threat = "Heavies protect the repeater while damaged orders resist interruption."
+human_reason = "Without the route, people and supplies cannot reach the Deep Gate safely."
+clue = "Charm is a forced override: the affected Custodian keeps signaling resistance, so the command is neither consent nor repair."
+core_service = "Evacuation lock repeater"
+clear_debrief = "The defense gives command one clean override window. The route opens briefly; the record confirms coercion over a resisting stored memory, not willing defection."
+defeat_debrief = "The evacuation chain remains active. Company 33 withdraws knowing the override cannot be mistaken for consent."

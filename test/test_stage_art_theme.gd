@@ -158,7 +158,7 @@ func test_s1_backdrop_is_one_continuous_noninteractive_panorama() -> void:
 	root.free()
 
 
-func test_missing_required_s1_theme_fails_closed_while_s2_stays_generic() -> void:
+func test_missing_required_themes_fail_closed_for_s1_and_act2() -> void:
 	var missing_resolver := func(_path: String) -> Resource: return null
 	var s1_result := StageArtTheme.resolve_for(s1, missing_resolver)
 	assert_true(bool(s1_result["required"]))
@@ -170,14 +170,10 @@ func test_missing_required_s1_theme_fails_closed_while_s2_stays_generic() -> voi
 	s1_root.free()
 
 	var s2_result := StageArtTheme.resolve_for(s2, missing_resolver)
-	assert_false(bool(s2_result["required"]))
+	assert_true(bool(s2_result["required"]))
 	assert_null(s2_result["theme"])
-	assert_eq(String(s2_result["error"]), "")
+	assert_string_contains(String(s2_result["error"]), "required stage art theme")
 	var s2_root := Node2D.new()
-	assert_true(IsoGridBuilder.build_stage(s2_root, s2, missing_resolver, false))
-	assert_gt(s2_root.get_child_count(), 0, "explicitly unthemed S2 keeps generic art")
-	var s2_tile := s2_root.get_node_or_null("Tile_0_0") as TextureRect
-	assert_not_null(s2_tile)
-	if s2_tile != null:
-		assert_eq(s2_tile.texture, Art.texture(&"tile_ground"))
+	assert_false(IsoGridBuilder.build_stage(s2_root, s2, missing_resolver, false))
+	assert_eq(s2_root.get_child_count(), 0, "broken required S2 must not draw generic art")
 	s2_root.free()

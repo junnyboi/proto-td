@@ -76,7 +76,7 @@ func test_all_18_candidates_resolve_through_art_and_remain_placeholders() -> voi
 		assert_eq(String(entry["provenance_sha256"]), FileAccess.get_sha256(fragments[id]), "%s fragment binding" % id)
 
 
-func test_real_candidate_themes_validate_and_remain_dormant() -> void:
+func test_real_candidate_themes_validate_and_are_runtime_active() -> void:
 	assert_not_null(s2_theme)
 	assert_not_null(s3_theme)
 	assert_eq(s2_theme.validation_errors(s2), PackedStringArray())
@@ -87,13 +87,13 @@ func test_real_candidate_themes_validate_and_remain_dormant() -> void:
 	assert_false(s3_theme.human_final_art)
 	assert_eq(s2_theme.approval_manifest_sha256, "")
 	assert_eq(s3_theme.approval_manifest_sha256, "")
-	assert_eq(StageArtTheme.REQUIRED_THEME_STAGE_IDS, [&"s1"])
+	assert_eq(StageArtTheme.REQUIRED_THEME_STAGE_IDS, [&"s1", &"s2", &"s3"])
 	for stage: StageDef in [s2, s3]:
-		assert_false(StageArtTheme.expects_theme(stage))
+		assert_true(StageArtTheme.expects_theme(stage))
 		var resolver := func(path: String) -> Resource: return load(path)
 		var result := StageArtTheme.resolve_for(stage, resolver)
-		assert_false(bool(result["required"]))
-		assert_null(result["theme"])
+		assert_true(bool(result["required"]))
+		assert_not_null(result["theme"])
 		assert_eq(String(result["error"]), "")
 
 

@@ -89,9 +89,13 @@ func _resign_to_results(
 	h.check("retry offered", retry != null)
 	h.check("Return to Staging offered", return_btn != null)
 	h.check("back to title offered", back_btn != null)
-	await h.shot("results_defeat")
 	if retry == null or return_btn == null or back_btn == null:
 		return null
+	var results_scroll := results.find_child("ResultsScroll", true, false) as ScrollContainer
+	results_scroll.ensure_control_visible(retry)
+	await h.frames(3)
+	h.check("Retry visible for real input", results_scroll.get_global_rect().intersects(retry.get_global_rect()))
+	await h.shot("results_defeat")
 	return results
 
 
@@ -117,6 +121,10 @@ func _retry_then_return_to_staging(
 	h.check("Return to Staging survives result reopen", return_btn != null)
 	if return_btn == null:
 		return null
+	var results_scroll := results.find_child("ResultsScroll", true, false) as ScrollContainer
+	results_scroll.ensure_control_visible(return_btn)
+	await h.frames(3)
+	h.check("Return to Staging visible for real input", results_scroll.get_global_rect().intersects(return_btn.get_global_rect()))
 	await h.click_view(return_btn.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("campaign defeat returns to Staging", staging != null)
@@ -131,6 +139,10 @@ func _return_to_title(
 	h.check("Staging offers Back to Title", staging_back != null)
 	if staging_back == null:
 		return false
+	var staging_scroll := staging.find_child("StagingScroll", true, false) as ScrollContainer
+	staging_scroll.ensure_control_visible(staging_back)
+	await h.frames(3)
+	h.check("Back to Title visible for real input", staging_scroll.get_global_rect().intersects(staging_back.get_global_rect()))
 	game.call("debug_unlock_all")
 	h.check("debug catalog override enabled", bool(game.get("_debug_catalog_override")))
 	await h.click_view(staging_back.get_global_rect().get_center())

@@ -5,7 +5,7 @@ extends Resource
 ## model, save, hash, or replay lanes; the disposable view consumes it to map
 ## stage roles to manifest IDs and typed decorative anchors.
 
-const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1"]
+const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
 const S1_APPROVAL_TOKEN: StringName = &"AUI-DESIGN-D-REVISION-2"
 const S1_APPROVAL_MANIFEST_SHA256 := (
 	"8a0be78a84f0c45f66ac16d5eef5bdb08fc83f212040d5ce696bf42617fa83e6"
@@ -15,6 +15,7 @@ const ACT2_CADENCE_E: StringName = &"world.pressure.cadence_e"
 const ACT2_CADENCE_S: StringName = &"world.pressure.cadence_s"
 const ACT2_CADENCE_E_TO_S: StringName = &"world.pressure.cadence_e_s"
 const ACT2_CADENCE_S_TO_E: StringName = &"world.pressure.cadence_s_e"
+const ACT2_SURFACE_MODULATE := Color(1.15, 1.15, 1.15, 1.0)
 
 const S2_ELEVATED_CELLS: Array[Vector2i] = [Vector2i(3, 1), Vector2i(3, 3)]
 const S2_CADENCE_CELLS: Array[Vector2i] = [
@@ -46,6 +47,7 @@ const S3_CADENCE_CELLS: Array[Vector2i] = [
 @export var backdrop_id: StringName = &""
 @export var backdrop_variant_ids: Array[StringName] = []
 @export var backdrop_panorama_id: StringName = &""
+@export var surface_modulate: Color = Color.WHITE
 
 @export var route_notch_id: StringName = &""
 @export var route_notch_cells: Array[Vector2i] = []
@@ -124,21 +126,22 @@ func tile_id(tile: StageDef.Tile, is_route: bool) -> StringName:
 
 ## Resolves topology-bearing variants before generic role fallbacks.
 func tile_id_at(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> StringName:
+	var resolved: StringName = &""
 	if tile == StageDef.Tile.ELEVATED:
 		var elevated_index := elevated_cells.find(cell)
 		if elevated_index >= 0 and elevated_index < elevated_variant_ids.size():
-			return elevated_variant_ids[elevated_index]
-		return elevated_id
-	if tile == StageDef.Tile.BLOCKED:
+			resolved = elevated_variant_ids[elevated_index]
+		else:
+			resolved = elevated_id
+	elif tile == StageDef.Tile.BLOCKED:
 		var blocked_index := blocked_cells.find(cell)
 		if blocked_index >= 0 and blocked_index < blocked_variant_ids.size():
-			return blocked_variant_ids[blocked_index]
-		return &""
-	if is_route:
-		return route_id
-	if tile == StageDef.Tile.GROUND:
-		return ground_id_at(cell)
-	return &""
+			resolved = blocked_variant_ids[blocked_index]
+	elif is_route:
+		resolved = route_id
+	elif tile == StageDef.Tile.GROUND:
+		resolved = ground_id_at(cell)
+	return resolved
 
 
 ## Stable cell-local breakup: base ground followed by its shared variants.
@@ -245,6 +248,8 @@ func _act2_validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme_id is empty")
 	if approval_token != ACT2_SEMANTIC_APPROVAL_TOKEN:
 		errors.append("approval token is not the approved Act II semantic contract")
+	if surface_modulate != ACT2_SURFACE_MODULATE:
+		errors.append("Act II surface modulation does not match the measured H1 calibration")
 
 	var seen: Dictionary = {}
 	for id: StringName in _act2_manifest_id_candidates():
