@@ -54,7 +54,7 @@ func test_returned_rows_and_death_records_are_defensive() -> void:
 	death["terminal_tick"] = 8
 	assert_eq(hero.operator_def_id(), &"defender_1")
 	assert_eq(int((hero.death() as Dictionary)["terminal_tick"]), 1000)
-	assert_eq(state.strategic_hash()["hex"], "e293b40478a9771c")
+	assert_eq(state.strategic_hash()["hex"], "6c13f78c886d80cc")
 
 
 func _fresh() -> CampaignState:

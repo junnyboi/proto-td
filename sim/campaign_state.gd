@@ -2,8 +2,11 @@ class_name CampaignState
 extends RefCounted
 
 ## Canonical model-only P16 aggregate (D16-08). The private value is always a
-## whole-document-normalized CampaignSave data object. P16.1 exposes no accepted
-## strategic mutation commands; every returned collection is a defensive view.
+## whole-document-normalized CampaignSave data object. Collections are defensive
+## views; strategic mutation enters only through deterministic command seams.
+
+const CampaignPromotionScript := preload("res://sim/campaign_promotion.gd")
+const PROMOTION_RULES_PATH := "res://data/progression/mage_advanced_v1.tres"
 
 const P16_STARTERS: Array[StringName] = [
 	&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
@@ -113,6 +116,22 @@ func strategic_hash() -> Dictionary:
 	return CampaignHash.of_data(_data, _context)
 
 
+func promotion_options(hero_id: Variant) -> Dictionary:
+	if typeof(hero_id) not in [TYPE_STRING, TYPE_STRING_NAME]:
+		return _reject(&"invalid_argument_type")
+	var hero_key := String(hero_id)
+	for hero: Dictionary in _data["heroes"]:
+		if hero["hero_id"] == hero_key:
+			return CampaignProgression.promotion_options(
+				hero, _context["promotion_rules"],
+			)
+	return _reject(&"unknown_hero")
+
+
+func promote_hero(command: Variant) -> Dictionary:
+	return CampaignPromotionScript.execute(_data, _context, command)
+
+
 func campaign_stage_ids() -> Array[StringName]:
 	var values: Array[StringName] = []
 	for stage_id: String in _context["stage_order"]:
@@ -199,8 +218,13 @@ static func _build_environment(
 		return normalized_stages
 	var stages: Array = normalized_stages["value"]
 	var canonical_catalogs: Dictionary = normalized_catalogs["value"]
+	var promotion_rules := CampaignProgression.normalize_promotion_rules(
+		load(PROMOTION_RULES_PATH), canonical_catalogs["operators"],
+	)
+	if not promotion_rules["accepted"]:
+		return promotion_rules
 	var environment_hash := CanonicalJson.sha256_hex(
-		_environment_manifest(canonical_catalogs, stages),
+		_environment_manifest(canonical_catalogs, stages, promotion_rules["value"]),
 	)
 	if environment_hash != definition["value"]["environment_sha256"]:
 		return _reject(&"campaign_environment_mismatch")
@@ -211,6 +235,7 @@ static func _build_environment(
 		canonical_catalogs["operators"], canonical_catalogs["traps"],
 		canonical_catalogs["spells"], stages,
 		definition["value"]["paid_offers"], starting["traps"], starting["spells"],
+		promotion_rules["value"],
 	)
 	return {
 		"accepted": true,
@@ -267,6 +292,8 @@ static func _fresh_data(
 			"unlocked_spells": _strings(starting["spells"]),
 			"offers": offers,
 			"heroes": rows,
+			"promotion_receipts": [],
+			"promotion_proofs": [],
 			"resolution_anchor": null,
 			"last_resolution": null,
 		},
@@ -507,7 +534,11 @@ static func _recovery_rosters_are_available(stages: Array, catalogs: Dictionary)
 	return true
 
 
-static func _environment_manifest(catalogs: Dictionary, stages: Array) -> Dictionary:
+static func _environment_manifest(
+	catalogs: Dictionary,
+	stages: Array,
+	promotion_rules: Dictionary,
+) -> Dictionary:
 	var stage_rows: Array[Dictionary] = []
 	for stage: StageDef in stages:
 		var rewards: Array[Dictionary] = []
@@ -528,6 +559,7 @@ static func _environment_manifest(catalogs: Dictionary, stages: Array) -> Dictio
 		"traps": _strings(catalogs["traps"]),
 		"spells": _strings(catalogs["spells"]),
 		"stages": stage_rows,
+		"promotion_rules": promotion_rules.duplicate(true),
 	}
 
 

@@ -72,7 +72,7 @@ func test_v1_migrates_to_byte_exact_v2_save_and_hash() -> void:
 	assert_eq(decoded["text"], _text(SAVE_PATH))
 	var root: Dictionary = JSON.parse_string(decoded["text"])
 	assert_eq(int(root["version"]), 2)
-	assert_eq(root["checksum"], "55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa")
+	assert_eq(root["checksum"], "69270968b2fedd82f98de96cf6ad530ad8e694d241aabdba5ab97a396e1b664b")
 	var strategic := CampaignHash.of_data(decoded["data"], context)
 	assert_true(strategic["accepted"])
 	assert_eq(strategic["hex"], "baa4d62d418258a5")
@@ -81,7 +81,7 @@ func test_v1_migrates_to_byte_exact_v2_save_and_hash() -> void:
 	assert_null(restored["migrated_from_version"])
 	assert_eq(restored["text"], decoded["text"])
 	assert_eq(restored["data"], decoded["data"])
-	assert_eq(restored["sha256"], "a31596c0d244e3cfb9c7ddab52b723e14a33602c32c8f80955cb1857730f46aa")
+	assert_eq(restored["sha256"], "899d8c44eb2b8f84ac255315a183b28bcc55c74407eef2a819bd1a8f7fc2b9fb")
 
 	var legacy_resolved: Dictionary = _json(LEGACY_TRANSACTION_PATH)["resolved_save"]["value"]
 	assert_true(CampaignCodec.decode_save(_raw_save(legacy_resolved), context)["accepted"])
@@ -136,14 +136,14 @@ func test_transaction_goldens_are_byte_exact() -> void:
 	assert_true(encoded_save["accepted"])
 	assert_eq(
 		encoded_save["value"]["checksum"],
-		"bcd36b9349ba086ba543d1ca189af2c40beeb3f6c5ec573a67755596386ba10f",
+		"09979db6f12dc37470fe76959cf12a6de88afb0d1075c5e326efae4304274804",
 	)
 	assert_eq(
 		encoded_save["sha256"],
-		"c04a0ba033f38f170148c76dd18a4e9c7f814689df2eb39457d3c69730cb8ed1",
+		"33fefbc6639fa30a56d339468e606c64c27ac60a68257452345115ceddaf950b",
 	)
 	var full_hash := CampaignHash.of_data(resolved["value"], _context())
-	assert_eq(full_hash["hex"], "e293b40478a9771c")
+	assert_eq(full_hash["hex"], "6c13f78c886d80cc")
 	var anchor: Dictionary = resolved["value"]["resolution_anchor"]
 	var before_hash := CampaignHash.of_core_snapshot(anchor["before_core"], _context())
 	var after_hash := CampaignHash.of_core_snapshot(anchor["after_core"], _context())

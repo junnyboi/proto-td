@@ -61,7 +61,10 @@ static func migrate_v1_data(data: Variant, context: Dictionary) -> Dictionary:
 		if migrated["last_resolution"] != null:
 			migrated["last_resolution"]["strategic_body_hash_before"] = before_hash["hex"]
 			migrated["last_resolution"]["strategic_body_hash_after"] = after_hash["hex"]
-	return {"accepted": true, "error_code": &"", "value": migrated}
+	var ordered := {}
+	for key: String in CampaignCodec.DATA_KEYS:
+		ordered[key] = migrated[key]
+	return {"accepted": true, "error_code": &"", "value": ordered}
 
 
 static func _legacy_integrity_is_valid(data: Dictionary) -> bool:
@@ -106,6 +109,8 @@ static func _migrate_core(value: Variant) -> bool:
 			return false
 		migrated.append(row)
 	core["heroes"] = migrated
+	core["promotion_receipts"] = []
+	core["promotion_proofs"] = []
 	return true
 
 
