@@ -58,7 +58,7 @@ def validate(root: Path) -> list[str]:
         seen_hashes.add(sha256(rp))
         with Image.open(rp) as image:
             assert image.mode == "RGBA" and image.size == size
-            pixels = list(image.getdata()); alpha = {px[3] for px in pixels}
+            pixels = list(image.get_flattened_data()); alpha = {px[3] for px in pixels}
             colors = {px[:3] for px in pixels if px[3]}
             assert alpha <= {0, 255} and not (colors & RESERVED) and colors <= allowed
         prov_name = filename.removesuffix(".png") + ".provenance.json"
