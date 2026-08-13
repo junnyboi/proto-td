@@ -36,11 +36,11 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Status: in_progress
 - Owner: AGENT 11
 - Branch: `agent-11/flavor-text`
-- Base: `master` at `d08819419631a7c330032f1a87f5ca16a4163c77`
-- Dependencies: TD-027
-- Owned files: `scripts/ui/components/aetheria_theme.gd`, `scripts/ui/components/aetheria_label.gd`, `scripts/ui/staging.gd`, `scripts/ui/squad_select.gd`, `scripts/ui/results.gd`, `test/test_ui_components.gd`, `test/test_ui_components.gd.component-contract.json`, `test/test_ui_components.gd.inventory.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `docs/todo.md`, `docs/completed.md`
-- Do not touch: headings, buttons, counters, tactical/operational detail typography, simulation, hash/save/replay, `scripts/verify.sh`, thresholds, or unrelated UI
-- Acceptance: every lore/narrative prose label uses a dedicated 36px Flavor role instead of 44px Body/Detail; at the 1.5x large viewport flavor text resolves to 54px while headings, buttons, counters, hints, and operational status retain their existing roles and sizes; all text remains readable, contained, and scroll-reachable
+- Base: `master` at `d08819419631a7c330032f1a87f5ca16a4163c77`; reconciled with E1 at `6f2f8acb73eb3532247ade3f027cdc262ba99721`
+- Dependencies: TD-027 and landed E1 dense-role convention (`fdee506`)
+- Owned files: `scripts/ui/components/aetheria_theme.gd`, `test/test_ui_components.gd.component-contract.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `docs/todo.md`, `docs/completed.md`
+- Do not touch: landed E1 role assignments, simulation, hash/save/replay, `scripts/verify.sh`, human-owned thresholds, or unrelated UI
+- Acceptance: every lore/narrative prose selector uses the landed Dense Body/Detail role at an unweakened 32px glyph floor; at the 1.5x large viewport the seven canonical flavor labels resolve to 48px; all text remains readable, contained, and scroll-reachable; Results flavor prose has a direct visible screenshot
 - Required evidence: exact Theme/role/inventory GUT, `ui_shell_floor` headless and windowed with fresh Staging/Squad/Results PNG review, and one green `scripts/verify.sh` STANDARD run on the reconciled union
 - Last update: 2026-08-14
 

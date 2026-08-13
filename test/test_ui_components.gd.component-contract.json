@@ -816,9 +816,19 @@
         "font_size": 44,
         "font_color": "muted"
       },
-      "AuiFlavorLabel": {
+      "AuiDenseHeadingLabel": {
         "base": "Label",
-        "font_size": 36,
+        "font_size": 32,
+        "font_color": "primary"
+      },
+      "AuiDenseBodyLabel": {
+        "base": "Label",
+        "font_size": 32,
+        "font_color": "body"
+      },
+      "AuiDenseDetailLabel": {
+        "base": "Label",
+        "font_size": 32,
         "font_color": "muted"
       },
       "AuiLocaleLabel": {
@@ -932,7 +942,9 @@
       "heading": "AuiHeadingLabel",
       "body": "AuiBodyLabel",
       "detail": "AuiDetailLabel",
-      "flavor": "AuiFlavorLabel",
+      "dense_heading": "AuiDenseHeadingLabel",
+      "dense_body": "AuiDenseBodyLabel",
+      "dense_detail": "AuiDenseDetailLabel",
       "locale": "AuiLocaleLabel",
       "class_badge": "AuiClassBadge",
       "cost_badge": "AuiCostBadge",
@@ -1202,7 +1214,13 @@
     "AuiDetailLabel": {
       "text": "muted_on_panel"
     },
-    "AuiFlavorLabel": {
+    "AuiDenseHeadingLabel": {
+      "text": "primary_on_panel"
+    },
+    "AuiDenseBodyLabel": {
+      "text": "body_on_panel"
+    },
+    "AuiDenseDetailLabel": {
       "text": "muted_on_panel"
     },
     "AuiLocaleLabel": {

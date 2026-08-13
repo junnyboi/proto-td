@@ -74,21 +74,21 @@ func _build_briefing() -> GridContainer:
 	_briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_theme_constant_override(&"h_separation", 24)
 	_briefing.add_theme_constant_override(&"v_separation", 8)
-	var heading := _label("CompanyCommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"), &"heading")
+	var heading := _label("CompanyCommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"), &"dense_heading")
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(heading)
-	var summary := _label("CampaignSummary", _campaign_summary_text(), &"body")
+	var summary := _label("CampaignSummary", _campaign_summary_text(), &"dense_body")
 	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_briefing.add_child(summary)
-	var body := _label("CompanyCommandBody", UiCopyType.text(&"ui.staging.command_body", "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation."), &"flavor")
+	var body := _label("CompanyCommandBody", UiCopyType.text(&"ui.staging.command_body", "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation."), &"dense_detail")
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 84.0
 	_briefing.add_child(body)
 	var next_box := VBoxContainer.new()
 	next_box.name = "NextOperationCard"
 	next_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var title := _label("NextOperationTitle", _next_operation_title(), &"body")
-	var objective := _label("NextOperationObjective", _next_operation_objective(), &"flavor")
+	var title := _label("NextOperationTitle", _next_operation_title(), &"dense_body")
+	var objective := _label("NextOperationObjective", _next_operation_objective(), &"dense_detail")
 	next_box.add_child(title)
 	next_box.add_child(objective)
 	_briefing.add_child(next_box)
@@ -100,7 +100,7 @@ func _build_operations() -> VBoxContainer:
 	operations.name = "OperationsColumn"
 	operations.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	operations.add_theme_constant_override(&"separation", 10)
-	operations.add_child(_label("OperationStatus", UiCopyType.text(&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE"), &"detail"))
+	operations.add_child(_label("OperationStatus", UiCopyType.text(&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE"), &"dense_detail"))
 	_mission = _button("MissionControlButton", UiCopyType.text(&"ui.staging.mission_control", "Mission Control"), "Mission
 Control", not _narrative_missing, &"primary" if not _narrative_missing else &"disabled")
 	_mission.pressed.connect(_on_mission_control)

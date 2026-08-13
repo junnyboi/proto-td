@@ -16,16 +16,28 @@ const INVENTORY_STATES := {
 	&"squad": "squad_s1_empty",
 	&"results": "results_campaign_clear",
 }
-const FLAVOR_LABEL_COUNTS := {
-	&"staging": 2,
-	&"squad": 4,
-	&"results": 1,
+const FLAVOR_LABEL_SPECS := {
+	&"staging": {
+		&"CompanyCommandBody": &"AuiDenseDetailLabel",
+		&"NextOperationObjective": &"AuiDenseDetailLabel",
+	},
+	&"squad": {
+		&"BriefingObjective": &"AuiDenseDetailLabel",
+		&"BriefingThreat": &"AuiDenseDetailLabel",
+		&"BriefingHumanReason": &"AuiDenseDetailLabel",
+		&"BriefingClue": &"AuiDenseDetailLabel",
+	},
+	&"results": {
+		&"ConsequenceLine": &"AuiDenseBodyLabel",
+	},
 }
 const EXPANSION_TOKEN := " PROTOS"
 const TEXT_COLOR_FLOOR := 0.10
 const BASE_FONT_SIZES := {
 	&"AuiTitleLabel": 64, &"AuiHeadingLabel": 48,
-	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44, &"AuiFlavorLabel": 36,
+	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44,
+	&"AuiDenseHeadingLabel": 32, &"AuiDenseBodyLabel": 32,
+	&"AuiDenseDetailLabel": 32,
 	&"AuiLocaleLabel": 44, &"AuiLocaleList": 44,
 	&"AuiPrimaryButton": 44, &"AuiSecondaryButton": 44,
 	&"AuiSelectedButton": 44, &"AuiDestructiveButton": 44,
@@ -127,7 +139,8 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	fixture.add_child(grid)
 	var probes: Array[Dictionary] = []
 	for role: StringName in [
-		&"title", &"heading", &"body", &"detail", &"flavor", &"locale", &"class_badge",
+		&"title", &"heading", &"body", &"detail", &"dense_heading", &"dense_body",
+		&"dense_detail", &"locale", &"class_badge",
 		&"cost_badge", &"cooldown_badge", &"locked_badge", &"completed_badge",
 	]:
 		var label := AetheriaLabel.new()
@@ -166,7 +179,7 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 			h.check(
 				"rendered glyph floor %s" % control.name,
 				height >= 32,
-				"rendered_height=%d" % height,
+				"rendered_height=%d floor=32" % height,
 			)
 
 
@@ -313,25 +326,27 @@ func _check_responsive_shell(
 				plate_rect.size, plate.size, shell.content_scale(),
 			],
 		)
-	if viewport == Vector2i(1920, 1080) and FLAVOR_LABEL_COUNTS.has(screen):
-		var scaled_sizes: Array[int] = []
-		for node: Node in _all_nodes(content):
-			if node is Label and (
-				(node as Label).theme_type_variation == &"AuiFlavorLabel"
-			):
-				var label := node as Label
-				scaled_sizes.append(roundi(
-					float(label.get_theme_font_size(&"font_size")) * shell.content_scale(),
-				))
-		var expected_count := int(FLAVOR_LABEL_COUNTS[screen])
+	if viewport == Vector2i(1920, 1080) and FLAVOR_LABEL_SPECS.has(screen):
+		var mismatches: Array[String] = []
+		var specifications := FLAVOR_LABEL_SPECS[screen] as Dictionary
+		for raw_selector: Variant in specifications:
+			var selector := StringName(raw_selector)
+			var label := content.find_child(String(selector), true, false) as Label
+			if label == null:
+				mismatches.append("%s:missing" % selector)
+				continue
+			var expected_variation := StringName(specifications[raw_selector])
+			var scaled_size := roundi(
+				float(label.get_theme_font_size(&"font_size")) * shell.content_scale(),
+			)
+			if label.theme_type_variation != expected_variation or scaled_size != 48:
+				mismatches.append("%s:%s/%d" % [
+					selector, label.theme_type_variation, scaled_size,
+				])
 		h.check(
 			"%s large viewport flavor typography" % screen,
-			scaled_sizes.size() == expected_count and scaled_sizes.all(
-				func(size: int) -> bool: return size == 54
-			),
-			"sizes=%s expected_count=%d expected_size=54" % [
-				scaled_sizes, expected_count,
-			],
+			mismatches.is_empty(),
+			"mismatches=" + str(mismatches) + " expected_size=48",
 		)
 	if screen == &"results" and viewport == Vector2i(1920, 1080):
 		var actions := content.find_child("ActionRow", true, false) as GridContainer

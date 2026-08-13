@@ -176,7 +176,7 @@ func _check_initial_staging(
 	var heading := _find(staging, "CompanyCommandHeading") as Label
 	var mission := _find(staging, "MissionControlButton") as Button
 	var back := _find(staging, "BackToTitleButton") as Button
-	h.check("heading meets 48px floor", heading.get_theme_font_size("font_size") >= 48)
+	h.check("heading uses exact dense 32px contract", heading.get_theme_font_size("font_size") == 32)
 	h.check("Mission Control is enabled", not mission.disabled)
 	h.check("Back to Title is enabled", not back.disabled)
 	h.check("Mission Control meets 32px floor", mission.get_theme_font_size("font_size") >= 32)
