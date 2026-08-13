@@ -9,6 +9,7 @@ extends Node2D
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
+const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
 
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
