@@ -220,16 +220,22 @@ func start_battle(stage_id: StringName) -> void:
 func _swap_content(scene_path: String) -> void:
 	if scene_path != BATTLE_SCENE_PATH:
 		_stop_music_if_available()
+	# Incumbent UI scenes assign Game.content from _ready(). Capture the real
+	# predecessor before add_child() runs that synchronous callback, then retire
+	# exactly that node at the commit point.
+	var previous := content
 	var packed: PackedScene = load(scene_path)
 	var candidate: Node = packed.instantiate()
 	get_tree().root.add_child(candidate)
-	_accept_content_candidate(candidate, scene_path == BATTLE_SCENE_PATH)
+	_accept_content_candidate(candidate, scene_path == BATTLE_SCENE_PATH, previous)
 
 
 ## Commit point shared by the runtime swap and executable activation tests.
 ## Adding the candidate runs _ready synchronously, so the entire decision and
 ## prior-content retirement remain inside this one deferred swap call.
-func _accept_content_candidate(candidate: Node, is_battle: bool) -> bool:
+func _accept_content_candidate(
+	candidate: Node, is_battle: bool, previous: Node = null
+) -> bool:
 	if candidate == null or not is_instance_valid(candidate):
 		if is_battle:
 			pending_stage = null
@@ -240,7 +246,6 @@ func _accept_content_candidate(candidate: Node, is_battle: bool) -> bool:
 		pending_stage = null
 		current_battle = null
 		return false
-	var previous := content
 	if previous != null and is_instance_valid(previous) and previous != candidate:
 		var previous_parent := previous.get_parent()
 		if previous_parent != null:
