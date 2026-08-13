@@ -4,10 +4,11 @@ extends Node
 ## deterministic BattleModel, state hash, save data, or replay. A single player
 ## hard-replaces cues because the approved contract forbids layering.
 
+const MusicCatalogType := preload("res://assets/music/music_catalog.gd")
 const CATALOG_PATH := "res://assets/music/catalog.tres"
 const PLAYER_NAME := "Player"
 
-var _catalog: MusicCatalog = null
+var _catalog: MusicCatalogType = null
 var _player: AudioStreamPlayer = null
 var _current_id: StringName = &""
 var _start_count := 0
@@ -37,7 +38,7 @@ func _process(_delta: float) -> void:
 
 
 func reload_catalog() -> bool:
-	_catalog = load(CATALOG_PATH) as MusicCatalog
+	_catalog = load(CATALOG_PATH) as MusicCatalogType
 	return _catalog != null
 
 
