@@ -89,8 +89,7 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 	)
 	if theme == null or grid == null:
 		return
-	if h.root.size.x < h.root.size.y:
-		_check_portrait_layout(h, stage_id, view, theme)
+	_check_responsive_layout(h, stage_id, view, theme)
 	var panorama_count := 0
 	var cadence_count := 0
 	var dynamic_count := 0
@@ -290,20 +289,20 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 	)
 
 
-func _check_portrait_layout(
+func _check_responsive_layout(
 	h: SelfTestHarness, stage_id: StringName, view: Node2D, theme: StageArtTheme
 ) -> void:
 	var viewport := Rect2(Vector2.ZERO, Vector2(h.root.size))
 	var content: Rect2 = view.call("map_content_rect")
 	h.check(
-		"%s portrait map content fully visible" % stage_id,
+		"%s responsive map content fully visible" % stage_id,
 		viewport.encloses(content),
 		"viewport=%s content=%s" % [viewport, content],
 	)
 	for endpoint: Vector2i in [theme.spawn_cell, theme.core_cell]:
 		var center: Vector2 = view.call("cell_center", endpoint)
 		h.check(
-			"%s portrait endpoint visible %s" % [stage_id, endpoint],
+			"%s responsive endpoint visible %s" % [stage_id, endpoint],
 			viewport.has_point(center),
 			"center=%s viewport=%s" % [center, viewport],
 		)
@@ -314,19 +313,26 @@ func _check_portrait_layout(
 	var controls_rect := controls.get_global_rect() if controls != null else Rect2()
 	var slots_rect := slot_box.get_global_rect() if slot_box != null else Rect2()
 	h.check(
-		"%s portrait HUD and controls are disjoint" % stage_id,
+		"%s responsive HUD and controls are disjoint" % stage_id,
 		hud != null and controls != null and not hud_rect.intersects(controls_rect),
 		"hud=%s controls=%s" % [hud_rect, controls_rect],
 	)
+	var expected_columns := 1
+	if h.root.size.x >= h.root.size.y:
+		expected_columns = 2 if h.root.size.x < 1200 else (3 if h.root.size.x < 1600 else 4)
 	h.check(
-		"%s portrait deploy bar is one-column and fully visible" % stage_id,
-		slot_box != null and slot_box.columns == 1 and viewport.encloses(slots_rect),
+		"%s responsive deploy bar is wrapped and fully visible" % stage_id,
+		bool(
+			slot_box != null
+			and slot_box.columns == expected_columns
+			and viewport.encloses(slots_rect)
+		),
 		"slots=%s columns=%d viewport=%s" % [
 			slots_rect, slot_box.columns if slot_box != null else -1, viewport,
 		],
 	)
 	h.check(
-		"%s portrait map avoids persistent UI" % stage_id,
+		"%s responsive map avoids persistent UI" % stage_id,
 		bool(
 			hud != null and controls != null and slot_box != null
 			and not content.intersects(hud_rect)

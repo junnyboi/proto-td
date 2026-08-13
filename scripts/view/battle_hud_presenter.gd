@@ -22,14 +22,14 @@ static func relayout(hud: Label, viewport: Vector2) -> void:
 		return
 	hud.size = (
 		Vector2(viewport.x * 0.46, 84.0)
-		if viewport.x < viewport.y
+		if _uses_compact_layout(viewport)
 		else Vector2(viewport.x - 32.0, 48.0)
 	)
 
 
 static func text_for(snapshot: Dictionary, viewport: Vector2) -> String:
 	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(snapshot["result"])]
-	if viewport.x < viewport.y:
+	if _uses_compact_layout(viewport):
 		return "HP %d  DP %d\nK %d  T %d  %s" % [
 			snapshot["base_hp"], snapshot["dp"], snapshot["killed"],
 			snapshot["tick"], result_text,
@@ -38,3 +38,7 @@ static func text_for(snapshot: Dictionary, viewport: Vector2) -> String:
 		snapshot["base_hp"], snapshot["dp"], snapshot["killed"],
 		snapshot["tick"], result_text,
 	]
+
+
+static func _uses_compact_layout(viewport: Vector2) -> bool:
+	return viewport.x < viewport.y or viewport.x < 1100.0

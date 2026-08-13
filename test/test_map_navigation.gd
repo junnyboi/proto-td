@@ -88,22 +88,26 @@ func test_initial_framing_keeps_right_edge_visible_and_y_centered() -> void:
 	assert_almost_eq(navigator.content_screen_rect().end.x, 1280.0, 0.0001)
 
 
-func test_portrait_fits_complete_act2_content_without_pan_or_crop() -> void:
-	for stage: StageDef in [S2, S3]:
-		var navigator := MapNavigator.new()
-		navigator.relayout(stage, PORTRAIT_VIEWPORT)
-		assert_eq(
-			navigator.scale,
-			IsoProjection.fit_scale(stage.grid_size(), PORTRAIT_VIEWPORT),
-		)
-		assert_eq(navigator.pan, Vector2.ZERO)
-		assert_eq(navigator.bounds, Rect2())
-		var screen := navigator.content_screen_rect()
-		assert_true(screen.position.x >= 0.0 and screen.position.y >= 0.0, str(screen))
-		assert_true(
-			screen.end.x <= PORTRAIT_VIEWPORT.x and screen.end.y <= PORTRAIT_VIEWPORT.y,
-			str(screen),
-		)
+func test_act2_target_viewports_fit_complete_content_inside_persistent_ui() -> void:
+	var cases: Array = [
+		[Vector2(1920.0, 1080.0), Rect2(16.0, 104.0, 1888.0, 822.0)],
+		[Vector2(1280.0, 720.0), Rect2(16.0, 104.0, 1248.0, 462.0)],
+		[Vector2(960.0, 720.0), Rect2(16.0, 104.0, 928.0, 398.0)],
+		[PORTRAIT_VIEWPORT, Rect2(16.0, 104.0, 688.0, 802.0)],
+	]
+	for spec: Array in cases:
+		var viewport: Vector2 = spec[0]
+		var safe: Rect2 = spec[1]
+		for stage: StageDef in [S2, S3]:
+			var navigator := MapNavigator.new()
+			navigator.relayout(stage, viewport)
+			assert_eq(
+				navigator.scale,
+				IsoProjection.fit_scale(stage.grid_size(), safe.size),
+			)
+			assert_eq(navigator.pan, Vector2.ZERO)
+			assert_eq(navigator.bounds, Rect2())
+			assert_true(safe.encloses(navigator.content_screen_rect()))
 
 
 func test_resize_preserves_pixel_pan_then_clamps_exactly() -> void:

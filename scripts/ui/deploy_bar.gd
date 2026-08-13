@@ -218,11 +218,16 @@ func _build_slots(op_defs: Dictionary) -> void:
 func _layout_slot_box() -> void:
 	if _slot_box == null:
 		return
-	_slot_box.columns = 1 if size.x < size.y else maxi(1, _slot_box.get_child_count())
-	_slot_box.reset_size()
-	var y := size.y - BAR_HEIGHT
 	if size.x < size.y:
-		y = size.y - _slot_box.get_combined_minimum_size().y - 8.0
+		_slot_box.columns = 1
+	elif size.x < 1200.0:
+		_slot_box.columns = 2
+	elif size.x < 1600.0:
+		_slot_box.columns = 3
+	else:
+		_slot_box.columns = 4
+	_slot_box.reset_size()
+	var y := size.y - _slot_box.get_combined_minimum_size().y - 8.0
 	_slot_box.position = Vector2(16.0, y)
 
 
