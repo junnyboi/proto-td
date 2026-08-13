@@ -55,6 +55,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: fresh `scripts/verify.sh --full`, tier-2 gate report, and updated verdict arithmetic
 - Last update: 2026-08-12
 
+## TD-027 — Make shared UI shells grow with the live viewport
+
+- Status: in_progress
+- Owner: AGENT 11
+- Branch: `agent-11/responsive-ui`
+- Base: `master` at `e98f667f61049af73f1e91a35c9f1ec26cf43fe6`
+- Dependencies: none
+- Owned files: `scenes/ui/components/aetheria_screen_shell.tscn`, `scripts/ui/components/aetheria_screen_shell.gd`, `scripts/ui/staging.gd`, `scripts/ui/results.gd`, `test/test_ui_components.gd`, `test/test_ui_components.gd.component-contract.json`, `selftest/scenarios/ui_shell_floor.gd`, `docs/todo.md`, `docs/completed.md`
+- Do not touch: battle HUD/world/VFX, simulation, hash/save/replay, `scripts/verify.sh`, `FEATURES.json`, thresholds, or unrelated UI components
+- Acceptance: the shared Title, Staging, Mission Control, Squad Select, and Results reading plates enlarge proportionally when a landscape or portrait viewport grows; Results action buttons fill their responsive row; every scaled plate remains centered and inside the live viewport; design-size and compact layouts preserve their existing metrics
+- Required evidence: focused `test_ui_components.gd`, `ui_shell_floor` headless/windowed with fresh large-viewport Results PNG, and one green `scripts/verify.sh` STANDARD run
+- Last update: 2026-08-14
+
 ## L7-R2 — Human playtest round 2 and acceptance closure
 
 - Status: blocked
