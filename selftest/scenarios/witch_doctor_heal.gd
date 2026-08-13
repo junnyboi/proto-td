@@ -1,6 +1,6 @@
 extends RefCounted
 
-## TD-021 exact-candidate scenario. The first healer click arms target mode;
+## TD-023 exact-candidate scenario. The first healer click arms target mode;
 ## the second valid click heals one injured ally through the public Mend verb.
 ## Every required input path is synthetic, state checks run in both lanes, and
 ## mint burst pixels gate the windowed lane with a present/absent pair.

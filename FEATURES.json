@@ -408,12 +408,35 @@
 	    "p16_strategic_campaign"
 	   ],
 		   "commits": [
-		    "cd35d19",
-		    "099614c"
+		    "cd35d19"
 		   ]
-	  },
-	  {
-	    "id": "AUI-10R",
+		  },
+		  {
+		   "id": "WITCH-1",
+		   "title": "Witch Doctor: deterministic targeted healing",
+		   "acceptance": [
+		    "a separate S7-unlocked Witch Doctor template heals one different living injured ally within data-owned range and never revives",
+		    "every malformed or invalid Mend command is hash-equal while an accepted Mend clamps HP, spends SP, records target/tick, and changes the pinned outcome differential",
+		    "canonical semantic replay is identical across processes; exact campaign checks prove 5 starters, 10 after S6, and 11 after S7",
+		    "real targeting input, cancellation, pan blocking, target-side mint VFX, decay, and legacy instant skills pass the dual-lane scenario",
+		    "Poseidon approved mechanics and legibility on exact-candidate frames; sprite and portrait remain truthfully marked as placeholders"
+		   ],
+		   "evidence_classes": [
+		    "logic",
+		    "integration",
+		    "visual",
+		    "feel"
+		   ],
+		   "status": "passing",
+		   "scenarios": [
+		    "witch_doctor_heal"
+		   ],
+		   "commits": [
+		    "91b427c"
+		   ]
+		  },
+		  {
+		    "id": "AUI-10R",
     "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
     "acceptance": [
       "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and Poseidon-approved human-final flags bound to candidate 60b69a6004a9c843851d9f6c9aee84c88389cb1f",

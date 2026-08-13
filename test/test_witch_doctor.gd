@@ -339,6 +339,33 @@ func test_mend_replay_codec_rejects_malformed_and_out_of_range_ids() -> void:
 		assert_false(decoded.has("timeline"), "rejection exposes no partial timeline")
 
 
+func test_p16_union_environment_binds_witch_doctor_catalog_and_s7_reward() -> void:
+	var definition := load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	assert_eq(
+		definition.environment_sha256,
+		"b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835",
+	)
+	var catalogs := _p16_catalog_ids()
+	var stages := _p16_stages()
+	var without_template: Dictionary = catalogs.duplicate(true)
+	without_template["operators"].erase(&"witch_doctor_1")
+	var missing_template := CampaignState.create(
+		42, 1, definition, without_template, stages,
+	)
+	assert_false(missing_template["accepted"])
+	assert_eq(missing_template["error_code"], &"invalid_stage_reward")
+
+	var without_reward: Array = stages.duplicate()
+	var s7 := (without_reward[6] as StageDef).duplicate(true) as StageDef
+	s7.rewards = []
+	without_reward[6] = s7
+	var missing_reward := CampaignState.create(
+		42, 1, definition, catalogs, without_reward,
+	)
+	assert_false(missing_reward["accepted"])
+	assert_eq(missing_reward["error_code"], &"campaign_environment_mismatch")
+
+
 func _replay_fixture(stage_id: String) -> Dictionary:
 	var loaded := ReplayCodec.load_file(
 		"res://playtests/replays/v1/%s.json" % stage_id,
@@ -368,4 +395,28 @@ func _catalog(path: String) -> Dictionary:
 		if source.ends_with(".tres"):
 			var resource: Resource = load("%s/%s" % [path, source])
 			result[resource.get("id")] = resource
+	return result
+
+
+func _p16_catalog_ids() -> Dictionary:
+	return {
+		"operators": _catalog_names("res://data/operators"),
+		"traps": _catalog_names("res://data/traps"),
+		"spells": _catalog_names("res://data/spells"),
+	}
+
+
+func _catalog_names(path: String) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for filename: String in DirAccess.open(path).get_files():
+		var source := filename.trim_suffix(".remap")
+		if source.ends_with(".tres"):
+			result.append(StringName(source.trim_suffix(".tres")))
+	return result
+
+
+func _p16_stages() -> Array:
+	var result: Array = []
+	for index: int in range(1, 9):
+		result.append(load("res://data/stages/s%d.tres" % index) as StageDef)
 	return result

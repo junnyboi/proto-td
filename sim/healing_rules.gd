@@ -1,7 +1,7 @@
 class_name HealingRules
 extends RefCounted
 
-## TD-021 targeted healing rules. Validation is a pure read over BattleModel;
+## TD-023 targeted healing rules. Validation is a pure read over BattleModel;
 ## apply() mutates only after the complete guard passes, preserving the
 ## reject-with-zero-state-change contract. Campaign death is outside this seam.
 
