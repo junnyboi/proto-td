@@ -14,7 +14,7 @@ static var _cache: Dictionary = {}
 
 
 static func _load_manifests() -> void:
-	if _manifest != null or _supplemental_manifest != null or _manifest_error:
+	if (_manifest != null and _supplemental_manifest != null) or _manifest_error:
 		return
 	_manifest = load("res://assets/manifest.tres") as AssetManifest
 	_supplemental_manifest = load("res://assets/act2_candidate_manifest.tres") as AssetManifest
