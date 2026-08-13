@@ -1,0 +1,31 @@
+{
+  "approval": {
+    "human_final_art": false,
+    "scope": "shared Act I world-art direction for S1-S3",
+    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+  },
+  "candidate_files": {
+    "bytes_identical": true,
+    "runtime": "assets/world/act1/core.png",
+    "sha256": "ac94307c860cf5bbec47434fc00d7f653e62fae95da358699de3fde833e9e2e9",
+    "staging": "staging/assets/world/act1/core.png"
+  },
+  "human_final_art": false,
+  "logical_id": "world.act1.core",
+  "normalization": {
+    "alpha_preserved": true,
+    "panorama_center_crop_to_2_1": false,
+    "resampling": "LANCZOS",
+    "target_size": [
+      64,
+      32
+    ],
+    "tool": "Pillow"
+  },
+  "schema_version": 1,
+  "source": {
+    "path": "art-src/world/act1/synthesized-roles/act1-core.png",
+    "sha256": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662"
+  },
+  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+}

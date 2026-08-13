@@ -5,7 +5,8 @@ extends RefCounted
 ## and mouse/trackpad gesture interpretation; it never reads or writes the model.
 
 const WHEEL_STEP_PX := 96.0
-const ACT2_STAGE_IDS: Array[StringName] = [&"s2", &"s3"]
+const SHARED_ACT1_FIT_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
+const SHARED_ACT1_PANORAMA_SIZE := Vector2(512.0, 256.0)
 const SAFE_MARGIN_X := 16.0
 const SAFE_TOP := 104.0
 
@@ -23,7 +24,9 @@ var _initialized := false
 func relayout(stage: StageDef, viewport: Vector2) -> void:
 	_stage = stage
 	_viewport = viewport
-	_safe_rect = _act2_safe_rect(viewport) if stage.id in ACT2_STAGE_IDS else Rect2()
+	_safe_rect = (
+		_shared_act1_safe_rect(viewport) if stage.id in SHARED_ACT1_FIT_STAGE_IDS else Rect2()
+	)
 	if not _safe_rect.has_area():
 		scale = (
 			IsoProjection.fit_scale(stage.grid_size(), viewport)
@@ -33,8 +36,8 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
 		bounds = IsoProjection.pan_bounds(stage, viewport, scale)
 	else:
-		scale = IsoProjection.fit_scale(stage.grid_size(), _safe_rect.size)
-		var content := IsoProjection.content_box(stage.grid_size())
+		var content := shared_act1_content_box(stage)
+		scale = shared_act1_fit_scale(stage, _safe_rect.size)
 		origin = _safe_rect.get_center() - content.get_center() * scale
 		bounds = _safe_pan_bounds(content)
 	if not _initialized:
@@ -51,7 +54,11 @@ func root_position() -> Vector2:
 
 
 func content_screen_rect() -> Rect2:
-	var content := IsoProjection.content_box(_stage.grid_size())
+	var content := (
+		shared_act1_content_box(_stage)
+		if _stage.id in SHARED_ACT1_FIT_STAGE_IDS
+		else IsoProjection.content_box(_stage.grid_size())
+	)
 	return Rect2(origin + pan + content.position * scale, content.size * scale)
 
 
@@ -80,7 +87,20 @@ func ensure_local_rect_visible(local_rect: Rect2) -> bool:
 	return changed
 
 
-func _act2_safe_rect(viewport: Vector2) -> Rect2:
+static func shared_act1_content_box(stage: StageDef) -> Rect2:
+	var content := IsoProjection.terrain_box(stage)
+	var center := IsoProjection.project(Vector2(stage.grid_size()) * 0.5)
+	var panorama := Rect2(center - SHARED_ACT1_PANORAMA_SIZE * 0.5, SHARED_ACT1_PANORAMA_SIZE)
+	return content.merge(panorama)
+
+
+static func shared_act1_fit_scale(stage: StageDef, available: Vector2) -> float:
+	var content := shared_act1_content_box(stage)
+	var candidate := minf(available.x / content.size.x, available.y / content.size.y)
+	return clampf(floorf(candidate * 4.0) * 0.25, 1.0, 3.0)
+
+
+func _shared_act1_safe_rect(viewport: Vector2) -> Rect2:
 	var bottom := 374.0 if viewport.x < viewport.y else (218.0 if viewport.x < 1200.0 else 154.0)
 	return Rect2(
 		Vector2(SAFE_MARGIN_X, SAFE_TOP),
@@ -138,11 +158,15 @@ func _handle_button(event: InputEventMouseButton) -> bool:
 	var delta := Vector2.ZERO
 	match event.button_index:
 		MOUSE_BUTTON_WHEEL_UP:
-			delta = Vector2(WHEEL_STEP_PX, 0.0) if event.shift_pressed \
-				else Vector2(0.0, WHEEL_STEP_PX)
+			delta = (
+				Vector2(WHEEL_STEP_PX, 0.0) if event.shift_pressed else Vector2(0.0, WHEEL_STEP_PX)
+			)
 		MOUSE_BUTTON_WHEEL_DOWN:
-			delta = Vector2(-WHEEL_STEP_PX, 0.0) if event.shift_pressed \
+			delta = (
+				Vector2(-WHEEL_STEP_PX, 0.0)
+				if event.shift_pressed
 				else Vector2(0.0, -WHEEL_STEP_PX)
+			)
 		MOUSE_BUTTON_WHEEL_LEFT:
 			delta.x = WHEEL_STEP_PX
 		MOUSE_BUTTON_WHEEL_RIGHT:

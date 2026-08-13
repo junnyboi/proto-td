@@ -26,6 +26,7 @@ const BACKDROP_RING := 10
 ## 32px-native art on the 64px face grid (pinned 2x integer, same pin as
 ## battle_view.SPRITE_SCALE)
 const SPRITE_SCALE := 2
+const HIGH_RES_WORLD_PREFIX := "world.act1."
 
 const TILE_ART := {
 	StageDef.Tile.VOID: &"tile_void",
@@ -97,17 +98,13 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var is_route := path_cells.has(cell)
 			var is_road := tile == StageDef.Tile.GROUND and is_route
 			var resolved := (
-				theme.resolve_cell(cell, tile, is_route)
-				if theme != null
-				else {"tile_id": &"", "cadence_id": &""}
+				theme.resolve_cell(cell, tile, is_route) if theme != null else {"tile_id": &""}
 			)
 			var art_id := StringName(resolved["tile_id"])
 			if art_id == &"":
 				art_id = &"tile_road" if is_road else TILE_ART[tile]
 			var surface_modulate := theme.surface_modulate if theme != null else Color.WHITE
-			if not _add_tile_sprite(
-				grid_root, stage, cell, art_id, lifted, surface_modulate
-			):
+			if not _add_tile_sprite(grid_root, stage, cell, art_id, lifted, surface_modulate):
 				var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
 				if lifted:
 					_add_tile_walls(grid_root, stage, cell, color)
@@ -143,14 +140,15 @@ static func _build_backdrop_ring(
 			if art_size == Vector2i.ZERO and tex != null:
 				art_size = Vector2i(tex.get_width(), tex.get_height())
 			if tex != null:
+				var art_scale := _art_scale(backdrop_id)
 				var top: Vector2 = IsoProjection.cell_polygon(cell)[0]
 				var sprite := TextureRect.new()
 				sprite.name = "Backdrop_%d_%d" % [x, y]
 				sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				sprite.texture = tex
 				sprite.stretch_mode = TextureRect.STRETCH_SCALE
-				sprite.size = Vector2(art_size) * SPRITE_SCALE
-				var rise := float(art_size.y - 16) * SPRITE_SCALE
+				sprite.size = Vector2(art_size) * art_scale
+				var rise := float(art_size.y - 16) * art_scale
 				sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y - rise)
 				sprite.z_index = -10 - _backdrop_distance(cell, size)
 				grid_root.add_child(sprite)
@@ -173,7 +171,7 @@ static func _add_backdrop_panorama(grid_root: Node2D, size: Vector2i, art_id: St
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = tex
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.size = Vector2(art_size) * _art_scale(art_id)
 	sprite.position = stage_center - sprite.size * 0.5
 	# BattleView's flat canvas lives at -20; panorama must sit above it while
 	# every terrain tile remains in the non-negative grid bands.
@@ -247,7 +245,7 @@ static func _add_tile_sprite(
 	var art_size := Art.size(art_id)
 	if art_size == Vector2i.ZERO:
 		art_size = Vector2i(tex.get_width(), tex.get_height())
-	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.size = Vector2(art_size) * _art_scale(art_id)
 	sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y)
 	sprite.z_index = IsoProjection.tile_z(cell)
 	grid_root.add_child(sprite)
@@ -257,8 +255,6 @@ static func _add_tile_sprite(
 
 
 static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArtThemeType) -> void:
-	for cell: Vector2i in theme.route_notch_cells:
-		_add_face_overlay(grid_root, cell, theme.route_notch_id, "RouteNotch")
 	_add_landmark(
 		grid_root,
 		stage,
@@ -277,7 +273,6 @@ static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArt
 		theme.core_offset,
 		"CoreLandmark",
 	)
-	# world.s1.rain_measure intentionally remains manifest-backed but unplaced.
 
 
 static func _add_face_overlay(
@@ -295,7 +290,7 @@ static func _add_face_overlay(
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = tex
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	sprite.size = Vector2(art_size) * SPRITE_SCALE
+	sprite.size = Vector2(art_size) * _art_scale(art_id)
 	sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y)
 	sprite.z_index = IsoProjection.tile_z(cell) + 1
 	grid_root.add_child(sprite)
@@ -322,10 +317,15 @@ static func _add_landmark(
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.texture = tex
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	sprite.size = Vector2(art_size) * SPRITE_SCALE
-	sprite.position = center - Vector2(pivot) * SPRITE_SCALE + Vector2(offset) * SPRITE_SCALE
+	var art_scale := _art_scale(art_id)
+	sprite.size = Vector2(art_size) * art_scale
+	sprite.position = center - Vector2(pivot) * art_scale + Vector2(offset) * art_scale
 	sprite.z_index = IsoProjection.tile_z(cell) + 1
 	grid_root.add_child(sprite)
+
+
+static func _art_scale(art_id: StringName) -> float:
+	return 1.0 if String(art_id).begins_with(HIGH_RES_WORLD_PREFIX) else float(SPRITE_SCALE)
 
 
 ## Cliff walls for a lifted face in the FALLBACK lane (textured tiles bake
