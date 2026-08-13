@@ -1,11 +1,14 @@
 # AUI-12 — Agent F UI Foundation Handoff
 
-**State:** audited implementation complete; fresh RELEASE and human approval pending
+**State:** CLOSED — approved candidate landed on `master`
 **Owner:** AGENT F
-**Branch:** `agent-f/aui-12-web-remediation`
+**Implementation branch:** `agent-f/aui-12-web-remediation`
+**Closure branch:** `agent-f/aui-12-closure`
 **Original successor base:** `9b834f54a218e3eeb77e89e014476300180dc33a`
 **Implementation commits:** `40bec07056508cbd8f9a12b8539516fb61631228`, `5441e27e47c6237541cb0a06dd3aeaaa02c3ddf9`
 **Current-master union:** merge `930ff8965005ca81cd28c961b8fc3ab38451da0e` with exact master parent `3376178219c4a9df94abfb24798a6ffe3d0c7aee`; prior union `cd8298d01936c77b12c19e559ef67f0a748fab82` is preserved in history
+**Approved/landed candidate:** `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d` / tree `40be18f250689e140d8ded3b5f4863a486b6ea57`
+**L7 host:** WebDev checkpoint `292d2003`
 **Effective lane:** MGS v2 RELEASE
 
 ## Delivered contract
@@ -30,6 +33,9 @@ The locale selector retains one logical ItemList row with `English (US)`, String
 | External Poseidon owner decision | `d616bc95eee2aeb3c226f167c2b45c71152d6856285b169af99eeabe7c1e3f17` |
 | Web differential oracle | `13f854775c671e7c508192e39d9adb55b3509a79a0d697a0b99fef41b5560b26` |
 | Independent implementation audit 04 | `PASS`, zero findings >=80 confidence |
+| Final RELEASE root | `release-aa856d7-r1`, 83 rungs / 26 scenarios / 62 shots / zero skips |
+| Independent final build audit | `8a76e00683a221e84fcdb038cb59a160f08b297c20ff198306fa134c23305ce4` |
+| Poseidon L7 approval record | `3999ae03080c2f48cf0fb3861892bb35792ad1ddee51d943d93fc3f6db046d40` |
 
 ## Verification contract
 
@@ -53,4 +59,4 @@ The focused portable suite freezes thirty-eight ordered tests, one hundred five 
 
 This package consumes no Agent D or Agent E runtime bytes and does not touch battle HUD/world/VFX, simulation, hash/save/replay, thresholds, or `scripts/verify.sh`. AUI-34 and AUI-10R are now closed on master, but AUI-11 and AUI-20 remain separate successor packages and cannot enter this candidate. AUI-20 remains blocked on AUI-12 closure.
 
-The candidate must not be fast-forwarded to master until Poseidon reviews the exact frozen Web build and fresh screenshots for route behavior, cyclic focus, cancel/back behavior, locale switching, compact landscape, portrait, true-200% text, +35% expansion, and en-US copy. Candidate movement invalidates that approval.
+Poseidon approved the exact frozen Web build after reviewing route behavior, cyclic focus, cancel/back behavior, locale switching, compact landscape, portrait, true-200% text, +35% expansion, and en-US copy. Candidate `aa856d7` was then fast-forwarded to master under exact remote-base, feature-ref, tree, evidence, audit, and approval guards. The active AUI-12 ownership claim is released; AUI-20 may now begin only through its own new exact-base claim.
