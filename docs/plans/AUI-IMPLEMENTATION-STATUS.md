@@ -124,16 +124,10 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 
 ## AUI-20 — Integrated S1 slice and kill-gate verdict
 
-- Status: `fixture_approved_current_master_rebase_preflight_pending`; no implementation byte has been written.
-- Owner: `AGENT F (Agent 7)`.
-- Claim/amendment boundary: landed `agent-f/aui-20-claim`, landed docs-only `agent-f/aui-20-fixture-amendment`, then current-master rebase claim `agent-f/aui-20-rebase-claim` from `b8a8474f1641980e9d056b39d727eea71e0f15d9` / tree `55a6a3c43a944cb0283956ceb7b9905b5645949a`.
-- Base health: fresh clean 35-rung default verification PASS in external `rebase-base-b8a8474-r2`; `verify.json` SHA-256 `c22dfca6ae95d997a37ad571629b29f4a0507df7fcce7cd81cc47559b0a5c739`. r1 is preserved as a procedure-only red because `/usr/bin/time` was absent before verification started.
-- Landed dependencies: AUI-12 approved candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d`; AUI-10R approved runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9`; AUI-10R Poseidon receipt SHA-256 `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`.
-- Round-5 dependency: current master contains the human-final Round-5 source/runtime binding accepted at `441cb80b079ee89195ef751dbc26e67b426600d0`; decision SHA-256 `ea503dba5c14b9b966d18d3dda6e0325b0d1b28aed540401311bf23b89a04f4e`.
-- Preflight 01: FAIL, preserved externally; no implementation started. Its source-fixture blocker is resolved only by Poseidon's 2026-08-13 narrow 192 px packet authorization. All other findings remain mandatory inputs to plan v2.
-- Dependency amendment: AUI-11 remains separate and no unlanded Agent E bytes are consumed. The new representative fixture is additive, AUI-20-only, and must never overwrite approved Round-5 sources, runtime derivatives, logical IDs, provenance, or acceptance state.
-- Fixture verdict: Poseidon approved exact fixture contract `bd0f253b561a530905eb862dd1640ca53f940c9700fd4087a8592f018174f97f`; schema-valid record SHA-256 `05b37ab6d48ddcdd6e561c31699502fc53e0e70ecabd9eaa48b5e4323cc0cac6` authorizes only the AUI-20 experiment runtime binding.
-- Current-master impact: master advanced after preflight 05 with directional grunt animation. The exact overlap is `scripts/view/battle_view.gd`; AUI-20 now protects `EnemyAnimator`, `Art`, production manifest/directional assets/provenance, and incumbent tests, and permits only a narrow S1 fixture selector while preserving explicit animator delegation and fallbacks.
-- Frozen package boundary: one human-approved representative 192 px operator/enemy pair, one title-to-S1 integrated scenario, focused native/Web/performance oracles, and the `PROCEED | PIVOT | KILL source approach` verdict. No bulk content, full-screen redesign, Act II work, simulation, balance, projection, localization, audio, threshold, or verification-entrypoint change.
-- Effective implementation lane: MGS v2 `RELEASE`; claim lane: docs-only `STANDARD`.
-- Next transition: land this docs-only rebase claim, obtain independent plan-v6 preflight PASS against exact current master, then create non-rewriting `agent-f/aui-20` from that landed claim with a new RELEASE orientation. `FEATURES.json` remains unchanged until closure evidence satisfies its declared boundary.
+- Status: `retired_superseded_pre_implementation` as of 2026-08-13 by Poseidon direction.
+- Runtime truth: no AUI-20 implementation byte was written. The retired package consists only of landed claim/decision history on `agent-f/aui-20-claim`, `agent-f/aui-20-fixture-amendment`, and `agent-f/aui-20-rebase-claim`.
+- Retirement base: clean master `8e6b0fa52faa935bc32f810c5048b43b61bb1132` / tree `1ef2e07cd9763725a91550e73b1c33e77fb5859a`; unchanged default verification passed 35/35 rungs. Baseline stdout SHA-256: `7709b69cc4360ef31c8ec3abdc2b334f562519f5a1cdffcfbe7a1c915a2fca95`; `verify.json` SHA-256: `75dd641a49ac1801e232271a848d97389abc50b707bdf1093f70a10f642d417a`.
+- Supersession: Protos canon 3.3 requires a broader Company 33/Act I comprehension tranche, and the owner has directed a separate turn-based tactical-combat proposal. The narrow S1 192 px source-approach kill gate is therefore no longer the next product question.
+- Ownership release: every AUI-20 path claim is released. The fixture authorization and prior rebase decision remain preserved as historical evidence, not active runtime authority; reuse requires a new current-base claim and plan.
+- Shared-state boundary: `FEATURES.json` remains unchanged because AUI-20 never became an implemented product feature. Canon comprehension and tactical combat will receive independent IDs only when implementation begins.
+- Durable decision: `docs/decisions/AUI-20-RETIREMENT.md`.
