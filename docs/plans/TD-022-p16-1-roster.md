@@ -1,4 +1,4 @@
-# TD-021 — P16.1 canonical hero/roster model
+# TD-022 — P16.1 canonical hero/roster model
 
 - Owner: AGENT A / Agent 1
 - Branch: `agent-a/p16-1-roster`

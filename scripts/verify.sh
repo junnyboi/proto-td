@@ -196,6 +196,7 @@ fi
 
 if [[ $FULL -eq 1 ]]; then
 	run_rung "R3.8-stale-class-registry" "" 480 scripts/probe_stale_class_registry.sh
+	run_rung "R3.9-music-cold-boot" "" 240 scripts/cold_boot_check.sh
 	quiet_windows
   for s in "${SCENARIOS[@]}"; do
     scenario_cmd windowed "$s"
