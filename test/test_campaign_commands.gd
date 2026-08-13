@@ -240,7 +240,7 @@ func _fresh() -> CampaignState:
 
 
 func _resolved() -> CampaignState:
-	var source := FileAccess.get_file_as_string("res://test/fixtures/p16/transaction_vectors_v1.json")
+	var source := FileAccess.get_file_as_string("res://test/fixtures/p16/transaction_vectors_v2.json")
 	var parser := JSON.new()
 	assert_eq(parser.parse(source), OK)
 	var exact := CanonicalJson.restore_exact_integers(source, parser.data)
@@ -355,7 +355,7 @@ func _ready_ids(state: CampaignState) -> Array[String]:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

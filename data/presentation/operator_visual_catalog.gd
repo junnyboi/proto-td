@@ -4,6 +4,8 @@ extends RefCounted
 ## Exact admitted-template catalog. Unknown or unapproved templates return null
 ## and BattleView preserves the incumbent legacy body projection.
 
+const OperatorAnimationDef := preload("res://data/presentation/operator_animation_def.gd")
+
 const DEFINITIONS: Dictionary = {
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
 	&"vanguard_2": preload("res://data/presentation/operator_visuals/vanguard_2.tres"),

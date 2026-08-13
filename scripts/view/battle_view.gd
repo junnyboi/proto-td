@@ -1,18 +1,16 @@
 extends Node2D
-
 ## Read-only BattleModel projection; speed changes ticks/frame, never outcomes.
-
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const OperatorAnimator := preload("res://scripts/view/operator_animator.gd")
+const OperatorVisualCatalog := preload("res://data/presentation/operator_visual_catalog.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
-
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
-
 ## Z bands (td-phase-12 pin): grid content 0-40, UI overlays 50, juice 60,
 ## HUD/flash/continue 70. z_index beats tree order, so siblings left at 0
 ## would sink under the grid.
@@ -43,14 +41,12 @@ const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
 const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
-
 var model: BattleModel = null
 var startup_succeeded: bool = false
 var theme_resolver: Callable = Callable()
 var model_factory: Callable = Callable()
 var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
-
 var _grid_root: Node2D = null
 var _grid_scale := 1.0
 var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
@@ -113,13 +109,9 @@ var _enemy_blend_frames: Dictionary = {}
 var _enemy_anim_seconds := 0.0
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
-
-
 func _init() -> void:
 	theme_resolver = Callable(self, "_resolve_stage_theme")
 	model_factory = Callable(self, "_create_battle_model")
-
-
 func _ready() -> void:
 	var stage := Game.pending_stage
 	if stage == null:
@@ -193,12 +185,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_relayout)
 	model = candidate_model
 	startup_succeeded = true
-
-
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
 	return StageArtThemeType.resolve_for(stage)
-
-
 func _create_battle_model(
 	stage: StageDef,
 	squad: Array[StringName],
@@ -212,8 +200,6 @@ func _create_battle_model(
 	return BattleModel.create(
 		stage, squad, seed_value, config, enemy_defs, op_defs, trap_defs, spell_defs
 	)
-
-
 ## Screen-space center of a grid cell's visible top face (no camera: world
 ## == screen; ELEVATED faces return the LIFTED center). The deploy adapter
 ## and scenarios use these instead of assuming a zero origin — this pair is
@@ -222,29 +208,20 @@ func _create_battle_model(
 func cell_center(cell: Vector2i) -> Vector2:
 	var local := IsoProjection.face_center(cell, _is_lifted_cell(cell))
 	return _grid_root.position + local * _grid_scale
-
-
 func cell_at(screen_pos: Vector2) -> Vector2i:
 	var local := (screen_pos - _grid_root.position) / _grid_scale
 	return IsoProjection.pick(local, _is_lifted_cell)
-
-
 ## Screen point of a continuous cell-space position (interpolated enemy
 ## centers, VFX anchors). Enemies never walk ELEVATED, so no lift here.
 func screen_of(p: Vector2) -> Vector2:
 	return _grid_root.position + IsoProjection.project(p) * _grid_scale
-
-
 ## Current uniform grid scale (dynamic canvas fit) — overlay footprints in
 ## the UI bars size themselves by this.
 func grid_scale() -> float:
 	return _grid_scale
-
-
 func map_screen_rect() -> Rect2:
 	var box := IsoProjection.terrain_box(_stage)
 	return Rect2(_grid_root.position + box.position * _grid_scale, box.size * _grid_scale)
-
 
 func map_content_rect() -> Rect2:
 	return _map_nav.content_screen_rect()

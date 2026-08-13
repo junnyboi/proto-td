@@ -4,6 +4,9 @@ extends RefCounted
 ## View-only projection for admitted directional operator art. It reads UnitState
 ## and model tick but never mutates either object.
 
+const OperatorAnimationDef := preload("res://data/presentation/operator_animation_def.gd")
+const UnitState := preload("res://sim/unit_state.gd")
+
 const NORMALIZED_SUBJECT_HEIGHT := 168.0
 const SOURCE_CELL_PX := 192.0
 const ATTACK_WINDOW_TICKS := 30

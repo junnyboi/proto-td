@@ -113,8 +113,9 @@ property_suite_gate() {
 			;;
 		first) expected='    P16_ROSTER_SEGMENT=0:512' ;;
 		second) expected='    P16_ROSTER_SEGMENT=512:768' ;;
-		third)
-			expected=$'    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=768:1019'
+		third) expected='    P16_ROSTER_SEGMENT=768:896' ;;
+		fourth)
+			expected=$'    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=896:1019'
 			;;
 		*) return 1 ;;
 	esac
@@ -124,16 +125,18 @@ property_suite_gate() {
 PROPERTY_GATE_SUBSETS=$'2/2 passed.\n    P16_RECOVERY_SUBSETS=296\n    P16_RECOVERY_ACCEPTS=812'
 PROPERTY_GATE_FIRST=$'2/2 passed.\n    P16_ROSTER_SEGMENT=0:512'
 PROPERTY_GATE_SECOND=$'2/2 passed.\n    P16_ROSTER_SEGMENT=512:768'
-PROPERTY_GATE_THIRD=$'2/2 passed.\n    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=768:1019'
+PROPERTY_GATE_THIRD=$'2/2 passed.\n    P16_ROSTER_SEGMENT=768:896'
+PROPERTY_GATE_FOURTH=$'2/2 passed.\n    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=896:1019'
 property_suite_gate "$PROPERTY_GATE_SUBSETS" subsets || exit 2
 property_suite_gate "$PROPERTY_GATE_FIRST" first || exit 2
 property_suite_gate "$PROPERTY_GATE_SECOND" second || exit 2
 property_suite_gate "$PROPERTY_GATE_THIRD" third || exit 2
-if property_suite_gate "$PROPERTY_GATE_THIRD"$'\n    P16_ROSTER_LIMIT_RENAMES=1024' third; then
+property_suite_gate "$PROPERTY_GATE_FOURTH" fourth || exit 2
+if property_suite_gate "$PROPERTY_GATE_FOURTH"$'\n    P16_ROSTER_LIMIT_RENAMES=1024' fourth; then
 	echo '[verify] P16 property gate accepted a duplicate sentinel' >&2
 	exit 2
 fi
-if property_suite_gate "${PROPERTY_GATE_THIRD/1019/1018}" third; then
+if property_suite_gate "${PROPERTY_GATE_FOURTH/1019/1018}" fourth; then
 	echo '[verify] P16 property gate accepted a wrong cycle count' >&2
 	exit 2
 fi
@@ -212,7 +215,7 @@ if [[ -z "$ONLY" ]]; then
 		done < <(find test -type f -name 'test_*.gd' | sort)
 		run_rung "R3-gut" "" 300 "$GODOT" --headless -d \
 		  -s addons/gut/gut_cmdln.gd "${GUT_ARGS[@]}" -gexit
-			for property_segment in subsets first second third; do
+			for property_segment in subsets first second third fourth; do
 				run_rung "R3.1-p16-properties-$property_segment" "" 300 env \
 				  P16_PROPERTY_SEGMENT="$property_segment" "$GODOT" --headless -d \
 				  -s addons/gut/gut_cmdln.gd \

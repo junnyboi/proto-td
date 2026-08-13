@@ -547,7 +547,7 @@ func _ready_ids(state: CampaignState) -> Array[String]:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

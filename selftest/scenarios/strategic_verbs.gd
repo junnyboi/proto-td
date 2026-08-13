@@ -29,7 +29,7 @@ func run(h: SelfTestHarness) -> void:
 	file.store_buffer(state.encode_save()["bytes"])
 	file.close()
 	h.check("fresh strategic hash pinned",
-		state.strategic_hash()["hex"] == "85f2c11018249153")
+		state.strategic_hash()["hex"] == "baa4d62d418258a5")
 	var rejected := state.rename_hero("missing", "Nova")
 	h.check("unknown hero rejects exactly",
 		not rejected["accepted"] and rejected["error_code"] == &"unknown_hero")
@@ -58,9 +58,9 @@ func run(h: SelfTestHarness) -> void:
 	var receipt: CampaignResolution = committed["payload"]["result"]["receipt"]
 	h.check("receipt SHA pinned",
 		receipt.canonical_sha256()
-		== "7a80c58cf5acf69959d774c245e4ccc9f5e972472c291b9541c6dc538912b312")
+		== "114f442783439000e421909798849af34b9ee0bf16c2d4f6baac75f8f43cd48d")
 	h.check("resolved strategic hash pinned",
-		state.strategic_hash()["hex"] == "5e0fba8ed23d6057")
+		state.strategic_hash()["hex"] == "280e3f09064f1d55")
 	var duplicate := state.resolve_attempt(ticket, outcome, pending)
 	h.check("duplicate accepted without freshness",
 		duplicate["accepted"] and not duplicate["payload"]["fresh"])
@@ -124,7 +124,7 @@ func _outcome(ticket: CampaignBattleTicket, fallen_id: String) -> BattleOutcome:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

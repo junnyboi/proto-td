@@ -533,6 +533,30 @@ func _cleanup_production_slot() -> void:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+func _assert_v1_production_migration() -> void:
+	_cleanup_production_slot()
+	var state := _fresh()
+	var created := CampaignSaveStore.create_production(state)
+	assert_true(created["accepted"])
+	var legacy := FileAccess.get_file_as_string(
+		"res://test/fixtures/p16/campaign_v1_seed42.json",
+	)
+	var file := FileAccess.open(CampaignSaveStore.PRODUCTION_SLOT, FileAccess.WRITE)
+	assert_not_null(file)
+	file.store_string(legacy)
+	file.close()
+	var loaded: Dictionary = (created["value"] as CampaignSaveStore).load()
+	assert_true(loaded["accepted"], str(loaded.get("error_code", &"")))
+	assert_eq(loaded["source"], CampaignSaveStore.MAIN)
+	var migrated: Dictionary = (loaded["state"] as CampaignState).encode_save()
+	assert_true(migrated["accepted"])
+	assert_ne(migrated["text"], legacy)
+	assert_eq(FileAccess.get_file_as_string(CampaignSaveStore.PRODUCTION_SLOT), migrated["text"])
+	assert_false(FileAccess.file_exists(CampaignSaveStore.PRODUCTION_SLOT.get_basename() + ".tmp"))
+	assert_false(FileAccess.file_exists(CampaignSaveStore.PRODUCTION_SLOT.get_basename() + ".bak"))
+	_cleanup_production_slot()
+
+
 func _outcome(ticket: CampaignBattleTicket) -> BattleOutcome:
 	var heroes: Array[Dictionary] = []
 	for row: Dictionary in ticket.manifest():
@@ -603,7 +627,7 @@ func _ready_ids(state: CampaignState) -> Array[String]:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

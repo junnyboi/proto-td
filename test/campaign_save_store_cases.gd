@@ -28,3 +28,4 @@ func test_store_config_requires_json_slot_factory_and_ops() -> void:
 
 func test_exact_17_load_matrix_and_recovered_winner_save_faults() -> void:
 	call("_assert_complete_store_contract")
+	call("_assert_v1_production_migration")

@@ -1,7 +1,8 @@
 class_name CampaignSaveStore
 extends RefCounted
 
-## Atomic CampaignSave v1 storage. The store owns bytes and winner selection;
+## Atomic CampaignSave storage with v1 admission and canonical v2 promotion.
+## The store owns bytes and winner selection;
 ## CampaignState owns codec context through the injected restore factory.
 
 const MAIN := &"main"
@@ -91,12 +92,21 @@ func load() -> Dictionary:
 	if not winner["accepted"]:
 		var code: StringName = &"slot_missing" if not _any_exists(candidates) else &"slot_corrupt"
 		return _load_reject(code)
-	_cleanup_loaded_winner(winner["source"])
+	var source: StringName = winner["source"]
+	_cleanup_loaded_winner(source)
+	if winner["migrated"]:
+		var migrated := save(winner["text"], winner["state"])
+		if migrated["status"] != COMMITTED:
+			_consume_commit_authority()
+			return _load_reject(&"store_migration_failed")
+		var authority := _consume_commit_authority()
+		if authority.get("state") is CampaignState:
+			winner["state"] = authority["state"]
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"state": winner["state"],
-		"source": winner["source"],
+		"source": source,
 	}
 
 
@@ -311,6 +321,9 @@ func _read_candidate(path: String, source: StringName) -> Dictionary:
 		"read_error": false,
 		"text": "",
 		"bytes": PackedByteArray(),
+		"canonical_text": "",
+		"canonical_bytes": PackedByteArray(),
+		"migrated": false,
 		"valid": false,
 		"state": null,
 		"pending_issue": Callable(),
@@ -332,14 +345,14 @@ func _read_candidate(path: String, source: StringName) -> Dictionary:
 	if restored.get("accepted", false) and restored.get("value") is CampaignState:
 		var state: CampaignState = restored["value"]
 		var encoded: Dictionary = state.encode_save()
-		if (
-			encoded["accepted"]
-			and encoded["text"] == candidate["text"]
-			and encoded["bytes"] == bytes
-		):
-				candidate["valid"] = true
-				candidate["state"] = state
-				candidate["pending_issue"] = restored.get("pending_issue", Callable())
+		if encoded["accepted"]:
+			candidate["valid"] = true
+			candidate["state"] = state
+			candidate["pending_issue"] = restored.get("pending_issue", Callable())
+			candidate["canonical_text"] = encoded["text"]
+			candidate["canonical_bytes"] = (encoded["bytes"] as PackedByteArray).duplicate()
+			candidate["migrated"] = encoded["text"] != candidate["text"]
+			candidate["header"] = _comparable_header(encoded["text"])
 	return candidate
 
 
@@ -448,6 +461,9 @@ static func _winner(candidate: Dictionary) -> Dictionary:
 		"source": candidate["source"],
 		"text": candidate["text"],
 		"bytes": (candidate["bytes"] as PackedByteArray).duplicate(),
+		"canonical_text": candidate["canonical_text"],
+		"canonical_bytes": (candidate["canonical_bytes"] as PackedByteArray).duplicate(),
+		"migrated": candidate["migrated"],
 		"state": candidate["state"],
 	}
 
@@ -458,6 +474,9 @@ static func _no_winner() -> Dictionary:
 		"source": NONE,
 		"text": "",
 		"bytes": PackedByteArray(),
+		"canonical_text": "",
+		"canonical_bytes": PackedByteArray(),
+		"migrated": false,
 		"state": null,
 	}
 

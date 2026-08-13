@@ -1,9 +1,11 @@
 extends GutTest
 
 const CHECKPOINT_512_PATH := "res://test/fixtures/p16/roster_limit_checkpoint_512.json"
-const CHECKPOINT_512_SHA := "6c62dc09fdf8406c624d2359bd7b1c0acc239450a1e6d28539053d3e8a2e169e"
+const CHECKPOINT_512_SHA := "90857657b587835de530ddca0d4f55ab0a7a079800f33855d62b19cafca6a76e"
 const CHECKPOINT_768_PATH := "res://test/fixtures/p16/roster_limit_checkpoint_768.json"
-const CHECKPOINT_768_SHA := "195a7c24d072edff6f930f79ce0363ec753efb291411004f34839d5f6266955d"
+const CHECKPOINT_768_SHA := "966f6391ae36813c1f824d81befdd94260637c0a1564a383b515050919f58678"
+const CHECKPOINT_896_PATH := "res://test/fixtures/p16/roster_limit_checkpoint_896.json"
+const CHECKPOINT_896_SHA := "393ef66e7a8227d9c04c3e2a3166f730040f50462c8021ff8ca1cadf778514df"
 
 func test_all_296_casualty_subsets_accept_exactly_812_recovery_recruits() -> void:
 	if OS.get_environment("P16_PROPERTY_SEGMENT") not in ["", "subsets", "capture"]:
@@ -46,8 +48,12 @@ func test_roster_limit_is_reached_by_1019_recovery_cycles_and_1024_renames() -> 
 		pass_test("inactive roster-limit segment")
 		return
 	_assert_indexed_recovery_matches_original_scan()
-	var start_cycle := 512 if mode == "second" else (768 if mode == "third" else 0)
-	var end_cycle := 768 if mode == "second" else (1019 if mode in ["", "third", "capture"] else 512)
+	var start_cycle := {
+		"second": 512, "third": 768, "fourth": 896,
+	}.get(mode, 0) as int
+	var end_cycle := {
+		"first": 512, "second": 768, "third": 896,
+	}.get(mode, 1019) as int
 	var initial := _checkpoint_state(start_cycle) if start_cycle > 0 else _fresh()
 	var session := _session(initial)
 	var rename_total := 5 + start_cycle
@@ -77,7 +83,7 @@ func test_roster_limit_is_reached_by_1019_recovery_cycles_and_1024_renames() -> 
 		assert_eq(renamed_state.next_recruitment_index(), 6 + cycle)
 		if (cycle + 1) % 64 == 0:
 			_assert_full_equivalent(renamed_state)
-		if not OS.get_environment("P16_CAPTURE_DIR").is_empty() and cycle + 1 in [512, 768]:
+		if not OS.get_environment("P16_CAPTURE_DIR").is_empty() and cycle + 1 in [512, 768, 896]:
 			_write_checkpoint(renamed_state)
 	if end_cycle < 1019:
 		var boundary: CampaignState = session["state"]
@@ -88,18 +94,20 @@ func test_roster_limit_is_reached_by_1019_recovery_cycles_and_1024_renames() -> 
 	var full: CampaignState = session["state"]
 	_assert_full_equivalent(full)
 	assert_eq(full.roster().all().size(), CampaignCodec.MAX_ROSTER)
-	var begun := _apply(session, full.begin_attempt(&"s1", [vanguard_id]))
-	var ticket: CampaignBattleTicket = session["last_result"]["ticket"]
-	var outcome := _outcome(
-		ticket, &"defeat", [vanguard_id], 0,
+	var boundary_begun := _apply(session, full.begin_attempt(&"s1", [vanguard_id]))
+	var boundary_ticket: CampaignBattleTicket = session["last_result"]["ticket"]
+	var boundary_outcome := _outcome(
+		boundary_ticket, &"defeat", [vanguard_id], 0,
 	)
-	var resolved := _apply(session, _resolve_certified(begun, outcome, ticket))
-	var before := _snapshot(resolved)
-	var rejected := resolved.recruit("recovery:s1:vanguard_1")
+	var boundary_resolved := _apply(
+		session, _resolve_certified(boundary_begun, boundary_outcome, boundary_ticket),
+	)
+	var before := _snapshot(boundary_resolved)
+	var rejected := boundary_resolved.recruit("recovery:s1:vanguard_1")
 	assert_false(rejected["accepted"])
 	assert_eq(rejected["error_code"], &"roster_limit")
-	assert_eq(_snapshot(resolved), before)
-	assert_eq(resolved.save_revision(), 1 + 1019 * 3 + 1024 + 2)
+	assert_eq(_snapshot(boundary_resolved), before)
+	assert_eq(boundary_resolved.save_revision(), 1 + 1019 * 3 + 1024 + 2)
 	assert_eq(recovery_cycles, 1019)
 	assert_eq(rename_total, 1024)
 	gut.p("P16_ROSTER_LIMIT_CYCLES=%d" % recovery_cycles, 0)
@@ -121,8 +129,14 @@ func _assert_full_equivalent(state: CampaignState) -> void:
 
 
 func _checkpoint_state(cycle: int) -> CampaignState:
-	var path := CHECKPOINT_512_PATH if cycle == 512 else CHECKPOINT_768_PATH
-	var expected := CHECKPOINT_512_SHA if cycle == 512 else CHECKPOINT_768_SHA
+	var paths := {
+		512: CHECKPOINT_512_PATH, 768: CHECKPOINT_768_PATH, 896: CHECKPOINT_896_PATH,
+	}
+	var hashes := {
+		512: CHECKPOINT_512_SHA, 768: CHECKPOINT_768_SHA, 896: CHECKPOINT_896_SHA,
+	}
+	var path: String = paths[cycle]
+	var expected: String = hashes[cycle]
 	var source := FileAccess.get_file_as_string(path)
 	assert_eq(source.sha256_text(), expected)
 	var parser := JSON.new()
@@ -174,6 +188,7 @@ func _assert_indexed_recovery_matches_original_scan() -> void:
 		if is_ready:
 			death = null
 		var hero := {
+			"acquisition_operator_def_id": operator_id,
 			"operator_def_id": operator_id,
 			"life_status": "ready" if is_ready else "dead",
 			"death": death,
@@ -325,7 +340,7 @@ func _restore(data: Dictionary) -> CampaignState:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

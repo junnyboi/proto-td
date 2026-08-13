@@ -232,7 +232,7 @@ func _plan_allocation(source: Dictionary) -> Dictionary:
 	)
 	if not allocated["accepted"]:
 		return allocated
-	var row := {
+	var row := CampaignProgression.add_initial_fields({
 		"hero_id": allocated["hero_id"],
 		"operator_def_id": String(source["operator_def_id"]),
 		"recruitment_index": rows.size(),
@@ -243,7 +243,9 @@ func _plan_allocation(source: Dictionary) -> Dictionary:
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
-	}
+	})
+	if row.is_empty():
+		return _source_reject(&"invalid_operator")
 	return {
 		"accepted": true,
 		"error_code": &"",

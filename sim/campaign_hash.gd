@@ -363,6 +363,12 @@ static func _derive_fresh_receipt(
 	var rewards := _derive_rewards_and_heroes(before, expected, outcome, draft, context)
 	if not rewards["accepted"]:
 		return rewards
+	var xp_awards := CampaignProgression.derive_xp_awards(
+		outcome["heroes"], before["heroes"],
+	)
+	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
+	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
+		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, draft)
 	if not dead["accepted"]:
 		return dead
@@ -388,6 +394,7 @@ static func _derive_fresh_receipt(
 		"rewards_granted": rewards["rewards"],
 		"created_hero_ids": rewards["created"],
 		"dead_hero_ids": dead["value"],
+		"xp_awards": xp_awards,
 		"marks_before": before["marks"],
 		"marks_after": expected["marks"],
 		"strategic_body_hash_before": before_hash["hex"],
@@ -404,7 +411,7 @@ static func _derive_fresh_receipt(
 	expected["last_resolution"] = resolution.duplicate(true)
 	var normalized_resolution := CampaignCodec.encode_resolution(resolution)
 	if not normalized_resolution["accepted"]:
-		return _reject(&"invalid_transaction_state")
+		return _reject(normalized_resolution["error_code"])
 	var after_value := expected
 	if full_after_validation:
 		var normalized_after := CampaignCodec.normalize_data(expected, context)
@@ -582,6 +589,7 @@ static func _derive_expected_after(
 	)
 	if resolution["xp_awards"] != xp_awards:
 		return _reject(&"transaction_xp_mismatch")
+	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
 	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, resolution)
@@ -681,6 +689,15 @@ static func _apply_casualties(
 		expected["heroes"][hero_index] = hero
 		dead.append(String(row["hero_id"]))
 	return {"accepted": true, "error_code": &"", "value": dead}
+
+
+static func _copy_awarded_hero_rows(rows: Array, awards: Array) -> void:
+	var awarded := {}
+	for award: Dictionary in awards:
+		awarded[String(award["hero_id"])] = true
+	for index: int in rows.size():
+		if awarded.has(String(rows[index]["hero_id"])):
+			rows[index] = (rows[index] as Dictionary).duplicate(true)
 
 
 static func _set_stage_stars(

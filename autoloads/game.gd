@@ -263,7 +263,7 @@ func _accept_content_candidate(
 	var candidate_battle: BattleModel = null
 	if is_battle:
 		candidate_battle = candidate.get("model") as BattleModel
-		if not bool(candidate.get("startup_succeeded")) or candidate_battle == null:
+		if candidate.get("startup_succeeded") != true or candidate_battle == null:
 			candidate.queue_free()
 			pending_stage = previous_pending
 			current_battle = previous_battle
