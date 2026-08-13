@@ -22,6 +22,7 @@ var scene: Node
 
 var _scenario_name := ""
 var _shots_dir := "res://artifacts/misc"
+var _requested_viewport := Vector2i.ZERO
 var _frames_used := 0
 var _checks: Array[Dictionary] = []
 var _shots: Array[String] = []
@@ -39,6 +40,10 @@ func _initialize() -> void:
 			seed_value = int(arg.trim_prefix("--seed="))
 		elif arg.begins_with("--shots="):
 			_shots_dir = arg.trim_prefix("--shots=")
+		elif arg.begins_with("--viewport="):
+			var parts := arg.trim_prefix("--viewport=").split("x")
+			if parts.size() == 2 and int(parts[0]) > 0 and int(parts[1]) > 0:
+				_requested_viewport = Vector2i(int(parts[0]), int(parts[1]))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_shots_dir))
 	process_frame.connect(_on_frame)
 	_run()
@@ -209,9 +214,13 @@ func _run() -> void:
 	# design size only sticks after the first frame (earlier sets are
 	# clobbered during engine setup), so it happens here, pre-scene-load.
 	await process_frame
-	root.size = Vector2i(
-		ProjectSettings.get_setting("display/window/size/viewport_width"),
-		ProjectSettings.get_setting("display/window/size/viewport_height"),
+	root.size = (
+		_requested_viewport
+		if _requested_viewport != Vector2i.ZERO
+		else Vector2i(
+			ProjectSettings.get_setting("display/window/size/viewport_width"),
+			ProjectSettings.get_setting("display/window/size/viewport_height"),
+		)
 	)
 	if DisplayServer.get_name() != "headless":
 		# quiet window (PAINPOINTS Phase 13): never take focus (creation-time
