@@ -31,17 +31,17 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-026 — Scaffold P16.2-PROMO contracts behind the missing strategic base
+## TD-026 — Implement P16.2-PROMO XP, migration, and save/load core
 
-- Status: blocked
+- Status: in_progress
 - Owner: AGENT 2
-- Branch: `agent-2/td-026-p16-2-promo-contracts`
-- Base: `master` at `a26969770a5ed57206d0751c1d0f757ac576f733`
-- Dependencies: P16.2 canonical strategic commands, exactly-once receipts, save-owner API, and schema checkpoint must land on `master`; P16.1/TD-022 is present but deliberately immutable
-- Owned files: `docs/plans/TD-026-p16-2-promo-contracts.md`; `docs/handoffs/TD-026-agent-2-p16-2-promo-contracts.md`; `test/fixtures/p16/promotion_contract_v1.json`; `test/wip_mage_promotion_contract.gd*`; this TD-026 row
-- Do not touch: `sim/**`; `data/**`; current P16 v1 fixtures; `scripts/verify.sh`; `FEATURES.json`; UI/localization/presentation; thresholds; player-facing routes
-- Acceptance: one machine-readable contract pins the two Mage destinations, XP rules, total eleven-template migration, immutable identity, command/receipt semantics, and expected v2 dependencies; a manually invoked GUT suite proves the contract itself and fails only on the absent P16.2 base/schema/promotion APIs; the default repository gate remains green because the test is explicitly WIP and excluded from discovery
-- Required evidence: fresh current-master `scripts/verify.sh` baseline; JSON syntax; GDScript parse/lint; exact manual red signature naming the missing dependency; unchanged default `scripts/verify.sh`; independent plan/contract review
+- Branch: `agent-2/td-026-p16-2-promo-core`
+- Base: `master` at `4dd4eed725e19061a7220f26ba600d1d5c9d4ab9`
+- Dependencies: P16.1/TD-022 landed; the current owner explicitly authorized this bounded P16.2-PROMO core on the latest master
+- Owned files: `sim/campaign_progression.gd*`; `sim/campaign_hero_codec.gd*`; `sim/campaign_migration.gd*`; `sim/campaign_legacy_hash.gd*`; `sim/campaign_state.gd`; `sim/hero_state.gd`; `sim/roster_state.gd`; `sim/campaign_codec.gd`; `sim/campaign_hash.gd`; `sim/campaign_invariants.gd`; `data/campaign_def.gd`; `data/campaigns/p16_v2.tres*`; `test/fixtures/p16/promotion_contract_v1.json`; additive `test/fixtures/p16/*_v2.json`; `test/test_mage_promotion_contract.gd*`; `test/test_campaign_progression.gd*`; `test/test_campaign_state_p16.gd`; `test/test_p16_contract_fixtures.gd`; `test/test_hero_state.gd`; `test/test_roster_state.gd`; `test/test_hash_paranoia.gd`; `tools/model_roster_runner.gd`; `tools/replay_runner.gd`; `selftest/scenarios/model_roster_probe.gd`; `selftest/scenarios/p16_contract_probe.gd`; `scripts/model_roster_check.sh`; `scripts/replay_check.sh`; `docs/plans/TD-026-p16-2-promo-contracts.md`; `docs/handoffs/TD-026-agent-2-p16-2-promo-contracts.md`; this TD-026 row
+- Do not touch: immutable v1 fixture bytes; promotion UI/localization/presentation; `scripts/verify.sh`; `FEATURES.json`; thresholds; player-facing routes; concurrent TD-025 operator-data files
+- Acceptance: all eleven hero templates migrate deterministically to the v2 progression row; old canonical v1 saves load as canonical v2 without mutation guessing; new saves round-trip exactly; deployed surviving heroes earn exactly 100 XP once per accepted operation while dead or undeployed heroes earn zero; XP, class, acquisition, and identity-portrait fields participate in strategic hashes and nested anchor validation
+- Required evidence: targeted migration/XP/save/hash tests; v1-to-v2 golden plus v2 round-trip; operation win/loss/retreat/dead XP matrix; cross-process roster equality; one STANDARD gate on the result
 - Last update: 2026-08-14
 
 ## L7-R1 — Human playtest round 1

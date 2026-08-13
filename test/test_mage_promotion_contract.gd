@@ -238,11 +238,9 @@ func test_p16_2_base_save_authority_has_landed() -> void:
 	)
 
 
-func test_promotion_model_surface_has_landed() -> void:
+func test_progression_save_surface_has_landed() -> void:
 	var state := _fresh()
 	var hero := state.roster().all()[0]
-	assert_true(state.has_method("promotion_options"))
-	assert_true(state.has_method("promote_hero"))
 	for method_name: String in [
 		"acquisition_operator_def_id",
 		"first_class_id",
@@ -252,6 +250,17 @@ func test_promotion_model_surface_has_landed() -> void:
 		"identity_portrait_id",
 	]:
 		assert_true(hero.has_method(method_name), "missing HeroState.%s" % method_name)
+	assert_eq(hero.acquisition_operator_def_id(), &"caster_1")
+	assert_eq(hero.first_class_id(), &"mage_apprentice")
+	assert_null(hero.advanced_class_id())
+	assert_eq(hero.progression_rules_version(), 1)
+	assert_eq(hero.xp(), 0)
+	assert_eq(hero.identity_portrait_id(), &"caster_1")
+	var restored := CampaignState.restore(
+		state.data_copy(), _definition(), _catalogs(), _stages(),
+	)
+	assert_true(restored["accepted"], str(restored.get("error_code", &"")))
+	assert_eq((restored["value"] as CampaignState).encode_data(), state.encode_data())
 
 
 func _contract() -> Dictionary:
@@ -274,7 +283,7 @@ func _fresh() -> CampaignState:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

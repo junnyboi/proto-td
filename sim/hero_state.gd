@@ -21,6 +21,31 @@ func operator_def_id() -> StringName:
 	return StringName(_row["operator_def_id"])
 
 
+func acquisition_operator_def_id() -> StringName:
+	return StringName(_row["acquisition_operator_def_id"])
+
+
+func first_class_id() -> StringName:
+	return StringName(_row["first_class_id"])
+
+
+func advanced_class_id() -> Variant:
+	var value: Variant = _row["advanced_class_id"]
+	return StringName(value) if value != null else null
+
+
+func progression_rules_version() -> int:
+	return int(_row["progression_rules_version"])
+
+
+func xp() -> int:
+	return int(_row["xp"])
+
+
+func identity_portrait_id() -> StringName:
+	return StringName(_row["identity_portrait_id"])
+
+
 func recruitment_index() -> int:
 	return int(_row["recruitment_index"])
 

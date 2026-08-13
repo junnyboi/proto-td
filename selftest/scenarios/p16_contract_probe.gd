@@ -12,7 +12,7 @@ func run(h: SelfTestHarness) -> void:
 	var name := HeroNames.default_name(HeroIdentity.hero_bits(h.seed_value, 1, 0, 0))
 	h.check("starter zero default name", name["value"] == "Dara Ember", str(name["value"]))
 	var save_file := FileAccess.open(
-		"res://test/fixtures/p16/campaign_v1_seed42.json",
+		"res://test/fixtures/p16/campaign_v2_seed42.json",
 		FileAccess.READ,
 	)
 	h.check("fresh save fixture opens", save_file != null)
@@ -25,7 +25,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("fresh save fixture validates", save["accepted"], str(save.get("error_code", &"")))
 	if save["accepted"]:
 		var strategic := CampaignHash.of_data(save["data"], context)
-		h.check("fresh strategic hash", strategic["hex"] == "85f2c11018249153", strategic["hex"])
+		h.check("fresh strategic hash", strategic["hex"] == "baa4d62d418258a5", strategic["hex"])
 	var replay := ReplayCodec.load_file(
 		"res://playtests/replays/v1/s8.json",
 		_replay_context(),

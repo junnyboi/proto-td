@@ -1,6 +1,6 @@
 extends GutTest
 
-const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v1.json"
+const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v2.json"
 
 
 func test_seed_42_starters_have_exact_identity_and_names() -> void:
@@ -54,7 +54,7 @@ func test_returned_rows_and_death_records_are_defensive() -> void:
 	death["terminal_tick"] = 8
 	assert_eq(hero.operator_def_id(), &"defender_1")
 	assert_eq(int((hero.death() as Dictionary)["terminal_tick"]), 1000)
-	assert_eq(state.strategic_hash()["hex"], "9f25771019b780ff")
+	assert_eq(state.strategic_hash()["hex"], "e293b40478a9771c")
 
 
 func _fresh() -> CampaignState:
@@ -81,7 +81,7 @@ func _transaction_fixture() -> Dictionary:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

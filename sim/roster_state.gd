@@ -113,6 +113,9 @@ func plan_allocation(
 		"life_status": "ready",
 		"death": null,
 	}
+	row = CampaignProgression.add_initial_fields(row)
+	if row.is_empty():
+		return _reject(&"unknown_operator")
 	return {
 		"accepted": true,
 		"error_code": &"",
