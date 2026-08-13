@@ -55,9 +55,7 @@ static func build_stage(
 	return true
 
 
-static func _build_terrain(
-	grid_root: Node2D, stage: StageDef, theme: StageArtThemeType
-) -> void:
+static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtThemeType) -> void:
 	var size := stage.grid_size()
 	var path_cells: Dictionary = {}
 	for i: int in stage.paths.size():
@@ -69,7 +67,9 @@ static func _build_terrain(
 			var tile := stage.tile_at(cell)
 			var lifted := tile == StageDef.Tile.ELEVATED
 			var is_road := tile == StageDef.Tile.GROUND and path_cells.has(cell)
-			var art_id: StringName = theme.tile_id(tile, path_cells.has(cell)) if theme != null else &""
+			var art_id: StringName = (
+				theme.tile_id(tile, path_cells.has(cell)) if theme != null else &""
+			)
 			if art_id == &"":
 				art_id = &"tile_road" if is_road else TILE_ART[tile]
 			if _add_tile_sprite(grid_root, stage, cell, art_id, lifted):
@@ -125,9 +125,7 @@ static func _build_backdrop_ring(
 			grid_root.add_child(poly)
 
 
-static func _add_backdrop_panorama(
-	grid_root: Node2D, size: Vector2i, art_id: StringName
-) -> void:
+static func _add_backdrop_panorama(grid_root: Node2D, size: Vector2i, art_id: StringName) -> void:
 	var tex := Art.texture(art_id)
 	var art_size := Art.size(art_id)
 	if tex == null or art_size == Vector2i.ZERO:
@@ -215,9 +213,7 @@ static func _add_tile_sprite(
 	return true
 
 
-static func _add_theme_decor(
-	grid_root: Node2D, stage: StageDef, theme: StageArtThemeType
-) -> void:
+static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArtThemeType) -> void:
 	for cell: Vector2i in theme.route_notch_cells:
 		_add_face_overlay(grid_root, cell, theme.route_notch_id, "RouteNotch")
 	_add_landmark(

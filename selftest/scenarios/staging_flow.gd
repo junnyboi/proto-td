@@ -184,7 +184,7 @@ func _check_initial_staging(
 
 
 func _snapshot(game: Node) -> Dictionary:
-	var campaign: CampaignState = game.get("campaign")
+	var campaign: LegacyCampaignAdapter = game.get("campaign")
 	return {
 		"campaign": campaign,
 		"stars": campaign.stage_stars.duplicate(true),

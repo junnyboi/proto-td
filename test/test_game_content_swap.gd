@@ -11,7 +11,6 @@ class MusicStub:
 
 	var stop_calls := 0
 
-
 	func stop() -> bool:
 		stop_calls += 1
 		return true

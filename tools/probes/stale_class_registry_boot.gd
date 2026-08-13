@@ -55,7 +55,9 @@ func _try_finish() -> void:
 	if not bool(music.call("reload_catalog")):
 		_fail("Music catalog failed to load")
 		return
-	print("[STALE-CLASS-REGISTRY] PASS frames=%d grid_children=%d" % [_frames, grid.get_child_count()])
+	print(
+		"[STALE-CLASS-REGISTRY] PASS frames=%d grid_children=%d" % [_frames, grid.get_child_count()]
+	)
 	quit(0)
 
 
