@@ -60,5 +60,6 @@ if grep -Eq 'SCRIPT ERROR: Parse Error|Failed to load script|Could not find type
   exit 1
 fi
 grep -q '^\[STALE-CLASS-REGISTRY\] PASS ' "$tmp_root/current-boot.log"
-grep -q 'title=ready s1=ready s2_tiles=50 s2_backdrops=700' "$tmp_root/current-boot.log"
+grep -q 'title=ready s1=ready s2_children=59 s3_children=68 s2_backdrops=0 s3_backdrops=0' \
+  "$tmp_root/current-boot.log"
 printf '[stale-class-registry] PASS old=%s current=%s\n' "$OLD_CACHE_COMMIT" "$current_commit"

@@ -25,9 +25,35 @@ const REQUIRED_S2_GRID_NODES := [
 	"Tile_9_2",
 	"Tile_3_1",
 	"Tile_3_3",
+	"BackdropPanorama",
+	"SpawnLandmark",
+	"CoreLandmark",
+	"Cadence_2_2",
+	"Cadence_4_2",
+	"Cadence_6_2",
+	"Cadence_8_2",
 ]
+const REQUIRED_S3_GRID_NODES := [
+	"Tile_0_2",
+	"Tile_9_4",
+	"Tile_2_3",
+	"Tile_5_2",
+	"Tile_5_3",
+	"BackdropPanorama",
+	"SpawnLandmark",
+	"CoreLandmark",
+	"Cadence_2_2",
+	"Cadence_4_2",
+	"Cadence_4_4",
+	"Cadence_7_4",
+]
+const EXPECTED_S2_CHILDREN := 59
 const EXPECTED_S2_TILES := 50
-const EXPECTED_S2_BACKDROPS := 700
+const EXPECTED_S2_SHADES := 2
+const EXPECTED_S3_CHILDREN := 68
+const EXPECTED_S3_TILES := 60
+const EXPECTED_S3_SHADES := 1
+const EXPECTED_CADENCE := 4
 
 var _frames := 0
 var _phase := 0
@@ -43,7 +69,7 @@ func _on_process_frame() -> void:
 	if _frames == 2:
 		_start_title()
 	elif _frames > MAX_FRAMES:
-		_fail("title/S1/S2 did not become ready within %d frames" % MAX_FRAMES)
+		_fail("title/S1/S2/S3 did not become ready within %d frames" % MAX_FRAMES)
 	elif _game != null:
 		_try_advance()
 
@@ -72,8 +98,10 @@ func _try_advance() -> void:
 		_try_title()
 	elif _phase == 1:
 		_try_s1()
-	else:
+	elif _phase == 2:
 		_try_s2()
+	else:
+		_try_s3()
 
 
 func _try_title() -> void:
@@ -106,27 +134,72 @@ func _try_s2() -> void:
 	var grid := _expected_stage_grid(&"s2")
 	if grid == null or not _grid_has(grid, REQUIRED_S2_GRID_NODES):
 		return
-	var tile_count := 0
-	var backdrop_count := 0
-	for child: Node in grid.get_children():
-		if child.name.begins_with("Tile_"):
-			tile_count += 1
-		elif child.name.begins_with("Backdrop_"):
-			backdrop_count += 1
-	if tile_count != EXPECTED_S2_TILES or backdrop_count != EXPECTED_S2_BACKDROPS:
-		_fail(
-			"S2 grid count mismatch: tiles=%d backdrops=%d" % [tile_count, backdrop_count]
-		)
+	var counts := _grid_counts(grid)
+	if not _counts_match(
+		counts, EXPECTED_S2_CHILDREN, EXPECTED_S2_TILES, EXPECTED_S2_SHADES
+	):
+		_fail("S2 grid count mismatch: %s" % counts)
 		return
-	if grid.get_node_or_null("BackdropPanorama") != null:
-		_fail("S2 unexpectedly inherited the S1 panorama")
+	_phase = 3
+	_game.call("start_battle", &"s3")
+
+
+func _try_s3() -> void:
+	var grid := _expected_stage_grid(&"s3")
+	if grid == null or not _grid_has(grid, REQUIRED_S3_GRID_NODES):
+		return
+	var counts := _grid_counts(grid)
+	if not _counts_match(
+		counts, EXPECTED_S3_CHILDREN, EXPECTED_S3_TILES, EXPECTED_S3_SHADES
+	):
+		_fail("S3 grid count mismatch: %s" % counts)
 		return
 	print(
 		"[STALE-CLASS-REGISTRY] PASS title=ready s1=ready "
-		+ "s2_tiles=%d s2_backdrops=%d frames=%d"
-		% [tile_count, backdrop_count, _frames]
+		+ "s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
+		% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]
 	)
 	quit(0)
+
+
+func _grid_counts(grid: Node2D) -> Dictionary:
+	var counts := {
+		"children": grid.get_child_count(),
+		"tiles": 0,
+		"shades": 0,
+		"panoramas": 0,
+		"cadence": 0,
+		"landmarks": 0,
+		"backdrops": 0,
+	}
+	for child: Node in grid.get_children():
+		if child.name.begins_with("Tile_"):
+			counts["tiles"] += 1
+		elif child.name.begins_with("Backdrop_"):
+			counts["backdrops"] += 1
+		elif child.name == "BackdropPanorama":
+			counts["panoramas"] += 1
+		elif child.name.begins_with("Cadence_"):
+			counts["cadence"] += 1
+		elif child.name in [&"SpawnLandmark", &"CoreLandmark"]:
+			counts["landmarks"] += 1
+		elif child is Polygon2D:
+			counts["shades"] += 1
+	return counts
+
+
+func _counts_match(
+	counts: Dictionary, expected_children: int, expected_tiles: int, expected_shades: int
+) -> bool:
+	return (
+		int(counts["children"]) == expected_children
+		and int(counts["tiles"]) == expected_tiles
+		and int(counts["shades"]) == expected_shades
+		and int(counts["panoramas"]) == 1
+		and int(counts["cadence"]) == EXPECTED_CADENCE
+		and int(counts["landmarks"]) == 2
+		and int(counts["backdrops"]) == 0
+	)
 
 
 func _expected_stage_grid(stage_id: StringName) -> Node2D:
