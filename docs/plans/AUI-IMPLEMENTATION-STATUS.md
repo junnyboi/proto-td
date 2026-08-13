@@ -22,7 +22,7 @@
 
 - D: exact parent/revision manifests are checked in; AUI-10R separately owns and verifies the S1 runtime successor. AUI-00 itself still consumed no D runtime bytes.
 - F: approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`.
-- E: iterating; all E-dependent packages remain blocked.
+- E: exact Round 5 concept packet approved; AUI-34 terminal lane receipt authenticated for the owner-authorized aggregate integration described below.
 - Shared-ledger exclusion ended after implementation landed; this dedicated closure branch owns only the compact AUI-00 completion transaction.
 
 ### Released implementation lease
@@ -62,7 +62,19 @@ Exact contract GUT, generator double-run byte identity, `assets_floor`, `present
 
 ## Successor locks
 
-AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the independent Agent D runtime successor, and AUI-12 remains Agent F's active UI lane. AUI-34 remains Agent E's lane; AUI-11 and every E-dependent package remain blocked until AUI-34 durably closes.
+AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the independent Agent D runtime successor, and AUI-12 remains Agent F's active UI lane. AUI-34 closes in the containing aggregate commit after fresh merged-union evidence qualifies; AUI-11 may be claimed only after that exact commit is remote-equal on `master`.
+
+## AUI-34 — Deterministic character/VFX pipeline aggregate
+
+- Status: `landed_closed` in this row's containing aggregate commit, conditional on the immutable external final-union record reporting PASS before publication.
+- Lane owner: `AGENT E / AGENT 6`; owner-appointed integrator: `AGENT 6`.
+- Union base: `master` at `bf3402c6e08baa8ec3ecc5157a7329bc27e51915` / tree `042dad117f2717a4fee1e2849427598e0dc9c285`.
+- Terminal lane: `ff64367e1991299fbecf3e517dc554443d819e73` / tree `2e7b85bb2347068779b4c37c0295a383344045fb`; immutable receipt SHA-256 `109a8e76846e25a8a58ba97f0c102f2c8f00a4a60b4d0366857a9da67f65a9bd`.
+- Delivered scope: offline Python/Pillow canonical normalizer, Godot `Image` fallback, strict schema/path contracts, deterministic synthetic fixtures, independent semantic oracle, same-backend byte proof, cross-backend decoded-RGBA differential, atomic publication, rollback salvage, runbook, and staging provenance fragments.
+- Reconciliation: AUI-00 closure is present; all six exact Round 5 hashes match; reserved colors remain exact `#F4F4F4` and `#41A6F6`; current provenance fragments are staging contracts rather than runtime sidecars; no manifest, runtime asset, gameplay, simulation, localization, test, harness, threshold, or final-art surface is changed.
+- Assurance: the aggregate is publishable only after a fresh cache-bypassed 600-check-or-higher differential, full repository gate, fresh image review, and non-implementer diff-vs-pins PASS are bound to the exact aggregate commit in external `mgs.final-union.v1` evidence.
+- Preserved boundary: `runtime_binding = UNBOUND_AGENT_F_SEAM`, `human_final_art = UNSET_HUMAN_ONLY`, and no production Aetheria character/VFX asset is emitted or installed.
+- Successor: AUI-11 may start after the exact aggregate commit is remote-equal on `master`; production content still requires its own claims, generated packets, QA, runtime-binding integration, and human final-art decisions.
 
 ## AUI-10 — Agent D S1 world source/staging closure
 
