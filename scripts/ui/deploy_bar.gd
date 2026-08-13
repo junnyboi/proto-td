@@ -16,6 +16,7 @@ extends Control
 ## never a copy).
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
+const S1_CUE_PATH := "res://data/presentation/s1_slice_cues.tres"
 
 const FONT_SIZE := 32
 const BAR_HEIGHT := 88.0
@@ -55,6 +56,10 @@ var _retreat_chip: Button = null
 var _retreat_unit_id: int = -1
 var _heal_source_unit_id: int = -1
 var _heal_cursor: Polygon2D = null
+var _cue_config: TacticalCueConfig = null
+var _range_root: Control = null
+var _skill_ring: Line2D = null
+var _selected_range_unit_id := -1
 
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
@@ -69,6 +74,10 @@ func setup(
 	view = battle_view
 	_op_defs = op_defs
 	_trap_defs = trap_defs
+	if model.stage.id == &"s1":
+		_cue_config = load(S1_CUE_PATH) as TacticalCueConfig
+		if _cue_config != null and not _cue_config.validate_contract().is_empty():
+			_cue_config = null
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -104,6 +113,7 @@ func relayout() -> void:
 		_layout_facing_buttons(_pending_cell)
 	if _heal_source_unit_id >= 0:
 		_show_heal_highlights()
+	_refresh_range_cue()
 
 
 func _process(_delta: float) -> void:
@@ -124,6 +134,7 @@ func _process(_delta: float) -> void:
 	for trap_id: StringName in _trap_slots:
 		var slot: Button = _trap_slots[trap_id]
 		slot.disabled = not model.is_trap_placeable(trap_id)
+	_refresh_skill_ready_cue()
 
 
 func _input(event: InputEvent) -> void:
@@ -219,9 +230,20 @@ func _build_overlays() -> void:
 	_highlight_root.name = "Highlights"
 	_highlight_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_highlight_root)
-	_cursor_rect = _make_overlay_rect(INVALID_COLOR)
+	_cursor_rect = _make_overlay_rect(_cue_color(&"invalid", INVALID_COLOR))
 	_cursor_rect.name = "CursorRect"
 	add_child(_cursor_rect)
+	_range_root = Control.new()
+	_range_root.name = "RangeCueRoot"
+	_range_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_range_root)
+	_skill_ring = Line2D.new()
+	_skill_ring.name = "SkillReadyRing"
+	_skill_ring.width = 4.0
+	_skill_ring.closed = true
+	_skill_ring.default_color = _cue_color(&"skill", Color("5dc8d3"))
+	_skill_ring.visible = false
+	add_child(_skill_ring)
 	_heal_cursor = _make_overlay_rect(HEAL_VALID_COLOR)
 	_heal_cursor.name = "HealTargetCursor"
 	add_child(_heal_cursor)
@@ -254,6 +276,15 @@ func _make_overlay_rect(color: Color) -> Polygon2D:
 	poly.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
 	poly.visible = false
 	return poly
+
+
+func _cue_color(state: StringName, fallback: Color) -> Color:
+	if _cue_config == null:
+		return fallback
+	var row: Variant = _cue_config.cues.get(state)
+	if not row is Dictionary or typeof(row.get(&"color")) != TYPE_COLOR:
+		return fallback
+	return row[&"color"]
 
 
 func _start_placement(op_id: StringName) -> void:
@@ -295,14 +326,20 @@ func _placement_valid_at(cell: Vector2i) -> bool:
 
 
 func _valid_color() -> Color:
-	return TRAP_VALID_COLOR if _placement_trap != &"" else VALID_COLOR
+	if _placement_trap != &"":
+		return TRAP_VALID_COLOR
+	return _cue_color(&"legal", VALID_COLOR)
 
 
 func _update_placement_hover() -> void:
 	if _pending_cell.x >= 0:
 		return
 	var cell: Vector2i = view.call("cell_at", _pointer)
-	_cursor_rect.color = _valid_color() if _placement_valid_at(cell) else INVALID_COLOR
+	_cursor_rect.color = (
+		_valid_color()
+		if _placement_valid_at(cell)
+		else _cue_color(&"invalid", INVALID_COLOR)
+	)
 	_cursor_rect.position = view.call("cell_center", cell)
 	_cursor_rect.visible = true
 
@@ -387,7 +424,9 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		return
 	if unit == null:
 		_hide_retreat_chip()
+		_clear_range_cue()
 		return
+	_show_range_cue(unit)
 	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
 	# its skill; the retreat chip only opens while the skill is not ready.
 	# Readiness comes from the verb's own validator (rule 7, P14).
@@ -396,6 +435,7 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 			_begin_heal_targeting(unit)
 		else:
 			model.apply_action([&"trigger_skill", unit.id])
+		_clear_range_cue()
 		_hide_retreat_chip()
 		return
 	_retreat_unit_id = unit.id
@@ -413,6 +453,62 @@ func _confirm_retreat() -> void:
 func _hide_retreat_chip() -> void:
 	_retreat_unit_id = -1
 	_retreat_chip.visible = false
+
+
+## Range derives exclusively from Targeting.range_cells over the deployed
+## UnitState's copied offsets/facing. Selection is presentation-only.
+func _show_range_cue(unit: UnitState) -> void:
+	if _cue_config == null or _range_root == null:
+		return
+	_selected_range_unit_id = unit.id
+	_refresh_range_cue()
+
+
+func _refresh_range_cue() -> void:
+	if _range_root == null:
+		return
+	for child: Node in _range_root.get_children():
+		child.queue_free()
+	if _selected_range_unit_id < 0 or model == null:
+		return
+	var unit := model.unit_by_id(_selected_range_unit_id)
+	if unit == null or not unit.alive:
+		_selected_range_unit_id = -1
+		return
+	var cells := Targeting.range_cells(unit.cell, unit.range_offsets, int(unit.facing))
+	for cell: Vector2i in cells:
+		var cue := _make_overlay_rect(_cue_color(&"range", Color("f0cf65")))
+		cue.name = "RangeCue_%d_%d" % [cell.x, cell.y]
+		cue.visible = true
+		cue.position = view.call("cell_center", cell)
+		_range_root.add_child(cue)
+
+
+func _clear_range_cue() -> void:
+	_selected_range_unit_id = -1
+	_refresh_range_cue()
+
+
+## Readiness is exactly UnitState.is_skill_ready(); no inferred cooldown or
+## generic warning/lethal state is fabricated.
+func _refresh_skill_ready_cue() -> void:
+	if _skill_ring == null:
+		return
+	var ready: UnitState = null
+	for unit: UnitState in model.units:
+		if unit.is_skill_ready():
+			ready = unit
+			break
+	_skill_ring.visible = ready != null and _cue_config != null
+	if ready == null or _cue_config == null:
+		return
+	var radius := 39.0 * float(view.call("grid_scale"))
+	var points := PackedVector2Array()
+	for index: int in 24:
+		points.append(Vector2.RIGHT.rotated(TAU * float(index) / 24.0) * radius)
+	_skill_ring.points = points
+	_skill_ring.position = view.call("cell_center", ready.cell)
+	_skill_ring.modulate.a = 0.62 + 0.24 * sin(float(Engine.get_process_frames()) * 0.14)
 
 
 func _begin_heal_targeting(healer: UnitState) -> void:

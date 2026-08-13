@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "logical_id": "aui20.fixture.grunt",
+  "source_type": "ai_assisted_deterministic_normalization",
+  "final_files": [
+    {
+      "path": "res://assets/sprites/aui20_fixture_grunt.png",
+      "bytes": 69500,
+      "sha256": "be7095a1a58a33bd70ef5ad8c913255a4bcc57a1a3ce5d2f5411d8f0a6e747ba"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "/home/ubuntu/project-docs/Prototype TD/aetheria-design-approvals/agent-f/aui-20/fixture-generation/round5-f4827f6/normalized/grunt_packet/aui20-round5-fixture-grunt.png",
+      "sha256": "be7095a1a58a33bd70ef5ad8c913255a4bcc57a1a3ce5d2f5411d8f0a6e747ba"
+    }
+  ],
+  "generation": {
+    "provider": "OpenAI",
+    "model": "gpt-image-2",
+    "seed": null,
+    "tool": "manus-gpt-image-2+aui20-round5-extract-v1",
+    "unsupported_reason": "service does not expose stable seeds; exact normalized output is hash-pinned"
+  },
+  "license": {
+    "spdx": "LicenseRef-Project-Owned",
+    "source": "project-owned approved AI-assisted fixture packet",
+    "human_contribution": "character references, animation specification, deterministic normalization, selection, and Poseidon approval"
+  },
+  "acceptance": {
+    "source": "/home/ubuntu/project-docs/Prototype TD/aetheria-design-approvals/agent-f/aui-20/AUI-20-FIXTURE-APPROVAL.json",
+    "record_id": "AUI-20-REPRESENTATIVE-FIXTURE-APPROVAL-V1",
+    "human_accepter": "Poseidon",
+    "accepted_at_utc": "2026-08-13T13:34:07Z",
+    "fixture_contract_sha256": "bd0f253b561a530905eb862dd1640ca53f940c9700fd4087a8592f018174f97f",
+    "state": "approved_s1_experiment_runtime_binding",
+    "final_visual_review": "pending"
+  },
+  "runtime_binding": {
+    "scope": "S1 presentation slice only",
+    "selector": "ordinary noncharmed basic grunt",
+    "fallback": "incumbent EnemyAnimator runtime"
+  }
+}

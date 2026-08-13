@@ -10,6 +10,7 @@ extends Node2D
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const S1_FIXTURE_PATH := "res://data/presentation/s1_slice_fixture_manifest.tres"
 
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -112,6 +113,7 @@ var _enemy_blend_frames: Dictionary = {}
 var _enemy_anim_seconds := 0.0
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
+var _s1_fixture: S1SliceFixtureManifest = null
 
 
 func _ready() -> void:
@@ -133,6 +135,7 @@ func _ready() -> void:
 	Game.current_battle = model
 	Game.content = self
 	_stage = stage
+	_s1_fixture = S1SliceFixtureManifest.load_valid(S1_FIXTURE_PATH)
 	if not _build_grid(stage):
 		return
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
@@ -621,24 +624,16 @@ func _project() -> void:
 			_enemy_anim_keys.erase(e.id)
 			_enemy_blend_frames.erase(e.id)
 		if e.alive:
+			var rect: ColorRect = _enemy_rects[e.id]
+			_refresh_enemy_body(e, rect)
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var center_p := pos + Vector2.ONE * 0.5
-			var rect: ColorRect = _enemy_rects[e.id]
 			# feet on the face: bottom-center anchored at the projected point
 			rect.position = (
 				IsoProjection.project(center_p)
 				+ Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
 			)
 			rect.z_index = IsoProjection.entity_z(center_p)
-			EnemyAnimator.refresh(
-				e,
-				model,
-				rect,
-				_enemy_anim_seconds,
-				_enemy_anim_keys,
-				_enemy_blend_frames,
-				_enemy_defs
-			)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()
@@ -659,13 +654,114 @@ func _project() -> void:
 		_hud.text += "  %d*" % int(s["stars"])
 
 
-## EnemyAnimator owns body art, state, direction, and shadow presentation;
-## this view keeps the existing HP-bar and grid-parent seams.
+## EnemyAnimator remains the construction and fallback authority. The approved
+## fixture replaces only the exact ordinary S1 grunt projection.
 func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	var rect := EnemyAnimator.make_body(e, model, _enemy_defs)
+	if _uses_fixture_enemy(e):
+		_configure_fixture_enemy_body(rect)
 	_add_hp_bar(rect, rect.size.x)
 	_grid_root.add_child(rect)
 	return rect
+
+
+func _refresh_enemy_body(e: EnemyState, body: ColorRect) -> void:
+	if _uses_fixture_enemy(e):
+		_refresh_fixture_enemy(e, body)
+		return
+	_restore_incumbent_enemy_geometry(body)
+	EnemyAnimator.refresh(
+		e, model, body, _enemy_anim_seconds, _enemy_anim_keys, _enemy_blend_frames, _enemy_defs
+	)
+
+
+func _uses_fixture_enemy(e: EnemyState) -> bool:
+	return _s1_fixture != null and _s1_fixture.selects_enemy(_stage, e)
+
+
+func _uses_fixture_operator(u: UnitState) -> bool:
+	return _s1_fixture != null and _s1_fixture.selects_operator(_stage, u.op_id)
+
+
+func _configure_fixture_enemy_body(body: ColorRect) -> void:
+	body.color = Color(0.0, 0.0, 0.0, 0.0)
+	body.size = Vector2.ONE * S1SliceFixtureManifest.DISPLAY_PX
+	for node_name: String in ["Sprite", "BlendSprite"]:
+		var sprite := body.get_node_or_null(node_name) as TextureRect
+		if sprite != null:
+			_layout_fixture_sprite(sprite)
+	var shadow := body.get_node_or_null("Shadow") as Polygon2D
+	if shadow != null:
+		shadow.position = Vector2(body.size.x * 0.5, body.size.y)
+
+
+func _restore_incumbent_enemy_geometry(body: ColorRect) -> void:
+	if body.size == Vector2.ONE * EnemyAnimator.BODY_PX:
+		return
+	body.size = Vector2.ONE * EnemyAnimator.BODY_PX
+	for node_name: String in ["Sprite", "BlendSprite"]:
+		var sprite := body.get_node_or_null(node_name) as TextureRect
+		if sprite != null:
+			sprite.position = Vector2.ZERO
+			sprite.size = body.size
+			sprite.flip_h = false
+	var shadow := body.get_node_or_null("Shadow") as Polygon2D
+	if shadow != null:
+		shadow.position = Vector2(body.size.x * 0.5, body.size.y)
+
+
+func _refresh_fixture_enemy(e: EnemyState, body: ColorRect) -> void:
+	_configure_fixture_enemy_body(body)
+	var sprite := body.get_node_or_null("Sprite") as TextureRect
+	if sprite == null:
+		return
+	var state := &"attack_skill" if EnemyAnimator.is_attacking(e) else &"rest_movement"
+	var direction := EnemyAnimator.direction_for_path(
+		model.path_for(e.path_idx), e.progress_units, false
+	)
+	var flip := direction == &"nw" or direction == &"sw"
+	var key := StringName("aui20_fixture_grunt_%s_%s" % [state, direction])
+	var texture := _s1_fixture.frame_texture(
+		&"enemy", state, _s1_fixture.frame_index(state, _enemy_anim_seconds, e.id)
+	)
+	if texture == null:
+		_restore_incumbent_enemy_geometry(body)
+		EnemyAnimator.refresh(
+			e, model, body, _enemy_anim_seconds, _enemy_anim_keys, _enemy_blend_frames, _enemy_defs
+		)
+		return
+	var old_key: StringName = _enemy_anim_keys.get(e.id, &"")
+	if old_key != key:
+		var blend := body.get_node_or_null("BlendSprite") as TextureRect
+		if old_key != &"" and blend != null and sprite.texture != null:
+			blend.texture = sprite.texture
+			blend.flip_h = sprite.flip_h
+			blend.visible = true
+			_enemy_blend_frames[e.id] = EnemyAnimator.BLEND_FRAMES
+			EnemyAnimator.apply_blend(body, EnemyAnimator.BLEND_FRAMES)
+		_enemy_anim_keys[e.id] = key
+	sprite.flip_h = flip
+	if sprite.texture != texture:
+		sprite.texture = texture
+
+
+func _layout_fixture_sprite(sprite: TextureRect) -> void:
+	var canvas_px := S1SliceFixtureManifest.RUNTIME_CANVAS_PX
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.size = Vector2.ONE * canvas_px
+	sprite.position = Vector2(
+		(S1SliceFixtureManifest.DISPLAY_PX - canvas_px) * 0.5,
+		(
+			S1SliceFixtureManifest.DISPLAY_PX
+			- (
+				canvas_px
+				* float(S1SliceFixtureManifest.FOOT_ROW)
+				/ float(S1SliceFixtureManifest.CELL_SIZE.y)
+			)
+		),
+	)
 
 
 ## Traps project as cell glyphs: armed spike = amber plate with a dark core
@@ -807,6 +903,24 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 		frame = 2
 	else:
 		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + u.id) % 2
+	if _uses_fixture_operator(u):
+		var state := (
+			&"attack_skill" if int(_attack_pose_left.get(u.id, 0)) > 0 else &"rest_movement"
+		)
+		var fixture_texture := (
+			_s1_fixture
+			. frame_texture(
+				&"operator",
+				state,
+				_s1_fixture.frame_index(state, _enemy_anim_seconds, u.id),
+			)
+		)
+		if fixture_texture != null:
+			_layout_fixture_sprite(sprite)
+			sprite.flip_h = u.facing == UnitState.Facing.LEFT
+			if sprite.texture != fixture_texture:
+				sprite.texture = fixture_texture
+			return
 	var tex := Art.texture(def.sprite_id, frame)
 	if tex != null and sprite.texture != tex:
 		sprite.texture = tex
@@ -835,6 +949,7 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	if u.skill_triggered_tick <= seen:
 		return
 	_skill_seen_tick[u.id] = u.skill_triggered_tick
+	_attack_pose_left[u.id] = ATTACK_POSE_FRAMES
 	Sfx.play(String(u.skill_id))
 	if _juice != null:
 		if u.skill_effect == SkillDef.Effect.HEAL_TARGET and u.skill_target_unit_id >= 0:
@@ -869,7 +984,9 @@ func _add_hp_bar(body: ColorRect, width: float) -> void:
 
 
 func _update_hp_bar(body: ColorRect, width: float, hp: int, hp_max: int) -> void:
-	var fill := body.get_node("HpBarBg/HpBarFill") as ColorRect
+	var bg := body.get_node("HpBarBg") as ColorRect
+	bg.size.x = width
+	var fill := bg.get_node("HpBarFill") as ColorRect
 	fill.size.x = width * clampf(float(hp) / float(maxi(hp_max, 1)), 0.0, 1.0)
 
 
@@ -898,17 +1015,29 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	var tex := Art.texture(def.sprite_id, 0) if def != null else null
+	var fixture := _uses_fixture_operator(u)
+	var tex := (
+		_s1_fixture.frame_texture(&"operator", &"rest_movement", 0)
+		if fixture
+		else (Art.texture(def.sprite_id, 0) if def != null else null)
+	)
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
-		rect.size = Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
+		rect.size = (
+			Vector2.ONE * S1SliceFixtureManifest.DISPLAY_PX
+			if fixture
+			else Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
+		)
 		var sprite := TextureRect.new()
 		sprite.name = "Sprite"
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		sprite.texture = tex
 		sprite.stretch_mode = TextureRect.STRETCH_SCALE
-		sprite.size = rect.size
-		sprite.flip_h = u.facing == 2
+		if fixture:
+			_layout_fixture_sprite(sprite)
+		else:
+			sprite.size = rect.size
+		sprite.flip_h = u.facing == UnitState.Facing.LEFT
 		rect.add_child(sprite)
 	else:
 		rect.color = BattlePalette.OPERATOR_CLASS[op_class]

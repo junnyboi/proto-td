@@ -14,6 +14,7 @@ extends Control
 ## deviation D1).
 
 const FONT_SIZE := 24
+const REPORT_FONT_SIZE := 32
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
 const PAUSED_LABEL_MIN_WIDTH := 130.0  # fixed slot: no row re-layout on toggle
 
@@ -24,6 +25,7 @@ var _pause_button: Button = null
 var _speed_button: Button = null
 var _resign_button: Button = null
 var _paused_label: Label = null
+var _readiness_report: Label = null
 var _confirm: PanelContainer = null
 var _resume_scale: float = 1.0
 var _pre_confirm_scale: float = 1.0
@@ -38,6 +40,7 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
 	_build_row()
+	_build_readiness_report()
 	_build_confirm()
 
 
@@ -49,6 +52,8 @@ func relayout() -> void:
 	var box := get_node_or_null("ControlsBox") as HBoxContainer
 	if box != null:
 		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
+	if _readiness_report != null:
+		_readiness_report.position = Vector2(size.x - 316.0, 116.0)
 	if _confirm != null and _confirm.visible:
 		_confirm.position = (size - _confirm.size) * 0.5
 
@@ -80,6 +85,22 @@ func _build_row() -> void:
 	# only after buttons exist
 	box.reset_size()
 	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
+
+
+func _build_readiness_report() -> void:
+	_readiness_report = Label.new()
+	_readiness_report.name = "SkillReadinessReport"
+	_readiness_report.text = ""
+	_readiness_report.add_theme_font_size_override("font_size", REPORT_FONT_SIZE)
+	_readiness_report.add_theme_color_override("font_color", Color("5dc8d3"))
+	_readiness_report.add_theme_color_override("font_shadow_color", Color("111827"))
+	_readiness_report.add_theme_constant_override("shadow_offset_x", 2)
+	_readiness_report.add_theme_constant_override("shadow_offset_y", 2)
+	_readiness_report.size = Vector2(300.0, 44.0)
+	_readiness_report.position = Vector2(size.x - 316.0, 116.0)
+	_readiness_report.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_readiness_report.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_readiness_report)
 
 
 func _build_confirm() -> void:
@@ -124,6 +145,7 @@ func _make_button(button_name: String, text: String) -> Button:
 	btn.name = button_name
 	btn.text = text
 	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(44.0, 44.0)
 	btn.add_theme_font_size_override("font_size", FONT_SIZE)
 	return btn
 
@@ -148,6 +170,20 @@ func _process(_delta: float) -> void:
 	_paused_label.text = "PAUSED" if paused and not _confirm.visible else ""
 	_speed_button.text = "%dx" % int(round(_resume_scale))
 	_resign_button.disabled = model.result != BattleModel.Result.RUNNING
+	_refresh_readiness_report()
+
+
+func _refresh_readiness_report() -> void:
+	if _readiness_report == null or model.stage.id != &"s1":
+		return
+	var ready_name := ""
+	for unit: UnitState in model.units:
+		if not unit.is_skill_ready():
+			continue
+		var definition := load("res://data/operators/%s.tres" % unit.op_id) as OperatorDef
+		ready_name = definition.display_name if definition != null else String(unit.op_id)
+		break
+	_readiness_report.text = "%s — SKILL READY" % ready_name if not ready_name.is_empty() else ""
 
 
 func _unhandled_input(event: InputEvent) -> void:

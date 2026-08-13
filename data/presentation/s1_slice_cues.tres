@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TacticalCueConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/tactical_cue_config.gd" id="1_cues"]
+
+[resource]
+script = ExtResource("1_cues")
+schema_version = 1
+config_id = &"aui20.s1.slice"
+cues = {
+&"legal": {&"color": Color(0.365, 0.784, 0.827, 0.48), &"geometry": &"solid_diamond", &"pattern": &"solid", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.legal", &"english_fallback": "Legal placement", &"motion": &"none"},
+&"invalid": {&"color": Color(0.498, 0.176, 0.176, 0.64), &"geometry": &"dashed_diamond", &"pattern": &"dashed", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.invalid", &"english_fallback": "Invalid placement", &"motion": &"none"},
+&"range": {&"color": Color(0.941, 0.812, 0.396, 0.5), &"geometry": &"perimeter_ticks", &"pattern": &"ticked", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.range", &"english_fallback": "Attack range", &"motion": &"none"},
+&"skill": {&"color": Color(0.365, 0.784, 0.827, 0.86), &"geometry": &"reticle_ring", &"pattern": &"ring", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.skill", &"english_fallback": "Skill ready", &"motion": &"pulse"},
+&"route": {&"color": Color(0.78, 0.839, 0.91, 0.42), &"geometry": &"route_chevrons", &"pattern": &"repeated", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.route", &"english_fallback": "Enemy route", &"motion": &"none"},
+&"warning": {&"color": Color(0.0, 0.0, 0.0, 0.0), &"geometry": &"warning_triangle", &"pattern": &"critical", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.warning", &"english_fallback": "Warning", &"motion": &"none"},
+&"lethal": {&"color": Color(0.0, 0.0, 0.0, 0.0), &"geometry": &"inward_chevrons", &"pattern": &"critical", &"icon_asset_id": &"", &"label_key": &"ui.battle.cue.lethal", &"english_fallback": "Lethal", &"motion": &"none"}
+}
+reduced_motion = false
+high_contrast = false
+ambient_suppression = 0.25
