@@ -1,7 +1,8 @@
 class_name CampaignCodec
 extends RefCounted
 const SAVE_SCHEMA := "prototype_td_campaign"
-const SAVE_VERSION := 1
+const LEGACY_SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SOURCE_VALUES := ["starter", "contract", "reward", "recovery"]
 const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
@@ -22,15 +23,11 @@ const CORE_KEYS := [
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 ]
-const HERO_KEYS := [
-	"hero_id", "operator_def_id", "recruitment_index", "recruited_after_resolution_index",
-	"recruit_source", "source_id",
-	"name_version", "custom_callsign", "life_status", "death",
-]
+const HERO_KEYS := CampaignHeroCodec.HERO_KEYS
 const RESOLUTION_KEYS := [
 	"schema_version", "resolution_index", "campaign_uid", "attempt_id", "stage_id",
 	"outcome_hash", "result", "terminal_reason", "terminal_tick", "stars_before", "stars_after",
-	"rewards_granted", "created_hero_ids", "dead_hero_ids", "marks_before",
+	"rewards_granted", "created_hero_ids", "dead_hero_ids", "xp_awards", "marks_before",
 	"marks_after", "strategic_body_hash_before", "strategic_body_hash_after",
 ]
 const ANCHOR_KEYS := [
@@ -178,10 +175,32 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 		return _reject(&"invalid_root_schema")
 	if parsed["schema"] != SAVE_SCHEMA or not _is_integer(parsed["version"]):
 		return _reject(&"unsupported_save")
-	if int(parsed["version"]) != SAVE_VERSION:
+	var source_version := int(parsed["version"])
+	if source_version not in [LEGACY_SAVE_VERSION, SAVE_VERSION]:
 		return _reject(&"unsupported_save")
 	if not _is_hex(String(parsed["checksum"]), 64):
 		return _reject(&"invalid_checksum")
+	if source_version == LEGACY_SAVE_VERSION:
+		if CanonicalJson.text(parsed) != source:
+			return _reject(&"noncanonical_save")
+		if CanonicalJson.sha256_hex(parsed["data"]) != String(parsed["checksum"]):
+			return _reject(&"checksum_mismatch")
+		var migrated := CampaignMigration.migrate_v1_data(parsed["data"], context)
+		if not migrated["accepted"]:
+			return migrated
+		var migrated_save := encode_save(migrated["value"], context)
+		if not migrated_save["accepted"]:
+			return migrated_save
+		return {
+			"accepted": true,
+			"error_code": &"",
+			"data": migrated_save["value"]["data"],
+			"value": migrated_save["value"],
+			"text": migrated_save["text"],
+			"bytes": migrated_save["bytes"],
+			"sha256": migrated_save["sha256"],
+			"migrated_from_version": LEGACY_SAVE_VERSION,
+		}
 	var encoded_data := encode_data(parsed["data"], context)
 	if not encoded_data["accepted"]:
 		return encoded_data
@@ -198,6 +217,7 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 		"text": encoded_save["text"],
 		"bytes": encoded_save["bytes"],
 		"sha256": encoded_save["sha256"],
+		"migrated_from_version": null,
 	}
 static func encode_manifest(rows: Variant) -> Dictionary:
 	var normalized := _normalize_manifest(rows)
@@ -240,7 +260,7 @@ static func normalize_resolution(resolution: Variant) -> Dictionary:
 	]:
 		if not _is_integer(resolution[key]):
 			return _reject(&"invalid_integer")
-	if int(resolution["schema_version"]) != 1:
+	if int(resolution["schema_version"]) != 2:
 		return _reject(&"invalid_resolution_value")
 	if not _in_range(resolution["resolution_index"], 1, U63_MAX):
 		return _reject(&"invalid_resolution_value")
@@ -271,7 +291,11 @@ static func normalize_resolution(resolution: Variant) -> Dictionary:
 	var rewards := _normalize_rewards(resolution["rewards_granted"])
 	var created := _normalize_hero_id_array(resolution["created_hero_ids"])
 	var dead := _normalize_hero_id_array(resolution["dead_hero_ids"])
-	if not rewards["accepted"] or not created["accepted"] or not dead["accepted"]:
+	var xp_awards := _normalize_xp_awards(resolution["xp_awards"])
+	if (
+		not rewards["accepted"] or not created["accepted"]
+		or not dead["accepted"] or not xp_awards["accepted"]
+	):
 		return _reject(&"invalid_resolution_rows")
 	var operator_created: Array[String] = []
 	for reward: Dictionary in rewards["value"]:
@@ -299,6 +323,7 @@ static func normalize_resolution(resolution: Variant) -> Dictionary:
 			"rewards_granted": ordered[key] = rewards["value"]
 			"created_hero_ids": ordered[key] = created["value"]
 			"dead_hero_ids": ordered[key] = dead["value"]
+			"xp_awards": ordered[key] = xp_awards["value"]
 			_:
 				var numeric := key in [
 					"schema_version", "resolution_index", "attempt_id", "terminal_tick", "stars_before",
@@ -439,6 +464,31 @@ static func _normalize_hero_id_array(value: Variant) -> Dictionary:
 			return _reject(&"invalid_hero_id_array")
 		out.append(hero_id)
 	return _accept(out)
+
+
+static func _normalize_xp_awards(value: Variant) -> Dictionary:
+	if typeof(value) != TYPE_ARRAY:
+		return _reject(&"invalid_xp_awards")
+	var out: Array[Dictionary] = []
+	var previous := ""
+	for item: Variant in value:
+		if typeof(item) != TYPE_DICTIONARY:
+			return _reject(&"invalid_xp_awards")
+		var row := item as Dictionary
+		if not _exact_keys(row, ["hero_id", "delta"]):
+			return _reject(&"invalid_xp_awards")
+		var hero_id := String(row["hero_id"])
+		if not _is_hex(hero_id, 16) or not _is_integer(row["delta"]):
+			return _reject(&"invalid_xp_awards")
+		if int(row["delta"]) <= 0 or int(row["delta"]) > U63_MAX:
+			return _reject(&"invalid_xp_awards")
+		if not previous.is_empty() and hero_id <= previous:
+			return _reject(&"noncanonical_xp_award_order")
+		previous = hero_id
+		out.append({"hero_id": hero_id, "delta": int(row["delta"])})
+	return _accept(out)
+
+
 static func _normalize_offers(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY:
 		return _reject(&"invalid_offers")
@@ -466,81 +516,7 @@ static func _normalize_offers(value: Variant) -> Dictionary:
 		out.append(ordered)
 	return _accept(out)
 static func _normalize_heroes(value: Variant) -> Dictionary:
-	if typeof(value) != TYPE_ARRAY:
-		return _reject(&"invalid_heroes")
-	var out: Array = []
-	var ids := {}
-	var indices := {}
-	var previous_index := -1
-	var previous_id := ""
-	for row: Variant in value:
-		if typeof(row) != TYPE_DICTIONARY or not _exact_keys(row, HERO_KEYS):
-			return _reject(&"invalid_hero")
-		if not _is_hex(String(row["hero_id"]), 16) or not _is_ascii_string(row["operator_def_id"]):
-			return _reject(&"invalid_hero")
-		if not _in_range(row["recruitment_index"], 0, U63_MAX):
-			return _reject(&"invalid_hero")
-		if not _in_range(row["recruited_after_resolution_index"], 0, U63_MAX):
-			return _reject(&"invalid_hero")
-		if not _in_range(row["name_version"], 1, U32_MAX):
-			return _reject(&"invalid_hero")
-		if not SOURCE_VALUES.has(String(row["recruit_source"])):
-			return _reject(&"invalid_hero")
-		if not _is_ascii_string(row["source_id"], true):
-			return _reject(&"invalid_hero")
-		if row["custom_callsign"] != null and typeof(row["custom_callsign"]) != TYPE_STRING:
-			return _reject(&"invalid_hero")
-		if not LIFE_VALUES.has(String(row["life_status"])):
-			return _reject(&"invalid_hero")
-		var hero_id := String(row["hero_id"])
-		var recruitment_index := int(row["recruitment_index"])
-		if ids.has(hero_id) or indices.has(recruitment_index):
-			return _reject(&"duplicate_hero")
-		if recruitment_index < previous_index:
-			return _reject(&"noncanonical_hero_order")
-		if recruitment_index == previous_index and hero_id <= previous_id:
-			return _reject(&"noncanonical_hero_order")
-		previous_index = recruitment_index
-		previous_id = hero_id
-		ids[hero_id] = true
-		indices[recruitment_index] = true
-		var death: Variant = null
-		if row["death"] != null:
-			var normalized_death := _normalize_death(row["death"])
-			if not normalized_death["accepted"]:
-				return normalized_death
-			death = normalized_death["value"]
-		if (String(row["life_status"]) == "dead") != (death != null):
-			return _reject(&"invalid_life_state")
-		var ordered := {}
-		for key: String in HERO_KEYS:
-			match key:
-				"death": ordered[key] = death
-				"recruitment_index", "recruited_after_resolution_index", "name_version":
-					ordered[key] = int(row[key])
-				_: ordered[key] = row[key]
-		out.append(ordered)
-	return _accept(out)
-static func _normalize_death(value: Variant) -> Dictionary:
-	var keys := ["resolution_index", "attempt_id", "stage_id", "terminal_reason", "terminal_tick"]
-	if typeof(value) != TYPE_DICTIONARY or not _exact_keys(value, keys):
-		return _reject(&"invalid_death")
-	for key: String in ["resolution_index", "attempt_id"]:
-		if not _in_range(value[key], 1, U63_MAX):
-			return _reject(&"invalid_death")
-	if not _in_range(value["terminal_tick"], 0, U63_MAX):
-		return _reject(&"invalid_death")
-	var known_terminal := TERMINAL_VALUES.has(String(value["terminal_reason"]))
-	if not _is_ascii_string(value["stage_id"]) or not known_terminal:
-		return _reject(&"invalid_death")
-	var ordered := {}
-	for key: String in keys:
-		ordered[key] = (
-			int(value[key])
-			if key in ["resolution_index", "attempt_id", "terminal_tick"]
-			else value[key]
-		)
-	return _accept(ordered)
+	return CampaignHeroCodec.normalize_heroes(value)
 static func _normalize_manifest(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
 		return _reject(&"invalid_manifest")
@@ -788,15 +764,19 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 	var callsigns := {}
 	var one_shot_sources := {}
 	for hero: Dictionary in data["heroes"]:
-		if not context["operator_ids"].has(String(hero["operator_def_id"])):
+		if (
+			not context["operator_ids"].has(String(hero["operator_def_id"]))
+			or not context["operator_ids"].has(String(hero["acquisition_operator_def_id"]))
+			or not context["operator_ids"].has(String(hero["identity_portrait_id"]))
+		):
 			return _reject(&"unknown_operator")
 		if int(hero["name_version"]) != HeroNames.VERSION:
 			return _reject(&"unsupported_name_version")
 		if not _valid_source_pair(hero, context):
 			return _reject(&"invalid_hero_source")
-		if not _valid_callsign_value(hero["custom_callsign"]):
+		if not CampaignHeroCodec.valid_callsign(hero["custom_callsign"]):
 			return _reject(&"invalid_callsign")
-		var display := _display_callsign(hero)
+		var display := CampaignHeroCodec.display_callsign(hero)
 		if not display["accepted"]:
 			return display
 		var folded := String(display["value"]).to_lower()
@@ -807,7 +787,8 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 			return _reject(&"unknown_death_stage")
 		if hero["recruit_source"] in ["contract", "reward"]:
 			var source_key := CanonicalJson.text([
-				hero["recruit_source"], hero["source_id"], hero["operator_def_id"],
+				hero["recruit_source"], hero["source_id"],
+				hero["acquisition_operator_def_id"],
 			])
 			if one_shot_sources.has(source_key):
 				return _reject(&"duplicate_hero_source")
@@ -845,7 +826,7 @@ static func _validate_receipt_links(data: Dictionary, context: Dictionary) -> Di
 		if created.is_empty():
 			return _reject(&"missing_created_hero")
 		if (
-			created["operator_def_id"] != reward["id"]
+			created["acquisition_operator_def_id"] != reward["id"]
 			or created["recruit_source"] != "reward"
 			or created["source_id"] != receipt["stage_id"]
 		):
@@ -856,6 +837,10 @@ static func _validate_receipt_links(data: Dictionary, context: Dictionary) -> Di
 		var death: Variant = heroes_by_id[hero_id]["death"]
 		if typeof(death) != TYPE_DICTIONARY or not _death_matches_receipt(death, receipt):
 			return _reject(&"death_receipt_mismatch")
+	for award: Dictionary in receipt["xp_awards"]:
+		var hero: Dictionary = heroes_by_id.get(award["hero_id"], {})
+		if hero.is_empty() or int(hero["xp"]) < int(award["delta"]):
+			return _reject(&"xp_receipt_mismatch")
 	return _accept(data)
 
 static func _death_matches_receipt(death: Dictionary, receipt: Dictionary) -> bool:
@@ -870,24 +855,25 @@ static func _death_matches_receipt(death: Dictionary, receipt: Dictionary) -> bo
 static func _valid_source_pair(hero: Dictionary, context: Dictionary) -> bool:
 	var source := String(hero["recruit_source"])
 	var source_id := String(hero["source_id"])
+	var acquisition := String(hero["acquisition_operator_def_id"])
 	match source:
 		"starter": return source_id.is_empty()
 		"contract":
 			return (
 				context["offers"].has(source_id)
-				and context["offers"][source_id]["operator_def_id"] == hero["operator_def_id"]
+				and context["offers"][source_id]["operator_def_id"] == acquisition
 			)
 		"reward":
 			if not context["stage_rewards"].has(source_id):
 				return false
 			for reward: Dictionary in context["stage_rewards"][source_id]:
-				if reward["kind"] == "operator" and reward["id"] == hero["operator_def_id"]:
+				if reward["kind"] == "operator" and reward["id"] == acquisition:
 					return true
 			return false
 		"recovery":
 			return (
 				context["stage_recovery_rosters"].has(source_id)
-				and context["stage_recovery_rosters"][source_id].has(hero["operator_def_id"])
+				and context["stage_recovery_rosters"][source_id].has(acquisition)
 			)
 		_: return false
 

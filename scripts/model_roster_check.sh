@@ -32,8 +32,8 @@ cmp -s "$TMP/normal.json" "$TMP/reversed.json"
 
 jq -e '
   .environment_sha256 == "b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835"
-  and .fresh_checksum == "516eb349d33fbb40408d742f86ef0784fc8ab9c473ab66893a730c28712f0c6a"
-  and .fresh_hash == "85f2c11018249153"
+  and .fresh_checksum == "55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa"
+  and .fresh_hash == "baa4d62d418258a5"
   and .campaign_uid == "ce46150984346591"
   and (.heroes | length) == 5
   and .fresh_reward_hero_id == "e54c103e46898f5d"

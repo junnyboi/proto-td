@@ -1,6 +1,6 @@
 extends GutTest
 
-const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v1.json"
+const TRANSACTION_PATH := "res://test/fixtures/p16/transaction_vectors_v2.json"
 
 
 func test_roster_lookup_ready_filter_and_owned_projection_are_exact() -> void:
@@ -153,7 +153,7 @@ func _transaction_fixture() -> Dictionary:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

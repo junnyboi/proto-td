@@ -2,7 +2,7 @@ extends SceneTree
 
 const DEFAULT_FIXTURES := "res://playtests/replays/v1"
 const EXPECTATIONS_FILE := "expectations.json"
-const TRANSACTION_FIXTURE := "res://test/fixtures/p16/transaction_vectors_v1.json"
+const TRANSACTION_FIXTURE := "res://test/fixtures/p16/transaction_vectors_v2.json"
 const DEFAULT_HASH_EVERY := 100
 const DEFAULT_MAX_TICKS := 6000
 
