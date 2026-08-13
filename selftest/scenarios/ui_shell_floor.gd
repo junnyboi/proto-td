@@ -32,11 +32,13 @@ var _inventory: Dictionary = {}
 var _contract: Dictionary = {}
 var _inventory_reports: Array[Dictionary] = []
 var _active_mode: StringName = &"standard"
+var _release_challenge := ""
 
 
 func run(h: SelfTestHarness) -> void:
 	h.max_frames = 2600
 	h.expect_done()
+	_release_challenge = _parse_release_challenge()
 	_inventory = JSON.parse_string(FileAccess.get_file_as_string(INVENTORY_PATH)) as Dictionary
 	_contract = JSON.parse_string(FileAccess.get_file_as_string(CONTRACT_PATH)) as Dictionary
 	h.check("ui inventory contract loaded", not _inventory.is_empty())
@@ -54,6 +56,18 @@ func run(h: SelfTestHarness) -> void:
 	h.check("ui_shell_floor inventory state count", _inventory_reports.size() == 60)
 	h.check("ui_shell_floor required report fields", _reports_have_required_fields())
 	h.done()
+
+
+func _parse_release_challenge() -> String:
+	var matcher := RegEx.new()
+	if matcher.compile("^[0-9a-f]{64}$") != OK:
+		return ""
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--release-challenge="):
+			var value := argument.trim_prefix("--release-challenge=")
+			if matcher.search(value) != null:
+				return value
+	return ""
 
 
 func _capture_component_gallery(h: SelfTestHarness) -> void:
@@ -855,6 +869,8 @@ func _write_supplemental_report(h: SelfTestHarness) -> void:
 		"completion_sentinel": true,
 		"inventory": _inventory_reports,
 	}
+	if not _release_challenge.is_empty():
+		report["release_challenge"] = _release_challenge
 	var directory := String(h.get("_shots_dir"))
 	var file := FileAccess.open("%s/ui-shell-report.json" % directory, FileAccess.WRITE)
 	if file != null:
