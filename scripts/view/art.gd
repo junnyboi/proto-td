@@ -7,15 +7,53 @@ extends RefCounted
 ## placeholder look instead of crashing a battle.
 
 static var _manifest: AssetManifest = null
+static var _supplemental_manifest: AssetManifest = null
+static var _manifest_entries: Dictionary = {}
+static var _manifest_error := false
 static var _cache: Dictionary = {}
 
 
+static func _load_manifests() -> void:
+	if _manifest != null or _supplemental_manifest != null or _manifest_error:
+		return
+	_manifest = load("res://assets/manifest.tres") as AssetManifest
+	_supplemental_manifest = load("res://assets/act2_candidate_manifest.tres") as AssetManifest
+	if _manifest == null or _supplemental_manifest == null:
+		_manifest_error = true
+		push_error("Art: failed to load base or supplemental asset manifest")
+		return
+	var merged := merge_manifest_entries(_manifest.entries, _supplemental_manifest.entries)
+	if not bool(merged[&"ok"]):
+		_manifest_error = true
+		push_error("Art: duplicate asset id across manifest layers: %s" % merged[&"duplicate_id"])
+		return
+	_manifest_entries = merged[&"entries"]
+
+
+## Pure test seam: base owns precedence, but overlap fails closed rather than shadowing.
+static func merge_manifest_entries(base_entries: Dictionary, supplemental_entries: Dictionary) -> Dictionary:
+	var entries := base_entries.duplicate(true)
+	for raw_id: Variant in supplemental_entries:
+		if entries.has(raw_id):
+			return {&"ok": false, &"entries": {}, &"duplicate_id": raw_id}
+		entries[raw_id] = supplemental_entries[raw_id]
+	return {&"ok": true, &"entries": entries, &"duplicate_id": &""}
+
+
+## Internal reset seam for focused tests; never returns mutable manifest state.
+static func _reset_manifests_for_test() -> void:
+	_manifest = null
+	_supplemental_manifest = null
+	_manifest_entries = {}
+	_manifest_error = false
+	_cache.clear()
+
+
 static func _entry(id: StringName) -> Dictionary:
-	if _manifest == null:
-		_manifest = load("res://assets/manifest.tres") as AssetManifest
-	if _manifest == null:
+	_load_manifests()
+	if _manifest_error:
 		return {}
-	var entry: Variant = _manifest.entries.get(id)
+	var entry: Variant = _manifest_entries.get(id)
 	return entry if entry is Dictionary else {}
 
 

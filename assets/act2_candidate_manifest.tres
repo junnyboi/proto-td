@@ -1,0 +1,297 @@
+[gd_resource type="Resource" script_class="AssetManifest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://assets/asset_manifest.gd" id="1_manifest"]
+
+[resource]
+script = ExtResource("1_manifest")
+schema_version = 2
+entries = {
+&"world.pressure.cadence_e": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/cadence-e.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "c73717589770d3598eb89b7e05615c4498be3eee472d4602ab267a4266ff5464",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.cadence_e_s": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/cadence-e-s.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "4aa1a783d3b3a75fe6b57e81ebe97ff131f04125bfa65247e1f7ac247a61e47c",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.cadence_s": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/cadence-s.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "41ba46130a958e33b144ef40a2c7a2ec1c7ae52c6956368b1963660f76841d8c",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.cadence_s_e": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/cadence-s-e.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "a25f5da18ee10c5bee7b8137b8635bd7463c57cde4b9493d67070471dbf3bb36",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.ground_calm": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/ground-calm.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "71d842728af946e3d9a6f67843a66fd0cda5e6414f1df8eab1f82669fc9971e1",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.ground_runoff": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/ground-runoff.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "079e63ab44d36324700601bf52dbe3cade3f79f3521625a6ef140cc3602e5a00",
+"size": Vector2i(32, 16)
+},
+&"world.pressure.route_plate": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/act2-shared/route-plate.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "c3f43cbf66e561cc71a9b5b4e679d3ceb1e9e27bb63ebe18602e18c0d08d39c8",
+"size": Vector2i(32, 16)
+},
+&"world.s2.backdrop_panorama": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s2/backdrop-panorama.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "7580c9bdfd1fca88ef9cf403a676a15054d72e0641cb44102a2c19dcd6596d05",
+"size": Vector2i(240, 120)
+},
+&"world.s2.core_receiver": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s2/core-receiver.png",
+"pivot": Vector2(0.5, 0.9375),
+"placeholder": true,
+"provenance_sha256": "541f59d3cf8c7fe6b8ccefd6d314fd19de6a61829ba498c7ad99b7e9fc7a05f3",
+"size": Vector2i(32, 32)
+},
+&"world.s2.elevated_manometer": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s2/elevated-manometer.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "40cda51fb1bc764519da82d079c6a188c88adfa7e8e132e0d3412d9c800f0ade",
+"size": Vector2i(32, 24)
+},
+&"world.s2.elevated_relief": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s2/elevated-relief.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "0f54e3b0292853a529d55ddd42f41d6b74192eaff4ad6405b213913447550896",
+"size": Vector2i(32, 24)
+},
+&"world.s2.spawn_louver": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s2/spawn-louver.png",
+"pivot": Vector2(0.5, 0.9375),
+"placeholder": true,
+"provenance_sha256": "8e17bdcd01e80b2e26f3e2caa9b970f2f4a5238dc3b7c9c65e785b91da9f3f2a",
+"size": Vector2i(32, 32)
+},
+&"world.s3.backdrop_panorama": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/backdrop-panorama.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "1bc6582ca379f1633f878957464a276ea5b059d815f0068d64d14814fd84a962",
+"size": Vector2i(256, 128)
+},
+&"world.s3.blocked_pressure_jaw": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/blocked-pressure-jaw.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "0daf659855ef788558755ba89e0bbbd9a25f8e19f26e5c6b75b0c90954d97240",
+"size": Vector2i(32, 16)
+},
+&"world.s3.blocked_regulator": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/blocked-regulator.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "c5e765a955e5225102616d4027249d15b1cf3eab6f4d956aad92db08ec1a361b",
+"size": Vector2i(32, 16)
+},
+&"world.s3.core_pressure_keeper": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/core-pressure-keeper.png",
+"pivot": Vector2(0.5, 0.9375),
+"placeholder": true,
+"provenance_sha256": "90a400f8780597464f43f21e64129781b90493fd379b086c6dc07e20812c8377",
+"size": Vector2i(32, 32)
+},
+&"world.s3.elevated_assay": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/elevated-assay.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "455c2aee7a413721329a21ebc43c36af6cf11c57c29578a6e17fa13a20217212",
+"size": Vector2i(32, 24)
+},
+&"world.s3.spawn_rain_sluice": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/world/s3/spawn-rain-sluice.png",
+"pivot": Vector2(0.5, 0.9375),
+"placeholder": true,
+"provenance_sha256": "0eb7d7bf4947140d61d69cdec11fc44f59947d8fa54f69c480b387a749e6e3f5",
+"size": Vector2i(32, 32)
+}
+}

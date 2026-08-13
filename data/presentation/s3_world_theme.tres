@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="StageArtTheme" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/stage_art_theme.gd" id="1_theme"]
+
+[resource]
+script = ExtResource("1_theme")
+stage_id = &"s3"
+theme_id = &"world.act2.pressure_descent"
+approval_token = &"ACT-II-S2-S3-H0"
+human_final_art = false
+ground_id = &"world.pressure.ground_calm"
+ground_variant_ids = Array[StringName]([&"world.pressure.ground_runoff"])
+route_id = &"world.pressure.route_plate"
+elevated_variant_ids = Array[StringName]([&"world.s3.elevated_assay"])
+elevated_cells = Array[Vector2i]([Vector2i(2, 3)])
+blocked_variant_ids = Array[StringName]([&"world.s3.blocked_regulator", &"world.s3.blocked_pressure_jaw"])
+blocked_cells = Array[Vector2i]([Vector2i(5, 2), Vector2i(5, 3)])
+cadence_variant_ids = Array[StringName]([&"world.pressure.cadence_e", &"world.pressure.cadence_s", &"world.pressure.cadence_e_s", &"world.pressure.cadence_s_e"])
+cadence_cells = Array[Vector2i]([Vector2i(2, 2), Vector2i(4, 2), Vector2i(4, 4), Vector2i(7, 4)])
+cadence_ids = Array[StringName]([&"world.pressure.cadence_e", &"world.pressure.cadence_e_s", &"world.pressure.cadence_s_e", &"world.pressure.cadence_e"])
+backdrop_panorama_id = &"world.s3.backdrop_panorama"
+spawn_landmark_id = &"world.s3.spawn_rain_sluice"
+spawn_cell = Vector2i(0, 2)
+spawn_pivot = Vector2i(16, 30)
+core_landmark_id = &"world.s3.core_pressure_keeper"
+core_cell = Vector2i(9, 4)
+core_pivot = Vector2i(16, 30)
