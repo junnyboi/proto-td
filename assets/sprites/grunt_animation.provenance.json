@@ -27,7 +27,218 @@
     "keyframes": "gpt-image-2 reference-guided variations",
     "video": "veo3.1-fast for Walk SE/NE and Attack SE",
     "approved_fallback": "Attack NE uses phase-locked gpt-image-2 image sequence after video quota exhaustion",
-    "postprocess": "full-cycle temporal compression, endpoint preservation, exact closure, bottom anchoring, transparent extraction, exact mirroring"
+    "postprocess": "full-cycle temporal compression, endpoint preservation, exact closure, bottom anchoring, transparent extraction, exact mirroring",
+    "attack_v3": {
+      "requested_by": "user-directed regeneration after attack sprites were rejected as undersized",
+      "keyframes": "Higgsfield GPT Image 2 selected SE/NE neutral direction authorities",
+      "video": "Higgsfield Wan 3.0 shared-motion SE/NE pair at 480p, 2 seconds, no audio",
+      "provider_jobs": {
+        "se_keyframe": "2840daf4-4cc2-4fa0-9f35-ff4a3303ba1a",
+        "ne_keyframe": "494b2c98-e85d-47e7-8140-26017f69af22",
+        "se_video": "fbc73613-e5b1-484b-8221-320d4698355a",
+        "ne_video": "3fa1c89d-6bc8-46e5-b7d2-5a5edc618d05"
+      },
+      "postprocess": "per-frame compressed-green border-median separation at fixed tolerance 128; largest connected subject; canonical 176px bottom-center normalization; 13-frame forward phase through frame 45; exact reversed recovery; exact mirrored SW/NW; TD32 quantization; deterministic charmed derivation",
+      "source_metrics": {
+        "se": {
+          "source_video": "Higgsfield job fbc73613-e5b1-484b-8221-320d4698355a",
+          "source_video_sha256": "d081808836f190446a2bd4183166d1388a9a31555ea2162ca3ebd5cc8cff2801",
+          "source_indices_forward": [
+            0,
+            4,
+            8,
+            11,
+            15,
+            19,
+            22,
+            26,
+            30,
+            34,
+            38,
+            41,
+            45
+          ],
+          "measured_border_keys": [
+            [
+              40,
+              203,
+              51
+            ],
+            [
+              40,
+              202,
+              52
+            ],
+            [
+              39,
+              202,
+              51
+            ],
+            [
+              39,
+              202,
+              51
+            ],
+            [
+              39,
+              202,
+              51
+            ],
+            [
+              39,
+              202,
+              52
+            ],
+            [
+              39,
+              202,
+              52
+            ],
+            [
+              39,
+              201,
+              52
+            ],
+            [
+              39,
+              202,
+              52
+            ],
+            [
+              39,
+              202,
+              52
+            ],
+            [
+              39,
+              201,
+              51
+            ],
+            [
+              39,
+              201,
+              51
+            ],
+            [
+              39,
+              201,
+              52
+            ]
+          ],
+          "recovery": "exact reverse of normalized forward phase excluding duplicate impact",
+          "tolerance": 128.0,
+          "source_anchor": [
+            413.0,
+            422.0
+          ],
+          "scale": 0.457692308,
+          "global_fit": 0.985598776,
+          "neutral_height": 173,
+          "height_min": 171,
+          "height_max": 185,
+          "bottom_max": 247
+        },
+        "ne": {
+          "source_video": "Higgsfield job 3fa1c89d-6bc8-46e5-b7d2-5a5edc618d05",
+          "source_video_sha256": "29d3fdc543e83c7c11f959e58ede83d4ed883f83eca673989b21b7954ff6f426",
+          "source_indices_forward": [
+            0,
+            4,
+            8,
+            11,
+            15,
+            19,
+            22,
+            26,
+            30,
+            34,
+            38,
+            41,
+            45
+          ],
+          "measured_border_keys": [
+            [
+              40,
+              202,
+              49
+            ],
+            [
+              41,
+              201,
+              50
+            ],
+            [
+              40,
+              200,
+              49
+            ],
+            [
+              40,
+              200,
+              49
+            ],
+            [
+              40,
+              200,
+              49
+            ],
+            [
+              40,
+              200,
+              50
+            ],
+            [
+              40,
+              200,
+              50
+            ],
+            [
+              41,
+              199,
+              50
+            ],
+            [
+              41,
+              199,
+              50
+            ],
+            [
+              41,
+              199,
+              50
+            ],
+            [
+              40,
+              200,
+              49
+            ],
+            [
+              40,
+              200,
+              50
+            ],
+            [
+              41,
+              200,
+              50
+            ]
+          ],
+          "recovery": "exact reverse of normalized forward phase excluding duplicate impact",
+          "tolerance": 128.0,
+          "source_anchor": [
+            409.5,
+            428.0
+          ],
+          "scale": 0.460732984,
+          "global_fit": 1.0,
+          "neutral_height": 176,
+          "height_min": 166,
+          "height_max": 192,
+          "bottom_max": 241
+        }
+      },
+      "known_rejected_outputs": "raw Wan floor shadows and dust excluded by fixed chroma distance plus largest-component isolation"
+    }
   },
   "generation_receipt": {
     "path": "assets/sprites/grunt_animation.generation_receipt.json",
@@ -74,19 +285,19 @@
     },
     "attack_se": {
       "file": "chibi_grunt_attack_se.png",
-      "sha256": "88a812e19878164b3f9977f86efc19f4a6629683ff960ca587114ca86a05f868"
+      "sha256": "0e749bc652d1c79c23db110615206565cb29b4e922e5853d161d22b8c659c9be"
     },
     "attack_sw": {
       "file": "chibi_grunt_attack_sw.png",
-      "sha256": "99e473973713ac11a0a8bc5846f8a13acc44bfacb1b98db61aeba2f2257738c5"
+      "sha256": "4c209e49e423d3d2a04ac1d2bcba3ca7e2d53fb474bafbeffea55f86a2eb4d65"
     },
     "attack_ne": {
       "file": "chibi_grunt_attack_ne.png",
-      "sha256": "df6fef451689fdaac21c0e25f2957714edf3da25fa6f3db6c57ce38cc68afea2"
+      "sha256": "fa6b4fd9116abd3d17ab329499f205cf30eb3a3f19aa1d36faa53ab52f2ff571"
     },
     "attack_nw": {
       "file": "chibi_grunt_attack_nw.png",
-      "sha256": "ceb7dacd3f2f94d3e37f695ca46b18987ec26de707b2e33ebcbc261731565c5f"
+      "sha256": "608e8e133d2fd925a96ba1150ba98a248240f5ac8989fb2c55623272c5854e31"
     }
   },
   "outputs": {
@@ -220,8 +431,8 @@
     },
     "grunt_anim_attack_se": {
       "path": "assets/sprites/grunt_anim_attack_se.png",
-      "sha256": "5929777de379438a5bead40e212ff68b6a319c678e36ba4f0e96d8e167cf90ad",
-      "bytes": 205537,
+      "sha256": "b02aa05939a1d61230ebd3c526e1868c4e37567dbec770bad9fe46462672be06",
+      "bytes": 260424,
       "size": [
         6400,
         256
@@ -236,8 +447,8 @@
     },
     "grunt_anim_attack_se_charmed": {
       "path": "assets/sprites/grunt_anim_attack_se_charmed.png",
-      "sha256": "683bf3c28f3658f05382bf6e3315e9219299886570204174139f7c13a2e89c22",
-      "bytes": 121509,
+      "sha256": "5f28c4544fe20a58b928d89d56c523898b79bd9424e784b3f4906e98ab2f4697",
+      "bytes": 163633,
       "size": [
         6400,
         256
@@ -252,8 +463,8 @@
     },
     "grunt_anim_attack_sw": {
       "path": "assets/sprites/grunt_anim_attack_sw.png",
-      "sha256": "ed0d8c6fa7bb4005bad092e4f05d3f29f1ddcbe9acd3d39688ccc5a44bf7d47d",
-      "bytes": 206841,
+      "sha256": "b9d1e96fb8a60e0bc56057f6a1d35a32bef1ea5188048afbaf7ac027903dbf4d",
+      "bytes": 259112,
       "size": [
         6400,
         256
@@ -268,8 +479,8 @@
     },
     "grunt_anim_attack_sw_charmed": {
       "path": "assets/sprites/grunt_anim_attack_sw_charmed.png",
-      "sha256": "6424c1e8ccf4ad981c47924a4e977d1f676029ecedfacb2b29312c99a89cd559",
-      "bytes": 119514,
+      "sha256": "f57529084cedc5317307fa263b77a32b9e44edd6f30cc477013830f1ba2a10d7",
+      "bytes": 164273,
       "size": [
         6400,
         256
@@ -284,8 +495,8 @@
     },
     "grunt_anim_attack_ne": {
       "path": "assets/sprites/grunt_anim_attack_ne.png",
-      "sha256": "b2184a1c49f458a11dde951dac010d84586d7ed6ec6be82852f80e65b69abdc8",
-      "bytes": 110055,
+      "sha256": "80ae917addec022a0497cbc962451d0e717b10c3c07917fdb04e2046b1d6556e",
+      "bytes": 221517,
       "size": [
         6400,
         256
@@ -300,8 +511,8 @@
     },
     "grunt_anim_attack_ne_charmed": {
       "path": "assets/sprites/grunt_anim_attack_ne_charmed.png",
-      "sha256": "28a35bc315f1896680338d1f7f6735aaccb40c2f8088dd7360ce3b85208eada9",
-      "bytes": 72369,
+      "sha256": "782aca455e003783ed5e3dcb48452cfac0cedc6746b0f25b82037e8ef1d9449f",
+      "bytes": 146831,
       "size": [
         6400,
         256
@@ -316,8 +527,8 @@
     },
     "grunt_anim_attack_nw": {
       "path": "assets/sprites/grunt_anim_attack_nw.png",
-      "sha256": "c841ea767a13e77a1b14cda26e671ae3edc0698be7aa6300b36b5ede392b1c28",
-      "bytes": 110080,
+      "sha256": "dbe3cf3c3093dc5b1a48fa5318b19f5add2c88815655f837c04da42c2c0f299a",
+      "bytes": 221753,
       "size": [
         6400,
         256
@@ -332,8 +543,8 @@
     },
     "grunt_anim_attack_nw_charmed": {
       "path": "assets/sprites/grunt_anim_attack_nw_charmed.png",
-      "sha256": "157c43dace4cb88ff5983cf383473e1c7704d471afae62d8e70d3a8f57a4f1bd",
-      "bytes": 71646,
+      "sha256": "c10f669f8d56b3d358e30770651cffd768e38b7eb2b841002727c6dd27d50daa",
+      "bytes": 146205,
       "size": [
         6400,
         256

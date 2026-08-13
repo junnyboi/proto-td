@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="AssetManifest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://assets/asset_manifest.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+schema_version = 2
+entries = {
+&"world.act1.blocked": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/blocked.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "a24995c598b3fa7452e5e832d09f349f1bca5d2aad54433531953d1541ea7c77",
+"size": Vector2i(64, 32)
+},
+&"world.act1.core": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/core.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "51f283a993a47fd6a660c87c7e3834d37455a1b21dfa846b867494d00e42b323",
+"size": Vector2i(64, 32)
+},
+&"world.act1.ground": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/ground.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "f1d33d1bb718219b0e02e94c17df08afd6ad7cf93cf2d20481211c8f1c80c731",
+"size": Vector2i(64, 32)
+},
+&"world.act1.panorama": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/panorama.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "c6478a19d028b5402037049f483880a956d932a75d08ac722af2332aa5219879",
+"size": Vector2i(512, 256)
+},
+&"world.act1.raised": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/raised.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "6a84f2684feb7b8cfce000332bfe9f95e84c8fd84e216d47164c26295f0be831",
+"size": Vector2i(64, 48)
+},
+&"world.act1.route": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/route.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "8d842e7b10852ef920c26815b1d5f8c6e879b9ee610ef1a2ce3c76aab0c77b7d",
+"size": Vector2i(64, 32)
+},
+&"world.act1.spawn": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/spawn.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "36835a673f3a270dff030cd205c8156cfcf5d06425b5ec7d3905e3dd0d70e14e",
+"size": Vector2i(64, 32)
+}
+}

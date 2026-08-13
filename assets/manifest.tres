@@ -162,7 +162,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "7f0570c0c3342f5a6a5e3db082af112d86bcb55c6564fa4822f855df26a282a5",
+"provenance_sha256": "f0ab96b6ae7fc3252a28d98a6a5fb09881e301a4f1a69129f3fbc2236a88acd2",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_ne_charmed": {
@@ -178,7 +178,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_ne_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "21503c5d2b9ea09a00ba232153c62b69bb3d636c3c46bc56827ac95223e3521b",
+"provenance_sha256": "0eb147caf80fbd41633fe523de9537744abd6be6578c0a332838874af8fdd9fe",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_nw": {
@@ -194,7 +194,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "343f7b1ff9e18720f08a49e72762dd67453cf7cfc92854c04675286220d44b44",
+"provenance_sha256": "60d8606ec71ce4bb423a77aa9c4d43ce8c3a0f6a3d60a97cb111c50d2e358361",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_nw_charmed": {
@@ -210,7 +210,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_nw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "bf0478bfe4b3ce3d61f5b775de68f41a9281b4b29a409743e29ea689bdbed377",
+"provenance_sha256": "aa1c458d166c36d376d67c68b7fac807fc5eea520870ffd75d50c68f201c6993",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_se": {
@@ -226,7 +226,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "4fed527c008de0bf92c2090611ce08b4fdad1de9a818efa1ea48b65edf58b345",
+"provenance_sha256": "8ef9a4a58dc11c468ec2198c1070fe83d6f7840348fe8897e3513b2173e05c28",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_se_charmed": {
@@ -242,7 +242,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_se_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "90199f8d406c832055ab381b4f5a7216e0a2e47edc86f82633cfa6dcc92d8fa9",
+"provenance_sha256": "a42e70fdb8a688bf9a8a867777fcea7bdb439c786dfc5b22631f48f41d11beef",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_sw": {
@@ -258,7 +258,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "73af7f32b5bc283927d326747fc163da203be84e3f42100dad6d884bf013d43e",
+"provenance_sha256": "1f57474e18e89e626d25611a44850182deab5e0dbf15270f2e6b5574540eabe5",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_sw_charmed": {
@@ -274,7 +274,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_sw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "c7c19464b5b9554e58966ddef681a6925fd8e9875dcfb92e1b4cf0d8ca790611",
+"provenance_sha256": "6c416792a7138c0bebe4bb8d55ccc93da145685455447ae37089984113112023",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_ne": {
@@ -290,7 +290,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "bd4037dc42c202e01e688b6f1ac749970f3dc128c18f5fda41a3c663d5900b39",
+"provenance_sha256": "79f020c225aca311e6d42141b187386c8b385ebf206a0fb2daa5d68fd6ec72b7",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_ne_charmed": {
@@ -306,7 +306,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_ne_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "467cf1e3299e74d06984fcb13ee46f1709f8226e075ba8792c0f04bebffd1f88",
+"provenance_sha256": "070fd02b754139f81bab53e028aa35f175236a6a3a4b85f708120b909c4fa683",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_nw": {
@@ -322,7 +322,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "6fff9e1347a20cad1d859dae7238e51a7f2a3e2d0ba21efa0e5709b9db209b45",
+"provenance_sha256": "9ded91b441a6e99b5d66d2039244989eaf682a84f0e500222c707099dae820c0",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_nw_charmed": {
@@ -338,7 +338,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_nw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "a1071028d831446533bb6a7fddda9d0293b3d04c3da83046d040990edb297038",
+"provenance_sha256": "d16f9f5fe7ad9e837ae3c90e45c2bbbd88c85b2e01bae80f45b3aa763f3da584",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_se": {
@@ -354,7 +354,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "844d9840ac656b88b0270301254c7a652f90f6a3c71796587d181d22b767121c",
+"provenance_sha256": "6e3a5551bd36568bf476c8a2a836b241754e8527ba0e8dc2b1e13b38fa7c223e",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_se_charmed": {
@@ -370,7 +370,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_se_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "27decb6caa8a66d302c017cea03d580fcb085bead91cf3c60b4d0b984a8798ce",
+"provenance_sha256": "dfe49e90ae16d8d77452af3ac10da7b977603920f7ebffa4aea8dd9e2bc43b7e",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_sw": {
@@ -386,7 +386,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "d88c4365a73eebf03de37137aeed2ebdeca8cd5d358472da7449f1b81153301e",
+"provenance_sha256": "2745117d8fd80719fede17a57f4e9333740ee363422079664f2f46b966fb9384",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_sw_charmed": {
@@ -402,7 +402,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_sw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "74dea7274aa0c706338ce48f1082172496d7aba807b5b9893e35a2971829fc6a",
+"provenance_sha256": "e0642b1a1964da62de09bbf38305d4fb5bd456c6638174b729820a262b2ba46c",
 "size": Vector2i(256, 256)
 },
 &"grunt_charmed": {
@@ -1318,7 +1318,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "00f7f9a66f01ef19d0cd6ba8194daab3d14ab4f4a3b9c741134bdb23f7cfa914",
+"provenance_sha256": "95fde45d82a209029dee786392569907648c046157e1e704a86aa91aa33e78d2",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_nw": {
@@ -1334,7 +1334,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "5d00e48abd7ae606d809fa898d7e1b01994eedc3d6f6fad65f4383c93571d7c0",
+"provenance_sha256": "0572b299498407c1ab9b515f54bf3eefddd677ea92bd0e04db702e612501ce2d",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_se": {
@@ -1350,7 +1350,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "d657835f8d4fdc78696ead260d31341eb4f252573e27358887477d0cb2a6047b",
+"provenance_sha256": "eb67ad6f1bfb1ad4ab4dd01453d16b7f94959b21d2905a636764a4f455320025",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_sw": {
@@ -1366,7 +1366,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "a452cfc34aa1f1b76f329e2d40c6ebcea5aca2c73fee35d77b3d6492634890ef",
+"provenance_sha256": "1e073873b624df8dacb4e89b164bb498c3cf53af5920d7e584afa3112aa9296c",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_ne": {
@@ -1382,7 +1382,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "11a0cfcdb1838d3db8aaf5ecbabf7fd919839026c9e3b28e8fd64de1ff1e90cc",
+"provenance_sha256": "e1accb7d6c644d0606d628442854373c9dfec02fbcb683b126955b4c25b2a889",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_nw": {
@@ -1398,7 +1398,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "8a8a85b75e611520c61523145d24042628a374fd3e336af110f36462eeed8300",
+"provenance_sha256": "cee12f992e89dec5527f4ee62c4c85ea8b7f4fc2e0e746a9089e53f8eb7b7ac3",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_se": {
@@ -1414,7 +1414,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "a0ace219625aa5c3a6f66f83c0cfe97ba2d8ebb60db9b234529c54cf9cf6e0b4",
+"provenance_sha256": "1ed7d4b90551bfddb0e6da4aa6c52e102cbd0589bf0312dedfffc5eb00b6546a",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_sw": {
@@ -1430,7 +1430,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "5ecdb468dd00a07c941cb6045455722867b9cc1fcbcee81e2903d23feb15d7a8",
+"provenance_sha256": "ba68802b4c9d186313c26f7208eed0824fc511356fad2bfe665059de86acfa08",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_ne": {
@@ -1446,7 +1446,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "1361eb8bb5a7d577ce87054b08dbb7927492b36ca552bea0af037b52068bab5d",
+"provenance_sha256": "162258abf8f3dbb4f9025fb572125a91d0580fc3e9bf046d27f9c0a32f9c8823",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_nw": {
@@ -1462,7 +1462,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "70dd8ed6dec53aa970f612f5b4add8f8c0fb36947483502510a535e592949e06",
+"provenance_sha256": "16f5326eeb9764ce7ff57f8eeb733d32b5caaa54abeb7f07c7902c724545b3bc",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_se": {
@@ -1478,7 +1478,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "b9d526479d75e95ec90e526ad7eeaa53dd0cb15368da3505288393c353cfb51b",
+"provenance_sha256": "3f0d6cf2052b69da066bcf744976fffd70fc599ab6ca606a48e735303548730b",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_sw": {
@@ -1494,7 +1494,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "f2ee376121212deaca65cf825c7719c053b833e820d4a166bbdd6355c0477997",
+"provenance_sha256": "4aa0bc51bbe47a5e6101c3ae7057fe75552036bf64aa3904c3fe3439f049e9a4",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_ne": {
@@ -1510,7 +1510,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "bb83aa8163ff825ae83fcd8915f776cf48ab1e6e37034e6652dac3d75eef39b2",
+"provenance_sha256": "f12330044740491f6da03157f00d9fb914cf0ef954d3e27bb583bba329b4f0fa",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_nw": {
@@ -1526,7 +1526,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "93000d3a5979cb344e51fb492665e6eb0acfeab5a737a519033ee9f2f146cad6",
+"provenance_sha256": "b0936f25c17196ef6b802bec307075d40c29f6d9c72d2d54ab8a331d57a8fbea",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_se": {
@@ -1542,7 +1542,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "b0e0dcae82102f44d51546a5d428d2dbfc6509c9d898db9fac6417510400b035",
+"provenance_sha256": "7018f93896ea1b75e1342479075fd5bd839542d4375fab2f0623d803b2d480da",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_sw": {
@@ -1558,7 +1558,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "081d6e86fc1abc2d61febf45779a93d9e7b0638d89180aadb261fecc1135f576",
+"provenance_sha256": "efd2bc81e3368639e5f1a706a5b86b5dc129000e3c8663f3b565dfe584acf54b",
 "size": Vector2i(192, 192)
 }
 }
