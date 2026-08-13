@@ -1,13 +1,9 @@
 extends Node2D
 
-## Disposable projection of BattleModel (architecture rules 1 + 6: view
-## reads, never writes). Consumes model ticks in _physics_process via an
-## accumulator; ticks_per_frame_scale is the Phase 8 speed-control seam
-## (pause/2x/4x = ticks consumed per frame — speed can never change
-## outcomes). Phase 1 renders ColorRect placeholders; Lane A sprites replace
-## them via the asset manifest without touching this flow.
+## Read-only BattleModel projection; speed changes ticks/frame, never outcomes.
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
@@ -627,6 +623,7 @@ func _relayout() -> void:
 	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
+	BATTLE_HUD_PRESENTER.relayout(_hud, viewport)
 	if _portrait_flash != null:
 		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 	if _continue_btn != null and is_instance_valid(_continue_btn):
@@ -645,11 +642,9 @@ func _relayout() -> void:
 
 
 func _build_hud() -> void:
-	_hud = Label.new()
-	_hud.name = "BattleHud"
-	_hud.position = Vector2(16, 8)
-	_hud.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
-	_hud.z_index = HUD_Z
+	_hud = BATTLE_HUD_PRESENTER.create(
+		HUD_FONT_SIZE, HUD_Z, get_viewport_rect().size
+	)
 	add_child(_hud)
 
 
@@ -686,17 +681,7 @@ func _project() -> void:
 	_project_units()
 	_project_tracers()
 	var s := model.snapshot()
-	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(s["result"])]
-	_hud.text = (
-		"Base HP %d   DP %d   kills %d   tick %d   %s"
-		% [
-			s["base_hp"],
-			s["dp"],
-			s["killed"],
-			s["tick"],
-			result_text,
-		]
-	)
+	_hud.text = BATTLE_HUD_PRESENTER.text_for(s, get_viewport_rect().size)
 	if int(s["result"]) == BattleModel.Result.CLEAR:
 		_hud.text += "  %d*" % int(s["stars"])
 

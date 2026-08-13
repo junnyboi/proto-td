@@ -89,6 +89,8 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 	)
 	if theme == null or grid == null:
 		return
+	if h.root.size.x < h.root.size.y:
+		_check_portrait_layout(h, stage_id, view, theme)
 	var panorama_count := 0
 	var cadence_count := 0
 	var dynamic_count := 0
@@ -285,6 +287,55 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		"%s Bolt targeting stopped after capture" % stage_id,
 		not spell_cursor.visible,
 		"cursor_visible=%s tick=%d" % [spell_cursor.visible, model.tick],
+	)
+
+
+func _check_portrait_layout(
+	h: SelfTestHarness, stage_id: StringName, view: Node2D, theme: StageArtTheme
+) -> void:
+	var viewport := Rect2(Vector2.ZERO, Vector2(h.root.size))
+	var content: Rect2 = view.call("map_content_rect")
+	h.check(
+		"%s portrait map content fully visible" % stage_id,
+		viewport.encloses(content),
+		"viewport=%s content=%s" % [viewport, content],
+	)
+	for endpoint: Vector2i in [theme.spawn_cell, theme.core_cell]:
+		var center: Vector2 = view.call("cell_center", endpoint)
+		h.check(
+			"%s portrait endpoint visible %s" % [stage_id, endpoint],
+			viewport.has_point(center),
+			"center=%s viewport=%s" % [center, viewport],
+		)
+	var hud := view.find_child("BattleHud", true, false) as Label
+	var controls := view.find_child("ControlsBox", true, false) as Control
+	var slot_box := view.find_child("SlotBox", true, false) as GridContainer
+	var hud_rect := hud.get_global_rect() if hud != null else Rect2()
+	var controls_rect := controls.get_global_rect() if controls != null else Rect2()
+	var slots_rect := slot_box.get_global_rect() if slot_box != null else Rect2()
+	h.check(
+		"%s portrait HUD and controls are disjoint" % stage_id,
+		hud != null and controls != null and not hud_rect.intersects(controls_rect),
+		"hud=%s controls=%s" % [hud_rect, controls_rect],
+	)
+	h.check(
+		"%s portrait deploy bar is one-column and fully visible" % stage_id,
+		slot_box != null and slot_box.columns == 1 and viewport.encloses(slots_rect),
+		"slots=%s columns=%d viewport=%s" % [
+			slots_rect, slot_box.columns if slot_box != null else -1, viewport,
+		],
+	)
+	h.check(
+		"%s portrait map avoids persistent UI" % stage_id,
+		bool(
+			hud != null and controls != null and slot_box != null
+			and not content.intersects(hud_rect)
+			and not content.intersects(controls_rect)
+			and not content.intersects(slots_rect)
+		),
+		"content=%s hud=%s controls=%s slots=%s" % [
+			content, hud_rect, controls_rect, slots_rect,
+		],
 	)
 
 

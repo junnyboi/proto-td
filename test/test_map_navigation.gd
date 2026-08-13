@@ -19,7 +19,10 @@ const BATTLE_VIEW_PATH := "res://scripts/view/battle_view.gd"
 const MAP_NAVIGATOR_PATH := "res://scripts/view/map_navigator.gd"
 const BATTLE_VIEW_SCRIPT: GDScript = preload("res://scripts/view/battle_view.gd")
 const S1: StageDef = preload("res://data/stages/s1.tres")
+const S2: StageDef = preload("res://data/stages/s2.tres")
+const S3: StageDef = preload("res://data/stages/s3.tres")
 const VIEWPORTS := [Vector2(960.0, 640.0), Vector2(1280.0, 720.0), Vector2(1920.0, 1080.0)]
+const PORTRAIT_VIEWPORT := Vector2(720.0, 1280.0)
 
 
 func test_battle_view_pins_map_navigator_as_an_explicit_resource_dependency() -> void:
@@ -83,6 +86,24 @@ func test_initial_framing_keeps_right_edge_visible_and_y_centered() -> void:
 	assert_eq(navigator.pan.x, navigator.bounds.position.x)
 	assert_eq(navigator.pan.y, 0.0)
 	assert_almost_eq(navigator.content_screen_rect().end.x, 1280.0, 0.0001)
+
+
+func test_portrait_fits_complete_act2_content_without_pan_or_crop() -> void:
+	for stage: StageDef in [S2, S3]:
+		var navigator := MapNavigator.new()
+		navigator.relayout(stage, PORTRAIT_VIEWPORT)
+		assert_eq(
+			navigator.scale,
+			IsoProjection.fit_scale(stage.grid_size(), PORTRAIT_VIEWPORT),
+		)
+		assert_eq(navigator.pan, Vector2.ZERO)
+		assert_eq(navigator.bounds, Rect2())
+		var screen := navigator.content_screen_rect()
+		assert_true(screen.position.x >= 0.0 and screen.position.y >= 0.0, str(screen))
+		assert_true(
+			screen.end.x <= PORTRAIT_VIEWPORT.x and screen.end.y <= PORTRAIT_VIEWPORT.y,
+			str(screen),
+		)
 
 
 func test_resize_preserves_pixel_pan_then_clamps_exactly() -> void:

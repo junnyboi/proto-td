@@ -43,7 +43,7 @@ var _slots: Dictionary = {}
 var _trap_slots: Dictionary = {}
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
-var _slot_box: HBoxContainer = null
+var _slot_box: GridContainer = null
 var _placement_op: StringName = &""
 var _placement_trap: StringName = &""
 var _pending_cell := Vector2i(-1, -1)
@@ -87,7 +87,7 @@ func is_mend_targeting() -> bool:
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	if _slot_box != null:
-		_slot_box.position = Vector2(16, size.y - BAR_HEIGHT)
+		_layout_slot_box()
 	if _cursor_rect != null:
 		_cursor_rect.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
 		if _cursor_rect.visible:
@@ -175,10 +175,10 @@ func _rebuild_slots() -> void:
 
 
 func _build_slots(op_defs: Dictionary) -> void:
-	var box := HBoxContainer.new()
+	var box := GridContainer.new()
 	box.name = "SlotBox"
-	box.add_theme_constant_override("separation", 16)
-	box.position = Vector2(16, size.y - BAR_HEIGHT)
+	box.add_theme_constant_override("h_separation", 16)
+	box.add_theme_constant_override("v_separation", 8)
 	add_child(box)
 	_slot_box = box
 	for op_id: StringName in model.squad:
@@ -212,6 +212,18 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.button_down.connect(_start_trap_placement.bind(trap_id))
 		box.add_child(slot)
 		_trap_slots[trap_id] = slot
+	_layout_slot_box()
+
+
+func _layout_slot_box() -> void:
+	if _slot_box == null:
+		return
+	_slot_box.columns = 1 if size.x < size.y else maxi(1, _slot_box.get_child_count())
+	_slot_box.reset_size()
+	var y := size.y - BAR_HEIGHT
+	if size.x < size.y:
+		y = size.y - _slot_box.get_combined_minimum_size().y - 8.0
+	_slot_box.position = Vector2(16.0, y)
 
 
 func _build_overlays() -> void:

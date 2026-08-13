@@ -19,7 +19,11 @@ var _initialized := false
 func relayout(stage: StageDef, viewport: Vector2) -> void:
 	_stage = stage
 	_viewport = viewport
-	scale = IsoProjection.height_fill_scale(stage, viewport)
+	scale = (
+		IsoProjection.fit_scale(stage.grid_size(), viewport)
+		if viewport.x < viewport.y
+		else IsoProjection.height_fill_scale(stage, viewport)
+	)
 	origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
 	bounds = IsoProjection.pan_bounds(stage, viewport, scale)
 	if not _initialized:
