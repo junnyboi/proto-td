@@ -12,6 +12,25 @@ const BANNER_SETTLE_FRAMES := 52
 const POPULATED_TICK := 150
 const PROJECTION_SETTLE_FRAMES := 8
 const CURSOR_EPS := 0.01
+const H1_VIEWPORT := Vector2i(1280, 720)
+const H1_SURFACE_COUNTS := {
+	&"s2": {"area": 50, "route": 10, "blocked": 0, "elevated": 2, "ground": 38},
+	&"s3": {"area": 60, "route": 12, "blocked": 2, "elevated": 1, "ground": 45},
+}
+const H1_SURFACE_COLORS := {
+	"route": Color8(242, 140, 40, 112),
+	"blocked": Color8(217, 74, 112, 112),
+	"elevated": Color8(142, 98, 217, 112),
+	"ground": Color8(42, 183, 169, 96),
+}
+const H1_ENVELOPE_COLORS := {
+	"route": Color8(167, 201, 87),
+	"endpoint": Color8(255, 176, 0),
+	"elevated": Color8(184, 107, 255),
+	"blocked": Color8(255, 77, 109),
+	"cadence": Color8(40, 215, 192),
+	"choke": Color8(255, 122, 0),
+}
 
 
 func run(h: SelfTestHarness) -> void:
@@ -132,6 +151,8 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		],
 	)
 	await h.shot("%s_world_clean" % stage_id)
+	if h.root.size == H1_VIEWPORT:
+		await _capture_h1_diagnostics(h, stage_id, model.stage, theme, grid)
 
 	h.check(
 		"%s DP funded through debug_set_dp" % stage_id,
@@ -222,6 +243,33 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		],
 	)
 	await h.shot("%s_world_targeting" % stage_id)
+	if stage_id == &"s3" and h.root.size == H1_VIEWPORT:
+		var blocker_a := grid.get_node_or_null("Tile_5_2") as CanvasItem
+		var blocker_b := grid.get_node_or_null("Tile_5_3") as CanvasItem
+		var choke_presence_now := _enemy_cells(model).filter(
+			func(cell: Vector2i) -> bool:
+				return cell in [Vector2i(4, 2), Vector2i(4, 3), Vector2i(4, 4)]
+		)
+		h.check(
+			"s3 H1 choke crowding has exact live population, blockers, and Bolt cursor",
+			model.deployed_count() == 4 and model.alive_enemy_count() == 2
+				and _live_unit_node_count(grid) == 4 and _live_enemy_node_count(grid) == 2
+				and not choke_presence_now.is_empty()
+				and blocker_a != null and blocker_a.visible
+				and blocker_b != null and blocker_b.visible
+				and spell_cursor != null and spell_cursor.visible
+				and spell_cursor.polygon.size() > 0
+				and spell_cursor.position.distance_to(expected_center) < CURSOR_EPS,
+			"units=%d unit_nodes=%d enemies=%d enemy_nodes=%d enemy_cells=%s blockers=%s/%s cursor=%s visible=%s center=%s expected=%s" % [
+				model.deployed_count(), _live_unit_node_count(grid), model.alive_enemy_count(),
+				_live_enemy_node_count(grid), _enemy_cells(model), blocker_a != null,
+				blocker_b != null, spell_cursor != null,
+				spell_cursor.visible if spell_cursor != null else false,
+				spell_cursor.position if spell_cursor != null else Vector2(-1, -1),
+				expected_center,
+			],
+		)
+		await h.shot("s3_h1_choke_blocker_crowding")
 	var casts_after: int = model.spell_book.total_casts()
 	h.check(
 		"%s targeting capture does not cast Bolt" % stage_id,
@@ -237,6 +285,186 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		not spell_cursor.visible,
 		"cursor_visible=%s tick=%d" % [spell_cursor.visible, model.tick],
 	)
+
+
+func _capture_h1_diagnostics(
+	h: SelfTestHarness,
+	stage_id: StringName,
+	stage: StageDef,
+	theme: StageArtTheme,
+	grid: Node2D
+) -> void:
+	var surface_overlay := Node2D.new()
+	surface_overlay.name = "H1PlayableSurfaceOverlay"
+	grid.add_child(surface_overlay)
+	var route_cells := _route_cell_set(stage)
+	var actual_counts := {"route": 0, "blocked": 0, "elevated": 0, "ground": 0}
+	var grid_size := stage.grid_size()
+	for y: int in grid_size.y:
+		for x: int in grid_size.x:
+			var cell := Vector2i(x, y)
+			var category := "ground"
+			if route_cells.has(cell):
+				category = "route"
+			elif stage.tile_at(cell) == StageDef.Tile.BLOCKED:
+				category = "blocked"
+			elif stage.tile_at(cell) == StageDef.Tile.ELEVATED:
+				category = "elevated"
+			actual_counts[category] = int(actual_counts[category]) + 1
+			var mask := Polygon2D.new()
+			mask.name = "Mask_%02d_%02d_%s" % [x, y, category]
+			mask.polygon = IsoProjection.cell_polygon(
+				cell, stage.tile_at(cell) == StageDef.Tile.ELEVATED
+			)
+			mask.color = H1_SURFACE_COLORS[category]
+			mask.z_index = 49
+			surface_overlay.add_child(mask)
+	var expected: Dictionary = H1_SURFACE_COUNTS[stage_id]
+	h.check(
+		"%s H1 playable surface exact live-data mask inventory" % stage_id,
+		surface_overlay.get_child_count() == int(expected["area"])
+			and grid_size.x * grid_size.y == int(expected["area"])
+			and actual_counts["route"] == expected["route"]
+			and actual_counts["blocked"] == expected["blocked"]
+			and actual_counts["elevated"] == expected["elevated"]
+			and actual_counts["ground"] == expected["ground"],
+		"masks=%d area=%d route=%d blocked=%d elevated=%d ground=%d expected=%s" % [
+			surface_overlay.get_child_count(), grid_size.x * grid_size.y,
+			actual_counts["route"], actual_counts["blocked"], actual_counts["elevated"],
+			actual_counts["ground"], expected,
+		],
+	)
+	await h.frames(1)
+	await h.shot("%s_h1_playable_surface_overlay" % stage_id)
+	surface_overlay.free()
+	h.check(
+		"%s H1 playable surface overlay removed synchronously" % stage_id,
+		grid.get_node_or_null("H1PlayableSurfaceOverlay") == null,
+		"overlay=%s" % grid.get_node_or_null("H1PlayableSurfaceOverlay"),
+	)
+
+	var panorama := grid.get_node_or_null("BackdropPanorama") as CanvasItem
+	var spawn_landmark := grid.get_node_or_null("SpawnLandmark") as CanvasItem
+	var core_landmark := grid.get_node_or_null("CoreLandmark") as CanvasItem
+	if panorama != null:
+		panorama.visible = false
+	h.check(
+		"%s H1 actual panorama hidden alone" % stage_id,
+		panorama != null and not panorama.visible
+			and spawn_landmark != null and spawn_landmark.visible
+			and core_landmark != null and core_landmark.visible,
+		"panorama=%s visible=%s spawn_visible=%s core_visible=%s" % [
+			panorama != null, panorama.visible if panorama != null else false,
+			spawn_landmark.visible if spawn_landmark != null else false,
+			core_landmark.visible if core_landmark != null else false,
+		],
+	)
+	await h.shot("%s_h1_panorama_hidden" % stage_id)
+	if panorama != null:
+		panorama.visible = true
+	h.check(
+		"%s H1 actual panorama visibility restored" % stage_id,
+		panorama != null and panorama.visible,
+		"panorama=%s visible=%s" % [
+			panorama != null, panorama.visible if panorama != null else false,
+		],
+	)
+
+	if spawn_landmark != null:
+		spawn_landmark.visible = false
+	if core_landmark != null:
+		core_landmark.visible = false
+	h.check(
+		"%s H1 actual endpoints hidden alone" % stage_id,
+		spawn_landmark != null and not spawn_landmark.visible
+			and core_landmark != null and not core_landmark.visible
+			and panorama != null and panorama.visible,
+		"spawn=%s visible=%s core=%s visible=%s panorama_visible=%s" % [
+			spawn_landmark != null, spawn_landmark.visible if spawn_landmark != null else false,
+			core_landmark != null, core_landmark.visible if core_landmark != null else false,
+			panorama.visible if panorama != null else false,
+		],
+	)
+	await h.shot("%s_h1_endpoints_hidden" % stage_id)
+	if spawn_landmark != null:
+		spawn_landmark.visible = true
+	if core_landmark != null:
+		core_landmark.visible = true
+	h.check(
+		"%s H1 actual endpoint visibility restored" % stage_id,
+		spawn_landmark != null and spawn_landmark.visible
+			and core_landmark != null and core_landmark.visible,
+		"spawn_visible=%s core_visible=%s" % [
+			spawn_landmark.visible if spawn_landmark != null else false,
+			core_landmark.visible if core_landmark != null else false,
+		],
+	)
+
+	var protected := _protected_cell_colors(stage, theme)
+	var envelope := Node2D.new()
+	envelope.name = "H1ProjectedEnvelope"
+	grid.add_child(envelope)
+	var local_width := 2.0 / maxf(absf(grid.global_scale.x), 0.001)
+	for y: int in grid_size.y:
+		for x: int in grid_size.x:
+			var cell := Vector2i(x, y)
+			if not protected.has(cell):
+				continue
+			var polygon := IsoProjection.cell_polygon(
+				cell, stage.tile_at(cell) == StageDef.Tile.ELEVATED
+			)
+			var points := polygon.duplicate()
+			points.append(polygon[0])
+			var outline := Line2D.new()
+			outline.name = "Outline_%02d_%02d" % [x, y]
+			outline.points = points
+			outline.default_color = protected[cell]
+			outline.width = local_width
+			outline.antialiased = false
+			outline.z_index = 49
+			envelope.add_child(outline)
+	h.check(
+		"%s H1 projected envelope matches deduplicated protected cells" % stage_id,
+		envelope.get_child_count() == protected.size(),
+		"outlines=%d protected=%d width_local=%.4f width_screen=%.4f cells=%s" % [
+			envelope.get_child_count(), protected.size(), local_width,
+			local_width * absf(grid.global_scale.x), protected.keys(),
+		],
+	)
+	await h.frames(1)
+	await h.shot("%s_h1_projected_envelope" % stage_id)
+	envelope.free()
+	h.check(
+		"%s H1 projected envelope removed synchronously" % stage_id,
+		grid.get_node_or_null("H1ProjectedEnvelope") == null,
+		"envelope=%s" % grid.get_node_or_null("H1ProjectedEnvelope"),
+	)
+
+
+func _route_cell_set(stage: StageDef) -> Dictionary:
+	var route_cells: Dictionary = {}
+	for path_index: int in stage.paths.size():
+		for cell: Vector2i in stage.path_cells(path_index):
+			route_cells[cell] = true
+	return route_cells
+
+
+func _protected_cell_colors(stage: StageDef, theme: StageArtTheme) -> Dictionary:
+	var protected: Dictionary = {}
+	for cell: Vector2i in _route_cell_set(stage):
+		protected[cell] = H1_ENVELOPE_COLORS["route"]
+	protected[theme.spawn_cell] = H1_ENVELOPE_COLORS["endpoint"]
+	protected[theme.core_cell] = H1_ENVELOPE_COLORS["endpoint"]
+	for cell: Vector2i in theme.elevated_cells:
+		protected[cell] = H1_ENVELOPE_COLORS["elevated"]
+	for cell: Vector2i in theme.blocked_cells:
+		protected[cell] = H1_ENVELOPE_COLORS["blocked"]
+	for cell: Vector2i in theme.cadence_cells:
+		protected[cell] = H1_ENVELOPE_COLORS["cadence"]
+	if stage.id == &"s3":
+		for cell: Vector2i in [Vector2i(4, 2), Vector2i(4, 3), Vector2i(4, 4)]:
+			protected[cell] = H1_ENVELOPE_COLORS["choke"]
+	return protected
 
 
 func _advance_view_to_tick(
