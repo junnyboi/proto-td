@@ -59,6 +59,7 @@ const CLASS_FAMILIES := {
 	OperatorDef.OpClass.DEFENDER: [NAVY, TEAL, CYAN],
 	OperatorDef.OpClass.SNIPER: [BRONZE, GOLD, PALE_GOLD],
 	OperatorDef.OpClass.CASTER: [PLUM, ORCHID, ROSE],
+	OperatorDef.OpClass.HEALER: [DEEP_GREEN, GREEN, LIME],
 }
 
 ## Charmed derivation targets (parent §6.2): ally-blue ramp by luminance

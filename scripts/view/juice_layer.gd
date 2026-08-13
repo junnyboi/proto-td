@@ -135,6 +135,30 @@ func skill_burst(local_center: Vector2) -> void:
 		})
 
 
+## TD-021: target-side Mend ring. All visible magnitudes live in JuiceConfig;
+## the stable node name is the harness probe seam.
+func heal_burst(local_center: Vector2) -> void:
+	var half := Vector2.ONE * cfg.heal_burst_size_px * 0.5
+	for i: int in cfg.heal_burst_particles:
+		var rect := _make_map_rect(
+			cfg.heal_burst_color,
+			Vector2.ONE * cfg.heal_burst_size_px,
+			"MapTransientHeal",
+		)
+		var dir := Vector2.RIGHT.rotated(TAU * float(i) / float(cfg.heal_burst_particles))
+		_transients.append({
+			"node": rect,
+			"left": cfg.heal_burst_frames,
+			"total": cfg.heal_burst_frames,
+			"velocity_screen": dir * cfg.heal_burst_speed_px,
+			"map_anchor": local_center,
+			"offset_screen": -half,
+			"travel_screen": Vector2.ZERO,
+			"kind": "dust",
+		})
+		_position_map_transient(_transients.back())
+
+
 ## item 3: expanding grid-local spark at a corpse; capped instances
 func spark(local_center: Vector2) -> void:
 	if _spark_live >= cfg.kill_spark_cap:

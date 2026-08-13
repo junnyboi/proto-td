@@ -142,7 +142,7 @@ def source_paths(logical_id: str) -> list[str]:
         result.add("res://tools/pixel/art_props.gd")
     elif logical_id in {
         "caster_1", "caster_2", "defender_1", "defender_2", "guard_1", "guard_2",
-        "sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
+        "sniper_1", "sniper_2", "vanguard_1", "vanguard_2", "witch_doctor_1",
     }:
         result.update(
             {

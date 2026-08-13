@@ -176,7 +176,7 @@ func _fixture_files(expectations: Dictionary) -> Dictionary:
 	return {"accepted": true, "value": files}
 
 
-func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictionary:
+func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictionary:
 	var stage_id: StringName = replay["stage_id"]
 	var stage_path := "res://data/stages/%s.tres" % stage_id
 	var stage := ResourceLoader.load(
@@ -204,8 +204,12 @@ func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictiona
 		_catalogs["spells"],
 	)
 	var rows: Array = replay["timeline"]
+	var verdicts := _expected_verdicts(expected)
+	var post_expectations := _post_action_expectations(expected)
+	var terminal_expectation := _terminal_expectation(expected)
 	var index := 0
 	var action_results: Array = []
+	var semantic_checks: Array = []
 	var resign_tick := -1
 	var hashes: Array = [{"tick": 0, "hash": HeroIdentity.format_u64_hex(model.state_hash())}]
 	while model.result == BattleModel.Result.RUNNING and model.tick < _max_ticks:
@@ -214,16 +218,29 @@ func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictiona
 			var state_hash_before := HeroIdentity.format_u64_hex(model.state_hash())
 			var accepted := model.apply_action(row.slice(1))
 			var state_hash_after := HeroIdentity.format_u64_hex(model.state_hash())
-			if index >= expected.size() or accepted != bool(expected[index]):
+			if index >= verdicts.size() or accepted != bool(verdicts[index]):
 				return _fail(3, "%s action %d verdict mismatch" % [filename, index])
-			action_results.append({
+			var result_row := {
 				"tick": int(row[0]),
 				"verb": String(row[1]),
 				"accepted": accepted,
-				"expected_accepted": bool(expected[index]),
+				"expected_accepted": bool(verdicts[index]),
 				"state_hash_before": state_hash_before,
 				"state_hash_after": state_hash_after,
-			})
+			}
+			action_results.append(result_row)
+			var semantic := _check_post_action(
+				filename,
+				index,
+				post_expectations,
+				model,
+				state_hash_before,
+				state_hash_after,
+			)
+			if not semantic["accepted"]:
+				return semantic
+			if semantic["checked"]:
+				semantic_checks.append(semantic["value"])
 			if accepted and row[1] == &"resign":
 				resign_tick = int(row[0])
 			index += 1
@@ -233,12 +250,19 @@ func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictiona
 				"tick": model.tick,
 				"hash": HeroIdentity.format_u64_hex(model.state_hash()),
 			})
-	if model.result == BattleModel.Result.RUNNING:
-		return _fail(4, "%s did not terminate by tick %d" % [filename, _max_ticks])
-	if index != rows.size():
-		return _fail(3, "%s ended with %d unplayed actions" % [filename, rows.size() - index])
-	if index != expected.size():
-		return _fail(3, "%s expectation count mismatch" % filename)
+	var completion_error := _completion_error(
+		model,
+		index,
+		rows.size(),
+		verdicts.size(),
+		semantic_checks.size(),
+		post_expectations.size(),
+	)
+	if not completion_error.is_empty():
+		return _fail(
+			4 if model.result == BattleModel.Result.RUNNING else 3,
+			"%s: %s" % [filename, completion_error],
+		)
 	var terminal := {}
 	terminal["result"] = "clear" if model.result == BattleModel.Result.CLEAR else "defeat"
 	terminal["reason"] = _terminal_reason(model, resign_tick)
@@ -249,6 +273,10 @@ func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictiona
 	terminal["base_hp"] = model.base_hp
 	terminal["tick"] = model.tick
 	terminal["hash"] = HeroIdentity.format_u64_hex(model.state_hash())
+	terminal["units"] = _unit_state(model)
+	var terminal_error := _subset_error(terminal_expectation, terminal, "terminal")
+	if not terminal_error.is_empty():
+		return _fail(3, "%s %s" % [filename, terminal_error])
 	var value := {}
 	value["fixture"] = filename
 	value["canonical_replay_sha256"] = replay["sha256"]
@@ -260,10 +288,30 @@ func _run_one(filename: String, replay: Dictionary, expected: Array) -> Dictiona
 		return bool(row["accepted"])).size()
 	value["rejected_actions"] = action_results.size() - int(value["accepted_actions"])
 	value["action_results"] = action_results
+	value["semantic_checks"] = semantic_checks
 	value["hashes"] = hashes
 	value["terminal"] = terminal
 	value["telemetry"] = _normalized_telemetry(model, terminal)
 	return {"accepted": true, "value": value}
+
+
+func _completion_error(
+	model: BattleModel,
+	action_index: int,
+	row_count: int,
+	verdict_count: int,
+	semantic_count: int,
+	post_expectation_count: int,
+) -> String:
+	if model.result == BattleModel.Result.RUNNING:
+		return "did not terminate by tick %d" % _max_ticks
+	if action_index != row_count:
+		return "ended with %d unplayed actions" % [row_count - action_index]
+	if action_index != verdict_count:
+		return "expectation count mismatch"
+	if semantic_count != post_expectation_count:
+		return "post-action expectation coverage mismatch"
+	return ""
 
 
 func _load_expectations() -> Dictionary:
@@ -271,9 +319,12 @@ func _load_expectations() -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return _fail(2, "missing replay expectations")
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	var source := file.get_as_text()
 	file.close()
 	var error := ""
+	var raw: Variant = JSON.parse_string(source)
+	var restored := CanonicalJson.restore_exact_integers(source, raw)
+	var parsed: Variant = restored.get("value") if restored["accepted"] else null
 	if typeof(parsed) != TYPE_DICTIONARY:
 		error = "invalid replay expectations"
 	elif parsed.get("schema", "") != "prototype_td_replay_expectations":
@@ -282,16 +333,140 @@ func _load_expectations() -> Dictionary:
 		error = "invalid replay expectation version"
 	var fixtures: Dictionary = parsed.get("fixtures", {}) if error.is_empty() else {}
 	for filename: Variant in fixtures:
-		if typeof(fixtures[filename]) != TYPE_ARRAY:
-			error = "invalid verdict expectations"
+		if not _valid_expectation(fixtures[filename]):
+			error = "invalid expectations for %s" % filename
 			break
-		for verdict: Variant in fixtures[filename]:
-			if typeof(verdict) != TYPE_BOOL:
-				error = "invalid verdict expectation"
-				break
 		if not error.is_empty():
 			break
 	return _fail(2, error) if not error.is_empty() else {"accepted": true, "value": fixtures}
+
+
+func _valid_expectation(value: Variant) -> bool:
+	if typeof(value) == TYPE_ARRAY:
+		return _bool_array(value)
+	if typeof(value) != TYPE_DICTIONARY:
+		return false
+	var expected: Dictionary = value
+	var valid := (
+		_has_exact_keys(expected, ["verdicts", "post_actions", "terminal"])
+		and _bool_array(expected.get("verdicts"))
+		and typeof(expected.get("post_actions")) == TYPE_ARRAY
+		and typeof(expected.get("terminal")) == TYPE_DICTIONARY
+	)
+	if not valid:
+		return false
+	var seen: Dictionary = {}
+	for raw_row: Variant in expected["post_actions"]:
+		if typeof(raw_row) != TYPE_DICTIONARY:
+			valid = false
+			break
+		var row: Dictionary = raw_row
+		if not _has_exact_keys(row, ["action_index", "hash_changed", "state"]):
+			valid = false
+			break
+		if (
+			typeof(row["action_index"]) != TYPE_INT
+			or int(row["action_index"]) < 0
+			or seen.has(row["action_index"])
+			or typeof(row["hash_changed"]) != TYPE_BOOL
+			or typeof(row["state"]) != TYPE_DICTIONARY
+		):
+			valid = false
+			break
+		seen[row["action_index"]] = true
+	return valid
+
+
+func _bool_array(value: Variant) -> bool:
+	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
+		return false
+	for verdict: Variant in value:
+		if typeof(verdict) != TYPE_BOOL:
+			return false
+	return true
+
+
+func _has_exact_keys(value: Dictionary, expected: Array) -> bool:
+	if value.size() != expected.size():
+		return false
+	for key: Variant in expected:
+		if not value.has(key):
+			return false
+	return true
+
+
+func _expected_verdicts(expected: Variant) -> Array:
+	return expected if typeof(expected) == TYPE_ARRAY else expected["verdicts"]
+
+
+func _post_action_expectations(expected: Variant) -> Array:
+	return [] if typeof(expected) == TYPE_ARRAY else expected["post_actions"]
+
+
+func _terminal_expectation(expected: Variant) -> Dictionary:
+	return {} if typeof(expected) == TYPE_ARRAY else expected["terminal"]
+
+
+func _check_post_action(
+	filename: String,
+	action_index: int,
+	expected_rows: Array,
+	model: BattleModel,
+	hash_before: String,
+	hash_after: String,
+) -> Dictionary:
+	for expected: Dictionary in expected_rows:
+		if int(expected["action_index"]) != action_index:
+			continue
+		var changed := hash_before != hash_after
+		if changed != bool(expected["hash_changed"]):
+			return _fail(3, "%s action %d hash-change mismatch" % [filename, action_index])
+		var actual := _model_state(model)
+		var state_error := _subset_error(expected["state"], actual, "post_action")
+		if not state_error.is_empty():
+			return _fail(3, "%s action %d %s" % [filename, action_index, state_error])
+		return {
+			"accepted": true,
+			"checked": true,
+			"value": {
+				"action_index": action_index,
+				"hash_changed": changed,
+				"state": expected["state"],
+			},
+		}
+	return {"accepted": true, "checked": false}
+
+
+func _model_state(model: BattleModel) -> Dictionary:
+	return {"skills_fired": model.skills_fired, "units": _unit_state(model)}
+
+
+func _unit_state(model: BattleModel) -> Dictionary:
+	var units := {}
+	for unit: UnitState in model.units:
+		units[String.num_int64(unit.id)] = {
+			"hp": unit.hp,
+			"hp_max": unit.hp_max,
+			"alive": unit.alive,
+			"sp": unit.sp,
+			"skill_triggered_tick": unit.skill_triggered_tick,
+			"skill_target_unit_id": unit.skill_target_unit_id,
+		}
+	return units
+
+
+func _subset_error(expected: Variant, actual: Variant, path: String) -> String:
+	if typeof(expected) == TYPE_DICTIONARY:
+		if typeof(actual) != TYPE_DICTIONARY:
+			return "%s expected Dictionary" % path
+		for key: Variant in expected:
+			if not (actual as Dictionary).has(key):
+				return "%s missing key %s" % [path, key]
+			var nested := _subset_error(expected[key], actual[key], "%s.%s" % [path, key])
+			if not nested.is_empty():
+				return nested
+		return ""
+	return "" if expected == actual else "%s expected %s got %s" % [path, expected, actual]
 
 
 func _terminal_reason(model: BattleModel, resign_tick: int) -> String:

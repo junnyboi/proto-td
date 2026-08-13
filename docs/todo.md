@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-021 — Implement Witch Doctor deterministic healing
+
+- Status: in_progress
+- Owner: AGENT 2
+- Branch: `agent-2/td-021-witch-doctor`
+- Base: `master` at `f84810578303d6599b4e5de89c407f9747d3812d`
+- Dependencies: TD-019 plain class labels; P16.0 identity contracts; plan-lint PASS in external `td-witch-doctor-deterministic-healing-plan.md`
+- Owned files: `data/operator_def.gd`; `data/skill_def.gd`; `data/operators/witch_doctor_1.tres*`; `data/skills/mend.tres*`; `data/stages/s7.tres`; `data/juice_config.gd`; `data/juice_config.tres`; `sim/battle_model.gd`; `sim/healing_rules.gd*`; `sim/unit_state.gd`; `sim/battle_hash.gd`; `sim/replay_codec.gd`; `tools/replay_runner.gd`; `scripts/ui/deploy_bar.gd`; `scripts/view/battle_view.gd`; `scripts/view/battle_palette.gd*`; `scripts/view/juice_layer.gd`; `tools/pixel/palette.gd`; `tools/pixel/art_operators.gd`; `tools/pixel/art_portraits.gd`; `tools/gen_assets.gd`; `tools/presentation_qa/provenance.py`; `assets/manifest.tres`; generated `assets/sprites/witch_doctor_1_*`; generated `assets/portraits/witch_doctor_1*`; canonical `assets/provenance/*.provenance.json` and manifest provenance bindings changed only by the deterministic generator; `playtests/replays/v1/witch_doctor.json`; `playtests/replays/v1/expectations.json`; `test/test_witch_doctor.gd*`; `test/test_replay_codec.gd`; `test/test_hash_paranoia.gd`; `test/test_campaign_state.gd`; `test/test_debug_verbs.gd`; `test/test_presentation_contracts.gd`; `selftest/scenarios/witch_doctor_heal.gd*`; `selftest/scenarios/assets_floor.gd`; `selftest/scenarios/debug_reach.gd`; `docs/handoffs/TD-021-agent-2-witch-doctor.md`; this TD-021 row; serialized TD-021 closure only in `docs/completed.md` and `FEATURES.json`
+- Do not touch: `caster_2`/Sorcerer payloads; permanent-death/Memorial semantics; `scripts/verify.sh`; thresholds; existing replay fixture bytes; Agent F AUI-12-owned localization/UI-shell/component files; unrelated art/world/music lanes
+- Acceptance: additive `witch_doctor_1` with append-only enum ordinals; `mend(healer,target)` heals one valid living ally by data-owned amount/range, clamps at max HP, never revives, and every reject is hash-equal; S7 first-clear unlock makes all eleven templates obtainable; canonical semantic replay plus two-process equality; real input targeting and fresh windowed heal VFX proof
+- Required evidence: focused exactness/differential/hash/replay/campaign tests; `witch_doctor_heal` dual-lane scenario with completion sentinel and present/absent pixel pair; canonical provenance and legacy-byte gate; fresh clean-artifact `scripts/verify.sh --full`; independent diff-vs-pins audit; Poseidon review of exact-candidate in-game frames before player-facing closure
+- Last update: 2026-08-13
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

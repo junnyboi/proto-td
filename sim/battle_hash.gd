@@ -105,6 +105,8 @@ static func _append_unit(bytes: PackedByteArray, u: UnitState) -> void:
 	_append_int(bytes, u.blocked_ids.size())
 	for bid: int in u.blocked_ids:
 		_append_int(bytes, bid)
+	# TD-021 append-only healer presentation/replay record.
+	_append_int(bytes, u.skill_target_unit_id)
 
 
 static func _append_int(bytes: PackedByteArray, v: int) -> void:

@@ -386,6 +386,7 @@ const CLASS_ART := {
 	OperatorDef.OpClass.DEFENDER: {"idle": DEFENDER_IDLE, "attack": DEFENDER_ATTACK},
 	OperatorDef.OpClass.SNIPER: {"idle": SNIPER_IDLE, "attack": SNIPER_ATTACK},
 	OperatorDef.OpClass.CASTER: {"idle": CASTER_IDLE, "attack": CASTER_ATTACK},
+	OperatorDef.OpClass.HEALER: {"idle": CASTER_IDLE, "attack": CASTER_ATTACK},
 }
 
 ## Per-operator sheets (graphics proposal §5): hair pair + skin tone + accent
@@ -461,6 +462,13 @@ const OPERATOR_SHEETS := {
 		"skin": Palette.SKIN,
 		"skin_shadow": Palette.SKIN_SHADOW,
 	},
+	&"witch_doctor_1":
+	{
+		"hair_light": Palette.LIME,
+		"hair_dark": Palette.DEEP_GREEN,
+		"skin": Palette.SKIN_PALE,
+		"skin_shadow": Palette.SKIN_LIGHT,
+	},
 }
 
 
@@ -487,8 +495,8 @@ static func legend_for(op_class: OperatorDef.OpClass, sheet: Dictionary) -> Dict
 		"g": Palette.BRONZE,
 		"L": Palette.BROWN,
 		"l": Palette.UMBER,
-		"C": Palette.CYAN,
-		"O": Palette.ORCHID,
+		"C": family[2] if op_class == OperatorDef.OpClass.HEALER else Palette.CYAN,
+		"O": family[1] if op_class == OperatorDef.OpClass.HEALER else Palette.ORCHID,
 	}
 
 

@@ -1,7 +1,7 @@
 class_name DeployBar
 extends Control
 
-## Raw-input adapter for the deploy/retreat/place_trap verbs (architecture
+## Raw-input adapter for the deploy/retreat/place_trap/mend verbs (architecture
 ## rule 3: a thin adapter over apply_action, validated once per verb by
 ## deploy_flow.gd / trap_flow.gd).
 ## Interaction (td-phase-2-3.md D21): press a slot -> drag with valid-cell
@@ -20,6 +20,7 @@ const BAR_HEIGHT := 88.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
+const HEAL_VALID_COLOR := Color(0.65, 0.94, 0.44, 0.5)
 const FACING_BUTTON_SIZE := Vector2(56.0, 56.0)
 const FACING_BUTTON_GAP := 12.0
 const FACING_SAFE_MARGIN := 12.0
@@ -50,6 +51,8 @@ var _cursor_rect: Polygon2D = null
 var _facing_buttons: Dictionary = {}
 var _retreat_chip: Button = null
 var _retreat_unit_id: int = -1
+var _heal_source_unit_id: int = -1
+var _heal_cursor: Polygon2D = null
 
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
@@ -71,6 +74,10 @@ func setup(
 	_build_overlays()
 
 
+func is_mend_targeting() -> bool:
+	return _heal_source_unit_id >= 0
+
+
 ## Dynamic canvas fit: CALLED BY battle_view._relayout() after the grid
 ## scale recomputes (P14 — a self-owned size_changed listener raced the
 ## view's recompute and re-derived footprints from the STALE scale).
@@ -83,17 +90,28 @@ func relayout() -> void:
 		_cursor_rect.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
 		if _cursor_rect.visible:
 			_update_placement_hover()
+	if _heal_cursor != null:
+		_heal_cursor.polygon = IsoProjection.face_polygon(view.call("grid_scale"))
+		if _heal_cursor.visible:
+			_update_heal_hover()
 	if _placement_op != &"" or _placement_trap != &"":
 		for child: Node in _highlight_root.get_children():
 			child.queue_free()
 		_show_valid_highlights()
 	if _pending_cell.x >= 0:
 		_layout_facing_buttons(_pending_cell)
+	if _heal_source_unit_id >= 0:
+		_show_heal_highlights()
 
 
 func _process(_delta: float) -> void:
 	if model == null:
 		return
+	if Input.is_action_just_pressed("ui_cancel"):
+		if is_mend_targeting():
+			_cancel_heal_targeting()
+		elif _placement_op != &"" or _placement_trap != &"":
+			_cancel_placement()
 	# squad is mutable now (Phase 8 debug grants): rebuild the strip when it
 	# changes so granted operators get slots
 	if _slots.size() != model.squad.size():
@@ -107,6 +125,17 @@ func _process(_delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if _heal_source_unit_id >= 0:
+		if event is InputEventMouseMotion:
+			_pointer = (event as InputEventMouseMotion).position
+			_update_heal_hover()
+		elif event is InputEventMouseButton:
+			var heal_button := event as InputEventMouseButton
+			if heal_button.button_index == MOUSE_BUTTON_RIGHT and not heal_button.pressed:
+				_cancel_heal_targeting()
+		elif event.is_action_pressed("ui_cancel"):
+			_cancel_heal_targeting()
+		return
 	# Placement drag: track the pointer from motion events (injected motion
 	# never moves get_mouse_position) and end placement on left release.
 	if _placement_op == &"" and _placement_trap == &"":
@@ -191,6 +220,9 @@ func _build_overlays() -> void:
 	_cursor_rect = _make_overlay_rect(INVALID_COLOR)
 	_cursor_rect.name = "CursorRect"
 	add_child(_cursor_rect)
+	_heal_cursor = _make_overlay_rect(HEAL_VALID_COLOR)
+	_heal_cursor.name = "HealTargetCursor"
+	add_child(_heal_cursor)
 	for facing: UnitState.Facing in FACING_BUTTONS:
 		var spec: Dictionary = FACING_BUTTONS[facing]
 		var btn := Button.new()
@@ -223,6 +255,7 @@ func _make_overlay_rect(color: Color) -> Polygon2D:
 
 
 func _start_placement(op_id: StringName) -> void:
+	_cancel_heal_targeting()
 	_hide_retreat_chip()
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
@@ -231,6 +264,7 @@ func _start_placement(op_id: StringName) -> void:
 
 
 func _start_trap_placement(trap_id: StringName) -> void:
+	_cancel_heal_targeting()
 	_hide_retreat_chip()
 	_placement_trap = trap_id
 	_pending_cell = Vector2i(-1, -1)
@@ -342,6 +376,13 @@ func _cancel_placement() -> void:
 func _handle_grid_click(screen_pos: Vector2) -> void:
 	var cell: Vector2i = view.call("cell_at", screen_pos)
 	var unit: UnitState = model.alive_unit_at(cell)
+	if _heal_source_unit_id >= 0:
+		if unit == null or not HealingRules.is_valid(model, _heal_source_unit_id, unit.id):
+			return
+		model.apply_action([&"mend", _heal_source_unit_id, unit.id])
+		_cancel_heal_targeting()
+		_hide_retreat_chip()
+		return
 	if unit == null:
 		_hide_retreat_chip()
 		return
@@ -349,7 +390,10 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 	# its skill; the retreat chip only opens while the skill is not ready.
 	# Readiness comes from the verb's own validator (rule 7, P14).
 	if unit.is_skill_ready():
-		model.apply_action([&"trigger_skill", unit.id])
+		if unit.skill_effect == SkillDef.Effect.HEAL_TARGET:
+			_begin_heal_targeting(unit)
+		else:
+			model.apply_action([&"trigger_skill", unit.id])
 		_hide_retreat_chip()
 		return
 	_retreat_unit_id = unit.id
@@ -367,3 +411,46 @@ func _confirm_retreat() -> void:
 func _hide_retreat_chip() -> void:
 	_retreat_unit_id = -1
 	_retreat_chip.visible = false
+
+
+func _begin_heal_targeting(healer: UnitState) -> void:
+	_heal_source_unit_id = healer.id
+	_pointer = view.call("cell_center", healer.cell)
+	_heal_cursor.position = _pointer
+	_heal_cursor.color = HEAL_VALID_COLOR
+	_heal_cursor.visible = true
+	_show_heal_highlights()
+
+
+func _show_heal_highlights() -> void:
+	for child: Node in _highlight_root.get_children():
+		child.queue_free()
+	for target: UnitState in model.units:
+		if not HealingRules.is_valid(model, _heal_source_unit_id, target.id):
+			continue
+		var rect := _make_overlay_rect(HEAL_VALID_COLOR)
+		rect.name = "HealTarget_%d" % target.id
+		rect.visible = true
+		rect.position = view.call("cell_center", target.cell)
+		_highlight_root.add_child(rect)
+
+
+func _update_heal_hover() -> void:
+	var cell: Vector2i = view.call("cell_at", _pointer)
+	var target := model.alive_unit_at(cell)
+	var valid := (
+		target != null
+		and HealingRules.is_valid(model, _heal_source_unit_id, target.id)
+	)
+	_heal_cursor.color = HEAL_VALID_COLOR if valid else INVALID_COLOR
+	_heal_cursor.position = view.call("cell_center", cell)
+
+
+func _cancel_heal_targeting() -> void:
+	if _heal_source_unit_id < 0:
+		return
+	_heal_source_unit_id = -1
+	if _heal_cursor != null:
+		_heal_cursor.visible = false
+	for child: Node in _highlight_root.get_children():
+		child.queue_free()

@@ -33,7 +33,10 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_placeholder_and_png
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size() + 12)
+	assert_eq(manifest.entries.size(), expected.size() + 14)
+	for healer_id: StringName in [&"witch_doctor_1", &"portrait_witch_doctor_1"]:
+		assert_true(manifest.entries.has(healer_id), "%s added through the manifest" % healer_id)
+		assert_true(manifest.entries[healer_id][&"placeholder"], "%s remains placeholder" % healer_id)
 	for raw_id: Variant in expected:
 		var id := StringName(raw_id)
 		assert_true(manifest.entries.has(id), "manifest retains %s" % id)
@@ -500,7 +503,7 @@ func _expected_sources(id: String) -> Array[String]:
 		result.append("res://tools/pixel/art_props.gd")
 	elif id in [
 		"caster_1", "caster_2", "defender_1", "defender_2", "guard_1", "guard_2",
-		"sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
+		"sniper_1", "sniper_2", "vanguard_1", "vanguard_2", "witch_doctor_1",
 	]:
 		result.append_array([
 			"res://data/operator_def.gd", "res://data/operators/%s.tres" % id,

@@ -8,6 +8,7 @@ extends Node2D
 ## them via the asset manifest without touching this flow.
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 
 const ENEMY_PX := 40.0
 const HUD_FONT_SIZE := 32
@@ -25,14 +26,6 @@ const HUD_Z := 70
 ## no bare empty canvas.
 const BACKDROP_COLOR := Color("11131f")
 const ENEMY_COLOR := Color("ef7d57")
-const ENEMY_TYPE_COLORS := {
-	&"grunt": Color("ef7d57"),
-	&"runner": Color("f4d35e"),
-	&"heavy": Color("b13e53"),
-	&"drone": Color("73eff7"),
-	&"spellcaster": Color("c964cf"),
-	&"mini_boss": Color("94216a"),
-}
 const AERIAL_PX := 24.0
 const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
 ## grounded shadow = 20x10 face diamond (0.3125 of a face); aerial casts
@@ -48,13 +41,6 @@ const SP_BAR_BG := Color("20263a")
 const SP_BAR_FILL := Color("f4b41b")
 const SP_FULL_FLASH := Color("f4f4f4")
 const PORTRAIT_FLASH_PX := 96.0
-const OP_CLASS_COLORS := {
-	OperatorDef.OpClass.VANGUARD: Color("38b764"),
-	OperatorDef.OpClass.GUARD: Color("a7f070"),
-	OperatorDef.OpClass.DEFENDER: Color("257179"),
-	OperatorDef.OpClass.SNIPER: Color("ffcd75"),
-	OperatorDef.OpClass.CASTER: Color("5d275d"),
-}
 const CHEVRON_COLOR := Color("f4f4f4")
 const CHARMED_COLOR := Color("41a6f6")
 const TRAP_SPIKE_COLOR := Color("f4b41b")
@@ -255,9 +241,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _map_navigation_blocked() -> bool:
 	var deploy_cursor := find_child("CursorRect", true, false) as CanvasItem
 	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
+	var deploy_bar := find_child("DeployBar", true, false) as DeployBar
 	return (
 		(deploy_cursor != null and deploy_cursor.visible)
 		or (spell_cursor != null and spell_cursor.visible)
+		or (deploy_bar != null and deploy_bar.is_mend_targeting())
 	)
 
 
@@ -660,7 +648,7 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 		sprite.size = rect.size
 		rect.add_child(sprite)
 	else:
-		rect.color = ENEMY_TYPE_COLORS.get(e.def_id, ENEMY_COLOR)
+		rect.color = BattlePalette.ENEMY_TYPE.get(e.def_id, ENEMY_COLOR)
 		rect.size = Vector2(body_px, body_px)
 	_add_ground_shadow(rect, e.aerial)
 	_add_hp_bar(rect, body_px)
@@ -871,10 +859,17 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	_skill_seen_tick[u.id] = u.skill_triggered_tick
 	Sfx.play(String(u.skill_id))
 	if _juice != null:
-		_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
+		if u.skill_effect == SkillDef.Effect.HEAL_TARGET and u.skill_target_unit_id >= 0:
+			var target := model.unit_by_id(u.skill_target_unit_id)
+			if target != null:
+				_juice.heal_burst(
+					IsoProjection.face_center(target.cell, _is_lifted_cell(target.cell))
+				)
+		else:
+			_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	_portrait_flash.color = OP_CLASS_COLORS[op_class]
+	_portrait_flash.color = BattlePalette.OPERATOR_CLASS[op_class]
 	_portrait_flash.visible = true
 	_portrait_flash_frames = cfg.skill_flash_frames
 
@@ -938,7 +933,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		sprite.flip_h = u.facing == 2
 		rect.add_child(sprite)
 	else:
-		rect.color = OP_CLASS_COLORS[op_class]
+		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
 	# feet on the face: bottom-center anchored at the node origin
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
