@@ -44,19 +44,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: plan-lint PASS; focused GUT and Python suites; fresh headless/windowed `aetheria_s1_slice` reports and exact-candidate images; code-blind recognition ballots; local-browser performance report; unchanged `scripts/verify.sh --full`; two-process normalized replay equality; independent non-implementer diff-vs-pins/evidence audit; inline fresh exact-candidate review captures and Poseidon milestone verdict before landing; guarded exact-union landing and docs-only closure.
 - Last update: 2026-08-13
 
-## TD-024 — Make shipped UI shells independent of stale Godot class caches
-
-- Status: in_progress
-- Owner: AGENT D
-- Branch: `agent-d/fix-ui-class-registry`
-- Base: `master` at `38e3123f31188a5bb8b0093bc092940e424e5961`
-- Dependencies: TD-020 and TD-021; exact S2 stale-cache run exposed the post-AUI-12 UI dependency set
-- Owned files: `autoloads/i18n.gd`; `scripts/ui/components/aetheria_button.gd`; `scripts/ui/components/aetheria_locale_selector.gd`; `scripts/ui/title.gd`; `scripts/ui/staging.gd`; `scripts/ui/stage_select.gd`; `scripts/ui/squad_select.gd`; `scripts/ui/results.gd`; `scripts/probe_stale_class_registry.sh`; `tools/probes/stale_class_registry_boot.gd`; `test/test_ui_registry_bootstrap.gd`; `test/test_ui_registry_bootstrap.gd.uid`; the canonical-title assertion in `test/test_i18n.gd`; this row; one compact `docs/completed.md` closure row
-- Do not touch: UI behavior, copy, layouts, Theme values, localization catalogs, S1/S2 data or art, simulation/hash/save/replay, thresholds, `scripts/verify.sh`, AUI-20-owned files, or any unrelated active lane
-- Acceptance: with current imported assets and only the `7babf28` global class registry injected, the title shell plus en-US locale load cleanly, S1 and S2 open, S2 has all 50 gameplay tiles and 700 backdrop tiles, no shipped UI custom-type parse error occurs, and normal/stale S2 pixels equal the pinned pre-fix frame
-- Required evidence: pre-fix S2 stale-cache logs; local-preload contract GUT; expanded stale-registry title/S1/S2 oracle; focused headless/windowed S2 run; full gate; fresh exact-union RELEASE; non-implementer diff-vs-pins audit
-- Last update: 2026-08-13
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
