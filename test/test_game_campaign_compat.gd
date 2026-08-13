@@ -34,7 +34,7 @@ func test_debug_unlock_is_projection_only_and_new_campaign_clears_it() -> void:
 
 	game.call("debug_unlock_all")
 	assert_true(bool(game.get("_debug_catalog_override")))
-	assert_eq((game.call("loadout_operator_ids") as Array).size(), 10)
+	assert_eq((game.call("loadout_operator_ids") as Array).size(), 11)
 	assert_eq((game.call("loadout_trap_ids") as Array).size(), 2)
 	assert_eq((game.call("loadout_spell_ids") as Array).size(), 2)
 	assert_eq(_legacy_snapshot(campaign), before)

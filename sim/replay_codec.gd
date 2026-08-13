@@ -153,6 +153,18 @@ static func _decode_action(row: Variant) -> Dictionary:
 			if not _exact_keys(args, ["unit_id"]) or not _in_nonnegative_i32(args["unit_id"]):
 				return _reject(&"invalid_action_args")
 			action.append(int(args["unit_id"]))
+		"mend":
+			if not _exact_keys(args, ["healer_unit_id", "target_unit_id"]):
+				return _reject(&"invalid_action_args")
+			if (
+				not _in_nonnegative_i32(args["healer_unit_id"])
+				or not _in_nonnegative_i32(args["target_unit_id"])
+			):
+				return _reject(&"invalid_action_args")
+			action.append_array([
+				int(args["healer_unit_id"]),
+				int(args["target_unit_id"]),
+			])
 		"place_trap":
 			if not _exact_keys(args, ["trap_id", "cell"]):
 				return _reject(&"invalid_action_args")
@@ -214,6 +226,15 @@ static func _encode_action(row: Variant) -> Dictionary:
 			if row.size() != 3 or not _in_nonnegative_i32(row[2]):
 				return _reject(&"invalid_timeline_row")
 			args["unit_id"] = int(row[2])
+		"mend":
+			if (
+				row.size() != 4
+				or not _in_nonnegative_i32(row[2])
+				or not _in_nonnegative_i32(row[3])
+			):
+				return _reject(&"invalid_timeline_row")
+			args["healer_unit_id"] = int(row[2])
+			args["target_unit_id"] = int(row[3])
 		"place_trap":
 			if row.size() != 4 or typeof(row[3]) != TYPE_VECTOR2I:
 				return _reject(&"invalid_timeline_row")

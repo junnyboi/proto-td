@@ -65,3 +65,12 @@ Shared ledgers and `FEATURES.json` remain serial integration surfaces. The curre
 - The non-implementer final build audit passed with zero findings at or above 80 confidence; report SHA-256 `8a76e00683a221e84fcdb038cb59a160f08b297c20ff198306fa134c23305ce4`.
 - Guarded landing proved remote `master` still equaled tested base `3376178219c4a9df94abfb24798a6ffe3d0c7aee`, the feature ref still equaled the approved candidate, the evidence root remained sealed, and the fast-forward required no force or synthesized merge.
 - AUI-12 is closed. Its active ownership is released. AUI-20 is unblocked by this dependency only; it still requires a new exact-base claim, its own scope, and applicable verification/human gates.
+
+## AUI-20 exact-base claim and dependency amendment
+
+- Poseidon directed AGENT F (Agent 7) to claim AUI-20 from `master` at abbreviated identity `38e3123`; Git resolves that identity uniquely to `38e3123f31188a5bb8b0093bc092940e424e5961` / tree `ea9a4e1b40afd5cf019610586725f5712468b312`.
+- This base contains closed AUI-12 candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d` and approved AUI-10R runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9`. The exact AUI-10R human-final receipt SHA-256 is `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`.
+- The older 2026-08-12 delegation sequence placed AUI-11 before AUI-20. The later AUI-12 closure boundary and Poseidon's new exact-base directive supersede that scheduling dependency only: AUI-11 remains an independent package, and AUI-20 may not ingest, bind, approve, reject, or claim performance/recognition results for unlanded Agent E runtime bytes.
+- AUI-20 is the S1 integration kill gate, not a production-content batch. Its frozen result vocabulary is `PROCEED | PIVOT | KILL source approach`; PIVOT is limited to presentation scale, batching, materials, or cue data, and KILL may target only the 192 px source approach after three distinct documented fixes fail a hard ceiling.
+- The implementation lane is MGS v2 `RELEASE`: player-facing milestone, new scenario/tests, local Web/performance evidence, fresh exact-candidate captures, non-implementer audit, and Poseidon review are mandatory. The claim transaction itself is docs-only `STANDARD`.
+- The exact AUI-20 lease and prohibitions are recorded in `docs/todo.md`. No implementation may start until the external package plan is frozen and passes `godot-2d-reviewer` plan lint; implementation then starts on new non-rewriting branch `agent-f/aui-20` from the landed claim commit.

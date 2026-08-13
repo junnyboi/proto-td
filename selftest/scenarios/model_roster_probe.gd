@@ -20,7 +20,7 @@ func run(h: SelfTestHarness) -> void:
 	var state := created["value"] as CampaignState
 	h.check("authored environment fingerprint",
 		_definition().environment_sha256
-		== "cf4a272e5aa14a2c8606a6aa6de8efb8345af37d10c82ecf2e579987f7fdb8b6")
+		== "b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835")
 	h.check("fresh campaign uid", state.campaign_uid() == "ce46150984346591")
 	h.check("fresh strategic hash", state.strategic_hash()["hex"] == "85f2c11018249153")
 	h.check("five canonical starters", state.roster().all().size() == 5)
@@ -71,7 +71,7 @@ func _check_debug_override(h: SelfTestHarness, game: Node) -> void:
 	}
 	game.call("debug_unlock_all")
 	h.check("debug override reaches full operator catalog",
-		(game.call("loadout_operator_ids") as Array).size() == 10)
+		(game.call("loadout_operator_ids") as Array).size() == 11)
 	h.check("debug override does not mutate legacy roster",
 		legacy.unlocked_operators == before["operators"])
 	game.call("start_campaign", false)
