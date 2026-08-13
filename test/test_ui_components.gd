@@ -190,20 +190,27 @@ func test_screen_shell_exact_structure_modes_clamps_and_failure() -> void:
 	await get_tree().process_frame
 	assert_eq(shell.content_host().name, &"ContentHost")
 	assert_eq(shell.preferred_size, Vector2(720.0, 520.0))
+	assert_eq(shell.content_scale(), 1.0)
 	assert_false(shell.set_preferred_size(Vector2.ZERO))
 	assert_eq(shell.preferred_size, Vector2(720.0, 520.0))
 	assert_true(shell.set_preferred_size(Vector2(1080.0, 620.0)))
 	for test_case: Array in [
-		[Vector2i(1920, 1080), &"regular_landscape"],
-		[Vector2i(1280, 720), &"regular_landscape"],
-		[Vector2i(960, 720), &"compact_landscape"],
-		[Vector2i(720, 1280), &"portrait"],
+		[Vector2i(1920, 1080), &"regular_landscape", 1.5],
+		[Vector2i(1280, 720), &"regular_landscape", 1.0],
+		[Vector2i(960, 720), &"compact_landscape", 1.0],
+		[Vector2i(720, 1280), &"portrait", 1.0],
 	]:
 		shell.relayout(test_case[0])
 		assert_eq(shell.layout_mode(), test_case[1])
-		var plate := shell.get_node("SafeMargin/Center/ReadingPlate") as Control
+		var plate := shell.reading_plate()
+		assert_almost_eq(shell.content_scale(), float(test_case[2]), 0.001)
+		assert_eq(plate.scale, Vector2.ONE * shell.content_scale())
 		assert_lte(plate.custom_minimum_size.x, float(test_case[0].x))
 		assert_lte(plate.custom_minimum_size.y, float(test_case[0].y))
+	assert_true(shell.set_preferred_size(Vector2(640.0, 900.0)))
+	shell.relayout(Vector2i(1440, 2560))
+	assert_eq(shell.layout_mode(), &"portrait")
+	assert_almost_eq(shell.content_scale(), 2.0, 0.001)
 
 
 func test_locale_selector_exact_rows_selection_and_rejection() -> void:

@@ -340,7 +340,7 @@ func test_mend_replay_codec_rejects_malformed_and_out_of_range_ids() -> void:
 
 
 func test_p16_union_environment_binds_witch_doctor_catalog_and_s7_reward() -> void:
-	var definition := load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	var definition := load("res://data/campaigns/p16_v2.tres") as CampaignDef
 	assert_eq(
 		definition.environment_sha256,
 		"b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835",

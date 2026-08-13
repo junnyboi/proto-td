@@ -194,5 +194,6 @@ func _button(
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.apply_role(role)
 	return button

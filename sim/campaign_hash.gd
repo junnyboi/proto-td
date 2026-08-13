@@ -2,7 +2,7 @@ class_name CampaignHash
 extends RefCounted
 
 const MAGIC := "PTD-CAMPAIGN-HASH"
-const VERSION := 1
+const VERSION := 2
 const FNV_OFFSET := -3750763034362895579
 const FNV_PRIME := 1099511628211
 const SOURCE_ENUM := {"starter": 0, "contract": 1, "reward": 2, "recovery": 3}
@@ -140,7 +140,13 @@ static func _append_heroes(out: PackedByteArray, rows: Array) -> void:
 	_append_u32(out, rows.size())
 	for row: Dictionary in rows:
 		_append_string(out, String(row["hero_id"]))
+		_append_string(out, String(row["acquisition_operator_def_id"]))
 		_append_string(out, String(row["operator_def_id"]))
+		_append_string(out, String(row["first_class_id"]))
+		_append_nullable_string(out, row["advanced_class_id"])
+		_append_u32(out, int(row["progression_rules_version"]))
+		_append_i64(out, int(row["xp"]))
+		_append_string(out, String(row["identity_portrait_id"]))
 		_append_i64(out, int(row["recruitment_index"]))
 		_append_i64(out, int(row["recruited_after_resolution_index"]))
 		out.append(int(SOURCE_ENUM[String(row["recruit_source"])]))
@@ -189,6 +195,11 @@ static func _append_resolution_nullable(out: PackedByteArray, value: Variant) ->
 		_append_nullable_string(out, reward["hero_instance_id"])
 	_append_strings(out, row["created_hero_ids"])
 	_append_strings(out, row["dead_hero_ids"])
+	var xp_awards: Array = row["xp_awards"]
+	_append_u32(out, xp_awards.size())
+	for award: Dictionary in xp_awards:
+		_append_string(out, String(award["hero_id"]))
+		_append_i64(out, int(award["delta"]))
 	_append_i64(out, int(row["marks_before"]))
 	_append_i64(out, int(row["marks_after"]))
 	_append_string(out, String(row["strategic_body_hash_before"]))
@@ -362,6 +373,13 @@ static func _derive_expected_after(
 		return _reject(&"transaction_rewards_mismatch")
 	if resolution["created_hero_ids"] != rewards["created"]:
 		return _reject(&"transaction_created_hero_mismatch")
+	var xp_awards := CampaignProgression.derive_xp_awards(
+		outcome["heroes"], before["heroes"],
+	)
+	if resolution["xp_awards"] != xp_awards:
+		return _reject(&"transaction_xp_mismatch")
+	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
+		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, resolution)
 	if not dead["accepted"]:
 		return dead
@@ -408,11 +426,11 @@ static func _derive_rewards_and_heroes(
 			hero_id = allocated["hero_id"]
 			created.append(hero_id)
 			taken[hero_id] = true
-			expected["heroes"].append({
+			var new_hero := CampaignProgression.add_initial_fields({
 				"hero_id": hero_id,
-					"operator_def_id": reward["id"],
-					"recruitment_index": recruitment_index,
-					"recruited_after_resolution_index": resolution["resolution_index"],
+				"operator_def_id": reward["id"],
+				"recruitment_index": recruitment_index,
+				"recruited_after_resolution_index": resolution["resolution_index"],
 				"recruit_source": "reward",
 				"source_id": outcome["stage_id"],
 				"name_version": HeroNames.VERSION,
@@ -420,6 +438,9 @@ static func _derive_rewards_and_heroes(
 				"life_status": "ready",
 				"death": null,
 			})
+			if new_hero.is_empty():
+				return _reject(&"transaction_created_hero_mismatch")
+			expected["heroes"].append(new_hero)
 			recruitment_index += 1
 		rewards.append({"kind": reward["kind"], "id": reward["id"], "hero_instance_id": hero_id})
 	expected["next_recruitment_index"] = recruitment_index

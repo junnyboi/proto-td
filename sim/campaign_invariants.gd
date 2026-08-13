@@ -37,7 +37,7 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 		var source_id := String(hero["source_id"])
 		var index := int(hero["recruitment_index"])
 		var created_after := int(hero["recruited_after_resolution_index"])
-		var operator_id := String(hero["operator_def_id"])
+		var operator_id := String(hero["acquisition_operator_def_id"])
 		if created_after < previous_created_after:
 			return _reject(&"recruitment_history_order_mismatch")
 		if created_after >= int(data["next_resolution_index"]):
@@ -103,7 +103,7 @@ static func _recovery_reachable(
 	var prior_death := false
 	for index: int in position:
 		var earlier: Dictionary = heroes[index]
-		if earlier["operator_def_id"] == operator_id:
+		if earlier["acquisition_operator_def_id"] == operator_id:
 			seen = true
 			if earlier["life_status"] == "ready":
 				return false
@@ -451,6 +451,8 @@ static func _reverse_latest(data: Dictionary, receipt: Dictionary) -> Dictionary
 		if receipt["dead_hero_ids"].has(hero["hero_id"]):
 			hero["life_status"] = "ready"
 			hero["death"] = null
+	if not CampaignProgression.reverse_xp(before["heroes"], receipt["xp_awards"]):
+		return {}
 	if int(receipt["stars_before"]) == 0:
 		before["stage_stars"] = before["stage_stars"].filter(
 			func(row: Dictionary) -> bool: return row["stage_id"] != receipt["stage_id"],

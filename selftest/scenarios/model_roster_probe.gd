@@ -22,7 +22,7 @@ func run(h: SelfTestHarness) -> void:
 		_definition().environment_sha256
 		== "b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835")
 	h.check("fresh campaign uid", state.campaign_uid() == "ce46150984346591")
-	h.check("fresh strategic hash", state.strategic_hash()["hex"] == "85f2c11018249153")
+	h.check("fresh strategic hash", state.strategic_hash()["hex"] == "baa4d62d418258a5")
 	h.check("five canonical starters", state.roster().all().size() == 5)
 	h.check("five compatibility operators",
 		(state.compatibility_projection()["unlocked_operators"] as Array).size() == 5)
@@ -40,7 +40,7 @@ func run(h: SelfTestHarness) -> void:
 		h.check("paid S1 reward uses index six",
 			paid_preview["created_hero_rows"][0]["hero_id"] == "fe0ff2c1e3ecc49d")
 	h.check("reward previews preserve canonical hash",
-		state.strategic_hash()["hex"] == "85f2c11018249153")
+		state.strategic_hash()["hex"] == "baa4d62d418258a5")
 	_check_debug_override(h, game)
 	game.call("open_title")
 	await h.frames(4)
@@ -94,7 +94,7 @@ func _paid_data(state: CampaignState) -> Dictionary:
 
 
 func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
 
 
 func _catalogs() -> Dictionary:

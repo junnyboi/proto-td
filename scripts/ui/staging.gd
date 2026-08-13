@@ -48,7 +48,9 @@ func _build_screen() -> void:
 	shell.preferred_size = SHELL_SIZE
 	add_child(shell)
 	shell.layout_mode_changed.connect(_on_layout_mode_changed)
-	(shell.get_node("SafeMargin/Center/ReadingPlate") as PanelContainer).name = "StagingShell"
+	(
+		shell.get_node("SafeMargin/Center/ReadingFrame/ReadingPlate") as PanelContainer
+	).name = "StagingShell"
 	var scroll := ScrollContainer.new()
 	scroll.name = "StagingScroll"
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL

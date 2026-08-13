@@ -11,7 +11,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var definition := load("res://data/campaigns/p16_v1.tres") as CampaignDef
+	var definition := load("res://data/campaigns/p16_v2.tres") as CampaignDef
 	var catalogs := _catalogs()
 	var stages := _stages()
 	if _reverse_inputs:
