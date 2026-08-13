@@ -40,7 +40,12 @@ if grep -Eq 'MusicCatalog|StageArtTheme' "$cache"; then
 fi
 
 git worktree add --detach "$current_tree" "$current_commit" >/dev/null
-mkdir -p "$current_tree/.godot"
+timeout 240s "$GODOT" --headless --path "$current_tree" --import \
+  >"$tmp_root/current-import.log" 2>&1
+current_cache="$current_tree/.godot/global_script_class_cache.cfg"
+[[ -s "$current_cache" ]] || { echo '[stale-class-registry] current cache missing' >&2; exit 1; }
+grep -q 'MusicCatalog' "$current_cache"
+grep -q 'StageArtTheme' "$current_cache"
 cp "$cache" "$current_tree/.godot/global_script_class_cache.cfg"
 set +e
 timeout 120s "$GODOT" --headless --fixed-fps 60 --path "$current_tree" -s "$PROBE_SCRIPT" \
