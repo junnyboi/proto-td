@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## STARTUP-CLASS-REGISTRY — Make pulled runtime types independent of stale Godot caches
-
-- Status: in_progress
-- Owner: AGENT D
-- Branch: `agent-d/fix-startup-class-registry`
-- Base: `master` at `98a9be388064aacaadd8fdc10570533a3cd9ef46`
-- Dependencies: none; exact stale-cache upgrade reproduced from `7babf28` to current master
-- Owned files: `autoloads/music.gd`; `scripts/view/iso_grid_builder.gd`; `tools/probes/stale_class_registry_boot.gd`; its generated UID; `scripts/probe_stale_class_registry.sh`; `CLAUDE.md`; this row; one compact `docs/completed.md` closure row
-- Do not touch: music behavior/data/assets, S1 geometry/art/assets, simulation/hash/save/replay, project/autoload registration, verification thresholds, `scripts/verify.sh`, Agent E/F paths, or any AUI-12 row/surface
-- Acceptance: after importing an old revision and switching to the fixed candidate without reimport, Music autoload parses, S1 loads twelve theme assets, the map renders non-vacuously, and no `MusicCatalog`/`StageArtTheme` parse error occurs; a totally fresh cache remains covered by the normal import lane
-- Required evidence: red pre-fix stale-upgrade boot and S1 logs; automated stale-cache regression probe; focused GUT/scenario; standard gate; fresh windowed S1 capture; RELEASE after union if master integration changes the candidate
-- Last update: 2026-08-13
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
