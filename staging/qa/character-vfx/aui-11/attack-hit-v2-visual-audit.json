@@ -1,0 +1,20 @@
+{
+  "findings": [
+    "Visual review of the atlas, contact sheet, and approved language sheet confirms a compact open target lozenge, two unequal detached chevrons at opposite ends of the 2:1 bearing axis, and exactly three unequal detached non-chevron perimeter notches.",
+    "The effect is target-centered, reads at the approved smallest-family scale, preserves a transparent center, and uses restrained local phase changes without slash, comet, starburst, halo, spray, or broad bloom grammar.",
+    "All eight cells have width 55..56 px, height 36..38 px, opaque area 424..486 px, center_x 96, inclusive foot row 180, open-center maximum alpha 0, and exactly seven eight-connected detached components.",
+    "Row-boundary IoU is 1.0 for frames 0 to 3 and 4 to 7, exceeding the unchanged 0.92 floor.",
+    "The atlas and contact hashes match metadata, all 42 packet QA checks pass, and all final native sources are 128x128 RGBA PNGs.",
+    "Runtime binding remains UNBOUND_AGENT_F_SEAM and human-final art remains UNSET_HUMAN_ONLY."
+  ],
+  "measurements_pass": true,
+  "summary": "The exact r3 native-128 attack_hit candidate satisfies the required compact target-contact silhouette and every authenticated packet measurement gate.",
+  "verdict": "PASS",
+  "visible_contract": {
+    "forbidden_slash_or_star_absent": true,
+    "open_target_lozenge": true,
+    "small_target_centered_read": true,
+    "three_detached_unequal_notches": true,
+    "two_detached_unequal_bearing_chevrons": true
+  }
+}

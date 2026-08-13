@@ -33,7 +33,7 @@ RESERVED = {bytes((244, 244, 244)), bytes((65, 166, 246))}
 VFX_RANGES = {
     "deploy": ((72, 108), (36, 72), (2000, 6500)),
     "attack_hit": ((32, 56), (18, 40), (350, 1800)),
-    "charm_vfx": ((44, 72), (22, 44), (900, 3200)),
+    "charm_vfx": ((44, 72), (22, 44), (900, 2800)),
 }
 CLAIM_COMMIT = "553c21ec4129b8a29f1e51301d522ae9a37d41a0"
 OWNED_PREFIXES = (
@@ -191,18 +191,55 @@ def verify_bound_oracles(checks: Checks, project: Path, manifest: dict[str, obje
     root = project / "staging/character-vfx/aui-11"
     qa = project / "staging/qa/character-vfx/aui-11"
     bindings = manifest["qa_bindings"]
-    checks.require(set(bindings) == {"dual_backend", "attack_hit_transform", "charm_semantics"}, "qa_binding_groups")
+    checks.require(
+        set(bindings) == {
+            "dual_backend",
+            "attack_hit_transform",
+            "charm_vfx_transform",
+            "charm_semantics",
+            "named_reviews",
+            "facing_state_corrections",
+        },
+        "qa_binding_groups",
+    )
     checks.require(set(bindings["dual_backend"]) == {"verifier"}, "dual_binding_schema")
     check_file(checks, project, bindings["dual_backend"]["verifier"], "dual_backend_verifier")
     attack = bindings["attack_hit_transform"]
-    checks.require(set(attack) == {"contract", "verifier", "receipt", "pretransform_sources"}, "attack_binding_schema")
+    checks.require(
+        set(attack)
+        == {
+            "contract",
+            "producer",
+            "verifier",
+            "receipt",
+            "pretransform_sources",
+            "extractor",
+            "extraction_receipt",
+            "generation_prompt",
+            "measurements",
+            "visual_audit",
+        },
+        "attack_binding_schema",
+    )
     contract = check_file(checks, project, attack["contract"], "attack_contract")
+    check_file(checks, project, attack["producer"], "attack_producer")
     verifier = check_file(checks, project, attack["verifier"], "attack_verifier")
     receipt_path = check_file(checks, project, attack["receipt"], "attack_receipt")
+    check_file(checks, project, attack["extractor"], "attack_extractor")
+    extraction_receipt = check_file(checks, project, attack["extraction_receipt"], "attack_extraction_receipt")
+    check_file(checks, project, attack["generation_prompt"], "attack_generation_prompt")
+    measurements_path = check_file(checks, project, attack["measurements"], "attack_measurements")
+    visual_audit_path = check_file(checks, project, attack["visual_audit"], "attack_visual_audit")
     pretransform = [check_file(checks, project, item, f"attack_pretransform_{index}") for index, item in enumerate(attack["pretransform_sources"])]
     checks.require([path.name for path in pretransform] == [f"frame_{index:02d}.png" for index in range(8)], "attack_pretransform_inventory")
     attack_receipt = parse_json(receipt_path)
     checks.require(attack_receipt["status"] == "PASS" and len(attack_receipt["inputs"]) == 8 and len(attack_receipt["outputs"]) == 8, "attack_receipt_status")
+    checks.require(parse_json(extraction_receipt)["schema_version"] == "mgs.aui11.attack-hit-source-extraction.v1", "attack_extraction_schema")
+    visual_audit = parse_json(visual_audit_path)
+    checks.require(visual_audit["verdict"] == "PASS" and visual_audit["measurements_pass"] is True and all(visual_audit["visible_contract"].values()), "attack_visual_audit_pass")
+    measurements = parse_json(measurements_path)
+    checks.require(len(measurements["frames"]) == 8 and all(frame["components_8_connected"] >= 7 for frame in measurements["frames"]), "attack_measurement_components")
+    checks.require(all(loop["iou"] >= 0.92 for loop in measurements["loops"]), "attack_measurement_loops")
     checks.require(attack_receipt["contract_sha256"] == sha256(contract), "attack_receipt_contract")
     for index, path in enumerate(pretransform):
         checks.require(attack_receipt["inputs"][index]["file_sha256"] == sha256(path), f"attack_receipt_input_{index}")
@@ -223,6 +260,125 @@ def verify_bound_oracles(checks: Checks, project: Path, manifest: dict[str, obje
         )
         checks.require(result.returncode == 0, "attack_oracle_rerun", result.stdout[-500:])
         checks.require(parse_json(rerun_report) == attack_receipt, "attack_oracle_receipt_reproduced")
+
+    charm_vfx = bindings["charm_vfx_transform"]
+    charm_vfx_keys = {
+        "contract",
+        "producer",
+        "verifier",
+        "receipt",
+        "pretransform_sources",
+        "extractor",
+        "extraction_receipt",
+        "generation_prompt",
+        "measurer",
+        "measurements",
+        "visual_audit",
+    }
+    checks.require(set(charm_vfx) == charm_vfx_keys, "charm_vfx_binding_schema")
+    charm_vfx_paths = {
+        key: check_file(checks, project, value, f"charm_vfx_{key}")
+        for key, value in charm_vfx.items()
+        if key != "pretransform_sources"
+    }
+    charm_vfx_pretransform = [
+        check_file(checks, project, item, f"charm_vfx_pretransform_{index}")
+        for index, item in enumerate(charm_vfx["pretransform_sources"])
+    ]
+    checks.require(
+        [path.name for path in charm_vfx_pretransform]
+        == [f"frame_{index:02d}.png" for index in range(8)],
+        "charm_vfx_pretransform_inventory",
+    )
+    charm_vfx_receipt = parse_json(charm_vfx_paths["receipt"])
+    checks.require(
+        charm_vfx_receipt["status"] == "PASS"
+        and len(charm_vfx_receipt["inputs"]) == 8
+        and len(charm_vfx_receipt["outputs"]) == 8,
+        "charm_vfx_receipt_status",
+    )
+    checks.require(
+        parse_json(charm_vfx_paths["extraction_receipt"])["schema_version"]
+        == "mgs.aui11.charm-vfx-source-extraction.v1",
+        "charm_vfx_extraction_schema",
+    )
+    charm_vfx_audit = parse_json(charm_vfx_paths["visual_audit"])
+    checks.require(
+        charm_vfx_audit["verdict"] == "PASS"
+        and charm_vfx_audit["measurements_pass"] is True
+        and all(charm_vfx_audit["visible_contract"].values()),
+        "charm_vfx_visual_audit_pass",
+    )
+    charm_vfx_measurements = parse_json(charm_vfx_paths["measurements"])
+    checks.require(len(charm_vfx_measurements["frames"]) == 8, "charm_vfx_measurement_frames")
+    for frame in charm_vfx_measurements["frames"]:
+        checks.require(44 <= frame["width"] <= 72, f"charm_vfx_width_{frame['frame']}")
+        checks.require(22 <= frame["height"] <= 44, f"charm_vfx_height_{frame['frame']}")
+        checks.require(900 <= frame["opaque"] <= 2800, f"charm_vfx_area_{frame['frame']}")
+        checks.require(93 <= frame["center_x"] <= 99 and frame["foot"] == 180, f"charm_vfx_anchor_{frame['frame']}")
+        checks.require(frame["open_center_max_alpha"] == 0, f"charm_vfx_open_center_{frame['frame']}")
+    frame_six = charm_vfx_measurements["frames"][6]
+    checks.require(frame_six["components_8_connected"] == 6, "charm_vfx_frame6_component_count")
+    checks.require(all(loop["iou"] >= 0.92 for loop in charm_vfx_measurements["loops"]), "charm_vfx_measurement_loops")
+    checks.require(charm_vfx_receipt["contract_sha256"] == sha256(charm_vfx_paths["contract"]), "charm_vfx_receipt_contract")
+    for index, path in enumerate(charm_vfx_pretransform):
+        checks.require(charm_vfx_receipt["inputs"][index]["file_sha256"] == sha256(path), f"charm_vfx_receipt_input_{index}")
+    charm_vfx_sources = {
+        item["path"].rsplit("/", 1)[-1]: item
+        for item in next(item for item in manifest["packets"] if item["logical_id"] == "charm_vfx")["sources"]
+    }
+    for index, item in enumerate(charm_vfx_receipt["outputs"]):
+        expected = charm_vfx_sources[f"frame_{index:02d}.png"]
+        checks.require(
+            item["expected_final"]["file_sha256"] == expected["sha256"]
+            and item["expected_final"]["bytes"] == expected["bytes"],
+            f"charm_vfx_receipt_output_{index}",
+        )
+    with tempfile.TemporaryDirectory(prefix="aui11-charm-vfx-oracle-") as temporary:
+        temporary_root = Path(temporary)
+        rerun_report = temporary_root / "transform-report.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-B",
+                str(charm_vfx_paths["verifier"]),
+                "--contract",
+                str(charm_vfx_paths["contract"]),
+                "--input-root",
+                str(qa / "charm-vfx-pretransform"),
+                "--expected-root",
+                str(root / "sources/charm_vfx"),
+                "--output-root",
+                str(temporary_root / "reconstructed"),
+                "--report",
+                str(rerun_report),
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=60,
+            check=False,
+        )
+        checks.require(result.returncode == 0, "charm_vfx_oracle_rerun", result.stdout[-500:])
+        checks.require(parse_json(rerun_report) == charm_vfx_receipt, "charm_vfx_oracle_receipt_reproduced")
+        rerun_measurements = temporary_root / "measurements.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-B",
+                str(charm_vfx_paths["measurer"]),
+                str(root / "packets/charm_vfx/aui11-charm_vfx.png"),
+                "--report",
+                str(rerun_measurements),
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=60,
+            check=False,
+        )
+        checks.require(result.returncode == 0, "charm_vfx_measurement_rerun", result.stdout[-500:])
+        checks.require(parse_json(rerun_measurements) == charm_vfx_measurements, "charm_vfx_measurement_reproduced")
 
     charm = bindings["charm_semantics"]
     expected_keys = {"contract", "expected", "transform_report", "transformer", "expected_oracle", "semantic_verifier", "semantic_receipt"}
@@ -246,6 +402,128 @@ def verify_bound_oracles(checks: Checks, project: Path, manifest: dict[str, obje
         )
         checks.require(result.returncode == 0, "charm_oracle_rerun", result.stdout[-500:])
         checks.require(parse_json(rerun_report) == semantic_receipt, "charm_oracle_receipt_reproduced")
+
+    named = bindings["named_reviews"]
+    named_keys = {
+        "input_builder",
+        "input_manifest",
+        "inputs",
+        "blind_results",
+        "originality_results",
+        "verifier",
+        "receipt",
+    }
+    checks.require(set(named) == named_keys, "named_binding_schema")
+    named_paths = {
+        key: check_file(checks, project, value, f"named_{key}")
+        for key, value in named.items()
+        if key != "inputs"
+    }
+    named_inputs = [
+        check_file(checks, project, value, f"named_input_{index}")
+        for index, value in enumerate(named["inputs"])
+    ]
+    checks.require(
+        [path.name for path in named_inputs]
+        == [
+            "blind-grunt-silhouette.png",
+            "blind-grunt-state-pair.png",
+            "blind-vanguard-silhouette.png",
+        ],
+        "named_input_inventory",
+    )
+    named_receipt = parse_json(named_paths["receipt"])
+    blind_results = parse_json(named_paths["blind_results"])
+    checks.require(
+        named_receipt["status"] == "PASS"
+        and named_receipt["blind_scores"] == blind_results["scores"]
+        and all(score >= 8 for score in named_receipt["blind_scores"].values())
+        and named_receipt["originality_reviews_passed"] == 7,
+        "named_receipt_status",
+    )
+    with tempfile.TemporaryDirectory(prefix="aui11-named-review-") as temporary:
+        rerun_report = Path(temporary) / "report.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-B",
+                str(named_paths["verifier"]),
+                "--project",
+                str(project),
+                "--report",
+                str(rerun_report),
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=60,
+            check=False,
+        )
+        checks.require(
+            result.returncode == 0,
+            "named_review_rerun",
+            "" if result.returncode == 0 else result.stdout[-500:],
+        )
+        checks.require(parse_json(rerun_report) == named_receipt, "named_review_receipt_reproduced")
+
+    corrections = bindings["facing_state_corrections"]
+    correction_keys = {
+        "extractor",
+        "extraction_receipt",
+        "cue_support_transform",
+        "cue_support_receipt",
+        "state_value_transform",
+        "state_value_receipt",
+        "base_highlight_transform",
+        "base_highlight_receipt",
+        "vanguard_loop_transform",
+        "vanguard_loop_receipt",
+        "grunt_loop_transform",
+        "grunt_loop_receipt",
+        "promotion_receipt",
+    }
+    checks.require(set(corrections) == correction_keys, "correction_binding_schema")
+    correction_paths = {
+        key: check_file(checks, project, value, f"correction_{key}")
+        for key, value in corrections.items()
+    }
+    checks.require(
+        parse_json(correction_paths["extraction_receipt"])["schema_version"]
+        == "mgs.aui11.facing-source-extraction.v1",
+        "correction_extraction_schema",
+    )
+    checks.require(
+        parse_json(correction_paths["cue_support_receipt"])["schema_version"]
+        == "mgs.aui11.charm-cue-support-repair.v1",
+        "correction_cue_support_schema",
+    )
+    checks.require(
+        parse_json(correction_paths["state_value_receipt"])["schema_version"]
+        == "mgs.aui11.grunt-state-region-flatten.v1",
+        "correction_state_value_schema",
+    )
+    checks.require(
+        parse_json(correction_paths["base_highlight_receipt"])["schema_version"]
+        == "mgs.aui11.grunt-base-highlight-reduction.v1",
+        "correction_base_highlight_schema",
+    )
+    loop_receipt = parse_json(correction_paths["vanguard_loop_receipt"])
+    checks.require(
+        loop_receipt["schema_version"] == "mgs.aui11.vanguard-loop-closure.v1"
+        and loop_receipt["after"]["start_recovery_byte_equal"] is True,
+        "correction_vanguard_loop_schema",
+    )
+    grunt_loop_receipt = parse_json(correction_paths["grunt_loop_receipt"])
+    checks.require(
+        grunt_loop_receipt["schema_version"] == "mgs.aui11.grunt-loop-closure.v1"
+        and all(item["byte_equal"] is True for item in grunt_loop_receipt["after"]["pairs"]),
+        "correction_grunt_loop_schema",
+    )
+    checks.require(
+        parse_json(correction_paths["promotion_receipt"])["schema_version"]
+        == "mgs.aui11.round6-promotion.v1",
+        "correction_promotion_schema",
+    )
 
 
 def verify_dual_receipt(checks: Checks, project: Path, manifest: dict[str, object]) -> None:
@@ -319,12 +597,24 @@ def verify_provenance(checks: Checks, project: Path, manifest: dict[str, object]
     expected_top = {"schema_version", "package", "state", "production_assets_emitted", "runtime_assets_changed", "runtime_binding", "human_final_art", "approval_token_sha256", "reference_manifest_sha256", "approved_concept_sha256", "generation", "foreground_extraction", "normalization", "evidence", "license", "asset_domain", "packet_ids"}
     expected_evidence_paths = {
         "attack_hit_transform": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
+        "attack_hit_visual_audit": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
         "batch_manifest": "res://staging/character-vfx/aui-11/batch-manifest.json",
+        "charm_vfx_transform": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+        "charm_vfx_visual_audit": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
         "charm_semantics": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
         "dual_backend_verification": "res://staging/qa/character-vfx/aui-11/dual-backend-bound-receipt.json",
         "dual_backend_verifier": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
         "generation_ledger": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
-        "staged_verification": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
+        "named_review_verification": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+        "blind_review_results": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+        "originality_review_results": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+        "facing_source_extraction": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+        "charm_cue_support": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+        "grunt_state_value_cleanup": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+        "grunt_base_highlight_reduction": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+        "vanguard_loop_closure": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+        "grunt_loop_closure": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+        "promotion_receipt": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
         "staged_verifier": "res://staging/qa/character-vfx/aui-11/verify_staged_packets.py",
         "visual_review": "res://staging/qa/character-vfx/aui-11/final-packet-visual-review.md",
     }

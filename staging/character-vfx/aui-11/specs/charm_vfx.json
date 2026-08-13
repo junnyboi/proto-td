@@ -108,7 +108,7 @@
     ],
     "human_approval": "CONCEPT_APPROVED_RUNTIME_UNBOUND",
     "model": "gpt-image-2+isnet-general-use",
-    "prompt_sha256": "374ca535246b6a4a37c04da65697b1bcbf546db8398b336efe2de64ea755105d",
+    "prompt_sha256": "d205db8f5e85a01d3be98d6292f581a5571fe1529e15df572924045421d1d2bf",
     "reference_sha256": "0389dd44621684d65636c5d4d549311ab39e090d77ca9560b7522f107162c1d6",
     "seed": null,
     "tool": "gpt-image-2+rembg-2.0.67+aui34-1.0.0"

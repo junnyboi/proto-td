@@ -116,7 +116,7 @@
       "ok": true
     },
     {
-      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-v1-contract.json",
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-v2-contract.json",
       "name": "attack_contract_file",
       "ok": true
     },
@@ -128,6 +128,26 @@
     {
       "detail": "",
       "name": "attack_contract_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_producer_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/build_attack_hit_sources.py",
+      "name": "attack_producer_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_producer_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_producer_sha256",
       "ok": true
     },
     {
@@ -168,6 +188,106 @@
     {
       "detail": "",
       "name": "attack_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extractor_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/extract_attack_hit_sources.py",
+      "name": "attack_extractor_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extractor_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extractor_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extraction_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-source-extraction.json",
+      "name": "attack_extraction_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extraction_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_extraction_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_generation_prompt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-generation-prompt.md",
+      "name": "attack_generation_prompt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_generation_prompt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_generation_prompt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_measurements_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-measurements.json",
+      "name": "attack_measurements_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_measurements_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_measurements_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
+      "name": "attack_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_visual_audit_sha256",
       "ok": true
     },
     {
@@ -342,6 +462,26 @@
     },
     {
       "detail": "",
+      "name": "attack_extraction_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_visual_audit_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_measurement_components",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_measurement_loops",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "attack_receipt_contract",
       "ok": true
     },
@@ -433,6 +573,711 @@
     {
       "detail": "",
       "name": "attack_oracle_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_contract_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-v1-contract.json",
+      "name": "charm_vfx_contract_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_contract_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_contract_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extraction_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-source-extraction.json",
+      "name": "charm_vfx_extraction_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extraction_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extraction_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extractor_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/extract_attack_hit_sources.py",
+      "name": "charm_vfx_extractor_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extractor_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extractor_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_generation_prompt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-generation-prompt.md",
+      "name": "charm_vfx_generation_prompt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_generation_prompt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_generation_prompt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurements_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-measurements.json",
+      "name": "charm_vfx_measurements_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurements_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurements_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurer_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/measure_charm_vfx.py",
+      "name": "charm_vfx_measurer_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurer_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurer_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_producer_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/build_attack_hit_sources.py",
+      "name": "charm_vfx_producer_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_producer_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_producer_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+      "name": "charm_vfx_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_attack_hit_transform.py",
+      "name": "charm_vfx_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
+      "name": "charm_vfx_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_visual_audit_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_00.png",
+      "name": "charm_vfx_pretransform_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_01.png",
+      "name": "charm_vfx_pretransform_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_02.png",
+      "name": "charm_vfx_pretransform_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_03.png",
+      "name": "charm_vfx_pretransform_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_04.png",
+      "name": "charm_vfx_pretransform_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_05.png",
+      "name": "charm_vfx_pretransform_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_06.png",
+      "name": "charm_vfx_pretransform_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_07.png",
+      "name": "charm_vfx_pretransform_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_pretransform_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_extraction_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_visual_audit_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurement_frames",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_width_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_height_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_area_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_center_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_frame6_component_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurement_loops",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_contract",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_input_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_receipt_output_7",
+      "ok": true
+    },
+    {
+      "detail": "{\"frames\": 8, \"status\": \"PASS\"}\n",
+      "name": "charm_vfx_oracle_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_oracle_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "71\n          ]\n        },\n        {\n          \"area\": 80,\n          \"bounds\": [\n            90,\n            174,\n            103,\n            181\n          ]\n        }\n      ],\n      \"components_8_connected\": 3,\n      \"foot\": 180,\n      \"frame\": 7,\n      \"height\": 40,\n      \"opaque\": 1030,\n      \"open_center_max_alpha\": 0,\n      \"width\": 65\n    }\n  ],\n  \"loops\": [\n    {\n      \"end\": 3,\n      \"iou\": 1.0,\n      \"start\": 0\n    },\n    {\n      \"end\": 7,\n      \"iou\": 1.0,\n      \"start\": 4\n    }\n  ]\n}\n",
+      "name": "charm_vfx_measurement_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_measurement_reproduced",
       "ok": true
     },
     {
@@ -608,6 +1453,511 @@
     {
       "detail": "",
       "name": "charm_oracle_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_blind_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+      "name": "named_blind_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_blind_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_blind_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_builder_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/build_blind_review_inputs.py",
+      "name": "named_input_builder_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_builder_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_builder_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_manifest_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-inputs.json",
+      "name": "named_input_manifest_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_manifest_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_manifest_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_originality_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+      "name": "named_originality_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_originality_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_originality_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+      "name": "named_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_named_review_gates.py",
+      "name": "named_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-silhouette.png",
+      "name": "named_input_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-state-pair.png",
+      "name": "named_input_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-vanguard-silhouette.png",
+      "name": "named_input_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_input_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_receipt_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_review_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "named_review_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+      "name": "correction_base_highlight_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/reduce_grunt_base_highlights.py",
+      "name": "correction_base_highlight_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+      "name": "correction_cue_support_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/repair_charm_cue_support.py",
+      "name": "correction_cue_support_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extraction_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+      "name": "correction_extraction_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extraction_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extraction_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extractor_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/extract_facing_sources.py",
+      "name": "correction_extractor_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extractor_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extractor_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+      "name": "correction_grunt_loop_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/close_grunt_loops.py",
+      "name": "correction_grunt_loop_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_promotion_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
+      "name": "correction_promotion_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_promotion_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_promotion_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+      "name": "correction_state_value_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/flatten_grunt_state_regions.py",
+      "name": "correction_state_value_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+      "name": "correction_vanguard_loop_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/close_vanguard_attack_loop.py",
+      "name": "correction_vanguard_loop_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_extraction_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_cue_support_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_state_value_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_base_highlight_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_vanguard_loop_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_grunt_loop_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "correction_promotion_schema",
       "ok": true
     },
     {
@@ -2182,6 +3532,31 @@
     },
     {
       "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_visual_audit_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
+      "name": "provenance_characters_evidence_attack_hit_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_visual_audit_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_characters_evidence_batch_manifest_path",
       "ok": true
     },
@@ -2207,6 +3582,56 @@
     },
     {
       "detail": "",
+      "name": "provenance_characters_evidence_blind_review_results_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_blind_review_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+      "name": "provenance_characters_evidence_blind_review_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_blind_review_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_blind_review_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_cue_support_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_cue_support_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+      "name": "provenance_characters_evidence_charm_cue_support_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_cue_support_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_cue_support_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_characters_evidence_charm_semantics_path",
       "ok": true
     },
@@ -2228,6 +3653,56 @@
     {
       "detail": "",
       "name": "provenance_characters_evidence_charm_semantics_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_transform_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+      "name": "provenance_characters_evidence_charm_vfx_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_visual_audit_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
+      "name": "provenance_characters_evidence_charm_vfx_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_vfx_visual_audit_sha256",
       "ok": true
     },
     {
@@ -2282,6 +3757,31 @@
     },
     {
       "detail": "",
+      "name": "provenance_characters_evidence_facing_source_extraction_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_facing_source_extraction_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+      "name": "provenance_characters_evidence_facing_source_extraction_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_facing_source_extraction_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_facing_source_extraction_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_characters_evidence_generation_ledger_path",
       "ok": true
     },
@@ -2307,27 +3807,152 @@
     },
     {
       "detail": "",
-      "name": "provenance_characters_evidence_staged_verification_path",
+      "name": "provenance_characters_evidence_grunt_base_highlight_reduction_path",
       "ok": true
     },
     {
       "detail": "",
-      "name": "provenance_characters_evidence_staged_verification_schema",
+      "name": "provenance_characters_evidence_grunt_base_highlight_reduction_schema",
       "ok": true
     },
     {
-      "detail": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
-      "name": "provenance_characters_evidence_staged_verification_file",
-      "ok": true
-    },
-    {
-      "detail": "",
-      "name": "provenance_characters_evidence_staged_verification_bytes",
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+      "name": "provenance_characters_evidence_grunt_base_highlight_reduction_file",
       "ok": true
     },
     {
       "detail": "",
-      "name": "provenance_characters_evidence_staged_verification_sha256",
+      "name": "provenance_characters_evidence_grunt_base_highlight_reduction_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_base_highlight_reduction_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_loop_closure_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_loop_closure_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+      "name": "provenance_characters_evidence_grunt_loop_closure_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_loop_closure_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_loop_closure_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_state_value_cleanup_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_state_value_cleanup_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+      "name": "provenance_characters_evidence_grunt_state_value_cleanup_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_state_value_cleanup_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_grunt_state_value_cleanup_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_named_review_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_named_review_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+      "name": "provenance_characters_evidence_named_review_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_named_review_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_named_review_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_originality_review_results_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_originality_review_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+      "name": "provenance_characters_evidence_originality_review_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_originality_review_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_originality_review_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_promotion_receipt_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_promotion_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
+      "name": "provenance_characters_evidence_promotion_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_promotion_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_promotion_receipt_sha256",
       "ok": true
     },
     {
@@ -2353,6 +3978,31 @@
     {
       "detail": "",
       "name": "provenance_characters_evidence_staged_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_vanguard_loop_closure_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_vanguard_loop_closure_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+      "name": "provenance_characters_evidence_vanguard_loop_closure_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_vanguard_loop_closure_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_vanguard_loop_closure_sha256",
       "ok": true
     },
     {
@@ -2567,6 +4217,31 @@
     },
     {
       "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_visual_audit_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
+      "name": "provenance_vfx_evidence_attack_hit_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_visual_audit_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_vfx_evidence_batch_manifest_path",
       "ok": true
     },
@@ -2592,6 +4267,56 @@
     },
     {
       "detail": "",
+      "name": "provenance_vfx_evidence_blind_review_results_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_blind_review_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+      "name": "provenance_vfx_evidence_blind_review_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_blind_review_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_blind_review_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_cue_support_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_cue_support_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+      "name": "provenance_vfx_evidence_charm_cue_support_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_cue_support_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_cue_support_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_vfx_evidence_charm_semantics_path",
       "ok": true
     },
@@ -2613,6 +4338,56 @@
     {
       "detail": "",
       "name": "provenance_vfx_evidence_charm_semantics_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_transform_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+      "name": "provenance_vfx_evidence_charm_vfx_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_visual_audit_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_visual_audit_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
+      "name": "provenance_vfx_evidence_charm_vfx_visual_audit_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_visual_audit_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_vfx_visual_audit_sha256",
       "ok": true
     },
     {
@@ -2667,6 +4442,31 @@
     },
     {
       "detail": "",
+      "name": "provenance_vfx_evidence_facing_source_extraction_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_facing_source_extraction_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+      "name": "provenance_vfx_evidence_facing_source_extraction_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_facing_source_extraction_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_facing_source_extraction_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
       "name": "provenance_vfx_evidence_generation_ledger_path",
       "ok": true
     },
@@ -2692,27 +4492,152 @@
     },
     {
       "detail": "",
-      "name": "provenance_vfx_evidence_staged_verification_path",
+      "name": "provenance_vfx_evidence_grunt_base_highlight_reduction_path",
       "ok": true
     },
     {
       "detail": "",
-      "name": "provenance_vfx_evidence_staged_verification_schema",
+      "name": "provenance_vfx_evidence_grunt_base_highlight_reduction_schema",
       "ok": true
     },
     {
-      "detail": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
-      "name": "provenance_vfx_evidence_staged_verification_file",
-      "ok": true
-    },
-    {
-      "detail": "",
-      "name": "provenance_vfx_evidence_staged_verification_bytes",
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+      "name": "provenance_vfx_evidence_grunt_base_highlight_reduction_file",
       "ok": true
     },
     {
       "detail": "",
-      "name": "provenance_vfx_evidence_staged_verification_sha256",
+      "name": "provenance_vfx_evidence_grunt_base_highlight_reduction_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_base_highlight_reduction_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_loop_closure_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_loop_closure_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+      "name": "provenance_vfx_evidence_grunt_loop_closure_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_loop_closure_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_loop_closure_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_state_value_cleanup_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_state_value_cleanup_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+      "name": "provenance_vfx_evidence_grunt_state_value_cleanup_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_state_value_cleanup_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_grunt_state_value_cleanup_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_named_review_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_named_review_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+      "name": "provenance_vfx_evidence_named_review_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_named_review_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_named_review_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_originality_review_results_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_originality_review_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+      "name": "provenance_vfx_evidence_originality_review_results_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_originality_review_results_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_originality_review_results_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_promotion_receipt_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_promotion_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
+      "name": "provenance_vfx_evidence_promotion_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_promotion_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_promotion_receipt_sha256",
       "ok": true
     },
     {
@@ -2738,6 +4663,31 @@
     {
       "detail": "",
       "name": "provenance_vfx_evidence_staged_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_vanguard_loop_closure_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_vanguard_loop_closure_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+      "name": "provenance_vfx_evidence_vanguard_loop_closure_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_vanguard_loop_closure_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_vanguard_loop_closure_sha256",
       "ok": true
     },
     {
@@ -3371,7 +5321,7 @@
       "ok": true
     },
     {
-      "detail": "iou=1.000000",
+      "detail": "iou=0.932059",
       "name": "packet_vanguard_1_loop_iou_0",
       "ok": true
     },
@@ -4441,7 +6391,7 @@
       "ok": true
     },
     {
-      "detail": "iou=1.000000",
+      "detail": "iou=0.980726",
       "name": "packet_grunt_loop_iou_0",
       "ok": true
     },
@@ -4451,7 +6401,7 @@
       "ok": true
     },
     {
-      "detail": "iou=1.000000",
+      "detail": "iou=0.995726",
       "name": "packet_grunt_loop_iou_4",
       "ok": true
     },
@@ -4976,7 +6926,7 @@
       "ok": true
     },
     {
-      "detail": "iou=1.000000",
+      "detail": "iou=0.980726",
       "name": "packet_grunt_charmed_loop_iou_0",
       "ok": true
     },
@@ -4986,7 +6936,7 @@
       "ok": true
     },
     {
-      "detail": "iou=1.000000",
+      "detail": "iou=0.995726",
       "name": "packet_grunt_charmed_loop_iou_4",
       "ok": true
     },
@@ -6606,7 +8556,7 @@
       "ok": true
     },
     {
-      "detail": "different=9850",
+      "detail": "different=6984",
       "name": "charm_grayscale_0",
       "ok": true
     },
@@ -6616,7 +8566,7 @@
       "ok": true
     },
     {
-      "detail": "different=8808",
+      "detail": "different=7033",
       "name": "charm_grayscale_1",
       "ok": true
     },
@@ -6626,7 +8576,7 @@
       "ok": true
     },
     {
-      "detail": "different=9381",
+      "detail": "different=7042",
       "name": "charm_grayscale_2",
       "ok": true
     },
@@ -6636,7 +8586,7 @@
       "ok": true
     },
     {
-      "detail": "different=9850",
+      "detail": "different=6992",
       "name": "charm_grayscale_3",
       "ok": true
     },
@@ -6646,7 +8596,7 @@
       "ok": true
     },
     {
-      "detail": "different=8409",
+      "detail": "different=7464",
       "name": "charm_grayscale_4",
       "ok": true
     },
@@ -6656,7 +8606,7 @@
       "ok": true
     },
     {
-      "detail": "different=7646",
+      "detail": "different=6925",
       "name": "charm_grayscale_5",
       "ok": true
     },
@@ -6666,7 +8616,7 @@
       "ok": true
     },
     {
-      "detail": "different=8247",
+      "detail": "different=6831",
       "name": "charm_grayscale_6",
       "ok": true
     },
@@ -6676,7 +8626,7 @@
       "ok": true
     },
     {
-      "detail": "different=8409",
+      "detail": "different=7478",
       "name": "charm_grayscale_7",
       "ok": true
     },
@@ -6841,7 +8791,7 @@
       "ok": true
     },
     {
-      "detail": "55",
+      "detail": "56",
       "name": "attack_hit_width_0",
       "ok": true
     },
@@ -6851,17 +8801,17 @@
       "ok": true
     },
     {
-      "detail": "451",
+      "detail": "424",
       "name": "attack_hit_area_0",
       "ok": true
     },
     {
-      "detail": "(55, 36, 451, 96, 180)",
+      "detail": "(56, 36, 424, 96, 180)",
       "name": "attack_hit_anchor_0",
       "ok": true
     },
     {
-      "detail": "54",
+      "detail": "56",
       "name": "attack_hit_width_1",
       "ok": true
     },
@@ -6871,12 +8821,12 @@
       "ok": true
     },
     {
-      "detail": "423",
+      "detail": "447",
       "name": "attack_hit_area_1",
       "ok": true
     },
     {
-      "detail": "(54, 38, 423, 96, 180)",
+      "detail": "(56, 38, 447, 96, 180)",
       "name": "attack_hit_anchor_1",
       "ok": true
     },
@@ -6886,22 +8836,22 @@
       "ok": true
     },
     {
-      "detail": "37",
+      "detail": "38",
       "name": "attack_hit_height_2",
       "ok": true
     },
     {
-      "detail": "490",
+      "detail": "486",
       "name": "attack_hit_area_2",
       "ok": true
     },
     {
-      "detail": "(55, 37, 490, 96, 180)",
+      "detail": "(55, 38, 486, 96, 180)",
       "name": "attack_hit_anchor_2",
       "ok": true
     },
     {
-      "detail": "55",
+      "detail": "56",
       "name": "attack_hit_width_3",
       "ok": true
     },
@@ -6911,37 +8861,37 @@
       "ok": true
     },
     {
-      "detail": "451",
+      "detail": "424",
       "name": "attack_hit_area_3",
       "ok": true
     },
     {
-      "detail": "(55, 36, 451, 96, 180)",
+      "detail": "(56, 36, 424, 96, 180)",
       "name": "attack_hit_anchor_3",
       "ok": true
     },
     {
-      "detail": "54",
+      "detail": "56",
       "name": "attack_hit_width_4",
       "ok": true
     },
     {
-      "detail": "37",
+      "detail": "36",
       "name": "attack_hit_height_4",
       "ok": true
     },
     {
-      "detail": "432",
+      "detail": "461",
       "name": "attack_hit_area_4",
       "ok": true
     },
     {
-      "detail": "(54, 37, 432, 96, 180)",
+      "detail": "(56, 36, 461, 96, 180)",
       "name": "attack_hit_anchor_4",
       "ok": true
     },
     {
-      "detail": "55",
+      "detail": "56",
       "name": "attack_hit_width_5",
       "ok": true
     },
@@ -6951,12 +8901,12 @@
       "ok": true
     },
     {
-      "detail": "477",
+      "detail": "466",
       "name": "attack_hit_area_5",
       "ok": true
     },
     {
-      "detail": "(55, 38, 477, 96, 180)",
+      "detail": "(56, 38, 466, 96, 180)",
       "name": "attack_hit_anchor_5",
       "ok": true
     },
@@ -6966,82 +8916,82 @@
       "ok": true
     },
     {
-      "detail": "37",
+      "detail": "38",
       "name": "attack_hit_height_6",
       "ok": true
     },
     {
-      "detail": "353",
+      "detail": "443",
       "name": "attack_hit_area_6",
       "ok": true
     },
     {
-      "detail": "(55, 37, 353, 96, 180)",
+      "detail": "(55, 38, 443, 96, 180)",
       "name": "attack_hit_anchor_6",
       "ok": true
     },
     {
-      "detail": "54",
+      "detail": "56",
       "name": "attack_hit_width_7",
       "ok": true
     },
     {
-      "detail": "37",
+      "detail": "36",
       "name": "attack_hit_height_7",
       "ok": true
     },
     {
-      "detail": "432",
+      "detail": "461",
       "name": "attack_hit_area_7",
       "ok": true
     },
     {
-      "detail": "(54, 37, 432, 96, 180)",
+      "detail": "(56, 36, 461, 96, 180)",
       "name": "attack_hit_anchor_7",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "63",
       "name": "charm_vfx_width_0",
       "ok": true
     },
     {
-      "detail": "30",
+      "detail": "40",
       "name": "charm_vfx_height_0",
       "ok": true
     },
     {
-      "detail": "1041",
+      "detail": "997",
       "name": "charm_vfx_area_0",
       "ok": true
     },
     {
-      "detail": "(70, 30, 1041, 96, 180)",
+      "detail": "(63, 40, 997, 96, 180)",
       "name": "charm_vfx_anchor_0",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "66",
       "name": "charm_vfx_width_1",
       "ok": true
     },
     {
-      "detail": "33",
+      "detail": "40",
       "name": "charm_vfx_height_1",
       "ok": true
     },
     {
-      "detail": "1044",
+      "detail": "922",
       "name": "charm_vfx_area_1",
       "ok": true
     },
     {
-      "detail": "(70, 33, 1044, 96, 180)",
+      "detail": "(66, 40, 922, 96, 180)",
       "name": "charm_vfx_anchor_1",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "60",
       "name": "charm_vfx_width_2",
       "ok": true
     },
@@ -7051,37 +9001,37 @@
       "ok": true
     },
     {
-      "detail": "1305",
+      "detail": "992",
       "name": "charm_vfx_area_2",
       "ok": true
     },
     {
-      "detail": "(70, 40, 1305, 96, 180)",
+      "detail": "(60, 40, 992, 96, 180)",
       "name": "charm_vfx_anchor_2",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "63",
       "name": "charm_vfx_width_3",
       "ok": true
     },
     {
-      "detail": "30",
+      "detail": "40",
       "name": "charm_vfx_height_3",
       "ok": true
     },
     {
-      "detail": "1041",
+      "detail": "997",
       "name": "charm_vfx_area_3",
       "ok": true
     },
     {
-      "detail": "(70, 30, 1041, 96, 180)",
+      "detail": "(63, 40, 997, 96, 180)",
       "name": "charm_vfx_anchor_3",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "65",
       "name": "charm_vfx_width_4",
       "ok": true
     },
@@ -7091,17 +9041,17 @@
       "ok": true
     },
     {
-      "detail": "1343",
+      "detail": "1030",
       "name": "charm_vfx_area_4",
       "ok": true
     },
     {
-      "detail": "(70, 40, 1343, 96, 180)",
+      "detail": "(65, 40, 1030, 96, 180)",
       "name": "charm_vfx_anchor_4",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "63",
       "name": "charm_vfx_width_5",
       "ok": true
     },
@@ -7111,37 +9061,37 @@
       "ok": true
     },
     {
-      "detail": "1383",
+      "detail": "1090",
       "name": "charm_vfx_area_5",
       "ok": true
     },
     {
-      "detail": "(70, 40, 1383, 96, 180)",
+      "detail": "(63, 40, 1090, 96, 180)",
       "name": "charm_vfx_anchor_5",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "67",
       "name": "charm_vfx_width_6",
       "ok": true
     },
     {
-      "detail": "32",
+      "detail": "40",
       "name": "charm_vfx_height_6",
       "ok": true
     },
     {
-      "detail": "1139",
+      "detail": "956",
       "name": "charm_vfx_area_6",
       "ok": true
     },
     {
-      "detail": "(70, 32, 1139, 96, 180)",
+      "detail": "(67, 40, 956, 96, 180)",
       "name": "charm_vfx_anchor_6",
       "ok": true
     },
     {
-      "detail": "70",
+      "detail": "65",
       "name": "charm_vfx_width_7",
       "ok": true
     },
@@ -7151,12 +9101,12 @@
       "ok": true
     },
     {
-      "detail": "1343",
+      "detail": "1030",
       "name": "charm_vfx_area_7",
       "ok": true
     },
     {
-      "detail": "(70, 40, 1343, 96, 180)",
+      "detail": "(65, 40, 1030, 96, 180)",
       "name": "charm_vfx_anchor_7",
       "ok": true
     },
@@ -7321,8 +9271,8 @@
       "ok": true
     }
   ],
-  "checks_executed": 1464,
-  "manifest_sha256": "7c9c8d116e6b655b6c4fc68668d4c3253bf540cb04c500b355636bda0b687ed1",
+  "checks_executed": 1854,
+  "manifest_sha256": "4ec7db2dc292d467f50e36e8d30612579815ee2a37c36e564c5e88cbcec45442",
   "packets": [
     "attack_hit",
     "charm_vfx",

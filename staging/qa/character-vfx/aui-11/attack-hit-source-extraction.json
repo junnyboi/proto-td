@@ -1,0 +1,300 @@
+{
+  "candidate_master": {
+    "bytes": 1542985,
+    "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-master.png",
+    "sha256": "11bba18bf00bfe8d57df2bd4521bce0dab739eb633a7dc72131f37da44666fa2"
+  },
+  "clean_master": {
+    "bytes": 819152,
+    "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/masters/vfx_attack_hit-master.png",
+    "sha256": "badea6b4b1b34fde75d081c54645a3c9f4505d20671d99817f8f0bd9ea35f9af"
+  },
+  "frames": [
+    {
+      "bytes": 6496,
+      "components_before": 7,
+      "components_kept": 7,
+      "cropped_size": [
+        461,
+        396
+      ],
+      "index": 0,
+      "material_pixels": 27740,
+      "output_bbox": [
+        9,
+        25,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_00.png",
+      "sha256": "aabc996317effd0ed889797ee8194423d21d09f76542b228dc8d4b08627b6d7a",
+      "source_bbox": [
+        104,
+        213,
+        565,
+        609
+      ],
+      "visible_bbox": [
+        104,
+        213,
+        565,
+        609
+      ]
+    },
+    {
+      "bytes": 6898,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        431,
+        391
+      ],
+      "index": 1,
+      "material_pixels": 25910,
+      "output_bbox": [
+        9,
+        20,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_01.png",
+      "sha256": "dfce8f9998734d2b08b03c3dea62775e9771072ba15440613c9dc00eaf9d75c9",
+      "source_bbox": [
+        105,
+        218,
+        536,
+        609
+      ],
+      "visible_bbox": [
+        105,
+        218,
+        536,
+        609
+      ]
+    },
+    {
+      "bytes": 7766,
+      "components_before": 7,
+      "components_kept": 7,
+      "cropped_size": [
+        438,
+        395
+      ],
+      "index": 2,
+      "material_pixels": 30613,
+      "output_bbox": [
+        9,
+        20,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_02.png",
+      "sha256": "40c04557c3c19b177195b764840a0e6c88f7a176821cb6de4ad64bf1c5d754dc",
+      "source_bbox": [
+        88,
+        210,
+        526,
+        605
+      ],
+      "visible_bbox": [
+        88,
+        210,
+        526,
+        605
+      ]
+    },
+    {
+      "bytes": 7455,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        415,
+        387
+      ],
+      "index": 3,
+      "material_pixels": 26431,
+      "output_bbox": [
+        9,
+        17,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_03.png",
+      "sha256": "e918436668e22f10961792573eaed6355b907043324dbb7886af3c1353ba2d92",
+      "source_bbox": [
+        60,
+        219,
+        475,
+        606
+      ],
+      "visible_bbox": [
+        60,
+        219,
+        475,
+        606
+      ]
+    },
+    {
+      "bytes": 7885,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        462,
+        405
+      ],
+      "index": 4,
+      "material_pixels": 32560,
+      "output_bbox": [
+        9,
+        23,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_04.png",
+      "sha256": "16d622bb68cf864edfcb726150ec7d7e8fe99e4ecce7cfe50533ebe0bbcdfa55",
+      "source_bbox": [
+        108,
+        62,
+        570,
+        467
+      ],
+      "visible_bbox": [
+        108,
+        62,
+        570,
+        467
+      ]
+    },
+    {
+      "bytes": 7967,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        448,
+        406
+      ],
+      "index": 5,
+      "material_pixels": 31217,
+      "output_bbox": [
+        9,
+        20,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_05.png",
+      "sha256": "7dbdbae260b6e5c194c41da0ec2ca3a8403d07a6e77db9bd965f56f9a37a778c",
+      "source_bbox": [
+        86,
+        62,
+        534,
+        468
+      ],
+      "visible_bbox": [
+        86,
+        62,
+        534,
+        468
+      ]
+    },
+    {
+      "bytes": 6772,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        425,
+        393
+      ],
+      "index": 6,
+      "material_pixels": 24737,
+      "output_bbox": [
+        9,
+        18,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_06.png",
+      "sha256": "46849d89378c561c0e7d39bcd209184b8e20b8cdcd81183adb7c98bc397f38bf",
+      "source_bbox": [
+        90,
+        70,
+        515,
+        463
+      ],
+      "visible_bbox": [
+        90,
+        70,
+        515,
+        463
+      ]
+    },
+    {
+      "bytes": 7045,
+      "components_before": 8,
+      "components_kept": 8,
+      "cropped_size": [
+        416,
+        394
+      ],
+      "index": 7,
+      "material_pixels": 24385,
+      "output_bbox": [
+        9,
+        15,
+        118,
+        119
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/attack-hit-concept-r3-native128/sources/attack_hit/frame_07.png",
+      "sha256": "20c479c7978aeb0562c1c1aa5cfe461eb1d86844a5db8dd05a4a8eb74090b700",
+      "source_bbox": [
+        63,
+        69,
+        479,
+        463
+      ],
+      "visible_bbox": [
+        63,
+        69,
+        479,
+        463
+      ]
+    }
+  ],
+  "model": {
+    "name": "isnet-general-use",
+    "path": "external-model-cache://isnet-general-use.onnx",
+    "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+  },
+  "schema_version": "mgs.aui11.attack-hit-source-extraction.v1"
+}

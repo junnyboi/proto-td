@@ -22,9 +22,9 @@ The canonical packet outputs live under `staging/character-vfx/aui-11/packets/<l
 
 ## Deterministic backends and QA
 
-Python 3.12.3 with Pillow 12.3.0 is the canonical emitter. Godot 4.7.1 is the independent fallback. Each backend built all seven packets twice from the repository-staged specs and sources. `dual-backend-bound-receipt.json` records per-run file SHA-256, decoded atlas/contact RGBA hashes, semantic metadata/QA hashes, source/spec hashes, and the final batch-manifest hash. The staged verifier reproduces all 28 builds in a disposable root and requires the regenerated receipt to match exactly. Same-backend packet bytes were exact and cross-backend decoded/semantic results matched. The repository-copy verifier executes 1,464 independent scope, manifest, hash, oracle-rerun, complete run-A/run-B dual-backend, provenance, alpha, border, reserved-color, loop, Charm, geometry, and open-center checks.
+Python 3.12.3 with Pillow 12.3.0 is the canonical emitter. Godot 4.7.1 is the independent fallback. Each backend built all seven packets twice from the repository-staged specs and sources. `dual-backend-bound-receipt.json` records per-run file SHA-256, decoded atlas/contact RGBA hashes, semantic metadata/QA hashes, source/spec hashes, and the final batch-manifest hash. The staged verifier reproduces all 28 builds in a disposable root and requires the regenerated receipt to match exactly. Same-backend packet bytes were exact and cross-backend decoded/semantic results matched. The repository-copy verifier executes 1,854 independent scope, manifest, hash, oracle-rerun, named-review, correction-chain, complete run-A/run-B dual-backend, provenance, alpha, border, reserved-color, loop, Charm, geometry, and open-center checks.
 
-The visual gate inspected every atlas and contact sheet. Six packets passed immediately. The first `attack_hit` packet was rejected because a centered bilateral silhouette read as a four-point star flare; the replacement uses compact lower-left-to-upper-right slash/comet-shard frames and passed direct plus independent focused review. The red verdict is retained beside the final pass in `staging/qa/character-vfx/aui-11/visual-review-items/`.
+The visual gate inspected every atlas and contact sheet. Attack Hit required four rejected forms before the accepted compact open target lozenge preserved two unequal detached bearing chevrons and exactly three detached notch blocks. Charm VFX required three rejected forms before the accepted four-facet arrival resolved into opposed open clasp pairs with a detached under-mark and exactly three frame-6 chips. Vanguard/grunt facing and Vanguard loop failures are likewise preserved as red evidence. No human or numeric threshold changed.
 
 ## Verification entrypoint
 
@@ -37,7 +37,7 @@ python3 -B staging/qa/character-vfx/aui-11/verify_staged_packets.py \
   --report /tmp/aui11-staged-verification.json
 ```
 
-A pass must report 1,464 executed checks. Missing files, changed bytes, malformed JSON, out-of-claim Git paths, altered approval hashes, cleared runtime/final-art barriers, stale or structurally incomplete provenance, wrong evidence locators, unbound oracle artifacts, any dual-run mismatch, reserved probe colors, blank or clipped cells, exact adjacent duplicates, weak loop boundaries, Charm geometry/cue drift, out-of-range VFX geometry, closed deploy/Charm centers, or cross-backend hash drift is red.
+A pass must report 1,854 executed checks. Missing files, changed bytes, malformed JSON, out-of-claim Git paths, altered approval hashes, cleared runtime/final-art barriers, stale or structurally incomplete provenance, wrong evidence locators, unbound oracle artifacts, any named-review score below 8/10, any dual-run mismatch, reserved probe colors, blank or clipped cells, exact adjacent duplicates, weak loop boundaries, Charm geometry/cue drift, out-of-range VFX geometry, closed deploy/Charm centers, or cross-backend hash drift is red.
 
 To reproduce one canonical packet into a disposable directory, use the tracked AUI-34 CLI and the packet's staged spec/source pair:
 
@@ -55,9 +55,11 @@ The equivalent Godot command and full backend contract remain documented in `doc
 
 `grunt_charmed` is derived only after the normalized base grunt atlas is accepted. `staging/qa/character-vfx/aui-11/charm-grunt-v1-contract.json` freezes the fixed palette and region transforms. `charm_expected_oracle.py` independently computes expected frame hashes; `build_charm_sources.py` must match those hashes. `verify_charm_semantics.py` separately requires both light and dark binding bands in shoulder and ankle regions, left/right tabs, a five-pixel knot, unchanged alpha, and pinned grayscale separations in every frame. The staged verifier reruns that oracle and reproduces `charm-semantic-verification.json` exactly.
 
-## Attack-hit transformation chain
+## VFX transformation chains
 
-The pre-compression directional frames are retained under `staging/qa/character-vfx/aui-11/attack-hit-pretransform/`, not under the final source path. `attack-hit-transform-v1-contract.json` freezes vertical compression, loop closure, the frame-6 interior densification, and reserved-token remapping. `verify_attack_hit_transform.py` reconstructs all eight final sources independently and must reproduce the tracked final file and decoded-RGBA hashes recorded by `attack-hit-transform-receipt.json`.
+The extracted Attack Hit frames are retained under `staging/qa/character-vfx/aui-11/attack-hit-pretransform/`. `attack-hit-transform-v2-contract.json` freezes component-preserving thickness, vertical fit, exact row-boundary closure, and token remapping. `attack-hit-v2-measurements.json` binds every geometry/open-center/component/loop pin, while `attack-hit-v2-visual-audit.json` records the independent concept-fidelity PASS.
+
+The extracted Charm frames are retained under `staging/qa/character-vfx/aui-11/charm-vfx-pretransform/`. `charm-vfx-transform-v1-contract.json` freezes the component-gap-preserving fit, protected center, bounded frame-6 interior fill, two deterministic side chips, row closure, and token remapping. `charm-vfx-measurements.json` is reproducible by `measure_charm_vfx.py`; `charm-vfx-r4-visual-audit.json` records the independent sealed-concept PASS. `verify_attack_hit_transform.py` independently reconstructs both eight-frame chains byte-for-byte from their tracked contracts and pretransform sources.
 
 ## Provenance and legal state
 

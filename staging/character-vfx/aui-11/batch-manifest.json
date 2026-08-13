@@ -27,79 +27,79 @@
     {
       "canonical_outputs": {
         "atlas": {
-          "bytes": 32119,
+          "bytes": 43102,
           "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.png",
-          "sha256": "126c316074471f8de5ff3acb7a035df86cbee1865cde53217a1b37bd6e2cbcf0"
+          "sha256": "056e8444b82e2f16427765fb1ce8c037ba17c48f122b1aa35bd56a80aff96c1c"
         },
         "contact": {
-          "bytes": 21287,
+          "bytes": 27591,
           "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.contact.png",
-          "sha256": "615dfb1fb707251f96ed621d7a2d6555cf7f6b0d120d2406c092e2166e9c99be"
+          "sha256": "9dad212b79bd5c66874bcf62add9a9188a8c5fb02a4b5ff096c12225f650450f"
         },
         "metadata": {
           "bytes": 2915,
           "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.asset.json",
-          "sha256": "b3fcf2fd5cb839042998cbaf56a14ce1d475b0b4555934bb5d691220d9554f85"
+          "sha256": "eb32e1ccbebfb103fe27f131a8927212586ecedf1882072ab4339545d43a7bcc"
         },
         "qa": {
-          "bytes": 6005,
+          "bytes": 6004,
           "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.qa.json",
-          "sha256": "09aa670b344b583151023c818959579d18fba968ea1b75abbf49d30fc8aafc64"
+          "sha256": "2e886bc0b3d98628d7c6c8614f3662988c797b9ac3c29e05ee62d10c0bc04b6f"
         }
       },
       "domain": "characters",
       "fallback_decoded_rgba_sha256": {
-        "atlas": "8a97b7bb98bf93092d2d10cda598d23fa1ecb908a297d41710759bdc010dd87a",
-        "contact": "3eb181f13c72e192a48a884576f3427e0d2ec601af61d85919d67ce55a400fec"
+        "atlas": "76752265cfa3be9e25282b82349538b3cdf7872dcbc3c06200570bf92e7a9b3a",
+        "contact": "454cbc4872f02f60bc67b1ef2ddd092e78b34cbcb72c015c6fd0f3ffe722c699"
       },
       "human_final_art": "UNSET_HUMAN_ONLY",
       "logical_id": "vanguard_1",
       "master": {
-        "bytes": 1684184,
+        "bytes": 1488582,
         "path": "res://staging/character-vfx/aui-11/masters/vanguard_1-master.png",
-        "sha256": "b5254e378115ebb3fa7b6a633887859eb0ce7c2b83ea2213b6b57f0a45ba40e3"
+        "sha256": "43051a276413119ab6bf4ca1879bb2c3307b1751ebbc25abcb7452b150b1633a"
       },
       "runtime_binding": "UNBOUND_AGENT_F_SEAM",
       "sources": [
         {
-          "bytes": 19603,
+          "bytes": 21622,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_00.png",
-          "sha256": "ac4ea3582942f71cac1f81eb5e1eef50efcc2010062b22726372a422bd499078"
+          "sha256": "18b21a619b2757f40e029328a3ba89193ef530b440165fa6189438de6232bcfb"
         },
         {
-          "bytes": 19163,
+          "bytes": 22387,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_01.png",
-          "sha256": "11566b687fdab3da6c0f9648a9777cfceb30a8580129aa81d364211e8b79e3d5"
+          "sha256": "4ee2afae41286d0a24820e20018cea26db2f30f8c9cc3f7007a95fdd3276dbdb"
         },
         {
-          "bytes": 21595,
+          "bytes": 24470,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_02.png",
-          "sha256": "4a41122efe4b98124ba2b4bfe95f1d5ebab5338dad04667f0fc2c1ad813f0c2f"
+          "sha256": "2a39fd0dc9ef699542234c9db31f8a6abf1374c641cc12629ea4ac6e0da7796c"
         },
         {
-          "bytes": 19601,
+          "bytes": 21534,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_03.png",
-          "sha256": "bf760061c06fb3b176ac578dcdcc601fdbb00b1e556edd5191fd7bdb942111d0"
+          "sha256": "1391e90c39ba1383adb4f42ca22e8e7b93bb9c6b2a9ec40eeb11f2f2d6bc6a9a"
         },
         {
-          "bytes": 20550,
+          "bytes": 24930,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_04.png",
-          "sha256": "1420bca314201eaf366dbf1849635b54c77d3bc9f9b7d43b7961d583ad1828a0"
+          "sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38"
         },
         {
-          "bytes": 20047,
+          "bytes": 22406,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_05.png",
-          "sha256": "de08142caf79fa2ae7d05077b52939adcc19feafcd18c13926269470ea34a3d0"
+          "sha256": "d7603175c805b234837ebcaba690f91261293c0af35dddd6cc90da41d924daaa"
         },
         {
-          "bytes": 19736,
+          "bytes": 21315,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_06.png",
-          "sha256": "b833794a07b2517cc95cec86c8e0589754c7654d1094309c332702ff8484c5e3"
+          "sha256": "428f414f397bed12faa5d5acf064cd4138ffe3d9090665aafde3a054f5eebd32"
         },
         {
-          "bytes": 20550,
+          "bytes": 24930,
           "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_07.png",
-          "sha256": "1595527fd13b9808bc81f739056bf9b42a928f22ddaa62e9d6992ae652efc792"
+          "sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38"
         }
       ],
       "spec": {
@@ -197,79 +197,79 @@
     {
       "canonical_outputs": {
         "atlas": {
-          "bytes": 49492,
+          "bytes": 28127,
           "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.png",
-          "sha256": "f035e85c117f570f0eab3f46dedaac75e0cdedf23feac7957afb8c2daa82bae6"
+          "sha256": "176eeddaa84b0e3277838389db7729f145266346c6e5811dde877334d307df50"
         },
         "contact": {
-          "bytes": 31072,
+          "bytes": 20388,
           "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.contact.png",
-          "sha256": "6902abe965f56f0a0b7af6b860d71911d93eee91b11e7eaf0e183f7677cd9cd7"
+          "sha256": "61164237b73a27296923dd34ed96a015d431043e8e0381719811fab713292f38"
         },
         "metadata": {
           "bytes": 2880,
           "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.asset.json",
-          "sha256": "aed529d691fe0164b74888eeea37982a2e90df3cae1d47e7ea8eb8ad8d2c7c5e"
+          "sha256": "e6f2884f0c28c5bf057c850ea93e4517a190c0eed7004103a9bf3ea06d971d89"
         },
         "qa": {
-          "bytes": 5979,
+          "bytes": 5950,
           "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.qa.json",
-          "sha256": "9088830976c5213bfa9552a54878c7c0d9addadfb9c4c07fba2e85322449cf0b"
+          "sha256": "7db67ce7a4501edb258e8cd8f09f43075c61822a84ffb3a20a027758aec9e4a5"
         }
       },
       "domain": "enemies",
       "fallback_decoded_rgba_sha256": {
-        "atlas": "99d790e2d5fd7c31b73e463e647737716a4d553f0501cc7fbefe3c99e09774f4",
-        "contact": "4a8e6f6d0c1bbbe04b328fe9f4cb795291a4857304a8bfa9b7ecbd9f7ebbac1d"
+        "atlas": "58b47931cb86fddb6d30dbdff4d77543111b0454efc209b53316854ef227ca9e",
+        "contact": "f6a94fc0c838c7970a1690edccbf1f4c4b3c92c3ce2bb5c57bf79d1deee8a44b"
       },
       "human_final_art": "UNSET_HUMAN_ONLY",
       "logical_id": "grunt",
       "master": {
-        "bytes": 2415047,
+        "bytes": 1703683,
         "path": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
-        "sha256": "87f92400889fee3cc2072b3e8fcb9ef6eeb8fefd4ccd8c6af47e3fde3739165e"
+        "sha256": "84b50ef3796517bff59db7c1b72f600b4ee13d3b2399844dca598859c48906fe"
       },
       "runtime_binding": "UNBOUND_AGENT_F_SEAM",
       "sources": [
         {
-          "bytes": 44552,
+          "bytes": 27937,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_00.png",
-          "sha256": "ad89936afca5c37dc8830a01d10b7cf0b4fc2aa873983511db651f5323980832"
+          "sha256": "83bd65ab43d6403c02cbee4ddd6bdbc538138e9f7dc49ed9b75245f94d95c0e2"
         },
         {
-          "bytes": 40753,
+          "bytes": 27969,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_01.png",
-          "sha256": "4e366550f65da9e1d3aaf41474084f573ce808620fdf4a6a8a448281eadae520"
+          "sha256": "2af2278cdb7f522bc75aa3f1e2fc32979372e2a3de8a715f1bcd47aa7c358668"
         },
         {
-          "bytes": 42765,
+          "bytes": 28176,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_02.png",
-          "sha256": "ff104c9187cbe0b2e0231193cfacf977e6daf9b0b56cca6e47e8bb86c23a6c99"
+          "sha256": "afa2f164e69906705f5e13d8d2c1765394411408c55d8f24fd900d7d02fbcce7"
         },
         {
-          "bytes": 44553,
+          "bytes": 27899,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_03.png",
-          "sha256": "9d79786995dac17c7c1b20b051940ccb0d5b508a336c04a9f4089e0092b4f986"
+          "sha256": "4ec7e496b7059329348d287a1b91c471b3789d67abe5484a3158726020979cc5"
         },
         {
-          "bytes": 38710,
+          "bytes": 28836,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_04.png",
-          "sha256": "c5e23dd2552bf00edf9213db644e105fdfc1c64dee798cc084e3ff00da98a1e6"
+          "sha256": "728ceec42a4fc411b47901cff210f5a38ba2e89c12b348856ec869cc3b26f53e"
         },
         {
-          "bytes": 35826,
+          "bytes": 27909,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_05.png",
-          "sha256": "f50624c663ade105d4c9739fc5c82959511a4fea3014849a25b33668f99658e2"
+          "sha256": "f8bd7e098c99b00864d82108ed8bee4d1d4dc4f73aafaa11a4be3afba2a4bc0b"
         },
         {
-          "bytes": 38646,
+          "bytes": 27280,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_06.png",
-          "sha256": "ca82ebf91d9697c00a585fd42cfee251d2365d8f70b5891442e1fab4f2abcb46"
+          "sha256": "fcf4c17cbce42fd2f3c298cc95648ca1a79a2ae05558fc5e9aa5e96db0875093"
         },
         {
-          "bytes": 38717,
+          "bytes": 28841,
           "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_07.png",
-          "sha256": "9eb866ee8254eb43912f10d4c770594635e1d22f6a3c46c50cb70d6fe6cc2582"
+          "sha256": "cb8b8534d3b977c640295870f90d75ced17d3f42c01154cb8f07cf0ee684fbec"
         }
       ],
       "spec": {
@@ -282,79 +282,79 @@
     {
       "canonical_outputs": {
         "atlas": {
-          "bytes": 46221,
+          "bytes": 30191,
           "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.png",
-          "sha256": "be68eb2b7c514401eb190cb4d832adf48742705e6e4cd48b9897bfbda102cac7"
+          "sha256": "fedc93ab8e5fb20cea4ac935c82b21b48a0b4f75f0b48cb5b6911a5952e2c90f"
         },
         "contact": {
-          "bytes": 31447,
+          "bytes": 23251,
           "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.contact.png",
-          "sha256": "7dd7f2a3e22fd1a9fc0c99c06be3eec2e9118f994e4151a1abdbaac66f015d39"
+          "sha256": "b3e38d56794749e648697d33209396de0c6b92e771f5bbb0f943b19fbc7d2d24"
         },
         "metadata": {
           "bytes": 2913,
           "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.asset.json",
-          "sha256": "5fa294bd6c3667b54b99d5f40fe239c5dfdafe6cda1bef54c7b3abcbdba59449"
+          "sha256": "7090ae9a2a2e932d71b96a24d612cc792dae919ee78dc0a4a526cb6a76cbf8c1"
         },
         "qa": {
           "bytes": 5980,
           "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.qa.json",
-          "sha256": "ce9fb61da417e4b3fb86ea2caf16b3981efc76710bab2b67985ee0a09cf18b5b"
+          "sha256": "11c0dcbaca432c4da647626bfface434f3d918e3ffd5be390fdd9ea898a1c424"
         }
       },
       "domain": "charm",
       "fallback_decoded_rgba_sha256": {
-        "atlas": "06164ad8040e24a19fd38fba32975b71dc1ce7bae530d5d53293b8893bd3b8aa",
-        "contact": "be7d84bca38515aab78653e0420c0bb589ea6f08605756a2ffbc51229acf041a"
+        "atlas": "e1b98cca108dd43c776719c36964306802ceb68642a9c445cb266067b0712bfd",
+        "contact": "2ca6ea82dabcbc46d8feab4ffadabd0dd121e659fdcd0c407b9d10e8262f01b1"
       },
       "human_final_art": "UNSET_HUMAN_ONLY",
       "logical_id": "grunt_charmed",
       "master": {
-        "bytes": 2415047,
+        "bytes": 1703683,
         "path": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
-        "sha256": "87f92400889fee3cc2072b3e8fcb9ef6eeb8fefd4ccd8c6af47e3fde3739165e"
+        "sha256": "84b50ef3796517bff59db7c1b72f600b4ee13d3b2399844dca598859c48906fe"
       },
       "runtime_binding": "UNBOUND_AGENT_F_SEAM",
       "sources": [
         {
-          "bytes": 8122,
+          "bytes": 4958,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_00.png",
-          "sha256": "0500ebc064156b5fdf901989a05acb8b3b9ac553687e3c13e50c21410f975794"
+          "sha256": "5805af926f456366d4894c109861d5610aa6c9e19790380aaa3bd9124b528f27"
         },
         {
-          "bytes": 7423,
+          "bytes": 4988,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_01.png",
-          "sha256": "77c2938e2374e3e4f6f742dafb7ad7a536e512a269dd4ad1cdc3157874f0c74c"
+          "sha256": "92bdc1f8be33311aaad409a83b3e5181e709b9ba29bbb432c9043b059b6c242a"
         },
         {
-          "bytes": 7886,
+          "bytes": 5043,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_02.png",
-          "sha256": "b1d0ae33499b24ab69272db450febe8595f7e5b4e0439f987f1246ddd44a2c38"
+          "sha256": "8756e05aec0a6275297928c94b614ffbd3e501d463c833ab63f50cb2ecfc381b"
         },
         {
-          "bytes": 8120,
+          "bytes": 4937,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_03.png",
-          "sha256": "e298c504ac5b706865093196b3b2a232955de1a365796a07c161f7dfde521b1f"
+          "sha256": "2f93ff8bcb0a013b44603d94cd0ac145c9a940acbe852f03cc341ef2faab0ab8"
         },
         {
-          "bytes": 7169,
+          "bytes": 5301,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_04.png",
-          "sha256": "fa97dcd15ca19b92bd33ad95ead77268ed31c53dfea5548a43fbd7bfa3c6f999"
+          "sha256": "c5be64a03a5196cd670efae1eefac7aa22685d58a3144fb0a2e59e319757f88c"
         },
         {
-          "bytes": 7009,
+          "bytes": 5064,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_05.png",
-          "sha256": "ff40db3841425213d6732a96f1b1250ad541b027762d2c339e9e3cfdac4c5552"
+          "sha256": "1a07e19597ace52b11b283d9cc2ad5963e256cdf6068de04282b137ceec6a74e"
         },
         {
-          "bytes": 7361,
+          "bytes": 4898,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_06.png",
-          "sha256": "c1de0c7207bd2bebcbe5aee75f52c3719f6af554317907aba624197b407efe7e"
+          "sha256": "7fb2f3d060e4aad1ad0de895593f5ba92aaac77e5b756faa8aebc045e990f427"
         },
         {
-          "bytes": 7153,
+          "bytes": 5277,
           "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_07.png",
-          "sha256": "faf8d6c92cc28e5d1ca704d7f7c7411665387e54083892b8ba4d0497ad1bdbec"
+          "sha256": "3aa77aad7be21ea6da701fc40e668606935c1351952db1d67d594ef90b425309"
         }
       ],
       "spec": {
@@ -452,170 +452,170 @@
     {
       "canonical_outputs": {
         "atlas": {
-          "bytes": 4418,
+          "bytes": 5754,
           "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.png",
-          "sha256": "831217b99d25ad64524d9fc3eb0b2c655698552843543083eea9058aa8389ab7"
+          "sha256": "dd0bb27ff654f9ea8eb1ffd665c138dce8ea5d672e98a5878f5a8cf147fd4198"
         },
         "contact": {
-          "bytes": 4915,
+          "bytes": 6076,
           "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.contact.png",
-          "sha256": "1c194db12616c1ad884b98f2d4fe0fd14e79bb8f6c585fa41b045f97cc8d31ef"
+          "sha256": "46c5f9407926a597167addb86943878cebdf9da701f2ed8f6df579097ae37609"
         },
         "metadata": {
           "bytes": 2859,
           "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.asset.json",
-          "sha256": "c5b248447ea8f763550d9730303fa6b1c75d48960842a594aab937bb56b756b1"
+          "sha256": "32b3ea6a36826f0f2512143b0e88cfe8f0ac6acf0ccbba1a6590c55e7e15907d"
         },
         "qa": {
           "bytes": 5957,
           "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.qa.json",
-          "sha256": "f0c5f2c73efd846eff7473cb9f39508b57bdab0a713b826404891e2022a8721c"
+          "sha256": "165f2ef8840bdaa59379002ba6c1524f99ce560b4fa25f986bb8d2623c16d5b9"
         }
       },
       "domain": "vfx",
       "fallback_decoded_rgba_sha256": {
-        "atlas": "66fc87d8893a3ce62fb51d85d11ea987ac83d4588fb7a1d3db1830fa7316f754",
-        "contact": "ae0ad17e3ed6874c5abfacab5da595e28064c97284507b53ffec8a3d04d261f2"
+        "atlas": "11edbd7b902fdac0bc85f844d79836b463a881aebb00279ecf88c56c1c119b6e",
+        "contact": "459b2c8d1b4bc44f4258a8f298d599c0ef8947461ce8c9af756764892619b2b3"
       },
       "human_final_art": "UNSET_HUMAN_ONLY",
       "logical_id": "attack_hit",
       "master": {
-        "bytes": 768914,
+        "bytes": 819152,
         "path": "res://staging/character-vfx/aui-11/masters/vfx_attack_hit-master.png",
-        "sha256": "9162513a1f0c4d5bc428e8a16c89ecebda560d6196b04a040adc60c566d45541"
+        "sha256": "badea6b4b1b34fde75d081c54645a3c9f4505d20671d99817f8f0bd9ea35f9af"
       },
       "runtime_binding": "UNBOUND_AGENT_F_SEAM",
       "sources": [
         {
-          "bytes": 6448,
+          "bytes": 6509,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_00.png",
-          "sha256": "188995fad01de61dd183b3e2ce85b4369974bdbf49c4cea4c6157a2400f32675"
+          "sha256": "a67b8b8e600f2731990094c0121caace20cee8528856879d46368aeaa0270ded"
         },
         {
-          "bytes": 6197,
+          "bytes": 6901,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_01.png",
-          "sha256": "5f6c9db4aa49dc71efbabeb7eaf98dd53151273c17a01465631c64397b94658c"
+          "sha256": "e519706c52b17e7b67f2ff2784bbe41c0a0eec0377f9bba566ae24ec0117774f"
         },
         {
-          "bytes": 7112,
+          "bytes": 7512,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_02.png",
-          "sha256": "c3194eb55b4785997f39ff341d1ddf1540888f07d9511cb3f5f5a3ae232bacd3"
+          "sha256": "2e8593eca69763f6d8e3bb78bc837082a31f09b796875c5c5601ec6c0271213f"
         },
         {
-          "bytes": 6448,
+          "bytes": 6511,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_03.png",
-          "sha256": "3ed6c636a6024f890e18966ad1ca387e1a4207a2247044a61b74236885795b24"
+          "sha256": "1a7dbe9f0b5a5dca65012cf758672ffd1ba74ede84f1eaeb7488dddd43c5f4a3"
         },
         {
-          "bytes": 6386,
+          "bytes": 7647,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_04.png",
-          "sha256": "a38a5b6dfcc4dd98acd42a30c9c860ccfe1f5b1b2955fb52c7d17a0063ea699d"
+          "sha256": "2d69d47e740ea4a30266c395fb42b3762f544d771f800d3c2e0982cbefc9a772"
         },
         {
-          "bytes": 6729,
+          "bytes": 7635,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_05.png",
-          "sha256": "972cbf6ad9f522eb086c70785a460dfb2d419ae5b93e91bf8f58b78371a9be61"
+          "sha256": "798f291e872ac036dd1504266407e5585389fda7941a129ffa8157c757c56abf"
         },
         {
-          "bytes": 5298,
+          "bytes": 6866,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_06.png",
-          "sha256": "0691092e5d222d55acc1e499ad3c967404226f50f46360aa2ea4e1484e3e17e6"
+          "sha256": "d4cf4abd720b1a0dbc6ed0f95a968ce0b84ff94765173f59336c71a7c546d33e"
         },
         {
-          "bytes": 6385,
+          "bytes": 7650,
           "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_07.png",
-          "sha256": "1e7540def7bf27d047031f49afce79d7621823229654e7e4c754d0256cd5a40e"
+          "sha256": "40a903986875afc10cb7851e71f3fba197676fa866fb65213b2416b1310b0ad5"
         }
       ],
       "spec": {
         "bytes": 2624,
         "path": "res://staging/character-vfx/aui-11/specs/attack_hit.json",
-        "sha256": "7483763e3a57e2d8f574035af146789aea5c57dc250076cca4062ab7cdae66ca"
+        "sha256": "f0e5c17d0288fdfd17cc9c35964aa551bd6b06a0a5b531f05edd8113055be6d2"
       },
       "state": "PRODUCTION_PACKET_STAGED_RUNTIME_UNBOUND"
     },
     {
       "canonical_outputs": {
         "atlas": {
-          "bytes": 8152,
+          "bytes": 7668,
           "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.png",
-          "sha256": "2563169945a7b7a3ad2170b464de6cff0eb2b1e28ebfd4c270882964f1f549c2"
+          "sha256": "e656ffc6f405ec939cb544a7642811f0dcee3b414a4e9df71a02d6c63ab4affb"
         },
         "contact": {
-          "bytes": 7723,
+          "bytes": 7170,
           "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.contact.png",
-          "sha256": "4a056a65abf84ce3abd77ec17bda0a5f28dd04f55255f73240ab402961c89f65"
+          "sha256": "ffe0101bed00f0ca4e20980eb1411bcd05be4b7b4811c99d6c17956287e8a7be"
         },
         "metadata": {
           "bytes": 2862,
           "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.asset.json",
-          "sha256": "97c32d4daa8d162619e57840a5ac61e0ace89184fdea88ccf610ed928c8a77dc"
+          "sha256": "ed2c21d272a850cbcaa965a251b54130107f0cc19c81fb5fb2e5b55ea54c3f80"
         },
         "qa": {
-          "bytes": 5970,
+          "bytes": 5966,
           "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.qa.json",
-          "sha256": "6597bdb840a575c96bb359ae450acec714c0c4604fd67c497187d2948c7178e8"
+          "sha256": "c705fec99b4bf471aff9a0875620e2316f2798d3bc1f2dc21bfd5a3e94b535d2"
         }
       },
       "domain": "vfx",
       "fallback_decoded_rgba_sha256": {
-        "atlas": "da3ddc30071fcf4cc94c5e8cce48098242f6165f04983c3fac8ec1169ac094c1",
-        "contact": "9e37a107df0d9f91af6ce9c6c747c47e77950ad6f581a45c04a44bd00c49cc94"
+        "atlas": "88d8871b0fad06dceed502c5979a73458df0e4e9f6193ed18b062e4bf0ee3de3",
+        "contact": "05e31bac233033e66b8c7c54814bf3ce02f1a370c925c23e111b59b4ce368ff2"
       },
       "human_final_art": "UNSET_HUMAN_ONLY",
       "logical_id": "charm_vfx",
       "master": {
-        "bytes": 1048553,
+        "bytes": 1226879,
         "path": "res://staging/character-vfx/aui-11/masters/vfx_charm-master.png",
-        "sha256": "478cdd6c57932ad2a2503212d5ffa1e47c6c6d241ea2922c162d432bcaa254a4"
+        "sha256": "88d1f3e2292e9dfacca5a70742c4da74b16d1126866dd38b411267e4db3abb31"
       },
       "runtime_binding": "UNBOUND_AGENT_F_SEAM",
       "sources": [
         {
-          "bytes": 7687,
+          "bytes": 7933,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_00.png",
-          "sha256": "0de97def5f23f04114dd57bde05b2874c6d151fdab8f21ccadff12cbc1142393"
+          "sha256": "e3b7694ff32e5bf84115ddb8d037367fc35479eafc214063ca2aa725decbc61f"
         },
         {
-          "bytes": 7684,
+          "bytes": 7468,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_01.png",
-          "sha256": "187952042633e61a930963c121cf4fa331cbd4e0a1d8c801ede17c5c446f6ee0"
+          "sha256": "041be729c68dab1eb1cbd4bd51dcad9bf44e38ffc06569acbcc7b74af46e543d"
         },
         {
-          "bytes": 9850,
+          "bytes": 7903,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_02.png",
-          "sha256": "abc64a715685960ea8913739e7a4b38ad55b17be28d0bdf0736e296f653ae531"
+          "sha256": "3c5694f53568c47791a5c32986e37be8358958afc2cbec3d3643b9c376d19d14"
         },
         {
-          "bytes": 7696,
+          "bytes": 7935,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_03.png",
-          "sha256": "f31ca487b5b26d35158c7c9a65ac8b57ad0eb1571130fbd04e3a5f9f8490b244"
+          "sha256": "724905174061ddc899038e8fe486471fb8b9748d939b72ebc26d1e9737c4e913"
         },
         {
-          "bytes": 10120,
+          "bytes": 8109,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_04.png",
-          "sha256": "02f56f44a6b77d7cce0f358a45065af91c6caf5844e7f53827d617090fe53989"
+          "sha256": "6a06445054808516ff1366b43983da6d248b880a47116b58f44823bae50b0c87"
         },
         {
-          "bytes": 10138,
+          "bytes": 8563,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_05.png",
-          "sha256": "4c6349b20ba3d6badbc082f80d362143c599e7f938a90ffbe3f155cd98646184"
+          "sha256": "62536de6684611932d9207eb83007576f972d59458e671edb059b5f088c3569b"
+        },
+        {
+          "bytes": 7648,
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_06.png",
+          "sha256": "5eae5a0561137ae40e0f809d5a5eb2ce8acf2f224bfa2c33584dd7d769a1d9a0"
         },
         {
           "bytes": 8107,
-          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_06.png",
-          "sha256": "1ab5498148d215fc17e62914f8f68776a065149837bc89356e7c8651943d535a"
-        },
-        {
-          "bytes": 10122,
           "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_07.png",
-          "sha256": "b41745e0989a1c65871466362e970ca39f25105a0a59c32531f9f49aa1a54b7d"
+          "sha256": "5a57e61c6131d42d1a640d8d8db963abd57835c00c0f47ab3d1c97ff8296442a"
         }
       ],
       "spec": {
         "bytes": 2630,
         "path": "res://staging/character-vfx/aui-11/specs/charm_vfx.json",
-        "sha256": "538387b609042b278e06e36734dc1749c465c84ce5de7b5b948a80355f64e50a"
+        "sha256": "6fafc2304c6f291fea6770f37fb16c95677ba13a80f046c9520813c120eb6176"
       },
       "state": "PRODUCTION_PACKET_STAGED_RUNTIME_UNBOUND"
     }
@@ -624,73 +624,103 @@
   "qa_bindings": {
     "attack_hit_transform": {
       "contract": {
-        "bytes": 947,
-        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-v1-contract.json",
-        "sha256": "fb6093a9519e904c6303360d0fa0681c0e29dce6a31c9694d8bc1a00db7033d9"
+        "bytes": 923,
+        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-v2-contract.json",
+        "sha256": "cf8c81621948e7a21cc845b3f6ed29b15a324bede31eefbbd25458e241884477"
+      },
+      "extraction_receipt": {
+        "bytes": 6453,
+        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-source-extraction.json",
+        "sha256": "d43a650e1ac53ae32f5b6aaa512a1436c63485aa3969107fa22b9ff310af3c7f"
+      },
+      "extractor": {
+        "bytes": 6363,
+        "path": "res://staging/qa/character-vfx/aui-11/extract_attack_hit_sources.py",
+        "sha256": "d4ee7ab3e7825a9ac00cc5c25d349e01b7d1ad3d8ceaca656fb764389c080ea1"
+      },
+      "generation_prompt": {
+        "bytes": 1930,
+        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-generation-prompt.md",
+        "sha256": "6fc960d96df4dfce20f255fe33baaf9fe4babf36a24295bcd57fbd796717e94a"
+      },
+      "measurements": {
+        "bytes": 1766,
+        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-measurements.json",
+        "sha256": "3894cdcf508c6fb11bb59be8fb6560e853917bf28445356cfbfcaf74766bd1e4"
       },
       "pretransform_sources": [
         {
-          "bytes": 8533,
+          "bytes": 6496,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_00.png",
-          "sha256": "9b49e92361568fc0f4ee9d837dbab7a3c14834925a73a9e3b5ea95915c2e38bd"
+          "sha256": "aabc996317effd0ed889797ee8194423d21d09f76542b228dc8d4b08627b6d7a"
         },
         {
-          "bytes": 8100,
+          "bytes": 6898,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_01.png",
-          "sha256": "386823f1782713a867dc184dd0ea08df8412ca6c848a46472da63e778762e6e6"
+          "sha256": "dfce8f9998734d2b08b03c3dea62775e9771072ba15440613c9dc00eaf9d75c9"
         },
         {
-          "bytes": 9395,
+          "bytes": 7766,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_02.png",
-          "sha256": "ba49febd6e54acbdd28af6c609d73d1e358bea1fc2b4664e83055aa8109245f6"
+          "sha256": "40c04557c3c19b177195b764840a0e6c88f7a176821cb6de4ad64bf1c5d754dc"
         },
         {
-          "bytes": 8533,
+          "bytes": 7455,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_03.png",
-          "sha256": "9fa93d8fa7a8f9e683ecc0690ac0bf091090c6d677be12813181d713b99f84e7"
+          "sha256": "e918436668e22f10961792573eaed6355b907043324dbb7886af3c1353ba2d92"
         },
         {
-          "bytes": 8425,
+          "bytes": 7885,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_04.png",
-          "sha256": "e3dad9d0a3554c840b15de8396d473a5fea9cb7046f7fce9e400d1aa0ecdefa9"
+          "sha256": "16d622bb68cf864edfcb726150ec7d7e8fe99e4ecce7cfe50533ebe0bbcdfa55"
         },
         {
-          "bytes": 8835,
+          "bytes": 7967,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_05.png",
-          "sha256": "de5e1682032f0b935a0277172fc47be25093753b15d18a8806f4972d9536dbdb"
+          "sha256": "7dbdbae260b6e5c194c41da0ec2ca3a8403d07a6e77db9bd965f56f9a37a778c"
         },
         {
-          "bytes": 6821,
+          "bytes": 6772,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_06.png",
-          "sha256": "2dd248c89bf14f8c32f5e76fc692919effb6cb8b322a5f5d1ef0e0f25379fba3"
+          "sha256": "46849d89378c561c0e7d39bcd209184b8e20b8cdcd81183adb7c98bc397f38bf"
         },
         {
-          "bytes": 8425,
+          "bytes": 7045,
           "path": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_07.png",
-          "sha256": "f4dbafc52c658f454d5c230a31b01c9d9d795ca32a35789601de0a0dafea08da"
+          "sha256": "20c479c7978aeb0562c1c1aa5cfe461eb1d86844a5db8dd05a4a8eb74090b700"
         }
       ],
+      "producer": {
+        "bytes": 9471,
+        "path": "res://staging/qa/character-vfx/aui-11/build_attack_hit_sources.py",
+        "sha256": "081afe4b0f2d0ce5b8ae79288cd2af1373d1a45731651cbb91acda69d4cbd96d"
+      },
       "receipt": {
         "bytes": 6082,
         "path": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
-        "sha256": "3f59f070a5ad2960db090185042d5682511d8e6a59b8e71f4c61f3988aafa750"
+        "sha256": "99af11f575a400a0688760cff2c2ed9015f99ea5bbaad3081cd909857efb469a"
       },
       "verifier": {
-        "bytes": 5771,
+        "bytes": 11146,
         "path": "res://staging/qa/character-vfx/aui-11/verify_attack_hit_transform.py",
-        "sha256": "cb28ba58c5343e5fc34416a008a273ca225de1227215d472fd2191a7bd10169f"
+        "sha256": "675eb1818baeae3d9bf2a5d6f10c0b44ac2a5ab04fb57aaebfe2ddbc73355fbb"
+      },
+      "visual_audit": {
+        "bytes": 1499,
+        "path": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
+        "sha256": "9c892ec04c0a6044f4d14c9ee2201e0878cd0f7435d57c7e2b969407560ef9d6"
       }
     },
     "charm_semantics": {
       "contract": {
-        "bytes": 966,
+        "bytes": 1136,
         "path": "res://staging/qa/character-vfx/aui-11/charm-grunt-v1-contract.json",
-        "sha256": "2ae653c2651d601a66b0aaf28e7c8d09ffe5661e18e962f724572c2f4dfa955a"
+        "sha256": "f1052b94dfc012947b6e2ce6914aa66c8250d1c09c35fd7fd4c2a715cfe4a9a2"
       },
       "expected": {
         "bytes": 5987,
         "path": "res://staging/qa/character-vfx/aui-11/charm-grunt-v1-expected.json",
-        "sha256": "1b59102dd04da11ee4748f453b3061f83634942c963ba7e773d5469ef6ad193f"
+        "sha256": "c071d6e2891562771fc5a33a5560b99bd8357349b9e63cf9e6567fd749026f6f"
       },
       "expected_oracle": {
         "bytes": 6606,
@@ -698,9 +728,9 @@
         "sha256": "fa8ba17fc743463a022abf8f001fe7c0a805461527fd083819f30aaea400acef"
       },
       "semantic_receipt": {
-        "bytes": 10232,
+        "bytes": 10269,
         "path": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
-        "sha256": "d5e8ec350a427fd9d3c6655a290286b1e1c5ea50d48390cb8ccb08742d080cd2"
+        "sha256": "b9358c668eefc069b22c4b32ff1ab93e08fc9ae7af2ee103fd7dd0fef9692b0a"
       },
       "semantic_verifier": {
         "bytes": 7861,
@@ -708,9 +738,9 @@
         "sha256": "361ee34b35f65acc2c00743183af15d1a545ab3ec660b95e4309e2f43af2c249"
       },
       "transform_report": {
-        "bytes": 5813,
+        "bytes": 5807,
         "path": "res://staging/qa/character-vfx/aui-11/charm-transform-report.json",
-        "sha256": "c23da110e641e469532757ff2df257dad3240f9bd3ac11c300f17b71129efe23"
+        "sha256": "b797389fe2fda54a937b14a90eefa71658cca0857f1411b48592cf26357aa855"
       },
       "transformer": {
         "bytes": 5974,
@@ -718,11 +748,221 @@
         "sha256": "6f72e0b839ed828a148d8de3a4432dd184912bb63c49191af426ac23cade4413"
       }
     },
+    "charm_vfx_transform": {
+      "contract": {
+        "bytes": 1527,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-v1-contract.json",
+        "sha256": "6987c257b19d2a0c6e93f655d08dffbd50d6f5e722bc5c805dadb239717a2736"
+      },
+      "extraction_receipt": {
+        "bytes": 6366,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-source-extraction.json",
+        "sha256": "65f5a66295b881a1ab0b92a0b127eec416592f5e7b4761e7a302068aa04daf15"
+      },
+      "extractor": {
+        "bytes": 6363,
+        "path": "res://staging/qa/character-vfx/aui-11/extract_attack_hit_sources.py",
+        "sha256": "d4ee7ab3e7825a9ac00cc5c25d349e01b7d1ad3d8ceaca656fb764389c080ea1"
+      },
+      "generation_prompt": {
+        "bytes": 1888,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-generation-prompt.md",
+        "sha256": "d205db8f5e85a01d3be98d6292f581a5571fe1529e15df572924045421d1d2bf"
+      },
+      "measurements": {
+        "bytes": 6460,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-measurements.json",
+        "sha256": "da73b1b1b3e40e2540d74dfefc2de35c171aa9a0c21cc9c7e5cabb93e3232f7c"
+      },
+      "measurer": {
+        "bytes": 3067,
+        "path": "res://staging/qa/character-vfx/aui-11/measure_charm_vfx.py",
+        "sha256": "764e8736573c0551daa91e00580f6b8ffa3974fea8c8155c193df8437779479f"
+      },
+      "pretransform_sources": [
+        {
+          "bytes": 10464,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_00.png",
+          "sha256": "6b9c2e4917f2c77663e0047ff628d973519d35fd8b58250a126c6e8616984f18"
+        },
+        {
+          "bytes": 9807,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_01.png",
+          "sha256": "6bc4649edeb79b1843cc4802b246d1729cbd11ac02acb91128de7a25cfabfbc3"
+        },
+        {
+          "bytes": 10961,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_02.png",
+          "sha256": "4980cb0399d185bfe839537ab3f97331754209a31b656c4baefcb7f196999da1"
+        },
+        {
+          "bytes": 10349,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_03.png",
+          "sha256": "c4907d6a80f7e620f270a82214697638adcc3643eeabd4664d1afd234085e461"
+        },
+        {
+          "bytes": 10742,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_04.png",
+          "sha256": "a0ad577981ae25a841b1a086f0fcc24748245f37142d4da8b8a8381de193c194"
+        },
+        {
+          "bytes": 11931,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_05.png",
+          "sha256": "ee59ab594e34c57def7140f242a8d7cd641a78c18c4e4556ff30262631aa77bc"
+        },
+        {
+          "bytes": 9843,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_06.png",
+          "sha256": "d52c264f15a99cf401fd3535a9f899ed75a54dcc9360f2b6758d447ff3d4e713"
+        },
+        {
+          "bytes": 10157,
+          "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-pretransform/frame_07.png",
+          "sha256": "93f3bacbbb12ecb632b628cdd513a56406d9524cc7c02550359768c8d547ffe7"
+        }
+      ],
+      "producer": {
+        "bytes": 9471,
+        "path": "res://staging/qa/character-vfx/aui-11/build_attack_hit_sources.py",
+        "sha256": "081afe4b0f2d0ce5b8ae79288cd2af1373d1a45731651cbb91acda69d4cbd96d"
+      },
+      "receipt": {
+        "bytes": 6088,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+        "sha256": "4d126e103c46bb45ad7f1a289c827fb42c1e27ba6e3b14091dfdeac617528fb3"
+      },
+      "verifier": {
+        "bytes": 11146,
+        "path": "res://staging/qa/character-vfx/aui-11/verify_attack_hit_transform.py",
+        "sha256": "675eb1818baeae3d9bf2a5d6f10c0b44ac2a5ab04fb57aaebfe2ddbc73355fbb"
+      },
+      "visual_audit": {
+        "bytes": 1297,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
+        "sha256": "ded818dd79ea47a7733b12d90d97deec55db6e3af74ea3346998209c3432c742"
+      }
+    },
     "dual_backend": {
       "verifier": {
         "bytes": 8037,
         "path": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
         "sha256": "ce3e2ceadb2df65aae46fa3a46df713d891058a024507a91d45cb36a67357ced"
+      }
+    },
+    "facing_state_corrections": {
+      "base_highlight_receipt": {
+        "bytes": 3345,
+        "path": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+        "sha256": "48ca5204f2c26a03683c6cf642311cb7ed14003afc867ea8fa249ed28cf16017"
+      },
+      "base_highlight_transform": {
+        "bytes": 5107,
+        "path": "res://staging/qa/character-vfx/aui-11/reduce_grunt_base_highlights.py",
+        "sha256": "ff0e2a22540818809698af8eecc6845a8a4fafb615b0a2cfb5f9c178145de654"
+      },
+      "cue_support_receipt": {
+        "bytes": 343533,
+        "path": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+        "sha256": "774c88a30d442ce8de09fcb835a78ac01704f5753c3aaee1c4df9bdac1877bf6"
+      },
+      "cue_support_transform": {
+        "bytes": 12538,
+        "path": "res://staging/qa/character-vfx/aui-11/repair_charm_cue_support.py",
+        "sha256": "653e169da138b466fd624efdb4646899a32357d5cfea39545ef15b6359dbdfd2"
+      },
+      "extraction_receipt": {
+        "bytes": 14816,
+        "path": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+        "sha256": "ab1f499f46c91f75263c11300eacd04f77dd92b215e87b0b688268f89593f317"
+      },
+      "extractor": {
+        "bytes": 7678,
+        "path": "res://staging/qa/character-vfx/aui-11/extract_facing_sources.py",
+        "sha256": "81de2f81c284e631fe709300f0750a7c5e1e40f0b387341149df593df0dc140b"
+      },
+      "grunt_loop_receipt": {
+        "bytes": 1439,
+        "path": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+        "sha256": "efc959f7cf5bc6ff48c704a3d17d36a4d40d29adcd7294acf796de289d20b8bf"
+      },
+      "grunt_loop_transform": {
+        "bytes": 2934,
+        "path": "res://staging/qa/character-vfx/aui-11/close_grunt_loops.py",
+        "sha256": "f6db7e21543b8286d5f23a3dede9decfe8d7d2c4fec2f0f94112cb1ba62ec405"
+      },
+      "promotion_receipt": {
+        "bytes": 3794,
+        "path": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
+        "sha256": "303f45a3342e11d49a8133af89167cf4ca6c82cc3f59595c962db187d9bb4c15"
+      },
+      "state_value_receipt": {
+        "bytes": 3933357,
+        "path": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+        "sha256": "bd799a7f88f85630af4ef83ee92906a204d2f44e4a3cd564632aecfc977af534"
+      },
+      "state_value_transform": {
+        "bytes": 7561,
+        "path": "res://staging/qa/character-vfx/aui-11/flatten_grunt_state_regions.py",
+        "sha256": "0ab70e18d71b945af3082b9c4bd356d6492c130a7b885d4b5496ed0db6d55b0f"
+      },
+      "vanguard_loop_receipt": {
+        "bytes": 815,
+        "path": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+        "sha256": "4589504f8d6472bc103006242f2d2c61518074f2ec35a47e449acf9b970616f2"
+      },
+      "vanguard_loop_transform": {
+        "bytes": 2333,
+        "path": "res://staging/qa/character-vfx/aui-11/close_vanguard_attack_loop.py",
+        "sha256": "bbf8e1d78e42ba6a59ba4280f8741586bc2ee4beaa606f0e451359a7ce46ac6f"
+      }
+    },
+    "named_reviews": {
+      "blind_results": {
+        "bytes": 18097,
+        "path": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+        "sha256": "90967f1b7bd13a9b354851c398c5adbfca1fea0761bcaad81bca11d3cd947388"
+      },
+      "input_builder": {
+        "bytes": 4960,
+        "path": "res://staging/qa/character-vfx/aui-11/build_blind_review_inputs.py",
+        "sha256": "02f3337562c488d34103bd813d128affdf78ae2d25f1258601be35b0293844f1"
+      },
+      "input_manifest": {
+        "bytes": 1986,
+        "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs.json",
+        "sha256": "034dcd1e684dce2ab47819988403460180b6fc4b670126f2440f48765586ccb7"
+      },
+      "inputs": [
+        {
+          "bytes": 2498,
+          "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-silhouette.png",
+          "sha256": "39a1169bc082a01d58490aaf27865aa8713779fff4788bf1b6190f3123da2d93"
+        },
+        {
+          "bytes": 14085,
+          "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-state-pair.png",
+          "sha256": "7839fe36dd5581b72abdd1adc62b6a03811987d22535a05c2d8586f443f9c04c"
+        },
+        {
+          "bytes": 2419,
+          "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-vanguard-silhouette.png",
+          "sha256": "2213b60b393cbc491d94dedb9ff5d69a256ad842aa7e567e26a3dddfbc832446"
+        }
+      ],
+      "originality_results": {
+        "bytes": 21123,
+        "path": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+        "sha256": "97e27a3127fc479229a226bd1bfc95dbc3f6745701d8b5d69ce7d99cc4562943"
+      },
+      "receipt": {
+        "bytes": 29732,
+        "path": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+        "sha256": "51328d0682f28110ac0cb6f746adbaeafa6e7f7b2434c6314b5c28e862b6f139"
+      },
+      "verifier": {
+        "bytes": 17337,
+        "path": "res://staging/qa/character-vfx/aui-11/verify_named_review_gates.py",
+        "sha256": "659e9fa706c725059ff2ab806f4a8fdc1aab383d7a52fb9eeeeb00c4ed72024f"
       }
     }
   },

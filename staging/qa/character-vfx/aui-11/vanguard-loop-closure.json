@@ -1,0 +1,16 @@
+{
+  "after": {
+    "master_sha256": "43051a276413119ab6bf4ca1879bb2c3307b1751ebbc25abcb7452b150b1633a",
+    "recovery_sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38",
+    "start_recovery_byte_equal": true,
+    "start_sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38"
+  },
+  "before": {
+    "master_sha256": "db294d8807d75bbbcfaacd510fe752d35d5e42ad60d21471046eee663bc1b27f",
+    "recovery_sha256": "ad50e44bcbdb444f66b475a66158b66ca74f268330bb1b642faf9a7b85ca702f",
+    "start_sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38"
+  },
+  "operation": "copy_row1_frame0_to_row1_frame3",
+  "reason": "attack recovery must close to anticipation without weakening loop_iou_min_0.92",
+  "schema_version": "mgs.aui11.vanguard-loop-closure.v1"
+}

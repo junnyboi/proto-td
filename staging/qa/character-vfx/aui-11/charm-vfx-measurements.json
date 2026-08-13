@@ -1,0 +1,391 @@
+{
+  "frames": [
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 258,
+          "bounds": [
+            65,
+            141,
+            91,
+            157
+          ]
+        },
+        {
+          "area": 259,
+          "bounds": [
+            102,
+            141,
+            128,
+            157
+          ]
+        },
+        {
+          "area": 205,
+          "bounds": [
+            66,
+            158,
+            88,
+            172
+          ]
+        },
+        {
+          "area": 199,
+          "bounds": [
+            105,
+            158,
+            126,
+            172
+          ]
+        },
+        {
+          "area": 76,
+          "bounds": [
+            90,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 5,
+      "foot": 180,
+      "frame": 0,
+      "height": 40,
+      "opaque": 997,
+      "open_center_max_alpha": 0,
+      "width": 63
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 420,
+          "bounds": [
+            64,
+            141,
+            89,
+            170
+          ]
+        },
+        {
+          "area": 422,
+          "bounds": [
+            106,
+            141,
+            130,
+            170
+          ]
+        },
+        {
+          "area": 80,
+          "bounds": [
+            91,
+            174,
+            104,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 3,
+      "foot": 180,
+      "frame": 1,
+      "height": 40,
+      "opaque": 922,
+      "open_center_max_alpha": 0,
+      "width": 66
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 455,
+          "bounds": [
+            67,
+            141,
+            92,
+            170
+          ]
+        },
+        {
+          "area": 467,
+          "bounds": [
+            102,
+            141,
+            127,
+            170
+          ]
+        },
+        {
+          "area": 70,
+          "bounds": [
+            91,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 3,
+      "foot": 180,
+      "frame": 2,
+      "height": 40,
+      "opaque": 992,
+      "open_center_max_alpha": 0,
+      "width": 60
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 258,
+          "bounds": [
+            65,
+            141,
+            91,
+            157
+          ]
+        },
+        {
+          "area": 259,
+          "bounds": [
+            102,
+            141,
+            128,
+            157
+          ]
+        },
+        {
+          "area": 205,
+          "bounds": [
+            66,
+            158,
+            88,
+            172
+          ]
+        },
+        {
+          "area": 199,
+          "bounds": [
+            105,
+            158,
+            126,
+            172
+          ]
+        },
+        {
+          "area": 76,
+          "bounds": [
+            90,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 5,
+      "foot": 180,
+      "frame": 3,
+      "height": 40,
+      "opaque": 997,
+      "open_center_max_alpha": 0,
+      "width": 63
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 475,
+          "bounds": [
+            64,
+            141,
+            91,
+            171
+          ]
+        },
+        {
+          "area": 475,
+          "bounds": [
+            102,
+            141,
+            129,
+            171
+          ]
+        },
+        {
+          "area": 80,
+          "bounds": [
+            90,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 3,
+      "foot": 180,
+      "frame": 4,
+      "height": 40,
+      "opaque": 1030,
+      "open_center_max_alpha": 0,
+      "width": 65
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 506,
+          "bounds": [
+            65,
+            141,
+            91,
+            170
+          ]
+        },
+        {
+          "area": 512,
+          "bounds": [
+            101,
+            141,
+            128,
+            170
+          ]
+        },
+        {
+          "area": 72,
+          "bounds": [
+            91,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 3,
+      "foot": 180,
+      "frame": 5,
+      "height": 40,
+      "opaque": 1090,
+      "open_center_max_alpha": 0,
+      "width": 63
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 420,
+          "bounds": [
+            69,
+            141,
+            92,
+            166
+          ]
+        },
+        {
+          "area": 427,
+          "bounds": [
+            100,
+            141,
+            124,
+            166
+          ]
+        },
+        {
+          "area": 6,
+          "bounds": [
+            63,
+            160,
+            66,
+            162
+          ]
+        },
+        {
+          "area": 8,
+          "bounds": [
+            126,
+            160,
+            130,
+            162
+          ]
+        },
+        {
+          "area": 28,
+          "bounds": [
+            93,
+            167,
+            100,
+            171
+          ]
+        },
+        {
+          "area": 67,
+          "bounds": [
+            91,
+            174,
+            102,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 6,
+      "foot": 180,
+      "frame": 6,
+      "height": 40,
+      "opaque": 956,
+      "open_center_max_alpha": 0,
+      "width": 67
+    },
+    {
+      "center_x": 96,
+      "components": [
+        {
+          "area": 475,
+          "bounds": [
+            64,
+            141,
+            91,
+            171
+          ]
+        },
+        {
+          "area": 475,
+          "bounds": [
+            102,
+            141,
+            129,
+            171
+          ]
+        },
+        {
+          "area": 80,
+          "bounds": [
+            90,
+            174,
+            103,
+            181
+          ]
+        }
+      ],
+      "components_8_connected": 3,
+      "foot": 180,
+      "frame": 7,
+      "height": 40,
+      "opaque": 1030,
+      "open_center_max_alpha": 0,
+      "width": 65
+    }
+  ],
+  "loops": [
+    {
+      "end": 3,
+      "iou": 1.0,
+      "start": 0
+    },
+    {
+      "end": 7,
+      "iou": 1.0,
+      "start": 4
+    }
+  ]
+}

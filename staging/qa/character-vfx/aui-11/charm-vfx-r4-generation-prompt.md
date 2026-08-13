@@ -1,0 +1,9 @@
+# AUI-11 Charm VFX r4 — Accepted GPT Image 2 Edit Prompt
+
+## Inputs
+
+The accepted edit used the r3 chunky Charm master, sealed Round 5 VFX language sheet, and sealed Round 5 Charm state sheet with `gpt-image-2`, high quality, at 16:9.
+
+## Exact prompt
+
+Edit the provided chunky Charm VFX 4x2 master with a surgical separation pass. Preserve the exact facet shapes, palette, hard-edged style, 4x2 centers, straight inward progression, and open centers. Make every intended separate component stay separate after strong downscaling: increase every black moat between components to at least 40 source-image pixels, including diagonal corners; no two components may touch even diagonally. Move the narrow under-mark farther downward so it is detached from all main facets by at least one full facet thickness in ALL eight cells. R0C0, R0C1, R0C3, R1C0, and R1C3 must each show exactly FOUR large detached blunt bracket facets plus ONE detached under-mark, all five components countable. R0C2 may show exactly TWO opposed open paired assemblies plus ONE detached under-mark. R1C1 must show exactly TWO opposed open interlocking clasp assemblies plus ONE detached under-mark. R1C2 only: enlarge the two main open clasp assemblies by 30 percent within the same cell so their total solid area is robust, retain the detached under-mark, and show exactly THREE additional straight rectangular detached chips at upper-center, far left, and far right; put every chip at least 45 source pixels from every clasp and from the under-mark. Frame R1C2 must have exactly SIX countable components total: two clasps, one under-mark, three chips. Keep the whole effect target-local and smaller than deploy. No connected horseshoe, closed diamond, ring, heart, eye, spiral, circle, star, X, slash, comet, halo, bloom, orbit, rotation, labels, text, borders, grid lines, characters, shadows, or cell crossing.

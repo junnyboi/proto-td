@@ -1,0 +1,142 @@
+{
+  "batch_id": "AUI-11",
+  "denominator": 10,
+  "expected": {
+    "alpha_role": "allied_operator",
+    "alpha_screen_facing": "screen_right",
+    "beta_role": "hostile_construct",
+    "beta_screen_facing": "screen_right",
+    "charmed_side": "left"
+  },
+  "failures": {
+    "charm_state": [
+      "blind-05",
+      "blind-10"
+    ],
+    "grunt_role_facing": [
+      "blind-05"
+    ],
+    "vanguard_role_facing": []
+  },
+  "input_manifest_sha256": "034dcd1e684dce2ab47819988403460180b6fc4b670126f2440f48765586ccb7",
+  "reviewers": [
+    {
+      "alpha_reason": "Image A shows a slim upright combatant whose projected blade/weapon and profile consistently point toward screen-right. Image B shows a broad, crouched heavy combatant carrying an oversized gun or cannon on its screen-right side; its posture reads as facing screen-right. In image C, the left-side group has conspicuous mottled/checkered overlaying across the body and equipment, while the right-side group reads as smoother ordinary base material.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows a slim upright combatant whose projected blade/weapon and profile consistently point toward screen-right. Image B shows a broad, crouched heavy combatant carrying an oversized gun or cannon on its screen-right side; its posture reads as facing screen-right. In image C, the left-side group has conspicuous mottled/checkered overlaying across the body and equipment, while the right-side group reads as smoother ordinary base material.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-01",
+      "state_reason": "Image A shows a slim upright combatant whose projected blade/weapon and profile consistently point toward screen-right. Image B shows a broad, crouched heavy combatant carrying an oversized gun or cannon on its screen-right side; its posture reads as facing screen-right. In image C, the left-side group has conspicuous mottled/checkered overlaying across the body and equipment, while the right-side group reads as smoother ordinary base material."
+    },
+    {
+      "alpha_reason": "Image A shows a slim upright humanoid in multiple combat poses; the blade and attacking reach extend predominantly toward screen-right. Image B shows a stocky crouched humanoid carrying a very large blunt or cannon-like object on its screen-right side in the recurring idle poses, indicating screen-right facing. In image C, the left set has conspicuous brighter, mottled/checkered tonal patches across the figure and weapon, whereas the right set reads as a more uniform ordinary grayscale material.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows a slim upright humanoid in multiple combat poses; the blade and attacking reach extend predominantly toward screen-right. Image B shows a stocky crouched humanoid carrying a very large blunt or cannon-like object on its screen-right side in the recurring idle poses, indicating screen-right facing. In image C, the left set has conspicuous brighter, mottled/checkered tonal patches across the figure and weapon, whereas the right set reads as a more uniform ordinary grayscale material.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-02",
+      "state_reason": "Image A shows a slim upright humanoid in multiple combat poses; the blade and attacking reach extend predominantly toward screen-right. Image B shows a stocky crouched humanoid carrying a very large blunt or cannon-like object on its screen-right side in the recurring idle poses, indicating screen-right facing. In image C, the left set has conspicuous brighter, mottled/checkered tonal patches across the figure and weapon, whereas the right set reads as a more uniform ordinary grayscale material."
+    },
+    {
+      "alpha_reason": "Image-a shows an upright, comparatively slim humanoid repeatedly extending a small firearm toward screen-right. Image-b shows a hunched, broad-bodied brute whose oversized weapon or striking arm projects toward screen-right in the clearest poses. In image-c, the left-side sprite set has conspicuous pale square overlays, sparkles, and diagonal shimmering marks; the right-side set retains plainer base shading.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image-a shows an upright, comparatively slim humanoid repeatedly extending a small firearm toward screen-right. Image-b shows a hunched, broad-bodied brute whose oversized weapon or striking arm projects toward screen-right in the clearest poses. In image-c, the left-side sprite set has conspicuous pale square overlays, sparkles, and diagonal shimmering marks; the right-side set retains plainer base shading.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-03",
+      "state_reason": "Image-a shows an upright, comparatively slim humanoid repeatedly extending a small firearm toward screen-right. Image-b shows a hunched, broad-bodied brute whose oversized weapon or striking arm projects toward screen-right in the clearest poses. In image-c, the left-side sprite set has conspicuous pale square overlays, sparkles, and diagonal shimmering marks; the right-side set retains plainer base shading."
+    },
+    {
+      "alpha_reason": "Image A shows a slim upright humanoid repeatedly aiming or extending an arm/weapon toward screen-right. Image B shows a stocky crouched figure whose head/body posture and oversized forward arm or weapon project toward screen-right. In image C, the left set has conspicuous hatched, wavy, and broken-line surface effects across limbs and torso; the right set is visibly cleaner and more uniformly filled, so the left reads as status-treated.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows a slim upright humanoid repeatedly aiming or extending an arm/weapon toward screen-right. Image B shows a stocky crouched figure whose head/body posture and oversized forward arm or weapon project toward screen-right. In image C, the left set has conspicuous hatched, wavy, and broken-line surface effects across limbs and torso; the right set is visibly cleaner and more uniformly filled, so the left reads as status-treated.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-04",
+      "state_reason": "Image A shows a slim upright humanoid repeatedly aiming or extending an arm/weapon toward screen-right. Image B shows a stocky crouched figure whose head/body posture and oversized forward arm or weapon project toward screen-right. In image C, the left set has conspicuous hatched, wavy, and broken-line surface effects across limbs and torso; the right set is visibly cleaner and more uniformly filled, so the left reads as status-treated."
+    },
+    {
+      "alpha_reason": "Image-a shows a slim upright humanoid repeatedly extending or aiming an arm/weapon toward screen-right. Image-b shows a low, bulky creature whose head/body posture reads toward screen-left, with an oversized arm or weapon trailing/occupying the right side in several frames. In image-c, the right-hand set is visibly differentiated from the ordinary gray base set by a tinted/speckled status-like treatment, most apparent around the body and silhouette edges.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image-a shows a slim upright humanoid repeatedly extending or aiming an arm/weapon toward screen-right. Image-b shows a low, bulky creature whose head/body posture reads toward screen-left, with an oversized arm or weapon trailing/occupying the right side in several frames. In image-c, the right-hand set is visibly differentiated from the ordinary gray base set by a tinted/speckled status-like treatment, most apparent around the body and silhouette edges.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_left",
+      "charmed_side": "right",
+      "reviewer_id": "blind-05",
+      "state_reason": "Image-a shows a slim upright humanoid repeatedly extending or aiming an arm/weapon toward screen-right. Image-b shows a low, bulky creature whose head/body posture reads toward screen-left, with an oversized arm or weapon trailing/occupying the right side in several frames. In image-c, the right-hand set is visibly differentiated from the ordinary gray base set by a tinted/speckled status-like treatment, most apparent around the body and silhouette edges."
+    },
+    {
+      "alpha_reason": "Image-a shows a slim upright humanoid repeatedly presenting or aiming a compact ranged weapon toward screen-right. Image-b shows a broad, crouched armored brute with an oversized club-like arm or weapon; its neutral silhouettes read toward screen-right, notwithstanding attack frames where the weapon swings across the body. In image-c, the left group has conspicuous bright checker/diagonal banding and sparkle-like highlights across the armor and weapon, while the right group appears comparatively like ordinary base material.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image-a shows a slim upright humanoid repeatedly presenting or aiming a compact ranged weapon toward screen-right. Image-b shows a broad, crouched armored brute with an oversized club-like arm or weapon; its neutral silhouettes read toward screen-right, notwithstanding attack frames where the weapon swings across the body. In image-c, the left group has conspicuous bright checker/diagonal banding and sparkle-like highlights across the armor and weapon, while the right group appears comparatively like ordinary base material.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-06",
+      "state_reason": "Image-a shows a slim upright humanoid repeatedly presenting or aiming a compact ranged weapon toward screen-right. Image-b shows a broad, crouched armored brute with an oversized club-like arm or weapon; its neutral silhouettes read toward screen-right, notwithstanding attack frames where the weapon swings across the body. In image-c, the left group has conspicuous bright checker/diagonal banding and sparkle-like highlights across the armor and weapon, while the right group appears comparatively like ordinary base material."
+    },
+    {
+      "alpha_reason": "Image A shows a slim upright combatant whose weapon, head/profile, and lunging poses consistently project toward screen-right. Image B shows a broad, low-set heavy figure with an oversized arm-mounted or carried weapon extending toward screen-right; the action poses preserve that orientation. In image C, the left group has conspicuous mottled/checkered overlay texture across the body and weapon, while the right group looks comparatively like ordinary smoother base shading.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows a slim upright combatant whose weapon, head/profile, and lunging poses consistently project toward screen-right. Image B shows a broad, low-set heavy figure with an oversized arm-mounted or carried weapon extending toward screen-right; the action poses preserve that orientation. In image C, the left group has conspicuous mottled/checkered overlay texture across the body and weapon, while the right group looks comparatively like ordinary smoother base shading.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-07",
+      "state_reason": "Image A shows a slim upright combatant whose weapon, head/profile, and lunging poses consistently project toward screen-right. Image B shows a broad, low-set heavy figure with an oversized arm-mounted or carried weapon extending toward screen-right; the action poses preserve that orientation. In image C, the left group has conspicuous mottled/checkered overlay texture across the body and weapon, while the right group looks comparatively like ordinary smoother base shading."
+    },
+    {
+      "alpha_reason": "Image-a shows a slender upright humanoid in several poses, with a short pointed blade consistently projecting toward screen-right; the profile and attack direction read as screen-right. Image-b shows a broad, low crouching heavy humanoid whose large weapon or enlarged arm projects toward screen-right; its posture reads as screen-right-facing. In image-c, the left panel has conspicuous light-and-dark crosshatched/dithered patterning across the body and limbs, while the right panel uses broader, smoother gray base-material regions; the left therefore appears status-treated.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image-a shows a slender upright humanoid in several poses, with a short pointed blade consistently projecting toward screen-right; the profile and attack direction read as screen-right. Image-b shows a broad, low crouching heavy humanoid whose large weapon or enlarged arm projects toward screen-right; its posture reads as screen-right-facing. In image-c, the left panel has conspicuous light-and-dark crosshatched/dithered patterning across the body and limbs, while the right panel uses broader, smoother gray base-material regions; the left therefore appears status-treated.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-08",
+      "state_reason": "Image-a shows a slender upright humanoid in several poses, with a short pointed blade consistently projecting toward screen-right; the profile and attack direction read as screen-right. Image-b shows a broad, low crouching heavy humanoid whose large weapon or enlarged arm projects toward screen-right; its posture reads as screen-right-facing. In image-c, the left panel has conspicuous light-and-dark crosshatched/dithered patterning across the body and limbs, while the right panel uses broader, smoother gray base-material regions; the left therefore appears status-treated."
+    },
+    {
+      "alpha_reason": "Image A shows an upright, agile humanoid combatant whose head, weapon, and lunging poses predominantly point toward screen-right. Image B shows a low, bulky heavy-weapon combatant; the repeated crouched profile presents the weapon and body toward screen-right. In image C, the left group has a conspicuous mottled/checkered overlay and brighter disrupted patches, while the right group has comparatively ordinary, smoother base shading.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows an upright, agile humanoid combatant whose head, weapon, and lunging poses predominantly point toward screen-right. Image B shows a low, bulky heavy-weapon combatant; the repeated crouched profile presents the weapon and body toward screen-right. In image C, the left group has a conspicuous mottled/checkered overlay and brighter disrupted patches, while the right group has comparatively ordinary, smoother base shading.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "left",
+      "reviewer_id": "blind-09",
+      "state_reason": "Image A shows an upright, agile humanoid combatant whose head, weapon, and lunging poses predominantly point toward screen-right. Image B shows a low, bulky heavy-weapon combatant; the repeated crouched profile presents the weapon and body toward screen-right. In image C, the left group has a conspicuous mottled/checkered overlay and brighter disrupted patches, while the right group has comparatively ordinary, smoother base shading."
+    },
+    {
+      "alpha_reason": "Image A shows an upright, lightly built humanoid holding a short blade extended toward screen-right across most poses. Image B shows a stocky crouched humanoid carrying an oversized cannon-like weapon, with the weapon and default body orientation toward screen-right. In image C, the right-hand sequence has conspicuous pale zigzag/spark-like marks around the upper body and weapon that are absent from the ordinary-looking left-hand sequence.",
+      "alpha_role": "allied_operator",
+      "alpha_screen_facing": "screen_right",
+      "beta_reason": "Image A shows an upright, lightly built humanoid holding a short blade extended toward screen-right across most poses. Image B shows a stocky crouched humanoid carrying an oversized cannon-like weapon, with the weapon and default body orientation toward screen-right. In image C, the right-hand sequence has conspicuous pale zigzag/spark-like marks around the upper body and weapon that are absent from the ordinary-looking left-hand sequence.",
+      "beta_role": "hostile_construct",
+      "beta_screen_facing": "screen_right",
+      "charmed_side": "right",
+      "reviewer_id": "blind-10",
+      "state_reason": "Image A shows an upright, lightly built humanoid holding a short blade extended toward screen-right across most poses. Image B shows a stocky crouched humanoid carrying an oversized cannon-like weapon, with the weapon and default body orientation toward screen-right. In image C, the right-hand sequence has conspicuous pale zigzag/spark-like marks around the upper body and weapon that are absent from the ordinary-looking left-hand sequence."
+    }
+  ],
+  "schema_version": "mgs.aui11.blind-review-results.v1",
+  "scores": {
+    "charm_state": 8,
+    "grunt_role_facing": 9,
+    "vanguard_role_facing": 10
+  },
+  "status": "PASS",
+  "threshold": 8
+}

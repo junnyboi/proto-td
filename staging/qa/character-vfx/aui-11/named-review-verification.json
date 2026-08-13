@@ -1,0 +1,1452 @@
+{
+  "batch_id": "AUI-11",
+  "blind_results_sha256": "90967f1b7bd13a9b354851c398c5adbfca1fea0761bcaad81bca11d3cd947388",
+  "blind_scores": {
+    "charm_state": 8,
+    "grunt_role_facing": 9,
+    "vanguard_role_facing": 10
+  },
+  "checks": [
+    {
+      "detail": "",
+      "name": "input_manifest_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_version",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_batch",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_background",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_silhouette",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_scale",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_grid",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_state_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_inputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_generator_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_generator_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_generator_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_generator_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_generator_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_charmed_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_charmed_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_charmed_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_charmed_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_grunt_charmed_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_vanguard_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_vanguard_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_vanguard_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_vanguard_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_atlas_vanguard_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_grunt_silhouette_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_grunt_silhouette_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_grunt_silhouette_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_grunt_silhouette_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_grunt_silhouette_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_state_pair_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_state_pair_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_state_pair_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_state_pair_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_state_pair_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_vanguard_silhouette_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_vanguard_silhouette_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_vanguard_silhouette_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_vanguard_silhouette_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_vanguard_silhouette_path",
+      "ok": true
+    },
+    {
+      "detail": "{\"outputs\": {\"grunt_silhouette\": \"blind-grunt-silhouette.png\", \"state_pair\": \"blind-grunt-state-pair.png\", \"vanguard_silhouette\": \"blind-vanguard-silhouette.png\"}, \"status\": \"PASS\"}\n",
+      "name": "input_builder_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "input_manifest_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_reproduced_blind-grunt-silhouette.png",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_reproduced_blind-grunt-state-pair.png",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "review_output_reproduced_blind-vanguard-silhouette.png",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_version",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_batch",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_input_binding",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_threshold",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_expected",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_denominator",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_reviewer_ids",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-01_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-01_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-01_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-01_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-01_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-02_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-02_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-02_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-02_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-02_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-03_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-03_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-03_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-03_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-03_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-04_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-04_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-04_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-04_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-04_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-05_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-05_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-05_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-05_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-05_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-06_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-06_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-06_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-06_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-06_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-07_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-07_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-07_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-07_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-07_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-08_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-08_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-08_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-08_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-08_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-09_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-09_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-09_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-09_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-09_reasons",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-10_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-10_roles",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-10_facings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-10_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_blind-10_reasons",
+      "ok": true
+    },
+    {
+      "detail": "{\"charm_state\": 8, \"grunt_role_facing\": 9, \"vanguard_role_facing\": 10}",
+      "name": "blind_results_scores",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_failures",
+      "ok": true
+    },
+    {
+      "detail": "8/10",
+      "name": "blind_gate_charm_state",
+      "ok": true
+    },
+    {
+      "detail": "9/10",
+      "name": "blind_gate_grunt_role_facing",
+      "ok": true
+    },
+    {
+      "detail": "10/10",
+      "name": "blind_gate_vanguard_role_facing",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "blind_results_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_version",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_batch",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_approval_token",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_ledger_binding",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_packet_bindings",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_atlas_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_atlas_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_atlas_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_atlas_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_atlas_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_contact_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_contact_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_contact_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_contact_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_contact_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_metadata_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_metadata_binding_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_metadata_binding_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_metadata_binding_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_metadata_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_packets",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_ids",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_vanguard_1_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_portrait_vanguard_1_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_grunt_charmed_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_deploy_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_attack_hit_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_id",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_concepts",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_approved",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_reason",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_observations",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_charm_vfx_pass",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_failures",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "originality_results_status",
+      "ok": true
+    }
+  ],
+  "checks_executed": 287,
+  "input_manifest_sha256": "034dcd1e684dce2ab47819988403460180b6fc4b670126f2440f48765586ccb7",
+  "originality_results_sha256": "97e27a3127fc479229a226bd1bfc95dbc3f6745701d8b5d69ce7d99cc4562943",
+  "originality_reviews_passed": 7,
+  "schema_version": "mgs.aui11.named-review-verification.v1",
+  "status": "PASS"
+}

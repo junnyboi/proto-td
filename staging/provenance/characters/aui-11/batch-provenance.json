@@ -13,47 +13,107 @@
     "attack_hit_transform": {
       "bytes": 6082,
       "path": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
-      "sha256": "3f59f070a5ad2960db090185042d5682511d8e6a59b8e71f4c61f3988aafa750"
+      "sha256": "99af11f575a400a0688760cff2c2ed9015f99ea5bbaad3081cd909857efb469a"
+    },
+    "attack_hit_visual_audit": {
+      "bytes": 1499,
+      "path": "res://staging/qa/character-vfx/aui-11/attack-hit-v2-visual-audit.json",
+      "sha256": "9c892ec04c0a6044f4d14c9ee2201e0878cd0f7435d57c7e2b969407560ef9d6"
     },
     "batch_manifest": {
-      "bytes": 31722,
+      "bytes": 42510,
       "path": "res://staging/character-vfx/aui-11/batch-manifest.json",
-      "sha256": "7c9c8d116e6b655b6c4fc68668d4c3253bf540cb04c500b355636bda0b687ed1"
+      "sha256": "4ec7db2dc292d467f50e36e8d30612579815ee2a37c36e564c5e88cbcec45442"
+    },
+    "blind_review_results": {
+      "bytes": 18097,
+      "path": "res://staging/qa/character-vfx/aui-11/blind-review-results.json",
+      "sha256": "90967f1b7bd13a9b354851c398c5adbfca1fea0761bcaad81bca11d3cd947388"
+    },
+    "charm_cue_support": {
+      "bytes": 343533,
+      "path": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+      "sha256": "774c88a30d442ce8de09fcb835a78ac01704f5753c3aaee1c4df9bdac1877bf6"
     },
     "charm_semantics": {
-      "bytes": 10232,
+      "bytes": 10269,
       "path": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
-      "sha256": "d5e8ec350a427fd9d3c6655a290286b1e1c5ea50d48390cb8ccb08742d080cd2"
+      "sha256": "b9358c668eefc069b22c4b32ff1ab93e08fc9ae7af2ee103fd7dd0fef9692b0a"
+    },
+    "charm_vfx_transform": {
+      "bytes": 6088,
+      "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-transform-receipt.json",
+      "sha256": "4d126e103c46bb45ad7f1a289c827fb42c1e27ba6e3b14091dfdeac617528fb3"
+    },
+    "charm_vfx_visual_audit": {
+      "bytes": 1297,
+      "path": "res://staging/qa/character-vfx/aui-11/charm-vfx-r4-visual-audit.json",
+      "sha256": "ded818dd79ea47a7733b12d90d97deec55db6e3af74ea3346998209c3432c742"
     },
     "dual_backend_verification": {
-      "bytes": 46175,
+      "bytes": 46172,
       "path": "res://staging/qa/character-vfx/aui-11/dual-backend-bound-receipt.json",
-      "sha256": "5ba6919a61997a9892e4fdbe4e656e149914eadcd425343cc656fcc4cc54427d"
+      "sha256": "ca323d0be0ec969c2d6a7a2e2e8a1c758d6dc61fcdc133a6e5976f637b7db566"
     },
     "dual_backend_verifier": {
       "bytes": 8037,
       "path": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
       "sha256": "ce3e2ceadb2df65aae46fa3a46df713d891058a024507a91d45cb36a67357ced"
     },
-    "generation_ledger": {
-      "bytes": 3750,
-      "path": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
-      "sha256": "3ef137ec3a350ab09200d37b326771e5531676cab7a7d0e0788b99dd51a50672"
+    "facing_source_extraction": {
+      "bytes": 14816,
+      "path": "res://staging/qa/character-vfx/aui-11/facing-source-extraction.json",
+      "sha256": "ab1f499f46c91f75263c11300eacd04f77dd92b215e87b0b688268f89593f317"
     },
-    "staged_verification": {
-      "bytes": 155324,
-      "path": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
-      "sha256": "8ba0a4373b1942dda5ca69d488ac242269097f5b2081a173e083c45fb0a20b36"
+    "generation_ledger": {
+      "bytes": 9916,
+      "path": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
+      "sha256": "4b97551e45439c9253ec450ffcbded3e43975a1da2c3feb045819b4ebf610096"
+    },
+    "grunt_base_highlight_reduction": {
+      "bytes": 3345,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+      "sha256": "48ca5204f2c26a03683c6cf642311cb7ed14003afc867ea8fa249ed28cf16017"
+    },
+    "grunt_loop_closure": {
+      "bytes": 1439,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+      "sha256": "efc959f7cf5bc6ff48c704a3d17d36a4d40d29adcd7294acf796de289d20b8bf"
+    },
+    "grunt_state_value_cleanup": {
+      "bytes": 3933357,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+      "sha256": "bd799a7f88f85630af4ef83ee92906a204d2f44e4a3cd564632aecfc977af534"
+    },
+    "named_review_verification": {
+      "bytes": 29732,
+      "path": "res://staging/qa/character-vfx/aui-11/named-review-verification.json",
+      "sha256": "51328d0682f28110ac0cb6f746adbaeafa6e7f7b2434c6314b5c28e862b6f139"
+    },
+    "originality_review_results": {
+      "bytes": 21123,
+      "path": "res://staging/qa/character-vfx/aui-11/originality-review-results.json",
+      "sha256": "97e27a3127fc479229a226bd1bfc95dbc3f6745701d8b5d69ce7d99cc4562943"
+    },
+    "promotion_receipt": {
+      "bytes": 3794,
+      "path": "res://staging/qa/character-vfx/aui-11/round6-promotion.json",
+      "sha256": "303f45a3342e11d49a8133af89167cf4ca6c82cc3f59595c962db187d9bb4c15"
     },
     "staged_verifier": {
-      "bytes": 32956,
+      "bytes": 45777,
       "path": "res://staging/qa/character-vfx/aui-11/verify_staged_packets.py",
-      "sha256": "200a38a70b51536894c0b7359a6c9fb40d454a364d80dc4a3abf7e85e084cd94"
+      "sha256": "740f34d90fce8011c786e3eaf1494e4e58a0528aa0d308b0e19a5b2413dd0600"
+    },
+    "vanguard_loop_closure": {
+      "bytes": 815,
+      "path": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+      "sha256": "4589504f8d6472bc103006242f2d2c61518074f2ec35a47e449acf9b970616f2"
     },
     "visual_review": {
-      "bytes": 1638,
+      "bytes": 2659,
       "path": "res://staging/qa/character-vfx/aui-11/final-packet-visual-review.md",
-      "sha256": "d977d80caf789191ce9b98f30abfbea360488ea2318321c6c6a093fb51f38564"
+      "sha256": "96c52f4d8743c961e34d705a108db075e1ff998718f9e8bc1970a1eb1cca1fad"
     }
   },
   "foreground_extraction": {

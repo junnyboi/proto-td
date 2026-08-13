@@ -1,0 +1,599 @@
+{
+  "assets": {
+    "grunt": {
+      "candidate_master": {
+        "bytes": 3619572,
+        "path": "external-production-evidence://reviewer-gates/grunt-facing-r5-master.png",
+        "sha256": "54208d8ba758613a60b11826c1d96cfc8d5c86de5d521294d40c2391478e3f6c"
+      },
+      "clean_master": {
+        "bytes": 2227885,
+        "path": "external-production-evidence://reviewer-gates/corrected-r5/masters/grunt-master.png",
+        "sha256": "b83a9fb8116a012e781370cc4e48f0f6b57f654dc3756bf11c481960495db639"
+      },
+      "frames": [
+        {
+          "bytes": 32625,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            566,
+            422
+          ],
+          "index": 0,
+          "largest_component_pixels": 102936,
+          "output_bbox": [
+            8,
+            53,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_00.png",
+          "sha256": "13c91053d728938b5d9b62389e7e12f38c564006e96c64d8798c1057c2f4c941",
+          "source_bbox": [
+            47,
+            176,
+            613,
+            598
+          ],
+          "visible_bbox": [
+            47,
+            176,
+            613,
+            598
+          ]
+        },
+        {
+          "bytes": 32768,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            563,
+            422
+          ],
+          "index": 1,
+          "largest_component_pixels": 102850,
+          "output_bbox": [
+            8,
+            53,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_01.png",
+          "sha256": "26139d1455b96010aedbbad8e10b039bc886df050c569e4a10997d2e8997ecf7",
+          "source_bbox": [
+            42,
+            176,
+            605,
+            598
+          ],
+          "visible_bbox": [
+            42,
+            176,
+            605,
+            598
+          ]
+        },
+        {
+          "bytes": 32920,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            561,
+            421
+          ],
+          "index": 2,
+          "largest_component_pixels": 101698,
+          "output_bbox": [
+            8,
+            52,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_02.png",
+          "sha256": "332a3ca60f8f06bf691809f3e4f7b9e0982ceb6cc46a1f9d56f0912a7a69912c",
+          "source_bbox": [
+            48,
+            177,
+            609,
+            598
+          ],
+          "visible_bbox": [
+            48,
+            177,
+            609,
+            598
+          ]
+        },
+        {
+          "bytes": 33539,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            549,
+            420
+          ],
+          "index": 3,
+          "largest_component_pixels": 99706,
+          "output_bbox": [
+            8,
+            50,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_03.png",
+          "sha256": "33bf322b605bb934cf4e032c893ec5bc757488fc430653e1cfcfafc816f1af4b",
+          "source_bbox": [
+            40,
+            178,
+            589,
+            598
+          ],
+          "visible_bbox": [
+            40,
+            178,
+            589,
+            598
+          ]
+        },
+        {
+          "bytes": 35177,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            523,
+            449
+          ],
+          "index": 4,
+          "largest_component_pixels": 95662,
+          "output_bbox": [
+            8,
+            33,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_04.png",
+          "sha256": "e024dcf16192fe0c30fad7efa4ba4b3180ae1a706da4d63ebe1436e88d768e2b",
+          "source_bbox": [
+            29,
+            72,
+            552,
+            521
+          ],
+          "visible_bbox": [
+            29,
+            72,
+            552,
+            521
+          ]
+        },
+        {
+          "bytes": 32190,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            563,
+            422
+          ],
+          "index": 5,
+          "largest_component_pixels": 100451,
+          "output_bbox": [
+            8,
+            53,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_05.png",
+          "sha256": "672d451eba7b4691e5c2756fae6fbe4bf4fe30b45af2c14d2f1f38d7107d8876",
+          "source_bbox": [
+            28,
+            83,
+            591,
+            505
+          ],
+          "visible_bbox": [
+            28,
+            83,
+            591,
+            505
+          ]
+        },
+        {
+          "bytes": 31791,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            559,
+            416
+          ],
+          "index": 6,
+          "largest_component_pixels": 97754,
+          "output_bbox": [
+            8,
+            54,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_06.png",
+          "sha256": "abb23319dc153e4aa1c9896657398f555cdede70b37bcce290ae23401866431a",
+          "source_bbox": [
+            31,
+            89,
+            590,
+            505
+          ],
+          "visible_bbox": [
+            31,
+            89,
+            590,
+            505
+          ]
+        },
+        {
+          "bytes": 33200,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            544,
+            416
+          ],
+          "index": 7,
+          "largest_component_pixels": 96918,
+          "output_bbox": [
+            8,
+            50,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/grunt/frame_07.png",
+          "sha256": "e1401b1a65f3c98576cf64beca227e6c038bff95019be94c462c9c37a7a57699",
+          "source_bbox": [
+            28,
+            89,
+            572,
+            505
+          ],
+          "visible_bbox": [
+            28,
+            89,
+            572,
+            505
+          ]
+        }
+      ]
+    },
+    "vanguard_1": {
+      "candidate_master": {
+        "bytes": 3165078,
+        "path": "external-production-evidence://reviewer-gates/vanguard-facing-r2-master.png",
+        "sha256": "ad3df895e8cfb3869b0730cba3cfd2b67baa92f6905a7ac4b3e19a4f1e9ce490"
+      },
+      "clean_master": {
+        "bytes": 1686061,
+        "path": "external-production-evidence://reviewer-gates/corrected-r5/masters/vanguard_1-master.png",
+        "sha256": "db294d8807d75bbbcfaacd510fe752d35d5e42ad60d21471046eee663bc1b27f"
+      },
+      "frames": [
+        {
+          "bytes": 21622,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            423,
+            601
+          ],
+          "index": 0,
+          "largest_component_pixels": 77357,
+          "output_bbox": [
+            34,
+            9,
+            157,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_00.png",
+          "sha256": "18b21a619b2757f40e029328a3ba89193ef530b440165fa6189438de6232bcfb",
+          "source_bbox": [
+            139,
+            30,
+            562,
+            631
+          ],
+          "visible_bbox": [
+            139,
+            30,
+            562,
+            631
+          ]
+        },
+        {
+          "bytes": 22387,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            464,
+            588
+          ],
+          "index": 1,
+          "largest_component_pixels": 76927,
+          "output_bbox": [
+            27,
+            9,
+            165,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_01.png",
+          "sha256": "4ee2afae41286d0a24820e20018cea26db2f30f8c9cc3f7007a95fdd3276dbdb",
+          "source_bbox": [
+            96,
+            38,
+            560,
+            626
+          ],
+          "visible_bbox": [
+            96,
+            38,
+            560,
+            626
+          ]
+        },
+        {
+          "bytes": 24470,
+          "components_before": 3,
+          "components_kept": 1,
+          "cropped_size": [
+            559,
+            570
+          ],
+          "index": 2,
+          "largest_component_pixels": 79370,
+          "output_bbox": [
+            10,
+            9,
+            182,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_02.png",
+          "sha256": "2a39fd0dc9ef699542234c9db31f8a6abf1374c641cc12629ea4ac6e0da7796c",
+          "source_bbox": [
+            81,
+            56,
+            640,
+            626
+          ],
+          "visible_bbox": [
+            81,
+            56,
+            640,
+            626
+          ]
+        },
+        {
+          "bytes": 21534,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            418,
+            597
+          ],
+          "index": 3,
+          "largest_component_pixels": 76059,
+          "output_bbox": [
+            34,
+            9,
+            157,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_03.png",
+          "sha256": "1391e90c39ba1383adb4f42ca22e8e7b93bb9c6b2a9ec40eeb11f2f2d6bc6a9a",
+          "source_bbox": [
+            148,
+            34,
+            566,
+            631
+          ],
+          "visible_bbox": [
+            148,
+            34,
+            566,
+            631
+          ]
+        },
+        {
+          "bytes": 24930,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            530,
+            562
+          ],
+          "index": 4,
+          "largest_component_pixels": 79222,
+          "output_bbox": [
+            13,
+            9,
+            178,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_04.png",
+          "sha256": "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38",
+          "source_bbox": [
+            56,
+            36,
+            586,
+            598
+          ],
+          "visible_bbox": [
+            56,
+            36,
+            586,
+            598
+          ]
+        },
+        {
+          "bytes": 22406,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            586,
+            542
+          ],
+          "index": 5,
+          "largest_component_pixels": 77770,
+          "output_bbox": [
+            8,
+            22,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_05.png",
+          "sha256": "d7603175c805b234837ebcaba690f91261293c0af35dddd6cc90da41d924daaa",
+          "source_bbox": [
+            54,
+            43,
+            640,
+            585
+          ],
+          "visible_bbox": [
+            54,
+            43,
+            640,
+            585
+          ]
+        },
+        {
+          "bytes": 21315,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            372,
+            594
+          ],
+          "index": 6,
+          "largest_component_pixels": 74695,
+          "output_bbox": [
+            41,
+            9,
+            151,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_06.png",
+          "sha256": "428f414f397bed12faa5d5acf064cd4138ffe3d9090665aafde3a054f5eebd32",
+          "source_bbox": [
+            122,
+            23,
+            494,
+            617
+          ],
+          "visible_bbox": [
+            122,
+            23,
+            494,
+            617
+          ]
+        },
+        {
+          "bytes": 22001,
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            428,
+            592
+          ],
+          "index": 7,
+          "largest_component_pixels": 76535,
+          "output_bbox": [
+            32,
+            9,
+            159,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "external-production-evidence://reviewer-gates/corrected-r5/sources/vanguard_1/frame_07.png",
+          "sha256": "ad50e44bcbdb444f66b475a66158b66ca74f268330bb1b642faf9a7b85ca702f",
+          "source_bbox": [
+            132,
+            23,
+            560,
+            615
+          ],
+          "visible_bbox": [
+            132,
+            23,
+            560,
+            615
+          ]
+        }
+      ]
+    }
+  },
+  "model": {
+    "bytes": 178648008,
+    "name": "isnet-general-use",
+    "path": "external-model-cache://isnet-general-use.onnx",
+    "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+  },
+  "schema_version": "mgs.aui11.facing-source-extraction.v1"
+}

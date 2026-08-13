@@ -1,0 +1,41 @@
+{
+  "after": {
+    "master_sha256": "84b50ef3796517bff59db7c1b72f600b4ee13d3b2399844dca598859c48906fe",
+    "pairs": [
+      {
+        "byte_equal": true,
+        "end": 3,
+        "end_sha256": "2004a0344fe38e3bcc715b21132036d9c7c7e3229ab84c77d9ffae6fa66ec40c",
+        "start": 0,
+        "start_sha256": "2004a0344fe38e3bcc715b21132036d9c7c7e3229ab84c77d9ffae6fa66ec40c"
+      },
+      {
+        "byte_equal": true,
+        "end": 7,
+        "end_sha256": "f5abb0e9ea863aa9ae86a23b30c4094f11e59cfa995bac645671bd94d166601d",
+        "start": 4,
+        "start_sha256": "f5abb0e9ea863aa9ae86a23b30c4094f11e59cfa995bac645671bd94d166601d"
+      }
+    ]
+  },
+  "before": {
+    "master_sha256": "b83a9fb8116a012e781370cc4e48f0f6b57f654dc3756bf11c481960495db639",
+    "pairs": [
+      {
+        "end": 3,
+        "end_sha256": "cbc7f22c328ba9fbb9d642255cbd1a78a24c89b826bc2f1de58af11bcb153ace",
+        "start": 0,
+        "start_sha256": "2004a0344fe38e3bcc715b21132036d9c7c7e3229ab84c77d9ffae6fa66ec40c"
+      },
+      {
+        "end": 7,
+        "end_sha256": "36a55cd9c033ed1d84ea491e47ad0fd6e38edf5b2eabdee43e2302bbb60d2245",
+        "start": 4,
+        "start_sha256": "f5abb0e9ea863aa9ae86a23b30c4094f11e59cfa995bac645671bd94d166601d"
+      }
+    ]
+  },
+  "operation": "copy_each_row_start_to_recovery",
+  "reason": "both grunt rows must satisfy the unchanged loop_iou_min_0.92",
+  "schema_version": "mgs.aui11.grunt-loop-closure.v1"
+}

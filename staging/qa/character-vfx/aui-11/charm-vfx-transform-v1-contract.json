@@ -1,0 +1,78 @@
+{
+  "cell_size": [
+    128,
+    128
+  ],
+  "contract_id": "charm-vfx-transform-v1",
+  "densification": {
+    "candidate_inset": 1,
+    "frame": 6,
+    "minimum_occupied_neighbors": 3,
+    "operation": "interior_neighbor_average_fill",
+    "ordering": "occupied_neighbor_count_desc_then_y_then_x",
+    "output_alpha": 255,
+    "selected_candidates": 160
+  },
+  "detached_chips": {
+    "color": [
+      138,
+      91,
+      120,
+      255
+    ],
+    "frame": 6,
+    "gap": 4,
+    "height": 3,
+    "sides": [
+      "left",
+      "right"
+    ],
+    "width": 5
+  },
+  "expected_final_frames": 8,
+  "loop_closure": [
+    {
+      "accent_after": [
+        208,
+        192,
+        205,
+        255
+      ],
+      "accent_selector": "first_opaque_y_then_x",
+      "source_frame": 0,
+      "target_frame": 3
+    },
+    {
+      "accent_after": [
+        208,
+        192,
+        205,
+        255
+      ],
+      "accent_selector": "first_opaque_y_then_x",
+      "source_frame": 4,
+      "target_frame": 7
+    }
+  ],
+  "open_center_clear": {
+    "height": 20,
+    "width": 24
+  },
+  "pre_dilation": {
+    "collision_rule": "leave_transparent_on_multi_component_competition",
+    "iterations": 1,
+    "mode": "preserve_component_gaps",
+    "neighborhood": "eight_connected"
+  },
+  "reserved_color_remap": {
+    "41a6f6": "40a5f5",
+    "f4f4f4": "f3f4f4"
+  },
+  "schema_version": 1,
+  "vertical_compression": {
+    "centering": "floor_canvas_minus_subject_div_2",
+    "denominator": 8,
+    "numerator": 5,
+    "resampler": "nearest"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "background_rgba": [
+    230,
+    230,
+    230,
+    255
+  ],
+  "batch_id": "AUI-11",
+  "columns": 4,
+  "generator": {
+    "bytes": 4960,
+    "path": "res://staging/qa/character-vfx/aui-11/build_blind_review_inputs.py",
+    "sha256": "02f3337562c488d34103bd813d128affdf78ae2d25f1258601be35b0293844f1"
+  },
+  "inputs": {
+    "grunt": {
+      "bytes": 28127,
+      "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.png",
+      "sha256": "176eeddaa84b0e3277838389db7729f145266346c6e5811dde877334d307df50"
+    },
+    "grunt_charmed": {
+      "bytes": 30191,
+      "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.png",
+      "sha256": "fedc93ab8e5fb20cea4ac935c82b21b48a0b4f75f0b48cb5b6911a5952e2c90f"
+    },
+    "vanguard": {
+      "bytes": 43102,
+      "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.png",
+      "sha256": "056e8444b82e2f16427765fb1ce8c037ba17c48f122b1aa35bd56a80aff96c1c"
+    }
+  },
+  "outputs": {
+    "grunt_silhouette": {
+      "bytes": 2498,
+      "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-silhouette.png",
+      "sha256": "39a1169bc082a01d58490aaf27865aa8713779fff4788bf1b6190f3123da2d93"
+    },
+    "state_pair": {
+      "bytes": 14085,
+      "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-grunt-state-pair.png",
+      "sha256": "7839fe36dd5581b72abdd1adc62b6a03811987d22535a05c2d8586f443f9c04c"
+    },
+    "vanguard_silhouette": {
+      "bytes": 2419,
+      "path": "res://staging/qa/character-vfx/aui-11/blind-review-inputs/blind-vanguard-silhouette.png",
+      "sha256": "2213b60b393cbc491d94dedb9ff5d69a256ad842aa7e567e26a3dddfbc832446"
+    }
+  },
+  "review_cell_px": 72,
+  "rows": 2,
+  "schema_version": "mgs.aui11.blind-review-inputs.v1",
+  "silhouette_rgba": [
+    17,
+    17,
+    17,
+    255
+  ],
+  "source_cell_px": 192,
+  "state_pair_order": {
+    "left": "grunt_charmed",
+    "right": "grunt"
+  }
+}

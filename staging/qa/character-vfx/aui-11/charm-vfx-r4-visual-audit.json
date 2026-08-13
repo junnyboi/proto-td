@@ -1,0 +1,21 @@
+{
+  "findings": [
+    "Four unequal blunt arrival facets resolve along fixed isometric diagonals into two opposed open clasp forms, compress, then slightly separate and dissolve without orbital or rotational motion.",
+    "A narrow under-mark remains detached in every phase at y 174 through 181.",
+    "Frame six has exactly six components: two principal clasps, left and right side chips, one upper chip, and one under-mark.",
+    "All centers remain transparent. Widths are 60 through 67 pixels, heights are 40, opaque areas are 922 through 1090, center_x is 96, feet are 180, and both row-boundary IoUs are 1.0.",
+    "All 42 packet QA checks pass and no forbidden Charm or competing-family silhouette is visible.",
+    "Runtime binding remains UNBOUND_AGENT_F_SEAM and human-final art remains UNSET_HUMAN_ONLY."
+  ],
+  "measurements_pass": true,
+  "summary": "Exact r4 Charm VFX passes the sealed visual contract and every numeric gate after deterministic frame-six side-chip insertion.",
+  "verdict": "PASS",
+  "visible_contract": {
+    "detached_under_mark_all_phases": true,
+    "forbidden_shapes_absent": true,
+    "four_facet_to_open_clasp_progression": true,
+    "frame6_three_chips_plus_under_mark": true,
+    "open_center_all_phases": true,
+    "straight_inward_no_orbit": true
+  }
+}

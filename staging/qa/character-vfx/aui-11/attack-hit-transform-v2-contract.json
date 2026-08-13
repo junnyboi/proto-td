@@ -1,0 +1,48 @@
+{
+  "cell_size": [
+    128,
+    128
+  ],
+  "contract_id": "attack-hit-transform-v2",
+  "expected_final_frames": 8,
+  "loop_closure": [
+    {
+      "accent_after": [
+        230,
+        195,
+        154,
+        255
+      ],
+      "accent_selector": "first_opaque_y_then_x",
+      "source_frame": 0,
+      "target_frame": 3
+    },
+    {
+      "accent_after": [
+        230,
+        195,
+        154,
+        255
+      ],
+      "accent_selector": "first_opaque_y_then_x",
+      "source_frame": 4,
+      "target_frame": 7
+    }
+  ],
+  "pre_dilation": {
+    "iterations": 1,
+    "neighborhood": "eight_connected",
+    "source_selection": "first_opaque_y_then_x"
+  },
+  "reserved_color_remap": {
+    "41a6f6": "40a5f5",
+    "f4f4f4": "f3f4f4"
+  },
+  "schema_version": 2,
+  "vertical_compression": {
+    "centering": "floor_canvas_minus_subject_div_2",
+    "denominator": 4,
+    "numerator": 3,
+    "resampler": "nearest"
+  }
+}

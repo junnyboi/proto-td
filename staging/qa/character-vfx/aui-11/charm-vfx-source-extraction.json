@@ -1,0 +1,300 @@
+{
+  "candidate_master": {
+    "bytes": 2074423,
+    "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4-master.png",
+    "sha256": "7dff1241aeb036a4b1c941a725aec92e9ec8fc461e8104175581fc778bda9a89"
+  },
+  "clean_master": {
+    "bytes": 1226879,
+    "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/masters/vfx_charm-master.png",
+    "sha256": "88d1f3e2292e9dfacca5a70742c4da74b16d1126866dd38b411267e4db3abb31"
+  },
+  "frames": [
+    {
+      "bytes": 10464,
+      "components_before": 5,
+      "components_kept": 5,
+      "cropped_size": [
+        427,
+        453
+      ],
+      "index": 0,
+      "material_pixels": 66215,
+      "output_bbox": [
+        15,
+        13,
+        113,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_00.png",
+      "sha256": "6b9c2e4917f2c77663e0047ff628d973519d35fd8b58250a126c6e8616984f18",
+      "source_bbox": [
+        128,
+        139,
+        555,
+        592
+      ],
+      "visible_bbox": [
+        128,
+        139,
+        555,
+        592
+      ]
+    },
+    {
+      "bytes": 9807,
+      "components_before": 4,
+      "components_kept": 4,
+      "cropped_size": [
+        429,
+        419
+      ],
+      "index": 1,
+      "material_pixels": 55232,
+      "output_bbox": [
+        12,
+        15,
+        115,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_01.png",
+      "sha256": "6bc4649edeb79b1843cc4802b246d1729cbd11ac02acb91128de7a25cfabfbc3",
+      "source_bbox": [
+        138,
+        186,
+        567,
+        605
+      ],
+      "visible_bbox": [
+        138,
+        186,
+        567,
+        605
+      ]
+    },
+    {
+      "bytes": 10961,
+      "components_before": 3,
+      "components_kept": 3,
+      "cropped_size": [
+        411,
+        455
+      ],
+      "index": 2,
+      "material_pixels": 70992,
+      "output_bbox": [
+        17,
+        13,
+        110,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_02.png",
+      "sha256": "4980cb0399d185bfe839537ab3f97331754209a31b656c4baefcb7f196999da1",
+      "source_bbox": [
+        125,
+        149,
+        536,
+        604
+      ],
+      "visible_bbox": [
+        125,
+        149,
+        536,
+        604
+      ]
+    },
+    {
+      "bytes": 10349,
+      "components_before": 5,
+      "components_kept": 5,
+      "cropped_size": [
+        405,
+        458
+      ],
+      "index": 3,
+      "material_pixels": 67475,
+      "output_bbox": [
+        18,
+        13,
+        109,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_03.png",
+      "sha256": "c4907d6a80f7e620f270a82214697638adcc3643eeabd4664d1afd234085e461",
+      "source_bbox": [
+        117,
+        148,
+        522,
+        606
+      ],
+      "visible_bbox": [
+        117,
+        148,
+        522,
+        606
+      ]
+    },
+    {
+      "bytes": 10742,
+      "components_before": 5,
+      "components_kept": 5,
+      "cropped_size": [
+        406,
+        410
+      ],
+      "index": 4,
+      "material_pixels": 56694,
+      "output_bbox": [
+        13,
+        13,
+        115,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_04.png",
+      "sha256": "a0ad577981ae25a841b1a086f0fcc24748245f37142d4da8b8a8381de193c194",
+      "source_bbox": [
+        126,
+        106,
+        532,
+        516
+      ],
+      "visible_bbox": [
+        126,
+        106,
+        532,
+        516
+      ]
+    },
+    {
+      "bytes": 11931,
+      "components_before": 3,
+      "components_kept": 3,
+      "cropped_size": [
+        397,
+        421
+      ],
+      "index": 5,
+      "material_pixels": 66217,
+      "output_bbox": [
+        15,
+        13,
+        113,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_05.png",
+      "sha256": "ee59ab594e34c57def7140f242a8d7cd641a78c18c4e4556ff30262631aa77bc",
+      "source_bbox": [
+        145,
+        96,
+        542,
+        517
+      ],
+      "visible_bbox": [
+        145,
+        96,
+        542,
+        517
+      ]
+    },
+    {
+      "bytes": 9843,
+      "components_before": 7,
+      "components_kept": 4,
+      "cropped_size": [
+        401,
+        484
+      ],
+      "index": 6,
+      "material_pixels": 70266,
+      "output_bbox": [
+        21,
+        13,
+        107,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_06.png",
+      "sha256": "d52c264f15a99cf401fd3535a9f899ed75a54dcc9360f2b6758d447ff3d4e713",
+      "source_bbox": [
+        131,
+        97,
+        532,
+        581
+      ],
+      "visible_bbox": [
+        131,
+        97,
+        532,
+        581
+      ]
+    },
+    {
+      "bytes": 10157,
+      "components_before": 5,
+      "components_kept": 5,
+      "cropped_size": [
+        359,
+        418
+      ],
+      "index": 7,
+      "material_pixels": 54328,
+      "output_bbox": [
+        19,
+        13,
+        108,
+        116
+      ],
+      "output_size": [
+        128,
+        128
+      ],
+      "path": "external-production-evidence://reviewer-gates/charm-vfx-concept-r4/sources/charm_vfx/frame_07.png",
+      "sha256": "93f3bacbbb12ecb632b628cdd513a56406d9524cc7c02550359768c8d547ffe7",
+      "source_bbox": [
+        159,
+        98,
+        518,
+        516
+      ],
+      "visible_bbox": [
+        159,
+        98,
+        518,
+        516
+      ]
+    }
+  ],
+  "model": {
+    "name": "isnet-general-use",
+    "path": "external-model-cache://isnet-general-use.onnx",
+    "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+  },
+  "schema_version": "mgs.aui11.charm-vfx-source-extraction.v1"
+}

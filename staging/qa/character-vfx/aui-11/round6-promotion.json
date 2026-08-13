@@ -1,0 +1,74 @@
+{
+  "blind_input_manifest_sha256": "034dcd1e684dce2ab47819988403460180b6fc4b670126f2440f48765586ccb7",
+  "candidate_root": "external-production-evidence://reviewer-gates/final-loop-closed",
+  "charm_semantic_sha256": "b9358c668eefc069b22c4b32ff1ab93e08fc9ae7af2ee103fd7dd0fef9692b0a",
+  "packets": {
+    "grunt": {
+      "atlas_sha256": "176eeddaa84b0e3277838389db7729f145266346c6e5811dde877334d307df50",
+      "source_sha256": [
+        "83bd65ab43d6403c02cbee4ddd6bdbc538138e9f7dc49ed9b75245f94d95c0e2",
+        "2af2278cdb7f522bc75aa3f1e2fc32979372e2a3de8a715f1bcd47aa7c358668",
+        "afa2f164e69906705f5e13d8d2c1765394411408c55d8f24fd900d7d02fbcce7",
+        "4ec7e496b7059329348d287a1b91c471b3789d67abe5484a3158726020979cc5",
+        "728ceec42a4fc411b47901cff210f5a38ba2e89c12b348856ec869cc3b26f53e",
+        "f8bd7e098c99b00864d82108ed8bee4d1d4dc4f73aafaa11a4be3afba2a4bc0b",
+        "fcf4c17cbce42fd2f3c298cc95648ca1a79a2ae05558fc5e9aa5e96db0875093",
+        "cb8b8534d3b977c640295870f90d75ced17d3f42c01154cb8f07cf0ee684fbec"
+      ]
+    },
+    "grunt_charmed": {
+      "atlas_sha256": "fedc93ab8e5fb20cea4ac935c82b21b48a0b4f75f0b48cb5b6911a5952e2c90f",
+      "source_sha256": [
+        "5805af926f456366d4894c109861d5610aa6c9e19790380aaa3bd9124b528f27",
+        "92bdc1f8be33311aaad409a83b3e5181e709b9ba29bbb432c9043b059b6c242a",
+        "8756e05aec0a6275297928c94b614ffbd3e501d463c833ab63f50cb2ecfc381b",
+        "2f93ff8bcb0a013b44603d94cd0ac145c9a940acbe852f03cc341ef2faab0ab8",
+        "c5be64a03a5196cd670efae1eefac7aa22685d58a3144fb0a2e59e319757f88c",
+        "1a07e19597ace52b11b283d9cc2ad5963e256cdf6068de04282b137ceec6a74e",
+        "7fb2f3d060e4aad1ad0de895593f5ba92aaac77e5b756faa8aebc045e990f427",
+        "3aa77aad7be21ea6da701fc40e668606935c1351952db1d67d594ef90b425309"
+      ]
+    },
+    "vanguard_1": {
+      "atlas_sha256": "056e8444b82e2f16427765fb1ce8c037ba17c48f122b1aa35bd56a80aff96c1c",
+      "source_sha256": [
+        "18b21a619b2757f40e029328a3ba89193ef530b440165fa6189438de6232bcfb",
+        "4ee2afae41286d0a24820e20018cea26db2f30f8c9cc3f7007a95fdd3276dbdb",
+        "2a39fd0dc9ef699542234c9db31f8a6abf1374c641cc12629ea4ac6e0da7796c",
+        "1391e90c39ba1383adb4f42ca22e8e7b93bb9c6b2a9ec40eeb11f2f2d6bc6a9a",
+        "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38",
+        "d7603175c805b234837ebcaba690f91261293c0af35dddd6cc90da41d924daaa",
+        "428f414f397bed12faa5d5acf064cd4138ffe3d9090665aafde3a054f5eebd32",
+        "f6de78695bcd9d4cfdf86b7acbcaf967a6edc5a2350af6d21d704b01ec204e38"
+      ]
+    }
+  },
+  "post_promotion_receipts": {
+    "base_highlight_reduction": {
+      "bytes": 3345,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-base-highlight-reduction.json",
+      "sha256": "48ca5204f2c26a03683c6cf642311cb7ed14003afc867ea8fa249ed28cf16017"
+    },
+    "charm_cue_support": {
+      "bytes": 343533,
+      "path": "res://staging/qa/character-vfx/aui-11/charm-cue-support-repair.json",
+      "sha256": "774c88a30d442ce8de09fcb835a78ac01704f5753c3aaee1c4df9bdac1877bf6"
+    },
+    "grunt_loop_closure": {
+      "bytes": 1439,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-loop-closure.json",
+      "sha256": "efc959f7cf5bc6ff48c704a3d17d36a4d40d29adcd7294acf796de289d20b8bf"
+    },
+    "state_value_cleanup": {
+      "bytes": 3933357,
+      "path": "res://staging/qa/character-vfx/aui-11/grunt-state-region-flatten.json",
+      "sha256": "bd799a7f88f85630af4ef83ee92906a204d2f44e4a3cd564632aecfc977af534"
+    },
+    "vanguard_loop_closure": {
+      "bytes": 815,
+      "path": "res://staging/qa/character-vfx/aui-11/vanguard-loop-closure.json",
+      "sha256": "4589504f8d6472bc103006242f2d2c61518074f2ec35a47e449acf9b970616f2"
+    }
+  },
+  "schema_version": "mgs.aui11.round6-promotion.v1"
+}

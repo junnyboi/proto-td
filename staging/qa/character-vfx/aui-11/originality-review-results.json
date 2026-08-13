@@ -1,0 +1,293 @@
+{
+  "approval_token_sha256": "5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b",
+  "approved_concept_sha256": [
+    "f3c338ec52a394e3e02a92bad65ca00e881fd340673ee6c120dec09c86b3b883",
+    "db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9",
+    "f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8",
+    "d6db376800af86f300f6fa8ea7c62865ce4c8bb05dadd9dbe9d470776fa22ee9",
+    "64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3",
+    "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+  ],
+  "batch_id": "AUI-11",
+  "failures": [],
+  "generation_ledger_sha256": "4b97551e45439c9253ec450ffcbded3e43975a1da2c3feb045819b4ebf610096",
+  "reviewed_packets": {
+    "attack_hit": {
+      "atlas": {
+        "bytes": 5754,
+        "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.png",
+        "sha256": "dd0bb27ff654f9ea8eb1ffd665c138dce8ea5d672e98a5878f5a8cf147fd4198"
+      },
+      "contact": {
+        "bytes": 6076,
+        "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.contact.png",
+        "sha256": "46c5f9407926a597167addb86943878cebdf9da701f2ed8f6df579097ae37609"
+      },
+      "metadata": {
+        "bytes": 2859,
+        "path": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.asset.json",
+        "sha256": "32b3ea6a36826f0f2512143b0e88cfe8f0ac6acf0ccbba1a6590c55e7e15907d"
+      }
+    },
+    "charm_vfx": {
+      "atlas": {
+        "bytes": 7668,
+        "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.png",
+        "sha256": "e656ffc6f405ec939cb544a7642811f0dcee3b414a4e9df71a02d6c63ab4affb"
+      },
+      "contact": {
+        "bytes": 7170,
+        "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.contact.png",
+        "sha256": "ffe0101bed00f0ca4e20980eb1411bcd05be4b7b4811c99d6c17956287e8a7be"
+      },
+      "metadata": {
+        "bytes": 2862,
+        "path": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.asset.json",
+        "sha256": "ed2c21d272a850cbcaa965a251b54130107f0cc19c81fb5fb2e5b55ea54c3f80"
+      }
+    },
+    "deploy": {
+      "atlas": {
+        "bytes": 16452,
+        "path": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.png",
+        "sha256": "70ce781fbdd0b14d29581b1780e056ffc80248f12037a73fb69a91d96bce38e7"
+      },
+      "contact": {
+        "bytes": 12902,
+        "path": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.contact.png",
+        "sha256": "b0cc8cd9dc96e8b71edaa18985b4175d45161204ad90e33bd4e431f58fa9fda1"
+      },
+      "metadata": {
+        "bytes": 2847,
+        "path": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.asset.json",
+        "sha256": "82589ffb79137b2762fe5ba11e12d6aed816a69ccf81793182156f520813a263"
+      }
+    },
+    "grunt": {
+      "atlas": {
+        "bytes": 28127,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.png",
+        "sha256": "176eeddaa84b0e3277838389db7729f145266346c6e5811dde877334d307df50"
+      },
+      "contact": {
+        "bytes": 20388,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.contact.png",
+        "sha256": "61164237b73a27296923dd34ed96a015d431043e8e0381719811fab713292f38"
+      },
+      "metadata": {
+        "bytes": 2880,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.asset.json",
+        "sha256": "e6f2884f0c28c5bf057c850ea93e4517a190c0eed7004103a9bf3ea06d971d89"
+      }
+    },
+    "grunt_charmed": {
+      "atlas": {
+        "bytes": 30191,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.png",
+        "sha256": "fedc93ab8e5fb20cea4ac935c82b21b48a0b4f75f0b48cb5b6911a5952e2c90f"
+      },
+      "contact": {
+        "bytes": 23251,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.contact.png",
+        "sha256": "b3e38d56794749e648697d33209396de0c6b92e771f5bbb0f943b19fbc7d2d24"
+      },
+      "metadata": {
+        "bytes": 2913,
+        "path": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.asset.json",
+        "sha256": "7090ae9a2a2e932d71b96a24d612cc792dae919ee78dc0a4a526cb6a76cbf8c1"
+      }
+    },
+    "portrait_vanguard_1": {
+      "atlas": {
+        "bytes": 56650,
+        "path": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.png",
+        "sha256": "cd466ef1e2baf1736d0ff37660b7c6213ca6944636185e463cc62859ee2cd8ac"
+      },
+      "contact": {
+        "bytes": 34643,
+        "path": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.contact.png",
+        "sha256": "392d6af14e73fd18b4aa87dfb17d6b17b4c583a390a466e36004a58e8c0d9446"
+      },
+      "metadata": {
+        "bytes": 2930,
+        "path": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.asset.json",
+        "sha256": "ebe946133794036a56ad0f6746a53814a2fe1a0accba7333456fa0faf6d728ca"
+      }
+    },
+    "vanguard_1": {
+      "atlas": {
+        "bytes": 43102,
+        "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.png",
+        "sha256": "056e8444b82e2f16427765fb1ce8c037ba17c48f122b1aa35bd56a80aff96c1c"
+      },
+      "contact": {
+        "bytes": 27591,
+        "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.contact.png",
+        "sha256": "9dad212b79bd5c66874bcf62add9a9188a8c5fb02a4b5ff096c12225f650450f"
+      },
+      "metadata": {
+        "bytes": 2915,
+        "path": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.asset.json",
+        "sha256": "eb32e1ccbebfb103fe27f131a8927212586ecedf1882072ab4339545d43a7bcc"
+      }
+    }
+  },
+  "reviews": [
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "f3c338ec52a394e3e02a92bad65ca00e881fd340673ee6c120dec09c86b3b883",
+        "db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The two transferred concept authorities hash to the required exact ordered set.",
+        "Transferred atlas and contact-sheet SHA-256 values exactly match packet metadata; dimensions, 4x2 layout, animation rows, pivot, and foot row are consistent.",
+        "The packet visibly preserves the approved Vanguard identity: compact East Asian woman, asymmetric dark bob, near-black mulberry/coral sleeveless outfit, boots, bracers, route-spear, grounded readiness, right-facing contained attack, Rally cue, and stable recovery.",
+        "No identifiable copied third-party signature, logo, watermark, or distinctive external franchise mark is visible in the packet.",
+        "The ledger states the exact approval token, GPT Image 2 route, pinned rembg 2.0.67/model extraction, deterministic transforms and independent byte-for-byte oracles, preserved external red evidence for Vanguard and grunt loop failures and every described Attack Hit and Charm VFX failure, and final blind scores of 10/10 Vanguard, 9/10 grunt, and 8/10 Charmed side.",
+        "The ledger authenticates Attack Hit as an open target lozenge with two unequal detached chevrons, exactly three detached notches, seven total components, and forbidden slash/comet/star/halo exclusions.",
+        "The ledger authenticates Charm VFX as a four-facet arrival progressing to opposed open clasps with detached under-mark; frame 6 has exactly three chips plus the under-mark, open centers, and the forbidden single-lozenge/orbit/ring/heart/halo exclusions.",
+        "Metadata and ledger both retain runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY."
+      ],
+      "packet_id": "vanguard_1",
+      "reason": "PASS: all packet-local authentication and visible Vanguard concept-fidelity conditions pass; the required ordered concept hashes and ledger assertions are exact, transferred packet hashes match metadata, runtime and human-final-art barriers remain unset as required, and no recognizable copied signature is present.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-01",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9",
+        "d6db376800af86f300f6fa8ea7c62865ce4c8bb05dadd9dbe9d470776fa22ee9"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The two transferred concept authorities hash to the exact required ordered SHA-256 set.",
+        "Transferred atlas and contact-sheet SHA-256 values exactly match packet metadata: cd466ef1e2baf1736d0ff37660b7c6213ca6944636185e463cc62859ee2cd8ac and 392d6af14e73fd18b4aa87dfb17d6b17b4c583a390a466e36004a58e8c0d9446.",
+        "The final portrait visibly preserves Vanguard's East Asian adult identity, asymmetrical mulberry bob with two brass bars, dark high collar with brass trim, coral/mulberry treatment, and route-spear presence across all eight cells.",
+        "No identifiable copied third-party signature, logo, watermark, artist mark, or distinctive foreign franchise signature is visible in the packet.",
+        "Ledger states approval token 5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b, GPT Image 2, pinned rembg 2.0.67/model extraction, and deterministic packet transforms with independent byte-for-byte oracles.",
+        "Ledger preserves external red evidence for Vanguard and grunt loop failures, all enumerated Attack Hit failures, and all enumerated Charm VFX failures; it records accepted Attack Hit as an open target lozenge with two unequal detached chevrons and exactly three detached notches while excluding slash/comet/star/halo, and accepted Charm as four-facet arrival to opposed open clasps with detached under-mark, exactly three frame-6 chips plus under-mark, open centers, and forbidden single-lozenge/orbit/ring/heart/halo exclusions.",
+        "Ledger records final blind scores of 10/10 Vanguard, 9/10 grunt, and 8/10 Charmed side, with runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY; metadata independently repeats both barrier values."
+      ],
+      "packet_id": "portrait_vanguard_1",
+      "reason": "PASS: all packet-local authentication, byte identity, ledger, visible concept-fidelity, and originality conditions pass for portrait_vanguard_1; unrelated packet images were not required.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-02",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The sole transferred concept file hashes to the exact required singleton ordered set.",
+        "The atlas and contact sheet match their metadata SHA-256 values and declared 4x2, 192-pixel-cell packet geometry.",
+        "Visible packet art preserves the approved grunt identity: compact forward-wedge ceramic automaton, planted quadrupedal stance, small lens/head assembly, and oversized hammer-palm action directed screen-right.",
+        "Rest and attack rows remain readable at contact-sheet scale; recovery cells visibly close to their respective row starts.",
+        "No artist mark, watermark, logo, or other identifiable copied third-party signature is visible in the packet atlas or contact sheet.",
+        "The ledger states the exact approval token, GPT Image 2 route, pinned rembg 2.0.67/model split, deterministic transforms and independent byte-for-byte oracles, preserved external red evidence for Vanguard and grunt loop failures and every described Attack Hit and Charm VFX failure, and final blind scores of 10/10 Vanguard, 9/10 grunt, and 8/10 Charm.",
+        "The ledger records Attack Hit as an open target lozenge with two unequal detached chevrons and exactly three detached notches, while excluding slash/comet/star/halo readings.",
+        "The ledger records Charm as four-facet arrival to opposed open clasps with a detached under-mark, and frame 6 as two clasps plus exactly three chips plus the under-mark, with open centers and forbidden single-lozenge/orbit/ring/heart/halo readings excluded.",
+        "Metadata and ledger preserve runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY."
+      ],
+      "packet_id": "grunt",
+      "reason": "All packet-local authentication, hash, ledger, visible concept-fidelity, originality-screen, animation, and staging-barrier conditions pass. Unrelated packet images were not required or inferred as transferred evidence.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-03",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8",
+        "64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The two transferred concept sheets hash to the exact required ordered SHA-256 set.",
+        "Transferred atlas and contact-sheet SHA-256 values exactly match packet metadata.",
+        "The ledger states approval token 5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b, GPT Image 2 generation, pinned rembg 2.0.67, deterministic transforms, and independent byte-for-byte or semantic oracles.",
+        "The ledger preserves external red evidence for Vanguard and grunt loop failures, all described Attack Hit failures, and all described Charm VFX failures.",
+        "The ledger records final blind scores of 10/10 Vanguard, 9/10 grunt, and 8/10 Charm, plus runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY.",
+        "The ledger authenticates Attack Hit as a compact open target lozenge with two unequal detached chevrons and exactly three detached notches, and excludes slash/comet/star/halo readings through its accepted audit and forbidden-shape exclusions.",
+        "The ledger authenticates Charm VFX's sealed four-facet-arrival-to-opposed-open-clasp progression, detached under-mark, open centers, and frame 6 containing exactly three chips plus the under-mark; it records rejection of the single-lozenge form and passage of all forbidden-shape exclusions.",
+        "The packet visibly preserves the approved grunt's compact forward-wedge, screen-right mechanical attack silhouette and applies a restrained deterministic Charmed treatment without changing the underlying character geometry or phase order.",
+        "No identifiable copied third-party signature, logo, character, or distinctive protected mark is visible in the reviewed packet."
+      ],
+      "packet_id": "grunt_charmed",
+      "reason": "PASS: all packet-local authentication, integrity, ledger, visible concept-fidelity, topology, exclusion, status, and originality conditions pass; unrelated packet images were not required.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-04",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The sole transferred concept authority hashes to the exact required ordered concept set.",
+        "The deploy atlas and contact sheet match their metadata SHA-256 values and dimensions; metadata identifies asset_id aui11.deploy.vfx with four-frame rest and attack rows.",
+        "Visible deploy forms preserve the concept sheet's restrained isometric threshold language: fragmented arrival, compact open lozenge semantic lock, detached lower anchor/under-mark, dissolve/recovery, and open centers; no packet-local concept-fidelity failure is visible.",
+        "No identifiable copied third-party signature, logo, watermark, or distinctive borrowed mark is visible in the transferred deploy packet.",
+        "The ledger states approval token 5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b, GPT Image 2, pinned rembg 2.0.67, deterministic transforms and independent byte-for-byte oracles, preserved external red evidence for Vanguard and grunt loop failures and all Attack Hit and Charm VFX failures, and final blind scores 10/10 Vanguard, 9/10 grunt, and 8/10 Charm.",
+        "Ledger and metadata both preserve runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY.",
+        "Attack Hit and Charm requirements were authenticated from the transferred ledger as required; unrelated packet images were not required or inferred for this deploy-only visible-fidelity judgment."
+      ],
+      "packet_id": "deploy",
+      "reason": "PASS: all transferred-file, packet-local conditions authenticate. The concept checksum set is exact, ledger requirements are present, deploy bytes match metadata, visible deploy fidelity passes, and no recognizable copied signature is present.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-05",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "The sole transferred concept authority hashes to the exact required ordered singleton set.",
+        "The atlas and contact-sheet SHA-256 values match packet metadata; metadata identifies aui11.attack_hit.vfx and preserves runtime_binding UNBOUND_AGENT_F_SEAM and human_final_art UNSET_HUMAN_ONLY.",
+        "Visible attack_hit cells retain a compact open target lozenge, two unequal detached chevrons, and exactly three detached notches; an independent 8-connected alpha audit found exactly seven components in every cell, consistent with those required seven detached material groups.",
+        "Open centers remain visibly clear across the packet, with no slash, comet, star, or halo reading and no identifiable copied third-party signature.",
+        "The ledger states the exact approval token, GPT Image 2, pinned rembg 2.0.67/isnet-general-use extraction, deterministic transforms and independent byte-for-byte oracles, preserved external red evidence for Vanguard and grunt loop failures and all described Attack Hit and Charm VFX failures, final blind scores 10/10 Vanguard, 9/10 grunt, and 8/10 Charm, plus the two required unset integration barriers.",
+        "Charm imagery was not required or transferred as a packet under review; its failure preservation and accepted progression are authenticated from the ledger only, consistent with packet-local review scope."
+      ],
+      "packet_id": "attack_hit",
+      "reason": "PASS: the exact concept authority and generation ledger authenticate, transferred packet hashes are internally consistent, and the visible attack_hit packet satisfies every packet-local fidelity, topology, forbidden-motif, originality, and staging condition.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-06",
+      "verdict": "PASS"
+    },
+    {
+      "approved_concept_authenticated": true,
+      "checked_concept_hashes": [
+        "64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3",
+        "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+      ],
+      "generation_ledger_authenticated": true,
+      "observations": [
+        "Computed concept hashes exactly match the required ordered set and packet provenance.",
+        "Atlas/contact file and decoded RGBA hashes exactly match packet metadata.",
+        "The ledger authenticates the approval token, GPT Image 2, pinned rembg, deterministic transforms and independent oracle, preserved loop and VFX red evidence, final blind scores, and both unset integration barriers.",
+        "The atlas shows four detached arrival facets moving straight inward into opposed open clasps, with a detached under-mark and open center throughout.",
+        "Frame 6 contains exactly three detached chips plus the detached under-mark alongside two open clasp components.",
+        "No single lozenge, orbit, ring, heart, halo, artist mark, brand glyph, or identifiable copied third-party signature is visible."
+      ],
+      "packet_id": "charm_vfx",
+      "reason": "PASS: exact concept authorities, packet bytes, metadata, ledger, sealed Charm progression, exclusions, originality, and unset barriers all authenticate.",
+      "recognizable_copied_signature_found": false,
+      "review_id": "orig-07",
+      "verdict": "PASS"
+    }
+  ],
+  "schema_version": "mgs.aui11.originality-review-results.v1",
+  "status": "PASS"
+}
