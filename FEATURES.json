@@ -496,12 +496,17 @@
     "integration",
     "visual"
    ],
-   "status": "pending",
+   "status": "passing",
    "scenarios": [
     "operator_animation_catalog",
     "operator_animation_part2"
    ],
-   "commits": []
+   "commits": [
+    "a46056f",
+    "4cb244e",
+    "f30aa57",
+    "d2c5b33"
+   ]
   }
  ],
  "deviations": [

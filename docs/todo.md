@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-029 — Integrate Aetheria Part 2 directional operator animations
-
-- Status: in_progress
-- Owner: AGENT 8
-- Branch: `agent-8/td-028-aetheria-part2-integration`
-- Base: `master` at `d08819419631a7c330032f1a87f5ca16a4163c77`
-- Dependencies: OPANIM-1 runtime canary passing; verified external package `aetheria-chibi-sprites-part-2-completed`
-- Owned files: `assets/sprites/operators/animated/{caster_1,caster_2,defender_2,sniper_1,sniper_2}/**`, all generated `assets/provenance/op_anim_*.provenance.json`, `assets/provenance/operators/{operator-animation-v1,aetheria-part2-source-manifest}.json`, `assets/manifest.tres`, `data/presentation/operator_animation_def.gd`, `data/presentation/operator_visual_catalog.gd`, `data/presentation/operator_visuals/{caster_1,caster_2,defender_2,sniper_1,sniper_2}.tres`, `scripts/view/{battle_view,operator_animator}.gd` (animation sizing and stale-cache-safe imports only), `scripts/view/iso_grid_builder.gd` (null-theme cadence union fix only), `tools/art_pipeline/characters/{import_aetheria_part2_animations,validate_operator_animation_runtime,generate_operator_animation_provenance}.py`, `tools/presentation_qa/{provenance.py,provenance_schema_v1.json}`, `test/{test_operator_animation_def,test_operator_animator,test_aetheria_part2_import,test_presentation_contracts}.gd`, `selftest/scenarios/operator_animation_catalog.gd`, `selftest/scenarios/operator_animation_part2.gd`, `FEATURES.json`, and TD-029 claim/closure edits in `docs/todo.md` / `docs/completed.md`
-- Do not touch: `sim/**`, gameplay/tick/action/save/replay semantics, gameplay `data/*.tres` values, any other `scripts/view/battle_view.gd` behavior, existing canary atlas bytes, human-owned thresholds, unrelated presentation assets, localization, or audio
-- Acceptance: five Part 2 templates resolve independent NE/SE/NW/SW idle and attack atlases through the existing view-only OPANIM-1 runtime with no mirroring; deterministic normalization emits 192×192 cells with 24-frame idle loops and 13-frame attacks at 12 fps; exactly `sniper_2` attack NE and NW remain placeholder-marked with their declared SE/SW sources; all seven admitted templates validate while the remaining three retain legacy fallback; projection leaves the model hash unchanged
-- Required evidence: deterministic importer regeneration/hash test, focused GUT catalog/placeholder/direction tests, `operator_animation_catalog` and `operator_animation_part2` headless/windowed with fresh screenshots and completion sentinels, fresh `assets_floor`, one uninterrupted `scripts/verify.sh --full`, cross-process campaign replay diff, and adversarial diff/evidence review
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
