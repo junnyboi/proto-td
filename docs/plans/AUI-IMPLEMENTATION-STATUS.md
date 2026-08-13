@@ -99,16 +99,25 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 
 ## AUI-12 — Protos Theme, components, localization, and compatible shells
 
-- Status: `web_remediation_claimed`; original implementation is complete but candidate `28b0391ab78b326772c11d040ad75f333183233b` is immutable red and non-releasable because the inherited Web corner-luma signal conflicts with the approved AUI-12 backdrop.
+- Status: `closed`; approved candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d` / tree `40be18f250689e140d8ded3b5f4863a486b6ea57` landed on `master` after fresh RELEASE, independent audit, and Poseidon L7 approval. Candidate `28b0391ab78b326772c11d040ad75f333183233b` remains immutable red history.
 - Owner: `AGENT F`.
 - Original claim/base: `agent-f/aui-12-claim` from `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`.
 - Web-remediation claim/base: `agent-f/aui-12-web-claim` from `master` at `6a578856d1893030011c557716bbb930559fa681`.
-- Successor implementation branch: `agent-f/aui-12-web-remediation` after the verified Web-remediation claim lands on master; do not rewrite the red branch.
+- Successor implementation branch/base: `agent-f/aui-12-web-remediation` from claimed master `9b834f54a218e3eeb77e89e014476300180dc33a`; do not rewrite the red branch.
+- Successor implementation commits: byte-identical current-master reconstruction `40bec07056508cbd8f9a12b8539516fb61631228`; D-WEB-1 production/tool/test implementation `5441e27e47c6237541cb0a06dd3aeaaa02c3ddf9`.
+- Exact union reconciliation: latest merge `930ff8965005ca81cd28c961b8fc3ab38451da0e` has first parent `02e3b54c4161df1b3b6dbd88e83db655fc112383` and exact current-master second parent `3376178219c4a9df94abfb24798a6ffe3d0c7aee`; the side diffs again had zero overlapping paths. Prior union merge `cd8298d01936c77b12c19e559ef67f0a748fab82` remains in history.
 - Effective lane: MGS v2 `RELEASE` because the package is player-visible and changes `test/**` plus `selftest/**`.
 - Final original implementation-plan SHA-256: `55e7daf91097e476719242203a6d3943e5db4e7a979f129cda0e08f6f3ba608b`.
 - Normative component/copy/scenario/inventory hashes: `70efb6f83b1c59d45d7a5a6cfb7e4cea4dd5058827b2f908fa290e7beaecab90`, `0061b4e08b7c27bd3ed38ceb88897da2d3032369cfbfbaf92ef543f8ffb70c83`, `692f7f492cb94ed28d8f8c8a44b738846ef9037d6c923841b72388d099505a01`, `177ee1e6c5e1e49357bb54263f0659c3bc50f213f4d544bfc1f6ef9f5fa50a2f`.
 - D-WEB-1 approval: exact manifest SHA-256 `0c7530b9bfa54bf8581d42596393cedfe3e06b410230c5c8565fe0a97520c200`; external Poseidon record SHA-256 `d616bc95eee2aeb3c226f167c2b45c71152d6856285b169af99eeabe7c1e3f17`.
 - Independent Web-remediation preflight 07: PASS with zero findings >=80 confidence; exact contract freezes 38 focused tests, 105 negative fixtures, one content-equivalence positive fixture, 25/27 required-option families, and 18 exercised failure codes.
-- Serialized ownership amendment: the complete exact lease remains in `docs/todo.md` and now additionally owns `tools/presentation_qa/web_baseline.py` plus `tools/presentation_qa/test_web_baseline.py`; optional `ui_shell_floor` challenge reporting stays inside the existing scenario lease.
+- Independent implementation audit 04: PASS with zero findings >=80 confidence after three preserved FAIL iterations closed production fail-closed/provenance gaps and made every one of the 105 observed fixture outcomes equal the frozen oracle.
+- Clean-commit evidence requirement: dirty-tree focused/default greens are feedback only. The containing documentation commit becomes the frozen candidate only after exact 38-test, scenario, default/full, production Web generation, independent verify-output, replay, and external integrity evidence all pass on a clean detached worktree.
+- Stale evidence boundary: `release-6a1d65a-r2` passed on the pre-union candidate but is not release qualification because master advanced during its run. The exact merged union must restart the complete RELEASE and both review gates from zero.
+- Union copy reconciliation: `release-dd8a049-r1` is preserved red because the merged catalog predated current master's nine operator class names and S2 hint. The copy contract itself is unchanged and source-derived; the successor updates exactly those ten dynamic en-US values to their current `fallback_property` literals, with 72 keys, all static copy, and all placeholders unchanged.
+- RELEASE result: `release-aa856d7-r1` passed 38 focused Web tests, 20 focused GUT tests / 1,987 assertions, 83 full rungs, 26 scenario reports, exact 65/142 `ui_shell_floor` checks with 62 PNGs and zero skips, two-process replay equality, `PASS_CONTENT_EQUIVALENT`, zero secret/stale matches, and 507 sealed artifacts after approval binding.
+- Independent final build audit: PASS with zero findings >=80 confidence; audit SHA-256 `8a76e00683a221e84fcdb038cb59a160f08b297c20ff198306fa134c23305ce4`.
+- Human L7: Poseidon approved exact `aa856d7` through WebDev checkpoint `292d2003`; external L7 record SHA-256 `3999ae03080c2f48cf0fb3861892bb35792ad1ddee51d943d93fc3f6db046d40`.
+- Ownership release: the AUI-12 active claim has been removed from `docs/todo.md`; successor packages may claim paths only through a new exact-base transaction.
 - Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-34 is now closed on master, but AUI-11/AUI-20 remain separate packages and cannot enter this successor.
-- Human gate: implementation cannot land until fresh exact-candidate RELEASE/audit passes and Poseidon completes the commit-bound Web route/focus/cancel/locale/compact/portrait/en-US review.
+- Closure boundary: AUI-20 is unblocked by AUI-12 closure but remains a separate, newly claimed package; AUI-11 remains governed by its own dependencies and scope.

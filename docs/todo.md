@@ -164,19 +164,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: linked L7 verdict; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/verify.sh --full`
 - Last update: 2026-08-12
 
-## AUI-12 — Build Protos Theme, components, localization, and compatible shells
-
-- Status: in_progress
-- Owner: AGENT F
-- Branch: `agent-f/aui-12-web-remediation` after the serialized `agent-f/aui-12-web-claim` transaction
-- Base: `master` at `6a578856d1893030011c557716bbb930559fa681`
-- Dependencies: AUI-00 and AUI-10 source/staging closed; AUI-DESIGN-F approved at `7dd6b1ca88d57bd4532c195f196f2ec44a46955dabf370ce774ea3ebc2037ed7`; D-WEB-1 approved at manifest SHA-256 `0c7530b9bfa54bf8581d42596393cedfe3e06b410230c5c8565fe0a97520c200` with external Poseidon record SHA-256 `d616bc95eee2aeb3c226f167c2b45c71152d6856285b169af99eeabe7c1e3f17`; independent Web-remediation preflight 07 PASS with zero findings >=80 confidence; failed candidate `28b0391ab78b326772c11d040ad75f333183233b` remains immutable red history; no Agent D/E runtime bytes are consumed
-- Owned files: `autoloads/i18n.gd`; `localization/en-US.json`; `scripts/ui/components/**`; `scenes/ui/components/**`; `data/presentation/ui/**`; `scripts/ui/title.gd`; `scripts/ui/staging.gd`; `scripts/ui/stage_select.gd`; `scripts/ui/squad_select.gd`; `scripts/ui/results.gd`; `tools/presentation_qa/web_baseline.py`; `tools/presentation_qa/test_web_baseline.py`; `test/test_i18n.gd`; `test/test_ui_components.gd*`; `selftest/scenarios/ui_shell_floor.gd*`; `docs/handoffs/AUI-12-agent-f-ui-foundation.md`; this exact AUI-12 row; AUI-12 sections in `docs/decisions/AUI-DESIGN-APPROVALS.md` and `docs/plans/AUI-IMPLEMENTATION-STATUS.md`
-- Do not touch: simulation/model/hash/save/replay/telemetry; battle HUD/world/VFX; Agent D source/staging/runtime paths; Agent E AUI-34 paths; `scripts/verify.sh`; thresholds; unrelated tests/scenarios; `FEATURES.json` before the dedicated closure transaction
-- Acceptance: preserve all 23 exact Theme variations/components, 72 en-US keys with stable fallbacks and named placeholder types, locale selector, five route-compatible shells, 32 rendered-pixel normal text, >=44x44 enabled targets, exact focus/cancel behavior, and source/runtime inventory parity across all pinned viewports/modes; legacy Web-baseline behavior remains byte-compatible by default; explicit D-WEB-1 mode uses the approved zero-tolerance challenge-bound native/Web categorical differential and independently verified receipts/transcript without claiming indistinguishable PNG byte origin
-- Required evidence: exact component/copy/inventory GUT; exact 38-test Web-baseline suite with 105 negative and one content-equivalence positive fixture; unchanged campaign/staging/resign/battle-control scenarios; `ui_shell_floor` with 62 fresh PNGs/zero skips/completion sentinel; two-process replay equality; owner-decision/receipt/transcript/schema validation; fresh cache-bypassed RELEASE union; independent diff-vs-pins audit; Poseidon commit-bound playable-Web and en-US review before landing
-- Last update: 2026-08-13
-
 ## PROC-FEATURE-EVIDENCE — Add explicit evidence classes to the feature ledger
 
 - Status: pending

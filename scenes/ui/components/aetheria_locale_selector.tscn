@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/components/aetheria_locale_selector.gd" id="1_locale"]
+[ext_resource type="Theme" path="res://data/presentation/ui/threshold_theme.tres" id="2_theme"]
+
+[node name="LocaleSelector" type="BoxContainer"]
+layout_mode = 3
+theme = ExtResource("2_theme")
+theme_override_constants/separation = 16
+vertical = false
+script = ExtResource("1_locale")
+
+[node name="LocaleLabel" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"AuiLocaleLabel"
+text = "Language"
+vertical_alignment = 1
+
+[node name="LocaleList" type="ItemList" parent="."]
+custom_minimum_size = Vector2(360, 72)
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"AuiLocaleList"
+select_mode = 0
