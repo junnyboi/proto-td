@@ -98,7 +98,9 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var is_route := path_cells.has(cell)
 			var is_road := tile == StageDef.Tile.GROUND and is_route
 			var resolved := (
-				theme.resolve_cell(cell, tile, is_route) if theme != null else {"tile_id": &""}
+				theme.resolve_cell(cell, tile, is_route)
+				if theme != null
+				else {"tile_id": &"", "cadence_id": &""}
 			)
 			var art_id := StringName(resolved["tile_id"])
 			if art_id == &"":
