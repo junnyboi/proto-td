@@ -103,6 +103,9 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
   local rung="$1" artifact="$2" budget="$3"
   shift 3
   local t0 t1 out code
+	if [[ "$rung" == R4a-* || "$rung" == R4b-* ]]; then
+		rm -f "$artifact"
+	fi
   t0=$(date +%s)
   out=$(timeout "$budget" "$@" 2>&1)
   code=$?
@@ -121,8 +124,30 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
     if ! p16_suite_gate "$out"; then
       code=1
       out+=$'\n[verify] required P16 suite-specific exact count missing'
-    fi
-  fi
+	    fi
+	  fi
+	if [[ ( "$rung" == R4a-* || "$rung" == R4b-* ) && $code -eq 0 ]]; then
+		local expected_scenario="${rung#R4?-}"
+		if [[ ! -s "$artifact" ]]; then
+			code=1
+			out+=$'\n[verify] scenario report missing or empty after engine success'
+		elif ! jq -e \
+			--arg scenario "$expected_scenario" \
+			'.scenario == $scenario
+			 and .result == "pass"
+			 and (.checks | type == "array" and length > 0)
+			 and .done_expected == true
+			 and .done_called == true' \
+			"$artifact" >/dev/null 2>&1; then
+			code=1
+			out+=$'\n[verify] scenario report failed identity/result/check/sentinel contract'
+		elif [[ "$rung" == R4b-* ]] && ! jq -e \
+			'.pixel_skipped | type == "array" and length == 0' \
+			"$artifact" >/dev/null 2>&1; then
+			code=1
+			out+=$'\n[verify] windowed scenario report contains pixel skips'
+		fi
+	fi
   if [[ $code -ne 0 ]]; then
     echo "==== $rung FAILED (exit $code) ===="
     echo "$out"
@@ -157,12 +182,18 @@ fi
 # R4: scenarios. Headless lane always; windowed lane with --full.
 scenario_cmd() { # lane scenario
   local lane="$1" s="$2"
+	local budget=120
+	case "$s" in
+		operator_animation_smoke) budget=10 ;;
+		operator_animation_catalog) budget=15 ;;
+		operator_animation_flow) budget=45 ;;
+	esac
   if [[ "$lane" == "headless" ]]; then
-    run_rung "R4a-$s" "artifacts/$s/report.json" 120 \
+    run_rung "R4a-$s" "artifacts/$s/report.json" "$budget" \
       "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
       --scenario="$s" --seed=42 --shots="res://artifacts/$s"
   else
-    run_rung "R4b-$s" "artifacts/$s/report.json" 120 \
+    run_rung "R4b-$s" "artifacts/$s/report.json" "$budget" \
       "$GODOT" --path . --resolution 1280x720 -s selftest/harness.gd -- \
       --scenario="$s" --seed=42 --shots="res://artifacts/$s"
   fi
