@@ -16,7 +16,7 @@ func before_all() -> void:
 
 func test_contract_fixtures_have_exact_schema_and_cardinality() -> void:
 	assert_eq(int(_contract.get("schema_version")), 2)
-	assert_eq((_contract["theme"]["variations"] as Dictionary).size(), 23)
+	assert_eq((_contract["theme"]["variations"] as Dictionary).size(), 26)
 	assert_eq((_contract["styleboxes"] as Dictionary).size(), 31)
 	assert_eq((_contract["components"] as Array).size(), 5)
 	assert_eq(int(_inventory.get("schema_version")), 1)
@@ -151,8 +151,10 @@ func test_component_roles_fail_closed_and_preserve_prior_state() -> void:
 	assert_eq(panel.role, &"reading")
 	var label := AetheriaLabel.new()
 	assert_eq(label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART)
+	assert_true(label.apply_role(&"dense_detail"))
+	assert_eq(label.theme_type_variation, &"AuiDenseDetailLabel")
 	assert_false(label.apply_role(&"unknown"))
-	assert_eq(label.role, &"body")
+	assert_eq(label.role, &"dense_detail")
 	button.free()
 	panel.free()
 	label.free()
