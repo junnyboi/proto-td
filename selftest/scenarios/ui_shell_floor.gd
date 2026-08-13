@@ -21,6 +21,8 @@ const TEXT_COLOR_FLOOR := 0.10
 const BASE_FONT_SIZES := {
 	&"AuiTitleLabel": 64, &"AuiHeadingLabel": 48,
 	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44,
+	&"AuiDenseHeadingLabel": 32, &"AuiDenseBodyLabel": 28,
+	&"AuiDenseDetailLabel": 26,
 	&"AuiLocaleLabel": 44, &"AuiLocaleList": 44,
 	&"AuiPrimaryButton": 44, &"AuiSecondaryButton": 44,
 	&"AuiSelectedButton": 44, &"AuiDestructiveButton": 44,
@@ -122,7 +124,8 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	fixture.add_child(grid)
 	var probes: Array[Dictionary] = []
 	for role: StringName in [
-		&"title", &"heading", &"body", &"detail", &"locale", &"class_badge",
+		&"title", &"heading", &"body", &"detail", &"dense_heading", &"dense_body",
+		&"dense_detail", &"locale", &"class_badge",
 		&"cost_badge", &"cooldown_badge", &"locked_badge", &"completed_badge",
 	]:
 		var label := AetheriaLabel.new()
@@ -158,10 +161,11 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 			var item := probe["item"] as StringName
 			var color := control.get_theme_color(item)
 			var height := _rendered_text_height(image, control.get_global_rect(), color)
+			var glyph_floor := 18 if String(control.name).begins_with("Dense") else 32
 			h.check(
 				"rendered glyph floor %s" % control.name,
-				height >= 32,
-				"rendered_height=%d" % height,
+				height >= glyph_floor,
+				"rendered_height=%d floor=%d" % [height, glyph_floor],
 			)
 
 

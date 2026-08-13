@@ -57,7 +57,7 @@ func _ready() -> void:
 		&"ui.squad.heading", "{stage} — pick your squad",
 		{&"stage": UiCopyType.stage_title(_stage)},
 	)
-	var heading := _label("SquadHeading", UiCopyType.stage_title(_stage), &"heading")
+	var heading := _label("SquadHeading", UiCopyType.stage_title(_stage), &"dense_heading")
 	heading.tooltip_text = full_heading
 	heading.custom_minimum_size.x = 320.0
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -107,10 +107,10 @@ func _ready() -> void:
 	_footer.add_theme_constant_override(&"h_separation", 16)
 	_footer.add_theme_constant_override(&"v_separation", 12)
 	column.add_child(_footer)
-	_counter = _label("PickCounter", "", &"body")
+	_counter = _label("PickCounter", "", &"dense_body")
 	_counter.custom_minimum_size = Vector2(180.0, 50.0)
 	_footer.add_child(_counter)
-	var loadout := _label("LoadoutStrip", _loadout_text(), &"detail")
+	var loadout := _label("LoadoutStrip", _loadout_text(), &"dense_detail")
 	loadout.custom_minimum_size = Vector2(300.0, 50.0)
 	loadout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_footer.add_child(loadout)
@@ -158,7 +158,7 @@ func _build_mission_briefing() -> GridContainer:
 	_add_briefing_value("BriefingThreat", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
 	_add_briefing_value("BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
 	_add_briefing_value("BriefingClue", &"ui.squad.briefing.clue", "Field note", StageNarrativeDefType.Field.CLUE)
-	var hint := _label("TacticalHint", "Tactical hint — %s" % UiCopyType.stage_hint(_stage), &"detail")
+	var hint := _label("TacticalHint", "Tactical hint — %s" % UiCopyType.stage_hint(_stage), &"dense_detail")
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(hint)
 	return _briefing
@@ -167,7 +167,7 @@ func _build_mission_briefing() -> GridContainer:
 func _add_briefing_value(node_name: String, key: StringName, fallback: String, field: StageNarrativeDefType.Field) -> void:
 	var heading := UiCopyType.text(key, fallback)
 	var value := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.") if _narrative_missing else UiCopyType.stage_narrative_text(_narrative, field)
-	var label := _label(node_name, "%s — %s" % [heading, value], &"detail")
+	var label := _label(node_name, "%s — %s" % [heading, value], &"dense_detail")
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(label)
 
