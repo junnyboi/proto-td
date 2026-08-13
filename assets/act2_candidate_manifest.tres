@@ -211,7 +211,7 @@ entries = {
 "pattern": "res://assets/world/s3/backdrop-panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "1bc6582ca379f1633f878957464a276ea5b059d815f0068d64d14814fd84a962",
+"provenance_sha256": "005c21e412f402d21ee6505b5e4e59eb6de18ea1a04f269533885dafdad21bbf",
 "size": Vector2i(256, 128)
 },
 &"world.s3.blocked_pressure_jaw": {
@@ -227,7 +227,7 @@ entries = {
 "pattern": "res://assets/world/s3/blocked-pressure-jaw.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "0daf659855ef788558755ba89e0bbbd9a25f8e19f26e5c6b75b0c90954d97240",
+"provenance_sha256": "8ce041a5e9d389243d764ec2620b67de17135d144544efe131111875a16f3a2f",
 "size": Vector2i(32, 16)
 },
 &"world.s3.blocked_regulator": {
@@ -243,7 +243,7 @@ entries = {
 "pattern": "res://assets/world/s3/blocked-regulator.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "c5e765a955e5225102616d4027249d15b1cf3eab6f4d956aad92db08ec1a361b",
+"provenance_sha256": "02115ac3c89aeb8819d9aafe475e3ac3de3ec43eb572ea284e6b5382593f6854",
 "size": Vector2i(32, 16)
 },
 &"world.s3.core_pressure_keeper": {
@@ -259,7 +259,7 @@ entries = {
 "pattern": "res://assets/world/s3/core-pressure-keeper.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "90a400f8780597464f43f21e64129781b90493fd379b086c6dc07e20812c8377",
+"provenance_sha256": "20293910a707a7dcf4e44c72fcb8f6e7d0de615c45559eb77cbc53bb8cdaa97d",
 "size": Vector2i(32, 32)
 },
 &"world.s3.elevated_assay": {
@@ -275,7 +275,7 @@ entries = {
 "pattern": "res://assets/world/s3/elevated-assay.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "455c2aee7a413721329a21ebc43c36af6cf11c57c29578a6e17fa13a20217212",
+"provenance_sha256": "cd9bcedf9712a3b665d24bdbf9fd9f31b7339de1568f1c3436f6564848f96bfc",
 "size": Vector2i(32, 24)
 },
 &"world.s3.spawn_rain_sluice": {
@@ -291,7 +291,7 @@ entries = {
 "pattern": "res://assets/world/s3/spawn-rain-sluice.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "0eb7d7bf4947140d61d69cdec11fc44f59947d8fa54f69c480b387a749e6e3f5",
+"provenance_sha256": "d72cc27779b39684bb77432ed149c0e716c008b35bb0e9b2b5a2599bed75e54c",
 "size": Vector2i(32, 32)
 }
 }

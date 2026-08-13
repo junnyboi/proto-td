@@ -73,7 +73,7 @@ def source_palette(source: Path) -> dict[str, tuple[int, int, int]]:
     """Choose nearest exact source colors to frozen semantic material targets."""
     with Image.open(source) as opened:
         image = opened.convert("RGB")
-        counts = Counter(image.getdata())
+        counts = Counter(image.get_flattened_data())
     # Ignore negligible compression/noise colors, exact reserved probes, and black.
     choices = [rgb for rgb, count in counts.items() if count >= 3 and rgb not in RESERVED and rgb != (0, 0, 0)]
     if not choices:
@@ -257,10 +257,10 @@ def asset_checks(asset_images: dict[str, Image.Image], palette: dict[str, tuple[
         expected = ASSETS[logical_id][1]
         if value.mode != "RGBA" or value.size != expected:
             raise RuntimeError(f"{logical_id}: expected RGBA {expected}, got {value.mode} {value.size}")
-        alpha = {px[3] for px in value.getdata()}
+        alpha = {px[3] for px in value.get_flattened_data()}
         if not alpha <= {0, 255}:
             raise RuntimeError(f"{logical_id}: soft alpha {sorted(alpha)}")
-        colors = {px[:3] for px in value.getdata() if px[3]}
+        colors = {px[:3] for px in value.get_flattened_data() if px[3]}
         if colors & RESERVED:
             raise RuntimeError(f"{logical_id}: reserved-color collision")
         if not colors <= allowed:
@@ -365,12 +365,21 @@ def build_topology_mock(asset_images: dict[str, Image.Image], p: dict[str, tuple
     return out
 
 
-def replace_tree(target: Path, prepared: Path) -> None:
+def replace_tree(target: Path, prepared: Path, preserved_suffixes: tuple[str, ...] = ()) -> None:
+    preserved: dict[Path, bytes] = {}
+    if target.exists() and preserved_suffixes:
+        for path in sorted(item for item in target.rglob("*") if item.is_file()):
+            if path.name.endswith(preserved_suffixes):
+                preserved[path.relative_to(target)] = path.read_bytes()
     target.parent.mkdir(parents=True, exist_ok=True)
     old = target.with_name(target.name + ".old-s3")
     if old.exists(): shutil.rmtree(old)
     if target.exists(): os.replace(target, old)
     os.replace(prepared, target)
+    for relative, data in preserved.items():
+        destination = target / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(data)
     if old.exists(): shutil.rmtree(old)
 
 
@@ -469,7 +478,12 @@ def generate(repo_root: Path, source: Path | None = None) -> dict[str, object]:
             "idempotence_protocol": ["clean A", "clean B", "contaminated C complete replacement"],
         }
         (qa_dir / "normalization-report.json").write_bytes(canonical_json(report))
-        for target, candidate in prepared.items(): replace_tree(target, candidate)
+        for target, candidate in prepared.items():
+            replace_tree(
+                target,
+                candidate,
+                (".png.import",) if target == repo_root / "assets/world/s3" else (),
+            )
     finally:
         if temp_parent.exists(): shutil.rmtree(temp_parent)
 

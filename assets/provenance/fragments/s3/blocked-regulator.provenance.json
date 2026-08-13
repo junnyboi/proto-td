@@ -36,7 +36,7 @@
     "python": "3.12.3",
     "recipe": "exact source-color extraction plus original integer Pillow geometry; no source crop/resize/paste; no dithering; hard alpha",
     "tool": "tools/art_pipeline/world/s3/normalize_s3_world.py",
-    "tool_sha256": "d1c4677390326086f79bc127578e47a18d7733a936eea43453f39d4ae8d1c7a4"
+    "tool_sha256": "45e2fac692be08b0162697dbe8dff3d0329774fe2c3fa354f2611a281b7fdaa5"
   },
   "pivot": [
     16,

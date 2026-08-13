@@ -29,6 +29,6 @@
   "schema_version": 1,
   "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
   "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING",
-  "tool_sha256": "d1c4677390326086f79bc127578e47a18d7733a936eea43453f39d4ae8d1c7a4",
+  "tool_sha256": "45e2fac692be08b0162697dbe8dff3d0329774fe2c3fa354f2611a281b7fdaa5",
   "visual_review_status": "H1_PENDING"
 }

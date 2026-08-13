@@ -74,6 +74,24 @@ class TestS3World(unittest.TestCase):
         normalizer.generate(REPO)
         self.assertEqual(before, digest_tree(REPO))
 
+    def test_runtime_import_sidecars_survive_complete_replacement(self):
+        root = self.trial("import-sidecars")
+        try:
+            runtime = root / "assets/world/s3"
+            sidecars = {}
+            for filename, _, _ in normalizer.ASSETS.values():
+                path = runtime / f"{filename}.import"
+                data = f"engine-owned:{filename}\n".encode()
+                path.write_bytes(data)
+                sidecars[path] = data
+            (runtime / "stale-junk.txt").write_text("must be removed", encoding="utf-8")
+            normalizer.generate(root)
+            self.assertFalse((runtime / "stale-junk.txt").exists())
+            for path, data in sidecars.items():
+                self.assertEqual(path.read_bytes(), data)
+        finally:
+            shutil.rmtree(root)
+
     def test_source_is_not_a_runtime_candidate(self):
         source_hash = hashlib.sha256((REPO / "art-src/world/s3/s3-production-source.png").read_bytes()).hexdigest()
         for path in (REPO / "assets/world/s3").glob("*.png"):
