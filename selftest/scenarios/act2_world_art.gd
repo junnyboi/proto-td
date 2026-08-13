@@ -12,7 +12,6 @@ const BANNER_SETTLE_FRAMES := 52
 const POPULATED_TICK := 150
 const PROJECTION_SETTLE_FRAMES := 8
 const CURSOR_EPS := 0.01
-const H1_VIEWPORT := Vector2i(1280, 720)
 const H1_SURFACE_COUNTS := {
 	&"s2": {"area": 50, "route": 10, "blocked": 0, "elevated": 2, "ground": 38},
 	&"s3": {"area": 60, "route": 12, "blocked": 2, "elevated": 1, "ground": 45},
@@ -151,8 +150,7 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		],
 	)
 	await h.shot("%s_world_clean" % stage_id)
-	if h.root.size == H1_VIEWPORT:
-		await _capture_h1_diagnostics(h, stage_id, model.stage, theme, grid)
+	await _capture_h1_diagnostics(h, stage_id, model.stage, theme, grid)
 
 	h.check(
 		"%s DP funded through debug_set_dp" % stage_id,
@@ -243,7 +241,7 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 		],
 	)
 	await h.shot("%s_world_targeting" % stage_id)
-	if stage_id == &"s3" and h.root.size == H1_VIEWPORT:
+	if stage_id == &"s3":
 		var blocker_a := grid.get_node_or_null("Tile_5_2") as CanvasItem
 		var blocker_b := grid.get_node_or_null("Tile_5_3") as CanvasItem
 		var choke_presence_now := _enemy_cells(model).filter(
@@ -260,7 +258,10 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName, expected_count: int)
 				and spell_cursor != null and spell_cursor.visible
 				and spell_cursor.polygon.size() > 0
 				and spell_cursor.position.distance_to(expected_center) < CURSOR_EPS,
-			"units=%d unit_nodes=%d enemies=%d enemy_nodes=%d enemy_cells=%s blockers=%s/%s cursor=%s visible=%s center=%s expected=%s" % [
+			(
+				"units=%d unit_nodes=%d enemies=%d enemy_nodes=%d enemy_cells=%s "
+				+ "blockers=%s/%s cursor=%s visible=%s center=%s expected=%s"
+			) % [
 				model.deployed_count(), _live_unit_node_count(grid), model.alive_enemy_count(),
 				_live_enemy_node_count(grid), _enemy_cells(model), blocker_a != null,
 				blocker_b != null, spell_cursor != null,
