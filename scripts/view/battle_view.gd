@@ -1,16 +1,13 @@
 extends Node2D
 
-## Disposable projection of BattleModel (architecture rules 1 + 6: view
-## reads, never writes). Consumes model ticks in _physics_process via an
-## accumulator; ticks_per_frame_scale is the Phase 8 speed-control seam
-## (pause/2x/4x = ticks consumed per frame — speed can never change
-## outcomes). Phase 1 renders ColorRect placeholders; Lane A sprites replace
-## them via the asset manifest without touching this flow.
+## Read-only BattleModel projection; speed changes ticks/frame, never outcomes.
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
 const S1_FIXTURE_PATH := "res://data/presentation/s1_slice_fixture_manifest.tres"
+const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -49,6 +46,9 @@ const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
 
 var model: BattleModel = null
+var startup_succeeded: bool = false
+var theme_resolver: Callable = Callable()
+var model_factory: Callable = Callable()
 var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
 
@@ -57,6 +57,7 @@ var _grid_scale := 1.0
 var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
+var _stage_theme: Resource = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
 var _tracer_lines: Dictionary = {}
@@ -116,11 +117,25 @@ var _unit_attack_seen: Dictionary = {}
 var _s1_fixture: S1SliceFixtureManifest = null
 
 
+func _init() -> void:
+	theme_resolver = Callable(self, "_resolve_stage_theme")
+	model_factory = Callable(self, "_create_battle_model")
+
+
 func _ready() -> void:
 	var stage := Game.pending_stage
 	if stage == null:
 		push_error("battle_view: no pending stage")
 		return
+	# Required world presentation is preflighted before any catalog or model load.
+	# Keep this explicit preload-backed call: stale global-class registries must not
+	# be able to bypass Act II activation.
+	var theme_result: Dictionary = theme_resolver.call(stage)
+	var theme_error := String(theme_result["error"])
+	if not theme_error.is_empty():
+		push_error("battle_view: stage art preflight failed: %s" % theme_error)
+		return
+	_stage_theme = theme_result["theme"] as Resource
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_enemy_defs = defs
@@ -129,11 +144,12 @@ func _ready() -> void:
 	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
-	model = BattleModel.create(
+	var candidate_model: BattleModel = model_factory.call(
 		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
 	)
-	Game.current_battle = model
-	Game.content = self
+	if candidate_model == null:
+		push_error("battle_view: model factory failed")
+		return
 	_stage = stage
 	_s1_fixture = S1SliceFixtureManifest.load_valid(S1_FIXTURE_PATH)
 	if not _build_grid(stage):
@@ -164,20 +180,41 @@ func _ready() -> void:
 	_deploy_bar.name = "DeployBar"
 	_deploy_bar.z_index = UI_OVERLAY_Z
 	add_child(_deploy_bar)
-	_deploy_bar.setup(model, self, _op_defs, bar_traps)
+	_deploy_bar.setup(candidate_model, self, _op_defs, bar_traps)
 	_spell_bar = SpellBar.new()
 	_spell_bar.name = "SpellBar"
 	_spell_bar.z_index = UI_OVERLAY_Z
 	add_child(_spell_bar)
-	_spell_bar.setup(model, self, Game.loadout_spell_ids())
+	_spell_bar.setup(candidate_model, self, Game.loadout_spell_ids())
 	_controls = BattleControls.new()
 	_controls.name = "BattleControls"
 	_controls.z_index = UI_OVERLAY_Z
 	add_child(_controls)
-	_controls.setup(model, self)
+	_controls.setup(candidate_model, self)
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
+	model = candidate_model
+	startup_succeeded = true
+
+
+func _resolve_stage_theme(stage: Resource) -> Dictionary:
+	return StageArtThemeType.resolve_for(stage)
+
+
+func _create_battle_model(
+	stage: StageDef,
+	squad: Array[StringName],
+	seed_value: int,
+	config: GameConfig,
+	enemy_defs: Dictionary,
+	op_defs: Dictionary,
+	trap_defs: Dictionary,
+	spell_defs: Dictionary
+) -> BattleModel:
+	return BattleModel.create(
+		stage, squad, seed_value, config, enemy_defs, op_defs, trap_defs, spell_defs
+	)
 
 
 ## Screen-space center of a grid cell's visible top face (no camera: world
@@ -565,7 +602,7 @@ func _build_grid(stage: StageDef) -> bool:
 	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
-	if not IsoGridBuilder.build_stage(_grid_root, stage):
+	if not IsoGridBuilder.build_stage_with_theme(_grid_root, stage, _stage_theme):
 		return false
 	return true
 
@@ -588,6 +625,7 @@ func _relayout() -> void:
 	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
+	BATTLE_HUD_PRESENTER.relayout(_hud, viewport)
 	if _portrait_flash != null:
 		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 	if _continue_btn != null and is_instance_valid(_continue_btn):
@@ -606,11 +644,9 @@ func _relayout() -> void:
 
 
 func _build_hud() -> void:
-	_hud = Label.new()
-	_hud.name = "BattleHud"
-	_hud.position = Vector2(16, 8)
-	_hud.add_theme_font_size_override("font_size", HUD_FONT_SIZE)
-	_hud.z_index = HUD_Z
+	_hud = BATTLE_HUD_PRESENTER.create(
+		HUD_FONT_SIZE, HUD_Z, get_viewport_rect().size
+	)
 	add_child(_hud)
 
 
@@ -639,17 +675,7 @@ func _project() -> void:
 	_project_units()
 	_project_tracers()
 	var s := model.snapshot()
-	var result_text: String = ["RUNNING", "CLEAR", "DEFEAT"][int(s["result"])]
-	_hud.text = (
-		"Base HP %d   DP %d   kills %d   tick %d   %s"
-		% [
-			s["base_hp"],
-			s["dp"],
-			s["killed"],
-			s["tick"],
-			result_text,
-		]
-	)
+	_hud.text = BATTLE_HUD_PRESENTER.text_for(s, get_viewport_rect().size)
 	if int(s["result"]) == BattleModel.Result.CLEAR:
 		_hud.text += "  %d*" % int(s["stars"])
 

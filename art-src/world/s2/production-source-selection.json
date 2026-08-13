@@ -1,0 +1,50 @@
+{
+  "approval_token": "ACT-II-S2-S3-H0",
+  "generator": {
+    "generation_id": null,
+    "generation_id_reason": "UNAVAILABLE: generation tool returned no generation identifier; none invented.",
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": null,
+    "seed_reason": "UNAVAILABLE: generation tool exposed no seed parameter or returned seed; none invented.",
+    "tool": "Manus built-in image generation / generate_image"
+  },
+  "human_final_art": false,
+  "packet": "s2",
+  "prompt": {
+    "path": "art-src/world/s2/production-prompt-contract.md",
+    "sha256": "54c6912dd7505c6de316a166b6ed394e2e0a1358240cf96150380ac0331ad3de"
+  },
+  "references": [
+    {
+      "path": "art-src/world/act2-references/act2-shared-style-material-board.png",
+      "role": "shared style and material board",
+      "sha256": "315b925585c1b9ac1dba4efdadcd194aed3b61b46448234bf1971a433a7d1b09"
+    },
+    {
+      "path": "art-src/world/act2-references/s2-counterpressure-transfer-hall-keyframe-v2.png",
+      "role": "S2 v2 approved keyframe",
+      "sha256": "ee6646091336a003f42d7983cc1d830170b52f74bb583abae199c94b8c64784a"
+    },
+    {
+      "path": "art-src/world/act2-references/act2-shared-tile-route-kit.png",
+      "role": "shared tile and route silhouette kit",
+      "sha256": "37e61c12517a407e7bb49416e5a18d5e31f96342a9e250896c6e4be179b4049b"
+    },
+    {
+      "path": "art-src/world/act2-references/act2-stage-owned-endpoints-blockers.png",
+      "role": "approved endpoint and blocker silhouettes",
+      "sha256": "3ee62b8aaff21ba0c5baac81bbe54a474c73bbadd42c6070ada87eec38e8a516"
+    }
+  ],
+  "rejected_candidates": [],
+  "schema_version": 1,
+  "selected_candidate": {
+    "canonical_source_path": "art-src/world/s2/s2-production-source.png",
+    "path": "art-src/world/s2/s2-production-source.png",
+    "reason": "Selected approved H0 S2 palette/material/provenance production input.",
+    "sha256": "d590f2d14fcb1efb4731abc93eef18cce39e9e4029f5ef520c67018b0299e5f3"
+  },
+  "selection_count": 1,
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s8"
+objective = "Hold the Gate approach while command challenges Goa Wey's false emergency authority and shuts down the Gatecrasher proxy."
+threat = "Goa Wey's evacuation authority closes routes and treats refusal as contamination."
+human_reason = "Hearthcross must be free to choose whether to descend; permanent emergency rule cannot replace consent."
+clue = "Goa Wey remembers Blue Noon, delay, and loss, but her damaged record no longer knows when the emergency ends."
+core_service = "Deep Gate authority"
+clear_debrief = "The victory creates the opening command needs: the false rules are broken, Goa Wey's surviving record enters custody, and Hearthcross opens the Deep Gate by choice."
+defeat_debrief = "Company 33 withdraws. The Deep Gate remains under forced-evacuation authority, and Hearthcross prepares another attempt."

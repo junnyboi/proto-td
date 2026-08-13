@@ -1,0 +1,174 @@
+{
+  "approval_token": "ACT-II-S2-S3-H0",
+  "assets": {
+    "world.pressure.cadence_e": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        7,
+        3,
+        27,
+        16
+      ],
+      "opaque_median_cie_lstar": 23.075,
+      "opaque_pixels": 66,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "cd55a50aa2e3100d393744e59d77d077e1a859e8ec5cb4836ed956a776118769",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.cadence_e_s": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        7,
+        3,
+        25,
+        16
+      ],
+      "opaque_median_cie_lstar": 23.075,
+      "opaque_pixels": 60,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "f80cb020d059432fbbc20323bfe5a454243a6009a6029d95c0bcc9dd9d556734",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.cadence_s": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        3,
+        3,
+        23,
+        16
+      ],
+      "opaque_median_cie_lstar": 23.075,
+      "opaque_pixels": 66,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "e308c3a9caa7fda02ae02953d56d2084192a20829bb01cefb7eb4a8872888569",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.cadence_s_e": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        8,
+        3,
+        25,
+        16
+      ],
+      "opaque_median_cie_lstar": 23.075,
+      "opaque_pixels": 60,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "d8cda51bdcd79b5344430833219dcf129fc0b1291634827c2f13a4aa01d42342",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.ground_calm": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "opaque_median_cie_lstar": 30.152,
+      "opaque_pixels": 256,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "e0112104e3074faf068fc5ecc46e69b79eae136de58615f06a681a4dce5930ad",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.ground_runoff": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "opaque_median_cie_lstar": 30.152,
+      "opaque_pixels": 256,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "2f1445b22c0f31b307358abf529fd6ac921b5faeadfe13b93bba6232a2f562e9",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.pressure.route_plate": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "opaque_median_cie_lstar": 46.449,
+      "opaque_pixels": 256,
+      "partial_alpha_pixels": 0,
+      "reserved_color_pixels": 0,
+      "sha256": "cd61c2c0247f3767a30fc6f4f7bc70067980c9208543a9fe1a4789c679dbaa87",
+      "size": [
+        32,
+        16
+      ]
+    }
+  },
+  "family": "act2-shared",
+  "human_final_art": false,
+  "machine_gate": "PASS",
+  "palette": {
+    "basalt": "#484838",
+    "basalt_dark": "#484848",
+    "basalt_light": "#786858",
+    "bronze": "#987858",
+    "bronze_dark": "#886848",
+    "outline": "#383828",
+    "s2_bronze": "#986838",
+    "s2_dark": "#282818",
+    "s2_light": "#787878",
+    "s2_mid": "#686858",
+    "s2_water": "#284858",
+    "void": "#282828",
+    "water": "#485868"
+  },
+  "runtime_staged_byte_identity": "PASS",
+  "schema_version": 1,
+  "source_hygiene": "PASS",
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}

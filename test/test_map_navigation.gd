@@ -19,7 +19,10 @@ const BATTLE_VIEW_PATH := "res://scripts/view/battle_view.gd"
 const MAP_NAVIGATOR_PATH := "res://scripts/view/map_navigator.gd"
 const BATTLE_VIEW_SCRIPT: GDScript = preload("res://scripts/view/battle_view.gd")
 const S1: StageDef = preload("res://data/stages/s1.tres")
+const S2: StageDef = preload("res://data/stages/s2.tres")
+const S3: StageDef = preload("res://data/stages/s3.tres")
 const VIEWPORTS := [Vector2(960.0, 640.0), Vector2(1280.0, 720.0), Vector2(1920.0, 1080.0)]
+const PORTRAIT_VIEWPORT := Vector2(720.0, 1280.0)
 
 
 func test_battle_view_pins_map_navigator_as_an_explicit_resource_dependency() -> void:
@@ -83,6 +86,28 @@ func test_initial_framing_keeps_right_edge_visible_and_y_centered() -> void:
 	assert_eq(navigator.pan.x, navigator.bounds.position.x)
 	assert_eq(navigator.pan.y, 0.0)
 	assert_almost_eq(navigator.content_screen_rect().end.x, 1280.0, 0.0001)
+
+
+func test_act2_target_viewports_fit_complete_content_inside_persistent_ui() -> void:
+	var cases: Array = [
+		[Vector2(1920.0, 1080.0), Rect2(16.0, 104.0, 1888.0, 822.0)],
+		[Vector2(1280.0, 720.0), Rect2(16.0, 104.0, 1248.0, 462.0)],
+		[Vector2(960.0, 720.0), Rect2(16.0, 104.0, 928.0, 398.0)],
+		[PORTRAIT_VIEWPORT, Rect2(16.0, 104.0, 688.0, 802.0)],
+	]
+	for spec: Array in cases:
+		var viewport: Vector2 = spec[0]
+		var safe: Rect2 = spec[1]
+		for stage: StageDef in [S2, S3]:
+			var navigator := MapNavigator.new()
+			navigator.relayout(stage, viewport)
+			assert_eq(
+				navigator.scale,
+				IsoProjection.fit_scale(stage.grid_size(), safe.size),
+			)
+			assert_eq(navigator.pan, Vector2.ZERO)
+			assert_eq(navigator.bounds, Rect2())
+			assert_true(safe.encloses(navigator.content_screen_rect()))
 
 
 func test_resize_preserves_pixel_pan_then_clamps_exactly() -> void:

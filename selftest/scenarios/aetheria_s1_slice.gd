@@ -254,6 +254,10 @@ func _route_to_paused_battle(h: SelfTestHarness) -> Dictionary:
 		h.check("Staging exposes Mission Control", mission != null)
 		if mission == null:
 			break
+		var staging_scroll := staging.find_child("StagingScroll", true, false) as ScrollContainer
+		if staging_scroll != null:
+			staging_scroll.ensure_control_visible(mission)
+			await h.frames(3)
 		await h.click_view(mission.get_global_rect().get_center())
 		var stages := await _await_screen(h, game, "StageColumn")
 		h.check("Mission Control routes to stage select", stages != null)
@@ -268,6 +272,7 @@ func _route_to_paused_battle(h: SelfTestHarness) -> Dictionary:
 		h.check("S1 routes to squad select", squad != null)
 		if squad == null:
 			break
+		var squad_scroll := squad.find_child("SquadScroll", true, false) as ScrollContainer
 		var all_picks_present := true
 		for op_id: StringName in PICKS:
 			var pick := squad.find_child("Pick_%s" % op_id, true, false) as Button
@@ -275,6 +280,9 @@ func _route_to_paused_battle(h: SelfTestHarness) -> Dictionary:
 			if pick == null:
 				all_picks_present = false
 				break
+			if squad_scroll != null:
+				squad_scroll.ensure_control_visible(pick)
+				await h.frames(3)
 			await h.click_view(pick.get_global_rect().get_center())
 		if not all_picks_present:
 			break
@@ -290,6 +298,9 @@ func _route_to_paused_battle(h: SelfTestHarness) -> Dictionary:
 		)
 		if battle_start == null:
 			break
+		if squad_scroll != null:
+			squad_scroll.ensure_control_visible(battle_start)
+			await h.frames(3)
 		await h.click_view(battle_start.get_global_rect().get_center())
 		var model := await _await_paused_battle(h, game)
 		h.check("real shell route boots seeded S1", model != null and model.stage.id == &"s1")

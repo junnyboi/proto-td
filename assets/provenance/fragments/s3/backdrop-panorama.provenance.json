@@ -1,0 +1,47 @@
+{
+  "approval": {
+    "approved_content_hash_gates_launch": false,
+    "h1_required": true,
+    "phase": "H0",
+    "token": "ACT-II-S2-S3-H0"
+  },
+  "candidate_files": {
+    "bytes_identical": true,
+    "runtime": "assets/world/s3/backdrop-panorama.png",
+    "sha256": "04141006a9f7be944a585319725834c024a3e094cc010997b5e668500a32743f",
+    "staging": "staging/assets/world/s3/backdrop-panorama.png"
+  },
+  "dimensions": [
+    256,
+    128
+  ],
+  "generator": {
+    "generation_id": null,
+    "generation_id_reason": "UNAVAILABLE: generation tool returned no generation identifier; none invented.",
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": null,
+    "seed_reason": "UNAVAILABLE: generation tool exposed no seed parameter or returned seed; none invented.",
+    "source": "art-src/world/s3/s3-production-source.png",
+    "source_sha256": "606b5411bbab1e52c6ee164929ff9138343fbd4b94ee793328bd763b1c5d587d",
+    "tool": "Manus built-in image generation / generate_image"
+  },
+  "human_final_art": false,
+  "license_source": "original AI-assisted source under project-controlled prompt/reference set; candidate pending H1",
+  "logical_id": "world.s3.backdrop_panorama",
+  "normalization": {
+    "palette": "art-src/world/s3/s3-derived-palette.json",
+    "palette_sha256": "294418da1fd78e1299507821a762f8097de5f9e5c2da5ae9abf941f155c991ce",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "recipe": "exact source-color extraction plus original integer Pillow geometry; no source crop/resize/paste; no dithering; hard alpha",
+    "tool": "tools/art_pipeline/world/s3/normalize_s3_world.py",
+    "tool_sha256": "aed9fec0b476ba7f546b15bfa5ee62935f1f0fc9a3354ae17585b3db7a4724e9"
+  },
+  "pivot": [
+    128,
+    127
+  ],
+  "schema_version": 1,
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s2"
+objective = "Hold the route stores while command compares the Runners' repeating arrival times."
+threat = "Runners carry access tokens and arrive on an old emergency timetable."
+human_reason = "Medicine and food move through these stores."
+clue = "The attack timestamps repeat Blue Noon instead of advancing with the present day."
+core_service = "Hearthcross route stores"
+clear_debrief = "The defense keeps the stores open long enough to prove that the Custodians are following a broken clock."
+defeat_debrief = "The stores close under evacuation pressure. Company 33 preserves people but loses supplies and the clean timing record."

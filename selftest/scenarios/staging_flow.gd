@@ -53,6 +53,7 @@ func _mission_round_trip(
 		h: SelfTestHarness, game: Node, staging: Control, initial: Dictionary,
 ) -> Control:
 	var mission := _find(staging, "MissionControlButton") as Button
+	await _scroll_to_control(h, staging, mission)
 	await h.click_view(mission.get_global_rect().get_center())
 	var stage_select := await _await_screen(h, game, "StageColumn")
 	h.check("Mission Control opens stage select", stage_select != null)
@@ -93,6 +94,10 @@ func _defeat_round_trip(
 	h.check("campaign defeat offers Return to Staging", return_button != null)
 	if return_button == null:
 		return null
+	var results_scroll := _find(results, "ResultsScroll") as ScrollContainer
+	results_scroll.ensure_control_visible(return_button)
+	await h.frames(3)
+	h.check("Return to Staging lies inside Results viewport after scroll", results_scroll.get_global_rect().intersects(return_button.get_global_rect()))
 	await h.shot("results_return_to_staging")
 	await h.click_view(return_button.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
@@ -107,6 +112,7 @@ func _return_to_title(h: SelfTestHarness, game: Node, staging: Control) -> bool:
 	h.check("Staging offers Back to Title", back != null)
 	if back == null:
 		return false
+	await _scroll_to_control(h, staging, back)
 	await h.click_view(back.get_global_rect().get_center())
 	var title := await _await_screen(h, game, "TitleBox")
 	h.check("Back to Title reaches title", title != null)
@@ -121,7 +127,8 @@ func _check_initial_staging(
 		h: SelfTestHarness, game: Node, staging: Control, initial: Dictionary,
 ) -> void:
 	for node_name: String in [
-		"StagingHeading", "CampaignSummary", "NextMissionSummary",
+		"CompanyCommandHeading", "CompanyCommandBody", "CampaignSummary",
+			"NextOperationTitle", "NextOperationObjective",
 		"MissionControlButton", "BarracksButton", "RecruitButton",
 		"TrainingButton", "ArmoryButton", "MemorialButton",
 		"BackToTitleButton", "OperationStatus",
@@ -132,16 +139,19 @@ func _check_initial_staging(
 		)
 
 	var summary := _find(staging, "CampaignSummary") as Label
-	var next_mission := _find(staging, "NextMissionSummary") as Label
+	var command_heading := _find(staging, "CompanyCommandHeading") as Label
+	var command_body := _find(staging, "CompanyCommandBody") as Label
+	var next_mission := _find(staging, "NextOperationTitle") as Label
+	var next_objective := _find(staging, "NextOperationObjective") as Label
 	var status := _find(staging, "OperationStatus") as Label
 	h.check(
 		"campaign summary starts at 0/8",
 		summary.text.contains("0/8"), summary.text,
 	)
-	h.check(
-		"next mission names First Stand",
-		next_mission.text.contains("First Stand"), next_mission.text,
-	)
+	h.check("command heading names Company 33", command_heading.text == "COMPANY 33 COMMAND", command_heading.text)
+	h.check("command body states canon premise", command_body.text.contains("Great Flare") and command_body.text.contains("the Fall") and command_body.text.contains("Custodians") and command_body.text.contains("Hearthcross"), command_body.text)
+	h.check("next operation exact title", next_mission.text == "NEXT 1: First Stand", next_mission.text)
+	h.check("next operation gives full objective", next_objective.text == "Hold the Hearthcross water-works line while investigators trace the evacuation order carried by the attackers.", next_objective.text)
 	h.check(
 		"operation status marks future work unavailable",
 		status.text.contains("UNAVAILABLE"), status.text,
@@ -163,7 +173,7 @@ func _check_initial_staging(
 		)
 		h.check("Staging shell fits the viewport", VIEWPORT_RECT.encloses(shell_rect), str(shell_rect))
 
-	var heading := _find(staging, "StagingHeading") as Label
+	var heading := _find(staging, "CompanyCommandHeading") as Label
 	var mission := _find(staging, "MissionControlButton") as Button
 	var back := _find(staging, "BackToTitleButton") as Button
 	h.check("heading meets 48px floor", heading.get_theme_font_size("font_size") >= 48)
@@ -177,10 +187,18 @@ func _check_initial_staging(
 		h.check("%s is disabled" % button_name, button.disabled)
 		h.check("%s is unfocusable" % button_name, button.focus_mode == Control.FOCUS_NONE)
 		h.check("%s says unavailable" % button_name, button.text.contains("Unavailable"), button.text)
-		h.check("%s lies inside viewport" % button_name, VIEWPORT_RECT.encloses(button.get_global_rect()))
+		await _scroll_to_control(h, staging, button)
+		h.check("%s lies inside viewport after scroll" % button_name, VIEWPORT_RECT.encloses(button.get_global_rect()))
 		await h.click_view(button.get_global_rect().get_center())
 		h.check("%s click keeps Staging open" % button_name, game.get("content") == staging)
 		_check_snapshot(h, game, initial, "%s disabled click" % button_name)
+
+
+func _scroll_to_control(h: SelfTestHarness, screen: Control, control: Control) -> void:
+	var scroll := _find(screen, "StagingScroll") as ScrollContainer
+	if scroll != null and control != null:
+		scroll.ensure_control_visible(control)
+		await h.frames(3)
 
 
 func _snapshot(game: Node) -> Dictionary:

@@ -1,0 +1,80 @@
+{
+  "alpha_values": [
+    0,
+    255
+  ],
+  "approval_token": "ACT-II-S2-S3-H0",
+  "assets": [
+    {
+      "filename": "elevated-manometer.png",
+      "human_final_art": false,
+      "logical_id": "world.s2.elevated_manometer",
+      "native_size": [
+        32,
+        24
+      ],
+      "pivot": null,
+      "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+    },
+    {
+      "filename": "elevated-relief.png",
+      "human_final_art": false,
+      "logical_id": "world.s2.elevated_relief",
+      "native_size": [
+        32,
+        24
+      ],
+      "pivot": null,
+      "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+    },
+    {
+      "filename": "spawn-louver.png",
+      "human_final_art": false,
+      "logical_id": "world.s2.spawn_louver",
+      "native_size": [
+        32,
+        32
+      ],
+      "pivot": [
+        16,
+        30
+      ],
+      "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+    },
+    {
+      "filename": "core-receiver.png",
+      "human_final_art": false,
+      "logical_id": "world.s2.core_receiver",
+      "native_size": [
+        32,
+        32
+      ],
+      "pivot": [
+        16,
+        30
+      ],
+      "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+    },
+    {
+      "filename": "backdrop-panorama.png",
+      "human_final_art": false,
+      "logical_id": "world.s2.backdrop_panorama",
+      "native_size": [
+        240,
+        120
+      ],
+      "pivot": null,
+      "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+    }
+  ],
+  "base_commit": "f4827f6ec255b502a1d17ef4642eda295ac162c8",
+  "candidate_state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING",
+  "family": "s2",
+  "lane": "ACT2-S2-SHARED",
+  "reserved_colors": [
+    "#F4F4F4",
+    "#41A6F6"
+  ],
+  "runtime_staging_bytes_identical": true,
+  "schema_version": 1
+}

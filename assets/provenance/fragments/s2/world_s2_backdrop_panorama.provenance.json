@@ -1,0 +1,41 @@
+{
+  "approval": {
+    "approved_content_hash_launch_dependency": false,
+    "human_final_art": false,
+    "token": "ACT-II-S2-S3-H0"
+  },
+  "final_file": "assets/world/s2/backdrop-panorama.png",
+  "final_file_sha256": "9f8177ffdb58fbb9726c8a31f9a8fdfc5dcd96d437d2a4af8d12921e3c224033",
+  "generator": {
+    "generation_id": "UNAVAILABLE",
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": "UNAVAILABLE",
+    "tool": "Manus built-in image generation",
+    "unavailability_reason": "Generation tool exposed neither generation ID nor seed; neither is invented."
+  },
+  "human_final_art": false,
+  "logical_id": "world.s2.backdrop_panorama",
+  "normalization": {
+    "method": "deterministic source palette extraction + original programmatic pixel shape; hard alpha; no dithering",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "tool": "tools/art_pipeline/world/act2_shared/normalize.py",
+    "tool_sha256": "a0abd59e87ce273cbae63f5f64466fd0222d8740d58b008b83a2155ba0935344"
+  },
+  "reserved_colors": {
+    "forbidden": [
+      "#F4F4F4",
+      "#41A6F6"
+    ],
+    "gate": "PASS"
+  },
+  "schema_version": 1,
+  "source": {
+    "path": "art-src/world/s2/s2-production-source.png",
+    "sha256": "d590f2d14fcb1efb4731abc93eef18cce39e9e4029f5ef520c67018b0299e5f3",
+    "usage": "palette/material/provenance input only; not copied or resized"
+  },
+  "staged_file": "staging/assets/world/s2/backdrop-panorama.png",
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}
