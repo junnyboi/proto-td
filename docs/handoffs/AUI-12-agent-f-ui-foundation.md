@@ -3,8 +3,9 @@
 **State:** audited implementation complete; fresh RELEASE and human approval pending
 **Owner:** AGENT F
 **Branch:** `agent-f/aui-12-web-remediation`
-**Successor base:** `9b834f54a218e3eeb77e89e014476300180dc33a` on current `master`
+**Original successor base:** `9b834f54a218e3eeb77e89e014476300180dc33a`
 **Implementation commits:** `40bec07056508cbd8f9a12b8539516fb61631228`, `5441e27e47c6237541cb0a06dd3aeaaa02c3ddf9`
+**Current-master union:** merge `cd8298d01936c77b12c19e559ef67f0a748fab82` with exact master parent `14b418bda8a9923ef3ad1ef0369e735f136b7df6`
 **Effective lane:** MGS v2 RELEASE
 
 ## Delivered contract
@@ -35,6 +36,8 @@ The locale selector retains one logical ItemList row with `English (US)`, String
 Focused GUT proves exact Theme tokens/items/StyleBoxes, material roles, component structure and failure semantics, duplicate-safe canonical localization, named placeholder types, focus permutations, and inventory expansion. `ui_shell_floor` produces the exact 62-shot matrix over five screens, four viewports, and three modes plus two typography probes. It records exact source/runtime inventory parity, Theme owner replacement/restoration, all sixteen font-bearing variations, per-screen reflows, target and text geometry, rendered glyph height, logical locale identity, semantic overlay geometry, and contrast. A headless run passes 65 checks; a windowed run passes 142 checks with 62 fresh PNGs and zero skips.
 
 Protected `boot`, `staging_flow`, `campaign_flow`, `resize_relayout`, battle-control, resign-modal, and localization journeys must remain unchanged. Final acceptance additionally requires a clean frozen candidate, cache-bypassed full RELEASE union, Web export/browser evidence, cross-process replay equality, independent non-implementer diff-vs-pins audit, and Poseidon’s commit-bound L7 review.
+
+The pre-union `6a1d65ac52d8e255c732e66fd3275485ec92119b` RELEASE run passed all gates but became stale when `master` advanced. It is historical evidence only. The exact merged union above must receive a wholly fresh RELEASE, diff-vs-pins audit, and human review; no lane green substitutes for union proof.
 
 ## D-WEB-1 successor
 
