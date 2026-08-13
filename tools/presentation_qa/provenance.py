@@ -64,7 +64,10 @@ OPERATOR_ANIMATION_COMMAND = (
 OPERATOR_ANIMATION_GENERATOR = (
     "res://tools/art_pipeline/characters/generate_operator_animation_provenance.py"
 )
-OPERATOR_ANIMATION_CLASSES = {"defender_1", "vanguard_2"}
+OPERATOR_ANIMATION_PART2_CLASSES = {
+    "caster_1", "caster_2", "defender_2", "sniper_1", "sniper_2",
+}
+OPERATOR_ANIMATION_CLASSES = {"defender_1", "vanguard_2"} | OPERATOR_ANIMATION_PART2_CLASSES
 OPERATOR_ANIMATION_COMMON_SOURCES = {
     "res://assets/provenance/operators/operator-animation-v1.json",
     "res://data/presentation/operator_animation_def.gd",
@@ -76,6 +79,11 @@ OPERATOR_ANIMATION_COMMON_SOURCES = {
     OPERATOR_ANIMATION_GENERATOR,
 }
 OPERATOR_ANIMATION_APPROVED_AT_UTC = "2026-08-13T16:45:41Z"
+OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC = "2026-08-13T18:58:27Z"
+OPERATOR_ANIMATION_PART2_SOURCES = {
+    "res://assets/provenance/operators/aetheria-part2-source-manifest.json",
+    "res://tools/art_pipeline/characters/import_aetheria_part2_animations.py",
+}
 
 
 def is_round5_character(logical_id: str) -> bool:
@@ -197,6 +205,8 @@ def source_paths(logical_id: str) -> list[str]:
     if animation_class is not None:
         result = set(OPERATOR_ANIMATION_COMMON_SOURCES)
         result.add(f"res://data/presentation/operator_visuals/{animation_class}.tres")
+        if animation_class in OPERATOR_ANIMATION_PART2_CLASSES:
+            result.update(OPERATOR_ANIMATION_PART2_SOURCES)
         return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
@@ -373,6 +383,7 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
     animation_class = operator_animation_class(logical_id)
     if animation_class is not None:
         generator = digest_row(repo, OPERATOR_ANIMATION_GENERATOR)
+        part2 = animation_class in OPERATOR_ANIMATION_PART2_CLASSES
         return {
             "schema_version": 1,
             "logical_id": logical_id,
@@ -404,11 +415,18 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
             "acceptance": {
                 "state": "human_concept_accepted_runtime_review_pending",
                 "human_accepter": "Poseidon",
-                "accepted_at_utc": OPERATOR_ANIMATION_APPROVED_AT_UTC,
+                "accepted_at_utc": (
+                    OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC
+                    if part2
+                    else OPERATOR_ANIMATION_APPROVED_AT_UTC
+                ),
                 "accepting_commit": None,
-                "source": "FEATURES.json:OPANIM-1",
+                "source": "FEATURES.json:OPANIM-2" if part2 else "FEATURES.json:OPANIM-1",
                 "reason": (
-                    "Poseidon approved the class candidates and premium repair authority; the "
+                    "Poseidon explicitly requested integration of the completed Part 2 package; "
+                    "the two declared sniper direction substitutions remain placeholders pending replacement"
+                    if part2
+                    else "Poseidon approved the class candidates and premium repair authority; the "
                     "current runtime bytes are an internal canary pending exact final release review"
                 ),
             },

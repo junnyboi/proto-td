@@ -8,10 +8,22 @@ from pathlib import Path
 
 from PIL import Image
 
-EXPECTED_CLASSES = {"defender_1", "vanguard_2"}
+EXPECTED_CLASSES = {
+    "caster_1",
+    "caster_2",
+    "defender_1",
+    "defender_2",
+    "sniper_1",
+    "sniper_2",
+    "vanguard_2",
+}
 EXPECTED_STATES = {"idle": 24, "attack": 13}
 EXPECTED_DIRECTIONS = {"se", "ne", "nw", "sw"}
 EXPECTED_CELL = (192, 192)
+EXPECTED_PLACEHOLDERS = {
+    ("sniper_2", "attack", "ne"): "se",
+    ("sniper_2", "attack", "nw"): "sw",
+}
 
 
 def sha256(path: Path) -> str:
@@ -49,6 +61,11 @@ def validate(repo: Path) -> None:
                 if asset_id != expected_id or asset_id in seen:
                     raise ValueError(f"{class_id}/{state}/{direction}: logical id mismatch")
                 seen.add(asset_id)
+                expected_source = EXPECTED_PLACEHOLDERS.get((class_id, state, direction))
+                if bool(asset.get("placeholder", False)) != (expected_source is not None):
+                    raise ValueError(f"{asset_id}: placeholder flag mismatch")
+                if asset.get("placeholder_source_direction") != expected_source:
+                    raise ValueError(f"{asset_id}: placeholder source mismatch")
                 rel_path = str(asset.get("path", ""))
                 if not rel_path.startswith("res://"):
                     raise ValueError(f"{asset_id}: invalid resource path")
@@ -66,8 +83,15 @@ def validate(repo: Path) -> None:
                         raise ValueError(f"{asset_id}: top border is occupied")
                     if alpha.crop((0, rgba.height - 1, rgba.width, rgba.height)).getbbox() is not None:
                         raise ValueError(f"{asset_id}: bottom border is occupied")
-    if len(seen) != 16:
+    if len(seen) != len(EXPECTED_CLASSES) * len(EXPECTED_STATES) * len(EXPECTED_DIRECTIONS):
         raise ValueError(f"operator animation atlas count mismatch: {len(seen)}")
+    known = document.get("known_placeholders")
+    expected_known = [
+        {"logical_id": "op_anim_sniper_2_attack_ne", "source_direction": "se"},
+        {"logical_id": "op_anim_sniper_2_attack_nw", "source_direction": "sw"},
+    ]
+    if known != expected_known:
+        raise ValueError(f"operator animation known placeholder mismatch: {known}")
 
 
 def main() -> int:

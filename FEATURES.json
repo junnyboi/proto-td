@@ -480,9 +480,30 @@
 	    "9b82a71",
 	    "e66ae2b",
 	    "ea3ee91"
-	   ]
-	  }
-	 ],
+   ]
+  },
+  {
+   "id": "OPANIM-2",
+   "title": "Aetheria Part 2 directional operator animations",
+   "acceptance": [
+    "Caster I, Caster II, Protector, Ranger, and Sky Hunter resolve independent SE, NE, NW, and SW idle/attack atlases through the existing view-only animation runtime",
+    "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and no directional mirroring",
+    "exactly Sky Hunter attack NE-from-SE and NW-from-SW remain declared placeholders in source, runtime, manifest, and resource metadata",
+    "catalog and five-hero live-battle scenarios pass headless and windowed with fresh screenshots, model-hash invariance, completion sentinels, and zero render skips"
+   ],
+   "evidence_classes": [
+    "logic",
+    "integration",
+    "visual"
+   ],
+   "status": "pending",
+   "scenarios": [
+    "operator_animation_catalog",
+    "operator_animation_part2"
+   ],
+   "commits": []
+  }
+ ],
  "deviations": [
   {
    "id": "D-SFX",

@@ -64,6 +64,8 @@ func test_admitted_texture_projection_sets_metadata_without_flipping() -> void:
 
 
 func test_catalog_boundary_preserves_legacy_fallback_for_blocked_classes() -> void:
+	for admitted: StringName in [&"caster_1", &"caster_2", &"defender_2", &"sniper_1", &"sniper_2"]:
+		assert_not_null(OperatorVisualCatalog.get_animation(admitted), String(admitted))
 	assert_null(OperatorVisualCatalog.get_animation(&"vanguard_1"))
 	assert_null(OperatorVisualCatalog.get_animation(&"guard_1"))
 	assert_null(OperatorVisualCatalog.get_animation(&"guard_2"))

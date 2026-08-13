@@ -5,7 +5,12 @@ extends RefCounted
 ## and BattleView preserves the incumbent legacy body projection.
 
 const DEFINITIONS: Dictionary = {
+	&"caster_1": preload("res://data/presentation/operator_visuals/caster_1.tres"),
+	&"caster_2": preload("res://data/presentation/operator_visuals/caster_2.tres"),
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
+	&"defender_2": preload("res://data/presentation/operator_visuals/defender_2.tres"),
+	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
+	&"sniper_2": preload("res://data/presentation/operator_visuals/sniper_2.tres"),
 	&"vanguard_2": preload("res://data/presentation/operator_visuals/vanguard_2.tres"),
 }
 
@@ -72,10 +77,14 @@ static func _validate_manifest(
 				errors.append("%s/%s/%s: manifest cell mismatch" % [template_id, family, direction])
 			if not is_equal_approx(Art.fps(logical_id), animation.fps):
 				errors.append("%s/%s/%s: manifest fps mismatch" % [template_id, family, direction])
-			var metadata := Art.metadata(logical_id)
-			if metadata.is_empty():
-				errors.append("%s/%s/%s: missing manifest row" % [template_id, family, direction])
-			elif bool(metadata.get(&"placeholder", true)) != animation.placeholder:
-				errors.append("%s/%s/%s: placeholder mismatch" % [template_id, family, direction])
-			if Art.provenance_sha256(logical_id).length() != 64:
-				errors.append("%s/%s/%s: invalid manifest provenance" % [template_id, family, direction])
+				var metadata := Art.metadata(logical_id)
+				if metadata.is_empty():
+					errors.append("%s/%s/%s: missing manifest row" % [template_id, family, direction])
+				else:
+					var expected_placeholder := animation.is_placeholder(logical_id)
+					if bool(metadata.get(&"placeholder", true)) != expected_placeholder:
+						errors.append("%s/%s/%s: placeholder mismatch" % [template_id, family, direction])
+				if Art.provenance_sha256(logical_id).length() != 64:
+					errors.append(
+						"%s/%s/%s: invalid manifest provenance" % [template_id, family, direction]
+					)
