@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-026 — Scaffold P16.2-PROMO contracts behind the missing strategic base
+
+- Status: blocked
+- Owner: AGENT 2
+- Branch: `agent-2/td-026-p16-2-promo-contracts`
+- Base: `master` at `a26969770a5ed57206d0751c1d0f757ac576f733`
+- Dependencies: P16.2 canonical strategic commands, exactly-once receipts, save-owner API, and schema checkpoint must land on `master`; P16.1/TD-022 is present but deliberately immutable
+- Owned files: `docs/plans/TD-026-p16-2-promo-contracts.md`; `docs/handoffs/TD-026-agent-2-p16-2-promo-contracts.md`; `test/fixtures/p16/promotion_contract_v1.json`; `test/wip_mage_promotion_contract.gd*`; this TD-026 row
+- Do not touch: `sim/**`; `data/**`; current P16 v1 fixtures; `scripts/verify.sh`; `FEATURES.json`; UI/localization/presentation; thresholds; player-facing routes
+- Acceptance: one machine-readable contract pins the two Mage destinations, XP rules, total eleven-template migration, immutable identity, command/receipt semantics, and expected v2 dependencies; a manually invoked GUT suite proves the contract itself and fails only on the absent P16.2 base/schema/promotion APIs; the default repository gate remains green because the test is explicitly WIP and excluded from discovery
+- Required evidence: fresh current-master `scripts/verify.sh` baseline; JSON syntax; GDScript parse/lint; exact manual red signature naming the missing dependency; unchanged default `scripts/verify.sh`; independent plan/contract review
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
