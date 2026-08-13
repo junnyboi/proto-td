@@ -14,11 +14,6 @@ cd "$ROOT"
   exit 2
 }
 current_commit="$(git rev-parse HEAD)"
-current_branch="$(git symbolic-ref --quiet --short HEAD || true)"
-[[ -n "$current_branch" ]] || {
-  echo '[stale-class-registry] probe requires a named branch' >&2
-  exit 2
-}
 
 tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
 old_tree="$tmp_root/old"

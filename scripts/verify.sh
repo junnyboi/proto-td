@@ -195,7 +195,8 @@ if [[ $WINDOWED -eq 1 ]]; then
 fi
 
 if [[ $FULL -eq 1 ]]; then
-  quiet_windows
+	run_rung "R3.8-stale-class-registry" "" 480 scripts/probe_stale_class_registry.sh
+	quiet_windows
   for s in "${SCENARIOS[@]}"; do
     scenario_cmd windowed "$s"
   done
