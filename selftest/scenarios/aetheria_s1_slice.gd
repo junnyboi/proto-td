@@ -150,8 +150,9 @@ func run(h: SelfTestHarness) -> void:
 			ready_text != null
 			and ready_text.text.contains("SKILL READY")
 			and ready_text.get_theme_font_size("font_size") >= 32
+			)
 		)
-	)
+	_check_readiness_report(h, ready_text, "Shock Trooper")
 	await _capture_still(h, "skill_ready", model)
 	await h.click_view(view.call("cell_center", VANGUARD_CELL))
 	h.check(
@@ -195,6 +196,7 @@ func run(h: SelfTestHarness) -> void:
 	await _settle_presentation(h, model, "tick 801 dense state")
 	_check_enemy_fixture(h, view, manifest, model)
 	_check_route_core_visible(h, view, "dense tick 801")
+	_check_readiness_report(h, ready_text, "Swordmaster")
 	await _capture_still(h, "dense_tick_801", model)
 
 	await _step_to(h, model, 901)
@@ -592,6 +594,21 @@ func _check_results(h: SelfTestHarness, results: Control, model: BattleModel) ->
 func _large_enough(control: Control) -> bool:
 	var size := control.get_global_rect().size
 	return size.x >= 44.0 and size.y >= 44.0
+
+
+func _check_readiness_report(h: SelfTestHarness, report: Label, operator_name: String) -> void:
+	var viewport := Rect2(Vector2.ZERO, Vector2(PROOF_VIEWPORT))
+	var report_rect := report.get_global_rect() if report != null else Rect2()
+	h.check(
+		"%s readiness report is fully inside the viewport" % operator_name,
+		(
+			report != null
+			and report.is_visible_in_tree()
+			and report.text == "%s — SKILL READY" % operator_name
+			and viewport.encloses(report_rect)
+		),
+		"%s in %s" % [report_rect, viewport],
+	)
 
 
 func _capture_still(h: SelfTestHarness, shot_name: String, model: BattleModel) -> void:

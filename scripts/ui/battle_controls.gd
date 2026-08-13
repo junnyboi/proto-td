@@ -15,6 +15,9 @@ extends Control
 
 const FONT_SIZE := 24
 const REPORT_FONT_SIZE := 32
+const REPORT_MAX_WIDTH := 720.0
+const REPORT_SIDE_MARGIN := 16.0
+const REPORT_TOP := 116.0
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
 const PAUSED_LABEL_MIN_WIDTH := 130.0  # fixed slot: no row re-layout on toggle
 
@@ -53,7 +56,7 @@ func relayout() -> void:
 	if box != null:
 		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
 	if _readiness_report != null:
-		_readiness_report.position = Vector2(size.x - 316.0, 116.0)
+		_layout_readiness_report()
 	if _confirm != null and _confirm.visible:
 		_confirm.position = (size - _confirm.size) * 0.5
 
@@ -96,11 +99,19 @@ func _build_readiness_report() -> void:
 	_readiness_report.add_theme_color_override("font_shadow_color", Color("111827"))
 	_readiness_report.add_theme_constant_override("shadow_offset_x", 2)
 	_readiness_report.add_theme_constant_override("shadow_offset_y", 2)
-	_readiness_report.size = Vector2(300.0, 44.0)
-	_readiness_report.position = Vector2(size.x - 316.0, 116.0)
 	_readiness_report.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_readiness_report.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_readiness_report)
+	_layout_readiness_report()
+
+
+func _layout_readiness_report() -> void:
+	var report_width := minf(REPORT_MAX_WIDTH, maxf(0.0, size.x - REPORT_SIDE_MARGIN * 2.0))
+	_readiness_report.size = Vector2(report_width, 44.0)
+	_readiness_report.position = Vector2(
+		size.x - REPORT_SIDE_MARGIN - report_width,
+		REPORT_TOP,
+	)
 
 
 func _build_confirm() -> void:
