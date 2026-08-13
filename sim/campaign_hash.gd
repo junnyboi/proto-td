@@ -27,6 +27,16 @@ static func of_core_snapshot(data: Variant, context: Dictionary) -> Dictionary:
 	return _hash_encoded(_bytes_of_normalized(normalized["value"], true))
 
 
+## Private performance seam: callers must have just accepted this exact value
+## through CampaignCodec.normalize_data. It changes no hash grammar or bytes.
+static func _of_normalized_data(data: Dictionary) -> Dictionary:
+	return _hash_encoded(_bytes_of_normalized(data, false))
+
+
+static func _of_normalized_core(data: Dictionary) -> Dictionary:
+	return _hash_encoded(_bytes_of_normalized(data, true))
+
+
 static func bytes_of(
 	data: Variant,
 	context: Dictionary,
@@ -219,6 +229,194 @@ static func _append_i64(out: PackedByteArray, value: int) -> void:
 		out.append((value >> shift) & 0xFF)
 
 
+static func derive_transaction(
+	ticket: Variant,
+	outcome: Variant,
+	state_before: Variant,
+	context: Dictionary,
+) -> Dictionary:
+	var encoded_ticket := CampaignCodec.encode_ticket(ticket)
+	if not encoded_ticket["accepted"]:
+		return _derive_reject(encoded_ticket["error_code"])
+	var encoded_outcome := CampaignCodec.encode_outcome(outcome)
+	if not encoded_outcome["accepted"]:
+		return _derive_reject(encoded_outcome["error_code"])
+	var before := CampaignCodec.normalize_data(state_before, context)
+	if not before["accepted"]:
+		return _derive_reject(&"invalid_transaction_state")
+	return _derive_normalized_transaction(
+		encoded_ticket["value"], encoded_outcome["value"], before["value"], context, true,
+	)
+
+
+static func _derive_certified_transaction(
+	ticket: Variant,
+	outcome: Variant,
+	state_before: Dictionary,
+	context: Dictionary,
+) -> Dictionary:
+	var encoded_ticket := CampaignCodec.encode_ticket(ticket)
+	if not encoded_ticket["accepted"]:
+		return _derive_reject(encoded_ticket["error_code"])
+	var encoded_outcome := CampaignCodec.encode_outcome(outcome)
+	if not encoded_outcome["accepted"]:
+		return _derive_reject(encoded_outcome["error_code"])
+	return _derive_normalized_transaction(
+		encoded_ticket["value"], encoded_outcome["value"], state_before, context, false,
+	)
+
+
+static func _derive_normalized_transaction(
+	ticket_value: Dictionary,
+	outcome_value: Dictionary,
+	before: Dictionary,
+	context: Dictionary,
+	full_after_validation: bool,
+) -> Dictionary:
+	var identity := _derive_identity(ticket_value, outcome_value, before)
+	if not identity["accepted"]:
+		return _derive_reject(identity["error_code"])
+	var derived := _derive_fresh_receipt(
+		ticket_value, outcome_value, before, context, full_after_validation,
+	)
+	if not derived["accepted"]:
+		return _derive_reject(derived["error_code"])
+	var validated := _validate_normalized_transaction(
+		ticket_value, outcome_value, derived["resolution"], before,
+		derived["state_after"], context,
+	)
+	if not validated["accepted"]:
+		return _derive_reject(validated["error_code"])
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"resolution": derived["resolution"],
+		"state_after": derived["state_after"],
+	}
+
+
+static func _derive_identity(
+	ticket: Dictionary,
+	outcome: Dictionary,
+	before: Dictionary,
+) -> Dictionary:
+	if ticket["campaign_uid"] != outcome["campaign_uid"]:
+		return _reject(&"transaction_campaign_mismatch")
+	if ticket["campaign_uid"] != before["campaign_uid"]:
+		return _reject(&"transaction_campaign_mismatch")
+	if ticket["attempt_id"] != outcome["attempt_id"]:
+		return _reject(&"transaction_identity_mismatch")
+	if ticket["stage_id"] != outcome["stage_id"]:
+		return _reject(&"transaction_identity_mismatch")
+	if ticket["manifest_hash"] != outcome["manifest_hash"]:
+		return _reject(&"transaction_manifest_mismatch")
+	if not _manifest_matches_outcome(ticket["manifest"], outcome["heroes"]):
+		return _reject(&"transaction_roster_mismatch")
+	if int(before["next_attempt_id"]) != int(ticket["attempt_id"]) + 1:
+		return _reject(&"transaction_attempt_counter_mismatch")
+	var owned := _heroes_by_id(before["heroes"])
+	for row: Dictionary in ticket["manifest"]:
+		var hero: Dictionary = owned.get(row["battle_id"], {})
+		if hero.is_empty() or hero["operator_def_id"] != row["operator_def_id"]:
+			return _reject(&"transaction_roster_mismatch")
+		if hero["life_status"] != "ready" or hero["death"] != null:
+			return _reject(&"transaction_roster_mismatch")
+	return _accept()
+
+
+static func _derive_fresh_receipt(
+	ticket: Dictionary,
+	outcome: Dictionary,
+	before: Dictionary,
+	context: Dictionary,
+	full_after_validation: bool,
+) -> Dictionary:
+	var resolution_index := int(before["next_resolution_index"])
+	var stars_before := _stage_stars(before, ticket["stage_id"])
+	var stars_after := stars_before
+	if outcome["result"] == "clear":
+		stars_after = maxi(stars_before, int(outcome["stars"]))
+	var expected := _transaction_working_copy(before)
+	expected["save_revision"] = int(before["save_revision"]) + 1
+	expected["next_resolution_index"] = resolution_index + 1
+	_set_stage_stars(
+		expected["stage_stars"], ticket["stage_id"], stars_after,
+		resolution_index, int(ticket["attempt_id"]), int(outcome["terminal_tick"]),
+	)
+	var draft := {
+		"resolution_index": resolution_index,
+		"attempt_id": ticket["attempt_id"],
+		"stage_id": ticket["stage_id"],
+		"terminal_reason": outcome["terminal_reason"],
+	}
+	var rewards := _derive_rewards_and_heroes(before, expected, outcome, draft, context)
+	if not rewards["accepted"]:
+		return rewards
+	var dead := _apply_casualties(expected, outcome, draft)
+	if not dead["accepted"]:
+		return dead
+	var unlocks := _expected_unlocks(before, rewards["authored"])
+	expected["unlocked_traps"] = unlocks["traps"]
+	expected["unlocked_spells"] = unlocks["spells"]
+	var before_hash := CampaignHash._of_normalized_core(before)
+	var after_hash := CampaignHash._of_normalized_core(expected)
+	if not before_hash["accepted"] or not after_hash["accepted"]:
+		return _reject(&"invalid_transaction_state")
+	var resolution := {
+		"schema_version": CampaignCodec.SAVE_VERSION,
+		"resolution_index": resolution_index,
+		"campaign_uid": ticket["campaign_uid"],
+		"attempt_id": ticket["attempt_id"],
+		"stage_id": ticket["stage_id"],
+		"outcome_hash": outcome["outcome_hash"],
+		"result": outcome["result"],
+		"terminal_reason": outcome["terminal_reason"],
+		"terminal_tick": outcome["terminal_tick"],
+		"stars_before": stars_before,
+		"stars_after": stars_after,
+		"rewards_granted": rewards["rewards"],
+		"created_hero_ids": rewards["created"],
+		"dead_hero_ids": dead["value"],
+		"marks_before": before["marks"],
+		"marks_after": expected["marks"],
+		"strategic_body_hash_before": before_hash["hex"],
+		"strategic_body_hash_after": after_hash["hex"],
+	}
+	expected["resolution_anchor"] = {
+		"resolution_index": resolution_index,
+		"save_revision_after": expected["save_revision"],
+		"before_core": _core_snapshot(before),
+		"after_core": _core_snapshot(expected),
+		"strategic_body_hash_before": before_hash["hex"],
+		"strategic_body_hash_after": after_hash["hex"],
+	}
+	expected["last_resolution"] = resolution.duplicate(true)
+	var normalized_resolution := CampaignCodec.encode_resolution(resolution)
+	if not normalized_resolution["accepted"]:
+		return _reject(&"invalid_transaction_state")
+	var after_value := expected
+	if full_after_validation:
+		var normalized_after := CampaignCodec.normalize_data(expected, context)
+		if not normalized_after["accepted"]:
+			return _reject(&"invalid_transaction_state")
+		after_value = normalized_after["value"]
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"resolution": normalized_resolution["value"],
+		"state_after": after_value,
+	}
+
+
+static func _derive_reject(code: StringName) -> Dictionary:
+	return {
+		"accepted": false,
+		"error_code": code,
+		"resolution": null,
+		"state_after": null,
+	}
+
+
 
 static func validate_transaction(
 	ticket: Variant,
@@ -238,19 +436,31 @@ static func validate_transaction(
 	var after := CampaignCodec.normalize_data(state_after, context)
 	if not before["accepted"] or not after["accepted"]:
 		return _reject(&"invalid_transaction_state")
-	var identity := _validate_identity(
+	return _validate_normalized_transaction(
 		encoded_ticket["value"], encoded_outcome["value"], encoded_resolution["value"],
+		before["value"], after["value"], context,
+	)
+
+
+static func _validate_normalized_transaction(
+	ticket: Dictionary,
+	outcome: Dictionary,
+	resolution: Dictionary,
+	before: Dictionary,
+	after: Dictionary,
+	context: Dictionary,
+) -> Dictionary:
+	var identity := _validate_identity(
+		ticket, outcome, resolution,
 	)
 	if not identity["accepted"]:
 		return identity
 	var prior := _validate_before(
-		encoded_ticket["value"], encoded_resolution["value"], before["value"], context,
+		ticket, resolution, before,
 	)
 	if not prior["accepted"]:
 		return prior
-	return _validate_after(
-		encoded_outcome["value"], encoded_resolution["value"], before["value"], after["value"], context,
-	)
+	return _validate_after(outcome, resolution, before, after, context)
 
 
 static func _validate_identity(
@@ -279,7 +489,6 @@ static func _validate_before(
 	ticket: Dictionary,
 	resolution: Dictionary,
 	before: Dictionary,
-	context: Dictionary,
 ) -> Dictionary:
 	if before["campaign_uid"] != ticket["campaign_uid"]:
 		return _reject(&"transaction_campaign_mismatch")
@@ -291,7 +500,7 @@ static func _validate_before(
 		return _reject(&"transaction_marks_before_mismatch")
 	if _stage_stars(before, ticket["stage_id"]) != int(resolution["stars_before"]):
 		return _reject(&"transaction_stars_before_mismatch")
-	var before_hash := CampaignHash.of_core(before, context)
+	var before_hash := CampaignHash._of_normalized_core(before)
 	if not before_hash["accepted"]:
 		return _reject(&"transaction_hash_before_mismatch")
 	if before_hash["hex"] != resolution["strategic_body_hash_before"]:
@@ -316,16 +525,11 @@ static func _validate_after(
 	var derived := _derive_expected_after(outcome, resolution, before, context)
 	if not derived["accepted"]:
 		return derived
-	var body_hash := CampaignHash.of_core(derived["value"], context)
+	var body_hash := CampaignHash._of_normalized_core(derived["value"])
 	if not body_hash["accepted"] or body_hash["hex"] != resolution["strategic_body_hash_after"]:
 		return _reject(&"transaction_hash_after_mismatch")
 	var expected: Dictionary = derived["value"]
-	expected["last_resolution"] = resolution.duplicate(true)
-	var expected_bytes := CampaignCodec.encode_data(expected, context)
-	var actual_bytes := CampaignCodec.encode_data(after, context)
-	if not expected_bytes["accepted"] or not actual_bytes["accepted"]:
-		return _reject(&"invalid_transaction_state")
-	if expected_bytes["bytes"] != actual_bytes["bytes"]:
+	if expected != after:
 		return _reject(&"transaction_after_state_mismatch")
 	return _accept()
 
@@ -336,7 +540,7 @@ static func _derive_expected_after(
 	before: Dictionary,
 	context: Dictionary,
 ) -> Dictionary:
-	var expected: Dictionary = before.duplicate(true)
+	var expected := _transaction_working_copy(before)
 	expected["save_revision"] = int(before["save_revision"]) + 1
 	expected["next_resolution_index"] = int(resolution["resolution_index"]) + 1
 	expected["marks"] = int(resolution["marks_after"])
@@ -437,12 +641,14 @@ static func _apply_casualties(
 	outcome: Dictionary,
 	resolution: Dictionary,
 ) -> Dictionary:
-	var heroes := _heroes_by_id(expected["heroes"])
 	var dead: Array[String] = []
 	for row: Dictionary in outcome["heroes"]:
 		if not bool(row["fell"]):
 			continue
-		var hero: Dictionary = heroes[row["hero_id"]]
+		var hero_index := _hero_index(expected["heroes"], String(row["hero_id"]))
+		if hero_index < 0:
+			return _reject(&"transaction_casualty_mismatch")
+		var hero: Dictionary = expected["heroes"][hero_index].duplicate(true)
 		hero["life_status"] = "dead"
 		hero["death"] = {
 			"resolution_index": resolution["resolution_index"],
@@ -451,6 +657,7 @@ static func _apply_casualties(
 			"terminal_reason": resolution["terminal_reason"],
 				"terminal_tick": outcome["terminal_tick"],
 		}
+		expected["heroes"][hero_index] = hero
 		dead.append(String(row["hero_id"]))
 	return {"accepted": true, "error_code": &"", "value": dead}
 
@@ -515,8 +722,25 @@ static func _heroes_by_id(rows: Array) -> Dictionary:
 	return result
 
 
+static func _hero_index(rows: Array, hero_id: String) -> int:
+	for index: int in rows.size():
+		if rows[index]["hero_id"] == hero_id:
+			return index
+	return -1
+
+
+static func _transaction_working_copy(data: Dictionary) -> Dictionary:
+	var working := data.duplicate()
+	working["stage_stars"] = (data["stage_stars"] as Array).duplicate(true)
+	working["unlocked_traps"] = (data["unlocked_traps"] as Array).duplicate()
+	working["unlocked_spells"] = (data["unlocked_spells"] as Array).duplicate()
+	working["offers"] = (data["offers"] as Array).duplicate(true)
+	working["heroes"] = (data["heroes"] as Array).duplicate()
+	return working
+
+
 static func _core_snapshot(data: Dictionary) -> Dictionary:
-	var snapshot: Dictionary = data.duplicate(true)
+	var snapshot: Dictionary = data.duplicate()
 	snapshot.erase("resolution_anchor")
 	snapshot.erase("last_resolution")
 	return snapshot

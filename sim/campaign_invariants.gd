@@ -12,6 +12,7 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	var reward_counts := {}
 	var reward_stages: Array[int] = []
 	var death_groups := {}
+	var operator_history := {}
 	var clear_resolutions := _clear_resolutions(data["stage_stars"])
 	var latest_deaths: Array[String] = []
 	var receipt: Variant = data["last_resolution"]
@@ -60,8 +61,8 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 				return _reject(&"hero_source_history_mismatch")
 			if source == "reward" and clear_resolutions.get(source_id, -1) != created_after:
 				return _reject(&"reward_history_order_mismatch")
-			if source == "recovery" and not _recovery_reachable(
-				data["heroes"], position, operator_id, source_id,
+			if source == "recovery" and not _recovery_reachable_indexed(
+				operator_history.get(operator_id, {}), source_id,
 				created_after, context, clear_resolutions,
 			):
 				return _reject(&"recovery_not_required")
@@ -74,6 +75,7 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 		)
 		if not death_check["accepted"]:
 			return death_check
+		_update_operator_history(operator_history, hero)
 	if starter_seen.size() != STARTERS.size():
 		return _reject(&"starter_provenance_mismatch")
 	if int(data["marks"]) != _expected_marks(data["offers"]):
@@ -120,6 +122,46 @@ static func _recovery_reachable(
 		and prerequisite_clear <= created_after
 		and created_after < source_clear
 	)
+
+
+static func _recovery_reachable_indexed(
+	history: Dictionary,
+	stage_id: String,
+	created_after: int,
+	context: Dictionary,
+	clear_resolutions: Dictionary,
+) -> bool:
+	var stage_index: int = context["stage_order"].find(stage_id)
+	var prerequisite_clear := 0
+	if stage_index > 0:
+		var prerequisite: String = context["stage_order"][stage_index - 1]
+		prerequisite_clear = int(clear_resolutions.get(prerequisite, U63_MAX))
+	var source_clear := int(clear_resolutions.get(stage_id, U63_MAX))
+	return (
+		bool(history.get("seen", false))
+		and not bool(history.get("has_ready", false))
+		and int(history.get("earliest_death_resolution", U63_MAX)) <= created_after
+		and prerequisite_clear <= created_after
+		and created_after < source_clear
+	)
+
+
+static func _update_operator_history(history: Dictionary, hero: Dictionary) -> void:
+	var operator_id := String(hero["operator_def_id"])
+	var entry: Dictionary = history.get(operator_id, {
+		"seen": false,
+		"has_ready": false,
+		"earliest_death_resolution": U63_MAX,
+	})
+	entry["seen"] = true
+	if hero["life_status"] == "ready":
+		entry["has_ready"] = true
+	elif hero["death"] != null:
+		entry["earliest_death_resolution"] = min(
+			int(entry["earliest_death_resolution"]),
+			int(hero["death"]["resolution_index"]),
+		)
+	history[operator_id] = entry
 
 
 static func _record_death(
@@ -309,8 +351,8 @@ static func _validate_latest_receipt(
 		return _reject(&"resolution_anchor_transition_mismatch")
 	if int(after_core["marks"]) != int(receipt["marks_after"]):
 		return _reject(&"resolution_anchor_transition_mismatch")
-	var anchored_before := CampaignHash.of_core_snapshot(before_core, context)
-	var anchored_after := CampaignHash.of_core_snapshot(after_core, context)
+	var anchored_before := CampaignHash._of_normalized_core(before_core)
+	var anchored_after := CampaignHash._of_normalized_core(after_core)
 	if not anchored_before["accepted"] or not anchored_after["accepted"]:
 		return _reject(&"resolution_anchor_hash_mismatch")
 	if anchored_before["hex"] != anchor["strategic_body_hash_before"]:

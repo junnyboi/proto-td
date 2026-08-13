@@ -79,9 +79,12 @@ res://test/test_hero_state.gd 3/3 passed.
 res://test/test_roster_state.gd 5/5 passed.
 res://test/test_campaign_state_p16.gd 11/11 passed.
 res://test/test_game_campaign_compat.gd 2/2 passed.
+res://test/test_campaign_commands.gd 12/12 passed.
+res://test/test_campaign_resolution.gd 10/10 passed.
+res://test/test_campaign_save_store.gd 22/22 passed.
 EOF
 }
-P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_game_campaign_compat.gd\n2/2 passed.'
+P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_game_campaign_compat.gd\n2/2 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
 P16_GATE_GOOD=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_BAD=$'res://test/test_dp_economy.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_INJECTED=$'res://test/test_p16_contract_fixtures.gd\nWARNING: 15/15 passed.\n15/15 passed.\n14/15 passed.\n'"$P16_GATE_TAIL"
@@ -99,6 +102,49 @@ if p16_suite_gate "$P16_GATE_CSI"; then
 	echo '[verify] P16 suite gate self-test accepted a CSI-prefixed wrong summary' >&2
 	exit 2
 fi
+property_suite_gate() {
+	local text="$1" segment="$2" clean expected actual
+	clean=$(awk '{ gsub(/\033\[[0-?]*[ -\/]*[@-~]/, ""); print }' <<< "$text")
+	[[ "$(grep -Ec '^[0-9]+/[0-9]+ passed\.$' <<< "$clean")" -eq 1 ]] || return 1
+	[[ "$(grep -Fxc '2/2 passed.' <<< "$clean")" -eq 1 ]] || return 1
+	case "$segment" in
+		subsets)
+			expected=$'    P16_RECOVERY_SUBSETS=296\n    P16_RECOVERY_ACCEPTS=812'
+			;;
+		first) expected='    P16_ROSTER_SEGMENT=0:512' ;;
+		second) expected='    P16_ROSTER_SEGMENT=512:768' ;;
+		third)
+			expected=$'    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=768:1019'
+			;;
+		*) return 1 ;;
+	esac
+	actual=$(grep -E '^    P16_' <<< "$clean" || true)
+	[[ "$actual" == "$expected" ]]
+}
+PROPERTY_GATE_SUBSETS=$'2/2 passed.\n    P16_RECOVERY_SUBSETS=296\n    P16_RECOVERY_ACCEPTS=812'
+PROPERTY_GATE_FIRST=$'2/2 passed.\n    P16_ROSTER_SEGMENT=0:512'
+PROPERTY_GATE_SECOND=$'2/2 passed.\n    P16_ROSTER_SEGMENT=512:768'
+PROPERTY_GATE_THIRD=$'2/2 passed.\n    P16_ROSTER_LIMIT_CYCLES=1019\n    P16_ROSTER_LIMIT_RENAMES=1024\n    P16_ROSTER_SEGMENT=768:1019'
+property_suite_gate "$PROPERTY_GATE_SUBSETS" subsets || exit 2
+property_suite_gate "$PROPERTY_GATE_FIRST" first || exit 2
+property_suite_gate "$PROPERTY_GATE_SECOND" second || exit 2
+property_suite_gate "$PROPERTY_GATE_THIRD" third || exit 2
+if property_suite_gate "$PROPERTY_GATE_THIRD"$'\n    P16_ROSTER_LIMIT_RENAMES=1024' third; then
+	echo '[verify] P16 property gate accepted a duplicate sentinel' >&2
+	exit 2
+fi
+if property_suite_gate "${PROPERTY_GATE_THIRD/1019/1018}" third; then
+	echo '[verify] P16 property gate accepted a wrong cycle count' >&2
+	exit 2
+fi
+property_suite_gate $'\e[4m'"$PROPERTY_GATE_SUBSETS"$'\e[0m' subsets || {
+	echo '[verify] P16 property gate rejected valid ANSI-decorated output' >&2
+	exit 2
+}
+if property_suite_gate "$PROPERTY_GATE_FIRST"$'\n\e[2K1/2 passed.' first; then
+	echo '[verify] P16 property gate accepted a CSI-prefixed extra summary' >&2
+	exit 2
+fi
 run_rung() { # rung_name artifact_hint timeout_s cmd...
   local rung="$1" artifact="$2" budget="$3"
   shift 3
@@ -107,7 +153,7 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
   out=$(timeout "$budget" "$@" 2>&1)
   code=$?
   t1=$(date +%s)
-  if [[ "$rung" == "R3-gut" && $code -eq 0 ]]; then
+	if [[ "$rung" == "R3-gut" && $code -eq 0 ]]; then
     local tests
     tests=$(grep -Eo 'Tests[[:space:]]+[0-9]+' <<< "$out" | tail -1 | awk '{print $2}')
     if [[ -z "$tests" || "$tests" -eq 0 ]]; then
@@ -118,11 +164,27 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
       code=1
       out+=$'\n[verify] GUT reported framework, parser, or discovery errors'
     fi
-    if ! p16_suite_gate "$out"; then
-      code=1
-      out+=$'\n[verify] required P16 suite-specific exact count missing'
-    fi
-  fi
+		if ! p16_suite_gate "$out"; then
+			code=1
+			out+=$'\n[verify] required P16 suite-specific exact count missing'
+		fi
+	fi
+	if [[ "$rung" == R3.1-p16-properties-* && $code -eq 0 ]]; then
+			local property_segment="${rung##*-}"
+			if ! property_suite_gate "$out" "$property_segment"; then
+			code=1
+			out+=$'\n[verify] P16 property count or exact sentinel missing/duplicated'
+		fi
+	fi
+	if [[ "$rung" =~ ^R4[ab]-strategic_verbs$ && $code -eq 0 ]]; then
+		local clean sentinel_count
+		clean=$(awk '{ gsub(/\033\[[0-?]*[ -\/]*[@-~]/, ""); print }' <<< "$out")
+		sentinel_count=$(grep -Fxc 'STRATEGIC_VERBS_COMPLETED' <<< "$clean")
+		if [[ "$sentinel_count" -ne 1 ]]; then
+			code=1
+			out+=$'\n[verify] strategic_verbs sentinel missing or duplicated'
+		fi
+	fi
   if [[ $code -ne 0 ]]; then
     echo "==== $rung FAILED (exit $code) ===="
     echo "$out"
@@ -143,11 +205,24 @@ fi
 
 # R3: GUT unit tests
 if [[ -z "$ONLY" ]]; then
-	run_rung "R3-gut" "" 300 "$GODOT" --headless -d -s addons/gut/gut_cmdln.gd \
-	  -gdir=res://test -ginclude_subdirs -gexit
+		GUT_ARGS=()
+		while read -r test_path; do
+			[[ "$test_path" == "test/test_campaign_recovery_property.gd" ]] && continue
+			GUT_ARGS+=("-gtest=res://$test_path")
+		done < <(find test -type f -name 'test_*.gd' | sort)
+		run_rung "R3-gut" "" 300 "$GODOT" --headless -d \
+		  -s addons/gut/gut_cmdln.gd "${GUT_ARGS[@]}" -gexit
+			for property_segment in subsets first second third; do
+				run_rung "R3.1-p16-properties-$property_segment" "" 300 env \
+				  P16_PROPERTY_SEGMENT="$property_segment" "$GODOT" --headless -d \
+				  -s addons/gut/gut_cmdln.gd \
+				  -gtest=res://test/test_campaign_recovery_property.gd -gexit
+			done
 	run_rung "R3.5-replay" "artifacts/replay/summary.json" 35 scripts/replay_check.sh
-	run_rung "R3.5-model-roster" "artifacts/model-roster/summary.json" 35 \
-	  scripts/model_roster_check.sh
+		run_rung "R3.5-model-roster" "artifacts/model-roster/summary.json" 35 \
+		  scripts/model_roster_check.sh
+		run_rung "R3.5-strategic-verbs" "artifacts/strategic-verbs/summary.json" 35 \
+		  scripts/strategic_verbs_check.sh
   run_rung "R3.6-filesystem-native" "artifacts/filesystem/native.json" 35 \
     scripts/probe_filesystem.sh "$GODOT" --out=artifacts/filesystem/native.json
   run_rung "R3.7-filesystem-web" "artifacts/filesystem/web/result.json" 360 \
@@ -177,13 +252,25 @@ SCENARIOS=()
 	echo '[verify] required model_roster_probe scenario missing' >&2
 	finish 1
 }
+[[ -f selftest/scenarios/strategic_verbs.gd ]] || {
+	echo '[verify] required strategic_verbs scenario missing' >&2
+	finish 1
+}
 for f in selftest/scenarios/*.gd; do
   [[ -e "$f" ]] || continue
   name="$(basename "$f" .gd)"
   [[ "$name" == wip_* ]] && continue
   if [[ -n "$ONLY" && "$name" != "$ONLY" ]]; then continue; fi
-  SCENARIOS+=("$name")
+	SCENARIOS+=("$name")
 done
+strategic_count=0
+for s in "${SCENARIOS[@]}"; do
+	[[ "$s" == "strategic_verbs" ]] && strategic_count=$((strategic_count + 1))
+done
+if [[ -z "$ONLY" && "$strategic_count" -ne 1 ]]; then
+	echo '[verify] strategic_verbs scenario discovery count is not exactly one' >&2
+	finish 1
+fi
 for s in "${SCENARIOS[@]}"; do
   scenario_cmd headless "$s"
 done

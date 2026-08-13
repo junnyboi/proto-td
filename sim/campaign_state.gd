@@ -1,9 +1,9 @@
 class_name CampaignState
-extends RefCounted
+extends "res://sim/campaign_strategic_commands.gd"
 
 ## Canonical model-only P16 aggregate (D16-08). The private value is always a
-## whole-document-normalized CampaignSave data object. P16.1 exposes no accepted
-## strategic mutation commands; every returned collection is a defensive view.
+## whole-document-normalized CampaignSave data object. P16.2 commands construct
+## validated prospective states; durability remains external in CampaignMutation.
 
 const P16_STARTERS: Array[StringName] = [
 	&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
@@ -14,8 +14,6 @@ const P16_OFFER := {
 	"cost": 80,
 }
 
-var _data: Dictionary = {}
-var _context: Dictionary = {}
 
 
 static func create(
@@ -33,7 +31,7 @@ static func create(
 	)
 	if not fresh["accepted"]:
 		return fresh
-	return _restore_normalized(fresh["value"], environment["context"])
+	return _public_restore(_restore_normalized(fresh["value"], environment))
 
 
 static func restore(
@@ -48,7 +46,7 @@ static func restore(
 	var normalized := CampaignCodec.normalize_data(data, environment["context"])
 	if not normalized["accepted"]:
 		return normalized
-	return _restore_normalized(normalized["value"], environment["context"])
+	return _public_restore(_restore_normalized(normalized["value"], environment))
 
 
 func campaign_uid() -> String:
@@ -110,7 +108,7 @@ func encode_data() -> Dictionary:
 
 
 func strategic_hash() -> Dictionary:
-	return CampaignHash.of_data(_data, _context)
+	return cached_strategic_hash()
 
 
 func campaign_stage_ids() -> Array[StringName]:
@@ -216,8 +214,12 @@ static func _build_environment(
 		"accepted": true,
 		"error_code": &"",
 		"context": context,
+		"command_context": _build_command_context(stages),
 		"starting": starting,
 		"definition": definition["value"],
+		"campaign_def_resource": campaign_def,
+		"catalogs": canonical_catalogs,
+		"stage_defs": stages,
 	}
 
 
@@ -273,17 +275,149 @@ static func _fresh_data(
 	}
 
 
-static func _restore_normalized(data: Dictionary, context: Dictionary) -> Dictionary:
+static func _restore_normalized(data: Dictionary, environment: Dictionary) -> Dictionary:
+	var context: Dictionary = environment["context"]
 	var normalized := CampaignCodec.normalize_data(data, context)
 	if not normalized["accepted"]:
 		return normalized
 	var state := CampaignState.new()
-	state._data = (normalized["value"] as Dictionary).duplicate(true)
-	state._context = context.duplicate(true)
+	state._data = normalized["value"]
+	state._context = context
+	state._command_context = environment["command_context"]
+	var definition: CampaignDef = environment["campaign_def_resource"]
+	var catalogs: Dictionary = (environment["catalogs"] as Dictionary).duplicate(true)
+	var stage_defs: Array = (environment["stage_defs"] as Array).duplicate()
+	state._campaign_def = definition
+	state._catalogs = catalogs
+	state._stage_defs = stage_defs
+	state._restore_callable = func(value: Dictionary) -> Dictionary:
+		return CampaignState._restore_normalized(value, environment)
+	state._certified_restore_callable = func(value: Dictionary) -> Dictionary:
+		return CampaignState._restore_certified(value, environment)
+	var authority := _new_pending_authority()
+	state._pending_control = authority["control"]
+	state.seed_validated_caches()
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": state,
+		"pending_issue": authority["issue"],
+	}
+
+
+static func _restore_certified(data: Dictionary, environment: Dictionary) -> Dictionary:
+	var state := CampaignState.new()
+	state._data = data
+	state._context = environment["context"]
+	state._command_context = environment["command_context"]
+	state._campaign_def = environment["campaign_def_resource"]
+	state._catalogs = environment["catalogs"]
+	state._stage_defs = environment["stage_defs"]
+	state._restore_callable = func(value: Dictionary) -> Dictionary:
+		return CampaignState._restore_normalized(value, environment)
+	state._certified_restore_callable = func(value: Dictionary) -> Dictionary:
+		return CampaignState._restore_certified(value, environment)
+	var authority := _new_pending_authority()
+	state._pending_control = authority["control"]
+	state.seed_validated_caches()
+	return {
+		"accepted": true, "error_code": &"", "value": state,
+		"pending_issue": authority["issue"],
+	}
+
+
+static func _new_pending_authority() -> Dictionary:
+	var status_cell := RefCounted.new()
+	status_cell.set_meta(&"status", CampaignPendingAttempt.ABORTED)
+	var record := {
+		"pending": null,
+		"status": CampaignPendingAttempt.ABORTED,
+		"attempt_id": 0,
+		"stage_id": &"",
+		"manifest_hash": "",
+		"committed_hash": "",
+	}
+	var control := func(action: StringName, pending: Variant) -> Dictionary:
+		var same: bool = pending != null and pending == record["pending"]
+		var status: StringName = record["status"]
+		var active: bool = status in [CampaignPendingAttempt.ACTIVE, CampaignPendingAttempt.RESERVED]
+		match action:
+			&"has": return {"accepted": record["pending"] != null and active}
+			&"current": return {"accepted": active, "pending": record["pending"]}
+			&"validate":
+				if not same or not active:
+					return {"accepted": false, "status": status}
+				var candidate: CampaignPendingAttempt = pending
+				var exact: bool = (
+					candidate.attempt_id() == record["attempt_id"]
+					and candidate.stage_id() == record["stage_id"]
+					and candidate.manifest_hash() == record["manifest_hash"]
+					and candidate.committed_strategic_hash() == record["committed_hash"]
+				)
+				return {"accepted": exact, "status": status}
+			&"reserve":
+				if not same or status != CampaignPendingAttempt.ACTIVE:
+					return {"accepted": false, "status": status}
+				record["status"] = CampaignPendingAttempt.RESERVED
+				status_cell.set_meta(&"status", record["status"])
+				return {"accepted": true, "status": record["status"]}
+			&"release":
+				if not same or status != CampaignPendingAttempt.RESERVED:
+					return {"accepted": false, "status": status}
+				record["status"] = CampaignPendingAttempt.ACTIVE
+				status_cell.set_meta(&"status", record["status"])
+				return {"accepted": true, "status": record["status"]}
+			&"resolve":
+				if not same or status != CampaignPendingAttempt.RESERVED:
+					return {"accepted": false, "status": status}
+				record["status"] = CampaignPendingAttempt.RESOLVED
+				status_cell.set_meta(&"status", record["status"])
+				return {"accepted": true, "status": record["status"]}
+			&"abort":
+				if not same or not active:
+					return {"accepted": false, "status": status}
+				record["status"] = CampaignPendingAttempt.ABORTED
+				status_cell.set_meta(&"status", record["status"])
+				return {"accepted": true, "status": record["status"]}
+		return {"accepted": false, "status": status}
+	var issue := func(ticket: CampaignBattleTicket, committed_hash: String) -> Dictionary:
+		if record["pending"] != null or ticket == null or committed_hash.is_empty():
+			return {"accepted": false, "pending": null}
+		var pending := CampaignPendingAttempt.new()
+		pending._ticket = ticket
+		pending._committed_hash = committed_hash
+		pending._status_cell = status_cell
+		record["pending"] = pending
+		record["status"] = CampaignPendingAttempt.ACTIVE
+		status_cell.set_meta(&"status", record["status"])
+		record["attempt_id"] = ticket.attempt_id()
+		record["stage_id"] = ticket.stage_id()
+		record["manifest_hash"] = ticket.manifest_hash()
+		record["committed_hash"] = committed_hash
+		return {"accepted": true, "pending": pending}
+	return {"control": control, "issue": issue}
+
+
+static func _public_restore(result: Dictionary) -> Dictionary:
+	if not result["accepted"]:
+		return result
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"value": result["value"],
+	}
+
+
+static func _build_command_context(stages: Array) -> Dictionary:
+	var squad_sizes := {}
+	var recovery_rosters := {}
+	for stage: StageDef in stages:
+		var stage_id := String(stage.id)
+		squad_sizes[stage_id] = stage.squad_size
+		recovery_rosters[stage_id] = _strings(stage.recovery_roster)
+	return {
+		"squad_sizes": squad_sizes,
+		"recovery_rosters": recovery_rosters,
 	}
 
 
