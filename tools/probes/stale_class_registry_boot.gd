@@ -3,10 +3,39 @@ extends SceneTree
 ## Runtime half of the stale-class-registry upgrade probe. This script avoids
 ## project class_name types deliberately: it must remain loadable from an old
 ## .godot/global_script_class_cache.cfg while exercising the newly pulled game.
+enum Phase {
+	TITLE,
+	STAGING,
+	S1_SQUAD,
+	S1_RESULTS,
+	S1_GRID,
+	S2_GRID,
+	S3_GRID,
+}
+
 const MAX_PHASE_FRAMES := 180
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
-const NARRATIVE_CATALOG_PATH := "res://data/presentation/narrative/stage_narrative_catalog.tres"
+const NARRATIVE_CATALOG_PATH := \
+	"res://data/presentation/narrative/stage_narrative_catalog.tres"
 const S1_RECORD_PATH := "res://data/presentation/narrative/stages/s1.tres"
+const S1_OBJECTIVE := (
+	"Hold the Hearthcross water-works line while investigators trace "
+	+ "the evacuation order carried by the attackers."
+)
+const S1_THREAT := "Road-clearing Grunts treat people and barricades as blockages."
+const S1_HUMAN_REASON := "The town's pumps feed homes, shelters, and fields."
+const S1_CLUE := (
+	"Every attacking machine carries a two-hundred-year-old Great Flare "
+	+ "evacuation mark."
+)
+const S1_CLEAR_DEBRIEF := (
+	"Holding the line gives investigators time to recover a damaged evacuation seal. "
+	+ "The pumps stay in service, and Company 33 confirms that the old order never ended."
+)
+const S1_DEFEAT_DEBRIEF := (
+	"Company 33 evacuates the exposed water works. People survive, but Hearthcross "
+	+ "loses service capacity before the order can be traced."
+)
 const REQUIRED_TITLE_NODES := [
 	"TitleShell",
 	"TitleLabel",
@@ -55,34 +84,51 @@ const REQUIRED_S2_GRID_NODES := [
 	"Tile_9_2",
 	"Tile_3_1",
 	"Tile_3_3",
+	"BackdropPanorama",
+	"SpawnLandmark",
+	"CoreLandmark",
+	"Cadence_2_2",
+	"Cadence_4_2",
+	"Cadence_6_2",
+	"Cadence_8_2",
+]
+const REQUIRED_S3_GRID_NODES := [
+	"Tile_0_2",
+	"Tile_9_4",
+	"Tile_2_3",
+	"Tile_5_2",
+	"Tile_5_3",
+	"BackdropPanorama",
+	"SpawnLandmark",
+	"CoreLandmark",
+	"Cadence_2_2",
+	"Cadence_4_2",
+	"Cadence_4_4",
+	"Cadence_7_4",
 ]
 const S1_RECORD_COPY := {
-	"objective": "Hold the Hearthcross water-works line while investigators trace the evacuation order carried by the attackers.",
-	"threat": "Road-clearing Grunts treat people and barricades as blockages.",
-	"human_reason": "The town's pumps feed homes, shelters, and fields.",
-	"clue": "Every attacking machine carries a two-hundred-year-old Great Flare evacuation mark.",
+	"objective": S1_OBJECTIVE,
+	"threat": S1_THREAT,
+	"human_reason": S1_HUMAN_REASON,
+	"clue": S1_CLUE,
 	"core_service": "Hearthcross water Core",
-	"clear_debrief": "Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended.",
-	"defeat_debrief": "Company 33 evacuates the exposed water works. People survive, but Hearthcross loses service capacity before the order can be traced.",
+	"clear_debrief": S1_CLEAR_DEBRIEF,
+	"defeat_debrief": S1_DEFEAT_DEBRIEF,
 }
 const S1_UI_COPY := {
-	"BriefingObjective": "Objective — Hold the Hearthcross water-works line while investigators trace the evacuation order carried by the attackers.",
-	"BriefingThreat": "Threat — Road-clearing Grunts treat people and barricades as blockages.",
-	"BriefingHumanReason": "Why it matters — The town's pumps feed homes, shelters, and fields.",
-	"BriefingClue": "Field note — Every attacking machine carries a two-hundred-year-old Great Flare evacuation mark.",
-	"ConsequenceLine": "Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended.",
+	"BriefingObjective": "Objective — %s" % S1_OBJECTIVE,
+	"BriefingThreat": "Threat — %s" % S1_THREAT,
+	"BriefingHumanReason": "Why it matters — %s" % S1_HUMAN_REASON,
+	"BriefingClue": "Field note — %s" % S1_CLUE,
+	"ConsequenceLine": S1_CLEAR_DEBRIEF,
 }
+const EXPECTED_S2_CHILDREN := 59
 const EXPECTED_S2_TILES := 50
-const EXPECTED_S2_BACKDROPS := 700
-
-enum Phase {
-	TITLE,
-	STAGING,
-	S1_SQUAD,
-	S1_RESULTS,
-	S1_GRID,
-	S2_GRID,
-}
+const EXPECTED_S2_SHADES := 2
+const EXPECTED_S3_CHILDREN := 68
+const EXPECTED_S3_TILES := 60
+const EXPECTED_S3_SHADES := 1
+const EXPECTED_CADENCE := 4
 
 var _frames := 0
 var _phase := Phase.TITLE
@@ -109,7 +155,11 @@ func _on_process_frame() -> void:
 func _start_title() -> void:
 	_game = root.get_node_or_null("Game")
 	var i18n := root.get_node_or_null("I18n")
-	if _game == null or not _game.has_method("start_campaign") or not _game.has_method("start_battle"):
+	if (
+		_game == null
+		or not _game.has_method("start_campaign")
+		or not _game.has_method("start_battle")
+	):
 		_fail("Game autoload unavailable")
 		return
 	if i18n == null or not i18n.has_method("supported_locales"):
@@ -144,6 +194,8 @@ func _try_advance() -> void:
 			_try_s1_grid()
 		Phase.S2_GRID:
 			_try_s2_grid()
+		Phase.S3_GRID:
+			_try_s3_grid()
 
 
 func _try_title() -> void:
@@ -169,11 +221,7 @@ func _try_staging() -> void:
 		return
 	if not _assert_text(content, "NextOperationTitle", "NEXT 1: First Stand"):
 		return
-	if not _assert_text(
-		content,
-		"NextOperationObjective",
-		String(S1_RECORD_COPY["objective"]),
-	):
+	if not _assert_text(content, "NextOperationObjective", S1_OBJECTIVE):
 		return
 	_set_phase(Phase.S1_SQUAD)
 	_game.set("selected_stage_id", &"s1")
@@ -207,7 +255,7 @@ func _try_s1_results() -> void:
 		return
 	if not _assert_text(content, "ConsequenceHeading", "Consequence"):
 		return
-	if not _assert_text(content, "ConsequenceLine", String(S1_UI_COPY["ConsequenceLine"])):
+	if not _assert_text(content, "ConsequenceLine", S1_CLEAR_DEBRIEF):
 		return
 	_set_phase(Phase.S1_GRID)
 	_game.call("start_battle", &"s1")
@@ -225,32 +273,41 @@ func _try_s2_grid() -> void:
 	var grid := _expected_stage_grid(&"s2")
 	if grid == null or not _grid_has(grid, REQUIRED_S2_GRID_NODES):
 		return
-	var tile_count := 0
-	var backdrop_count := 0
-	for child: Node in grid.get_children():
-		if child.name.begins_with("Tile_"):
-			tile_count += 1
-		elif child.name.begins_with("Backdrop_"):
-			backdrop_count += 1
-	if tile_count != EXPECTED_S2_TILES or backdrop_count != EXPECTED_S2_BACKDROPS:
-		_fail(
-			"S2 grid count mismatch: tiles=%d backdrops=%d" % [tile_count, backdrop_count]
-		)
+	var counts := _grid_counts(grid)
+	if not _counts_match(
+		counts, EXPECTED_S2_CHILDREN, EXPECTED_S2_TILES, EXPECTED_S2_SHADES
+	):
+		_fail("S2 grid count mismatch: %s" % counts)
 		return
-	if grid.get_node_or_null("BackdropPanorama") != null:
-		_fail("S2 unexpectedly inherited the S1 panorama")
+	_set_phase(Phase.S3_GRID)
+	_game.call("start_battle", &"s3")
+
+
+func _try_s3_grid() -> void:
+	var grid := _expected_stage_grid(&"s3")
+	if grid == null or not _grid_has(grid, REQUIRED_S3_GRID_NODES):
+		return
+	var counts := _grid_counts(grid)
+	if not _counts_match(
+		counts, EXPECTED_S3_CHILDREN, EXPECTED_S3_TILES, EXPECTED_S3_SHADES
+	):
+		_fail("S3 grid count mismatch: %s" % counts)
 		return
 	print(
 		"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
 		+ "s1_squad=ready s1_results=ready s1=ready "
-		+ "s2_tiles=%d s2_backdrops=%d frames=%d"
-		% [tile_count, backdrop_count, _frames]
+		+ "s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
+		% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]
 	)
 	quit(0)
 
 
 func _assert_s1_record_identity() -> bool:
-	if _catalog == null or not _catalog.has_method("validate_contract") or not _catalog.has_method("get_record"):
+	if (
+		_catalog == null
+		or not _catalog.has_method("validate_contract")
+		or not _catalog.has_method("get_record")
+	):
 		_fail("narrative catalog methods unavailable")
 		return false
 	var errors: Variant = _catalog.call("validate_contract")
@@ -258,6 +315,12 @@ func _assert_s1_record_identity() -> bool:
 		_fail("narrative catalog invalid: %s" % [errors])
 		return false
 	var catalog_record := _catalog.call("get_record", &"s1") as Resource
+	if not _validate_s1_resource(catalog_record):
+		return false
+	return _validate_s1_copy(catalog_record)
+
+
+func _validate_s1_resource(catalog_record: Resource) -> bool:
 	if catalog_record == null or _s1_record == null:
 		_fail("S1 narrative record unavailable")
 		return false
@@ -274,6 +337,10 @@ func _assert_s1_record_identity() -> bool:
 	if not record_errors.is_empty():
 		_fail("S1 narrative record invalid: %s" % [record_errors])
 		return false
+	return true
+
+
+func _validate_s1_copy(catalog_record: Resource) -> bool:
 	var i18n := root.get_node_or_null("I18n")
 	if i18n == null or not i18n.has_method("t"):
 		_fail("I18n localized-copy method unavailable")
@@ -312,6 +379,46 @@ func _assert_text(content: Node, node_name: String, expected: String) -> bool:
 		)
 		return false
 	return true
+
+
+func _grid_counts(grid: Node2D) -> Dictionary:
+	var counts := {
+		"children": grid.get_child_count(),
+		"tiles": 0,
+		"shades": 0,
+		"panoramas": 0,
+		"cadence": 0,
+		"landmarks": 0,
+		"backdrops": 0,
+	}
+	for child: Node in grid.get_children():
+		if child.name.begins_with("Tile_"):
+			counts["tiles"] += 1
+		elif child.name.begins_with("Backdrop_"):
+			counts["backdrops"] += 1
+		elif child.name == "BackdropPanorama":
+			counts["panoramas"] += 1
+		elif child.name.begins_with("Cadence_"):
+			counts["cadence"] += 1
+		elif child.name in [&"SpawnLandmark", &"CoreLandmark"]:
+			counts["landmarks"] += 1
+		elif child is Polygon2D:
+			counts["shades"] += 1
+	return counts
+
+
+func _counts_match(
+		counts: Dictionary, expected_children: int, expected_tiles: int, expected_shades: int,
+) -> bool:
+	return (
+		int(counts["children"]) == expected_children
+		and int(counts["tiles"]) == expected_tiles
+		and int(counts["shades"]) == expected_shades
+		and int(counts["panoramas"]) == 1
+		and int(counts["cadence"]) == EXPECTED_CADENCE
+		and int(counts["landmarks"]) == 2
+		and int(counts["backdrops"]) == 0
+	)
 
 
 func _expected_stage_grid(stage_id: StringName) -> Node2D:

@@ -265,8 +265,8 @@ func _validate_lineage() -> void:
 
 
 func _validate_themes() -> void:
-	if StageArtTheme.REQUIRED_THEME_STAGE_IDS != [&"s1"]:
-		_fail("dormant required stage inventory changed")
+	if StageArtTheme.REQUIRED_THEME_STAGE_IDS != [&"s1", &"s2", &"s3"]:
+		_fail("active required stage inventory must be exactly S1/S2/S3")
 	for stage_id: String in ["s2", "s3"]:
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		var theme := load("res://data/presentation/%s_world_theme.tres" % stage_id) as StageArtTheme
@@ -281,8 +281,27 @@ func _validate_themes() -> void:
 			_fail("%s theme approval token mismatch" % stage_id)
 		if not String(theme.approval_manifest_sha256).is_empty():
 			_fail("%s theme has a hash launch gate" % stage_id)
-		if StageArtTheme.expects_theme(stage):
-			_fail("%s theme is not dormant" % stage_id)
+		if not StageArtTheme.expects_theme(stage):
+			_fail("%s theme is not runtime-active" % stage_id)
+		var result := StageArtTheme.resolve_for(stage)
+		if not bool(result["required"]) or result["theme"] == null or not String(result["error"]).is_empty():
+			_fail("%s active theme does not resolve through runtime preflight" % stage_id)
+		var root := Node2D.new()
+		if not IsoGridBuilder.build_stage_with_theme(root, stage, theme, false):
+			_fail("%s active theme does not render" % stage_id)
+		var expected_count := 59 if stage_id == "s2" else 68
+		if root.get_child_count() != expected_count:
+			_fail("%s renderer inventory expected %d, got %d" % [stage_id, expected_count, root.get_child_count()])
+		var backdrop_count := 0
+		var cadence_count := 0
+		for child: Node in root.get_children():
+			if child.name.begins_with("Backdrop"):
+				backdrop_count += 1
+			if child.name.begins_with("Cadence_"):
+				cadence_count += 1
+		if backdrop_count != 1 or cadence_count != 4:
+			_fail("%s renderer requires one panorama and four cadence overlays" % stage_id)
+		root.free()
 
 
 func _read_json(path: String) -> Dictionary:

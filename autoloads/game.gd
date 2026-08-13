@@ -212,19 +212,71 @@ func start_battle(stage_id: StringName) -> void:
 	if not ResourceLoader.exists(stage_path):
 		push_error("unknown stage: " + stage_path)
 		return
+	var previous_content := content
+	var previous_pending := pending_stage
+	var previous_battle := current_battle
 	pending_stage = load(stage_path) as StageDef
-	_swap_content.call_deferred(BATTLE_SCENE_PATH)
+	_swap_content.call_deferred(
+		BATTLE_SCENE_PATH, previous_content, previous_pending, previous_battle
+	)
 
 
-func _swap_content(scene_path: String) -> void:
+func _swap_content(
+	scene_path: String,
+	previous_override: Node = null,
+	previous_pending: StageDef = null,
+	previous_battle: BattleModel = null,
+) -> void:
 	if scene_path != BATTLE_SCENE_PATH:
 		_stop_music_if_available()
-	if content != null and is_instance_valid(content):
-		content.queue_free()
+	# Incumbent UI scenes assign Game.content from _ready(). Capture the real
+	# predecessor before add_child() runs that synchronous callback, then retire
+	# exactly that node at the commit point.
+	var previous := previous_override if scene_path == BATTLE_SCENE_PATH else content
 	var packed: PackedScene = load(scene_path)
-	var node: Node = packed.instantiate()
-	get_tree().root.add_child(node)
-	content = node
+	var candidate: Node = packed.instantiate()
+	get_tree().root.add_child(candidate)
+	_accept_content_candidate(
+		candidate,
+		scene_path == BATTLE_SCENE_PATH,
+		previous,
+		previous_pending,
+		previous_battle,
+	)
+
+
+## Commit point shared by the runtime swap and executable activation tests.
+## Adding the candidate runs _ready synchronously, so the entire decision and
+## prior-content retirement remain inside this one deferred swap call.
+func _accept_content_candidate(
+	candidate: Node,
+	is_battle: bool,
+	previous: Node = null,
+	previous_pending: StageDef = null,
+	previous_battle: BattleModel = null,
+) -> bool:
+	if candidate == null or not is_instance_valid(candidate):
+		if is_battle:
+			pending_stage = previous_pending
+			current_battle = previous_battle
+		return false
+	var candidate_battle: BattleModel = null
+	if is_battle:
+		candidate_battle = candidate.get("model") as BattleModel
+		if not bool(candidate.get("startup_succeeded")) or candidate_battle == null:
+			candidate.queue_free()
+			pending_stage = previous_pending
+			current_battle = previous_battle
+			return false
+	if previous != null and is_instance_valid(previous) and previous != candidate:
+		var previous_parent := previous.get_parent()
+		if previous_parent != null:
+			previous_parent.remove_child(previous)
+		previous.queue_free()
+	content = candidate
+	if is_battle:
+		current_battle = candidate_battle
+	return true
 
 
 ## Music is presentation-only and must never block navigation. Resolve the
