@@ -1,6 +1,8 @@
 extends GutTest
 
 const MusicScript := preload("res://autoloads/music.gd")
+const MUSIC_SCRIPT_PATH := "res://autoloads/music.gd"
+const MUSIC_CATALOG_SCRIPT_PATH := "res://assets/music/music_catalog.gd"
 const S1 := preload("res://data/stages/s1.tres")
 const S5 := preload("res://data/stages/s5.tres")
 
@@ -12,6 +14,19 @@ func before_each() -> void:
 	music.name = "TestMusic"
 	add_child_autoqfree(music)
 	assert_true(music.call("reload_catalog"))
+
+
+func test_music_autoload_pins_catalog_as_an_explicit_resource_dependency() -> void:
+	var source := FileAccess.get_file_as_string(MUSIC_SCRIPT_PATH)
+	assert_false(source.is_empty(), MUSIC_SCRIPT_PATH)
+	assert_true(
+		source.contains('preload("%s")' % MUSIC_CATALOG_SCRIPT_PATH),
+		"Music must parse when the MusicCatalog cache entry is absent",
+	)
+	assert_false(
+		source.contains("MusicCatalog"),
+		"Music autoload cannot type or cast through the cache-backed global class name",
+	)
 
 
 func test_controller_owns_one_player_and_duplicate_cue_is_no_op() -> void:

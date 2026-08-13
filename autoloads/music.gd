@@ -5,9 +5,10 @@ extends Node
 ## hard-replaces cues because the approved contract forbids layering.
 
 const CATALOG_PATH := "res://assets/music/catalog.tres"
+const MUSIC_CATALOG_SCRIPT: GDScript = preload("res://assets/music/music_catalog.gd")
 const PLAYER_NAME := "Player"
 
-var _catalog: MusicCatalog = null
+var _catalog: Resource = null
 var _player: AudioStreamPlayer = null
 var _current_id: StringName = &""
 var _start_count := 0
@@ -37,8 +38,20 @@ func _process(_delta: float) -> void:
 
 
 func reload_catalog() -> bool:
-	_catalog = load(CATALOG_PATH) as MusicCatalog
-	return _catalog != null
+	var loaded := load(CATALOG_PATH) as Resource
+	if loaded == null or loaded.get_script() != MUSIC_CATALOG_SCRIPT:
+		_catalog = null
+		return false
+	var entries_value: Variant = loaded.get("entries")
+	if not entries_value is Dictionary:
+		_catalog = null
+		return false
+	var entries: Dictionary = entries_value
+	if entries.is_empty():
+		_catalog = null
+		return false
+	_catalog = loaded
+	return true
 
 
 func play_stage_bgm(stage: StageDef) -> bool:
@@ -68,9 +81,11 @@ func play_cue(cue_id: StringName) -> bool:
 		return false
 	if _catalog == null and not reload_catalog():
 		return false
-	if not _catalog.entries.has(cue_id):
+	var entries_value: Variant = _catalog.get("entries")
+	if not entries_value is Dictionary or not entries_value.has(cue_id):
 		return false
-	var entry: Dictionary = _catalog.entries[cue_id]
+	var entries: Dictionary = entries_value
+	var entry: Dictionary = entries[cue_id]
 	var stream := load(String(entry.get("path", ""))) as AudioStream
 	if stream == null:
 		return false
