@@ -60,5 +60,27 @@ if grep -Eq 'Unable to open file: .*grunt_anim_walk_se|Failed loading resource: 
 fi
 grep -q '^\[SOURCE-TEXTURE-FALLBACK\] PASS frame=(256.0, 256.0) atlas=(6400.0, 256.0)$' \
   "$tmp_root/probe.log"
-printf '[source-texture-fallback] PASS commit=%s cache_removed=%s\n' \
+
+set +e
+timeout 120s "$GODOT" --headless --fixed-fps 60 --path "$probe_tree" \
+  -s res://selftest/harness.gd -- --scenario=grunt_animation --seed=42 \
+  >"$tmp_root/real-game.log" 2>&1
+game_rc=$?
+set -e
+cat "$tmp_root/real-game.log"
+[[ $game_rc -eq 0 ]] || exit "$game_rc"
+[[ ! -e "$cache_path" ]] || {
+  echo '[source-texture-fallback] real game silently regenerated the removed ctex' >&2
+  exit 1
+}
+if grep -Eq 'Unable to open file: .*grunt_anim|Failed loading resource: .*grunt_anim|SCRIPT ERROR|\[FAIL\]' "$tmp_root/real-game.log"; then
+  echo '[source-texture-fallback] real-game load or scenario failure detected' >&2
+  exit 1
+fi
+grep -q '^\[PASS\] sixteen grunt animation atlases resolve bad=0$' "$tmp_root/real-game.log"
+grep -q '^\[PASS\] six gallery enemies spawned count=6$' "$tmp_root/real-game.log"
+grep -q '^\[PASS\] grunt uses generated body $' "$tmp_root/real-game.log"
+grep -q '^\[PASS\] grunt has two animation layers $' "$tmp_root/real-game.log"
+grep -q '^\[RESULT\] pass (41 checks, 0 shots, 98 frames)$' "$tmp_root/real-game.log"
+printf '[source-texture-fallback] PASS commit=%s cache_removed=%s real_game=grunt_animation\n' \
   "$current_commit" "$cache_rel"
