@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"sniper_1"
-display_name = "Longshot"
+display_name = "Gunner"
 op_class = 3
 rarity = 2
 dp_cost = 10
