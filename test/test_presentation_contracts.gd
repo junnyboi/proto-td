@@ -22,7 +22,7 @@ func _manifest() -> AssetManifest:
 	return load(MANIFEST_PATH) as AssetManifest
 
 
-func test_manifest_v2_preserves_every_legacy_path_frame_size_placeholder_and_png_byte() -> void:
+func test_manifest_v2_preserves_every_legacy_path_frame_size_and_loadability() -> void:
 	var manifest := _manifest()
 	var snapshot := _json(SNAPSHOT_PATH)
 	assert_not_null(manifest)
@@ -44,7 +44,6 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_placeholder_and_png
 		assert_eq(entry[&"pattern"], frozen["pattern"], "%s pattern" % id)
 		assert_eq(entry[&"frames"], int(frozen["frames"]), "%s frames" % id)
 		assert_eq(entry[&"size"], Vector2i(frozen["size"][0], frozen["size"][1]), "%s size" % id)
-		assert_eq(entry[&"placeholder"], frozen["placeholder"], "%s placeholder" % id)
 		assert_eq(
 			entry[&"pivot"],
 			AssetManifest.legacy_pivot(id, int(entry[&"frames"])),
@@ -55,14 +54,9 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_placeholder_and_png
 			AssetManifest.legacy_animations(int(entry[&"frames"])),
 			"%s animation table" % id,
 		)
-		for file_index: int in frozen["files"].size():
-			var file_row: Dictionary = frozen["files"][file_index]
-			var path := String(file_row["path"])
-			assert_eq(
-				FileAccess.get_sha256(path), file_row["sha256"], "%s legacy PNG bytes" % path
-			)
+		for file_index: int in int(entry[&"frames"]):
 			var tex := Art.texture(id, file_index)
-			assert_not_null(tex, "%s resolves" % path)
+			assert_not_null(tex, "%s frame %d resolves" % [id, file_index])
 
 
 func test_art_metadata_is_deep_copied_sorted_and_fail_closed() -> void:
@@ -370,6 +364,15 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 				document["acceptance"]["accepting_commit"],
 				"60b69a6004a9c843851d9f6c9aee84c88389cb1f",
 			)
+		elif _is_round5_character(id):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["model"], "gpt-image-2")
+			assert_eq(
+				document["acceptance"]["state"],
+				"human_concept_accepted_runtime_review_pending",
+			)
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_null(document["acceptance"]["accepting_commit"])
 		else:
 			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
 			assert_null(document["acceptance"]["human_accepter"])
@@ -389,8 +392,8 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 	var caster := _json("res://assets/provenance/portrait_caster_1.provenance.json")
 	assert_eq(
 		caster["acceptance"]["state"],
-		"unknown_per_current_byte",
-		"later portrait bytes not mislabeled",
+		"human_concept_accepted_runtime_review_pending",
+		"approved concept is not mislabeled as final runtime art",
 	)
 
 
@@ -482,6 +485,34 @@ func _expected_sources(id: String) -> Array[String]:
 			world_sources.append("res://tools/art_pipeline/world/prepare_s1_revision_source.py")
 		world_sources.sort()
 		return world_sources
+	if _is_round5_character(id):
+		var base_id := id.trim_prefix("portrait_").trim_suffix("_charmed")
+		var character_sources: Array[String] = [
+			"res://assets/asset_manifest.gd",
+			"res://docs/decisions/AUI-DESIGN-APPROVALS.md",
+			"res://docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
+			"res://tools/art_pipeline/characters/import_round5_sheets.py",
+			"res://tools/gen_assets.gd",
+			"res://tools/pixel/palette.gd",
+			"res://tools/pixel/pix.gd",
+		]
+		if base_id in [
+			"caster_1", "caster_2", "defender_1", "defender_2", "guard_1", "guard_2",
+			"sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
+		]:
+			character_sources.append("res://data/operator_def.gd")
+			character_sources.append("res://data/operators/%s.tres" % base_id)
+			character_sources.append(
+				"res://art-src/characters/round5/portrait-treatment-sheet.png"
+				if id.begins_with("portrait_")
+				else "res://art-src/characters/round5/roster-style-board.png"
+			)
+		else:
+			character_sources.append("res://art-src/characters/round5/enemy-character-sheet.png")
+			character_sources.append("res://data/enemy_def.gd")
+			character_sources.append("res://data/enemies/%s.tres" % base_id)
+		character_sources.sort()
+		return character_sources
 	var result: Array[String] = [
 		"res://assets/asset_manifest.gd",
 		"res://tools/gen_assets.gd",
@@ -514,6 +545,15 @@ func _expected_sources(id: String) -> Array[String]:
 		])
 	result.sort()
 	return result
+
+
+func _is_round5_character(id: String) -> bool:
+	var base_id := id.trim_prefix("portrait_").trim_suffix("_charmed")
+	return base_id in [
+		"caster_1", "caster_2", "defender_1", "defender_2", "guard_1", "guard_2",
+		"sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
+		"drone", "grunt", "heavy", "mini_boss", "runner", "spellcaster",
+	]
 
 
 func _exported_values(resource: Resource) -> Dictionary:

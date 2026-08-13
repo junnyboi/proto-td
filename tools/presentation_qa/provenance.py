@@ -29,6 +29,25 @@ S1_COMMON_SOURCES = {
     "res://tools/art_pipeline/world/normalize_s1_world.py",
 }
 S1_APPROVED_CANDIDATE = "60b69a6004a9c843851d9f6c9aee84c88389cb1f"
+ROUND5_OPERATOR_IDS = {
+    "caster_1", "caster_2", "defender_1", "defender_2", "guard_1", "guard_2",
+    "sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
+}
+ROUND5_ENEMY_IDS = {"drone", "grunt", "heavy", "mini_boss", "runner", "spellcaster"}
+ROUND5_COMMON_SOURCES = {
+    "res://assets/asset_manifest.gd",
+    "res://docs/decisions/AUI-DESIGN-APPROVALS.md",
+    "res://docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
+    "res://tools/art_pipeline/characters/import_round5_sheets.py",
+    "res://tools/gen_assets.gd",
+    "res://tools/pixel/palette.gd",
+    "res://tools/pixel/pix.gd",
+}
+
+
+def is_round5_character(logical_id: str) -> bool:
+    base_id = logical_id.removeprefix("portrait_").removesuffix("_charmed")
+    return base_id in ROUND5_OPERATOR_IDS or base_id in ROUND5_ENEMY_IDS
 
 
 def validate_schema(value: Any, schema: dict[str, Any], root: dict[str, Any], path: str = "$") -> None:
@@ -125,6 +144,30 @@ def source_paths(logical_id: str) -> list[str]:
                 }
             )
         return sorted(result)
+    if is_round5_character(logical_id):
+        result = set(ROUND5_COMMON_SOURCES)
+        base_id = logical_id.removeprefix("portrait_").removesuffix("_charmed")
+        if base_id in ROUND5_OPERATOR_IDS:
+            result.update(
+                {
+                    "res://data/operator_def.gd",
+                    f"res://data/operators/{base_id}.tres",
+                    (
+                        "res://art-src/characters/round5/portrait-treatment-sheet.png"
+                        if logical_id.startswith("portrait_")
+                        else "res://art-src/characters/round5/roster-style-board.png"
+                    ),
+                }
+            )
+        else:
+            result.update(
+                {
+                    "res://art-src/characters/round5/enemy-character-sheet.png",
+                    "res://data/enemy_def.gd",
+                    f"res://data/enemies/{base_id}.tres",
+                }
+            )
+        return sorted(result)
     result = set(COMMON_SOURCES)
     if logical_id.startswith("tile_"):
         result.add("res://tools/pixel/art_tiles.gd")
@@ -218,6 +261,54 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "spdx": "LicenseRef-Project-Owned",
                 "source": "original GPT Image 2 concepts and project-controlled deterministic normalization",
                 "human_contribution": "direction, selection, revision verdicts, pixel normalization contracts, and exact-candidate final-art acceptance",
+            },
+        }
+    if is_round5_character(logical_id):
+        generator_path = "res://tools/art_pipeline/characters/import_round5_sheets.py"
+        generator = digest_row(repo, generator_path)
+        return {
+            "schema_version": 1,
+            "logical_id": logical_id,
+            "source_type": "ai_assisted_deterministic_normalization",
+            "final_files": [digest_row(repo, path) for path in sorted(final_paths(entry))],
+            "source_files": [digest_row(repo, path) for path in source_paths(logical_id)],
+            "recipe": {
+                "command": "godot --headless --path . -s tools/gen_assets.gd",
+                "godot_version": GODOT_VERSION,
+                "generator_path": generator_path,
+                "generator_sha256": generator["sha256"],
+            },
+            "generation": {
+                "provider": "OpenAI",
+                "model": "gpt-image-2",
+                "generation_id": None,
+                "seed": None,
+                "unsupported_reason": (
+                    "service does not expose a stable seed; exact approved concept sheets are retained"
+                ),
+            },
+            "migration": {
+                "baseline_commit": BASELINE_COMMIT,
+                "baseline_tree": BASELINE_TREE,
+                "migrated_at_utc": None,
+                "status": "new_runtime_asset_authenticated",
+            },
+            "acceptance": {
+                "state": "human_concept_accepted_runtime_review_pending",
+                "human_accepter": "Poseidon",
+                "accepted_at_utc": "2026-08-13T07:01:56Z",
+                "accepting_commit": None,
+                "source": "docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
+                "reason": (
+                    "approved Round-5 concept normalized into a runtime candidate; final in-game review pending"
+                ),
+            },
+            "license": {
+                "spdx": "LicenseRef-Project-Owned",
+                "source": "original GPT Image 2 concepts and project-controlled deterministic normalization",
+                "human_contribution": (
+                    "direction, selection, concept approval, runtime-binding direction, and normalization review"
+                ),
             },
         }
     generator = digest_row(repo, "res://tools/gen_assets.gd")

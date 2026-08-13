@@ -18,6 +18,7 @@ const ArtProps := preload("res://tools/pixel/art_props.gd")
 const OUT_SPRITES := "res://assets/sprites"
 const OUT_PORTRAITS := "res://assets/portraits"
 const OUT_SHEET := "res://artifacts/lane_a"
+const ROUND5_IMPORTER := "res://tools/art_pipeline/characters/import_round5_sheets.py"
 const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
 const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
 
@@ -65,7 +66,7 @@ func _initialize() -> void:
 			)
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
-			ArtOperators.SIZE
+			ArtOperators.SIZE, true
 		)
 		for i: int in [0, 2, 4]:
 			sheet_cells.append(Pix.upscale(frames[i], 4))
@@ -84,7 +85,8 @@ func _initialize() -> void:
 			StringName("portrait_%s" % def.portrait_id),
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
 			1,
-			ArtPortraits.SIZE * ArtPortraits.UPSCALE
+			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
+			true
 		)
 		portrait_cells.append(portrait)
 
@@ -100,7 +102,8 @@ func _initialize() -> void:
 			)
 		var def := load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 		_record(
-			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size
+			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size,
+			true
 		)
 		sheet_cells.append(Pix.upscale(frames[0], 4))
 		if not def.charm_immune:
@@ -119,9 +122,17 @@ func _initialize() -> void:
 				StringName("%s_charmed" % def.sprite_id),
 				"%s/%s_charmed_%%d.png" % [OUT_SPRITES, enemy_id],
 				2,
-				enemy_size
+				enemy_size,
+				true
 			)
 			sheet_cells.append(Pix.upscale(charmed, 4))
+
+	# Production character art: the procedural pixels above remain a deterministic
+	# fallback, then the approved Round-5 source sheets replace the exact legacy
+	# runtime paths and frame counts. Gameplay/UI code stays manifest-only.
+	if not _import_round5_character_art():
+		quit(1)
+		return
 
 	# traps + spell icons: traps carry the reservation lint, icon chips
 	# keep the full palette (sanctioned exemption above)
@@ -157,6 +168,24 @@ func _initialize() -> void:
 		return
 	print("[gen_assets] OK — %d manifest entries" % _manifest.entries.size())
 	quit(0)
+
+
+func _import_round5_character_art() -> bool:
+	var output: Array = []
+	var code := OS.execute(
+		"/usr/bin/python3",
+		[
+			ProjectSettings.globalize_path(ROUND5_IMPORTER),
+			"--repo", ProjectSettings.globalize_path("res://"),
+			"--review-dir", ProjectSettings.globalize_path(OUT_SHEET + "/round5"),
+		],
+		output,
+		true,
+	)
+	if code != 0:
+		push_error("[gen_assets] Round-5 import failed (%d): %s" % [code, "\n".join(output)])
+		return false
+	return true
 
 
 ## Every entry carries its native size (P12.1 manifest schema pin) — a
