@@ -178,7 +178,7 @@ func test_project_and_title_source_use_canonical_identity_seam() -> void:
 	var project_name := str(ProjectSettings.get_setting("application/config/name", ""))
 	assert_eq(project_name, TITLE_FALLBACK)
 	var source := FileAccess.get_file_as_string("res://scripts/ui/title.gd")
-	assert_true(source.contains('UiCopy.text(&"ui.game_title", "Protos")'))
+	assert_true(source.contains('UiCopyType.text(&"ui.game_title", "Protos")'))
 	assert_false(source.contains('label.text = "Prototype TD"'))
 
 
