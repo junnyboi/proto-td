@@ -1318,7 +1318,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "00f7f9a66f01ef19d0cd6ba8194daab3d14ab4f4a3b9c741134bdb23f7cfa914",
+"provenance_sha256": "95fde45d82a209029dee786392569907648c046157e1e704a86aa91aa33e78d2",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_nw": {
@@ -1334,7 +1334,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "5d00e48abd7ae606d809fa898d7e1b01994eedc3d6f6fad65f4383c93571d7c0",
+"provenance_sha256": "0572b299498407c1ab9b515f54bf3eefddd677ea92bd0e04db702e612501ce2d",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_se": {
@@ -1350,7 +1350,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "d657835f8d4fdc78696ead260d31341eb4f252573e27358887477d0cb2a6047b",
+"provenance_sha256": "eb67ad6f1bfb1ad4ab4dd01453d16b7f94959b21d2905a636764a4f455320025",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_attack_sw": {
@@ -1366,7 +1366,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/attack_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "a452cfc34aa1f1b76f329e2d40c6ebcea5aca2c73fee35d77b3d6492634890ef",
+"provenance_sha256": "1e073873b624df8dacb4e89b164bb498c3cf53af5920d7e584afa3112aa9296c",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_ne": {
@@ -1382,7 +1382,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "11a0cfcdb1838d3db8aaf5ecbabf7fd919839026c9e3b28e8fd64de1ff1e90cc",
+"provenance_sha256": "e1accb7d6c644d0606d628442854373c9dfec02fbcb683b126955b4c25b2a889",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_nw": {
@@ -1398,7 +1398,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "8a8a85b75e611520c61523145d24042628a374fd3e336af110f36462eeed8300",
+"provenance_sha256": "cee12f992e89dec5527f4ee62c4c85ea8b7f4fc2e0e746a9089e53f8eb7b7ac3",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_se": {
@@ -1414,7 +1414,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "a0ace219625aa5c3a6f66f83c0cfe97ba2d8ebb60db9b234529c54cf9cf6e0b4",
+"provenance_sha256": "1ed7d4b90551bfddb0e6da4aa6c52e102cbd0589bf0312dedfffc5eb00b6546a",
 "size": Vector2i(192, 192)
 },
 &"op_anim_defender_1_idle_sw": {
@@ -1430,7 +1430,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/defender_1/idle_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "5ecdb468dd00a07c941cb6045455722867b9cc1fcbcee81e2903d23feb15d7a8",
+"provenance_sha256": "ba68802b4c9d186313c26f7208eed0824fc511356fad2bfe665059de86acfa08",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_ne": {
@@ -1446,7 +1446,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "1361eb8bb5a7d577ce87054b08dbb7927492b36ca552bea0af037b52068bab5d",
+"provenance_sha256": "162258abf8f3dbb4f9025fb572125a91d0580fc3e9bf046d27f9c0a32f9c8823",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_nw": {
@@ -1462,7 +1462,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "70dd8ed6dec53aa970f612f5b4add8f8c0fb36947483502510a535e592949e06",
+"provenance_sha256": "16f5326eeb9764ce7ff57f8eeb733d32b5caaa54abeb7f07c7902c724545b3bc",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_se": {
@@ -1478,7 +1478,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "b9d526479d75e95ec90e526ad7eeaa53dd0cb15368da3505288393c353cfb51b",
+"provenance_sha256": "3f0d6cf2052b69da066bcf744976fffd70fc599ab6ca606a48e735303548730b",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_attack_sw": {
@@ -1494,7 +1494,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "f2ee376121212deaca65cf825c7719c053b833e820d4a166bbdd6355c0477997",
+"provenance_sha256": "4aa0bc51bbe47a5e6101c3ae7057fe75552036bf64aa3904c3fe3439f049e9a4",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_ne": {
@@ -1510,7 +1510,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_ne.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "bb83aa8163ff825ae83fcd8915f776cf48ab1e6e37034e6652dac3d75eef39b2",
+"provenance_sha256": "f12330044740491f6da03157f00d9fb914cf0ef954d3e27bb583bba329b4f0fa",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_nw": {
@@ -1526,7 +1526,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_nw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "93000d3a5979cb344e51fb492665e6eb0acfeab5a737a519033ee9f2f146cad6",
+"provenance_sha256": "b0936f25c17196ef6b802bec307075d40c29f6d9c72d2d54ab8a331d57a8fbea",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_se": {
@@ -1542,7 +1542,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_se.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "b0e0dcae82102f44d51546a5d428d2dbfc6509c9d898db9fac6417510400b035",
+"provenance_sha256": "7018f93896ea1b75e1342479075fd5bd839542d4375fab2f0623d803b2d480da",
 "size": Vector2i(192, 192)
 },
 &"op_anim_vanguard_2_idle_sw": {
@@ -1558,7 +1558,7 @@ entries = {
 "pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_sw.png",
 "pivot": Vector2(0.5, 0.94),
 "placeholder": false,
-"provenance_sha256": "081d6e86fc1abc2d61febf45779a93d9e7b0638d89180aadb261fecc1135f576",
+"provenance_sha256": "efd2bc81e3368639e5f1a706a5b86b5dc129000e3c8663f3b565dfe584acf54b",
 "size": Vector2i(192, 192)
 }
 }
