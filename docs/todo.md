@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-019 — Replace obsolete player-facing class names
+
+- Status: in_progress
+- Owner: AGENT 2
+- Branch: `agent-2/td-019-class-display-names`
+- Base: `master` at `98a9be388064aacaadd8fdc10570533a3cd9ef46`
+- Dependencies: owner-approved plain-language class tree; Witch Doctor gameplay remains P16-unbuilt
+- Owned files: `data/operators/vanguard_1.tres`; `data/operators/vanguard_2.tres`; `data/operators/guard_1.tres`; `data/operators/guard_2.tres`; `data/operators/defender_2.tres`; `data/operators/sniper_1.tres`; `data/operators/sniper_2.tres`; `data/operators/caster_1.tres`; `data/operators/caster_2.tres`; `data/stages/s2.tres`; `assets/manifest.tres`; the exact operator/portrait provenance sidecars for those nine changed OperatorDefs under `assets/provenance/`; `test/test_class_display_names.gd*`; `PLAYTEST.md` S2 watch-for wording only; `docs/handoffs/TD-019-agent-2-class-display-names.md`; this TD-019 row; final compact TD-019 line in `docs/completed.md`
+- Do not touch: internal template IDs; `OperatorDef.OpClass`; stats/skills/unlocks/simulation/hash/save/replay; Witch Doctor runtime/template; `localization/en-US.json` and all AUI-12-owned paths; human verdict rows; `FEATURES.json`; `scripts/verify.sh`; thresholds; unrelated tests/scenarios
+- Acceptance: the ten existing template IDs and payloads remain byte-semantically unchanged except exact English display labels; S2 says Shock Trooper; no obsolete player-facing class label remains in runtime data or active playtest instructions; exact resource-contract test passes; fresh full gate is green
+- Required evidence: `test/test_class_display_names.gd`; old-label runtime-data scan; canonical provenance regeneration and contract test; `git diff --check`; `scripts/verify.sh --full`; independent diff-vs-pins audit; exact union verification after autonomous merge
+- Last update: 2026-08-13
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
