@@ -209,10 +209,24 @@ func start_battle(stage_id: StringName) -> void:
 
 func _swap_content(scene_path: String) -> void:
 	if scene_path != BATTLE_SCENE_PATH:
-		Music.stop()
+		_stop_music_if_available()
 	if content != null and is_instance_valid(content):
 		content.queue_free()
 	var packed: PackedScene = load(scene_path)
 	var node: Node = packed.instantiate()
 	get_tree().root.add_child(node)
 	content = node
+
+
+## Music is presentation-only and must never block navigation. Resolve the
+## optional autoload at call time because failed/partial project startup can
+## leave the global singleton identifier as Nil on some runtime paths.
+func _stop_music_if_available() -> bool:
+	return _stop_music_node(get_node_or_null("/root/Music"))
+
+
+func _stop_music_node(music: Node) -> bool:
+	if music == null or not music.has_method("stop"):
+		return false
+	music.call("stop")
+	return true
