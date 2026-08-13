@@ -3,6 +3,7 @@
 **Owner:** AGENT 2  
 **Branch:** `agent-2/td-019-class-display-names`  
 **Base:** `98a9be388064aacaadd8fdc10570533a3cd9ef46`  
+**Implementation commit:** `0e0c0c42b753d946b88889061ee7d46c5518061b`
 **Date:** 2026-08-13
 
 ## Outcome
