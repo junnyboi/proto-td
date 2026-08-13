@@ -35,8 +35,9 @@ static func derive_starting_unlocks(catalogs: Dictionary, stage_defs: Array) -> 
 	return out
 
 
-static func create(catalogs: Dictionary, stage_defs: Array) -> LegacyCampaignAdapter:
-	var state := LegacyCampaignAdapter.new()
+static func create(catalogs: Dictionary, stage_defs: Array) -> Variant:
+	var script := load("res://sim/legacy_campaign_adapter.gd") as GDScript
+	var state: Variant = script.new()
 	var starting := derive_starting_unlocks(catalogs, stage_defs)
 	state.unlocked_operators.assign(starting["operators"])
 	state.unlocked_traps.assign(starting["traps"])

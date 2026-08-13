@@ -2,7 +2,7 @@ extends GutTest
 
 
 func test_legacy_adapter_preserves_exact_start_and_first_clear_behavior() -> void:
-	var adapter := LegacyCampaignAdapter.create(_catalogs(), _stages())
+	var adapter: LegacyCampaignAdapter = LegacyCampaignAdapter.create(_catalogs(), _stages())
 	assert_eq(adapter.unlocked_operators, [
 		&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
 	])
@@ -11,7 +11,9 @@ func test_legacy_adapter_preserves_exact_start_and_first_clear_behavior() -> voi
 	assert_true(adapter.is_stage_unlocked(&"s1"))
 	assert_false(adapter.is_stage_unlocked(&"s2"))
 	var stage := load("res://data/stages/s1.tres") as StageDef
-	var granted := adapter.record_result(stage, BattleModel.Result.CLEAR, 3)
+	var granted: Array[Dictionary] = adapter.record_result(
+		stage, BattleModel.Result.CLEAR, 3,
+	)
 	assert_eq(granted, stage.rewards)
 	assert_eq(adapter.stage_stars, {&"s1": 3})
 	assert_true(adapter.unlocked_operators.has(&"guard_2"))
