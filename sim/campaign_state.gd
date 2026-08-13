@@ -1,109 +1,599 @@
 class_name CampaignState
 extends RefCounted
 
-## Session campaign model (Phase 10, td-phase-10.md §2.2 — architecture
-## rule 1: plain data, zero Node/autoload imports, GUT-testable without the
-## Game wrapper). Holds the unlocked sets + per-stage best stars; rewards
-## grant on FIRST clear only (idempotent), stars update best-of always,
-## DEFEAT records nothing. Starting unlocks are DERIVED, never declared:
-## full catalogs minus the union of all campaign rewards — the same static
-## function feeds the runtime and the stage lint, so the two can't drift.
+## Canonical model-only P16 aggregate (D16-08). The private value is always a
+## whole-document-normalized CampaignSave data object. P16.1 exposes no accepted
+## strategic mutation commands; every returned collection is a defensive view.
 
-var unlocked_operators: Array[StringName] = []
-var unlocked_traps: Array[StringName] = []
-var unlocked_spells: Array[StringName] = []
-var stage_stars: Dictionary = {}
+const P16_STARTERS: Array[StringName] = [
+	&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
+]
+const P16_OFFER := {
+	"offer_id": "p16_caster_contract",
+	"operator_def_id": "caster_1",
+	"cost": 80,
+}
 
-var _campaign_order: Array[StringName] = []
-var _stage_index: Dictionary = {}
-
-
-## catalogs = {operators: [...ids], traps: [...], spells: [...]};
-## stage_defs = every StageDef (non-campaign entries are ignored).
-static func derive_starting_unlocks(catalogs: Dictionary, stage_defs: Array) -> Dictionary:
-	var rewarded: Dictionary = {}
-	for stage: StageDef in stage_defs:
-		if stage.campaign_index < 1:
-			continue
-		for reward: Dictionary in stage.rewards:
-			rewarded[reward["id"]] = true
-	var out := {"operators": [], "traps": [], "spells": []}
-	for kind: String in out:
-		var starting: Array[StringName] = []
-		for item_id: StringName in catalogs[kind]:
-			if not rewarded.has(item_id):
-				starting.append(item_id)
-		starting.sort_custom(func(a: StringName, b: StringName) -> bool:
-			return String(a) < String(b))
-		out[kind] = starting
-	return out
+var _data: Dictionary = {}
+var _context: Dictionary = {}
 
 
-static func create(catalogs: Dictionary, stage_defs: Array) -> CampaignState:
-	var state := CampaignState.new()
-	var starting := derive_starting_unlocks(catalogs, stage_defs)
-	state.unlocked_operators.assign(starting["operators"])
-	state.unlocked_traps.assign(starting["traps"])
-	state.unlocked_spells.assign(starting["spells"])
-	var campaign: Array = []
-	for stage: StageDef in stage_defs:
-		if stage.campaign_index >= 1:
-			campaign.append(stage)
-	campaign.sort_custom(func(a: StageDef, b: StageDef) -> bool:
-		return a.campaign_index < b.campaign_index)
-	for stage: StageDef in campaign:
-		state._campaign_order.append(stage.id)
-		state._stage_index[stage.id] = stage.campaign_index
-	return state
+static func create(
+	seed_value: int,
+	generation: int,
+	campaign_def: CampaignDef,
+	catalogs: Dictionary,
+	stage_defs: Array,
+) -> Dictionary:
+	var environment := _build_environment(campaign_def, catalogs, stage_defs)
+	if not environment["accepted"]:
+		return environment
+	var fresh := _fresh_data(
+		seed_value, generation, environment["definition"], environment["starting"],
+	)
+	if not fresh["accepted"]:
+		return fresh
+	return _restore_normalized(fresh["value"], environment["context"])
+
+
+static func restore(
+	data: Dictionary,
+	campaign_def: CampaignDef,
+	catalogs: Dictionary,
+	stage_defs: Array,
+) -> Dictionary:
+	var environment := _build_environment(campaign_def, catalogs, stage_defs)
+	if not environment["accepted"]:
+		return environment
+	var normalized := CampaignCodec.normalize_data(data, environment["context"])
+	if not normalized["accepted"]:
+		return normalized
+	return _restore_normalized(normalized["value"], environment["context"])
+
+
+func campaign_uid() -> String:
+	return String(_data["campaign_uid"])
+
+
+func campaign_seed() -> int:
+	return int(_data["campaign_seed"])
+
+
+func campaign_generation() -> int:
+	return int(_data["campaign_generation"])
+
+
+func save_revision() -> int:
+	return int(_data["save_revision"])
+
+
+func next_recruitment_index() -> int:
+	return int(_data["next_recruitment_index"])
+
+
+func next_attempt_id() -> int:
+	return int(_data["next_attempt_id"])
+
+
+func next_resolution_index() -> int:
+	return int(_data["next_resolution_index"])
+
+
+func marks() -> int:
+	return int(_data["marks"])
+
+
+func roster() -> RosterState:
+	return RosterState.from_normalized_rows(_data["heroes"])
+
+
+func offers() -> Array[Dictionary]:
+	var values: Array[Dictionary] = []
+	for row: Dictionary in _data["offers"]:
+		values.append(row.duplicate(true))
+	return values
+
+
+func offer(offer_id: String) -> Dictionary:
+	for row: Dictionary in _data["offers"]:
+		if row["offer_id"] == offer_id:
+			return row.duplicate(true)
+	return {}
+
+
+func data_copy() -> Dictionary:
+	return _data.duplicate(true)
+
+
+func encode_data() -> Dictionary:
+	return CampaignCodec.encode_data(_data, _context)
+
+
+func strategic_hash() -> Dictionary:
+	return CampaignHash.of_data(_data, _context)
 
 
 func campaign_stage_ids() -> Array[StringName]:
-	return _campaign_order
+	var values: Array[StringName] = []
+	for stage_id: String in _context["stage_order"]:
+		values.append(StringName(stage_id))
+	return values
 
 
-## Linear campaign: stage k unlocked iff k == 1 or stage k-1 is cleared.
-## Non-campaign stages are always "unlocked" (they're outside the campaign).
 func is_stage_unlocked(stage_id: StringName) -> bool:
-	if not _stage_index.has(stage_id):
+	var position: int = _context["stage_order"].find(String(stage_id))
+	if position < 0:
 		return true
-	var index: int = _stage_index[stage_id]
-	if index == 1:
+	if position == 0:
 		return true
-	var prev := _campaign_order[index - 2]
-	return stage_stars.has(prev)
+	return _stage_stars_by_id().has(StringName(_context["stage_order"][position - 1]))
 
 
-## Returns the rewards newly granted by this result ([] on DEFEAT, on
-## non-campaign stages, and on re-clears).
-func record_result(stage: StageDef, result: int, stars: int) -> Array[Dictionary]:
-	if result != BattleModel.Result.CLEAR or stage.campaign_index < 1:
-		return []
-	var first_clear := not stage_stars.has(stage.id)
-	stage_stars[stage.id] = maxi(stars, int(stage_stars.get(stage.id, 0)))
-	if not first_clear:
-		return []
-	var granted: Array[Dictionary] = []
-	for reward: Dictionary in stage.rewards:
-		var target := _set_for(reward["kind"])
-		var item_id: StringName = reward["id"]
-		if not target.has(item_id):
-			target.append(item_id)
-			granted.append(reward)
-	return granted
+func compatibility_projection() -> Dictionary:
+	return {
+		"unlocked_operators": roster().owned_operator_def_ids(),
+		"unlocked_traps": _string_names(_data["unlocked_traps"]),
+		"unlocked_spells": _string_names(_data["unlocked_spells"]),
+		"stage_stars": _stage_stars_by_id(),
+	}
 
 
-func unlock_everything(catalogs: Dictionary) -> void:
-	unlocked_operators.assign(catalogs["operators"])
-	unlocked_traps.assign(catalogs["traps"])
-	unlocked_spells.assign(catalogs["spells"])
+func preview_first_clear_rewards(stage_id: StringName) -> Dictionary:
+	var stage_key := String(stage_id)
+	if not _context["stage_rewards"].has(stage_key):
+		return _reject(&"unknown_campaign_stage")
+	if not is_stage_unlocked(stage_id):
+		return _reject(&"stage_locked")
+	if _stage_stars_by_id().has(stage_id):
+		return _preview_accept(false, [], [], next_recruitment_index())
+	var working_roster := roster()
+	var next_index := next_recruitment_index()
+	var reward_rows: Array[Dictionary] = []
+	var hero_rows: Array[Dictionary] = []
+	for authored: Dictionary in _context["stage_rewards"][stage_key]:
+		var hero_id: Variant = null
+		if authored["kind"] == "operator":
+			if working_roster.rows_copy().size() >= CampaignCodec.MAX_ROSTER:
+				return _reject(&"roster_limit")
+			var allocated := working_roster.plan_allocation(
+				campaign_seed(), campaign_generation(), next_index,
+				StringName(authored["id"]), &"reward", stage_key,
+				next_resolution_index(),
+			)
+			if not allocated["accepted"]:
+				return allocated
+			var hero_row: Dictionary = allocated["row"]
+			hero_rows.append(hero_row.duplicate(true))
+			hero_id = hero_row["hero_id"]
+			next_index = int(allocated["next_recruitment_index"])
+			var combined := working_roster.rows_copy()
+			combined.append(hero_row)
+			working_roster = RosterState.from_normalized_rows(combined)
+		reward_rows.append({
+			"kind": authored["kind"],
+			"id": authored["id"],
+			"hero_instance_id": hero_id,
+		})
+	return _preview_accept(true, reward_rows, hero_rows, next_index)
 
 
-func _set_for(kind: StringName) -> Array[StringName]:
-	match kind:
-		&"operator":
-			return unlocked_operators
-		&"trap":
-			return unlocked_traps
-		&"spell":
-			return unlocked_spells
-	return []
+static func _build_environment(
+	campaign_def: CampaignDef,
+	catalogs: Dictionary,
+	stage_defs: Array,
+) -> Dictionary:
+	var definition := _normalize_campaign_definition(campaign_def)
+	if not definition["accepted"]:
+		return definition
+	var normalized_catalogs := _normalize_catalogs(catalogs)
+	if not normalized_catalogs["accepted"]:
+		return normalized_catalogs
+	if not _definition_references_exist(
+		definition["value"], normalized_catalogs["value"],
+	):
+		return _reject(&"invalid_campaign_definition")
+	var normalized_stages := _normalize_stages(
+		stage_defs, normalized_catalogs["value"],
+	)
+	if not normalized_stages["accepted"]:
+		return normalized_stages
+	var stages: Array = normalized_stages["value"]
+	var canonical_catalogs: Dictionary = normalized_catalogs["value"]
+	var environment_hash := CanonicalJson.sha256_hex(
+		_environment_manifest(canonical_catalogs, stages),
+	)
+	if environment_hash != definition["value"]["environment_sha256"]:
+		return _reject(&"campaign_environment_mismatch")
+	var starting := _derive_starting_unlocks(canonical_catalogs, stages)
+	if starting["operators"] != definition["value"]["starter_operator_ids"]:
+		return _reject(&"starter_contract_mismatch")
+	var context := CampaignCodec.build_context(
+		canonical_catalogs["operators"], canonical_catalogs["traps"],
+		canonical_catalogs["spells"], stages,
+		definition["value"]["paid_offers"], starting["traps"], starting["spells"],
+	)
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"context": context,
+		"starting": starting,
+		"definition": definition["value"],
+	}
+
+
+static func _fresh_data(
+	seed_value: int,
+	generation: int,
+	campaign_def: Dictionary,
+	starting: Dictionary,
+) -> Dictionary:
+	if generation < 1:
+		return _reject(&"invalid_campaign_identity")
+	var rows: Array[Dictionary] = []
+	var working := RosterState.from_normalized_rows(rows)
+	for operator_id: StringName in campaign_def["starter_operator_ids"]:
+		var allocated := working.plan_allocation(
+			seed_value, generation, rows.size(), operator_id,
+			&"starter", "", 0, int(campaign_def["name_version"]),
+		)
+		if not allocated["accepted"]:
+			return allocated
+		rows.append((allocated["row"] as Dictionary).duplicate(true))
+		working = RosterState.from_normalized_rows(rows)
+	var offers: Array[Dictionary] = []
+	for authored: Dictionary in campaign_def["paid_offers"]:
+		offers.append({
+			"offer_id": String(authored["offer_id"]),
+			"operator_def_id": String(authored["operator_def_id"]),
+			"cost": int(authored["cost"]),
+			"consumed": false,
+		})
+	offers.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a["offer_id"]) < String(b["offer_id"]))
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"value": {
+			"campaign_uid": HeroIdentity.campaign_uid(seed_value, generation),
+			"campaign_seed": seed_value,
+			"campaign_generation": generation,
+			"save_revision": 1,
+			"next_recruitment_index": rows.size(),
+			"next_attempt_id": 1,
+			"next_resolution_index": 1,
+			"marks": int(campaign_def["initial_marks"]),
+			"stage_stars": [],
+			"unlocked_traps": _strings(starting["traps"]),
+			"unlocked_spells": _strings(starting["spells"]),
+			"offers": offers,
+			"heroes": rows,
+			"resolution_anchor": null,
+			"last_resolution": null,
+		},
+	}
+
+
+static func _restore_normalized(data: Dictionary, context: Dictionary) -> Dictionary:
+	var normalized := CampaignCodec.normalize_data(data, context)
+	if not normalized["accepted"]:
+		return normalized
+	var state := CampaignState.new()
+	state._data = (normalized["value"] as Dictionary).duplicate(true)
+	state._context = context.duplicate(true)
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"value": state,
+	}
+
+
+static func _normalize_campaign_definition(campaign_def: CampaignDef) -> Dictionary:
+	if campaign_def == null:
+		return _reject(&"invalid_campaign_definition")
+	if (
+		campaign_def.schema_version != CampaignCodec.SAVE_VERSION
+		or campaign_def.name_version != HeroNames.VERSION
+		or campaign_def.initial_marks != CampaignInvariants.INITIAL_MARKS
+		or campaign_def.starter_operator_ids != P16_STARTERS
+		or not _is_hex_sha256(campaign_def.environment_sha256)
+		or campaign_def.environment_sha256 != CampaignDef.P16_ENVIRONMENT_SHA256
+	):
+		return _reject(&"invalid_campaign_definition")
+	var offers := _normalize_campaign_offers(campaign_def.paid_offers)
+	if not offers["accepted"]:
+		return offers
+	if (offers["value"] as Array).size() != 1 or offers["value"][0] != P16_OFFER:
+		return _reject(&"invalid_campaign_definition")
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"value": {
+			"schema_version": campaign_def.schema_version,
+			"name_version": campaign_def.name_version,
+			"initial_marks": campaign_def.initial_marks,
+			"starter_operator_ids": P16_STARTERS.duplicate(),
+			"paid_offers": offers["value"],
+			"environment_sha256": campaign_def.environment_sha256,
+		},
+	}
+
+
+static func _normalize_catalogs(catalogs: Dictionary) -> Dictionary:
+	if catalogs.keys().size() != 3:
+		return _reject(&"invalid_catalog")
+	var normalized := {}
+	var all_ids := {}
+	for key: String in ["operators", "traps", "spells"]:
+		if not catalogs.has(key) or typeof(catalogs[key]) != TYPE_ARRAY:
+			return _reject(&"invalid_catalog")
+		var ids: Array[StringName] = []
+		for raw_id: Variant in catalogs[key]:
+			if typeof(raw_id) not in [TYPE_STRING, TYPE_STRING_NAME]:
+				return _reject(&"invalid_catalog")
+			var item_id := String(raw_id)
+			if not _is_ascii_id(item_id) or all_ids.has(item_id):
+				return _reject(&"invalid_catalog")
+			all_ids[item_id] = true
+			ids.append(StringName(item_id))
+		if ids.is_empty():
+			return _reject(&"invalid_catalog")
+		ids.sort_custom(func(a: StringName, b: StringName) -> bool:
+			return String(a) < String(b))
+		normalized[key] = ids
+	return {"accepted": true, "error_code": &"", "value": normalized}
+
+
+static func _definition_references_exist(
+	definition: Dictionary,
+	catalogs: Dictionary,
+) -> bool:
+	var operators: Array = catalogs["operators"]
+	for operator_id: StringName in definition["starter_operator_ids"]:
+		if not operators.has(operator_id):
+			return false
+	for offer: Dictionary in definition["paid_offers"]:
+		if not operators.has(StringName(offer["operator_def_id"])):
+			return false
+	return true
+
+
+static func _normalize_stages(stage_defs: Array, catalogs: Dictionary) -> Dictionary:
+	var stages: Array = []
+	var stage_ids := {}
+	var stage_indices := {}
+	var rewarded := {}
+	for value: Variant in stage_defs:
+		if not value is StageDef:
+			return _reject(&"invalid_campaign_stage")
+		var stage := value as StageDef
+		if stage.campaign_index < 1:
+			continue
+		var stage_id := String(stage.id)
+		if (
+			not _is_ascii_id(stage_id) or stage_ids.has(stage_id)
+			or stage_indices.has(stage.campaign_index)
+		):
+			return _reject(&"invalid_campaign_stage")
+		stage_ids[stage_id] = true
+		stage_indices[stage.campaign_index] = true
+		var rewards_valid := _validate_stage_rewards(stage.rewards, catalogs, rewarded)
+		if not rewards_valid["accepted"]:
+			return rewards_valid
+		if not _valid_recovery_shape(
+			stage.recovery_roster, catalogs["operators"], stage.squad_size,
+		):
+			return _reject(&"invalid_campaign_stage")
+		stages.append(stage)
+	stages.sort_custom(func(a: StageDef, b: StageDef) -> bool:
+		return a.campaign_index < b.campaign_index)
+	if stages.is_empty():
+		return _reject(&"invalid_campaign_stage")
+	for position: int in stages.size():
+		if (stages[position] as StageDef).campaign_index != position + 1:
+			return _reject(&"invalid_campaign_stage")
+	if not _recovery_rosters_are_available(stages, catalogs):
+		return _reject(&"invalid_campaign_stage")
+	return {"accepted": true, "error_code": &"", "value": stages}
+
+
+static func _derive_starting_unlocks(catalogs: Dictionary, stages: Array) -> Dictionary:
+	var rewarded := {}
+	for stage: StageDef in stages:
+		for reward: Dictionary in stage.rewards:
+			rewarded[String(reward["id"])] = true
+	var result := {"operators": [], "traps": [], "spells": []}
+	for kind: String in result:
+		var starting: Array[StringName] = []
+		for item_id: Variant in catalogs[kind]:
+			if not rewarded.has(String(item_id)):
+				starting.append(StringName(item_id))
+		starting.sort_custom(func(a: StringName, b: StringName) -> bool:
+			return String(a) < String(b))
+		result[kind] = starting
+	return result
+
+
+static func _normalize_campaign_offers(values: Array[Dictionary]) -> Dictionary:
+	var rows: Array[Dictionary] = []
+	var seen := {}
+	for value: Dictionary in values:
+		if value.keys().size() != 3:
+			return _reject(&"invalid_campaign_definition")
+		for key: String in ["offer_id", "operator_def_id", "cost"]:
+			if not value.has(key):
+				return _reject(&"invalid_campaign_definition")
+		if (
+			typeof(value["offer_id"]) != TYPE_STRING
+			or typeof(value["operator_def_id"]) != TYPE_STRING
+			or typeof(value["cost"]) != TYPE_INT
+		):
+			return _reject(&"invalid_campaign_definition")
+		var offer_id: String = value["offer_id"]
+		var operator_id: String = value["operator_def_id"]
+		if (
+			not _is_ascii_id(offer_id) or not _is_ascii_id(operator_id)
+			or seen.has(offer_id) or int(value["cost"]) < 0
+		):
+			return _reject(&"invalid_campaign_definition")
+		seen[offer_id] = true
+		rows.append({
+			"offer_id": offer_id,
+			"operator_def_id": operator_id,
+			"cost": int(value["cost"]),
+		})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a["offer_id"]) < String(b["offer_id"]))
+	return {"accepted": true, "error_code": &"", "value": rows}
+
+
+static func _validate_stage_rewards(
+	rewards: Array[Dictionary],
+	catalogs: Dictionary,
+	seen: Dictionary,
+) -> Dictionary:
+	for reward: Dictionary in rewards:
+		if not _exact_keys(reward, ["kind", "id"]):
+			return _reject(&"invalid_stage_reward")
+		if (
+			typeof(reward["kind"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+			or typeof(reward["id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+		):
+			return _reject(&"invalid_stage_reward")
+		var kind := String(reward["kind"])
+		var item_id := String(reward["id"])
+		var catalog_key := kind + "s"
+		var reward_key := kind + ":" + item_id
+		if (
+			kind not in ["operator", "trap", "spell"]
+			or not _is_ascii_id(item_id) or seen.has(reward_key)
+			or not catalogs[catalog_key].has(StringName(item_id))
+		):
+			return _reject(&"invalid_stage_reward")
+		seen[reward_key] = true
+	return {"accepted": true, "error_code": &""}
+
+
+static func _valid_recovery_shape(
+	values: Array[StringName],
+	operators: Array,
+	squad_size: int,
+) -> bool:
+	if values.is_empty() or squad_size < 1 or values.size() > squad_size:
+		return false
+	var seen := {}
+	for value: StringName in values:
+		var operator_id := String(value)
+		if (
+			not _is_ascii_id(operator_id) or seen.has(operator_id)
+			or not operators.has(value)
+		):
+			return false
+		seen[operator_id] = true
+	return true
+
+
+static func _recovery_rosters_are_available(stages: Array, catalogs: Dictionary) -> bool:
+	var available := {}
+	var starting: Array = _derive_starting_unlocks(catalogs, stages)["operators"]
+	for operator_id: StringName in starting:
+		available[operator_id] = true
+	for stage: StageDef in stages:
+		for operator_id: StringName in stage.recovery_roster:
+			if not available.has(operator_id):
+				return false
+		for reward: Dictionary in stage.rewards:
+			if reward["kind"] == &"operator":
+				available[StringName(reward["id"])] = true
+	return true
+
+
+static func _environment_manifest(catalogs: Dictionary, stages: Array) -> Dictionary:
+	var stage_rows: Array[Dictionary] = []
+	for stage: StageDef in stages:
+		var rewards: Array[Dictionary] = []
+		for reward: Dictionary in stage.rewards:
+			rewards.append({
+				"kind": String(reward["kind"]),
+				"id": String(reward["id"]),
+			})
+		stage_rows.append({
+			"stage_id": String(stage.id),
+			"campaign_index": stage.campaign_index,
+			"squad_size": stage.squad_size,
+			"recovery_roster": _strings(stage.recovery_roster),
+			"rewards": rewards,
+		})
+	return {
+		"operators": _strings(catalogs["operators"]),
+		"traps": _strings(catalogs["traps"]),
+		"spells": _strings(catalogs["spells"]),
+		"stages": stage_rows,
+	}
+
+
+static func _exact_keys(value: Dictionary, expected: Array[String]) -> bool:
+	if value.keys().size() != expected.size():
+		return false
+	for key: String in expected:
+		if not value.has(key):
+			return false
+	return true
+
+
+static func _is_ascii_id(value: String) -> bool:
+	if value.is_empty():
+		return false
+	for character: String in value:
+		if character not in "abcdefghijklmnopqrstuvwxyz0123456789_-":
+			return false
+	return true
+
+
+static func _is_hex_sha256(value: String) -> bool:
+	if value.length() != 64:
+		return false
+	for character: String in value:
+		if character not in "0123456789abcdef":
+			return false
+	return true
+
+
+func _stage_stars_by_id() -> Dictionary:
+	var values := {}
+	for row: Dictionary in _data["stage_stars"]:
+		values[StringName(row["stage_id"])] = int(row["stars"])
+	return values
+
+
+static func _string_names(values: Array) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for value: Variant in values:
+		result.append(StringName(value))
+	return result
+
+
+static func _strings(values: Array) -> Array[String]:
+	var result: Array[String] = []
+	for value: Variant in values:
+		result.append(String(value))
+	return result
+
+
+static func _preview_accept(
+	first_clear: bool,
+	rewards_granted: Array,
+	created_hero_rows: Array,
+	next_index: int,
+) -> Dictionary:
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"first_clear": first_clear,
+		"rewards_granted": rewards_granted.duplicate(true),
+		"created_hero_rows": created_hero_rows.duplicate(true),
+		"next_recruitment_index": next_index,
+	}
+
+
+static func _reject(error_code: StringName) -> Dictionary:
+	return {"accepted": false, "error_code": error_code}

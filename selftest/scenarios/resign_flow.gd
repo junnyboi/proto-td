@@ -97,7 +97,7 @@ func _resign_to_results(
 
 func _retry_then_return_to_staging(
 		h: SelfTestHarness, game: Node, results: Control,
-		campaign_ref: CampaignState,
+			campaign_ref: LegacyCampaignAdapter,
 ) -> Control:
 	var retry := results.find_child("RetryButton", true, false) as Button
 	await h.click_view(retry.get_global_rect().get_center())
@@ -131,6 +131,8 @@ func _return_to_title(
 	h.check("Staging offers Back to Title", staging_back != null)
 	if staging_back == null:
 		return false
+	game.call("debug_unlock_all")
+	h.check("debug catalog override enabled", bool(game.get("_debug_catalog_override")))
 	await h.click_view(staging_back.get_global_rect().get_center())
 	var title := await _await_screen(h, game, "TitleBox")
 	h.check("title reached", title != null)
@@ -141,6 +143,7 @@ func _return_to_title(
 	h.check("selected stage cleared", game.get("selected_stage_id") == &"")
 	h.check("selected squad cleared", (game.get("selected_squad") as Array).is_empty())
 	h.check("last result cleared", (game.get("last_result") as Dictionary).is_empty())
+	h.check("debug catalog override cleared", not bool(game.get("_debug_catalog_override")))
 	if title == null:
 		return false
 	var start := title.find_child("StartButton", true, false) as Button
@@ -158,7 +161,7 @@ func _return_to_title(
 	return true
 
 
-func _start_campaign_battle(h: SelfTestHarness, game: Node) -> CampaignState:
+func _start_campaign_battle(h: SelfTestHarness, game: Node) -> LegacyCampaignAdapter:
 	var title := game.get("content") as Control
 	var start := title.find_child("StartButton", true, false) as Button
 	h.check("Start button on the title", start != null and start.text == "Start")
@@ -168,7 +171,7 @@ func _start_campaign_battle(h: SelfTestHarness, game: Node) -> CampaignState:
 	await h.click_view(start.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("Start opens campaign Staging", staging != null)
-	var campaign: CampaignState = game.get("campaign")
+	var campaign: LegacyCampaignAdapter = game.get("campaign")
 	h.check("campaign is active", campaign != null and bool(game.get("campaign_active")))
 	if staging == null or campaign == null:
 		return null

@@ -14,11 +14,6 @@ cd "$ROOT"
   exit 2
 }
 current_commit="$(git rev-parse HEAD)"
-current_branch="$(git symbolic-ref --quiet --short HEAD || true)"
-[[ -n "$current_branch" ]] || {
-  echo '[stale-class-registry] probe requires a named branch' >&2
-  exit 2
-}
 
 tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
 old_tree="$tmp_root/old"
@@ -54,7 +49,7 @@ probe_rc=$?
 set -e
 cat "$tmp_root/current-boot.log"
 [[ $probe_rc -eq 0 ]] || exit "$probe_rc"
-if grep -Eq 'Could not find type "(MusicCatalog|StageArtTheme)"|Identifier "StageArtTheme" not declared' \
+if grep -Eq 'Could not find type "(MusicCatalog|StageArtTheme|LegacyCampaignAdapter)"|Identifier "StageArtTheme" not declared|Identifier not found: LegacyCampaignAdapter|Identifier "LegacyCampaignAdapter" not declared' \
   "$tmp_root/current-boot.log"; then
   echo '[stale-class-registry] forbidden registry-dependent parse error detected' >&2
   exit 1
