@@ -46,7 +46,7 @@ func run(h: SelfTestHarness) -> void:
 
 	# operators: 5 battle frames + portrait each
 	var op_ids := _scan("res://data/operators")
-	h.check("ten operators on disk", op_ids.size() == 10)
+	h.check("eleven operators on disk", op_ids.size() == 11)
 	var op_ok := true
 	for op_id: StringName in op_ids:
 		var def := load("res://data/operators/%s.tres" % op_id) as OperatorDef
@@ -85,7 +85,10 @@ func run(h: SelfTestHarness) -> void:
 
 	# distinctness proxy: class representatives pairwise differ substantially
 	var reps: Array[Image] = []
-	for rep_id: StringName in [&"vanguard_1", &"guard_1", &"defender_1", &"sniper_1", &"caster_1"]:
+	for rep_id: StringName in [
+		&"vanguard_1", &"guard_1", &"defender_1", &"sniper_1", &"caster_1",
+		&"witch_doctor_1",
+	]:
 		reps.append(Art.texture(rep_id, 0).get_image())
 	var min_diff := 1 << 30
 	for i: int in reps.size():

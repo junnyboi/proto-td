@@ -121,3 +121,15 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 - Ownership release: the AUI-12 active claim has been removed from `docs/todo.md`; successor packages may claim paths only through a new exact-base transaction.
 - Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-34 is now closed on master, but AUI-11/AUI-20 remain separate packages and cannot enter this successor.
 - Closure boundary: AUI-20 is unblocked by AUI-12 closure but remains a separate, newly claimed package; AUI-11 remains governed by its own dependencies and scope.
+
+## AUI-20 — Integrated S1 slice and kill-gate verdict
+
+- Status: `claimed_plan_in_progress`; no implementation byte has been written.
+- Owner: `AGENT F (Agent 7)`.
+- Claim branch/base: `agent-f/aui-20-claim` from `master` at `38e3123f31188a5bb8b0093bc092940e424e5961` / tree `ea9a4e1b40afd5cf019610586725f5712468b312`.
+- Base health: clean 33-rung default verification PASS; `verify.json` SHA-256 `4da359c0bfe6bb721877b9bbfbe68dedca323b2c96d7cd4bca4a1648338cd807`.
+- Landed dependencies: AUI-12 approved candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d`; AUI-10R approved runtime union `ffc08098a1434ca9cb68cc7dd884c71d690a93a9`; AUI-10R Poseidon receipt SHA-256 `a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83`.
+- Dependency amendment: Poseidon's exact-base claim directive supersedes only the older scheduling edge from AUI-11 to AUI-20. AUI-11 remains separate; this package consumes and judges no unlanded Agent E runtime bytes.
+- Frozen package boundary: one title-to-S1 integrated scenario plus focused native/Web/performance oracles and the `PROCEED | PIVOT | KILL source approach` verdict. No bulk content, full-screen redesign, Act II work, simulation, balance, projection, localization, audio, threshold, or verification-entrypoint change.
+- Effective implementation lane: MGS v2 `RELEASE`; claim lane: docs-only `STANDARD`.
+- Next transition: freeze the external package plan, obtain plan-lint PASS, land this claim, then create non-rewriting `agent-f/aui-20` from the exact landed claim commit with a new RELEASE orientation. `FEATURES.json` remains unchanged until closure evidence satisfies its declared boundary.

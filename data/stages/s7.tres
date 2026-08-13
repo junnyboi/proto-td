@@ -95,7 +95,10 @@ music_boss_wave_index = -1
 leak_limit = 3
 squad_size = 6
 recovery_roster = Array[StringName]([&"vanguard_1", &"guard_1", &"guard_2", &"sniper_1", &"caster_2", &"defender_1"])
-rewards = Array[Dictionary]([])
+rewards = Array[Dictionary]([{
+"id": &"witch_doctor_1",
+"kind": &"operator"
+}])
 campaign_index = 7
 requires = Array[StringName]([])
 intro_hint = "Everything at once. Spend every tool you own, on time."

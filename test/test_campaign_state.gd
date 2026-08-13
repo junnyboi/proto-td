@@ -93,14 +93,21 @@ func test_star_best_of() -> void:
 	assert_eq(int(state.stage_stars[&"s1"]), 3, "DEFEAT changes nothing")
 
 
-## §4.1.5: the whole chain end-to-end — after s6 everything is unlocked.
+## §4.1.5: the whole chain end-to-end — Witch Doctor remains locked through
+## S6, then the first S7 clear makes the full eleven-template catalog available.
 func test_chain_integrity() -> void:
 	var state := _fresh()
 	for sid: StringName in [&"s1", &"s2", &"s3", &"s4", &"s5", &"s6"]:
 		assert_true(state.is_stage_unlocked(sid), "%s unlocked in order" % sid)
 		state.record_result(_stage(sid), BattleModel.Result.CLEAR, 2)
-	assert_eq(state.unlocked_operators.size(), 10, "all ten operators after s6")
+	assert_eq(state.unlocked_operators.size(), 10, "ten pre-healer operators after s6")
+	assert_false(state.unlocked_operators.has(&"witch_doctor_1"))
 	assert_eq(state.unlocked_traps.size(), 2)
 	assert_eq(state.unlocked_spells.size(), 2)
 	assert_eq(state.stage_stars.size(), 6)
 	assert_true(state.is_stage_unlocked(&"s7"))
+	var granted := state.record_result(_stage(&"s7"), BattleModel.Result.CLEAR, 2)
+	assert_eq(granted, [{"kind": &"operator", "id": &"witch_doctor_1"}])
+	assert_eq(state.unlocked_operators.size(), 11, "all eleven operators after s7")
+	assert_true(state.unlocked_operators.has(&"witch_doctor_1"))
+	assert_eq(state.record_result(_stage(&"s7"), BattleModel.Result.CLEAR, 3), [])

@@ -13,7 +13,8 @@ extends RefCounted
 ## A battle is fully described by (stage_id, squad, seed, [[tick, verb,
 ## args...]]) — that tuple is the replay format, the bot format, and the
 ## test format. Verbs: deploy(op_id, cell, facing), retreat(unit_id),
-## trigger_skill(unit_id), place_trap(trap_id, cell), cast(spell_id, target),
+## trigger_skill(unit_id), mend(healer_unit_id, target_unit_id),
+## place_trap(trap_id, cell), cast(spell_id, target),
 ## plus the debug verbs (Phase 8, rule 5 — the overlay is a client of this
 ## dispatcher, never a parallel path): debug_grant_operator(op_id),
 ## debug_remove_operator(op_id), debug_set_dp(value),
@@ -47,6 +48,8 @@ extends RefCounted
 ## (CLAUDE.md ban list).
 
 enum Result { RUNNING, CLEAR, DEFEAT }
+
+const HealingRulesScript := preload("res://sim/healing_rules.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
@@ -157,6 +160,8 @@ func run_to_terminal(max_ticks: int) -> void:
 func apply_action(action: Array) -> bool:
 	if action.is_empty() or result != Result.RUNNING:
 		return false
+	if typeof(action[0]) != TYPE_STRING_NAME:
+		return false
 	var verb: StringName = action[0]
 	var n := action.size()
 	var ok := false
@@ -167,6 +172,13 @@ func apply_action(action: Array) -> bool:
 			ok = n == 2 and _apply_retreat(int(action[1]))
 		&"trigger_skill":
 			ok = n == 2 and _apply_trigger_skill(int(action[1]))
+		&"mend":
+			if (
+				n == 3
+				and HealingRulesScript.is_valid_id(action[1])
+				and HealingRulesScript.is_valid_id(action[2])
+			):
+				ok = HealingRulesScript.apply(self, int(action[1]), int(action[2]))
 		&"place_trap":
 			ok = n == 3 and _apply_place_trap(action[1], action[2])
 		&"cast":
@@ -278,10 +290,15 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 ## active_effects until tick + duration_ticks.
 func _apply_trigger_skill(unit_id: int) -> bool:
 	var u := unit_by_id(unit_id)
-	if u == null or not u.is_skill_ready():
+	if (
+		u == null
+		or not u.is_skill_ready()
+		or u.skill_effect == SkillDef.Effect.HEAL_TARGET
+	):
 		return false
 	u.sp = 0
 	u.skill_triggered_tick = tick
+	u.skill_target_unit_id = -1
 	skills_fired += 1
 	match u.skill_effect:
 		SkillDef.Effect.DP_BURST:

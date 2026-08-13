@@ -6,7 +6,8 @@ extends Resource
 ## the skill field lands in Phase 5 with the SkillDef class (as pinned in
 ## td-phase-2-3.md §3.2).
 
-enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER }
+## Append-only: .tres resources serialize this enum by integer ordinal.
+enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER }
 enum Placement { GROUND, ELEVATED }
 
 @export var id: StringName = &""

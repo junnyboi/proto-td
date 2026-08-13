@@ -57,6 +57,7 @@ func _initialize() -> void:
 	# operators: battle frames + portrait bust
 	for op_id: StringName in ArtOperators.OPERATOR_SHEETS:
 		var def := load("res://data/operators/%s.tres" % op_id) as OperatorDef
+		var is_placeholder := op_id == &"witch_doctor_1"
 		var frames := ArtOperators.build(op_id, def.op_class)
 		for i: int in frames.size():
 			_lint_and_save(
@@ -65,7 +66,7 @@ func _initialize() -> void:
 			)
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
-			ArtOperators.SIZE
+			ArtOperators.SIZE, is_placeholder
 		)
 		for i: int in [0, 2, 4]:
 			sheet_cells.append(Pix.upscale(frames[i], 4))
@@ -78,13 +79,13 @@ func _initialize() -> void:
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
 			reserved_free
 		)
-		# fidelity pass (art v2) signed off: card backdrop + glint/blush on
-		# the roster-spread archetypes — placeholder flag retired (§6.3)
+		# Existing accepted art remains final; the new healer stays placeholder.
 		_record(
 			StringName("portrait_%s" % def.portrait_id),
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
 			1,
-			ArtPortraits.SIZE * ArtPortraits.UPSCALE
+			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
+			is_placeholder
 		)
 		portrait_cells.append(portrait)
 
