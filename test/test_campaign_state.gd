@@ -1,6 +1,6 @@
 extends GutTest
 
-## Phase 10 unlock-flow gates (td-phase-10.md §4.1) — pure CampaignState,
+## Phase 10 unlock-flow gates (td-phase-10.md §4.1) — pure LegacyCampaignAdapter,
 ## no autoload, no residual state. Run against the LIVE catalogs and stage
 ## files so a roster or reward edit that breaks the campaign design fails
 ## loudly here.
@@ -35,13 +35,13 @@ func _stage(sid: StringName) -> StageDef:
 	return null
 
 
-func _fresh() -> CampaignState:
-	return CampaignState.create(_catalogs, _stages)
+func _fresh() -> LegacyCampaignAdapter:
+	return LegacyCampaignAdapter.create(_catalogs, _stages)
 
 
 ## §4.1.1 gate: derivation exactness against the live data (K7 rosters).
 func test_derivation_exactness() -> void:
-	var starting := CampaignState.derive_starting_unlocks(_catalogs, _stages)
+	var starting := LegacyCampaignAdapter.derive_starting_unlocks(_catalogs, _stages)
 	var expected_ops: Array[StringName] = [
 		&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
 	]

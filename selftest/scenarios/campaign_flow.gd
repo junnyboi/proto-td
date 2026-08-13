@@ -32,7 +32,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("Start opens Staging", staging != null)
 	if staging == null:
 		return
-	var campaign_ref: CampaignState = game.get("campaign")
+	var campaign_ref: LegacyCampaignAdapter = game.get("campaign")
 	game.call("open_stage_select")
 	var select := await _await_screen(h, game, "StageColumn")
 	h.check("stage select opened", select != null)
@@ -87,7 +87,8 @@ func run(h: SelfTestHarness) -> void:
 ## Second half (own function to keep run() within the lint's return
 ## budget): S1 battle -> Continue -> results -> progress -> s2 gate.
 func _battle_and_progress(
-		h: SelfTestHarness, game: Node, start_btn: Button, campaign_ref: CampaignState,
+		h: SelfTestHarness, game: Node, start_btn: Button,
+		campaign_ref: LegacyCampaignAdapter,
 ) -> void:
 	await h.click_view(start_btn.get_global_rect().get_center())
 	var budget := 120
@@ -185,7 +186,8 @@ func _battle_and_progress(
 
 
 func _return_to_stage_select(
-		h: SelfTestHarness, game: Node, results: Control, campaign_ref: CampaignState,
+		h: SelfTestHarness, game: Node, results: Control,
+		campaign_ref: LegacyCampaignAdapter,
 ) -> Control:
 	var to_staging := results.find_child("ReturnToStaging", true, false) as Button
 	h.check("campaign CLEAR offers Return to Staging", to_staging != null)

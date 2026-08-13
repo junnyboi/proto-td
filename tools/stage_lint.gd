@@ -5,7 +5,7 @@ extends SceneTree
 ## enemy-walkable, wave enemy ids resolve, path_idx in range, sane limits.
 ## Phase 10 (td-phase-10.md §2.7): reward id resolution + no double grants,
 ## dense campaign_index 1..8, teach-before-use (requires ⊆ starting set ∪
-## earlier rewards — the STARTING SET comes from the same CampaignState
+## earlier rewards — the STARTING SET comes from the same LegacyCampaignAdapter
 ## derivation the runtime uses, so the two can't drift), difficulty
 ## monotonicity (Σ wave hp non-decreasing in campaign order), campaign
 ## hygiene (intro_hint, squad_size vs available operators, wave_starts ≥ 2).
@@ -81,7 +81,7 @@ func _lint_teach_before_use(campaign: Array, failures: Array[String]) -> void:
 		"traps": _scan_ids(KIND_DIRS[&"trap"]),
 		"spells": _scan_ids(KIND_DIRS[&"spell"]),
 	}
-	var starting := CampaignState.derive_starting_unlocks(catalogs, campaign)
+	var starting := LegacyCampaignAdapter.derive_starting_unlocks(catalogs, campaign)
 	var available: Dictionary = {}
 	for kind: String in starting:
 		for item_id: StringName in starting[kind]:
@@ -98,7 +98,7 @@ func _lint_teach_before_use(campaign: Array, failures: Array[String]) -> void:
 func _lint_monotonic_and_hygiene(campaign: Array, failures: Array[String]) -> void:
 	var enemy_hp: Dictionary = {}
 	var prev_total := -1
-	var starting_ops: Array = CampaignState.derive_starting_unlocks({
+	var starting_ops: Array = LegacyCampaignAdapter.derive_starting_unlocks({
 		"operators": _scan_ids(KIND_DIRS[&"operator"]),
 		"traps": [], "spells": [],
 	}, campaign)["operators"] as Array
@@ -198,7 +198,7 @@ func _lint_stage(path: String, failures: Array[String]) -> StageDef:
 		return null
 	var tag := String(stage.id)
 	# P10 audit F4: filename<->id agreement is load-bearing (Game loads defs
-	# by filename, CampaignState/screens load by stage.id — a mismatch is
+	# by filename, LegacyCampaignAdapter/screens load by stage.id — a mismatch is
 	# lint-green but breaks the campaign at runtime)
 	if path.get_file().trim_suffix(".tres") != tag:
 		failures.append("%s: file name does not match stage id '%s'" % [path, tag])

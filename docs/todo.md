@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-019 — Implement the canonical P16.1 hero/roster model
+
+- Status: in_progress
+- Owner: AGENT A / Agent 1
+- Branch: `agent-a/p16-1-roster`
+- Base: `master` at `6a578856d1893030011c557716bbb930559fa681`; oriented merge `8e973dc94303d556d1a42261b6d95a64dd8f045d`
+- Dependencies: TD-018; owner-approved D16-08
+- Owned files: `data/campaign_def.gd*`; `data/campaigns/p16_v1.tres`; `sim/hero_state.gd*`; `sim/roster_state.gd*`; `sim/legacy_campaign_adapter.gd*`; `sim/campaign_state.gd`; `autoloads/game.gd`; `test/test_hero_state.gd*`; `test/test_roster_state.gd*`; `test/test_campaign_state_p16.gd*`; `test/test_game_campaign_compat.gd*`; `test/test_campaign_state.gd`; `test/test_resign.gd`; `selftest/scenarios/model_roster_probe.gd*`; `selftest/scenarios/campaign_flow.gd`; `selftest/scenarios/resign_flow.gd`; `selftest/scenarios/staging_flow.gd`; `playtests/bots/bot_campaign.gd`; `tools/model_roster_runner.gd*`; `tools/stage_lint.gd`; `scripts/model_roster_check.sh`; `scripts/verify.sh`; `docs/plans/TD-019-p16-1-roster.md`; `docs/handoffs/TD-019-agent-a-p16-1-roster.md`; this TD-019 row; serialized closure updates to `docs/completed.md` and `FEATURES.json`
+- Do not touch: frozen P16.0 codec/hash/invariants/fixtures/replay contracts; BattleModel; player-facing UI; thresholds; localization; presentation/art/audio; AUI-12/AUI-34 files
+- Acceptance: exact fresh canonical model pins, immutable hero/roster views, pure reward preview, compatibility projection, nonpersistent debug override, two-process equality, and unchanged legacy campaign behavior; no player-facing P16 claim
+- Required evidence: focused suites twice; model-roster two-process diff; existing replay/filesystem proof; `model_roster_probe` sentinel with no screenshots; fresh clean-artifact RELEASE; independent diff-vs-pins audit; exact merged-union verification
+- Last update: 2026-08-13
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

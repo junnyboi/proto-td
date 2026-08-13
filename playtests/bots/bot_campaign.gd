@@ -74,7 +74,7 @@ func _assert_before_stage(bot: StageBot) -> bool:
 	var index := order.find(sid)
 	if index + 1 < order.size() and game.call("is_stage_unlocked", order[index + 1]):
 		return _fail("%s unlocked before %s cleared" % [order[index + 1], sid])
-	var campaign: CampaignState = game.get("campaign")
+	var campaign: LegacyCampaignAdapter = game.get("campaign")
 	for op_id: StringName in bot.squad():
 		if not campaign.unlocked_operators.has(op_id):
 			return _fail("%s squad uses locked operator %s" % [sid, op_id])
@@ -89,7 +89,7 @@ func _assert_before_stage(bot: StageBot) -> bool:
 func _assert_after_clear(bot: StageBot) -> void:
 	var game := _game()
 	var sid := bot.stage_id()
-	var campaign: CampaignState = game.get("campaign")
+	var campaign: LegacyCampaignAdapter = game.get("campaign")
 	if not campaign.stage_stars.has(sid):
 		_fail("%s clear was not recorded" % sid)
 		return
