@@ -1,0 +1,47 @@
+{
+  "approval": {
+    "approved_content_hash_gates_launch": false,
+    "h1_required": true,
+    "phase": "H0",
+    "token": "ACT-II-S2-S3-H0"
+  },
+  "candidate_files": {
+    "bytes_identical": true,
+    "runtime": "assets/world/s3/blocked-regulator.png",
+    "sha256": "4fe1aa007bdbb2ba9e872a0fd7d7bc71c6b6f47f7679d5203b9994a0c0a05d7f",
+    "staging": "staging/assets/world/s3/blocked-regulator.png"
+  },
+  "dimensions": [
+    32,
+    16
+  ],
+  "generator": {
+    "generation_id": null,
+    "generation_id_reason": "UNAVAILABLE: generation tool returned no generation identifier; none invented.",
+    "model": "gpt-image-2",
+    "provider": "Manus built-in image generation",
+    "seed": null,
+    "seed_reason": "UNAVAILABLE: generation tool exposed no seed parameter or returned seed; none invented.",
+    "source": "art-src/world/s3/s3-production-source.png",
+    "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
+    "tool": "Manus built-in image generation / generate_image"
+  },
+  "human_final_art": false,
+  "license_source": "original AI-assisted source under project-controlled prompt/reference set; candidate pending H1",
+  "logical_id": "world.s3.blocked_regulator",
+  "normalization": {
+    "palette": "art-src/world/s3/s3-derived-palette.json",
+    "palette_sha256": "37c2cd6bc95cc9601089d12f0eabcd6eb458537c2c598ff211a270d0871a6dcf",
+    "pillow": "12.3.0",
+    "python": "3.12.3",
+    "recipe": "exact source-color extraction plus original integer Pillow geometry; no source crop/resize/paste; no dithering; hard alpha",
+    "tool": "tools/art_pipeline/world/s3/normalize_s3_world.py",
+    "tool_sha256": "d1c4677390326086f79bc127578e47a18d7733a936eea43453f39d4ae8d1c7a4"
+  },
+  "pivot": [
+    16,
+    15
+  ],
+  "schema_version": 1,
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
+}

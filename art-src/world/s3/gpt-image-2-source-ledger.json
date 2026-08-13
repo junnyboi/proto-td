@@ -1,0 +1,18 @@
+{
+  "approval_token": "ACT-II-S2-S3-H0",
+  "approved_content_hash_gates_launch": false,
+  "generation_id": null,
+  "generation_id_reason": "UNAVAILABLE: tool returned paths/dimensions but no generation identifier; none invented.",
+  "human_final_art": false,
+  "model": "gpt-image-2",
+  "originality": "Runtime pixels are new programmatic shapes; source modules are not resized, copied, cropped, or pasted.",
+  "provider": "Manus built-in image generation",
+  "schema_version": 1,
+  "seed": null,
+  "seed_reason": "UNAVAILABLE: tool did not expose/return a seed; none invented.",
+  "source": "art-src/world/s3/s3-production-source.png",
+  "source_role": "mandatory GPT Image 2 palette/material/provenance input; never a runtime raster",
+  "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING",
+  "tool": "Manus built-in image generation / generate_image"
+}

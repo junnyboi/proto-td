@@ -1,0 +1,34 @@
+{
+  "approval_token": "ACT-II-S2-S3-H0",
+  "asset_count": 6,
+  "asset_sha256": {
+    "world.s3.backdrop_panorama": "8f519edbee6a3c85ef3456ac889c9dffba65d45e92c1d96175d20f9b08997ba4",
+    "world.s3.blocked_pressure_jaw": "4f5240d335be2ce78d9ccd2e469f7df851e8c2cec5ba40049881c43cee6f6e13",
+    "world.s3.blocked_regulator": "4fe1aa007bdbb2ba9e872a0fd7d7bc71c6b6f47f7679d5203b9994a0c0a05d7f",
+    "world.s3.core_pressure_keeper": "c981c00ea4116c2d0d832dc0db0f79eac5b5e6610351f3b064f104c08411e61b",
+    "world.s3.elevated_assay": "69db28e652a3bb5fb82a680862286c387a5aa5263aaf4c00310592691013e0e1",
+    "world.s3.spawn_rain_sluice": "c38b9b0fef8d6fbb67dd16a59b9f2022a681e1d7bf7d652abb05fbca17762b3a"
+  },
+  "checks_passed": [
+    "six exact logical IDs and dimensions",
+    "RGBA hard alpha only",
+    "all opaque RGB values are exact mandatory-source palette members",
+    "reserved colors absent",
+    "blocker bytes and silhouettes distinct",
+    "endpoint lower-center owner/approach negative space clear",
+    "panorama authored from non-diamond vertical/arcing primitives",
+    "runtime/staging candidate bytes identical",
+    "one provenance fragment per logical asset mirrored byte-identically"
+  ],
+  "human_final_art": false,
+  "idempotence_protocol": [
+    "clean A",
+    "clean B",
+    "contaminated C complete replacement"
+  ],
+  "schema_version": 1,
+  "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
+  "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING",
+  "tool_sha256": "d1c4677390326086f79bc127578e47a18d7733a936eea43453f39d4ae8d1c7a4",
+  "visual_review_status": "H1_PENDING"
+}
