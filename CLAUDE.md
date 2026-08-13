@@ -37,6 +37,13 @@ it grows one rule per repeated mistake and never shrinks.
 - Never hand-write `Object(InputEventKey…)` serialization — input actions via a scratch
   `ProjectSettings` script.
 - Never reference a new `class_name` before running `--import` (registry lives in `.godot`).
+- Runtime hot paths that reference a newly introduced `class_name` (especially autoloads and
+  battle-view builders) must explicitly `preload()` that script under a local constant or type
+  alias. A developer
+  pulling new code can retain a valid-but-stale class cache; requiring a manual reimport is not a
+  shipping fix. Fresh clones still run `--import` first. Gate the upgrade path with
+  `scripts/probe_stale_class_registry.sh`; dedicated cache-regression gates must also scan output
+  because Godot may report a fatal parse/autoload error and still exit 0.
 - `--check-only` cannot resolve autoloads — the compile gate for autoload-referencing scripts is
   the boot check + GUT, not `--check-only`.
 - Never override `_process` on a `SceneTree` script — connect to `process_frame`.

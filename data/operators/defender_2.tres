@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"defender_2"
-display_name = "Aegiswall"
+display_name = "Immovable"
 op_class = 2
 rarity = 4
 dp_cost = 18

@@ -11,6 +11,7 @@ const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
+const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -19,14 +20,15 @@ var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null
 
-# Campaign session (Phase 10, td-phase-10.md §2.2 — session-only, resets
-# every start_campaign). campaign_active == false preserves full-catalog
-# loadouts for harness/debug direct-battle seams; it is not a player mode.
-var campaign: CampaignState = null
+# D16-08 runtime compatibility session. Canonical P16 CampaignState remains
+# model-only until real ticket/outcome production permits the P16.3 cutover.
+# campaign_active == false preserves full-catalog direct-battle seams.
+var campaign: Variant = null
 var campaign_active: bool = false
 var selected_stage_id: StringName = &""
 var selected_squad: Array[StringName] = []
 var last_result: Dictionary = {}
+var _debug_catalog_override: bool = false
 
 
 func set_run_seed(value: int) -> void:
@@ -37,7 +39,8 @@ func set_run_seed(value: int) -> void:
 ## Fresh campaign run (always from scratch — no persistence by design).
 ## Bots pass open_campaign_ui = false and drive start_stage directly.
 func start_campaign(open_campaign_ui: bool = true) -> void:
-	campaign = CampaignState.create(_catalogs(), _all_stage_defs())
+	_debug_catalog_override = false
+	campaign = LEGACY_CAMPAIGN_ADAPTER_SCRIPT.create(_catalogs(), _all_stage_defs())
 	campaign_active = true
 	pending_stage = null
 	current_battle = null
@@ -83,18 +86,24 @@ func campaign_stage_ids() -> Array[StringName]:
 ## §2.1): unlocked sets while a campaign runs, full catalogs for internal
 ## harness/debug direct-battle seams.
 func loadout_operator_ids() -> Array[StringName]:
+	if _debug_catalog_override:
+		return _scan_ids("res://data/operators")
 	if campaign_active and campaign != null:
 		return campaign.unlocked_operators
 	return _scan_ids("res://data/operators")
 
 
 func loadout_trap_ids() -> Array[StringName]:
+	if _debug_catalog_override:
+		return _scan_ids("res://data/traps")
 	if campaign_active and campaign != null:
 		return campaign.unlocked_traps
 	return _scan_ids("res://data/traps")
 
 
 func loadout_spell_ids() -> Array[StringName]:
+	if _debug_catalog_override:
+		return _scan_ids("res://data/spells")
 	if campaign_active and campaign != null:
 		return campaign.unlocked_spells
 	return _scan_ids("res://data/spells")
@@ -102,14 +111,14 @@ func loadout_spell_ids() -> Array[StringName]:
 
 ## Records a terminal battle result (called once per battle by the view's
 ## result edge); grants first-clear rewards and stores last_result for the
-## results screen. Idempotent by CampaignState construction.
+## results screen. Idempotent by LegacyCampaignAdapter construction.
 func record_result(result: int, stars: int) -> void:
 	if current_battle == null:
 		return
 	var stage := current_battle.stage
 	var granted: Array[Dictionary] = []
 	# campaign_active guard (Phase 13, Q4): a harness/debug direct battle
-	# must never grant rewards through a stale CampaignState.
+	# must never grant rewards through a stale compatibility campaign.
 	if campaign != null and campaign_active:
 		granted = campaign.record_result(stage, result, stars)
 	last_result = {
@@ -123,8 +132,7 @@ func record_result(result: int, stars: int) -> void:
 
 
 func debug_unlock_all() -> void:
-	if campaign != null:
-		campaign.unlock_everything(_catalogs())
+	_debug_catalog_override = true
 
 
 ## Back to the starting menu (Phase 13). Resets the campaign session so the
@@ -137,11 +145,12 @@ func open_title() -> void:
 	selected_stage_id = &""
 	selected_squad = []
 	last_result = {}
+	_debug_catalog_override = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
 ## P15 campaign-home seam. Returning here only swaps the projection; the
-## existing CampaignState object remains authoritative and unchanged.
+## existing LegacyCampaignAdapter remains authoritative and unchanged.
 func open_staging() -> void:
 	_swap_content.call_deferred(STAGING_SCENE_PATH)
 

@@ -56,3 +56,12 @@ Shared ledgers and `FEATURES.json` remain serial integration surfaces. The curre
 - Added exclusive Agent F paths: `tools/presentation_qa/web_baseline.py` and `tools/presentation_qa/test_web_baseline.py`; existing AUI-12 ownership of `selftest/scenarios/ui_shell_floor.gd*` permits only optional release-challenge reporting that is absent in ordinary verification.
 - Implementation must use a new non-rewriting `agent-f/aui-12-web-remediation` successor from the exact claimed master. It may not alter `scripts/verify.sh`, thresholds, simulation/model/hash/save/replay/telemetry, Agent D/E bytes, or unrelated tests/scenarios.
 - Landing still requires one wholly fresh cache-bypassed RELEASE at the frozen successor, exact 38-test focused proof, 62-shot zero-skip scenario proof, two-process replay equality, independent diff-vs-pins audit, and Poseidon's exact-candidate playable-Web/en-US review.
+
+## AUI-12 L7 approval, landing, and closure
+
+- Poseidon approved exact candidate `aa856d71d5e533f8267bed3b63c8c85fc0acfc9d` / tree `40be18f250689e140d8ded3b5f4863a486b6ea57` after reviewing the commit-bound WebDev checkpoint `292d2003`.
+- The verbatim decision is preserved externally in `AUI-12-L7-REVIEW.md` at SHA-256 `3999ae03080c2f48cf0fb3861892bb35792ad1ddee51d943d93fc3f6db046d40`.
+- Exact RELEASE root `release-aa856d7-r1` passed 83 rungs, 26 scenario reports, 38 focused Web tests, 20 focused GUT tests / 1,987 assertions, 62 fresh UI shots, zero skips, two-process replay equality, and independent `PASS_CONTENT_EQUIVALENT` output.
+- The non-implementer final build audit passed with zero findings at or above 80 confidence; report SHA-256 `8a76e00683a221e84fcdb038cb59a160f08b297c20ff198306fa134c23305ce4`.
+- Guarded landing proved remote `master` still equaled tested base `3376178219c4a9df94abfb24798a6ffe3d0c7aee`, the feature ref still equaled the approved candidate, the evidence root remained sealed, and the fast-forward required no force or synthesized merge.
+- AUI-12 is closed. Its active ownership is released. AUI-20 is unblocked by this dependency only; it still requires a new exact-base claim, its own scope, and applicable verification/human gates.

@@ -1,0 +1,1391 @@
+{
+  "schema_version": 1,
+  "discovery": {
+    "targets": "Recursively collect every visible BaseButton and ItemList under the active screen; compare normalized node-name IDs to the exact target inventory for the active state. Missing and unexpected both fail.",
+    "text": "Recursively collect every visible Label, every visible BaseButton with nonempty logical text, and each visible ItemList selected-item text; compare normalized logical owner IDs to the exact text inventory. A BaseButton PresentationLabel child is measured as the owner Button's glyph/layout surface and is not a second row. Missing and unexpected both fail.",
+    "normalized_dynamic_ids": "Selectors ending in * match direct node-name prefixes only; discovered IDs retain full runtime node names in diagnostics.",
+    "runtime_parity": "At every mode and viewport, discovered target/text sets, counts, node types, enabled predicates, Theme variations, owner ancestry, visibility, clipping, and geometry must equal this contract exactly. Scenario report includes per-state discovered_count, expected_count, missing_ids, unexpected_ids, and mismatched_ids for targets and text.",
+    "source_parity": "GUT scans exact assignment constructors. Literal assignments must equal literal selectors. Approved formatted assignments are expanded over the exact bounded domains below. Any other formatted/dynamic Button, Label, or ItemList name constructor fails. Source diagnostics report expected_count, discovered_count, missing_ids, unexpected_ids, and mismatched_templates separately from runtime diagnostics.",
+    "approved_source_templates": [
+      {
+        "path": "res://scripts/ui/stage_select.gd",
+        "source": "row.name = \"Stage_%s\" % stage_id",
+        "template": "Stage_%s",
+        "domain": [
+          "s1",
+          "s2",
+          "s3",
+          "s4",
+          "s5",
+          "s6",
+          "s7",
+          "s8"
+        ],
+        "expanded_count": 8
+      },
+      {
+        "path": "res://scripts/ui/squad_select.gd",
+        "source": "pick.name = \"Pick_%s\" % op_id",
+        "template": "Pick_%s",
+        "domain": [
+          "caster_1",
+          "caster_2",
+          "defender_1",
+          "defender_2",
+          "guard_1",
+          "guard_2",
+          "sniper_1",
+          "sniper_2",
+          "vanguard_1",
+          "vanguard_2"
+        ],
+        "expanded_count": 10
+      },
+      {
+        "path": "res://scripts/ui/results.gd",
+        "source": "\"Reward%d\" % i",
+        "template": "Reward%d",
+        "domain": [
+          0
+        ],
+        "expanded_count": 1,
+        "bound": "Every campaign stage rewards.size() <= 1; result fixture rewards_granted.size() in [0,1]."
+      }
+    ],
+    "source_report_fields": [
+      "expected_count",
+      "discovered_count",
+      "missing_ids",
+      "unexpected_ids",
+      "mismatched_templates"
+    ],
+    "text_exclusions": []
+  },
+  "states": {
+    "title": {
+      "screen_marker": "TitleBox",
+      "targets": [
+        {
+          "selector": "StartButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ContentHost"
+        },
+        {
+          "selector": "LocaleList",
+          "type": "ItemList",
+          "enabled": true,
+          "variation": [
+            "AuiLocaleList"
+          ],
+          "owner": "LocaleSelector"
+        }
+      ],
+      "text": [
+        {
+          "selector": "TitleLabel",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "TitleBox"
+        },
+        {
+          "selector": "StartButton",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "TitleBox"
+        },
+        {
+          "selector": "FooterLabel",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "TitleBox"
+        },
+        {
+          "selector": "LocaleLabel",
+          "type": "Label",
+          "variation": [
+            "AuiLocaleLabel"
+          ],
+          "owner": "LocaleSelector"
+        },
+        {
+          "selector": "LocaleList",
+          "type": "ItemList",
+          "variation": [
+            "AuiLocaleList"
+          ],
+          "owner": "LocaleSelector"
+        }
+      ],
+      "focus_order": [
+        "StartButton",
+        "LocaleList"
+      ],
+      "target_count": 2,
+      "text_count": 5
+    },
+    "staging": {
+      "screen_marker": "StagingShell",
+      "targets": [
+        {
+          "selector": "MissionControlButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "BarracksButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "RecruitButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "TrainingButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "ArmoryButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "MemorialButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "BackToTitleButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationsColumn"
+        }
+      ],
+      "text": [
+        {
+          "selector": "StagingHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "StagingColumn"
+        },
+        {
+          "selector": "CampaignSummary",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "NextMissionSummary",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "OperationStatus",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "MissionControlButton",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "BarracksButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "RecruitButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "TrainingButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "ArmoryButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "MemorialButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "BackToTitleButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationsColumn"
+        }
+      ],
+      "focus_order": [
+        "MissionControlButton",
+        "BackToTitleButton"
+      ],
+      "target_count": 7,
+      "text_count": 11
+    },
+    "campaign_initial": {
+      "screen_marker": "StageColumn",
+      "targets": [
+        {
+          "selector": "Stage_s1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s2",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s3",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s4",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s5",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s6",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s7",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s8",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "BackToStaging",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "StageColumn"
+        }
+      ],
+      "text": [
+        {
+          "selector": "CampaignHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "StageColumn"
+        },
+        {
+          "selector": "Stage_*",
+          "type": "Button",
+          "expected_count": 8,
+          "variation": [
+            "AuiPrimaryButton",
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "NextHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "StageColumn"
+        },
+        {
+          "selector": "BackToStaging",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "StageColumn"
+        }
+      ],
+      "focus_order": [
+        "Stage_s1",
+        "BackToStaging"
+      ],
+      "target_count": 9,
+      "text_count": 11
+    },
+    "squad_s1_empty": {
+      "screen_marker": "SquadColumn",
+      "targets": [
+        {
+          "selector": "Pick_*",
+          "type": "Button",
+          "expected_count": 5,
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton",
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "SquadHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "IntroHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "Pick_*",
+          "type": "Button",
+          "expected_count": 5,
+          "variation": [
+            "AuiSecondaryButton",
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "PickCounter",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "LoadoutStrip",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "Pick_caster_1",
+        "Pick_defender_1",
+        "Pick_defender_2",
+        "Pick_guard_1",
+        "Pick_vanguard_1",
+        "BackButton"
+      ],
+      "target_count": 7,
+      "text_count": 11,
+      "focus_expansions": {
+        "Pick_*": [
+          "Pick_caster_1",
+          "Pick_defender_1",
+          "Pick_defender_2",
+          "Pick_guard_1",
+          "Pick_vanguard_1"
+        ]
+      }
+    },
+    "results_campaign_clear": {
+      "screen_marker": "ResultsColumn",
+      "targets": [
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "Headline",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "StarLine",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "TallyLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "Reward0",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "ReturnToStaging",
+        "RetryButton",
+        "BackToTitle"
+      ],
+      "target_count": 3,
+      "text_count": 7
+    },
+    "results_standalone_defeat": {
+      "screen_marker": "ResultsColumn",
+      "targets": [
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "Headline",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "TallyLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "BackToTitle"
+      ],
+      "target_count": 1,
+      "text_count": 3
+    },
+    "campaign_advanced": {
+      "screen_marker": "StageColumn",
+      "targets": [
+        {
+          "selector": "Stage_s1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s2",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s3",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s4",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s5",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s6",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s7",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "Stage_s8",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "BackToStaging",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "StageColumn"
+        }
+      ],
+      "text": [
+        {
+          "selector": "CampaignHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "StageColumn"
+        },
+        {
+          "selector": "Stage_*",
+          "type": "Button",
+          "expected_count": 8,
+          "variation": [
+            "AuiPrimaryButton",
+            "AuiDisabledButton"
+          ],
+          "owner": "StageRows"
+        },
+        {
+          "selector": "NextHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "StageColumn"
+        },
+        {
+          "selector": "BackToStaging",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "StageColumn"
+        }
+      ],
+      "focus_order": [
+        "Stage_s1",
+        "Stage_s2",
+        "BackToStaging"
+      ],
+      "target_count": 9,
+      "text_count": 11
+    },
+    "squad_s1_selected": {
+      "screen_marker": "SquadColumn",
+      "targets": [
+        {
+          "selector": "Pick_vanguard_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_2",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_caster_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "SquadHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "IntroHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "Pick_vanguard_1",
+          "type": "Button",
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_1",
+          "type": "Button",
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_1",
+          "type": "Button",
+          "variation": [
+            "AuiSelectedButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_2",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_caster_1",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "PickCounter",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "LoadoutStrip",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "Pick_caster_1",
+        "Pick_defender_1",
+        "Pick_defender_2",
+        "Pick_guard_1",
+        "Pick_vanguard_1",
+        "BackButton",
+        "StartBattle"
+      ],
+      "target_count": 7,
+      "text_count": 11
+    },
+    "squad_s2_expanded": {
+      "screen_marker": "SquadColumn",
+      "targets": [
+        {
+          "selector": "Pick_vanguard_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_2",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_caster_1",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_2",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "SquadHeading",
+          "type": "Label",
+          "variation": [
+            "AuiHeadingLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "IntroHint",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "Pick_vanguard_1",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_1",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_1",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_defender_2",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_caster_1",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "Pick_guard_2",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperatorGrid"
+        },
+        {
+          "selector": "PickCounter",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "LoadoutStrip",
+          "type": "Label",
+          "variation": [
+            "AuiDetailLabel"
+          ],
+          "owner": "SquadColumn"
+        },
+        {
+          "selector": "BackButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "StartBattle",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "Pick_caster_1",
+        "Pick_defender_1",
+        "Pick_defender_2",
+        "Pick_guard_1",
+        "Pick_vanguard_1",
+        "Pick_guard_2",
+        "BackButton"
+      ],
+      "target_count": 8,
+      "text_count": 12
+    },
+    "results_campaign_rewardless_clear": {
+      "screen_marker": "ResultsColumn",
+      "targets": [
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "Headline",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "StarLine",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "TallyLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "ReturnToStaging",
+        "RetryButton",
+        "BackToTitle"
+      ],
+      "target_count": 3,
+      "text_count": 6
+    },
+    "results_campaign_defeat": {
+      "screen_marker": "ResultsColumn",
+      "targets": [
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "Headline",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "TallyLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "RetryButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "ReturnToStaging",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "ReturnToStaging",
+        "RetryButton",
+        "BackToTitle"
+      ],
+      "target_count": 3,
+      "text_count": 5
+    },
+    "results_standalone_clear": {
+      "screen_marker": "ResultsColumn",
+      "targets": [
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "text": [
+        {
+          "selector": "Headline",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "StarLine",
+          "type": "Label",
+          "variation": [
+            "AuiTitleLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "TallyLine",
+          "type": "Label",
+          "variation": [
+            "AuiBodyLabel"
+          ],
+          "owner": "ResultsColumn"
+        },
+        {
+          "selector": "BackToTitle",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "ActionRow"
+        }
+      ],
+      "focus_order": [
+        "BackToTitle"
+      ],
+      "target_count": 1,
+      "text_count": 4
+    }
+  }
+}

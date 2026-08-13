@@ -1,0 +1,1414 @@
+{
+  "schema_version": 2,
+  "engine": {
+    "version": "4.7.1.stable.official.a13da4feb",
+    "binary_sha256": "32f8d7596c4b41185512b1c49d69f2da3be018fd784a53e349fa92a98a97bcde"
+  },
+  "font": {
+    "provider": "ThemeDB.fallback_font",
+    "runtime_class": "FontFile",
+    "resource_path": "",
+    "custom_fallbacks": [],
+    "glyph_coverage": "Every Unicode codepoint in the exact catalog values, English fallbacks, and representative formatted strings must return true from ThemeDB.fallback_font.has_char(codepoint)."
+  },
+  "tokens": {
+    "colors": {
+      "backdrop": "111827FF",
+      "panel": "1C2433FF",
+      "secondary": "263147FF",
+      "secondary_hover": "34425CFF",
+      "body": "F7F3E8FF",
+      "muted": "C7D6E8FF",
+      "primary": "E3B341FF",
+      "primary_hover": "F0CF65FF",
+      "primary_pressed": "C58B24FF",
+      "selected": "5DC8D3FF",
+      "selected_hover": "79DBE3FF",
+      "selected_pressed": "3EA9B8FF",
+      "destructive": "7F2D2DFF",
+      "destructive_hover": "973A34FF",
+      "destructive_pressed": "642222FF",
+      "disabled_background": "303846FF",
+      "disabled_text": "AEB8C6FF",
+      "focus": "F0CF65FF",
+      "boundary": "8998ACFF",
+      "dark_ink": "111827FF",
+      "transparent": "00000000"
+    },
+    "metrics": {
+      "button_minimum": [
+        44,
+        52
+      ],
+      "button_content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "button_border_width": 2,
+      "button_corner_radius": 8,
+      "focus_border_width": 4,
+      "focus_corner_radius": 10,
+      "focus_expand_margin": 4,
+      "badge_content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "badge_border_width": 2,
+      "badge_corner_radius": 8,
+      "panel_corner_radius": 12,
+      "panel_border_width": 2,
+      "screen_outer_inset_compact": 24,
+      "screen_outer_inset_regular": 36,
+      "screen_content_padding_compact": 32,
+      "screen_content_padding_regular": 40
+    }
+  },
+  "stylebox_schema": {
+    "fields": [
+      "background",
+      "border",
+      "border_width",
+      "corner_radius",
+      "content_margins",
+      "expand_margin"
+    ],
+    "all_border_widths_equal": true,
+    "all_corner_radii_equal": true,
+    "content_margin_order": [
+      "left",
+      "top",
+      "right",
+      "bottom"
+    ],
+    "expand_margin_order": [
+      "left",
+      "top",
+      "right",
+      "bottom"
+    ]
+  },
+  "styleboxes": {
+    "primary_normal": {
+      "background": "primary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "primary_hover": {
+      "background": "primary_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "primary_pressed": {
+      "background": "primary_pressed",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "secondary_normal": {
+      "background": "secondary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "secondary_hover": {
+      "background": "secondary_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "secondary_pressed": {
+      "background": "panel",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "selected_normal": {
+      "background": "selected",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "selected_hover": {
+      "background": "selected_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "selected_pressed": {
+      "background": "selected_pressed",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "destructive_normal": {
+      "background": "destructive",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "destructive_hover": {
+      "background": "destructive_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "destructive_pressed": {
+      "background": "destructive_pressed",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "disabled": {
+      "background": "disabled_background",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        18,
+        10,
+        18,
+        10
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "focus": {
+      "background": "transparent",
+      "border": "focus",
+      "border_width": 4,
+      "corner_radius": 10,
+      "content_margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expand_margin": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "reading_panel": {
+      "background": "panel",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 12,
+      "content_margins": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "hud_panel": {
+      "background": "panel",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "card_panel": {
+      "background": "secondary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 10,
+      "content_margins": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "modal_panel": {
+      "background": "panel",
+      "border": "focus",
+      "border_width": 3,
+      "corner_radius": 12,
+      "content_margins": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "inspector_panel": {
+      "background": "secondary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "reward_panel": {
+      "background": "panel",
+      "border": "primary",
+      "border_width": 3,
+      "corner_radius": 12,
+      "content_margins": [
+        40,
+        40,
+        40,
+        40
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "focus_ring": {
+      "background": "transparent",
+      "border": "focus",
+      "border_width": 4,
+      "corner_radius": 12,
+      "content_margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expand_margin": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "class_badge": {
+      "background": "selected",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "cost_badge": {
+      "background": "primary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "cooldown_badge": {
+      "background": "secondary",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locked_badge": {
+      "background": "disabled_background",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "completed_badge": {
+      "background": "selected",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locale_selected": {
+      "background": "selected",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locale_hovered": {
+      "background": "secondary_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locale_selected_hovered": {
+      "background": "selected_hover",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        8,
+        4,
+        8,
+        4
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locale_cursor": {
+      "background": "transparent",
+      "border": "focus",
+      "border_width": 3,
+      "corner_radius": 8,
+      "content_margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "locale_cursor_unfocused": {
+      "background": "transparent",
+      "border": "boundary",
+      "border_width": 2,
+      "corner_radius": 8,
+      "content_margins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expand_margin": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "theme": {
+    "script": "res://scripts/ui/components/aetheria_theme.gd",
+    "class_name": "AetheriaTheme",
+    "resource": "res://data/presentation/ui/threshold_theme.tres",
+    "material": "res://data/presentation/ui/threshold_material.tres",
+    "default_font": "ThemeDB.fallback_font",
+    "default_font_size": 44,
+    "button_constants": {
+      "outline_size": 0,
+      "h_separation": 12,
+      "icon_max_width": 96
+    },
+    "variations": {
+      "AuiPrimaryButton": {
+        "base": "Button",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "dark_ink",
+          "hover": "dark_ink",
+          "pressed": "dark_ink",
+          "focus": "dark_ink",
+          "disabled": "disabled_text"
+        },
+        "styleboxes": {
+          "normal": "primary_normal",
+          "hover": "primary_hover",
+          "pressed": "primary_pressed",
+          "focus": "focus",
+          "disabled": "disabled"
+        }
+      },
+      "AuiSecondaryButton": {
+        "base": "Button",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "body",
+          "hover": "body",
+          "pressed": "body",
+          "focus": "body",
+          "disabled": "disabled_text"
+        },
+        "styleboxes": {
+          "normal": "secondary_normal",
+          "hover": "secondary_hover",
+          "pressed": "secondary_pressed",
+          "focus": "focus",
+          "disabled": "disabled"
+        }
+      },
+      "AuiSelectedButton": {
+        "base": "Button",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "dark_ink",
+          "hover": "dark_ink",
+          "pressed": "dark_ink",
+          "focus": "dark_ink",
+          "disabled": "disabled_text"
+        },
+        "styleboxes": {
+          "normal": "selected_normal",
+          "hover": "selected_hover",
+          "pressed": "selected_pressed",
+          "focus": "focus",
+          "disabled": "disabled"
+        }
+      },
+      "AuiDestructiveButton": {
+        "base": "Button",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "body",
+          "hover": "body",
+          "pressed": "body",
+          "focus": "body",
+          "disabled": "disabled_text"
+        },
+        "styleboxes": {
+          "normal": "destructive_normal",
+          "hover": "destructive_hover",
+          "pressed": "destructive_pressed",
+          "focus": "focus",
+          "disabled": "disabled"
+        }
+      },
+      "AuiDisabledButton": {
+        "base": "Button",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "disabled_text",
+          "hover": "disabled_text",
+          "pressed": "disabled_text",
+          "focus": "disabled_text",
+          "disabled": "disabled_text"
+        },
+        "styleboxes": {
+          "normal": "disabled",
+          "hover": "disabled",
+          "pressed": "disabled",
+          "focus": "focus",
+          "disabled": "disabled"
+        }
+      },
+      "AuiReadingPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "reading_panel"
+        }
+      },
+      "AuiHudPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "hud_panel"
+        }
+      },
+      "AuiCardPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "card_panel"
+        }
+      },
+      "AuiModalPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "modal_panel"
+        }
+      },
+      "AuiInspectorPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "inspector_panel"
+        }
+      },
+      "AuiRewardPanel": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "reward_panel"
+        }
+      },
+      "AuiFocusRing": {
+        "base": "PanelContainer",
+        "styleboxes": {
+          "panel": "focus_ring"
+        }
+      },
+      "AuiTitleLabel": {
+        "base": "Label",
+        "font_size": 64,
+        "font_color": "primary"
+      },
+      "AuiHeadingLabel": {
+        "base": "Label",
+        "font_size": 48,
+        "font_color": "primary"
+      },
+      "AuiBodyLabel": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "body"
+      },
+      "AuiDetailLabel": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "muted"
+      },
+      "AuiLocaleLabel": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "body"
+      },
+      "AuiClassBadge": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "dark_ink",
+        "styleboxes": {
+          "normal": "class_badge"
+        }
+      },
+      "AuiCostBadge": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "dark_ink",
+        "styleboxes": {
+          "normal": "cost_badge"
+        }
+      },
+      "AuiCooldownBadge": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "body",
+        "styleboxes": {
+          "normal": "cooldown_badge"
+        }
+      },
+      "AuiLockedBadge": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "disabled_text",
+        "styleboxes": {
+          "normal": "locked_badge"
+        }
+      },
+      "AuiCompletedBadge": {
+        "base": "Label",
+        "font_size": 44,
+        "font_color": "dark_ink",
+        "styleboxes": {
+          "normal": "completed_badge"
+        }
+      },
+      "AuiLocaleList": {
+        "base": "ItemList",
+        "font_size": 44,
+        "font_colors": {
+          "normal": "body",
+          "hovered": "body",
+          "selected": "dark_ink",
+          "hovered_selected": "dark_ink"
+        },
+        "styleboxes": {
+          "panel": "secondary_normal",
+          "focus": "focus",
+          "hovered": "locale_hovered",
+          "selected": "locale_selected",
+          "selected_focus": "locale_selected",
+          "hovered_selected": "locale_selected_hovered",
+          "hovered_selected_focus": "locale_selected_hovered",
+          "cursor": "locale_cursor",
+          "cursor_unfocused": "locale_cursor_unfocused"
+        },
+        "constants": {
+          "outline_size": 0
+        }
+      }
+    },
+    "required_material_roles": {
+      "primary_button": "AuiPrimaryButton",
+      "secondary_button": "AuiSecondaryButton",
+      "destructive_button": "AuiDestructiveButton",
+      "disabled_button": "AuiDisabledButton",
+      "reading_panel": "AuiReadingPanel",
+      "hud_panel": "AuiHudPanel",
+      "card_panel": "AuiCardPanel",
+      "modal_panel": "AuiModalPanel",
+      "inspector_panel": "AuiInspectorPanel",
+      "reward_panel": "AuiRewardPanel",
+      "class_badge": "AuiClassBadge",
+      "cost_badge": "AuiCostBadge",
+      "cooldown_badge": "AuiCooldownBadge",
+      "locked_badge": "AuiLockedBadge",
+      "completed_badge": "AuiCompletedBadge",
+      "focus_ring": "AuiFocusRing"
+    }
+  },
+  "valid_component_roles": {
+    "AetheriaButton": {
+      "primary": "AuiPrimaryButton",
+      "secondary": "AuiSecondaryButton",
+      "selected": "AuiSelectedButton",
+      "destructive": "AuiDestructiveButton",
+      "disabled": "AuiDisabledButton"
+    },
+    "AetheriaPanel": {
+      "reading": "AuiReadingPanel",
+      "hud": "AuiHudPanel",
+      "card": "AuiCardPanel",
+      "modal": "AuiModalPanel",
+      "inspector": "AuiInspectorPanel",
+      "reward": "AuiRewardPanel",
+      "focus_ring": "AuiFocusRing"
+    },
+    "AetheriaLabel": {
+      "title": "AuiTitleLabel",
+      "heading": "AuiHeadingLabel",
+      "body": "AuiBodyLabel",
+      "detail": "AuiDetailLabel",
+      "locale": "AuiLocaleLabel",
+      "class_badge": "AuiClassBadge",
+      "cost_badge": "AuiCostBadge",
+      "cooldown_badge": "AuiCooldownBadge",
+      "locked_badge": "AuiLockedBadge",
+      "completed_badge": "AuiCompletedBadge"
+    }
+  },
+  "contrast_pairs": [
+    {
+      "id": "body_on_backdrop",
+      "foreground": "body",
+      "background": "backdrop",
+      "minimum": 4.5,
+      "expected": 16.0
+    },
+    {
+      "id": "body_on_panel",
+      "foreground": "body",
+      "background": "panel",
+      "minimum": 4.5,
+      "expected": 14.035
+    },
+    {
+      "id": "muted_on_panel",
+      "foreground": "muted",
+      "background": "panel",
+      "minimum": 4.5,
+      "expected": 10.531
+    },
+    {
+      "id": "primary_on_panel",
+      "foreground": "primary",
+      "background": "panel",
+      "minimum": 3.0,
+      "expected": 7.996
+    },
+    {
+      "id": "primary_on_backdrop",
+      "foreground": "primary",
+      "background": "backdrop",
+      "minimum": 3.0,
+      "expected": 9.115
+    },
+    {
+      "id": "dark_on_primary_normal",
+      "foreground": "dark_ink",
+      "background": "primary",
+      "minimum": 4.5,
+      "expected": 9.115
+    },
+    {
+      "id": "dark_on_primary_hover",
+      "foreground": "dark_ink",
+      "background": "primary_hover",
+      "minimum": 4.5,
+      "expected": 11.673
+    },
+    {
+      "id": "dark_on_primary_pressed",
+      "foreground": "dark_ink",
+      "background": "primary_pressed",
+      "minimum": 4.5,
+      "expected": 5.991
+    },
+    {
+      "id": "body_on_secondary_normal",
+      "foreground": "body",
+      "background": "secondary",
+      "minimum": 4.5,
+      "expected": 11.744
+    },
+    {
+      "id": "body_on_secondary_hover",
+      "foreground": "body",
+      "background": "secondary_hover",
+      "minimum": 4.5,
+      "expected": 9.107
+    },
+    {
+      "id": "body_on_secondary_pressed",
+      "foreground": "body",
+      "background": "panel",
+      "minimum": 4.5,
+      "expected": 14.035
+    },
+    {
+      "id": "dark_on_selected_normal",
+      "foreground": "dark_ink",
+      "background": "selected",
+      "minimum": 4.5,
+      "expected": 9.012
+    },
+    {
+      "id": "dark_on_selected_hover",
+      "foreground": "dark_ink",
+      "background": "selected_hover",
+      "minimum": 4.5,
+      "expected": 11.028
+    },
+    {
+      "id": "dark_on_selected_pressed",
+      "foreground": "dark_ink",
+      "background": "selected_pressed",
+      "minimum": 4.5,
+      "expected": 6.397
+    },
+    {
+      "id": "body_on_destructive_normal",
+      "foreground": "body",
+      "background": "destructive",
+      "minimum": 4.5,
+      "expected": 8.179
+    },
+    {
+      "id": "body_on_destructive_hover",
+      "foreground": "body",
+      "background": "destructive_hover",
+      "minimum": 4.5,
+      "expected": 6.376
+    },
+    {
+      "id": "body_on_destructive_pressed",
+      "foreground": "body",
+      "background": "destructive_pressed",
+      "minimum": 4.5,
+      "expected": 10.559
+    },
+    {
+      "id": "disabled_on_disabled",
+      "foreground": "disabled_text",
+      "background": "disabled_background",
+      "minimum": 4.5,
+      "expected": 5.884
+    },
+    {
+      "id": "focus_on_panel",
+      "foreground": "focus",
+      "background": "panel",
+      "minimum": 3.0,
+      "expected": 10.239
+    },
+    {
+      "id": "focus_on_backdrop",
+      "foreground": "focus",
+      "background": "backdrop",
+      "minimum": 3.0,
+      "expected": 11.673
+    },
+    {
+      "id": "focus_on_secondary",
+      "foreground": "focus",
+      "background": "secondary",
+      "minimum": 3.0,
+      "expected": 8.568
+    },
+    {
+      "id": "boundary_on_backdrop",
+      "foreground": "boundary",
+      "background": "backdrop",
+      "minimum": 3.0,
+      "expected": 6.041
+    },
+    {
+      "id": "boundary_on_panel",
+      "foreground": "boundary",
+      "background": "panel",
+      "minimum": 3.0,
+      "expected": 5.299
+    },
+    {
+      "id": "boundary_on_secondary",
+      "foreground": "boundary",
+      "background": "secondary",
+      "minimum": 3.0,
+      "expected": 4.434
+    }
+  ],
+  "contrast_calculation": "WCAG 2.1 relative luminance using sRGB <=0.04045 /12.92 else ((c+0.055)/1.055)^2.4; ratio=(Lmax+0.05)/(Lmin+0.05); compare unrounded ratio to minimum; report rounded to 0.001; expected tolerance 0.002.",
+  "render_context": "All AUI-12 interactive controls and text render inside AuiReadingPanel on token panel. Top-level panels render on token backdrop. Each interactive StyleBox border is adjacent outside to token panel; its focus ring expands over token panel. Runtime ancestry must prove this context before applying a binding.",
+  "render_contrast_bindings": {
+    "AuiPrimaryButton": {
+      "text_normal": "dark_on_primary_normal",
+      "text_hover": "dark_on_primary_hover",
+      "text_pressed": "dark_on_primary_pressed",
+      "text_disabled": "disabled_on_disabled",
+      "border_normal_outside": "boundary_on_panel",
+      "border_hover_outside": "boundary_on_panel",
+      "border_pressed_outside": "boundary_on_panel",
+      "border_disabled_outside": "boundary_on_panel",
+      "focus_outside": "focus_on_panel"
+    },
+    "AuiSecondaryButton": {
+      "text_normal": "body_on_secondary_normal",
+      "text_hover": "body_on_secondary_hover",
+      "text_pressed": "body_on_secondary_pressed",
+      "text_disabled": "disabled_on_disabled",
+      "border_normal_outside": "boundary_on_panel",
+      "border_hover_outside": "boundary_on_panel",
+      "border_pressed_outside": "boundary_on_panel",
+      "border_disabled_outside": "boundary_on_panel",
+      "focus_outside": "focus_on_panel"
+    },
+    "AuiSelectedButton": {
+      "text_normal": "dark_on_selected_normal",
+      "text_hover": "dark_on_selected_hover",
+      "text_pressed": "dark_on_selected_pressed",
+      "text_disabled": "disabled_on_disabled",
+      "border_normal_outside": "boundary_on_panel",
+      "border_hover_outside": "boundary_on_panel",
+      "border_pressed_outside": "boundary_on_panel",
+      "border_disabled_outside": "boundary_on_panel",
+      "focus_outside": "focus_on_panel"
+    },
+    "AuiDestructiveButton": {
+      "text_normal": "body_on_destructive_normal",
+      "text_hover": "body_on_destructive_hover",
+      "text_pressed": "body_on_destructive_pressed",
+      "text_disabled": "disabled_on_disabled",
+      "border_normal_outside": "boundary_on_panel",
+      "border_hover_outside": "boundary_on_panel",
+      "border_pressed_outside": "boundary_on_panel",
+      "border_disabled_outside": "boundary_on_panel",
+      "focus_outside": "focus_on_panel"
+    },
+    "AuiDisabledButton": {
+      "text_normal": "disabled_on_disabled",
+      "text_hover": "disabled_on_disabled",
+      "text_pressed": "disabled_on_disabled",
+      "text_disabled": "disabled_on_disabled",
+      "border_normal_outside": "boundary_on_panel",
+      "border_hover_outside": "boundary_on_panel",
+      "border_pressed_outside": "boundary_on_panel",
+      "border_disabled_outside": "boundary_on_panel",
+      "focus_outside": "focus_on_panel"
+    },
+    "AuiReadingPanel": {
+      "boundary": "boundary_on_backdrop"
+    },
+    "AuiHudPanel": {
+      "boundary": "boundary_on_backdrop"
+    },
+    "AuiCardPanel": {
+      "boundary": "boundary_on_backdrop"
+    },
+    "AuiModalPanel": {
+      "boundary": "focus_on_backdrop"
+    },
+    "AuiInspectorPanel": {
+      "boundary": "boundary_on_backdrop"
+    },
+    "AuiRewardPanel": {
+      "boundary": "primary_on_backdrop"
+    },
+    "AuiFocusRing": {
+      "boundary": "focus_on_backdrop"
+    },
+    "AuiTitleLabel": {
+      "text": "primary_on_panel"
+    },
+    "AuiHeadingLabel": {
+      "text": "primary_on_panel"
+    },
+    "AuiBodyLabel": {
+      "text": "body_on_panel"
+    },
+    "AuiDetailLabel": {
+      "text": "muted_on_panel"
+    },
+    "AuiLocaleLabel": {
+      "text": "body_on_panel"
+    },
+    "AuiClassBadge": {
+      "text": "dark_on_selected_normal",
+      "boundary": "boundary_on_panel"
+    },
+    "AuiCostBadge": {
+      "text": "dark_on_primary_normal",
+      "boundary": "boundary_on_panel"
+    },
+    "AuiCooldownBadge": {
+      "text": "body_on_secondary_normal",
+      "boundary": "boundary_on_panel"
+    },
+    "AuiLockedBadge": {
+      "text": "disabled_on_disabled",
+      "boundary": "boundary_on_panel"
+    },
+    "AuiCompletedBadge": {
+      "text": "dark_on_selected_normal",
+      "boundary": "boundary_on_panel"
+    },
+    "AuiLocaleList": {
+      "text_normal": "body_on_secondary_normal",
+      "text_hovered": "body_on_secondary_hover",
+      "text_selected": "dark_on_selected_normal",
+      "text_hovered_selected": "dark_on_selected_hover",
+      "panel_border_outside": "boundary_on_panel",
+      "hovered_border_outside": "boundary_on_secondary",
+      "selected_border_outside": "boundary_on_secondary",
+      "hovered_selected_border_outside": "boundary_on_secondary",
+      "cursor_focused_inside": "focus_on_secondary",
+      "cursor_unfocused_inside": "boundary_on_secondary",
+      "focus_outside": "focus_on_panel"
+    }
+  },
+  "components": [
+    {
+      "class_name": "AetheriaButton",
+      "script": "res://scripts/ui/components/aetheria_button.gd",
+      "scene": "res://scenes/ui/components/aetheria_button.tscn",
+      "root": "AetheriaButton",
+      "base": "Button",
+      "children": [],
+      "properties": {
+        "role": {
+          "type": "StringName",
+          "default": "secondary"
+        }
+      },
+      "methods": {
+        "apply_role": "(StringName)->bool; unknown returns false and preserves prior role/variation",
+        "set_presentation_text": "(String logical_text, String rendered_text)->bool; preserves exact logical text in Button.text for automation/copy parity, hides built-in glyph paint without removing semantics, creates or updates one mouse-ignored AuiBodyLabel child named PresentationLabel, constrains that child to the Button rect with arbitrary wrapping and clipping, and rejects empty arguments"
+      },
+      "signals": [],
+      "defaults": {
+        "focus_mode": "FOCUS_ALL",
+        "custom_minimum_size": [
+          44,
+          52
+        ]
+      },
+      "optional_children": [
+        "PresentationLabel"
+      ],
+      "presentation_text_oracle": "When PresentationLabel exists, runtime text discovery records one logical text owner under the Button selector, compares Button.text to the catalog fallback, and measures visible glyph/layout pixels from PresentationLabel. PresentationLabel is not an extra inventory row."
+    },
+    {
+      "class_name": "AetheriaPanel",
+      "script": "res://scripts/ui/components/aetheria_panel.gd",
+      "scene": "res://scenes/ui/components/aetheria_panel.tscn",
+      "root": "AetheriaPanel",
+      "base": "PanelContainer",
+      "children": [],
+      "properties": {
+        "role": {
+          "type": "StringName",
+          "default": "reading"
+        }
+      },
+      "methods": {
+        "apply_role": "(StringName)->bool; unknown returns false and preserves prior role/variation"
+      },
+      "signals": [],
+      "defaults": {
+        "mouse_filter": "MOUSE_FILTER_IGNORE"
+      }
+    },
+    {
+      "class_name": "AetheriaLabel",
+      "script": "res://scripts/ui/components/aetheria_label.gd",
+      "scene": "res://scenes/ui/components/aetheria_label.tscn",
+      "root": "AetheriaLabel",
+      "base": "Label",
+      "children": [],
+      "properties": {
+        "role": {
+          "type": "StringName",
+          "default": "body"
+        }
+      },
+      "methods": {
+        "apply_role": "(StringName)->bool; unknown returns false and preserves prior role/variation"
+      },
+      "signals": [],
+      "defaults": {
+        "autowrap_mode": "AUTOWRAP_WORD_SMART"
+      }
+    },
+    {
+      "class_name": "AetheriaScreenShell",
+      "script": "res://scripts/ui/components/aetheria_screen_shell.gd",
+      "scene": "res://scenes/ui/components/aetheria_screen_shell.tscn",
+      "root": "AetheriaScreenShell",
+      "base": "Control",
+      "children": [
+        "Backdrop",
+        "SafeMargin",
+        "Center",
+        "ReadingPlate",
+        "ContentMargin",
+        "ContentHost"
+      ],
+      "properties": {
+        "preferred_size": {
+          "type": "Vector2",
+          "default": [
+            720,
+            520
+          ]
+        }
+      },
+      "methods": {
+        "set_preferred_size": "(Vector2)->bool; nonpositive returns false and preserves prior value",
+        "content_host": "()->Control; returns exact ContentHost",
+        "relayout": "(Vector2i)->void; clamps plate inside viewport and emits only on mode change",
+        "layout_mode": "()->StringName; one of regular_landscape, compact_landscape, portrait"
+      },
+      "signals": [
+        "layout_mode_changed(mode: StringName)"
+      ],
+      "defaults": {
+        "mouse_filter": "MOUSE_FILTER_IGNORE",
+        "outer_inset_compact": 24,
+        "outer_inset_regular": 36,
+        "content_padding_compact": 32,
+        "content_padding_regular": 40
+      }
+    },
+    {
+      "class_name": "AetheriaLocaleSelector",
+      "script": "res://scripts/ui/components/aetheria_locale_selector.gd",
+      "scene": "res://scenes/ui/components/aetheria_locale_selector.tscn",
+      "root": "LocaleSelector",
+      "base": "BoxContainer",
+      "children": [
+        "LocaleLabel",
+        "LocaleList"
+      ],
+      "properties": {},
+      "methods": {
+        "refresh": "()->bool; false only when supported locale list is empty or active locale is absent; selects the exact active locale row and mirrors its full localized display through one mouse-ignored wrapped AuiBodyLabel named LocaleList/PresentationLabel while retaining logical ItemList item text and metadata",
+        "select_locale": "(StringName)->bool; delegates to I18n.set_locale and emits only on accepted change",
+        "set_vertical_layout": "(bool)->void; switches between horizontal and vertical child flow without changing locale items, active selection, or focus identity"
+      },
+      "signals": [
+        "locale_selected(locale_id: StringName)"
+      ],
+      "defaults": {
+        "minimum_each_interactive_target": [
+          360,
+          72
+        ],
+        "locale_list_type": "ItemList",
+        "selection_mode": "SELECT_SINGLE",
+        "vertical": false
+      },
+      "runtime_semantic_overlay": {
+        "path": "LocaleList/PresentationLabel",
+        "class_name": "AetheriaLabel",
+        "theme_variation": "AuiBodyLabel",
+        "font_token": "dark_ink",
+        "selected_fill_token": "selected",
+        "contrast_pair": "dark_on_selected_normal",
+        "minimum_contrast": 4.5,
+        "mouse_filter": "MOUSE_FILTER_IGNORE",
+        "autowrap_mode": "AUTOWRAP_ARBITRARY",
+        "clip_text": true,
+        "geometry": "full rect of LocaleList and enclosed by LocaleList global rect",
+        "text": "exact active ItemList item text",
+        "logical_identity": "LocaleList retains exact item text, StringName metadata, sole selected index, focus ownership, and minimum target"
+      }
+    }
+  ],
+  "locale_list_reachable_states": {
+    "font_colors": [
+      "font_color",
+      "font_hovered_color",
+      "font_selected_color",
+      "font_hovered_selected_color"
+    ],
+    "styleboxes": [
+      "panel",
+      "focus",
+      "hovered",
+      "selected",
+      "selected_focus",
+      "hovered_selected",
+      "hovered_selected_focus",
+      "cursor",
+      "cursor_unfocused"
+    ],
+    "oracle": "Focused GUT calls Theme.has_* and get_* for every listed item on AuiLocaleList, compares the exact token-derived value, and rejects inherited ThemeDB defaults. It then recomputes every render_contrast_bindings pair from those resolved values and actual reading-panel ancestry."
+  }
+}

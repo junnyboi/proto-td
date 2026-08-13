@@ -30,7 +30,7 @@ lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 | Stage | The lesson that should land | Juice moments to notice |
 |---|---|---|
 | S1 First Stand | blocking is the game — melee ON the road stops them | deploy ritual (drag slowdown, landing dust), wave banners, kill sparks |
-| S2 Tempo | you feel DP-poor; opening with the Vanguard matters | leak alarm (red frame + shake) when the rush gets through |
+| S2 Tempo | you feel DP-poor; opening with the Shock Trooper matters | leak alarm (red frame + shake) when the rush gets through |
 | S3 The Choke | the 1-wide choke begs for a Spike Plate | trap snap on trigger |
 | S4 Air Raid | drones sail over your blockers — Snipers or lose | tracer fire; drone kill cadence |
 | S5 High Ground | spellcasters cluster; one Bolt erases a cluster | bolt burst; elevated Casters |
