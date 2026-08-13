@@ -21,7 +21,7 @@
     "pillow": "12.3.0",
     "python": "3.12.3",
     "tool": "tools/art_pipeline/world/act2_shared/normalize.py",
-    "tool_sha256": "9c7d4a27a293f741a21eb59b75ab5b49f007ab3286f4b9d88fa0983fd975209e"
+    "tool_sha256": "a0abd59e87ce273cbae63f5f64466fd0222d8740d58b008b83a2155ba0935344"
   },
   "reserved_colors": {
     "forbidden": [

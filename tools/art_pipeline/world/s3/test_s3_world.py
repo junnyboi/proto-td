@@ -47,8 +47,32 @@ class TestS3World(unittest.TestCase):
         root = Path(tempfile.mkdtemp(prefix=f"s3-{name}-"))
         source = root / "art-src/world/s3/s3-production-source.png"; source.parent.mkdir(parents=True)
         shutil.copyfile(REPO / "art-src/world/s3/s3-production-source.png", source)
+        for relative in (
+            "art-src/world/s3/production-prompt-contract.md",
+            "art-src/world/s3/production-source-selection.json",
+            "art-src/world/s3/candidates/s3-production-candidate-a.png",
+            "art-src/world/s3/candidates/s3-production-candidate-b.png",
+            "art-src/world/s3/rejected/s3-pre-lineage-source.png",
+            "art-src/world/act2-shared/production-prompt-contract.md",
+            "art-src/world/act2-shared/production-source-selection.json",
+            "art-src/world/act2-shared/source-ledger.json",
+            "art-src/world/act2-shared/act2-shared-production-source.png",
+            "art-src/world/s2/production-prompt-contract.md",
+            "art-src/world/s2/production-source-selection.json",
+            "art-src/world/s2/source-ledger.json",
+            "art-src/world/s2/s2-production-source.png",
+        ):
+            destination = root / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / relative, destination)
+        references = root / "art-src/world/act2-references"; references.mkdir(parents=True)
+        for reference in (REPO / "art-src/world/act2-references").iterdir():
+            shutil.copyfile(reference, references / reference.name)
         tool_dir = root / "tools/art_pipeline/world/s3"; tool_dir.mkdir(parents=True)
         shutil.copyfile(HERE / "normalize_s3_world.py", tool_dir / "normalize_s3_world.py")
+        lineage_tool = root / "tools/art_pipeline/world/validate_act2_lineage.py"
+        lineage_tool.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(REPO / "tools/art_pipeline/world/validate_act2_lineage.py", lineage_tool)
         if contaminate:
             for rel in MANAGED:
                 directory = root / rel; directory.mkdir(parents=True, exist_ok=True)

@@ -8,7 +8,7 @@
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/s3/core-pressure-keeper.png",
-    "sha256": "c981c00ea4116c2d0d832dc0db0f79eac5b5e6610351f3b064f104c08411e61b",
+    "sha256": "2590c21039c80247bab557f396245ae88f5b6bc9b426f10dbf4cffdb55b33fcb",
     "staging": "staging/assets/world/s3/core-pressure-keeper.png"
   },
   "dimensions": [
@@ -23,7 +23,7 @@
     "seed": null,
     "seed_reason": "UNAVAILABLE: generation tool exposed no seed parameter or returned seed; none invented.",
     "source": "art-src/world/s3/s3-production-source.png",
-    "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
+    "source_sha256": "606b5411bbab1e52c6ee164929ff9138343fbd4b94ee793328bd763b1c5d587d",
     "tool": "Manus built-in image generation / generate_image"
   },
   "human_final_art": false,
@@ -31,12 +31,12 @@
   "logical_id": "world.s3.core_pressure_keeper",
   "normalization": {
     "palette": "art-src/world/s3/s3-derived-palette.json",
-    "palette_sha256": "37c2cd6bc95cc9601089d12f0eabcd6eb458537c2c598ff211a270d0871a6dcf",
+    "palette_sha256": "294418da1fd78e1299507821a762f8097de5f9e5c2da5ae9abf941f155c991ce",
     "pillow": "12.3.0",
     "python": "3.12.3",
     "recipe": "exact source-color extraction plus original integer Pillow geometry; no source crop/resize/paste; no dithering; hard alpha",
     "tool": "tools/art_pipeline/world/s3/normalize_s3_world.py",
-    "tool_sha256": "45e2fac692be08b0162697dbe8dff3d0329774fe2c3fa354f2611a281b7fdaa5"
+    "tool_sha256": "aed9fec0b476ba7f546b15bfa5ee62935f1f0fc9a3354ae17585b3db7a4724e9"
   },
   "pivot": [
     16,

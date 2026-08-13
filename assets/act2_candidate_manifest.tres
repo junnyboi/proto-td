@@ -19,7 +19,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/cadence-e.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "c73717589770d3598eb89b7e05615c4498be3eee472d4602ab267a4266ff5464",
+"provenance_sha256": "1aad6fd81623a5209ed100895f598901ce05f0b450216f02d8bfa1dc398e5fc0",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.cadence_e_s": {
@@ -35,7 +35,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/cadence-e-s.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "4aa1a783d3b3a75fe6b57e81ebe97ff131f04125bfa65247e1f7ac247a61e47c",
+"provenance_sha256": "1b982f868e94165665d70c76bd18bec4bc70ae3227407843d8472cc5b1471c78",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.cadence_s": {
@@ -51,7 +51,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/cadence-s.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "41ba46130a958e33b144ef40a2c7a2ec1c7ae52c6956368b1963660f76841d8c",
+"provenance_sha256": "01bcff0470a800bf10d4564a149aaadc350214676443f0353ba9f493aa50202d",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.cadence_s_e": {
@@ -67,7 +67,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/cadence-s-e.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "a25f5da18ee10c5bee7b8137b8635bd7463c57cde4b9493d67070471dbf3bb36",
+"provenance_sha256": "60513e836adbe9b3256a7630fcd7a045b573c355d96a30fc3019fea5a95be20f",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.ground_calm": {
@@ -83,7 +83,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/ground-calm.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "71d842728af946e3d9a6f67843a66fd0cda5e6414f1df8eab1f82669fc9971e1",
+"provenance_sha256": "63430bef3761f65c16ea08b5ba48617f890d9dabc9284795994f4ac1fc2bb563",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.ground_runoff": {
@@ -99,7 +99,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/ground-runoff.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "079e63ab44d36324700601bf52dbe3cade3f79f3521625a6ef140cc3602e5a00",
+"provenance_sha256": "cf97b1603334900f3bad7781019a8c903ba2b9acc0e0ba2f59040f85e39f3371",
 "size": Vector2i(32, 16)
 },
 &"world.pressure.route_plate": {
@@ -115,7 +115,7 @@ entries = {
 "pattern": "res://assets/world/act2-shared/route-plate.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "c3f43cbf66e561cc71a9b5b4e679d3ceb1e9e27bb63ebe18602e18c0d08d39c8",
+"provenance_sha256": "42f77f53b0e7461ccd29928fcde7d9b542a97e69dc624e3eb89e9794c8ad517f",
 "size": Vector2i(32, 16)
 },
 &"world.s2.backdrop_panorama": {
@@ -131,7 +131,7 @@ entries = {
 "pattern": "res://assets/world/s2/backdrop-panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "7580c9bdfd1fca88ef9cf403a676a15054d72e0641cb44102a2c19dcd6596d05",
+"provenance_sha256": "947a55a7eea71ff8979b4a7823055136f6241cf668a280adf31a6fbabb48eaaa",
 "size": Vector2i(240, 120)
 },
 &"world.s2.core_receiver": {
@@ -147,7 +147,7 @@ entries = {
 "pattern": "res://assets/world/s2/core-receiver.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "541f59d3cf8c7fe6b8ccefd6d314fd19de6a61829ba498c7ad99b7e9fc7a05f3",
+"provenance_sha256": "b2e7a611be44a44f47191bbbd675be808ace97872fdb84e69ede0e02a45ebd10",
 "size": Vector2i(32, 32)
 },
 &"world.s2.elevated_manometer": {
@@ -163,7 +163,7 @@ entries = {
 "pattern": "res://assets/world/s2/elevated-manometer.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "40cda51fb1bc764519da82d079c6a188c88adfa7e8e132e0d3412d9c800f0ade",
+"provenance_sha256": "a959c0d2493e2d63250569cdff55d4b5e150e12adb7ed805bb384705274ed0b7",
 "size": Vector2i(32, 24)
 },
 &"world.s2.elevated_relief": {
@@ -179,7 +179,7 @@ entries = {
 "pattern": "res://assets/world/s2/elevated-relief.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "0f54e3b0292853a529d55ddd42f41d6b74192eaff4ad6405b213913447550896",
+"provenance_sha256": "0cf708d02c7f4d5fbf26b252cf245ded0cef65e984370f71caea320ea6398eca",
 "size": Vector2i(32, 24)
 },
 &"world.s2.spawn_louver": {
@@ -195,7 +195,7 @@ entries = {
 "pattern": "res://assets/world/s2/spawn-louver.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "8e17bdcd01e80b2e26f3e2caa9b970f2f4a5238dc3b7c9c65e785b91da9f3f2a",
+"provenance_sha256": "82ab0f85f231bbeef0f3ee83627765f87a42f88227701b17c83a49fa2a0d5bb6",
 "size": Vector2i(32, 32)
 },
 &"world.s3.backdrop_panorama": {
@@ -211,7 +211,7 @@ entries = {
 "pattern": "res://assets/world/s3/backdrop-panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "005c21e412f402d21ee6505b5e4e59eb6de18ea1a04f269533885dafdad21bbf",
+"provenance_sha256": "6c29f5a3cbef23b717dc54c8fb4af73c75261d993629c031dad38f14389ff70e",
 "size": Vector2i(256, 128)
 },
 &"world.s3.blocked_pressure_jaw": {
@@ -227,7 +227,7 @@ entries = {
 "pattern": "res://assets/world/s3/blocked-pressure-jaw.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "8ce041a5e9d389243d764ec2620b67de17135d144544efe131111875a16f3a2f",
+"provenance_sha256": "c002a4033080f4bda20b5f4131883536ced290409c251a5d1567fe3d22ea806c",
 "size": Vector2i(32, 16)
 },
 &"world.s3.blocked_regulator": {
@@ -243,7 +243,7 @@ entries = {
 "pattern": "res://assets/world/s3/blocked-regulator.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "02115ac3c89aeb8819d9aafe475e3ac3de3ec43eb572ea284e6b5382593f6854",
+"provenance_sha256": "61f45355d3c1c5124c3af2c81afdeb0b4f00b51acc224b8e1c8d6c334eeb65fb",
 "size": Vector2i(32, 16)
 },
 &"world.s3.core_pressure_keeper": {
@@ -259,7 +259,7 @@ entries = {
 "pattern": "res://assets/world/s3/core-pressure-keeper.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "20293910a707a7dcf4e44c72fcb8f6e7d0de615c45559eb77cbc53bb8cdaa97d",
+"provenance_sha256": "c2397c313f0cd3c6f07e902c9c05724211823b6d7a5554a57d29dc34ba0af244",
 "size": Vector2i(32, 32)
 },
 &"world.s3.elevated_assay": {
@@ -275,7 +275,7 @@ entries = {
 "pattern": "res://assets/world/s3/elevated-assay.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "cd9bcedf9712a3b665d24bdbf9fd9f31b7339de1568f1c3436f6564848f96bfc",
+"provenance_sha256": "ca1e5098e1eb60f2a5092b764439af1c1ea74a338f03fc6d87515c41d5e85d82",
 "size": Vector2i(32, 24)
 },
 &"world.s3.spawn_rain_sluice": {
@@ -291,7 +291,7 @@ entries = {
 "pattern": "res://assets/world/s3/spawn-rain-sluice.png",
 "pivot": Vector2(0.5, 0.9375),
 "placeholder": true,
-"provenance_sha256": "d72cc27779b39684bb77432ed149c0e716c008b35bb0e9b2b5a2599bed75e54c",
+"provenance_sha256": "bb3a63ee2c39a75d6804cb841c4804438d4455ea5edb71f02ffe3bed85c545f7",
 "size": Vector2i(32, 32)
 }
 }

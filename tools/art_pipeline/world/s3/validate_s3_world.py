@@ -6,6 +6,7 @@ import argparse
 import ast
 import hashlib
 import json
+import importlib.util
 from pathlib import Path
 from PIL import Image
 
@@ -19,6 +20,10 @@ ASSETS = {
 }
 STATE = "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
 RESERVED = {(244, 244, 244), (65, 166, 246)}
+REPO_DEFAULT=Path(__file__).resolve().parents[4]
+_LINEAGE_SPEC=importlib.util.spec_from_file_location("act2_lineage", REPO_DEFAULT/"tools/art_pipeline/world/validate_act2_lineage.py")
+assert _LINEAGE_SPEC and _LINEAGE_SPEC.loader
+LINEAGE=importlib.util.module_from_spec(_LINEAGE_SPEC); _LINEAGE_SPEC.loader.exec_module(LINEAGE)
 
 
 def sha256(path: Path) -> str:
@@ -31,12 +36,16 @@ def exact_names(path: Path, suffix: str) -> set[str]:
 
 def validate(root: Path) -> list[str]:
     root = root.resolve(); passed: list[str] = []
+    LINEAGE.validate(root)
     source = root / "art-src/world/s3/s3-production-source.png"
     ledger = json.loads((root / "art-src/world/s3/gpt-image-2-source-ledger.json").read_text())
     contract = json.loads((root / "art-src/world/s3/s3-world-asset-contract.json").read_text())
     palette_doc = json.loads((root / "art-src/world/s3/s3-derived-palette.json").read_text())
     assert source.is_file() and ledger["source_sha256"] == sha256(source)
-    assert ledger["model"] == "gpt-image-2" and ledger["generation_id"] is None and ledger["seed"] is None
+    assert ledger["model"] == "gpt-image-2" and ledger["provider"] == "Manus built-in image generation"
+    assert ledger["tool"] == "Manus built-in image generation / generate_image"
+    assert ledger["generation_id"] is None and ledger["seed"] is None
+    assert ledger["generation_id_reason"] and ledger["seed_reason"]
     assert ledger["approval_token"] == "ACT-II-S2-S3-H0" and ledger["human_final_art"] is False
     assert ledger["state"] == STATE and ledger["approved_content_hash_gates_launch"] is False
     assert contract["asset_count"] == 6 and contract["state"] == STATE

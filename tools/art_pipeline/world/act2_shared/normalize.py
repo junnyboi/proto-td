@@ -92,9 +92,9 @@ def sample_source(path: Path) -> list[tuple[int, int, int]]:
         picks = [dark[0], dark[min(4,len(dark)-1)], mid[0], mid[min(5,len(mid)-1)], light[0] if light else mid[-1], warm[0], warm[2], cool[0]]
         return picks
 
-def palette() -> dict[str, tuple[int, int, int]]:
-    shared = sample_source(REPO / SOURCE_INFO["act2-shared"][0])
-    s2 = sample_source(REPO / SOURCE_INFO["s2"][0])
+def palette(root: Path = REPO) -> dict[str, tuple[int, int, int]]:
+    shared = sample_source(root / SOURCE_INFO["act2-shared"][0])
+    s2 = sample_source(root / SOURCE_INFO["s2"][0])
     p = {
         "void": shared[0], "outline": shared[1], "basalt_dark": shared[2], "basalt": shared[3],
         "basalt_light": shared[4], "bronze_dark": shared[5], "bronze": shared[6], "water": shared[7],
@@ -265,13 +265,23 @@ def topology_mock(images:dict[str,Image.Image],p:dict)->Image.Image:
     return canvas
 
 def make_ledger(family:str, root:Path, prompt_path:Path)->dict:
-    source_rel, expected_hash=SOURCE_INFO[family]; source=REPO/source_rel
+    source_rel, expected_hash=SOURCE_INFO[family]; source=root/source_rel
     if digest(source)!=expected_hash: raise RuntimeError(f"source hash mismatch: {source_rel}")
+    selection_path=root/f"art-src/world/{family}/production-source-selection.json"
+    if not selection_path.is_file(): raise RuntimeError(f"missing checked-in selection ledger: {selection_path}")
+    selection=json.loads(selection_path.read_text(encoding="utf-8"))
+    if selection.get("packet")!=family or selection.get("selection_count")!=1: raise RuntimeError(f"selection ledger packet/count mismatch: {family}")
+    selected=selection.get("selected_candidate",{})
+    if selected.get("canonical_source_path")!=source_rel or selected.get("sha256")!=expected_hash: raise RuntimeError(f"selection ledger source mismatch: {family}")
+    prompt_rel=rel(prompt_path,root); prompt_hash=digest(prompt_path)
+    if selection.get("prompt")!={"path":prompt_rel,"sha256":prompt_hash}: raise RuntimeError(f"selection ledger prompt mismatch: {family}")
+    for reference in selection.get("references",[]):
+        reference_path=root/reference["path"]
+        if not reference_path.is_file() or digest(reference_path)!=reference.get("sha256"): raise RuntimeError(f"selection reference mismatch: {reference.get('path')}")
     return {"schema_version":1,"family":family,"state":STATE,"human_final_art":False,"approval_token":TOKEN,
-        "generator":{"provider":"Manus built-in image generation","tool":"Manus built-in image generation","model":"gpt-image-2",
-        "generation_id":{"status":"UNAVAILABLE","reason":"The tool returned no generation identifier; none is invented."},
-        "seed":{"status":"UNAVAILABLE","reason":"The tool exposed no seed parameter or value; none is invented."}},
-        "prompt":{"path":rel(prompt_path,root),"sha256":hashlib.sha256(PROMPT.encode()).hexdigest()},
+        "generator":selection["generator"],
+        "prompt":selection["prompt"],"references":selection["references"],
+        "selection":{"path":rel(selection_path,root),"sha256":digest(selection_path)},
         "source":{"path":source_rel,"sha256":expected_hash,"runtime_usage":"PALETTE_MATERIAL_PROVENANCE_INPUT_ONLY_NOT_RUNTIME_RASTER"},
         "approval":{"token":TOKEN,"content_hash_launch_dependency":False},
         "production_method":"deterministic Pillow source-palette extraction plus independently authored programmatic pixel geometry; no source module copied/resized"}
@@ -283,7 +293,7 @@ def contract(family:str)->dict:
     return {"schema_version":1,"lane":"ACT2-S2-SHARED","family":family,"base_commit":BASE_COMMIT,"approval_token":TOKEN,"candidate_state":STATE,"assets":entries,"reserved_colors":["#F4F4F4","#41A6F6"],"alpha_values":[0,255],"runtime_staging_bytes_identical":True}
 
 def write_package(outroot:Path)->dict:
-    p=palette(); images=build_assets(p)
+    p=palette(outroot); images=build_assets(p)
     generated_roots=[outroot/"assets/world/act2-shared",outroot/"assets/world/s2",outroot/"assets/provenance/fragments/act2-shared",outroot/"assets/provenance/fragments/s2",outroot/"staging/assets/world/act2-shared",outroot/"staging/assets/world/s2",outroot/"staging/provenance/world/act2-shared",outroot/"staging/provenance/world/s2",outroot/"staging/qa/world/act2-shared",outroot/"staging/qa/world/s2"]
     # Atomic owned-set replacement: construct all destination trees in sibling temporary roots, then replace.
     temp=Path(tempfile.mkdtemp(prefix="act2-s2-build-",dir=outroot if outroot.exists() else None))
@@ -326,7 +336,9 @@ def write_package(outroot:Path)->dict:
     # Ledgers/contracts are generated deterministically but source rasters remain untouched.
     for family in ("act2-shared","s2"):
         srcdir=outroot/f"art-src/world/{family}"; srcdir.mkdir(parents=True,exist_ok=True)
-        prompt=srcdir/"production-prompt-contract.md"; prompt.write_text(PROMPT,encoding="utf-8")
+        prompt=srcdir/"production-prompt-contract.md"
+        if not prompt.is_file() or prompt.read_text(encoding="utf-8") != PROMPT:
+            raise RuntimeError(f"frozen prompt contract missing or mutated: {prompt}")
         (srcdir/"source-ledger.json").write_bytes(json_bytes(make_ledger(family,outroot,prompt)))
         (srcdir/"asset-contract.json").write_bytes(json_bytes(contract(family)))
         (srcdir/"derived-palette.json").write_bytes(json_bytes({k:rgbhex(v) for k,v in p.items()}))

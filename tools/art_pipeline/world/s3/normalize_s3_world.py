@@ -26,6 +26,8 @@ STATE = "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
 APPROVAL_TOKEN = "ACT-II-S2-S3-H0"
 SOURCE_REL = Path("art-src/world/s3/s3-production-source.png")
 TOOL_REL = Path("tools/art_pipeline/world/s3/normalize_s3_world.py")
+PROMPT_REL = Path("art-src/world/s3/production-prompt-contract.md")
+SELECTION_REL = Path("art-src/world/s3/production-source-selection.json")
 RESERVED = {(244, 244, 244), (65, 166, 246)}
 ASSETS = {
     "world.s3.elevated_assay": ("elevated-assay.png", (32, 24), [16, 23]),
@@ -389,6 +391,21 @@ def generate(repo_root: Path, source: Path | None = None) -> dict[str, object]:
     if not source.is_file(): raise FileNotFoundError(source)
     source_hash = sha256(source)
     tool_path = Path(__file__).resolve(); tool_hash = sha256(tool_path)
+    prompt_path=repo_root/PROMPT_REL; selection_path=repo_root/SELECTION_REL
+    if not prompt_path.is_file() or not selection_path.is_file(): raise RuntimeError("missing frozen S3 prompt or selection ledger")
+    selection=json.loads(selection_path.read_text(encoding="utf-8"))
+    if selection.get("packet")!="s3" or selection.get("selection_count")!=1: raise RuntimeError("S3 selection packet/count mismatch")
+    selected=selection.get("selected_candidate",{})
+    selected_path=repo_root/selected.get("path","")
+    if selected.get("canonical_source_path")!=SOURCE_REL.as_posix() or not selected_path.is_file(): raise RuntimeError("S3 selected candidate path mismatch")
+    if selected.get("sha256")!=sha256(selected_path) or source_hash!=selected.get("sha256"): raise RuntimeError("S3 selected/canonical source hash mismatch")
+    if selection.get("prompt")!={"path":PROMPT_REL.as_posix(),"sha256":sha256(prompt_path)}: raise RuntimeError("S3 prompt receipt mismatch")
+    for reference in selection.get("references",[]):
+        path=repo_root/reference["path"]
+        if not path.is_file() or sha256(path)!=reference.get("sha256"): raise RuntimeError(f"S3 reference receipt mismatch: {reference.get('path')}")
+    for rejected in selection.get("rejected_candidates",[]):
+        path=repo_root/rejected["path"]
+        if not path.is_file() or sha256(path)!=rejected.get("sha256") or not rejected.get("reason"): raise RuntimeError(f"S3 rejection receipt mismatch: {rejected.get('path')}")
     palette = source_palette(source)
     asset_images = {logical_id: BUILDERS[logical_id](palette) for logical_id in ASSETS}
     passed = asset_checks(asset_images, palette)
@@ -399,13 +416,11 @@ def generate(repo_root: Path, source: Path | None = None) -> dict[str, object]:
         "source": SOURCE_REL.as_posix(),
         "source_sha256": source_hash,
         "source_role": "mandatory GPT Image 2 palette/material/provenance input; never a runtime raster",
-        "provider": "Manus built-in image generation",
-        "model": "gpt-image-2",
-        "tool": "Manus built-in image generation / generate_image",
-        "generation_id": None,
-        "generation_id_reason": "UNAVAILABLE: tool returned paths/dimensions but no generation identifier; none invented.",
-        "seed": None,
-        "seed_reason": "UNAVAILABLE: tool did not expose/return a seed; none invented.",
+        "prompt": selection["prompt"],
+        "references": selection["references"],
+        "selection": {"path": SELECTION_REL.as_posix(), "sha256": sha256(selection_path)},
+        "selected_candidate": selected,
+        **selection["generator"],
         "approval_token": APPROVAL_TOKEN,
         "human_final_art": False,
         "approved_content_hash_gates_launch": False,

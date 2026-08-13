@@ -1,10 +1,5 @@
 {
-  "approval": {
-    "content_hash_launch_dependency": false,
-    "token": "ACT-II-S2-S3-H0"
-  },
   "approval_token": "ACT-II-S2-S3-H0",
-  "family": "act2-shared",
   "generator": {
     "generation_id": null,
     "generation_id_reason": "UNAVAILABLE: generation tool returned no generation identifier; none invented.",
@@ -15,7 +10,7 @@
     "tool": "Manus built-in image generation / generate_image"
   },
   "human_final_art": false,
-  "production_method": "deterministic Pillow source-palette extraction plus independently authored programmatic pixel geometry; no source module copied/resized",
+  "packet": "act2-shared",
   "prompt": {
     "path": "art-src/world/act2-shared/production-prompt-contract.md",
     "sha256": "54c6912dd7505c6de316a166b6ed394e2e0a1358240cf96150380ac0331ad3de"
@@ -37,15 +32,14 @@
       "sha256": "3ee62b8aaff21ba0c5baac81bbe54a474c73bbadd42c6070ada87eec38e8a516"
     }
   ],
+  "rejected_candidates": [],
   "schema_version": 1,
-  "selection": {
-    "path": "art-src/world/act2-shared/production-source-selection.json",
-    "sha256": "46fe51eeb588d00d23173686e9dce86f27a08820ce2596011fdac0676b2db7de"
-  },
-  "source": {
+  "selected_candidate": {
+    "canonical_source_path": "art-src/world/act2-shared/act2-shared-production-source.png",
     "path": "art-src/world/act2-shared/act2-shared-production-source.png",
-    "runtime_usage": "PALETTE_MATERIAL_PROVENANCE_INPUT_ONLY_NOT_RUNTIME_RASTER",
+    "reason": "Selected approved H0 shared palette/material/provenance production input.",
     "sha256": "b7cd173a2bdb4341456b53eb3a0c919e8fe7696d22402194ea27d3c77fe48ca3"
   },
+  "selection_count": 1,
   "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
 }

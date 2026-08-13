@@ -8,6 +8,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import importlib.util
 from pathlib import Path
 
 from PIL import Image
@@ -17,6 +18,9 @@ NORMALIZER = REPO / "tools/art_pipeline/world/act2_shared/normalize.py"
 STATE = "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
 TOKEN = "ACT-II-S2-S3-H0"
 RESERVED = {(244, 244, 244), (65, 166, 246)}
+_LINEAGE_SPEC=importlib.util.spec_from_file_location("act2_lineage", REPO/"tools/art_pipeline/world/validate_act2_lineage.py")
+assert _LINEAGE_SPEC and _LINEAGE_SPEC.loader
+LINEAGE=importlib.util.module_from_spec(_LINEAGE_SPEC); _LINEAGE_SPEC.loader.exec_module(LINEAGE)
 EXPECTED = {
     "world.pressure.ground_calm": ("act2-shared", "ground-calm.png", (32, 16)),
     "world.pressure.ground_runoff": ("act2-shared", "ground-runoff.png", (32, 16)),
@@ -37,6 +41,10 @@ OWNED_PREFIXES = (
     "staging/qa/world/act2-shared/", "staging/qa/world/s2/", "assets/world/act2-shared/",
     "assets/world/s2/", "assets/provenance/fragments/act2-shared/", "assets/provenance/fragments/s2/",
     "tools/art_pipeline/world/act2_shared/", "tools/art_pipeline/world/s2/",
+    "art-src/world/act2-references/", "art-src/world/s3/", "assets/world/s3/",
+    "assets/provenance/fragments/s3/", "staging/assets/world/s3/", "staging/provenance/world/s3/",
+    "staging/qa/world/s3/", "tools/art_pipeline/world/s3/", "tools/art_pipeline/world/validate_act2_lineage.py",
+    "tools/presentation_qa/act2_candidate_contract_lint.gd", "assets/act2_candidate_manifest.tres",
 )
 
 def sha(path: Path) -> str:
@@ -52,6 +60,7 @@ def files(root: Path) -> dict[str, str]:
     return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob("*")) if p.is_file()}
 
 def check_package(root: Path) -> None:
+    LINEAGE.validate(root)
     if len(EXPECTED) != 12: fail("logical inventory is not exactly 12")
     for family in ("act2-shared", "s2"):
         contract = load(root / f"art-src/world/{family}/asset-contract.json")
@@ -59,8 +68,10 @@ def check_package(root: Path) -> None:
         if contract["candidate_state"] != STATE or ledger["state"] != STATE: fail("candidate state drift")
         if contract["approval_token"] != TOKEN or ledger["approval_token"] != TOKEN: fail("approval token drift")
         if ledger["human_final_art"] is not False or ledger["approval"]["content_hash_launch_dependency"] is not False: fail("false H1/final dependency claim")
-        if ledger["generator"]["model"] != "gpt-image-2" or ledger["generator"]["tool"] != "Manus built-in image generation": fail("generator lineage drift")
-        if ledger["generator"]["generation_id"]["status"] != "UNAVAILABLE" or ledger["generator"]["seed"]["status"] != "UNAVAILABLE": fail("unavailable generation facts not truthful")
+        generator = ledger["generator"]
+        if generator["model"] != "gpt-image-2" or generator["provider"] != "Manus built-in image generation" or generator["tool"] != "Manus built-in image generation / generate_image": fail("generator lineage drift")
+        if generator["generation_id"] is not None or generator["seed"] is not None: fail("generation ID/seed must remain null")
+        if "UNAVAILABLE" not in generator["generation_id_reason"] or "UNAVAILABLE" not in generator["seed_reason"]: fail("unavailable generation facts not truthful")
         source = root / ledger["source"]["path"]
         if not source.is_file() or sha(source) != ledger["source"]["sha256"]: fail("production-source receipt mismatch")
     actual = []
@@ -125,6 +136,15 @@ def run_trials() -> dict:
                 destination = root / f"art-src/world/{family}/{source_name}"
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(REPO / f"art-src/world/{family}/{source_name}", destination)
+                for name in ("production-prompt-contract.md", "production-source-selection.json"):
+                    shutil.copy2(REPO / f"art-src/world/{family}/{name}", destination.parent / name)
+            references=root/"art-src/world/act2-references"; references.mkdir(parents=True,exist_ok=True)
+            for reference in (REPO/"art-src/world/act2-references").iterdir(): shutil.copy2(reference,references/reference.name)
+            s3base=root/"art-src/world/s3"; s3base.mkdir(parents=True,exist_ok=True)
+            for rel in ("production-prompt-contract.md","production-source-selection.json","gpt-image-2-source-ledger.json","s3-production-source.png"):
+                shutil.copy2(REPO/f"art-src/world/s3/{rel}",s3base/rel)
+            for rel in ("candidates/s3-production-candidate-a.png","candidates/s3-production-candidate-b.png","rejected/s3-pre-lineage-source.png"):
+                dest=s3base/rel; dest.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(REPO/f"art-src/world/s3/{rel}",dest)
         subprocess.run(["python3", str(NORMALIZER), "--output-root", str(roots["A"])], check=True, capture_output=True, text=True)
         subprocess.run(["python3", str(NORMALIZER), "--output-root", str(roots["B"])], check=True, capture_output=True, text=True)
         # C contains stale junk in every generated output class; producer must replace it.

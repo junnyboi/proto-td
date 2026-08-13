@@ -10,6 +10,12 @@ const FRAGMENT_ROOTS := [
 const APPROVAL_TOKEN := "ACT-II-S2-S3-H0"
 const PENDING_STATE := "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING"
 const RESERVED := [Color8(244, 244, 244), Color8(65, 166, 246)]
+const PACKETS := {
+    "act2-shared": {"ledger": "source-ledger.json", "source": "act2-shared-production-source.png", "references": ["act2-shared-style-material-board.png", "act2-shared-tile-route-kit.png", "act2-stage-owned-endpoints-blockers.png"], "min_rejected": 0},
+    "s2": {"ledger": "source-ledger.json", "source": "s2-production-source.png", "references": ["act2-shared-style-material-board.png", "s2-counterpressure-transfer-hall-keyframe-v2.png", "act2-shared-tile-route-kit.png", "act2-stage-owned-endpoints-blockers.png"], "min_rejected": 0},
+    "s3": {"ledger": "gpt-image-2-source-ledger.json", "source": "s3-production-source.png", "references": ["act2-shared-style-material-board.png", "s3-compressed-strata-lockhall-keyframe-v6.png", "act2-stage-owned-endpoints-blockers.png", "s3-pre-lineage-source.png"], "min_rejected": 2},
+}
+const H0_REFERENCES := ["act2-shared-style-material-board.png", "act2-shared-tile-route-kit.png", "act2-stage-owned-endpoints-blockers.png", "s2-counterpressure-transfer-hall-keyframe-v2.png", "s3-compressed-strata-lockhall-keyframe-v6.png"]
 const EXPECTED := {
 	&"world.pressure.ground_calm": ["res://assets/world/act2-shared/ground-calm.png", "res://staging/assets/world/act2-shared/ground-calm.png", Vector2i(32, 16)],
 	&"world.pressure.ground_runoff": ["res://assets/world/act2-shared/ground-runoff.png", "res://staging/assets/world/act2-shared/ground-runoff.png", Vector2i(32, 16)],
@@ -51,6 +57,7 @@ func _initialize() -> void:
 		_validate_disjoint(base, candidate)
 		_validate_inventory(candidate)
 		_validate_fragments(candidate)
+	_validate_lineage()
 	_validate_themes()
 	if _errors.is_empty():
 		print("ACT2_CANDIDATE_CONTRACT_OK")
@@ -192,6 +199,68 @@ func _validate_image(path: String, id: StringName, expected_size: Vector2i) -> v
 			if pixel.a > 0.0 and (pixel.is_equal_approx(RESERVED[0]) or pixel.is_equal_approx(RESERVED[1])):
 				_fail("reserved color present: %s" % id)
 				return
+
+
+func _validate_lineage() -> void:
+	var seen_h0: Dictionary = {}
+	var ref_dir := DirAccess.open("res://art-src/world/act2-references")
+	if ref_dir == null:
+		_fail("missing H0 reference directory")
+	else:
+		var actual := PackedStringArray()
+		ref_dir.list_dir_begin()
+		var filename := ref_dir.get_next()
+		while not filename.is_empty():
+			if not ref_dir.current_is_dir(): actual.append(filename)
+			filename = ref_dir.get_next()
+		ref_dir.list_dir_end()
+		actual.sort()
+		var expected := PackedStringArray(H0_REFERENCES); expected.sort()
+		if actual != expected: _fail("H0 reference inventory must contain exactly five unique files")
+	for packet: String in PACKETS:
+		var spec: Dictionary = PACKETS[packet]
+		var base := "res://art-src/world/%s" % packet
+		var selection_path := base.path_join("production-source-selection.json")
+		var prompt_path := base.path_join("production-prompt-contract.md")
+		var ledger_path := base.path_join(String(spec["ledger"]))
+		var source_path := base.path_join(String(spec["source"]))
+		var selection := _read_json(selection_path)
+		var ledger := _read_json(ledger_path)
+		if String(selection.get("packet", "")) != packet: _fail("selection packet mismatch: %s" % packet)
+		if String(selection.get("state", "")) != PENDING_STATE or bool(selection.get("human_final_art", true)): _fail("selection state/final-art claim: %s" % packet)
+		if String(selection.get("approval_token", "")) != APPROVAL_TOKEN: _fail("selection H0 token mismatch: %s" % packet)
+		if int(selection.get("selection_count", 0)) != 1: _fail("selection count must be one: %s" % packet)
+		var prompt: Dictionary = selection.get("prompt", {})
+		if "res://" + String(prompt.get("path", "")) != prompt_path or String(prompt.get("sha256", "")) != FileAccess.get_sha256(prompt_path): _fail("prompt receipt mismatch: %s" % packet)
+		var references: Array = selection.get("references", [])
+		if references.size() != Array(spec["references"]).size(): _fail("reference count mismatch: %s" % packet)
+		for index: int in references.size():
+			var reference: Dictionary = references[index]
+			var reference_path := "res://" + String(reference.get("path", ""))
+			if reference_path.get_file() != String(Array(spec["references"])[index]): _fail("ordered reference mismatch: %s[%d]" % [packet, index])
+			if String(reference.get("role", "")).is_empty() or String(reference.get("sha256", "")) != FileAccess.get_sha256(reference_path): _fail("reference receipt mismatch: %s[%d]" % [packet, index])
+			if reference_path.get_base_dir().ends_with("act2-references"): seen_h0[reference_path.get_file()] = true
+		var generator: Dictionary = selection.get("generator", {})
+		if String(generator.get("model", "")) != "gpt-image-2" or String(generator.get("provider", "")) != "Manus built-in image generation" or String(generator.get("tool", "")) != "Manus built-in image generation / generate_image": _fail("generator facts mismatch: %s" % packet)
+		if generator.get("generation_id", "MISSING") != null or generator.get("seed", "MISSING") != null: _fail("generation ID/seed must be null: %s" % packet)
+		if not String(generator.get("generation_id_reason", "")).contains("UNAVAILABLE") or not String(generator.get("seed_reason", "")).contains("UNAVAILABLE"): _fail("null ID/seed reasons missing: %s" % packet)
+		var selected: Dictionary = selection.get("selected_candidate", {})
+		var selected_path := "res://" + String(selected.get("path", ""))
+		if String(selected.get("sha256", "")) != FileAccess.get_sha256(selected_path) or String(selected.get("sha256", "")) != FileAccess.get_sha256(source_path) or String(selected.get("reason", "")).is_empty(): _fail("selected candidate/source receipt mismatch: %s" % packet)
+		var rejected: Array = selection.get("rejected_candidates", [])
+		if rejected.size() < int(spec["min_rejected"]): _fail("rejected candidate history incomplete: %s" % packet)
+		if packet != "s3" and rejected.size() != 0: _fail("shared/S2 rejected arrays must truthfully be empty: %s" % packet)
+		for item: Dictionary in rejected:
+			var rejected_path := "res://" + String(item.get("path", ""))
+			if String(item.get("sha256", "")) != FileAccess.get_sha256(rejected_path) or String(item.get("reason", "")).is_empty(): _fail("rejected candidate receipt mismatch: %s" % packet)
+		if packet == "s3" and rejected.size() < 2: _fail("S3 must retain at least two rejected records")
+		if String(ledger.get("state", "")) != PENDING_STATE or bool(ledger.get("human_final_art", true)): _fail("packet ledger state/final-art claim: %s" % packet)
+		if String(ledger.get("approval_token", "")) != APPROVAL_TOKEN: _fail("packet ledger H0 token mismatch: %s" % packet)
+		if ledger.get("prompt", {}) != prompt or ledger.get("references", []) != references: _fail("packet ledger prompt/reference mismatch: %s" % packet)
+		var receipt: Dictionary = ledger.get("selection", {})
+		if "res://" + String(receipt.get("path", "")) != selection_path or String(receipt.get("sha256", "")) != FileAccess.get_sha256(selection_path): _fail("packet ledger selection receipt mismatch: %s" % packet)
+		if bool(ledger.get("approved_content_hash_gates_launch", false)): _fail("packet ledger launch claim: %s" % packet)
+	if seen_h0.size() != 5: _fail("packet ledgers must bind exactly five unique H0 reference files")
 
 
 func _validate_themes() -> void:

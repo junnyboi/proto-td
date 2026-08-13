@@ -2,12 +2,12 @@
   "approval_token": "ACT-II-S2-S3-H0",
   "asset_count": 6,
   "asset_sha256": {
-    "world.s3.backdrop_panorama": "8f519edbee6a3c85ef3456ac889c9dffba65d45e92c1d96175d20f9b08997ba4",
-    "world.s3.blocked_pressure_jaw": "4f5240d335be2ce78d9ccd2e469f7df851e8c2cec5ba40049881c43cee6f6e13",
-    "world.s3.blocked_regulator": "4fe1aa007bdbb2ba9e872a0fd7d7bc71c6b6f47f7679d5203b9994a0c0a05d7f",
-    "world.s3.core_pressure_keeper": "c981c00ea4116c2d0d832dc0db0f79eac5b5e6610351f3b064f104c08411e61b",
-    "world.s3.elevated_assay": "69db28e652a3bb5fb82a680862286c387a5aa5263aaf4c00310592691013e0e1",
-    "world.s3.spawn_rain_sluice": "c38b9b0fef8d6fbb67dd16a59b9f2022a681e1d7bf7d652abb05fbca17762b3a"
+    "world.s3.backdrop_panorama": "04141006a9f7be944a585319725834c024a3e094cc010997b5e668500a32743f",
+    "world.s3.blocked_pressure_jaw": "c8e69626e2fbf62768042fb6d7573db178f81081c31f33e1af8f95073c633739",
+    "world.s3.blocked_regulator": "e93e6159f6d559afec007213ed949022d6ddc233c8c44c8649b4b0649d6afe1a",
+    "world.s3.core_pressure_keeper": "2590c21039c80247bab557f396245ae88f5b6bc9b426f10dbf4cffdb55b33fcb",
+    "world.s3.elevated_assay": "543b6b2f669908c3c674a223959b3ac619776890969f8ff90cfb30216ddb4255",
+    "world.s3.spawn_rain_sluice": "b8e69d6733b793b65afb25b86da86b94f008f710f3d6e3d52c4f3075d6f0bb6a"
   },
   "checks_passed": [
     "six exact logical IDs and dimensions",
@@ -27,8 +27,8 @@
     "contaminated C complete replacement"
   ],
   "schema_version": 1,
-  "source_sha256": "fb7f0ca75fbe9e5f2b5e0b1f46fa42859191f7c899e57ce0eb33c85c996ca599",
+  "source_sha256": "606b5411bbab1e52c6ee164929ff9138343fbd4b94ee793328bd763b1c5d587d",
   "state": "CANDIDATE_MACHINE_CONFORMANT_H1_PENDING",
-  "tool_sha256": "45e2fac692be08b0162697dbe8dff3d0329774fe2c3fa354f2611a281b7fdaa5",
+  "tool_sha256": "aed9fec0b476ba7f546b15bfa5ee62935f1f0fc9a3354ae17585b3db7a4724e9",
   "visual_review_status": "H1_PENDING"
 }
