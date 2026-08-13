@@ -1,0 +1,141 @@
+{
+  "approval_token_sha256": "5ab42289310a3176718a2d2c4c70f91aa87041564aaac0c6652bbf3295ece93b",
+  "approved_concept_sha256": [
+    "f3c338ec52a394e3e02a92bad65ca00e881fd340673ee6c120dec09c86b3b883",
+    "db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9",
+    "f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8",
+    "d6db376800af86f300f6fa8ea7c62865ce4c8bb05dadd9dbe9d470776fa22ee9",
+    "64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3",
+    "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+  ],
+  "asset_domain": "characters",
+  "evidence": {
+    "attack_hit_transform": {
+      "bytes": 6082,
+      "path": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
+      "sha256": "3f59f070a5ad2960db090185042d5682511d8e6a59b8e71f4c61f3988aafa750"
+    },
+    "batch_manifest": {
+      "bytes": 31722,
+      "path": "res://staging/character-vfx/aui-11/batch-manifest.json",
+      "sha256": "7c9c8d116e6b655b6c4fc68668d4c3253bf540cb04c500b355636bda0b687ed1"
+    },
+    "charm_semantics": {
+      "bytes": 10232,
+      "path": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
+      "sha256": "d5e8ec350a427fd9d3c6655a290286b1e1c5ea50d48390cb8ccb08742d080cd2"
+    },
+    "dual_backend_verification": {
+      "bytes": 46175,
+      "path": "res://staging/qa/character-vfx/aui-11/dual-backend-bound-receipt.json",
+      "sha256": "5ba6919a61997a9892e4fdbe4e656e149914eadcd425343cc656fcc4cc54427d"
+    },
+    "dual_backend_verifier": {
+      "bytes": 8037,
+      "path": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
+      "sha256": "ce3e2ceadb2df65aae46fa3a46df713d891058a024507a91d45cb36a67357ced"
+    },
+    "generation_ledger": {
+      "bytes": 3750,
+      "path": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
+      "sha256": "3ef137ec3a350ab09200d37b326771e5531676cab7a7d0e0788b99dd51a50672"
+    },
+    "staged_verification": {
+      "bytes": 155324,
+      "path": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
+      "sha256": "8ba0a4373b1942dda5ca69d488ac242269097f5b2081a173e083c45fb0a20b36"
+    },
+    "staged_verifier": {
+      "bytes": 32956,
+      "path": "res://staging/qa/character-vfx/aui-11/verify_staged_packets.py",
+      "sha256": "200a38a70b51536894c0b7359a6c9fb40d454a364d80dc4a3abf7e85e084cd94"
+    },
+    "visual_review": {
+      "bytes": 1638,
+      "path": "res://staging/qa/character-vfx/aui-11/final-packet-visual-review.md",
+      "sha256": "d977d80caf789191ce9b98f30abfbea360488ea2318321c6c6a093fb51f38564"
+    }
+  },
+  "foreground_extraction": {
+    "model_assignment": {
+      "attack_hit": "isnet-general-use",
+      "charm_vfx": "isnet-general-use",
+      "deploy": "isnet-general-use",
+      "grunt": "isnet-general-use",
+      "portrait_vanguard_1": "u2net_human_seg",
+      "vanguard_1": "isnet-general-use"
+    },
+    "models": {
+      "isnet-general-use": {
+        "path": "external-model-cache://isnet-general-use.onnx",
+        "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+      },
+      "u2net_human_seg": {
+        "path": "external-model-cache://u2net_human_seg.onnx",
+        "sha256": "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c"
+      }
+    },
+    "provider": "rembg",
+    "version": "2.0.67"
+  },
+  "generation": {
+    "generation_id": null,
+    "model": "gpt-image-2",
+    "provider": "OpenAI",
+    "seed": null,
+    "unsupported_reason": "service does not expose stable generation IDs or seeds; prompts, accepted concepts, masters, and normalized packet bytes are hash-pinned"
+  },
+  "human_final_art": "UNSET_HUMAN_ONLY",
+  "license": {
+    "human_contribution": "direction, approved concept selection, rejection decisions, deterministic transformation contracts, and runtime-boundary ownership",
+    "source": "original GPT Image 2 production masters and project-controlled deterministic normalization",
+    "spdx": "LicenseRef-Project-Owned"
+  },
+  "normalization": {
+    "canonical_backend": {
+      "name": "python-pillow",
+      "pillow": "12.3.0",
+      "python": "3.12.3"
+    },
+    "fallback_backend": {
+      "godot": "4.7.1.stable.official.a13da4feb",
+      "name": "godot-image"
+    },
+    "generator_files": [
+      {
+        "bytes": 17737,
+        "path": "res://tools/art_pipeline/character_vfx/pipeline.py",
+        "sha256": "96dce8be4602ccdf2cebd1a017ba2ae31eb07c0fa1563cb07a8abe6c46a5720e"
+      },
+      {
+        "bytes": 7956,
+        "path": "res://tools/art_pipeline/character_vfx/pixel_ops.py",
+        "sha256": "d6e88d5679cb4fc972ca41cf60d25d33a803651e1e55e5d84f178665d2b3b668"
+      },
+      {
+        "bytes": 29653,
+        "path": "res://tools/art_pipeline/character_vfx/godot/pipeline.gd",
+        "sha256": "31896aeb15083c166882e3e98efac5633978b42ff97d9c0998c032b9c19cb5e2"
+      },
+      {
+        "bytes": 10598,
+        "path": "res://tools/art_pipeline/character_vfx/godot/pixel_ops.gd",
+        "sha256": "4c1862336f06b8ac8b023569a9f018ce77525152fbc9e2e6006d029174a866c6"
+      }
+    ],
+    "seed": null
+  },
+  "package": "AUI-11",
+  "packet_ids": [
+    "vanguard_1",
+    "portrait_vanguard_1",
+    "grunt",
+    "grunt_charmed"
+  ],
+  "production_assets_emitted": true,
+  "reference_manifest_sha256": "0389dd44621684d65636c5d4d549311ab39e090d77ca9560b7522f107162c1d6",
+  "runtime_assets_changed": false,
+  "runtime_binding": "UNBOUND_AGENT_F_SEAM",
+  "schema_version": 1,
+  "state": "PRODUCTION_PACKETS_STAGED_RUNTIME_UNBOUND"
+}

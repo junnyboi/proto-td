@@ -1,0 +1,121 @@
+{
+  "animations": [
+    {
+      "fps": 5.5,
+      "frames": 4,
+      "loop": true,
+      "name": "rest_movement",
+      "row": 0
+    },
+    {
+      "fps": 8,
+      "frames": 4,
+      "loop": true,
+      "name": "attack_skill",
+      "row": 1
+    }
+  ],
+  "asset_class": "character_vfx",
+  "asset_id": "aui11.grunt.charmed.character",
+  "atlas": {
+    "cell_height": 192,
+    "cell_width": 192,
+    "columns": 4,
+    "foot_row": 180,
+    "height": 384,
+    "pivot": [
+      0.5,
+      0.94
+    ],
+    "rows": 2,
+    "width": 768
+  },
+  "frames": [
+    {
+      "column": 0,
+      "path": "frame_00.png",
+      "row": 0
+    },
+    {
+      "column": 1,
+      "path": "frame_01.png",
+      "row": 0
+    },
+    {
+      "column": 2,
+      "path": "frame_02.png",
+      "row": 0
+    },
+    {
+      "column": 3,
+      "path": "frame_03.png",
+      "row": 0
+    },
+    {
+      "column": 0,
+      "path": "frame_04.png",
+      "row": 1
+    },
+    {
+      "column": 1,
+      "path": "frame_05.png",
+      "row": 1
+    },
+    {
+      "column": 2,
+      "path": "frame_06.png",
+      "row": 1
+    },
+    {
+      "column": 3,
+      "path": "frame_07.png",
+      "row": 1
+    }
+  ],
+  "normalization": {
+    "alpha_threshold": 26,
+    "anchor_foot_y": 180,
+    "anchor_x": 96,
+    "background_key": "#D3D3D3",
+    "minimum_component_size": 16,
+    "resize": null
+  },
+  "outputs": {
+    "atlas": "aui11-grunt_charmed.png",
+    "contact": "aui11-grunt_charmed.contact.png",
+    "metadata": "aui11-grunt_charmed.asset.json",
+    "qa": "aui11-grunt_charmed.qa.json"
+  },
+  "palette": [
+    "#211A2A",
+    "#3C3049",
+    "#655069",
+    "#8A5B78",
+    "#A590A4",
+    "#D0C0CD",
+    "#D5B3C4",
+    "#738E8A"
+  ],
+  "provenance": {
+    "approved_concept_sha256": [
+      "f3c338ec52a394e3e02a92bad65ca00e881fd340673ee6c120dec09c86b3b883",
+      "db59ac74296fe4cbf6c78a3011bf78cdfd1c7814c576c7f22e8d02853d7135c9",
+      "f512c5022533c53c4a84bcfd036a513d13ee5ec2667cba15283dff21fd373ea8",
+      "d6db376800af86f300f6fa8ea7c62865ce4c8bb05dadd9dbe9d470776fa22ee9",
+      "64039ab91598423982031948fefc30b5f9b2d93b803d51617cb88fcea2aa8dd3",
+      "0a13437c7284fac6fbaf9e67be8223443bbdb3e47158a46325d007d691d17667"
+    ],
+    "human_approval": "CONCEPT_APPROVED_RUNTIME_UNBOUND",
+    "model": "charm-grunt-v1-deterministic-transform",
+    "prompt_sha256": "374ca535246b6a4a37c04da65697b1bcbf546db8398b336efe2de64ea755105d",
+    "reference_sha256": "0389dd44621684d65636c5d4d549311ab39e090d77ca9560b7522f107162c1d6",
+    "seed": null,
+    "tool": "gpt-image-2+rembg-2.0.67+aui34-1.0.0"
+  },
+  "reserved_colors": [
+    "#F4F4F4",
+    "#41A6F6"
+  ],
+  "schema_version": 1,
+  "state": "STAGED_RUNTIME_UNBOUND"
+}

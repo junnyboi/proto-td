@@ -1,0 +1,254 @@
+[
+  {
+    "accent_pixel": {
+      "after": [
+        91,
+        100,
+        114,
+        255
+      ],
+      "before": [
+        42,
+        26,
+        24,
+        255
+      ],
+      "x": 98,
+      "y": 10
+    },
+    "asset": "vanguard_1",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        91,
+        100,
+        114,
+        255
+      ],
+      "before": [
+        28,
+        14,
+        17,
+        255
+      ],
+      "x": 100,
+      "y": 12
+    },
+    "asset": "vanguard_1",
+    "from": 4,
+    "to": 7
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        91,
+        100,
+        114,
+        255
+      ],
+      "before": [
+        109,
+        76,
+        76,
+        255
+      ],
+      "x": 96,
+      "y": 9
+    },
+    "asset": "portrait_vanguard_1",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        91,
+        100,
+        114,
+        255
+      ],
+      "before": [
+        61,
+        43,
+        43,
+        255
+      ],
+      "x": 95,
+      "y": 9
+    },
+    "asset": "portrait_vanguard_1",
+    "from": 4,
+    "to": 7
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        110,
+        137,
+        122,
+        255
+      ],
+      "before": [
+        66,
+        63,
+        62,
+        255
+      ],
+      "x": 96,
+      "y": 17
+    },
+    "asset": "grunt",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        110,
+        137,
+        122,
+        255
+      ],
+      "before": [
+        26,
+        22,
+        24,
+        255
+      ],
+      "x": 95,
+      "y": 20
+    },
+    "asset": "grunt",
+    "from": 4,
+    "to": 7
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        167,
+        213,
+        198,
+        255
+      ],
+      "before": [
+        9,
+        39,
+        21,
+        255
+      ],
+      "x": 63,
+      "y": 32
+    },
+    "asset": "vfx_deploy",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        167,
+        213,
+        198,
+        255
+      ],
+      "before": [
+        22,
+        67,
+        39,
+        255
+      ],
+      "x": 73,
+      "y": 35
+    },
+    "asset": "vfx_deploy",
+    "from": 4,
+    "to": 7
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        230,
+        195,
+        154,
+        255
+      ],
+      "before": [
+        138,
+        141,
+        143,
+        255
+      ],
+      "x": 114,
+      "y": 28
+    },
+    "asset": "vfx_attack_hit",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        230,
+        195,
+        154,
+        255
+      ],
+      "before": [
+        112,
+        117,
+        116,
+        255
+      ],
+      "x": 109,
+      "y": 31
+    },
+    "asset": "vfx_attack_hit",
+    "from": 4,
+    "to": 7
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        208,
+        192,
+        205,
+        255
+      ],
+      "before": [
+        35,
+        33,
+        33,
+        255
+      ],
+      "x": 55,
+      "y": 39
+    },
+    "asset": "vfx_charm",
+    "from": 0,
+    "to": 3
+  },
+  {
+    "accent_pixel": {
+      "after": [
+        208,
+        192,
+        205,
+        255
+      ],
+      "before": [
+        1,
+        1,
+        1,
+        255
+      ],
+      "x": 56,
+      "y": 31
+    },
+    "asset": "vfx_charm",
+    "from": 4,
+    "to": 7
+  }
+]

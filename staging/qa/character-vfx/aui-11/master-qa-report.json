@@ -1,0 +1,479 @@
+{
+  "actual": [
+    "grunt-master.png",
+    "portrait_vanguard_1-master.png",
+    "vanguard_1-master.png",
+    "vfx_attack_hit-master.png",
+    "vfx_charm-master.png",
+    "vfx_deploy-master.png"
+  ],
+  "expected": [
+    "vanguard_1-master.png",
+    "portrait_vanguard_1-master.png",
+    "grunt-master.png",
+    "vfx_deploy-master.png",
+    "vfx_attack_hit-master.png",
+    "vfx_charm-master.png"
+  ],
+  "failures": [],
+  "files": [
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 1,
+          "occupied_pixels": 95540,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 2,
+          "occupied_pixels": 93639,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 104327,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 3,
+          "occupied_pixels": 94849,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 1,
+          "occupied_pixels": 102143,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 97994,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 95475,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 1,
+          "occupied_pixels": 95143,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 779110,
+      "path": "res://staging/character-vfx/aui-11/masters/vanguard_1-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 767790,
+      "sha256": "b5254e378115ebb3fa7b6a633887859eb0ce7c2b83ea2213b6b57f0a45ba40e3",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    },
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 1,
+          "occupied_pixels": 257480,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 254949,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 253903,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 2,
+          "occupied_pixels": 251666,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 1,
+          "occupied_pixels": 255866,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 254091,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 254527,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 1,
+          "occupied_pixels": 250574,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 2033056,
+      "path": "res://staging/character-vfx/aui-11/masters/portrait_vanguard_1-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 1997096,
+      "sha256": "7da51d26f62d00778239755dbff0795593c0b25db36152f7796e017054464545",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    },
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 1,
+          "occupied_pixels": 174372,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 157746,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 3,
+          "occupied_pixels": 167210,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 1,
+          "occupied_pixels": 172698,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 2,
+          "occupied_pixels": 149744,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 136326,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 146938,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 1,
+          "occupied_pixels": 173122,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 1278156,
+      "path": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 1263889,
+      "sha256": "87f92400889fee3cc2072b3e8fcb9ef6eeb8fefd4ccd8c6af47e3fde3739165e",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    },
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 7,
+          "occupied_pixels": 27155,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 3,
+          "occupied_pixels": 47984,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 4,
+          "occupied_pixels": 56343,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 2,
+          "occupied_pixels": 60300,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 3,
+          "occupied_pixels": 59978,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 3,
+          "occupied_pixels": 60150,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 14,
+          "occupied_pixels": 22848,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 10,
+          "occupied_pixels": 23006,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 357764,
+      "path": "res://staging/character-vfx/aui-11/masters/vfx_deploy-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 340988,
+      "sha256": "b3fb18dc4b1dc8db947427aeb4b636adeaacd32ec11ce05ac2b86da0781a0022",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    },
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 5,
+          "occupied_pixels": 39637,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 5,
+          "occupied_pixels": 39636,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 8,
+          "occupied_pixels": 40324,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 10,
+          "occupied_pixels": 37492,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 10,
+          "occupied_pixels": 47891,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 7,
+          "occupied_pixels": 48513,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 5,
+          "occupied_pixels": 24600,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 5,
+          "occupied_pixels": 31724,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 309817,
+      "path": "res://staging/character-vfx/aui-11/masters/vfx_attack_hit-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 267535,
+      "sha256": "b71b43ac52c595587e9c3c0b428b2558b6e02419f4c62473ef9ae1c1575885ab",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    },
+    {
+      "cells": [
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 5,
+          "occupied_pixels": 68974,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 6,
+          "occupied_pixels": 66956,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 1,
+          "occupied_pixels": 98490,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 2,
+          "occupied_pixels": 99761,
+          "row": 0
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 0,
+          "components": 2,
+          "occupied_pixels": 105476,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 1,
+          "components": 1,
+          "occupied_pixels": 108247,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 2,
+          "components": 4,
+          "occupied_pixels": 83449,
+          "row": 1
+        },
+        {
+          "border_occupied_pixels": 0,
+          "column": 3,
+          "components": 2,
+          "occupied_pixels": 140049,
+          "row": 1
+        }
+      ],
+      "failures": [],
+      "mode": "RGBA",
+      "neutral_guide_rows": [],
+      "opaque_pixels": 771402,
+      "path": "res://staging/character-vfx/aui-11/masters/vfx_charm-master.png",
+      "reserved_color_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "semi_transparent_pixels": 748286,
+      "sha256": "478cdd6c57932ad2a2503212d5ffa1e47c6c6d241ea2922c162d432bcaa254a4",
+      "size": [
+        2560,
+        1440
+      ],
+      "status": "PASS"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

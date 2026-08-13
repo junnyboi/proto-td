@@ -1,0 +1,1817 @@
+{
+  "assets": {
+    "grunt": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
+      "clean_master_sha256": "169a73483662b7baca8f38bf724f25c962125682070606fd0fd27310b4fec973",
+      "frames": [
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            494,
+            469
+          ],
+          "index": 0,
+          "largest_component_pixels": 112466,
+          "output_bbox": [
+            8,
+            17,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_00.png",
+          "sha256": "ad89936afca5c37dc8830a01d10b7cf0b4fc2aa873983511db651f5323980832",
+          "source_bbox": [
+            78,
+            159,
+            572,
+            628
+          ],
+          "visible_bbox": [
+            78,
+            159,
+            572,
+            628
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            528,
+            465
+          ],
+          "index": 1,
+          "largest_component_pixels": 116139,
+          "output_bbox": [
+            8,
+            30,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_01.png",
+          "sha256": "4e366550f65da9e1d3aaf41474084f573ce808620fdf4a6a8a448281eadae520",
+          "source_bbox": [
+            46,
+            159,
+            574,
+            624
+          ],
+          "visible_bbox": [
+            46,
+            159,
+            574,
+            624
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            506,
+            468
+          ],
+          "index": 2,
+          "largest_component_pixels": 113140,
+          "output_bbox": [
+            8,
+            22,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_02.png",
+          "sha256": "ff104c9187cbe0b2e0231193cfacf977e6daf9b0b56cca6e47e8bb86c23a6c99",
+          "source_bbox": [
+            42,
+            158,
+            548,
+            626
+          ],
+          "visible_bbox": [
+            42,
+            158,
+            548,
+            626
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            495,
+            469
+          ],
+          "index": 3,
+          "largest_component_pixels": 111871,
+          "output_bbox": [
+            8,
+            18,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_03.png",
+          "sha256": "52d9cd7416038136579e78897d6704492de0118c168d5d750e1a2d0403e46013",
+          "source_bbox": [
+            21,
+            159,
+            516,
+            628
+          ],
+          "visible_bbox": [
+            21,
+            159,
+            516,
+            628
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            514,
+            480
+          ],
+          "index": 4,
+          "largest_component_pixels": 104486,
+          "output_bbox": [
+            8,
+            20,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_04.png",
+          "sha256": "c5e23dd2552bf00edf9213db644e105fdfc1c64dee798cc084e3ff00da98a1e6",
+          "source_bbox": [
+            57,
+            76,
+            571,
+            556
+          ],
+          "visible_bbox": [
+            57,
+            76,
+            571,
+            556
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            578,
+            462
+          ],
+          "index": 5,
+          "largest_component_pixels": 120272,
+          "output_bbox": [
+            8,
+            44,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_05.png",
+          "sha256": "f50624c663ade105d4c9739fc5c82959511a4fea3014849a25b33668f99658e2",
+          "source_bbox": [
+            6,
+            86,
+            584,
+            548
+          ],
+          "visible_bbox": [
+            6,
+            86,
+            584,
+            548
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            538,
+            533
+          ],
+          "index": 6,
+          "largest_component_pixels": 112271,
+          "output_bbox": [
+            8,
+            10,
+            183,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_06.png",
+          "sha256": "ca82ebf91d9697c00a585fd42cfee251d2365d8f70b5891442e1fab4f2abcb46",
+          "source_bbox": [
+            32,
+            33,
+            570,
+            566
+          ],
+          "visible_bbox": [
+            32,
+            33,
+            570,
+            566
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 4,
+          "components_kept": 1,
+          "cropped_size": [
+            500,
+            475
+          ],
+          "index": 7,
+          "largest_component_pixels": 114088,
+          "output_bbox": [
+            8,
+            17,
+            184,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_07.png",
+          "sha256": "6d91ff04afd97101315e5a1d591bb0bd5af5cb9e2cf396f91e0427a6f497894e",
+          "source_bbox": [
+            22,
+            85,
+            522,
+            560
+          ],
+          "visible_bbox": [
+            22,
+            85,
+            522,
+            560
+          ]
+        }
+      ],
+      "kind": "character",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/grunt-master.png",
+      "master_source_sha256": "b300865f79b97227456ea33aa6b66d5c67000e99ef477127e566c790c6e5a68f",
+      "model": "isnet-general-use"
+    },
+    "grunt_charmed": {
+      "base": "grunt",
+      "frames": [
+        {
+          "alpha_equal": true,
+          "base_sha256": "ad89936afca5c37dc8830a01d10b7cf0b4fc2aa873983511db651f5323980832",
+          "index": 0,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_00.png",
+          "sha256": "5a965902c5eaa321bb6b08e1841f09f97a54f9be374dc8ed467c62d389f50255"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "4e366550f65da9e1d3aaf41474084f573ce808620fdf4a6a8a448281eadae520",
+          "index": 1,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_01.png",
+          "sha256": "ae38ba279db87129f2fa8b0f1e2e7677226cb80f4d2859c9d55867e6a1ddd740"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "ff104c9187cbe0b2e0231193cfacf977e6daf9b0b56cca6e47e8bb86c23a6c99",
+          "index": 2,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_02.png",
+          "sha256": "868f8b812c685e4b3066e7ddfe45ff9726f41870c14cad89efd4f30840007629"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "52d9cd7416038136579e78897d6704492de0118c168d5d750e1a2d0403e46013",
+          "index": 3,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_03.png",
+          "sha256": "e19cc34360106e54402fd94a08fa9cb23872eef59f1dca48d2963da7be4418a6"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "c5e23dd2552bf00edf9213db644e105fdfc1c64dee798cc084e3ff00da98a1e6",
+          "index": 4,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_04.png",
+          "sha256": "e630e0ad942c95f971ee989e2f5c5ec47f0303605b0301ec08b7a2f4e25bb97b"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "f50624c663ade105d4c9739fc5c82959511a4fea3014849a25b33668f99658e2",
+          "index": 5,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_05.png",
+          "sha256": "d60dee2e32c57f80483934ac2f9f57f873eb4335c2d2cdbcd59f7575fb1cc6d9"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "ca82ebf91d9697c00a585fd42cfee251d2365d8f70b5891442e1fab4f2abcb46",
+          "index": 6,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_06.png",
+          "sha256": "30d30b49543b25a84bf9f90ffa2801af76c4dddd64d40f92ef1a075ae22a6d17"
+        },
+        {
+          "alpha_equal": true,
+          "base_sha256": "6d91ff04afd97101315e5a1d591bb0bd5af5cb9e2cf396f91e0427a6f497894e",
+          "index": 7,
+          "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_07.png",
+          "sha256": "3f6eb7ba8ae36e48ff0ba245f7471751c0eaa322707e75b619186cab7934d760"
+        }
+      ],
+      "kind": "derived_state"
+    },
+    "portrait_vanguard_1": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/portrait_vanguard_1-master.png",
+      "clean_master_sha256": "20ca49413d0072e394f28bfdbfc333330de9ed2e8752f1b7b3708a520c930526",
+      "frames": [
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            589,
+            704
+          ],
+          "index": 0,
+          "largest_component_pixels": 264044,
+          "output_bbox": [
+            22,
+            8,
+            169,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_00.png",
+          "sha256": "4887d963639f93012e25d22e01139aa5dac0b2c1008252b2d56aab618c030ab8",
+          "source_bbox": [
+            15,
+            16,
+            604,
+            720
+          ],
+          "visible_bbox": [
+            15,
+            16,
+            604,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            584,
+            703
+          ],
+          "index": 1,
+          "largest_component_pixels": 260672,
+          "output_bbox": [
+            23,
+            8,
+            169,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_01.png",
+          "sha256": "13256510fd9d16d8334bf4f1014bc2bc359874852146f106583777ffa87e4f2b",
+          "source_bbox": [
+            8,
+            17,
+            592,
+            720
+          ],
+          "visible_bbox": [
+            8,
+            17,
+            592,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            577,
+            702
+          ],
+          "index": 2,
+          "largest_component_pixels": 258710,
+          "output_bbox": [
+            24,
+            8,
+            168,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_02.png",
+          "sha256": "c5d31806755faa9c047304f2839275a547f680b0ab0ee2d741eb45eef69c39e9",
+          "source_bbox": [
+            0,
+            18,
+            577,
+            720
+          ],
+          "visible_bbox": [
+            0,
+            18,
+            577,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            558,
+            701
+          ],
+          "index": 3,
+          "largest_component_pixels": 255533,
+          "output_bbox": [
+            26,
+            8,
+            166,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_03.png",
+          "sha256": "d2a57a5c687b44c1a04de3dee96def69640ecc03dd60350f039cfd2877cbf19c",
+          "source_bbox": [
+            0,
+            19,
+            558,
+            720
+          ],
+          "visible_bbox": [
+            0,
+            19,
+            558,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            593,
+            706
+          ],
+          "index": 4,
+          "largest_component_pixels": 264018,
+          "output_bbox": [
+            22,
+            8,
+            169,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_04.png",
+          "sha256": "6193615faa5450bd8696e91cb0f249cb8d43472e050298cd5c4a24f81e71d631",
+          "source_bbox": [
+            19,
+            14,
+            612,
+            720
+          ],
+          "visible_bbox": [
+            19,
+            14,
+            612,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            590,
+            707
+          ],
+          "index": 5,
+          "largest_component_pixels": 263032,
+          "output_bbox": [
+            23,
+            8,
+            169,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_05.png",
+          "sha256": "36af9f86e0bc905ca3d17b46af4cdd75411cde0bfb4ecd13abca2b1960860b68",
+          "source_bbox": [
+            14,
+            13,
+            604,
+            720
+          ],
+          "visible_bbox": [
+            14,
+            13,
+            604,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 5,
+          "components_kept": 1,
+          "cropped_size": [
+            583,
+            705
+          ],
+          "index": 6,
+          "largest_component_pixels": 261885,
+          "output_bbox": [
+            23,
+            8,
+            168,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_06.png",
+          "sha256": "b4d5f7427660ebbf0556a726ddc8d11d04f877743646b2e69e32201d9209684f",
+          "source_bbox": [
+            0,
+            15,
+            583,
+            720
+          ],
+          "visible_bbox": [
+            0,
+            15,
+            583,
+            720
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 2,
+          "components_kept": 1,
+          "cropped_size": [
+            562,
+            705
+          ],
+          "index": 7,
+          "largest_component_pixels": 257903,
+          "output_bbox": [
+            26,
+            8,
+            166,
+            183
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_07.png",
+          "sha256": "e5ebc7c0da89a64b0c1dae7be1aa68c2ba5911dbee00919c3e14ee4cd65a04d4",
+          "source_bbox": [
+            0,
+            15,
+            562,
+            720
+          ],
+          "visible_bbox": [
+            0,
+            15,
+            562,
+            720
+          ]
+        }
+      ],
+      "kind": "portrait",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/portrait_vanguard_1-master.png",
+      "master_source_sha256": "fec0443ce743947e4492e34af457f3b891560865651957c3e869ab7a992e5675",
+      "model": "u2net_human_seg"
+    },
+    "vanguard_1": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/vanguard_1-master.png",
+      "clean_master_sha256": "b5254e378115ebb3fa7b6a633887859eb0ce7c2b83ea2213b6b57f0a45ba40e3",
+      "frames": [
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            382,
+            670
+          ],
+          "index": 0,
+          "largest_component_pixels": 88873,
+          "output_bbox": [
+            46,
+            9,
+            146,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_00.png",
+          "sha256": "ac4ea3582942f71cac1f81eb5e1eef50efcc2010062b22726372a422bd499078",
+          "source_bbox": [
+            162,
+            35,
+            544,
+            705
+          ],
+          "visible_bbox": [
+            162,
+            35,
+            544,
+            705
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            360,
+            670
+          ],
+          "index": 1,
+          "largest_component_pixels": 87136,
+          "output_bbox": [
+            49,
+            9,
+            143,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_01.png",
+          "sha256": "11566b687fdab3da6c0f9648a9777cfceb30a8580129aa81d364211e8b79e3d5",
+          "source_bbox": [
+            122,
+            35,
+            482,
+            705
+          ],
+          "visible_bbox": [
+            122,
+            35,
+            482,
+            705
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            499,
+            648
+          ],
+          "index": 2,
+          "largest_component_pixels": 90646,
+          "output_bbox": [
+            28,
+            9,
+            163,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_02.png",
+          "sha256": "4a41122efe4b98124ba2b4bfe95f1d5ebab5338dad04667f0fc2c1ad813f0c2f",
+          "source_bbox": [
+            26,
+            39,
+            525,
+            687
+          ],
+          "visible_bbox": [
+            26,
+            39,
+            525,
+            687
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            376,
+            671
+          ],
+          "index": 3,
+          "largest_component_pixels": 88215,
+          "output_bbox": [
+            47,
+            9,
+            145,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_03.png",
+          "sha256": "ec29e4d49b186a3957ef6727604cdc7e4e074f9ace04a71247dbb55b63392c33",
+          "source_bbox": [
+            25,
+            35,
+            401,
+            706
+          ],
+          "visible_bbox": [
+            25,
+            35,
+            401,
+            706
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 2,
+          "components_kept": 1,
+          "cropped_size": [
+            419,
+            636
+          ],
+          "index": 4,
+          "largest_component_pixels": 85485,
+          "output_bbox": [
+            38,
+            9,
+            153,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_04.png",
+          "sha256": "1420bca314201eaf366dbf1849635b54c77d3bc9f9b7d43b7961d583ad1828a0",
+          "source_bbox": [
+            152,
+            18,
+            571,
+            654
+          ],
+          "visible_bbox": [
+            152,
+            18,
+            571,
+            654
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            448,
+            644
+          ],
+          "index": 5,
+          "largest_component_pixels": 84029,
+          "output_bbox": [
+            35,
+            9,
+            157,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_05.png",
+          "sha256": "de08142caf79fa2ae7d05077b52939adcc19feafcd18c13926269470ea34a3d0",
+          "source_bbox": [
+            74,
+            21,
+            522,
+            665
+          ],
+          "visible_bbox": [
+            74,
+            21,
+            522,
+            665
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            368,
+            673
+          ],
+          "index": 6,
+          "largest_component_pixels": 89472,
+          "output_bbox": [
+            48,
+            9,
+            144,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_06.png",
+          "sha256": "b833794a07b2517cc95cec86c8e0589754c7654d1094309c332702ff8484c5e3",
+          "source_bbox": [
+            53,
+            2,
+            421,
+            675
+          ],
+          "visible_bbox": [
+            53,
+            2,
+            421,
+            675
+          ]
+        },
+        {
+          "component_policy": "largest",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            385,
+            668
+          ],
+          "index": 7,
+          "largest_component_pixels": 87812,
+          "output_bbox": [
+            45,
+            9,
+            146,
+            184
+          ],
+          "output_size": [
+            192,
+            192
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_07.png",
+          "sha256": "cad947b91301375c6626280573e2446644a6dcceb14b5d46da9a09ead48dedb1",
+          "source_bbox": [
+            9,
+            5,
+            394,
+            673
+          ],
+          "visible_bbox": [
+            9,
+            5,
+            394,
+            673
+          ]
+        }
+      ],
+      "kind": "character",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/vanguard_1-master.png",
+      "master_source_sha256": "4a11b39dd7886a45ce561ea01891b9846a1534a44c224c330921b0b70d9790b8",
+      "model": "isnet-general-use"
+    },
+    "vfx_attack_hit": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/vfx_attack_hit-master.png",
+      "clean_master_sha256": "5595f2d0093aa9bf41bda8adcbb1ec4cbc3de55152ffb4b4fe41e177935ca4e4",
+      "frames": [
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            379,
+            189
+          ],
+          "index": 0,
+          "largest_component_pixels": 6953,
+          "output_bbox": [
+            8,
+            36,
+            119,
+            91
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_00.png",
+          "sha256": "c7a91762d29c5da1f6957fa4ab84131edee380e27e9456392e1a95c2dfcc3cdb",
+          "source_bbox": [
+            214,
+            363,
+            593,
+            552
+          ],
+          "visible_bbox": [
+            214,
+            363,
+            593,
+            552
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            368,
+            163
+          ],
+          "index": 1,
+          "largest_component_pixels": 5969,
+          "output_bbox": [
+            8,
+            39,
+            119,
+            88
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_01.png",
+          "sha256": "9f632d0e6679750dfd7c30a1952a9972cdb14e60cd937f95b1d1e58ccc724cbf",
+          "source_bbox": [
+            145,
+            378,
+            513,
+            541
+          ],
+          "visible_bbox": [
+            145,
+            378,
+            513,
+            541
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            337,
+            138
+          ],
+          "index": 2,
+          "largest_component_pixels": 4667,
+          "output_bbox": [
+            8,
+            41,
+            119,
+            86
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_02.png",
+          "sha256": "8a5e5bffc229ba55129e955e558795b9642ddb9f0e86d975514688d68e39ada5",
+          "source_bbox": [
+            88,
+            392,
+            425,
+            530
+          ],
+          "visible_bbox": [
+            88,
+            392,
+            425,
+            530
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 6,
+          "components_kept": 5,
+          "cropped_size": [
+            380,
+            205
+          ],
+          "index": 3,
+          "largest_component_pixels": 6464,
+          "output_bbox": [
+            8,
+            34,
+            119,
+            94
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_03.png",
+          "sha256": "09f34df2315ecae5b365cd708fc7f3a15c39a4d4dc150cb6581fb898b0f83502",
+          "source_bbox": [
+            11,
+            360,
+            391,
+            565
+          ],
+          "visible_bbox": [
+            11,
+            360,
+            391,
+            565
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            384,
+            226
+          ],
+          "index": 4,
+          "largest_component_pixels": 6871,
+          "output_bbox": [
+            8,
+            31,
+            119,
+            96
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_04.png",
+          "sha256": "b57b98fccb5f090e6c670ee0cd36e69055bcca91d25ef634b4a24b29ffb01a17",
+          "source_bbox": [
+            209,
+            160,
+            593,
+            386
+          ],
+          "visible_bbox": [
+            209,
+            160,
+            593,
+            386
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            382,
+            226
+          ],
+          "index": 5,
+          "largest_component_pixels": 6871,
+          "output_bbox": [
+            8,
+            31,
+            119,
+            97
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_05.png",
+          "sha256": "028d4e94d126d4f508c40077f7a6df3a3dec59158c163860d6d099231013f0cb",
+          "source_bbox": [
+            129,
+            160,
+            511,
+            386
+          ],
+          "visible_bbox": [
+            129,
+            160,
+            511,
+            386
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            451,
+            170
+          ],
+          "index": 6,
+          "largest_component_pixels": 6243,
+          "output_bbox": [
+            8,
+            43,
+            119,
+            85
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_06.png",
+          "sha256": "c7b40daafe19f62d764c9be28dc7ec1537a69accce23155cd8e009f5b2fe1385",
+          "source_bbox": [
+            32,
+            194,
+            483,
+            364
+          ],
+          "visible_bbox": [
+            32,
+            194,
+            483,
+            364
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            385,
+            166
+          ],
+          "index": 7,
+          "largest_component_pixels": 5739,
+          "output_bbox": [
+            8,
+            40,
+            119,
+            88
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_07.png",
+          "sha256": "19951ea52eee1b46f09ba242f974362eb654de1cf773a65c2c6dee627a941e4e",
+          "source_bbox": [
+            13,
+            193,
+            398,
+            359
+          ],
+          "visible_bbox": [
+            13,
+            193,
+            398,
+            359
+          ]
+        }
+      ],
+      "kind": "vfx",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/vfx_attack_hit-master.png",
+      "master_source_sha256": "af1d6ea6b106b73af477634fb5009d973bac659f954615165a679cea0ab405d9",
+      "model": "isnet-general-use"
+    },
+    "vfx_charm": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/vfx_charm-master.png",
+      "clean_master_sha256": "6b76929f85d00936fc467dae1f1f49bc75f7e2551d3104c9b1c37cf108388c6c",
+      "frames": [
+        {
+          "component_policy": "all_material",
+          "components_before": 5,
+          "components_kept": 5,
+          "cropped_size": [
+            485,
+            311
+          ],
+          "index": 0,
+          "largest_component_pixels": 17273,
+          "output_bbox": [
+            8,
+            28,
+            119,
+            99
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_00.png",
+          "sha256": "20ad4dd83ec53693209b568d23e71682b1c803e830a0bb06f6840cb36dd8a30c",
+          "source_bbox": [
+            105,
+            273,
+            590,
+            584
+          ],
+          "visible_bbox": [
+            105,
+            273,
+            590,
+            584
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 6,
+          "components_kept": 6,
+          "cropped_size": [
+            478,
+            335
+          ],
+          "index": 1,
+          "largest_component_pixels": 13032,
+          "output_bbox": [
+            8,
+            25,
+            119,
+            103
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_01.png",
+          "sha256": "c00e908a68e059bb94d120d94a0e193fdf21d81eade4054a2b802f806c13d79a",
+          "source_bbox": [
+            82,
+            252,
+            560,
+            587
+          ],
+          "visible_bbox": [
+            82,
+            252,
+            560,
+            587
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            443,
+            369
+          ],
+          "index": 2,
+          "largest_component_pixels": 51032,
+          "output_bbox": [
+            8,
+            17,
+            119,
+            110
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_02.png",
+          "sha256": "6cb2591546350862c966dd82c6495f2c9171fecbd54819571dd180bf60b782eb",
+          "source_bbox": [
+            104,
+            247,
+            547,
+            616
+          ],
+          "visible_bbox": [
+            104,
+            247,
+            547,
+            616
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            447,
+            369
+          ],
+          "index": 3,
+          "largest_component_pixels": 50127,
+          "output_bbox": [
+            8,
+            18,
+            119,
+            110
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_03.png",
+          "sha256": "669ad3acaeaa4377fe96c7a5e4c10a4b085636da946f9ef9a534a3f3c5c62852",
+          "source_bbox": [
+            62,
+            248,
+            509,
+            617
+          ],
+          "visible_bbox": [
+            62,
+            248,
+            509,
+            617
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            425,
+            361
+          ],
+          "index": 4,
+          "largest_component_pixels": 47692,
+          "output_bbox": [
+            8,
+            16,
+            119,
+            111
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_04.png",
+          "sha256": "c3e1d142e9bf6b1804c5e4625543a07a80a7b783a99e5112dff2d56c19a03759",
+          "source_bbox": [
+            131,
+            123,
+            556,
+            484
+          ],
+          "visible_bbox": [
+            131,
+            123,
+            556,
+            484
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 1,
+          "components_kept": 1,
+          "cropped_size": [
+            413,
+            349
+          ],
+          "index": 5,
+          "largest_component_pixels": 48752,
+          "output_bbox": [
+            8,
+            17,
+            119,
+            111
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_05.png",
+          "sha256": "68dd2bb4494d76d8d6e7052205bfe9224ea37b377c46c9d5132fbad033cea02b",
+          "source_bbox": [
+            111,
+            128,
+            524,
+            477
+          ],
+          "visible_bbox": [
+            111,
+            128,
+            524,
+            477
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 4,
+          "components_kept": 4,
+          "cropped_size": [
+            413,
+            278
+          ],
+          "index": 6,
+          "largest_component_pixels": 35682,
+          "output_bbox": [
+            8,
+            26,
+            119,
+            101
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_06.png",
+          "sha256": "811e133413b68c38d36d4829932e2f8f9296877eabb90e70757c071cacd7464b",
+          "source_bbox": [
+            115,
+            161,
+            528,
+            439
+          ],
+          "visible_bbox": [
+            115,
+            161,
+            528,
+            439
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            310,
+            279
+          ],
+          "index": 7,
+          "largest_component_pixels": 34908,
+          "output_bbox": [
+            8,
+            14,
+            119,
+            114
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_07.png",
+          "sha256": "6ccdefab2207fdf3d4b6095d95e9a9aec07447a1933ff93277df6f0a7443ec95",
+          "source_bbox": [
+            126,
+            165,
+            436,
+            444
+          ],
+          "visible_bbox": [
+            126,
+            165,
+            436,
+            444
+          ]
+        }
+      ],
+      "kind": "vfx",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/vfx_charm-master.png",
+      "master_source_sha256": "8d52462d4ecd48d776e9c06b3d5e5d28ccd5506c3257525b82e06142e643f3d0",
+      "model": "isnet-general-use"
+    },
+    "vfx_deploy": {
+      "clean_master": "res://staging/character-vfx/aui-11/masters/vfx_deploy-master.png",
+      "clean_master_sha256": "27c4c81469318757beec0b7c7c3ef304e9b19d628b46f4c0e405697926f22f48",
+      "frames": [
+        {
+          "component_policy": "all_material",
+          "components_before": 8,
+          "components_kept": 7,
+          "cropped_size": [
+            512,
+            257
+          ],
+          "index": 0,
+          "largest_component_pixels": 7767,
+          "output_bbox": [
+            8,
+            36,
+            120,
+            92
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_00.png",
+          "sha256": "4f25b199c16b22ab3e6403ec6943ce709ee53ef78a6bd08c0835a2d3837cdf76",
+          "source_bbox": [
+            75,
+            299,
+            587,
+            556
+          ],
+          "visible_bbox": [
+            75,
+            299,
+            587,
+            556
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 3,
+          "components_kept": 3,
+          "cropped_size": [
+            516,
+            287
+          ],
+          "index": 1,
+          "largest_component_pixels": 30681,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_01.png",
+          "sha256": "47b7370c6d44a5696fe502251a07d7f65db0731f6b7e72f89243668967727abb",
+          "source_bbox": [
+            65,
+            297,
+            581,
+            584
+          ],
+          "visible_bbox": [
+            65,
+            297,
+            581,
+            584
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 4,
+          "components_kept": 3,
+          "cropped_size": [
+            514,
+            287
+          ],
+          "index": 2,
+          "largest_component_pixels": 36354,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_02.png",
+          "sha256": "bf05bb1840dbe71d976bbe7dc77b26bb6f13a5266c358d6bf7b1c4caae9281e3",
+          "source_bbox": [
+            57,
+            296,
+            571,
+            583
+          ],
+          "visible_bbox": [
+            57,
+            296,
+            571,
+            583
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            516,
+            287
+          ],
+          "index": 3,
+          "largest_component_pixels": 41099,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_03.png",
+          "sha256": "607c340de773748159dd65aacf0eb132ff7d47425481395af9dc3e74b740be57",
+          "source_bbox": [
+            53,
+            296,
+            569,
+            583
+          ],
+          "visible_bbox": [
+            53,
+            296,
+            569,
+            583
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            513,
+            288
+          ],
+          "index": 4,
+          "largest_component_pixels": 40342,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_04.png",
+          "sha256": "0ba4184ccda052054c22cee95807e28e69102b136d1470a887de365318bc60ce",
+          "source_bbox": [
+            58,
+            145,
+            571,
+            433
+          ],
+          "visible_bbox": [
+            58,
+            145,
+            571,
+            433
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 2,
+          "components_kept": 2,
+          "cropped_size": [
+            513,
+            288
+          ],
+          "index": 5,
+          "largest_component_pixels": 40492,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_05.png",
+          "sha256": "7439e6655502475a17a5b5a972798da20f23117266fce065a2be8aee0294648f",
+          "source_bbox": [
+            56,
+            145,
+            569,
+            433
+          ],
+          "visible_bbox": [
+            56,
+            145,
+            569,
+            433
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 14,
+          "components_kept": 13,
+          "cropped_size": [
+            508,
+            288
+          ],
+          "index": 6,
+          "largest_component_pixels": 3159,
+          "output_bbox": [
+            8,
+            32,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_06.png",
+          "sha256": "42c01ff953deb41a300d0027fc92dc509034315bccd56221dd6094f67f50d83d",
+          "source_bbox": [
+            61,
+            151,
+            569,
+            439
+          ],
+          "visible_bbox": [
+            61,
+            151,
+            569,
+            439
+          ]
+        },
+        {
+          "component_policy": "all_material",
+          "components_before": 8,
+          "components_kept": 8,
+          "cropped_size": [
+            511,
+            285
+          ],
+          "index": 7,
+          "largest_component_pixels": 3123,
+          "output_bbox": [
+            8,
+            33,
+            119,
+            95
+          ],
+          "output_size": [
+            128,
+            128
+          ],
+          "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_07.png",
+          "sha256": "5ae9af8a2fc6bc587631a73d6f35c49e614f8dcf404f4840081f3545992a05ca",
+          "source_bbox": [
+            57,
+            151,
+            568,
+            436
+          ],
+          "visible_bbox": [
+            57,
+            151,
+            568,
+            436
+          ]
+        }
+      ],
+      "kind": "vfx",
+      "master_source": "external-generation-evidence://masters-v2-rgb-checkerboard/vfx_deploy-master.png",
+      "master_source_sha256": "72ed15de6d1e4ef45935bdb8f1eb03426d2cdfcd96fcb710c77ea5bfbc90614a",
+      "model": "isnet-general-use"
+    }
+  },
+  "models": {
+    "isnet-general-use": {
+      "path": "external-model-cache://isnet-general-use.onnx",
+      "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+    },
+    "u2net_human_seg": {
+      "path": "external-model-cache://u2net_human_seg.onnx",
+      "sha256": "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c"
+    }
+  },
+  "schema_version": 1
+}

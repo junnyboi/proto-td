@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "contract_id": "charm-grunt-v1",
+  "base_packet": "grunt",
+  "cell_size": [192, 192],
+  "frame_count": 8,
+  "base_palette": [
+    "#1B1C22",
+    "#3A3B42",
+    "#5E5A50",
+    "#8B795B",
+    "#B4A384",
+    "#D1C2A8",
+    "#E0C99D",
+    "#6E897A"
+  ],
+  "target_palette": [
+    "#211A2A",
+    "#3C3049",
+    "#655069",
+    "#8A5B78",
+    "#A590A4",
+    "#D0C0CD",
+    "#D5B3C4",
+    "#738E8A"
+  ],
+  "stripe": {
+    "period": 8,
+    "active_width": 3,
+    "frame_phase_multiplier": 2,
+    "light": "#D0C0CD",
+    "dark": "#3C3049"
+  },
+  "regions_sixteenths": {
+    "shoulder": [9, 4, 13, 7],
+    "ankles": [3, 12, 12, 15],
+    "left_tab": [4, 3, 6, 5],
+    "right_tab": [10, 3, 12, 5],
+    "knot_center": [10, 6]
+  },
+  "tab_color": "#D5B3C4",
+  "knot_color": "#A590A4",
+  "precedence": ["base_palette", "bindings", "tabs", "knot"],
+  "alpha_policy": "byte-identical-to-base",
+  "geometry_policy": "occupied-coordinate-identical-to-base"
+}

@@ -1,0 +1,492 @@
+[
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/portrait_vanguard_1-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/vanguard_1-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/vfx_attack_hit-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/vfx_charm-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/masters/vfx_deploy-master.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/grunt_charmed_normalized/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_00.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_01.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_02.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_03.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_04.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_05.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_06.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  },
+  {
+    "path": "res://staging/character-vfx/aui-11/sources/deploy/frame_07.png",
+    "remapped": {
+      "#41A6F6": 0,
+      "#F4F4F4": 0
+    }
+  }
+]

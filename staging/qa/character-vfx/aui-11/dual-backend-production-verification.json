@@ -1,0 +1,4584 @@
+{
+  "checks": [
+    {
+      "detail": "",
+      "name": "vanguard_1_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-vanguard_1.asset.json', 'aui11-vanguard_1.contact.png', 'aui11-vanguard_1.png', 'aui11-vanguard_1.qa.json']",
+      "name": "vanguard_1_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-vanguard_1.asset.json', 'aui11-vanguard_1.contact.png', 'aui11-vanguard_1.png', 'aui11-vanguard_1.qa.json']",
+      "name": "vanguard_1_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "vanguard_1_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "vanguard_1_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "vanguard_1_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "vanguard_1_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "vanguard_1_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "vanguard_1_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "vanguard_1_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "vanguard_1_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-vanguard_1.asset.json', 'aui11-vanguard_1.contact.png', 'aui11-vanguard_1.png', 'aui11-vanguard_1.qa.json']",
+      "name": "vanguard_1_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-vanguard_1.asset.json', 'aui11-vanguard_1.contact.png', 'aui11-vanguard_1.png', 'aui11-vanguard_1.qa.json']",
+      "name": "vanguard_1_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "vanguard_1_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "vanguard_1_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "vanguard_1_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "vanguard_1_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "vanguard_1_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "vanguard_1_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "vanguard_1_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "vanguard_1_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "vanguard_1_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-portrait_vanguard_1.asset.json', 'aui11-portrait_vanguard_1.contact.png', 'aui11-portrait_vanguard_1.png', 'aui11-portrait_vanguard_1.qa.json']",
+      "name": "portrait_vanguard_1_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-portrait_vanguard_1.asset.json', 'aui11-portrait_vanguard_1.contact.png', 'aui11-portrait_vanguard_1.png', 'aui11-portrait_vanguard_1.qa.json']",
+      "name": "portrait_vanguard_1_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "portrait_vanguard_1_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "portrait_vanguard_1_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "portrait_vanguard_1_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "portrait_vanguard_1_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "portrait_vanguard_1_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "portrait_vanguard_1_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "portrait_vanguard_1_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "portrait_vanguard_1_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-portrait_vanguard_1.asset.json', 'aui11-portrait_vanguard_1.contact.png', 'aui11-portrait_vanguard_1.png', 'aui11-portrait_vanguard_1.qa.json']",
+      "name": "portrait_vanguard_1_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-portrait_vanguard_1.asset.json', 'aui11-portrait_vanguard_1.contact.png', 'aui11-portrait_vanguard_1.png', 'aui11-portrait_vanguard_1.qa.json']",
+      "name": "portrait_vanguard_1_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "portrait_vanguard_1_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "portrait_vanguard_1_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "portrait_vanguard_1_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "portrait_vanguard_1_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "portrait_vanguard_1_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "portrait_vanguard_1_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "portrait_vanguard_1_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "portrait_vanguard_1_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "portrait_vanguard_1_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt.asset.json', 'aui11-grunt.contact.png', 'aui11-grunt.png', 'aui11-grunt.qa.json']",
+      "name": "grunt_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt.asset.json', 'aui11-grunt.contact.png', 'aui11-grunt.png', 'aui11-grunt.qa.json']",
+      "name": "grunt_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "grunt_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "grunt_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "grunt_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "grunt_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt.asset.json', 'aui11-grunt.contact.png', 'aui11-grunt.png', 'aui11-grunt.qa.json']",
+      "name": "grunt_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt.asset.json', 'aui11-grunt.contact.png', 'aui11-grunt.png', 'aui11-grunt.qa.json']",
+      "name": "grunt_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "grunt_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "grunt_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "grunt_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "grunt_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt_charmed.asset.json', 'aui11-grunt_charmed.contact.png', 'aui11-grunt_charmed.png', 'aui11-grunt_charmed.qa.json']",
+      "name": "grunt_charmed_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt_charmed.asset.json', 'aui11-grunt_charmed.contact.png', 'aui11-grunt_charmed.png', 'aui11-grunt_charmed.qa.json']",
+      "name": "grunt_charmed_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "grunt_charmed_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "grunt_charmed_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "grunt_charmed_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "grunt_charmed_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_charmed_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_charmed_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_charmed_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_charmed_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt_charmed.asset.json', 'aui11-grunt_charmed.contact.png', 'aui11-grunt_charmed.png', 'aui11-grunt_charmed.qa.json']",
+      "name": "grunt_charmed_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-grunt_charmed.asset.json', 'aui11-grunt_charmed.contact.png', 'aui11-grunt_charmed.png', 'aui11-grunt_charmed.qa.json']",
+      "name": "grunt_charmed_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "grunt_charmed_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "grunt_charmed_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "grunt_charmed_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "grunt_charmed_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_charmed_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_charmed_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "grunt_charmed_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "grunt_charmed_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "grunt_charmed_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-deploy.asset.json', 'aui11-deploy.contact.png', 'aui11-deploy.png', 'aui11-deploy.qa.json']",
+      "name": "deploy_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-deploy.asset.json', 'aui11-deploy.contact.png', 'aui11-deploy.png', 'aui11-deploy.qa.json']",
+      "name": "deploy_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "deploy_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "deploy_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "deploy_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "deploy_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "deploy_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "deploy_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "deploy_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "deploy_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-deploy.asset.json', 'aui11-deploy.contact.png', 'aui11-deploy.png', 'aui11-deploy.qa.json']",
+      "name": "deploy_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-deploy.asset.json', 'aui11-deploy.contact.png', 'aui11-deploy.png', 'aui11-deploy.qa.json']",
+      "name": "deploy_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "deploy_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "deploy_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "deploy_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "deploy_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "deploy_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "deploy_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "deploy_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "deploy_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-attack_hit.asset.json', 'aui11-attack_hit.contact.png', 'aui11-attack_hit.png', 'aui11-attack_hit.qa.json']",
+      "name": "attack_hit_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-attack_hit.asset.json', 'aui11-attack_hit.contact.png', 'aui11-attack_hit.png', 'aui11-attack_hit.qa.json']",
+      "name": "attack_hit_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "attack_hit_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "attack_hit_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "attack_hit_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "attack_hit_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "attack_hit_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "attack_hit_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "attack_hit_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "attack_hit_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-attack_hit.asset.json', 'aui11-attack_hit.contact.png', 'aui11-attack_hit.png', 'aui11-attack_hit.qa.json']",
+      "name": "attack_hit_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-attack_hit.asset.json', 'aui11-attack_hit.contact.png', 'aui11-attack_hit.png', 'aui11-attack_hit.qa.json']",
+      "name": "attack_hit_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "attack_hit_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "attack_hit_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "attack_hit_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "attack_hit_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "attack_hit_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "attack_hit_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "attack_hit_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "attack_hit_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_hit_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-charm_vfx.asset.json', 'aui11-charm_vfx.contact.png', 'aui11-charm_vfx.png', 'aui11-charm_vfx.qa.json']",
+      "name": "charm_vfx_python_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-charm_vfx.asset.json', 'aui11-charm_vfx.contact.png', 'aui11-charm_vfx.png', 'aui11-charm_vfx.qa.json']",
+      "name": "charm_vfx_python_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "charm_vfx_python_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "charm_vfx_python_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "charm_vfx_python_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "charm_vfx_python_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_python_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "charm_vfx_python_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "charm_vfx_python_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "charm_vfx_python_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "charm_vfx_python_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_directories",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-charm_vfx.asset.json', 'aui11-charm_vfx.contact.png', 'aui11-charm_vfx.png', 'aui11-charm_vfx.qa.json']",
+      "name": "charm_vfx_godot_same_backend_bytes",
+      "ok": true
+    },
+    {
+      "detail": "files=['aui11-charm_vfx.asset.json', 'aui11-charm_vfx.contact.png', 'aui11-charm_vfx.png', 'aui11-charm_vfx.qa.json']",
+      "name": "charm_vfx_godot_inventory",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "charm_vfx_godot_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "charm_vfx_godot_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "status=PASS checks=42",
+      "name": "charm_vfx_godot_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_atlas_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_atlas_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_contact_file_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_contact_rgba_hash",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_human_final_art",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_runtime_binding",
+      "ok": true
+    },
+    {
+      "detail": "frames=8",
+      "name": "charm_vfx_godot_source_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_godot_adjacent_unique_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "charm_vfx_godot_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "charm_vfx_godot_loop_center_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "charm_vfx_godot_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "charm_vfx_godot_loop_center_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_cross_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_cross_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_cross_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_cross_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_0",
+      "ok": true
+    },
+    {
+      "detail": "different=9850",
+      "name": "charm_grayscale_distinct_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_1",
+      "ok": true
+    },
+    {
+      "detail": "different=8808",
+      "name": "charm_grayscale_distinct_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_2",
+      "ok": true
+    },
+    {
+      "detail": "different=9381",
+      "name": "charm_grayscale_distinct_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_3",
+      "ok": true
+    },
+    {
+      "detail": "different=9850",
+      "name": "charm_grayscale_distinct_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_4",
+      "ok": true
+    },
+    {
+      "detail": "different=8409",
+      "name": "charm_grayscale_distinct_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_5",
+      "ok": true
+    },
+    {
+      "detail": "different=7646",
+      "name": "charm_grayscale_distinct_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_6",
+      "ok": true
+    },
+    {
+      "detail": "different=8247",
+      "name": "charm_grayscale_distinct_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_equal_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_occupancy_equal_7",
+      "ok": true
+    },
+    {
+      "detail": "different=8409",
+      "name": "charm_grayscale_distinct_7",
+      "ok": true
+    },
+    {
+      "detail": "width=105",
+      "name": "deploy_width_0",
+      "ok": true
+    },
+    {
+      "detail": "height=56",
+      "name": "deploy_height_0",
+      "ok": true
+    },
+    {
+      "detail": "area=2105",
+      "name": "deploy_area_0",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_1",
+      "ok": true
+    },
+    {
+      "detail": "height=61",
+      "name": "deploy_height_1",
+      "ok": true
+    },
+    {
+      "detail": "area=2952",
+      "name": "deploy_area_1",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_2",
+      "ok": true
+    },
+    {
+      "detail": "height=61",
+      "name": "deploy_height_2",
+      "ok": true
+    },
+    {
+      "detail": "area=2976",
+      "name": "deploy_area_2",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "width=105",
+      "name": "deploy_width_3",
+      "ok": true
+    },
+    {
+      "detail": "height=56",
+      "name": "deploy_height_3",
+      "ok": true
+    },
+    {
+      "detail": "area=2105",
+      "name": "deploy_area_3",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_4",
+      "ok": true
+    },
+    {
+      "detail": "height=61",
+      "name": "deploy_height_4",
+      "ok": true
+    },
+    {
+      "detail": "area=3025",
+      "name": "deploy_area_4",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_5",
+      "ok": true
+    },
+    {
+      "detail": "height=61",
+      "name": "deploy_height_5",
+      "ok": true
+    },
+    {
+      "detail": "area=3043",
+      "name": "deploy_area_5",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_6",
+      "ok": true
+    },
+    {
+      "detail": "height=62",
+      "name": "deploy_height_6",
+      "ok": true
+    },
+    {
+      "detail": "area=2367",
+      "name": "deploy_area_6",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "width=104",
+      "name": "deploy_width_7",
+      "ok": true
+    },
+    {
+      "detail": "height=61",
+      "name": "deploy_height_7",
+      "ok": true
+    },
+    {
+      "detail": "area=3025",
+      "name": "deploy_area_7",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "deploy_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "width=55",
+      "name": "attack_hit_width_0",
+      "ok": true
+    },
+    {
+      "detail": "height=36",
+      "name": "attack_hit_height_0",
+      "ok": true
+    },
+    {
+      "detail": "area=451",
+      "name": "attack_hit_area_0",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "width=54",
+      "name": "attack_hit_width_1",
+      "ok": true
+    },
+    {
+      "detail": "height=38",
+      "name": "attack_hit_height_1",
+      "ok": true
+    },
+    {
+      "detail": "area=423",
+      "name": "attack_hit_area_1",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "width=55",
+      "name": "attack_hit_width_2",
+      "ok": true
+    },
+    {
+      "detail": "height=37",
+      "name": "attack_hit_height_2",
+      "ok": true
+    },
+    {
+      "detail": "area=490",
+      "name": "attack_hit_area_2",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "width=55",
+      "name": "attack_hit_width_3",
+      "ok": true
+    },
+    {
+      "detail": "height=36",
+      "name": "attack_hit_height_3",
+      "ok": true
+    },
+    {
+      "detail": "area=451",
+      "name": "attack_hit_area_3",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "width=54",
+      "name": "attack_hit_width_4",
+      "ok": true
+    },
+    {
+      "detail": "height=37",
+      "name": "attack_hit_height_4",
+      "ok": true
+    },
+    {
+      "detail": "area=432",
+      "name": "attack_hit_area_4",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "width=55",
+      "name": "attack_hit_width_5",
+      "ok": true
+    },
+    {
+      "detail": "height=38",
+      "name": "attack_hit_height_5",
+      "ok": true
+    },
+    {
+      "detail": "area=477",
+      "name": "attack_hit_area_5",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "width=55",
+      "name": "attack_hit_width_6",
+      "ok": true
+    },
+    {
+      "detail": "height=37",
+      "name": "attack_hit_height_6",
+      "ok": true
+    },
+    {
+      "detail": "area=353",
+      "name": "attack_hit_area_6",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "width=54",
+      "name": "attack_hit_width_7",
+      "ok": true
+    },
+    {
+      "detail": "height=37",
+      "name": "attack_hit_height_7",
+      "ok": true
+    },
+    {
+      "detail": "area=432",
+      "name": "attack_hit_area_7",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "attack_hit_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_0",
+      "ok": true
+    },
+    {
+      "detail": "height=30",
+      "name": "charm_vfx_height_0",
+      "ok": true
+    },
+    {
+      "detail": "area=1041",
+      "name": "charm_vfx_area_0",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_1",
+      "ok": true
+    },
+    {
+      "detail": "height=33",
+      "name": "charm_vfx_height_1",
+      "ok": true
+    },
+    {
+      "detail": "area=1044",
+      "name": "charm_vfx_area_1",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_2",
+      "ok": true
+    },
+    {
+      "detail": "height=40",
+      "name": "charm_vfx_height_2",
+      "ok": true
+    },
+    {
+      "detail": "area=1305",
+      "name": "charm_vfx_area_2",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_3",
+      "ok": true
+    },
+    {
+      "detail": "height=30",
+      "name": "charm_vfx_height_3",
+      "ok": true
+    },
+    {
+      "detail": "area=1041",
+      "name": "charm_vfx_area_3",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_4",
+      "ok": true
+    },
+    {
+      "detail": "height=40",
+      "name": "charm_vfx_height_4",
+      "ok": true
+    },
+    {
+      "detail": "area=1343",
+      "name": "charm_vfx_area_4",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_5",
+      "ok": true
+    },
+    {
+      "detail": "height=40",
+      "name": "charm_vfx_height_5",
+      "ok": true
+    },
+    {
+      "detail": "area=1383",
+      "name": "charm_vfx_area_5",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_6",
+      "ok": true
+    },
+    {
+      "detail": "height=32",
+      "name": "charm_vfx_height_6",
+      "ok": true
+    },
+    {
+      "detail": "area=1139",
+      "name": "charm_vfx_area_6",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "width=70",
+      "name": "charm_vfx_width_7",
+      "ok": true
+    },
+    {
+      "detail": "height=40",
+      "name": "charm_vfx_height_7",
+      "ok": true
+    },
+    {
+      "detail": "area=1343",
+      "name": "charm_vfx_area_7",
+      "ok": true
+    },
+    {
+      "detail": "center=96 bottom=180",
+      "name": "charm_vfx_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_0",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 147, 18, 10) max=0",
+      "name": "deploy_open_window_0",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 162, 10, 6) max=0",
+      "name": "charm_vfx_open_window_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_1",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 145, 18, 10) max=0",
+      "name": "deploy_open_window_1",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 161, 10, 6) max=0",
+      "name": "charm_vfx_open_window_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_2",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 145, 18, 10) max=0",
+      "name": "deploy_open_window_2",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 157, 10, 6) max=0",
+      "name": "charm_vfx_open_window_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_3",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 147, 18, 10) max=0",
+      "name": "deploy_open_window_3",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 162, 10, 6) max=0",
+      "name": "charm_vfx_open_window_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_4",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 145, 18, 10) max=0",
+      "name": "deploy_open_window_4",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 157, 10, 6) max=0",
+      "name": "charm_vfx_open_window_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_5",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 145, 18, 10) max=0",
+      "name": "deploy_open_window_5",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 157, 10, 6) max=0",
+      "name": "charm_vfx_open_window_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_6",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 144, 18, 10) max=0",
+      "name": "deploy_open_window_6",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 161, 10, 6) max=0",
+      "name": "charm_vfx_open_window_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_width_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_smallest_area_7",
+      "ok": true
+    },
+    {
+      "detail": "rect=(87, 145, 18, 10) max=0",
+      "name": "deploy_open_window_7",
+      "ok": true
+    },
+    {
+      "detail": "rect=(91, 157, 10, 6) max=0",
+      "name": "charm_vfx_open_window_7",
+      "ok": true
+    }
+  ],
+  "checks_executed": 880,
+  "root": "external-evidence://aui-11/seven-packets-draft",
+  "schema_version": 1,
+  "status": "PASS",
+  "vfx_metrics": {
+    "attack_hit": [
+      [
+        55,
+        36,
+        451,
+        96,
+        180
+      ],
+      [
+        54,
+        38,
+        423,
+        96,
+        180
+      ],
+      [
+        55,
+        37,
+        490,
+        96,
+        180
+      ],
+      [
+        55,
+        36,
+        451,
+        96,
+        180
+      ],
+      [
+        54,
+        37,
+        432,
+        96,
+        180
+      ],
+      [
+        55,
+        38,
+        477,
+        96,
+        180
+      ],
+      [
+        55,
+        37,
+        353,
+        96,
+        180
+      ],
+      [
+        54,
+        37,
+        432,
+        96,
+        180
+      ]
+    ],
+    "charm_vfx": [
+      [
+        70,
+        30,
+        1041,
+        96,
+        180
+      ],
+      [
+        70,
+        33,
+        1044,
+        96,
+        180
+      ],
+      [
+        70,
+        40,
+        1305,
+        96,
+        180
+      ],
+      [
+        70,
+        30,
+        1041,
+        96,
+        180
+      ],
+      [
+        70,
+        40,
+        1343,
+        96,
+        180
+      ],
+      [
+        70,
+        40,
+        1383,
+        96,
+        180
+      ],
+      [
+        70,
+        32,
+        1139,
+        96,
+        180
+      ],
+      [
+        70,
+        40,
+        1343,
+        96,
+        180
+      ]
+    ],
+    "deploy": [
+      [
+        105,
+        56,
+        2105,
+        96,
+        180
+      ],
+      [
+        104,
+        61,
+        2952,
+        96,
+        180
+      ],
+      [
+        104,
+        61,
+        2976,
+        96,
+        180
+      ],
+      [
+        105,
+        56,
+        2105,
+        96,
+        180
+      ],
+      [
+        104,
+        61,
+        3025,
+        96,
+        180
+      ],
+      [
+        104,
+        61,
+        3043,
+        96,
+        180
+      ],
+      [
+        104,
+        62,
+        2367,
+        96,
+        180
+      ],
+      [
+        104,
+        61,
+        3025,
+        96,
+        180
+      ]
+    ]
+  }
+}

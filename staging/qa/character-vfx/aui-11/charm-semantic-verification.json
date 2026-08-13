@@ -1,0 +1,571 @@
+{
+  "contract_sha256": "2ae653c2651d601a66b0aaf28e7c8d09ffe5661e18e962f724572c2f4dfa955a",
+  "expected_sha256": "1b59102dd04da11ee4748f453b3061f83634942c963ba7e773d5469ef6ad193f",
+  "frames": [
+    {
+      "alpha_sha256": "fe5741680f3be890ee74704dfab76600712f7229f5c7883856c3e0c31c3b7617",
+      "cue_counts": {
+        "ankles": {
+          "dark": 389,
+          "light": 242,
+          "region": [
+            51,
+            146,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            68,
+            78,
+            85
+          ],
+          "tab": 161
+        },
+        "right_tab": {
+          "region": [
+            115,
+            68,
+            133,
+            85
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 466,
+          "light": 281,
+          "region": [
+            106,
+            76,
+            142,
+            102
+          ]
+        }
+      },
+      "frame": 0,
+      "grayscale_different_pixels": 9850,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          94
+        ],
+        [
+          114,
+          94
+        ],
+        [
+          116,
+          94
+        ],
+        [
+          115,
+          93
+        ],
+        [
+          115,
+          95
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "c04bdb4c0dc79ae9e0ae0aabac2ec1fbaa212cad5890d7c23d401bbe67463c80",
+      "cue_counts": {
+        "ankles": {
+          "dark": 371,
+          "light": 225,
+          "region": [
+            51,
+            148,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            76,
+            78,
+            92
+          ],
+          "tab": 217
+        },
+        "right_tab": {
+          "region": [
+            115,
+            76,
+            133,
+            92
+          ],
+          "tab": 287
+        },
+        "shoulder": {
+          "dark": 394,
+          "light": 235,
+          "region": [
+            106,
+            84,
+            142,
+            108
+          ]
+        }
+      },
+      "frame": 1,
+      "grayscale_different_pixels": 8808,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          100
+        ],
+        [
+          114,
+          100
+        ],
+        [
+          116,
+          100
+        ],
+        [
+          115,
+          99
+        ],
+        [
+          115,
+          101
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "4fe3d5fb0711fa7771848e1a8c391196cea39d7c3b85f3b183073ae1b92dc1a6",
+      "cue_counts": {
+        "ankles": {
+          "dark": 377,
+          "light": 216,
+          "region": [
+            51,
+            147,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            71,
+            78,
+            88
+          ],
+          "tab": 189
+        },
+        "right_tab": {
+          "region": [
+            115,
+            71,
+            133,
+            88
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 442,
+          "light": 259,
+          "region": [
+            106,
+            79,
+            142,
+            105
+          ]
+        }
+      },
+      "frame": 2,
+      "grayscale_different_pixels": 9381,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          96
+        ],
+        [
+          114,
+          96
+        ],
+        [
+          116,
+          96
+        ],
+        [
+          115,
+          95
+        ],
+        [
+          115,
+          97
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "fe5741680f3be890ee74704dfab76600712f7229f5c7883856c3e0c31c3b7617",
+      "cue_counts": {
+        "ankles": {
+          "dark": 385,
+          "light": 246,
+          "region": [
+            51,
+            146,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            68,
+            78,
+            85
+          ],
+          "tab": 161
+        },
+        "right_tab": {
+          "region": [
+            115,
+            68,
+            133,
+            85
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 467,
+          "light": 280,
+          "region": [
+            106,
+            76,
+            142,
+            102
+          ]
+        }
+      },
+      "frame": 3,
+      "grayscale_different_pixels": 9850,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          94
+        ],
+        [
+          114,
+          94
+        ],
+        [
+          116,
+          94
+        ],
+        [
+          115,
+          93
+        ],
+        [
+          115,
+          95
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "6f8453d6a0f0bd735e3514d7d59d8c5b787666cd05c8f18f21d78a0555e38da5",
+      "cue_counts": {
+        "ankles": {
+          "dark": 260,
+          "light": 170,
+          "region": [
+            51,
+            146,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            69,
+            78,
+            86
+          ],
+          "tab": 300
+        },
+        "right_tab": {
+          "region": [
+            115,
+            69,
+            133,
+            86
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 441,
+          "light": 269,
+          "region": [
+            106,
+            78,
+            142,
+            103
+          ]
+        }
+      },
+      "frame": 4,
+      "grayscale_different_pixels": 8409,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          95
+        ],
+        [
+          114,
+          95
+        ],
+        [
+          116,
+          95
+        ],
+        [
+          115,
+          94
+        ],
+        [
+          115,
+          96
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "ec4c4b225cbad5918ae6f07cfe86501dc000963d467ef70285b4b4a97839c60f",
+      "cue_counts": {
+        "ankles": {
+          "dark": 270,
+          "light": 176,
+          "region": [
+            51,
+            151,
+            133,
+            173
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            85,
+            78,
+            100
+          ],
+          "tab": 92
+        },
+        "right_tab": {
+          "region": [
+            115,
+            85,
+            133,
+            100
+          ],
+          "tab": 269
+        },
+        "shoulder": {
+          "dark": 379,
+          "light": 216,
+          "region": [
+            106,
+            93,
+            142,
+            115
+          ]
+        }
+      },
+      "frame": 5,
+      "grayscale_different_pixels": 7646,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          107
+        ],
+        [
+          114,
+          107
+        ],
+        [
+          116,
+          107
+        ],
+        [
+          115,
+          106
+        ],
+        [
+          115,
+          108
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "00ec444c55bdc9417d5f5c087acbf8a4a44fbadd4edbc7cebbd02489203d1682",
+      "cue_counts": {
+        "ankles": {
+          "dark": 309,
+          "light": 178,
+          "region": [
+            51,
+            144,
+            133,
+            171
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            63,
+            78,
+            81
+          ],
+          "tab": 322
+        },
+        "right_tab": {
+          "region": [
+            115,
+            63,
+            133,
+            81
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 466,
+          "light": 283,
+          "region": [
+            106,
+            72,
+            142,
+            99
+          ]
+        }
+      },
+      "frame": 6,
+      "grayscale_different_pixels": 8247,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          90
+        ],
+        [
+          114,
+          90
+        ],
+        [
+          116,
+          90
+        ],
+        [
+          115,
+          89
+        ],
+        [
+          115,
+          91
+        ]
+      ]
+    },
+    {
+      "alpha_sha256": "6f8453d6a0f0bd735e3514d7d59d8c5b787666cd05c8f18f21d78a0555e38da5",
+      "cue_counts": {
+        "ankles": {
+          "dark": 264,
+          "light": 166,
+          "region": [
+            51,
+            146,
+            133,
+            172
+          ]
+        },
+        "left_tab": {
+          "region": [
+            60,
+            69,
+            78,
+            86
+          ],
+          "tab": 300
+        },
+        "right_tab": {
+          "region": [
+            115,
+            69,
+            133,
+            86
+          ],
+          "tab": 305
+        },
+        "shoulder": {
+          "dark": 446,
+          "light": 264,
+          "region": [
+            106,
+            78,
+            142,
+            103
+          ]
+        }
+      },
+      "frame": 7,
+      "grayscale_different_pixels": 8409,
+      "knot_exclusion_radius": 3,
+      "knot_local_count": 5,
+      "knot_points": [
+        [
+          115,
+          95
+        ],
+        [
+          114,
+          95
+        ],
+        [
+          116,
+          95
+        ],
+        [
+          115,
+          94
+        ],
+        [
+          115,
+          96
+        ]
+      ]
+    }
+  ],
+  "pins": {
+    "binding_dark_per_region_min": 128,
+    "binding_light_per_region_min": 128,
+    "binding_luminance_delta_min": 96,
+    "grayscale_different_pixels_min": 128,
+    "knot_exclusion_radius": 3,
+    "knot_pixels_exact": 5,
+    "tab_knot_luminance_delta_min": 24,
+    "tab_pixels_per_region_min": 64
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "transform_report_sha256": "c23da110e641e469532757ff2df257dad3240f9bd3ac11c300f17b71129efe23"
+}

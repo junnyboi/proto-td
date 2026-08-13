@@ -1,0 +1,458 @@
+[
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_00.png",
+    "source_bbox": [
+      4,
+      32,
+      124,
+      96
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_01.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_02.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_03.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_04.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_05.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_06.png",
+    "source_bbox": [
+      4,
+      28,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_deploy",
+    "contract": {
+      "clip": false,
+      "compress": null,
+      "radius": 4,
+      "window": [
+        22,
+        12
+      ]
+    },
+    "frame": "frame_07.png",
+    "source_bbox": [
+      4,
+      29,
+      123,
+      99
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_00.png",
+    "source_bbox": [
+      8,
+      36,
+      119,
+      91
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_01.png",
+    "source_bbox": [
+      8,
+      39,
+      119,
+      88
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_02.png",
+    "source_bbox": [
+      8,
+      41,
+      119,
+      86
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_03.png",
+    "source_bbox": [
+      8,
+      34,
+      119,
+      94
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_04.png",
+    "source_bbox": [
+      8,
+      31,
+      119,
+      96
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_05.png",
+    "source_bbox": [
+      8,
+      31,
+      119,
+      97
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_06.png",
+    "source_bbox": [
+      8,
+      43,
+      119,
+      85
+    ]
+  },
+  {
+    "asset": "vfx_attack_hit",
+    "contract": {
+      "clip": true,
+      "compress": null,
+      "radius": 2,
+      "window": null
+    },
+    "frame": "frame_07.png",
+    "source_bbox": [
+      8,
+      40,
+      119,
+      88
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_00.png",
+    "source_bbox": [
+      8,
+      39,
+      119,
+      87
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_01.png",
+    "source_bbox": [
+      8,
+      37,
+      119,
+      90
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_02.png",
+    "source_bbox": [
+      8,
+      32,
+      119,
+      95
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_03.png",
+    "source_bbox": [
+      8,
+      32,
+      119,
+      95
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_04.png",
+    "source_bbox": [
+      8,
+      31,
+      119,
+      96
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_05.png",
+    "source_bbox": [
+      8,
+      32,
+      119,
+      96
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_06.png",
+    "source_bbox": [
+      8,
+      38,
+      119,
+      89
+    ]
+  },
+  {
+    "asset": "vfx_charm",
+    "contract": {
+      "clip": true,
+      "compress": [
+        11,
+        16
+      ],
+      "radius": 3,
+      "window": [
+        16,
+        10
+      ]
+    },
+    "frame": "frame_07.png",
+    "source_bbox": [
+      8,
+      30,
+      119,
+      98
+    ]
+  }
+]

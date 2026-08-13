@@ -1,0 +1,7337 @@
+{
+  "checks": [
+    {
+      "detail": "",
+      "name": "manifest_identity",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "manifest_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "production_emitted",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "runtime_assets_unchanged",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "runtime_unbound",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "human_final_unset",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "approval_token",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "approved_hashes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_ids",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "git_scope_nonempty",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "git_scope_owned",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "git_scope_no_deletions",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "git_scope_forbidden_files",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "git_scope_forbidden_prefixes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "qa_binding_groups",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_backend_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
+      "name": "dual_backend_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_backend_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_backend_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_contract_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-v1-contract.json",
+      "name": "attack_contract_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_contract_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_contract_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_attack_hit_transform.py",
+      "name": "attack_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
+      "name": "attack_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_00.png",
+      "name": "attack_pretransform_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_01.png",
+      "name": "attack_pretransform_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_02.png",
+      "name": "attack_pretransform_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_03.png",
+      "name": "attack_pretransform_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_04.png",
+      "name": "attack_pretransform_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_05.png",
+      "name": "attack_pretransform_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_06.png",
+      "name": "attack_pretransform_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-pretransform/frame_07.png",
+      "name": "attack_pretransform_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_pretransform_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_contract",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_input_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_receipt_output_7",
+      "ok": true
+    },
+    {
+      "detail": "{\"frames\": 8, \"status\": \"PASS\"}\n",
+      "name": "attack_oracle_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_oracle_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_binding_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_contract_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-grunt-v1-contract.json",
+      "name": "charm_contract_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_contract_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_contract_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-grunt-v1-expected.json",
+      "name": "charm_expected_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_oracle_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm_expected_oracle.py",
+      "name": "charm_expected_oracle_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_oracle_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_expected_oracle_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
+      "name": "charm_semantic_receipt_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_receipt_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_receipt_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_charm_semantics.py",
+      "name": "charm_semantic_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transform_report_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-transform-report.json",
+      "name": "charm_transform_report_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transform_report_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transform_report_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transformer_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/build_charm_sources.py",
+      "name": "charm_transformer_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transformer_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_transformer_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_contract",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_expected",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_semantic_transform_report",
+      "ok": true
+    },
+    {
+      "detail": "{\"frames\": 8, \"status\": \"PASS\"}\n",
+      "name": "charm_oracle_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_oracle_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_identity",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_status",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_manifest",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_backends",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_packet_ids",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_attack_hit_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_charm_vfx_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_deploy_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_grunt_charmed_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_portrait_vanguard_1_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_run_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_spec",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_sources",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_run_record_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_python_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_python_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_python_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_python_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_godot_a_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_godot_a_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_godot_b_file_inventory",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_godot_b_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_python_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_godot_exact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_atlas_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_contact_rgba_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_metadata_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_qa_semantic_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_canonical_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_canonical_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_canonical_metadata",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_canonical_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_a_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_atlas_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_contact_recomputed",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_metadata_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_qa_semantic",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_vanguard_1_b_named_outputs",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_rerun",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "dual_receipt_reproduced",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_identity",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_barriers",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_reference_manifest",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generation_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generation",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_foreground_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_foreground",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_normalization_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_canonical_backend",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_fallback_backend",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_transform_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
+      "name": "provenance_characters_evidence_attack_hit_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_attack_hit_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_batch_manifest_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_batch_manifest_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/batch-manifest.json",
+      "name": "provenance_characters_evidence_batch_manifest_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_batch_manifest_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_batch_manifest_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_semantics_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_semantics_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
+      "name": "provenance_characters_evidence_charm_semantics_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_semantics_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_charm_semantics_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/dual-backend-bound-receipt.json",
+      "name": "provenance_characters_evidence_dual_backend_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verifier_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
+      "name": "provenance_characters_evidence_dual_backend_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_dual_backend_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_generation_ledger_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_generation_ledger_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
+      "name": "provenance_characters_evidence_generation_ledger_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_generation_ledger_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_generation_ledger_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
+      "name": "provenance_characters_evidence_staged_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verifier_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_staged_packets.py",
+      "name": "provenance_characters_evidence_staged_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_staged_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_visual_review_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_visual_review_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/final-packet-visual-review.md",
+      "name": "provenance_characters_evidence_visual_review_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_visual_review_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_evidence_visual_review_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/pipeline.py",
+      "name": "provenance_characters_generator_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/pixel_ops.py",
+      "name": "provenance_characters_generator_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/godot/pipeline.gd",
+      "name": "provenance_characters_generator_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/godot/pixel_ops.gd",
+      "name": "provenance_characters_generator_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_generator_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_characters_license",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_identity",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_barriers",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_reference_manifest",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generation_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generation",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_foreground_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_foreground",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_normalization_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_canonical_backend",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_fallback_backend",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_transform_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_transform_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/attack-hit-transform-receipt.json",
+      "name": "provenance_vfx_evidence_attack_hit_transform_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_transform_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_attack_hit_transform_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_batch_manifest_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_batch_manifest_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/batch-manifest.json",
+      "name": "provenance_vfx_evidence_batch_manifest_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_batch_manifest_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_batch_manifest_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_semantics_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_semantics_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/charm-semantic-verification.json",
+      "name": "provenance_vfx_evidence_charm_semantics_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_semantics_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_charm_semantics_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/dual-backend-bound-receipt.json",
+      "name": "provenance_vfx_evidence_dual_backend_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verifier_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_dual_backend_packets.py",
+      "name": "provenance_vfx_evidence_dual_backend_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_dual_backend_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_generation_ledger_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_generation_ledger_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/generation-ledger.md",
+      "name": "provenance_vfx_evidence_generation_ledger_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_generation_ledger_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_generation_ledger_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verification_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verification_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/staged-verification.json",
+      "name": "provenance_vfx_evidence_staged_verification_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verification_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verification_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verifier_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verifier_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/verify_staged_packets.py",
+      "name": "provenance_vfx_evidence_staged_verifier_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verifier_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_staged_verifier_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_visual_review_path",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_visual_review_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/qa/character-vfx/aui-11/final-packet-visual-review.md",
+      "name": "provenance_vfx_evidence_visual_review_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_visual_review_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_evidence_visual_review_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_schema",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/pipeline.py",
+      "name": "provenance_vfx_generator_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/pixel_ops.py",
+      "name": "provenance_vfx_generator_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/godot/pipeline.gd",
+      "name": "provenance_vfx_generator_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://tools/art_pipeline/character_vfx/godot/pixel_ops.gd",
+      "name": "provenance_vfx_generator_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_generator_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "provenance_vfx_license",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/vanguard_1-master.png",
+      "name": "packet_vanguard_1_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/vanguard_1.json",
+      "name": "packet_vanguard_1_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_00.png",
+      "name": "packet_vanguard_1_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_01.png",
+      "name": "packet_vanguard_1_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_02.png",
+      "name": "packet_vanguard_1_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_03.png",
+      "name": "packet_vanguard_1_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_04.png",
+      "name": "packet_vanguard_1_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_05.png",
+      "name": "packet_vanguard_1_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_06.png",
+      "name": "packet_vanguard_1_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/vanguard_1/frame_07.png",
+      "name": "packet_vanguard_1_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.png",
+      "name": "packet_vanguard_1_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.contact.png",
+      "name": "packet_vanguard_1_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.asset.json",
+      "name": "packet_vanguard_1_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/vanguard_1/aui11-vanguard_1.qa.json",
+      "name": "packet_vanguard_1_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_vanguard_1_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_vanguard_1_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_vanguard_1_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_vanguard_1_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_vanguard_1_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_vanguard_1_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_vanguard_1_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/portrait_vanguard_1-master.png",
+      "name": "packet_portrait_vanguard_1_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/portrait_vanguard_1.json",
+      "name": "packet_portrait_vanguard_1_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_00.png",
+      "name": "packet_portrait_vanguard_1_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_01.png",
+      "name": "packet_portrait_vanguard_1_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_02.png",
+      "name": "packet_portrait_vanguard_1_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_03.png",
+      "name": "packet_portrait_vanguard_1_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_04.png",
+      "name": "packet_portrait_vanguard_1_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_05.png",
+      "name": "packet_portrait_vanguard_1_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_06.png",
+      "name": "packet_portrait_vanguard_1_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/portrait_vanguard_1/frame_07.png",
+      "name": "packet_portrait_vanguard_1_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.png",
+      "name": "packet_portrait_vanguard_1_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.contact.png",
+      "name": "packet_portrait_vanguard_1_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.asset.json",
+      "name": "packet_portrait_vanguard_1_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/portrait_vanguard_1/aui11-portrait_vanguard_1.qa.json",
+      "name": "packet_portrait_vanguard_1_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_portrait_vanguard_1_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_portrait_vanguard_1_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_portrait_vanguard_1_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_portrait_vanguard_1_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_portrait_vanguard_1_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_portrait_vanguard_1_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_portrait_vanguard_1_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
+      "name": "packet_grunt_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/grunt.json",
+      "name": "packet_grunt_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_00.png",
+      "name": "packet_grunt_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_01.png",
+      "name": "packet_grunt_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_02.png",
+      "name": "packet_grunt_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_03.png",
+      "name": "packet_grunt_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_04.png",
+      "name": "packet_grunt_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_05.png",
+      "name": "packet_grunt_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_06.png",
+      "name": "packet_grunt_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt/frame_07.png",
+      "name": "packet_grunt_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.png",
+      "name": "packet_grunt_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.contact.png",
+      "name": "packet_grunt_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.asset.json",
+      "name": "packet_grunt_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt/aui11-grunt.qa.json",
+      "name": "packet_grunt_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_grunt_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_grunt_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_grunt_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_grunt_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_grunt_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_grunt_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/grunt-master.png",
+      "name": "packet_grunt_charmed_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/grunt_charmed.json",
+      "name": "packet_grunt_charmed_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_00.png",
+      "name": "packet_grunt_charmed_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_01.png",
+      "name": "packet_grunt_charmed_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_02.png",
+      "name": "packet_grunt_charmed_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_03.png",
+      "name": "packet_grunt_charmed_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_04.png",
+      "name": "packet_grunt_charmed_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_05.png",
+      "name": "packet_grunt_charmed_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_06.png",
+      "name": "packet_grunt_charmed_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/grunt_charmed/frame_07.png",
+      "name": "packet_grunt_charmed_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.png",
+      "name": "packet_grunt_charmed_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.contact.png",
+      "name": "packet_grunt_charmed_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.asset.json",
+      "name": "packet_grunt_charmed_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/grunt_charmed/aui11-grunt_charmed.qa.json",
+      "name": "packet_grunt_charmed_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_grunt_charmed_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_grunt_charmed_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_grunt_charmed_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_grunt_charmed_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_grunt_charmed_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_grunt_charmed_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_grunt_charmed_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/vfx_deploy-master.png",
+      "name": "packet_deploy_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/deploy.json",
+      "name": "packet_deploy_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_00.png",
+      "name": "packet_deploy_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_01.png",
+      "name": "packet_deploy_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_02.png",
+      "name": "packet_deploy_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_03.png",
+      "name": "packet_deploy_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_04.png",
+      "name": "packet_deploy_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_05.png",
+      "name": "packet_deploy_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_06.png",
+      "name": "packet_deploy_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/deploy/frame_07.png",
+      "name": "packet_deploy_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.png",
+      "name": "packet_deploy_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.contact.png",
+      "name": "packet_deploy_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.asset.json",
+      "name": "packet_deploy_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/deploy/aui11-deploy.qa.json",
+      "name": "packet_deploy_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_deploy_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_deploy_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_deploy_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_deploy_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_deploy_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_deploy_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_deploy_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/vfx_attack_hit-master.png",
+      "name": "packet_attack_hit_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/attack_hit.json",
+      "name": "packet_attack_hit_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_00.png",
+      "name": "packet_attack_hit_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_01.png",
+      "name": "packet_attack_hit_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_02.png",
+      "name": "packet_attack_hit_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_03.png",
+      "name": "packet_attack_hit_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_04.png",
+      "name": "packet_attack_hit_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_05.png",
+      "name": "packet_attack_hit_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_06.png",
+      "name": "packet_attack_hit_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/attack_hit/frame_07.png",
+      "name": "packet_attack_hit_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.png",
+      "name": "packet_attack_hit_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.contact.png",
+      "name": "packet_attack_hit_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.asset.json",
+      "name": "packet_attack_hit_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/attack_hit/aui11-attack_hit.qa.json",
+      "name": "packet_attack_hit_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_attack_hit_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_attack_hit_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_attack_hit_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_attack_hit_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_attack_hit_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_attack_hit_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_attack_hit_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_state",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_human_final",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_master_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/masters/vfx_charm-master.png",
+      "name": "packet_charm_vfx_master_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_master_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_master_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_spec_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/specs/charm_vfx.json",
+      "name": "packet_charm_vfx_spec_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_spec_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_spec_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_count",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_0_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_00.png",
+      "name": "packet_charm_vfx_source_0_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_0_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_0_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_1_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_01.png",
+      "name": "packet_charm_vfx_source_1_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_1_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_1_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_2_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_02.png",
+      "name": "packet_charm_vfx_source_2_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_2_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_2_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_3_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_03.png",
+      "name": "packet_charm_vfx_source_3_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_3_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_3_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_4_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_04.png",
+      "name": "packet_charm_vfx_source_4_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_4_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_4_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_5_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_05.png",
+      "name": "packet_charm_vfx_source_5_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_5_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_5_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_6_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_06.png",
+      "name": "packet_charm_vfx_source_6_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_6_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_6_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_7_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/sources/charm_vfx/frame_07.png",
+      "name": "packet_charm_vfx_source_7_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_7_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_7_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_source_order",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_atlas_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.png",
+      "name": "packet_charm_vfx_atlas_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_atlas_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_atlas_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_contact_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.contact.png",
+      "name": "packet_charm_vfx_contact_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_contact_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_contact_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.asset.json",
+      "name": "packet_charm_vfx_metadata_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_sha256",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_qa_file_schema",
+      "ok": true
+    },
+    {
+      "detail": "res://staging/character-vfx/aui-11/packets/charm_vfx/aui11-charm_vfx.qa.json",
+      "name": "packet_charm_vfx_qa_file_file",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_qa_file_bytes",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_qa_file_sha256",
+      "ok": true
+    },
+    {
+      "detail": "(768, 384)",
+      "name": "packet_charm_vfx_atlas_size",
+      "ok": true
+    },
+    {
+      "detail": "(1536, 256)",
+      "name": "packet_charm_vfx_contact_size",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_qa",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_qa_checks",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_approval",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_human",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_metadata_runtime",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_atlas_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_contact_rgba",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_fallback_atlas",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_fallback_contact",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_nonempty_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_border_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_reserved_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "packet_charm_vfx_adjacent_6",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_charm_vfx_loop_iou_0",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_charm_vfx_loop_drift_0",
+      "ok": true
+    },
+    {
+      "detail": "iou=1.000000",
+      "name": "packet_charm_vfx_loop_iou_4",
+      "ok": true
+    },
+    {
+      "detail": "drift=0",
+      "name": "packet_charm_vfx_loop_drift_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_0",
+      "ok": true
+    },
+    {
+      "detail": "different=9850",
+      "name": "charm_grayscale_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_1",
+      "ok": true
+    },
+    {
+      "detail": "different=8808",
+      "name": "charm_grayscale_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_2",
+      "ok": true
+    },
+    {
+      "detail": "different=9381",
+      "name": "charm_grayscale_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_3",
+      "ok": true
+    },
+    {
+      "detail": "different=9850",
+      "name": "charm_grayscale_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_4",
+      "ok": true
+    },
+    {
+      "detail": "different=8409",
+      "name": "charm_grayscale_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_5",
+      "ok": true
+    },
+    {
+      "detail": "different=7646",
+      "name": "charm_grayscale_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_6",
+      "ok": true
+    },
+    {
+      "detail": "different=8247",
+      "name": "charm_grayscale_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_alpha_7",
+      "ok": true
+    },
+    {
+      "detail": "different=8409",
+      "name": "charm_grayscale_7",
+      "ok": true
+    },
+    {
+      "detail": "105",
+      "name": "deploy_width_0",
+      "ok": true
+    },
+    {
+      "detail": "56",
+      "name": "deploy_height_0",
+      "ok": true
+    },
+    {
+      "detail": "2105",
+      "name": "deploy_area_0",
+      "ok": true
+    },
+    {
+      "detail": "(105, 56, 2105, 96, 180)",
+      "name": "deploy_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_1",
+      "ok": true
+    },
+    {
+      "detail": "61",
+      "name": "deploy_height_1",
+      "ok": true
+    },
+    {
+      "detail": "2952",
+      "name": "deploy_area_1",
+      "ok": true
+    },
+    {
+      "detail": "(104, 61, 2952, 96, 180)",
+      "name": "deploy_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_2",
+      "ok": true
+    },
+    {
+      "detail": "61",
+      "name": "deploy_height_2",
+      "ok": true
+    },
+    {
+      "detail": "2976",
+      "name": "deploy_area_2",
+      "ok": true
+    },
+    {
+      "detail": "(104, 61, 2976, 96, 180)",
+      "name": "deploy_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "105",
+      "name": "deploy_width_3",
+      "ok": true
+    },
+    {
+      "detail": "56",
+      "name": "deploy_height_3",
+      "ok": true
+    },
+    {
+      "detail": "2105",
+      "name": "deploy_area_3",
+      "ok": true
+    },
+    {
+      "detail": "(105, 56, 2105, 96, 180)",
+      "name": "deploy_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_4",
+      "ok": true
+    },
+    {
+      "detail": "61",
+      "name": "deploy_height_4",
+      "ok": true
+    },
+    {
+      "detail": "3025",
+      "name": "deploy_area_4",
+      "ok": true
+    },
+    {
+      "detail": "(104, 61, 3025, 96, 180)",
+      "name": "deploy_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_5",
+      "ok": true
+    },
+    {
+      "detail": "61",
+      "name": "deploy_height_5",
+      "ok": true
+    },
+    {
+      "detail": "3043",
+      "name": "deploy_area_5",
+      "ok": true
+    },
+    {
+      "detail": "(104, 61, 3043, 96, 180)",
+      "name": "deploy_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_6",
+      "ok": true
+    },
+    {
+      "detail": "62",
+      "name": "deploy_height_6",
+      "ok": true
+    },
+    {
+      "detail": "2367",
+      "name": "deploy_area_6",
+      "ok": true
+    },
+    {
+      "detail": "(104, 62, 2367, 96, 180)",
+      "name": "deploy_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "104",
+      "name": "deploy_width_7",
+      "ok": true
+    },
+    {
+      "detail": "61",
+      "name": "deploy_height_7",
+      "ok": true
+    },
+    {
+      "detail": "3025",
+      "name": "deploy_area_7",
+      "ok": true
+    },
+    {
+      "detail": "(104, 61, 3025, 96, 180)",
+      "name": "deploy_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "55",
+      "name": "attack_hit_width_0",
+      "ok": true
+    },
+    {
+      "detail": "36",
+      "name": "attack_hit_height_0",
+      "ok": true
+    },
+    {
+      "detail": "451",
+      "name": "attack_hit_area_0",
+      "ok": true
+    },
+    {
+      "detail": "(55, 36, 451, 96, 180)",
+      "name": "attack_hit_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "54",
+      "name": "attack_hit_width_1",
+      "ok": true
+    },
+    {
+      "detail": "38",
+      "name": "attack_hit_height_1",
+      "ok": true
+    },
+    {
+      "detail": "423",
+      "name": "attack_hit_area_1",
+      "ok": true
+    },
+    {
+      "detail": "(54, 38, 423, 96, 180)",
+      "name": "attack_hit_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "55",
+      "name": "attack_hit_width_2",
+      "ok": true
+    },
+    {
+      "detail": "37",
+      "name": "attack_hit_height_2",
+      "ok": true
+    },
+    {
+      "detail": "490",
+      "name": "attack_hit_area_2",
+      "ok": true
+    },
+    {
+      "detail": "(55, 37, 490, 96, 180)",
+      "name": "attack_hit_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "55",
+      "name": "attack_hit_width_3",
+      "ok": true
+    },
+    {
+      "detail": "36",
+      "name": "attack_hit_height_3",
+      "ok": true
+    },
+    {
+      "detail": "451",
+      "name": "attack_hit_area_3",
+      "ok": true
+    },
+    {
+      "detail": "(55, 36, 451, 96, 180)",
+      "name": "attack_hit_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "54",
+      "name": "attack_hit_width_4",
+      "ok": true
+    },
+    {
+      "detail": "37",
+      "name": "attack_hit_height_4",
+      "ok": true
+    },
+    {
+      "detail": "432",
+      "name": "attack_hit_area_4",
+      "ok": true
+    },
+    {
+      "detail": "(54, 37, 432, 96, 180)",
+      "name": "attack_hit_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "55",
+      "name": "attack_hit_width_5",
+      "ok": true
+    },
+    {
+      "detail": "38",
+      "name": "attack_hit_height_5",
+      "ok": true
+    },
+    {
+      "detail": "477",
+      "name": "attack_hit_area_5",
+      "ok": true
+    },
+    {
+      "detail": "(55, 38, 477, 96, 180)",
+      "name": "attack_hit_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "55",
+      "name": "attack_hit_width_6",
+      "ok": true
+    },
+    {
+      "detail": "37",
+      "name": "attack_hit_height_6",
+      "ok": true
+    },
+    {
+      "detail": "353",
+      "name": "attack_hit_area_6",
+      "ok": true
+    },
+    {
+      "detail": "(55, 37, 353, 96, 180)",
+      "name": "attack_hit_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "54",
+      "name": "attack_hit_width_7",
+      "ok": true
+    },
+    {
+      "detail": "37",
+      "name": "attack_hit_height_7",
+      "ok": true
+    },
+    {
+      "detail": "432",
+      "name": "attack_hit_area_7",
+      "ok": true
+    },
+    {
+      "detail": "(54, 37, 432, 96, 180)",
+      "name": "attack_hit_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_0",
+      "ok": true
+    },
+    {
+      "detail": "30",
+      "name": "charm_vfx_height_0",
+      "ok": true
+    },
+    {
+      "detail": "1041",
+      "name": "charm_vfx_area_0",
+      "ok": true
+    },
+    {
+      "detail": "(70, 30, 1041, 96, 180)",
+      "name": "charm_vfx_anchor_0",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_1",
+      "ok": true
+    },
+    {
+      "detail": "33",
+      "name": "charm_vfx_height_1",
+      "ok": true
+    },
+    {
+      "detail": "1044",
+      "name": "charm_vfx_area_1",
+      "ok": true
+    },
+    {
+      "detail": "(70, 33, 1044, 96, 180)",
+      "name": "charm_vfx_anchor_1",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_2",
+      "ok": true
+    },
+    {
+      "detail": "40",
+      "name": "charm_vfx_height_2",
+      "ok": true
+    },
+    {
+      "detail": "1305",
+      "name": "charm_vfx_area_2",
+      "ok": true
+    },
+    {
+      "detail": "(70, 40, 1305, 96, 180)",
+      "name": "charm_vfx_anchor_2",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_3",
+      "ok": true
+    },
+    {
+      "detail": "30",
+      "name": "charm_vfx_height_3",
+      "ok": true
+    },
+    {
+      "detail": "1041",
+      "name": "charm_vfx_area_3",
+      "ok": true
+    },
+    {
+      "detail": "(70, 30, 1041, 96, 180)",
+      "name": "charm_vfx_anchor_3",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_4",
+      "ok": true
+    },
+    {
+      "detail": "40",
+      "name": "charm_vfx_height_4",
+      "ok": true
+    },
+    {
+      "detail": "1343",
+      "name": "charm_vfx_area_4",
+      "ok": true
+    },
+    {
+      "detail": "(70, 40, 1343, 96, 180)",
+      "name": "charm_vfx_anchor_4",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_5",
+      "ok": true
+    },
+    {
+      "detail": "40",
+      "name": "charm_vfx_height_5",
+      "ok": true
+    },
+    {
+      "detail": "1383",
+      "name": "charm_vfx_area_5",
+      "ok": true
+    },
+    {
+      "detail": "(70, 40, 1383, 96, 180)",
+      "name": "charm_vfx_anchor_5",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_6",
+      "ok": true
+    },
+    {
+      "detail": "32",
+      "name": "charm_vfx_height_6",
+      "ok": true
+    },
+    {
+      "detail": "1139",
+      "name": "charm_vfx_area_6",
+      "ok": true
+    },
+    {
+      "detail": "(70, 32, 1139, 96, 180)",
+      "name": "charm_vfx_anchor_6",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "charm_vfx_width_7",
+      "ok": true
+    },
+    {
+      "detail": "40",
+      "name": "charm_vfx_height_7",
+      "ok": true
+    },
+    {
+      "detail": "1343",
+      "name": "charm_vfx_area_7",
+      "ok": true
+    },
+    {
+      "detail": "(70, 40, 1343, 96, 180)",
+      "name": "charm_vfx_anchor_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_0",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_1",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_2",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_3",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_4",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_5",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_6",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_width_order_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "attack_area_order_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "deploy_open_7",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "charm_vfx_open_7",
+      "ok": true
+    }
+  ],
+  "checks_executed": 1464,
+  "manifest_sha256": "7c9c8d116e6b655b6c4fc68668d4c3253bf540cb04c500b355636bda0b687ed1",
+  "packets": [
+    "attack_hit",
+    "charm_vfx",
+    "deploy",
+    "grunt",
+    "grunt_charmed",
+    "portrait_vanguard_1",
+    "vanguard_1"
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}
