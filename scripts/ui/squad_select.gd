@@ -1,80 +1,145 @@
 extends Control
 
-## Campaign squad select (Phase 10, td-phase-10.md §2.6): toggle up to
-## squad_size of the UNLOCKED operators (class-colored text — portraits are
-## Lane A), read-only loadout strip for unlocked traps/spells (global verbs,
-## always available in battle), the stage's intro_hint, StartBattle gated on
-## >= 1 pick. squad_size is enforced HERE only — the model accepts any
-## squad (K6 pin). Pre-fills the previous selection ∩ unlocked.
+## Campaign squad select: toggle up to squad_size unlocked operators and route
+## through the existing Game seams. The model accepts the unchanged selected IDs.
 
-const FONT_SIZE := 32
-const HINT_FONT_SIZE := 24
-const GRID_COLUMNS := 5
+const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 
 var _stage: StageDef = null
 var _picked: Array[StringName] = []
 var _buttons: Dictionary = {}
 var _counter: Label = null
-var _start: Button = null
+var _start: AetheriaButton = null
+var _back: AetheriaButton = null
+var _grid: GridContainer = null
+var _footer: GridContainer = null
+var _header: BoxContainer = null
 
 
 func _ready() -> void:
 	Game.content = self
 	_stage = load("res://data/stages/%s.tres" % Game.selected_stage_id) as StageDef
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShell
+	shell.name = "SquadShell"
+	shell.preferred_size = Vector2(1160.0, 640.0)
+	add_child(shell)
+	shell.layout_mode_changed.connect(_on_layout_mode_changed)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "SquadScroll"
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	shell.content_host().add_child(scroll)
+
 	var column := VBoxContainer.new()
 	column.name = "SquadColumn"
-	column.set_anchors_preset(Control.PRESET_CENTER)
-	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	column.grow_vertical = Control.GROW_DIRECTION_BOTH
-	column.add_theme_constant_override("separation", 12)
-	add_child(column)
-	column.add_child(_label("SquadHeading", "%s — pick your squad" % _stage.title, FONT_SIZE))
-	column.add_child(_label("IntroHint", _stage.intro_hint, HINT_FONT_SIZE))
-	var grid := GridContainer.new()
-	grid.name = "OperatorGrid"
-	grid.columns = GRID_COLUMNS
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 10)
-	column.add_child(grid)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 12)
+	scroll.add_child(column)
+	_header = BoxContainer.new()
+	_header.name = "SquadHeader"
+	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header.add_theme_constant_override(&"separation", 16)
+	column.add_child(_header)
+	var full_heading := UiCopy.format_text(
+		&"ui.squad.heading", "{stage} — pick your squad",
+		{&"stage": UiCopy.stage_title(_stage)},
+	)
+	var heading := _label("SquadHeading", UiCopy.stage_title(_stage), &"heading")
+	heading.tooltip_text = full_heading
+	heading.custom_minimum_size.x = 320.0
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header.add_child(heading)
+	var full_hint := UiCopy.stage_hint(_stage)
+	var intro := _label("IntroHint", _compact_hint(full_hint), &"detail")
+	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intro.tooltip_text = full_hint
+	_header.add_child(intro)
+
+	_grid = GridContainer.new()
+	_grid.name = "OperatorGrid"
+	_grid.columns = 5
+	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_grid.add_theme_constant_override(&"h_separation", 10)
+	_grid.add_theme_constant_override(&"v_separation", 10)
+	column.add_child(_grid)
 	for op_id: StringName in Game.loadout_operator_ids():
-		var def := load("res://data/operators/%s.tres" % op_id) as OperatorDef
-		var pick := Button.new()
+		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
+		var pick := AetheriaButton.new()
 		pick.name = "Pick_%s" % op_id
+		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		pick.toggle_mode = true
-		pick.text = "%s\n%d DP" % [def.display_name, def.dp_cost]
-		pick.icon = Art.texture(StringName("portrait_%s" % def.portrait_id))
-		pick.add_theme_constant_override("icon_max_width", 96)
+		pick.apply_role(&"secondary")
+		var card_text := UiCopy.format_text(
+			&"ui.squad.operator_card", "{name}\n{cost} DP",
+			{&"name": UiCopy.operator_name(definition), &"cost": definition.dp_cost},
+		)
+		var compact_card := "%s\n%d DP" % [
+			_compact_operator_name(UiCopy.operator_name(definition)), definition.dp_cost,
+		]
+		pick.text = card_text
+		pick.tooltip_text = card_text.replace("\n", " — ")
+		pick.icon = Art.texture(StringName("portrait_%s" % definition.portrait_id))
+		pick.expand_icon = true
+		pick.add_theme_constant_override(&"icon_max_width", 80)
 		pick.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pick.add_theme_font_size_override("font_size", HINT_FONT_SIZE)
+		pick.custom_minimum_size = Vector2(170.0, 190.0)
+		pick.set_presentation_text(card_text, compact_card)
+		var card_label := pick.get_node("PresentationLabel") as Label
+		card_label.offset_top = 70.0
 		pick.toggled.connect(_on_pick_toggled.bind(op_id))
-		grid.add_child(pick)
+		_grid.add_child(pick)
 		_buttons[op_id] = pick
-	_counter = _label("PickCounter", "", FONT_SIZE)
-	column.add_child(_counter)
-	column.add_child(_label("LoadoutStrip", _loadout_text(), HINT_FONT_SIZE))
+
+	_footer = GridContainer.new()
+	_footer.name = "SquadFooter"
+	_footer.columns = 3
+	_footer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_footer.add_theme_constant_override(&"h_separation", 16)
+	_footer.add_theme_constant_override(&"v_separation", 12)
+	column.add_child(_footer)
+	_counter = _label("PickCounter", "", &"body")
+	_counter.custom_minimum_size = Vector2(180.0, 50.0)
+	_footer.add_child(_counter)
+	var loadout := _label("LoadoutStrip", _loadout_text(), &"detail")
+	loadout.custom_minimum_size = Vector2(300.0, 50.0)
+	loadout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_footer.add_child(loadout)
+
 	var actions := HBoxContainer.new()
 	actions.name = "ActionRow"
-	actions.add_theme_constant_override("separation", 16)
+	actions.custom_minimum_size.x = 300.0
+	actions.add_theme_constant_override(&"separation", 16)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(actions)
-	var back := Button.new()
-	back.name = "BackButton"
-	back.text = "Back"
-	back.add_theme_font_size_override("font_size", FONT_SIZE)
-	back.pressed.connect(_on_back)
-	actions.add_child(back)
-	_start = Button.new()
+	_footer.add_child(actions)
+	_back = AetheriaButton.new()
+	_back.name = "BackButton"
+	_back.apply_role(&"secondary")
+	_back.text = UiCopy.text(&"ui.common.back", "Back")
+	_back.custom_minimum_size = Vector2(140.0, 100.0)
+	_back.set_presentation_text(_back.text, _back.text)
+	_back.pressed.connect(_on_back)
+	actions.add_child(_back)
+	_start = AetheriaButton.new()
 	_start.name = "StartBattle"
-	_start.text = "Start Battle"
-	_start.add_theme_font_size_override("font_size", FONT_SIZE)
+	_start.text = UiCopy.text(&"ui.squad.start_battle", "Start Battle")
+	_start.custom_minimum_size = Vector2(140.0, 100.0)
+	_start.set_presentation_text(_start.text, "Start\nBattle")
 	_start.pressed.connect(_on_start)
 	actions.add_child(_start)
 	_prefill()
 	_refresh()
+	_on_layout_mode_changed(shell.layout_mode())
 
 
-## previous selection ∩ unlocked, truncated to squad_size (§2.3.4 QoL)
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_back()
+
+
 func _prefill() -> void:
 	for op_id: StringName in Game.selected_squad:
 		if _picked.size() >= _stage.squad_size:
@@ -88,13 +153,18 @@ func _loadout_text() -> String:
 	var gear: Array[String] = []
 	for trap_id: StringName in Game.loadout_trap_ids():
 		var trap := load("res://data/traps/%s.tres" % trap_id) as TrapDef
-		gear.append(trap.display_name)
+		gear.append(UiCopy.trap_name(trap))
 	for spell_id: StringName in Game.loadout_spell_ids():
 		var spell := load("res://data/spells/%s.tres" % spell_id) as SpellDef
-		gear.append(spell.display_name)
+		gear.append(UiCopy.spell_name(spell))
 	if gear.is_empty():
-		return "Loadout: nothing unlocked yet"
-	return "Loadout (always available): " + ", ".join(gear)
+		return UiCopy.text(
+			&"ui.squad.loadout_none", "Loadout: nothing unlocked yet",
+		)
+	return UiCopy.format_text(
+		&"ui.squad.loadout_available", "Loadout (always available): {items}",
+		{&"items": ", ".join(gear)},
+	)
 
 
 func _on_pick_toggled(pressed: bool, op_id: StringName) -> void:
@@ -109,8 +179,66 @@ func _on_pick_toggled(pressed: bool, op_id: StringName) -> void:
 
 
 func _refresh() -> void:
-	_counter.text = "%d/%d selected" % [_picked.size(), _stage.squad_size]
+	_counter.text = UiCopy.format_text(
+		&"ui.squad.selected_count", "{selected}/{limit} selected",
+		{&"selected": _picked.size(), &"limit": _stage.squad_size},
+	)
+	for raw_id: Variant in _buttons:
+		var op_id := StringName(raw_id)
+		(_buttons[op_id] as AetheriaButton).apply_role(
+			&"selected" if _picked.has(op_id) else &"secondary",
+		)
 	_start.disabled = _picked.is_empty()
+	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
+	_start.apply_role(&"disabled" if _start.disabled else &"primary")
+	_wire_focus()
+
+
+func _wire_focus() -> void:
+	var focusable: Array[Button] = []
+	for op_id: StringName in Game.loadout_operator_ids():
+		focusable.append(_buttons[op_id] as Button)
+	focusable.append(_back)
+	if not _start.disabled:
+		focusable.append(_start)
+	for index: int in focusable.size():
+		var current: Button = focusable[index]
+		var previous: Button = focusable[(index - 1 + focusable.size()) % focusable.size()]
+		var next: Button = focusable[(index + 1) % focusable.size()]
+		current.focus_previous = current.get_path_to(previous)
+		current.focus_next = current.get_path_to(next)
+	if not focusable.is_empty() and get_viewport().gui_get_focus_owner() == null:
+		focusable[0].grab_focus.call_deferred()
+
+
+func _compact_hint(full_hint: String) -> String:
+	const LIMIT := 18
+	if full_hint.length() <= LIMIT:
+		return full_hint
+	var prefix := full_hint.left(LIMIT).strip_edges()
+	var boundary := prefix.rfind(" ")
+	if boundary > 6:
+		prefix = prefix.left(boundary)
+	return prefix + "…"
+
+
+func _compact_operator_name(full_name: String) -> String:
+	const LIMIT := 4
+	if full_name.length() <= LIMIT:
+		return full_name
+	return full_name.left(LIMIT)
+
+
+func _on_layout_mode_changed(mode: StringName) -> void:
+	if _header != null:
+		_header.vertical = mode == &"portrait"
+	if _grid == null:
+		return
+	_grid.columns = 2 if mode == &"portrait" else 5
+	for button: Button in _buttons.values():
+		button.custom_minimum_size.x = 150.0 if mode == &"compact_landscape" else 170.0
+	if _footer != null:
+		_footer.columns = 1 if mode == &"portrait" else 3
 
 
 func _on_back() -> void:
@@ -123,10 +251,10 @@ func _on_start() -> void:
 	Game.start_stage(_stage.id, _picked)
 
 
-func _label(label_name: String, text: String, size_px: int) -> Label:
-	var label := Label.new()
+func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabel:
+	var label := AetheriaLabel.new()
 	label.name = label_name
-	label.text = text
-	label.add_theme_font_size_override("font_size", size_px)
+	label.text = label_text
+	label.apply_role(role)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
