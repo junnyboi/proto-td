@@ -89,6 +89,9 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	var events := _validate_global_events(data)
 	if not events["accepted"]:
 		return events
+	var promotions := CampaignPromotionHistory.validate(data, context)
+	if not promotions["accepted"]:
+		return promotions
 	return _validate_latest_receipt(data, context, latest_deaths)
 
 
@@ -426,8 +429,28 @@ static func _validate_current_from_anchor(
 		for key: String in ["offer_id", "operator_def_id", "cost"]:
 			if anchored_offer[key] != current_offer[key]:
 				return _reject(&"post_resolution_mutation_mismatch")
-		if bool(anchored_offer["consumed"]) and not bool(current_offer["consumed"]):
+			if bool(anchored_offer["consumed"]) and not bool(current_offer["consumed"]):
+				return _reject(&"post_resolution_mutation_mismatch")
+	var anchored_promotions: Array = after_core["promotion_receipts"]
+	var current_promotions: Array = data["promotion_receipts"]
+	if current_promotions.size() < anchored_promotions.size():
+		return _reject(&"post_resolution_mutation_mismatch")
+	for index: int in anchored_promotions.size():
+		if anchored_promotions[index] != current_promotions[index]:
 			return _reject(&"post_resolution_mutation_mismatch")
+	var anchored_proofs: Array = after_core["promotion_proofs"]
+	var current_proofs: Array = data["promotion_proofs"]
+	if current_proofs.size() < anchored_proofs.size():
+		return _reject(&"post_resolution_mutation_mismatch")
+	for index: int in anchored_proofs.size():
+		if anchored_proofs[index] != current_proofs[index]:
+			return _reject(&"post_resolution_mutation_mismatch")
+	var later_promotions := {}
+	for index: int in range(anchored_promotions.size(), current_promotions.size()):
+		var promotion: Dictionary = current_promotions[index]
+		if int(promotion["prior_save_revision"]) < int(after_core["save_revision"]):
+			return _reject(&"post_resolution_mutation_mismatch")
+		later_promotions[promotion["hero_id"]] = promotion
 	var anchored_heroes: Array = after_core["heroes"]
 	var current_heroes: Array = data["heroes"]
 	if current_heroes.size() < anchored_heroes.size():
@@ -438,6 +461,17 @@ static func _validate_current_from_anchor(
 		var current_hero: Dictionary = current_heroes[index].duplicate(true)
 		if anchored_hero["custom_callsign"] != current_hero["custom_callsign"]:
 			renamed_count += 1
+		var promotion: Dictionary = later_promotions.get(current_hero["hero_id"], {})
+		if not promotion.is_empty():
+			if (
+				anchored_hero["advanced_class_id"] != null
+				or anchored_hero["operator_def_id"] != promotion["prior_operator_def_id"]
+				or current_hero["advanced_class_id"] != promotion["new_class_id"]
+				or current_hero["operator_def_id"] != promotion["new_operator_def_id"]
+			):
+				return _reject(&"post_resolution_mutation_mismatch")
+			anchored_hero["advanced_class_id"] = current_hero["advanced_class_id"]
+			anchored_hero["operator_def_id"] = current_hero["operator_def_id"]
 		anchored_hero.erase("custom_callsign")
 		current_hero.erase("custom_callsign")
 		if anchored_hero != current_hero:
@@ -451,7 +485,8 @@ static func _validate_current_from_anchor(
 		if hero["custom_callsign"] != null:
 			renamed_count += 1
 	var recruit_delta := current_heroes.size() - anchored_heroes.size()
-	var minimum_revision_delta := attempt_delta + recruit_delta + renamed_count
+	var promotion_delta := current_promotions.size() - anchored_promotions.size()
+	var minimum_revision_delta := attempt_delta + recruit_delta + renamed_count + promotion_delta
 	var hidden_rename_count := revision_delta - minimum_revision_delta
 	if revision_delta < minimum_revision_delta:
 		return _reject(&"post_resolution_revision_mismatch")

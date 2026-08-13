@@ -9,6 +9,7 @@ const MODES: Array[StringName] = [
 const LANDSCAPE_REFERENCE := Vector2(1280.0, 720.0)
 const PORTRAIT_REFERENCE := Vector2(720.0, 1280.0)
 const MAX_CONTENT_SCALE := 2.0
+const DIALOG_TEXT_GUTTER := 36
 
 @export var preferred_size: Vector2:
 	get:
@@ -19,6 +20,7 @@ const MAX_CONTENT_SCALE := 2.0
 var _preferred_size := Vector2(720.0, 520.0)
 var _layout_mode: StringName = &"regular_landscape"
 var _content_scale := 1.0
+var _dialog_scroll: ScrollContainer = null
 
 @onready var _safe_margin: MarginContainer = $SafeMargin
 @onready var _reading_frame: Control = $SafeMargin/Center/ReadingFrame
@@ -52,6 +54,26 @@ func content_host() -> Control:
 	return _content_host
 
 
+func add_dialog_scroll(scroll: ScrollContainer) -> MarginContainer:
+	if scroll == null or scroll.get_parent() != null or _dialog_scroll != null:
+		return null
+	_dialog_scroll = scroll
+	var panel_style := _reading_plate.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	panel_style.content_margin_right = 0.0
+	_reading_plate.add_theme_stylebox_override(&"panel", panel_style)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_content_host.add_child(scroll)
+	_content_margin.add_theme_constant_override(&"margin_right", 0)
+	var gutter := MarginContainer.new()
+	gutter.name = "%sContentGutter" % scroll.name
+	gutter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gutter.add_theme_constant_override(&"margin_right", DIALOG_TEXT_GUTTER)
+	scroll.add_child(gutter)
+	return gutter
+
+
 func reading_plate() -> Control:
 	return _reading_plate
 
@@ -73,6 +95,8 @@ func relayout(viewport: Vector2i) -> void:
 	var padding := 32 if compact else 40
 	_set_margins(_safe_margin, inset)
 	_set_margins(_content_margin, padding)
+	if _dialog_scroll != null:
+		_content_margin.add_theme_constant_override(&"margin_right", 0)
 	var available := Vector2(
 		maxi(1, viewport.x - inset * 2),
 		maxi(1, viewport.y - inset * 2),

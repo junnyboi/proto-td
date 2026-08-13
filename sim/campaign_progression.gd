@@ -7,7 +7,6 @@ extends RefCounted
 const RULES_VERSION := 1
 const XP_PER_OPERATION := 100
 const XP_MAX := 9_223_372_036_854_775_807
-const ADVANCED_XP_REQUIRED := 400
 const HERO_FIELD_ORDER := [
 	"hero_id", "acquisition_operator_def_id", "operator_def_id",
 	"first_class_id", "advanced_class_id", "progression_rules_version", "xp",
@@ -51,6 +50,10 @@ const PROFILES := {
 		"first_class_id": "mage_apprentice", "advanced_class_id": "witch_doctor",
 	},
 }
+
+const PROMOTION_CHOICE_KEYS := [
+	"advanced_class_id", "operator_def_id", "role", "skill_id", "dp_cost",
+]
 
 
 static func initial_fields(operator_def_id: String) -> Dictionary:
@@ -105,6 +108,104 @@ static func projection_is_valid(row: Dictionary) -> bool:
 		current == acquisition
 		and advanced == acquisition_profile["advanced_class_id"]
 	)
+
+
+static func normalize_promotion_rules(value: Variant, operator_ids: Array) -> Dictionary:
+	if not value is Resource:
+		return _reject(&"invalid_promotion_rules")
+	var resource := value as Resource
+	var rules := {
+		"rules_version": resource.get("rules_version"),
+		"source_class_id": resource.get("source_class_id"),
+		"xp_required": resource.get("xp_required"),
+		"choices": resource.get("choices"),
+	}
+	if (
+		typeof(rules["rules_version"]) != TYPE_INT
+		or int(rules["rules_version"]) != RULES_VERSION
+		or not _is_ascii_id(rules["source_class_id"])
+		or typeof(rules["xp_required"]) != TYPE_INT
+		or int(rules["xp_required"]) < 1
+		or int(rules["xp_required"]) > XP_MAX
+		or typeof(rules["choices"]) != TYPE_ARRAY
+	):
+		return _reject(&"invalid_promotion_rules")
+	var operators := {}
+	for operator_id: Variant in operator_ids:
+		operators[String(operator_id)] = true
+	var choices: Array[Dictionary] = []
+	var class_ids := {}
+	var destination_ids := {}
+	for value_choice: Variant in rules["choices"]:
+		if typeof(value_choice) != TYPE_DICTIONARY:
+			return _reject(&"invalid_promotion_rules")
+		var choice := value_choice as Dictionary
+		if not _exact_keys(choice, PROMOTION_CHOICE_KEYS):
+			return _reject(&"invalid_promotion_rules")
+		for key: String in ["advanced_class_id", "operator_def_id", "role", "skill_id"]:
+			if not _is_ascii_id(choice[key]):
+				return _reject(&"invalid_promotion_rules")
+		if typeof(choice["dp_cost"]) != TYPE_INT or int(choice["dp_cost"]) < 0:
+			return _reject(&"invalid_promotion_rules")
+		var class_id := String(choice["advanced_class_id"])
+		var operator_id := String(choice["operator_def_id"])
+		if (
+			class_ids.has(class_id) or destination_ids.has(operator_id)
+			or not operators.has(operator_id)
+		):
+			return _reject(&"invalid_promotion_rules")
+		class_ids[class_id] = true
+		destination_ids[operator_id] = true
+		var ordered := {}
+		for key: String in PROMOTION_CHOICE_KEYS:
+			ordered[key] = int(choice[key]) if key == "dp_cost" else String(choice[key])
+		choices.append(ordered)
+	if choices.size() != 2:
+		return _reject(&"invalid_promotion_rules")
+	return _accept({
+		"rules_version": int(rules["rules_version"]),
+		"source_class_id": String(rules["source_class_id"]),
+		"xp_required": int(rules["xp_required"]),
+		"choices": choices,
+	})
+
+
+static func promotion_options(hero: Dictionary, rules: Dictionary) -> Dictionary:
+	var eligibility := promotion_eligibility(hero, rules)
+	if not eligibility["accepted"]:
+		return eligibility
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"hero_id": String(hero["hero_id"]),
+		"xp": int(hero["xp"]),
+		"xp_required": int(rules["xp_required"]),
+		"choices": (rules["choices"] as Array).duplicate(true),
+	}
+
+
+static func promotion_eligibility(hero: Dictionary, rules: Dictionary) -> Dictionary:
+	if hero["life_status"] != "ready" or hero["death"] != null:
+		return _reject(&"hero_not_ready")
+	if hero["first_class_id"] != rules["source_class_id"]:
+		return _reject(&"wrong_source_class")
+	if hero["advanced_class_id"] != null:
+		return _reject(&"already_promoted")
+	if int(hero["xp"]) < int(rules["xp_required"]):
+		return _reject(&"insufficient_xp")
+	return _accept(hero)
+
+
+static func promotion_choice(rules: Dictionary, advanced_class_id: String) -> Dictionary:
+	for choice: Dictionary in rules["choices"]:
+		if choice["advanced_class_id"] == advanced_class_id:
+			return choice.duplicate(true)
+	return {}
+
+
+static func apply_promotion(hero: Dictionary, choice: Dictionary) -> void:
+	hero["advanced_class_id"] = choice["advanced_class_id"]
+	hero["operator_def_id"] = choice["operator_def_id"]
 
 
 static func derive_xp_awards(outcome_heroes: Array, before_heroes: Array) -> Array[Dictionary]:
@@ -169,3 +270,33 @@ static func _heroes_by_id(rows: Array) -> Dictionary:
 	for row: Dictionary in rows:
 		result[String(row["hero_id"])] = row
 	return result
+
+
+static func _is_ascii_id(value: Variant) -> bool:
+	if typeof(value) not in [TYPE_STRING, TYPE_STRING_NAME]:
+		return false
+	var text := String(value)
+	if text.is_empty():
+		return false
+	for character: String in text:
+		if character not in "abcdefghijklmnopqrstuvwxyz0123456789_-":
+			return false
+	return true
+
+
+static func _exact_keys(value: Dictionary, expected: Array) -> bool:
+	if value.size() != expected.size():
+		return false
+	var actual: Array = value.keys()
+	for index: int in expected.size():
+		if actual[index] != expected[index]:
+			return false
+	return true
+
+
+static func _accept(value: Variant) -> Dictionary:
+	return {"accepted": true, "error_code": &"", "value": value}
+
+
+static func _reject(error_code: StringName) -> Dictionary:
+	return {"accepted": false, "error_code": error_code}

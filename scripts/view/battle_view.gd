@@ -1,30 +1,32 @@
 extends Node2D
+
 ## Read-only BattleModel projection; speed changes ticks/frame, never outcomes.
+
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
-const OperatorAnimator := preload("res://scripts/view/operator_animator.gd")
-const OperatorVisualCatalog := preload("res://data/presentation/operator_visual_catalog.gd")
+const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.gd")
+const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
+	"res://data/presentation/operator_visual_catalog.gd"
+)
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
+
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
-## Z bands (td-phase-12 pin): grid content 0-40, UI overlays 50, juice 60,
-## HUD/flash/continue 70. z_index beats tree order, so siblings left at 0
-## would sink under the grid.
+
+## Pinned z bands: grid 0-40, overlays 50, juice 60, HUD/flash/continue 70.
 const UI_OVERLAY_Z := 50
 const JUICE_Z := 60
 const HUD_Z := 70
-## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
-## no bare empty canvas.
+## Full-canvas background behind IsoGridBuilder terrain and backdrop.
 const BACKDROP_COLOR := Color("11131f")
 const ENEMY_COLOR := Color("ef7d57")
 const AERIAL_PX := 24.0
 const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
-## grounded shadow = 20x10 face diamond (0.3125 of a face); aerial casts
-## the same diamond 10px further down (td-phase-12 pin)
+## Ground shadow is a 20x10 face diamond; aerial shadow drops 10px.
 const SHADOW_FACE_SCALE := 0.3125
 const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
@@ -41,12 +43,14 @@ const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
 const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
+
 var model: BattleModel = null
 var startup_succeeded: bool = false
 var theme_resolver: Callable = Callable()
 var model_factory: Callable = Callable()
 var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
+
 var _grid_root: Node2D = null
 var _grid_scale := 1.0
 var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
@@ -109,9 +113,13 @@ var _enemy_blend_frames: Dictionary = {}
 var _enemy_anim_seconds := 0.0
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
+
+
 func _init() -> void:
 	theme_resolver = Callable(self, "_resolve_stage_theme")
 	model_factory = Callable(self, "_create_battle_model")
+
+
 func _ready() -> void:
 	var stage := Game.pending_stage
 	if stage == null:
@@ -185,8 +193,12 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_relayout)
 	model = candidate_model
 	startup_succeeded = true
+
+
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
 	return StageArtThemeType.resolve_for(stage)
+
+
 func _create_battle_model(
 	stage: StageDef,
 	squad: Array[StringName],
@@ -200,28 +212,33 @@ func _create_battle_model(
 	return BattleModel.create(
 		stage, squad, seed_value, config, enemy_defs, op_defs, trap_defs, spell_defs
 	)
-## Screen-space center of a grid cell's visible top face (no camera: world
-## == screen; ELEVATED faces return the LIFTED center). The deploy adapter
-## and scenarios use these instead of assuming a zero origin — this pair is
-## the projection seam (td-phase-12): all picking and synthetic input
-## migrate with it.
+
+
+## Screen center of a cell's visible face; elevated cells include their lift.
 func cell_center(cell: Vector2i) -> Vector2:
 	var local := IsoProjection.face_center(cell, _is_lifted_cell(cell))
 	return _grid_root.position + local * _grid_scale
+
+
 func cell_at(screen_pos: Vector2) -> Vector2i:
 	var local := (screen_pos - _grid_root.position) / _grid_scale
 	return IsoProjection.pick(local, _is_lifted_cell)
-## Screen point of a continuous cell-space position (interpolated enemy
-## centers, VFX anchors). Enemies never walk ELEVATED, so no lift here.
+
+
+## Screen point for continuous flat cell-space positions and VFX anchors.
 func screen_of(p: Vector2) -> Vector2:
 	return _grid_root.position + IsoProjection.project(p) * _grid_scale
-## Current uniform grid scale (dynamic canvas fit) — overlay footprints in
-## the UI bars size themselves by this.
+
+
+## Current uniform grid scale used by screen-owned overlay footprints.
 func grid_scale() -> float:
 	return _grid_scale
+
+
 func map_screen_rect() -> Rect2:
 	var box := IsoProjection.terrain_box(_stage)
 	return Rect2(_grid_root.position + box.position * _grid_scale, box.size * _grid_scale)
+
 
 func map_content_rect() -> Rect2:
 	return _map_nav.content_screen_rect()
@@ -282,11 +299,7 @@ func _physics_process(delta: float) -> void:
 	_project()
 
 
-## Juice detection runs on render frames (after the frame's physics), so
-## transient lifetimes and the harness's frames(n) count the same frames —
-## that alignment is what makes the decay checks deterministic
-## (td-phase-9.md §2.1.9). Every effect keys off exactly one unambiguous
-## model record (§2.1.7) and every magnitude comes from cfg (rule 4).
+## Juice detection and harness decay share render-frame timing and cfg magnitudes.
 func _process(delta: float) -> void:
 	if model == null or _juice == null:
 		return
@@ -313,10 +326,7 @@ func _process(delta: float) -> void:
 	_age_view_transients()
 
 
-## Rule 10 (P14): tracer and attack-pose countdowns age here in RENDER
-## frames — the physics-paced _project() only edge-detects and draws, so
-## lifetimes match every other juice item at any refresh rate and keep
-## aging through hit-stop consistently.
+## Tracer and attack-pose countdowns age in render frames, including hit-stop.
 func _age_view_transients() -> void:
 	for uid: int in _tracer_frames_left.keys():
 		var left := int(_tracer_frames_left[uid])
@@ -338,10 +348,7 @@ func _age_view_transients() -> void:
 			_enemy_blend_frames.erase(enemy_id)
 
 
-## Single owner of Engine.time_scale (§2.1.3): overlapping juice slowdowns
-## (deploy drag + charm beat) resolve to the strongest; the empty stack
-## restores exactly 1.0. Outcome-safe by J3: time_scale changes wall-clock
-## scheduling only, never ticks-per-physics-frame arithmetic (rule 6).
+## Single time-scale owner: strongest slowdown wins; empty stack restores 1.0.
 func juice_time_push(tag: StringName, value: float) -> void:
 	_time_tags[tag] = value
 	_apply_time_scale()
@@ -420,8 +427,7 @@ func _detect_leaks() -> void:
 		_hit_stop_frames = cfg.leak_hit_stop_frames
 
 
-## item 5: banner keys off wave-index crossings (one boundary definition,
-## shared with Charm's once-per-wave — J13); includes the tick-0 banner
+## Wave banner keys off the same boundary used by Charm's once-per-wave rule.
 func _detect_wave() -> void:
 	var wave := model.spell_book.wave_index_of(model.tick)
 	if wave <= _banner_seen_wave:
@@ -431,9 +437,7 @@ func _detect_wave() -> void:
 	Sfx.play("wave")
 
 
-## item 5: terminal stamp, one-shot on the result flip. The same edge feeds
-## the campaign unlock flow (Phase 10) — it runs per render frame, so it
-## fires identically under normal play and under 0x-scale bot driving.
+## Terminal stamp is one-shot on result flip, shared with campaign unlock flow.
 func _detect_result_stamp() -> void:
 	if _stamp_shown or model.result == BattleModel.Result.RUNNING:
 		return
@@ -474,10 +478,7 @@ func _on_continue_pressed() -> void:
 	Game.open_results()
 
 
-## item 6: snap SFX keys off the triggers counter (exact); the sprung frame
-## keys off last_trigger_tick per surviving trap — the final-charge trap
-## leaves the model on its trigger tick and is handled by the adoption path
-## in _project_traps instead
+## Trap snap keys off trigger count; final-charge removal uses the adoption path.
 func _detect_trap_juice() -> void:
 	if model.traps_triggered > _snaps_seen:
 		for _i: int in model.traps_triggered - _snaps_seen:
@@ -514,8 +515,7 @@ func _shimmer_tar(t: TrapState) -> void:
 		rect.modulate = Color.WHITE
 
 
-## item 7: swirl + beat key off the faction flip; EnemyAnimator projects the
-## deterministic ally-blue atlas derivative from that same authoritative fact.
+## Charm swirl and ally-blue art both key off the authoritative faction flip.
 func _detect_charms() -> void:
 	for e: EnemyState in model.enemies:
 		if e.faction != EnemyState.Faction.CHARMED or _charm_seen.has(e.id):
@@ -539,9 +539,7 @@ func _load_enemy_defs(stage: StageDef) -> Dictionary:
 	return defs
 
 
-## Full catalogs by directory scan — the model validates against the
-## catalog, not a loadout (td-phase-6-7.md §2.1); Phase 10 gates loadouts
-## in the UI.
+## Model validation uses full catalogs; loadout restrictions remain UI-owned.
 func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	var defs: Dictionary = {}
 	var dir := DirAccess.open(dir_path)
@@ -589,8 +587,7 @@ func _apply_map_transform() -> void:
 		_juice.refresh_base()
 
 
-## Dynamic height-fill + bounded pan: refit to the live viewport height, keep
-## the current pan where legal, then drive all screen-owned UI relayouts.
+## Refit to the live viewport, clamp pan, then relayout screen-owned UI.
 func _relayout() -> void:
 	if _stage == null or _grid_root == null:
 		return
@@ -618,9 +615,7 @@ func _relayout() -> void:
 
 
 func _build_hud() -> void:
-	_hud = BATTLE_HUD_PRESENTER.create(
-		HUD_FONT_SIZE, HUD_Z, get_viewport_rect().size
-	)
+	_hud = BATTLE_HUD_PRESENTER.create(HUD_FONT_SIZE, HUD_Z, get_viewport_rect().size)
 	add_child(_hud)
 
 
@@ -662,8 +657,7 @@ func _project() -> void:
 		_hud.text += "  %d*" % int(s["stars"])
 
 
-## EnemyAnimator owns body art, state, direction, and shadow presentation;
-## this view keeps the existing HP-bar and grid-parent seams.
+## EnemyAnimator owns body art/state/direction/shadow; this view owns HP bars.
 func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	var rect := EnemyAnimator.make_body(e, model, _enemy_defs)
 	_add_hp_bar(rect, rect.size.x)
@@ -671,10 +665,7 @@ func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	return rect
 
 
-## Traps project as cell glyphs: armed spike = amber plate with a dark core
-## (visibly distinct from 44px units and full tiles), tar = dark translucent
-## overlay covering the cell. A trap removed from the model (exhausted
-## charges) drops its node the same frame.
+## Traps use distinct cell glyphs and disappear with their model record.
 func _project_traps() -> void:
 	var live: Dictionary = {}
 	for t: TrapState in model.traps:
@@ -740,8 +731,7 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 	return rect
 
 
-## Ranged attacks leave a short-lived tracer line unit -> target cell (a
-## checkable pixel for "the sniper shot the drone").
+## Ranged attacks leave a short-lived unit-to-target tracer.
 func _project_tracers() -> void:
 	for u: UnitState in model.units:
 		var is_ranged := (
@@ -791,16 +781,15 @@ func _project_units() -> void:
 		_detect_skill_trigger(u)
 
 
-## Admitted templates use OperatorAnimator. Legacy fallbacks keep the pinned
-## frame 0-1 bob and frame 2 attack-pose window unchanged.
+## Admitted templates animate; legacy sprites retain pinned bob/attack frames.
 func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
 		return
-	var animation := OperatorVisualCatalog.get_animation(u.op_id)
+	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(u.op_id)
 	var animated := (
 		animation != null
-		and OperatorAnimator.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
+		and OPERATOR_ANIMATOR_SCRIPT.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
 	)
 	if animated:
 		return
@@ -821,8 +810,7 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 		sprite.texture = tex
 
 
-## SP pip under the unit: fills toward sp_cost, flashes while full (the
-## trigger-ready state is a checkable pixel).
+## SP pip fills toward cost and flashes while ready.
 func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 	if u.sp_cost <= 0:
 		return
@@ -836,9 +824,7 @@ func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 		fill.color = SP_BAR_FILL
 
 
-## item 2: a trigger flashes the portrait-placeholder quad (class-colored,
-## top center), bursts a ring at the unit, and plays the sting (the skill id
-## rides the sfx_played event unchanged — Sfx aliases every skill to sting).
+## Skill trigger flashes the portrait, bursts at the unit, and plays its sting.
 func _detect_skill_trigger(u: UnitState) -> void:
 	var seen := int(_skill_seen_tick.get(u.id, -1))
 	if u.skill_triggered_tick <= seen:
@@ -907,8 +893,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	var animation := OperatorVisualCatalog.get_animation(u.op_id)
-	var direction := OperatorAnimator.direction_for_facing(u.facing)
+	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(u.op_id)
+	var direction := OPERATOR_ANIMATOR_SCRIPT.direction_for_facing(u.facing)
 	var animation_id := (
 		StringName(animation.idle_by_direction.get(direction, &"")) if animation != null else &""
 	)
@@ -919,7 +905,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	if tex != null:
 		rect.color = Color(0, 0, 0, 0)
 		rect.size = (
-			OperatorAnimator.body_size(animation)
+			OPERATOR_ANIMATOR_SCRIPT.body_size(animation)
 			if animated
 			else Vector2.ONE * (tex.get_width() * SPRITE_SCALE)
 		)
@@ -927,6 +913,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		sprite.name = "Sprite"
 		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		sprite.texture = tex
+		sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		sprite.stretch_mode = TextureRect.STRETCH_SCALE
 		sprite.size = rect.size
 		sprite.flip_h = false if animated else u.facing == UnitState.Facing.LEFT
@@ -976,9 +963,7 @@ func _push_telemetry() -> void:
 		Telemetry.event("result", {"result": model.result, "stars": model.stars})
 
 
-## Per-spell cast counters + per-cast SFX (the spell id rides the
-## sfx_played event unchanged; Sfx maps bolt/charm to their sounds), and
-## each charm lifecycle transition emits its own event.
+## Spell counters/SFX and charm lifecycle events are projected per cast.
 func _push_spell_telemetry() -> void:
 	for spell_id: StringName in model.spell_book.ids:
 		var casts := model.spell_book.casts(spell_id)

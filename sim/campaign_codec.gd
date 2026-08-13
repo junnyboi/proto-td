@@ -1,10 +1,13 @@
 class_name CampaignCodec
 extends RefCounted
+const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_receipt_codec.gd")
+const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
+const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
+const SaveUpgradeScript := preload("res://sim/campaign_save_upgrade.gd")
+const PromotionRulesResource := preload("res://data/progression/mage_advanced_v1.tres")
 const SAVE_SCHEMA := "prototype_td_campaign"
 const LEGACY_SAVE_VERSION := 1
 const SAVE_VERSION := 2
-const SOURCE_VALUES := ["starter", "contract", "reward", "recovery"]
-const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
 const RESULT_VALUES := ["clear", "defeat"]
 const REWARD_VALUES := ["operator", "trap", "spell"]
@@ -16,14 +19,14 @@ const DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
-	"resolution_anchor", "last_resolution",
+	"promotion_receipts", "promotion_proofs", "resolution_anchor", "last_resolution",
 ]
 const CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs",
 ]
-const HERO_KEYS := CampaignHeroCodec.HERO_KEYS
 const RESOLUTION_KEYS := [
 	"schema_version", "resolution_index", "campaign_uid", "attempt_id", "stage_id",
 	"outcome_hash", "result", "terminal_reason", "terminal_tick", "stars_before", "stars_after",
@@ -35,9 +38,12 @@ const ANCHOR_KEYS := [
 	"before_core", "after_core",
 	"strategic_body_hash_before", "strategic_body_hash_after",
 ]
+const PROMOTION_RECEIPT_KEYS := PromotionReceiptCodecScript.RECEIPT_KEYS
 static func normalize_data(data: Variant, context: Dictionary = {}) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_validation_context")
+	if SaveUpgradeScript.is_pre_promotion_v2(data):
+		data = SaveUpgradeScript.upgrade(data)
 	if typeof(data) != TYPE_DICTIONARY or not _exact_keys(data, DATA_KEYS):
 		return _reject(&"invalid_data_schema")
 	var core_input := {}
@@ -101,6 +107,16 @@ static func normalize_core_snapshot(value: Variant, context: Dictionary) -> Dict
 		return heroes
 	if (heroes["value"] as Array).is_empty() or (heroes["value"] as Array).size() > MAX_ROSTER:
 		return _reject(&"empty_roster")
+	var promotion_receipts := normalize_promotion_receipts(value["promotion_receipts"])
+	if not promotion_receipts["accepted"]:
+		return promotion_receipts
+	var promotion_proofs := PromotionProofCodecScript.normalize(
+		value["promotion_proofs"],
+		func(snapshot: Variant) -> Dictionary:
+			return _normalize_promotion_snapshot(snapshot, context),
+	)
+	if not promotion_proofs["accepted"]:
+		return promotion_proofs
 	var ordered := {}
 	ordered["campaign_uid"] = uid
 	ordered["campaign_seed"] = int(value["campaign_seed"])
@@ -115,6 +131,8 @@ static func normalize_core_snapshot(value: Variant, context: Dictionary) -> Dict
 	ordered["unlocked_spells"] = spells["value"]
 	ordered["offers"] = offers["value"]
 	ordered["heroes"] = heroes["value"]
+	ordered["promotion_receipts"] = promotion_receipts["value"]
+	ordered["promotion_proofs"] = promotion_proofs["value"]
 	var invariants := _validate_core_snapshot_invariants(ordered, context)
 	return _accept(ordered) if invariants["accepted"] else invariants
 static func _normalize_anchor(value: Variant, context: Dictionary) -> Dictionary:
@@ -180,27 +198,13 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 		return _reject(&"unsupported_save")
 	if not _is_hex(String(parsed["checksum"]), 64):
 		return _reject(&"invalid_checksum")
-	if source_version == LEGACY_SAVE_VERSION:
-		if CanonicalJson.text(parsed) != source:
-			return _reject(&"noncanonical_save")
-		if CanonicalJson.sha256_hex(parsed["data"]) != String(parsed["checksum"]):
-			return _reject(&"checksum_mismatch")
-		var migrated := CampaignMigration.migrate_v1_data(parsed["data"], context)
-		if not migrated["accepted"]:
-			return migrated
-		var migrated_save := encode_save(migrated["value"], context)
-		if not migrated_save["accepted"]:
-			return migrated_save
-		return {
-			"accepted": true,
-			"error_code": &"",
-			"data": migrated_save["value"]["data"],
-			"value": migrated_save["value"],
-			"text": migrated_save["text"],
-			"bytes": migrated_save["bytes"],
-			"sha256": migrated_save["sha256"],
-			"migrated_from_version": LEGACY_SAVE_VERSION,
-		}
+	var upgraded := SaveUpgradeScript.decode(
+		parsed, source, context,
+		func(data: Variant, save_context: Dictionary) -> Dictionary:
+			return encode_save(data, save_context),
+	)
+	if upgraded["handled"]:
+		return upgraded["result"]
 	var encoded_data := encode_data(parsed["data"], context)
 	if not encoded_data["accepted"]:
 		return encoded_data
@@ -336,6 +340,22 @@ static func encode_resolution(resolution: Variant) -> Dictionary:
 	if not normalized["accepted"]:
 		return normalized
 	return _encoded(normalized["value"])
+
+
+static func normalize_promotion_receipts(value: Variant) -> Dictionary:
+	return PromotionReceiptCodecScript.normalize(value)
+
+static func _normalize_promotion_snapshot(value: Variant, context: Dictionary) -> Dictionary:
+	return PromotionSnapshotCodecScript.normalize(
+		value, context, DATA_KEYS, CORE_KEYS,
+		func(core: Variant, core_context: Dictionary) -> Dictionary:
+			return normalize_core_snapshot(core, core_context),
+		func(resolution: Variant) -> Dictionary:
+			return normalize_resolution(resolution),
+		func(anchor: Variant, anchor_context: Dictionary) -> Dictionary:
+			return _normalize_anchor(anchor, anchor_context),
+	)
+
 static func _encode_outcome(outcome: Variant, include_hash: bool) -> Dictionary:
 	var keys := [
 		"schema_version", "campaign_uid", "attempt_id", "stage_id", "manifest_hash",
@@ -599,6 +619,7 @@ static func build_context(
 	authored_offers: Array,
 	starting_traps: Array = [],
 	starting_spells: Array = [],
+	promotion_rules: Dictionary = {},
 ) -> Dictionary:
 	var stage_order: Array[String] = []
 	var stage_rewards := {}
@@ -619,6 +640,13 @@ static func build_context(
 			"operator_def_id": String(row["operator_def_id"]),
 			"cost": int(row["cost"]),
 		}
+	var normalized_promotion_rules := promotion_rules.duplicate(true)
+	if normalized_promotion_rules.is_empty():
+		var normalized := CampaignProgression.normalize_promotion_rules(
+			PromotionRulesResource, operator_ids,
+		)
+		if normalized["accepted"]:
+			normalized_promotion_rules = normalized["value"]
 	return {
 		"operator_ids": _string_set(operator_ids),
 		"trap_ids": _string_set(trap_ids),
@@ -629,6 +657,7 @@ static func build_context(
 		"offers": offers,
 		"starting_traps": _sorted_strings(starting_traps),
 		"starting_spells": _sorted_strings(starting_spells),
+		"promotion_rules": normalized_promotion_rules,
 	}
 static func _validate_data_invariants(data: Dictionary, context: Dictionary) -> Dictionary:
 	var root := _validate_root_links(data)
@@ -877,43 +906,19 @@ static func _valid_source_pair(hero: Dictionary, context: Dictionary) -> bool:
 			)
 		_: return false
 
-static func _valid_callsign_value(value: Variant) -> bool:
-	if value == null:
-		return true
-	var text := String(value)
-	if text.is_empty() or text != _trim_callsign(text):
-		return false
-	var count := 0
-	for character: String in text:
-		var codepoint := character.unicode_at(0)
-		if codepoint < 32 or (codepoint >= 127 and codepoint <= 159):
-			return false
-		count += 1
-	return count <= 20
-
-static func _trim_callsign(value: String) -> String:
-	var first := 0
-	var last := value.length()
-	while first < last and value.substr(first, 1) in [" ", "\t"]:
-		first += 1
-	while last > first and value.substr(last - 1, 1) in [" ", "\t"]:
-		last -= 1
-	return value.substr(first, last - first)
-
-static func _display_callsign(hero: Dictionary) -> Dictionary:
-	if hero["custom_callsign"] != null:
-		return _accept(String(hero["custom_callsign"]))
-	var parsed := HeroIdentity.parse_u64_hex(hero["hero_id"])
-	if not parsed["accepted"]:
-		return parsed
-	return HeroNames.default_name(parsed["bits"], int(hero["name_version"]))
-
 static func _valid_context(context: Dictionary) -> bool:
 	var keys := [
 		"operator_ids", "trap_ids", "spell_ids", "stage_order", "stage_rewards",
 		"stage_recovery_rosters", "offers", "starting_traps", "starting_spells",
+		"promotion_rules",
 	]
-	return _exact_keys(context, keys)
+	if not _exact_keys(context, keys):
+		return false
+	var normalized := CampaignProgression.normalize_promotion_rules(
+		PromotionRulesResource,
+		(context["operator_ids"] as Dictionary).keys(),
+	)
+	return normalized["accepted"] and context["promotion_rules"] == normalized["value"]
 
 static func _string_set(values: Array) -> Dictionary:
 	var result := {}
@@ -958,9 +963,6 @@ static func _exact_keys(value: Dictionary, expected: Array) -> bool:
 		if actual[index] != expected[index]:
 			return false
 	return true
-
-static func _nonempty_string(value: Variant) -> bool:
-	return typeof(value) in [TYPE_STRING, TYPE_STRING_NAME] and not String(value).is_empty()
 
 static func _is_ascii_string(value: Variant, allow_empty: bool = false) -> bool:
 	if typeof(value) not in [TYPE_STRING, TYPE_STRING_NAME]:

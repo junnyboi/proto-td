@@ -31,9 +31,9 @@ run_one reversed --reverse-inputs
 cmp -s "$TMP/normal.json" "$TMP/reversed.json"
 
 jq -e '
-  .environment_sha256 == "b0188079cc71f817bdc05383258a14238c5f65e3327b7bc7830ec548deaf5835"
-  and .fresh_checksum == "55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa"
-  and .fresh_hash == "baa4d62d418258a5"
+	.environment_sha256 == "766d1404bfa53e650cc419c49fde338eb20334611b49a19cd095a789f6f525b5"
+	and .fresh_checksum == "69270968b2fedd82f98de96cf6ad530ad8e694d241aabdba5ab97a396e1b664b"
+	and .fresh_hash == "baa4d62d418258a5"
   and .campaign_uid == "ce46150984346591"
   and (.heroes | length) == 5
   and .fresh_reward_hero_id == "e54c103e46898f5d"

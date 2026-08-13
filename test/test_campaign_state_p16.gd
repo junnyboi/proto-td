@@ -10,7 +10,7 @@ func test_fresh_factory_matches_frozen_fixture_checksum_and_hash() -> void:
 	assert_true(fixture["accepted"])
 	assert_eq(state.data_copy(), fixture["data"])
 	assert_eq(state.encode_data()["sha256"],
-		"55549330b2875bcd6d09b0f8559fdca47efada81d394254dd58a7e4d445b3efa")
+		"69270968b2fedd82f98de96cf6ad530ad8e694d241aabdba5ab97a396e1b664b")
 	assert_eq(state.strategic_hash()["hex"], "baa4d62d418258a5")
 	assert_eq(state.campaign_uid(), "ce46150984346591")
 	assert_eq(state.next_recruitment_index(), 5)
@@ -240,7 +240,7 @@ func test_valid_field_families_change_the_single_frozen_full_hash() -> void:
 		var value: String = candidate.strategic_hash()["hex"]
 		assert_false(hashes.has(value), "field-family hashes must be distinct: %s" % value)
 		hashes[value] = true
-	assert_eq(resolved.strategic_hash()["hex"], "e293b40478a9771c")
+	assert_eq(resolved.strategic_hash()["hex"], "6c13f78c886d80cc")
 
 
 func test_restore_encode_restore_is_byte_and_hash_exact() -> void:

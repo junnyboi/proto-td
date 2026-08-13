@@ -60,7 +60,7 @@ func run(h: SelfTestHarness) -> void:
 		receipt.canonical_sha256()
 		== "114f442783439000e421909798849af34b9ee0bf16c2d4f6baac75f8f43cd48d")
 	h.check("resolved strategic hash pinned",
-		state.strategic_hash()["hex"] == "280e3f09064f1d55")
+		state.strategic_hash()["hex"] == "69c1737eab27d319")
 	var duplicate := state.resolve_attempt(ticket, outcome, pending)
 	h.check("duplicate accepted without freshness",
 		duplicate["accepted"] and not duplicate["payload"]["fresh"])

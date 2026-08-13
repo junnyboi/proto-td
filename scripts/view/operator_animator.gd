@@ -4,42 +4,46 @@ extends RefCounted
 ## View-only projection for admitted directional operator art. It reads UnitState
 ## and model tick but never mutates either object.
 
-const OperatorAnimationDef := preload("res://data/presentation/operator_animation_def.gd")
-const UnitState := preload("res://sim/unit_state.gd")
+const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
+const UnitStateType := preload("res://sim/unit_state.gd")
 
-const NORMALIZED_SUBJECT_HEIGHT := 168.0
 const SOURCE_CELL_PX := 192.0
-const ATTACK_WINDOW_TICKS := 30
-const ATTACK_FRAMES := 13
+const MODEL_TICKS_PER_SECOND := 30.0
+const NO_ATTACK_AGE := 1_000_000
 const IDLE_FRAMES := 24
 
 
 static func direction_for_facing(facing: int) -> StringName:
 	match facing:
-		UnitState.Facing.RIGHT:
+		UnitStateType.Facing.RIGHT:
 			return &"se"
-		UnitState.Facing.DOWN:
+		UnitStateType.Facing.DOWN:
 			return &"sw"
-		UnitState.Facing.LEFT:
+		UnitStateType.Facing.LEFT:
 			return &"nw"
-		UnitState.Facing.UP:
+		UnitStateType.Facing.UP:
 			return &"ne"
 		_:
 			return &"se"
 
 
 static func attack_age(model_tick: int, last_attack_tick: int) -> int:
-	return model_tick - last_attack_tick if last_attack_tick >= 0 else ATTACK_WINDOW_TICKS
+	return model_tick - last_attack_tick if last_attack_tick >= 0 else NO_ATTACK_AGE
 
 
-static func attack_active(age_ticks: int) -> bool:
-	return age_ticks >= 1 and age_ticks < ATTACK_WINDOW_TICKS
+static func attack_window_ticks(frame_count: int, fps: float) -> int:
+	return 1 + ceili(float(frame_count) * MODEL_TICKS_PER_SECOND / fps)
 
 
-static func attack_frame(age_ticks: int) -> int:
+static func attack_active(age_ticks: int, frame_count: int, fps: float) -> bool:
+	return age_ticks >= 1 and age_ticks < attack_window_ticks(frame_count, fps)
+
+
+static func attack_frame(age_ticks: int, frame_count: int, fps: float) -> int:
 	if age_ticks <= 0:
 		return 0
-	return clampi(((age_ticks - 1) * ATTACK_FRAMES) / 29, 0, ATTACK_FRAMES - 1)
+	var elapsed_seconds := float(age_ticks - 1) / MODEL_TICKS_PER_SECOND
+	return clampi(floori(elapsed_seconds * fps), 0, frame_count - 1)
 
 
 static func idle_frame(idle_seconds: float) -> int:
@@ -47,15 +51,18 @@ static func idle_frame(idle_seconds: float) -> int:
 
 
 static func selection(
-	u: UnitState, model_tick: int, idle_seconds: float, animation: OperatorAnimationDef
+	u: UnitStateType,
+	model_tick: int,
+	idle_seconds: float,
+	animation: OperatorAnimationDefType,
 ) -> Dictionary:
 	var direction := direction_for_facing(u.facing)
 	var age := attack_age(model_tick, u.last_attack_tick)
-	if attack_active(age):
+	if attack_active(age, animation.attack_frame_count, animation.fps):
 		return {
 			&"state": &"attack",
 			&"direction": direction,
-			&"frame": attack_frame(age),
+			&"frame": attack_frame(age, animation.attack_frame_count, animation.fps),
 			&"logical_id": StringName(animation.attack_by_direction.get(direction, &"")),
 		}
 	return {
@@ -66,17 +73,17 @@ static func selection(
 	}
 
 
-static func body_size(animation: OperatorAnimationDef) -> Vector2:
-	var scale := float(animation.display_height_px) / NORMALIZED_SUBJECT_HEIGHT
+static func body_size(animation: OperatorAnimationDefType) -> Vector2:
+	var scale := float(animation.display_height_px) / float(animation.normalized_subject_height_px)
 	return Vector2.ONE * SOURCE_CELL_PX * scale
 
 
 static func apply(
-	u: UnitState,
+	u: UnitStateType,
 	model_tick: int,
 	idle_seconds: float,
 	sprite: TextureRect,
-	animation: OperatorAnimationDef,
+	animation: OperatorAnimationDefType,
 ) -> bool:
 	if sprite == null or animation == null or not animation.validate_contract().is_empty():
 		return false

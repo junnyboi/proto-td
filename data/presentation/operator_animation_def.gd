@@ -15,8 +15,10 @@ const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
 @export var fps: float = 12.0
 @export var pivot: Vector2 = Vector2(0.5, 0.94)
 @export var display_height_px: int = 64
+@export var normalized_subject_height_px: int = 168
 @export var provenance_sha256: String = ""
 @export var placeholder: bool = true
+@export var placeholder_source_by_logical_id: Dictionary = {}
 
 
 func validate_contract() -> PackedStringArray:
@@ -37,9 +39,40 @@ func validate_contract() -> PackedStringArray:
 		errors.append("pivot: expected finite normalized Vector2")
 	if display_height_px <= 0:
 		errors.append("display_height_px: expected positive int")
+	if normalized_subject_height_px <= 0 or normalized_subject_height_px > 192:
+		errors.append("normalized_subject_height_px: expected 1..192")
 	if not provenance_sha256.is_valid_hex_number(false) or provenance_sha256.length() != 64:
 		errors.append("provenance_sha256: expected lowercase 64-hex")
+	_validate_placeholders(errors)
 	return errors
+
+
+func is_placeholder(logical_id: StringName) -> bool:
+	return placeholder_source_by_logical_id.has(logical_id)
+
+
+func placeholder_source_direction(logical_id: StringName) -> StringName:
+	var stored: Variant = placeholder_source_by_logical_id.get(logical_id, &"")
+	return stored if typeof(stored) == TYPE_STRING_NAME else &""
+
+
+func _validate_placeholders(errors: PackedStringArray) -> void:
+	if placeholder != (not placeholder_source_by_logical_id.is_empty()):
+		errors.append("placeholder: expected to match exact placeholder source map")
+	var admitted_ids: Dictionary = {}
+	for mapping: Dictionary in [idle_by_direction, attack_by_direction]:
+		for raw_id: Variant in mapping.values():
+			if typeof(raw_id) == TYPE_STRING_NAME:
+				admitted_ids[raw_id] = true
+	for raw_id: Variant in placeholder_source_by_logical_id:
+		if typeof(raw_id) != TYPE_STRING_NAME or not admitted_ids.has(raw_id):
+			errors.append("placeholder_source_by_logical_id: unknown logical id %s" % raw_id)
+			continue
+		var raw_direction: Variant = placeholder_source_by_logical_id[raw_id]
+		if typeof(raw_direction) != TYPE_STRING_NAME or raw_direction not in DIRECTIONS:
+			errors.append(
+				"placeholder_source_by_logical_id.%s: expected admitted source direction" % raw_id
+			)
 
 
 static func _validate_direction_map(

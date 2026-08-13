@@ -37,6 +37,12 @@ static func _of_normalized_core(data: Dictionary) -> Dictionary:
 	return _hash_encoded(_bytes_of_normalized(data, true))
 
 
+static func of_normalized_data(data: Dictionary, omit_last_resolution: bool) -> Dictionary:
+	## Test/invariant seam for ban-list paranoia. Callers must already own a
+	## canonical normalized value; public gameplay uses of_data()/of_core().
+	return _hash_encoded(_bytes_of_normalized(data, omit_last_resolution))
+
+
 static func bytes_of(
 	data: Variant,
 	context: Dictionary,
@@ -70,6 +76,9 @@ static func _bytes_of_normalized(
 	_append_strings(out, value["unlocked_spells"])
 	_append_offers(out, value["offers"])
 	_append_heroes(out, value["heroes"])
+	_append_promotion_receipts(
+		out, value["promotion_receipts"], int(value["save_revision"]),
+	)
 	if omit_last_resolution:
 		out.append(0)
 		out.append(0)
@@ -165,6 +174,34 @@ static func _append_heroes(out: PackedByteArray, rows: Array) -> void:
 		_append_nullable_string(out, row["custom_callsign"])
 		out.append(int(LIFE_ENUM[String(row["life_status"])]))
 		_append_death_nullable(out, row["death"])
+
+
+static func _append_promotion_receipts(
+	out: PackedByteArray,
+	rows: Array,
+	current_revision: int,
+) -> void:
+	# Preserve every pre-promotion frozen hash. Once history exists, the section
+	# marker and count make its boundary unambiguous. Only the receipt produced at
+	# the current revision is self-referential; older after-hashes are state.
+	if rows.is_empty():
+		return
+	out.append(0x50)
+	_append_u32(out, rows.size())
+	for row: Dictionary in rows:
+		_append_u32(out, int(row["version"]))
+		_append_string(out, String(row["command_id"]))
+		_append_string(out, String(row["verb"]))
+		_append_string(out, String(row["hero_id"]))
+		_append_string(out, String(row["prior_class_id"]))
+		_append_string(out, String(row["new_class_id"]))
+		_append_string(out, String(row["prior_operator_def_id"]))
+		_append_string(out, String(row["new_operator_def_id"]))
+		_append_i64(out, int(row["prior_save_revision"]))
+		_append_i64(out, int(row["new_save_revision"]))
+		_append_string(out, String(row["before_strategic_hash"]))
+		if int(row["new_save_revision"]) != current_revision:
+			_append_string(out, String(row["after_strategic_hash"]))
 
 
 static func _append_death_nullable(out: PackedByteArray, value: Variant) -> void:

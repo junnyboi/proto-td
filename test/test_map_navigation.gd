@@ -21,6 +21,7 @@ const BATTLE_VIEW_SCRIPT: GDScript = preload("res://scripts/view/battle_view.gd"
 const S1: StageDef = preload("res://data/stages/s1.tres")
 const S2: StageDef = preload("res://data/stages/s2.tres")
 const S3: StageDef = preload("res://data/stages/s3.tres")
+const S4: StageDef = preload("res://data/stages/s4.tres")
 const VIEWPORTS := [Vector2(960.0, 640.0), Vector2(1280.0, 720.0), Vector2(1920.0, 1080.0)]
 const PORTRAIT_VIEWPORT := Vector2(720.0, 1280.0)
 
@@ -82,13 +83,13 @@ func test_pan_clamp_rejects_beyond_edge_void() -> void:
 
 func test_initial_framing_keeps_right_edge_visible_and_y_centered() -> void:
 	var navigator := MapNavigator.new()
-	navigator.relayout(S1, Vector2(1280.0, 720.0))
+	navigator.relayout(S4, Vector2(1280.0, 720.0))
 	assert_eq(navigator.pan.x, navigator.bounds.position.x)
 	assert_eq(navigator.pan.y, 0.0)
 	assert_almost_eq(navigator.content_screen_rect().end.x, 1280.0, 0.0001)
 
 
-func test_act2_target_viewports_fit_complete_content_inside_persistent_ui() -> void:
+func test_shared_act1_target_viewports_fit_complete_content_inside_persistent_ui() -> void:
 	var cases: Array = [
 		[Vector2(1920.0, 1080.0), Rect2(16.0, 104.0, 1888.0, 822.0)],
 		[Vector2(1280.0, 720.0), Rect2(16.0, 104.0, 1248.0, 462.0)],
@@ -98,12 +99,12 @@ func test_act2_target_viewports_fit_complete_content_inside_persistent_ui() -> v
 	for spec: Array in cases:
 		var viewport: Vector2 = spec[0]
 		var safe: Rect2 = spec[1]
-		for stage: StageDef in [S2, S3]:
+		for stage: StageDef in [S1, S2, S3]:
 			var navigator := MapNavigator.new()
 			navigator.relayout(stage, viewport)
 			assert_eq(
 				navigator.scale,
-				IsoProjection.fit_scale(stage.grid_size(), safe.size),
+				MapNavigator.shared_act1_fit_scale(stage, safe.size),
 			)
 			assert_eq(navigator.pan, Vector2.ZERO)
 			assert_eq(navigator.bounds, Rect2())
@@ -112,16 +113,16 @@ func test_act2_target_viewports_fit_complete_content_inside_persistent_ui() -> v
 
 func test_resize_preserves_pixel_pan_then_clamps_exactly() -> void:
 	var navigator := MapNavigator.new()
-	navigator.relayout(S1, Vector2(1280.0, 720.0))
+	navigator.relayout(S4, Vector2(1280.0, 720.0))
 	navigator.pan = Vector2(12.0, 180.0)
 	var old_pan := navigator.pan
-	navigator.relayout(S1, Vector2(960.0, 640.0))
+	navigator.relayout(S4, Vector2(960.0, 640.0))
 	assert_eq(navigator.pan, IsoProjection.clamp_pan(old_pan, navigator.bounds))
 
 
 func test_missed_release_clears_latched_middle_drag_on_motion() -> void:
 	var navigator := MapNavigator.new()
-	navigator.relayout(S1, Vector2(1280.0, 720.0))
+	navigator.relayout(S4, Vector2(1280.0, 720.0))
 	assert_true(navigator.handle_input(_mouse_button(MOUSE_BUTTON_MIDDLE, true)))
 	assert_true(navigator.is_dragging())
 	var before := navigator.pan
@@ -135,7 +136,7 @@ func test_missed_release_clears_latched_middle_drag_on_motion() -> void:
 
 func test_native_horizontal_wheel_moves_only_x() -> void:
 	var navigator := MapNavigator.new()
-	navigator.relayout(S1, Vector2(1280.0, 720.0))
+	navigator.relayout(S4, Vector2(1280.0, 720.0))
 	navigator.pan = navigator.bounds.position
 	var before := navigator.pan
 	assert_true(navigator.handle_input(_mouse_button(MOUSE_BUTTON_WHEEL_LEFT, true)))
@@ -145,7 +146,7 @@ func test_native_horizontal_wheel_moves_only_x() -> void:
 
 func test_ensure_visible_reveals_a_clipped_unit_rect() -> void:
 	var navigator := MapNavigator.new()
-	navigator.relayout(S1, Vector2(1280.0, 720.0))
+	navigator.relayout(S4, Vector2(1280.0, 720.0))
 	var local_rect := Rect2(-32.0, -66.0, 64.0, 80.0)
 	assert_true(navigator.ensure_local_rect_visible(local_rect))
 	var screen_top := navigator.root_position().y + local_rect.position.y * navigator.scale

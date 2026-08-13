@@ -82,9 +82,9 @@ jq -e '
 	and ([.runs[] | .terminal.reason | IN("clear","leak_defeat","base_defeat","resign")] | all)
 	and ([.runs[] | .telemetry | has("counters") and has("series_last") and has("events")] | all)
 	and .campaign_contract == {
-		checksum:"bcd36b9349ba086ba543d1ca189af2c40beeb3f6c5ec573a67755596386ba10f",
-		save_sha256:"c04a0ba033f38f170148c76dd18a4e9c7f814689df2eb39457d3c69730cb8ed1",
-		full_strategic_hash:"e293b40478a9771c",
+		checksum:"09979db6f12dc37470fe76959cf12a6de88afb0d1075c5e326efae4304274804",
+		save_sha256:"33fefbc6639fa30a56d339468e606c64c27ac60a68257452345115ceddaf950b",
+		full_strategic_hash:"6c13f78c886d80cc",
 		strategic_body_hash_before:"39725890ee4a6a1a",
 		strategic_body_hash_after:"4942c92d813313ac"
 	}
