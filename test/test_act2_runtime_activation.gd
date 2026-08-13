@@ -39,6 +39,12 @@ func after_each() -> void:
 
 
 func test_missing_required_theme_aborts_before_model_or_projection_and_is_rejected() -> void:
+	var previous_content := Node.new()
+	add_child_autoqfree(previous_content)
+	var previous_battle := BattleModel.new()
+	var previous_pending := s3
+	Game.content = previous_content
+	Game.current_battle = previous_battle
 	Game.pending_stage = s2
 	var factory_calls := {"count": 0}
 	var view: Node = BATTLE_VIEW_SCRIPT.new()
@@ -65,16 +71,24 @@ func test_missing_required_theme_aborts_before_model_or_projection_and_is_reject
 	assert_eq(factory_calls["count"], 0)
 	assert_null(view.get("model"))
 	assert_false(bool(view.get("startup_succeeded")))
-	assert_null(Game.current_battle)
+	assert_eq(Game.content, previous_content)
+	assert_eq(Game.current_battle, previous_battle)
 	for child_name: String in [
 		"GridRoot", "JuiceLayer", "BattleHud", "DeployBar", "SpellBar", "BattleControls"
 	]:
 		assert_null(view.get_node_or_null(child_name), "startup failure omits %s" % child_name)
 
-	assert_false(bool(Game.call("_accept_content_candidate", view, true)))
-	assert_null(Game.content)
-	assert_null(Game.current_battle)
-	assert_null(Game.pending_stage)
+	assert_false(bool(Game.call(
+		"_accept_content_candidate",
+		view,
+		true,
+		previous_content,
+		previous_pending,
+		previous_battle,
+	)))
+	assert_eq(Game.content, previous_content)
+	assert_eq(Game.current_battle, previous_battle)
+	assert_eq(Game.pending_stage, previous_pending)
 
 
 func test_valid_s2_candidate_publishes_only_after_complete_projection() -> void:
@@ -85,7 +99,7 @@ func test_valid_s2_candidate_publishes_only_after_complete_projection() -> void:
 
 	assert_true(bool(view.get("startup_succeeded")))
 	assert_not_null(view.get("model"))
-	assert_eq(Game.current_battle, view.get("model"))
+	assert_null(Game.current_battle)
 	var grid := view.get_node_or_null("GridRoot")
 	assert_not_null(grid)
 	if grid != null:
@@ -93,7 +107,9 @@ func test_valid_s2_candidate_publishes_only_after_complete_projection() -> void:
 	for child_name: String in ["JuiceLayer", "BattleHud", "DeployBar", "SpellBar", "BattleControls"]:
 		assert_not_null(view.get_node_or_null(child_name), "startup creates %s" % child_name)
 	assert_null(Game.content)
-	assert_true(bool(Game.call("_accept_content_candidate", view, true)))
+	assert_true(bool(Game.call(
+		"_accept_content_candidate", view, true, null, null, null
+	)))
 	assert_eq(Game.content, view)
 	assert_eq(Game.current_battle, view.get("model"))
 
@@ -121,6 +137,7 @@ func test_battle_view_preflight_remains_before_catalogs_and_factory() -> void:
 	assert_gt(catalog_pos, resolve_pos)
 	assert_gt(create_pos, catalog_pos)
 	assert_false(source.contains("Game.content = self"))
+	assert_false(source.contains("Game.current_battle = model"))
 
 
 func test_real_act2_themes_render_exact_runtime_inventories() -> void:

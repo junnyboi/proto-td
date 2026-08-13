@@ -193,7 +193,6 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_relayout)
 	model = candidate_model
 	startup_succeeded = true
-	Game.current_battle = model
 
 
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
