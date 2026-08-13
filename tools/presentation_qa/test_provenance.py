@@ -92,7 +92,7 @@ class ProvenanceContractTests(unittest.TestCase):
         self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
         self.assertEqual(document["acceptance"]["accepting_commit"], MODULE.S1_APPROVED_CANDIDATE)
 
-    def test_round5_character_is_concept_accepted_but_not_runtime_final(self) -> None:
+    def test_round5_character_is_human_final_accepted(self) -> None:
         path = REPO / "assets/provenance/portrait_vanguard_1.provenance.json"
         document = json.loads(path.read_text(encoding="utf-8"))
         entry = {"pattern": "res://assets/portraits/vanguard_1.png", "frames": 1}
@@ -100,12 +100,12 @@ class ProvenanceContractTests(unittest.TestCase):
         MODULE.validate_document(REPO, document, "portrait_vanguard_1", entry)
         self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
         self.assertEqual(document["generation"]["model"], "gpt-image-2")
-        self.assertEqual(
-            document["acceptance"]["state"],
-            "human_concept_accepted_runtime_review_pending",
-        )
+        self.assertEqual(document["acceptance"]["state"], "human_final_accepted")
         self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
-        self.assertIsNone(document["acceptance"]["accepting_commit"])
+        self.assertEqual(
+            document["acceptance"]["accepting_commit"],
+            MODULE.ROUND5_APPROVED_CANDIDATE,
+        )
 
 
 if __name__ == "__main__":

@@ -34,6 +34,8 @@ ROUND5_OPERATOR_IDS = {
     "sniper_1", "sniper_2", "vanguard_1", "vanguard_2",
 }
 ROUND5_ENEMY_IDS = {"drone", "grunt", "heavy", "mini_boss", "runner", "spellcaster"}
+ROUND5_APPROVED_CANDIDATE = "441cb80b079ee89195ef751dbc26e67b426600d0"
+ROUND5_APPROVED_AT_UTC = "2026-08-13T10:13:37Z"
 ROUND5_COMMON_SOURCES = {
     "res://assets/asset_manifest.gd",
     "res://docs/decisions/AUI-DESIGN-APPROVALS.md",
@@ -294,20 +296,22 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "status": "new_runtime_asset_authenticated",
             },
             "acceptance": {
-                "state": "human_concept_accepted_runtime_review_pending",
+                "state": "human_final_accepted",
                 "human_accepter": "Poseidon",
-                "accepted_at_utc": "2026-08-13T07:01:56Z",
-                "accepting_commit": None,
+                "accepted_at_utc": ROUND5_APPROVED_AT_UTC,
+                "accepting_commit": ROUND5_APPROVED_CANDIDATE,
                 "source": "docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
                 "reason": (
-                    "approved Round-5 concept normalized into a runtime candidate; final in-game review pending"
+                    "Poseidon approved the exact Round-5 in-game candidate after squad, portrait, "
+                    "operator-animation, and enemy-variant review"
                 ),
             },
             "license": {
                 "spdx": "LicenseRef-Project-Owned",
                 "source": "original GPT Image 2 concepts and project-controlled deterministic normalization",
                 "human_contribution": (
-                    "direction, selection, concept approval, runtime-binding direction, and normalization review"
+                    "direction, selection, revision verdicts, pixel normalization contracts, and "
+                    "exact-candidate final-art acceptance"
                 ),
             },
         }

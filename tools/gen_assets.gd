@@ -21,6 +21,7 @@ const OUT_SHEET := "res://artifacts/lane_a"
 const ROUND5_IMPORTER := "res://tools/art_pipeline/characters/import_round5_sheets.py"
 const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
 const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
+const ROUND5_CHARACTER_PLACEHOLDER := false
 
 var _failed := false
 var _manifest := AssetManifest.new()
@@ -66,7 +67,7 @@ func _initialize() -> void:
 			)
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, op_id], frames.size(),
-			ArtOperators.SIZE, true
+			ArtOperators.SIZE, ROUND5_CHARACTER_PLACEHOLDER
 		)
 		for i: int in [0, 2, 4]:
 			sheet_cells.append(Pix.upscale(frames[i], 4))
@@ -86,7 +87,7 @@ func _initialize() -> void:
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
 			1,
 			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
-			true
+			ROUND5_CHARACTER_PLACEHOLDER
 		)
 		portrait_cells.append(portrait)
 
@@ -103,7 +104,7 @@ func _initialize() -> void:
 		var def := load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 		_record(
 			def.sprite_id, "%s/%s_%%d.png" % [OUT_SPRITES, enemy_id], frames.size(), enemy_size,
-			true
+			ROUND5_CHARACTER_PLACEHOLDER
 		)
 		sheet_cells.append(Pix.upscale(frames[0], 4))
 		if not def.charm_immune:
@@ -123,7 +124,7 @@ func _initialize() -> void:
 				"%s/%s_charmed_%%d.png" % [OUT_SPRITES, enemy_id],
 				2,
 				enemy_size,
-				true
+				ROUND5_CHARACTER_PLACEHOLDER
 			)
 			sheet_cells.append(Pix.upscale(charmed, 4))
 

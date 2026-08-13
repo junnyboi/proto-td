@@ -2,7 +2,9 @@
 
 - **Decision owner:** Poseidon
 - **Effective:** 2026-08-13
-- **State:** runtime candidate authorized; final in-game review pending
+- **State:** human-final accepted
+- **Accepted candidate:** `441cb80b079ee89195ef751dbc26e67b426600d0`
+- **Accepted at:** 2026-08-13T10:13:37Z
 - **Scope:** approved Round-5 allied roster, allied portraits, and enemy character sheet
 
 ## Decision
@@ -20,7 +22,9 @@ No gameplay, simulation, save, replay, localization, UI-layout, or balance contr
 
 ## Acceptance state
 
-The source concepts are already owner-approved. Normalized runtime bytes remain `human_concept_accepted_runtime_review_pending` and manifest `placeholder: true` until Poseidon reviews fresh exact-candidate in-game captures. Final acceptance, if granted, flips only the character placeholder/provenance acceptance state and then runs the release gate; a machine may not infer that verdict.
+Poseidon approved the exact candidate after reviewing fresh windowed captures of squad select, portrait inventory, operator animation regions, and base/charmed enemy variants. Round-5 character provenance is therefore `human_final_accepted` and all corresponding manifest entries are `placeholder: false`.
+
+This decision applies only to the exact reviewed character bytes at candidate `441cb80b079ee89195ef751dbc26e67b426600d0`. The subsequent acceptance-state commit changes metadata and generated manifest/provenance only; it does not alter the reviewed PNGs. Any later character-byte change returns the affected asset to review-pending.
 
 ## Reproduction
 

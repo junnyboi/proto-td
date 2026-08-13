@@ -367,12 +367,13 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 		elif _is_round5_character(id):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
-			assert_eq(
-				document["acceptance"]["state"],
-				"human_concept_accepted_runtime_review_pending",
-			)
+			assert_eq(document["acceptance"]["state"], "human_final_accepted")
 			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
-			assert_null(document["acceptance"]["accepting_commit"])
+			assert_eq(
+				document["acceptance"]["accepting_commit"],
+				"441cb80b079ee89195ef751dbc26e67b426600d0",
+			)
+			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
 		else:
 			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
 			assert_null(document["acceptance"]["human_accepter"])
@@ -390,11 +391,7 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 		assert_eq(actual_sources, _expected_sources(id), "%s exact source closure" % id)
 	assert_true(manifest.entries.has(&"tile_backdrop"), "post-218 asset covered")
 	var caster := _json("res://assets/provenance/portrait_caster_1.provenance.json")
-	assert_eq(
-		caster["acceptance"]["state"],
-		"human_concept_accepted_runtime_review_pending",
-		"approved concept is not mislabeled as final runtime art",
-	)
+	assert_eq(caster["acceptance"]["state"], "human_final_accepted")
 
 
 func test_presentation_contract_sources_never_reference_simulation() -> void:
