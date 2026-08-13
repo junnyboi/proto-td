@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-028 — Reduce narrative flavor-text typography
-
-- Status: in_progress
-- Owner: AGENT 11
-- Branch: `agent-11/flavor-text`
-- Base: latest `master` at `7b186dc9588a210bfe04242a0436b9b753beb89c`; reconciles landed E1 `fdee506`
-- Dependencies: TD-027 and landed E1 dense-role convention
-- Owned files: `scripts/ui/components/aetheria_theme.gd`, `test/test_ui_components.gd.component-contract.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `selftest/scenarios/canon_act1_flow.gd`, `selftest/scenarios/staging_flow.gd`, `docs/todo.md`, `docs/completed.md`
-- Do not touch: landed E1 role assignments, simulation, hash/save/replay, `scripts/verify.sh`, human-owned thresholds, or unrelated UI
-- Acceptance: canonical flavor/dense copy is materially smaller than the former 44px role while every dense probe satisfies the unchanged 32px rendered-glyph floor; selector-exact Staging/Squad/Results proof and direct Results screenshot pass on the latest master union
-- Required evidence: exact UI GUT, `ui_shell_floor` headless/windowed with 63 fresh shots and zero skips, affected canon/staging scenarios, and corrected green STANDARD on the true final union
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
