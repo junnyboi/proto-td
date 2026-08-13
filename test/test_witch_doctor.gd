@@ -212,6 +212,10 @@ func test_mend_rejects_invalid_targets_and_never_revives() -> void:
 
 func test_mend_malformed_actions_fail_closed_without_integer_coercion() -> void:
 	var cases: Array[Dictionary] = [
+		{"label": "String verb", "action": ["mend", 1, 0]},
+		{"label": "integer verb", "action": [1, 1, 0]},
+		{"label": "bool verb", "action": [true, 1, 0]},
+		{"label": "null verb", "action": [null, 1, 0]},
 		{"label": "missing target", "action": [&"mend", 1]},
 		{"label": "extra arg", "action": [&"mend", 1, 0, 0]},
 		{"label": "string healer", "action": [&"mend", "1", 0]},

@@ -6,7 +6,7 @@
 
 **Base:** `f84810578303d6599b4e5de89c407f9747d3812d`
 
-**Implementation candidate:** pending commit freeze
+**Superseded candidate:** `c0506a4d1da93dd45e78987ebf7306b7970a870f` — independent audit FAIL; never eligible for merge
 
 ## Outcome
 
@@ -34,11 +34,14 @@ The red acceptance suite initially failed because the enum, resource, and verb d
 
 One standard run saw R3.7 filesystem-web exit 139 during clean import. The unchanged rung passed immediately in isolation, then the full standard ladder was restarted from R2 and completed ALL GREEN. A later plan-checklist review found invalid-click, cancellation, pan-block, legacy-skill, screenshot-name, and watchdog evidence gaps; the game/scenario were corrected and the complete standard ladder was restarted and passed again.
 
+The first frozen release candidate then completed a fresh 183.310-second full gate with 78 passing rungs, 25 passing windowed reports, zero pixel skips, and identical 11-replay cross-process output. The mandatory independent audit still rejected it: `BattleModel.apply_action` converted a String `"mend"` to `StringName` before checking the pinned exact verb type. The dispatcher now rejects every non-`TYPE_STRING_NAME` verb before conversion, and hash-equal tests reproduce String, integer, bool, and null verb variants. The release audit restarts from a new frozen commit; no evidence from `c0506a4` will be reused.
+
 ## Plan deviations and boundaries
 
 - D-WD-1 exercised: Mend validation/mutation was extracted to pure `sim/healing_rules.gd` because `BattleModel` was at its public-method cap. The dispatcher remains the sole mutation entry and the UI calls the same pure validator.
 - `BattleView` color constants moved to immutable `scripts/view/battle_palette.gd` to remain under the 1,000-line lint cap; no presentation value changed except the additive healer color.
 - Replay runner expectation objects are additive; every legacy boolean array and existing replay fixture byte remains unchanged.
+- D-WD-4 exercised and explicit: adding a canonical generated operator changes shared checked-in generator inputs (`tools/gen_assets.gd`, palette/operator/portrait recipes, and the provenance router). Every legacy generated provenance sidecar authenticates those shared source bytes, so truthful canonical regeneration necessarily refreshes its source digests and the manifest's provenance hashes even though every unrelated PNG remains byte-identical. Preserving the old sidecar bytes would make their authenticated source digests false and fail the exact provenance contract. This is a provenance-only migration: acceptance state, generation facts, source closure, logical IDs, and all unrelated asset bytes remain unchanged.
 - Agent F's localization/UI-shell lane, Sorcerer payload, promotion/XP UI, permanent-death logic, thresholds, `scripts/verify.sh`, and final-art acceptance remain untouched.
 
 ## Current evidence state

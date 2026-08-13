@@ -158,6 +158,8 @@ func run_to_terminal(max_ticks: int) -> void:
 func apply_action(action: Array) -> bool:
 	if action.is_empty() or result != Result.RUNNING:
 		return false
+	if typeof(action[0]) != TYPE_STRING_NAME:
+		return false
 	var verb: StringName = action[0]
 	var n := action.size()
 	var ok := false
