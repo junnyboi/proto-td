@@ -11,3 +11,11 @@ extends Resource
 @export var dp_cap: int = 99
 @export var retreat_refund_percent: int = 50
 @export var sp_progress_interval_ticks: int = 30
+
+
+func debug_dp_value_valid(value: int) -> bool:
+	return value >= 0 and value <= dp_cap
+
+
+func debug_base_hp_value_valid(value: int) -> bool:
+	return value >= 0

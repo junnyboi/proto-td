@@ -52,6 +52,53 @@ finish() { # exit_code
   echo "$RESULTS" | jq '.' > artifacts/verify.json
   exit "$1"
 }
+p16_suite_gate() {
+	local text="$1" path expected summary
+	while read -r path expected; do
+		summary=$(awk -v suite="$path" '
+			{
+				clean=$0
+				gsub(/\033\[[0-?]*[ -\/]*[@-~]/, "", clean)
+			}
+			clean == suite { active=1; next }
+			active && clean ~ /^res:\/\/test\/[^[:space:]]+\.gd$/ { exit }
+			active && clean ~ /^[0-9]+\/[0-9]+ passed\.$/ {
+				count += 1
+				value=clean
+			}
+			END {
+				if (count == 1) print value
+				else print "__INVALID_SUMMARY_COUNT__"
+			}
+		' <<< "$text")
+		[[ "$summary" == "$expected" ]] || return 1
+	done <<'EOF'
+res://test/test_p16_contract_fixtures.gd 15/15 passed.
+res://test/test_replay_codec.gd 5/5 passed.
+res://test/test_hero_state.gd 3/3 passed.
+res://test/test_roster_state.gd 5/5 passed.
+res://test/test_campaign_state_p16.gd 11/11 passed.
+res://test/test_game_campaign_compat.gd 2/2 passed.
+EOF
+}
+P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_game_campaign_compat.gd\n2/2 passed.'
+P16_GATE_GOOD=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
+P16_GATE_BAD=$'res://test/test_dp_economy.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
+P16_GATE_INJECTED=$'res://test/test_p16_contract_fixtures.gd\nWARNING: 15/15 passed.\n15/15 passed.\n14/15 passed.\n'"$P16_GATE_TAIL"
+P16_GATE_CSI=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n\e[2K14/15 passed.\n'"$P16_GATE_TAIL"
+p16_suite_gate "$P16_GATE_GOOD" || { echo '[verify] P16 suite gate self-test false red' >&2; exit 2; }
+if p16_suite_gate "$P16_GATE_BAD"; then
+	echo '[verify] P16 suite gate self-test accepted an unrelated count' >&2
+	exit 2
+fi
+if p16_suite_gate "$P16_GATE_INJECTED"; then
+	echo '[verify] P16 suite gate self-test accepted injected or duplicate summaries' >&2
+	exit 2
+fi
+if p16_suite_gate "$P16_GATE_CSI"; then
+	echo '[verify] P16 suite gate self-test accepted a CSI-prefixed wrong summary' >&2
+	exit 2
+fi
 run_rung() { # rung_name artifact_hint timeout_s cmd...
   local rung="$1" artifact="$2" budget="$3"
   shift 3
@@ -60,6 +107,22 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
   out=$(timeout "$budget" "$@" 2>&1)
   code=$?
   t1=$(date +%s)
+  if [[ "$rung" == "R3-gut" && $code -eq 0 ]]; then
+    local tests
+    tests=$(grep -Eo 'Tests[[:space:]]+[0-9]+' <<< "$out" | tail -1 | awk '{print $2}')
+    if [[ -z "$tests" || "$tests" -eq 0 ]]; then
+      code=1
+      out+=$'\n[verify] GUT reported zero tests or no parseable test count'
+    fi
+    if grep -Eq 'SCRIPT ERROR:|Nothing was run|Errors[[:space:]]+[1-9][0-9]*' <<< "$out"; then
+      code=1
+      out+=$'\n[verify] GUT reported framework, parser, or discovery errors'
+    fi
+    if ! p16_suite_gate "$out"; then
+      code=1
+      out+=$'\n[verify] required P16 suite-specific exact count missing'
+    fi
+  fi
   if [[ $code -ne 0 ]]; then
     echo "==== $rung FAILED (exit $code) ===="
     echo "$out"
@@ -80,8 +143,15 @@ fi
 
 # R3: GUT unit tests
 if [[ -z "$ONLY" ]]; then
-  run_rung "R3-gut" "" 300 "$GODOT" --headless -d -s addons/gut/gut_cmdln.gd \
-    -gdir=res://test -ginclude_subdirs -gexit
+	run_rung "R3-gut" "" 300 "$GODOT" --headless -d -s addons/gut/gut_cmdln.gd \
+	  -gdir=res://test -ginclude_subdirs -gexit
+	run_rung "R3.5-replay" "artifacts/replay/summary.json" 35 scripts/replay_check.sh
+	run_rung "R3.5-model-roster" "artifacts/model-roster/summary.json" 35 \
+	  scripts/model_roster_check.sh
+  run_rung "R3.6-filesystem-native" "artifacts/filesystem/native.json" 35 \
+    scripts/probe_filesystem.sh "$GODOT" --out=artifacts/filesystem/native.json
+  run_rung "R3.7-filesystem-web" "artifacts/filesystem/web/result.json" 360 \
+    scripts/probe_filesystem.sh "$GODOT" --web --out=artifacts/filesystem/web
 fi
 
 # R4: scenarios. Headless lane always; windowed lane with --full.
@@ -99,6 +169,14 @@ scenario_cmd() { # lane scenario
 }
 
 SCENARIOS=()
+[[ -f selftest/scenarios/p16_contract_probe.gd ]] || {
+	echo '[verify] required p16_contract_probe scenario missing' >&2
+	finish 1
+}
+[[ -f selftest/scenarios/model_roster_probe.gd ]] || {
+	echo '[verify] required model_roster_probe scenario missing' >&2
+	finish 1
+}
 for f in selftest/scenarios/*.gd; do
   [[ -e "$f" ]] || continue
   name="$(basename "$f" .gd)"
@@ -117,7 +195,9 @@ if [[ $WINDOWED -eq 1 ]]; then
 fi
 
 if [[ $FULL -eq 1 ]]; then
-  quiet_windows
+	run_rung "R3.8-stale-class-registry" "" 480 scripts/probe_stale_class_registry.sh
+	run_rung "R3.9-music-cold-boot" "" 240 scripts/cold_boot_check.sh
+	quiet_windows
   for s in "${SCENARIOS[@]}"; do
     scenario_cmd windowed "$s"
   done

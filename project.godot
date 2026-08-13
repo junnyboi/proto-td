@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 I18n="*res://autoloads/i18n.gd"
 Telemetry="*res://autoloads/telemetry.gd"
+Music="*res://autoloads/music.gd"
 PlaytestRunner="*res://autoloads/playtest_runner.gd"
 Game="*res://autoloads/game.gd"
 Debug="*res://autoloads/debug.gd"

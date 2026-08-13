@@ -9,13 +9,15 @@ say whether it is *fun*. Trust your gut, write everything down, and don't be pol
 - **Progress is session-only.** Closing the window resets the campaign — by design.
 - F12 opens a debug overlay. Rounds 1–2 are played **without** it: debug is for reproducing a
   verdict afterwards, never for forming one.
-- Build under test: **`master` ≥ `f08ee08`** (TD-007 campaign-only Start candidate — includes
-  the P12 iso view, P13 battle controls, phase-14 remediation, P15 Staging hub, and the single
-  Start → campaign route). The original `poc-v1-audit` tag and two-flow P15 build are
-  superseded; do not playtest an older build.
-- **The build is silent by design** (owner decision 2026-08-11, deviation D-SFX): no SFX, no
-  music. Every audio question in this script is N/A — judge visuals only, and do not log the
-  silence as a defect.
+- Build under test: **the integrated P16.0/master union or later** (includes the P12 iso view,
+  P13 battle controls, phase-14 remediation, P15 Staging hub, single Start → campaign route,
+  TD-017 runtime music, current Protos presentation work, and deterministic P16.0 personnel
+  contracts). P16.0 is deliberately non-player-facing: recruitment, persistence, Barracks,
+  Continue, and permadeath are not expected yet. The original `poc-v1-audit` tag and two-flow
+  P15 build are superseded; do not playtest an older build.
+- **Music is active; SFX remains silent.** Expect Act I BGM in S1–S4 and Act II BGM in S5–S8.
+  S4 and S8 hard-switch to their paired boss cues at the final wave. Only one cue may ever be
+  audible; layering, duplicate restarts, or music continuing into menus/results is a defect.
 
 ## 2. The run
 
@@ -28,7 +30,7 @@ lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 | Stage | The lesson that should land | Juice moments to notice |
 |---|---|---|
 | S1 First Stand | blocking is the game — melee ON the road stops them | deploy ritual (drag slowdown, landing dust), wave banners, kill sparks |
-| S2 Tempo | you feel DP-poor; opening with the Vanguard matters | leak alarm (red frame + shake) when the rush gets through |
+| S2 Tempo | you feel DP-poor; opening with the Shock Trooper matters | leak alarm (red frame + shake) when the rush gets through |
 | S3 The Choke | the 1-wide choke begs for a Spike Plate | trap snap on trigger |
 | S4 Air Raid | drones sail over your blockers — Snipers or lose | tracer fire; drone kill cadence |
 | S5 High Ground | spellcasters cluster; one Bolt erases a cluster | bolt burst; elevated Casters |
@@ -69,9 +71,10 @@ lose sometimes — note when a loss felt fair vs cheap. Per stage, three passes:
 - Banner rhythm: does WAVE N landing feel like a beat? Star stagger on the stamp?
 - Trap snap: sharp enough? Tar shimmer visible without being noisy?
 - Charm beat: is the 0.5× beat + swirl a *moment*?
-- Audio (deploy thump, kill ticks, leak alarm sound, trap snap, charm chime, wave/victory
-  stings): **N/A by design** — the build is deliberately silent (deviation D-SFX). Skip every
-  audio judgment; the original questions return with the audio.
+- Music: does each act BGM fit its location and leave tactical space? Do S4/S8 switch once into
+	  the correct boss cue without a doubled layer or obvious restart? Does music stop on results
+	  and menu screens? SFX questions (deploy, kill, leak, trap, charm, wave/victory stings) remain
+	  **N/A by design** under D-SFX.
 - Art v2: does the warm road read as "their lane"? Do operators vs enemies separate cleanly
   in a messy fight (flagged from the audit's shot review)? Portrait cards charming?
 
@@ -109,3 +112,10 @@ relayouts live on resize; the playfield sits on a backdrop ring (no bare
 canvas). Two added L7 questions: (1) does high ground read at a glance
 (lift + walls + cast shade), and (2) does the wall-band click behavior
 (cliff selects the high ground) ever surprise you during deploys?
+
+## P16.0 note (deterministic personnel contracts, 2026-08-13)
+
+P16.0 changes no visible screen or battle behavior. Its save/hash/replay/hero identity contracts
+are groundwork for P16.1–P16.5. Continue to use the existing session-only campaign protocol in
+this document; do not record the absence of Continue, Barracks customization, recruitment, or
+permadeath as a defect until their scheduled player-facing phases land.

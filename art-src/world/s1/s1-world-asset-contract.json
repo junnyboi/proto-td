@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "AUI-10",
-  "status": "STAGED_IN_AGENT_D_LANE_RUNTIME_UNBOUND",
+  "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
   "owner": "AGENT D",
   "repository_base_observed": "975261e8e00a20a0b25fe17e7976d743d509c14b",
   "stage": {
@@ -24,9 +24,13 @@
     {"id":"world.s1.ground","role":"passive_floor","native_size":[32,16],"pivot":"top-corner tile convention","protected_center":"must remain quiet and open"},
     {"id":"world.s1.route","role":"route_straight","native_size":[32,16],"pivot":"top-corner tile convention","direction":"west_to_east","protected_center":"must remain open for units and traps"},
     {"id":"world.s1.elevated","role":"elevated_top_and_walls","native_size":[32,24],"pivot":"top-corner tile convention","lift_runtime_px":16,"protected_center":"deployable top remains open"},
-    {"id":"world.s1.backdrop","role":"noninteractive_backdrop_tile","native_size":[32,16],"pivot":"top-corner tile convention","affordance":"must not form a complete playable diamond at review scale"},
+    {"id":"world.s1.backdrop","role":"noninteractive_low_foothill","native_size":[32,16],"pivot":"bottom-center terrain convention","affordance":"irregular mountain silhouette; no complete playable diamond"},
+    {"id":"world.s1.backdrop_ridge","role":"noninteractive_mid_ridge","native_size":[32,24],"pivot":"bottom-center terrain convention","affordance":"layered cliff shelf; no grid line or playable face"},
+    {"id":"world.s1.backdrop_peak","role":"noninteractive_high_peak","native_size":[32,32],"pivot":"bottom-center terrain convention","affordance":"distant angular peak; lower contrast than playable terrain"},
+    {"id":"world.s1.backdrop_mist","role":"noninteractive_mist_ravine","native_size":[32,16],"pivot":"bottom-center terrain convention","affordance":"broken mist bank; no playable face center"},
+    {"id":"world.s1.backdrop_panorama","role":"continuous_alpine_escarpment","native_size":[208,104],"pivot":"exact S1 diamond-bounds convention","affordance":"one noninteractive mountain panorama; no outside-map grid or deployable face"},
     {"id":"world.s1.spawn_landmark","role":"typed_spawn_landmark","native_size":[32,32],"pivot":[16,30],"cell_owner":[0,2],"clearance":"face center, emergence approach, overlays, and contact region remain exposed"},
-    {"id":"world.s1.core_landmark","role":"typed_core_landmark","native_size":[32,32],"pivot":[16,30],"cell_owner":[7,2],"clearance":"face center, route approach, HP/leak attachments, overlays, and contact region remain exposed"},
+    {"id":"world.s1.core_landmark","role":"typed_core_cloud_seal_orrery","native_size":[32,32],"pivot":[16,30],"cell_owner":[7,2],"clearance":"open arc silhouette; face center, route approach, HP/leak attachments, overlays, and contact region remain exposed"},
     {"id":"world.s1.rain_measure","role":"low_decor_candidate","native_size":[16,16],"pivot":[8,14],"placement":"only on later validated non-path anchors; never baked into terrain"},
     {"id":"world.s1.route_notch","role":"optional_route_direction_overlay","native_size":[32,16],"pivot":"tile overlay","direction":"west_to_east","semantics":"neutral cadence only; no reserved colors and no hue-only dependence"}
   ],
@@ -44,12 +48,9 @@
     "post_generation": "deterministic keying, connected-component crop, nearest resample, palette quantization without dither, hard alpha, geometry/pivot/reserved-color QA"
   },
   "non_goals": [
-    "runtime binding",
-    "canonical manifest edits",
     "stage-data edits",
     "simulation or route changes",
-    "auto-discovered scenarios",
-    "human final-art acceptance",
+    "human final-art acceptance outside AUI-10R S1 revision 2",
     "Agent E character assumptions"
   ]
 }

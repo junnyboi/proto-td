@@ -37,6 +37,13 @@ it grows one rule per repeated mistake and never shrinks.
 - Never hand-write `Object(InputEventKey…)` serialization — input actions via a scratch
   `ProjectSettings` script.
 - Never reference a new `class_name` before running `--import` (registry lives in `.godot`).
+- Runtime hot paths that reference a newly introduced `class_name` (especially autoloads and
+  battle-view builders) must explicitly `preload()` that script under a local constant or type
+  alias. A developer
+  pulling new code can retain a valid-but-stale class cache; requiring a manual reimport is not a
+  shipping fix. Fresh clones still run `--import` first. Gate the upgrade path with
+  `scripts/probe_stale_class_registry.sh`; dedicated cache-regression gates must also scan output
+  because Godot may report a fatal parse/autoload error and still exit 0.
 - `--check-only` cannot resolve autoloads — the compile gate for autoload-referencing scripts is
   the boot check + GUT, not `--check-only`.
 - Never override `_process` on a `SceneTree` script — connect to `process_frame`.
@@ -152,11 +159,11 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
-## Audio: music assets reopened; runtime and SFX remain silent
+## Audio: approved runtime music; SFX remains silent
 
-The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner explicitly
-reopened **music asset creation** for the three-act score, so generated music catalogs and
-their QA/provenance are allowed. Do not restore synth SFX or hardcode provisional runtime
-playback before the act/boss routing contract exists. The current playable build remains
-silent, the `sfx_played` telemetry seam stays wired, and any further audio scope requires an
-explicit owner request. See `docs/decisions/D-SFX.md`.
+The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner approved the
+six-cue score and explicitly authorized runtime music. `Music` is the sole catalog-backed
+owner and must retain exactly one `AudioStreamPlayer`: never layer cues, never restart the
+current logical ID, and hard-replace only when the ID changes. Stage act/boss routing lives
+in `StageDef` data. Do not restore synth SFX; the `sfx_played` telemetry seam stays wired.
+See `docs/decisions/D-SFX.md`.

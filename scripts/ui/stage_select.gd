@@ -1,73 +1,177 @@
 extends Control
 
-## Campaign stage select (Phase 10, td-phase-10.md §2.6): a vertical list of
-## the eight campaign stages — honest floor, not a map. Locked rows are
-## disabled Buttons (dimmed by the theme, click = no-op); cleared rows show
-## their best stars as asterisks. Buttons named Stage_<id> for click_view.
-## Rects + labels at the 2x font floor; art is Lane A's.
+## Campaign stage select. Locked rows remain disabled controls; stars and routes
+## remain projections of the existing campaign state.
 
-const FONT_SIZE := 32
-const TITLE_FONT_SIZE := 48
-const HINT_FONT_SIZE := 24
+const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
+var _rows: GridContainer = null
+var _header: GridContainer = null
 
 
 func _ready() -> void:
 	Game.content = self
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
+	shell.name = "CampaignShell"
+	shell.preferred_size = Vector2(900.0, 620.0)
+	add_child(shell)
+	shell.layout_mode_changed.connect(_on_layout_mode_changed)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "CampaignScroll"
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	shell.content_host().add_child(scroll)
+
 	var column := VBoxContainer.new()
 	column.name = "StageColumn"
-	column.set_anchors_preset(Control.PRESET_CENTER)
-	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	column.grow_vertical = Control.GROW_DIRECTION_BOTH
-	column.add_theme_constant_override("separation", 10)
-	add_child(column)
-	var heading := Label.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 8)
+	scroll.add_child(column)
+
+	_header = GridContainer.new()
+	_header.name = "CampaignHeader"
+	_header.columns = 3
+	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header.add_theme_constant_override(&"h_separation", 16)
+	_header.add_theme_constant_override(&"v_separation", 12)
+	column.add_child(_header)
+	var heading := AetheriaLabelType.new()
 	heading.name = "CampaignHeading"
-	heading.text = "Campaign"
-	heading.add_theme_font_size_override("font_size", TITLE_FONT_SIZE)
+	heading.apply_role(&"heading")
+	heading.text = UiCopyType.text(&"ui.campaign.heading", "Campaign")
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(heading)
+	_header.add_child(heading)
+	var hint := AetheriaLabelType.new()
+	hint.name = "NextHint"
+	hint.apply_role(&"detail")
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_header.add_child(hint)
+
+	_rows = GridContainer.new()
+	_rows.name = "StageRows"
+	_rows.columns = 2
+	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rows.add_theme_constant_override(&"h_separation", 8)
+	_rows.add_theme_constant_override(&"v_separation", 8)
+	column.add_child(_rows)
+
 	var next_hint := ""
+	var next_hint_tooltip := ""
+	var enabled_rows: Array[Button] = []
 	for stage_id: StringName in Game.campaign_stage_ids():
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		var unlocked: bool = Game.is_stage_unlocked(stage_id)
-		var row := Button.new()
+		var row := AetheriaButtonType.new()
 		row.name = "Stage_%s" % stage_id
 		row.text = _row_text(stage, unlocked)
+		row.custom_minimum_size = Vector2(44.0, 52.0)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.disabled = not unlocked
-		row.add_theme_font_size_override("font_size", FONT_SIZE)
+		row.apply_role(&"primary" if unlocked else &"disabled")
+		row.set_presentation_text(row.text, _row_presentation_text(stage))
+		row.tooltip_text = row.text
+		if not unlocked:
+			row.focus_mode = Control.FOCUS_NONE
+		else:
+			enabled_rows.append(row)
 		row.pressed.connect(_on_stage_pressed.bind(stage_id))
-		column.add_child(row)
+		_rows.add_child(row)
 		if unlocked and not Game.campaign.stage_stars.has(stage_id):
-			next_hint = stage.intro_hint
-	if not next_hint.is_empty():
-		var hint := Label.new()
-		hint.name = "NextHint"
-		hint.text = next_hint
-		hint.add_theme_font_size_override("font_size", HINT_FONT_SIZE)
-		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		column.add_child(hint)
-	var back := Button.new()
+			next_hint = UiCopyType.stage_title(stage)
+			next_hint_tooltip = UiCopyType.stage_hint(stage)
+
+	if next_hint.is_empty():
+		next_hint = UiCopyType.text(&"ui.staging.next_complete", "Campaign complete")
+	hint.text = next_hint
+	hint.tooltip_text = next_hint_tooltip
+
+	var back := AetheriaButtonType.new()
 	back.name = "BackToStaging"
-	back.text = "Back to Staging"
-	back.add_theme_font_size_override("font_size", FONT_SIZE)
+	back.custom_minimum_size = Vector2(220.0, 81.0)
+	back.apply_role(&"secondary")
+	back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
+	back.set_presentation_text(back.text, UiCopyType.text(&"ui.common.back", "Back"))
+	back.tooltip_text = back.text
 	back.pressed.connect(_on_back_to_staging)
-	column.add_child(back)
+	_header.add_child(back)
+	_wire_focus(enabled_rows, back)
+	_on_layout_mode_changed(shell.layout_mode())
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_back_to_staging()
 
 
 func _row_text(stage: StageDef, unlocked: bool) -> String:
 	var stars := int(Game.campaign.stage_stars.get(stage.id, 0))
 	var suffix := ""
 	if not unlocked:
-		suffix = "  LOCKED"
+		suffix = UiCopyType.text(&"ui.campaign.locked_suffix", "  LOCKED")
 	elif stars > 0:
-		suffix = "  " + "*".repeat(stars)
-	return "%d. %s%s" % [stage.campaign_index, stage.title, suffix]
+		suffix = UiCopyType.format_text(
+			&"ui.campaign.cleared_suffix", "  {stars}",
+			{&"stars": "*".repeat(stars)},
+		)
+	return UiCopyType.format_text(
+		&"ui.campaign.row", "{index}. {title}{status}",
+		{
+			&"index": stage.campaign_index,
+			&"title": UiCopyType.stage_title(stage),
+			&"status": suffix,
+		},
+	)
+
+
+func _row_presentation_text(stage: StageDef) -> String:
+	var stars := int(Game.campaign.stage_stars.get(stage.id, 0))
+	var suffix := ""
+	if stars > 0:
+		suffix = " " + "*".repeat(stars)
+	var title := UiCopyType.stage_title(stage)
+	if title.begins_with("The "):
+		title = title.trim_prefix("The ")
+	return "%d. %s%s" % [stage.campaign_index, title, suffix]
+
+
+func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
+	var focusable := enabled_rows.duplicate()
+	focusable.append(back)
+	for index: int in focusable.size():
+		var current: Button = focusable[index]
+		var previous: Button = focusable[(index - 1 + focusable.size()) % focusable.size()]
+		var next: Button = focusable[(index + 1) % focusable.size()]
+		current.focus_neighbor_top = current.get_path_to(previous)
+		current.focus_previous = current.get_path_to(previous)
+		current.focus_neighbor_bottom = current.get_path_to(next)
+		current.focus_next = current.get_path_to(next)
+	if not focusable.is_empty():
+		focusable[0].grab_focus.call_deferred()
 
 
 func _on_stage_pressed(stage_id: StringName) -> void:
 	Sfx.play("ui_click")
 	Game.selected_stage_id = stage_id
 	Game.open_squad_select()
+
+
+func _on_layout_mode_changed(mode: StringName) -> void:
+	if _header != null:
+		_header.columns = 1 if mode == &"portrait" else 3
+	if _rows != null:
+		_rows.columns = 1 if mode == &"portrait" else 2
 
 
 func _on_back_to_staging() -> void:

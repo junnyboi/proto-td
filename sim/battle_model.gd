@@ -13,7 +13,8 @@ extends RefCounted
 ## A battle is fully described by (stage_id, squad, seed, [[tick, verb,
 ## args...]]) — that tuple is the replay format, the bot format, and the
 ## test format. Verbs: deploy(op_id, cell, facing), retreat(unit_id),
-## trigger_skill(unit_id), place_trap(trap_id, cell), cast(spell_id, target),
+## trigger_skill(unit_id), mend(healer_unit_id, target_unit_id),
+## place_trap(trap_id, cell), cast(spell_id, target),
 ## plus the debug verbs (Phase 8, rule 5 — the overlay is a client of this
 ## dispatcher, never a parallel path): debug_grant_operator(op_id),
 ## debug_remove_operator(op_id), debug_set_dp(value),
@@ -47,6 +48,8 @@ extends RefCounted
 ## (CLAUDE.md ban list).
 
 enum Result { RUNNING, CLEAR, DEFEAT }
+
+const HealingRulesScript := preload("res://sim/healing_rules.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
@@ -87,7 +90,6 @@ var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _paths: Array = []
 var _path_lengths: Array[int] = []
-var _path_cell_set: Dictionary = {}
 var _next_enemy_id: int = 0
 var _next_unit_id: int = 0
 var _next_trap_id: int = 0
@@ -119,8 +121,6 @@ static func create(
 		var cells := stage_def.path_cells(i)
 		model._paths.append(cells)
 		model._path_lengths.append(Pathing.length_units(cells))
-		for cell: Vector2i in cells:
-			model._path_cell_set[cell] = true
 	return model
 
 
@@ -160,6 +160,8 @@ func run_to_terminal(max_ticks: int) -> void:
 func apply_action(action: Array) -> bool:
 	if action.is_empty() or result != Result.RUNNING:
 		return false
+	if typeof(action[0]) != TYPE_STRING_NAME:
+		return false
 	var verb: StringName = action[0]
 	var n := action.size()
 	var ok := false
@@ -170,6 +172,13 @@ func apply_action(action: Array) -> bool:
 			ok = n == 2 and _apply_retreat(int(action[1]))
 		&"trigger_skill":
 			ok = n == 2 and _apply_trigger_skill(int(action[1]))
+		&"mend":
+			if (
+				n == 3
+				and HealingRulesScript.is_valid_id(action[1])
+				and HealingRulesScript.is_valid_id(action[2])
+			):
+				ok = HealingRulesScript.apply(self, int(action[1]), int(action[2]))
 		&"place_trap":
 			ok = n == 3 and _apply_place_trap(action[1], action[2])
 		&"cast":
@@ -213,10 +222,7 @@ func can_deploy_at(op_id: StringName, cell: Vector2i) -> bool:
 	if not is_deployable(op_id):
 		return false
 	var def: OperatorDef = _op_defs[op_id]
-	var tile := stage.tile_at(cell)
-	if def.placement == OperatorDef.Placement.GROUND and tile != StageDef.Tile.GROUND:
-		return false
-	if def.placement == OperatorDef.Placement.ELEVATED and tile != StageDef.Tile.ELEVATED:
+	if not stage.operator_cell_in_domain(def, cell):
 		return false
 	return alive_unit_at(cell) == null
 
@@ -284,10 +290,15 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 ## active_effects until tick + duration_ticks.
 func _apply_trigger_skill(unit_id: int) -> bool:
 	var u := unit_by_id(unit_id)
-	if u == null or not u.is_skill_ready():
+	if (
+		u == null
+		or not u.is_skill_ready()
+		or u.skill_effect == SkillDef.Effect.HEAL_TARGET
+	):
 		return false
 	u.sp = 0
 	u.skill_triggered_tick = tick
+	u.skill_target_unit_id = -1
 	skills_fired += 1
 	match u.skill_effect:
 		SkillDef.Effect.DP_BURST:
@@ -338,9 +349,7 @@ func is_trap_placeable(trap_id: StringName) -> bool:
 func can_place_trap_at(trap_id: StringName, cell: Vector2i) -> bool:
 	if not is_trap_placeable(trap_id):
 		return false
-	if stage.tile_at(cell) != StageDef.Tile.GROUND:
-		return false
-	if not _path_cell_set.has(cell):
+	if not stage.trap_cell_in_domain(cell):
 		return false
 	return alive_trap_at(cell) == null
 
@@ -390,17 +399,11 @@ func cast_target_valid(spell_id: StringName, target: Variant) -> bool:
 	if not spell_book.has_spell(spell_id):
 		return false
 	var def: SpellDef = spell_book.def_of(spell_id)
-	if def.target_kind == SpellDef.TargetKind.CELL:
-		return _cell_target_valid(target)
-	return _enemy_target_valid(def, target)
-
-
-func _cell_target_valid(target: Variant) -> bool:
-	if typeof(target) != TYPE_VECTOR2I:
+	if not stage.spell_target_in_domain(def, target):
 		return false
-	var cell: Vector2i = target
-	var size := stage.grid_size()
-	return cell.x >= 0 and cell.y >= 0 and cell.x < size.x and cell.y < size.y
+	if def.target_kind == SpellDef.TargetKind.CELL:
+		return true
+	return _enemy_target_valid(def, target)
 
 
 func _enemy_target_valid(def: SpellDef, target: Variant) -> bool:
@@ -499,7 +502,7 @@ func _apply_debug_remove_operator(op_id: StringName) -> bool:
 
 
 func _apply_debug_set_dp(value: int) -> bool:
-	if value < 0 or value > config.dp_cap:
+	if not config.debug_dp_value_valid(value):
 		return false
 	dp_debug_adjusted += value - dp
 	dp = value
@@ -507,7 +510,7 @@ func _apply_debug_set_dp(value: int) -> bool:
 
 
 func _apply_debug_set_base_hp(value: int) -> bool:
-	if value < 0:
+	if not config.debug_base_hp_value_valid(value):
 		return false
 	base_hp = value
 	return true

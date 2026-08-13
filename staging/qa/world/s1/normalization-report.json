@@ -1,310 +1,422 @@
 {
-  "schema_version": 1,
-  "package": "AUI-10",
-  "status": "STAGED_IN_AGENT_D_LANE_RUNTIME_UNBOUND",
-  "repository_base_observed": "975261e8e00a20a0b25fe17e7976d743d509c14b",
-  "contract": {
-    "path": "art-src/world/s1/s1-world-asset-contract.json",
-    "sha256": "9b8d67bbed8e0ec94ad48f807c30fed766e74cc50c5f38c80a9e80a89fe5ecf5"
-  },
-  "source_ledger": {
-    "path": "art-src/world/s1/gpt-image-2-source-ledger.json",
-    "sha256": "ab26c64e32a3d640d3569d7e2e314017ac3ee3cc686bb50fd5aa91457c49faf8"
-  },
-  "source_palette_report": {
-    "path": "art-src/world/s1/s1-source-palettes.json",
-    "sha256": "350bcf69b6d4585db52826d74c24a970c32490bdd8c38d69dad3158fd7cde4d6"
-  },
-  "normalizer": {
-    "path": "tools/art_pipeline/world/normalize_s1_world.py",
-    "sha256": "3ff303db2aac77f49ebb8632e0fe445d83bc469df36c4eb7436fbcf93a805c04"
-  },
-  "pipeline": "GPT Image 2 source identity -> deterministic source-palette derivation -> contract-authored native geometry -> hard alpha/native PNGs -> provenance + QA boards",
-  "raw_source_retention": {
-    "raw_rasters": "external owner-approval archive; intentionally excluded from Git to avoid 59 MB of duplicate binary churn",
-    "audit_key": "filename + exact SHA-256 + dimensions + source mode",
-    "regeneration": "use the checked-in prompt contract and approved reference hashes; stochastic source regeneration never overrides an accepted native asset without a new review"
-  },
-  "derived_palette": {
-    "outline": "#242420",
-    "metal_dark": "#31312D",
-    "metal_mid": "#494945",
-    "metal_light": "#666662",
-    "ground_dark": "#6F6454",
-    "ground_mid": "#867B69",
-    "ground_light": "#978D7C",
-    "ground_high": "#A69D8F",
-    "route_dark": "#715734",
-    "route_mid": "#8C704C",
-    "route_light": "#9F8463",
-    "canvas_dark": "#71604F",
-    "canvas_mid": "#958371",
-    "canvas_light": "#A8998A",
-    "timber_dark": "#5D4218",
-    "timber_mid": "#7B5E36",
-    "timber_light": "#967A55",
-    "ceramic_dark": "#5B5449",
-    "ceramic_mid": "#7B7469",
-    "ceramic_light": "#979086",
-    "bronze_dark": "#684B1F",
-    "bronze_mid": "#896A3F",
-    "bronze_light": "#A88962",
-    "water_dark": "#2C2C28",
-    "water_mid": "#474743",
-    "backdrop_void": "#181A1F"
-  },
   "assets": {
-    "world.s1.ground": {
-      "path": "staging/assets/world/s1/s1-ground.png",
-      "sha256": "1dad2adea323d311f0afb0526a2d9f7195f807055a13842dae07638c1425d7af",
-      "size": [
-        32,
-        16
-      ],
+    "world.s1.backdrop": {
       "expected_size": [
         32,
         16
       ],
       "geometry_gate": "PASS",
       "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 256,
       "opaque_bbox": [
-        1,
         0,
-        31,
+        4,
+        32,
         16
       ],
+      "opaque_pixels": 282,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-backdrop.png",
+      "reserved_color_gate": "PASS",
       "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
+        "#41A6F6": 0,
+        "#F4F4F4": 0
       },
-      "reserved_color_gate": "PASS"
+      "sha256": "6a1cb0457a2fa6b33a2039c34092c17a026a14e86127021b3a870e782df6c2bf",
+      "size": [
+        32,
+        16
+      ]
     },
-    "world.s1.route": {
-      "path": "staging/assets/world/s1/s1-route.png",
-      "sha256": "c852a1ed7de5b81d4890afa7c2b077f354b57c2d0956ff9f29d1c3890c276ecd",
-      "size": [
-        32,
-        16
-      ],
+    "world.s1.backdrop_mist": {
       "expected_size": [
         32,
         16
       ],
       "geometry_gate": "PASS",
       "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 256,
       "opaque_bbox": [
-        1,
         0,
-        31,
+        5,
+        32,
         16
       ],
+      "opaque_pixels": 249,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-backdrop-mist.png",
+      "reserved_color_gate": "PASS",
       "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
+        "#41A6F6": 0,
+        "#F4F4F4": 0
       },
-      "reserved_color_gate": "PASS"
+      "sha256": "d2c16aa40595619b487e494531036ab95964b4ac9647c6be6ba7d09dadb89800",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.s1.backdrop_panorama": {
+      "expected_size": [
+        208,
+        104
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        0,
+        0,
+        208,
+        104
+      ],
+      "opaque_pixels": 21632,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-backdrop-panorama.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "b5027513bf0607f0a741fbcd0e38663d6dbef84cc99013f81dbe8386da584f81",
+      "size": [
+        208,
+        104
+      ]
+    },
+    "world.s1.backdrop_peak": {
+      "expected_size": [
+        32,
+        32
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        0,
+        3,
+        32,
+        32
+      ],
+      "opaque_pixels": 568,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-backdrop-peak.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "5f0b38d4706b1575e190476a2a2b1966af483f8a92cfc5d9a9e8aeef2b80b27d",
+      "size": [
+        32,
+        32
+      ]
+    },
+    "world.s1.backdrop_ridge": {
+      "expected_size": [
+        32,
+        24
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        0,
+        4,
+        32,
+        24
+      ],
+      "opaque_pixels": 478,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-backdrop-ridge.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "6864786e058b4158ec40bba9521cf80df2213c1a7a0f7b75b4d5ca5f46241625",
+      "size": [
+        32,
+        24
+      ]
+    },
+    "world.s1.core_landmark": {
+      "expected_size": [
+        32,
+        32
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        3,
+        1,
+        30,
+        32
+      ],
+      "opaque_pixels": 481,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-core-landmark.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "8d6276cc05dc04c78cb62b6b998388962d657cc417f28dbeeb3b715a08446787",
+      "size": [
+        32,
+        32
+      ]
     },
     "world.s1.elevated": {
+      "expected_size": [
+        32,
+        24
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        24
+      ],
+      "opaque_pixels": 501,
+      "partial_alpha_pixels": 0,
       "path": "staging/assets/world/s1/s1-elevated.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
       "sha256": "e25f601d850f8fb5ae5b32b840415dbad31171731579da430a701b00f36ed43d",
       "size": [
         32,
         24
-      ],
+      ]
+    },
+    "world.s1.ground": {
       "expected_size": [
         32,
-        24
+        16
       ],
       "geometry_gate": "PASS",
       "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 501,
       "opaque_bbox": [
         1,
         0,
         31,
-        24
+        16
       ],
+      "opaque_pixels": 256,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-ground.png",
+      "reserved_color_gate": "PASS",
       "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
+        "#41A6F6": 0,
+        "#F4F4F4": 0
       },
-      "reserved_color_gate": "PASS"
-    },
-    "world.s1.backdrop": {
-      "path": "staging/assets/world/s1/s1-backdrop.png",
-      "sha256": "592b2295edab8ced4958d5e3dff5a09bfd0efef7e2a7bba550591dfaa5f34bb4",
+      "sha256": "1dad2adea323d311f0afb0526a2d9f7195f807055a13842dae07638c1425d7af",
       "size": [
         32,
         16
-      ],
-      "expected_size": [
-        32,
-        16
-      ],
-      "geometry_gate": "PASS",
-      "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 136,
-      "opaque_bbox": [
-        1,
-        5,
-        32,
-        15
-      ],
-      "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
-      },
-      "reserved_color_gate": "PASS"
-    },
-    "world.s1.spawn_landmark": {
-      "path": "staging/assets/world/s1/s1-spawn-landmark.png",
-      "sha256": "e4172fc2a33d68e063a742b44ae221159762dee74b6a20874395690e73f3a22d",
-      "size": [
-        32,
-        32
-      ],
-      "expected_size": [
-        32,
-        32
-      ],
-      "geometry_gate": "PASS",
-      "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 448,
-      "opaque_bbox": [
-        3,
-        3,
-        32,
-        31
-      ],
-      "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
-      },
-      "reserved_color_gate": "PASS"
-    },
-    "world.s1.core_landmark": {
-      "path": "staging/assets/world/s1/s1-core-landmark.png",
-      "sha256": "805e7ee2f01ba4e8770f27bbfdccf8ffbbcaff90791b849bbf915b93ecdd111b",
-      "size": [
-        32,
-        32
-      ],
-      "expected_size": [
-        32,
-        32
-      ],
-      "geometry_gate": "PASS",
-      "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 547,
-      "opaque_bbox": [
-        4,
-        4,
-        31,
-        31
-      ],
-      "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
-      },
-      "reserved_color_gate": "PASS"
+      ]
     },
     "world.s1.rain_measure": {
-      "path": "staging/assets/world/s1/s1-rain-measure.png",
-      "sha256": "fc8d346c0f129ea912fa216aa9ee53b4c78f32be68ff2cb9a1c771f8a9051dcf",
-      "size": [
-        16,
-        16
-      ],
       "expected_size": [
         16,
         16
       ],
       "geometry_gate": "PASS",
       "hard_alpha_gate": "PASS",
-      "partial_alpha_pixels": 0,
-      "opaque_pixels": 100,
       "opaque_bbox": [
         2,
         4,
         14,
         15
       ],
+      "opaque_pixels": 100,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-rain-measure.png",
+      "reserved_color_gate": "PASS",
       "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
+        "#41A6F6": 0,
+        "#F4F4F4": 0
       },
-      "reserved_color_gate": "PASS"
-    },
-    "world.s1.route_notch": {
-      "path": "staging/assets/world/s1/s1-route-notch.png",
-      "sha256": "b31be5a9a001c8c9662ce017ed7853f9872313204d4567a6f050dfa1bc12f8ba",
+      "sha256": "fc8d346c0f129ea912fa216aa9ee53b4c78f32be68ff2cb9a1c771f8a9051dcf",
       "size": [
-        32,
+        16,
         16
-      ],
+      ]
+    },
+    "world.s1.route": {
       "expected_size": [
         32,
         16
       ],
       "geometry_gate": "PASS",
       "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        1,
+        0,
+        31,
+        16
+      ],
+      "opaque_pixels": 256,
       "partial_alpha_pixels": 0,
-      "opaque_pixels": 42,
+      "path": "staging/assets/world/s1/s1-route.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "c852a1ed7de5b81d4890afa7c2b077f354b57c2d0956ff9f29d1c3890c276ecd",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.s1.route_notch": {
+      "expected_size": [
+        32,
+        16
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
       "opaque_bbox": [
         7,
         4,
         26,
         15
       ],
+      "opaque_pixels": 42,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-route-notch.png",
+      "reserved_color_gate": "PASS",
       "reserved_exact_pixel_counts": {
-        "#F4F4F4": 0,
-        "#41A6F6": 0
+        "#41A6F6": 0,
+        "#F4F4F4": 0
       },
-      "reserved_color_gate": "PASS"
+      "sha256": "b31be5a9a001c8c9662ce017ed7853f9872313204d4567a6f050dfa1bc12f8ba",
+      "size": [
+        32,
+        16
+      ]
+    },
+    "world.s1.spawn_landmark": {
+      "expected_size": [
+        32,
+        32
+      ],
+      "geometry_gate": "PASS",
+      "hard_alpha_gate": "PASS",
+      "opaque_bbox": [
+        3,
+        3,
+        32,
+        31
+      ],
+      "opaque_pixels": 448,
+      "partial_alpha_pixels": 0,
+      "path": "staging/assets/world/s1/s1-spawn-landmark.png",
+      "reserved_color_gate": "PASS",
+      "reserved_exact_pixel_counts": {
+        "#41A6F6": 0,
+        "#F4F4F4": 0
+      },
+      "sha256": "e4172fc2a33d68e063a742b44ae221159762dee74b6a20874395690e73f3a22d",
+      "size": [
+        32,
+        32
+      ]
     }
   },
   "contact_sheet": {
-    "path": "staging/qa/world/s1/s1-world-contact-sheet.png",
-    "sha256": "c613a42cfe3d3f8972e4cbeca10e35ce3595239df7b524f96761c6c18afc7728",
+    "path": "staging/qa/world/s1/s1-revision-v2-contact-sheet.png",
+    "sha256": "9ee105037bc6b4765bb2b0f8a8decda123a18047544d47c949da189e95aebd41",
     "size": [
-      960,
-      440
+      1440,
+      240
     ]
   },
+  "contract": {
+    "path": "art-src/world/s1/s1-world-asset-contract.json",
+    "sha256": "3c151deb528a68769d0a06268abe5117d15bcee8c04222024c8ba73cac21bc3e"
+  },
+  "derived_palette": {
+    "backdrop_void": "#181A1F",
+    "bronze_dark": "#684B1F",
+    "bronze_light": "#A88962",
+    "bronze_mid": "#896A3F",
+    "canvas_dark": "#71604F",
+    "canvas_light": "#A8998A",
+    "canvas_mid": "#958371",
+    "ceramic_dark": "#5B5449",
+    "ceramic_light": "#979086",
+    "ceramic_mid": "#7B7469",
+    "ground_dark": "#6F6454",
+    "ground_high": "#A69D8F",
+    "ground_light": "#978D7C",
+    "ground_mid": "#867B69",
+    "metal_dark": "#31312D",
+    "metal_light": "#666662",
+    "metal_mid": "#494945",
+    "outline": "#242420",
+    "route_dark": "#715734",
+    "route_light": "#9F8463",
+    "route_mid": "#8C704C",
+    "timber_dark": "#5D4218",
+    "timber_light": "#967A55",
+    "timber_mid": "#7B5E36",
+    "water_dark": "#2C2C28",
+    "water_mid": "#474743"
+  },
+  "final_art_acceptance": "POSEIDON_APPROVED_AUI_10R_REVISION_2",
+  "human_approval": {
+    "path": "docs/media/AUI-10R-REVISION-2-HUMAN-APPROVAL.json",
+    "sha256": "a21755ce4e761b51f903d07861d154ae5c618cb4ccabf5b31f652dc8167f2c83"
+  },
+  "machine_gate": "PASS",
+  "normalizer": {
+    "path": "tools/art_pipeline/world/generate_s1_revision_v2.py",
+    "sha256": "1bfd3a2d2dcd35627a3f5d97462e06a8155100823b18cd0cbf19b330273a42db"
+  },
+  "package": "AUI-10",
+  "pipeline": "GPT Image 2 owner-approved concepts -> deterministic contract-native synthesis -> hard alpha/runtime PNGs -> provenance + QA",
+  "raw_source_retention": {
+    "audit_key": "filename + exact SHA-256 + dimensions + source mode",
+    "raw_rasters": "external owner-approval archive; intentionally excluded from Git to avoid 59 MB of duplicate binary churn",
+    "regeneration": "use the checked-in prompt contract and approved reference hashes; stochastic source regeneration never overrides an accepted native asset without a new review"
+  },
+  "repository_base_observed": "975261e8e00a20a0b25fe17e7976d743d509c14b",
+  "runtime_binding": "BOUND_AGENT_D_S1_PRESENTATION",
+  "schema_version": 1,
+  "source_ledger": {
+    "path": "art-src/world/s1/gpt-image-2-source-ledger.json",
+    "sha256": "ab26c64e32a3d640d3569d7e2e314017ac3ee3cc686bb50fd5aa91457c49faf8"
+  },
+  "source_only_rejections": {
+    "s1-backdrop.png": "raw silhouette rejected as false-playable affordance; deterministic non-diamond fragments used",
+    "s1-route-notch.png": "raw full-face/four-arrow silhouette rejected; deterministic exactly-three notch overlay used"
+  },
+  "source_palette_report": {
+    "path": "art-src/world/s1/s1-source-palettes.json",
+    "sha256": "350bcf69b6d4585db52826d74c24a970c32490bdd8c38d69dad3158fd7cde4d6"
+  },
   "stage_value_board": {
+    "act_i_lstar_gate": "PASS",
+    "measurement_note": "Concept/staged raster feasibility only; final runtime measurement remains required.",
+    "median_cie_lstar": 52.124,
     "stage_mock": {
       "path": "staging/qa/world/s1/s1-stage-mock.png",
       "sha256": "cbf7ba3ddff8622e7e8760642e28018b35172444fe6265d406f52fb726881bf5"
     },
     "surface_mask": {
       "path": "staging/qa/world/s1/s1-playable-surface-mask.png",
-      "sha256": "eeffca2cd8830a66d234f10b14b9e93e2386143e247ad7c3bb3b55c6cbff2928",
-      "pixel_count_native": 10240
+      "pixel_count_native": 10240,
+      "sha256": "eeffca2cd8830a66d234f10b14b9e93e2386143e247ad7c3bb3b55c6cbff2928"
     },
-    "median_cie_lstar": 52.124,
-    "act_i_lstar_gate": "PASS",
+    "warm_direct_gate": "PASS",
     "warm_direct_share": 0.667,
     "warm_direct_target": [
       0.55,
       0.7
-    ],
-    "warm_direct_gate": "PASS",
-    "measurement_note": "Concept/staged raster feasibility only; final runtime measurement remains required."
+    ]
   },
-  "source_only_rejections": {
-    "s1-backdrop.png": "raw silhouette rejected as false-playable affordance; deterministic non-diamond fragments used",
-    "s1-route-notch.png": "raw full-face/four-arrow silhouette rejected; deterministic exactly-three notch overlay used"
-  },
-  "machine_gate": "PASS",
-  "final_art_acceptance": "UNSET_HUMAN_ONLY",
-  "runtime_binding": "UNBOUND_AGENT_F_SEAM",
-  "writes_owned_staging_only": true
+  "status": "RUNTIME_INTEGRATED_MACHINE_CONFORMANT_HUMAN_FINAL_ACCEPTED",
+  "writes_owned_staging_only": false
 }

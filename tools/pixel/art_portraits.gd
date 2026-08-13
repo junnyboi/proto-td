@@ -5,7 +5,7 @@ extends RefCounted
 ## independent channels: hair silhouette (the strongest lever), signature
 ## accent (class family + iris color), class signifier on the shoulder,
 ## expression keyword (eyes + brows + mouth). Roster spread allocated across
-## ten distinct archetypes so the cast never collapses to one face.
+## eleven distinct archetypes so the cast never collapses to one face.
 ## Compositing order: base bust -> features (brows/eyes/nose/mouth) ->
 ## hair on top -> class signifier -> outline pass.
 
@@ -238,6 +238,22 @@ const HAIR := {
 		"..............hhHHh",
 		"................hhh",
 	],
+	# pale braided crown and hanging green locks (watchful field healer)
+	&"witch_doctor_1":
+	[
+		"..........HH..HH",
+		".........hHHHHHHh",
+		"........HHHGGGHHHh",
+		".......HHHHHHHHHHHh",
+		".......HHHhhhhhHHHhh",
+		".......HHh.....hHHhh",
+		".......Hh.......hHHh",
+		".......Hh.......hHHh",
+		".......Hh.......hHHh",
+		".......hh.......hhhh",
+		".......hh........hhh",
+		"........h.........hh",
+	],
 }
 
 # --- class signifiers, 8x8, stamped on the left shoulder --------------------
@@ -253,6 +269,8 @@ const SIGNIFIERS := {
 	["...oo...", ".o.oo.o.", "..o..o..", "oo.WW.oo", "oo.WW.oo", "..o..o..", ".o.oo.o.", "...oo..."],
 	OperatorDef.OpClass.CASTER:
 	["...ww...", "..wCCw..", ".wCCCCw.", ".wCCCCw.", "..wCCw..", "...ww...", ".w....w.", ""],
+	OperatorDef.OpClass.HEALER:
+	["...AA...", "...AA...", ".AAAAAA.", ".AAAAAA.", "...AA...", "...AA...", "........", ""],
 }
 
 ## Per-operator identity sheets: expression keyword -> feature picks.
@@ -268,6 +286,7 @@ const SHEETS := {
 	&"sniper_2": {"eyes": "sharp", "brows": "angled", "mouth": "frown"},
 	&"caster_1": {"eyes": "open", "brows": "raised", "mouth": "smile", "blush": true},
 	&"caster_2": {"eyes": "lidded", "brows": "flat", "mouth": "firm"},
+	&"witch_doctor_1": {"eyes": "soft", "brows": "gentle", "mouth": "soft"},
 }
 
 const GLINT_EYES: Array[String] = ["open", "sharp", "stern"]

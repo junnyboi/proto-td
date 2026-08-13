@@ -10,6 +10,9 @@ extends Resource
 ## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
 ## (td-phase-6-7.md §2.3). Empty means one window covering the whole battle;
 ## non-empty must be strictly ascending and start at 0 (stage_lint).
+## Music routing is presentation metadata: act selects the catalog pair;
+## boss_wave_index -1 means BGM for the whole battle, otherwise the view
+## hard-switches to the paired boss cue at that wave window.
 
 enum Tile { VOID, GROUND, ELEVATED, SPAWN, BASE, BLOCKED }
 
@@ -28,8 +31,11 @@ const TILE_CHARS := {
 @export var paths: Array[PackedVector2Array] = []
 @export var waves: Array[Dictionary] = []
 @export var wave_starts: PackedInt32Array = []
+@export_range(1, 3) var music_act: int = 1
+@export var music_boss_wave_index: int = -1
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
+@export var recovery_roster: Array[StringName] = []
 # campaign metadata (Phase 10, td-phase-10.md §2.1): rewards granted on
 # first clear ({kind: operator|trap|spell, id}); campaign_index -1 = not a
 # campaign stage (campaign order = ascending index, never scan order);
@@ -67,3 +73,28 @@ func path_cells(idx: int) -> Array[Vector2i]:
 	for v: Vector2 in paths[idx]:
 		out.append(Vector2i(v))
 	return out
+
+
+func operator_cell_in_domain(operator_def: OperatorDef, cell: Vector2i) -> bool:
+	if operator_def.placement == OperatorDef.Placement.GROUND:
+		return tile_at(cell) == Tile.GROUND
+	return tile_at(cell) == Tile.ELEVATED
+
+
+func trap_cell_in_domain(cell: Vector2i) -> bool:
+	if tile_at(cell) != Tile.GROUND:
+		return false
+	for path_index: int in paths.size():
+		if path_cells(path_index).has(cell):
+			return true
+	return false
+
+
+func spell_target_in_domain(spell_def: SpellDef, target: Variant) -> bool:
+	if spell_def.target_kind == SpellDef.TargetKind.CELL:
+		if typeof(target) != TYPE_VECTOR2I:
+			return false
+		var cell: Vector2i = target
+		var size := grid_size()
+		return cell.x >= 0 and cell.y >= 0 and cell.x < size.x and cell.y < size.y
+	return typeof(target) == TYPE_INT and int(target) >= 0

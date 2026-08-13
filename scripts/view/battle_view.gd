@@ -8,6 +8,7 @@ extends Node2D
 ## them via the asset manifest without touching this flow.
 
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
+const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 
 const HUD_FONT_SIZE := 32
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -23,6 +24,13 @@ const HUD_Z := 70
 ## Full-canvas rect behind the terrain + backdrop ring (IsoGridBuilder):
 ## no bare empty canvas.
 const BACKDROP_COLOR := Color("11131f")
+const ENEMY_COLOR := Color("ef7d57")
+const AERIAL_PX := 24.0
+const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
+## grounded shadow = 20x10 face diamond (0.3125 of a face); aerial casts
+## the same diamond 10px further down (td-phase-12 pin)
+const SHADOW_FACE_SCALE := 0.3125
+const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
 const UNIT_PX := 64.0  # 32px art at the pinned 2x scale
 const HP_BAR_HEIGHT := 5.0
@@ -32,13 +40,6 @@ const SP_BAR_BG := Color("20263a")
 const SP_BAR_FILL := Color("f4b41b")
 const SP_FULL_FLASH := Color("f4f4f4")
 const PORTRAIT_FLASH_PX := 96.0
-const OP_CLASS_COLORS := {
-	OperatorDef.OpClass.VANGUARD: Color("38b764"),
-	OperatorDef.OpClass.GUARD: Color("a7f070"),
-	OperatorDef.OpClass.DEFENDER: Color("257179"),
-	OperatorDef.OpClass.SNIPER: Color("ffcd75"),
-	OperatorDef.OpClass.CASTER: Color("5d275d"),
-}
 const CHEVRON_COLOR := Color("f4f4f4")
 const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
@@ -131,7 +132,8 @@ func _ready() -> void:
 	Game.current_battle = model
 	Game.content = self
 	_stage = stage
-	_build_grid(stage)
+	if not _build_grid(stage):
+		return
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
 	_juice = JuiceLayer.new()
 	_juice.name = "JuiceLayer"
@@ -237,9 +239,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _map_navigation_blocked() -> bool:
 	var deploy_cursor := find_child("CursorRect", true, false) as CanvasItem
 	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
+	var deploy_bar := find_child("DeployBar", true, false) as DeployBar
 	return (
 		(deploy_cursor != null and deploy_cursor.visible)
 		or (spell_cursor != null and spell_cursor.visible)
+		or (deploy_bar != null and deploy_bar.is_mend_targeting())
 	)
 
 
@@ -543,7 +547,7 @@ func _load_catalog(dir_path: String, script_class: String) -> Dictionary:
 	return defs
 
 
-func _build_grid(stage: StageDef) -> void:
+func _build_grid(stage: StageDef) -> bool:
 	_backdrop = ColorRect.new()
 	_backdrop.name = "Backdrop"
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -553,13 +557,13 @@ func _build_grid(stage: StageDef) -> void:
 	add_child(_backdrop)
 	_grid_root = Node2D.new()
 	_grid_root.name = "GridRoot"
-	var size := stage.grid_size()
 	var viewport := get_viewport_rect().size
 	_map_nav.relayout(stage, viewport)
 	_apply_map_transform()
 	add_child(_grid_root)
-	IsoGridBuilder.build_backdrop_ring(_grid_root, size)
-	IsoGridBuilder.build_terrain(_grid_root, stage)
+	if not IsoGridBuilder.build_stage(_grid_root, stage):
+		return false
+	return true
 
 
 func _apply_map_transform() -> void:
@@ -832,10 +836,17 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	_skill_seen_tick[u.id] = u.skill_triggered_tick
 	Sfx.play(String(u.skill_id))
 	if _juice != null:
-		_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
+		if u.skill_effect == SkillDef.Effect.HEAL_TARGET and u.skill_target_unit_id >= 0:
+			var target := model.unit_by_id(u.skill_target_unit_id)
+			if target != null:
+				_juice.heal_burst(
+					IsoProjection.face_center(target.cell, _is_lifted_cell(target.cell))
+				)
+		else:
+			_juice.skill_burst(IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell)))
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	_portrait_flash.color = OP_CLASS_COLORS[op_class]
+	_portrait_flash.color = BattlePalette.OPERATOR_CLASS[op_class]
 	_portrait_flash.visible = true
 	_portrait_flash_frames = cfg.skill_flash_frames
 
@@ -899,7 +910,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		sprite.flip_h = u.facing == 2
 		rect.add_child(sprite)
 	else:
-		rect.color = OP_CLASS_COLORS[op_class]
+		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
 	# feet on the face: bottom-center anchored at the node origin
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)

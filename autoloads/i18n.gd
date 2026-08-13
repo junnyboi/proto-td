@@ -1,12 +1,14 @@
 extends Node
 
-## TD-012 presentation-only localization seam. Locale and catalog data never enter
-## simulation, save, hash, replay, or telemetry state.
+## Presentation-only localization seam. Locale and catalog data never enter
+## simulation, save, hash, replay, bot input, or telemetry state.
 
 signal locale_changed(locale_id: StringName)
 
 const DEFAULT_LOCALE := &"en-US"
 const CATALOG_PATH := "res://localization/en-US.json"
+const ROOT_KEYS := ["locale", "entries"]
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _locale := DEFAULT_LOCALE
 var _entries: Dictionary = {}
@@ -24,6 +26,21 @@ func t(key: StringName, fallback: String) -> String:
 	if value is String and not String(value).is_empty():
 		return String(value)
 	return fallback
+
+
+func format_text(key: StringName, fallback: String, args: Dictionary) -> String:
+	var expected_all := UiCopyType.placeholder_types()
+	var expected: Dictionary = expected_all.get(key, {})
+	if not _valid_args(key, fallback, args, expected):
+		return fallback
+	var template := t(key, fallback)
+	if _placeholder_names(template) != _placeholder_names(fallback):
+		push_error("I18n.format_text: catalog placeholder drift for %s" % key)
+		return fallback
+	for raw_name: Variant in expected:
+		var name := StringName(raw_name)
+		template = template.replace("{%s}" % name, str(args[name]))
+	return template
 
 
 func locale() -> StringName:
@@ -48,19 +65,143 @@ func set_locale(locale_id: StringName) -> bool:
 func reload_catalog() -> bool:
 	var file := FileAccess.open(CATALOG_PATH, FileAccess.READ)
 	if file == null:
-		_entries = {}
 		return false
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	var catalog := parse_catalog_text(file.get_as_text())
+	if catalog.is_empty():
+		return false
+	_entries = (catalog["entries"] as Dictionary).duplicate(true)
+	return true
+
+
+func catalog_keys() -> PackedStringArray:
+	var keys := PackedStringArray()
+	for raw_key: Variant in _entries:
+		keys.append(String(raw_key))
+	keys.sort()
+	return keys
+
+
+static func parse_catalog_text(text: String) -> Dictionary:
+	var root_keys: Array[String] = []
+	var entry_keys: Array[String] = []
+	for line: String in text.split("\n"):
+		var root_key := _line_key(line, "  ")
+		if not root_key.is_empty():
+			if root_keys.has(root_key):
+				return {}
+			root_keys.append(root_key)
+			continue
+		var entry_key := _line_key(line, "    ")
+		if not entry_key.is_empty():
+			if entry_keys.has(entry_key):
+				return {}
+			entry_keys.append(entry_key)
+	if root_keys != ROOT_KEYS or entry_keys.is_empty():
+		return {}
+	var sorted_keys := entry_keys.duplicate()
+	sorted_keys.sort()
+	if sorted_keys != entry_keys:
+		return {}
+	var parsed: Variant = JSON.parse_string(text)
 	if not parsed is Dictionary:
-		_entries = {}
-		return false
+		return {}
 	var catalog := parsed as Dictionary
+	if catalog.keys() != ROOT_KEYS:
+		return {}
 	if String(catalog.get("locale", "")) != String(DEFAULT_LOCALE):
-		_entries = {}
-		return false
+		return {}
 	var raw_entries: Variant = catalog.get("entries", {})
 	if not raw_entries is Dictionary:
-		_entries = {}
+		return {}
+	var entries := raw_entries as Dictionary
+	if entries.size() != entry_keys.size():
+		return {}
+	for key: String in entry_keys:
+		var value: Variant = entries.get(key)
+		if not value is String or String(value).is_empty():
+			return {}
+	if not _is_canonical_catalog_text(text, entries):
+		return {}
+	return catalog
+
+
+static func _line_key(line: String, indent: String) -> String:
+	if not line.begins_with(indent + "\""):
+		return ""
+	if indent == "  " and line.begins_with("    \""):
+		return ""
+	var key_end := line.find("\":")
+	if key_end <= indent.length() + 1:
+		return ""
+	return line.substr(indent.length() + 1, key_end - indent.length() - 1)
+
+
+static func _is_canonical_catalog_text(text: String, entries: Dictionary) -> bool:
+	if not text.ends_with("\n") or text.contains("\r"):
 		return false
-	_entries = (raw_entries as Dictionary).duplicate(true)
+	var lines := text.trim_suffix("\n").split("\n")
+	if lines.size() != entries.size() + 5:
+		return false
+	if lines[0] != "{" or lines[1] != '  "locale": "en-US",':
+		return false
+	if lines[2] != '  "entries": {' or lines[-2] != "  }" or lines[-1] != "}":
+		return false
+	var keys: Array = entries.keys()
+	keys.sort()
+	for index: int in keys.size():
+		var key := String(keys[index])
+		var value := String(entries[keys[index]])
+		var comma := "," if index < keys.size() - 1 else ""
+		var expected := "    %s: %s%s" % [
+			JSON.stringify(key), JSON.stringify(value), comma,
+		]
+		if lines[index + 3] != expected:
+			return false
 	return true
+
+
+func _valid_args(
+		key: StringName, fallback: String, args: Dictionary, expected: Dictionary,
+	) -> bool:
+	var expected_names := _string_keys(expected)
+	var actual_names := _string_keys(args)
+	if expected_names != actual_names:
+		push_error("I18n.format_text: argument set mismatch for %s" % key)
+		return false
+	if _placeholder_names(fallback) != expected_names:
+		push_error("I18n.format_text: fallback placeholder mismatch for %s" % key)
+		return false
+	for raw_name: Variant in expected:
+		var name := StringName(raw_name)
+		var expected_type := StringName(expected[raw_name])
+		var value: Variant = args.get(name)
+		if expected_type == &"int" and typeof(value) != TYPE_INT:
+			push_error("I18n.format_text: expected int %s.%s" % [key, name])
+			return false
+		if expected_type == &"String" and typeof(value) != TYPE_STRING:
+			push_error("I18n.format_text: expected String %s.%s" % [key, name])
+			return false
+	return true
+
+
+func _placeholder_names(text: String) -> Array[String]:
+	var regex := RegEx.new()
+	regex.compile("\\{([A-Za-z][A-Za-z0-9_]*)\\}")
+	var names: Array[String] = []
+	for result: RegExMatch in regex.search_all(text):
+		var name := result.get_string(1)
+		if names.has(name):
+			return ["<duplicate>"]
+		names.append(name)
+	names.sort()
+	return names
+
+
+func _string_keys(values: Dictionary) -> Array[String]:
+	var names: Array[String] = []
+	for raw_name: Variant in values:
+		if typeof(raw_name) != TYPE_STRING_NAME:
+			return ["<non-StringName>"]
+		names.append(String(raw_name))
+	names.sort()
+	return names

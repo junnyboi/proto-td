@@ -85,9 +85,9 @@ func test_grant_validation() -> void:
 		"granted sniper still rejects GROUND tiles (already fielded anyway)",
 	)
 	for op_id: StringName in [&"caster_1", &"caster_2", &"defender_1", &"defender_2",
-			&"guard_2", &"sniper_2", &"vanguard_1", &"vanguard_2"]:
+			&"guard_2", &"sniper_2", &"vanguard_1", &"vanguard_2", &"witch_doctor_1"]:
 		assert_true(model.apply_action([&"debug_grant_operator", op_id]), "grant %s" % op_id)
-	assert_eq(model.squad.size(), 10, "the full catalog fits in the squad")
+	assert_eq(model.squad.size(), 11, "the full catalog fits in the squad")
 
 
 ## §4.2: removal edits the squad only — the op stops being deployable, its

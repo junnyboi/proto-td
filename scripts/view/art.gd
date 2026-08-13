@@ -24,7 +24,13 @@ static func frame_count(id: StringName) -> int:
 
 
 static func fps(id: StringName) -> float:
-	return float(_entry(id).get("fps", 0.0))
+	var animations: Variant = _entry(id).get("animations", {})
+	if animations is not Dictionary or animations.is_empty():
+		return 0.0
+	var names: Array = animations.keys()
+	names.sort_custom(func(a: Variant, b: Variant) -> bool: return String(a) < String(b))
+	var region: Variant = animations[names[0]]
+	return float(region.get(&"fps", 0.0)) if region is Dictionary else 0.0
 
 
 ## Native pixel size from the manifest (P12.1: tiles are no longer a
@@ -35,6 +41,52 @@ static func size(id: StringName) -> Vector2i:
 	if stored is Vector2i:
 		return stored
 	return Vector2i.ZERO
+
+
+static func metadata(id: StringName) -> Dictionary:
+	return _entry(id).duplicate(true)
+
+
+static func pivot(id: StringName) -> Vector2:
+	var stored: Variant = _entry(id).get("pivot", Vector2.ZERO)
+	return stored if stored is Vector2 else Vector2.ZERO
+
+
+static func animation_names(id: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	var stored: Variant = _entry(id).get("animations", {})
+	if stored is not Dictionary:
+		return result
+	for raw_name: Variant in stored:
+		if typeof(raw_name) == TYPE_STRING_NAME:
+			result.append(raw_name)
+	result.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	return result
+
+
+static func animation_frame_index(id: StringName, animation: StringName, local_frame: int) -> int:
+	if local_frame < 0:
+		return -1
+	var stored: Variant = _entry(id).get("animations", {})
+	if stored is not Dictionary or not stored.has(animation):
+		return -1
+	var raw_region: Variant = stored[animation]
+	if raw_region is not Dictionary:
+		return -1
+	var length := int(raw_region.get("length", 0))
+	if local_frame >= length:
+		return -1
+	return int(raw_region.get("start", -1)) + local_frame
+
+
+static func animation_texture(id: StringName, animation: StringName, local_frame: int) -> Texture2D:
+	var frame := animation_frame_index(id, animation, local_frame)
+	return texture(id, frame) if frame >= 0 else null
+
+
+static func provenance_sha256(id: StringName) -> String:
+	var stored: Variant = _entry(id).get("provenance_sha256", "")
+	return stored if stored is String else ""
 
 
 static func texture(id: StringName, frame := 0) -> Texture2D:
@@ -48,11 +100,11 @@ static func texture(id: StringName, frame := 0) -> Texture2D:
 	if frame < 0 or frame >= frames:
 		return null
 	var pattern: String = entry["pattern"]
-	var frame_size: Variant = entry.get("frame_size")
 	var tex: Texture2D = null
-	if frame_size is Vector2i:
+	if frames > 1 and not pattern.contains("%d"):
+		var frame_size := size(id)
 		var atlas_source := load(pattern) as Texture2D
-		if atlas_source != null:
+		if atlas_source != null and frame_size != Vector2i.ZERO:
 			var atlas := AtlasTexture.new()
 			atlas.atlas = atlas_source
 			atlas.region = Rect2i(frame * frame_size.x, 0, frame_size.x, frame_size.y)

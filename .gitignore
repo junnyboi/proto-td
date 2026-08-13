@@ -2,3 +2,5 @@
 .DS_Store
 artifacts/
 override.cfg
+__pycache__/
+*.py[cod]

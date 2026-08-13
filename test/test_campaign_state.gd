@@ -1,6 +1,6 @@
 extends GutTest
 
-## Phase 10 unlock-flow gates (td-phase-10.md §4.1) — pure CampaignState,
+## Phase 10 unlock-flow gates (td-phase-10.md §4.1) — pure LegacyCampaignAdapter,
 ## no autoload, no residual state. Run against the LIVE catalogs and stage
 ## files so a roster or reward edit that breaks the campaign design fails
 ## loudly here.
@@ -35,13 +35,13 @@ func _stage(sid: StringName) -> StageDef:
 	return null
 
 
-func _fresh() -> CampaignState:
-	return CampaignState.create(_catalogs, _stages)
+func _fresh() -> LegacyCampaignAdapter:
+	return LegacyCampaignAdapter.create(_catalogs, _stages)
 
 
 ## §4.1.1 gate: derivation exactness against the live data (K7 rosters).
 func test_derivation_exactness() -> void:
-	var starting := CampaignState.derive_starting_unlocks(_catalogs, _stages)
+	var starting := LegacyCampaignAdapter.derive_starting_unlocks(_catalogs, _stages)
 	var expected_ops: Array[StringName] = [
 		&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
 	]
@@ -93,14 +93,21 @@ func test_star_best_of() -> void:
 	assert_eq(int(state.stage_stars[&"s1"]), 3, "DEFEAT changes nothing")
 
 
-## §4.1.5: the whole chain end-to-end — after s6 everything is unlocked.
+## §4.1.5: the whole chain end-to-end — Witch Doctor remains locked through
+## S6, then the first S7 clear makes the full eleven-template catalog available.
 func test_chain_integrity() -> void:
 	var state := _fresh()
 	for sid: StringName in [&"s1", &"s2", &"s3", &"s4", &"s5", &"s6"]:
 		assert_true(state.is_stage_unlocked(sid), "%s unlocked in order" % sid)
 		state.record_result(_stage(sid), BattleModel.Result.CLEAR, 2)
-	assert_eq(state.unlocked_operators.size(), 10, "all ten operators after s6")
+	assert_eq(state.unlocked_operators.size(), 10, "ten pre-healer operators after s6")
+	assert_false(state.unlocked_operators.has(&"witch_doctor_1"))
 	assert_eq(state.unlocked_traps.size(), 2)
 	assert_eq(state.unlocked_spells.size(), 2)
 	assert_eq(state.stage_stars.size(), 6)
 	assert_true(state.is_stage_unlocked(&"s7"))
+	var granted := state.record_result(_stage(&"s7"), BattleModel.Result.CLEAR, 2)
+	assert_eq(granted, [{"kind": &"operator", "id": &"witch_doctor_1"}])
+	assert_eq(state.unlocked_operators.size(), 11, "all eleven operators after s7")
+	assert_true(state.unlocked_operators.has(&"witch_doctor_1"))
+	assert_eq(state.record_result(_stage(&"s7"), BattleModel.Result.CLEAR, 3), [])

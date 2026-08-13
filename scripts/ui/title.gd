@@ -3,41 +3,74 @@ extends Control
 ## Protos entry screen. The campaign is the only player-facing game flow;
 ## direct battle startup remains a harness/debug seam, never a title action.
 
-const FONT_SIZE_TITLE := 64
-const FONT_SIZE_BUTTON := 32
-const FONT_SIZE_FOOTER := 24
+const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
+const LOCALE_SCENE := preload("res://scenes/ui/components/aetheria_locale_selector.tscn")
+const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
+const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const AetheriaLocaleSelectorType := preload(
+	"res://scripts/ui/components/aetheria_locale_selector.gd"
+)
+const AetheriaScreenShellType := preload(
+	"res://scripts/ui/components/aetheria_screen_shell.gd"
+)
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
+var _locale_selector: AetheriaLocaleSelectorType = null
 
 
 func _ready() -> void:
+	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
+	shell.name = "TitleShell"
+	shell.preferred_size = Vector2(720.0, 520.0)
+	add_child(shell)
+	shell.layout_mode_changed.connect(_on_layout_mode_changed)
+
 	var vbox := VBoxContainer.new()
 	vbox.name = "TitleBox"
-	vbox.set_anchors_preset(Control.PRESET_CENTER)
-	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 24)
-	add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override(&"separation", 24)
+	shell.content_host().add_child(vbox)
 
-	var label := Label.new()
+	var label := AetheriaLabelType.new()
 	label.name = "TitleLabel"
-	label.text = I18n.t(&"ui.game_title", "Protos")
-	label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
+	label.apply_role(&"title")
+	label.text = UiCopyType.text(&"ui.game_title", "Protos")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)
 
-	var start := Button.new()
+	var start := AetheriaButtonType.new()
 	start.name = "StartButton"
-	start.text = "Start"
-	start.add_theme_font_size_override("font_size", FONT_SIZE_BUTTON)
+	start.apply_role(&"primary")
+	start.text = UiCopyType.text(&"ui.title.start", "Start")
 	start.pressed.connect(_on_start_pressed)
 	vbox.add_child(start)
 
-	var footer := Label.new()
+	var footer := AetheriaLabelType.new()
 	footer.name = "FooterLabel"
-	footer.text = "seed %d" % Game.run_seed
-	footer.add_theme_font_size_override("font_size", FONT_SIZE_FOOTER)
+	footer.apply_role(&"detail")
+	footer.text = UiCopyType.format_text(
+		&"ui.title.seed", "seed {seed}", {&"seed": Game.run_seed},
+	)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(footer)
+
+	_locale_selector = LOCALE_SCENE.instantiate() as AetheriaLocaleSelectorType
+	_locale_selector.name = "LocaleSelector"
+	_locale_selector.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(_locale_selector)
+	var locale_list := _locale_selector.get_node("LocaleList") as ItemList
+	start.focus_neighbor_top = start.get_path_to(locale_list)
+	start.focus_previous = start.get_path_to(locale_list)
+	start.focus_neighbor_bottom = start.get_path_to(locale_list)
+	start.focus_next = start.get_path_to(locale_list)
+	locale_list.focus_neighbor_top = locale_list.get_path_to(start)
+	locale_list.focus_previous = locale_list.get_path_to(start)
+	locale_list.focus_neighbor_bottom = locale_list.get_path_to(start)
+	locale_list.focus_next = locale_list.get_path_to(start)
+	start.grab_focus.call_deferred()
+	_on_layout_mode_changed(shell.layout_mode())
 
 	Game.content = self
 
@@ -45,3 +78,8 @@ func _ready() -> void:
 func _on_start_pressed() -> void:
 	Sfx.play("ui_click")
 	Game.start_campaign()
+
+
+func _on_layout_mode_changed(mode: StringName) -> void:
+	if _locale_selector != null:
+		_locale_selector.set_vertical_layout(mode == &"portrait")

@@ -1,0 +1,2824 @@
+{
+  "artifacts": [
+    {
+      "bytes": 28816,
+      "created_at": "2026-08-12T16:53:47.025177Z",
+      "path": "sealed://aggregate/artifacts/assets_floor/assets_contact_sheet.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "414696b44915ebe4af3a8ede80362a950605c286c8c3238dcbb56b2669df7e2a"
+    },
+    {
+      "bytes": 1311,
+      "created_at": "2026-08-12T16:53:47.025540Z",
+      "path": "sealed://aggregate/artifacts/assets_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "39c9ca5f19c2e7baa69d88ef2ef01e41547bc61ad9b10f4c12d1f069037d6ec2"
+    },
+    {
+      "bytes": 54858,
+      "created_at": "2026-08-12T16:53:48.734754Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/controls_idle.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2e232c15833180dce66861f8703ab6bcacf8044a87f0df2de201a333a08deedb"
+    },
+    {
+      "bytes": 54184,
+      "created_at": "2026-08-12T16:53:49.409992Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/paused.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "945250684ccd2b2caaf55a23e34ed0eae88fd0ac8dc955923eb29d209ddbe051"
+    },
+    {
+      "bytes": 3412,
+      "created_at": "2026-08-12T16:53:52.134760Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8d46cd580d0d6def29ee332b548dc33399359f45bc745a548237d42ad69182c2"
+    },
+    {
+      "bytes": 69664,
+      "created_at": "2026-08-12T16:53:51.409985Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/resign_confirm.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "87e0a41e1e6dd517d1aff6723f2c422844e814d9d95855b5b93291285198d179"
+    },
+    {
+      "bytes": 53064,
+      "created_at": "2026-08-12T16:53:51.107951Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/speed_4x.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "510d400d667206d91fad54638f81545c7b322e3045420e43ac7b0089dd14d2ce"
+    },
+    {
+      "bytes": 52322,
+      "created_at": "2026-08-12T16:53:51.901260Z",
+      "path": "sealed://aggregate/artifacts/battle_controls/terminal_continue.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d96489d18b1a3986c5f72e3067b7351fafae23cf10e68a518b306b707e61eadb"
+    },
+    {
+      "bytes": 55136,
+      "created_at": "2026-08-12T16:54:10.734516Z",
+      "path": "sealed://aggregate/artifacts/blocking/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3b3687e9863e7c5ef476b37595d4bc32d231089ec3ca706965b0f8b87d06962e"
+    },
+    {
+      "bytes": 54124,
+      "created_at": "2026-08-12T16:53:59.731665Z",
+      "path": "sealed://aggregate/artifacts/blocking/block_cluster.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2e12928939bf1b363175655e87a940b39f41a85b4ee6e2ddf42a02306c0e9490"
+    },
+    {
+      "bytes": 53564,
+      "created_at": "2026-08-12T16:54:03.721052Z",
+      "path": "sealed://aggregate/artifacts/blocking/first_kill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a4336b7187938ca3ce1dc814b8e2d829b35c4f1a28d99f7544254d93df2420fd"
+    },
+    {
+      "bytes": 1129,
+      "created_at": "2026-08-12T16:54:10.734733Z",
+      "path": "sealed://aggregate/artifacts/blocking/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4349087c690cf41fa5a0854d9b50354e7a37a9a7bac9eaa27a1ab59a6e5708d4"
+    },
+    {
+      "bytes": 41937,
+      "created_at": "2026-08-12T16:54:15.704270Z",
+      "path": "sealed://aggregate/artifacts/boot/battle_early.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f0fd16362a40965c14ab22743208ec6f927ff143ea0eb3982c57a827e0fb7bc9"
+    },
+    {
+      "bytes": 41224,
+      "created_at": "2026-08-12T16:54:26.575598Z",
+      "path": "sealed://aggregate/artifacts/boot/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c5c8fe0ba0278f02691341a280f085427021e5348f466951eebeb68f621c871b"
+    },
+    {
+      "bytes": 12334,
+      "created_at": "2026-08-12T16:54:12.090723Z",
+      "path": "sealed://aggregate/artifacts/boot/boot.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "37af0de9db86d6f204afe0551fc065ca35a7f95a6c1bc6882a7d2050571ebb75"
+    },
+    {
+      "bytes": 2722,
+      "created_at": "2026-08-12T16:54:26.575891Z",
+      "path": "sealed://aggregate/artifacts/boot/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8178d84ab2319ccb6c08562693dd93ca4622dc4048990cae9ff616b9b0f339d3"
+    },
+    {
+      "bytes": 4871,
+      "created_at": "2026-08-12T16:54:29.620995Z",
+      "path": "sealed://aggregate/artifacts/campaign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "02f457466f6f4bf72ce8bb575dea84d948258c4470b791fe9bfe82648275b32d"
+    },
+    {
+      "bytes": 25813,
+      "created_at": "2026-08-12T16:54:29.389464Z",
+      "path": "sealed://aggregate/artifacts/campaign_flow/results_reward.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c517db01b61d5ca258280155826b305b5dfa75c382b213efdb0549b4c8c24222"
+    },
+    {
+      "bytes": 48096,
+      "created_at": "2026-08-12T16:54:28.833195Z",
+      "path": "sealed://aggregate/artifacts/campaign_flow/squad_select.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "abcba70f7922993306a5b484189670df28569a7cfff3382f56ef2ba9e44d1180"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T16:54:28.274076Z",
+      "path": "sealed://aggregate/artifacts/campaign_flow/stage_select_locked.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 55047,
+      "created_at": "2026-08-12T16:54:29.594533Z",
+      "path": "sealed://aggregate/artifacts/campaign_flow/stage_select_progress.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f01c05cc2e310778f5ff40d1c7d940d98864cf0edfdc30b8ab45031a5fa24bc9"
+    },
+    {
+      "bytes": 53338,
+      "created_at": "2026-08-12T16:54:31.952288Z",
+      "path": "sealed://aggregate/artifacts/charm_runback/bolt_cast.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c2a212aac09087f8a36f3ae13036ec114c5a6061a8e7834b9ac535d5195a9b0a"
+    },
+    {
+      "bytes": 52410,
+      "created_at": "2026-08-12T16:54:32.859911Z",
+      "path": "sealed://aggregate/artifacts/charm_runback/charm_convert.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "beed593df3c9ded72b2b6ecb429f6e0aabf2f677880271f3dda30dfe5185c020"
+    },
+    {
+      "bytes": 52998,
+      "created_at": "2026-08-12T16:54:33.150343Z",
+      "path": "sealed://aggregate/artifacts/charm_runback/charm_duel.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c2242d344893239cca76380b7602360cbe2d1a1913ae74c1ae593dd7e51f3e9b"
+    },
+    {
+      "bytes": 54769,
+      "created_at": "2026-08-12T16:54:34.017912Z",
+      "path": "sealed://aggregate/artifacts/charm_runback/charm_victory.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "fbd03c549a03de2766c518e27387c9fda8e0a4a6f61842d2f010da6767c4de4e"
+    },
+    {
+      "bytes": 2495,
+      "created_at": "2026-08-12T16:54:34.018139Z",
+      "path": "sealed://aggregate/artifacts/charm_runback/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e7b15c4bbb7b0b2692fd7e08e8c4ce6d53baafdc0f74b08c6832a979300fa278"
+    },
+    {
+      "bytes": 145040,
+      "created_at": "2026-08-12T16:54:35.853629Z",
+      "path": "sealed://aggregate/artifacts/debug_reach/overlay_battle.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "288b2430771db9699777199cdd80ac30e6c3bbe06e80b545d2481b2c7bf4bbc6"
+    },
+    {
+      "bytes": 148109,
+      "created_at": "2026-08-12T16:54:37.554878Z",
+      "path": "sealed://aggregate/artifacts/debug_reach/overlay_granted.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "de97a91343dab8207075aba3063d22ee8ade32eb56e3f57efc16ccea31731bf1"
+    },
+    {
+      "bytes": 28955,
+      "created_at": "2026-08-12T16:54:35.390331Z",
+      "path": "sealed://aggregate/artifacts/debug_reach/overlay_open.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "80398e037610acdc578e29f164cdea5ccd2bee8002457f5a03addf157c1411cb"
+    },
+    {
+      "bytes": 5404,
+      "created_at": "2026-08-12T16:54:38.238881Z",
+      "path": "sealed://aggregate/artifacts/debug_reach/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "02c491ba7003a9918f69569ab74d7d5611720b494e7d3060bb8366409f7d1ddb"
+    },
+    {
+      "bytes": 53308,
+      "created_at": "2026-08-12T16:54:41.931058Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/after_retreat.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5983d3065de04e6b20c3762f0780011de2c5e88b8c6ba4ad5bd545ca2d450257"
+    },
+    {
+      "bytes": 51858,
+      "created_at": "2026-08-12T16:54:40.321103Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/deployed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8c4feab412291a2e68b2be717d3059887f45c36cc240d89f5265c5e8ea9bdb23"
+    },
+    {
+      "bytes": 53308,
+      "created_at": "2026-08-12T16:54:41.966916Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/elevated_lift.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5983d3065de04e6b20c3762f0780011de2c5e88b8c6ba4ad5bd545ca2d450257"
+    },
+    {
+      "bytes": 56707,
+      "created_at": "2026-08-12T16:54:42.049470Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/elevated_sniper.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6fdd3efc1bb047061bc1149befd246e6b72937ec8dc8d03910f55c9a23f0d4e4"
+    },
+    {
+      "bytes": 63431,
+      "created_at": "2026-08-12T16:54:40.153943Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/facing_chooser.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "beddc161a0b78ac633c860fdcc39ff40d9d2b96d3cfa6618fae1c83eef4d9bae"
+    },
+    {
+      "bytes": 62575,
+      "created_at": "2026-08-12T16:54:40.008509Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/placement_mode.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "40910294ce68929adbc6e7259dfa8578938575d938d3a52c3d25dd7d04a1c5fe"
+    },
+    {
+      "bytes": 3315,
+      "created_at": "2026-08-12T16:54:42.200380Z",
+      "path": "sealed://aggregate/artifacts/deploy_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3e922ba3c612f4e674a5aecbfe37abb7b047b71729647b744939664e4b125d59"
+    },
+    {
+      "bytes": 61809,
+      "created_at": "2026-08-12T16:54:55.829141Z",
+      "path": "sealed://aggregate/artifacts/drone_counter/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "feec86ec7922e751e1c5edf45e9d462d7dac42cb7ddc73fb106243f5c1a30e6d"
+    },
+    {
+      "bytes": 59990,
+      "created_at": "2026-08-12T16:54:49.043182Z",
+      "path": "sealed://aggregate/artifacts/drone_counter/drones_over_defenders.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e2ce4ef18754ce8cab064a78b0012ed7b45d3451afeff18c62551483b6a1a458"
+    },
+    {
+      "bytes": 1327,
+      "created_at": "2026-08-12T16:54:55.829362Z",
+      "path": "sealed://aggregate/artifacts/drone_counter/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4d374a30065954e5d68e3ffd523bdccd53d33ffee340b079c6cf6761422aad88"
+    },
+    {
+      "bytes": 60261,
+      "created_at": "2026-08-12T16:54:52.628968Z",
+      "path": "sealed://aggregate/artifacts/drone_counter/sniper_shot.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b9f45e4eedeff6053c2d1735d7656e0c228ca6caae29a0e7347b82a29af3b267"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:55:57.182166Z",
+      "path": "sealed://aggregate/artifacts/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 54046,
+      "created_at": "2026-08-12T16:54:58.008865Z",
+      "path": "sealed://aggregate/artifacts/iso_projection_floor/iso_deployed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "518624ba5b682005f0483604626694b1c89193fd223f2f89a70d0cee738d6045"
+    },
+    {
+      "bytes": 54958,
+      "created_at": "2026-08-12T16:54:57.574730Z",
+      "path": "sealed://aggregate/artifacts/iso_projection_floor/iso_grid.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a369b39cfa30f743e3e0abb056c68c2d166df64efc536a20d7d5bdfdca87673a"
+    },
+    {
+      "bytes": 62708,
+      "created_at": "2026-08-12T16:54:57.710833Z",
+      "path": "sealed://aggregate/artifacts/iso_projection_floor/iso_placement_highlights.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f0be508dbdee2e46a3131ac564520aa43999b5c5e0c30725722910fa7b72b255"
+    },
+    {
+      "bytes": 1407,
+      "created_at": "2026-08-12T16:54:58.009092Z",
+      "path": "sealed://aggregate/artifacts/iso_projection_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "fd1e725e60114f4cf20bcdc166ae050b61d1602d52cce6860d53ebc26bd7f808"
+    },
+    {
+      "bytes": 62806,
+      "created_at": "2026-08-12T16:55:00.012141Z",
+      "path": "sealed://aggregate/artifacts/juice_deploy/deploy_drag.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c457b9b185825d5a62957839b40ec0bb45208f65f7df78b88bc85727f1321f4b"
+    },
+    {
+      "bytes": 54213,
+      "created_at": "2026-08-12T16:55:00.265509Z",
+      "path": "sealed://aggregate/artifacts/juice_deploy/deploy_land.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c34b430833a3722b288de2023d762ec6d0c70da5c0ee29b47ac65ec5fb815105"
+    },
+    {
+      "bytes": 54198,
+      "created_at": "2026-08-12T16:55:00.444262Z",
+      "path": "sealed://aggregate/artifacts/juice_deploy/deploy_settled.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8690fe51aa760f508fbdd4ac62dd3c6e9f9b3599bc2ec827378f688ec4b1046e"
+    },
+    {
+      "bytes": 1518,
+      "created_at": "2026-08-12T16:55:00.455904Z",
+      "path": "sealed://aggregate/artifacts/juice_deploy/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "187970717cc204315bb1b93a3ce709102c229c1b2f09b2964c50254d53c1f4c8"
+    },
+    {
+      "bytes": 52591,
+      "created_at": "2026-08-12T16:55:05.285777Z",
+      "path": "sealed://aggregate/artifacts/juice_kill_leak/kill_burst.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e902c6556556343d9e4f2c6fee9084977b437a669d9ede05522ac35f68edc01e"
+    },
+    {
+      "bytes": 52325,
+      "created_at": "2026-08-12T16:55:03.955418Z",
+      "path": "sealed://aggregate/artifacts/juice_kill_leak/leak_clear.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6ffbf90118d14b26e80c9bc2c3844e47dc43ee24e0c7ee69610775318ba34508"
+    },
+    {
+      "bytes": 52862,
+      "created_at": "2026-08-12T16:55:03.728076Z",
+      "path": "sealed://aggregate/artifacts/juice_kill_leak/leak_vignette.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9b634f6319258612eaad31afd83eab3e42bcf975b3a76e9b7f38358ff9e08df4"
+    },
+    {
+      "bytes": 2177,
+      "created_at": "2026-08-12T16:55:05.349170Z",
+      "path": "sealed://aggregate/artifacts/juice_kill_leak/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8bf5156b72e605c341d41846e1a91d7b25a46d7b0652c29e714b7ad0d1758ac4"
+    },
+    {
+      "bytes": 52785,
+      "created_at": "2026-08-12T16:55:11.365343Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/charm_after.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3dcb081544aa89125aa6210270675cca9e77d42648695d83bbab561689bcd739"
+    },
+    {
+      "bytes": 53345,
+      "created_at": "2026-08-12T16:55:11.305357Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/charm_before.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "decc61493a7940e8ca0035db4673a78a62a2d9fdfd70a341145eaf6be31af362"
+    },
+    {
+      "bytes": 2101,
+      "created_at": "2026-08-12T16:55:11.525990Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "fa02ed5046c4c020b747b25b4b8e7ad7081979dbecc525d9ec1881c5db0ccb0c"
+    },
+    {
+      "bytes": 54150,
+      "created_at": "2026-08-12T16:55:10.175582Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/trap_gone.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "739c142c44d9e416e9226d88a33cada5c096ad4ab2e5f80285ae360c96852d08"
+    },
+    {
+      "bytes": 53138,
+      "created_at": "2026-08-12T16:55:08.872748Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/trap_sprung.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "86b37cf172630e7f3dc23683cfd9e0ce85824626fc58856e6b5e227fc50fdf28"
+    },
+    {
+      "bytes": 54744,
+      "created_at": "2026-08-12T16:55:10.015454Z",
+      "path": "sealed://aggregate/artifacts/juice_trap_charm/trap_sprung_final.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "738da6a9155f2ab27246cf3a37429c692a4c0b7b6da98a5b82df8b32fc4f56b6"
+    },
+    {
+      "bytes": 54763,
+      "created_at": "2026-08-12T16:55:13.190371Z",
+      "path": "sealed://aggregate/artifacts/map_navigation/map_height_fill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7732a84b4ec8a807dcc5a2e4b2f9d8056ad0e1ed368088b32f5dce2d12ea4eb8"
+    },
+    {
+      "bytes": 55610,
+      "created_at": "2026-08-12T16:55:13.308082Z",
+      "path": "sealed://aggregate/artifacts/map_navigation/map_pan_far_edges.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8af76e1bd6b1c56b3b61d4ad267e836e39f54887e620d97166b22c8a6210ed88"
+    },
+    {
+      "bytes": 55343,
+      "created_at": "2026-08-12T16:55:13.453269Z",
+      "path": "sealed://aggregate/artifacts/map_navigation/map_pan_near_edges.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9bc52d694b517b4313a88c8553af96b154ecb7e92eeb13b5be5cec12aa2d4d80"
+    },
+    {
+      "bytes": 7581,
+      "created_at": "2026-08-12T16:55:14.131789Z",
+      "path": "sealed://aggregate/artifacts/map_navigation/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "60ed1d91f599fc4e889a1a3d04376062ac858e1ee1ce9a9f64140fe409b42b72"
+    },
+    {
+      "bytes": 2737,
+      "created_at": "2026-08-12T16:55:16.120514Z",
+      "path": "sealed://aggregate/artifacts/music_routing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "75456e31fe333bbbd494c29dd2411f46f6df0b398ae9d42a5bbf32c7bb9d09da"
+    },
+    {
+      "bytes": 12334,
+      "created_at": "2026-08-12T16:55:19.682284Z",
+      "path": "sealed://aggregate/artifacts/resign_flow/back_at_title.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "37af0de9db86d6f204afe0551fc065ca35a7f95a6c1bc6882a7d2050571ebb75"
+    },
+    {
+      "bytes": 46562,
+      "created_at": "2026-08-12T16:55:19.062862Z",
+      "path": "sealed://aggregate/artifacts/resign_flow/defeat_stamp.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c6fcbaecf0ddd3cddc0e39f2d6282ff1ed86a1204a39f0862e2b578e6e67ec80"
+    },
+    {
+      "bytes": 3607,
+      "created_at": "2026-08-12T16:55:19.682601Z",
+      "path": "sealed://aggregate/artifacts/resign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "49233c3ab7e31fe2ed6529f0ea87b3a97ae8b2a0fd238c9c093979c344cf54a9"
+    },
+    {
+      "bytes": 17511,
+      "created_at": "2026-08-12T16:55:19.282719Z",
+      "path": "sealed://aggregate/artifacts/resign_flow/results_defeat.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a38c5004daabd5d4d62e586515f61cfbc8acd39d1e0820a0f8527a09e78b6e28"
+    },
+    {
+      "bytes": 2131,
+      "created_at": "2026-08-12T16:55:21.745297Z",
+      "path": "sealed://aggregate/artifacts/resize_relayout/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ab58b8535e4432bc8ff3b505c903b617548a8cb8e9d26ce09632ffb4892f2bb7"
+    },
+    {
+      "bytes": 55532,
+      "created_at": "2026-08-12T16:55:34.750681Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "baff85fbbea9a7b3869bd9cee535c3e4c771188877a4b1889d4f0ec0433ae5d6"
+    },
+    {
+      "bytes": 2207,
+      "created_at": "2026-08-12T16:55:34.750945Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "858ee6e380a01ff5393a8f1dab614dca863f568d3a45b5e5062c16a1a01175a8"
+    },
+    {
+      "bytes": 54969,
+      "created_at": "2026-08-12T16:55:30.973850Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/skill_flash.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2eb215736cd44e0a453247369318dc286c21c36ad2e901bbc1945e4d2571f023"
+    },
+    {
+      "bytes": 54798,
+      "created_at": "2026-08-12T16:55:31.304852Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/skill_flash_decay.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a8dfcfe368f30ef7126b8804aadc0b0806cdad5bca142ab6dfad86951fb7cb12"
+    },
+    {
+      "bytes": 53051,
+      "created_at": "2026-08-12T16:55:27.374858Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/sp_fill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3fefc6357af99f8822bcb17629167419e3aaf0dee64f6ec947666cccb8358591"
+    },
+    {
+      "bytes": 54552,
+      "created_at": "2026-08-12T16:55:30.893917Z",
+      "path": "sealed://aggregate/artifacts/skill_timing/sp_full.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1123dad7636c00e5b2151eae06f26ba660b549d00943bb1374a037aafae723d2"
+    },
+    {
+      "bytes": 10352,
+      "created_at": "2026-08-12T16:55:37.447639Z",
+      "path": "sealed://aggregate/artifacts/staging_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6a638836eb907a53bec71f7de26f2a3d8e286d956ca4a31e03b24b9bbcf958db"
+    },
+    {
+      "bytes": 18044,
+      "created_at": "2026-08-12T16:55:37.218431Z",
+      "path": "sealed://aggregate/artifacts/staging_flow/results_return_to_staging.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "03d4e488118ff976f1a110a8906398459a22fc706dbee66c801842532192869f"
+    },
+    {
+      "bytes": 58430,
+      "created_at": "2026-08-12T16:55:36.883642Z",
+      "path": "sealed://aggregate/artifacts/staging_flow/staging_initial.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "05e38dae6be8cea90fd28237f77be9664fa106cb74421b19b2f6caff36dd8054"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T16:55:37.036205Z",
+      "path": "sealed://aggregate/artifacts/staging_flow/staging_to_missions.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 3003,
+      "created_at": "2026-08-12T16:55:57.061401Z",
+      "path": "sealed://aggregate/artifacts/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ab9bf07c368c9e2704754578bb0a73988ecf4b5b04052c1d030594e61a772cb6"
+    },
+    {
+      "bytes": 1901,
+      "created_at": "2026-08-12T16:55:40.608665Z",
+      "path": "sealed://aggregate/artifacts/trap_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4f96ae23ab341f8ddf36bb489ea82f28ca17af4a556dd34e04b50e681a555a15"
+    },
+    {
+      "bytes": 54749,
+      "created_at": "2026-08-12T16:55:40.608444Z",
+      "path": "sealed://aggregate/artifacts/trap_flow/spike_after.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9ee25befef2336f28f2efa22cc3ba8fc5cb95f071e3f8706aec14a21b6ec8ae9"
+    },
+    {
+      "bytes": 52843,
+      "created_at": "2026-08-12T16:55:39.322417Z",
+      "path": "sealed://aggregate/artifacts/trap_flow/spike_armed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "02039aa65e994c10149bb3fb7b9c2e130cdb710f6165dd274c55e514a1a6b4ed"
+    },
+    {
+      "bytes": 52843,
+      "created_at": "2026-08-12T16:55:39.358527Z",
+      "path": "sealed://aggregate/artifacts/trap_flow/tar_overlay.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "02039aa65e994c10149bb3fb7b9c2e130cdb710f6165dd274c55e514a1a6b4ed"
+    },
+    {
+      "bytes": 56907,
+      "created_at": "2026-08-12T16:55:39.184669Z",
+      "path": "sealed://aggregate/artifacts/trap_flow/traps_placed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f8ff2bbcca1cfc4d8de6d5eadc848f4fd8ae3d583b88a63d438c50586785bf1f"
+    },
+    {
+      "bytes": 8697,
+      "created_at": "2026-08-12T16:55:57.187665Z",
+      "path": "sealed://aggregate/artifacts/verify.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2ebdcc0d4ac7282fc900370e4e9d9e17002a76bd5eec8e3b3853d2ea7d39efac"
+    },
+    {
+      "bytes": 1493,
+      "created_at": "2026-08-12T16:55:48.421421Z",
+      "path": "sealed://aggregate/artifacts/wave_banner_victory/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d7ac647fda0d8c004fc397026e0b5f2ca645ea6315be19249d56e50051c47206"
+    },
+    {
+      "bytes": 58086,
+      "created_at": "2026-08-12T16:55:48.420250Z",
+      "path": "sealed://aggregate/artifacts/wave_banner_victory/victory_stamp.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3dd7d51136216a095cefb0ccf85fa46435c07164d26ba4e9daad1d9e36b10ef6"
+    },
+    {
+      "bytes": 57857,
+      "created_at": "2026-08-12T16:55:42.336747Z",
+      "path": "sealed://aggregate/artifacts/wave_banner_victory/wave_banner_1.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b350674332cc7d13f604da8b7fe7c9cbcba54a7a614a43d2de86c539be7dba32"
+    },
+    {
+      "bytes": 58451,
+      "created_at": "2026-08-12T16:55:45.393446Z",
+      "path": "sealed://aggregate/artifacts/wave_banner_victory/wave_banner_2.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d3fc8458f87fa0606d56072477ae6dc41b1a783742069f0be944c851e3e10248"
+    },
+    {
+      "bytes": 2492,
+      "created_at": "2026-08-12T16:55:57.183665Z",
+      "path": "sealed://aggregate/verify-full.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8ae02419eae62ea16bb8ef49eb9028df67843ff4661f8ca6db3ab0620067c46f"
+    },
+    {
+      "bytes": 16970,
+      "created_at": "2026-08-12T16:50:59.927732Z",
+      "path": "sealed://gut-full.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4be85acca6b7043f58efdd61ace86b23d63b7570d6b1c7e4066124511a84853f"
+    },
+    {
+      "bytes": 52290,
+      "created_at": "2026-08-12T16:50:54.619733Z",
+      "path": "sealed://import.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8bd9b5024a64cd9ef17d298e1516555353fb23a6a35dcd5550caeb8d34d7e48b"
+    },
+    {
+      "bytes": 1135,
+      "created_at": "2026-08-12T16:50:49.883734Z",
+      "path": "sealed://music-verify.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "02192fce82e3a8fc4758807359c4832e7a3aa7af9a47392218b49c473c534ceb"
+    },
+    {
+      "bytes": 2869,
+      "created_at": "2026-08-12T16:50:31.565973Z",
+      "path": "sealed://provenance/ORIENTATION.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e6b306a02c4c67590195ab58c1dec87c93fc275b4337bc5c21e4b47a2479d74a"
+    },
+    {
+      "bytes": 10280,
+      "created_at": "2026-08-12T16:50:31.568069Z",
+      "path": "sealed://provenance/TD-017-runtime-music-plan.md",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b3e6e43a0e18b9ee5e9ff1768e4ffcec258a792ebd5752d9ebf89f5b64f7335f"
+    },
+    {
+      "bytes": 630,
+      "created_at": "2026-08-12T16:55:57.282338Z",
+      "path": "sealed://provenance/release-identity-end.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "42a64875dd6d85a3cce93cbe90cd1a737998d07fe1ce72e415973fced3cf569c"
+    },
+    {
+      "bytes": 3162,
+      "created_at": "2026-08-12T16:50:31.575482Z",
+      "path": "sealed://provenance/release-identity-start.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3f280137c3885069c3fb85cfa6c382b400aab134e8da7add6d7123958d54513b"
+    },
+    {
+      "bytes": 10672,
+      "created_at": "2026-08-12T16:50:31.570044Z",
+      "path": "sealed://provenance/run_authenticated_release.sh",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b75526ea5c1495ad12c09919cf01fd2b0b629f2b2059dcb5476d65b433db8105"
+    },
+    {
+      "bytes": 3466,
+      "created_at": "2026-08-12T16:50:31.572168Z",
+      "path": "sealed://provenance/seal_release.py",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d7a80a656b73469e0286435409b8322af9dc3327a1adaa6c2464d746b5217510"
+    },
+    {
+      "bytes": 6015,
+      "created_at": "2026-08-12T16:50:31.564381Z",
+      "path": "sealed://provenance/verification-policy-v2.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0c7fd9b4d84eb89c8cf9d1916ffb4f97d0e1e227fe59d96410eb23ac345a8764"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:17.107908Z",
+      "path": "sealed://rungs/bots/bot_campaign/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 1165,
+      "created_at": "2026-08-12T16:53:17.043701Z",
+      "path": "sealed://rungs/bots/bot_campaign/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e81f103bdebeef3f99ebce1aa749b27e9cd5f35746f520fb8fb87e7359ae1b72"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:17.099701Z",
+      "path": "sealed://rungs/bots/bot_campaign/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 17353,
+      "created_at": "2026-08-12T16:53:17.080318Z",
+      "path": "sealed://rungs/bots/bot_campaign/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "22c0824e9e013c8995b148ecb66084531fe16db517ab1d9bed8e9d8c8a7b74dc"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:18.036936Z",
+      "path": "sealed://rungs/bots/bot_idle/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 460,
+      "created_at": "2026-08-12T16:53:17.975701Z",
+      "path": "sealed://rungs/bots/bot_idle/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e8deb6bd6fd170e8bc66a04ef2f703243cc1cb7fa3da8db30f1ad4633ba239de"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:18.034832Z",
+      "path": "sealed://rungs/bots/bot_idle/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 1363,
+      "created_at": "2026-08-12T16:53:18.010519Z",
+      "path": "sealed://rungs/bots/bot_idle/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2d849ff013396b53de3637adb915a4796b8f1c5eaec29424b692edb77735a6b8"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:18.686142Z",
+      "path": "sealed://rungs/bots/bot_stage_01/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 503,
+      "created_at": "2026-08-12T16:53:18.623701Z",
+      "path": "sealed://rungs/bots/bot_stage_01/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1dd807197927ac29d28fa25de4283618b8d68caaeaa57fbca0a04e8908d3c606"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:18.679701Z",
+      "path": "sealed://rungs/bots/bot_stage_01/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 1566,
+      "created_at": "2026-08-12T16:53:18.659762Z",
+      "path": "sealed://rungs/bots/bot_stage_01/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "08defedf60300d7f84cab25a5382b6b0d88aaf6efdf13bc5d25fbf0b1dfcfc5b"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:19.332176Z",
+      "path": "sealed://rungs/bots/bot_stage_02/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 503,
+      "created_at": "2026-08-12T16:53:19.271700Z",
+      "path": "sealed://rungs/bots/bot_stage_02/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b279a2109d16da0c71fa0d4b620fdbc879b2e4077728b85d604d57a4a6350f53"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:19.330052Z",
+      "path": "sealed://rungs/bots/bot_stage_02/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 1766,
+      "created_at": "2026-08-12T16:53:19.305597Z",
+      "path": "sealed://rungs/bots/bot_stage_02/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "84ac1511aa5bb4f6e6b736ff69ec0dff8f8b8eb308bbb833185f7f89fe06c163"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:19.982376Z",
+      "path": "sealed://rungs/bots/bot_stage_03/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 504,
+      "created_at": "2026-08-12T16:53:19.919700Z",
+      "path": "sealed://rungs/bots/bot_stage_03/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1f08eea7e9efe92e3bb41e548e74d906f0acd216bf0d8b694bceebbe30dd20fd"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:19.975700Z",
+      "path": "sealed://rungs/bots/bot_stage_03/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 2383,
+      "created_at": "2026-08-12T16:53:19.956047Z",
+      "path": "sealed://rungs/bots/bot_stage_03/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9de347fef59eb0bd1f5963e8b7520757807b99fd84d5b56e07486650f6c360cc"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:20.634628Z",
+      "path": "sealed://rungs/bots/bot_stage_04/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 503,
+      "created_at": "2026-08-12T16:53:20.571700Z",
+      "path": "sealed://rungs/bots/bot_stage_04/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9afd2cc459786ecd5fe026011df91346bfc171832e11ae55419a46b25fff3fd0"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:20.627700Z",
+      "path": "sealed://rungs/bots/bot_stage_04/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 2693,
+      "created_at": "2026-08-12T16:53:20.607053Z",
+      "path": "sealed://rungs/bots/bot_stage_04/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "89890d642b3301b4bdc536c55cf7909dbfff1b58a71e45efc69d754e04a0c10d"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:21.280404Z",
+      "path": "sealed://rungs/bots/bot_stage_05/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 504,
+      "created_at": "2026-08-12T16:53:21.219700Z",
+      "path": "sealed://rungs/bots/bot_stage_05/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d4097006b9d35e2390e15bdbb04488c2d59722c0e22ee3dbe8df0e3d673252d8"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:21.278371Z",
+      "path": "sealed://rungs/bots/bot_stage_05/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 2574,
+      "created_at": "2026-08-12T16:53:21.254107Z",
+      "path": "sealed://rungs/bots/bot_stage_05/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8cc7d06f33ad9bda00c3282d35ed9ecf03177115465803a9870993ad2bda998c"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:21.931747Z",
+      "path": "sealed://rungs/bots/bot_stage_06/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 504,
+      "created_at": "2026-08-12T16:53:21.867700Z",
+      "path": "sealed://rungs/bots/bot_stage_06/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d59a61c8fc473ab5d69163e6a01f9b4179a8e36dd07c2c62f09ba955e6256153"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:21.923700Z",
+      "path": "sealed://rungs/bots/bot_stage_06/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 2284,
+      "created_at": "2026-08-12T16:53:21.904639Z",
+      "path": "sealed://rungs/bots/bot_stage_06/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e7140ac6f029e39d15861dfee92926fc85d5b18396fa81ac01dec0b3a436b581"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:22.583608Z",
+      "path": "sealed://rungs/bots/bot_stage_06_no_charm/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 514,
+      "created_at": "2026-08-12T16:53:22.519700Z",
+      "path": "sealed://rungs/bots/bot_stage_06_no_charm/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0b08a87cf09b79c00d2370e73674fc5540a02be2fbfe43d557bf44f77be19e1"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:22.575700Z",
+      "path": "sealed://rungs/bots/bot_stage_06_no_charm/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 2493,
+      "created_at": "2026-08-12T16:53:22.555494Z",
+      "path": "sealed://rungs/bots/bot_stage_06_no_charm/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ae9c66c4909a64a46b5e0e8e9193790011a60329f8b57d6a0a42bc5bae8373ff"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:23.353144Z",
+      "path": "sealed://rungs/bots/bot_stage_07/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 504,
+      "created_at": "2026-08-12T16:53:23.287699Z",
+      "path": "sealed://rungs/bots/bot_stage_07/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f20731705c211864da590d2671698ce8b1a6a2830f2d5ab227261834e4f50d33"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:23.343699Z",
+      "path": "sealed://rungs/bots/bot_stage_07/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 3078,
+      "created_at": "2026-08-12T16:53:23.324460Z",
+      "path": "sealed://rungs/bots/bot_stage_07/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0ebdccdaee3daf07c22211648ecf6465e73c9650abe66428112b07abdd14d17a"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:24.094200Z",
+      "path": "sealed://rungs/bots/bot_stage_08/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 504,
+      "created_at": "2026-08-12T16:53:24.031699Z",
+      "path": "sealed://rungs/bots/bot_stage_08/playtest.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "edede2c02afcfd1ea9777d53f013631e1979402c45f66c5924aeaedcd8fe2c62"
+    },
+    {
+      "bytes": 47,
+      "created_at": "2026-08-12T16:53:24.087699Z",
+      "path": "sealed://rungs/bots/bot_stage_08/quality-gate.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d0190b1e937d07da30a168e71b56eea40fcf5f383cad30e64225070a91598d6f"
+    },
+    {
+      "bytes": 3003,
+      "created_at": "2026-08-12T16:53:24.067500Z",
+      "path": "sealed://rungs/bots/bot_stage_08/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9609cbd3fceb3c57fef0f840431513993a460a826675218ae8c3a60635f82176"
+    },
+    {
+      "bytes": 68,
+      "created_at": "2026-08-12T16:53:24.087699Z",
+      "path": "sealed://rungs/bots/live/gate.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "15de3c2d35b76511c0b8addae635d3bf9bfb62dadacf4fc637ea27d896fb5047"
+    },
+    {
+      "bytes": 3003,
+      "created_at": "2026-08-12T16:53:23.964353Z",
+      "path": "sealed://rungs/bots/live/telemetry.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9609cbd3fceb3c57fef0f840431513993a460a826675218ae8c3a60635f82176"
+    },
+    {
+      "bytes": 1277,
+      "created_at": "2026-08-12T16:51:00.287442Z",
+      "path": "sealed://rungs/headless/assets_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "06c8007ad9eb83b43c884faceaf323ca158c11336bd5dc7bf14dce7365d625af"
+    },
+    {
+      "bytes": 640,
+      "created_at": "2026-08-12T16:51:00.287442Z",
+      "path": "sealed://rungs/headless/assets_floor/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a46af6cb3fbb969d6d70ba4a4d39962c9a9f86db2afe1abda7ef86332b37b27e"
+    },
+    {
+      "bytes": 3174,
+      "created_at": "2026-08-12T16:51:00.888375Z",
+      "path": "sealed://rungs/headless/battle_controls/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a519fd1e5517fba1e02f9a099ba1f659aebfad97d33768c0e77d032c1fa96c20"
+    },
+    {
+      "bytes": 1658,
+      "created_at": "2026-08-12T16:51:00.891731Z",
+      "path": "sealed://rungs/headless/battle_controls/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4efc3a7a303f5501ad7921ecd922a4eff7c936a7c19c89cb3a2c2bdc1ded3c14"
+    },
+    {
+      "bytes": 1058,
+      "created_at": "2026-08-12T16:51:01.603595Z",
+      "path": "sealed://rungs/headless/blocking/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "05615bd2c4b3c5d486f18a9d6bf014b1a9b8ac9adf6e8e2ac3e4fe79c9781bc0"
+    },
+    {
+      "bytes": 832,
+      "created_at": "2026-08-12T16:51:01.635731Z",
+      "path": "sealed://rungs/headless/blocking/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "171cdf0b9d1ca9159a6e464cd9493bd06cd6c53ea60741369b4a000187d3cb88"
+    },
+    {
+      "bytes": 2657,
+      "created_at": "2026-08-12T16:51:02.251756Z",
+      "path": "sealed://rungs/headless/boot/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a0f48f45f394311d91f31008b0ed10761bb47219067b8204929282f6a46da3f5"
+    },
+    {
+      "bytes": 1544,
+      "created_at": "2026-08-12T16:51:02.287731Z",
+      "path": "sealed://rungs/headless/boot/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "395e5cd9b4aee6dcea444167ac7912cdbb7b7282522687bebfb8c2da61afb3c6"
+    },
+    {
+      "bytes": 4755,
+      "created_at": "2026-08-12T16:51:02.883170Z",
+      "path": "sealed://rungs/headless/campaign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "29349fc2c4a592b9ea0b243dd1854980667a8a1550c1a727094b79b04e282ed8"
+    },
+    {
+      "bytes": 2384,
+      "created_at": "2026-08-12T16:51:02.939731Z",
+      "path": "sealed://rungs/headless/campaign_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b0c1a44185bb152ff669f58912560629be6eb4ba5f5ce5fe2de64c9358c3ee2f"
+    },
+    {
+      "bytes": 2400,
+      "created_at": "2026-08-12T16:51:03.485269Z",
+      "path": "sealed://rungs/headless/charm_runback/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c8257cb0caba52518805751f68f0e9e35f91b339ecb2c3f9980ee264bc2a9702"
+    },
+    {
+      "bytes": 1431,
+      "created_at": "2026-08-12T16:51:03.495731Z",
+      "path": "sealed://rungs/headless/charm_runback/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5d7d478c20fc39998f254297868c67dd199f7d669fda9b799ad7635f5cb2de16"
+    },
+    {
+      "bytes": 5325,
+      "created_at": "2026-08-12T16:51:04.673363Z",
+      "path": "sealed://rungs/headless/debug_reach/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a3d10072b320c98de051c3c39e2e04bc3177e03163294768e5deb9f8c6167913"
+    },
+    {
+      "bytes": 2096,
+      "created_at": "2026-08-12T16:51:04.703730Z",
+      "path": "sealed://rungs/headless/debug_reach/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a8f2df5beed02046929065c4adfdcc7414eef36c146835cf8f98764decd649f9"
+    },
+    {
+      "bytes": 3046,
+      "created_at": "2026-08-12T16:51:05.215730Z",
+      "path": "sealed://rungs/headless/deploy_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9dfc8b309373cea64bd4ddae9d0def32dbd807e440a165af8476cd96b96e2199"
+    },
+    {
+      "bytes": 1805,
+      "created_at": "2026-08-12T16:51:05.259730Z",
+      "path": "sealed://rungs/headless/deploy_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7f9675fb25d76ac09fa8618df78eb4db8b28c2b19cd0a732f3c51fb2c0e6fed0"
+    },
+    {
+      "bytes": 1246,
+      "created_at": "2026-08-12T16:51:05.895874Z",
+      "path": "sealed://rungs/headless/drone_counter/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1ce23b38fb9209a020fe007a2c1697650776d55fdfd371bf08e429e3d78c506a"
+    },
+    {
+      "bytes": 907,
+      "created_at": "2026-08-12T16:51:05.911730Z",
+      "path": "sealed://rungs/headless/drone_counter/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c6109d91263dc2a95f3ab5fa60ca2dfd7a2fc8aa81cd723b5fc5ead019c757de"
+    },
+    {
+      "bytes": 1147,
+      "created_at": "2026-08-12T16:51:06.405288Z",
+      "path": "sealed://rungs/headless/iso_projection_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3781f725d778e2036c5556cea891377d33cb2bd7fe8947aae57127727835fcfd"
+    },
+    {
+      "bytes": 1004,
+      "created_at": "2026-08-12T16:51:06.467730Z",
+      "path": "sealed://rungs/headless/iso_projection_floor/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e37ff6f5ab80d1914c0f349ab31ca051354716c3cafde36b8433f0375438908c"
+    },
+    {
+      "bytes": 1326,
+      "created_at": "2026-08-12T16:51:06.967515Z",
+      "path": "sealed://rungs/headless/juice_deploy/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "505ee88ae004a34de416df6e1b3699b9bfdc405601943f94a8c5eabe603284cf"
+    },
+    {
+      "bytes": 998,
+      "created_at": "2026-08-12T16:51:07.027730Z",
+      "path": "sealed://rungs/headless/juice_deploy/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b492ca9ab3f025d0949ca4b4015eaf721f21e0f936bea183b818a761ab2abde5"
+    },
+    {
+      "bytes": 1928,
+      "created_at": "2026-08-12T16:51:07.579357Z",
+      "path": "sealed://rungs/headless/juice_kill_leak/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "adcc05efecbc14d74b907ec9451b12f25b87d0a9546cb229352785e3bff1bcac"
+    },
+    {
+      "bytes": 1367,
+      "created_at": "2026-08-12T16:51:07.675730Z",
+      "path": "sealed://rungs/headless/juice_kill_leak/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "26bfb2691e1fdc7955c032d511cdb56242a6ed18fc3f10cc87bfbd4463181fe4"
+    },
+    {
+      "bytes": 1681,
+      "created_at": "2026-08-12T16:51:08.224857Z",
+      "path": "sealed://rungs/headless/juice_trap_charm/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "79a2db0595c1201a6043486960d9f6dcaa59e7bbe21bf87cdab6ff5b3357ed50"
+    },
+    {
+      "bytes": 1314,
+      "created_at": "2026-08-12T16:51:08.231730Z",
+      "path": "sealed://rungs/headless/juice_trap_charm/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "132ad96277910423f31fb84ae14950ea6ae01a3e2888679e912e5436706ba007"
+    },
+    {
+      "bytes": 7493,
+      "created_at": "2026-08-12T16:51:08.817331Z",
+      "path": "sealed://rungs/headless/map_navigation/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "00378e5da64be3a7aff92c008f32ab00d23449cdfbfbcadf1a8e0aff6fb53935"
+    },
+    {
+      "bytes": 4734,
+      "created_at": "2026-08-12T16:51:08.879730Z",
+      "path": "sealed://rungs/headless/map_navigation/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8f6405bd82396f2ca9383e9b58fa2f165b5262b6aaada6a2dc1d596a012657c2"
+    },
+    {
+      "bytes": 2737,
+      "created_at": "2026-08-12T16:51:09.449943Z",
+      "path": "sealed://rungs/headless/music_routing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "75456e31fe333bbbd494c29dd2411f46f6df0b398ae9d42a5bbf32c7bb9d09da"
+    },
+    {
+      "bytes": 1237,
+      "created_at": "2026-08-12T16:51:09.449943Z",
+      "path": "sealed://rungs/headless/music_routing/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b7418251b261a551f35d9a4a1703623b69367d8294d953c17abba364f81b7968"
+    },
+    {
+      "bytes": 3472,
+      "created_at": "2026-08-12T16:51:10.084877Z",
+      "path": "sealed://rungs/headless/resign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f4a13fd290a0bd256c6b10f60f4ea6d935d79b7d63df9f45d435212f7dd167cb"
+    },
+    {
+      "bytes": 1723,
+      "created_at": "2026-08-12T16:51:10.087729Z",
+      "path": "sealed://rungs/headless/resign_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1de7b6c24482d96c064cbf9cf497ddee723dc59e5beeee328d3204cfd9f2aad9"
+    },
+    {
+      "bytes": 2131,
+      "created_at": "2026-08-12T16:51:10.581693Z",
+      "path": "sealed://rungs/headless/resize_relayout/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b4cac201df0e0d581676786d0eb59b1b41b32e34551b2f7014263f7af7df1724"
+    },
+    {
+      "bytes": 1287,
+      "created_at": "2026-08-12T16:51:10.643729Z",
+      "path": "sealed://rungs/headless/resize_relayout/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "81fe8ae9b02adf67ddb5974342144bf3db42a08bde1ba7f6e124c2058bec816d"
+    },
+    {
+      "bytes": 1974,
+      "created_at": "2026-08-12T16:51:11.287437Z",
+      "path": "sealed://rungs/headless/skill_timing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b61d1df27e1ce911fa9365f72abbf37a2cb78f757c1117d19fd7e889dae5994f"
+    },
+    {
+      "bytes": 1095,
+      "created_at": "2026-08-12T16:51:11.287437Z",
+      "path": "sealed://rungs/headless/skill_timing/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b6aa3c76aa72fb9546db685bf0e3cfd198b45b6d7a5277bfd3e182117df33894"
+    },
+    {
+      "bytes": 10255,
+      "created_at": "2026-08-12T16:51:11.750723Z",
+      "path": "sealed://rungs/headless/staging_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "4dcc0832a1b3b44ee9ff28f191b8730dffc445b97c26f0f89c9cba08ec84e06e"
+    },
+    {
+      "bytes": 4730,
+      "created_at": "2026-08-12T16:51:11.750723Z",
+      "path": "sealed://rungs/headless/staging_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "19718a20e647c68ca36a1974bc15028b962349e889a66f2fe633653fc6ec3bab"
+    },
+    {
+      "bytes": 1806,
+      "created_at": "2026-08-12T16:51:12.273306Z",
+      "path": "sealed://rungs/headless/trap_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3575466217018d42535c00b64df15b3872be68f2386c9bd65f25883caff9764d"
+    },
+    {
+      "bytes": 1136,
+      "created_at": "2026-08-12T16:51:12.315729Z",
+      "path": "sealed://rungs/headless/trap_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3d91bf877f675c9b589b1e55af3e509620f775128d691e0f48e4fb0d466819a1"
+    },
+    {
+      "bytes": 1663,
+      "created_at": "2026-08-12T16:51:12.970611Z",
+      "path": "sealed://rungs/headless/wave_banner_victory/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "87a347dc6bf619dabdd6ba45b938f384b7be551878403eaacdf79ff00e0d3469"
+    },
+    {
+      "bytes": 1095,
+      "created_at": "2026-08-12T16:51:13.055729Z",
+      "path": "sealed://rungs/headless/wave_banner_victory/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "adae995001602ca850fa8c5aa1fae74f0acd92e9fa5fd86b5f0b537fe52b83a5"
+    },
+    {
+      "bytes": 28816,
+      "created_at": "2026-08-12T16:51:14.340202Z",
+      "path": "sealed://rungs/windowed/assets_floor/assets_contact_sheet.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "414696b44915ebe4af3a8ede80362a950605c286c8c3238dcbb56b2669df7e2a"
+    },
+    {
+      "bytes": 1311,
+      "created_at": "2026-08-12T16:51:14.340710Z",
+      "path": "sealed://rungs/windowed/assets_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "39c9ca5f19c2e7baa69d88ef2ef01e41547bc61ad9b10f4c12d1f069037d6ec2"
+    },
+    {
+      "bytes": 1680,
+      "created_at": "2026-08-12T16:51:14.340710Z",
+      "path": "sealed://rungs/windowed/assets_floor/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0cd0ae4ba6b5c11367ce0e92ad1da54840a03d88ee1f66b121b1899036c39128"
+    },
+    {
+      "bytes": 54858,
+      "created_at": "2026-08-12T16:51:15.937230Z",
+      "path": "sealed://rungs/windowed/battle_controls/controls_idle.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2e232c15833180dce66861f8703ab6bcacf8044a87f0df2de201a333a08deedb"
+    },
+    {
+      "bytes": 54149,
+      "created_at": "2026-08-12T16:51:16.590840Z",
+      "path": "sealed://rungs/windowed/battle_controls/paused.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b553feab5b77f6de6a7caf03b497a4e26eb0b9aa523b662dba3a945eef4aaae4"
+    },
+    {
+      "bytes": 3412,
+      "created_at": "2026-08-12T16:51:19.311981Z",
+      "path": "sealed://rungs/windowed/battle_controls/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0a255d15b32b434dcc3102eb7a712c1ed19c18089f86d849f215342a2dad8593"
+    },
+    {
+      "bytes": 69474,
+      "created_at": "2026-08-12T16:51:18.589430Z",
+      "path": "sealed://rungs/windowed/battle_controls/resign_confirm.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "47d6d04502964edda5f64721f32ccb71c2db56d155ea26005222940269d8880e"
+    },
+    {
+      "bytes": 2552,
+      "created_at": "2026-08-12T16:51:19.311981Z",
+      "path": "sealed://rungs/windowed/battle_controls/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1351807eb000ba85ad6874d6b51584759a9296826b90100caf9bbeaf96d56ef0"
+    },
+    {
+      "bytes": 52808,
+      "created_at": "2026-08-12T16:51:18.285848Z",
+      "path": "sealed://rungs/windowed/battle_controls/speed_4x.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2ede28714de7f7f517c3b9527e28f8739e435c9df626cf26a1ff809936b1288d"
+    },
+    {
+      "bytes": 52322,
+      "created_at": "2026-08-12T16:51:19.083528Z",
+      "path": "sealed://rungs/windowed/battle_controls/terminal_continue.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d96489d18b1a3986c5f72e3067b7351fafae23cf10e68a518b306b707e61eadb"
+    },
+    {
+      "bytes": 55053,
+      "created_at": "2026-08-12T16:51:37.865281Z",
+      "path": "sealed://rungs/windowed/blocking/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e9986a1f5b863dc9a7fc00000ac477ea5ee65ef04824ee38951a99de0afc5a88"
+    },
+    {
+      "bytes": 54291,
+      "created_at": "2026-08-12T16:51:26.862855Z",
+      "path": "sealed://rungs/windowed/blocking/block_cluster.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a1547c4abef688a2b4978bcf27ae36b39bfbd94683c7f551e834fb4a93958f01"
+    },
+    {
+      "bytes": 53796,
+      "created_at": "2026-08-12T16:51:30.854264Z",
+      "path": "sealed://rungs/windowed/blocking/first_kill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "94854009badfe541d8807dc8e87212f3138ef5f14a6fd77372f56585b2ae3102"
+    },
+    {
+      "bytes": 1129,
+      "created_at": "2026-08-12T16:51:37.865486Z",
+      "path": "sealed://rungs/windowed/blocking/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "03f1feb025b9a4f7986408ca03240a5d5a3c53fd35cb437729ea4e07bfd5b2e0"
+    },
+    {
+      "bytes": 1910,
+      "created_at": "2026-08-12T16:51:38.039723Z",
+      "path": "sealed://rungs/windowed/blocking/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6aa0e674ade45b56936797be7da27cd76f1c5474400aad1d5e637a37957b666a"
+    },
+    {
+      "bytes": 41937,
+      "created_at": "2026-08-12T16:51:42.901954Z",
+      "path": "sealed://rungs/windowed/boot/battle_early.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f0fd16362a40965c14ab22743208ec6f927ff143ea0eb3982c57a827e0fb7bc9"
+    },
+    {
+      "bytes": 41224,
+      "created_at": "2026-08-12T16:51:53.779740Z",
+      "path": "sealed://rungs/windowed/boot/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c5c8fe0ba0278f02691341a280f085427021e5348f466951eebeb68f621c871b"
+    },
+    {
+      "bytes": 12334,
+      "created_at": "2026-08-12T16:51:39.318302Z",
+      "path": "sealed://rungs/windowed/boot/boot.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "37af0de9db86d6f204afe0551fc065ca35a7f95a6c1bc6882a7d2050571ebb75"
+    },
+    {
+      "bytes": 2722,
+      "created_at": "2026-08-12T16:51:53.780039Z",
+      "path": "sealed://rungs/windowed/boot/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b32895746ca35b790dacedc99935412e39886974d74a4b3fd1bcec18655eed37"
+    },
+    {
+      "bytes": 2611,
+      "created_at": "2026-08-12T16:51:53.919719Z",
+      "path": "sealed://rungs/windowed/boot/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "94b8926d47a59eb698f30360813116746206ddc281b7130768de362b49d30f4b"
+    },
+    {
+      "bytes": 4871,
+      "created_at": "2026-08-12T16:51:56.736532Z",
+      "path": "sealed://rungs/windowed/campaign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "cb66f2e116516aa1078df7e2427bc8ff6e55b9fef033d48c9440312c51cd27e0"
+    },
+    {
+      "bytes": 25813,
+      "created_at": "2026-08-12T16:51:56.538553Z",
+      "path": "sealed://rungs/windowed/campaign_flow/results_reward.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c517db01b61d5ca258280155826b305b5dfa75c382b213efdb0549b4c8c24222"
+    },
+    {
+      "bytes": 3258,
+      "created_at": "2026-08-12T16:51:56.736532Z",
+      "path": "sealed://rungs/windowed/campaign_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7ecf04e14dc509aea05cab4c56aa04e6d90a2539522440acb2bec94a37dbc8ba"
+    },
+    {
+      "bytes": 48096,
+      "created_at": "2026-08-12T16:51:56.013549Z",
+      "path": "sealed://rungs/windowed/campaign_flow/squad_select.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "abcba70f7922993306a5b484189670df28569a7cfff3382f56ef2ba9e44d1180"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T16:51:55.441709Z",
+      "path": "sealed://rungs/windowed/campaign_flow/stage_select_locked.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 55047,
+      "created_at": "2026-08-12T16:51:56.708332Z",
+      "path": "sealed://rungs/windowed/campaign_flow/stage_select_progress.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f01c05cc2e310778f5ff40d1c7d940d98864cf0edfdc30b8ab45031a5fa24bc9"
+    },
+    {
+      "bytes": 53341,
+      "created_at": "2026-08-12T16:51:59.076069Z",
+      "path": "sealed://rungs/windowed/charm_runback/bolt_cast.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f1e0359553dd2c47d0961f287f2c26e0e88b90eafcacec9b1a7718adb32d6b7d"
+    },
+    {
+      "bytes": 52410,
+      "created_at": "2026-08-12T16:51:59.987386Z",
+      "path": "sealed://rungs/windowed/charm_runback/charm_convert.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "beed593df3c9ded72b2b6ecb429f6e0aabf2f677880271f3dda30dfe5185c020"
+    },
+    {
+      "bytes": 52945,
+      "created_at": "2026-08-12T16:52:00.283208Z",
+      "path": "sealed://rungs/windowed/charm_runback/charm_duel.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c4d61cc2aee82d2f20f5d0685355188a42e1b122dfb305e136f88eba1c007879"
+    },
+    {
+      "bytes": 54769,
+      "created_at": "2026-08-12T16:52:01.166439Z",
+      "path": "sealed://rungs/windowed/charm_runback/charm_victory.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "fbd03c549a03de2766c518e27387c9fda8e0a4a6f61842d2f010da6767c4de4e"
+    },
+    {
+      "bytes": 2495,
+      "created_at": "2026-08-12T16:52:01.166677Z",
+      "path": "sealed://rungs/windowed/charm_runback/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f4495981d24746708f8715cb3a87abd79708574c5f32ee19c6b5df245cfaa349"
+    },
+    {
+      "bytes": 2550,
+      "created_at": "2026-08-12T16:52:01.351718Z",
+      "path": "sealed://rungs/windowed/charm_runback/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5d556f5f045b48f45b83196a1ebcda97bfedbb0d6b4334fae82ca1777d4c02da"
+    },
+    {
+      "bytes": 145040,
+      "created_at": "2026-08-12T16:52:03.050333Z",
+      "path": "sealed://rungs/windowed/debug_reach/overlay_battle.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "288b2430771db9699777199cdd80ac30e6c3bbe06e80b545d2481b2c7bf4bbc6"
+    },
+    {
+      "bytes": 148295,
+      "created_at": "2026-08-12T16:52:04.741288Z",
+      "path": "sealed://rungs/windowed/debug_reach/overlay_granted.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9606e0994c1e5aff1e6ecc4124d0c20d8474c7248ffc39e74ccfd91ee2dea9db"
+    },
+    {
+      "bytes": 28955,
+      "created_at": "2026-08-12T16:52:02.594896Z",
+      "path": "sealed://rungs/windowed/debug_reach/overlay_open.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "80398e037610acdc578e29f164cdea5ccd2bee8002457f5a03addf157c1411cb"
+    },
+    {
+      "bytes": 5404,
+      "created_at": "2026-08-12T16:52:05.423730Z",
+      "path": "sealed://rungs/windowed/debug_reach/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "cde5402bfef7d1224c54fcfd308b34d60bbffbbd60e050605a6f91c2a021907b"
+    },
+    {
+      "bytes": 3183,
+      "created_at": "2026-08-12T16:52:05.603717Z",
+      "path": "sealed://rungs/windowed/debug_reach/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "01012ac1573ac0f6a519454e7c4247ad7d548e7583468ea08eff903c346a8bb9"
+    },
+    {
+      "bytes": 54010,
+      "created_at": "2026-08-12T16:52:09.189223Z",
+      "path": "sealed://rungs/windowed/deploy_flow/after_retreat.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8715c6735a7fde398536f09d3f9f5f8c27625ecceea207a6e795e1417e0143eb"
+    },
+    {
+      "bytes": 51858,
+      "created_at": "2026-08-12T16:52:07.528015Z",
+      "path": "sealed://rungs/windowed/deploy_flow/deployed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8c4feab412291a2e68b2be717d3059887f45c36cc240d89f5265c5e8ea9bdb23"
+    },
+    {
+      "bytes": 54010,
+      "created_at": "2026-08-12T16:52:09.224467Z",
+      "path": "sealed://rungs/windowed/deploy_flow/elevated_lift.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8715c6735a7fde398536f09d3f9f5f8c27625ecceea207a6e795e1417e0143eb"
+    },
+    {
+      "bytes": 56753,
+      "created_at": "2026-08-12T16:52:09.309097Z",
+      "path": "sealed://rungs/windowed/deploy_flow/elevated_sniper.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "dffd3c19f3fa3a69dc473f6a42f5c297034187aa023a50eb354c41686ac13a44"
+    },
+    {
+      "bytes": 64082,
+      "created_at": "2026-08-12T16:52:07.351120Z",
+      "path": "sealed://rungs/windowed/deploy_flow/facing_chooser.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d5cadfcd56ddaf79a7029e9ce22d90626012bc3f9edf4fe597e0016c53d2aee7"
+    },
+    {
+      "bytes": 62555,
+      "created_at": "2026-08-12T16:52:07.206686Z",
+      "path": "sealed://rungs/windowed/deploy_flow/placement_mode.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e947cc52c07915539dbd8f2553aebd10af7fa3b0bf4d9aaac75735dedcbb1510"
+    },
+    {
+      "bytes": 3315,
+      "created_at": "2026-08-12T16:52:09.459597Z",
+      "path": "sealed://rungs/windowed/deploy_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c65bc443103045e0ac5d7e8441ddd92c392528b36aa580382b231d175f5abfd2"
+    },
+    {
+      "bytes": 2948,
+      "created_at": "2026-08-12T16:52:09.607716Z",
+      "path": "sealed://rungs/windowed/deploy_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9168d1bdbaae7c04755f0f7b4584ea042c4183d76a8fd3889aead799b5cf27ae"
+    },
+    {
+      "bytes": 61906,
+      "created_at": "2026-08-12T16:52:23.192474Z",
+      "path": "sealed://rungs/windowed/drone_counter/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "93bf0d7b01ffd96b7e7307af8c305d0ee788a9418e4ec8f0c97a1478eff8bab7"
+    },
+    {
+      "bytes": 59990,
+      "created_at": "2026-08-12T16:52:16.410800Z",
+      "path": "sealed://rungs/windowed/drone_counter/drones_over_defenders.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e2ce4ef18754ce8cab064a78b0012ed7b45d3451afeff18c62551483b6a1a458"
+    },
+    {
+      "bytes": 1327,
+      "created_at": "2026-08-12T16:52:23.192686Z",
+      "path": "sealed://rungs/windowed/drone_counter/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6eb7d81b7d369995546adfd57aa208f853bfc9c2e22bcf0aa424a4b1b5546c5e"
+    },
+    {
+      "bytes": 2001,
+      "created_at": "2026-08-12T16:52:23.371713Z",
+      "path": "sealed://rungs/windowed/drone_counter/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "bf7366743be5be46f9b5eaa712f54a6e234db6344359dbd948f21eb38a64fa08"
+    },
+    {
+      "bytes": 60285,
+      "created_at": "2026-08-12T16:52:19.997766Z",
+      "path": "sealed://rungs/windowed/drone_counter/sniper_shot.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0eab1dc0e2d2af943aa60bd80b29419e4372906640e7d9c99075c1f2875cdb5a"
+    },
+    {
+      "bytes": 54209,
+      "created_at": "2026-08-12T16:52:25.298422Z",
+      "path": "sealed://rungs/windowed/iso_projection_floor/iso_deployed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c80be24484958db168a546af3d5daf13d350d77e549a75c95804d79a08558a03"
+    },
+    {
+      "bytes": 54763,
+      "created_at": "2026-08-12T16:52:24.868793Z",
+      "path": "sealed://rungs/windowed/iso_projection_floor/iso_grid.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7732a84b4ec8a807dcc5a2e4b2f9d8056ad0e1ed368088b32f5dce2d12ea4eb8"
+    },
+    {
+      "bytes": 62708,
+      "created_at": "2026-08-12T16:52:25.004290Z",
+      "path": "sealed://rungs/windowed/iso_projection_floor/iso_placement_highlights.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f0be508dbdee2e46a3131ac564520aa43999b5c5e0c30725722910fa7b72b255"
+    },
+    {
+      "bytes": 1407,
+      "created_at": "2026-08-12T16:52:25.298648Z",
+      "path": "sealed://rungs/windowed/iso_projection_floor/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "fd1e725e60114f4cf20bcdc166ae050b61d1602d52cce6860d53ebc26bd7f808"
+    },
+    {
+      "bytes": 2095,
+      "created_at": "2026-08-12T16:52:25.431712Z",
+      "path": "sealed://rungs/windowed/iso_projection_floor/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8466d1b653f15f7fe54d42788697b6be6cc474233833da51108deff4cf31fe08"
+    },
+    {
+      "bytes": 62266,
+      "created_at": "2026-08-12T16:52:27.200299Z",
+      "path": "sealed://rungs/windowed/juice_deploy/deploy_drag.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c6750a62cf277c2043cfa95de6e2dcbf56ff569ee4d70ca8cbf270f690982c17"
+    },
+    {
+      "bytes": 54303,
+      "created_at": "2026-08-12T16:52:27.450163Z",
+      "path": "sealed://rungs/windowed/juice_deploy/deploy_land.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5c63b23c3de36df17ff19a8f9e57178b9db482f00049a44e6755b32996158ffd"
+    },
+    {
+      "bytes": 54119,
+      "created_at": "2026-08-12T16:52:27.622392Z",
+      "path": "sealed://rungs/windowed/juice_deploy/deploy_settled.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f58164e6548d2e878e623d58e594e1c2a48961c4b03f6a8c3356dc64fa5570da"
+    },
+    {
+      "bytes": 1518,
+      "created_at": "2026-08-12T16:52:27.633806Z",
+      "path": "sealed://rungs/windowed/juice_deploy/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b52c4d267d3593d833afc099dab84771e7c29131bd2528193343e1ae99eac512"
+    },
+    {
+      "bytes": 2072,
+      "created_at": "2026-08-12T16:52:27.743712Z",
+      "path": "sealed://rungs/windowed/juice_deploy/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "264eaa0dd966f7c480e7ec814669dd2a15ecb553e0d5fc5dd83bc0d2c1f34c1e"
+    },
+    {
+      "bytes": 52591,
+      "created_at": "2026-08-12T16:52:32.348555Z",
+      "path": "sealed://rungs/windowed/juice_kill_leak/kill_burst.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "e902c6556556343d9e4f2c6fee9084977b437a669d9ede05522ac35f68edc01e"
+    },
+    {
+      "bytes": 52325,
+      "created_at": "2026-08-12T16:52:31.018031Z",
+      "path": "sealed://rungs/windowed/juice_kill_leak/leak_clear.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "6ffbf90118d14b26e80c9bc2c3844e47dc43ee24e0c7ee69610775318ba34508"
+    },
+    {
+      "bytes": 52862,
+      "created_at": "2026-08-12T16:52:30.794597Z",
+      "path": "sealed://rungs/windowed/juice_kill_leak/leak_vignette.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9b634f6319258612eaad31afd83eab3e42bcf975b3a76e9b7f38358ff9e08df4"
+    },
+    {
+      "bytes": 2177,
+      "created_at": "2026-08-12T16:52:32.408790Z",
+      "path": "sealed://rungs/windowed/juice_kill_leak/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ccd678d7cf89c6df006c37977c97c9c121226e658f2931aea536169ff9f1aee8"
+    },
+    {
+      "bytes": 2442,
+      "created_at": "2026-08-12T16:52:32.511711Z",
+      "path": "sealed://rungs/windowed/juice_kill_leak/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0d786c528b6119caf335a48d518ad20a7c2e322a453a3d796ee7cb6b92ba221f"
+    },
+    {
+      "bytes": 53085,
+      "created_at": "2026-08-12T16:52:38.353913Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/charm_after.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0cac52c3d82718bdc8eb4ea80d44bba5eb4b8243dae2da39bb1add1cb4ebaae1"
+    },
+    {
+      "bytes": 53490,
+      "created_at": "2026-08-12T16:52:38.295594Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/charm_before.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "16cd726858969ef8d477d978afc37324e1e0f8b5fb19d01420b326d788be49b4"
+    },
+    {
+      "bytes": 2101,
+      "created_at": "2026-08-12T16:52:38.505152Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d14de7124f856738c0f4776c9ac7fdebf4a706bef3ea96b52385cd3ce3c92811"
+    },
+    {
+      "bytes": 2189,
+      "created_at": "2026-08-12T16:52:38.505152Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "45d77a918a52cd4278923586b958f656b8cbfea02a15880d348e76726102caaa"
+    },
+    {
+      "bytes": 54491,
+      "created_at": "2026-08-12T16:52:37.174789Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/trap_gone.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3ae84fca0333f5f43253859f26e63489382701588739eaeafd046b4157d98a26"
+    },
+    {
+      "bytes": 54292,
+      "created_at": "2026-08-12T16:52:35.877287Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/trap_sprung.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7aca9cb4b806407ce735e1224c6dcf798c93a41082ee9cbf64b778cd17fa866f"
+    },
+    {
+      "bytes": 54744,
+      "created_at": "2026-08-12T16:52:37.018350Z",
+      "path": "sealed://rungs/windowed/juice_trap_charm/trap_sprung_final.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "738da6a9155f2ab27246cf3a37429c692a4c0b7b6da98a5b82df8b32fc4f56b6"
+    },
+    {
+      "bytes": 54763,
+      "created_at": "2026-08-12T16:52:40.159409Z",
+      "path": "sealed://rungs/windowed/map_navigation/map_height_fill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7732a84b4ec8a807dcc5a2e4b2f9d8056ad0e1ed368088b32f5dce2d12ea4eb8"
+    },
+    {
+      "bytes": 55610,
+      "created_at": "2026-08-12T16:52:40.276123Z",
+      "path": "sealed://rungs/windowed/map_navigation/map_pan_far_edges.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8af76e1bd6b1c56b3b61d4ad267e836e39f54887e620d97166b22c8a6210ed88"
+    },
+    {
+      "bytes": 55343,
+      "created_at": "2026-08-12T16:52:40.418382Z",
+      "path": "sealed://rungs/windowed/map_navigation/map_pan_near_edges.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9bc52d694b517b4313a88c8553af96b154ecb7e92eeb13b5be5cec12aa2d4d80"
+    },
+    {
+      "bytes": 7581,
+      "created_at": "2026-08-12T16:52:41.078002Z",
+      "path": "sealed://rungs/windowed/map_navigation/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "60ed1d91f599fc4e889a1a3d04376062ac858e1ee1ce9a9f64140fe409b42b72"
+    },
+    {
+      "bytes": 5830,
+      "created_at": "2026-08-12T16:52:41.187709Z",
+      "path": "sealed://rungs/windowed/map_navigation/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2a1e8bba8f296ab530ca4f3fb810d7d89363d2b263a2bc53c49c78b9546b1755"
+    },
+    {
+      "bytes": 2737,
+      "created_at": "2026-08-12T16:52:42.935419Z",
+      "path": "sealed://rungs/windowed/music_routing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "75456e31fe333bbbd494c29dd2411f46f6df0b398ae9d42a5bbf32c7bb9d09da"
+    },
+    {
+      "bytes": 2252,
+      "created_at": "2026-08-12T16:52:42.935419Z",
+      "path": "sealed://rungs/windowed/music_routing/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "55f77d626044eb4c04ef83a4cadeae09ea174a68728d8f75ffc4379ca814c2ee"
+    },
+    {
+      "bytes": 12334,
+      "created_at": "2026-08-12T16:52:46.583763Z",
+      "path": "sealed://rungs/windowed/resign_flow/back_at_title.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "37af0de9db86d6f204afe0551fc065ca35a7f95a6c1bc6882a7d2050571ebb75"
+    },
+    {
+      "bytes": 46562,
+      "created_at": "2026-08-12T16:52:45.964000Z",
+      "path": "sealed://rungs/windowed/resign_flow/defeat_stamp.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "c6fcbaecf0ddd3cddc0e39f2d6282ff1ed86a1204a39f0862e2b578e6e67ec80"
+    },
+    {
+      "bytes": 3607,
+      "created_at": "2026-08-12T16:52:46.584066Z",
+      "path": "sealed://rungs/windowed/resign_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b2ed300d73cfe41babf5b4bc773b109f734b04f017ec19471d7faea20f06c457"
+    },
+    {
+      "bytes": 17511,
+      "created_at": "2026-08-12T16:52:46.169990Z",
+      "path": "sealed://rungs/windowed/resign_flow/results_defeat.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a38c5004daabd5d4d62e586515f61cfbc8acd39d1e0820a0f8527a09e78b6e28"
+    },
+    {
+      "bytes": 2557,
+      "created_at": "2026-08-12T16:52:46.584066Z",
+      "path": "sealed://rungs/windowed/resign_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3c43e82b0456da55e3953f891e20d81eac01b88bca3d9b92165efeeb8adb10f4"
+    },
+    {
+      "bytes": 2131,
+      "created_at": "2026-08-12T16:52:48.515945Z",
+      "path": "sealed://rungs/windowed/resize_relayout/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ab58b8535e4432bc8ff3b505c903b617548a8cb8e9d26ce09632ffb4892f2bb7"
+    },
+    {
+      "bytes": 2302,
+      "created_at": "2026-08-12T16:52:48.651707Z",
+      "path": "sealed://rungs/windowed/resize_relayout/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "8b2ecf877bf36756911c10e53f850f872f02cdf1956293b512de78273209fe4b"
+    },
+    {
+      "bytes": 55532,
+      "created_at": "2026-08-12T16:53:01.411905Z",
+      "path": "sealed://rungs/windowed/skill_timing/battle_end.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "baff85fbbea9a7b3869bd9cee535c3e4c771188877a4b1889d4f0ec0433ae5d6"
+    },
+    {
+      "bytes": 2207,
+      "created_at": "2026-08-12T16:53:01.412130Z",
+      "path": "sealed://rungs/windowed/skill_timing/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "25db54fac6127c7e9ba2b94fcad5cc4ea53e7d2eaa634a77f25ad8cb7c94e9db"
+    },
+    {
+      "bytes": 2465,
+      "created_at": "2026-08-12T16:53:01.603704Z",
+      "path": "sealed://rungs/windowed/skill_timing/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "75b72120034ab441cb63ce3ecc55c2d8bcd7be232ae0bfe03ddea82ea9493b4a"
+    },
+    {
+      "bytes": 55186,
+      "created_at": "2026-08-12T16:52:57.642982Z",
+      "path": "sealed://rungs/windowed/skill_timing/skill_flash.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "24778f1f29de4f6df5604efed9744c773d831f0f65f2c7849e64fa1b06ce811f"
+    },
+    {
+      "bytes": 54826,
+      "created_at": "2026-08-12T16:52:57.959729Z",
+      "path": "sealed://rungs/windowed/skill_timing/skill_flash_decay.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "03079a1f67af8b15a169dd5ed2690e8a47604404d230266853ea081cc1bd62b9"
+    },
+    {
+      "bytes": 53198,
+      "created_at": "2026-08-12T16:52:54.087127Z",
+      "path": "sealed://rungs/windowed/skill_timing/sp_fill.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "225004c47b9243bcdc235b73e85d53192289fbb0f4f9d24890aa8d3ecaaa01e2"
+    },
+    {
+      "bytes": 54466,
+      "created_at": "2026-08-12T16:52:57.565830Z",
+      "path": "sealed://rungs/windowed/skill_timing/sp_full.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "43aa833f08bac964b6d68ef8441c7b7c146dffce29c5e1d2e648e64be85c1481"
+    },
+    {
+      "bytes": 10352,
+      "created_at": "2026-08-12T16:53:04.128390Z",
+      "path": "sealed://rungs/windowed/staging_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "16593514f4312d5ca2f596e5d965a59ba48ea76391ce4b6c0a4a2b07e10411af"
+    },
+    {
+      "bytes": 18044,
+      "created_at": "2026-08-12T16:53:03.899759Z",
+      "path": "sealed://rungs/windowed/staging_flow/results_return_to_staging.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "03d4e488118ff976f1a110a8906398459a22fc706dbee66c801842532192869f"
+    },
+    {
+      "bytes": 5820,
+      "created_at": "2026-08-12T16:53:04.128390Z",
+      "path": "sealed://rungs/windowed/staging_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "41e0437b774d3d5a4756a300f0e76432c5248965fb9bf8532622bfd15b1085c4"
+    },
+    {
+      "bytes": 58430,
+      "created_at": "2026-08-12T16:53:03.540518Z",
+      "path": "sealed://rungs/windowed/staging_flow/staging_initial.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "05e38dae6be8cea90fd28237f77be9664fa106cb74421b19b2f6caff36dd8054"
+    },
+    {
+      "bytes": 56919,
+      "created_at": "2026-08-12T16:53:03.700386Z",
+      "path": "sealed://rungs/windowed/staging_flow/staging_to_missions.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "00bc11388d5a38e140ba738bc37ad46a340b221d9a5f97e167a2d4306bdff3dd"
+    },
+    {
+      "bytes": 1901,
+      "created_at": "2026-08-12T16:53:07.393218Z",
+      "path": "sealed://rungs/windowed/trap_flow/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "5055944ab1d4a7647305527a1b925eea86c277e6246681e516e15c2facc39a1c"
+    },
+    {
+      "bytes": 1994,
+      "created_at": "2026-08-12T16:53:07.393218Z",
+      "path": "sealed://rungs/windowed/trap_flow/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "ea6926510d1eec8d485a5cac33dbb588c652cee5084a5af9e901c01f2492e0b8"
+    },
+    {
+      "bytes": 54749,
+      "created_at": "2026-08-12T16:53:07.392992Z",
+      "path": "sealed://rungs/windowed/trap_flow/spike_after.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "9ee25befef2336f28f2efa22cc3ba8fc5cb95f071e3f8706aec14a21b6ec8ae9"
+    },
+    {
+      "bytes": 52482,
+      "created_at": "2026-08-12T16:53:06.100681Z",
+      "path": "sealed://rungs/windowed/trap_flow/spike_armed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1dace7695abd42f5e205a052e671808b30e26fe05972d798b103760a9d3e8e8b"
+    },
+    {
+      "bytes": 52482,
+      "created_at": "2026-08-12T16:53:06.137671Z",
+      "path": "sealed://rungs/windowed/trap_flow/tar_overlay.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "1dace7695abd42f5e205a052e671808b30e26fe05972d798b103760a9d3e8e8b"
+    },
+    {
+      "bytes": 56907,
+      "created_at": "2026-08-12T16:53:05.964044Z",
+      "path": "sealed://rungs/windowed/trap_flow/traps_placed.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f8ff2bbcca1cfc4d8de6d5eadc848f4fd8ae3d583b88a63d438c50586785bf1f"
+    },
+    {
+      "bytes": 1493,
+      "created_at": "2026-08-12T16:53:15.289410Z",
+      "path": "sealed://rungs/windowed/wave_banner_victory/report.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "dab93ce8f5a0119106ab7ab2e5eef809973c8d99e3d0da8df53938a695a6bc20"
+    },
+    {
+      "bytes": 2061,
+      "created_at": "2026-08-12T16:53:15.431701Z",
+      "path": "sealed://rungs/windowed/wave_banner_victory/run.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "39613641e78dd9bbe4d3284785920d3f008bfd39a375323ccf212bc775dbcf17"
+    },
+    {
+      "bytes": 58086,
+      "created_at": "2026-08-12T16:53:15.288326Z",
+      "path": "sealed://rungs/windowed/wave_banner_victory/victory_stamp.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "3dd7d51136216a095cefb0ccf85fa46435c07164d26ba4e9daad1d9e36b10ef6"
+    },
+    {
+      "bytes": 57857,
+      "created_at": "2026-08-12T16:53:09.183931Z",
+      "path": "sealed://rungs/windowed/wave_banner_victory/wave_banner_1.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b350674332cc7d13f604da8b7fe7c9cbcba54a7a614a43d2de86c539be7dba32"
+    },
+    {
+      "bytes": 58451,
+      "created_at": "2026-08-12T16:53:12.250788Z",
+      "path": "sealed://rungs/windowed/wave_banner_victory/wave_banner_2.png",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "d3fc8458f87fa0606d56072477ae6dc41b1a783742069f0be944c851e3e10248"
+    },
+    {
+      "bytes": 101,
+      "created_at": "2026-08-12T16:50:55.679733Z",
+      "path": "sealed://stage-lint.log",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "0bd55c354adbba9a5428d37b770e7c98be9f184660f9203d60b34c2f47561af8"
+    },
+    {
+      "bytes": 68629,
+      "created_at": "2026-08-12T16:55:57.405171Z",
+      "path": "sealed://provenance/artifact-manifest.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd"
+    },
+    {
+      "bytes": 1679,
+      "created_at": "2026-08-12T17:04:07.379555Z",
+      "path": "state://independent-audit-pass.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "f356d96c5b394d89ab629159ed360ea81aa6d78291e4dd70b5553817e5c226cb"
+    },
+    {
+      "bytes": 1155,
+      "created_at": "2026-08-12T16:42:24.967839Z",
+      "path": "state://independent-audit-initial-fail.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "7f6c21e9f0e15726508b99a41267fa98d84c200e50cc0816718f29e222949852"
+    },
+    {
+      "bytes": 762,
+      "created_at": "2026-08-12T16:48:42.623762Z",
+      "path": "state://independent-audit-second-fail.json",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "a87cb6dfa231709e2972155638f1bab90d4f423dafb3ca38efc268d56e7cbef6"
+    },
+    {
+      "bytes": 1304,
+      "created_at": "2026-08-12T16:57:58.683638Z",
+      "path": "state://authenticated-visual-review/findings.md",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "2adf5ada50ad10b93b68af1479950e4f7226c8d68cc127057b566e27c99c37f8"
+    },
+    {
+      "bytes": 10280,
+      "created_at": "2026-08-12T16:48:50.806433Z",
+      "path": "state://TD-017-runtime-music-plan.md",
+      "provenance_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+      "sha256": "b3e6e43a0e18b9ee5e9ff1768e4ffcec258a792ebd5752d9ebf89f5b64f7335f"
+    }
+  ],
+  "commands": [
+    {
+      "digest": "sha256:132326c55e4d27a5a0809b1cec28a62eccbda17b0681bac3cdb190eced86012a",
+      "name": "music_asset_integrity",
+      "safe_args": [
+        "tools/music/verify_music.sh"
+      ]
+    },
+    {
+      "digest": "sha256:fac4473f5704a5d514e35ee285dcc07e3036de0e83c95f6a5726ce58f99e3323",
+      "name": "godot_import",
+      "safe_args": [
+        "--headless",
+        "--path",
+        ".",
+        "--import"
+      ]
+    },
+    {
+      "digest": "sha256:c452f7d76e1c22615b56bb2affeed8ccd20bc372dca0384e2e4dc2454aedfecc",
+      "name": "stage_lint",
+      "safe_args": [
+        "--headless",
+        "stage_lint.gd"
+      ]
+    },
+    {
+      "digest": "sha256:14816080702780873e82d1273596b3b6f2e035f0a98807ef72c0366fad741f57",
+      "name": "full_gut",
+      "safe_args": [
+        "--headless",
+        "test/**",
+        "positive-count"
+      ]
+    },
+    {
+      "digest": "sha256:45913537de249316a472119fc4675a37bb23fc133926437159751b083837e61f",
+      "name": "headless_scenarios",
+      "safe_args": [
+        "all",
+        "seed=42",
+        "fixed-fps=60"
+      ]
+    },
+    {
+      "digest": "sha256:97e938c9941171d574d40919264fb9da110c64c9f1ba1291154a1dfd8b0016d9",
+      "name": "windowed_scenarios",
+      "safe_args": [
+        "all",
+        "seed=42",
+        "1280x720",
+        "no-focus"
+      ]
+    },
+    {
+      "digest": "sha256:4d1dcc4d681f58a9403202b32923c3a7951e126e2a38e018616ebdd2d6d001c2",
+      "name": "bots_and_gates",
+      "safe_args": [
+        "all-bots",
+        "ticks=3600",
+        "quality-gate"
+      ]
+    },
+    {
+      "digest": "sha256:f5672410e1382173604e84908b2f04b69d989b2cff3ee87f95ca64c3e949fa29",
+      "name": "aggregate_full",
+      "safe_args": [
+        "scripts/verify.sh",
+        "--full"
+      ]
+    }
+  ],
+  "duration_seconds": 326,
+  "ended_at": "2026-08-12T16:55:57Z",
+  "environment": {
+    "ARCH": "x86_64",
+    "CI": "false",
+    "DISPLAY_KIND": "sandbox-windowed-display",
+    "GODOT_VERSION": "4.7.1.stable.official.a13da4feb",
+    "LOCALE_CLASS": "C.UTF-8",
+    "OS": "linux",
+    "XVFB": "repository-wrapper"
+  },
+  "fresh": true,
+  "gates": [
+    {
+      "detail": "Six human-approved catalog cues preserve exact media/source/transcription hashes and one-player runtime metadata.",
+      "id": "music_asset_integrity",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "150 tests passed with 22,841 assertions; controller/catalog tests are positive and non-vacuous.",
+      "id": "full_gut",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "21 headless plus 21 windowed reports are distinct and green; 67 windowed screenshots; zero required render skips.",
+      "id": "scenario_integrity",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "25 seeded checks prove one player, stage/boss routes, duplicate no-restart, hard replacement, invalid zero-state change, and non-battle stop.",
+      "id": "music_routing",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "11 distinct bot telemetry/gate pairs; every quality verdict is GO with no failures.",
+      "id": "bots_and_quality",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Poseidon explicitly approved the six-cue score and specified exactly one non-layered, non-restarting player.",
+      "id": "human_audio_review",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "All 67 authenticated windowed screenshots were reviewed; no non-audio regression observed.",
+      "id": "visual_regression_review",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Strict third audit PASS with zero material functional or evidence findings. The exact diff satisfies one cue at a time, no layering, and no repeated restart/fire. The content-addressed read-only RELEASE authenticates 300 manifest entries, complete start/end identity, 150 tests and 22,841 assertions, 21 headless plus 21 windowed reports, zero windowed skips, 67 screenshots, 11 distinct bot evidence pairs, and separate aggregate full green.",
+      "id": "independent_diff_and_evidence_audit",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "300 manifest entries verified by hash and size; content-addressed root is read-only with no symlinks or unlisted regular artifacts except the manifest itself.",
+      "id": "authenticated_artifact_seal",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Aggregate repository rung passed.",
+      "id": "R2-import",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "Aggregate repository rung passed.",
+      "id": "R2.5-stage-lint",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "Aggregate repository rung passed.",
+      "id": "R3-gut",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/assets_floor/report.json",
+      "id": "R4a-assets_floor",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/battle_controls/report.json",
+      "id": "R4a-battle_controls",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/blocking/report.json",
+      "id": "R4a-blocking",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/boot/report.json",
+      "id": "R4a-boot",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/campaign_flow/report.json",
+      "id": "R4a-campaign_flow",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/charm_runback/report.json",
+      "id": "R4a-charm_runback",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/debug_reach/report.json",
+      "id": "R4a-debug_reach",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/deploy_flow/report.json",
+      "id": "R4a-deploy_flow",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/drone_counter/report.json",
+      "id": "R4a-drone_counter",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/iso_projection_floor/report.json",
+      "id": "R4a-iso_projection_floor",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_deploy/report.json",
+      "id": "R4a-juice_deploy",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_kill_leak/report.json",
+      "id": "R4a-juice_kill_leak",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_trap_charm/report.json",
+      "id": "R4a-juice_trap_charm",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/map_navigation/report.json",
+      "id": "R4a-map_navigation",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/music_routing/report.json",
+      "id": "R4a-music_routing",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resign_flow/report.json",
+      "id": "R4a-resign_flow",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resize_relayout/report.json",
+      "id": "R4a-resize_relayout",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/skill_timing/report.json",
+      "id": "R4a-skill_timing",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/staging_flow/report.json",
+      "id": "R4a-staging_flow",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/trap_flow/report.json",
+      "id": "R4a-trap_flow",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/wave_banner_victory/report.json",
+      "id": "R4a-wave_banner_victory",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/assets_floor/report.json",
+      "id": "R4b-assets_floor",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/battle_controls/report.json",
+      "id": "R4b-battle_controls",
+      "seconds": 5,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/blocking/report.json",
+      "id": "R4b-blocking",
+      "seconds": 18,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/boot/report.json",
+      "id": "R4b-boot",
+      "seconds": 16,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/campaign_flow/report.json",
+      "id": "R4b-campaign_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/charm_runback/report.json",
+      "id": "R4b-charm_runback",
+      "seconds": 5,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/debug_reach/report.json",
+      "id": "R4b-debug_reach",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/deploy_flow/report.json",
+      "id": "R4b-deploy_flow",
+      "seconds": 4,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/drone_counter/report.json",
+      "id": "R4b-drone_counter",
+      "seconds": 14,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/iso_projection_floor/report.json",
+      "id": "R4b-iso_projection_floor",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_deploy/report.json",
+      "id": "R4b-juice_deploy",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_kill_leak/report.json",
+      "id": "R4b-juice_kill_leak",
+      "seconds": 5,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/juice_trap_charm/report.json",
+      "id": "R4b-juice_trap_charm",
+      "seconds": 6,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/map_navigation/report.json",
+      "id": "R4b-map_navigation",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/music_routing/report.json",
+      "id": "R4b-music_routing",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resign_flow/report.json",
+      "id": "R4b-resign_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/resize_relayout/report.json",
+      "id": "R4b-resize_relayout",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/skill_timing/report.json",
+      "id": "R4b-skill_timing",
+      "seconds": 13,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/staging_flow/report.json",
+      "id": "R4b-staging_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/trap_flow/report.json",
+      "id": "R4b-trap_flow",
+      "seconds": 3,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/wave_banner_victory/report.json",
+      "id": "R4b-wave_banner_victory",
+      "seconds": 8,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_campaign",
+      "seconds": 2,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_campaign",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_idle",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_idle",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_01",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_01",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_02",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_02",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_03",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_03",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_04",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_04",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_05",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_05",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_06",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_06",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_06_no_charm",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_06_no_charm",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_07",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_07",
+      "seconds": 0,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/telemetry.json",
+      "id": "R5-bot_stage_08",
+      "seconds": 1,
+      "status": "PASS"
+    },
+    {
+      "detail": "artifacts/gate.json",
+      "id": "R6-gate-bot_stage_08",
+      "seconds": 0,
+      "status": "PASS"
+    }
+  ],
+  "identity": {
+    "affected_surfaces": [
+      "public_runtime_seam",
+      "music_catalog",
+      "stage_data",
+      "tests",
+      "harness",
+      "player_facing_audio",
+      "policy_records"
+    ],
+    "artifact_manifest_hash": "sha256:68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd",
+    "commit_sha": "bb5c384739311af54f3045832239451a34c5eb3c",
+    "effective_lane": "RELEASE",
+    "environment_fingerprint": "sha256:d9ca8faa798c3f96c1a31c21912466ada438bafa326a62eef0b7d842c504889d",
+    "gate_hash": "sha256:8ef89f826efe3342b9d78614cf24c95e218ade1e948e5f507fbfa619a3e64ec9",
+    "impact_map_hash": "sha256:91e8c8e832da6c8ddfcedcec789c93c80ffa484a8adfe53f4e8faf7d58768ce7",
+    "inputs": [
+      {
+        "digest": "sha256:e6b306a02c4c67590195ab58c1dec87c93fc275b4337bc5c21e4b47a2479d74a",
+        "id": "td017",
+        "kind": "orientation",
+        "seed": null
+      },
+      {
+        "digest": "sha256:b3e6e43a0e18b9ee5e9ff1768e4ffcec258a792ebd5752d9ebf89f5b64f7335f",
+        "id": "td017-runtime-music",
+        "kind": "runtime_plan",
+        "seed": null
+      },
+      {
+        "digest": "sha256:6ab060b765d807743262675a2888f1a7a324316943e36a30c77fee7365893520",
+        "id": "music_routing",
+        "kind": "scenario",
+        "seed": 42
+      },
+      {
+        "digest": "sha256:5ab4ceba9e4890245917291c32b919d13b27b141dbf886a1076ffb50766ca90b",
+        "id": "six-cue-score",
+        "kind": "human_approval",
+        "seed": null
+      }
+    ],
+    "policy_hash": "sha256:0c7fd9b4d84eb89c8cf9d1916ffb4f97d0e1e227fe59d96410eb23ac345a8764",
+    "requested_lane": "RELEASE",
+    "semantic_flags": [
+      "public_seam",
+      "tests_checks",
+      "harness_contract",
+      "player_facing_output",
+      "milestone_release"
+    ],
+    "tree_sha": "c994c538b1c6ef425b6e670d08b7fc33b3f42a6f"
+  },
+  "integrity": {
+    "clean_end": true,
+    "clean_start": true,
+    "completion_sentinel": true,
+    "external_evidence": true,
+    "frozen_commit": true,
+    "required_render_skips": 0,
+    "source_unchanged": true,
+    "test_count": 150,
+    "watchdog": "ARMED_COMPLETED"
+  },
+  "release": {
+    "cache_bypassed": true,
+    "clean_artifact_proof": "Content-addressed read-only root 68c57f506755649a15229b072943689941d7206ba3e07aeb7a6669ff893b88cd; 300 listed entries independently rehashed; exact clean start/end commit and tree.",
+    "complete_ladder": true,
+    "cross_process_or_differential": "Not applicable: presentation-only music state; BattleModel, tick, hash, save, replay, and deterministic contracts are unchanged.",
+    "export_browser_smoke": "Not applicable: engine/export/browser surfaces are unchanged; full windowed runtime lanes passed. Real audio-device output remains a disclosed platform smoke test.",
+    "frozen_candidate": "bb5c384739311af54f3045832239451a34c5eb3c",
+    "human_review": "Poseidon explicitly approved the score and required exactly one non-layered, non-restarting player on 2026-08-12.",
+    "independent_audit": "Strict third audit PASS with zero material functional or evidence findings. The exact diff satisfies one cue at a time, no layering, and no repeated restart/fire. The content-addressed read-only RELEASE authenticates 300 manifest entries, complete start/end identity, 150 tests and 22,841 assertions, 21 headless plus 21 windowed reports, zero windowed skips, 67 screenshots, 11 distinct bot evidence pairs, and separate aggregate full green."
+  },
+  "reuse": null,
+  "routing": {
+    "changed_paths": [
+      "CLAUDE.md",
+      "FEATURES.json",
+      "PLAYTEST.md",
+      "assets/music/README.md",
+      "assets/music/catalog.tres",
+      "assets/music/provenance.json",
+      "autoloads/game.gd",
+      "autoloads/music.gd",
+      "autoloads/music.gd.uid",
+      "data/stage_def.gd",
+      "data/stages/s1.tres",
+      "data/stages/s2.tres",
+      "data/stages/s3.tres",
+      "data/stages/s4.tres",
+      "data/stages/s5.tres",
+      "data/stages/s6.tres",
+      "data/stages/s7.tres",
+      "data/stages/s8.tres",
+      "docs/decisions/D-SFX.md",
+      "docs/todo.md",
+      "project.godot",
+      "selftest/scenarios/music_routing.gd",
+      "selftest/scenarios/music_routing.gd.uid",
+      "test/test_music_catalog.gd",
+      "test/test_music_player.gd",
+      "test/test_music_player.gd.uid",
+      "tools/music/verify_music.sh",
+      "tools/stage_lint.gd"
+    ],
+    "matched_rules": [
+      "public-seam",
+      "tests-checks",
+      "harness",
+      "player-facing-audio",
+      "policy"
+    ],
+    "required_gates": [
+      "fresh-import",
+      "full-gut",
+      "content-lints",
+      "all-headless",
+      "all-windowed",
+      "pixel-probes",
+      "all-bots",
+      "quality-gates",
+      "human-review",
+      "independent-audit",
+      "artifact-seal"
+    ],
+    "unknown_paths": []
+  },
+  "run_id": "td017-bb5c384-auth-release-68c57f5",
+  "schema_version": "mgs.verification-evidence.v2",
+  "secret_scan": {
+    "matches": 0,
+    "seeded_values": 1
+  },
+  "started_at": "2026-08-12T16:50:31Z",
+  "status": "PASS"
+}

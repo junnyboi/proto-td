@@ -6,7 +6,7 @@ extends GutTest
 ## early-return — the generic verb-at-T-observable-at-T+1 convention does
 ## not apply because nothing is derived by _check_terminal. Also pins the
 ## Q4 record guard: reward granting requires campaign_active, not just a
-## non-null CampaignState.
+## non-null LegacyCampaignAdapter.
 
 const STAGE_PATH := "res://data/stages/test_lane.tres"
 const CONFIG_PATH := "res://data/config/game.tres"
@@ -104,14 +104,14 @@ func test_resign_timeline_is_deterministic() -> void:
 	assert_eq(b.result, BattleModel.Result.DEFEAT)
 
 
-## §3.5: Q4 record guard — a stale CampaignState grants nothing while
+## §3.5: Q4 record guard — a stale LegacyCampaignAdapter grants nothing while
 ## campaign_active is false; an active campaign DEFEAT still records
 ## nothing. Game session fields are saved/restored explicitly
 ## (test_campaign_state.gd stays autoload-free by its own pin).
 func test_record_result_requires_active_campaign() -> void:
 	var game: Node = get_node("/root/Game")
 	var saved_battle: BattleModel = game.get("current_battle")
-	var saved_campaign: CampaignState = game.get("campaign")
+	var saved_campaign: LegacyCampaignAdapter = game.get("campaign")
 	var saved_active: bool = game.get("campaign_active")
 	var saved_last: Dictionary = game.get("last_result")
 
@@ -121,7 +121,7 @@ func test_record_result_requires_active_campaign() -> void:
 		_catalog("res://data/operators"), _catalog("res://data/traps"),
 		_catalog("res://data/spells"),
 	)
-	var campaign: CampaignState = CampaignState.create(
+	var campaign: LegacyCampaignAdapter = LegacyCampaignAdapter.create(
 		game.call("_catalogs"), game.call("_all_stage_defs"),
 	)
 	game.set("current_battle", model)

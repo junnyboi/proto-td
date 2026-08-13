@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"caster_1"
-display_name = "Emberweaver"
+display_name = "Mage Apprentice"
 op_class = 4
 rarity = 2
 dp_cost = 16

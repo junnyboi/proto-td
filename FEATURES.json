@@ -311,19 +311,28 @@
   },
   {
    "id": "MUSIC-1",
-   "title": "Three-act Luminous Descent candidate score: one BGM and boss cue per act",
+   "title": "Approved three-act score with single-owner runtime playback",
    "acceptance": [
     "exactly six unique instrumental cues resolve through the logical music catalog as one BGM/boss pair per act",
     "music structural gate green: stereo 48 kHz Ogg Vorbis, 160-180 seconds, approximately -18 LUFS, loop-enabled, prompt/provenance-linked, no detected speech",
-    "human listening accepts act identity, pair coherence, cross-act descent, loop seams, gameplay space, fatigue, vocal absence, and originality before placeholder flags clear"
+    "human listening accepts act identity, pair coherence, cross-act descent, loop seams, gameplay space, fatigue, vocal absence, and originality before placeholder flags clear",
+    "one global catalog-backed AudioStreamPlayer starts the stage BGM once, hard-switches once at the data-owned act-final boss boundary, never layers cues, and never restarts the current logical id",
+    "all non-battle screens stop music while synthesized SFX remains deliberately silent"
    ],
-   "status": "pending",
-   "scenarios": [],
+   "status": "passing",
+   "scenarios": [
+    "music_routing"
+   ],
    "commits": [
     "be1c50b",
     "97f5b3b",
     "a58e2d5",
-    "08ff849"
+    "08ff849",
+    "61eefbb",
+    "92f9bbc",
+    "49a79d7",
+    "bb5c384",
+    "234ae94"
    ]
   },
   {
@@ -369,6 +378,83 @@
     "f08ee08",
     "924f360"
    ]
+  },
+  {
+	   "id": "P16",
+	   "title": "Persistent heroes: recruitment, Muster Ledger, duplicate-safe battles, permadeath, and one durable campaign slot",
+	   "acceptance": [
+	    "a campaign owns stable deterministic hero instances distinct from OperatorDef identity, with exact hash/save/replay coverage",
+	    "Contract Board recruitment and emergency recovery preserve deterministic economy and prevent roster soft locks",
+	    "Muster Ledger supports callsign-only customization and READY/DEAD history without mutating combat definitions",
+	    "campaign battle tickets bind hero IDs to immutable definitions; terminal casualties resolve exactly once and remain dead after Continue",
+	    "one corruption-safe autosave slot, Continue, overwrite confirmation, Retry Save, and Abandon preserve durable strategic truth",
+	    "localized player-facing surfaces provide stable keys, English fallbacks, en-US default, selector, parity, glyph, and layout proof",
+	    "fresh RELEASE verification, independent audit, Web preview, and human verdict cover identity, death fairness, recovery clarity, and save trust"
+	   ],
+	   "evidence_classes": [
+	    "logic",
+	    "integration",
+	    "visual",
+	    "feel"
+	   ],
+	   "status": "pending",
+	   "scenarios": [
+	    "p16_contract_probe",
+	    "model_roster_probe",
+	    "strategic_verbs",
+	    "hero_result_flow",
+	    "barracks_recruit_death",
+	    "save_roundtrip",
+	    "p16_strategic_campaign"
+	   ],
+		   "commits": [
+		    "cd35d19"
+		   ]
+		  },
+		  {
+		   "id": "WITCH-1",
+		   "title": "Witch Doctor: deterministic targeted healing",
+		   "acceptance": [
+		    "a separate S7-unlocked Witch Doctor template heals one different living injured ally within data-owned range and never revives",
+		    "every malformed or invalid Mend command is hash-equal while an accepted Mend clamps HP, spends SP, records target/tick, and changes the pinned outcome differential",
+		    "canonical semantic replay is identical across processes; exact campaign checks prove 5 starters, 10 after S6, and 11 after S7",
+		    "real targeting input, cancellation, pan blocking, target-side mint VFX, decay, and legacy instant skills pass the dual-lane scenario",
+		    "Poseidon approved mechanics and legibility on exact-candidate frames; sprite and portrait remain truthfully marked as placeholders"
+		   ],
+		   "evidence_classes": [
+		    "logic",
+		    "integration",
+		    "visual",
+		    "feel"
+		   ],
+		   "status": "passing",
+		   "scenarios": [
+		    "witch_doctor_heal"
+		   ],
+		   "commits": [
+		    "91b427c"
+		   ]
+		  },
+		  {
+		    "id": "AUI-10R",
+    "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
+    "acceptance": [
+      "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and Poseidon-approved human-final flags bound to candidate 60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+    "the Cloud-Seal Orrery replaces the rejected pressure-tank Core while preserving final-route clearance and input semantics",
+    "one continuous Alpine Escarpment renders behind S1 with no repeated outside-map grid or deployable-tile affordance",
+    "s1_world_art, assets_floor, iso_projection_floor, full RELEASE, independent diff-vs-pins, localization review, and Poseidon visual verdict are green"
+   ],
+    "status": "passing",
+   "scenarios": [
+    "s1_world_art",
+    "assets_floor",
+    "iso_projection_floor"
+   ],
+    "commits": [
+      "879c488",
+      "3c5cc50",
+      "60b69a6"
+	    ]
   }
  ],
  "deviations": [
@@ -376,7 +462,7 @@
    "id": "D-SFX",
    "date": "2026-08-11",
    "owner": "human",
-   "record": "The 2026-08-11 decision keeps SFX and current runtime audio intentionally silent. On 2026-08-12 the owner explicitly reopened music asset creation for MUSIC-1; this authorizes the generated catalog but not synth SFX or provisional runtime playback. The sfx_played telemetry seam stays wired. SFX restoration recipe: git show 81ec642^:tools/gen_sfx.gd",
+   "record": "The 2026-08-11 decision keeps synthesized SFX intentionally silent. On 2026-08-12 the owner approved MUSIC-1 and authorized runtime music through exactly one catalog-backed player with no layering or duplicate restarts. The sfx_played telemetry seam stays wired. SFX restoration recipe: git show 81ec642^:tools/gen_sfx.gd",
    "docs": [
     "FINAL_REPORT.md \u00a79",
     "PLAYTEST.md \u00a71/\u00a73",

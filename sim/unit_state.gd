@@ -44,6 +44,7 @@ var skill_effect: int = 0
 var skill_params: Dictionary = {}
 var skill_duration_ticks: int = 0
 var skill_triggered_tick: int = -1
+var skill_target_unit_id: int = -1
 
 
 func effective_atk() -> int:

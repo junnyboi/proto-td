@@ -70,6 +70,19 @@ func test_every_catalog_stream_loads_loops_and_matches_measured_duration() -> vo
 		)
 
 
+func test_human_approval_and_runtime_contract_are_exact() -> void:
+	var document := _json_file(PROVENANCE_PATH)
+	var feedback: Dictionary = document.get("human_feedback", {})
+	assert_eq(String(feedback.get("classification", "")), "accepted")
+	assert_true(bool(feedback.get("final_acceptance_complete", false)))
+	assert_true(String(feedback.get("review_uri", "")).begins_with("user://conversation/"))
+	var runtime: Dictionary = document.get("runtime_integration", {})
+	assert_eq(String(runtime.get("status", "")), "approved_for_runtime")
+	assert_eq(int(runtime.get("player_count", 0)), 1)
+	assert_false(bool(runtime.get("layering", true)))
+	assert_false(bool(runtime.get("same_cue_restart", true)))
+
+
 func test_catalog_provenance_and_raw_hashes_are_exact() -> void:
 	var catalog := _catalog()
 	assert_not_null(catalog)
@@ -88,7 +101,9 @@ func test_catalog_provenance_and_raw_hashes_are_exact() -> void:
 		assert_eq(int(track.get("act", 0)), int(entry.get("act", 0)), "%s act parity" % id)
 		assert_eq(String(track.get("role", "")), String(entry.get("role", "")), "%s role" % id)
 		assert_eq(String(track.get("title", "")), String(entry.get("title", "")), "%s title" % id)
-		assert_eq(String(track.get("asset_path", "")), String(entry.get("path", "")), "%s path" % id)
+		assert_eq(
+			String(track.get("asset_path", "")), String(entry.get("path", "")), "%s path" % id
+		)
 		assert_eq(
 			String(track.get("prompt_path", "")),
 			String(entry.get("prompt_path", "")),
@@ -110,8 +125,13 @@ func test_catalog_provenance_and_raw_hashes_are_exact() -> void:
 			0.0001,
 			"%s duration parity" % id,
 		)
-		assert_true(bool(track.get("placeholder", false)), "%s provenance remains human-owned" % id)
-		assert_true(bool(entry.get("placeholder", false)), "%s catalog remains human-owned" % id)
+		assert_false(bool(track.get("placeholder", true)), "%s provenance is human-approved" % id)
+		assert_false(bool(entry.get("placeholder", true)), "%s catalog is human-approved" % id)
+		assert_eq(String(track.get("human_status", "")), "accepted", "%s human status" % id)
+		assert_true(
+			String(track.get("human_review_uri", "")).begins_with("user://conversation/"),
+			"%s human review URI" % id,
+		)
 		assert_true(bool(entry.get("loop", false)), "%s is cataloged loopable" % id)
 		assert_eq(float(entry.get("loop_crossfade_seconds", 0.0)), 4.0, "%s seam" % id)
 		assert_eq(String(entry.get("generator_model", "")), "not exposed by tool")
@@ -137,8 +157,12 @@ func test_catalog_provenance_and_raw_hashes_are_exact() -> void:
 			"%s transcription hash" % id,
 		)
 		assert_eq(asset_hash, String(entry.get("asset_sha256", "")), "%s catalog asset hash" % id)
-		assert_eq(prompt_hash, String(entry.get("prompt_sha256", "")), "%s catalog prompt hash" % id)
-		assert_eq(source_hash, String(entry.get("source_sha256", "")), "%s catalog source hash" % id)
+		assert_eq(
+			prompt_hash, String(entry.get("prompt_sha256", "")), "%s catalog prompt hash" % id
+		)
+		assert_eq(
+			source_hash, String(entry.get("source_sha256", "")), "%s catalog source hash" % id
+		)
 		assert_eq(
 			transcription_hash,
 			String(entry.get("transcription_sha256", "")),
