@@ -49,6 +49,9 @@ const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
 
 var model: BattleModel = null
+var startup_succeeded: bool = false
+var theme_resolver: Callable = Callable()
+var model_factory: Callable = Callable()
 var ticks_per_frame_scale: float = 1.0
 var cfg: JuiceConfig = null
 
@@ -57,7 +60,7 @@ var _grid_scale := 1.0
 var _map_nav: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 var _backdrop: ColorRect = null
 var _stage: StageDef = null
-var _stage_theme: StageArtTheme = null
+var _stage_theme: Resource = null
 var _enemy_rects: Dictionary = {}
 var _unit_nodes: Dictionary = {}
 var _tracer_lines: Dictionary = {}
@@ -116,6 +119,11 @@ var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
 
 
+func _init() -> void:
+	theme_resolver = Callable(self, "_resolve_stage_theme")
+	model_factory = Callable(self, "_create_battle_model")
+
+
 func _ready() -> void:
 	var stage := Game.pending_stage
 	if stage == null:
@@ -124,12 +132,12 @@ func _ready() -> void:
 	# Required world presentation is preflighted before any catalog or model load.
 	# Keep this explicit preload-backed call: stale global-class registries must not
 	# be able to bypass Act II activation.
-	var theme_result := StageArtThemeType.resolve_for(stage)
+	var theme_result: Dictionary = theme_resolver.call(stage)
 	var theme_error := String(theme_result["error"])
 	if not theme_error.is_empty():
 		push_error("battle_view: stage art preflight failed: %s" % theme_error)
 		return
-	_stage_theme = theme_result["theme"] as StageArtTheme
+	_stage_theme = theme_result["theme"] as Resource
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_enemy_defs = defs
@@ -138,11 +146,12 @@ func _ready() -> void:
 	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
-	model = BattleModel.create(
+	var candidate_model: BattleModel = model_factory.call(
 		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
 	)
-	Game.current_battle = model
-	Game.content = self
+	if candidate_model == null:
+		push_error("battle_view: model factory failed")
+		return
 	_stage = stage
 	if not _build_grid(stage):
 		return
@@ -172,20 +181,42 @@ func _ready() -> void:
 	_deploy_bar.name = "DeployBar"
 	_deploy_bar.z_index = UI_OVERLAY_Z
 	add_child(_deploy_bar)
-	_deploy_bar.setup(model, self, _op_defs, bar_traps)
+	_deploy_bar.setup(candidate_model, self, _op_defs, bar_traps)
 	_spell_bar = SpellBar.new()
 	_spell_bar.name = "SpellBar"
 	_spell_bar.z_index = UI_OVERLAY_Z
 	add_child(_spell_bar)
-	_spell_bar.setup(model, self, Game.loadout_spell_ids())
+	_spell_bar.setup(candidate_model, self, Game.loadout_spell_ids())
 	_controls = BattleControls.new()
 	_controls.name = "BattleControls"
 	_controls.z_index = UI_OVERLAY_Z
 	add_child(_controls)
-	_controls.setup(model, self)
+	_controls.setup(candidate_model, self)
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
+	model = candidate_model
+	startup_succeeded = true
+	Game.current_battle = model
+
+
+func _resolve_stage_theme(stage: Resource) -> Dictionary:
+	return StageArtThemeType.resolve_for(stage)
+
+
+func _create_battle_model(
+	stage: StageDef,
+	squad: Array[StringName],
+	seed_value: int,
+	config: GameConfig,
+	enemy_defs: Dictionary,
+	op_defs: Dictionary,
+	trap_defs: Dictionary,
+	spell_defs: Dictionary
+) -> BattleModel:
+	return BattleModel.create(
+		stage, squad, seed_value, config, enemy_defs, op_defs, trap_defs, spell_defs
+	)
 
 
 ## Screen-space center of a grid cell's visible top face (no camera: world

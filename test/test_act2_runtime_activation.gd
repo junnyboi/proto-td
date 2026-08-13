@@ -1,9 +1,17 @@
 extends GutTest
 
+const BATTLE_VIEW_SCRIPT := preload("res://scripts/view/battle_view.gd")
+
 var s2: StageDef
 var s3: StageDef
 var s2_theme: StageArtTheme
 var s3_theme: StageArtTheme
+
+var _saved_pending_stage: StageDef = null
+var _saved_current_battle: BattleModel = null
+var _saved_content: Node = null
+var _test_view: Node = null
+
 
 func before_all() -> void:
 	s2 = load("res://data/stages/s2.tres") as StageDef
@@ -11,32 +19,104 @@ func before_all() -> void:
 	s2_theme = load("res://data/presentation/s2_world_theme.tres") as StageArtTheme
 	s3_theme = load("res://data/presentation/s3_world_theme.tres") as StageArtTheme
 
-func test_battle_view_preflights_once_before_catalogs_and_model_creation() -> void:
-	var file := FileAccess.open("res://scripts/view/battle_view.gd", FileAccess.READ)
-	assert_not_null(file)
-	if file == null:
-		return
-	var source := file.get_as_text()
-	var preload_pos := source.find('const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")')
-	var enemy_animator_pos := source.find('const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")')
+
+func before_each() -> void:
+	_saved_pending_stage = Game.pending_stage
+	_saved_current_battle = Game.current_battle
+	_saved_content = Game.content
+	Game.pending_stage = null
+	Game.current_battle = null
+	Game.content = null
+	_test_view = null
+
+
+func after_each() -> void:
+	if _test_view != null and is_instance_valid(_test_view):
+		_test_view.free()
+	Game.pending_stage = _saved_pending_stage
+	Game.current_battle = _saved_current_battle
+	Game.content = _saved_content
+
+
+func test_missing_required_theme_aborts_before_model_or_projection_and_is_rejected() -> void:
+	Game.pending_stage = s2
+	var factory_calls := {"count": 0}
+	var view: Node = BATTLE_VIEW_SCRIPT.new()
+	_test_view = view
+	view.set("theme_resolver", func(_stage: Resource) -> Dictionary:
+		return {"theme": null, "required": true, "error": "forced missing theme"}
+	)
+	view.set("model_factory", func(
+		_stage: Variant,
+		_squad: Variant,
+		_seed: Variant,
+		_config: Variant,
+		_enemy_defs: Variant,
+		_op_defs: Variant,
+		_trap_defs: Variant,
+		_spell_defs: Variant
+	) -> Variant:
+		factory_calls["count"] += 1
+		return null
+	)
+	add_child(view)
+	assert_push_error("battle_view: stage art preflight failed: forced missing theme")
+
+	assert_eq(factory_calls["count"], 0)
+	assert_null(view.get("model"))
+	assert_false(bool(view.get("startup_succeeded")))
+	assert_null(Game.current_battle)
+	for child_name: String in [
+		"GridRoot", "JuiceLayer", "BattleHud", "DeployBar", "SpellBar", "BattleControls"
+	]:
+		assert_null(view.get_node_or_null(child_name), "startup failure omits %s" % child_name)
+
+	assert_false(bool(Game.call("_accept_content_candidate", view, true)))
+	assert_null(Game.content)
+	assert_null(Game.current_battle)
+	assert_null(Game.pending_stage)
+
+
+func test_valid_s2_candidate_publishes_only_after_complete_projection() -> void:
+	Game.pending_stage = s2
+	var view: Node = BATTLE_VIEW_SCRIPT.new()
+	_test_view = view
+	add_child(view)
+
+	assert_true(bool(view.get("startup_succeeded")))
+	assert_not_null(view.get("model"))
+	assert_eq(Game.current_battle, view.get("model"))
+	var grid := view.get_node_or_null("GridRoot")
+	assert_not_null(grid)
+	if grid != null:
+		assert_eq(grid.get_child_count(), 59)
+	for child_name: String in ["JuiceLayer", "BattleHud", "DeployBar", "SpellBar", "BattleControls"]:
+		assert_not_null(view.get_node_or_null(child_name), "startup creates %s" % child_name)
+	assert_null(Game.content)
+	assert_true(bool(Game.call("_accept_content_candidate", view, true)))
+	assert_eq(Game.content, view)
+	assert_eq(Game.current_battle, view.get("model"))
+
+
+func test_battle_view_preflight_remains_before_catalogs_and_factory() -> void:
+	var source := FileAccess.get_file_as_string("res://scripts/view/battle_view.gd")
+	assert_false(source.is_empty())
 	var ready_pos := source.find("func _ready() -> void:")
-	var resolve_pos := source.find("StageArtThemeType.resolve_for(stage)", ready_pos)
+	var resolve_pos := source.find("theme_resolver.call(stage)", ready_pos)
 	var catalog_pos := source.find('_load_catalog("res://data/operators"', ready_pos)
-	var create_pos := source.find("BattleModel.create(", ready_pos)
-	var build_pos := source.find("build_stage_with_theme(_grid_root, stage, _stage_theme)", ready_pos)
-	assert_gte(preload_pos, 0)
-	assert_gte(enemy_animator_pos, 0)
+	var create_pos := source.find("model_factory.call(", ready_pos)
+	assert_gte(source.find('const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")'), 0)
+	assert_gte(source.find('const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")'), 0)
 	assert_gt(resolve_pos, ready_pos)
 	assert_gt(catalog_pos, resolve_pos)
-	assert_gt(create_pos, resolve_pos)
-	assert_gt(build_pos, create_pos)
-	assert_eq(source.count("StageArtThemeType.resolve_for(stage)"), 1)
-	assert_string_contains(source, 'push_error("battle_view: stage art preflight failed: %s" % theme_error)')
+	assert_gt(create_pos, catalog_pos)
+	assert_false(source.contains("Game.content = self"))
 
 
 func test_real_act2_themes_render_exact_runtime_inventories() -> void:
 	_check_stage(s2, s2_theme, 59)
 	_check_stage(s3, s3_theme, 68)
+
 
 func test_s2_exact_variants_cadence_and_endpoints() -> void:
 	var root := _build(s2, s2_theme)
@@ -47,6 +127,7 @@ func test_s2_exact_variants_cadence_and_endpoints() -> void:
 	_check_endpoints(root, s2, s2_theme)
 	root.free()
 
+
 func test_s3_exact_blockers_elevation_cadence_and_endpoints() -> void:
 	var root := _build(s3, s3_theme)
 	_check_texture(root, "Tile_2_3", &"world.s3.elevated_assay")
@@ -56,6 +137,7 @@ func test_s3_exact_blockers_elevation_cadence_and_endpoints() -> void:
 		_check_overlay(root, cell, s3_theme.cadence_id_at(cell))
 	_check_endpoints(root, s3, s3_theme)
 	root.free()
+
 
 func test_missing_and_invalid_required_explicit_themes_fail_with_zero_children() -> void:
 	for stage: StageDef in [s2, s3]:
@@ -70,10 +152,12 @@ func test_missing_and_invalid_required_explicit_themes_fail_with_zero_children()
 	assert_eq(invalid_root.get_child_count(), 0)
 	invalid_root.free()
 
+
 func _build(stage: StageDef, theme: StageArtTheme) -> Node2D:
 	var root := Node2D.new()
 	assert_true(IsoGridBuilder.build_stage_with_theme(root, stage, theme, false))
 	return root
+
 
 func _check_stage(stage: StageDef, theme: StageArtTheme, expected_count: int) -> void:
 	var root := _build(stage, theme)
@@ -107,6 +191,7 @@ func _check_stage(stage: StageDef, theme: StageArtTheme, expected_count: int) ->
 			assert_not_null(root.get_node_or_null("Tile_%d_%d" % [x, y]))
 	root.free()
 
+
 func _check_overlay(root: Node2D, cell: Vector2i, id: StringName) -> void:
 	var overlay := root.get_node_or_null("Cadence_%d_%d" % [cell.x, cell.y]) as TextureRect
 	assert_not_null(overlay)
@@ -114,6 +199,7 @@ func _check_overlay(root: Node2D, cell: Vector2i, id: StringName) -> void:
 		assert_eq(overlay.texture, Art.texture(id))
 		assert_eq(overlay.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 		assert_eq(overlay.z_index, IsoProjection.tile_z(cell) + 1)
+
 
 func _check_endpoints(root: Node2D, stage: StageDef, theme: StageArtTheme) -> void:
 	for spec: Array in [["SpawnLandmark", theme.spawn_cell, theme.spawn_landmark_id, theme.spawn_pivot, theme.spawn_offset], ["CoreLandmark", theme.core_cell, theme.core_landmark_id, theme.core_pivot, theme.core_offset]]:
@@ -124,6 +210,7 @@ func _check_endpoints(root: Node2D, stage: StageDef, theme: StageArtTheme) -> vo
 			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 			var center := IsoProjection.face_center(spec[1], stage.tile_at(spec[1]) == StageDef.Tile.ELEVATED)
 			assert_eq(node.position, center - Vector2(spec[3]) * IsoGridBuilder.SPRITE_SCALE + Vector2(spec[4]) * IsoGridBuilder.SPRITE_SCALE)
+
 
 func _check_texture(root: Node2D, node_name: String, id: StringName) -> void:
 	var node := root.get_node_or_null(node_name) as TextureRect

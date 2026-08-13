@@ -212,6 +212,7 @@ func start_battle(stage_id: StringName) -> void:
 	if not ResourceLoader.exists(stage_path):
 		push_error("unknown stage: " + stage_path)
 		return
+	current_battle = null
 	pending_stage = load(stage_path) as StageDef
 	_swap_content.call_deferred(BATTLE_SCENE_PATH)
 
@@ -219,12 +220,34 @@ func start_battle(stage_id: StringName) -> void:
 func _swap_content(scene_path: String) -> void:
 	if scene_path != BATTLE_SCENE_PATH:
 		_stop_music_if_available()
-	if content != null and is_instance_valid(content):
-		content.queue_free()
 	var packed: PackedScene = load(scene_path)
-	var node: Node = packed.instantiate()
-	get_tree().root.add_child(node)
-	content = node
+	var candidate: Node = packed.instantiate()
+	get_tree().root.add_child(candidate)
+	_accept_content_candidate(candidate, scene_path == BATTLE_SCENE_PATH)
+
+
+## Commit point shared by the runtime swap and executable activation tests.
+## Adding the candidate runs _ready synchronously, so the entire decision and
+## prior-content retirement remain inside this one deferred swap call.
+func _accept_content_candidate(candidate: Node, is_battle: bool) -> bool:
+	if candidate == null or not is_instance_valid(candidate):
+		if is_battle:
+			pending_stage = null
+			current_battle = null
+		return false
+	if is_battle and not bool(candidate.get("startup_succeeded")):
+		candidate.queue_free()
+		pending_stage = null
+		current_battle = null
+		return false
+	var previous := content
+	if previous != null and is_instance_valid(previous) and previous != candidate:
+		var previous_parent := previous.get_parent()
+		if previous_parent != null:
+			previous_parent.remove_child(previous)
+		previous.queue_free()
+	content = candidate
+	return true
 
 
 ## Music is presentation-only and must never block navigation. Resolve the
