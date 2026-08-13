@@ -213,7 +213,7 @@
           "selector": "CompanyCommandBody",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "BriefingRow"
         },
@@ -237,7 +237,7 @@
           "selector": "NextOperationObjective",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "NextOperationCard"
         },
@@ -487,7 +487,7 @@
           "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -495,7 +495,7 @@
           "selector": "BriefingThreat",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -503,7 +503,7 @@
           "selector": "BriefingHumanReason",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -511,7 +511,7 @@
           "selector": "BriefingClue",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -662,7 +662,7 @@
           "selector": "ConsequenceLine",
           "type": "Label",
           "variation": [
-            "AuiBodyLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "ResultsColumn"
         },
@@ -741,7 +741,7 @@
           "selector": "ConsequenceLine",
           "type": "Label",
           "variation": [
-            "AuiBodyLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "ResultsColumn"
         },
@@ -969,7 +969,7 @@
           "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -977,7 +977,7 @@
           "selector": "BriefingThreat",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -985,7 +985,7 @@
           "selector": "BriefingHumanReason",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -993,7 +993,7 @@
           "selector": "BriefingClue",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -1179,7 +1179,7 @@
           "selector": "BriefingObjective",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -1187,7 +1187,7 @@
           "selector": "BriefingThreat",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -1195,7 +1195,7 @@
           "selector": "BriefingHumanReason",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -1203,7 +1203,7 @@
           "selector": "BriefingClue",
           "type": "Label",
           "variation": [
-            "AuiDetailLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "MissionBriefingPanel"
         },
@@ -1376,7 +1376,7 @@
           "selector": "ConsequenceLine",
           "type": "Label",
           "variation": [
-            "AuiBodyLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "ResultsColumn"
         },
@@ -1473,7 +1473,7 @@
           "selector": "ConsequenceLine",
           "type": "Label",
           "variation": [
-            "AuiBodyLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "ResultsColumn"
         },
@@ -1560,7 +1560,7 @@
           "selector": "ConsequenceLine",
           "type": "Label",
           "variation": [
-            "AuiBodyLabel"
+            "AuiFlavorLabel"
           ],
           "owner": "ResultsColumn"
         },

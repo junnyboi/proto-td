@@ -170,7 +170,7 @@ func _build_mission_briefing() -> GridContainer:
 func _add_briefing_value(node_name: String, key: StringName, fallback: String, field: StageNarrativeDefType.Field) -> void:
 	var heading := UiCopyType.text(key, fallback)
 	var value := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.") if _narrative_missing else UiCopyType.stage_narrative_text(_narrative, field)
-	var label := _label(node_name, "%s — %s" % [heading, value], &"detail")
+	var label := _label(node_name, "%s — %s" % [heading, value], &"flavor")
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(label)
 

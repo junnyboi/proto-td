@@ -146,6 +146,7 @@ func _build_labels() -> void:
 	_label(&"AuiHeadingLabel", 48, &"primary")
 	_label(&"AuiBodyLabel", 44, &"body")
 	_label(&"AuiDetailLabel", 44, &"muted")
+	_label(&"AuiFlavorLabel", 36, &"muted")
 	_label(&"AuiLocaleLabel", 44, &"body")
 	_badge(&"AuiClassBadge", &"class_badge", &"selected", &"dark_ink")
 	_badge(&"AuiCostBadge", &"cost_badge", &"primary", &"dark_ink")

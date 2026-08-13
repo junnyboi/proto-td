@@ -816,6 +816,11 @@
         "font_size": 44,
         "font_color": "muted"
       },
+      "AuiFlavorLabel": {
+        "base": "Label",
+        "font_size": 36,
+        "font_color": "muted"
+      },
       "AuiLocaleLabel": {
         "base": "Label",
         "font_size": 44,
@@ -927,6 +932,7 @@
       "heading": "AuiHeadingLabel",
       "body": "AuiBodyLabel",
       "detail": "AuiDetailLabel",
+      "flavor": "AuiFlavorLabel",
       "locale": "AuiLocaleLabel",
       "class_badge": "AuiClassBadge",
       "cost_badge": "AuiCostBadge",
@@ -1194,6 +1200,9 @@
       "text": "body_on_panel"
     },
     "AuiDetailLabel": {
+      "text": "muted_on_panel"
+    },
+    "AuiFlavorLabel": {
       "text": "muted_on_panel"
     },
     "AuiLocaleLabel": {

@@ -16,11 +16,16 @@ const INVENTORY_STATES := {
 	&"squad": "squad_s1_empty",
 	&"results": "results_campaign_clear",
 }
+const FLAVOR_LABEL_COUNTS := {
+	&"staging": 2,
+	&"squad": 4,
+	&"results": 1,
+}
 const EXPANSION_TOKEN := " PROTOS"
 const TEXT_COLOR_FLOOR := 0.10
 const BASE_FONT_SIZES := {
 	&"AuiTitleLabel": 64, &"AuiHeadingLabel": 48,
-	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44,
+	&"AuiBodyLabel": 44, &"AuiDetailLabel": 44, &"AuiFlavorLabel": 36,
 	&"AuiLocaleLabel": 44, &"AuiLocaleList": 44,
 	&"AuiPrimaryButton": 44, &"AuiSecondaryButton": 44,
 	&"AuiSelectedButton": 44, &"AuiDestructiveButton": 44,
@@ -36,7 +41,7 @@ var _release_challenge := ""
 
 
 func run(h: SelfTestHarness) -> void:
-	h.max_frames = 2600
+	h.max_frames = 2700
 	h.expect_done()
 	_release_challenge = _parse_release_challenge()
 	_inventory = JSON.parse_string(FileAccess.get_file_as_string(INVENTORY_PATH)) as Dictionary
@@ -122,14 +127,14 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 	fixture.add_child(grid)
 	var probes: Array[Dictionary] = []
 	for role: StringName in [
-		&"title", &"heading", &"body", &"detail", &"locale", &"class_badge",
+		&"title", &"heading", &"body", &"detail", &"flavor", &"locale", &"class_badge",
 		&"cost_badge", &"cooldown_badge", &"locked_badge", &"completed_badge",
 	]:
 		var label := AetheriaLabel.new()
 		label.name = "%sProbe" % String(role).to_pascal_case()
 		label.text = "Mg %s" % String(role).capitalize()
 		label.apply_role(role)
-		label.custom_minimum_size = Vector2(280.0, 144.0)
+		label.custom_minimum_size = Vector2(280.0, 112.0)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		grid.add_child(label)
@@ -139,13 +144,13 @@ func _capture_text_style_probes(h: SelfTestHarness) -> void:
 		button.name = "%sButtonProbe" % String(role).to_pascal_case()
 		button.text = "Mg %s" % String(role).capitalize()
 		button.apply_role(role)
-		button.custom_minimum_size = Vector2(280.0, 144.0)
+		button.custom_minimum_size = Vector2(280.0, 112.0)
 		grid.add_child(button)
 		probes.append({"control": button, "item": &"font_color"})
 	var item_list := ItemList.new()
 	item_list.name = "LocaleListProbe"
 	item_list.theme_type_variation = &"AuiLocaleList"
-	item_list.custom_minimum_size = Vector2(280.0, 144.0)
+	item_list.custom_minimum_size = Vector2(280.0, 112.0)
 	item_list.add_item("Mg Locale")
 	item_list.select(0)
 	grid.add_child(item_list)
@@ -193,6 +198,34 @@ func _capture_screen_state(
 	if image != null:
 		h.check(
 			"shot geometry %s" % shot_name,
+			image.get_size() == viewport,
+			"image=%s viewport=%s" % [image.get_size(), viewport],
+		)
+	if (
+		screen == &"results" and viewport == Vector2i(1920, 1080)
+		and mode == &"standard"
+	):
+		await _capture_results_flavor(h, content, viewport)
+
+
+func _capture_results_flavor(
+		h: SelfTestHarness, content: Control, viewport: Vector2i,
+		) -> void:
+	var scroll := content.find_child("ResultsScroll", true, false) as ScrollContainer
+	var flavor := content.find_child("ConsequenceLine", true, false) as Control
+	h.check(
+		"results flavor capture controls exist",
+		scroll != null and flavor != null,
+		"scroll=%s flavor=%s" % [scroll, flavor],
+	)
+	if scroll == null or flavor == null:
+		return
+	scroll.ensure_control_visible(flavor)
+	await h.frames(3)
+	var image := await h.shot_grab("ui_results_1920x1080_flavor")
+	if image != null:
+		h.check(
+			"results flavor shot geometry",
 			image.get_size() == viewport,
 			"image=%s viewport=%s" % [image.get_size(), viewport],
 		)
@@ -278,6 +311,26 @@ func _check_responsive_shell(
 			plate_rect.size.is_equal_approx(plate.size * shell.content_scale()),
 			"rendered=%s layout=%s scale=%.3f" % [
 				plate_rect.size, plate.size, shell.content_scale(),
+			],
+		)
+	if viewport == Vector2i(1920, 1080) and FLAVOR_LABEL_COUNTS.has(screen):
+		var scaled_sizes: Array[int] = []
+		for node: Node in _all_nodes(content):
+			if node is Label and (
+				(node as Label).theme_type_variation == &"AuiFlavorLabel"
+			):
+				var label := node as Label
+				scaled_sizes.append(roundi(
+					float(label.get_theme_font_size(&"font_size")) * shell.content_scale(),
+				))
+		var expected_count := int(FLAVOR_LABEL_COUNTS[screen])
+		h.check(
+			"%s large viewport flavor typography" % screen,
+			scaled_sizes.size() == expected_count and scaled_sizes.all(
+				func(size: int) -> bool: return size == 54
+			),
+			"sizes=%s expected_count=%d expected_size=54" % [
+				scaled_sizes, expected_count,
 			],
 		)
 	if screen == &"results" and viewport == Vector2i(1920, 1080):

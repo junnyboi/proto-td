@@ -6,6 +6,7 @@ const ROLE_VARIATIONS := {
 	&"heading": &"AuiHeadingLabel",
 	&"body": &"AuiBodyLabel",
 	&"detail": &"AuiDetailLabel",
+	&"flavor": &"AuiFlavorLabel",
 	&"locale": &"AuiLocaleLabel",
 	&"class_badge": &"AuiClassBadge",
 	&"cost_badge": &"AuiCostBadge",

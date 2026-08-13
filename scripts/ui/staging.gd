@@ -80,7 +80,7 @@ func _build_briefing() -> GridContainer:
 	var summary := _label("CampaignSummary", _campaign_summary_text(), &"body")
 	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_briefing.add_child(summary)
-	var body := _label("CompanyCommandBody", UiCopyType.text(&"ui.staging.command_body", "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation."), &"detail")
+	var body := _label("CompanyCommandBody", UiCopyType.text(&"ui.staging.command_body", "Commander, the Great Flare was a massive solar flare that corrupted connected systems two centuries ago and caused the Fall. Custodians are still forcing Hearthcross through that unfinished evacuation."), &"flavor")
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 84.0
 	_briefing.add_child(body)
@@ -88,7 +88,7 @@ func _build_briefing() -> GridContainer:
 	next_box.name = "NextOperationCard"
 	next_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var title := _label("NextOperationTitle", _next_operation_title(), &"body")
-	var objective := _label("NextOperationObjective", _next_operation_objective(), &"detail")
+	var objective := _label("NextOperationObjective", _next_operation_objective(), &"flavor")
 	next_box.add_child(title)
 	next_box.add_child(objective)
 	_briefing.add_child(next_box)

@@ -88,7 +88,7 @@ func _ready() -> void:
 	var consequence := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
 	if record != null:
 		consequence = UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.CLEAR_DEBRIEF if cleared else StageNarrativeDefType.Field.DEFEAT_DEBRIEF)
-	var consequence_line := _label("ConsequenceLine", consequence, &"body")
+	var consequence_line := _label("ConsequenceLine", consequence, &"flavor")
 	column.add_child(consequence_line)
 
 	_actions = GridContainer.new()

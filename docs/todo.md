@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-028 — Reduce narrative flavor-text typography
+
+- Status: in_progress
+- Owner: AGENT 11
+- Branch: `agent-11/flavor-text`
+- Base: `master` at `d08819419631a7c330032f1a87f5ca16a4163c77`
+- Dependencies: TD-027
+- Owned files: `scripts/ui/components/aetheria_theme.gd`, `scripts/ui/components/aetheria_label.gd`, `scripts/ui/staging.gd`, `scripts/ui/squad_select.gd`, `scripts/ui/results.gd`, `test/test_ui_components.gd`, `test/test_ui_components.gd.component-contract.json`, `test/test_ui_components.gd.inventory.json`, `selftest/scenarios/ui_shell_floor.gd`, `selftest/scenarios/ui_shell_floor.gd.contract.json`, `docs/todo.md`, `docs/completed.md`
+- Do not touch: headings, buttons, counters, tactical/operational detail typography, simulation, hash/save/replay, `scripts/verify.sh`, thresholds, or unrelated UI
+- Acceptance: every lore/narrative prose label uses a dedicated 36px Flavor role instead of 44px Body/Detail; at the 1.5x large viewport flavor text resolves to 54px while headings, buttons, counters, hints, and operational status retain their existing roles and sizes; all text remains readable, contained, and scroll-reachable
+- Required evidence: exact Theme/role/inventory GUT, `ui_shell_floor` headless and windowed with fresh Staging/Squad/Results PNG review, and one green `scripts/verify.sh` STANDARD run on the reconciled union
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
