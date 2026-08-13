@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"caster_2"
-display_name = "Stormcaller"
+display_name = "Sorcerer"
 op_class = 4
 rarity = 3
 dp_cost = 20

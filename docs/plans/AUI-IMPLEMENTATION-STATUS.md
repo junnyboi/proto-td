@@ -99,14 +99,16 @@ AUI-00 is durably closed. AUI-10 source/staging is closed, AUI-10R is the indepe
 
 ## AUI-12 — Protos Theme, components, localization, and compatible shells
 
-- Status: `claimed`; implementation not started at this claim commit.
+- Status: `web_remediation_claimed`; original implementation is complete but candidate `28b0391ab78b326772c11d040ad75f333183233b` is immutable red and non-releasable because the inherited Web corner-luma signal conflicts with the approved AUI-12 backdrop.
 - Owner: `AGENT F`.
-- Claim branch/base: `agent-f/aui-12-claim` from `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`.
-- Implementation branch: `agent-f/aui-12` after the verified claim lands on master.
+- Original claim/base: `agent-f/aui-12-claim` from `master` at `ed66d67e67e56f5b41f3fb52a812a78452b9db0d`.
+- Web-remediation claim/base: `agent-f/aui-12-web-claim` from `master` at `6a578856d1893030011c557716bbb930559fa681`.
+- Successor implementation branch: `agent-f/aui-12-web-remediation` after the verified Web-remediation claim lands on master; do not rewrite the red branch.
 - Effective lane: MGS v2 `RELEASE` because the package is player-visible and changes `test/**` plus `selftest/**`.
-- Immutable plan SHA-256: `29022e14441c3842f5c364ae3423bb30d12b8897e11b4d2064e0f3a8e32586b0`.
-- Normative copy/component/inventory/scenario hashes: `d7afa360523ad915aaa25f95d30fd0054d23078cd7a79ed3d25ce8d02d6dc37c`, `16e3f18ac23ecb846b288b7dbe4de454f3581faa3b27386885dd3d1e624285d4`, `78b57390c35343966b971cdcfe951f23950299ed78c03a44da3db0e347fc2a12`, `bca4ebd9c0ac364b3ca290896a0a54d005713a402c2d57cb4c1d5d5cbd18d01f`.
-- Independent preflight: PASS with zero critical/warning findings.
-- Serialized ownership amendment: AUI-12 owns `autoloads/i18n.gd`, `localization/en-US.json`, and `test/test_i18n.gd` because current project policy requires localization from the first visible AUI phase. The complete exact file lease is in `docs/todo.md`.
-- Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-20 remains blocked on AUI-12 closure and exact D runtime approval; AUI-11 remains blocked on AUI-34 closure.
+- Final original implementation-plan SHA-256: `55e7daf91097e476719242203a6d3943e5db4e7a979f129cda0e08f6f3ba608b`.
+- Normative component/copy/scenario/inventory hashes: `70efb6f83b1c59d45d7a5a6cfb7e4cea4dd5058827b2f908fa290e7beaecab90`, `0061b4e08b7c27bd3ed38ceb88897da2d3032369cfbfbaf92ef543f8ffb70c83`, `692f7f492cb94ed28d8f8c8a44b738846ef9037d6c923841b72388d099505a01`, `177ee1e6c5e1e49357bb54263f0659c3bc50f213f4d544bfc1f6ef9f5fa50a2f`.
+- D-WEB-1 approval: exact manifest SHA-256 `0c7530b9bfa54bf8581d42596393cedfe3e06b410230c5c8565fe0a97520c200`; external Poseidon record SHA-256 `d616bc95eee2aeb3c226f167c2b45c71152d6856285b169af99eeabe7c1e3f17`.
+- Independent Web-remediation preflight 07: PASS with zero findings >=80 confidence; exact contract freezes 38 focused tests, 105 negative fixtures, one content-equivalence positive fixture, 25/27 required-option families, and 18 exercised failure codes.
+- Serialized ownership amendment: the complete exact lease remains in `docs/todo.md` and now additionally owns `tools/presentation_qa/web_baseline.py` plus `tools/presentation_qa/test_web_baseline.py`; optional `ui_shell_floor` challenge reporting stays inside the existing scenario lease.
+- Dependency boundary: AUI-12 consumes no Agent D or Agent E runtime bytes. AUI-34 is now closed on master, but AUI-11/AUI-20 remain separate packages and cannot enter this successor.
 - Human gate: implementation cannot land until fresh exact-candidate RELEASE/audit passes and Poseidon completes the commit-bound Web route/focus/cancel/locale/compact/portrait/en-US review.

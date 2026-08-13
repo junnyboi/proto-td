@@ -1,4 +1,9 @@
-# TD-019 — Remove Music autoload's cache-order compile dependency
+# TD-021 — Harden Music autoload's stale-cache compile fix
+
+This work began locally as TD-019. During final reconciliation, remote `master` already owned
+TD-019 for class display names and TD-020 for the first stale-class-registry startup repair.
+The integrator therefore reallocated this complementary hardening and dedicated regression proof
+to TD-021 rather than corrupt either stable history.
 
 ## Report and reproduction
 
@@ -41,12 +46,13 @@ The exact non-vacuous regression starts from a successful import, copies that ca
 
 ## Rollback
 
-Revert TD-019. No resource, save, replay, catalog schema, or audio asset migration is required.
+Revert TD-021. No resource, save, replay, catalog schema, or audio asset migration is required.
 
 ## Implementation outcome
 
 - `Music` now preloads the catalog script by path, stores it as built-in `Resource`, validates exact script identity, and validates `entries` as a non-empty `Dictionary` before mutating controller state.
 - Existing BattleModel and StageDef routing annotations and behavior remain unchanged; the fix removes only the newly introduced `MusicCatalog` global-class dependency.
 - `scripts/cold_boot_check.sh` copies a valid imported cache, removes only `MusicCatalog`, runs the real project with a bounded watchdog, and rejects fatal text even when Godot exits 0.
-- `test_autoload_cold_cache.gd` pins the source contract and executes that shell gate inside GUT. Focused result: 4/4 new regression tests pass; existing Music player tests remain 7/7; the mandatory headless repository gate is green.
-- A fully empty `.godot` cache still requires the established `--import` bootstrap because pre-existing non-Music autoloads depend on their registered classes. TD-019 neither hides nor broadens into those unrelated boundaries.
+- `test_autoload_cold_cache.gd` pins the source contract and executes that shell gate inside GUT. Frozen result: 4/4 new regression tests pass; existing Music player tests remain 8/8; the full suite passes 192/192 tests with 25,153 assertions.
+- Remote TD-020 independently landed a local preload alias plus a broader S1 startup probe before reconciliation. TD-021 preserves that broader probe and strengthens the Music-specific seam with exact script-identity validation, fail-closed catalog entries, and a current-cache-minus-only-`MusicCatalog` launch gate.
+- A fully empty `.godot` cache still requires the established `--import` bootstrap because pre-existing non-Music autoloads depend on their registered classes. TD-021 neither hides nor broadens into those unrelated boundaries.

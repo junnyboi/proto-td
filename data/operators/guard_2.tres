@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"guard_2"
-display_name = "Brandmaster"
+display_name = "Sword Saint"
 op_class = 1
 rarity = 3
 dp_cost = 16
