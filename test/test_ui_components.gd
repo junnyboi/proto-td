@@ -2,6 +2,7 @@ extends GutTest
 
 const CONTRACT_PATH := "res://test/test_ui_components.gd.component-contract.json"
 const INVENTORY_PATH := "res://test/test_ui_components.gd.inventory.json"
+const SCREEN_SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const SIDE_NAMES: Array[StringName] = [&"left", &"top", &"right", &"bottom"]
 const SIDE_VALUES: Array[int] = [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]
 
@@ -184,8 +185,7 @@ func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure
 
 
 func test_screen_shell_exact_structure_modes_clamps_and_failure() -> void:
-	var scene := load("res://scenes/ui/components/aetheria_screen_shell.tscn") as PackedScene
-	var shell := scene.instantiate() as AetheriaScreenShell
+	var shell := SCREEN_SHELL_SCENE.instantiate() as AetheriaScreenShell
 	add_child_autofree(shell)
 	await get_tree().process_frame
 	assert_eq(shell.content_host().name, &"ContentHost")
@@ -211,6 +211,34 @@ func test_screen_shell_exact_structure_modes_clamps_and_failure() -> void:
 	shell.relayout(Vector2i(1440, 2560))
 	assert_eq(shell.layout_mode(), &"portrait")
 	assert_almost_eq(shell.content_scale(), 2.0, 0.001)
+
+
+func test_screen_shell_dialog_scroll_uses_far_right_gutter() -> void:
+	var shell := SCREEN_SHELL_SCENE.instantiate() as AetheriaScreenShell
+	shell.preferred_size = Vector2(1080.0, 620.0)
+	add_child_autofree(shell)
+	await get_tree().process_frame
+	shell.relayout(Vector2i(1280, 720))
+	var scroll := ScrollContainer.new()
+	scroll.name = "TestDialogScroll"
+	var gutter := shell.add_dialog_scroll(scroll)
+	assert_not_null(gutter)
+	var body := Control.new()
+	body.name = "TestDialogBody"
+	body.custom_minimum_size = Vector2(600.0, 1200.0)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gutter.add_child(body)
+	var rejected_scroll := ScrollContainer.new()
+	assert_null(shell.add_dialog_scroll(rejected_scroll))
+	rejected_scroll.free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var bar := scroll.get_v_scroll_bar()
+	assert_true(bar.visible)
+	assert_almost_eq(
+		bar.get_global_rect().end.x, shell.reading_plate().get_global_rect().end.x, 0.5,
+	)
+	assert_gte(bar.get_global_rect().position.x - body.get_global_rect().end.x, 35.0)
 
 
 func test_locale_selector_exact_rows_selection_and_rejection() -> void:

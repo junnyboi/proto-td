@@ -53,15 +53,12 @@ func _build_screen() -> void:
 	).name = "StagingShell"
 	var scroll := ScrollContainer.new()
 	scroll.name = "StagingScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	shell.content_host().add_child(scroll)
+	var scroll_content := shell.add_dialog_scroll(scroll)
 	var column := VBoxContainer.new()
 	column.name = "StagingColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 10)
-	scroll.add_child(column)
+	scroll_content.add_child(column)
 	column.add_child(_build_briefing())
 	column.add_child(_build_operations())
 	_on_layout_mode_changed(shell.layout_mode())

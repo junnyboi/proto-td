@@ -25,16 +25,13 @@ func _ready() -> void:
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "CampaignScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	shell.content_host().add_child(scroll)
+	var scroll_content := shell.add_dialog_scroll(scroll)
 
 	var column := VBoxContainer.new()
 	column.name = "StageColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 8)
-	scroll.add_child(column)
+	scroll_content.add_child(column)
 
 	_header = GridContainer.new()
 	_header.name = "CampaignHeader"
