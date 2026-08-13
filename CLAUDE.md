@@ -37,6 +37,11 @@ it grows one rule per repeated mistake and never shrinks.
 - Never hand-write `Object(InputEventKey…)` serialization — input actions via a scratch
   `ProjectSettings` script.
 - Never reference a new `class_name` before running `--import` (registry lives in `.godot`).
+- Player-launch scripts and autoloads must explicitly `preload()` any newly introduced
+  cache-sensitive script dependency; do not assume a stale or partially populated global
+  `class_name` registry contains the new class. Fresh clones still run `--import` first. Godot may
+  report a fatal parse/autoload error and still exit 0, so cache-regression gates scan output as
+  well as exit status.
 - `--check-only` cannot resolve autoloads — the compile gate for autoload-referencing scripts is
   the boot check + GUT, not `--check-only`.
 - Never override `_process` on a `SceneTree` script — connect to `process_frame`.
