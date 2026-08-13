@@ -211,7 +211,8 @@ func _validate_lineage() -> void:
 		ref_dir.list_dir_begin()
 		var filename := ref_dir.get_next()
 		while not filename.is_empty():
-			if not ref_dir.current_is_dir(): actual.append(filename)
+			if not ref_dir.current_is_dir() and filename.ends_with(".png"):
+				actual.append(filename)
 			filename = ref_dir.get_next()
 		ref_dir.list_dir_end()
 		actual.sort()

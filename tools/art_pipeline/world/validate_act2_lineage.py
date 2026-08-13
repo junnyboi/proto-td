@@ -61,7 +61,7 @@ def load(path: Path) -> dict:
 def validate(root: Path) -> list[str]:
     root=root.resolve(); seen_h0=set()
     ref_dir=root/"art-src/world/act2-references"
-    assert {p.name for p in ref_dir.iterdir() if p.is_file()} == H0_REFERENCES
+    assert {p.name for p in ref_dir.iterdir() if p.is_file() and p.suffix.lower() == ".png"} == H0_REFERENCES
     for packet,spec in PACKETS.items():
         base=root/f"art-src/world/{packet}"
         selection_path=base/"production-source-selection.json"
