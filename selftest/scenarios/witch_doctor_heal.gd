@@ -42,6 +42,35 @@ func run(h: SelfTestHarness) -> void:
 	var defender: UnitState = model.units[0]
 	var healer: UnitState = model.units[1]
 
+	# User-directed presentation alias: Witch Doctor keeps its model identity while
+	# the live battle body resolves the exact Mage Apprentice animation atlas.
+	view.set("ticks_per_frame_scale", 0.0)
+	var projection_hash := model.state_hash()
+	await h.frames(2)
+	var unit_nodes: Dictionary = view.get("_unit_nodes")
+	var healer_node := unit_nodes.get(healer.id) as Node2D
+	var healer_body := healer_node.get_node_or_null("Body") as ColorRect if healer_node else null
+	var healer_sprite := (
+		healer_body.get_node_or_null("Sprite") as TextureRect if healer_body else null
+	)
+	h.check("Witch Doctor keeps model operator id", healer.op_id == &"witch_doctor_1")
+	h.check(
+		"Witch Doctor body is an admitted animation",
+		healer_body != null and bool(healer_body.get_meta(&"operator_animation", false)),
+	)
+	h.check(
+		"Witch Doctor body keeps Witch Doctor template identity",
+		healer_body != null
+		and healer_body.get_meta(&"operator_template_id", &"") == &"witch_doctor_1",
+	)
+	h.check(
+		"Witch Doctor body uses Mage Apprentice SE idle atlas",
+		healer_sprite != null
+		and healer_sprite.get_meta(&"operator_animation_id", &"")
+		== &"op_anim_caster_1_idle_se",
+	)
+	h.check("visual alias is model-hash invariant", model.state_hash() == projection_hash)
+
 	view.set("ticks_per_frame_scale", 4.0)
 	while (
 		model.result == BattleModel.Result.RUNNING
