@@ -1,5 +1,6 @@
 class_name CampaignCodec
 extends RefCounted
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_receipt_codec.gd")
 const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
@@ -642,7 +643,7 @@ static func build_context(
 		}
 	var normalized_promotion_rules := promotion_rules.duplicate(true)
 	if normalized_promotion_rules.is_empty():
-		var normalized := CampaignProgression.normalize_promotion_rules(
+		var normalized := CampaignProgressionType.normalize_promotion_rules(
 			PromotionRulesResource, operator_ids,
 		)
 		if normalized["accepted"]:
@@ -914,7 +915,7 @@ static func _valid_context(context: Dictionary) -> bool:
 	]
 	if not _exact_keys(context, keys):
 		return false
-	var normalized := CampaignProgression.normalize_promotion_rules(
+	var normalized := CampaignProgressionType.normalize_promotion_rules(
 		PromotionRulesResource,
 		(context["operator_ids"] as Dictionary).keys(),
 	)
