@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-032 — Replace Sky Hunter attack placeholders with native NE and NW
+
+- Status: in_progress
+- Owner: AGENT 8
+- Branch: `agent-8/td-032-sky-hunter-native-attacks`
+- Base: latest-master Training union at `df082262956d690407b4afe3ad042d24e86bab8c`
+- Dependencies: TD-029 operator animation runtime; TD-031 localization; TD-033 Training UI
+- Owned files: `sim/{campaign_promotion,campaign_codec,campaign_hash}.gd`, `test/test_ui_registry_bootstrap.gd`, `docs/handoffs/TD-032-agent-8-sky-hunter-native-attacks.md`, and TD-032 claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Do not touch: promotion behavior/hash grammar/save/replay/economy values, localization catalogs/runtime, verification thresholds, or unrelated presentation files
+- Acceptance: the historical-cache boot parses the Training promotion dependency chain through explicit path preloads while all native Sky Hunter, bilingual UI, Training model, save/replay, and hash gates remain exact
+- Required evidence: focused registry/promotion tests, exact stale-cache and model-promotion scripts, affected operator/Training renders, then one uninterrupted `scripts/verify.sh --full`
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

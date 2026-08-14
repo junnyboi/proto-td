@@ -4,6 +4,8 @@ const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_recei
 const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
 const SaveUpgradeScript := preload("res://sim/campaign_save_upgrade.gd")
+const CanonicalJsonType := preload("res://sim/canonical_json.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const PromotionRulesResource := preload("res://data/progression/mage_advanced_v1.tres")
 const SAVE_SCHEMA := "prototype_td_campaign"
 const LEGACY_SAVE_VERSION := 1
@@ -183,7 +185,7 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 	var parser := JSON.new()
 	if parser.parse(source) != OK:
 		return _reject(&"malformed_json")
-	var coerced := CanonicalJson.restore_exact_integers(source, parser.data)
+	var coerced := CanonicalJsonType.restore_exact_integers(source, parser.data)
 	if not coerced["accepted"]:
 		return coerced
 	var parsed: Variant = coerced["value"]
@@ -247,7 +249,7 @@ static func encode_ticket(ticket: Variant) -> Dictionary:
 			"manifest": ordered[key] = manifest["value"]
 			"attempt_id": ordered[key] = int(ticket[key])
 			_: ordered[key] = ticket[key]
-	if CanonicalJson.sha256_hex(manifest["value"]) != String(ticket["manifest_hash"]):
+	if CanonicalJsonType.sha256_hex(manifest["value"]) != String(ticket["manifest_hash"]):
 		return _reject(&"manifest_hash_mismatch")
 	return _encoded(ordered)
 static func encode_outcome_body(outcome: Variant) -> Dictionary:
@@ -413,7 +415,7 @@ static func _encode_outcome(outcome: Variant, include_hash: bool) -> Dictionary:
 			return _reject(&"invalid_outcome_hash")
 		var body := ordered.duplicate()
 		body.erase("outcome_hash")
-		if CanonicalJson.sha256_hex(body) != String(outcome["outcome_hash"]):
+		if CanonicalJsonType.sha256_hex(body) != String(outcome["outcome_hash"]):
 			return _reject(&"outcome_hash_mismatch")
 	return _encoded(ordered)
 static func _normalize_stage_rows(value: Variant) -> Dictionary:
@@ -599,7 +601,7 @@ static func _normalize_rewards(value: Variant) -> Dictionary:
 			return _reject(&"invalid_reward")
 		if not REWARD_VALUES.has(String(row["kind"])) or not _is_ascii_string(row["id"]):
 			return _reject(&"invalid_reward")
-		var reward_key := CanonicalJson.text([String(row["kind"]), String(row["id"])])
+		var reward_key := CanonicalJsonType.text([String(row["kind"]), String(row["id"])])
 		if seen.has(reward_key):
 			return _reject(&"duplicate_reward")
 		seen[reward_key] = true
@@ -642,7 +644,7 @@ static func build_context(
 		}
 	var normalized_promotion_rules := promotion_rules.duplicate(true)
 	if normalized_promotion_rules.is_empty():
-		var normalized := CampaignProgression.normalize_promotion_rules(
+		var normalized := CampaignProgressionType.normalize_promotion_rules(
 			PromotionRulesResource, operator_ids,
 		)
 		if normalized["accepted"]:
@@ -815,7 +817,7 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 		if hero["death"] != null and not context["stage_rewards"].has(hero["death"]["stage_id"]):
 			return _reject(&"unknown_death_stage")
 		if hero["recruit_source"] in ["contract", "reward"]:
-			var source_key := CanonicalJson.text([
+			var source_key := CanonicalJsonType.text([
 				hero["recruit_source"], hero["source_id"],
 				hero["acquisition_operator_def_id"],
 			])
@@ -914,7 +916,7 @@ static func _valid_context(context: Dictionary) -> bool:
 	]
 	if not _exact_keys(context, keys):
 		return false
-	var normalized := CampaignProgression.normalize_promotion_rules(
+	var normalized := CampaignProgressionType.normalize_promotion_rules(
 		PromotionRulesResource,
 		(context["operator_ids"] as Dictionary).keys(),
 	)
@@ -939,14 +941,14 @@ static func _in_range(value: Variant, minimum: int, maximum: int) -> bool:
 	return _is_integer(value) and int(value) >= minimum and int(value) <= maximum
 
 static func _encoded(value: Variant) -> Dictionary:
-	var source := CanonicalJson.text(value)
+	var source := CanonicalJsonType.text(value)
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": value,
 		"text": source,
 		"bytes": source.to_utf8_buffer(),
-		"sha256": CanonicalJson.sha256_text(source),
+		"sha256": CanonicalJsonType.sha256_text(source),
 	}
 
 static func _accept(value: Variant) -> Dictionary:

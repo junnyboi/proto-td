@@ -56,6 +56,32 @@ const CONTRACTS := [
 		"forbidden": _SHELL_FORBIDDEN,
 	},
 ]
+const SIMULATION_CONTRACTS := [
+	{
+		"path": "res://sim/campaign_promotion.gd",
+		"aliases": [
+			"CampaignCodecType", "CampaignProgressionType", "CampaignHashType",
+			"CanonicalJsonType",
+		],
+		"forbidden": [
+			"\\bCampaignCodec\\b", "\\bCampaignProgression\\b", "\\bCampaignHash\\b",
+			"\\bCanonicalJson\\b",
+		],
+	},
+	{
+		"path": "res://sim/campaign_codec.gd",
+		"aliases": ["CanonicalJsonType", "CampaignProgressionType"],
+		"forbidden": ["\\bCanonicalJson\\b", "\\bCampaignProgression\\b"],
+	},
+	{
+		"path": "res://sim/campaign_hash.gd",
+		"aliases": ["CampaignCodecType", "CampaignProgressionType", "CanonicalJsonType"],
+		"forbidden": [
+			"\\bCampaignCodec\\.", "\\bCampaignProgression\\.", "\\bCanonicalJson\\.",
+			"\\bCampaignHash\\.",
+		],
+	},
+]
 
 
 func test_shipped_ui_consumers_preload_scripts_instead_of_using_global_registry() -> void:
@@ -84,3 +110,21 @@ func test_stale_probe_requires_exact_shipped_locale_registry() -> void:
 		"stale-cache probe must require the exact shipped locale registry",
 	)
 	assert_false(source.contains('PackedStringArray(["en-US"])'))
+
+
+func test_training_promotion_dependencies_preload_stale_cache_helpers() -> void:
+	for raw_contract: Variant in SIMULATION_CONTRACTS:
+		var contract := raw_contract as Dictionary
+		var path := String(contract["path"])
+		var source := FileAccess.get_file_as_string(path)
+		assert_false(source.is_empty(), path)
+		for raw_alias: Variant in contract["aliases"]:
+			var alias := String(raw_alias)
+			assert_true(
+				source.contains("const %s := preload(" % alias),
+				"%s is missing %s" % [path, alias],
+			)
+		for raw_pattern: Variant in contract["forbidden"]:
+			var expression := RegEx.new()
+			assert_eq(expression.compile(String(raw_pattern)), OK, path)
+			assert_null(expression.search(source), "%s still uses %s" % [path, raw_pattern])

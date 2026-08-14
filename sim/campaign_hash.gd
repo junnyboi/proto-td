@@ -1,6 +1,9 @@
 class_name CampaignHash
 extends RefCounted
 
+const CampaignCodecType := preload("res://sim/campaign_codec.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CanonicalJsonType := preload("res://sim/canonical_json.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 2
 const FNV_OFFSET := -3750763034362895579
@@ -21,14 +24,14 @@ static func of_core(data: Variant, context: Dictionary) -> Dictionary:
 
 
 static func of_core_snapshot(data: Variant, context: Dictionary) -> Dictionary:
-	var normalized := CampaignCodec.normalize_core_snapshot(data, context)
+	var normalized := CampaignCodecType.normalize_core_snapshot(data, context)
 	if not normalized["accepted"]:
 		return normalized
 	return _hash_encoded(_bytes_of_normalized(normalized["value"], true))
 
 
 ## Private performance seam: callers must have just accepted this exact value
-## through CampaignCodec.normalize_data. It changes no hash grammar or bytes.
+## through CampaignCodecType.normalize_data. It changes no hash grammar or bytes.
 static func _of_normalized_data(data: Dictionary) -> Dictionary:
 	return _hash_encoded(_bytes_of_normalized(data, false))
 
@@ -48,7 +51,7 @@ static func bytes_of(
 	context: Dictionary,
 	omit_last_resolution: bool = false,
 ) -> Dictionary:
-	var normalized := CampaignCodec.normalize_data(data, context)
+	var normalized := CampaignCodecType.normalize_data(data, context)
 	if not normalized["accepted"]:
 		return normalized
 	var value: Dictionary = normalized["value"]
@@ -140,8 +143,8 @@ static func _append_anchor_nullable(out: PackedByteArray, value: Variant) -> voi
 	out.append(1)
 	_append_i64(out, int(value["resolution_index"]))
 	_append_i64(out, int(value["save_revision_after"]))
-	_append_string(out, CanonicalJson.text(value["before_core"]))
-	_append_string(out, CanonicalJson.text(value["after_core"]))
+	_append_string(out, CanonicalJsonType.text(value["before_core"]))
+	_append_string(out, CanonicalJsonType.text(value["after_core"]))
 	_append_string(out, String(value["strategic_body_hash_before"]))
 	_append_string(out, String(value["strategic_body_hash_after"]))
 
@@ -283,13 +286,13 @@ static func derive_transaction(
 	state_before: Variant,
 	context: Dictionary,
 ) -> Dictionary:
-	var encoded_ticket := CampaignCodec.encode_ticket(ticket)
+	var encoded_ticket := CampaignCodecType.encode_ticket(ticket)
 	if not encoded_ticket["accepted"]:
 		return _derive_reject(encoded_ticket["error_code"])
-	var encoded_outcome := CampaignCodec.encode_outcome(outcome)
+	var encoded_outcome := CampaignCodecType.encode_outcome(outcome)
 	if not encoded_outcome["accepted"]:
 		return _derive_reject(encoded_outcome["error_code"])
-	var before := CampaignCodec.normalize_data(state_before, context)
+	var before := CampaignCodecType.normalize_data(state_before, context)
 	if not before["accepted"]:
 		return _derive_reject(&"invalid_transaction_state")
 	return _derive_normalized_transaction(
@@ -303,10 +306,10 @@ static func _derive_certified_transaction(
 	state_before: Dictionary,
 	context: Dictionary,
 ) -> Dictionary:
-	var encoded_ticket := CampaignCodec.encode_ticket(ticket)
+	var encoded_ticket := CampaignCodecType.encode_ticket(ticket)
 	if not encoded_ticket["accepted"]:
 		return _derive_reject(encoded_ticket["error_code"])
-	var encoded_outcome := CampaignCodec.encode_outcome(outcome)
+	var encoded_outcome := CampaignCodecType.encode_outcome(outcome)
 	if not encoded_outcome["accepted"]:
 		return _derive_reject(encoded_outcome["error_code"])
 	return _derive_normalized_transaction(
@@ -400,11 +403,11 @@ static func _derive_fresh_receipt(
 	var rewards := _derive_rewards_and_heroes(before, expected, outcome, draft, context)
 	if not rewards["accepted"]:
 		return rewards
-	var xp_awards := CampaignProgression.derive_xp_awards(
+	var xp_awards := CampaignProgressionType.derive_xp_awards(
 		outcome["heroes"], before["heroes"],
 	)
 	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
-	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
+	if not CampaignProgressionType.apply_xp(expected["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, draft)
 	if not dead["accepted"]:
@@ -412,12 +415,12 @@ static func _derive_fresh_receipt(
 	var unlocks := _expected_unlocks(before, rewards["authored"])
 	expected["unlocked_traps"] = unlocks["traps"]
 	expected["unlocked_spells"] = unlocks["spells"]
-	var before_hash := CampaignHash._of_normalized_core(before)
-	var after_hash := CampaignHash._of_normalized_core(expected)
+	var before_hash := _of_normalized_core(before)
+	var after_hash := _of_normalized_core(expected)
 	if not before_hash["accepted"] or not after_hash["accepted"]:
 		return _reject(&"invalid_transaction_state")
 	var resolution := {
-		"schema_version": CampaignCodec.SAVE_VERSION,
+		"schema_version": CampaignCodecType.SAVE_VERSION,
 		"resolution_index": resolution_index,
 		"campaign_uid": ticket["campaign_uid"],
 		"attempt_id": ticket["attempt_id"],
@@ -446,12 +449,12 @@ static func _derive_fresh_receipt(
 		"strategic_body_hash_after": after_hash["hex"],
 	}
 	expected["last_resolution"] = resolution.duplicate(true)
-	var normalized_resolution := CampaignCodec.encode_resolution(resolution)
+	var normalized_resolution := CampaignCodecType.encode_resolution(resolution)
 	if not normalized_resolution["accepted"]:
 		return _reject(normalized_resolution["error_code"])
 	var after_value := expected
 	if full_after_validation:
-		var normalized_after := CampaignCodec.normalize_data(expected, context)
+		var normalized_after := CampaignCodecType.normalize_data(expected, context)
 		if not normalized_after["accepted"]:
 			return _reject(&"invalid_transaction_state")
 		after_value = normalized_after["value"]
@@ -481,14 +484,14 @@ static func validate_transaction(
 	state_after: Variant,
 	context: Dictionary,
 ) -> Dictionary:
-	var encoded_ticket := CampaignCodec.encode_ticket(ticket)
-	var encoded_outcome := CampaignCodec.encode_outcome(outcome)
-	var encoded_resolution := CampaignCodec.encode_resolution(resolution)
+	var encoded_ticket := CampaignCodecType.encode_ticket(ticket)
+	var encoded_outcome := CampaignCodecType.encode_outcome(outcome)
+	var encoded_resolution := CampaignCodecType.encode_resolution(resolution)
 	for encoded: Dictionary in [encoded_ticket, encoded_outcome, encoded_resolution]:
 		if not encoded["accepted"]:
 			return encoded
-	var before := CampaignCodec.normalize_data(state_before, context)
-	var after := CampaignCodec.normalize_data(state_after, context)
+	var before := CampaignCodecType.normalize_data(state_before, context)
+	var after := CampaignCodecType.normalize_data(state_after, context)
 	if not before["accepted"] or not after["accepted"]:
 		return _reject(&"invalid_transaction_state")
 	return _validate_normalized_transaction(
@@ -555,7 +558,7 @@ static func _validate_before(
 		return _reject(&"transaction_marks_before_mismatch")
 	if _stage_stars(before, ticket["stage_id"]) != int(resolution["stars_before"]):
 		return _reject(&"transaction_stars_before_mismatch")
-	var before_hash := CampaignHash._of_normalized_core(before)
+	var before_hash := _of_normalized_core(before)
 	if not before_hash["accepted"]:
 		return _reject(&"transaction_hash_before_mismatch")
 	if before_hash["hex"] != resolution["strategic_body_hash_before"]:
@@ -580,7 +583,7 @@ static func _validate_after(
 	var derived := _derive_expected_after(outcome, resolution, before, context)
 	if not derived["accepted"]:
 		return derived
-	var body_hash := CampaignHash._of_normalized_core(derived["value"])
+	var body_hash := _of_normalized_core(derived["value"])
 	if not body_hash["accepted"] or body_hash["hex"] != resolution["strategic_body_hash_after"]:
 		return _reject(&"transaction_hash_after_mismatch")
 	var expected: Dictionary = derived["value"]
@@ -621,13 +624,13 @@ static func _derive_expected_after(
 		return _reject(&"transaction_rewards_mismatch")
 	if resolution["created_hero_ids"] != rewards["created"]:
 		return _reject(&"transaction_created_hero_mismatch")
-	var xp_awards := CampaignProgression.derive_xp_awards(
+	var xp_awards := CampaignProgressionType.derive_xp_awards(
 		outcome["heroes"], before["heroes"],
 	)
 	if resolution["xp_awards"] != xp_awards:
 		return _reject(&"transaction_xp_mismatch")
 	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
-	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
+	if not CampaignProgressionType.apply_xp(expected["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, resolution)
 	if not dead["accepted"]:
@@ -675,7 +678,7 @@ static func _derive_rewards_and_heroes(
 			hero_id = allocated["hero_id"]
 			created.append(hero_id)
 			taken[hero_id] = true
-			var new_hero := CampaignProgression.add_initial_fields({
+			var new_hero := CampaignProgressionType.add_initial_fields({
 				"hero_id": hero_id,
 				"operator_def_id": reward["id"],
 				"recruitment_index": recruitment_index,
