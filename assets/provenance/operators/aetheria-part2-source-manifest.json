@@ -631,7 +631,7 @@
       "direction": "ne",
       "animation_name": "attacking_ne",
       "path": "deliverables/sniper_2/sniper_2_attacking_ne.png",
-      "sha256": "33f07aae2b229b521cad1824861a977cb387c54ca2087d3fedf156985b7cd43d",
+      "sha256": "12e0d0a6ac543f66e261d4be5ab6a03e1b39534c776b12383ad4fdc43be86220",
       "frame_width": 256,
       "frame_height": 256,
       "frame_count": 25,
@@ -639,8 +639,8 @@
       "sheet_height": 256,
       "fps": 6.25,
       "loop": false,
-      "placeholder": true,
-      "placeholder_source_direction": "se"
+      "placeholder": false,
+      "placeholder_source_direction": null
     },
     {
       "hero": "sniper_2",
@@ -648,7 +648,7 @@
       "direction": "se",
       "animation_name": "attacking_se",
       "path": "deliverables/sniper_2/sniper_2_attacking_se.png",
-      "sha256": "33f07aae2b229b521cad1824861a977cb387c54ca2087d3fedf156985b7cd43d",
+      "sha256": "3b973ba80a1c1259177799e774626d2b129fbc99f66251ce8d3e9064950be4f6",
       "frame_width": 256,
       "frame_height": 256,
       "frame_count": 25,
@@ -665,7 +665,7 @@
       "direction": "nw",
       "animation_name": "attacking_nw",
       "path": "deliverables/sniper_2/sniper_2_attacking_nw.png",
-      "sha256": "57b9123142063b11f7aadec122e2d2f0e7f76a80d5e76233e4a5724a697bd88d",
+      "sha256": "6613f6665bd2f1bdc62be1d58919173eda8fec0cd097afd6234188fb1a47c6ee",
       "frame_width": 256,
       "frame_height": 256,
       "frame_count": 25,
@@ -673,8 +673,8 @@
       "sheet_height": 256,
       "fps": 6.25,
       "loop": false,
-      "placeholder": true,
-      "placeholder_source_direction": "sw"
+      "placeholder": false,
+      "placeholder_source_direction": null
     },
     {
       "hero": "sniper_2",
@@ -682,7 +682,7 @@
       "direction": "sw",
       "animation_name": "attacking_sw",
       "path": "deliverables/sniper_2/sniper_2_attacking_sw.png",
-      "sha256": "57b9123142063b11f7aadec122e2d2f0e7f76a80d5e76233e4a5724a697bd88d",
+      "sha256": "75107e3440646de7d11c5f2cf2a8d60cc3aaa925c4a6d18f664e38e732456ea5",
       "frame_width": 256,
       "frame_height": 256,
       "frame_count": 25,
@@ -694,40 +694,5 @@
       "placeholder_source_direction": null
     }
   ],
-  "known_placeholders": [
-    {
-      "hero": "sniper_2",
-      "state": "attacking",
-      "direction": "ne",
-      "animation_name": "attacking_ne",
-      "path": "deliverables/sniper_2/sniper_2_attacking_ne.png",
-      "sha256": "33f07aae2b229b521cad1824861a977cb387c54ca2087d3fedf156985b7cd43d",
-      "frame_width": 256,
-      "frame_height": 256,
-      "frame_count": 25,
-      "sheet_width": 6400,
-      "sheet_height": 256,
-      "fps": 6.25,
-      "loop": false,
-      "placeholder": true,
-      "placeholder_source_direction": "se"
-    },
-    {
-      "hero": "sniper_2",
-      "state": "attacking",
-      "direction": "nw",
-      "animation_name": "attacking_nw",
-      "path": "deliverables/sniper_2/sniper_2_attacking_nw.png",
-      "sha256": "57b9123142063b11f7aadec122e2d2f0e7f76a80d5e76233e4a5724a697bd88d",
-      "frame_width": 256,
-      "frame_height": 256,
-      "frame_count": 25,
-      "sheet_width": 6400,
-      "sheet_height": 256,
-      "fps": 6.25,
-      "loop": false,
-      "placeholder": true,
-      "placeholder_source_direction": "sw"
-    }
-  ]
+  "known_placeholders": []
 }

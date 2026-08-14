@@ -6,7 +6,7 @@ const SOURCE_PATH := "res://assets/provenance/operators/aetheria-part2-source-ma
 const RUNTIME_PATH := "res://assets/provenance/operators/operator-animation-v1.json"
 
 
-func test_source_inventory_and_placeholder_set_are_exact() -> void:
+func test_source_inventory_is_all_native() -> void:
 	var source := _load_json(SOURCE_PATH)
 	assert_eq(source.get("schema_version"), 1)
 	var assets: Array = source.get("assets", [])
@@ -19,8 +19,20 @@ func test_source_inventory_and_placeholder_set_are_exact() -> void:
 				"%s/%s/%s<-%s"
 				% [row["hero"], row["state"], row["direction"], row["placeholder_source_direction"]]
 			)
-	placeholders.sort()
-	assert_eq(placeholders, ["sniper_2/attacking/ne<-se", "sniper_2/attacking/nw<-sw"])
+		placeholders.sort()
+	assert_eq(placeholders, [])
+	var by_key: Dictionary = {}
+	for raw_row: Variant in assets:
+		var row := raw_row as Dictionary
+		by_key[_key(row["hero"], row["state"], row["direction"])] = row
+	assert_ne(
+		by_key["sniper_2/attacking/ne"]["sha256"],
+		by_key["sniper_2/attacking/se"]["sha256"],
+	)
+	assert_ne(
+		by_key["sniper_2/attacking/nw"]["sha256"],
+		by_key["sniper_2/attacking/sw"]["sha256"],
+	)
 
 
 func test_runtime_catalog_preserves_source_hashes_and_pinned_sampling() -> void:

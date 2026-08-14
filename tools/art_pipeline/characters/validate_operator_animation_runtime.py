@@ -26,8 +26,6 @@ EXPECTED_CELL = (192, 192)
 EXPECTED_PIVOT = (0.5, 0.94)
 EXPECTED_PLACEHOLDERS = {
     ("guard_1", "attack", "ne"): "se",
-    ("sniper_2", "attack", "ne"): "se",
-    ("sniper_2", "attack", "nw"): "sw",
 }
 
 
@@ -95,8 +93,6 @@ def validate(repo: Path) -> None:
     known = document.get("known_placeholders")
     expected_known = [
         {"logical_id": "op_anim_guard_1_attack_ne", "source_direction": "se"},
-        {"logical_id": "op_anim_sniper_2_attack_ne", "source_direction": "se"},
-        {"logical_id": "op_anim_sniper_2_attack_nw", "source_direction": "sw"},
     ]
     if known != expected_known:
         raise ValueError(f"operator animation known placeholder mismatch: {known}")

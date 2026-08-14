@@ -32,11 +32,18 @@ func _fixture() -> BattleModel:
 	]
 	stage.waves = waves
 	var squad: Array[StringName] = [&"vanguard_1"]
-	var m := BattleModel.create(
-		stage, squad, 42, load(CONFIG_PATH) as GameConfig,
-		{&"grunt": load("res://data/enemies/grunt.tres") as EnemyDef},
-		_catalog("res://data/operators"), _catalog("res://data/traps"),
-		_catalog("res://data/spells"),
+	var m := (
+		BattleModel
+		. create(
+			stage,
+			squad,
+			42,
+			load(CONFIG_PATH) as GameConfig,
+			{&"grunt": load("res://data/enemies/grunt.tres") as EnemyDef},
+			_catalog("res://data/operators"),
+			_catalog("res://data/traps"),
+			_catalog("res://data/spells"),
+		)
 	)
 	assert_true(m.apply_action([&"debug_set_dp", 99]))
 	assert_true(
@@ -82,11 +89,11 @@ func test_every_hashed_field_group_flips_the_hash() -> void:
 		"unit.dp_generation_counter": func() -> void: m.units[0].dp_generation_counter += 1,
 		"unit.last_attack_tick": func() -> void: m.units[0].last_attack_tick += 1,
 		"unit.last_attack_cell": func() -> void: m.units[0].last_attack_cell.x += 1,
-			"unit.sp": func() -> void: m.units[0].sp += 1,
-			"unit.sp_progress": func() -> void: m.units[0].sp_progress += 1,
-			"unit.skill_triggered_tick": func() -> void: m.units[0].skill_triggered_tick += 1,
-			"unit.skill_target_unit_id": func() -> void: m.units[0].skill_target_unit_id += 1,
-			"unit.active_effects.size": func() -> void: _push_second_effect(m),
+		"unit.sp": func() -> void: m.units[0].sp += 1,
+		"unit.sp_progress": func() -> void: m.units[0].sp_progress += 1,
+		"unit.skill_triggered_tick": func() -> void: m.units[0].skill_triggered_tick += 1,
+		"unit.skill_target_unit_id": func() -> void: m.units[0].skill_target_unit_id += 1,
+		"unit.active_effects.size": func() -> void: _push_second_effect(m),
 		"unit.effect.expires_tick": func() -> void: _bump_effect_expiry(m),
 		"unit.effect.float_param_x1000": func() -> void: _nudge_effect_float(m),
 		"unit.blocked_ids": func() -> void: m.units[0].blocked_ids.append(9),
@@ -96,6 +103,9 @@ func test_every_hashed_field_group_flips_the_hash() -> void:
 		"enemy.atk_counter": func() -> void: m.enemies[0].atk_counter += 1,
 		"enemy.blocked_by": func() -> void: m.enemies[0].blocked_by += 1,
 		"enemy.stunned_until_tick": func() -> void: m.enemies[0].stunned_until_tick += 1,
+		"enemy.damage_stagger_until_tick":
+		func() -> void: m.enemies[0].damage_stagger_until_tick += 1,
+		"enemy.last_damage_tick": func() -> void: m.enemies[0].last_damage_tick += 1,
 		"enemy.alive": func() -> void: m.enemies[0].alive = not m.enemies[0].alive,
 		"enemy.faction": func() -> void: m.enemies[0].faction = EnemyState.Faction.CHARMED,
 		"enemy.engaged_with": func() -> void: m.enemies[0].engaged_with += 1,
@@ -123,9 +133,7 @@ func test_every_hashed_field_group_flips_the_hash() -> void:
 
 
 func _push_second_effect(m: BattleModel) -> void:
-	var fx := {
-		"effect": SkillDef.Effect.BLOCK_PLUS, "expires_tick": 400, "params": {"amount": 1}
-	}
+	var fx := {"effect": SkillDef.Effect.BLOCK_PLUS, "expires_tick": 400, "params": {"amount": 1}}
 	m.units[0].active_effects.append(fx)
 
 

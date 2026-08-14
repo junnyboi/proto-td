@@ -50,6 +50,7 @@ extends RefCounted
 enum Result { RUNNING, CLEAR, DEFEAT }
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
+const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
@@ -290,11 +291,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 ## active_effects until tick + duration_ticks.
 func _apply_trigger_skill(unit_id: int) -> bool:
 	var u := unit_by_id(unit_id)
-	if (
-		u == null
-		or not u.is_skill_ready()
-		or u.skill_effect == SkillDef.Effect.HEAL_TARGET
-	):
+	if u == null or not u.is_skill_ready() or u.skill_effect == SkillDef.Effect.HEAL_TARGET:
 		return false
 	u.sp = 0
 	u.skill_triggered_tick = tick
@@ -313,11 +310,17 @@ func _apply_trigger_skill(unit_id: int) -> bool:
 				if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
 					e.stunned_until_tick = tick + int(u.skill_params["stun_ticks"])
 		_:
-			u.active_effects.append({
-				"effect": u.skill_effect,
-				"params": u.skill_params,
-				"expires_tick": tick + u.skill_duration_ticks,
-			})
+			(
+				u
+				. active_effects
+				. append(
+					{
+						"effect": u.skill_effect,
+						"params": u.skill_params,
+						"expires_tick": tick + u.skill_duration_ticks,
+					}
+				)
+			)
 	return true
 
 
@@ -450,9 +453,18 @@ func _resolve_burst(center: Vector2i, def: SpellDef) -> void:
 		if maxi(absi(c.x - center.x), absi(c.y - center.y)) <= def.radius:
 			victims.append(e)
 	for v: EnemyState in victims:
-		v.hp -= def.damage
-		if v.hp <= 0:
-			_kill_enemy(v)
+		_damage_enemy(v, def.damage)
+
+
+## One authoritative EnemyState damage seam. Positive damage stamps the
+## presentation event and extends an integer-tick movement stagger before the
+## existing faction-correct death path resolves. Attack cadence is unchanged.
+func _damage_enemy(e: EnemyState, damage: int) -> void:
+	if EnemyDamageScript.apply(e, damage, tick, config.damage_stagger_ticks):
+		if e.faction == EnemyState.Faction.CHARMED:
+			_kill_charmed(e)
+		else:
+			_kill_enemy(e)
 
 
 ## Charm conversion (§2.4 steps 1-4): faction flip at current HP, stats
@@ -608,6 +620,8 @@ func _advance_enemies() -> Array[Dictionary]:
 	for e: EnemyState in enemies:
 		if not e.alive or e.engaged_with >= 0:
 			continue
+		if tick < e.damage_stagger_until_tick:
+			continue
 		if e.faction == EnemyState.Faction.CHARMED:
 			e.progress_units -= e.step_units
 			if e.progress_units <= 0:
@@ -675,9 +689,7 @@ func _resolve_trap_triggers(entrants: Array[Dictionary]) -> void:
 		traps_triggered += 1
 		trap.last_trigger_tick = tick
 		if trap.effect == TrapDef.Effect.DAMAGE:
-			e.hp -= trap.damage
-			if e.hp <= 0:
-				_kill_enemy(e)
+			_damage_enemy(e, trap.damage)
 		if trap.charges_left > 0:
 			trap.charges_left -= 1
 			if trap.charges_left == 0:
@@ -749,10 +761,8 @@ func _tick_combat() -> void:
 			continue
 		var foe := enemies[a.engaged_with]
 		if a.atk > 0 and foe.alive:
-			foe.hp -= a.atk
+			_damage_enemy(foe, a.atk)
 			a.atk_counter = a.atk_interval_ticks - 1
-			if foe.hp <= 0:
-				_kill_enemy(foe)
 	for e: EnemyState in enemies:
 		if not e.alive or e.faction != EnemyState.Faction.ENEMY:
 			continue
@@ -764,10 +774,8 @@ func _tick_combat() -> void:
 		if e.engaged_with >= 0:
 			var ally := enemies[e.engaged_with]
 			if e.atk > 0 and ally.alive:
-				ally.hp -= e.atk
+				_damage_enemy(ally, e.atk)
 				e.atk_counter = e.atk_interval_ticks - 1
-				if ally.hp <= 0:
-					_kill_charmed(ally)
 			continue
 		var victim: UnitState = null
 		if e.blocked_by >= 0:
@@ -790,12 +798,17 @@ func _fire_ranged(u: UnitState) -> void:
 	var candidates: Array[Dictionary] = []
 	for e: EnemyState in enemies:
 		if e.alive and e.faction == EnemyState.Faction.ENEMY:
-			candidates.append({
-				"id": e.id,
-				"cell": Pathing.cell_of(path_for(e.path_idx), e.progress_units),
-				"progress_units": e.progress_units,
-				"aerial": e.aerial,
-			})
+			(
+				candidates
+				. append(
+					{
+						"id": e.id,
+						"cell": Pathing.cell_of(path_for(e.path_idx), e.progress_units),
+						"progress_units": e.progress_units,
+						"aerial": e.aerial,
+					}
+				)
+			)
 	var filter := Targeting.Filter.ANTI_AIR_PRIORITY
 	if u.op_class == OperatorDef.OpClass.CASTER:
 		filter = Targeting.Filter.GROUND_ONLY
@@ -814,20 +827,16 @@ func _fire_ranged(u: UnitState) -> void:
 			if not e.alive or e.aerial or e.faction != EnemyState.Faction.ENEMY:
 				continue
 			if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
-				e.hp -= damage
-				if e.hp <= 0:
-					_kill_enemy(e)
+				_damage_enemy(e, damage)
 	else:
 		_strike_enemy(u, primary)
 
 
 func _strike_enemy(u: UnitState, target: EnemyState) -> void:
-	target.hp -= u.effective_atk()
+	_damage_enemy(target, u.effective_atk())
 	u.atk_counter = u.effective_interval() - 1
 	u.last_attack_tick = tick
 	u.last_attack_cell = Pathing.cell_of(path_for(target.path_idx), target.progress_units)
-	if target.hp <= 0:
-		_kill_enemy(target)
 
 
 func _nearest_unit_in_range(e: EnemyState) -> UnitState:

@@ -50,6 +50,16 @@ func expected_result() -> int:
 	return BattleModel.Result.CLEAR
 
 
+func stop_reason() -> String:
+	if failed:
+		return "bot_failed"
+	if not _finished or _model == null:
+		return ""
+	if _model.result == BattleModel.Result.CLEAR:
+		return "terminal_clear"
+	return "terminal_defeat"
+
+
 func tick(t: int) -> bool:
 	if failed:
 		return false

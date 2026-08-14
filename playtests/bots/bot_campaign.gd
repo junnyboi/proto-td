@@ -25,6 +25,14 @@ func _init() -> void:
 	expects_completion = true
 
 
+func stop_reason() -> String:
+	if failed:
+		return "bot_failed"
+	if _child == null and _stage_idx >= BOT_COUNT and _settle == 0:
+		return "campaign_complete"
+	return ""
+
+
 func tick(t: int) -> bool:
 	if failed:
 		return false

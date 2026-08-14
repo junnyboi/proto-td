@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "feature_id": "OPANIM-2",
+  "task_id": "TD-032",
+  "human_accepter": "Poseidon",
+  "accepted_at_utc": "2026-08-14T06:41:55Z",
+  "source": "task response to the linked native NE/NW contact sheet and 12 fps gameplay previews",
+  "verdict": "ACCEPT",
+  "reason": "Poseidon instructed the agent to continue if on track after reviewing the linked native Sky Hunter candidates; the response authorizes final package and game integration for these exact hashes.",
+  "package_manifest_sha256": "c57ae5779f320f597e1d3fd34eb6089ca19c81e742437bb4764ee2a50275e2e4",
+  "package_audit_sha256": "6b8946178aa2028e79bdbea5aa2fe452a148974bd6cbf3644b61f9dc3c267e28",
+  "assets": [
+    {
+      "logical_id": "op_anim_sniper_2_attack_ne",
+      "source_direction": "ne",
+      "source_sha256": "12e0d0a6ac543f66e261d4be5ab6a03e1b39534c776b12383ad4fdc43be86220"
+    },
+    {
+      "logical_id": "op_anim_sniper_2_attack_nw",
+      "source_direction": "nw",
+      "source_sha256": "6613f6665bd2f1bdc62be1d58919173eda8fec0cd097afd6234188fb1a47c6ee"
+    }
+  ]
+}

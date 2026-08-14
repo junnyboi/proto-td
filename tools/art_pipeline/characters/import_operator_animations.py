@@ -393,7 +393,7 @@ def run(repo: Path, source_root: Path, classes: list[str]) -> None:
         if value not in classes
     )
     compact["acceptance"]["status"] = (
-        "all_ten_operator_classes_integrated_with_three_declared_placeholders"
+        "all_ten_operator_classes_integrated_with_one_declared_placeholder"
     )
     known_placeholders = {
         str(row["logical_id"]): str(row["source_direction"])

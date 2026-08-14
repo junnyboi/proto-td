@@ -380,122 +380,122 @@
    ]
   },
   {
-	   "id": "P16",
-	   "title": "Persistent heroes: recruitment, Muster Ledger, duplicate-safe battles, permadeath, and one durable campaign slot",
-	   "acceptance": [
-	    "a campaign owns stable deterministic hero instances distinct from OperatorDef identity, with exact hash/save/replay coverage",
-	    "Contract Board recruitment and emergency recovery preserve deterministic economy and prevent roster soft locks",
-	    "Muster Ledger supports callsign-only customization and READY/DEAD history without mutating combat definitions",
-	    "campaign battle tickets bind hero IDs to immutable definitions; terminal casualties resolve exactly once and remain dead after Continue",
-	    "one corruption-safe autosave slot, Continue, overwrite confirmation, Retry Save, and Abandon preserve durable strategic truth",
-	    "localized player-facing surfaces provide stable keys, English fallbacks, en-US default, selector, parity, glyph, and layout proof",
-	    "fresh RELEASE verification, independent audit, Web preview, and human verdict cover identity, death fairness, recovery clarity, and save trust"
-	   ],
-	   "evidence_classes": [
-	    "logic",
-	    "integration",
-	    "visual",
-	    "feel"
-	   ],
-	   "status": "pending",
-		   "scenarios": [
-		    "p16_contract_probe",
-		    "model_roster_probe",
-		    "strategic_verbs",
-		    "mage_promotion",
-		    "mage_promotion_compact",
-		    "mage_promotion_focus",
-		    "mage_promotion_portrait",
-		    "mage_promotion_zh_cn",
-		    "hero_result_flow",
-	    "barracks_recruit_death",
-	    "save_roundtrip",
-	    "p16_strategic_campaign"
-	   ],
-			   "commits": [
-			    "cd35d19",
-			    "afabc07",
-			    "1259739",
-			    "b018448"
-			   ]
-		  },
-		  {
-		   "id": "WITCH-1",
-		   "title": "Witch Doctor: deterministic targeted healing",
-		   "acceptance": [
-		    "a separate S7-unlocked Witch Doctor template heals one different living injured ally within data-owned range and never revives",
-		    "every malformed or invalid Mend command is hash-equal while an accepted Mend clamps HP, spends SP, records target/tick, and changes the pinned outcome differential",
-		    "canonical semantic replay is identical across processes; exact campaign checks prove 5 starters, 10 after S6, and 11 after S7",
-		    "real targeting input, cancellation, pan blocking, target-side mint VFX, decay, and legacy instant skills pass the dual-lane scenario",
-		    "Poseidon approved mechanics and legibility on exact-candidate frames; sprite and portrait remain truthfully marked as placeholders"
-		   ],
-		   "evidence_classes": [
-		    "logic",
-		    "integration",
-		    "visual",
-		    "feel"
-		   ],
-		   "status": "passing",
-		   "scenarios": [
-		    "witch_doctor_heal"
-		   ],
-		   "commits": [
-		    "91b427c"
-		   ]
-		  },
-		  {
-		    "id": "AUI-10R",
-    "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
-    "acceptance": [
-      "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and Poseidon-approved human-final flags bound to candidate 60b69a6004a9c843851d9f6c9aee84c88389cb1f",
+   "id": "P16",
+   "title": "Persistent heroes: recruitment, Muster Ledger, duplicate-safe battles, permadeath, and one durable campaign slot",
+   "acceptance": [
+    "a campaign owns stable deterministic hero instances distinct from OperatorDef identity, with exact hash/save/replay coverage",
+    "Contract Board recruitment and emergency recovery preserve deterministic economy and prevent roster soft locks",
+    "Muster Ledger supports callsign-only customization and READY/DEAD history without mutating combat definitions",
+    "campaign battle tickets bind hero IDs to immutable definitions; terminal casualties resolve exactly once and remain dead after Continue",
+    "one corruption-safe autosave slot, Continue, overwrite confirmation, Retry Save, and Abandon preserve durable strategic truth",
+    "localized player-facing surfaces provide stable keys, English fallbacks, en-US default, selector, parity, glyph, and layout proof",
+    "fresh RELEASE verification, independent audit, Web preview, and human verdict cover identity, death fairness, recovery clarity, and save trust"
+   ],
+   "evidence_classes": [
+    "logic",
+    "integration",
+    "visual",
+    "feel"
+   ],
+   "status": "pending",
+   "scenarios": [
+    "p16_contract_probe",
+    "model_roster_probe",
+    "strategic_verbs",
+    "mage_promotion",
+    "mage_promotion_compact",
+    "mage_promotion_focus",
+    "mage_promotion_portrait",
+    "mage_promotion_zh_cn",
+    "hero_result_flow",
+    "barracks_recruit_death",
+    "save_roundtrip",
+    "p16_strategic_campaign"
+   ],
+   "commits": [
+    "cd35d19",
+    "afabc07",
+    "1259739",
+    "b018448"
+   ]
+  },
+  {
+   "id": "WITCH-1",
+   "title": "Witch Doctor: deterministic targeted healing",
+   "acceptance": [
+    "a separate S7-unlocked Witch Doctor template heals one different living injured ally within data-owned range and never revives",
+    "every malformed or invalid Mend command is hash-equal while an accepted Mend clamps HP, spends SP, records target/tick, and changes the pinned outcome differential",
+    "canonical semantic replay is identical across processes; exact campaign checks prove 5 starters, 10 after S6, and 11 after S7",
+    "real targeting input, cancellation, pan blocking, target-side mint VFX, decay, and legacy instant skills pass the dual-lane scenario",
+    "Poseidon approved mechanics and legibility on exact-candidate frames; sprite and portrait remain truthfully marked as placeholders"
+   ],
+   "evidence_classes": [
+    "logic",
+    "integration",
+    "visual",
+    "feel"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "witch_doctor_heal"
+   ],
+   "commits": [
+    "91b427c"
+   ]
+  },
+  {
+   "id": "AUI-10R",
+   "title": "S1 civic-weatherworks world art: Cloud-Seal Orrery and Alpine Escarpment",
+   "acceptance": [
+    "S1 resolves twelve exact manifest-backed world assets with one-to-one runtime provenance and Poseidon-approved human-final flags bound to candidate 60b69a6004a9c843851d9f6c9aee84c88389cb1f",
     "the Cloud-Seal Orrery replaces the rejected pressure-tank Core while preserving final-route clearance and input semantics",
     "one continuous Alpine Escarpment renders behind S1 with no repeated outside-map grid or deployable-tile affordance",
     "s1_world_art, assets_floor, iso_projection_floor, full RELEASE, independent diff-vs-pins, localization review, and Poseidon visual verdict are green"
    ],
-    "status": "passing",
+   "status": "passing",
    "scenarios": [
     "s1_world_art",
     "assets_floor",
     "iso_projection_floor"
    ],
-    "commits": [
-      "879c488",
-      "3c5cc50",
-      "60b69a6"
-	    ]
-	  },
-	  {
-	   "id": "OPANIM-1",
-	   "title": "Directional operator animation core roster",
-	   "acceptance": [
-	    "Banner Guard, Defender, Shock Trooper, Swordmaster, and Sword Saint resolve SE, NE, NW, and SW idle/attack atlases through the view-only animation runtime",
-	    "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and class-relative display heights",
-	    "exactly Swordmaster attack NE-from-SE remains a declared placeholder in source, runtime, manifest, and resource metadata",
-	    "animation state is projected from existing model facing and last_attack_tick without changing simulation state",
-	    "catalog and live-battle scenarios pass headless and windowed with fresh screenshots and zero pixel skips"
-	   ],
-	   "evidence_classes": [
-	    "logic",
-	    "integration",
-	    "visual"
-	   ],
-	   "status": "passing",
-	   "scenarios": [
-	    "operator_animation_catalog",
-	    "operator_animation_flow"
-	   ],
-	   "commits": [
-	    "9b82a71",
-	    "e66ae2b",
-	    "ea3ee91",
-	    "84d9d31",
-	    "b19c306",
-	    "228a8d2",
-	    "5576e39",
-	    "8ce50f0",
-	    "0d4729a",
-	    "7693c76",
-	    "3564591"
+   "commits": [
+    "879c488",
+    "3c5cc50",
+    "60b69a6"
+   ]
+  },
+  {
+   "id": "OPANIM-1",
+   "title": "Directional operator animation core roster",
+   "acceptance": [
+    "Banner Guard, Defender, Shock Trooper, Swordmaster, and Sword Saint resolve SE, NE, NW, and SW idle/attack atlases through the view-only animation runtime",
+    "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and class-relative display heights",
+    "exactly Swordmaster attack NE-from-SE remains a declared placeholder in source, runtime, manifest, and resource metadata",
+    "animation state is projected from existing model facing and last_attack_tick without changing simulation state",
+    "catalog and live-battle scenarios pass headless and windowed with fresh screenshots and zero pixel skips"
+   ],
+   "evidence_classes": [
+    "logic",
+    "integration",
+    "visual"
+   ],
+   "status": "passing",
+   "scenarios": [
+    "operator_animation_catalog",
+    "operator_animation_flow"
+   ],
+   "commits": [
+    "9b82a71",
+    "e66ae2b",
+    "ea3ee91",
+    "84d9d31",
+    "b19c306",
+    "228a8d2",
+    "5576e39",
+    "8ce50f0",
+    "0d4729a",
+    "7693c76",
+    "3564591"
    ]
   },
   {
@@ -504,7 +504,7 @@
    "acceptance": [
     "Caster I, Caster II, Protector, Ranger, and Sky Hunter resolve independent SE, NE, NW, and SW idle/attack atlases through the existing view-only animation runtime",
     "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and no directional mirroring",
-    "exactly Sky Hunter attack NE-from-SE and NW-from-SW remain declared placeholders in source, runtime, manifest, and resource metadata",
+    "Sky Hunter attack NE and NW are native, hash-distinct from SE and SW, and every source/runtime/manifest/resource placeholder flag or source map is empty",
     "catalog and five-hero live-battle scenarios pass headless and windowed with fresh screenshots, model-hash invariance, completion sentinels, and zero render skips"
    ],
    "evidence_classes": [
@@ -521,7 +521,30 @@
     "a46056f",
     "4cb244e",
     "f30aa57",
-    "d2c5b33"
+    "d2c5b33",
+    "a51a322",
+    "a035948",
+    "516e6e9",
+    "a2f5298",
+    "c7f65d0",
+    "35831f5",
+    "c1b1f39"
+   ]
+  },
+  {
+   "id": "TD-OBS",
+   "title": "Canonical battle observations and deterministic conditional S6 policy bots",
+   "acceptance": [
+    "BattleObservation is a primitive-only deep-copy canonical projection with pinned tick, upcoming-window, ETA, lane pressure, aerial, terminal-cause, cold-load, and source-permutation semantics without adding model state",
+    "conditional policy decisions are pure and deterministic, action attempts carry canonical observation and unsigned 64-bit model hashes, rejected attempts are hash-equal, and command/no-progress bounds fail closed",
+    "successful completed bots preserve meta.quit_reason bot_done while precise recognized stop reasons classify completion, duration, load failure, and watchdog exits correctly",
+    "scripted S6 pins remain CLEAR leaked=1 tick=1319 and no-Charm DEFEAT leaked=4 tick=1387; conditional full/no-Charm outcomes and telemetry are byte-identical across independent processes after volatile-meta normalization",
+    "scripts/td_obs_check.sh passes import, focused lint/GUT, replay determinism, baseline and conditional outcomes, stop probes, required UID, and owned-worktree checks"
+   ],
+   "status": "passing",
+   "scenarios": [],
+   "commits": [
+    "1821689"
    ]
   }
  ],
@@ -532,8 +555,8 @@
    "owner": "human",
    "record": "The 2026-08-11 decision keeps synthesized SFX intentionally silent. On 2026-08-12 the owner approved MUSIC-1 and authorized runtime music through exactly one catalog-backed player with no layering or duplicate restarts. The sfx_played telemetry seam stays wired. SFX restoration recipe: git show 81ec642^:tools/gen_sfx.gd",
    "docs": [
-    "FINAL_REPORT.md \u00a79",
-    "PLAYTEST.md \u00a71/\u00a73",
+    "FINAL_REPORT.md §9",
+    "PLAYTEST.md §1/§3",
     "JUICE_VERDICT.md Phase 14 note",
     "CLAUDE.md audio section",
     "docs/decisions/D-SFX.md",
