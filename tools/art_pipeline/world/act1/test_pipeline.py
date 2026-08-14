@@ -8,7 +8,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageStat
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
@@ -17,7 +17,9 @@ RUNTIME = REPO / "assets/world/act1"
 STAGING = REPO / "staging/assets/world/act1"
 FRAGMENTS = REPO / "assets/provenance/fragments/act1"
 SOURCE = REPO / "art-src/world/act1"
+SOURCE_MANIFEST = SOURCE / "source-manifest.json"
 MANIFEST = REPO / "assets/act1_shared_manifest.tres"
+TOKEN = "ACT-I-S1-S3-OWNER-TILES-V2"
 EXPECTED = {
     "ground.png": (64, 32),
     "route.png": (64, 32),
@@ -28,12 +30,11 @@ EXPECTED = {
     "panorama.png": (512, 256),
 }
 SOURCE_HASHES = {
-    "ground": "a1bc8c3c969ee921051490c716ce09d94ce001c8df520ad07782b1f9c81affd4",
-    "route": "3894361e2b3f79dfab379ef0745f52ea3bac5ecf7bbbd649e44aa247bd5b94c8",
-    "raised": "faaee6a67f3066f244d72fffaed173b7b9ea1a7cbd247468b6e2e278966144e3",
-    "blocked": "db421085e6205a1e8b7b789b5426e7af7471c8b32a5c1cd4270a5d9193f15a51",
-    "spawn": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
-    "core": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662",
+    "ground": "ab43310f885a50fe9a34a6ef32bfd16aa8f15d46e595557a544c6b9b8dbfa7b8",
+    "route": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9",
+    "raised": "b63816e00bc99487f84def28424897311246c796027eac59a2c0029268490665",
+    "spawn_marker": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
+    "core_marker": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662",
     "panorama": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
 }
 
@@ -54,25 +55,32 @@ def snapshot() -> dict[str, str]:
     return result
 
 
+def alpha_weighted_luma(path: Path) -> float:
+    with Image.open(path) as opened:
+        rgba = opened.convert("RGBA")
+    return float(ImageStat.Stat(rgba.convert("L"), mask=rgba.getchannel("A")).mean[0])
+
+
 class Act1WorldPipelineTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         subprocess.run([sys.executable, str(NORMALIZER)], cwd=REPO, check=True)
 
-    def test_repo_local_source_packet_is_exact(self) -> None:
-        manifest = json.loads((SOURCE / "synthesis-manifest.json").read_text())
-        for role in EXPECTED.keys() - {"panorama.png"}:
-            name = role.removesuffix(".png")
-            path = SOURCE / "synthesized-roles" / f"act1-{name}.png"
-            self.assertEqual(digest(path), SOURCE_HASHES[name])
-            self.assertEqual(manifest["roles"][name]["sha256"], SOURCE_HASHES[name])
-        panorama = SOURCE / "s1-alpine-escarpment-panorama-source.png"
-        self.assertEqual(digest(panorama), SOURCE_HASHES["panorama"])
-        self.assertEqual(manifest["panorama"]["sha256"], SOURCE_HASHES["panorama"])
+    def test_repo_local_owner_source_packet_is_exact(self) -> None:
+        manifest = json.loads(SOURCE_MANIFEST.read_text())
+        self.assertEqual(manifest["approval_token"], TOKEN)
+        self.assertEqual(set(manifest["sources"]), set(SOURCE_HASHES))
+        for name, expected_hash in SOURCE_HASHES.items():
+            record = manifest["sources"][name]
+            path = REPO / record["path"]
+            self.assertEqual(digest(path), expected_hash)
+            self.assertEqual(record["sha256"], expected_hash)
+            with Image.open(path) as image:
+                self.assertEqual(list(image.size), record["size"])
 
     def test_exact_runtime_and_staging_inventory_and_bytes(self) -> None:
         for root in [RUNTIME, STAGING]:
-            self.assertEqual({p.name for p in root.glob("*.png")}, set(EXPECTED))
+            self.assertEqual({path.name for path in root.glob("*.png")}, set(EXPECTED))
         for filename, size in EXPECTED.items():
             runtime = RUNTIME / filename
             staging = STAGING / filename
@@ -80,15 +88,44 @@ class Act1WorldPipelineTest(unittest.TestCase):
             with Image.open(runtime) as image:
                 self.assertEqual(image.size, size)
 
-    def test_roles_preserve_real_alpha_and_panorama_is_rgb(self) -> None:
+    def test_roles_have_exact_geometry_and_real_alpha(self) -> None:
         for filename in EXPECTED.keys() - {"panorama.png"}:
             with Image.open(RUNTIME / filename) as image:
+                rgba = image.convert("RGBA")
                 self.assertEqual(image.mode, "RGBA")
-                extrema = image.getchannel("A").getextrema()
-                self.assertLess(extrema[0], extrema[1])
-                self.assertGreater(extrema[1], 0)
+                self.assertIsNotNone(rgba.getbbox())
+                self.assertLess(rgba.getchannel("A").getextrema()[0], 255)
+                self.assertGreater(rgba.getchannel("A").getextrema()[1], 0)
         with Image.open(RUNTIME / "panorama.png") as image:
             self.assertEqual(image.mode, "RGB")
+
+    def test_owner_materials_are_distinct_and_blocked_is_darker(self) -> None:
+        self.assertNotEqual(digest(RUNTIME / "ground.png"), digest(RUNTIME / "route.png"))
+        self.assertNotEqual(digest(RUNTIME / "ground.png"), digest(RUNTIME / "raised.png"))
+        ground_luma = alpha_weighted_luma(RUNTIME / "ground.png")
+        route_luma = alpha_weighted_luma(RUNTIME / "route.png")
+        blocked_luma = alpha_weighted_luma(RUNTIME / "blocked.png")
+        self.assertGreater(ground_luma, 100.0)
+        self.assertGreater(route_luma, 80.0)
+        self.assertLess(blocked_luma, ground_luma - 20.0)
+
+    def test_no_visible_magenta_canvas_residue_and_markers_are_sparse(self) -> None:
+        for filename in ["ground.png", "route.png", "raised.png", "blocked.png"]:
+            with Image.open(RUNTIME / filename) as opened:
+                pixels = list(opened.convert("RGBA").get_flattened_data())
+            residue = [
+                pixel
+                for pixel in pixels
+                if pixel[3] > 0 and pixel[0] - pixel[1] > 25 and pixel[2] - pixel[1] > 25
+            ]
+            self.assertEqual(residue, [], filename)
+            self.assertEqual([pixel for pixel in pixels if 0 < pixel[3] < 16], [], filename)
+        for filename in ["spawn.png", "core.png"]:
+            with Image.open(RUNTIME / filename) as opened:
+                alpha = opened.convert("RGBA").getchannel("A")
+            opaque = sum(1 for value in alpha.get_flattened_data() if value > 32)
+            self.assertGreater(opaque, 20, filename)
+            self.assertLess(opaque, 900, filename)
 
     def test_provenance_fragments_are_exact_and_truthful(self) -> None:
         paths = sorted(FRAGMENTS.glob("*.json"))
@@ -98,8 +135,10 @@ class Act1WorldPipelineTest(unittest.TestCase):
             data = json.loads(path.read_text())
             logical_id = data["logical_id"]
             seen.add(logical_id)
-            self.assertEqual(data["approval"]["token"], "ACT-I-S1-S3-SYNTHESIS-V1")
+            self.assertEqual(data["approval"]["token"], TOKEN)
+            self.assertEqual(data["state"], "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING")
             self.assertFalse(data["human_final_art"])
+            self.assertNotEqual(data["normalization"]["operation"], "")
             files = data["candidate_files"]
             runtime = REPO / files["runtime"]
             staging = REPO / files["staging"]

@@ -68,7 +68,7 @@ func _validate_assets(supplement: AssetManifest) -> void:
 			_fail("fragment parse failed: %s" % id)
 		elif (
 			data.get("logical_id") != String(id)
-			or data.get("approval", {}).get("token") != "ACT-I-S1-S3-SYNTHESIS-V1"
+			or data.get("approval", {}).get("token") != "ACT-I-S1-S3-OWNER-TILES-V2"
 			or bool(data.get("human_final_art", true))
 		):
 			_fail("fragment truth mismatch: %s" % id)

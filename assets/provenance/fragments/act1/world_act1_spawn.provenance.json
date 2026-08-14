@@ -1,19 +1,20 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "shared Act I world-art direction for S1-S3",
-    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+    "scope": "owner-supplied shared Act I tiles for S1-S3",
+    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
   },
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/spawn.png",
-    "sha256": "2c48bd58dda1eac7950514372476a20c6b25464eaa5ae01bef84f0ebd87e9e17",
+    "sha256": "ccb116fc934a0077fb88318a70967f9041f42f61560ae6ec0282485e2fa64554",
     "staging": "staging/assets/world/act1/spawn.png"
   },
   "human_final_art": false,
   "logical_id": "world.act1.spawn",
   "normalization": {
     "alpha_preserved": true,
+    "operation": "transparent endpoint marker extraction",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
@@ -24,8 +25,8 @@
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/synthesized-roles/act1-spawn.png",
+    "path": "art-src/world/act1/endpoint-markers/spawn-marker-source.png",
     "sha256": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf"
   },
-  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
 }

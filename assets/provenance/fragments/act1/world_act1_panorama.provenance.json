@@ -1,8 +1,8 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "shared Act I world-art direction for S1-S3",
-    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+    "scope": "owner-supplied shared Act I tiles for S1-S3",
+    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
   },
   "candidate_files": {
     "bytes_identical": true,
@@ -14,6 +14,7 @@
   "logical_id": "world.act1.panorama",
   "normalization": {
     "alpha_preserved": false,
+    "operation": "center crop to 2:1 panorama",
     "panorama_center_crop_to_2_1": true,
     "resampling": "LANCZOS",
     "target_size": [
@@ -27,5 +28,5 @@
     "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
     "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b"
   },
-  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
 }

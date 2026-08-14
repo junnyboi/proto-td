@@ -1,19 +1,20 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "shared Act I world-art direction for S1-S3",
-    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+    "scope": "owner-supplied shared Act I tiles for S1-S3",
+    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
   },
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/raised.png",
-    "sha256": "379c82ebf86c98b2baeed5c5db1ab2de97b2401a704ae5fb75d89e027d0d9533",
+    "sha256": "0f6ef75bc7a83f518d940a1ebcedcad7f1f7af0ad42308d38383f50d14e584a2",
     "staging": "staging/assets/world/act1/raised.png"
   },
   "human_final_art": false,
   "logical_id": "world.act1.raised",
   "normalization": {
     "alpha_preserved": true,
+    "operation": "canvas strip + crop + fit to 64x48 raised face",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
@@ -24,8 +25,8 @@
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/synthesized-roles/act1-raised.png",
-    "sha256": "faaee6a67f3066f244d72fffaed173b7b9ea1a7cbd247468b6e2e278966144e3"
+    "path": "art-src/world/act1/owner-tiles/elevated-source.png",
+    "sha256": "b63816e00bc99487f84def28424897311246c796027eac59a2c0029268490665"
   },
-  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
 }

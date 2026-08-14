@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "approval_token": "ACT-I-S1-S3-OWNER-TILES-V2",
+  "owner_direction": "Use the supplied ground, route, and elevated images across Act I, forced into exact 2:1 runtime geometry.",
+  "sources": {
+    "ground": {
+      "path": "art-src/world/act1/owner-tiles/ground-source.png",
+      "sha256": "ab43310f885a50fe9a34a6ef32bfd16aa8f15d46e595557a544c6b9b8dbfa7b8",
+      "size": [1920, 1920]
+    },
+    "route": {
+      "path": "art-src/world/act1/owner-tiles/route-source.png",
+      "sha256": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9",
+      "size": [1920, 1920]
+    },
+    "raised": {
+      "path": "art-src/world/act1/owner-tiles/elevated-source.png",
+      "sha256": "b63816e00bc99487f84def28424897311246c796027eac59a2c0029268490665",
+      "size": [1920, 1920]
+    },
+    "spawn_marker": {
+      "path": "art-src/world/act1/endpoint-markers/spawn-marker-source.png",
+      "sha256": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
+      "size": [480, 264]
+    },
+    "core_marker": {
+      "path": "art-src/world/act1/endpoint-markers/core-marker-source.png",
+      "sha256": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662",
+      "size": [480, 264]
+    },
+    "panorama": {
+      "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
+      "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
+      "size": [2560, 1440]
+    }
+  },
+  "derived_roles": {
+    "ground": "ground source canvas strip, crop, and exact 64x32 fit",
+    "route": "route source canvas strip, crop, and exact 64x32 fit",
+    "raised": "elevated source canvas strip, crop, and exact 64x48 fit",
+    "blocked": "ground source with deterministic muted contrast",
+    "spawn": "transparent red endpoint marker extracted from preserved approved marker source",
+    "core": "transparent cyan endpoint marker extracted from preserved approved marker source"
+  }
+}

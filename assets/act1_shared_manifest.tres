@@ -12,7 +12,7 @@ entries = {
 "pattern": "res://assets/world/act1/blocked.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "a24995c598b3fa7452e5e832d09f349f1bca5d2aad54433531953d1541ea7c77",
+"provenance_sha256": "b02bbe51c03c92f9782c410c5f15d0e98577c08d4c89c93494b058aafd0a776b",
 "size": Vector2i(64, 32)
 },
 &"world.act1.core": {
@@ -21,7 +21,7 @@ entries = {
 "pattern": "res://assets/world/act1/core.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "51f283a993a47fd6a660c87c7e3834d37455a1b21dfa846b867494d00e42b323",
+"provenance_sha256": "4a016150221b4b9baefc64f850d297e6c03ac8faf23486f7ea7ab05f9eaf9781",
 "size": Vector2i(64, 32)
 },
 &"world.act1.ground": {
@@ -30,7 +30,7 @@ entries = {
 "pattern": "res://assets/world/act1/ground.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "f1d33d1bb718219b0e02e94c17df08afd6ad7cf93cf2d20481211c8f1c80c731",
+"provenance_sha256": "9c638d29326e87209b764beffb240c3c1dca80686a77056ddf02d5ef94b52603",
 "size": Vector2i(64, 32)
 },
 &"world.act1.panorama": {
@@ -39,7 +39,7 @@ entries = {
 "pattern": "res://assets/world/act1/panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "d83eb9a33eeb752afb63d70f4781ffe0af27671a39c7ebcddb685c208bd50440",
+"provenance_sha256": "c174dba04e9f88f89f10055acf9094eb96c0e26627cc8c3c2ccdaeb0907adc12",
 "size": Vector2i(512, 256)
 },
 &"world.act1.raised": {
@@ -48,7 +48,7 @@ entries = {
 "pattern": "res://assets/world/act1/raised.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "6a84f2684feb7b8cfce000332bfe9f95e84c8fd84e216d47164c26295f0be831",
+"provenance_sha256": "792ad49ced05d19af125b868773181f649d9830cae9dbd0e076a9346cdd8210d",
 "size": Vector2i(64, 48)
 },
 &"world.act1.route": {
@@ -57,7 +57,7 @@ entries = {
 "pattern": "res://assets/world/act1/route.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "8d842e7b10852ef920c26815b1d5f8c6e879b9ee610ef1a2ce3c76aab0c77b7d",
+"provenance_sha256": "28c151f4cb7ab17d2455d9fdff83ba78cc32ca9c2d31b914b33bb8fb3231f3de",
 "size": Vector2i(64, 32)
 },
 &"world.act1.spawn": {
@@ -66,7 +66,7 @@ entries = {
 "pattern": "res://assets/world/act1/spawn.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "36835a673f3a270dff030cd205c8156cfcf5d06425b5ec7d3905e3dd0d70e14e",
+"provenance_sha256": "500065d380bfbb6d6aa2929862d2da70c8e86045732a97f56e06c002143d9ed0",
 "size": Vector2i(64, 32)
 }
 }

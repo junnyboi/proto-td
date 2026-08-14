@@ -64,7 +64,7 @@ func test_runtime_staging_bytes_textures_sizes_and_provenance_bindings() -> void
 		)
 		var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(fragment))
 		assert_eq(data["logical_id"], String(id))
-		assert_eq(data["approval"]["token"], "ACT-I-S1-S3-SYNTHESIS-V1")
+		assert_eq(data["approval"]["token"], "ACT-I-S1-S3-OWNER-TILES-V2")
 		assert_false(bool(data["human_final_art"]))
 		assert_eq(Art.size(id), size)
 		assert_not_null(Art.texture(id))
@@ -81,6 +81,8 @@ func test_all_three_themes_share_exact_contract_and_validate() -> void:
 		assert_eq(theme.surface_modulate, Color.WHITE)
 		assert_eq(theme.required_manifest_ids(), StageArtTheme.SHARED_IDS)
 		assert_eq(theme.backdrop_panorama_id, &"world.act1.panorama")
+		assert_eq(theme.tile_id(StageDef.Tile.SPAWN, false), &"world.act1.ground")
+		assert_eq(theme.tile_id(StageDef.Tile.BASE, false), &"world.act1.ground")
 		assert_eq(
 			theme.resolve_cell(Vector2i(1, 1), StageDef.Tile.GROUND, false)["cadence_id"], &""
 		)

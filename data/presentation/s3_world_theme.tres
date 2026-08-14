@@ -4,7 +4,7 @@
 script = ExtResource("1_theme")
 stage_id = &"s3"
 theme_id = &"world.act1.alpine_shared"
-approval_token = &"ACT-I-S1-S3-SYNTHESIS-V1"
+approval_token = &"ACT-I-S1-S3-OWNER-TILES-V2"
 human_final_art = false
 ground_id = &"world.act1.ground"
 route_id = &"world.act1.route"

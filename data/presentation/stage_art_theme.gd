@@ -5,7 +5,7 @@ extends Resource
 ## campaign, save, replay, and music lanes never read this resource.
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
-const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-SYNTHESIS-V1"
+const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-OWNER-TILES-V2"
 const SHARED_THEME_ID: StringName = &"world.act1.alpine_shared"
 const SHARED_ENDPOINT_PIVOT := Vector2i(32, 16)
 const SHARED_IDS: Array[StringName] = [
@@ -117,6 +117,8 @@ func tile_id(tile: StageDef.Tile, is_route: bool) -> StringName:
 		return elevated_id
 	if tile == StageDef.Tile.BLOCKED:
 		return blocked_id
+	if tile == StageDef.Tile.SPAWN or tile == StageDef.Tile.BASE:
+		return ground_id
 	if is_route:
 		return route_id
 	if tile == StageDef.Tile.GROUND:
@@ -151,7 +153,7 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 	if theme_id != SHARED_THEME_ID:
 		errors.append("theme_id is not the shared Act I alpine family")
 	if approval_token != APPROVAL_TOKEN:
-		errors.append("approval token is not the approved Act I S1-S3 synthesis direction")
+		errors.append("approval token is not the owner-supplied Act I tile direction")
 	if not approval_manifest_sha256.is_empty():
 		errors.append("approval manifest hash must remain empty until final owner verdict")
 	if human_final_art:
