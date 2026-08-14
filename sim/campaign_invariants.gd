@@ -1,6 +1,7 @@
 class_name CampaignInvariants
 extends RefCounted
 
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const STARTERS := [&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1"]
 const INITIAL_MARKS := 120
 const U63_MAX := 9_223_372_036_854_775_807
@@ -528,7 +529,7 @@ static func _reverse_latest(data: Dictionary, receipt: Dictionary) -> Dictionary
 		if receipt["dead_hero_ids"].has(hero["hero_id"]):
 			hero["life_status"] = "ready"
 			hero["death"] = null
-	if not CampaignProgression.reverse_xp(before["heroes"], receipt["xp_awards"]):
+	if not CampaignProgressionType.reverse_xp(before["heroes"], receipt["xp_awards"]):
 		return {}
 	if int(receipt["stars_before"]) == 0:
 		before["stage_stars"] = before["stage_stars"].filter(

@@ -5,6 +5,7 @@ extends RefCounted
 ## Migration adds progression defaults and rewrites nested anchor integrity links.
 
 const LegacyHashScript := preload("res://sim/campaign_legacy_hash.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 
 const V1_HERO_KEYS := [
 	"hero_id", "operator_def_id", "recruitment_index", "recruited_after_resolution_index",
@@ -104,7 +105,7 @@ static func _migrate_core(value: Variant) -> bool:
 	for raw: Variant in core["heroes"]:
 		if typeof(raw) != TYPE_DICTIONARY or not _exact_keys(raw, V1_HERO_KEYS):
 			return false
-		var row := CampaignProgression.add_initial_fields(raw)
+		var row := CampaignProgressionType.add_initial_fields(raw)
 		if row.is_empty():
 			return false
 		migrated.append(row)

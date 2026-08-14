@@ -1,6 +1,7 @@
 class_name CampaignPromotionHistory
 extends RefCounted
 
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 
 static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	var receipts: Array = data["promotion_receipts"]
@@ -78,7 +79,7 @@ static func _current_hero_matches(
 ) -> bool:
 	if hero.is_empty():
 		return false
-	var choice := CampaignProgression.promotion_choice(
+	var choice := CampaignProgressionType.promotion_choice(
 		rules, String(receipt["new_class_id"]),
 	)
 	return (
