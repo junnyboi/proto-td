@@ -51,6 +51,7 @@ enum Result { RUNNING, CLEAR, DEFEAT }
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
+const TargetDecisionProjectionScript := preload("res://sim/target_decision_projection.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
@@ -272,6 +273,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.op_class = def.op_class
 	u.splash_dim_base = def.splash_dim
 	u.range_offsets = def.range_offsets.duplicate()
+	u.target_policy = Targeting.compile(def.target_policy, TargetPolicyDef.OwnerKind.OPERATOR)
 	if def.skill != null:
 		u.skill_id = def.skill.id
 		u.sp_cost = def.skill.sp_cost
@@ -731,13 +733,9 @@ func _assign_duels() -> void:
 ## counter is 0 and a target exists (counter then resets to interval - 1 so
 ## shots land exactly atk_interval_ticks apart); otherwise the counter ticks
 ## down and holds at 0. Units strike before enemies, so an enemy killed on its
-## ready-tick never lands that hit. Melee classes (VG/GD/DF) target their
-## lowest-spawn-id blocked enemy; SNIPER/CASTER select via Targeting over the
-## rotated range pattern (sniper prioritizes aerial, caster excludes it and
-## splashes 3x3 around the primary). An enemy targets its blocker; an
-## unblocked ranged enemy (atk_range_cells > 0) targets the nearest deployed
-## unit within Chebyshev range while it keeps walking (pinned v1 deviation:
-## it never stops to attack).
+## ready-tick never lands that hit. Every automatic selection consumes the
+## actor's explicit compiled TargetPolicyDef; Caster splash remains data-owned
+## by splash_dim. Charmed duels remain direct engagement relationships.
 func _tick_combat() -> void:
 	for u: UnitState in units:
 		if not u.alive:
@@ -745,12 +743,12 @@ func _tick_combat() -> void:
 		if u.atk_counter > 0:
 			u.atk_counter -= 1
 			continue
-		if u.op_class == OperatorDef.OpClass.SNIPER or u.op_class == OperatorDef.OpClass.CASTER:
-			_fire_ranged(u)
-		else:
-			var target := _first_blocked_alive(u)
-			if target != null and u.atk > 0:
-				_strike_enemy(u, target)
+		if u.atk <= 0:
+			continue
+		var decision := TargetDecisionProjectionScript.unit_target_decision(self, u.id)
+		var target_id := int(decision["selected_id"])
+		if target_id >= 0:
+			_fire_unit(u, enemies[target_id])
 	for a: EnemyState in enemies:
 		if not a.alive or a.faction != EnemyState.Faction.CHARMED:
 			continue
@@ -777,11 +775,8 @@ func _tick_combat() -> void:
 				_damage_enemy(ally, e.atk)
 				e.atk_counter = e.atk_interval_ticks - 1
 			continue
-		var victim: UnitState = null
-		if e.blocked_by >= 0:
-			victim = unit_by_id(e.blocked_by)
-		elif e.atk_range_cells > 0:
-			victim = _nearest_unit_in_range(e)
+		var decision := TargetDecisionProjectionScript.enemy_target_decision(self, e.id)
+		var victim := unit_by_id(int(decision["selected_id"]))
 		if e.atk > 0 and victim != null and victim.alive:
 			victim.hp -= e.atk
 			e.atk_counter = e.atk_interval_ticks - 1
@@ -789,35 +784,11 @@ func _tick_combat() -> void:
 				_kill_unit(victim)
 
 
-## Deterministic ranged attack (td-phase-4-5.md §2): candidates by current
-## cell, class filter, max progress then lowest id. Caster damage is full atk
-## to every alive non-aerial enemy in the splash square around the primary.
-func _fire_ranged(u: UnitState) -> void:
-	if u.atk <= 0:
-		return
-	var candidates: Array[Dictionary] = []
-	for e: EnemyState in enemies:
-		if e.alive and e.faction == EnemyState.Faction.ENEMY:
-			(
-				candidates
-				. append(
-					{
-						"id": e.id,
-						"cell": Pathing.cell_of(path_for(e.path_idx), e.progress_units),
-						"progress_units": e.progress_units,
-						"aerial": e.aerial,
-					}
-				)
-			)
-	var filter := Targeting.Filter.ANTI_AIR_PRIORITY
-	if u.op_class == OperatorDef.OpClass.CASTER:
-		filter = Targeting.Filter.GROUND_ONLY
-	var target_id := Targeting.select(candidates, u.cell, u.range_offsets, int(u.facing), filter)
-	if target_id < 0:
-		return
-	var primary := enemies[target_id]
+## Automatic unit attacks consume the public decision query. Caster splash is
+## selected by data (splash_dim > 0), not by an operator-class branch.
+func _fire_unit(u: UnitState, primary: EnemyState) -> void:
 	var primary_cell := Pathing.cell_of(path_for(primary.path_idx), primary.progress_units)
-	if u.op_class == OperatorDef.OpClass.CASTER:
+	if u.splash_dim() > 0:
 		u.atk_counter = u.effective_interval() - 1
 		u.last_attack_tick = tick
 		u.last_attack_cell = primary_cell
@@ -839,33 +810,11 @@ func _strike_enemy(u: UnitState, target: EnemyState) -> void:
 	u.last_attack_cell = Pathing.cell_of(path_for(target.path_idx), target.progress_units)
 
 
-func _nearest_unit_in_range(e: EnemyState) -> UnitState:
-	var e_cell := Pathing.cell_of(path_for(e.path_idx), e.progress_units)
-	var best: UnitState = null
-	var best_dist := e.atk_range_cells + 1
-	for u: UnitState in units:
-		if not u.alive:
-			continue
-		var dist := maxi(absi(u.cell.x - e_cell.x), absi(u.cell.y - e_cell.y))
-		if dist < best_dist:
-			best = u
-			best_dist = dist
-	return best
-
-
 func _block_capacity_left(u: UnitState) -> int:
 	var held := 0
 	for enemy_id: int in u.blocked_ids:
 		held += enemies[enemy_id].block_weight
 	return u.effective_block() - held
-
-
-func _first_blocked_alive(u: UnitState) -> EnemyState:
-	for enemy_id: int in u.blocked_ids:
-		var e := enemies[enemy_id]
-		if e.alive:
-			return e
-	return null
 
 
 func _kill_enemy(e: EnemyState) -> void:
@@ -981,6 +930,7 @@ func _spawn(entry: Dictionary) -> void:
 	e.atk_interval_ticks = def.atk_interval_ticks
 	e.aerial = def.aerial
 	e.atk_range_cells = def.atk_range_cells
+	e.target_policy = Targeting.compile(def.target_policy, TargetPolicyDef.OwnerKind.ENEMY)
 	e.charm_immune = def.charm_immune
 	enemies.append(e)
 	spawned += 1

@@ -431,7 +431,7 @@
   ],
   "blocked_row": {
     "case_id": "blocked_runtime_id_order",
-    "policy_id": "operator_blocked_lowest_entity_id",
+    "policy_id": "operator_blocked_assignment_order",
     "blocked_ids": [
       0,
       1

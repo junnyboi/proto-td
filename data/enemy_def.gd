@@ -16,4 +16,5 @@ extends Resource
 @export var charm_immune: bool = false
 ## Chebyshev range for ranged enemies (spellcaster); 0 = melee-only.
 @export var atk_range_cells: int = 0
+@export var target_policy: TargetPolicyDef = null
 @export var sprite_id: StringName = &""
