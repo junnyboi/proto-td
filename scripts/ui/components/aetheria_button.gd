@@ -51,7 +51,7 @@ func set_presentation_text(logical_text: String, rendered_text: String) -> bool:
 	var transparent := Color(0.0, 0.0, 0.0, 0.0)
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
-		&"font_focus_color", &"font_disabled_color",
+		&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
 	]:
 		add_theme_color_override(color_name, transparent)
 	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType
@@ -79,5 +79,7 @@ func apply_compact_action_layout() -> bool:
 		COMPACT_ACTION_MINIMUM_HEIGHT,
 	)
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	add_theme_font_size_override(&"font_size", COMPACT_ACTION_FONT_SIZE)
 	label.add_theme_font_size_override(&"font_size", COMPACT_ACTION_FONT_SIZE)
+	set_meta(&"compact_action_layout", true)
 	return true

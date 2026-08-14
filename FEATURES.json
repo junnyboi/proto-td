@@ -398,20 +398,26 @@
 	    "feel"
 	   ],
 	   "status": "pending",
-	   "scenarios": [
-	    "p16_contract_probe",
-	    "model_roster_probe",
-	    "strategic_verbs",
-	    "hero_result_flow",
+		   "scenarios": [
+		    "p16_contract_probe",
+		    "model_roster_probe",
+		    "strategic_verbs",
+		    "mage_promotion",
+		    "mage_promotion_compact",
+		    "mage_promotion_focus",
+		    "mage_promotion_portrait",
+		    "mage_promotion_zh_cn",
+		    "hero_result_flow",
 	    "barracks_recruit_death",
 	    "save_roundtrip",
 	    "p16_strategic_campaign"
 	   ],
-		   "commits": [
-		    "cd35d19",
-		    "afabc07",
-		    "1259739"
-		   ]
+			   "commits": [
+			    "cd35d19",
+			    "afabc07",
+			    "1259739",
+			    "b018448"
+			   ]
 		  },
 		  {
 		   "id": "WITCH-1",

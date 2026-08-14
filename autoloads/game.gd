@@ -8,6 +8,7 @@ extends Node
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
+const TRAINING_SCENE_PATH := "res://scenes/training.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -153,6 +154,10 @@ func open_title() -> void:
 ## existing LegacyCampaignAdapter remains authoritative and unchanged.
 func open_staging() -> void:
 	_swap_content.call_deferred(STAGING_SCENE_PATH)
+
+
+func open_training() -> void:
+	_swap_content.call_deferred(TRAINING_SCENE_PATH)
 
 
 func open_stage_select() -> void:

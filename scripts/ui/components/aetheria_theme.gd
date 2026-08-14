@@ -1,6 +1,7 @@
 class_name AetheriaTheme
 extends Theme
 
+const CJK_FONT := preload("res://assets/fonts/ProtosSansSC-Subset.otf")
 const COLORS := {
 	&"backdrop": Color("111827"),
 	&"panel": Color("1c2433"),
@@ -27,7 +28,10 @@ const COLORS := {
 
 
 func _init() -> void:
-	default_font = ThemeDB.fallback_font
+	var composite_font := FontVariation.new()
+	composite_font.base_font = ThemeDB.fallback_font
+	composite_font.fallbacks = [CJK_FONT]
+	default_font = composite_font
 	default_font_size = 44
 	_build_buttons()
 	_build_locale_list()

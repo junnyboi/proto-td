@@ -33,6 +33,10 @@ Before this docs-only retirement, current master passed the unchanged default ga
 
 This decision authorizes no successor implementation. The external E1 Canon Comprehension execution plan and the tactical-combat proposal each require their own current-base orientation, scope, proof, and feature-ledger entry when work starts. AUI-20 cannot be silently reactivated or merged into either successor.
 
+## 2026-08-14 tactical-retirement addendum
+
+E1 Canon Comprehension landed. The isolated G1–G3 turn-based tactical greybox was then stopped because it changed Protos too far from its intended Arknights-style tower-defense RPG identity. No tactical-greybox byte entered this repository. Its standalone repository, Git history, plans, audits, screenshots, verification outputs, and source bundles were consolidated into the external archive `protos-tactical-greybox-retired-2026-08-14.tar.gz` with SHA-256 `968953873e07ac8c1c87d590437aeab8417eb0105dfd027a1a8c39599fdff430`, then removed from active workspaces. Future combat work must extend the original continuous wave, deployment, blocking, DP, skill, trap, spell, and Charm systems.
+
 ## Rollback
 
 Reverting the retirement commit restores only the old claim text; it does not make its stale base, plan, or runtime authorization current. A real reactivation still requires an explicit owner decision and a fresh claim from current master.

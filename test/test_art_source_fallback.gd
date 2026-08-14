@@ -5,13 +5,11 @@ const GRUNT_ID := &"grunt_anim_walk_se"
 
 
 func before_each() -> void:
-	Art._manifest = null
-	Art._cache.clear()
+	Art._reset_manifests_for_test()
 
 
 func after_each() -> void:
-	Art._manifest = null
-	Art._cache.clear()
+	Art._reset_manifests_for_test()
 
 
 func test_direct_png_loader_builds_the_complete_source_texture() -> void:
@@ -43,3 +41,10 @@ func test_stale_null_cache_entry_is_discarded_and_retried() -> void:
 func test_missing_manifest_entry_never_creates_a_null_cache_record() -> void:
 	assert_null(Art.texture(&"missing_texture_contract", 0))
 	assert_false(Art._cache.has("missing_texture_contract/0"))
+
+
+func test_experimental_manifest_is_visible_without_shadowing_base() -> void:
+	var id := &"experimental_salvage_heavy_attack_ne"
+	assert_eq(Art.frame_count(id), 8)
+	assert_not_null(Art.texture(id, 7))
+	assert_not_null(Art.texture(GRUNT_ID, 7))
