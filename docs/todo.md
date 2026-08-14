@@ -31,7 +31,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-030 — Integrate Simplified Chinese localization
+## TD-031 — Integrate Simplified Chinese localization
 
 - Status: in_progress
 - Owner: AGENT 11
