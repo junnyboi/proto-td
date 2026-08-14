@@ -534,10 +534,28 @@
    ],
    "status": "passing",
    "scenarios": [],
-   "commits": [
-    "1821689"
-   ]
-  }
+	   "commits": [
+	    "1821689"
+	   ]
+	  },
+	  {
+	   "id": "TD-TARGET",
+	   "title": "Data-driven deterministic target-selection policies",
+	   "acceptance": [
+	    "a closed six-resource TargetPolicyDef catalog gives all eleven canonical operators and all six canonical enemies explicit valid policies; missing, unknown, contradictory, owner-mismatched, unstable, and unsupported policies fail closed without an implicit class fallback",
+	    "TargetDecisionProjection exposes primitive-only unit and enemy decision diagnostics with canonical entity ordering, explicit rejection/rank reasons, stable tie breaks, permutation invariance, repeated-query byte identity, and zero model or BattleObservation state change",
+	    "BattleModel automatic attacks consume the same policy decisions; ranged frontmost/aerial/ground behavior, enemy blocker/nearest behavior, and live melee blocked-assignment order remain exact while legacy Targeting.Filter and Targeting.select dispatch are removed",
+	    "the frozen pre-refactor conditional S6 oracle remains byte-exact at CLEAR, leaked=1, tick=1387, model hash 376a0c16c62dd32a, observation sequence acd60c0336314a88ae5768b48451059893425f0c1d6dcb26d2a22bbfe2deecbf, and trace 9499ceccc213704444b242b507ffd31a827c25d7ca677d8d90e21fd29b4a0d09; replay is cross-process identical",
+	    "scripts/td_target_check.sh passes import, focused lint/GUT, six-policy and complete actor-catalog validation, the six-check target_policy_compat scenario, frozen TD-OBS differential, replay proof, required UID checks, and a nonzero completion sentinel"
+	   ],
+	   "status": "passing",
+	   "scenarios": [
+	    "target_policy_compat"
+	   ],
+	   "commits": [
+	    "5974adc"
+	   ]
+	  }
  ],
  "deviations": [
   {

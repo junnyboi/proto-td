@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-TARGET — Implement data-driven targeting policies
-
-- Status: in_progress
-- Owner: AGENT E
-- Branch: `agent-e/td-target`
-- Base: `master` at `3b3fdfba2a749597e2f8ad1d87f74d365c18b231`
-- Dependencies: TD-OBS published at `7228f0300e6c75b69c377b252a4e140ce6150e41`
-- Owned files: `data/target_policy_def.gd`, `data/target_policies/*.tres`, `data/operator_def.gd`, `data/enemy_def.gd`, `data/operators/*.tres`, `data/enemies/*.tres`, `sim/targeting.gd`, `sim/target_decision_projection.gd`, `sim/battle_model.gd`, `sim/unit_state.gd`, `sim/enemy_state.gd`, `test/test_targeting.gd`, `test/test_target_policy_catalog.gd`, `test/test_targeting_compatibility.gd`, `test/fixtures/targeting_compat_v1.json`, `selftest/scenarios/target_policy_compat.gd`, `scripts/td_target_check.sh`, `FEATURES.json`, `docs/todo.md`, `docs/completed.md`
-- Do not touch: `sim/battle_hash.gd`, replay/save schemas, combat numbers, stages, waves, bot timelines, thresholds, visuals, or audio
-- Acceptance: every canonical actor has a valid explicit policy; automatic target IDs, BattleObservation sequence hashes, model hashes, replay bytes, combat checkpoints, and outcomes remain compatible; invalid policies fail closed; diagnostics are canonical, permutation-invariant, and state-neutral
-- Required evidence: frozen pre-refactor fixture, targeted GUT, `target_policy_compat`, TD-OBS observation differential, replay check, and one uninterrupted STANDARD gate
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
