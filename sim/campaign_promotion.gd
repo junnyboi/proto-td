@@ -5,10 +5,7 @@ extends RefCounted
 ## exact retries resolve before revision checks, and every rejection leaves the
 ## caller-owned campaign Dictionary untouched.
 
-const CampaignCodecType := preload("res://sim/campaign_codec.gd")
-const CampaignHashType := preload("res://sim/campaign_hash.gd")
 const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
-const CanonicalJsonType := preload("res://sim/canonical_json.gd")
 
 const COMMAND_KEYS := [
 	"version", "verb", "command_id", "hero_id", "advanced_class_id",
@@ -19,7 +16,7 @@ const REPLAY_ARG_KEYS := [
 	"version", "command_id", "hero_id", "advanced_class_id",
 	"expected_save_revision",
 ]
-const RECEIPT_KEYS := CampaignCodecType.PROMOTION_RECEIPT_KEYS
+const RECEIPT_KEYS := CampaignCodec.PROMOTION_RECEIPT_KEYS
 const U63_MAX := 9_223_372_036_854_775_807
 
 
@@ -56,7 +53,7 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 		return _reject(&"invalid_choice")
 	if int(data["save_revision"]) >= U63_MAX:
 		return _reject(&"xp_overflow")
-	var before_hash := CampaignHashType.of_data(data, context)
+	var before_hash := CampaignHash.of_data(data, context)
 	if not before_hash["accepted"]:
 		return _reject(&"invalid_argument_type")
 	var before_snapshot := _proof_snapshot(data)
@@ -71,7 +68,7 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 		String(before_hash["hex"]), int(working["save_revision"]),
 	)
 	working["promotion_receipts"].append(receipt)
-	var after_hash := CampaignHashType.of_normalized_data(working, false)
+	var after_hash := CampaignHash.of_normalized_data(working, false)
 	receipt["after_strategic_hash"] = String(after_hash["hex"])
 	var after_snapshot := _proof_snapshot(working)
 	working["promotion_proofs"].append({
@@ -79,7 +76,7 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 		"before_data": before_snapshot,
 		"after_data": after_snapshot,
 	})
-	var canonical := CampaignCodecType.normalize_data(working, context)
+	var canonical := CampaignCodec.normalize_data(working, context)
 	if not canonical["accepted"]:
 		return _reject(&"invalid_argument_type")
 	data.clear()
@@ -170,14 +167,14 @@ static func encode_replay_rows(value: Variant) -> Dictionary:
 			return normalized
 		rows.append(replay_row(expected_seq, normalized["value"]))
 		expected_seq += 1
-	var text := CanonicalJsonType.text(rows)
+	var text := CanonicalJson.text(rows)
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": rows,
 		"text": text,
 		"bytes": text.to_utf8_buffer(),
-		"sha256": CanonicalJsonType.sha256_text(text),
+		"sha256": CanonicalJson.sha256_text(text),
 	}
 
 
@@ -226,7 +223,7 @@ static func _accepted(receipt: Dictionary) -> Dictionary:
 		"accepted": true,
 		"error_code": &"",
 		"receipt": canonical,
-		"receipt_bytes": CanonicalJsonType.text(canonical).to_utf8_buffer(),
+		"receipt_bytes": CanonicalJson.text(canonical).to_utf8_buffer(),
 	}
 
 

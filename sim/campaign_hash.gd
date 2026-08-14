@@ -1,7 +1,6 @@
 class_name CampaignHash
 extends RefCounted
 
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 2
 const FNV_OFFSET := -3750763034362895579
@@ -401,11 +400,11 @@ static func _derive_fresh_receipt(
 	var rewards := _derive_rewards_and_heroes(before, expected, outcome, draft, context)
 	if not rewards["accepted"]:
 		return rewards
-	var xp_awards := CampaignProgressionType.derive_xp_awards(
+	var xp_awards := CampaignProgression.derive_xp_awards(
 		outcome["heroes"], before["heroes"],
 	)
 	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
-	if not CampaignProgressionType.apply_xp(expected["heroes"], xp_awards):
+	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, draft)
 	if not dead["accepted"]:
@@ -622,13 +621,13 @@ static func _derive_expected_after(
 		return _reject(&"transaction_rewards_mismatch")
 	if resolution["created_hero_ids"] != rewards["created"]:
 		return _reject(&"transaction_created_hero_mismatch")
-	var xp_awards := CampaignProgressionType.derive_xp_awards(
+	var xp_awards := CampaignProgression.derive_xp_awards(
 		outcome["heroes"], before["heroes"],
 	)
 	if resolution["xp_awards"] != xp_awards:
 		return _reject(&"transaction_xp_mismatch")
 	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
-	if not CampaignProgressionType.apply_xp(expected["heroes"], xp_awards):
+	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	var dead := _apply_casualties(expected, outcome, resolution)
 	if not dead["accepted"]:
@@ -676,7 +675,7 @@ static func _derive_rewards_and_heroes(
 			hero_id = allocated["hero_id"]
 			created.append(hero_id)
 			taken[hero_id] = true
-			var new_hero := CampaignProgressionType.add_initial_fields({
+			var new_hero := CampaignProgression.add_initial_fields({
 				"hero_id": hero_id,
 				"operator_def_id": reward["id"],
 				"recruitment_index": recruitment_index,
