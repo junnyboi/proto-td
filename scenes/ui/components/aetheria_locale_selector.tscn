@@ -17,8 +17,11 @@ text = "Language"
 vertical_alignment = 1
 
 [node name="LocaleList" type="ItemList" parent="."]
-custom_minimum_size = Vector2(360, 72)
+custom_minimum_size = Vector2(360, 90)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 2
 theme_type_variation = &"AuiLocaleList"
 select_mode = 0
+max_columns = 2
+same_column_width = true

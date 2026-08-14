@@ -2,11 +2,11 @@
   "schema_version": 2,
   "scenario": "ui_shell_floor",
   "seed": 42,
-  "max_frames": 2700,
-  "max_wall_seconds": 30,
+  "max_frames": 3000,
+  "max_wall_seconds": 35,
   "settle_frames_per_state": 4,
   "capture_deadline_frames_per_state": 30,
-  "budget_derivation": "63*(4+30)+180 route/import+240 allowance=2562; rounded to 2700 before implementation",
+  "budget_derivation": "68*(4+30)+180 route/import+240 allowance=2732; rounded to 3000 before implementation",
   "modes": [
     "standard",
     "text200",
@@ -111,11 +111,16 @@
     "ui_results_1920x1080_expand135",
     "ui_results_1280x720_expand135",
     "ui_results_960x720_expand135",
-    "ui_results_720x1280_expand135"
+    "ui_results_720x1280_expand135",
+    "ui_title_1280x720_zh_cn",
+    "ui_staging_1280x720_zh_cn",
+    "ui_campaign_1280x720_zh_cn",
+    "ui_squad_1280x720_zh_cn",
+    "ui_results_1280x720_zh_cn"
   ],
   "required_report": {
     "result": "pass",
-    "shots": 63,
+    "shots": 68,
     "pixel_skipped": 0,
     "completion_sentinel": true,
     "stale_shots": 0,

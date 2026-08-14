@@ -133,7 +133,7 @@ func _ready() -> void:
 	_start.name = "StartBattle"
 	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	_start.custom_minimum_size = Vector2(140.0, 100.0)
-	_start.set_presentation_text(_start.text, "Start\nBattle")
+	_start.set_presentation_text(_start.text, _start.text)
 	_start.pressed.connect(_on_start)
 	actions.add_child(_start)
 	_prefill()
@@ -158,7 +158,12 @@ func _build_mission_briefing() -> GridContainer:
 	_add_briefing_value("BriefingThreat", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
 	_add_briefing_value("BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
 	_add_briefing_value("BriefingClue", &"ui.squad.briefing.clue", "Field note", StageNarrativeDefType.Field.CLUE)
-	var hint := _label("TacticalHint", "Tactical hint — %s" % UiCopyType.stage_hint(_stage), &"dense_detail")
+	var hint := _label(
+		"TacticalHint", UiCopyType.format_text(
+			&"ui.squad.tactical_hint", "Tactical hint — {hint}",
+			{&"hint": UiCopyType.stage_hint(_stage)},
+		), &"dense_detail",
+	)
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(hint)
 	return _briefing
