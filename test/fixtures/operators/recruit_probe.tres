@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="OperatorDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/operator_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"recruit_probe_template"
+display_name = "Recruit"
+op_class = 0
+rarity = 1
+dp_cost = 8
+block = 1
+hp = 110
+atk = 4
+atk_interval_ticks = 36
+range_offsets = Array[Vector2i]([Vector2i(0, 0)])
+placement = 0
+dp_generation_interval_ticks = 0
+splash_dim = 0
+skill = null
+sprite_id = &""
+portrait_id = &""
