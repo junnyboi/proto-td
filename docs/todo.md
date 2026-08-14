@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-035 — Close post-merge damage-feedback cache dependency
-
-- Status: in_progress
-- Owner: AGENT 11
-- Branch: `agent-11/cache-bootstrap-regressions`
-- Base: latest merged master through `3b3fdfb`
-- Dependencies: completed TD-034 enemy damage feedback and TD-035 cache-bootstrap implementation
-- Owned files: `scripts/view/enemy_damage_feedback.gd`, `test/test_ui_registry_bootstrap.gd`, `docs/todo.md`, `docs/completed.md`
-- Do not touch: damage timing/visual parameters, battle model/hash/replay semantics, thresholds, or unrelated damage-feedback files
-- Acceptance: the legacy `7babf28` registry boots all canonical stale-cache routes without an `EnemyAnimator` parse error, and the new view helper owns an explicit local dependency without changing rendered damage feedback
-- Required evidence: exact registry bootstrap GUT, canonical stale-cache probe, affected damage-feedback scenario, and fresh latest-master STANDARD
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
