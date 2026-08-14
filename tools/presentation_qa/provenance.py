@@ -80,6 +80,12 @@ OPERATOR_ANIMATION_COMMON_SOURCES = {
 }
 OPERATOR_ANIMATION_APPROVED_AT_UTC = "2026-08-13T16:45:41Z"
 OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC = "2026-08-13T18:58:27Z"
+OPERATOR_ANIMATION_NATIVE_APPROVED_AT_UTC = "2026-08-14T06:41:55Z"
+OPERATOR_ANIMATION_NATIVE_APPROVAL = "res://docs/media/TD-030-SKY-HUNTER-NATIVE-APPROVAL.json"
+OPERATOR_ANIMATION_NATIVE_IDS = {
+    "op_anim_sniper_2_attack_ne",
+    "op_anim_sniper_2_attack_nw",
+}
 OPERATOR_ANIMATION_PART2_SOURCES = {
     "res://assets/provenance/operators/aetheria-part2-source-manifest.json",
     "res://tools/art_pipeline/characters/import_aetheria_part2_animations.py",
@@ -207,6 +213,8 @@ def source_paths(logical_id: str) -> list[str]:
         result.add(f"res://data/presentation/operator_visuals/{animation_class}.tres")
         if animation_class in OPERATOR_ANIMATION_PART2_CLASSES:
             result.update(OPERATOR_ANIMATION_PART2_SOURCES)
+        if logical_id in OPERATOR_ANIMATION_NATIVE_IDS:
+            result.add(OPERATOR_ANIMATION_NATIVE_APPROVAL)
         return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
@@ -384,6 +392,7 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
     if animation_class is not None:
         generator = digest_row(repo, OPERATOR_ANIMATION_GENERATOR)
         part2 = animation_class in OPERATOR_ANIMATION_PART2_CLASSES
+        native_approved = logical_id in OPERATOR_ANIMATION_NATIVE_IDS
         return {
             "schema_version": 1,
             "logical_id": logical_id,
@@ -413,18 +422,33 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "status": "new_runtime_asset_authenticated",
             },
             "acceptance": {
-                "state": "human_concept_accepted_runtime_review_pending",
+                "state": (
+                    "human_final_accepted"
+                    if native_approved
+                    else "human_concept_accepted_runtime_review_pending"
+                ),
                 "human_accepter": "Poseidon",
                 "accepted_at_utc": (
-                    OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC
+                    OPERATOR_ANIMATION_NATIVE_APPROVED_AT_UTC
+                    if native_approved
+                    else OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC
                     if part2
                     else OPERATOR_ANIMATION_APPROVED_AT_UTC
                 ),
                 "accepting_commit": None,
-                "source": "FEATURES.json:OPANIM-2" if part2 else "FEATURES.json:OPANIM-1",
+                "source": (
+                    OPERATOR_ANIMATION_NATIVE_APPROVAL
+                    if native_approved
+                    else "FEATURES.json:OPANIM-2"
+                    if part2
+                    else "FEATURES.json:OPANIM-1"
+                ),
                 "reason": (
-                    "Poseidon explicitly requested integration of the completed Part 2 package; "
-                    "the two declared sniper direction substitutions remain placeholders pending replacement"
+                    "Poseidon accepted the exact native Sky Hunter NE and NW attack candidates "
+                    "after linked contact-sheet and 12 fps gameplay-preview review"
+                    if native_approved
+                    else "Poseidon explicitly requested integration of the completed Part 2 package; "
+                    "all directional assets are native and runtime review remains pending"
                     if part2
                     else "Poseidon approved the class candidates and premium repair authority; the "
                     "current runtime bytes are an internal canary pending exact final release review"
