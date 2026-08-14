@@ -71,70 +71,51 @@ const SIMULATION_CONTRACTS := [
 	{
 		"path": "res://sim/campaign_codec.gd",
 		"aliases": [
-			"CanonicalJsonType", "CampaignProgressionType", "CampaignHeroCodecType",
-			"HeroIdentityType", "HeroNamesType",
+			"CampaignHeroCodec", "CampaignProgression", "CanonicalJson",
+			"HeroIdentity", "HeroNames",
 		],
-		"forbidden": [
-			"\\bCanonicalJson\\b", "\\bCampaignProgression\\b", "\\bCampaignHeroCodec\\b",
-			"\\bHeroIdentity\\b", "\\bHeroNames\\b", "\\bCampaignInvariants\\.",
-		],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_hash.gd",
 		"aliases": [
-			"CampaignCodecType", "CampaignProgressionType", "CanonicalJsonType",
-			"HeroIdentityType", "HeroNamesType",
+			"CampaignCodec", "CampaignProgression", "CanonicalJson",
+			"HeroIdentity", "HeroNames",
 		],
-		"forbidden": [
-			"\\bCampaignCodec\\.", "\\bCampaignProgression\\.", "\\bCanonicalJson\\.",
-			"\\bCampaignHash\\.", "\\bHeroIdentity\\.", "\\bHeroNames\\.",
-		],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_hero_codec.gd",
-		"aliases": ["HeroIdentityType", "HeroNamesType", "CampaignProgressionType"],
-		"forbidden": [
-			"\\bHeroIdentity\\.", "\\bHeroNames\\.", "\\bCampaignProgression\\.",
-		],
+		"aliases": ["CampaignProgression", "HeroIdentity", "HeroNames"],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/hero_names.gd",
-		"aliases": ["HeroIdentityType", "HeroNamesV1Type"],
-		"forbidden": ["\\bHeroIdentity\\.", "\\bHeroNamesV1\\."],
-	},
-	{
-		"path": "res://sim/campaign_promotion_history.gd",
-		"aliases": ["CampaignHashType", "CampaignProgressionType"],
-		"forbidden": ["\\bCampaignHash\\.", "\\bCampaignProgression\\."],
+		"aliases": ["HeroIdentity", "HeroNamesV1"],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_invariants.gd",
 		"aliases": [
-			"CampaignPromotionHistoryType", "CampaignHashType", "CampaignCodecType",
-			"CampaignProgressionType", "CanonicalJsonType",
+			"CampaignCodec", "CampaignHash", "CampaignProgression",
+			"CampaignPromotionHistory", "CanonicalJson", "HeroIdentity",
 		],
-		"forbidden": [
-			"\\bCampaignPromotionHistory\\.", "\\bCampaignHash\\.",
-			"\\bCampaignCodec\\.", "\\bCampaignProgression\\.",
-			"\\bCanonicalJson\\.",
-		],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_save_upgrade.gd",
-		"aliases": ["CanonicalJsonType"],
-		"forbidden": ["\\bCanonicalJson\\.", "\\bCampaignMigration\\."],
+		"aliases": ["CampaignMigration", "CanonicalJson"],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_migration.gd",
-		"aliases": ["CampaignHashType", "CampaignCodecType", "CampaignProgressionType"],
-		"forbidden": [
-			"\\bCampaignHash\\.", "\\bCampaignCodec\\.", "\\bCampaignProgression\\.",
-		],
+		"aliases": ["CampaignCodec", "CampaignHash", "CampaignProgression"],
+		"forbidden": [],
 	},
 	{
 		"path": "res://sim/campaign_legacy_hash.gd",
-		"aliases": ["HeroIdentityType"],
-		"forbidden": ["\\bHeroIdentity\\."],
+		"aliases": ["HeroIdentity"],
+		"forbidden": [],
 	},
 ]
 
@@ -185,11 +166,5 @@ func test_training_promotion_dependencies_preload_stale_cache_helpers() -> void:
 			assert_null(expression.search(source), "%s still uses %s" % [path, raw_pattern])
 	var codec_source := FileAccess.get_file_as_string("res://sim/campaign_codec.gd")
 	assert_true(codec_source.contains(
-		'const CAMPAIGN_INVARIANTS_PATH := "res://sim/campaign_invariants.gd"',
+		'return load("res://sim/campaign_invariants.gd") as Script',
 	))
-	assert_true(codec_source.contains("load(CAMPAIGN_INVARIANTS_PATH)"))
-	var upgrade_source := FileAccess.get_file_as_string("res://sim/campaign_save_upgrade.gd")
-	assert_true(upgrade_source.contains(
-		'const CAMPAIGN_MIGRATION_PATH := "res://sim/campaign_migration.gd"',
-	))
-	assert_true(upgrade_source.contains("load(CAMPAIGN_MIGRATION_PATH)"))

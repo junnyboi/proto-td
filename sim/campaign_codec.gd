@@ -1,15 +1,14 @@
 class_name CampaignCodec
 extends RefCounted
+const CampaignHeroCodec := preload("res://sim/campaign_hero_codec.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_receipt_codec.gd")
 const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
 const SaveUpgradeScript := preload("res://sim/campaign_save_upgrade.gd")
-const CanonicalJsonType := preload("res://sim/canonical_json.gd")
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
-const CampaignHeroCodecType := preload("res://sim/campaign_hero_codec.gd")
-const HeroIdentityType := preload("res://sim/hero_identity.gd")
-const HeroNamesType := preload("res://sim/hero_names.gd")
-const CAMPAIGN_INVARIANTS_PATH := "res://sim/campaign_invariants.gd"
 const PromotionRulesResource := preload("res://data/progression/mage_advanced_v1.tres")
 const SAVE_SCHEMA := "prototype_td_campaign"
 const LEGACY_SAVE_VERSION := 1
@@ -189,7 +188,7 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 	var parser := JSON.new()
 	if parser.parse(source) != OK:
 		return _reject(&"malformed_json")
-	var coerced := CanonicalJsonType.restore_exact_integers(source, parser.data)
+	var coerced := CanonicalJson.restore_exact_integers(source, parser.data)
 	if not coerced["accepted"]:
 		return coerced
 	var parsed: Variant = coerced["value"]
@@ -253,7 +252,7 @@ static func encode_ticket(ticket: Variant) -> Dictionary:
 			"manifest": ordered[key] = manifest["value"]
 			"attempt_id": ordered[key] = int(ticket[key])
 			_: ordered[key] = ticket[key]
-	if CanonicalJsonType.sha256_hex(manifest["value"]) != String(ticket["manifest_hash"]):
+	if CanonicalJson.sha256_hex(manifest["value"]) != String(ticket["manifest_hash"]):
 		return _reject(&"manifest_hash_mismatch")
 	return _encoded(ordered)
 static func encode_outcome_body(outcome: Variant) -> Dictionary:
@@ -419,7 +418,7 @@ static func _encode_outcome(outcome: Variant, include_hash: bool) -> Dictionary:
 			return _reject(&"invalid_outcome_hash")
 		var body := ordered.duplicate()
 		body.erase("outcome_hash")
-		if CanonicalJsonType.sha256_hex(body) != String(outcome["outcome_hash"]):
+		if CanonicalJson.sha256_hex(body) != String(outcome["outcome_hash"]):
 			return _reject(&"outcome_hash_mismatch")
 	return _encoded(ordered)
 static func _normalize_stage_rows(value: Variant) -> Dictionary:
@@ -542,7 +541,7 @@ static func _normalize_offers(value: Variant) -> Dictionary:
 		out.append(ordered)
 	return _accept(out)
 static func _normalize_heroes(value: Variant) -> Dictionary:
-	return CampaignHeroCodecType.normalize_heroes(value)
+	return CampaignHeroCodec.normalize_heroes(value)
 static func _normalize_manifest(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
 		return _reject(&"invalid_manifest")
@@ -605,7 +604,7 @@ static func _normalize_rewards(value: Variant) -> Dictionary:
 			return _reject(&"invalid_reward")
 		if not REWARD_VALUES.has(String(row["kind"])) or not _is_ascii_string(row["id"]):
 			return _reject(&"invalid_reward")
-		var reward_key := CanonicalJsonType.text([String(row["kind"]), String(row["id"])])
+		var reward_key := CanonicalJson.text([String(row["kind"]), String(row["id"])])
 		if seen.has(reward_key):
 			return _reject(&"duplicate_reward")
 		seen[reward_key] = true
@@ -648,7 +647,7 @@ static func build_context(
 		}
 	var normalized_promotion_rules := promotion_rules.duplicate(true)
 	if normalized_promotion_rules.is_empty():
-		var normalized := CampaignProgressionType.normalize_promotion_rules(
+		var normalized := CampaignProgression.normalize_promotion_rules(
 			PromotionRulesResource, operator_ids,
 		)
 		if normalized["accepted"]:
@@ -681,10 +680,9 @@ static func _validate_data_invariants(data: Dictionary, context: Dictionary) -> 
 	var receipt := _validate_receipt_links(data, context)
 	if not receipt["accepted"]:
 		return receipt
-	var invariants: Variant = load(CAMPAIGN_INVARIANTS_PATH)
-	return invariants.validate(data, context)
+	return _campaign_invariants().validate(data, context)
 static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictionary) -> Dictionary:
-	var expected_uid := HeroIdentityType.campaign_uid(
+	var expected_uid := HeroIdentity.campaign_uid(
 		int(data["campaign_seed"]), int(data["campaign_generation"]),
 	)
 	if data["campaign_uid"] != expected_uid:
@@ -694,7 +692,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 		var hero: Dictionary = data["heroes"][position]
 		if int(hero["recruitment_index"]) != position:
 			return _reject(&"recruitment_history_gap")
-		var allocated := HeroIdentityType.allocate_hero_id(
+		var allocated := HeroIdentity.allocate_hero_id(
 			int(data["campaign_seed"]), int(data["campaign_generation"]), position,
 			func(candidate: String) -> bool: return allocated_ids.has(candidate),
 		)
@@ -710,8 +708,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 	]:
 		if not result["accepted"]:
 			return result
-	var invariants: Variant = load(CAMPAIGN_INVARIANTS_PATH)
-	var expected_marks: int = invariants.INITIAL_MARKS
+	var expected_marks: int = _campaign_invariants().INITIAL_MARKS
 	for offer: Dictionary in data["offers"]:
 		if offer["consumed"]:
 			expected_marks -= int(offer["cost"])
@@ -720,7 +717,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 	)
 
 static func _validate_root_links(data: Dictionary) -> Dictionary:
-	var expected_uid := HeroIdentityType.campaign_uid(
+	var expected_uid := HeroIdentity.campaign_uid(
 		int(data["campaign_seed"]),
 		int(data["campaign_generation"]),
 	)
@@ -731,7 +728,7 @@ static func _validate_root_links(data: Dictionary) -> Dictionary:
 		var hero: Dictionary = data["heroes"][position]
 		if int(hero["recruitment_index"]) != position:
 			return _reject(&"recruitment_history_gap")
-		var allocated := HeroIdentityType.allocate_hero_id(
+		var allocated := HeroIdentity.allocate_hero_id(
 			int(data["campaign_seed"]),
 			int(data["campaign_generation"]),
 			int(hero["recruitment_index"]),
@@ -807,13 +804,13 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 			or not context["operator_ids"].has(String(hero["identity_portrait_id"]))
 		):
 			return _reject(&"unknown_operator")
-		if int(hero["name_version"]) != HeroNamesType.VERSION:
+		if int(hero["name_version"]) != HeroNames.VERSION:
 			return _reject(&"unsupported_name_version")
 		if not _valid_source_pair(hero, context):
 			return _reject(&"invalid_hero_source")
-		if not CampaignHeroCodecType.valid_callsign(hero["custom_callsign"]):
+		if not CampaignHeroCodec.valid_callsign(hero["custom_callsign"]):
 			return _reject(&"invalid_callsign")
-		var display := CampaignHeroCodecType.display_callsign(hero)
+		var display := CampaignHeroCodec.display_callsign(hero)
 		if not display["accepted"]:
 			return display
 		var folded := String(display["value"]).to_lower()
@@ -823,7 +820,7 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 		if hero["death"] != null and not context["stage_rewards"].has(hero["death"]["stage_id"]):
 			return _reject(&"unknown_death_stage")
 		if hero["recruit_source"] in ["contract", "reward"]:
-			var source_key := CanonicalJsonType.text([
+			var source_key := CanonicalJson.text([
 				hero["recruit_source"], hero["source_id"],
 				hero["acquisition_operator_def_id"],
 			])
@@ -922,7 +919,7 @@ static func _valid_context(context: Dictionary) -> bool:
 	]
 	if not _exact_keys(context, keys):
 		return false
-	var normalized := CampaignProgressionType.normalize_promotion_rules(
+	var normalized := CampaignProgression.normalize_promotion_rules(
 		PromotionRulesResource,
 		(context["operator_ids"] as Dictionary).keys(),
 	)
@@ -947,15 +944,18 @@ static func _in_range(value: Variant, minimum: int, maximum: int) -> bool:
 	return _is_integer(value) and int(value) >= minimum and int(value) <= maximum
 
 static func _encoded(value: Variant) -> Dictionary:
-	var source := CanonicalJsonType.text(value)
+	var source := CanonicalJson.text(value)
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": value,
 		"text": source,
 		"bytes": source.to_utf8_buffer(),
-		"sha256": CanonicalJsonType.sha256_text(source),
+		"sha256": CanonicalJson.sha256_text(source),
 	}
+
+static func _campaign_invariants() -> Script:
+	return load("res://sim/campaign_invariants.gd") as Script
 
 static func _accept(value: Variant) -> Dictionary:
 	return {"accepted": true, "error_code": &"", "value": value}

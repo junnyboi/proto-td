@@ -1,8 +1,8 @@
 class_name CampaignSaveUpgrade
 extends RefCounted
 
-const CanonicalJsonType := preload("res://sim/canonical_json.gd")
-const CAMPAIGN_MIGRATION_PATH := "res://sim/campaign_migration.gd"
+const CampaignMigration := preload("res://sim/campaign_migration.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
 const PRE_PROMOTION_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
@@ -81,13 +81,12 @@ static func decode(
 	var additive := source_version == 2 and is_pre_promotion_v2(parsed["data"])
 	if not legacy and not additive:
 		return {"handled": false}
-	if CanonicalJsonType.text(parsed) != source:
+	if CanonicalJson.text(parsed) != source:
 		return {"handled": true, "result": _reject(&"noncanonical_save")}
-	if CanonicalJsonType.sha256_hex(parsed["data"]) != String(parsed["checksum"]):
+	if CanonicalJson.sha256_hex(parsed["data"]) != String(parsed["checksum"]):
 		return {"handled": true, "result": _reject(&"checksum_mismatch")}
-	var migration: Variant = load(CAMPAIGN_MIGRATION_PATH)
-	var data_result: Dictionary = (
-		migration.migrate_v1_data(parsed["data"], context)
+	var data_result := (
+		CampaignMigration.migrate_v1_data(parsed["data"], context)
 		if legacy else {"accepted": true, "value": parsed["data"]}
 	)
 	if not data_result["accepted"]:

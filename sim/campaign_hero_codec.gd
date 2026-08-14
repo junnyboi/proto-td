@@ -1,9 +1,9 @@
 class_name CampaignHeroCodec
 extends RefCounted
 
-const HeroIdentityType := preload("res://sim/hero_identity.gd")
-const HeroNamesType := preload("res://sim/hero_names.gd")
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const SOURCE_VALUES := ["starter", "contract", "reward", "recovery"]
 const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
@@ -86,10 +86,10 @@ static func valid_callsign(value: Variant) -> bool:
 static func display_callsign(hero: Dictionary) -> Dictionary:
 	if hero["custom_callsign"] != null:
 		return _accept(String(hero["custom_callsign"]))
-	var parsed := HeroIdentityType.parse_u64_hex(hero["hero_id"])
+	var parsed := HeroIdentity.parse_u64_hex(hero["hero_id"])
 	if not parsed["accepted"]:
 		return parsed
-	return HeroNamesType.default_name(parsed["bits"], int(hero["name_version"]))
+	return HeroNames.default_name(parsed["bits"], int(hero["name_version"]))
 
 
 static func _valid_identity_fields(row: Dictionary) -> bool:
@@ -103,7 +103,7 @@ static func _valid_identity_fields(row: Dictionary) -> bool:
 		return false
 	if row["advanced_class_id"] != null and not _is_ascii(row["advanced_class_id"]):
 		return false
-	return CampaignProgressionType.projection_is_valid(row)
+	return CampaignProgression.projection_is_valid(row)
 
 
 static func _valid_history_fields(row: Dictionary, recruitment_index: int) -> bool:

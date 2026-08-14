@@ -6,16 +6,23 @@ extends RefCounted
 ## caller-owned campaign Dictionary untouched.
 
 const CampaignCodecType := preload("res://sim/campaign_codec.gd")
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const CampaignHashType := preload("res://sim/campaign_hash.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const CanonicalJsonType := preload("res://sim/canonical_json.gd")
 const COMMAND_KEYS := [
-	"version", "verb", "command_id", "hero_id", "advanced_class_id",
+	"version",
+	"verb",
+	"command_id",
+	"hero_id",
+	"advanced_class_id",
 	"expected_save_revision",
 ]
 const REPLAY_ROW_KEYS := ["seq", "verb", "args"]
 const REPLAY_ARG_KEYS := [
-	"version", "command_id", "hero_id", "advanced_class_id",
+	"version",
+	"command_id",
+	"hero_id",
+	"advanced_class_id",
 	"expected_save_revision",
 ]
 const RECEIPT_KEYS := CampaignCodecType.PROMOTION_RECEIPT_KEYS
@@ -33,8 +40,10 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 			return _reject(&"command_id_conflict")
 		return _accepted(stored)
 	var expected_id := command_id(
-		String(data["campaign_uid"]), int(command["expected_save_revision"]),
-		String(command["hero_id"]), String(command["advanced_class_id"]),
+		String(data["campaign_uid"]),
+		int(command["expected_save_revision"]),
+		String(command["hero_id"]),
+		String(command["advanced_class_id"]),
 	)
 	if command["command_id"] != expected_id:
 		return _reject(&"invalid_argument_type")
@@ -43,13 +52,21 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 	var hero := _hero_by_id(data["heroes"], String(command["hero_id"]))
 	if hero.is_empty():
 		return _reject(&"unknown_hero")
-	var eligibility := CampaignProgressionType.promotion_eligibility(
-		hero, context["promotion_rules"],
+	var eligibility := (
+		CampaignProgressionType
+		. promotion_eligibility(
+			hero,
+			context["promotion_rules"],
+		)
 	)
 	if not eligibility["accepted"]:
 		return eligibility
-	var choice := CampaignProgressionType.promotion_choice(
-		context["promotion_rules"], String(command["advanced_class_id"]),
+	var choice := (
+		CampaignProgressionType
+		. promotion_choice(
+			context["promotion_rules"],
+			String(command["advanced_class_id"]),
+		)
 	)
 	if choice.is_empty():
 		return _reject(&"invalid_choice")
@@ -66,18 +83,26 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 	CampaignProgressionType.apply_promotion(working_hero, choice)
 	working["save_revision"] = int(working["save_revision"]) + 1
 	var receipt := _receipt(
-		command, prior_operator_def_id, String(choice["operator_def_id"]),
-		String(before_hash["hex"]), int(working["save_revision"]),
+		command,
+		prior_operator_def_id,
+		String(choice["operator_def_id"]),
+		String(before_hash["hex"]),
+		int(working["save_revision"]),
 	)
 	working["promotion_receipts"].append(receipt)
 	var after_hash := CampaignHashType.of_normalized_data(working, false)
 	receipt["after_strategic_hash"] = String(after_hash["hex"])
 	var after_snapshot := _proof_snapshot(working)
-	working["promotion_proofs"].append({
-		"command_id": command["command_id"],
-		"before_data": before_snapshot,
-		"after_data": after_snapshot,
-	})
+	(
+		working["promotion_proofs"]
+		. append(
+			{
+				"command_id": command["command_id"],
+				"before_data": before_snapshot,
+				"after_data": after_snapshot,
+			}
+		)
+	)
 	var canonical := CampaignCodecType.normalize_data(working, context)
 	if not canonical["accepted"]:
 		return _reject(&"invalid_argument_type")
@@ -99,7 +124,8 @@ static func normalize_command(value: Variant) -> Dictionary:
 		if not _is_ascii_string(command[key]):
 			return _reject(&"invalid_argument_type")
 	if (
-		int(command["version"]) != 1 or command["verb"] != "promote_hero"
+		int(command["version"]) != 1
+		or command["verb"] != "promote_hero"
 		or int(command["expected_save_revision"]) < 1
 		or int(command["expected_save_revision"]) > U63_MAX
 		or not _is_hex(String(command["hero_id"]), 16)
@@ -121,9 +147,15 @@ static func command_id(
 	hero_id: String,
 	advanced_class_id: String,
 ) -> String:
-	return "promote:%s:%d:%s:%s" % [
-		campaign_uid, expected_save_revision, hero_id, advanced_class_id,
-	]
+	return (
+		"promote:%s:%d:%s:%s"
+		% [
+			campaign_uid,
+			expected_save_revision,
+			hero_id,
+			advanced_class_id,
+		]
+	)
 
 
 static func replay_row(seq: int, command: Dictionary) -> Dictionary:
