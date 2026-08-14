@@ -2,6 +2,10 @@ class_name AetheriaButton
 extends Button
 
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const COMPACT_ACTION_MINIMUM_WIDTH := 44.0
+const COMPACT_ACTION_MINIMUM_HEIGHT := 80.0
+const COMPACT_ACTION_FONT_SIZE := 34
+const COMPACT_ACTION_ROW_TOP_PADDING := 20
 
 const ROLE_VARIATIONS := {
 	&"primary": &"AuiPrimaryButton",
@@ -63,4 +67,17 @@ func set_presentation_text(logical_text: String, rendered_text: String) -> bool:
 		label.apply_role(&"body")
 		add_child(label)
 	label.text = rendered_text
+	return true
+
+
+func apply_compact_action_layout() -> bool:
+	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType
+	if label == null:
+		return false
+	custom_minimum_size = Vector2(
+		maxf(custom_minimum_size.x, COMPACT_ACTION_MINIMUM_WIDTH),
+		COMPACT_ACTION_MINIMUM_HEIGHT,
+	)
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	label.add_theme_font_size_override(&"font_size", COMPACT_ACTION_FONT_SIZE)
 	return true

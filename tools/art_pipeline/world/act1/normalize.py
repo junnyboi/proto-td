@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Deterministically normalize the approved shared Act I source packet.
 
-The synthesized role sources are smooth, high-resolution RGBA renders, not pixel
-art. They are resized with Pillow LANCZOS while retaining alpha. The approved
-16:9 panorama is center-cropped to 2:1 before the same smooth downsampling.
+The synthesized role sources are smooth, high-resolution RGBA renders and retain
+alpha through Pillow LANCZOS resizing. The owner-supplied 16:9 alpine panorama
+is center-cropped to 2:1 before the same deterministic downsampling.
 Runtime and staging PNGs are emitted from the same encoded bytes.
 """
 
@@ -33,6 +33,7 @@ ROLE_SIZES: Final = {
     "core": (64, 32),
 }
 PANORAMA_SIZE: Final = (512, 256)
+PANORAMA_SOURCE: Final = SOURCE_ROOT / "s1-alpine-escarpment-panorama-source.png"
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -60,8 +61,7 @@ def _normalize_role(role: str) -> bytes:
 
 
 def _normalize_panorama() -> bytes:
-    source = SOURCE_ROOT / "act1-alpine-panorama-flux-a.jpg"
-    with Image.open(source) as opened:
+    with Image.open(PANORAMA_SOURCE) as opened:
         rgb = opened.convert("RGB")
         crop_height = rgb.width // 2
         if crop_height > rgb.height:
@@ -161,7 +161,9 @@ def normalize() -> None:
 
     panorama = _normalize_panorama()
     _write_pair("panorama.png", panorama)
-    records.append(("world.act1.panorama", "panorama.png", PANORAMA_SIZE, panorama, SOURCE_ROOT / "act1-alpine-panorama-flux-a.jpg"))
+    records.append(
+        ("world.act1.panorama", "panorama.png", PANORAMA_SIZE, panorama, PANORAMA_SOURCE)
+    )
 
     manifest_records: list[tuple[str, str, tuple[int, int], str]] = []
     for logical_id, filename, size, payload, source in records:

@@ -207,6 +207,7 @@ func _return_to_stage_select(
 	results_scroll.ensure_control_visible(to_staging)
 	await h.frames(3)
 	h.check("Return to Staging visible for real input", results_scroll.get_global_rect().intersects(to_staging.get_global_rect()))
+	await h.shot("results_compact_action_row")
 	await h.click_view(to_staging.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("Staging re-opened after clear", staging != null)

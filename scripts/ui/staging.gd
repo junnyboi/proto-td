@@ -14,9 +14,6 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const TrainingScreenType := preload("res://scripts/ui/training.gd")
 const SHELL_SIZE := Vector2(1080.0, 620.0)
-const ACTION_BUTTON_FONT_SIZE := 34
-const ACTION_BUTTON_HEIGHT := 80.0
-const ACTION_ROW_TOP_PADDING := 20
 
 var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
@@ -127,7 +124,7 @@ func _build_operations() -> VBoxContainer:
 	_mission = _button(
 		"MissionControlButton",
 		UiCopyType.text(&"ui.staging.mission_control", "Mission Control"),
-		"Mission\nControl", not _narrative_missing,
+		"Mission", not _narrative_missing,
 		&"primary" if not _narrative_missing else &"disabled",
 	)
 	_mission.pressed.connect(_on_mission_control)
@@ -140,14 +137,16 @@ func _build_operations() -> VBoxContainer:
 	var grid_margin := MarginContainer.new()
 	grid_margin.name = "OperationGridMargin"
 	grid_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_margin.add_theme_constant_override(&"margin_top", ACTION_ROW_TOP_PADDING)
+	grid_margin.add_theme_constant_override(
+		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
 	grid_margin.add_child(_operation_grid)
 	operations.add_child(grid_margin)
 	_operation_grid.add_child(_mission)
 	var back := _button(
 		"BackToTitleButton",
 		UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
-		"Back to\nTitle", true, &"secondary",
+		"Back", true, &"secondary",
 	)
 	back.pressed.connect(_on_back_to_title)
 	_operation_grid.add_child(back)
@@ -155,19 +154,19 @@ func _build_operations() -> VBoxContainer:
 	for specification: Array in [
 		[
 			"BarracksButton", &"ui.staging.barracks_unavailable",
-			"Barracks — Unavailable", "Barracks\nUnavailable",
+			"Barracks — Unavailable", "Barracks",
 		],
 		[
 			"RecruitButton", &"ui.staging.recruit_unavailable",
-			"Recruit — Unavailable", "Recruit\nUnavailable",
+			"Recruit — Unavailable", "Recruit",
 		],
 		[
 			"ArmoryButton", &"ui.staging.armory_unavailable",
-			"Armory — Unavailable", "Armory\nUnavailable",
+			"Armory — Unavailable", "Armory",
 		],
 		[
 			"MemorialButton", &"ui.staging.memorial_unavailable",
-			"Memorial — Unavailable", "Memorial\nUnavailable",
+			"Memorial — Unavailable", "Memorial",
 		],
 	]:
 		_operation_grid.add_child(_button(
@@ -183,7 +182,7 @@ func _build_operations() -> VBoxContainer:
 			&"ui.staging.training" if training_available else &"ui.staging.training_unavailable",
 			"Training" if training_available else "Training — Unavailable",
 		),
-		"Training" if training_available else "Training\nUnavailable",
+		"Training",
 		training_available,
 		&"primary" if training_available else &"disabled",
 	)
@@ -305,14 +304,13 @@ func _button(
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
-	button.custom_minimum_size = Vector2(44.0, ACTION_BUTTON_HEIGHT)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.disabled = not enabled
 	button.apply_role(role)
 	button.set_presentation_text(button_text, presentation_text)
-	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
-	presentation.add_theme_font_size_override(&"font_size", ACTION_BUTTON_FONT_SIZE)
+	button.tooltip_text = button_text
+	button.apply_compact_action_layout()
 	if not enabled:
 		button.focus_mode = Control.FOCUS_NONE
 	return button

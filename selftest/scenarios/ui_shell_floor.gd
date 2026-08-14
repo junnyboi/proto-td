@@ -205,6 +205,8 @@ func _capture_screen_state(
 		return
 	var stress_evidence := _apply_stress_mode(content, mode, screen)
 	await h.frames(4)
+	if screen != &"title":
+		_check_compact_action_hierarchy(h, content, screen, viewport, mode)
 	if mode == &"standard":
 		_check_responsive_shell(h, content, screen, viewport)
 	var state_name := String(INVENTORY_STATES[screen])
@@ -376,6 +378,81 @@ func _check_responsive_shell(
 		)
 	if screen != &"title":
 		_check_dialog_scrollbar_gutter(h, content, shell, screen, viewport)
+
+
+func _check_compact_action_hierarchy(
+		h: SelfTestHarness, content: Control, screen: StringName,
+		viewport: Vector2i, mode: StringName,
+		) -> void:
+	var margin_name := {
+		&"staging": &"OperationGridMargin", &"campaign": &"StageRowsMargin",
+		&"squad": &"ActionRowMargin", &"results": &"ActionRowMargin",
+	}[screen] as StringName
+	var margin := content.find_child(margin_name, true, false) as MarginContainer
+	h.check(
+		"%s %s %s compact action padding" % [screen, viewport, mode],
+		margin != null and margin.get_theme_constant(&"margin_top")
+		== AetheriaButton.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
+	var actions: Array[Button] = []
+	for node: Node in _all_nodes(content):
+		if not node is AetheriaButton:
+			continue
+		var button := node as Button
+		var include := false
+		match screen:
+			&"staging":
+				include = button.name in [
+					&"MissionControlButton", &"BackToTitleButton", &"BarracksButton",
+					&"RecruitButton", &"TrainingButton", &"ArmoryButton", &"MemorialButton",
+				]
+			&"campaign":
+				include = String(button.name).begins_with("Stage_") or button.name == &"BackToStaging"
+			&"squad":
+				include = button.name in [&"BackButton", &"StartBattle"]
+			&"results":
+				include = button.name in [&"RetryButton", &"ReturnToStaging", &"BackToTitle"]
+		if include:
+			actions.append(button)
+	var expected_count := {&"staging": 7, &"campaign": 9, &"squad": 2, &"results": 3}[screen] as int
+	h.check(
+		"%s %s %s compact action count" % [screen, viewport, mode],
+		actions.size() == expected_count, "count=%d expected=%d" % [actions.size(), expected_count],
+	)
+	var scale := 2.0 if mode == &"text200" else (1.35 if mode == &"expand135" else 1.0)
+	var expected_height := ceilf(AetheriaButton.COMPACT_ACTION_MINIMUM_HEIGHT * scale)
+	var expected_font := AetheriaButton.COMPACT_ACTION_FONT_SIZE * (2 if mode == &"text200" else 1)
+	for button: Button in actions:
+		var presentation := button.get_node_or_null("PresentationLabel") as Label
+		var text_width := 0.0
+		if presentation != null:
+			text_width = presentation.get_theme_font(&"font").get_string_size(
+				presentation.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0,
+				presentation.get_theme_font_size(&"font_size"),
+			).x
+		h.check(
+			"%s %s %s %s compact action geometry" % [screen, viewport, mode, button.name],
+			is_equal_approx(button.custom_minimum_size.y, expected_height)
+			and button.size.y >= expected_height
+			and button.size.y <= expected_height + 1.0
+			and presentation != null
+			and presentation.get_theme_font_size(&"font_size") == expected_font,
+			"minimum=%.1f rendered=%.1f expected=%.1f font=%d expected_font=%d" % [
+				button.custom_minimum_size.y, button.size.y, expected_height,
+				presentation.get_theme_font_size(&"font_size") if presentation != null else -1,
+				expected_font,
+			],
+		)
+		if mode == &"standard":
+			h.check(
+				"%s %s %s compact action label fits" % [screen, viewport, button.name],
+				presentation != null and not presentation.text.contains("\n")
+				and text_width <= presentation.size.x,
+				"text_width=%.1f available=%.1f text=%s" % [
+					text_width, presentation.size.x if presentation != null else 0.0,
+					presentation.text if presentation != null else "missing",
+				],
+			)
 
 
 func _check_dialog_scrollbar_gutter(

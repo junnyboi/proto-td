@@ -7,6 +7,20 @@ func test_basic_enemy_scope_excludes_mini_boss() -> void:
 	assert_false(EnemyAnimator.uses_grunt(&"mini_boss"))
 
 
+func test_directional_scope_includes_the_complete_enemy_roster() -> void:
+	for id: StringName in [&"grunt", &"runner", &"heavy", &"drone", &"spellcaster", &"mini_boss"]:
+		assert_true(EnemyAnimator.uses_directional_animation(id), String(id))
+	assert_false(EnemyAnimator.uses_directional_animation(&"unknown"))
+
+
+func test_experimental_state_policy_preserves_grunt_walk_fallback() -> void:
+	assert_false(EnemyAnimator.uses_experimental_state(&"grunt", &"walk"))
+	assert_true(EnemyAnimator.uses_experimental_state(&"grunt", &"attack"))
+	for id: StringName in [&"runner", &"heavy", &"drone", &"spellcaster", &"mini_boss"]:
+		assert_true(EnemyAnimator.uses_experimental_state(id, &"walk"), String(id))
+		assert_true(EnemyAnimator.uses_experimental_state(id, &"attack"), String(id))
+
+
 func test_grid_tangents_map_to_isometric_directions() -> void:
 	assert_eq(EnemyAnimator.direction_from_tangent(Vector2i(1, 0)), &"se")
 	assert_eq(EnemyAnimator.direction_from_tangent(Vector2i(0, 1)), &"sw")
@@ -57,6 +71,9 @@ func test_attack_counter_spans_the_complete_animation() -> void:
 	assert_eq(EnemyAnimator.attack_frame(0, 30), 24)
 	assert_eq(EnemyAnimator.attack_frame(47, 48), 0)
 	assert_eq(EnemyAnimator.attack_frame(0, 48), 24)
+	assert_eq(EnemyAnimator.attack_frame(29, 30, 8), 0)
+	assert_eq(EnemyAnimator.attack_frame(15, 30, 8), 3)
+	assert_eq(EnemyAnimator.attack_frame(0, 30, 8), 7)
 
 
 func test_logical_ids_cover_state_direction_and_charm() -> void:
@@ -65,6 +82,21 @@ func test_logical_ids_cover_state_direction_and_charm() -> void:
 		EnemyAnimator.animation_id(&"attack", &"nw", true),
 		&"grunt_anim_attack_nw_charmed",
 	)
+	assert_eq(
+		EnemyAnimator.experimental_animation_id(&"mini_boss", &"attack", &"sw"),
+		&"experimental_salvage_mini_boss_attack_sw",
+	)
+	assert_true(EnemyAnimator.is_experimental_id(&"experimental_salvage_runner_walk_ne"))
+	assert_false(EnemyAnimator.is_experimental_id(&"grunt_anim_walk_ne"))
+
+
+func test_experimental_walk_uses_all_eight_frames() -> void:
+	var enemy := EnemyState.new()
+	enemy.id = 0
+	var id := &"experimental_salvage_runner_walk_se"
+	assert_eq(EnemyAnimator.frame_for(enemy, id, 0.0), 0)
+	assert_eq(EnemyAnimator.frame_for(enemy, id, 7.0 / 8.0), 7)
+	assert_eq(EnemyAnimator.frame_for(enemy, id, 1.0), 0)
 
 
 func test_only_faction_palette_changes_bypass_cross_fade() -> void:

@@ -11,6 +11,15 @@
     }
   },
   "recipe": "central AI material crop -> exact diamond mask -> role overlays -> fixed extrusion",
+  "panorama": {
+    "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
+    "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
+    "size": [
+      2560,
+      1440
+    ],
+    "owner_direction": "Use this background across Act I"
+  },
   "roles": {
     "ground": {
       "path": "concepts/synthesized-act1-tiles/act1-ground.png",
