@@ -119,6 +119,23 @@ const SIMULATION_CONTRACTS := [
 			"\\bCanonicalJson\\.",
 		],
 	},
+	{
+		"path": "res://sim/campaign_save_upgrade.gd",
+		"aliases": ["CanonicalJsonType"],
+		"forbidden": ["\\bCanonicalJson\\.", "\\bCampaignMigration\\."],
+	},
+	{
+		"path": "res://sim/campaign_migration.gd",
+		"aliases": ["CampaignHashType", "CampaignCodecType", "CampaignProgressionType"],
+		"forbidden": [
+			"\\bCampaignHash\\.", "\\bCampaignCodec\\.", "\\bCampaignProgression\\.",
+		],
+	},
+	{
+		"path": "res://sim/campaign_legacy_hash.gd",
+		"aliases": ["HeroIdentityType"],
+		"forbidden": ["\\bHeroIdentity\\."],
+	},
 ]
 
 
@@ -171,3 +188,8 @@ func test_training_promotion_dependencies_preload_stale_cache_helpers() -> void:
 		'const CAMPAIGN_INVARIANTS_PATH := "res://sim/campaign_invariants.gd"',
 	))
 	assert_true(codec_source.contains("load(CAMPAIGN_INVARIANTS_PATH)"))
+	var upgrade_source := FileAccess.get_file_as_string("res://sim/campaign_save_upgrade.gd")
+	assert_true(upgrade_source.contains(
+		'const CAMPAIGN_MIGRATION_PATH := "res://sim/campaign_migration.gd"',
+	))
+	assert_true(upgrade_source.contains("load(CAMPAIGN_MIGRATION_PATH)"))

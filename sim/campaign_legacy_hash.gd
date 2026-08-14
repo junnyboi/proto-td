@@ -3,6 +3,7 @@ extends RefCounted
 ## Read-only v1 strategic core hash used only at the migration boundary.
 ## New campaign state must use CampaignHash v2.
 
+const HeroIdentityType := preload("res://sim/hero_identity.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 1
 const FNV_OFFSET := -3750763034362895579
@@ -66,7 +67,7 @@ static func of_core_snapshot(value: Variant) -> Dictionary:
 	for byte: int in out:
 		bits ^= byte
 		bits *= FNV_PRIME
-	return {"accepted": true, "error_code": &"", "hex": HeroIdentity.format_u64_hex(bits)}
+	return {"accepted": true, "error_code": &"", "hex": HeroIdentityType.format_u64_hex(bits)}
 
 
 static func _append_stars(out: PackedByteArray, rows: Array) -> void:

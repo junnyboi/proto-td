@@ -5,6 +5,9 @@ extends RefCounted
 ## Migration adds progression defaults and rewrites nested anchor integrity links.
 
 const LegacyHashScript := preload("res://sim/campaign_legacy_hash.gd")
+const CampaignHashType := preload("res://sim/campaign_hash.gd")
+const CampaignCodecType := preload("res://sim/campaign_codec.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 
 const V1_HERO_KEYS := [
 	"hero_id", "operator_def_id", "recruitment_index", "recruited_after_resolution_index",
@@ -51,8 +54,12 @@ static func migrate_v1_data(data: Variant, context: Dictionary) -> Dictionary:
 			return _reject(&"invalid_v1_anchor")
 		if not _migrate_core(migrated_anchor.get("after_core", null)):
 			return _reject(&"invalid_v1_anchor")
-		var before_hash := CampaignHash.of_core_snapshot(migrated_anchor["before_core"], context)
-		var after_hash := CampaignHash.of_core_snapshot(migrated_anchor["after_core"], context)
+		var before_hash := CampaignHashType.of_core_snapshot(
+			migrated_anchor["before_core"], context,
+		)
+		var after_hash := CampaignHashType.of_core_snapshot(
+			migrated_anchor["after_core"], context,
+		)
 		if not before_hash["accepted"] or not after_hash["accepted"]:
 			return _reject(&"invalid_v1_anchor")
 		migrated_anchor["strategic_body_hash_before"] = before_hash["hex"]
@@ -62,7 +69,7 @@ static func migrate_v1_data(data: Variant, context: Dictionary) -> Dictionary:
 			migrated["last_resolution"]["strategic_body_hash_before"] = before_hash["hex"]
 			migrated["last_resolution"]["strategic_body_hash_after"] = after_hash["hex"]
 	var ordered := {}
-	for key: String in CampaignCodec.DATA_KEYS:
+	for key: String in CampaignCodecType.DATA_KEYS:
 		ordered[key] = migrated[key]
 	return {"accepted": true, "error_code": &"", "value": ordered}
 
@@ -104,7 +111,7 @@ static func _migrate_core(value: Variant) -> bool:
 	for raw: Variant in core["heroes"]:
 		if typeof(raw) != TYPE_DICTIONARY or not _exact_keys(raw, V1_HERO_KEYS):
 			return false
-		var row := CampaignProgression.add_initial_fields(raw)
+		var row := CampaignProgressionType.add_initial_fields(raw)
 		if row.is_empty():
 			return false
 		migrated.append(row)
