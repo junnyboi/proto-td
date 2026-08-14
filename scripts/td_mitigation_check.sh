@@ -70,6 +70,7 @@ tests=(
   test/test_game_campaign_compat.gd
   test/test_mage_promotion_contract.gd
   test/test_p16_contract_fixtures.gd
+  test/test_witch_doctor.gd
   test/test_target_policy_catalog.gd
   test/test_presentation_contracts.gd
 )
