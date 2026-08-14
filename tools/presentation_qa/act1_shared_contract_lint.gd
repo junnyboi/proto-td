@@ -73,7 +73,11 @@ func _validate_assets(supplement: AssetManifest) -> void:
 		elif (
 			data.get("logical_id") != String(id)
 			or data.get("approval", {}).get("token") != "ACT-I-S1-S3-VISUAL-PASS-V3"
-			or bool(data.get("human_final_art", true))
+			or not bool(data.get("human_final_art", false))
+			or (
+				data.get("approval", {}).get("manifest_sha256")
+				!= StageArtTheme.APPROVAL_MANIFEST_SHA256
+			)
 		):
 			_fail("fragment truth mismatch: %s" % id)
 		if Art.size(id) != size or Art.texture(id) == null:

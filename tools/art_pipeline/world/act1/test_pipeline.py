@@ -18,8 +18,10 @@ STAGING = REPO / "staging/assets/world/act1"
 FRAGMENTS = REPO / "assets/provenance/fragments/act1"
 SOURCE = REPO / "art-src/world/act1"
 SOURCE_MANIFEST = SOURCE / "source-manifest.json"
+APPROVAL_MANIFEST = SOURCE / "ACT-I-V3-GROUND-BASE-APPROVAL.json"
 MANIFEST = REPO / "assets/act1_shared_manifest.tres"
 TOKEN = "ACT-I-S1-S3-VISUAL-PASS-V3"
+APPROVAL_MANIFEST_SHA256 = "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
 EXPECTED = {
     "ground.png": (64, 32),
     "route.png": (64, 32),
@@ -74,6 +76,8 @@ class Act1WorldPipelineTest(unittest.TestCase):
     def test_repo_local_owner_source_packet_is_exact(self) -> None:
         manifest = json.loads(SOURCE_MANIFEST.read_text())
         self.assertEqual(manifest["approval_token"], TOKEN)
+        self.assertEqual(manifest["owner_approval"]["verdict"], "APPROVED")
+        self.assertEqual(manifest["owner_approval"]["manifest_sha256"], APPROVAL_MANIFEST_SHA256)
         self.assertEqual(set(manifest["sources"]), set(SOURCE_HASHES))
         for name, expected_hash in SOURCE_HASHES.items():
             record = manifest["sources"][name]
@@ -150,8 +154,10 @@ class Act1WorldPipelineTest(unittest.TestCase):
             logical_id = data["logical_id"]
             seen.add(logical_id)
             self.assertEqual(data["approval"]["token"], TOKEN)
-            self.assertEqual(data["state"], "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING")
-            self.assertFalse(data["human_final_art"])
+            self.assertEqual(data["state"], "HUMAN_FINAL_APPROVED")
+            self.assertTrue(data["human_final_art"])
+            self.assertEqual(data["approval"]["manifest_sha256"], APPROVAL_MANIFEST_SHA256)
+            self.assertEqual(digest(APPROVAL_MANIFEST), APPROVAL_MANIFEST_SHA256)
             self.assertNotEqual(data["normalization"]["operation"], "")
             files = data["candidate_files"]
             runtime = REPO / files["runtime"]

@@ -1,6 +1,8 @@
 {
   "approval": {
-    "human_final_art": false,
+    "human_final_art": true,
+    "manifest_path": "art-src/world/act1/ACT-I-V3-GROUND-BASE-APPROVAL.json",
+    "manifest_sha256": "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249",
     "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
     "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
@@ -10,7 +12,7 @@
     "sha256": "85c1602cb8f12f74bdd1eb11ba612fb8975d034e09b42c5a17b614c2578e3fa8",
     "staging": "staging/assets/world/act1/env-crate.png"
   },
-  "human_final_art": false,
+  "human_final_art": true,
   "logical_id": "world.act1.env.crate",
   "normalization": {
     "alpha_preserved": true,
@@ -28,5 +30,5 @@
     "path": "art-src/world/act1/owner-tiles/env-blockers-sheet.png",
     "sha256": "adf301a6863dc28e731ea43cde20babf69fd6b24979cb3c0e9dbff321f14ce24"
   },
-  "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING"
+  "state": "HUMAN_FINAL_APPROVED"
 }

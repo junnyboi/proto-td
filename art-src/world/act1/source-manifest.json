@@ -2,6 +2,13 @@
   "schema_version": 3,
   "approval_token": "ACT-I-S1-S3-VISUAL-PASS-V3",
   "owner_direction": "Use the supplied ground and route tiles, a taller blocky elevated platform, the Cloud-Seal Orrery core, and environmental blockers across Act I.",
+  "owner_approval": {
+    "verdict": "APPROVED",
+    "approved_at": "2026-08-14T16:46:03+08:00",
+    "message": "Approve Act I V3 ground-base amendment",
+    "manifest_path": "art-src/world/act1/ACT-I-V3-GROUND-BASE-APPROVAL.json",
+    "manifest_sha256": "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
+  },
   "sources": {
     "ground": {
       "path": "art-src/world/act1/owner-tiles/ground-source.png",

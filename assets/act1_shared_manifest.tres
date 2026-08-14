@@ -12,7 +12,7 @@ entries = {
 "pattern": "res://assets/world/act1/blocked.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "188584199c569fe00870ffa11791a67d5ee14a1c6db0e68dd028c48dda5ba69e",
+"provenance_sha256": "3bfe8ffa9f7b3a37818fb2f975df55ff13951bad3e29a028838e9359981a21d4",
 "size": Vector2i(64, 32)
 },
 &"world.act1.core": {
@@ -21,7 +21,7 @@ entries = {
 "pattern": "res://assets/world/act1/core.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "7df79220b3fd6c4976bab6e4fa633c420ca5774eb80565dbde86a87d6509669f",
+"provenance_sha256": "0d7f17493120205ed2632b2450ed2051baabd8468ac55938c18421f5064f506f",
 "size": Vector2i(128, 128)
 },
 &"world.act1.env.barrel": {
@@ -30,7 +30,7 @@ entries = {
 "pattern": "res://assets/world/act1/env-barrel.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "1c1f83359a6d454c551b14f5d4426d321dd5ea46c8c414b5b3682374a6b70877",
+"provenance_sha256": "1c5f59b76b95c15f5b9273706d54b26d3a0920bffdeb0bd6e0dd0e41a3ffa239",
 "size": Vector2i(64, 64)
 },
 &"world.act1.env.boulder": {
@@ -39,7 +39,7 @@ entries = {
 "pattern": "res://assets/world/act1/env-boulder.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "76d85dbb7d5df23dcd48b181dca5ea9ee37613fcc248e83670ba5d9952baca50",
+"provenance_sha256": "1800c9473822482bccc5da5019b386ee9b7de06f0a043d0f87507067141bb7e5",
 "size": Vector2i(64, 64)
 },
 &"world.act1.env.crate": {
@@ -48,7 +48,7 @@ entries = {
 "pattern": "res://assets/world/act1/env-crate.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "bf6f9b5de83055b1d1ac08eb1cf1ee3efaa61a71b590f4cdd4ec5eed569e61e7",
+"provenance_sha256": "961107f86c294282e83985a786f62934bae1dc6d5f14b9d72657dce87e2ba391",
 "size": Vector2i(64, 64)
 },
 &"world.act1.env.wall": {
@@ -57,7 +57,7 @@ entries = {
 "pattern": "res://assets/world/act1/env-wall.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "a01547d923c16199310602affd961beeb6be76e4662c26672384b5d15fff6724",
+"provenance_sha256": "afcae18042abaa9ebde8457f43bfa2520e2398bb9aa903411f8b4adb23e3b075",
 "size": Vector2i(64, 64)
 },
 &"world.act1.ground": {
@@ -66,7 +66,7 @@ entries = {
 "pattern": "res://assets/world/act1/ground.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "a1b472a6f1d45914bfcdefc6831f1f2d7c04d33c62a792845b77a39cfc411457",
+"provenance_sha256": "fc636ca5cf01e39d19217b6dbc22e940d2965602f9e82212d57f3b7bdff77f7c",
 "size": Vector2i(64, 32)
 },
 &"world.act1.panorama": {
@@ -75,7 +75,7 @@ entries = {
 "pattern": "res://assets/world/act1/panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "b4d2154c41dd48a921cec8434a0d8f8f7f80b02b2a4fd5ed994683889a36074c",
+"provenance_sha256": "87b34f7de79884f8be11915f646ab3be870d8c822e8e5017dac78505832dc962",
 "size": Vector2i(512, 256)
 },
 &"world.act1.raised": {
@@ -84,7 +84,7 @@ entries = {
 "pattern": "res://assets/world/act1/raised.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "20d6eea2c0fc6c2a92854a410fee17f72b1e46076511cc66024393f1b9f0afa0",
+"provenance_sha256": "cd5c6ee1d267a376f7e57dfb367670f5630b081fa1be1075b996305d6cdc134b",
 "size": Vector2i(64, 80)
 },
 &"world.act1.route": {
@@ -93,7 +93,7 @@ entries = {
 "pattern": "res://assets/world/act1/route.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "27bd7798c3f5903fdb633d79d676a1631bd020f63137e99862c6b4dbbcda86ff",
+"provenance_sha256": "8e81c5e79629f41bddd0737681641878477759061e981f1c8f2d0b3d108db299",
 "size": Vector2i(64, 32)
 },
 &"world.act1.spawn": {
@@ -102,7 +102,7 @@ entries = {
 "pattern": "res://assets/world/act1/spawn.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "173afb5ea527c26e3a047307df9aa57d7b69a7ae051ae4db947841e27e9057af",
+"provenance_sha256": "d26fd87331d9ec27ec1344431581d7c43ab276768754cdca7237148675ca6581",
 "size": Vector2i(64, 32)
 }
 }

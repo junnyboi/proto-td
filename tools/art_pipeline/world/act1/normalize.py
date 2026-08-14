@@ -28,6 +28,8 @@ STAGING_ROOT: Final = REPO / "staging/assets/world/act1"
 FRAGMENT_ROOT: Final = REPO / "assets/provenance/fragments/act1"
 MANIFEST_PATH: Final = REPO / "assets/act1_shared_manifest.tres"
 APPROVAL_TOKEN: Final = "ACT-I-S1-S3-VISUAL-PASS-V3"
+APPROVAL_MANIFEST_PATH: Final = SOURCE_ROOT / "ACT-I-V3-GROUND-BASE-APPROVAL.json"
+APPROVAL_MANIFEST_SHA256: Final = "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
 ROLE_SIZES: Final = {
     "ground": (64, 32),
     "route": (64, 32),
@@ -248,11 +250,13 @@ def _fragment(
     return {
         "schema_version": 1,
         "logical_id": logical_id,
-        "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING",
-        "human_final_art": False,
+        "state": "HUMAN_FINAL_APPROVED",
+        "human_final_art": True,
         "approval": {
             "token": APPROVAL_TOKEN,
-            "human_final_art": False,
+            "human_final_art": True,
+            "manifest_path": APPROVAL_MANIFEST_PATH.relative_to(REPO).as_posix(),
+            "manifest_sha256": APPROVAL_MANIFEST_SHA256,
             "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
         },
         "source": {
@@ -307,6 +311,8 @@ def _manifest_text(records: list[tuple[str, str, tuple[int, int], str]]) -> str:
 
 
 def normalize() -> None:
+    if sha256_file(APPROVAL_MANIFEST_PATH) != APPROVAL_MANIFEST_SHA256:
+        raise SystemExit("Act I approval manifest hash mismatch")
     _clear_generated_files(RUNTIME_ROOT, ".png")
     _clear_generated_files(STAGING_ROOT, ".png")
     _clear_generated_files(FRAGMENT_ROOT, ".json")

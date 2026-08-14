@@ -6,6 +6,7 @@ extends Resource
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
 const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-VISUAL-PASS-V3"
+const APPROVAL_MANIFEST_SHA256 := "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
 const SHARED_THEME_ID: StringName = &"world.act1.alpine_shared"
 const SHARED_ENDPOINT_PIVOT := Vector2i(32, 16)
 const SHARED_IDS: Array[StringName] = [
@@ -170,10 +171,10 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme_id is not the shared Act I alpine family")
 	if approval_token != APPROVAL_TOKEN:
 		errors.append("approval token is not the owner-supplied Act I tile direction")
-	if not approval_manifest_sha256.is_empty():
-		errors.append("approval manifest hash must remain empty until final owner verdict")
-	if human_final_art:
-		errors.append("shared Act I runtime candidate must not claim human-final art")
+	if approval_manifest_sha256 != APPROVAL_MANIFEST_SHA256:
+		errors.append("approval manifest hash does not match the approved Act I V3 candidate")
+	if not human_final_art:
+		errors.append("shared Act I runtime art is not sealed human-final")
 	if surface_modulate != Color.WHITE:
 		errors.append("shared Act I surface modulation must be Color.WHITE")
 	# core landmark is now 128x128 (Orrery); spawn stays at 64x32 overlay pivot
