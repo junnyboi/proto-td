@@ -164,9 +164,16 @@ run 90 scripts/replay_check.sh --out="${OUT#"$ROOT/"}/replay" >"$OUT/replay.log"
 jq -e '.status == "PASS" and .sentinel == "REPLAY_CHECK_OK" and .identical == true' \
   "$OUT/replay/summary.json" >/dev/null || fail "replay proof failed"
 
+run 60 scripts/model_roster_check.sh --out="$OUT/model-roster/summary.json" \
+  >"$OUT/model-roster.log" 2>&1
+[[ -s "$OUT/model-roster/summary.json" ]] || fail "model-roster summary is missing"
+jq -e '.verdict == "pass" and .processes == 2 and .byte_identical == true' \
+  "$OUT/model-roster/summary.json" >/dev/null || fail "model-roster proof failed"
+
 fixture_sha="$(sha256sum "$FIXTURE" | awk '{print $1}')"
 scenario_sha="$(sha256sum "$OUT/scenario/report.json" | awk '{print $1}')"
 replay_sha="$(jq -r '.sha256' "$OUT/replay/summary.json")"
+roster_sha="$(jq -r '.normal_sha256' "$OUT/model-roster/summary.json")"
 binding_sha="$(jq -r '.rows[0].model_hash' "$FIXTURE")"
 jq -n \
   --arg sentinel TD_MITIGATION_CHECK_PASS \
@@ -176,12 +183,14 @@ jq -n \
   --arg fixture_sha256 "$fixture_sha" \
   --arg scenario_sha256 "$scenario_sha" \
   --arg replay_sha256 "$replay_sha" \
+  --arg model_roster_sha256 "$roster_sha" \
   --arg legacy_operator_hash "$binding_sha" \
   --slurpfile scenario "$OUT/scenario/report.json" \
   --slurpfile actual "$OUT/conditional.json" \
   '{sentinel:$sentinel,status:$status,tests:$tests,assertions:$assertions,
     fixture_sha256:$fixture_sha256,scenario_sha256:$scenario_sha256,
-    replay_sha256:$replay_sha256,legacy_operator_hash:$legacy_operator_hash,
+    replay_sha256:$replay_sha256,model_roster_sha256:$model_roster_sha256,
+    legacy_operator_hash:$legacy_operator_hash,
     counter_checks:$scenario[0].checks,
     td_obs:{model_hash:$actual[0].meta.bot_summary.model_hash,
       observation_sequence_sha256:$actual[0].meta.bot_summary.observation_sequence_sha256,
