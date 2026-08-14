@@ -46,16 +46,27 @@ func _physics_process(_delta: float) -> void:
 	Telemetry.current_tick = _tick
 	var done: bool = _bot.tick(_tick)
 	_tick += 1
+	var reason := _bot.stop_reason()
 	if done:
-		_quit("bot_done", 0)
+		if not PlaytestBot.recognized_stop_reason(reason):
+			push_error("playtest bot completed with invalid stop reason: '%s'" % reason)
+			_quit("bot_failed", 3)
+		else:
+			_quit(reason, PlaytestBot.stop_exit_code(reason))
+	elif reason == "bot_failed":
+		_quit(reason, PlaytestBot.stop_exit_code(reason))
 	elif _tick >= _max_ticks:
 		if _bot.expects_completion:
-			_quit("watchdog_max_ticks", 3)
+			_quit("watchdog_max_ticks", PlaytestBot.stop_exit_code("watchdog_max_ticks"))
 		else:
-			_quit("duration_reached", 0)
+			_quit("duration_reached", PlaytestBot.stop_exit_code("duration_reached"))
 
 
 func _quit(reason: String, code: int) -> void:
+	var summary := {} if _bot == null else _bot.final_summary()
+	var legacy_reason := reason
+	if code == 0 and reason != "duration_reached":
+		legacy_reason = "bot_done"
 	_bot = null
 	Telemetry.flush({
 		"bot": _bot_name,
@@ -64,7 +75,9 @@ func _quit(reason: String, code: int) -> void:
 		"wall_ms": Time.get_ticks_msec() - _start_ms,
 		"engine": Engine.get_version_info()["string"],
 		"headless": DisplayServer.get_name() == "headless",
-		"quit_reason": reason,
+		"quit_reason": legacy_reason,
+		"stop_reason": reason,
+		"bot_summary": summary,
 	})
 	print("[PLAYTEST] quit: %s (exit %d)" % [reason, code])
 	get_tree().quit(code)
