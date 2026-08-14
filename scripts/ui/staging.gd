@@ -10,6 +10,9 @@ const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const SHELL_SIZE := Vector2(1080.0, 620.0)
+const ACTION_BUTTON_FONT_SIZE := 34
+const ACTION_BUTTON_HEIGHT := 80.0
+const ACTION_ROW_TOP_PADDING := 20
 
 var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
@@ -107,7 +110,12 @@ Control", not _narrative_missing, &"primary" if not _narrative_missing else &"di
 	_operation_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_operation_grid.add_theme_constant_override(&"h_separation", 14)
 	_operation_grid.add_theme_constant_override(&"v_separation", 10)
-	operations.add_child(_operation_grid)
+	var grid_margin := MarginContainer.new()
+	grid_margin.name = "OperationGridMargin"
+	grid_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid_margin.add_theme_constant_override(&"margin_top", ACTION_ROW_TOP_PADDING)
+	grid_margin.add_child(_operation_grid)
+	operations.add_child(grid_margin)
 	_operation_grid.add_child(_mission)
 	var back := _button("BackToTitleButton", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), "Back to
 Title", true, &"secondary")
@@ -196,12 +204,14 @@ func _button(button_name: String, button_text: String, presentation_text: String
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
-	button.custom_minimum_size = Vector2(44.0, 120.0)
+	button.custom_minimum_size = Vector2(44.0, ACTION_BUTTON_HEIGHT)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.disabled = not enabled
 	button.apply_role(role)
 	button.set_presentation_text(button_text, presentation_text)
+	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
+	presentation.add_theme_font_size_override(&"font_size", ACTION_BUTTON_FONT_SIZE)
 	if not enabled:
 		button.focus_mode = Control.FOCUS_NONE
 	return button
