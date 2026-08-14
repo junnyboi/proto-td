@@ -55,14 +55,16 @@ const CONTRACTS := [
 		"forbidden": _SHELL_FORBIDDEN,
 	},
 	{
-		"path": "res://sim/campaign_promotion.gd",
+		"path": "res://scripts/ui/training.gd",
 		"aliases": [
-			"CAMPAIGN_CODEC_SCRIPT", "CAMPAIGN_HASH_SCRIPT",
-			"CAMPAIGN_PROGRESSION_SCRIPT", "CANONICAL_JSON_SCRIPT",
+			"AetheriaButtonType", "AetheriaLabelType", "AetheriaPanelType",
+			"AetheriaScreenShellType", "PromotionPathCardType",
+			"TrainingRosterRowType", "UiCopyType",
 		],
 		"forbidden": [
-			"\\bCampaignCodec\\b", "\\bCampaignHash\\b",
-			"\\bCampaignProgression\\b", "\\bCanonicalJson\\b",
+			"\\bAetheriaButton\\b", "\\bAetheriaLabel\\b", "\\bAetheriaPanel\\b",
+			"\\bAetheriaScreenShell\\b", "\\bPromotionPathCard\\b",
+			"\\bTrainingRosterRow\\b", "\\bUiCopy\\b", "\\bCampaignPromotion\\b",
 		],
 	},
 ]
