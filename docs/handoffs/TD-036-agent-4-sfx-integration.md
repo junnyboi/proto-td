@@ -11,12 +11,13 @@
 | First reconciled union | `768ed59b549c5bfa56c8eb112b26713e8896c087` over remote master `7228f0300e6c75b69c377b252a4e140ce6150e41` |
 | Final reconciled union | `458e6deac139380b4d1c662003636b54c4251ba3` over remote master `1db9986ead0f4d9de8726f015783dfde172679b2` |
 | Cache-independent fixes | helper registry `8e3b1fe`; damage feedback preload `d953165`; scratch import hardening `85c6d33` |
-| Verified candidate | `85c6d334a2d7bebae483c583f846d0a257c2e5ef` |
+| Canonical cache/operator union | `8c4e41836e9d9cd54124acc6250af55c2aa36db1` over remote master `f885e9b37a4f1e6c5601b7a69931feb48a4a4879` |
+| Verified candidate | `8c4e41836e9d9cd54124acc6250af55c2aa36db1` |
 | Human verdict | Poseidon ACCEPT, all ten exact Batch 01 source hashes, 2026-08-14 |
 | Branch STANDARD | PASS, 107 rungs and 70 headless/windowed scenario runs |
 | Union STANDARD | PASS, 121 rungs and 80 headless/windowed scenario runs |
 | Final STANDARD | PASS, 124 rungs and 82 headless/windowed scenario runs |
-| Evidence | External `td035-green-standard-85c6d334a2d7bebae483c583f846d0a257c2e5ef/` |
+| Evidence | External `td036-final-standard-8c4e41836e9d9cd54124acc6250af55c2aa36db1/` |
 
 ## Outcome
 
@@ -43,7 +44,9 @@ All ten Poseidon-accepted 48 kHz stereo 24-bit PCM candidates are immutable unde
 | Fresh union STANDARD | 121/121 rungs; 40 headless + 40 windowed scenarios; Training, native Sky Hunter, Act I V3, observations, stale-registry, music cold boot, bots, and gates PASS on `768ed59` |
 | Final-union targeted proof | Focused SFX GUT 9/9; `sfx_playback`, `skill_timing`, `enemy_damage_feedback`, `juice_deploy`, Web filesystem twice, and stale registry twice PASS |
 | Fresh final STANDARD | 124/124 rungs; 41 headless + 41 windowed scenarios; all prior surfaces plus enemy damage and font cold-cache PASS on `85c6d33` |
-| Candidate identity | clean worktree at `85c6d334a2d7bebae483c583f846d0a257c2e5ef` |
+| Canonical-union targeted proof | SFX GUT 9/9; four affected scenarios; Web 150 checks/17 cases; font fallback; dual UI/promotion stale-cache oracle PASS |
+| Fresh canonical-union STANDARD | 124/124 rungs; 41 headless + 41 windowed scenarios; all prior surfaces plus remaining operator animations and canonical cache-bootstrap work PASS on `8c4e418` |
+| Candidate identity | clean worktree at `8c4e41836e9d9cd54124acc6250af55c2aa36db1` |
 
 ## Preserved reds and deviations
 
@@ -57,6 +60,6 @@ After TD-034 enemy-damage and font-cache work landed, the second union exposed t
 
 ## Merge and rollback
 
-Remote master allocated TD-032/TD-033 during branch verification, TD-034 after the first union, and TD-035 after the cache-bootstrap diagnosis. This SFX lane is therefore TD-036 without any source, asset, or acceptance rewrite. Candidate `85c6d33` passed its full gate; final reconciliation must prefer remote's canonical equivalent cache fixes, preserve the stricter cache probe and remaining operator animations, and retain only complementary scratch-import stabilization. Never force-push.
+Remote master allocated TD-032/TD-033 during branch verification, TD-034 after the first union, and TD-035 after the cache-bootstrap diagnosis. This SFX lane is therefore TD-036 without any source, asset, or acceptance rewrite. Candidate `8c4e418` prefers remote's canonical cache fixes, preserves the stricter dual-cache probe and remaining operator animations, retains complementary scratch-import stabilization, and passed the full gate. Never force-push.
 
 Rollback is `git revert` of the TD-036 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. Cache/bootstrap fixes now have canonical remote ownership and should be preserved independently of an SFX rollback.
