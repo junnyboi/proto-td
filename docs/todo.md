@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-030 — Import and playtest experimental salvage enemy animations
+
+- Status: in_progress
+- Owner: AGENT 9
+- Branch: `agent-9/experimental-salvage-enemy-animations`
+- Base: `master` at `25f8bd8c6a813e85c0f5920fc758807e450d7096`
+- Dependencies: user-approved `EXPERIMENTAL_NON_MGS` salvage archive at SHA-256 `7f1c6cd29d78ee877cb02d580aa14caace176ead813d25796474b116d70fbc5b`
+- Owned files: `assets/experimental_salvage/**`, `assets/experimental_salvage_manifest.tres`, `scripts/view/art.gd`, `scripts/view/enemy_animator.gd`, `test/test_art_source_fallback.gd`, `test/test_enemy_animator.gd`, `test/test_experimental_salvage_enemy_assets.gd`, `selftest/scenarios/grunt_animation.gd`, `selftest/scenarios/experimental_salvage_enemies.gd`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-030-agent-9-experimental-salvage-enemies.md`
+- Do not touch: simulation, enemy balance/data definitions, `FEATURES.json`, `scripts/verify.sh`, thresholds, official/non-experimental enemy or operator asset bytes, audio, unrelated UI/presentation lanes
+- Acceptance: all 44 namespaced sheets resolve as eight-frame 256×256 atlases at 8 FPS with provenance and placeholder status; every six-enemy state/direction projection uses the correct salvage atlas where available while Grunt legacy walk/charmed fallbacks remain intact; relative source-authored heights remain readable at 1× without model mutation
+- Required evidence: focused GUT, original `grunt_animation` behavioral checks updated only for intentional TD-030 IDs/sizes/frame count, fresh headless and windowed `experimental_salvage_enemies` with zero skipped render shots, falsifiable screenshot review, one runtime playtest bot, and clean-result `scripts/verify.sh`
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
