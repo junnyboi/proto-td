@@ -52,6 +52,7 @@ enum Result { RUNNING, CLEAR, DEFEAT }
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
 const TargetDecisionProjectionScript := preload("res://sim/target_decision_projection.gd")
+const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
@@ -273,7 +274,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.op_class = def.op_class
 	u.splash_dim_base = def.splash_dim
 	u.range_offsets = def.range_offsets.duplicate()
-	u.target_policy = Targeting.compile(def.target_policy, TargetPolicyDef.OwnerKind.OPERATOR)
+	u.target_policy = Targeting.compile(def.target_policy, TargetPolicyDefScript.OwnerKind.OPERATOR)
 	if def.skill != null:
 		u.skill_id = def.skill.id
 		u.sp_cost = def.skill.sp_cost
@@ -930,7 +931,7 @@ func _spawn(entry: Dictionary) -> void:
 	e.atk_interval_ticks = def.atk_interval_ticks
 	e.aerial = def.aerial
 	e.atk_range_cells = def.atk_range_cells
-	e.target_policy = Targeting.compile(def.target_policy, TargetPolicyDef.OwnerKind.ENEMY)
+	e.target_policy = Targeting.compile(def.target_policy, TargetPolicyDefScript.OwnerKind.ENEMY)
 	e.charm_immune = def.charm_immune
 	enemies.append(e)
 	spawned += 1

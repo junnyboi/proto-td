@@ -10,6 +10,8 @@ extends Resource
 enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER }
 enum Placement { GROUND, ELEVATED }
 
+const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+
 @export var id: StringName = &""
 @export var display_name: String = ""
 @export var op_class: OpClass = OpClass.GUARD
@@ -20,7 +22,7 @@ enum Placement { GROUND, ELEVATED }
 @export var atk: int = 10
 @export var atk_interval_ticks: int = 30
 @export var range_offsets: Array[Vector2i] = []
-@export var target_policy: TargetPolicyDef = null
+@export var target_policy: TargetPolicyDefScript = null
 @export var placement: Placement = Placement.GROUND
 @export var dp_generation_interval_ticks: int = 0
 ## square splash side length for basic attacks; 0 = single target (P14:

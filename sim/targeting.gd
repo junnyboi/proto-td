@@ -18,42 +18,44 @@ const RELATION_DEPLOYED_UNIT := "deployed_unit"
 const FACTION_ENEMY := "enemy"
 const FACTION_OPERATOR := "operator"
 
+const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+
 const _POLICY_SHAPES := {
 	"no_automatic_target": [
-		TargetPolicyDef.OwnerKind.OPERATOR,
-		TargetPolicyDef.CandidateDomain.NONE,
-		TargetPolicyDef.AerialRule.ANY,
-		TargetPolicyDef.RankKey.ENTITY_ID_ASC,
+		TargetPolicyDefScript.OwnerKind.OPERATOR,
+		TargetPolicyDefScript.CandidateDomain.NONE,
+		TargetPolicyDefScript.AerialRule.ANY,
+		TargetPolicyDefScript.RankKey.ENTITY_ID_ASC,
 	],
 	"operator_blocked_assignment_order": [
-		TargetPolicyDef.OwnerKind.OPERATOR,
-		TargetPolicyDef.CandidateDomain.BLOCKED_ENEMY,
-		TargetPolicyDef.AerialRule.ANY,
-		TargetPolicyDef.RankKey.ENGAGEMENT_ORDER_ASC,
+		TargetPolicyDefScript.OwnerKind.OPERATOR,
+		TargetPolicyDefScript.CandidateDomain.BLOCKED_ENEMY,
+		TargetPolicyDefScript.AerialRule.ANY,
+		TargetPolicyDefScript.RankKey.ENGAGEMENT_ORDER_ASC,
 	],
 	"operator_aerial_first_frontmost": [
-		TargetPolicyDef.OwnerKind.OPERATOR,
-		TargetPolicyDef.CandidateDomain.ENEMY_IN_OPERATOR_RANGE,
-		TargetPolicyDef.AerialRule.PREFER,
-		TargetPolicyDef.RankKey.PROGRESS_DESC,
+		TargetPolicyDefScript.OwnerKind.OPERATOR,
+		TargetPolicyDefScript.CandidateDomain.ENEMY_IN_OPERATOR_RANGE,
+		TargetPolicyDefScript.AerialRule.PREFER,
+		TargetPolicyDefScript.RankKey.PROGRESS_DESC,
 	],
 	"operator_ground_only_frontmost": [
-		TargetPolicyDef.OwnerKind.OPERATOR,
-		TargetPolicyDef.CandidateDomain.ENEMY_IN_OPERATOR_RANGE,
-		TargetPolicyDef.AerialRule.EXCLUDE,
-		TargetPolicyDef.RankKey.PROGRESS_DESC,
+		TargetPolicyDefScript.OwnerKind.OPERATOR,
+		TargetPolicyDefScript.CandidateDomain.ENEMY_IN_OPERATOR_RANGE,
+		TargetPolicyDefScript.AerialRule.EXCLUDE,
+		TargetPolicyDefScript.RankKey.PROGRESS_DESC,
 	],
 	"enemy_blocker_only": [
-		TargetPolicyDef.OwnerKind.ENEMY,
-		TargetPolicyDef.CandidateDomain.CURRENT_BLOCKER,
-		TargetPolicyDef.AerialRule.ANY,
-		TargetPolicyDef.RankKey.ENTITY_ID_ASC,
+		TargetPolicyDefScript.OwnerKind.ENEMY,
+		TargetPolicyDefScript.CandidateDomain.CURRENT_BLOCKER,
+		TargetPolicyDefScript.AerialRule.ANY,
+		TargetPolicyDefScript.RankKey.ENTITY_ID_ASC,
 	],
 	"enemy_blocker_then_nearest": [
-		TargetPolicyDef.OwnerKind.ENEMY,
-		TargetPolicyDef.CandidateDomain.BLOCKER_THEN_DEPLOYED_UNIT,
-		TargetPolicyDef.AerialRule.ANY,
-		TargetPolicyDef.RankKey.DISTANCE_ASC,
+		TargetPolicyDefScript.OwnerKind.ENEMY,
+		TargetPolicyDefScript.CandidateDomain.BLOCKER_THEN_DEPLOYED_UNIT,
+		TargetPolicyDefScript.AerialRule.ANY,
+		TargetPolicyDefScript.RankKey.DISTANCE_ASC,
 	],
 }
 
@@ -81,7 +83,7 @@ static func range_cells(origin: Vector2i, offsets: Array[Vector2i], facing: int)
 ## Compile a Resource into a primitive-only immutable-by-convention snapshot.
 ## Null, unknown, contradictory, owner-incompatible, or unstable policies fail
 ## closed. The evaluator accepts the invalid snapshot and returns invalid_policy.
-static func compile(policy: TargetPolicyDef, expected_owner_kind: int) -> Dictionary:
+static func compile(policy: TargetPolicyDefScript, expected_owner_kind: int) -> Dictionary:
 	var reason := validation_reason(policy, expected_owner_kind)
 	if reason != "":
 		return {
@@ -104,7 +106,7 @@ static func compile(policy: TargetPolicyDef, expected_owner_kind: int) -> Dictio
 	}
 
 
-static func validation_reason(policy: TargetPolicyDef, expected_owner_kind: int) -> String:
+static func validation_reason(policy: TargetPolicyDefScript, expected_owner_kind: int) -> String:
 	if policy == null:
 		return "null_policy"
 	var policy_id := String(policy.id)
@@ -112,15 +114,15 @@ static func validation_reason(policy: TargetPolicyDef, expected_owner_kind: int)
 		return "missing_policy_id"
 	if not _POLICY_SHAPES.has(policy_id):
 		return "unknown_policy_id"
-	if not _enum_in_range(int(policy.owner_kind), TargetPolicyDef.OwnerKind.size()):
+	if not _enum_in_range(int(policy.owner_kind), TargetPolicyDefScript.OwnerKind.size()):
 		return "unknown_owner_kind"
 	if not _enum_in_range(
-		int(policy.candidate_domain), TargetPolicyDef.CandidateDomain.size()
+		int(policy.candidate_domain), TargetPolicyDefScript.CandidateDomain.size()
 	):
 		return "unknown_candidate_domain"
-	if not _enum_in_range(int(policy.aerial_rule), TargetPolicyDef.AerialRule.size()):
+	if not _enum_in_range(int(policy.aerial_rule), TargetPolicyDefScript.AerialRule.size()):
 		return "unknown_aerial_rule"
-	if not _enum_in_range(int(policy.primary_rank), TargetPolicyDef.RankKey.size()):
+	if not _enum_in_range(int(policy.primary_rank), TargetPolicyDefScript.RankKey.size()):
 		return "unsupported_rank_key"
 	if int(policy.owner_kind) != expected_owner_kind:
 		return "owner_kind_mismatch"
@@ -153,7 +155,7 @@ static func decide(
 			policy, attacker_kind, attacker_id, rows, NO_TARGET, "invalid_policy", ""
 		)
 	var domain := int(policy["candidate_domain"])
-	if domain == TargetPolicyDef.CandidateDomain.NONE:
+	if domain == TargetPolicyDefScript.CandidateDomain.NONE:
 		_reject_all(rows, "automatic_target_disabled")
 		return _decision(
 			policy,
@@ -235,27 +237,27 @@ static func _eligibility_reason(policy: Dictionary, row: Dictionary, has_blocker
 		return "not_alive"
 	var domain := int(policy["candidate_domain"])
 	match domain:
-		TargetPolicyDef.CandidateDomain.BLOCKED_ENEMY:
+		TargetPolicyDefScript.CandidateDomain.BLOCKED_ENEMY:
 			if row["faction"] != FACTION_ENEMY:
 				return "wrong_faction"
 			if row["relation"] != RELATION_BLOCKED:
 				return "not_blocked"
-		TargetPolicyDef.CandidateDomain.ENEMY_IN_OPERATOR_RANGE:
+		TargetPolicyDefScript.CandidateDomain.ENEMY_IN_OPERATOR_RANGE:
 			if row["faction"] != FACTION_ENEMY:
 				return "wrong_faction"
 			if not bool(row["in_range"]):
 				return "out_of_range"
 			if (
-				int(policy["aerial_rule"]) == TargetPolicyDef.AerialRule.EXCLUDE
+				int(policy["aerial_rule"]) == TargetPolicyDefScript.AerialRule.EXCLUDE
 				and bool(row["aerial"])
 			):
 				return "aerial_excluded"
-		TargetPolicyDef.CandidateDomain.CURRENT_BLOCKER:
+		TargetPolicyDefScript.CandidateDomain.CURRENT_BLOCKER:
 			if row["faction"] != FACTION_OPERATOR:
 				return "wrong_faction"
 			if row["relation"] != RELATION_CURRENT_BLOCKER:
 				return "not_current_blocker"
-		TargetPolicyDef.CandidateDomain.BLOCKER_THEN_DEPLOYED_UNIT:
+		TargetPolicyDefScript.CandidateDomain.BLOCKER_THEN_DEPLOYED_UNIT:
 			if row["faction"] != FACTION_OPERATOR:
 				return "wrong_faction"
 			if has_blocker and row["relation"] != RELATION_CURRENT_BLOCKER:
@@ -272,20 +274,20 @@ static func _eligibility_reason(policy: Dictionary, row: Dictionary, has_blocker
 static func _rank_key(policy: Dictionary, row: Dictionary, has_blocker: bool) -> Array:
 	var rank := int(policy["primary_rank"])
 	match rank:
-		TargetPolicyDef.RankKey.PROGRESS_DESC:
+		TargetPolicyDefScript.RankKey.PROGRESS_DESC:
 			var bucket := 0
 			if (
-				int(policy["aerial_rule"]) == TargetPolicyDef.AerialRule.PREFER
+				int(policy["aerial_rule"]) == TargetPolicyDefScript.AerialRule.PREFER
 				and not bool(row["aerial"])
 			):
 				bucket = 1
 			return [bucket, -int(row["progress_units"]), int(row["id"])]
-		TargetPolicyDef.RankKey.DISTANCE_ASC:
+		TargetPolicyDefScript.RankKey.DISTANCE_ASC:
 			var relation_bucket := 0
 			if not has_blocker and row["relation"] != RELATION_DEPLOYED_UNIT:
 				relation_bucket = 1
 			return [relation_bucket, int(row["distance"]), int(row["id"])]
-		TargetPolicyDef.RankKey.ENGAGEMENT_ORDER_ASC:
+		TargetPolicyDefScript.RankKey.ENGAGEMENT_ORDER_ASC:
 			return [int(row["engagement_order"]), int(row["id"])]
 		_:
 			return [int(row["id"])]
@@ -304,19 +306,19 @@ static func _tie_break_reason(policy: Dictionary, eligible: Array[Dictionary]) -
 	var rank := int(policy["primary_rank"])
 	var first: Dictionary = eligible[0]
 	var second: Dictionary = eligible[1]
-	if rank == TargetPolicyDef.RankKey.ENTITY_ID_ASC:
+	if rank == TargetPolicyDefScript.RankKey.ENTITY_ID_ASC:
 		return "entity_id_tie_break"
-	if rank == TargetPolicyDef.RankKey.PROGRESS_DESC:
+	if rank == TargetPolicyDefScript.RankKey.PROGRESS_DESC:
 		var same_progress := int(first["progress_units"]) == int(second["progress_units"])
 		var same_bucket := bool(first["aerial"]) == bool(second["aerial"])
 		return "entity_id_tie_break" if same_progress and same_bucket else ""
-	if rank == TargetPolicyDef.RankKey.DISTANCE_ASC:
+	if rank == TargetPolicyDefScript.RankKey.DISTANCE_ASC:
 		return (
 			"entity_id_tie_break"
 			if int(first["distance"]) == int(second["distance"])
 			else ""
 		)
-	if rank == TargetPolicyDef.RankKey.ENGAGEMENT_ORDER_ASC:
+	if rank == TargetPolicyDefScript.RankKey.ENGAGEMENT_ORDER_ASC:
 		return (
 			"entity_id_tie_break"
 			if int(first["engagement_order"]) == int(second["engagement_order"])
@@ -327,17 +329,17 @@ static func _tie_break_reason(policy: Dictionary, eligible: Array[Dictionary]) -
 
 static func _loser_reason(policy: Dictionary, selected: Dictionary, loser: Dictionary) -> String:
 	var rank := int(policy["primary_rank"])
-	if rank == TargetPolicyDef.RankKey.PROGRESS_DESC:
+	if rank == TargetPolicyDefScript.RankKey.PROGRESS_DESC:
 		if bool(selected["aerial"]) and not bool(loser["aerial"]):
 			return "aerial_bucket_lost"
 		if int(loser["progress_units"]) < int(selected["progress_units"]):
 			return "lower_progress"
 		return "entity_id_tie_break"
-	if rank == TargetPolicyDef.RankKey.DISTANCE_ASC:
+	if rank == TargetPolicyDefScript.RankKey.DISTANCE_ASC:
 		if int(loser["distance"]) > int(selected["distance"]):
 			return "farther_distance"
 		return "entity_id_tie_break"
-	if rank == TargetPolicyDef.RankKey.ENGAGEMENT_ORDER_ASC:
+	if rank == TargetPolicyDefScript.RankKey.ENGAGEMENT_ORDER_ASC:
 		if int(loser["engagement_order"]) > int(selected["engagement_order"]):
 			return "later_engagement"
 		return "entity_id_tie_break"

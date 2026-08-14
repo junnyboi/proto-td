@@ -30,7 +30,7 @@ entries = {
 "pattern": "res://assets/sprites/caster_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "d32fd1bcb28076a731c088f63b1014ebaf95cd0fde7ce37203618eed3996ba29",
+"provenance_sha256": "495b2301858d724ab505dd2e4c73c73d344301cb53510a6f63f8e4095a57a25a",
 "size": Vector2i(32, 32)
 },
 &"caster_2": {
@@ -58,7 +58,7 @@ entries = {
 "pattern": "res://assets/sprites/caster_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "d3aee3273adef0f8b27c92e5ce38ba3b9ff2e7f0b8d386cafdc6d1b9ad3caecf",
+"provenance_sha256": "8ce7c9ed06f21947f01dd7f775aa6e664fc269e44b30875906241bc2dbe1fa24",
 "size": Vector2i(32, 32)
 },
 &"defender_1": {
@@ -86,7 +86,7 @@ entries = {
 "pattern": "res://assets/sprites/defender_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "208ccd132b6293e61d4ce4b5ce13f5cfb9a6ef263104154d1c5f40df390bcbab",
+"provenance_sha256": "aaa82e959254c75407ed998ed851dc3f47ca7e2ff229edb221f10c26f29ec141",
 "size": Vector2i(32, 32)
 },
 &"defender_2": {
@@ -114,7 +114,7 @@ entries = {
 "pattern": "res://assets/sprites/defender_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "f87ffc7db879949fe694750fc96af90b2f8e6364e6b391b0bd3b7b20feedcd2e",
+"provenance_sha256": "25cbf2b8258ece6b00e89977dbcfc31454cae3de6b14094bdce0282ea41be49c",
 "size": Vector2i(32, 32)
 },
 &"drone": {
@@ -130,7 +130,7 @@ entries = {
 "pattern": "res://assets/sprites/drone_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "5a86272427f03f04b177e574a55b0e73b45facb0b08f15dbcae49ecb5265da98",
+"provenance_sha256": "6512141da79c07e2eb8d45c2f9097d57e7e328144d8a6a7a64a519b8a0fb0019",
 "size": Vector2i(24, 24)
 },
 &"grunt": {
@@ -146,7 +146,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "101f27caa879fa43db626f701af8b51158d12e2ba3ad9cfb9c3476e272b73bc4",
+"provenance_sha256": "f9c35789e3f345a1567ed9c79401ecdc917fe23fde548139c8c25d6b608aea45",
 "size": Vector2i(32, 32)
 },
 &"grunt_anim_attack_ne": {
@@ -418,7 +418,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_charmed_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "26a5ab7cda21a571d7f66ab1860f2ed181794fa1c41e9d258bf91e53dcada6e9",
+"provenance_sha256": "0021be9f0b782b0c5beafdddbde204adbb0c095a220a681feb9b3d0cee74c2eb",
 "size": Vector2i(32, 32)
 },
 &"guard_1": {
@@ -446,7 +446,7 @@ entries = {
 "pattern": "res://assets/sprites/guard_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "53fff20df0125209e12f74160b3688ad4a8d58f347a281e7eac70aa68bb14fc9",
+"provenance_sha256": "b3d2baf881598b94293bdd117810c333c8fa051fdf921c78f2c714f3496f2645",
 "size": Vector2i(32, 32)
 },
 &"guard_2": {
@@ -474,7 +474,7 @@ entries = {
 "pattern": "res://assets/sprites/guard_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "13bd95845e92bdb72d1bf95b6a1469757ef60f97cdfc8b368f86b26553b2b086",
+"provenance_sha256": "8675817cb4cecdd0822e07673974f0a39afaf0989045ea1525103cb3a2e80c9f",
 "size": Vector2i(32, 32)
 },
 &"heavy": {
@@ -490,7 +490,7 @@ entries = {
 "pattern": "res://assets/sprites/heavy_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "babf70c02cbb3b451ac30480f4d9b5843474b2c446b40871f455e62e04805de4",
+"provenance_sha256": "bf9b2e198ea743b3c5f52403b7f9396fac9ccd1e70b8dc3e0ea812aeb7109048",
 "size": Vector2i(32, 32)
 },
 &"heavy_charmed": {
@@ -506,7 +506,7 @@ entries = {
 "pattern": "res://assets/sprites/heavy_charmed_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "370cf6d77626ffd45b2312f1278bcae972310c217f0e1a714b4e2faead4c0431",
+"provenance_sha256": "8d02512f39111f194745140db40ffe77f96f22f272b0a413f580666e8783e9dc",
 "size": Vector2i(32, 32)
 },
 &"icon_bolt": {
@@ -554,7 +554,7 @@ entries = {
 "pattern": "res://assets/sprites/mini_boss_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "b822f60f01b5bb53de6d26184156865f4c2f437f65e64e58ca50e147e535f356",
+"provenance_sha256": "84c839c0c9f01eda18ad0dfa80e13662da81f51e77bd48eeb86290968a8f0476",
 "size": Vector2i(48, 48)
 },
 &"portrait_caster_1": {
@@ -570,7 +570,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "708253d94b0323c04b85bd8d9d2e3fc30ee5bd2c99725f902d00edfa52e82222",
+"provenance_sha256": "8b71103064d98d66d609cb8dca48e6e3d13580f6d812f796565aab432633a5cf",
 "size": Vector2i(128, 128)
 },
 &"portrait_caster_2": {
@@ -586,7 +586,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "649bc9eeb6b720172da1b7b25acc5bed10f3fe708f6605b5dd11053480fad751",
+"provenance_sha256": "bae7f10d1745400f1ed14218b230d28ebf894704cc8ddd7be1fad07dd2eac0bc",
 "size": Vector2i(128, 128)
 },
 &"portrait_defender_1": {
@@ -602,7 +602,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "d55e597c37dbd6495f20f70fee1a37ebedec66073230379aba0766bd259d6e87",
+"provenance_sha256": "6d3d25c1f23cc04cba5d7b99107482c05e91ba37ef8981b8b9c464ff1468e86b",
 "size": Vector2i(128, 128)
 },
 &"portrait_defender_2": {
@@ -618,7 +618,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "9e0f8ed2b02a3ecfa0486490593f9fc1a0c007a215e9f693640d7fe761def060",
+"provenance_sha256": "c22d96632ae6ae8f9ab8a61550c90d8c1509c4fcacd8850597021e32f6645b32",
 "size": Vector2i(128, 128)
 },
 &"portrait_guard_1": {
@@ -634,7 +634,7 @@ entries = {
 "pattern": "res://assets/portraits/guard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "74364151f8a50dce87f714d71a0e766b29b7f44b7409c4eab392ab55eaf22e35",
+"provenance_sha256": "37d9b7d54109710679ac01cf9011c53ce28c5ac93e6bc2f324c8243f17815ae8",
 "size": Vector2i(128, 128)
 },
 &"portrait_guard_2": {
@@ -650,7 +650,7 @@ entries = {
 "pattern": "res://assets/portraits/guard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "11d0a652145aa36a94ffb37736b39bdc35544dfc81a3d00ec92cdf6390139d1c",
+"provenance_sha256": "d2d4fb827ce6a45dfbc75e090157e5d4c67a653fcc9a903934e572907bbb13ae",
 "size": Vector2i(128, 128)
 },
 &"portrait_sniper_1": {
@@ -666,7 +666,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "e6f47622b6b76c031c9c3b34370d2910c1ccfd3653c052a700653a66a64859be",
+"provenance_sha256": "80c323800f70455af40fa3b16183c8d74da5b3434e038e462d7a1572ba78c6da",
 "size": Vector2i(128, 128)
 },
 &"portrait_sniper_2": {
@@ -682,7 +682,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "4d5a1641ae6d66dfad442ed3aa406b57f4f66ebcede856c8fe2d83fb77bc70d9",
+"provenance_sha256": "8ee918a012f581350dbde902000832d3366555f25ffb8988b93f2a26147a46ba",
 "size": Vector2i(128, 128)
 },
 &"portrait_vanguard_1": {
@@ -698,7 +698,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "c2688375a1a7e5c56cf462391e269785650637b9458b7a08d6593b5b5ee9fad5",
+"provenance_sha256": "59eadb358b2d2208198416b5510c7dcf434208aa0eadd8989f9aac81754b5a81",
 "size": Vector2i(128, 128)
 },
 &"portrait_vanguard_2": {
@@ -714,7 +714,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "912331f4b3ecd9c4df12846d2cb9d8b0fe05014986f0f0a70117db6f9eeec94a",
+"provenance_sha256": "3e11d3f8d2a5549997d76754164d43bd892f20418a2ed032a280ad07c12140e7",
 "size": Vector2i(128, 128)
 },
 &"portrait_witch_doctor_1": {
@@ -730,7 +730,7 @@ entries = {
 "pattern": "res://assets/portraits/witch_doctor_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "435cb19bb3d5376d31d2776d1bd8e108f4b912f45f736373638d9a6e64b8ab3e",
+"provenance_sha256": "50c90cf967e586911a6efe2a6c55b4827396eb788c152b2f1fff99ecf1575b2c",
 "size": Vector2i(128, 128)
 },
 &"runner": {
@@ -746,7 +746,7 @@ entries = {
 "pattern": "res://assets/sprites/runner_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "f438832de9e825431917bfb6ecc37b98bf99fbc213beb627c1233436a5f49288",
+"provenance_sha256": "34ce4b6910e3b4b3d99034f1a1624b5fe537380f75bb6bfd2ac64068c460951c",
 "size": Vector2i(32, 32)
 },
 &"runner_charmed": {
@@ -762,7 +762,7 @@ entries = {
 "pattern": "res://assets/sprites/runner_charmed_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "45096af83c461c182f6e0ebca0cee7972b997acda0cdb85352afde82ccb88ea5",
+"provenance_sha256": "41f55a786929cc550365129898af773fa1fa10fe30eb3ade4bf4c8f9aa5931c1",
 "size": Vector2i(32, 32)
 },
 &"sniper_1": {
@@ -790,7 +790,7 @@ entries = {
 "pattern": "res://assets/sprites/sniper_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "6de182ed24f420e0e2392dbff8fb89fd7d58a3029cbd27c315e0996e8b80c3e7",
+"provenance_sha256": "a0a9a8432051dc8dacc4156286b9f3644f5681a285ed0b69c5b968745e18c4a6",
 "size": Vector2i(32, 32)
 },
 &"sniper_2": {
@@ -818,7 +818,7 @@ entries = {
 "pattern": "res://assets/sprites/sniper_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "47d67c41147fe6fabd438412edc5f4ffb8d909ece46e99a1004bcc69bbae7055",
+"provenance_sha256": "fa97a73913298d99fcee1d4c5096fddb0c17be40323296edc91be27a22b24f3e",
 "size": Vector2i(32, 32)
 },
 &"spellcaster": {
@@ -834,7 +834,7 @@ entries = {
 "pattern": "res://assets/sprites/spellcaster_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "72425d3789f2d077d4901a7f587796520fa002489eed3e41bc77f0cdaec7a130",
+"provenance_sha256": "cd1f65c864c2a4313186d89d3510148fbc8ed8301197ad74025c67a79118498d",
 "size": Vector2i(32, 32)
 },
 &"spellcaster_charmed": {
@@ -850,7 +850,7 @@ entries = {
 "pattern": "res://assets/sprites/spellcaster_charmed_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "be3fa47a33a7047800310a2c4100c57f72cdc46fbdd8b8e7d852e2f2aa8fa006",
+"provenance_sha256": "881ce96db8a2171806810a1295d4e4da4ce8a46ce8b6241a21a39b5b4db8d960",
 "size": Vector2i(32, 32)
 },
 &"tile_backdrop": {
@@ -1054,7 +1054,7 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "d898ca92170595a2afb593b520bfd0c979888fdc820809e052cbc2a909d9ca2c",
+"provenance_sha256": "38fd31e3a77b94795fd3dbb7c6c64fd45f81bdda646396901666f4b0e1cef740",
 "size": Vector2i(32, 32)
 },
 &"vanguard_2": {
@@ -1082,7 +1082,7 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "8e6309e1809f8747545d71c54e2e07470bb587330d303eb77c1f6caada58d9aa",
+"provenance_sha256": "2678da83dc02b5dfc167a6d1693489e5415777f7e96937da78e8fdfb7b490a92",
 "size": Vector2i(32, 32)
 },
 &"witch_doctor_1": {
@@ -1110,7 +1110,7 @@ entries = {
 "pattern": "res://assets/sprites/witch_doctor_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "861e8437ef0f8123480a92571f0888737a29aa4843cd64cc6569c05bf45bf547",
+"provenance_sha256": "7f15f861d1bebdddacb939d829c5f17b7921652f9448ee519c2bc903f8fca8c5",
 "size": Vector2i(32, 32)
 },
 &"world.s1.backdrop": {

@@ -4,12 +4,14 @@ extends RefCounted
 ## Read-only candidate projection for Targeting. BattleModel owns the database;
 ## this class emits primitive dictionaries and retains no model objects.
 
+const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+
 
 static func unit_target_decision(model: BattleModel, unit_id: int) -> Dictionary:
 	var unit := model.unit_by_id(unit_id)
 	if unit == null:
 		return Targeting.decide(
-			Targeting.compile(null, TargetPolicyDef.OwnerKind.OPERATOR),
+			Targeting.compile(null, TargetPolicyDefScript.OwnerKind.OPERATOR),
 			"operator",
 			unit_id,
 			[],
@@ -26,7 +28,7 @@ static func enemy_target_decision(model: BattleModel, enemy_id: int) -> Dictiona
 	var enemy := _enemy_by_id(model, enemy_id)
 	if enemy == null:
 		return Targeting.decide(
-			Targeting.compile(null, TargetPolicyDef.OwnerKind.ENEMY),
+			Targeting.compile(null, TargetPolicyDefScript.OwnerKind.ENEMY),
 			"enemy",
 			enemy_id,
 			[],
@@ -43,7 +45,7 @@ static func _unit_candidates(model: BattleModel, unit: UnitState) -> Array:
 	var candidates: Array = []
 	var domain := int(unit.target_policy.get("candidate_domain", -1))
 	var covered_cells: Dictionary = {}
-	if domain == TargetPolicyDef.CandidateDomain.ENEMY_IN_OPERATOR_RANGE:
+	if domain == TargetPolicyDefScript.CandidateDomain.ENEMY_IN_OPERATOR_RANGE:
 		covered_cells = Targeting.range_cells(
 			unit.cell, unit.range_offsets, int(unit.facing)
 		)
