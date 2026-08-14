@@ -1,4 +1,4 @@
-# TD-032 — Accepted SFX runtime integration
+# TD-034 — Accepted SFX runtime integration
 
 | Field | Value |
 |---|---|
@@ -43,6 +43,6 @@ The generation fallback used `generate_video(generate_audio=true)` because built
 
 ## Merge and rollback
 
-Before publication, fetch remote master. If it moved, merge `origin/master` into this branch, resolve shared ledgers semantically, run the union gate, and push normally. Never force-push. Fast-forward local and remote master only from the verified branch union, then run the final master gate.
+Remote master allocated TD-032 and TD-033 while this lane was verifying, so this completed lane was reallocated to TD-034 without changing code or acceptance. Merge `origin/master` into this branch, preserve concurrent Training, native Sky Hunter, observation, world-art, and stale-cache work, resolve shared ledgers semantically, run the exact union gate, and push normally. Never force-push. Fast-forward local and remote master only from the verified branch union, then run the final master gate.
 
-Rollback is `git revert` of the TD-032 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. Revert `55cff6d` only if the product locale set is also intentionally rolled back; otherwise it is the correct independent stale-registry oracle repair.
+Rollback is `git revert` of the TD-034 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
