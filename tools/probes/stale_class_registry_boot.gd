@@ -157,7 +157,12 @@ func _start_title() -> void:
 		_fail("I18n autoload unavailable")
 		return
 	if i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"]):
-		_fail("exact en-US/zh-CN locales unavailable")
+		_fail("exact bilingual locale set unavailable")
+		return
+	var english_keys: PackedStringArray = i18n.call("catalog_keys", &"en-US")
+	var chinese_keys: PackedStringArray = i18n.call("catalog_keys", &"zh-CN")
+	if english_keys.is_empty() or chinese_keys != english_keys:
+		_fail("bilingual locale catalogs lack exact key parity")
 		return
 	_catalog = load(NARRATIVE_CATALOG_PATH) as Resource
 	_s1_record = load(S1_RECORD_PATH) as Resource

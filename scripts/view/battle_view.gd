@@ -1,7 +1,5 @@
 extends Node2D
 
-## Read-only BattleModel projection; speed changes ticks/frame, never outcomes.
-
 const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator.gd")
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
@@ -18,16 +16,13 @@ const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
 
-## Pinned z bands: grid 0-40, overlays 50, juice 60, HUD/flash/continue 70.
 const UI_OVERLAY_Z := 50
 const JUICE_Z := 60
 const HUD_Z := 70
-## Full-canvas background behind IsoGridBuilder terrain and backdrop.
 const BACKDROP_COLOR := Color("11131f")
 const ENEMY_COLOR := Color("ef7d57")
 const AERIAL_PX := 24.0
 const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.35)
-## Ground shadow is a 20x10 face diamond; aerial shadow drops 10px.
 const SHADOW_FACE_SCALE := 0.3125
 const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
@@ -318,10 +313,6 @@ func _process(delta: float) -> void:
 		_beat_frames_left -= 1
 		if _beat_frames_left == 0:
 			juice_time_pop(&"charm_beat")
-	# flash ages here, not in the physics-paced projection: juice lifetimes
-	# count the same render frames the harness's frames(n) awaits (§2.1.2 —
-	# physics-frame aging halves the visual budget on 120 Hz displays and
-	# breaks the decay probes)
 	if _portrait_flash_frames > 0:
 		_portrait_flash_frames -= 1
 		if _portrait_flash_frames == 0 and _portrait_flash != null:
@@ -379,7 +370,6 @@ func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
 
-## item 1 drag hooks — called by the DeployBar adapter
 func deploy_drag_started() -> void:
 	juice_time_push(&"deploy_drag", cfg.deploy_drag_time_scale)
 
@@ -388,29 +378,40 @@ func deploy_drag_ended() -> void:
 	juice_time_pop(&"deploy_drag")
 
 
-## item 1: landing juice keys off new unit ids (fires for seam deploys too)
 func _detect_deploys() -> void:
 	for u: UnitState in model.units:
-		if _deploy_seen.has(u.id):
+		var crouch_left := int(_deploy_seen.get(u.id, -1))
+		if crouch_left == 0:
 			continue
-		_deploy_seen[u.id] = true
+		var node: Node2D = _unit_nodes.get(u.id)
+		if node == null:
+			continue
 		var local_center := IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
-		var unit_top := IsoProjection.FEET_OFFSET - UNIT_PX - HP_BAR_HEIGHT - 3.0
-		var unit_bottom := IsoProjection.FEET_OFFSET + HP_BAR_HEIGHT + 3.0
+		if crouch_left < 0:
+			crouch_left = cfg.deploy_crouch_frames
+			_juice.dust(local_center)
+			_juice.crouch(node)
+			Sfx.play("deploy")
+		var next_left := maxi(crouch_left - 1, 0)
+		_deploy_seen[u.id] = next_left
+		var t := 1.0 - float(next_left) / float(cfg.deploy_crouch_frames)
+		var presentation_scale := Vector2(1.0, 0.7).lerp(Vector2.ONE, t)
+		var body := node.get_node("Body") as ColorRect
 		var unit_rect := Rect2(
-			local_center + Vector2(-UNIT_PX * 0.5, unit_top),
-			Vector2(UNIT_PX, unit_bottom - unit_top),
+			node.position + body.position * presentation_scale,
+			body.size * presentation_scale,
 		)
+		for bar_path: NodePath in [^"HpBarBg", ^"SpBarBg"]:
+			var bar := body.get_node_or_null(bar_path) as ColorRect
+			if bar != null:
+				unit_rect = unit_rect.merge(Rect2(
+				node.position + (body.position + bar.position) * presentation_scale,
+				bar.size * presentation_scale,
+			))
 		if _map_nav.ensure_local_rect_visible(unit_rect):
 			_apply_map_transform()
-		_juice.dust(local_center)
-		var node: Node2D = _unit_nodes.get(u.id)
-		if node != null:
-			_juice.crouch(node)
-		Sfx.play("deploy")
 
 
-## item 3: sparks key off died_at_tick — kill paths only, either faction
 func _detect_kills() -> void:
 	for e: EnemyState in model.enemies:
 		if e.died_at_tick < 0 or _spark_seen.has(e.id):

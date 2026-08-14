@@ -4,15 +4,21 @@ extends RefCounted
 ## authoritative model verbs, lets the real combat model emit attack edges,
 ## and checks that BattleView projects those edges without changing model state.
 
+const CORE_CLASSES: Array[StringName] = [
+	&"vanguard_2", &"defender_1", &"vanguard_1", &"guard_1", &"guard_2",
+]
+
 
 func run(h: SelfTestHarness) -> void:
-	h.max_frames = 900
+	h.max_frames = 1800
 	await h.frames(10)
 	var game := h.autoload("Game")
 	h.expect_done()
 	game.call("start_battle", game.get("default_stage_id"))
 	var stage := (game.get("pending_stage") as StageDef).duplicate(true) as StageDef
-	stage.waves = [{"tick": 0, "enemy_id": &"mini_boss", "path_idx": 0}]
+	stage.waves = []
+	for _index: int in CORE_CLASSES.size():
+		stage.waves.append({"tick": 0, "enemy_id": &"heavy", "path_idx": 0})
 	stage.leak_limit = 99
 	game.set("pending_stage", stage)
 	var model := await _await_battle(h, game)
@@ -21,104 +27,91 @@ func run(h: SelfTestHarness) -> void:
 		return
 	var view := game.get("content") as Node2D
 	view.set("ticks_per_frame_scale", 0.0)
+	# Presentation transients age in render frames. Clear the Wave 1 banner before
+	# capturing any operator so idle and attack evidence remains unobscured.
+	await h.frames(60)
 
-	for template_id: StringName in [&"vanguard_2", &"defender_1"]:
+	for template_id: StringName in CORE_CLASSES:
 		var available := model.squad.has(template_id)
 		if not available:
 			available = model.apply_action([&"debug_grant_operator", template_id])
 		h.check("%s available in squad" % template_id, available)
 	h.check("grant deployment points", model.apply_action([&"debug_set_dp", 99]))
-	var placements := _find_pair(model, view)
-	h.check("found sequential real-combat target geometry", not placements.is_empty())
-	if placements.is_empty():
-		return
+	var used_cells: Dictionary = {}
 
-	for template_id: StringName in [&"vanguard_2", &"defender_1"]:
-		var row: Dictionary = placements[template_id]
+	for template_id: StringName in CORE_CLASSES:
+		var row := _find_placement(model, view, template_id, used_cells)
+		h.check("found %s combat placement" % template_id, not row.is_empty())
+		if row.is_empty():
+			return
 		h.check(
 			"deploy %s" % template_id,
 			model.apply_action([&"deploy", template_id, row["cell"], row["facing"]]),
 		)
-	view.call("_project_units")
-	var before_projection := model.state_hash()
-	view.call("_project_units")
-	h.check("view projection leaves model hash unchanged", model.state_hash() == before_projection)
-
-	var units: Array[UnitState] = []
-	for template_id: StringName in [&"vanguard_2", &"defender_1"]:
+		used_cells[row["cell"]] = true
+		view.call("_project_units")
+		var before_projection := model.state_hash()
+		view.call("_project_units")
+		h.check(
+			"%s projection leaves model hash unchanged" % template_id,
+			model.state_hash() == before_projection,
+		)
 		var unit := _unit_for(model, template_id)
 		h.check("%s unit exists" % template_id, unit != null)
-		if unit != null:
-			units.append(unit)
-			_check_body(h, view, unit, &"idle")
-	if units.size() != 2:
-		return
-	# Presentation transients age in render frames. Let the Wave 1 banner clear
-	# before capturing operator feedback while the deterministic model is frozen.
-	await h.frames(60)
-	await h.shot("operator_animation_idle")
+		if unit == null:
+			return
+		_check_body(h, view, unit, &"idle")
+		var idle_body := _body_for(view, unit.id)
+		var idle_texture_hash := hash(idle_body.texture.get_image().get_data())
+		await h.frames(3)
+		await h.shot("operator_animation_%s_idle" % template_id)
 
-	var budget := 600
-	while budget > 0 and units[0].last_attack_tick < 0:
-		model.step()
+		var budget := 600
+		while budget > 0 and unit.last_attack_tick < 0:
+			model.step()
+			view.call("_project_units")
+			budget -= 1
+		h.check("%s attacked in real combat" % template_id, unit.last_attack_tick >= 0)
+		if unit.last_attack_tick < 0:
+			return
+		_check_body(h, view, unit, &"attack")
+		var body := _body_for(view, unit.id)
+		var target_frame := 6
+		var frame_budget := 30
+		while frame_budget > 0 and int(
+			body.get_meta(&"operator_animation_frame", -1)
+		) < target_frame:
+			model.step()
+			view.call("_project_units")
+			frame_budget -= 1
+		h.check(
+			"%s attack reaches mid-frame" % template_id,
+			int(body.get_meta(&"operator_animation_frame", -1)) >= target_frame,
+		)
+		h.check(
+			"%s attack texture differs from idle" % template_id,
+			hash(body.texture.get_image().get_data()) != idle_texture_hash,
+		)
+		await h.shot("operator_animation_%s_attack_mid" % template_id)
+		h.check("retreat %s" % template_id, model.apply_action([&"retreat", unit.id]))
 		view.call("_project_units")
-		budget -= 1
-	h.check("Banner Guard attacked in real combat", units[0].last_attack_tick >= 0)
-	if units[0].last_attack_tick < 0:
-		return
-	_check_body(h, view, units[0], &"attack")
-	await h.shot("operator_animation_banner_attack_edge")
-
-	for _tick: int in 8:
-		model.step()
-	view.call("_project_units")
-	var banner_body := _body_for(view, units[0].id)
-	h.check(
-		"Banner Guard attack advances past frame zero",
-		int(banner_body.get_meta(&"operator_animation_frame", -1)) > 0,
-	)
-	await h.shot("operator_animation_banner_attack_mid")
-	h.check("retreat Banner Guard", model.apply_action([&"retreat", units[0].id]))
-	view.call("_project_units")
-	budget = 600
-	while budget > 0 and units[1].last_attack_tick < 0:
-		model.step()
-		view.call("_project_units")
-		budget -= 1
-	h.check("Defender attacked in real combat", units[1].last_attack_tick >= 0)
-	if units[1].last_attack_tick < 0:
-		return
-	_check_body(h, view, units[1], &"attack")
-	await h.shot("operator_animation_defender_attack_edge")
-	for _tick: int in 8:
-		model.step()
-	view.call("_project_units")
-	var defender_body := _body_for(view, units[1].id)
-	h.check(
-		"Defender attack advances past frame zero",
-		int(defender_body.get_meta(&"operator_animation_frame", -1)) > 0,
-	)
-	await h.shot("operator_animation_defender_attack_mid")
 	h.done()
 
 
-func _find_pair(model: BattleModel, view: Node2D) -> Dictionary:
+func _find_placement(
+	model: BattleModel,
+	view: Node2D,
+	template_id: StringName,
+	occupied: Dictionary,
+) -> Dictionary:
 	var stage := model.stage
 	var op_defs: Dictionary = model.get("_op_defs")
 	var path := stage.path_cells(0)
-	var result: Dictionary = {}
-	var occupied: Dictionary = {}
-	for template_id: StringName in [&"vanguard_2", &"defender_1"]:
-		var found: Dictionary = {}
-		for target: Vector2i in path:
-			found = _placement(stage, op_defs[template_id], target, occupied, view)
-			if not found.is_empty():
-				break
-		if found.is_empty():
-			return {}
-		result[template_id] = found
-		occupied[found["cell"]] = true
-	return result
+	for target: Vector2i in path:
+		var found := _placement(stage, op_defs[template_id], target, occupied, view)
+		if not found.is_empty():
+			return found
+	return {}
 
 
 func _placement(
@@ -179,9 +172,14 @@ func _check_body(
 		== OperatorAnimator.direction_for_facing(int(unit.facing)),
 	)
 	var logical_id := StringName(body.get_meta(&"operator_animation_id", &""))
+	var animation := OperatorVisualCatalog.get_animation(unit.op_id)
+	var expected_placeholder := (
+		animation != null and animation.is_placeholder(logical_id)
+	)
 	h.check(
-		"%s projects non-placeholder atlas" % unit.op_id,
-		not logical_id.is_empty() and not bool(Art.metadata(logical_id).get(&"placeholder", true)),
+		"%s projects truthfully flagged atlas" % unit.op_id,
+		not logical_id.is_empty()
+		and bool(Art.metadata(logical_id).get(&"placeholder", true)) == expected_placeholder,
 	)
 
 

@@ -13,15 +13,20 @@ EXPECTED_CLASSES = {
     "caster_2",
     "defender_1",
     "defender_2",
+    "guard_1",
+    "guard_2",
     "sniper_1",
     "sniper_2",
+    "vanguard_1",
     "vanguard_2",
 }
 EXPECTED_STATES = {"idle": 24, "attack": 13}
 EXPECTED_DIRECTIONS = {"se", "ne", "nw", "sw"}
 EXPECTED_CELL = (192, 192)
 EXPECTED_PIVOT = (0.5, 0.94)
-EXPECTED_PLACEHOLDERS: dict[tuple[str, str, str], str] = {}
+EXPECTED_PLACEHOLDERS = {
+    ("guard_1", "attack", "ne"): "se",
+}
 
 
 def sha256(path: Path) -> str:
@@ -86,7 +91,9 @@ def validate(repo: Path) -> None:
     if len(seen) != len(EXPECTED_CLASSES) * len(EXPECTED_STATES) * len(EXPECTED_DIRECTIONS):
         raise ValueError(f"operator animation atlas count mismatch: {len(seen)}")
     known = document.get("known_placeholders")
-    expected_known: list[dict[str, str]] = []
+    expected_known = [
+        {"logical_id": "op_anim_guard_1_attack_ne", "source_direction": "se"},
+    ]
     if known != expected_known:
         raise ValueError(f"operator animation known placeholder mismatch: {known}")
 

@@ -5,7 +5,8 @@ const FOREGROUND := Color("e8e3d5")
 const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
 const CLASSES: Array[StringName] = [
 	&"caster_1", &"caster_2", &"defender_1", &"defender_2",
-	&"sniper_1", &"sniper_2", &"vanguard_2",
+	&"guard_1", &"guard_2", &"sniper_1", &"sniper_2",
+	&"vanguard_1", &"vanguard_2",
 ]
 
 
@@ -20,16 +21,22 @@ func run(h: SelfTestHarness) -> void:
 		"errors=%s" % OperatorVisualCatalog.validate_all(),
 	)
 	h.check(
-		"blocked Shock Trooper keeps fallback",
-		OperatorVisualCatalog.get_animation(&"vanguard_1") == null,
+		"Shock Trooper is admitted without placeholders",
+		OperatorVisualCatalog.get_animation(&"vanguard_1") != null
+		and not OperatorVisualCatalog.get_animation(&"vanguard_1").placeholder,
 	)
 	h.check(
-		"blocked Sword Saint keeps fallback",
-		OperatorVisualCatalog.get_animation(&"guard_2") == null,
+		"Sword Saint is admitted without placeholders",
+		OperatorVisualCatalog.get_animation(&"guard_2") != null
+		and not OperatorVisualCatalog.get_animation(&"guard_2").placeholder,
 	)
+	var swordmaster := OperatorVisualCatalog.get_animation(&"guard_1")
 	h.check(
-		"machine-red Swordmaster keeps fallback",
-		OperatorVisualCatalog.get_animation(&"guard_1") == null,
+		"Swordmaster declares exactly attack NE from SE",
+		swordmaster != null
+		and swordmaster.placeholder
+		and swordmaster.placeholder_source_by_logical_id
+		== {&"op_anim_guard_1_attack_ne": &"se"},
 	)
 	for template_id: StringName in CLASSES:
 		var animation := OperatorVisualCatalog.get_animation(template_id)
