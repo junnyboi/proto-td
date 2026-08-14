@@ -7,6 +7,7 @@ const _SHELL_FORBIDDEN := [
 	"\\bAetheriaButton\\b", "\\bAetheriaLabel\\b",
 	"\\bAetheriaScreenShell\\b", "\\bUiCopy\\b",
 ]
+const STALE_PROBE_PATH := "res://tools/probes/stale_class_registry_boot.gd"
 const CONTRACTS := [
 	{
 		"path": "res://autoloads/i18n.gd",
@@ -73,3 +74,13 @@ func test_shipped_ui_consumers_preload_scripts_instead_of_using_global_registry(
 			var expression := RegEx.new()
 			assert_eq(expression.compile(String(raw_pattern)), OK, path)
 			assert_null(expression.search(source), "%s still uses %s" % [path, raw_pattern])
+
+
+func test_stale_probe_requires_exact_shipped_locale_registry() -> void:
+	var source := FileAccess.get_file_as_string(STALE_PROBE_PATH)
+	assert_false(source.is_empty())
+	assert_true(
+		source.contains('PackedStringArray(["en-US", "zh-CN"])'),
+		"stale-cache probe must require the exact shipped locale registry",
+	)
+	assert_false(source.contains('PackedStringArray(["en-US"])'))
