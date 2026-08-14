@@ -6,6 +6,7 @@ extends SceneTree
 enum Phase {
 	TITLE,
 	STAGING,
+	TRAINING,
 	S1_SQUAD,
 	S1_RESULTS,
 	S1_GRID,
@@ -48,6 +49,15 @@ const REQUIRED_STAGING_NODES := [
 	"NextOperationTitle",
 	"NextOperationObjective",
 	"MissionControlButton",
+]
+const REQUIRED_TRAINING_NODES := [
+	"TrainingScreenShell",
+	"TrainingShell",
+	"TrainingDialogScroll",
+	"TrainingTitle",
+	"TrainingRosterBody",
+	"TrainingRosterList",
+	"TrainingBack",
 ]
 const REQUIRED_S1_SQUAD_NODES := [
 	"SquadColumn",
@@ -155,8 +165,8 @@ func _start_title() -> void:
 	if i18n == null or not i18n.has_method("supported_locales"):
 		_fail("I18n autoload unavailable")
 		return
-	if i18n.call("supported_locales") != PackedStringArray(["en-US"]):
-		_fail("en-US locale unavailable")
+	if i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"]):
+		_fail("exact en-US/zh-CN locales unavailable")
 		return
 	_catalog = load(NARRATIVE_CATALOG_PATH) as Resource
 	_s1_record = load(S1_RECORD_PATH) as Resource
@@ -176,6 +186,8 @@ func _try_advance() -> void:
 			_try_title()
 		Phase.STAGING:
 			_try_staging()
+		Phase.TRAINING:
+			_try_training()
 		Phase.S1_SQUAD:
 			_try_s1_squad()
 		Phase.S1_RESULTS:
@@ -212,6 +224,16 @@ func _try_staging() -> void:
 	if not _assert_text(content, "NextOperationTitle", "NEXT 1: First Stand"):
 		return
 	if not _assert_text(content, "NextOperationObjective", S1_OBJECTIVE):
+		return
+	_set_phase(Phase.TRAINING)
+	_game.call("open_training")
+
+
+func _try_training() -> void:
+	var content := _content_with_nodes(REQUIRED_TRAINING_NODES)
+	if content == null:
+		return
+	if not _assert_text(content, "TrainingTitle", "TRAINING"):
 		return
 	_set_phase(Phase.S1_SQUAD)
 	_game.set("selected_stage_id", &"s1")
@@ -290,8 +312,8 @@ func _try_s3_grid() -> void:
 		return
 	print(
 		(
-			"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
-			+ "s1_squad=ready s1_results=ready s1=ready "
+				"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready training=ready "
+				+ "s1_squad=ready s1_results=ready s1=ready "
 			+ (
 				"s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
 				% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]

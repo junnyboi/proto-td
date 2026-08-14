@@ -1,7 +1,7 @@
 class_name AetheriaTheme
 extends Theme
 
-const CJK_FONT := preload("res://assets/fonts/ProtosSansSC-Subset.otf")
+const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC-Subset.otf"
 const COLORS := {
 	&"backdrop": Color("111827"),
 	&"panel": Color("1c2433"),
@@ -28,9 +28,14 @@ const COLORS := {
 
 
 func _init() -> void:
+	var cjk_bytes := FileAccess.get_file_as_bytes(CJK_FONT_PATH)
+	assert(not cjk_bytes.is_empty(), "Bundled CJK font bytes are missing")
+	var cjk_font := FontFile.new()
+	cjk_font.data = cjk_bytes
+	cjk_font.resource_name = "ProtosSansSC-Subset"
 	var composite_font := FontVariation.new()
 	composite_font.base_font = ThemeDB.fallback_font
-	composite_font.fallbacks = [CJK_FONT]
+	composite_font.fallbacks = [cjk_font]
 	default_font = composite_font
 	default_font_size = 44
 	_build_buttons()

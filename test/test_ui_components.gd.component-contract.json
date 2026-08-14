@@ -5,7 +5,7 @@
     "binary_sha256": "32f8d7596c4b41185512b1c49d69f2da3be018fd784a53e349fa92a98a97bcde"
   },
   "font": {
-    "provider": "FontVariation: ThemeDB.fallback_font primary plus ProtosSansSC-Subset.otf fallback",
+    "provider": "FontVariation: ThemeDB.fallback_font primary plus FontFile built from tracked ProtosSansSC-Subset.otf bytes",
     "runtime_class": "FontVariation",
     "resource_path": "",
     "base_font": "ThemeDB.fallback_font",
@@ -665,7 +665,7 @@
     "class_name": "AetheriaTheme",
     "resource": "res://data/presentation/ui/threshold_theme.tres",
     "material": "res://data/presentation/ui/threshold_material.tres",
-    "default_font": "FontVariation(ThemeDB.fallback_font + res://assets/fonts/ProtosSansSC-Subset.otf)",
+    "default_font": "FontVariation(ThemeDB.fallback_font + FontFile(raw res://assets/fonts/ProtosSansSC-Subset.otf bytes))",
     "default_font_size": 44,
     "button_constants": {
       "outline_size": 0,

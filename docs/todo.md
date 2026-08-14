@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-034 — Fix pulled-worktree font and promotion cache regressions
+
+- Status: in_progress
+- Owner: AGENT 11
+- Branch: `agent-11/cache-bootstrap-regressions`
+- Base: `master` at `49686474b85f2c2abe626d9a3c6b48f26364ed78`
+- Dependencies: TD-031 localization, TD-027 promotion command, TD-033 Training UI
+- Owned files: `assets/fonts/README.md`, `scripts/ui/components/aetheria_theme.gd`, `sim/campaign_promotion.gd`, `scripts/probe_stale_class_registry.sh`, `tools/probes/stale_class_registry_boot.gd`, `test/test_ui_components.gd`, `test/test_ui_components.gd.component-contract.json`, `docs/todo.md`, `docs/completed.md`, `CLAUDE.md`
+- Do not touch: promotion semantics/hash/save/replay, localization values, font source bytes/provenance, Training presentation, `scripts/verify.sh`, thresholds, or unrelated model/view files
+- Acceptance: a pulled worktree with the old `7babf28` global class registry and current source boots Title → Staging → Training without any registry-dependent parse error; deleting the current CJK `.fontdata` cache never makes `aetheria_theme.gd` unparseable and the Theme still covers all exact English/Chinese catalog glyphs; source, stale-cache, and packed-project paths retain one composed font and unchanged promotion outcomes
+- Required evidence: focused Theme/i18n/Training GUT; cache-bypassed font load probe; upgraded `scripts/probe_stale_class_registry.sh` with fatal-output scan and Training readiness; pack-only raw-font proof; one green `scripts/verify.sh` STANDARD run on the reconciled union
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

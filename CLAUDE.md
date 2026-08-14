@@ -44,6 +44,11 @@ it grows one rule per repeated mistake and never shrinks.
   shipping fix. Fresh clones still run `--import` first. Gate the upgrade path with
   `scripts/probe_stale_class_registry.sh`; dedicated cache-regression gates must also scan output
   because Godot may report a fatal parse/autoload error and still exit 0.
+- Never make a shipped script's parseability depend on a generated `.godot/imported/*` artifact.
+  A pull can update the tracked source asset and `.import` remap before that machine regenerates
+  the cache. For the bundled CJK font, build `FontFile` from the tracked OTF bytes at runtime;
+  preserve those raw bytes in exports and gate the upgrade path by deleting the generated
+  `.fontdata` before boot. A committed `.import` sidecar is metadata, not a cache delivery system.
 - `--check-only` cannot resolve autoloads — the compile gate for autoload-referencing scripts is
   the boot check + GUT, not `--check-only`.
 - Never override `_process` on a `SceneTree` script — connect to `process_frame`.
