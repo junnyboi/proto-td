@@ -238,6 +238,37 @@
         }
       },
       "known_rejected_outputs": "raw Wan floor shadows and dust excluded by fixed chroma distance plus largest-component isolation"
+    },
+    "walk_matte_v2": {
+      "operation": "deterministic cleanup of existing accepted walk sheets; no regeneration",
+      "source": "existing four-direction high-color walking spritesheets",
+      "matte": {
+        "key_rgb": [
+          211,
+          211,
+          211
+        ],
+        "distance_tolerance": 24.0,
+        "scope": "visible pixels across the full frame, including enclosed limb gaps",
+        "edge_cleanup": "not reapplied; surviving existing source RGB remains byte-identical"
+      },
+      "geometry_policy": "remove keyed pixels only; preserve every frame outer bbox, frame count, order, pivot, and exact loop closure",
+      "source_metrics": {
+        "se": {
+          "source_path": "chibi_grunt_walk_se.png",
+          "source_sha256": "17e02cfbf6573abc4e54676bb213bffbc179b162a01d35e22259018e51d67501",
+          "removed_pixels_total": 3951,
+          "removed_pixels_min": 33,
+          "removed_pixels_max": 655
+        },
+        "ne": {
+          "source_path": "chibi_grunt_walk_ne.png",
+          "source_sha256": "9dbbc0306485d2c69da2d711455c11d43b1ad7940e7927cd293926044ea0bca8",
+          "removed_pixels_total": 2376,
+          "removed_pixels_min": 34,
+          "removed_pixels_max": 281
+        }
+      }
     }
   },
   "generation_receipt": {
@@ -269,19 +300,19 @@
   "sources": {
     "walk_se": {
       "file": "chibi_grunt_walk_se.png",
-      "sha256": "17e02cfbf6573abc4e54676bb213bffbc179b162a01d35e22259018e51d67501"
+      "sha256": "94a34e0895dcd7210f868e8eed2a8ef420a0cdeb3abc259f6841f610ff9da531"
     },
     "walk_sw": {
       "file": "chibi_grunt_walk_sw.png",
-      "sha256": "a17b58b62e67036aeaf65cc1165d3fd708f70f55088a274eaf0b6dbacd2cd486"
+      "sha256": "76295d35e6c0a67bc775676aa1be009d2e2e40f5ab5d20a3037247a81a6d1471"
     },
     "walk_ne": {
       "file": "chibi_grunt_walk_ne.png",
-      "sha256": "9dbbc0306485d2c69da2d711455c11d43b1ad7940e7927cd293926044ea0bca8"
+      "sha256": "5b8b7c539043c941ed0214891084b934a6735444f1a8963f71063d6225980992"
     },
     "walk_nw": {
       "file": "chibi_grunt_walk_nw.png",
-      "sha256": "88d00fd3cc26785ad3339753f10d9f22fdb93c15892520d53e3863e6f45c789e"
+      "sha256": "2a075f0dc42e99a5fd1ea05a8d441c2e3b741e07f584cba1528b5df7aca165b2"
     },
     "attack_se": {
       "file": "chibi_grunt_attack_se.png",
@@ -303,8 +334,8 @@
   "outputs": {
     "grunt_anim_walk_se": {
       "path": "assets/sprites/grunt_anim_walk_se.png",
-      "sha256": "e303443428b5f6e814287b567c5b92b1dbbe8b753a9382b872fec81b0eca0122",
-      "bytes": 389312,
+      "sha256": "947849571d0af71f3167ee05002e6b15032c1a9151e67cc46c134d70ec1b39b3",
+      "bytes": 385080,
       "size": [
         6400,
         256
@@ -319,8 +350,8 @@
     },
     "grunt_anim_walk_se_charmed": {
       "path": "assets/sprites/grunt_anim_walk_se_charmed.png",
-      "sha256": "2f0eef94699f742ae708a7e97092f1fdb70917b1df2eb59202855c6dc4011d67",
-      "bytes": 221270,
+      "sha256": "b23033181efa68786721463c279b7b970130f71e582e13551daeb4dca5654110",
+      "bytes": 231248,
       "size": [
         6400,
         256
@@ -335,8 +366,8 @@
     },
     "grunt_anim_walk_sw": {
       "path": "assets/sprites/grunt_anim_walk_sw.png",
-      "sha256": "33f1413c0e231335385fe34b99320f3410d1d9d7cce12fb46ec7e639d5c09cb3",
-      "bytes": 382450,
+      "sha256": "422a3912675f63e535fd64ec31d66f2c9bc4c04c8324b699dee3ff82287d7b4d",
+      "bytes": 391854,
       "size": [
         6400,
         256
@@ -351,8 +382,8 @@
     },
     "grunt_anim_walk_sw_charmed": {
       "path": "assets/sprites/grunt_anim_walk_sw_charmed.png",
-      "sha256": "c6a757132384d0767d8912afb0f37b71633faddefc449b0dbc7049e7d02b2994",
-      "bytes": 225193,
+      "sha256": "0f1c2232b8570351a2b977dbeb9f18645d4a9fe1ee45538457d02c6ecc226914",
+      "bytes": 234578,
       "size": [
         6400,
         256
@@ -367,8 +398,8 @@
     },
     "grunt_anim_walk_ne": {
       "path": "assets/sprites/grunt_anim_walk_ne.png",
-      "sha256": "29a58dd144c5946fac7dcdc53413995be24d1aac87312a828f4ec6be307b5e70",
-      "bytes": 303067,
+      "sha256": "250a021e87cb49ccbf6bb63b4af2b74e03b9c7820afdd1686c07b2786ae87992",
+      "bytes": 309044,
       "size": [
         6400,
         256
@@ -383,8 +414,8 @@
     },
     "grunt_anim_walk_ne_charmed": {
       "path": "assets/sprites/grunt_anim_walk_ne_charmed.png",
-      "sha256": "4ed654e84d0235fe1e67a6c9f820e2cb4b6e93f1fe0288c2c498da3d35bbe56f",
-      "bytes": 184447,
+      "sha256": "7c5b798a911f0a1ddfa6cfe6dde9d79aa0abb7cdf872f56f73aae45f46f2eb40",
+      "bytes": 189953,
       "size": [
         6400,
         256
@@ -399,8 +430,8 @@
     },
     "grunt_anim_walk_nw": {
       "path": "assets/sprites/grunt_anim_walk_nw.png",
-      "sha256": "5e3277d17ffe6495b01e503f40399d08363e6a9fbd359d4c8c29eb157339d363",
-      "bytes": 307607,
+      "sha256": "94a377961d1bec8023dac7402819f9d99a01695f60088e75a807d23b5a28ee73",
+      "bytes": 311104,
       "size": [
         6400,
         256
@@ -415,8 +446,8 @@
     },
     "grunt_anim_walk_nw_charmed": {
       "path": "assets/sprites/grunt_anim_walk_nw_charmed.png",
-      "sha256": "5ea4889698f92779cebc3d9d896b9eee5741c97607e86a9443df823050d78664",
-      "bytes": 184161,
+      "sha256": "a07d4654b823f7b6ed204b8e6908b3681a33ca3f221d4269810a2cf046045741",
+      "bytes": 190049,
       "size": [
         6400,
         256
