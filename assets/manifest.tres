@@ -730,7 +730,7 @@ entries = {
 "pattern": "res://assets/portraits/witch_doctor_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "e9ff43e8ab9b435e91f9e5ca94716c08b0d3ef665b765b8649a38804f13f2736",
+"provenance_sha256": "dc99a8d9ce5ed0946cf78e6f6612aaf4e9721347f59bda5430b27f55ffc990c6",
 "size": Vector2i(128, 128)
 },
 &"runner": {
@@ -1110,7 +1110,7 @@ entries = {
 "pattern": "res://assets/sprites/witch_doctor_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "648549e41faeaf9b4cbd472ac0f100564f98ed7b5d1359ac1454e961f71ed816",
+"provenance_sha256": "4f1e73fe05c7744ca92d00a4f7096fbeba41d51cd035e43b4a8e745b2af6537d",
 "size": Vector2i(32, 32)
 },
 &"world.s1.backdrop": {

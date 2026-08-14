@@ -151,6 +151,8 @@ func test_template_contract_is_a_separate_advanced_mage_path() -> void:
 	assert_eq(def.skill.duration_ticks, 0)
 	assert_eq(int(def.skill.effect), 6)
 	assert_eq(def.skill.params, {"amount": 60, "range_cells": 2})
+	assert_eq(def.sprite_id, &"caster_1", "deployment icon uses Mage Apprentice")
+	assert_eq(def.portrait_id, &"caster_1", "portrait uses Mage Apprentice")
 	assert_ne(def.id, &"caster_2", "Witch Doctor never aliases Sorcerer")
 
 

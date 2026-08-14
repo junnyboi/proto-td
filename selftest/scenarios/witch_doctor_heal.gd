@@ -29,6 +29,16 @@ func run(h: SelfTestHarness) -> void:
 	var telemetry := h.autoload("Telemetry")
 	var bar := view.find_child("DeployBar", true, false) as DeployBar
 	var grid := view.find_child("GridRoot", true, false) as Node2D
+	var healer_slot := bar.find_child("Slot_witch_doctor_1", true, false) as Button
+	var ui_hash := model.state_hash()
+	var mage_icon := Art.texture(&"caster_1", 0)
+	var old_icon := Art.texture(&"witch_doctor_1", 0)
+	h.check("Witch Doctor deployment slot exists", healer_slot != null)
+	h.check(
+		"Witch Doctor deployment slot uses Mage Apprentice frame zero",
+		healer_slot != null and healer_slot.icon == mage_icon and healer_slot.icon != old_icon,
+	)
+	h.check("deployment icon alias is model-hash invariant", model.state_hash() == ui_hash)
 
 	h.check("DP funded through public debug verb", model.apply_action([&"debug_set_dp", 99]))
 	h.check(
