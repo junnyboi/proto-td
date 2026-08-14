@@ -4,6 +4,7 @@ set -euo pipefail
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT/scripts/godot_import_profile.sh"
 OLD_CACHE_COMMIT="${OLD_CACHE_COMMIT:-7babf28}"
 PROBE_SCRIPT="res://tools/probes/stale_class_registry_boot.gd"
 NEW_RUNTIME_CLASSES='MusicCatalog|StageArtTheme|StageNarrative(Def|Catalog)|UiCopy|UiMaterialTier|Aetheria(Button|Label|LocaleSelector|Panel|ScreenShell|Theme)'
@@ -19,6 +20,8 @@ current_commit="$(git rev-parse HEAD)"
 tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
 old_tree="$tmp_root/old"
 current_tree="$tmp_root/current"
+import_config="$tmp_root/editor-config"
+protos_write_single_threaded_import_profile "$import_config"
 cleanup() {
   git -C "$ROOT" worktree remove --force "$old_tree" >/dev/null 2>&1 || true
   git -C "$ROOT" worktree remove --force "$current_tree" >/dev/null 2>&1 || true
@@ -27,7 +30,9 @@ cleanup() {
 trap cleanup EXIT
 
 git worktree add --detach "$old_tree" "$OLD_CACHE_COMMIT" >/dev/null
-timeout 240s "$GODOT" --headless --path "$old_tree" --import >"$tmp_root/old-import.log" 2>&1
+XDG_CONFIG_HOME="$import_config" timeout 240s "$GODOT" --headless --recovery-mode \
+  --path "$old_tree" --import \
+  >"$tmp_root/old-import.log" 2>&1
 cache="$old_tree/.godot/global_script_class_cache.cfg"
 [[ -s "$cache" ]] || { echo '[stale-class-registry] old cache missing' >&2; exit 1; }
 if grep -Eq "$NEW_RUNTIME_CLASSES" "$cache"; then
@@ -36,7 +41,8 @@ if grep -Eq "$NEW_RUNTIME_CLASSES" "$cache"; then
 fi
 
 git worktree add --detach "$current_tree" "$current_commit" >/dev/null
-timeout 240s "$GODOT" --headless --path "$current_tree" --import \
+XDG_CONFIG_HOME="$import_config" timeout 240s "$GODOT" --headless --recovery-mode \
+  --path "$current_tree" --import \
   >"$tmp_root/current-import.log" 2>&1
 current_cache="$current_tree/.godot/global_script_class_cache.cfg"
 [[ -s "$current_cache" ]] || { echo '[stale-class-registry] current cache missing' >&2; exit 1; }

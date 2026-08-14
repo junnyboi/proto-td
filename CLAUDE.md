@@ -159,6 +159,11 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
+Godot 4.7.1 full-worktree scratch imports must use `--recovery-mode` plus the repository's isolated
+editor profile with `editor/import/use_multiple_threads=false`; ordinary R2 import remains unchanged.
+This prevents editor-layout/worker crashes without skipping any resource, sentinel, cache check, or
+threshold. Never mutate global editor settings; use `scripts/godot_import_profile.sh` in scratch.
+
 ## Audio: approved music and generated SFX are active
 
 `Music` remains the sole catalog-backed music owner and must retain exactly one
