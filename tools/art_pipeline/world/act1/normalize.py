@@ -4,8 +4,9 @@
 The three supplied tile images are authoritative. Their visible isometric
 objects are isolated from black/magenta editor residue, cropped, and fitted to
 the exact runtime geometry requested by the owner: 64x32 flat faces and a
-64x48 raised face plus wall. The blocked role is a contrast transform of the
-supplied ground. Endpoint seals remain sparse overlays over their ground cells.
+64x80 tall raised platform. The blocked role is a contrast transform of the
+supplied ground. The core is the owner-supplied Cloud-Seal Orrery, while four
+generated environmental props remain presentation-only decoration.
 """
 
 from __future__ import annotations
@@ -26,14 +27,18 @@ RUNTIME_ROOT: Final = REPO / "assets/world/act1"
 STAGING_ROOT: Final = REPO / "staging/assets/world/act1"
 FRAGMENT_ROOT: Final = REPO / "assets/provenance/fragments/act1"
 MANIFEST_PATH: Final = REPO / "assets/act1_shared_manifest.tres"
-APPROVAL_TOKEN: Final = "ACT-I-S1-S3-OWNER-TILES-V2"
+APPROVAL_TOKEN: Final = "ACT-I-S1-S3-VISUAL-PASS-V3"
 ROLE_SIZES: Final = {
     "ground": (64, 32),
     "route": (64, 32),
-    "raised": (64, 48),
+    "raised": (64, 80),
     "blocked": (64, 32),
     "spawn": (64, 32),
-    "core": (64, 32),
+    "core": (128, 128),
+    "env-boulder": (64, 64),
+    "env-barrel": (64, 64),
+    "env-wall": (64, 64),
+    "env-crate": (64, 64),
 }
 OWNER_SOURCES: Final = {
     "ground": OWNER_TILE_ROOT / "ground-source.png",
@@ -42,8 +47,9 @@ OWNER_SOURCES: Final = {
 }
 MARKER_SOURCES: Final = {
     "spawn": MARKER_ROOT / "spawn-marker-source.png",
-    "core": MARKER_ROOT / "core-marker-source.png",
 }
+CORE_SOURCE: Final = SOURCE_ROOT / "core-orrery-source.png"
+ENV_SOURCE: Final = OWNER_TILE_ROOT / "env-blockers-sheet.png"
 PANORAMA_SIZE: Final = (512, 256)
 PANORAMA_SOURCE: Final = SOURCE_ROOT / "s1-alpine-escarpment-panorama-source.png"
 
@@ -75,6 +81,65 @@ def _remove_magenta_fringe(image: Image.Image) -> Image.Image:
             if alpha < 16 or (red - green > 25 and blue - green > 25):
                 pixels[x, y] = (red, green, blue, 0)
     return cleaned
+
+
+def _clean_transparent_source(image: Image.Image) -> Image.Image:
+    cleaned = image.convert("RGBA").copy()
+    pixels = cleaned.load()
+    for y in range(cleaned.height):
+        for x in range(cleaned.width):
+            red, green, blue, alpha = pixels[x, y]
+            green_key = green > 150 and green > red * 1.5 and green > blue * 1.5
+            if alpha < 16 or green_key:
+                pixels[x, y] = (red, green, blue, 0)
+    return cleaned
+
+
+def _transparent_object(source: Path, target_size: tuple[int, int]) -> Image.Image:
+    with Image.open(source) as opened:
+        cleaned = _clean_transparent_source(opened)
+    bbox = cleaned.getbbox()
+    if bbox is None:
+        raise ValueError(f"transparent owner source has no visible object: {source}")
+    fitted = cleaned.crop(bbox).resize(target_size, Image.Resampling.LANCZOS)
+    return _clean_transparent_source(fitted)
+
+
+def _orrery_landmark() -> Image.Image:
+    with Image.open(CORE_SOURCE) as opened:
+        rgba = opened.convert("RGBA")
+    corner = rgba.crop((0, 0, 20, 20)).convert("RGB")
+    samples = list(corner.get_flattened_data())
+    background = tuple(sum(pixel[channel] for pixel in samples) // len(samples) for channel in range(3))
+    pixels = rgba.load()
+    for y in range(rgba.height):
+        for x in range(rgba.width):
+            red, green, blue, alpha = pixels[x, y]
+            distance = max(abs(red - background[0]), abs(green - background[1]), abs(blue - background[2]))
+            if distance < 25:
+                pixels[x, y] = (red, green, blue, 0)
+    return _clean_transparent_source(rgba.resize(ROLE_SIZES["core"], Image.Resampling.LANCZOS))
+
+
+def _environment_props() -> dict[str, Image.Image]:
+    with Image.open(ENV_SOURCE) as opened:
+        sheet = _clean_transparent_source(opened)
+    half_w, half_h = sheet.width // 2, sheet.height // 2
+    regions = {
+        "env-boulder": (0, 0, half_w, half_h),
+        "env-barrel": (half_w, 0, sheet.width, half_h),
+        "env-wall": (0, half_h, half_w, sheet.height),
+        "env-crate": (half_w, half_h, sheet.width, sheet.height),
+    }
+    props: dict[str, Image.Image] = {}
+    for role, region in regions.items():
+        cell = sheet.crop(region)
+        bbox = cell.getbbox()
+        if bbox is None:
+            raise ValueError(f"environment prop cell has no visible object: {role}")
+        fitted = cell.crop(bbox).resize(ROLE_SIZES[role], Image.Resampling.LANCZOS)
+        props[role] = _clean_transparent_source(fitted)
+    return props
 
 
 def _owner_object(source: Path, target_size: tuple[int, int]) -> Image.Image:
@@ -183,12 +248,12 @@ def _fragment(
     return {
         "schema_version": 1,
         "logical_id": logical_id,
-        "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING",
+        "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING",
         "human_final_art": False,
         "approval": {
             "token": APPROVAL_TOKEN,
             "human_final_art": False,
-            "scope": "owner-supplied shared Act I tiles for S1-S3",
+            "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
         },
         "source": {
             "path": source.relative_to(REPO).as_posix(),
@@ -247,21 +312,27 @@ def normalize() -> None:
     _clear_generated_files(FRAGMENT_ROOT, ".json")
 
     ground = _owner_object(OWNER_SOURCES["ground"], ROLE_SIZES["ground"])
+    environment_props = _environment_props()
     role_images = {
         "ground": ground,
         "route": _owner_object(OWNER_SOURCES["route"], ROLE_SIZES["route"]),
-        "raised": _owner_object(OWNER_SOURCES["raised"], ROLE_SIZES["raised"]),
+        "raised": _transparent_object(OWNER_SOURCES["raised"], ROLE_SIZES["raised"]),
         "blocked": _blocked_from_ground(ground),
         "spawn": _endpoint_overlay("spawn"),
-        "core": _endpoint_overlay("core"),
+        "core": _orrery_landmark(),
+        **environment_props,
     }
     role_sources = {
         "ground": (OWNER_SOURCES["ground"], "canvas strip + crop + fit to 2:1 face"),
         "route": (OWNER_SOURCES["route"], "canvas strip + crop + fit to 2:1 face"),
-        "raised": (OWNER_SOURCES["raised"], "canvas strip + crop + fit to 64x48 raised face"),
+        "raised": (OWNER_SOURCES["raised"], "transparent crop + fit to 64x80 raised platform"),
         "blocked": (OWNER_SOURCES["ground"], "ground face contrast transform"),
         "spawn": (MARKER_SOURCES["spawn"], "transparent endpoint marker extraction"),
-        "core": (MARKER_SOURCES["core"], "transparent endpoint marker extraction"),
+        "core": (CORE_SOURCE, "beige background removal + fit to 128x128 landmark"),
+        "env-boulder": (ENV_SOURCE, "top-left prop extraction + fit to 64x64"),
+        "env-barrel": (ENV_SOURCE, "top-right prop extraction + fit to 64x64"),
+        "env-wall": (ENV_SOURCE, "bottom-left prop extraction + fit to 64x64"),
+        "env-crate": (ENV_SOURCE, "bottom-right prop extraction + fit to 64x64"),
     }
     records: list[tuple[str, str, tuple[int, int], bytes, Path, str]] = []
     for role, size in ROLE_SIZES.items():
@@ -269,7 +340,8 @@ def normalize() -> None:
         filename = f"{role}.png"
         _write_pair(filename, payload)
         source, operation = role_sources[role]
-        records.append((f"world.act1.{role}", filename, size, payload, source, operation))
+        logical_role = role.replace("env-", "env.")
+        records.append((f"world.act1.{logical_role}", filename, size, payload, source, operation))
 
     panorama = _normalize_panorama()
     _write_pair("panorama.png", panorama)

@@ -1,8 +1,8 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "owner-supplied shared Act I tiles for S1-S3",
-    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
+    "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
+    "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
   "candidate_files": {
     "bytes_identical": true,
@@ -28,5 +28,5 @@
     "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
     "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b"
   },
-  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING"
 }

@@ -12,7 +12,7 @@ entries = {
 "pattern": "res://assets/world/act1/blocked.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "b02bbe51c03c92f9782c410c5f15d0e98577c08d4c89c93494b058aafd0a776b",
+"provenance_sha256": "188584199c569fe00870ffa11791a67d5ee14a1c6db0e68dd028c48dda5ba69e",
 "size": Vector2i(64, 32)
 },
 &"world.act1.core": {
@@ -21,8 +21,44 @@ entries = {
 "pattern": "res://assets/world/act1/core.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "4a016150221b4b9baefc64f850d297e6c03ac8faf23486f7ea7ab05f9eaf9781",
-"size": Vector2i(64, 32)
+"provenance_sha256": "7df79220b3fd6c4976bab6e4fa633c420ca5774eb80565dbde86a87d6509669f",
+"size": Vector2i(128, 128)
+},
+&"world.act1.env.barrel": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/env-barrel.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "1c1f83359a6d454c551b14f5d4426d321dd5ea46c8c414b5b3682374a6b70877",
+"size": Vector2i(64, 64)
+},
+&"world.act1.env.boulder": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/env-boulder.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "76d85dbb7d5df23dcd48b181dca5ea9ee37613fcc248e83670ba5d9952baca50",
+"size": Vector2i(64, 64)
+},
+&"world.act1.env.crate": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/env-crate.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "bf6f9b5de83055b1d1ac08eb1cf1ee3efaa61a71b590f4cdd4ec5eed569e61e7",
+"size": Vector2i(64, 64)
+},
+&"world.act1.env.wall": {
+"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
+"frames": 1,
+"pattern": "res://assets/world/act1/env-wall.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "a01547d923c16199310602affd961beeb6be76e4662c26672384b5d15fff6724",
+"size": Vector2i(64, 64)
 },
 &"world.act1.ground": {
 "animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
@@ -30,7 +66,7 @@ entries = {
 "pattern": "res://assets/world/act1/ground.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "9c638d29326e87209b764beffb240c3c1dca80686a77056ddf02d5ef94b52603",
+"provenance_sha256": "a1b472a6f1d45914bfcdefc6831f1f2d7c04d33c62a792845b77a39cfc411457",
 "size": Vector2i(64, 32)
 },
 &"world.act1.panorama": {
@@ -39,7 +75,7 @@ entries = {
 "pattern": "res://assets/world/act1/panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "c174dba04e9f88f89f10055acf9094eb96c0e26627cc8c3c2ccdaeb0907adc12",
+"provenance_sha256": "b4d2154c41dd48a921cec8434a0d8f8f7f80b02b2a4fd5ed994683889a36074c",
 "size": Vector2i(512, 256)
 },
 &"world.act1.raised": {
@@ -48,8 +84,8 @@ entries = {
 "pattern": "res://assets/world/act1/raised.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "792ad49ced05d19af125b868773181f649d9830cae9dbd0e076a9346cdd8210d",
-"size": Vector2i(64, 48)
+"provenance_sha256": "20d6eea2c0fc6c2a92854a410fee17f72b1e46076511cc66024393f1b9f0afa0",
+"size": Vector2i(64, 80)
 },
 &"world.act1.route": {
 "animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
@@ -57,7 +93,7 @@ entries = {
 "pattern": "res://assets/world/act1/route.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "28c151f4cb7ab17d2455d9fdff83ba78cc32ca9c2d31b914b33bb8fb3231f3de",
+"provenance_sha256": "27bd7798c3f5903fdb633d79d676a1631bd020f63137e99862c6b4dbbcda86ff",
 "size": Vector2i(64, 32)
 },
 &"world.act1.spawn": {
@@ -66,7 +102,7 @@ entries = {
 "pattern": "res://assets/world/act1/spawn.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "500065d380bfbb6d6aa2929862d2da70c8e86045732a97f56e06c002143d9ed0",
+"provenance_sha256": "173afb5ea527c26e3a047307df9aa57d7b69a7ae051ae4db947841e27e9057af",
 "size": Vector2i(64, 32)
 }
 }

@@ -6,27 +6,27 @@
   },
   "candidate_files": {
     "bytes_identical": true,
-    "runtime": "assets/world/act1/ground.png",
-    "sha256": "e0039c84aeac5864f527976900b56ed8407237399d250e636cc8ffef6348c9fd",
-    "staging": "staging/assets/world/act1/ground.png"
+    "runtime": "assets/world/act1/env-wall.png",
+    "sha256": "a3a0b2f0711e04a0ac532bced6283993fe70af8a4d1618dd503c98c8856e1e4c",
+    "staging": "staging/assets/world/act1/env-wall.png"
   },
   "human_final_art": false,
-  "logical_id": "world.act1.ground",
+  "logical_id": "world.act1.env.wall",
   "normalization": {
     "alpha_preserved": true,
-    "operation": "canvas strip + crop + fit to 2:1 face",
+    "operation": "bottom-left prop extraction + fit to 64x64",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
       64,
-      32
+      64
     ],
     "tool": "Pillow"
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/owner-tiles/ground-source.png",
-    "sha256": "ab43310f885a50fe9a34a6ef32bfd16aa8f15d46e595557a544c6b9b8dbfa7b8"
+    "path": "art-src/world/act1/owner-tiles/env-blockers-sheet.png",
+    "sha256": "adf301a6863dc28e731ea43cde20babf69fd6b24979cb3c0e9dbff321f14ce24"
   },
   "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING"
 }

@@ -112,13 +112,14 @@ const S1_UI_COPY := {
 	"BriefingClue": "Field note — %s" % S1_CLUE,
 	"ConsequenceLine": S1_CLEAR_DEBRIEF,
 }
-const EXPECTED_S2_CHILDREN := 55
+const EXPECTED_S2_CHILDREN := 59
 const EXPECTED_S2_TILES := 50
 const EXPECTED_S2_SHADES := 2
-const EXPECTED_S3_CHILDREN := 64
+const EXPECTED_S3_CHILDREN := 68
 const EXPECTED_S3_TILES := 60
 const EXPECTED_S3_SHADES := 1
 const EXPECTED_CADENCE := 0
+const EXPECTED_ENV_PROPS := 4
 
 var _frames := 0
 var _phase := Phase.TITLE
@@ -389,6 +390,7 @@ func _grid_counts(grid: Node2D) -> Dictionary:
 		"shades": 0,
 		"panoramas": 0,
 		"cadence": 0,
+		"env_props": 0,
 		"landmarks": 0,
 		"backdrops": 0,
 	}
@@ -401,6 +403,8 @@ func _grid_counts(grid: Node2D) -> Dictionary:
 			counts["panoramas"] += 1
 		elif child.name.begins_with("Cadence_"):
 			counts["cadence"] += 1
+		elif child.name.begins_with("EnvProp_"):
+			counts["env_props"] += 1
 		elif child.name in [&"SpawnLandmark", &"CoreLandmark"]:
 			counts["landmarks"] += 1
 		elif child is Polygon2D:
@@ -420,6 +424,7 @@ func _counts_match(
 		and int(counts["shades"]) == expected_shades
 		and int(counts["panoramas"]) == 1
 		and int(counts["cadence"]) == EXPECTED_CADENCE
+		and int(counts["env_props"]) == EXPECTED_ENV_PROPS
 		and int(counts["landmarks"]) == 2
 		and int(counts["backdrops"]) == 0
 	)

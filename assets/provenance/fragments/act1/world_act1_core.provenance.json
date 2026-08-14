@@ -1,32 +1,32 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "owner-supplied shared Act I tiles for S1-S3",
-    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
+    "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
+    "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/core.png",
-    "sha256": "48fb62471cf4f065066888e83311c8b9e61a1b229ecf2cdaf4804e0c61437dfb",
+    "sha256": "c2e5bce587355246cd2e1162e3f509bf1b82042b5da1a583d6815a228bbd548c",
     "staging": "staging/assets/world/act1/core.png"
   },
   "human_final_art": false,
   "logical_id": "world.act1.core",
   "normalization": {
     "alpha_preserved": true,
-    "operation": "transparent endpoint marker extraction",
+    "operation": "beige background removal + fit to 128x128 landmark",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
-      64,
-      32
+      128,
+      128
     ],
     "tool": "Pillow"
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/endpoint-markers/core-marker-source.png",
-    "sha256": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662"
+    "path": "art-src/world/act1/core-orrery-source.png",
+    "sha256": "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3"
   },
-  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING"
 }

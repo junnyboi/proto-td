@@ -3,13 +3,17 @@ extends SceneTree
 const EXPECTED := {
 	&"world.act1.ground": ["ground.png", Vector2i(64, 32)],
 	&"world.act1.route": ["route.png", Vector2i(64, 32)],
-	&"world.act1.raised": ["raised.png", Vector2i(64, 48)],
+	&"world.act1.raised": ["raised.png", Vector2i(64, 80)],
 	&"world.act1.blocked": ["blocked.png", Vector2i(64, 32)],
 	&"world.act1.spawn": ["spawn.png", Vector2i(64, 32)],
-	&"world.act1.core": ["core.png", Vector2i(64, 32)],
+	&"world.act1.core": ["core.png", Vector2i(128, 128)],
 	&"world.act1.panorama": ["panorama.png", Vector2i(512, 256)],
+	&"world.act1.env.boulder": ["env-boulder.png", Vector2i(64, 64)],
+	&"world.act1.env.barrel": ["env-barrel.png", Vector2i(64, 64)],
+	&"world.act1.env.wall": ["env-wall.png", Vector2i(64, 64)],
+	&"world.act1.env.crate": ["env-crate.png", Vector2i(64, 64)],
 }
-const COUNTS := {&"s1": 45, &"s2": 55, &"s3": 64}
+const COUNTS := {&"s1": 49, &"s2": 59, &"s3": 68}
 var errors := PackedStringArray()
 
 
@@ -23,8 +27,8 @@ func _initialize() -> void:
 			_fail("base.%s" % detail)
 		for detail: String in supplement.validate_contract():
 			_fail("supplement.%s" % detail)
-		if supplement.entries.size() != 7:
-			_fail("supplement must contain exactly seven entries")
+		if supplement.entries.size() != 11:
+			_fail("supplement must contain exactly eleven entries")
 		for id: StringName in supplement.entries:
 			if base.entries.has(id):
 				_fail("manifest overlap: %s" % id)
@@ -33,7 +37,7 @@ func _initialize() -> void:
 		_validate_assets(supplement)
 	_validate_themes()
 	if errors.is_empty():
-		print("ACT1_SHARED_CONTRACT_OK S1=45 S2=55 S3=64")
+		print("ACT1_SHARED_CONTRACT_OK S1=49 S2=59 S3=68")
 		quit(0)
 		return
 	for detail: String in errors:
@@ -68,7 +72,7 @@ func _validate_assets(supplement: AssetManifest) -> void:
 			_fail("fragment parse failed: %s" % id)
 		elif (
 			data.get("logical_id") != String(id)
-			or data.get("approval", {}).get("token") != "ACT-I-S1-S3-OWNER-TILES-V2"
+			or data.get("approval", {}).get("token") != "ACT-I-S1-S3-VISUAL-PASS-V3"
 			or bool(data.get("human_final_art", true))
 		):
 			_fail("fragment truth mismatch: %s" % id)
@@ -94,8 +98,16 @@ func _validate_themes() -> void:
 		for child: Node in root.get_children():
 			if child.name.begins_with("Cadence_"):
 				cadence += 1
-		if cadence != 0:
-			_fail("%s cadence nodes present" % id)
+			if cadence != 0:
+				_fail("%s cadence nodes present" % id)
+			var props := 0
+			for prop_child: Node in root.get_children():
+				if prop_child.name.begins_with("EnvProp_"):
+					props += 1
+			if props != theme.env_prop_cells.size():
+				_fail(
+					"%s environment prop count %d != %d" % [id, props, theme.env_prop_cells.size()]
+				)
 		root.free()
 
 

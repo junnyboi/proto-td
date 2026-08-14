@@ -19,22 +19,27 @@ FRAGMENTS = REPO / "assets/provenance/fragments/act1"
 SOURCE = REPO / "art-src/world/act1"
 SOURCE_MANIFEST = SOURCE / "source-manifest.json"
 MANIFEST = REPO / "assets/act1_shared_manifest.tres"
-TOKEN = "ACT-I-S1-S3-OWNER-TILES-V2"
+TOKEN = "ACT-I-S1-S3-VISUAL-PASS-V3"
 EXPECTED = {
     "ground.png": (64, 32),
     "route.png": (64, 32),
-    "raised.png": (64, 48),
+    "raised.png": (64, 80),
     "blocked.png": (64, 32),
     "spawn.png": (64, 32),
-    "core.png": (64, 32),
+    "core.png": (128, 128),
+    "env-boulder.png": (64, 64),
+    "env-barrel.png": (64, 64),
+    "env-wall.png": (64, 64),
+    "env-crate.png": (64, 64),
     "panorama.png": (512, 256),
 }
 SOURCE_HASHES = {
     "ground": "ab43310f885a50fe9a34a6ef32bfd16aa8f15d46e595557a544c6b9b8dbfa7b8",
     "route": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9",
-    "raised": "b63816e00bc99487f84def28424897311246c796027eac59a2c0029268490665",
+    "raised": "a87160a0ec044297d798f837f7173e2a067080351baa88f2bd70d243f7720b6f",
     "spawn_marker": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
-    "core_marker": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662",
+    "core_orrery": "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3",
+    "env_blockers": "adf301a6863dc28e731ea43cde20babf69fd6b24979cb3c0e9dbff321f14ce24",
     "panorama": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
 }
 
@@ -110,7 +115,11 @@ class Act1WorldPipelineTest(unittest.TestCase):
         self.assertLess(blocked_luma, ground_luma - 20.0)
 
     def test_no_visible_magenta_canvas_residue_and_markers_are_sparse(self) -> None:
-        for filename in ["ground.png", "route.png", "raised.png", "blocked.png"]:
+        material_files = {
+            "ground.png", "route.png", "raised.png", "blocked.png",
+            "env-boulder.png", "env-barrel.png", "env-wall.png", "env-crate.png",
+        }
+        for filename in material_files:
             with Image.open(RUNTIME / filename) as opened:
                 pixels = list(opened.convert("RGBA").get_flattened_data())
             residue = [
@@ -120,23 +129,28 @@ class Act1WorldPipelineTest(unittest.TestCase):
             ]
             self.assertEqual(residue, [], filename)
             self.assertEqual([pixel for pixel in pixels if 0 < pixel[3] < 16], [], filename)
-        for filename in ["spawn.png", "core.png"]:
+        for filename in ["spawn.png"]:
             with Image.open(RUNTIME / filename) as opened:
                 alpha = opened.convert("RGBA").getchannel("A")
             opaque = sum(1 for value in alpha.get_flattened_data() if value > 32)
             self.assertGreater(opaque, 20, filename)
             self.assertLess(opaque, 900, filename)
+        with Image.open(RUNTIME / "core.png") as opened:
+            alpha = opened.convert("RGBA").getchannel("A")
+        opaque = sum(1 for value in alpha.get_flattened_data() if value > 32)
+        self.assertGreater(opaque, 2500, "core.png")
+        self.assertLess(opaque, 7000, "core.png")
 
     def test_provenance_fragments_are_exact_and_truthful(self) -> None:
         paths = sorted(FRAGMENTS.glob("*.json"))
-        self.assertEqual(len(paths), 7)
+        self.assertEqual(len(paths), 11)
         seen = set()
         for path in paths:
             data = json.loads(path.read_text())
             logical_id = data["logical_id"]
             seen.add(logical_id)
             self.assertEqual(data["approval"]["token"], TOKEN)
-            self.assertEqual(data["state"], "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING")
+            self.assertEqual(data["state"], "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING")
             self.assertFalse(data["human_final_art"])
             self.assertNotEqual(data["normalization"]["operation"], "")
             files = data["candidate_files"]
@@ -145,7 +159,10 @@ class Act1WorldPipelineTest(unittest.TestCase):
             self.assertEqual(runtime.read_bytes(), staging.read_bytes())
             self.assertEqual(digest(runtime), files["sha256"])
             self.assertEqual(digest(REPO / data["source"]["path"]), data["source"]["sha256"])
-        self.assertEqual(seen, {f"world.act1.{name.removesuffix('.png')}" for name in EXPECTED})
+        expected_ids = {
+            f"world.act1.{name.removesuffix('.png').replace('env-', 'env.')}" for name in EXPECTED
+        }
+        self.assertEqual(seen, expected_ids)
 
     def test_regeneration_is_idempotent_and_complete_replacement_safe(self) -> None:
         before = snapshot()

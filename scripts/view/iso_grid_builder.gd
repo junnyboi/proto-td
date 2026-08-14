@@ -275,6 +275,34 @@ static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArt
 		theme.core_offset,
 		"CoreLandmark",
 	)
+	_add_env_props(grid_root, theme)
+
+
+## Scatter environmental blocker props on pre-approved GROUND cells.
+## Props are pure presentation — no collision, no model state.
+static func _add_env_props(grid_root: Node2D, theme: StageArtThemeType) -> void:
+	var cells: Array = theme.env_prop_cells if theme.env_prop_cells != null else []
+	var ids: Array = theme.env_prop_ids if theme.env_prop_ids != null else []
+	var count := mini(cells.size(), ids.size())
+	for i: int in range(count):
+		var cell: Vector2i = cells[i]
+		var art_id: StringName = ids[i]
+		var tex := Art.texture(art_id)
+		if tex == null:
+			continue
+		var art_size := Art.size(art_id)
+		if art_size == Vector2i.ZERO:
+			art_size = Vector2i(tex.get_width(), tex.get_height())
+		var center := IsoProjection.face_center(cell, false)
+		var sprite := TextureRect.new()
+		sprite.name = "EnvProp_%d_%d" % [cell.x, cell.y]
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = Vector2(art_size)
+		sprite.position = center - Vector2(art_size.x * 0.5, art_size.y)
+		sprite.z_index = IsoProjection.tile_z(cell) + 2
+		grid_root.add_child(sprite)
 
 
 static func _add_face_overlay(

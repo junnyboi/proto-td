@@ -1,8 +1,8 @@
 {
   "approval": {
     "human_final_art": false,
-    "scope": "owner-supplied shared Act I tiles for S1-S3",
-    "token": "ACT-I-S1-S3-OWNER-TILES-V2"
+    "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
+    "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
   "candidate_files": {
     "bytes_identical": true,
@@ -28,5 +28,5 @@
     "path": "art-src/world/act1/endpoint-markers/spawn-marker-source.png",
     "sha256": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf"
   },
-  "state": "OWNER_TILE_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "OWNER_DIRECTED_VISUAL_PASS_RUNTIME_CAPTURE_PENDING"
 }
