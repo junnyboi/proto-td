@@ -47,8 +47,8 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName) -> void:
 		return
 	h.check("%s exact shared IDs" % stage_id, theme.required_manifest_ids() == IDS)
 	h.check(
-		"%s approved token and pending final verdict" % stage_id,
-		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and not theme.human_final_art
+		"%s approved token and human-final verdict" % stage_id,
+		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and theme.human_final_art
 	)
 	var grid := view.get_node_or_null("GridRoot") as Node2D
 	h.check(
