@@ -11,6 +11,10 @@ const FUTURE_BUTTONS: Array[String] = [
 	"ArmoryButton",
 	"MemorialButton",
 ]
+const ACTION_BUTTONS: Array[String] = [
+	"MissionControlButton", "BackToTitleButton", "BarracksButton", "RecruitButton",
+	"TrainingButton", "ArmoryButton", "MemorialButton",
+]
 const VIEWPORT_RECT := Rect2(Vector2.ZERO, Vector2(1280.0, 720.0))
 
 
@@ -176,10 +180,26 @@ func _check_initial_staging(
 	var heading := _find(staging, "CompanyCommandHeading") as Label
 	var mission := _find(staging, "MissionControlButton") as Button
 	var back := _find(staging, "BackToTitleButton") as Button
+	var grid_margin := _find(staging, "OperationGridMargin") as MarginContainer
 	h.check("heading uses exact dense 34px contract", heading.get_theme_font_size("font_size") == 34)
+	h.check(
+		"operation row has exact 20px top padding",
+		grid_margin != null and grid_margin.get_theme_constant("margin_top") == 20,
+	)
 	h.check("Mission Control is enabled", not mission.disabled)
 	h.check("Back to Title is enabled", not back.disabled)
-	h.check("Mission Control meets 32px floor", mission.get_theme_font_size("font_size") >= 32)
+	for button_name: String in ACTION_BUTTONS:
+		var action := _find(staging, button_name) as Button
+		var presentation := action.get_node("PresentationLabel") as Label
+		h.check(
+			"%s uses header-sized 34px text" % button_name,
+			presentation.get_theme_font_size("font_size")
+			== heading.get_theme_font_size("font_size"),
+		)
+		h.check(
+			"%s uses compact 80px height" % button_name,
+			is_equal_approx(action.custom_minimum_size.y, 80.0),
+		)
 	h.check("detail text meets 24px floor", summary.get_theme_font_size("font_size") >= 24)
 
 	for button_name: String in FUTURE_BUTTONS:
@@ -192,6 +212,7 @@ func _check_initial_staging(
 		await h.click_view(button.get_global_rect().get_center())
 		h.check("%s click keeps Staging open" % button_name, game.get("content") == staging)
 		_check_snapshot(h, game, initial, "%s disabled click" % button_name)
+	await h.shot("staging_compact_action_row")
 
 
 func _scroll_to_control(h: SelfTestHarness, screen: Control, control: Control) -> void:

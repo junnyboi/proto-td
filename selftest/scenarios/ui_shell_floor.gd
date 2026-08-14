@@ -629,6 +629,12 @@ func _apply_stress_mode(
 	for owner: Control in owners:
 		owner.theme = theme
 	if mode == &"text200":
+		for node: Node in _all_nodes(content):
+			if node is Control:
+				var control := node as Control
+				if control.has_theme_font_size_override(&"font_size"):
+					var local_size := control.get_theme_font_size(&"font_size")
+					control.add_theme_font_size_override(&"font_size", local_size * 2)
 		_apply_text200_reflow(content)
 	if mode == &"expand135":
 		target_scale = 1.35
