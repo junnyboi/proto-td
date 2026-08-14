@@ -42,6 +42,8 @@ tests=(
   test/test_composition.gd
   test/test_battle_observation.gd
   test/test_hash_paranoia.gd
+  test/test_recruit_balance_probe.gd
+  test/test_presentation_contracts.gd
 )
 scenario="selftest/scenarios/target_policy_compat.gd"
 all_gd=("${production[@]}" "${tests[@]}" "$scenario")
@@ -60,6 +62,9 @@ enemy_assignments="$(grep -l '^target_policy = ' data/enemies/*.tres | wc -l)"
   || fail "not every operator has an explicit target policy"
 [[ "$enemy_assignments" -eq "$enemy_count" ]] \
   || fail "not every enemy has an explicit target policy"
+grep -F 'target_policy = ExtResource("2_policy")' \
+  test/fixtures/operators/recruit_probe.tres >/dev/null \
+  || fail "Recruit compatibility fixture has no explicit target policy"
 if rg -n 'Targeting\.select|Targeting\.Filter' sim/battle_model.gd sim/targeting.gd >"$OUT/legacy-paths.log"; then
   fail "legacy class/filter target dispatch remains"
 fi
@@ -81,10 +86,10 @@ if grep -Eq 'SCRIPT ERROR:|Parse Error:|Nothing was run|Errors[[:space:]]+[1-9][
 fi
 test_count="$(grep -E '^Tests[[:space:]]+[0-9]+$' "$OUT/gut.log" | tail -1 | awk '{print $2}')"
 assert_count="$(grep -E '^Asserts[[:space:]]+[0-9]+$' "$OUT/gut.log" | tail -1 | awk '{print $2}')"
-[[ -n "$test_count" && "$test_count" -ge 25 ]] \
-  || fail "GUT reported fewer than 25 tests"
-[[ -n "$assert_count" && "$assert_count" -ge 4951 ]] \
-  || fail "GUT reported fewer than 4951 assertions"
+[[ -n "$test_count" && "$test_count" -ge 47 ]] \
+  || fail "GUT reported fewer than 47 tests"
+[[ -n "$assert_count" && "$assert_count" -ge 8688 ]] \
+  || fail "GUT reported fewer than 8688 assertions"
 
 rm -rf "$OUT/scenario"
 mkdir -p "$OUT/scenario"

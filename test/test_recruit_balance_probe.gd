@@ -23,6 +23,8 @@ func test_probe_fixture_matches_the_basic_recruit_contract() -> void:
 	assert_eq(recruit.atk, 4)
 	assert_eq(recruit.atk_interval_ticks, 36)
 	assert_eq(recruit.range_offsets, [Vector2i.ZERO] as Array[Vector2i])
+	assert_not_null(recruit.target_policy)
+	assert_eq(recruit.target_policy.id, &"operator_blocked_assignment_order")
 	assert_eq(recruit.placement, OperatorDef.Placement.GROUND)
 	assert_eq(recruit.dp_generation_interval_ticks, 0)
 	assert_eq(recruit.splash_dim, 0)

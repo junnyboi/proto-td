@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-TARGET — Complete data-driven targeting publication remediation
+
+- Status: in_progress
+- Owner: AGENT E
+- Branch: `agent-e/td-target`
+- Base: `master` at `a50868e7bf74ae64d07d789fa35b1aac7c6bdfe9`
+- Dependencies: implementation `5974adc4a30190c4199cedf18888159b82a213fe`; targeted gate PASS; STANDARD R3 red
+- Owned files: original TD-TARGET surfaces plus `test/fixtures/operators/recruit_probe.tres`, `test/test_recruit_balance_probe.gd`, `assets/provenance/*.provenance.json`, `assets/manifest.tres`, `FEATURES.json`, `docs/todo.md`, `docs/completed.md`
+- Do not touch: image/audio bytes, combat numbers, stages, waves, bot timelines, thresholds, replay/save schemas, or unrelated presentation contracts
+- Acceptance: Recruit probe receives the explicit melee policy; canonical provenance source hashes and manifest bindings are regenerated without visual-byte change; targeted gate and one fresh uninterrupted STANDARD pass on the current union
+- Required evidence: recruit exact outcome test, presentation provenance contract, `scripts/td_target_check.sh`, `scripts/verify.sh --full`, and unchanged frozen TD-OBS/replay hashes
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

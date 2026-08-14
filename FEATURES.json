@@ -548,7 +548,7 @@
 	    "the frozen pre-refactor conditional S6 oracle remains byte-exact at CLEAR, leaked=1, tick=1387, model hash 376a0c16c62dd32a, observation sequence acd60c0336314a88ae5768b48451059893425f0c1d6dcb26d2a22bbfe2deecbf, and trace 9499ceccc213704444b242b507ffd31a827c25d7ca677d8d90e21fd29b4a0d09; replay is cross-process identical",
 	    "scripts/td_target_check.sh passes import, focused lint/GUT, six-policy and complete actor-catalog validation, the six-check target_policy_compat scenario, frozen TD-OBS differential, replay proof, required UID checks, and a nonzero completion sentinel"
 	   ],
-	   "status": "passing",
+	   "status": "pending",
 	   "scenarios": [
 	    "target_policy_compat"
 	   ],
