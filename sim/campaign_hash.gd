@@ -417,8 +417,8 @@ static func _derive_fresh_receipt(
 	var unlocks := _expected_unlocks(before, rewards["authored"])
 	expected["unlocked_traps"] = unlocks["traps"]
 	expected["unlocked_spells"] = unlocks["spells"]
-	var before_hash := CampaignHash._of_normalized_core(before)
-	var after_hash := CampaignHash._of_normalized_core(expected)
+	var before_hash := _of_normalized_core(before)
+	var after_hash := _of_normalized_core(expected)
 	if not before_hash["accepted"] or not after_hash["accepted"]:
 		return _reject(&"invalid_transaction_state")
 	var resolution := {
