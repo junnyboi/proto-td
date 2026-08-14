@@ -585,7 +585,7 @@ static func _validate_after(
 	var derived := _derive_expected_after(outcome, resolution, before, context)
 	if not derived["accepted"]:
 		return derived
-	var body_hash := CampaignHash._of_normalized_core(derived["value"])
+	var body_hash := _of_normalized_core(derived["value"])
 	if not body_hash["accepted"] or body_hash["hex"] != resolution["strategic_body_hash_after"]:
 		return _reject(&"transaction_hash_after_mismatch")
 	var expected: Dictionary = derived["value"]

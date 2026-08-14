@@ -3,6 +3,7 @@ extends RefCounted
 ## Read-only v1 strategic core hash used only at the migration boundary.
 ## New campaign state must use CampaignHash v2.
 
+const HeroIdentity := preload("res://sim/hero_identity.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 1
 const FNV_OFFSET := -3750763034362895579
