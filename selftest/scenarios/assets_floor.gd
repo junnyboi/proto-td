@@ -46,7 +46,7 @@ func run(h: SelfTestHarness) -> void:
 
 	# operators: 5 battle frames + portrait each
 	var op_ids := _scan("res://data/operators")
-	h.check("eleven operators on disk", op_ids.size() == 11)
+	h.check("twelve operators on disk", op_ids.size() == 12)
 	var op_ok := true
 	for op_id: StringName in op_ids:
 		var def := load("res://data/operators/%s.tres" % op_id) as OperatorDef

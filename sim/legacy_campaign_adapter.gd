@@ -1,6 +1,8 @@
 class_name LegacyCampaignAdapter
 extends RefCounted
 
+const FUTURE_ONLY_OPERATORS: Array[StringName] = [&"recruit"]
+
 ## Temporary D16-08 adapter for the pre-P16 runtime campaign flow. This exact
 ## P10 definition-ID state is neither a CampaignSave nor a CampaignHash input.
 ## Game removes this runtime route at the P16.3 canonical ticket/outcome cutover.
@@ -27,7 +29,9 @@ static func derive_starting_unlocks(catalogs: Dictionary, stage_defs: Array) -> 
 	for kind: String in out:
 		var starting: Array[StringName] = []
 		for item_id: StringName in catalogs[kind]:
-			if not rewarded.has(item_id):
+			if not rewarded.has(item_id) and not (
+				kind == "operators" and FUTURE_ONLY_OPERATORS.has(item_id)
+			):
 				starting.append(item_id)
 		starting.sort_custom(func(a: StringName, b: StringName) -> bool:
 			return String(a) < String(b))

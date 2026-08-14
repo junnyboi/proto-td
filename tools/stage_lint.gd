@@ -12,6 +12,8 @@ extends SceneTree
 
 const STAGES_DIR := "res://data/stages"
 const ENEMIES_DIR := "res://data/enemies"
+const CLASSES_DIR := "res://data/classes"
+const V3_CAMPAIGN_PATH := "res://data/campaigns/p16_v3.tres"
 const CAMPAIGN_COUNT := 8
 const KIND_DIRS := {
 	&"operator": "res://data/operators",
@@ -31,6 +33,7 @@ func _initialize() -> void:
 		if stage != null:
 			stages.append(stage)
 	_lint_campaign(stages, failures)
+	_lint_recruit_classes(stages, failures)
 	if failures.is_empty():
 		print("[stage-lint] OK (%d stages)" % stage_files.size())
 		quit(0)
@@ -38,6 +41,43 @@ func _initialize() -> void:
 		for f: String in failures:
 			printerr("[stage-lint] FAIL: " + f)
 		quit(1)
+
+
+func _lint_recruit_classes(stages: Array, failures: Array[String]) -> void:
+	var locale_source := FileAccess.get_file_as_string("res://localization/en-US.json")
+	var locale: Variant = JSON.parse_string(locale_source)
+	if typeof(locale) != TYPE_DICTIONARY or typeof(locale.get("entries")) != TYPE_DICTIONARY:
+		failures.append("classes: invalid en-US catalog")
+		return
+	var operator_defs: Array = []
+	for path: String in _list_tres(KIND_DIRS[&"operator"]):
+		operator_defs.append(load(path) as OperatorDef)
+	var class_defs: Array = []
+	for path: String in _list_tres(CLASSES_DIR):
+		class_defs.append(load(path) as ClassDef)
+	var operator_ids := _scan_ids(KIND_DIRS[&"operator"])
+	var normalized := ClassDef.normalize_catalog(class_defs, operator_ids, locale["entries"])
+	if not normalized["accepted"]:
+		failures.append("classes: %s" % normalized["error_code"])
+		return
+	var campaign := load(V3_CAMPAIGN_PATH) as CampaignDef
+	var obtainable := ClassDef.validate_obtainability(normalized["value"], campaign)
+	if not obtainable["accepted"]:
+		failures.append("classes: %s" % obtainable["error_code"])
+		return
+	var environment := CampaignV3Codec.derive_environment_sha256(
+		operator_defs,
+		class_defs,
+		_scan_ids(KIND_DIRS[&"trap"]),
+		_scan_ids(KIND_DIRS[&"spell"]),
+		stages,
+		campaign,
+		locale["entries"],
+	)
+	if not environment["accepted"]:
+		failures.append("classes: %s" % environment["error_code"])
+	elif environment["value"] != CampaignDef.P16_V3_ENVIRONMENT_SHA256:
+		failures.append("classes: environment hash mismatch")
 
 
 ## §2.7 campaign rules (key off campaign_index >= 1 — test stages opt out).

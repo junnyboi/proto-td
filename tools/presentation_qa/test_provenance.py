@@ -107,6 +107,18 @@ class ProvenanceContractTests(unittest.TestCase):
             MODULE.ROUND5_APPROVED_CANDIDATE,
         )
 
+    def test_recruit_placeholder_is_canonical_and_review_pending(self) -> None:
+        logical_id = "portrait_recruit_00"
+        path = REPO / f"assets/provenance/{logical_id}.provenance.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        entry = {"pattern": "res://assets/portraits/vanguard_1.png", "frames": 1}
+        MODULE.validate_schema(document, self.schema, self.schema)
+        MODULE.validate_document(REPO, document, logical_id, entry)
+        self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
+        self.assertEqual(document["generation"]["model"], "gpt-image-2")
+        self.assertEqual(document["acceptance"]["state"], "unknown_per_current_byte")
+        self.assertIsNone(document["acceptance"]["accepting_commit"])
+
     def test_single_file_atlas_path_is_not_expanded_as_printf_pattern(self) -> None:
         entry = {"pattern": "res://assets/sprites/grunt_anim_walk_se.png", "frames": 25}
         self.assertEqual(MODULE.final_paths(entry), [entry["pattern"]])

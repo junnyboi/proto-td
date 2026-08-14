@@ -122,6 +122,8 @@ func test_contract_migration_is_exact_and_total_over_current_templates() -> void
 	actual.sort()
 	var expected_strings: Array[String] = []
 	for operator_id: StringName in _catalog_ids("res://data/operators"):
+		if operator_id == &"recruit":
+			continue
 		expected_strings.append(String(operator_id))
 	expected_strings.sort()
 	assert_eq(actual, expected_strings)

@@ -4,7 +4,6 @@ extends RefCounted
 ## Immutable ordered view over normalized CampaignSave hero rows. Allocation is
 ## a pure preview: no roster row or campaign counter is changed here.
 
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const VALID_SOURCES := [&"starter", &"contract", &"reward", &"recovery"]
 
 var _rows: Array[Dictionary] = []
@@ -114,7 +113,7 @@ func plan_allocation(
 		"life_status": "ready",
 		"death": null,
 	}
-	row = CampaignProgressionType.add_initial_fields(row)
+	row = CampaignProgression.add_initial_fields(row)
 	if row.is_empty():
 		return _reject(&"unknown_operator")
 	return {

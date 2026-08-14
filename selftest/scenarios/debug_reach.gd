@@ -9,7 +9,7 @@ extends RefCounted
 ## Raw input is validated once per surface (F12 key, one stage-jump button,
 ## the DP-max button); everything else drives the Debug seam methods (G6).
 
-const OPERATOR_COUNT := 11
+const OPERATOR_COUNT := 12
 const TRAP_IDS: Array[StringName] = [&"spike_plate", &"tar_pit"]
 
 

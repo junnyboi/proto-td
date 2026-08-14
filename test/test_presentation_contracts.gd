@@ -33,7 +33,7 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_and_loadability() -
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size() + 110)
+	assert_eq(manifest.entries.size(), expected.size() + 119)
 	for healer_id: StringName in [&"witch_doctor_1", &"portrait_witch_doctor_1"]:
 		assert_true(manifest.entries.has(healer_id), "%s added through the manifest" % healer_id)
 		assert_true(manifest.entries[healer_id][&"placeholder"], "%s remains placeholder" % healer_id)
@@ -573,6 +573,25 @@ func _expected_sources(id: String) -> Array[String]:
 			"res://assets/sprites/grunt_animation.provenance.json",
 			"res://tools/artgen/compile_grunt_animations.py",
 		]
+	if id == "recruit" or id.begins_with("portrait_recruit_"):
+		var recruit_sources: Array[String] = [
+			"res://assets/asset_manifest.gd",
+			"res://data/operator_def.gd",
+			"res://data/operators/recruit.tres",
+			"res://docs/decisions/AUI-DESIGN-APPROVALS.md",
+			"res://docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
+			"res://tools/art_pipeline/characters/import_round5_sheets.py",
+			"res://tools/gen_assets.gd",
+			"res://tools/pixel/palette.gd",
+			"res://tools/pixel/pix.gd",
+		]
+		recruit_sources.append(
+			"res://art-src/characters/round5/portrait-treatment-sheet.png"
+			if id.begins_with("portrait_")
+			else "res://art-src/characters/round5/roster-style-board.png"
+		)
+		recruit_sources.sort()
+		return recruit_sources
 	if _is_round5_character(id):
 		var base_id := id.trim_prefix("portrait_").trim_suffix("_charmed")
 		var character_sources: Array[String] = [

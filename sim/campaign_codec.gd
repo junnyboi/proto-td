@@ -10,9 +10,11 @@ const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_c
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
 const SaveUpgradeScript := preload("res://sim/campaign_save_upgrade.gd")
 const PromotionRulesResource := preload("res://data/progression/mage_advanced_v1.tres")
+const V3_CODEC_PATH := "res://sim/campaign_v3_codec.gd"
 const SAVE_SCHEMA := "prototype_td_campaign"
 const LEGACY_SAVE_VERSION := 1
 const SAVE_VERSION := 2
+const RECRUIT_SAVE_VERSION := 3
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
 const RESULT_VALUES := ["clear", "defeat"]
 const REWARD_VALUES := ["operator", "trap", "spell"]
@@ -182,6 +184,8 @@ static func encode_save(data: Variant, context: Dictionary = {}) -> Dictionary:
 	root["checksum"] = encoded_data["sha256"]
 	root["data"] = encoded_data["value"]
 	return _encoded(root)
+static func encode_save_v3(data: Variant, context: Dictionary) -> Dictionary:
+	return (load(V3_CODEC_PATH) as GDScript).encode_save(data, context)
 static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 	if not source.ends_with("\n") or source.ends_with("\n\n") or source.contains("\r"):
 		return _reject(&"noncanonical_save")
@@ -199,8 +203,12 @@ static func decode_save(source: String, context: Dictionary = {}) -> Dictionary:
 	if parsed["schema"] != SAVE_SCHEMA or not _is_integer(parsed["version"]):
 		return _reject(&"unsupported_save")
 	var source_version := int(parsed["version"])
+	if source_version == RECRUIT_SAVE_VERSION:
+		return (load(V3_CODEC_PATH) as GDScript).decode_parsed(parsed, source, context)
 	if source_version not in [LEGACY_SAVE_VERSION, SAVE_VERSION]:
 		return _reject(&"unsupported_save")
+	if context.has("environment_sha256"):
+		return (load(V3_CODEC_PATH) as GDScript).migrate_legacy_source(source, context)
 	if not _is_hex(String(parsed["checksum"]), 64):
 		return _reject(&"invalid_checksum")
 	var upgraded := SaveUpgradeScript.decode(
@@ -346,7 +354,6 @@ static func encode_resolution(resolution: Variant) -> Dictionary:
 		return normalized
 	return _encoded(normalized["value"])
 
-
 static func normalize_promotion_receipts(value: Variant) -> Dictionary:
 	return PromotionReceiptCodecScript.normalize(value)
 
@@ -490,7 +497,6 @@ static func _normalize_hero_id_array(value: Variant) -> Dictionary:
 		out.append(hero_id)
 	return _accept(out)
 
-
 static func _normalize_xp_awards(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY:
 		return _reject(&"invalid_xp_awards")
@@ -512,7 +518,6 @@ static func _normalize_xp_awards(value: Variant) -> Dictionary:
 		previous = hero_id
 		out.append({"hero_id": hero_id, "delta": int(row["delta"])})
 	return _accept(out)
-
 
 static func _normalize_offers(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY:
@@ -626,6 +631,8 @@ static func build_context(
 	starting_spells: Array = [],
 	promotion_rules: Dictionary = {},
 ) -> Dictionary:
+	operator_ids = operator_ids.filter(func(value: Variant) -> bool:
+		return String(value) != "recruit")
 	var stage_order: Array[String] = []
 	var stage_rewards := {}
 	var stage_recovery_rosters := {}
@@ -942,7 +949,6 @@ static func _sorted_strings(values: Array) -> Array[String]:
 
 static func _in_range(value: Variant, minimum: int, maximum: int) -> bool:
 	return _is_integer(value) and int(value) >= minimum and int(value) <= maximum
-
 static func _encoded(value: Variant) -> Dictionary:
 	var source := CanonicalJson.text(value)
 	return {
@@ -953,7 +959,6 @@ static func _encoded(value: Variant) -> Dictionary:
 		"bytes": source.to_utf8_buffer(),
 		"sha256": CanonicalJson.sha256_text(source),
 	}
-
 static func _campaign_invariants() -> Script:
 	return load("res://sim/campaign_invariants.gd") as Script
 

@@ -1,5 +1,5 @@
 class_name CampaignState
-extends "res://sim/campaign_training_projection.gd"
+extends "res://sim/campaign_strategic_commands.gd"
 
 ## Canonical model-only P16 aggregate (D16-08). The private value is always a
 ## whole-document-normalized CampaignSave data object. P16.2 commands construct
@@ -121,7 +121,7 @@ func promotion_options(hero_id: Variant) -> Dictionary:
 	var hero_key := String(hero_id)
 	for hero: Dictionary in _data["heroes"]:
 		if hero["hero_id"] == hero_key:
-			return CampaignProgressionType.promotion_options(
+			return CampaignProgression.promotion_options(
 				hero, _context["promotion_rules"],
 			)
 	return _reject(&"unknown_hero")
@@ -222,7 +222,7 @@ static func _build_environment(
 		return normalized_stages
 	var stages: Array = normalized_stages["value"]
 	var canonical_catalogs: Dictionary = normalized_catalogs["value"]
-	var promotion_rules := CampaignProgressionType.normalize_promotion_rules(
+	var promotion_rules := CampaignProgression.normalize_promotion_rules(
 		load(PROMOTION_RULES_PATH), canonical_catalogs["operators"],
 	)
 	if not promotion_rules["accepted"]:
@@ -498,6 +498,8 @@ static func _normalize_catalogs(catalogs: Dictionary) -> Dictionary:
 			if typeof(raw_id) not in [TYPE_STRING, TYPE_STRING_NAME]:
 				return _reject(&"invalid_catalog")
 			var item_id := String(raw_id)
+			if key == "operators" and item_id == "recruit":
+				continue
 			if not _is_ascii_id(item_id) or all_ids.has(item_id):
 				return _reject(&"invalid_catalog")
 			all_ids[item_id] = true
@@ -572,7 +574,9 @@ static func _derive_starting_unlocks(catalogs: Dictionary, stages: Array) -> Dic
 	for kind: String in result:
 		var starting: Array[StringName] = []
 		for item_id: Variant in catalogs[kind]:
-			if not rewarded.has(String(item_id)):
+			if not rewarded.has(String(item_id)) and not (
+				kind == "operators" and String(item_id) == "recruit"
+			):
 				starting.append(StringName(item_id))
 		starting.sort_custom(func(a: StringName, b: StringName) -> bool:
 			return String(a) < String(b))

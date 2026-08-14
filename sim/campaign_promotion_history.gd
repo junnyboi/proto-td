@@ -62,8 +62,9 @@ static func _validate_transition(
 	expected["promotion_receipts"].append(receipt.duplicate(true))
 	if expected != after:
 		return _reject(&"promotion_history_mismatch")
-	var before_hash := CampaignHash.of_normalized_data(before, false)
-	var after_hash := CampaignHash.of_normalized_data(after, false)
+	var hash_script := load("res://sim/campaign_hash.gd") as GDScript
+	var before_hash: Dictionary = hash_script.of_normalized_data(before, false)
+	var after_hash: Dictionary = hash_script.of_normalized_data(after, false)
 	if (
 		before_hash["hex"] != receipt["before_strategic_hash"]
 		or after_hash["hex"] != receipt["after_strategic_hash"]

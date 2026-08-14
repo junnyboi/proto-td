@@ -26,6 +26,28 @@ func run(h: SelfTestHarness) -> void:
 	if save["accepted"]:
 		var strategic := CampaignHash.of_data(save["data"], context)
 		h.check("fresh strategic hash", strategic["hex"] == "baa4d62d418258a5", strategic["hex"])
+	var v3_context := _v3_context()
+	h.check("v3 context validates", not v3_context.is_empty())
+	if not v3_context.is_empty():
+		var fresh_v3 := CampaignV3Codec.create_fresh(h.seed_value, 1, v3_context)
+		h.check(
+			"v3 fresh roster validates", fresh_v3["accepted"],
+			str(fresh_v3.get("error_code", &"")),
+		)
+		if fresh_v3["accepted"]:
+			var hero_ids := {}
+			for hero: Dictionary in fresh_v3["value"]["heroes"]:
+				hero_ids[hero["hero_id"]] = true
+				h.check("v3 starter is Recruit", hero["current_class_id"] == "recruit")
+			h.check("v3 has five distinct starters", hero_ids.size() == 5, str(hero_ids.size()))
+			var v3_hash := CampaignV3Hash.of_data(fresh_v3["value"], v3_context)
+			h.check("v3 fresh strategic hash", v3_hash["hex"] == "bf4a5c25be2b0efd")
+		var graph: Dictionary = v3_context["class_by_id"]
+		h.check("v3 class graph has twelve nodes", graph.size() == 12, str(graph.size()))
+		h.check(
+			"Recruit has five first choices",
+			(graph["recruit"]["promotion_to_class_ids"] as Array).size() == 5,
+		)
 	var replay := ReplayCodec.load_file(
 		"res://playtests/replays/v1/s8.json",
 		_replay_context(),
@@ -46,6 +68,25 @@ func _context() -> Dictionary:
 		_catalog_ids("res://data/spells"),
 		stages,
 		[{"offer_id": "p16_caster_contract", "operator_def_id": "caster_1", "cost": 80}],
+	)
+
+
+func _v3_context() -> Dictionary:
+	var stages: Array = []
+	for index: int in range(1, 9):
+		stages.append(load("res://data/stages/s%d.tres" % index) as StageDef)
+	var parsed: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://localization/en-US.json")
+	)
+	return CampaignV3Codec.build_context(
+		_catalog_resources("res://data/operators"),
+		_catalog_resources("res://data/classes"),
+		_catalog_ids("res://data/traps"),
+		_catalog_ids("res://data/spells"),
+		stages,
+		load("res://data/campaigns/p16_v3.tres") as CampaignDef,
+		parsed["entries"],
+		_context(),
 	)
 
 
@@ -76,3 +117,12 @@ func _catalog_defs(path: String) -> Dictionary:
 			var resource: Resource = load("%s/%s" % [path, source])
 			defs[resource.get("id")] = resource
 	return defs
+
+
+func _catalog_resources(path: String) -> Array:
+	var resources: Array = []
+	for filename: String in DirAccess.open(path).get_files():
+		var source := filename.trim_suffix(".remap")
+		if source.ends_with(".tres"):
+			resources.append(load("%s/%s" % [path, source]))
+	return resources

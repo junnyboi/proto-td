@@ -11,8 +11,13 @@ const STAGE_IDS: Array[StringName] = [
 ]
 const OPERATOR_IDS: Array[StringName] = [
 	&"caster_1", &"caster_2", &"defender_1", &"defender_2", &"guard_1",
-	&"guard_2", &"sniper_1", &"sniper_2", &"vanguard_1", &"vanguard_2",
+	&"guard_2", &"recruit", &"sniper_1", &"sniper_2", &"vanguard_1", &"vanguard_2",
 	&"witch_doctor_1",
+]
+const CLASS_IDS: Array[StringName] = [
+	&"banner_guard", &"defender", &"gunner", &"immovable", &"mage_apprentice",
+	&"recruit", &"shock_trooper", &"sniper", &"sorcerer", &"sword_saint",
+	&"swordmaster", &"witch_doctor",
 ]
 const TRAP_IDS: Array[StringName] = [&"spike_plate", &"tar_pit"]
 const SPELL_IDS: Array[StringName] = [&"bolt", &"charm"]
@@ -67,8 +72,8 @@ func test_catalog_has_exact_generated_key_value_set_and_order() -> void:
 	var expected_keys: Array = expected.keys()
 	expected_keys.sort()
 	assert_eq(entries.keys(), expected_keys)
-	assert_eq(entries.size(), 208)
-	assert_eq(zh_entries.size(), 208)
+	assert_eq(entries.size(), 245)
+	assert_eq(zh_entries.size(), 245)
 	assert_eq(zh_entries.keys(), expected_keys)
 	for key: Variant in expected_keys:
 		assert_eq(entries[key], expected[key], "catalog value %s" % key)
@@ -209,8 +214,8 @@ func test_zh_cn_values_are_complete_distinct_and_placeholder_exact() -> void:
 		FileAccess.get_file_as_string("res://localization/zh-CN.json"),
 	)["entries"] as Dictionary
 	var en_keys := _sorted_keys(en_entries)
-	assert_eq(en_entries.size(), 208)
-	assert_eq(zh_entries.size(), 208)
+	assert_eq(en_entries.size(), 245)
+	assert_eq(zh_entries.size(), 245)
 	assert_eq(_sorted_keys(zh_entries), en_keys)
 	var equal_allowed := [
 		"ui.campaign.cleared_suffix", "ui.campaign.row", "ui.game_title",
@@ -273,6 +278,11 @@ func _expected_catalog() -> Dictionary:
 		expected["data.operator.%s.name" % operator_id] = (
 			definition.display_name
 		)
+	for class_id: StringName in CLASS_IDS:
+		var definition := load("res://data/classes/%s.tres" % class_id) as ClassDef
+		expected[String(definition.name_key)] = definition.name
+		expected[String(definition.role_key)] = definition.role
+		expected[String(definition.description_key)] = definition.description
 	for trap_id: StringName in TRAP_IDS:
 		var trap := load("res://data/traps/%s.tres" % trap_id) as TrapDef
 		expected["data.trap.%s.name" % trap_id] = trap.display_name

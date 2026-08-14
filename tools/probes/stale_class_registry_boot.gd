@@ -156,8 +156,11 @@ func _start_title() -> void:
 	if i18n == null or not i18n.has_method("supported_locales"):
 		_fail("I18n autoload unavailable")
 		return
-	if i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"]):
-		_fail("exact bilingual locale set unavailable")
+	if (
+		i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"])
+		or i18n.call("locale") != &"en-US"
+	):
+		_fail("exact bilingual locale set or en-US default unavailable")
 		return
 	var english_keys: PackedStringArray = i18n.call("catalog_keys", &"en-US")
 	var chinese_keys: PackedStringArray = i18n.call("catalog_keys", &"zh-CN")

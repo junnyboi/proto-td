@@ -71,7 +71,7 @@ func _check_debug_override(h: SelfTestHarness, game: Node) -> void:
 	}
 	game.call("debug_unlock_all")
 	h.check("debug override reaches full operator catalog",
-		(game.call("loadout_operator_ids") as Array).size() == 11)
+		(game.call("loadout_operator_ids") as Array).size() == 12)
 	h.check("debug override does not mutate legacy roster",
 		legacy.unlocked_operators == before["operators"])
 	game.call("start_campaign", false)

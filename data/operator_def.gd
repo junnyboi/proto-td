@@ -7,9 +7,8 @@ extends Resource
 ## td-phase-2-3.md §3.2).
 
 ## Append-only: .tres resources serialize this enum by integer ordinal.
-enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER }
+enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER, RECRUIT }
 enum Placement { GROUND, ELEVATED }
-
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 
 @export var id: StringName = &""

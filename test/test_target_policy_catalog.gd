@@ -5,6 +5,7 @@ const OPERATOR_DIR := "res://data/operators"
 const ENEMY_DIR := "res://data/enemies"
 
 const OPERATOR_ASSIGNMENTS := {
+	"recruit": "operator_blocked_assignment_order",
 	"vanguard_1": "operator_blocked_assignment_order",
 	"vanguard_2": "operator_blocked_assignment_order",
 	"guard_1": "operator_blocked_assignment_order",

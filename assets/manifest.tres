@@ -30,7 +30,7 @@ entries = {
 "pattern": "res://assets/sprites/caster_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "495b2301858d724ab505dd2e4c73c73d344301cb53510a6f63f8e4095a57a25a",
+"provenance_sha256": "fe0ead65763de9b84840b00d35dd9c46fcfeb62694e39042c0e8507e90a91ee3",
 "size": Vector2i(32, 32)
 },
 &"caster_2": {
@@ -58,7 +58,7 @@ entries = {
 "pattern": "res://assets/sprites/caster_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "8ce7c9ed06f21947f01dd7f775aa6e664fc269e44b30875906241bc2dbe1fa24",
+"provenance_sha256": "162116abad1ff510884d1bdffddc8cdfc6219486ea46d8ac56b7642cb86fc75b",
 "size": Vector2i(32, 32)
 },
 &"defender_1": {
@@ -86,7 +86,7 @@ entries = {
 "pattern": "res://assets/sprites/defender_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "aaa82e959254c75407ed998ed851dc3f47ca7e2ff229edb221f10c26f29ec141",
+"provenance_sha256": "ea8b00a6b4f8a6160a70c3deedc7be07918c2099ac2723cc09d9ba3463351668",
 "size": Vector2i(32, 32)
 },
 &"defender_2": {
@@ -114,7 +114,7 @@ entries = {
 "pattern": "res://assets/sprites/defender_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "25cbf2b8258ece6b00e89977dbcfc31454cae3de6b14094bdce0282ea41be49c",
+"provenance_sha256": "41c0a8aa76b85396c51ff86db0c45afdaf7e3511e68e68083a49e869b2e6f632",
 "size": Vector2i(32, 32)
 },
 &"drone": {
@@ -446,7 +446,7 @@ entries = {
 "pattern": "res://assets/sprites/guard_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "b3d2baf881598b94293bdd117810c333c8fa051fdf921c78f2c714f3496f2645",
+"provenance_sha256": "23742a5194d96ac16889a8196eb655b7236c89a97bc49fe8cafea4a5187946bc",
 "size": Vector2i(32, 32)
 },
 &"guard_2": {
@@ -474,7 +474,7 @@ entries = {
 "pattern": "res://assets/sprites/guard_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "8675817cb4cecdd0822e07673974f0a39afaf0989045ea1525103cb3a2e80c9f",
+"provenance_sha256": "a78b7592089fe1f811f13a30a5c45c645b50496e04cd822d40ca1bdfb29bd4fc",
 "size": Vector2i(32, 32)
 },
 &"heavy": {
@@ -557,6 +557,1286 @@ entries = {
 "provenance_sha256": "84c839c0c9f01eda18ad0dfa80e13662da81f51e77bd48eeb86290968a8f0476",
 "size": Vector2i(48, 48)
 },
+&"op_anim_caster_1_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_1/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "de3ca8dfea1b285410d97c5b9661048c61aeb98f39297b112be91822f4f57667",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_1/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "1a4a7e658e0bd8660dfa2d0d6c66972844bde9e780a3fc5294b9fec26c292bcf",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_1/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "5277d444b5d5501e1395561eff9405a5cf19a60a4c5e86c3fa6bc6089be7908e",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_1/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "ed4e477aac3f10907c21e2c3986bdd9da72c6d2871c764b51fbc7f6011d674d0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_1/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "6b28776812ef4b76f08374fcf1ead2e341eed6c40edf2993a902c06dcad8fdab",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_1/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "4516bcd0ee1005403d445b3a6311b9d3771e03e17ee60fe2378497ab0519ad76",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_1/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "61a38092a0350db682d8403e2eda442df1dfbc26037299aa3dc0c970cd231640",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_1_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_1/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "5193e63df157a5a91d538b44ebebe334ce82a129f72304bf65728115bb2e255d",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_2/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "842961f4f4dda3f806039f3507af373fc2db7c13076e52db9b63add28a93041d",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_2/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c2a56cc05c96ea3cbf3d80e51d6ef7ad8d1f6c69bbf0713bf4c894d98dc1024e",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_2/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "3289bb7354c7dc493c181996dc50661737b9afba0c1f44df18c55521beaa53bf",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/caster_2/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "dea931cfe5895d77f23e315f454993dd0f42d749dd5def47d44f4de1b8cce572",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_2/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "bfd540492bacbaa15f460e980c7640c9375fcf36b2716e5f96ae982ad31671c5",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_2/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "42f1f2231cc9f1ffd291d9b34a6f5efb381c62ab8f22f0947945fd28871ebc75",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_2/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "7621e805f896808933ab234fd0a01b1f3350de1ddda76ce82bed51ce7ec28c03",
+"size": Vector2i(192, 192)
+},
+&"op_anim_caster_2_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/caster_2/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "4be8157d27eda3c468fd53632ee843e1cbb4e69090292b91990a40c2538663b0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_1/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c31f6cff37ea1fb9d61e367e07ad3ed6282afee94e4b6228cd47b870189844e4",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_1/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "48e417bf4e1bf46efd96f5c985654afd29f9dd9f04fc0c873de94dd717c622ca",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_1/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "b7c04ce8fde697099f6203e1ecef834735bd9c0e0ee95200cae214bf6a587cd0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_1/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "f6ea3f4d9bc0dd948cbd49f9b4f7473958545c85cb04199d2f7f5c88c6191009",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_1/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "7e1b974f0d07a924b4f3c9fb08ac96a1d916d918e3cee80f8f3c52cd16df6992",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_1/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "941f3f83a91b919abf52b51158bb32219df370cd9a7072a20aa114d93d5d1f3a",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_1/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "6382c920921abcbcb8c941bd516cc30a96e1a979990604c1bb845f25a3c84c61",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_1_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_1/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "9b9fde9344595775a47fe06c492b83e0b7e54493ed7db9b68158be3cdee8314e",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_2/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "d32e3f33688372c2e4afc7abaec2e54d29a48a0995604759d3d566145dde5e2c",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_2/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "064d1a7a8943a041f447b253eafa28376b908dea095500cea668832ba1826109",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_2/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "308213ae75e2d3e5052bce5447c699eb24623550a524243bc7765f381d02bc57",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/defender_2/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "5330a27559f3db148f9e6667710c0eebf94017dc3f607bd4bdb892800eb651d4",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_2/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "8ffc91105e8281c6b96418d95c644ba37722aeade83e5f0c630b1f4ccb48a362",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_2/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "dac2d60794730deb39bdd4cbb9a84799b2e1517fd9dde4d40b777e520fe0dad3",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_2/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "99ca989e2df2c0a09ad18dec1f258ef713cc60e63db61b764ebee798aa843ec1",
+"size": Vector2i(192, 192)
+},
+&"op_anim_defender_2_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/defender_2/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "56ae06005d91c4e402332c0b4939c32414b811e04e8c5d1e40fa567aed188d53",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_1/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": true,
+"provenance_sha256": "09340a412ddd73d1b8ef6599d7909648c3180e4ee2e1bf8db77eb83e55d35a64",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_1/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "5efb1ccdbe4be0d0370118872002d1661ab141c27326672959d135d7d62884d2",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_1/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c8fe4ee0d3b23a80f2200366a2058b88602b83ff4d10806659437c77396de7d9",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_1/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "8ce766ab37a534be5df05dbe99c1b7db2481af60cf9a28b1c925bdb17913c1c0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_1/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "8d85ef743dce08c2b18697325a8ffe903d04164c0a3135428da9f88008c2393e",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_1/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "a8e215861561ac331836fc00e94d855ea513ae5a95b4f7da8a2d67a1226bd735",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_1/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "91246ad8342f0bbb8eb2ee9fe23885d0eec65845b40d04cd4b3b3d50de1c465e",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_1_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_1/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "edb303efce38b25267d9eea98eecf33837db00331c4edbadac63d18330ee72aa",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_2/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c888e4720807c1d9b1bdafbc56e8a5b61b1e674524a726ccdc57a650ddf0a369",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_2/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "8f14236ba9723b839ec021d4731c793ccbaeb6247a5087ab9923ac3f7b9c15c8",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_2/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "370f303947d6c2fc1c031212da1edbf956fc97f1089483a2b6a03df08be05d87",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/guard_2/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "cc4d1eee9df0a6f9748993a663932953a0c835391a3aa67da1a2fbf94fa7b294",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_2/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "429305a3daa885be4136d26caed64ad2ae208031ebab37a166c4035bda28155c",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_2/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "a01745a483f1420d199ea244d05c17138969c127aaf852ced173bfaa3081d54c",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_2/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "35b605f85bb5c55ea3822237bea00858de266d40ab0e3ecc1921b3e50ca78bc0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_guard_2_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/guard_2/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "f699929fe15d055dc6386910f996f023160121ac707f5d86826df5a1ae532b35",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "1cb0a45382df0874e1c657ea7780a9361cc0de6d26ac11d98b5ac91a0008bc55",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "64ece453523e7804d40b3a43475c0d069ffa5f0fd66bc976ebfe5280d56c32b1",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "e07a0275edbf0ed479f25e8820bf67f867a13b1634fef1dfb05ef13943fb5c89",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "197e1257a71f8bd4ff283a065766d3ba3443d6ef21e1ec6dea7f7d6d93060f50",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "1d1f6e18a1f26ebb9e08d5122164611a3a23c46986441630d1bbf90bef44f79a",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "f3157e555c0c9716e14b8277881b03fc9dd67b2c605df1d924c6d0e5c163b713",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "dc10f930d478122b054fdddf0729ada4b3b1ce5a48a4dbfcde755227cadb3b89",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_1_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "a3f2f4f6e80dddf464300437706238798ef3bc2ed332691ca40a926875ee12e5",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "4b43054c3f58125b82f51374f3774e03770f2c73166bc52ce0c905123decc4b0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "4b7a3fb8d1fabbd181f2ae23e2f7957d293e5c562cb65fce7af65531c7a56098",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "fc6a8e35482e3a65c5a6013abab0438063d353d8432464d9104000753a2096e4",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "7b53dd74540279be4ff70f09d99bb3c72eec8b8de60cc430adc91f64e477da50",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "17922515b88919e845951c43beef87fac59364b663e8ccca6aff1c387f5cf5d0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "b77e645e5f30923aa14f7ab6478dc1fe7c48524a09e1a5ad01e81b3a1b80f0d8",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "7c8d3a97f56d95623db22ee255cba49ecb5011dffaa21f8c04acee70bd40e7ac",
+"size": Vector2i(192, 192)
+},
+&"op_anim_sniper_2_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "fa865542b66f2110586334b158a80897f1c1171dff45c91ce52f704cacacc966",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "955b87932a6026dc112b34a5b91aeea8676c046c0a5d1473168cde2d7a327d13",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "0bd32717bcb678220f45afd76a6a5245c7baed8d3ecc592e25030a557aeb9c9b",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "f0b726e18499480b0645ac4941f775bc08543d915da51c6e8ce5ebc1dbffa229",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c7c5f5b4885f554f7679ffec25d75002eaaaf0bfe685a4da360d0196c72a03c2",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "5f8eb624176f5b41246138b387d477fb63d2bd103e5a21ac5ec432c911ee6fe2",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "d62b2024c461afb1b80047182e8ca5347ffac9288f343db1d83d2ee23ccd0745",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "399f3e6d627dc79e0b3785587841ab37b663784f0ae0727cb2386acbebefdd99",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_1_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c7e90ba88ad9dbc41c466dcd998aedb537c657ca176273bf7e7ba00721bfd799",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_attack_ne": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "deb74e6a547e5068476ed8cf64e983cb2f07512cecdd4d912e849d273d29264d",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_attack_nw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "2480d3234d3d3ea282033bf3b60000d39bc6ce3f40888c4193506d93816357a0",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_attack_se": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "199bd79f5d96f1acf3e5d6e4e60dc7e6a7add16bf34fb70914ac2ec4e7955f06",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_attack_sw": {
+"animations": {
+&"attack": {
+&"fps": 12.0,
+&"length": 13,
+&"loop": false,
+&"start": 0
+}
+},
+"frames": 13,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "666b270d03ec2a9b4ec5a7311fb377674a295323c718a2fa0df6258ebbf341bf",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_idle_ne": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_ne.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "ab3cca7de43c29430c49fba8c048a94d0cfddf1b4a23eefa7348567f8908f86a",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_idle_nw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_nw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "adff9d5e3b6e963eb7033755d20cea8f7fb886b954089d7edddd366293f5d5b8",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_idle_se": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_se.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "c94545c1e2627b9c353100f7b0b580c1735bd7dcb4e75013e886f1d896a3f076",
+"size": Vector2i(192, 192)
+},
+&"op_anim_vanguard_2_idle_sw": {
+"animations": {
+&"idle": {
+&"fps": 12.0,
+&"length": 24,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 24,
+"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_sw.png",
+"pivot": Vector2(0.5, 0.94),
+"placeholder": false,
+"provenance_sha256": "14292d07ee439b96c36a26488bff790edefd6c7c9e7f9b4b0690331220790639",
+"size": Vector2i(192, 192)
+},
 &"portrait_caster_1": {
 "animations": {
 &"default": {
@@ -570,7 +1850,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "8b71103064d98d66d609cb8dca48e6e3d13580f6d812f796565aab432633a5cf",
+"provenance_sha256": "d2e864175a7cd7637262ad178bc75aac964d171a1da51a6ebe61951d596e107b",
 "size": Vector2i(128, 128)
 },
 &"portrait_caster_2": {
@@ -586,7 +1866,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "bae7f10d1745400f1ed14218b230d28ebf894704cc8ddd7be1fad07dd2eac0bc",
+"provenance_sha256": "ecf9936af1d7ef11211823e31edf1f96679f7d3bc973b1805d72aaf7f3a4e325",
 "size": Vector2i(128, 128)
 },
 &"portrait_defender_1": {
@@ -602,7 +1882,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "6d3d25c1f23cc04cba5d7b99107482c05e91ba37ef8981b8b9c464ff1468e86b",
+"provenance_sha256": "93236e8159a2a2fec25be45e20fe2cf57422fd70094a05db1766ec77d27f1337",
 "size": Vector2i(128, 128)
 },
 &"portrait_defender_2": {
@@ -618,7 +1898,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "c22d96632ae6ae8f9ab8a61550c90d8c1509c4fcacd8850597021e32f6645b32",
+"provenance_sha256": "cb048aee7236c31bb90c206c6101646962a93f400b552f4e60d2e296ef25122d",
 "size": Vector2i(128, 128)
 },
 &"portrait_guard_1": {
@@ -634,7 +1914,7 @@ entries = {
 "pattern": "res://assets/portraits/guard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "37d9b7d54109710679ac01cf9011c53ce28c5ac93e6bc2f324c8243f17815ae8",
+"provenance_sha256": "8be5cafeb4412f402eb1f275882de12f02763f572b475ecd41c669dcbcc7b46a",
 "size": Vector2i(128, 128)
 },
 &"portrait_guard_2": {
@@ -650,7 +1930,135 @@ entries = {
 "pattern": "res://assets/portraits/guard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "d2d4fb827ce6a45dfbc75e090157e5d4c67a653fcc9a903934e572907bbb13ae",
+"provenance_sha256": "b636d11c764a2a4b75c1f7c7c9abf360d4cbf5a9e53d2ed6c61eb4d9403f4cd4",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_00": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/vanguard_1.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "53750f536675e33cb94411c9f8df4461b11fb9c254e34bb009cbd787fd6574ac",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_01": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/guard_1.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "f2ad6ce8ded4cc759abc4f03e6a4b2e62c4c8ba2b37a5f11296f62895b49b4dc",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_02": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/defender_1.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "8b631f11183bbd2fb4ff8a60cdca9964e97b862597c4745fe180a87c2a87e09c",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_03": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/sniper_1.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "3f8bb7b755bd8e432c0eef48b62dc052da95a1691941d0442892a921faeda79e",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_04": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/caster_1.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "0c956ea03ec99c634e131deb7a5a4777830caaf38002a87f9de73bb8c13b794d",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_05": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/vanguard_2.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "615bd331f93bd815c2f8583032d742c06af2c13af1c943ad90b94564f767f517",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_06": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/guard_2.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "d9750567d3fe0ff07366d8bb43c8125c4f5e898b40b9105dccdebde3338bf7a2",
+"size": Vector2i(128, 128)
+},
+&"portrait_recruit_07": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/defender_2.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": true,
+"provenance_sha256": "ff2acca20f7a37c2ee8f926444752e9926d54486f9d5a3b6076cb8656285ce4f",
 "size": Vector2i(128, 128)
 },
 &"portrait_sniper_1": {
@@ -666,7 +2074,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "80c323800f70455af40fa3b16183c8d74da5b3434e038e462d7a1572ba78c6da",
+"provenance_sha256": "92342e3a392277ea41211450567ba165a850604ccfa8e8b902afb14c4ba39a9d",
 "size": Vector2i(128, 128)
 },
 &"portrait_sniper_2": {
@@ -682,7 +2090,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "8ee918a012f581350dbde902000832d3366555f25ffb8988b93f2a26147a46ba",
+"provenance_sha256": "27ccc789fa67bffb8bdaa94dd4ab7fb780a2bc342d2518fc383ecc4491c1a3b9",
 "size": Vector2i(128, 128)
 },
 &"portrait_vanguard_1": {
@@ -698,7 +2106,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "59eadb358b2d2208198416b5510c7dcf434208aa0eadd8989f9aac81754b5a81",
+"provenance_sha256": "10255d8a3fb044d482c95aa73c602f74506fb05deba6a6d1e1cb1a4671b66506",
 "size": Vector2i(128, 128)
 },
 &"portrait_vanguard_2": {
@@ -714,7 +2122,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "3e11d3f8d2a5549997d76754164d43bd892f20418a2ed032a280ad07c12140e7",
+"provenance_sha256": "04d48f8926402c5e72400f3766c9fdcd9194c520a9d876a6172d961e298e3375",
 "size": Vector2i(128, 128)
 },
 &"portrait_witch_doctor_1": {
@@ -730,8 +2138,36 @@ entries = {
 "pattern": "res://assets/portraits/witch_doctor_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "0c29de07c9466088329523b381400a71886f31b9e4ed0877a93b6df8283649a5",
+"provenance_sha256": "54c51068ce9e32b4c870115dc885f0035f660847d1f5e1e5684f0267ff4258f5",
 "size": Vector2i(128, 128)
+},
+&"recruit": {
+"animations": {
+&"attack": {
+&"fps": 8.0,
+&"length": 2,
+&"loop": false,
+&"start": 2
+},
+&"deploy": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": false,
+&"start": 4
+},
+&"idle": {
+&"fps": 5.5,
+&"length": 2,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 5,
+"pattern": "res://assets/sprites/vanguard_1_%d.png",
+"pivot": Vector2(0.5, 1),
+"placeholder": true,
+"provenance_sha256": "331752ea9e5f6c0bd8e32a9a74e499840d61634d6116cdeeafae24545938b57a",
+"size": Vector2i(32, 32)
 },
 &"runner": {
 "animations": {
@@ -790,7 +2226,7 @@ entries = {
 "pattern": "res://assets/sprites/sniper_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "a0a9a8432051dc8dacc4156286b9f3644f5681a285ed0b69c5b968745e18c4a6",
+"provenance_sha256": "2745dd87010366b4eaf5f92e7697167a41953edf39874f390663b9823173f7b2",
 "size": Vector2i(32, 32)
 },
 &"sniper_2": {
@@ -818,7 +2254,7 @@ entries = {
 "pattern": "res://assets/sprites/sniper_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "fa97a73913298d99fcee1d4c5096fddb0c17be40323296edc91be27a22b24f3e",
+"provenance_sha256": "04f14f67bbb64c54a528382d52ecf92a1ce97611c92d1c5198aa3e498f7d37bd",
 "size": Vector2i(32, 32)
 },
 &"spellcaster": {
@@ -1054,7 +2490,7 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "38fd31e3a77b94795fd3dbb7c6c64fd45f81bdda646396901666f4b0e1cef740",
+"provenance_sha256": "8d5c0d15bec7256e52c85c8658a1cf0657801e7753b9aace71a4d33882179dfd",
 "size": Vector2i(32, 32)
 },
 &"vanguard_2": {
@@ -1082,7 +2518,7 @@ entries = {
 "pattern": "res://assets/sprites/vanguard_2_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "2678da83dc02b5dfc167a6d1693489e5415777f7e96937da78e8fdfb7b490a92",
+"provenance_sha256": "c1a4da2803132e3545f4b35ce07dc13f66f71c13cc7be111176824c5f575d1e3",
 "size": Vector2i(32, 32)
 },
 &"witch_doctor_1": {
@@ -1110,7 +2546,7 @@ entries = {
 "pattern": "res://assets/sprites/witch_doctor_1_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "ad63d8d057067ec1d251b32084854ec04cab743ebdacfa7646f2bbac0b447e12",
+"provenance_sha256": "05efe93454f3305fe82c676ea70c2134dd12732a033f860df74773c423edf1bb",
 "size": Vector2i(32, 32)
 },
 &"world.s1.backdrop": {
@@ -1304,1285 +2740,5 @@ entries = {
 "placeholder": false,
 "provenance_sha256": "77428ed45a8412a5265efe9ddba0ba765a719a729cdc33fe39142de5b1f31e3d",
 "size": Vector2i(32, 32)
-},
-&"op_anim_caster_1_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_1/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "4ee5d75eb828743c070b890421e11da58df16d7ce1b8a6aa1cd93cc9dd6a4699",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_1/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "34a235bad8dc41a8bad2d8889ff4a17109e995b73a06caa9dea9d993db7769de",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_1/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "2ed34198d93e0cf178e602c01025f6188cfa8c8fed765b05956f860861e1de77",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_1/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "8c4bb20e0b87c592927554154e06ea82b97c9dd309801e7b3bae3e1318ca1612",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_1/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "370a46b28e13b6e5b3640c21eceafcd0c210cdf743516e11d079bcc4da4c8f7e",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_1/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "5e5fe5433545156f9244ec2a66e4ce75d60b8b65a86e158b920b82368ffc0c02",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_1/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "64020ac8336613ed2398f6969415109a2add983d6f29c4e6b6bd14fb61450d62",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_1_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_1/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "0c4195d10541a01139783d769d8e81b5c22e282a27186bb9a36c421ed8e842a0",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_2/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "3bdeab01e78695e35d4445c9041d5743bcdae282e6f5d1aa486a3db1b59f3643",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_2/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "6a0ffe5f4df22ba15703857595a687adef8b724d09c8db33131b75d6c54032ea",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_2/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "aa81d9f131d515898674d6a217663868376c1494cc3aa31d2a145ddec141cd23",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/caster_2/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "4c68ab565c69ec636df07b038f91fbb5d4a9294d776faf117f873ea48aa7af48",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_2/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "9d447ad2191b95f1ff515523de5cfed6af9d1b9967b8ea1eadca5f517b5f2aed",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_2/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "72b68ca2b450ea083b912f824325a9d4aa46ee164ea8303609f36e14072d44d9",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_2/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "f9c7c495c1103a26c56604953d239e91e1f885d13cc00a73bdd9d3727723bef2",
-"size": Vector2i(192, 192)
-},
-&"op_anim_caster_2_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/caster_2/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "d16676b3c965d5090b172358a38dceb9d96022c38fd4b8c33850459b01073b72",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_1/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "e157cca58770d0b6ae83b4d947bb3975205f0c7a979eb476f9c2e501d58ce445",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_1/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "a6f1c437570be4ce28d70bdfe1d929707d17b9e6667a2aef7987005d30e155c9",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_1/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "429a4feac2e9e42e7b34110ace65c6b7c791dd42a63fffc1e090bde57eb40d3c",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_1/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "dee82f74339048d2a961bb4886cf27bb89c4c80d461f00d78704b72d26ab153c",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_1/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "ee5abdbc3794a7175781710584257f4f604c6474c308aa4bfe6f94434ce6045c",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_1/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "3c95df57b8b509eef7e42eb4295000b557cd421d70311b4fa3b6f542f6546b85",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_1/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "6b093aaac20bdc80f9d04ee9ae4ee68f67ada7eed699c7d6d83f131fb5c6b001",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_1_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_1/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "11b44f131e0398de74d2cae2726ce3f19344d705d098814eb0ae9d04a3755f30",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_2/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "01bc25ae76f722f326f004c54cfa5eae43b65b87cc2bf687628344787b56235e",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_2/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "19987701528d9a8dd3d4dc0093db69129de676ffe44ea89c467f9c5db4c2ca3d",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_2/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "2a228746b747447e5d0337b457813cc688dc44eb02f518cb7a2c742ab3ebe4d6",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/defender_2/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "d73e62a43bbab3fa98335dd10b795a4f509628d129a6357422420d69717227ac",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_2/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "18cf76592084c696903e1271dfafa04ee34173e35dd19d7c1ba2188c26f9c0f1",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_2/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "b6d507ed13d82fa6a9c21a85948642da257bf1bbe594a54033444397b9c1918b",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_2/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "d7808ae6e000fd23192bc5d9b30e6ab5f4f2a35dc96020db5eafb7c93bf47e4f",
-"size": Vector2i(192, 192)
-},
-&"op_anim_defender_2_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/defender_2/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "06c3fee114c8863724d0257bd910254434c83c386df56dda6b13a951d39e5897",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_1/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": true,
-"provenance_sha256": "f0c27f4e896356ca134b2da4b8c77f6e5480bcaa777dc136306440b982d252a4",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_1/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "6e025363424ffdb6119c9bfb3743723f98fdeb159fc3e1766c89cc87fe66aea3",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_1/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "37805901847a8220cc622a3be5de8ed981ed211b6dfbb427f9b7a73f6f510943",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_1/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "4453480e0cef4c06cee8c0bd9979048631b8849e34de770da238c11c235e498c",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_1/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "9ccb6559c15f6b6b72ca8bd2302ba28c089dacb696d3c45c2ff9245c11c8f7ed",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_1/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "8ad6a460a17bf986ed12d0833168877623255a2af11dfc21b2495bf56fbadfb5",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_1/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "79fd1b119d3af6debb4608f2bbb0b663536f5a063064660ed958076962ffd7fa",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_1_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_1/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "92993c639cacb06d96568990e6d44e45c968eb014cfdb97fade3a2fe4ab0e137",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_2/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "8ac79e3090b5eb686d9dd5f1d26ced6073b6e9225a69bb71eede135fd862c287",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_2/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "99b63cbee99c15ea2d78bd0455f51f9d744f09212c3748d877ded126b4c6ea07",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_2/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "68d515f9b0702e9b690c2f8e413730f266611cdc670ff0d9b472fd611fc13cd7",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/guard_2/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "3803d3dc36f72bc064ae49973fa6c0bbaf1c71077749487e28928e34eca79f9e",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_2/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "0ce3e2aba8db0ab148eee3ec5d227180c21ab6156ec79d9bfa456100783e7b31",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_2/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "1a247401ce52d11a090c8443522dbee020ed17cb64108b1c122f3b60886c5cec",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_2/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "dc7dfc2e68fb991bc78564d82fe4c9e2fa16a87fdc74453ce8943ae90a021030",
-"size": Vector2i(192, 192)
-},
-&"op_anim_guard_2_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/guard_2/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "cb55bbb48c1f309cda378ec854aec0470856b4088a2c0711df69f0d29e561812",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "46d12ffd92b4279266287af64caf983c202567e0749e24d84941e1a0e48df2bb",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "15250ff7a1de11a68035833c87aa19ffc162e1ff2b8486ce0bdd2da5a4c424e1",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "4eb5757892bfe68d6c719457396e9a6546a90fc2022130b6a95d8d1e403a28ad",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "272e7ab7ff361c9a8ca6955100f0a93c0aeac7c1d568bf40894a90671cf20099",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "fa3e6db545c3ec7682c10a1c692c259763eb5c1610ddb3cdc98fa5da6d792b38",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "0ecdfc9c3d2eb62caadb5f1417ce6d2f4c68a6e41de6440f5c36c0f42fb1c456",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "c474fe0b9ee6dd6fc8bb2e29645dc273d1aedc5f47feffaf7cd389eaf72070a3",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_1_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_1/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "8fb9df4697ce7e4c3b283df04904d05beca933e76b857b1ee4442ca44ddc5fd0",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "0b91e94512214a57dc3548f6e3ccb2f29251e9fd4a9d13eeb693e54a86872578",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "9b50db08c9ee648ce10f93a32a30a9f3aadbde7199096d77d27b1ae8cda92cf6",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "c6ec421f06fd341ab3038b04092bf6d7fd7e141c07cfee4bfa05433555f7a319",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "ff18716edc582a2ef687ee3d95065f8ba476432db722cbf11cc3088bbb4d8d8b",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "5e86534e6076058d8b177d6425d47c9fd006f969b5bc0193481856e79ae52ea9",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "be9b26bd625362ff00055661ffbadf07d810bc3fe4f5c618b6c9dd7c9b9ac643",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "79cd320ae315bbb847262acbe8fda92adbe8955883807d587fee8f064e1cfb08",
-"size": Vector2i(192, 192)
-},
-&"op_anim_sniper_2_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/sniper_2/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "7b624e6ddc2848293c40d66339403d93f06aa2e61e0968614f0c0b7b8a50c115",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "72817381a811a76bdb23462775bd193aa4a18c6a1e8e3735e108b23960eec9cc",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "6a7da3d780fabe5c1459680977aec362921aba5a56411e91b50552447fac6897",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "c04f3c9155ce924623f71b8eec24491f6715420ce4ae617daba696da06ed63b1",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "8cd0719d6aea8a8f0b73434a3fb3d88deb586a1d7ef33e29e4f670b80d9cb10a",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "e06eb06844198ab499249ebbc9cc0c338fa75b03930b49cfa5743c28d2f4bcd2",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "2042a01afd360e4fdc067c845c4276e7c62f96ec0b986864d0a2c6f9216e2694",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "5bc7a6c462e7b4e5f5e001c04ee4115da646837479d924e8212b7a2ddaef9908",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_1_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_1/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "9c6b9f8d2e96054418b6442c933bf68d623819d404ccd90949bcdfdfeb250c63",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_attack_ne": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "9121acdf9c3a294b431155a3dd8bf95bb78abc4cb7b60225edc41f05ddcc4e28",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_attack_nw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "5baf070847feac75aff82d3ed608dbd1d0492771c3f4a8389de9f17231725671",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_attack_se": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "77834e3334b3cf0265a0c4195e4160ce8ae974b952e1425c60c864719a599fb9",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_attack_sw": {
-"animations": {
-&"attack": {
-&"fps": 12.0,
-&"length": 13,
-&"loop": false,
-&"start": 0
-}
-},
-"frames": 13,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/attack_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "e06a5711010bf2e08a6ba9571971b39619ea1dc9a5a0b9da4206a89cb6b2bc95",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_idle_ne": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_ne.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "b026bbb0c597d9b2562c5620b8848d722ea7a19891b718c1c12b33eacd558552",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_idle_nw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_nw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "33f5b4984454a0fa654274a708d7da44eb43ecac045e7a1ec846e33cb007d639",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_idle_se": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_se.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "5d4798b4e1699a35a6559cf3b76d8adbdbe5d11daf5d2efd4f9493c0b95bb1e6",
-"size": Vector2i(192, 192)
-},
-&"op_anim_vanguard_2_idle_sw": {
-"animations": {
-&"idle": {
-&"fps": 12.0,
-&"length": 24,
-&"loop": true,
-&"start": 0
-}
-},
-"frames": 24,
-"pattern": "res://assets/sprites/operators/animated/vanguard_2/idle_sw.png",
-"pivot": Vector2(0.5, 0.94),
-"placeholder": false,
-"provenance_sha256": "2b01b6da45ec44125eb5c2d97bceb5a91f67470e0502bcae1afd275e5ca8d0e9",
-"size": Vector2i(192, 192)
 }
 }

@@ -36,6 +36,9 @@ ROUND5_OPERATOR_IDS = {
 ROUND5_ENEMY_IDS = {"drone", "grunt", "heavy", "mini_boss", "runner", "spellcaster"}
 ROUND5_APPROVED_CANDIDATE = "441cb80b079ee89195ef751dbc26e67b426600d0"
 ROUND5_APPROVED_AT_UTC = "2026-08-13T10:13:37Z"
+RECRUIT_PLACEHOLDER_IDS = {"recruit"} | {
+    f"portrait_recruit_{index:02d}" for index in range(8)
+}
 ROUND5_COMMON_SOURCES = {
     "res://assets/asset_manifest.gd",
     "res://docs/decisions/AUI-DESIGN-APPROVALS.md",
@@ -105,6 +108,10 @@ OPERATOR_ANIMATION_REMAINING_SOURCES = {
 def is_round5_character(logical_id: str) -> bool:
     base_id = logical_id.removeprefix("portrait_").removesuffix("_charmed")
     return base_id in ROUND5_OPERATOR_IDS or base_id in ROUND5_ENEMY_IDS
+
+
+def is_recruit_placeholder(logical_id: str) -> bool:
+    return logical_id in RECRUIT_PLACEHOLDER_IDS
 
 
 def is_grunt_animation(logical_id: str) -> bool:
@@ -245,6 +252,20 @@ def source_paths(logical_id: str) -> list[str]:
             result.update(OPERATOR_ANIMATION_REMAINING_SOURCES)
         if logical_id in OPERATOR_ANIMATION_NATIVE_IDS:
             result.add(OPERATOR_ANIMATION_NATIVE_APPROVAL)
+        return sorted(result)
+    if is_recruit_placeholder(logical_id):
+        result = set(ROUND5_COMMON_SOURCES)
+        result.update(
+            {
+                "res://data/operator_def.gd",
+                "res://data/operators/recruit.tres",
+                (
+                    "res://art-src/characters/round5/portrait-treatment-sheet.png"
+                    if logical_id.startswith("portrait_")
+                    else "res://art-src/characters/round5/roster-style-board.png"
+                ),
+            }
+        )
         return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
@@ -504,6 +525,61 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "human_contribution": (
                     "character direction, class selection, model override approval, visual review, "
                     "and runtime presentation calibration"
+                ),
+            },
+        }
+    if is_recruit_placeholder(logical_id):
+        generator_path = "res://tools/art_pipeline/characters/import_round5_sheets.py"
+        generator = digest_row(repo, generator_path)
+        return {
+            "schema_version": 1,
+            "logical_id": logical_id,
+            "source_type": "ai_assisted_deterministic_normalization",
+            "final_files": [digest_row(repo, path) for path in sorted(final_paths(entry))],
+            "source_files": [digest_row(repo, path) for path in source_paths(logical_id)],
+            "recipe": {
+                "command": "godot --headless --path . -s tools/gen_assets.gd",
+                "godot_version": GODOT_VERSION,
+                "generator_path": generator_path,
+                "generator_sha256": generator["sha256"],
+            },
+            "generation": {
+                "provider": "OpenAI",
+                "model": "gpt-image-2",
+                "generation_id": None,
+                "seed": None,
+                "unsupported_reason": (
+                    "service does not expose a stable seed; exact approved concept sheets are retained"
+                ),
+            },
+            "migration": {
+                "baseline_commit": BASELINE_COMMIT,
+                "baseline_tree": BASELINE_TREE,
+                "migrated_at_utc": None,
+                "status": "new_runtime_asset_authenticated",
+            },
+            "acceptance": {
+                "state": "unknown_per_current_byte",
+                "human_accepter": None,
+                "accepted_at_utc": None,
+                "accepting_commit": None,
+                "source": (
+                    "FEATURES.json:LA records family-level Lane A acceptance at c8ee84d and 218aaea "
+                    "but does not prove every current byte"
+                ),
+                "reason": (
+                    "current inventory includes later additions or modifications, so no immutable "
+                    "per-asset human acceptance fact was inferred"
+                ),
+            },
+            "license": {
+                "spdx": "LicenseRef-Project-Owned",
+                "source": (
+                    "original GPT Image 2 concepts and project-controlled deterministic normalization"
+                ),
+                "human_contribution": (
+                    "direction, selection, concept approval, runtime-binding direction, and "
+                    "normalization review"
                 ),
             },
         }
