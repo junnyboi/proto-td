@@ -97,6 +97,9 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var lifted := tile == StageDef.Tile.ELEVATED
 			var is_route := path_cells.has(cell)
 			var is_road := tile == StageDef.Tile.GROUND and is_route
+			var surface_modulate := theme.surface_modulate if theme != null else Color.WHITE
+			if lifted and theme != null:
+				_add_standard_base(grid_root, cell, theme.ground_id, surface_modulate)
 			var resolved := (
 				theme.resolve_cell(cell, tile, is_route)
 				if theme != null
@@ -105,7 +108,6 @@ static func _build_terrain(grid_root: Node2D, stage: StageDef, theme: StageArtTh
 			var art_id := StringName(resolved["tile_id"])
 			if art_id == &"":
 				art_id = &"tile_road" if is_road else TILE_ART[tile]
-			var surface_modulate := theme.surface_modulate if theme != null else Color.WHITE
 			if not _add_tile_sprite(grid_root, stage, cell, art_id, lifted, surface_modulate):
 				var color: Color = ROAD_STANDIN_COLOR if is_road else TILE_COLORS[tile]
 				if lifted:
@@ -256,6 +258,31 @@ static func _add_tile_sprite(
 	return true
 
 
+## Every raised platform is an object above the canonical ground map. The base
+## face is unlifted and non-interactive; gameplay/picking still owns one cell.
+static func _add_standard_base(
+	grid_root: Node2D,
+	cell: Vector2i,
+	ground_id: StringName,
+	surface_modulate: Color,
+) -> void:
+	var tex := Art.texture(ground_id)
+	var art_size := Art.size(ground_id)
+	if tex == null or art_size == Vector2i.ZERO:
+		return
+	var top := IsoProjection.cell_polygon(cell)[0]
+	var sprite := TextureRect.new()
+	sprite.name = "BaseTile_%d_%d" % [cell.x, cell.y]
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.texture = tex
+	sprite.self_modulate = surface_modulate
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	sprite.size = Vector2(art_size) * _art_scale(ground_id)
+	sprite.position = Vector2(top.x - IsoProjection.TILE_W * 0.5, top.y)
+	sprite.z_index = IsoProjection.tile_z(cell) - 1
+	grid_root.add_child(sprite)
+
+
 static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArtThemeType) -> void:
 	_add_landmark(
 		grid_root,
@@ -275,6 +302,34 @@ static func _add_theme_decor(grid_root: Node2D, stage: StageDef, theme: StageArt
 		theme.core_offset,
 		"CoreLandmark",
 	)
+	_add_env_props(grid_root, theme)
+
+
+## Scatter environmental props above standard ground faces. Their stage cells
+## remain BLOCKED in gameplay data; the prop itself adds no separate collision.
+static func _add_env_props(grid_root: Node2D, theme: StageArtThemeType) -> void:
+	var cells: Array = theme.env_prop_cells if theme.env_prop_cells != null else []
+	var ids: Array = theme.env_prop_ids if theme.env_prop_ids != null else []
+	var count := mini(cells.size(), ids.size())
+	for i: int in range(count):
+		var cell: Vector2i = cells[i]
+		var art_id: StringName = ids[i]
+		var tex := Art.texture(art_id)
+		if tex == null:
+			continue
+		var art_size := Art.size(art_id)
+		if art_size == Vector2i.ZERO:
+			art_size = Vector2i(tex.get_width(), tex.get_height())
+		var center := IsoProjection.face_center(cell, false)
+		var sprite := TextureRect.new()
+		sprite.name = "EnvProp_%d_%d" % [cell.x, cell.y]
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = Vector2(art_size)
+		sprite.position = center - Vector2(art_size.x * 0.5, art_size.y)
+		sprite.z_index = IsoProjection.tile_z(cell) + 2
+		grid_root.add_child(sprite)
 
 
 static func _add_face_overlay(

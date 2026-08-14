@@ -51,7 +51,7 @@ func set_presentation_text(logical_text: String, rendered_text: String) -> bool:
 	var transparent := Color(0.0, 0.0, 0.0, 0.0)
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
-		&"font_focus_color", &"font_disabled_color",
+		&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
 	]:
 		add_theme_color_override(color_name, transparent)
 	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType

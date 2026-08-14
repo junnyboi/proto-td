@@ -8,8 +8,12 @@ const IDS: Array[StringName] = [
 	&"world.act1.spawn",
 	&"world.act1.core",
 	&"world.act1.panorama",
+	&"world.act1.env.boulder",
+	&"world.act1.env.barrel",
+	&"world.act1.env.wall",
+	&"world.act1.env.crate",
 ]
-const COUNTS := {&"s1": 45, &"s2": 55, &"s3": 64}
+const COUNTS := {&"s1": 51, &"s2": 61, &"s3": 69}
 
 
 func run(h: SelfTestHarness) -> void:
@@ -43,8 +47,8 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName) -> void:
 		return
 	h.check("%s exact shared IDs" % stage_id, theme.required_manifest_ids() == IDS)
 	h.check(
-		"%s approved token and pending final verdict" % stage_id,
-		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and not theme.human_final_art
+		"%s approved token and human-final verdict" % stage_id,
+		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and theme.human_final_art
 	)
 	var grid := view.get_node_or_null("GridRoot") as Node2D
 	h.check(
@@ -63,19 +67,68 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName) -> void:
 		)
 	)
 	var cadence_count := 0
+	var prop_count := 0
 	for child: Node in grid.get_children():
 		if child.name.begins_with("Cadence_"):
 			cadence_count += 1
+		if child.name.begins_with("EnvProp_"):
+			prop_count += 1
 	h.check("%s zero cadence nodes" % stage_id, cadence_count == 0)
+	(
+		h
+		. check(
+			"%s exact environment prop count" % stage_id,
+			prop_count == theme.env_prop_cells.size(),
+			"actual=%d expected=%d" % [prop_count, theme.env_prop_cells.size()],
+		)
+	)
 	_check_texture(h, grid, stage_id, "BackdropPanorama", &"world.act1.panorama")
 	_check_texture(h, grid, stage_id, "SpawnLandmark", &"world.act1.spawn")
 	_check_texture(h, grid, stage_id, "CoreLandmark", &"world.act1.core")
 	for cell: Vector2i in theme.elevated_cells:
+		_check_texture(h, grid, stage_id, "BaseTile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.raised")
-	for cell: Vector2i in theme.blocked_cells:
-		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.blocked")
+	for cell: Vector2i in theme.env_prop_cells:
+		(
+			h
+			. check(
+				"%s %s remains gameplay-blocked" % [stage_id, cell],
+				model.stage.tile_at(cell) == StageDef.Tile.BLOCKED,
+			)
+		)
+		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 	await h.frames(52)
 	await h.shot("%s_act1_shared_clean" % stage_id)
+	if stage_id == &"s1":
+		await _check_selection_ring(h, model, view)
+
+
+func _check_selection_ring(h: SelfTestHarness, model: BattleModel, view: Node2D) -> void:
+	var cell := Vector2i(1, 1)
+	var op_id: StringName = model.squad[0]
+	var deployed := model.apply_action([&"deploy", op_id, cell, int(UnitState.Facing.RIGHT)])
+	h.check("S1 tower deployed for selection ring", deployed)
+	if not deployed:
+		return
+	await h.frames(3)
+	await h.click_view(view.call("cell_center", cell))
+	await h.frames(3)
+	var ring := view.find_child("SelectionRing", true, false) as Node2D
+	h.check("selected tower rotating ring visible", ring != null and ring.visible)
+	if ring != null:
+		var expected: Vector2 = view.call("cell_center", cell)
+		h.check("selection ring centered on tower feet", ring.position.distance_to(expected) < 1.0)
+		var first_phase := float(ring.get("_phase"))
+		await h.frames(6)
+		(
+			h
+			. check(
+				"selected tower ring rotates",
+				absf(float(ring.get("_phase")) - first_phase) > 0.01,
+				"before=%f after=%f" % [first_phase, float(ring.get("_phase"))],
+			)
+		)
+	await h.shot("s1_act1_selected_tower")
 
 
 func _check_texture(

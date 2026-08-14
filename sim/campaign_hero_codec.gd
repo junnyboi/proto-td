@@ -1,6 +1,9 @@
 class_name CampaignHeroCodec
 extends RefCounted
 
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const SOURCE_VALUES := ["starter", "contract", "reward", "recovery"]
 const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]

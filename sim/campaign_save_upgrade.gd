@@ -1,6 +1,8 @@
 class_name CampaignSaveUpgrade
 extends RefCounted
 
+const CampaignMigration := preload("res://sim/campaign_migration.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
 const PRE_PROMOTION_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
