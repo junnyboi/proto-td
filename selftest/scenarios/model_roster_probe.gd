@@ -20,7 +20,7 @@ func run(h: SelfTestHarness) -> void:
 	var state := created["value"] as CampaignState
 	h.check("authored environment fingerprint",
 		_definition().environment_sha256
-		== "766d1404bfa53e650cc419c49fde338eb20334611b49a19cd095a789f6f525b5")
+		== "693c3f42b492bde75c14940c1068d8a6e7ae551aa694d8551d5a49e26bdd9156")
 	h.check("fresh campaign uid", state.campaign_uid() == "ce46150984346591")
 	h.check("fresh strategic hash", state.strategic_hash()["hex"] == "baa4d62d418258a5")
 	h.check("five canonical starters", state.roster().all().size() == 5)

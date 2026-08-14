@@ -170,6 +170,18 @@ run 60 scripts/model_roster_check.sh --out="$OUT/model-roster/summary.json" \
 jq -e '.verdict == "pass" and .processes == 2 and .byte_identical == true' \
   "$OUT/model-roster/summary.json" >/dev/null || fail "model-roster proof failed"
 
+rm -rf "$OUT/model-roster-scenario"
+mkdir -p "$OUT/model-roster-scenario"
+run 90 "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
+  --scenario=model_roster_probe --seed=42 \
+  --shots="res://${OUT#"$ROOT/"}/model-roster-scenario" \
+  >"$OUT/model-roster-scenario.log" 2>&1
+[[ -s "$OUT/model-roster-scenario/report.json" ]] \
+  || fail "model-roster scenario report is missing"
+jq -e '.result == "pass" and all(.checks[]; .ok)' \
+  "$OUT/model-roster-scenario/report.json" >/dev/null \
+  || fail "model-roster scenario failed"
+
 run 90 scripts/strategic_verbs_check.sh --out="$OUT/strategic-verbs/summary.json" \
   >"$OUT/strategic-verbs.log" 2>&1
 [[ -s "$OUT/strategic-verbs/summary.json" ]] || fail "strategic-verbs summary is missing"
