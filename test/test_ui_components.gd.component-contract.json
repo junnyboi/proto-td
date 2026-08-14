@@ -5,13 +5,14 @@
     "binary_sha256": "32f8d7596c4b41185512b1c49d69f2da3be018fd784a53e349fa92a98a97bcde"
   },
   "font": {
-    "provider": "FontVariation: ThemeDB.fallback_font primary plus ProtosSansSC-Subset.otf fallback",
+    "provider": "FontVariation: ThemeDB.fallback_font primary plus cache-independent ProtosSansSC-Subset source fallback",
     "runtime_class": "FontVariation",
     "resource_path": "",
     "base_font": "ThemeDB.fallback_font",
     "custom_fallbacks": [
       "res://assets/fonts/ProtosSansSC-Subset.otf"
     ],
+    "runtime_loading": "AetheriaTheme first loads the tracked OTF source through FontFile.load_dynamic_font, independent of .godot/imported fontdata; the in-memory data must be byte-identical to the tracked source, and exported packs fall back to ResourceLoader only when the source path is not directly file-accessible.",
     "glyph_coverage": "Every Unicode codepoint in both exact catalogs, English fallbacks, and representative formatted strings must return true from the composed Theme default font."
   },
   "tokens": {
@@ -665,7 +666,7 @@
     "class_name": "AetheriaTheme",
     "resource": "res://data/presentation/ui/threshold_theme.tres",
     "material": "res://data/presentation/ui/threshold_material.tres",
-    "default_font": "FontVariation(ThemeDB.fallback_font + res://assets/fonts/ProtosSansSC-Subset.otf)",
+    "default_font": "FontVariation(ThemeDB.fallback_font + source-loaded res://assets/fonts/ProtosSansSC-Subset.otf)",
     "default_font_size": 44,
     "button_constants": {
       "outline_size": 0,

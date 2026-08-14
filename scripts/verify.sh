@@ -201,6 +201,9 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 # R2: import + project sanity
 run_rung "R2-import" "" 120 "$GODOT" --headless --path . --import
 
+# R2.1: tracked font source must compile without its disposable .fontdata cache.
+run_rung "R2.1-font-cold-cache" "" 60 scripts/probe_font_cache_fallback.sh "$GODOT"
+
 # R2.5: stage data lint (exists from Phase 1 on)
 if [[ -f tools/stage_lint.gd ]]; then
   run_rung "R2.5-stage-lint" "" 60 "$GODOT" --headless --path . -s tools/stage_lint.gd
