@@ -7,10 +7,13 @@
 | Base | `bec1f32600074d6a119ea184837659662546caaf` |
 | SFX implementation | `7790e03ee2f1f28439fb6cd034c3c2f4225e89c6` |
 | Stale-locale oracle remediation | `55cff6d9cb24aa56c3277239c8b7670d06246bf4` |
-| Verified candidate | `55cff6d9cb24aa56c3277239c8b7670d06246bf4` |
+| Reallocated closure | `98e2fa65e2fd40852b38648a289fc3c324bcf7fc` |
+| Reconciled union | `768ed59b549c5bfa56c8eb112b26713e8896c087` over remote master `7228f0300e6c75b69c377b252a4e140ce6150e41` |
+| Verified candidate | `768ed59b549c5bfa56c8eb112b26713e8896c087` |
 | Human verdict | Poseidon ACCEPT, all ten exact Batch 01 source hashes, 2026-08-14 |
-| STANDARD | PASS, 107 rungs and 70 headless/windowed scenario runs |
-| Evidence | External `td032-standard-55cff6d9cb24aa56c3277239c8b7670d06246bf4/` |
+| Branch STANDARD | PASS, 107 rungs and 70 headless/windowed scenario runs |
+| Union STANDARD | PASS, 121 rungs and 80 headless/windowed scenario runs |
+| Evidence | External `td034-union-standard-768ed59b549c5bfa56c8eb112b26713e8896c087-attempt2/` |
 
 ## Outcome
 
@@ -33,7 +36,9 @@ All ten Poseidon-accepted 48 kHz stereo 24-bit PCM candidates are immutable unde
 | Asset integrity | 10 immutable accepted masters, 10 runtime WAVs, 10 uncompressed imports, exact source/runtime hashes, idempotent derivation |
 | FAST | 48/48 rungs, including 35 headless scenarios, PASS on implementation tree |
 | Fresh STANDARD | 107/107 rungs; 35 headless + 35 windowed scenarios; stale-registry, music cold boot, bots, and gates PASS on `55cff6d` |
-| Candidate identity | clean worktree at `55cff6d9cb24aa56c3277239c8b7670d06246bf4` |
+| Reconciled union targeted proof | Focused SFX GUT 9/9; `sfx_playback`, `juice_deploy`, and stronger bilingual/world stale-registry probe PASS |
+| Fresh union STANDARD | 121/121 rungs; 40 headless + 40 windowed scenarios; Training, native Sky Hunter, Act I V3, observations, stale-registry, music cold boot, bots, and gates PASS on `768ed59` |
+| Candidate identity | clean worktree at `768ed59b549c5bfa56c8eb112b26713e8896c087` |
 
 ## Preserved reds and deviations
 
@@ -41,8 +46,10 @@ The first STANDARD attempt on `7790e03` remains preserved as RED. Godot exited 1
 
 The generation fallback used `generate_video(generate_audio=true)` because built-in Mirelo was unavailable in the live catalog. Carrier videos and immutable extracted PCM evidence remain external; the game tree retains their prompt, manifest, QA, and hash bindings. No regeneration was performed during integration.
 
+The first full union STANDARD attempt is also preserved as RED: Godot crashed in a worker thread during the Web filesystem probe's copied-project fresh import after 12 earlier rungs passed. The unchanged exact union then passed that isolated Web rung with 150 checks across 17 cases. A second full run from empty artifacts passed all 121 rungs. No game code, asset, test, threshold, or environment variable changed between the red and green attempts.
+
 ## Merge and rollback
 
-Remote master allocated TD-032 and TD-033 while this lane was verifying, so this completed lane was reallocated to TD-034 without changing code or acceptance. Merge `origin/master` into this branch, preserve concurrent Training, native Sky Hunter, observation, world-art, and stale-cache work, resolve shared ledgers semantically, run the exact union gate, and push normally. Never force-push. Fast-forward local and remote master only from the verified branch union, then run the final master gate.
+Remote master allocated TD-032 and TD-033 while this lane was verifying, so this completed lane was reallocated to TD-034 without changing code or acceptance. Union `768ed59` preserves concurrent Training, native Sky Hunter, observation, world-art, and stale-cache work and passed the full union gate. Push the feature branch normally, fast-forward local and remote master only if remote master still equals audited parent `7228f03`, then run the final master gate. Never force-push.
 
 Rollback is `git revert` of the TD-034 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
