@@ -1,9 +1,8 @@
 extends RefCounted
 
-## TD-015 runtime prototype. A real BattleView renders all five basic enemy
-## definitions with the generated grunt family while mini_boss remains the
-## control. The view is tick-frozen after spawn; only render-time animation and
-## explicitly authored test presentation facts change.
+## TD-015/TD-030 regression. A real BattleView keeps the original Grunt walk,
+## direction-blend, charm, and frame-loop checks while non-Grunt enemies and all
+## uncharmed attacks project through the experimental salvage namespace.
 
 const FRAME_SIZE := 256
 const BASIC_IDS: Array[StringName] = [
@@ -128,7 +127,10 @@ func run(h: SelfTestHarness) -> void:
 		h
 		. check(
 			"attack state selected from combat counter",
-			(view.get("_enemy_anim_keys") as Dictionary).get(grunt.id) == &"grunt_anim_attack_sw",
+			(
+				(view.get("_enemy_anim_keys") as Dictionary).get(grunt.id)
+				== &"experimental_salvage_grunt_attack_sw"
+			),
 		)
 	)
 	grunt.atk_counter = 15
@@ -138,7 +140,7 @@ func run(h: SelfTestHarness) -> void:
 		h
 		. check(
 			"attack reaches its midpoint frame",
-			_atlas_frame(grunt_sprite.texture) == 12,
+			_atlas_frame(grunt_sprite.texture) == 3,
 			(
 				"frame=%d counter=%d interval=%d"
 				% [
@@ -221,10 +223,16 @@ func _check_gallery_nodes(h: SelfTestHarness, view: Node2D, model: BattleModel) 
 	for index: int in BASIC_IDS.size():
 		var enemy := model.enemies[index]
 		var body := _enemy_body(view, enemy.id)
-		var expected := EnemyAnimator.animation_id(&"walk", GALLERY_DIRECTIONS[index])
+		var expected := (
+			EnemyAnimator.animation_id(&"walk", GALLERY_DIRECTIONS[index])
+			if enemy.def_id == &"grunt"
+			else EnemyAnimator.experimental_animation_id(
+				enemy.def_id, &"walk", GALLERY_DIRECTIONS[index]
+			)
+		)
 		h.check(
 			"%s uses generated body" % BASIC_IDS[index],
-			body != null and body.size == Vector2.ONE * 64.0
+			body != null and body.size == Vector2.ONE * EnemyAnimator.EXPERIMENTAL_BODY_PX
 		)
 		if body == null:
 			continue
@@ -249,11 +257,12 @@ func _check_gallery_nodes(h: SelfTestHarness, view: Node2D, model: BattleModel) 
 		)
 	var boss := _enemy_body(view, model.enemies[5].id)
 	h.check(
-		"mini-boss keeps its original body size", boss != null and boss.size == Vector2.ONE * 96.0
+		"mini-boss uses the directional body size",
+		boss != null and boss.size == Vector2.ONE * EnemyAnimator.EXPERIMENTAL_BODY_PX
 	)
 	h.check(
-		"mini-boss has no grunt blend layer",
-		boss != null and boss.get_node_or_null("BlendSprite") == null
+		"mini-boss has the directional blend layer",
+		boss != null and boss.get_node_or_null("BlendSprite") != null
 	)
 
 

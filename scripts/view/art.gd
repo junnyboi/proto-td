@@ -8,26 +8,45 @@ extends RefCounted
 
 static var _manifest: AssetManifest = null
 static var _supplemental_manifest: AssetManifest = null
+static var _experimental_manifest: AssetManifest = null
 static var _manifest_entries: Dictionary = {}
 static var _manifest_error := false
 static var _cache: Dictionary = {}
 
 
 static func _load_manifests() -> void:
-	if (_manifest != null and _supplemental_manifest != null) or _manifest_error:
+	if (
+		(_manifest != null and _supplemental_manifest != null and _experimental_manifest != null)
+		or _manifest_error
+	):
 		return
 	_manifest = load("res://assets/manifest.tres") as AssetManifest
 	_supplemental_manifest = load("res://assets/act1_shared_manifest.tres") as AssetManifest
-	if _manifest == null or _supplemental_manifest == null:
+	_experimental_manifest = (
+		load("res://assets/experimental_salvage_manifest.tres") as AssetManifest
+	)
+	if _manifest == null or _supplemental_manifest == null or _experimental_manifest == null:
 		_manifest_error = true
-		push_error("Art: failed to load base or supplemental asset manifest")
+		push_error("Art: failed to load base, supplemental, or experimental asset manifest")
 		return
 	var merged := merge_manifest_entries(_manifest.entries, _supplemental_manifest.entries)
 	if not bool(merged[&"ok"]):
 		_manifest_error = true
 		push_error("Art: duplicate asset id across manifest layers: %s" % merged[&"duplicate_id"])
 		return
-	_manifest_entries = merged[&"entries"]
+	var merged_experimental := merge_manifest_entries(
+		merged[&"entries"], _experimental_manifest.entries
+	)
+	if not bool(merged_experimental[&"ok"]):
+		_manifest_error = true
+		push_error(
+			(
+				"Art: duplicate experimental asset id across manifest layers: %s"
+				% merged_experimental[&"duplicate_id"]
+			)
+		)
+		return
+	_manifest_entries = merged_experimental[&"entries"]
 
 
 ## Pure test seam: base owns precedence, but overlap fails closed rather than shadowing.
@@ -46,6 +65,7 @@ static func merge_manifest_entries(
 static func _reset_manifests_for_test() -> void:
 	_manifest = null
 	_supplemental_manifest = null
+	_experimental_manifest = null
 	_manifest_entries = {}
 	_manifest_error = false
 	_cache.clear()
