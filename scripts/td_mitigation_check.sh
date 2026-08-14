@@ -182,6 +182,18 @@ jq -e '.result == "pass" and all(.checks[]; .ok)' \
   "$OUT/model-roster-scenario/report.json" >/dev/null \
   || fail "model-roster scenario failed"
 
+rm -rf "$OUT/enemy-damage-scenario"
+mkdir -p "$OUT/enemy-damage-scenario"
+run 90 "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
+  --scenario=enemy_damage_feedback --seed=42 \
+  --shots="res://${OUT#"$ROOT/"}/enemy-damage-scenario" \
+  >"$OUT/enemy-damage-scenario.log" 2>&1
+[[ -s "$OUT/enemy-damage-scenario/report.json" ]] \
+  || fail "enemy-damage scenario report is missing"
+jq -e '.result == "pass" and all(.checks[]; .ok)' \
+  "$OUT/enemy-damage-scenario/report.json" >/dev/null \
+  || fail "enemy-damage scenario failed"
+
 run 90 scripts/strategic_verbs_check.sh --out="$OUT/strategic-verbs/summary.json" \
   >"$OUT/strategic-verbs.log" 2>&1
 [[ -s "$OUT/strategic-verbs/summary.json" ]] || fail "strategic-verbs summary is missing"
