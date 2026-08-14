@@ -47,8 +47,8 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName) -> void:
 		return
 	h.check("%s exact shared IDs" % stage_id, theme.required_manifest_ids() == IDS)
 	h.check(
-		"%s approved token and pending final verdict" % stage_id,
-		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and not theme.human_final_art
+		"%s approved token and human-final verdict" % stage_id,
+		theme.approval_token == StageArtTheme.APPROVAL_TOKEN and theme.human_final_art
 	)
 	var grid := view.get_node_or_null("GridRoot") as Node2D
 	h.check(
@@ -110,14 +110,35 @@ func _check_selection_ring(h: SelfTestHarness, model: BattleModel, view: Node2D)
 	h.check("S1 tower deployed for selection ring", deployed)
 	if not deployed:
 		return
-	await h.frames(3)
+	var unit: UnitState = model.units[-1]
+	var deploy_seen: Dictionary = view.get("_deploy_seen")
+	var settle_budget := 32
+	while int(deploy_seen.get(unit.id, -1)) != 0 and settle_budget > 0:
+		settle_budget -= 1
+		await h.frames(1)
+	h.check(
+		"deployment auto-frame settled before selection",
+		int(deploy_seen.get(unit.id, -1)) == 0,
+		"remaining=%d" % int(deploy_seen.get(unit.id, -1)),
+	)
 	await h.click_view(view.call("cell_center", cell))
 	await h.frames(3)
 	var ring := view.find_child("SelectionRing", true, false) as Node2D
-	h.check("selected tower rotating ring visible", ring != null and ring.visible)
+	var deploy_bar := view.find_child("DeployBar", true, false)
+	var selected_id := int(deploy_bar.get("_selected_unit_id")) if deploy_bar != null else -2
+	var expected: Vector2 = view.call("cell_center", cell)
+	var picked: Vector2i = view.call("cell_at", expected)
+	h.check(
+		"selected tower rotating ring visible",
+		ring != null and ring.visible,
+		"selected=%d picked=%s ring=%s" % [selected_id, picked, ring],
+	)
 	if ring != null:
-		var expected: Vector2 = view.call("cell_center", cell)
-		h.check("selection ring centered on tower feet", ring.position.distance_to(expected) < 1.0)
+		h.check(
+			"selection ring centered on tower feet",
+			ring.position.distance_to(expected) < 1.0,
+			"actual=%s expected=%s selected=%d" % [ring.position, expected, selected_id],
+		)
 		var first_phase := float(ring.get("_phase"))
 		await h.frames(6)
 		(
