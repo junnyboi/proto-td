@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-MITIGATION — Implement Physical and Arts damage foundations
+
+- Status: in_progress
+- Owner: AGENT E
+- Branch: `agent-e/td-mitigation`
+- Base: `master` at `9767e3af419448e01f9ac2dd7a6317ee92d2cdd3`
+- Dependencies: TD-TARGET passing; P16 campaign/save/promotion contract stable on master
+- Owned files: `sim/damage_rules.gd`, `data/operator_def.gd`, `data/enemy_def.gd`, `data/spell_def.gd`, `data/trap_def.gd`, `sim/unit_state.gd`, `sim/enemy_state.gd`, `sim/trap_state.gd`, `sim/enemy_damage.gd`, `sim/battle_model.gd`, `sim/battle_hash.gd`, `sim/battle_snapshot.gd`, `sim/campaign_state.gd`, `sim/campaign_codec.gd`, `sim/campaign_hash.gd`, `sim/campaign_save_upgrade.gd`, `data/campaign_def.gd`, `data/campaigns/p16_v2.tres`, `data/enemies/test_high_def.tres`, `data/enemies/test_high_res.tres`, `data/stages/test_mitigation.tres`, `test/test_damage_rules.gd`, `test/test_mitigation_paths.gd`, `test/test_mitigation_persistence.gd`, `test/fixtures/mitigation_legacy_v1.json`, `selftest/scenarios/mitigation_counter.gd`, `scripts/td_mitigation_check.sh`, affected canonical provenance sidecars plus `assets/manifest.tres`, `FEATURES.json`, `docs/todo.md`, `docs/completed.md`
+- Do not touch: production DEF/RES/damage-kind assignments, tick order, targeting, waves, deployment, controls, bot timelines, thresholds, image/audio bytes, or replay action syntax
+- Acceptance: one integer-only PHYSICAL/ARTS rule owns every combat HP subtraction; defaults preserve exact legacy HP/ticks/outcomes/hashes; copied mitigation fields are hash-covered; campaign saves carry a canonical combat binding with old-save upgrade and tamper rejection; armor and ward differentials are non-vacuous
+- Required evidence: frozen pre-change fixture, damage-rule/path/hash/save tests, two-process semantic replay, `mitigation_counter`, `scripts/td_mitigation_check.sh`, source audit, and one uninterrupted STANDARD union gate
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
