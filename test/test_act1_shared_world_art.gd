@@ -13,7 +13,7 @@ const EXPECTED := {
 	&"world.act1.env.wall": ["env-wall.png", Vector2i(64, 64)],
 	&"world.act1.env.crate": ["env-crate.png", Vector2i(64, 64)],
 }
-const COUNTS := {&"s1": 49, &"s2": 59, &"s3": 68}
+const COUNTS := {&"s1": 51, &"s2": 61, &"s3": 69}
 
 var base: AssetManifest
 var supplement: AssetManifest
@@ -108,9 +108,11 @@ func test_exact_topology_role_textures_zero_cadence_and_node_counts() -> void:
 		_check_texture(root, "SpawnLandmark", &"world.act1.spawn")
 		_check_texture(root, "CoreLandmark", &"world.act1.core")
 		for cell: Vector2i in theme.elevated_cells:
+			_check_texture(root, "BaseTile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.raised")
-		for cell: Vector2i in theme.blocked_cells:
-			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.blocked")
+		for cell: Vector2i in theme.env_prop_cells:
+			assert_eq(stage.tile_at(cell), StageDef.Tile.BLOCKED, "%s blocker semantic" % cell)
+			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 		root.free()
 
 

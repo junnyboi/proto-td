@@ -112,10 +112,10 @@ const S1_UI_COPY := {
 	"BriefingClue": "Field note — %s" % S1_CLUE,
 	"ConsequenceLine": S1_CLEAR_DEBRIEF,
 }
-const EXPECTED_S2_CHILDREN := 59
+const EXPECTED_S2_CHILDREN := 61
 const EXPECTED_S2_TILES := 50
 const EXPECTED_S2_SHADES := 2
-const EXPECTED_S3_CHILDREN := 68
+const EXPECTED_S3_CHILDREN := 69
 const EXPECTED_S3_TILES := 60
 const EXPECTED_S3_SHADES := 1
 const EXPECTED_CADENCE := 0

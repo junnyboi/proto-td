@@ -13,7 +13,7 @@ const IDS: Array[StringName] = [
 	&"world.act1.env.wall",
 	&"world.act1.env.crate",
 ]
-const COUNTS := {&"s1": 49, &"s2": 59, &"s3": 68}
+const COUNTS := {&"s1": 51, &"s2": 61, &"s3": 69}
 
 
 func run(h: SelfTestHarness) -> void:
@@ -86,9 +86,17 @@ func _check_stage(h: SelfTestHarness, stage_id: StringName) -> void:
 	_check_texture(h, grid, stage_id, "SpawnLandmark", &"world.act1.spawn")
 	_check_texture(h, grid, stage_id, "CoreLandmark", &"world.act1.core")
 	for cell: Vector2i in theme.elevated_cells:
+		_check_texture(h, grid, stage_id, "BaseTile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.raised")
-	for cell: Vector2i in theme.blocked_cells:
-		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.blocked")
+	for cell: Vector2i in theme.env_prop_cells:
+		(
+			h
+			. check(
+				"%s %s remains gameplay-blocked" % [stage_id, cell],
+				model.stage.tile_at(cell) == StageDef.Tile.BLOCKED,
+			)
+		)
+		_check_texture(h, grid, stage_id, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 	await h.frames(52)
 	await h.shot("%s_act1_shared_clean" % stage_id)
 	if stage_id == &"s1":

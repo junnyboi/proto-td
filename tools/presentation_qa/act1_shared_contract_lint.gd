@@ -13,7 +13,7 @@ const EXPECTED := {
 	&"world.act1.env.wall": ["env-wall.png", Vector2i(64, 64)],
 	&"world.act1.env.crate": ["env-crate.png", Vector2i(64, 64)],
 }
-const COUNTS := {&"s1": 49, &"s2": 59, &"s3": 68}
+const COUNTS := {&"s1": 51, &"s2": 61, &"s3": 69}
 var errors := PackedStringArray()
 
 
@@ -37,7 +37,7 @@ func _initialize() -> void:
 		_validate_assets(supplement)
 	_validate_themes()
 	if errors.is_empty():
-		print("ACT1_SHARED_CONTRACT_OK S1=49 S2=59 S3=68")
+		print("ACT1_SHARED_CONTRACT_OK S1=51 S2=61 S3=69")
 		quit(0)
 		return
 	for detail: String in errors:
@@ -94,21 +94,30 @@ func _validate_themes() -> void:
 			_fail("%s render failed" % id)
 		if root.get_child_count() != COUNTS[id]:
 			_fail("%s node count %d != %d" % [id, root.get_child_count(), COUNTS[id]])
+		for cell: Vector2i in theme.elevated_cells:
+			_check_texture(root, "BaseTile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
+		for cell: Vector2i in theme.env_prop_cells:
+			if stage.tile_at(cell) != StageDef.Tile.BLOCKED:
+				_fail("%s environment cell is not gameplay-blocked: %s" % [id, cell])
+			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 		var cadence := 0
+		var props := 0
 		for child: Node in root.get_children():
 			if child.name.begins_with("Cadence_"):
 				cadence += 1
-			if cadence != 0:
-				_fail("%s cadence nodes present" % id)
-			var props := 0
-			for prop_child: Node in root.get_children():
-				if prop_child.name.begins_with("EnvProp_"):
-					props += 1
-			if props != theme.env_prop_cells.size():
-				_fail(
-					"%s environment prop count %d != %d" % [id, props, theme.env_prop_cells.size()]
-				)
+			if child.name.begins_with("EnvProp_"):
+				props += 1
+		if cadence != 0:
+			_fail("%s cadence nodes present" % id)
+		if props != theme.env_prop_cells.size():
+			_fail("%s environment prop count %d != %d" % [id, props, theme.env_prop_cells.size()])
 		root.free()
+
+
+func _check_texture(root: Node, node_name: String, expected_id: StringName) -> void:
+	var node := root.get_node_or_null(node_name) as TextureRect
+	if node == null or node.texture != Art.texture(expected_id):
+		_fail("%s is not exact %s" % [node_name, expected_id])
 
 
 func _fail(detail: String) -> void:

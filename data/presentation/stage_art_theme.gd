@@ -148,7 +148,10 @@ func tile_id_at(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> StringNa
 
 
 func resolve_cell(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> Dictionary:
-	return {"tile_id": tile_id_at(cell, tile, is_route), "cadence_id": &""}
+	var resolved_id := tile_id_at(cell, tile, is_route)
+	if env_prop_cells.has(cell):
+		resolved_id = ground_id
+	return {"tile_id": resolved_id, "cadence_id": &""}
 
 
 func required_manifest_ids() -> Array[StringName]:
@@ -200,11 +203,8 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		if prop_id not in ENV_PROP_IDS:
 			errors.append("environment prop is not in the shared Act I pool: %s" % prop_id)
 		var prop_cell := env_prop_cells[index]
-		if (
-			stage != null
-			and stage.tile_at(prop_cell) not in [StageDef.Tile.VOID, StageDef.Tile.BLOCKED]
-		):
-			errors.append("environment prop would mislabel a playable cell: %s" % prop_cell)
+		if stage != null and stage.tile_at(prop_cell) != StageDef.Tile.BLOCKED:
+			errors.append("environment prop must occupy a blocked ground-base cell: %s" % prop_cell)
 	for id: StringName in elevated_variant_ids:
 		if id != elevated_id:
 			errors.append("elevated variant is not the shared raised role: %s" % id)
