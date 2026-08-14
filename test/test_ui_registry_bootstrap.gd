@@ -55,6 +55,11 @@ const CONTRACTS := [
 		"aliases": _SHELL_ALIASES,
 		"forbidden": _SHELL_FORBIDDEN,
 	},
+	{
+		"path": "res://scripts/view/enemy_damage_feedback.gd",
+		"aliases": ["EnemyAnimatorType"],
+		"forbidden": ["\\bEnemyAnimator\\b"],
+	},
 ]
 const SIMULATION_CONTRACTS := [
 	{

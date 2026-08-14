@@ -4,6 +4,8 @@ extends RefCounted
 ## View-only damage feedback. Animation clocks and flashes age on render frames;
 ## authoritative movement pause remains EnemyState.damage_stagger_until_tick.
 
+const EnemyAnimatorType := preload("res://scripts/view/enemy_animator.gd")
+
 var _anim_paused_seconds: Dictionary = {}
 var _seen_ticks: Dictionary = {}
 var _flash_frames: Dictionary = {}
@@ -33,7 +35,7 @@ func process(delta: float, model: BattleModel, rects: Dictionary, cfg: JuiceConf
 		_seen_ticks[enemy.id] = enemy.last_damage_tick
 		_flash_frames[enemy.id] = cfg.damage_flash_frames
 		(
-			EnemyAnimator
+			EnemyAnimatorType
 			. apply_damage_flash(
 				rects[enemy.id],
 				cfg.damage_flash_frames,
@@ -51,7 +53,7 @@ func age(rects: Dictionary, cfg: JuiceConfig) -> void:
 			continue
 		var left := int(_flash_frames[enemy_id])
 		(
-			EnemyAnimator
+			EnemyAnimatorType
 			. apply_damage_flash(
 				rects[enemy_id],
 				left,
