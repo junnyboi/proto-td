@@ -125,3 +125,52 @@ func test_blend_weights_are_complementary_and_settle_in_six_frames() -> void:
 	for left: int in range(7):
 		var weights := EnemyAnimator.blend_alpha(left)
 		assert_almost_eq(weights.x + weights.y, 1.0, 0.0001)
+
+
+func test_damage_flash_is_white_then_red_then_neutral_on_both_layers() -> void:
+	var white := Color("ffffff")
+	var red := Color("ff3b30")
+	assert_eq(EnemyAnimator.damage_flash_color(6, 6, white, red), white)
+	assert_eq(EnemyAnimator.damage_flash_color(4, 6, white, red), white)
+	assert_eq(EnemyAnimator.damage_flash_color(3, 6, white, red), red)
+	assert_eq(EnemyAnimator.damage_flash_color(1, 6, white, red), red)
+	assert_eq(EnemyAnimator.damage_flash_color(0, 6, white, red), Color.WHITE)
+
+	var body := ColorRect.new()
+	var sprite := EnemyAnimator._texture_rect("Sprite", null, Vector2.ONE * 32.0)
+	var blend := EnemyAnimator._texture_rect("BlendSprite", null, Vector2.ONE * 32.0)
+	blend.modulate.a = 0.4
+	body.add_child(sprite)
+	body.add_child(blend)
+	EnemyAnimator.apply_damage_flash(body, 6, 6, white, red)
+	for layer: TextureRect in [sprite, blend]:
+		var material := layer.material as ShaderMaterial
+		assert_not_null(material)
+		assert_eq(material.get_shader_parameter("flash_color"), white)
+		assert_eq(material.get_shader_parameter("flash_strength"), 1.0)
+	assert_almost_eq(blend.modulate.a, 0.4, 0.0001, "flash preserves blend alpha")
+	EnemyAnimator.apply_damage_flash(body, 3, 6, white, red)
+	assert_eq((sprite.material as ShaderMaterial).get_shader_parameter("flash_color"), red)
+	EnemyAnimator.apply_damage_flash(body, 0, 6, white, red)
+	assert_eq((sprite.material as ShaderMaterial).get_shader_parameter("flash_strength"), 0.0)
+	body.free()
+
+
+func test_damage_before_first_projection_still_flashes_once_registered() -> void:
+	var enemy := EnemyState.new()
+	enemy.id = 0
+	enemy.alive = true
+	enemy.last_damage_tick = 5
+	var model := BattleModel.new()
+	model.tick = 5
+	model.enemies = [enemy]
+	var body := ColorRect.new()
+	var sprite := EnemyAnimator._texture_rect("Sprite", null, Vector2.ONE * 32.0)
+	body.add_child(sprite)
+	var rects := {0: body}
+	var cfg := load("res://data/juice_config.tres") as JuiceConfig
+	var feedback := EnemyDamageFeedback.new()
+	feedback.register(enemy)
+	feedback.process(0.0, model, rects, cfg)
+	assert_eq((sprite.material as ShaderMaterial).get_shader_parameter("flash_strength"), 1.0)
+	body.free()

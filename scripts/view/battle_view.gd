@@ -6,6 +6,7 @@ const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const ENEMY_DAMAGE_FEEDBACK_SCRIPT := preload("res://scripts/view/enemy_damage_feedback.gd")
 const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.gd")
 const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
@@ -111,6 +112,7 @@ var _enemy_defs: Dictionary = {}
 var _enemy_anim_keys: Dictionary = {}
 var _enemy_blend_frames: Dictionary = {}
 var _enemy_anim_seconds := 0.0
+var _enemy_damage_feedback: RefCounted = ENEMY_DAMAGE_FEEDBACK_SCRIPT.new()
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
 
@@ -304,6 +306,7 @@ func _process(delta: float) -> void:
 	if model == null or _juice == null:
 		return
 	_enemy_anim_seconds += delta
+	_enemy_damage_feedback.process(delta, model, _enemy_rects, cfg)
 	_detect_deploys()
 	_detect_kills()
 	_detect_leaks()
@@ -340,12 +343,18 @@ func _age_view_transients() -> void:
 		if not _enemy_rects.has(enemy_id):
 			_enemy_blend_frames.erase(enemy_id)
 			continue
+		if (
+			enemy_id < model.enemies.size()
+			and _enemy_damage_feedback.is_staggered(model, model.enemies[enemy_id])
+		):
+			continue
 		var left := int(_enemy_blend_frames[enemy_id])
 		EnemyAnimator.apply_blend(_enemy_rects[enemy_id], left)
 		if left > 0:
 			_enemy_blend_frames[enemy_id] = left - 1
 		else:
 			_enemy_blend_frames.erase(enemy_id)
+	_enemy_damage_feedback.age(_enemy_rects, cfg)
 
 
 ## Single time-scale owner: strongest slowdown wins; empty stack restores 1.0.
@@ -623,11 +632,16 @@ func _project() -> void:
 	for e: EnemyState in model.enemies:
 		if e.alive and not _enemy_rects.has(e.id):
 			_enemy_rects[e.id] = _make_enemy_rect(e)
+			_enemy_damage_feedback.register(e)
 		elif not e.alive and _enemy_rects.has(e.id):
+			if _enemy_damage_feedback.retain_dead(e):
+				_update_hp_bar(_enemy_rects[e.id], _enemy_rects[e.id].size.x, e.hp, e.hp_max)
+				continue
 			_enemy_rects[e.id].queue_free()
 			_enemy_rects.erase(e.id)
 			_enemy_anim_keys.erase(e.id)
 			_enemy_blend_frames.erase(e.id)
+			_enemy_damage_feedback.remove(e.id)
 		if e.alive:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var center_p := pos + Vector2.ONE * 0.5
@@ -638,15 +652,16 @@ func _project() -> void:
 				+ Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
 			)
 			rect.z_index = IsoProjection.entity_z(center_p)
-			EnemyAnimator.refresh(
-				e,
-				model,
-				rect,
-				_enemy_anim_seconds,
-				_enemy_anim_keys,
-				_enemy_blend_frames,
-				_enemy_defs
-			)
+			if not _enemy_damage_feedback.is_staggered(model, e):
+				EnemyAnimator.refresh(
+					e,
+					model,
+					rect,
+					_enemy_damage_feedback.animation_seconds(_enemy_anim_seconds, e.id),
+					_enemy_anim_keys,
+					_enemy_blend_frames,
+					_enemy_defs
+				)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()

@@ -99,19 +99,31 @@ func test_append_only_ordinals_and_existing_resources() -> void:
 	assert_eq(int(SkillDef.Effect.STUN_IN_RANGE), 5, "existing stun ordinal is immutable")
 	assert_eq(int(SkillDef.Effect.HEAL_TARGET), 6, "HEAL_TARGET appends at ordinal 6")
 	var expected_classes := {
-		&"vanguard_1": 0, &"vanguard_2": 0,
-		&"guard_1": 1, &"guard_2": 1,
-		&"defender_1": 2, &"defender_2": 2,
-		&"sniper_1": 3, &"sniper_2": 3,
-		&"caster_1": 4, &"caster_2": 4,
+		&"vanguard_1": 0,
+		&"vanguard_2": 0,
+		&"guard_1": 1,
+		&"guard_2": 1,
+		&"defender_1": 2,
+		&"defender_2": 2,
+		&"sniper_1": 3,
+		&"sniper_2": 3,
+		&"caster_1": 4,
+		&"caster_2": 4,
 	}
 	for op_id: StringName in expected_classes:
 		var def := load("res://data/operators/%s.tres" % op_id) as OperatorDef
 		assert_eq(int(def.op_class), expected_classes[op_id], "%s semantic class" % op_id)
 	var expected_effects := {
-		&"bastion_slam": 5, &"conflagration": 4, &"deadeye": 0,
-		&"flurry": 1, &"hold_the_line": 2, &"overpower": 0,
-		&"rally": 3, &"rapid_volley": 1, &"tempest": 0, &"war_banner": 3,
+		&"bastion_slam": 5,
+		&"conflagration": 4,
+		&"deadeye": 0,
+		&"flurry": 1,
+		&"hold_the_line": 2,
+		&"overpower": 0,
+		&"rally": 3,
+		&"rapid_volley": 1,
+		&"tempest": 0,
+		&"war_banner": 3,
 	}
 	for skill_id: StringName in expected_effects:
 		var skill := load("res://data/skills/%s.tres" % skill_id) as SkillDef
@@ -251,7 +263,7 @@ func test_three_mends_create_exact_clear_vs_defeat_differential() -> void:
 	assert_eq(without["death_tick"], 1161)
 	assert_eq(without["terminal_tick"], 1402)
 	assert_eq(without["killed"], 0)
-	assert_eq(without["leaked"], 2)
+	assert_eq(without["leaked"], 1, "stagger desynchronizes same-terminal-tick leaks")
 	assert_eq(without["hp_at_900"], 142)
 	assert_true(with_mend["alive_at_1162"])
 	assert_false(without["alive_at_1162"])
@@ -262,8 +274,16 @@ func _run_differential(with_mend: bool) -> Dictionary:
 	var healer := _healer_def()
 	var ops := {&"defender_2": target, HEALER_ID: healer}
 	var squad: Array[StringName] = [&"defender_2", HEALER_ID]
-	var model := BattleModel.create(
-		load(STAGE_SKILL) as StageDef, squad, 42, _config(), _enemy_defs(), ops,
+	var model := (
+		BattleModel
+		. create(
+			load(STAGE_SKILL) as StageDef,
+			squad,
+			42,
+			_config(),
+			_enemy_defs(),
+			ops,
+		)
 	)
 	assert_true(model.apply_action([&"debug_set_dp", 99]))
 	assert_true(model.apply_action([&"deploy", &"defender_2", Vector2i(4, 2), RIGHT]))
@@ -349,8 +369,15 @@ func test_p16_union_environment_binds_witch_doctor_catalog_and_s7_reward() -> vo
 	var stages := _p16_stages()
 	var without_template: Dictionary = catalogs.duplicate(true)
 	without_template["operators"].erase(&"witch_doctor_1")
-	var missing_template := CampaignState.create(
-		42, 1, definition, without_template, stages,
+	var missing_template := (
+		CampaignState
+		. create(
+			42,
+			1,
+			definition,
+			without_template,
+			stages,
+		)
 	)
 	assert_false(missing_template["accepted"])
 	assert_eq(missing_template["error_code"], &"invalid_stage_reward")
@@ -359,32 +386,51 @@ func test_p16_union_environment_binds_witch_doctor_catalog_and_s7_reward() -> vo
 	var s7 := (without_reward[6] as StageDef).duplicate(true) as StageDef
 	s7.rewards = []
 	without_reward[6] = s7
-	var missing_reward := CampaignState.create(
-		42, 1, definition, catalogs, without_reward,
+	var missing_reward := (
+		CampaignState
+		. create(
+			42,
+			1,
+			definition,
+			catalogs,
+			without_reward,
+		)
 	)
 	assert_false(missing_reward["accepted"])
 	assert_eq(missing_reward["error_code"], &"campaign_environment_mismatch")
 
 
 func _replay_fixture(stage_id: String) -> Dictionary:
-	var loaded := ReplayCodec.load_file(
-		"res://playtests/replays/v1/%s.json" % stage_id,
-		_replay_context(),
+	var loaded := (
+		ReplayCodec
+		. load_file(
+			"res://playtests/replays/v1/%s.json" % stage_id,
+			_replay_context(),
+		)
 	)
 	assert_true(loaded["accepted"])
-	return ReplayCodec.encode_document(
-		loaded["stage_id"], loaded["squad"], loaded["seed"], loaded["timeline"],
-		_replay_context(),
-	)["value"]
+	return (
+		ReplayCodec
+		. encode_document(
+			loaded["stage_id"],
+			loaded["squad"],
+			loaded["seed"],
+			loaded["timeline"],
+			_replay_context(),
+		)["value"]
+	)
 
 
 func _replay_context() -> Dictionary:
-	return ReplayCodec.build_context(
-		_catalog("res://data/operators"),
-		_catalog("res://data/traps"),
-		_catalog("res://data/spells"),
-		_catalog("res://data/stages"),
-		_config(),
+	return (
+		ReplayCodec
+		. build_context(
+			_catalog("res://data/operators"),
+			_catalog("res://data/traps"),
+			_catalog("res://data/spells"),
+			_catalog("res://data/stages"),
+			_config(),
+		)
 	)
 
 

@@ -45,9 +45,18 @@ func _make_model(stage: StageDef, trap_defs: Dictionary = {}) -> BattleModel:
 	if trap_defs.is_empty():
 		trap_defs = _catalog("res://data/traps")
 	var squad: Array[StringName] = [&"guard_1"]
-	return BattleModel.create(
-		stage, squad, 42, _config(), _enemy_catalog(),
-		_catalog("res://data/operators"), trap_defs, _catalog("res://data/spells"),
+	return (
+		BattleModel
+		. create(
+			stage,
+			squad,
+			42,
+			_config(),
+			_enemy_catalog(),
+			_catalog("res://data/operators"),
+			trap_defs,
+			_catalog("res://data/spells"),
+		)
 	)
 
 
@@ -213,14 +222,30 @@ func test_juice_config_sanity() -> void:
 	assert_true(cfg.deploy_drag_time_scale > 0.0 and cfg.deploy_drag_time_scale <= 1.0)
 	assert_true(cfg.charm_beat_time_scale > 0.0 and cfg.charm_beat_time_scale <= 1.0)
 	var frame_fields := [
-		cfg.deploy_crouch_frames, cfg.deploy_dust_frames, cfg.skill_flash_frames,
-		cfg.skill_burst_frames, cfg.kill_spark_frames, cfg.kill_spark_cap,
-		cfg.leak_vignette_frames, cfg.leak_shake_frames, cfg.leak_hit_stop_frames,
-		cfg.wave_banner_frames, cfg.star_burst_stagger_frames, cfg.trap_sprung_frames,
-		cfg.tar_shimmer_period_frames, cfg.charm_swirl_frames, cfg.charm_beat_frames,
-		cfg.charm_shake_frames, cfg.charm_hit_stop_frames, cfg.tracer_frames,
+		cfg.deploy_crouch_frames,
+		cfg.deploy_dust_frames,
+		cfg.skill_flash_frames,
+		cfg.skill_burst_frames,
+		cfg.damage_flash_frames,
+		cfg.kill_spark_frames,
+		cfg.kill_spark_cap,
+		cfg.leak_vignette_frames,
+		cfg.leak_shake_frames,
+		cfg.leak_hit_stop_frames,
+		cfg.wave_banner_frames,
+		cfg.star_burst_stagger_frames,
+		cfg.trap_sprung_frames,
+		cfg.tar_shimmer_period_frames,
+		cfg.charm_swirl_frames,
+		cfg.charm_beat_frames,
+		cfg.charm_shake_frames,
+		cfg.charm_hit_stop_frames,
+		cfg.tracer_frames,
 	]
 	for value: int in frame_fields:
 		assert_true(value >= 0, "frame counts are non-negative")
 	assert_true(cfg.leak_shake_amplitude_px >= 0.0 and cfg.charm_shake_amplitude_px >= 0.0)
+	assert_eq(cfg.damage_flash_frames, 6)
+	assert_true(cfg.damage_flash_white.is_equal_approx(Color("ffffff")))
+	assert_true(cfg.damage_flash_red.is_equal_approx(Color("ff3b30")))
 	assert_true(cfg.shake_events.has("leak") and cfg.shake_events.has("charm_beat"))
