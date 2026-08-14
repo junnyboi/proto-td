@@ -1,4 +1,4 @@
-# TD-031 — Native Sky Hunter NE and NW Attack Animations
+# TD-032 — Native Sky Hunter NE and NW Attack Animations
 
 **Author:** Manus AI / Agent 8
 
@@ -10,7 +10,7 @@
 
 ## Outcome
 
-TD-031 replaces the two temporary Sky Hunter attack substitutions with native NE and NW Seedance motion. The game now contains four native and independently generated Sky Hunter attack directions. No directional mirroring remains in this family, and no source, runtime, manifest, resource, or compact-provenance placeholder flag remains anywhere in Aetheria Part 2.
+TD-032 replaces the two temporary Sky Hunter attack substitutions with native NE and NW Seedance motion. The game now contains four native and independently generated Sky Hunter attack directions. No directional mirroring remains in this family, and no source, runtime, manifest, resource, or compact-provenance placeholder flag remains anywhere in Aetheria Part 2.
 
 The replacement is presentation-only. The runtime continues to use 192×192 RGBA cells, thirteen attack frames selected from source indices `0,2,4,...,24`, 12 fps playback, pivot `(0.5, 0.94)`, a 158 px normalization denominator, binary alpha, and the existing view projection. Simulation, action, tick, save, replay, economy, operator data, and combat outcomes are unchanged.
 
@@ -25,7 +25,7 @@ The source importer also recompiled the four-direction Sky Hunter attack family 
 
 ## Human visual acceptance and provenance
 
-Poseidon reviewed the linked four-direction contact sheet plus NE and NW gameplay-cadence GIFs and replied to continue if the work was on track. That response is recorded as ACCEPT for the exact native source hashes at `2026-08-14T06:41:55Z` in `docs/media/TD-031-SKY-HUNTER-NATIVE-APPROVAL.json`.
+Poseidon reviewed the linked four-direction contact sheet plus NE and NW gameplay-cadence GIFs and replied to continue if the work was on track. That response is recorded as ACCEPT for the exact native source hashes at `2026-08-14T06:41:55Z` in `docs/media/TD-032-SKY-HUNTER-NATIVE-APPROVAL.json`.
 
 The NE and NW per-atlas provenance sidecars are now `human_final_accepted` and include the approval record in their exact source closure. The other Part 2 atlases retain their existing concept-accepted status while inheriting the refreshed all-native package manifest digest. The compact runtime catalog reports `part2_runtime_integrated_all_native`, and `known_placeholders` is empty.
 
@@ -50,10 +50,10 @@ The live-battle scenario now asserts that Sky Hunter resolves `op_anim_sniper_2_
 
 ## Live-master union
 
-Live master advanced during TD-031 with Agent 9’s completed experimental enemy salvage work, which also modified the shared asset manifest and Art loader. The final union `516e6e9` contains both parents without conflict. Deterministic importer/provenance checks and fresh rendered affected proof verified the operator, Grunt, and experimental-enemy manifests together before the final 105-rung STANDARD run.
+Live master advanced during TD-032 with Agent 9’s completed experimental enemy salvage work, which also modified the shared asset manifest and Art loader. The final union `516e6e9` contains both parents without conflict. Deterministic importer/provenance checks and fresh rendered affected proof verified the operator, Grunt, and experimental-enemy manifests together before the final 105-rung STANDARD run.
 
 ## Delivery
 
 The refreshed all-native package is archived as `aetheria-chibi-sprites-part-2-completed.zip` with SHA-256 `c6b148db0d8091800ed458b4b5d36e8239782863cb9fdcbefc66b2c792e8601c`. Its package manifest SHA-256 is `c57ae5779f320f597e1d3fd34eb6089ca19c81e742437bb4764ee2a50275e2e4`. The package contains forty directional sheets and no placeholder note or placeholder metadata.
 
-TD-031 has no remaining implementation blocker. Any later work on this family is optional art-direction refinement rather than placeholder retirement or runtime correctness work.
+TD-032 has no remaining implementation blocker. Any later work on this family is optional art-direction refinement rather than placeholder retirement or runtime correctness work.

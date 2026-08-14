@@ -395,7 +395,7 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 				assert_eq(document["acceptance"]["accepted_at_utc"], "2026-08-14T06:41:55Z")
 				assert_eq(
 					document["acceptance"]["source"],
-					"res://docs/media/TD-031-SKY-HUNTER-NATIVE-APPROVAL.json",
+					"res://docs/media/TD-032-SKY-HUNTER-NATIVE-APPROVAL.json",
 				)
 			assert_null(document["acceptance"]["accepting_commit"])
 			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
@@ -524,7 +524,7 @@ func _expected_sources(id: String) -> Array[String]:
 			)
 		if id in ["op_anim_sniper_2_attack_ne", "op_anim_sniper_2_attack_nw"]:
 			animation_sources.append(
-				"res://docs/media/TD-031-SKY-HUNTER-NATIVE-APPROVAL.json"
+				"res://docs/media/TD-032-SKY-HUNTER-NATIVE-APPROVAL.json"
 			)
 		animation_sources.sort()
 		return animation_sources
