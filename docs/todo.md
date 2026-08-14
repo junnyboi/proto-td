@@ -38,7 +38,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Branch: `agent-8/td-036-witch-doctor-mage-visual`
 - Base: `master` at `f885e9b37a4f1e6c5601b7a69931feb48a4a4879`
 - Dependencies: OPANIM-2 Mage Apprentice animation resource
-- Owned files: `data/presentation/operator_visual_catalog.gd`, `test/test_operator_animation_def.gd`, `selftest/scenarios/operator_animation_catalog.gd`, `selftest/scenarios/witch_doctor_heal.gd`, and TD-036 claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Owned files: `data/presentation/operator_visual_catalog.gd`, `assets/manifest.tres`, all generated `assets/provenance/op_anim_*.provenance.json`, `test/test_operator_animation_def.gd`, `selftest/scenarios/operator_animation_catalog.gd`, `selftest/scenarios/witch_doctor_heal.gd`, and TD-036 claim/closure edits in `docs/todo.md` / `docs/completed.md`
 - Do not touch: Witch Doctor or Mage Apprentice gameplay data, portraits, simulation/hash/save/replay/economy state, animation atlas bytes/provenance, manifests, verification thresholds, or unrelated presentation files
 - Acceptance: `witch_doctor_1` resolves the exact `caster_1` animation resource for all battle idle/attack directions; Witch Doctor keeps its operator ID, mechanics, name, portrait, and model hash; runtime body metadata proves the admitted Mage Apprentice atlas is used instead of the procedural fallback
 - Required evidence: focused animation-catalog GUT, fresh headless/windowed `operator_animation_catalog`, fresh headless/windowed `witch_doctor_heal` with runtime visual-ID assertion and screenshot, then one clean STANDARD gate on the final union
