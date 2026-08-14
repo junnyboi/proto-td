@@ -1,5 +1,7 @@
 class_name CampaignCodec
 extends RefCounted
+const CampaignHeroCodecType := preload("res://sim/campaign_hero_codec.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_receipt_codec.gd")
 const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
@@ -536,7 +538,7 @@ static func _normalize_offers(value: Variant) -> Dictionary:
 		out.append(ordered)
 	return _accept(out)
 static func _normalize_heroes(value: Variant) -> Dictionary:
-	return CampaignHeroCodec.normalize_heroes(value)
+	return CampaignHeroCodecType.normalize_heroes(value)
 static func _normalize_manifest(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
 		return _reject(&"invalid_manifest")
@@ -642,7 +644,7 @@ static func build_context(
 		}
 	var normalized_promotion_rules := promotion_rules.duplicate(true)
 	if normalized_promotion_rules.is_empty():
-		var normalized := CampaignProgression.normalize_promotion_rules(
+		var normalized := CampaignProgressionType.normalize_promotion_rules(
 			PromotionRulesResource, operator_ids,
 		)
 		if normalized["accepted"]:
@@ -803,9 +805,9 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 			return _reject(&"unsupported_name_version")
 		if not _valid_source_pair(hero, context):
 			return _reject(&"invalid_hero_source")
-		if not CampaignHeroCodec.valid_callsign(hero["custom_callsign"]):
+		if not CampaignHeroCodecType.valid_callsign(hero["custom_callsign"]):
 			return _reject(&"invalid_callsign")
-		var display := CampaignHeroCodec.display_callsign(hero)
+		var display := CampaignHeroCodecType.display_callsign(hero)
 		if not display["accepted"]:
 			return display
 		var folded := String(display["value"]).to_lower()
@@ -914,7 +916,7 @@ static func _valid_context(context: Dictionary) -> bool:
 	]
 	if not _exact_keys(context, keys):
 		return false
-	var normalized := CampaignProgression.normalize_promotion_rules(
+	var normalized := CampaignProgressionType.normalize_promotion_rules(
 		PromotionRulesResource,
 		(context["operator_ids"] as Dictionary).keys(),
 	)
