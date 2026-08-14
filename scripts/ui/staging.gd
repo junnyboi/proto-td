@@ -10,9 +10,6 @@ const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const SHELL_SIZE := Vector2(1080.0, 620.0)
-const ACTION_BUTTON_FONT_SIZE := 34
-const ACTION_BUTTON_HEIGHT := 80.0
-const ACTION_ROW_TOP_PADDING := 20
 
 var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
@@ -101,8 +98,7 @@ func _build_operations() -> VBoxContainer:
 	operations.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	operations.add_theme_constant_override(&"separation", 10)
 	operations.add_child(_label("OperationStatus", UiCopyType.text(&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE"), &"dense_detail"))
-	_mission = _button("MissionControlButton", UiCopyType.text(&"ui.staging.mission_control", "Mission Control"), "Mission
-Control", not _narrative_missing, &"primary" if not _narrative_missing else &"disabled")
+	_mission = _button("MissionControlButton", UiCopyType.text(&"ui.staging.mission_control", "Mission Control"), "Mission", not _narrative_missing, &"primary" if not _narrative_missing else &"disabled")
 	_mission.pressed.connect(_on_mission_control)
 	_operation_grid = GridContainer.new()
 	_operation_grid.name = "OperationGrid"
@@ -113,25 +109,21 @@ Control", not _narrative_missing, &"primary" if not _narrative_missing else &"di
 	var grid_margin := MarginContainer.new()
 	grid_margin.name = "OperationGridMargin"
 	grid_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_margin.add_theme_constant_override(&"margin_top", ACTION_ROW_TOP_PADDING)
+	grid_margin.add_theme_constant_override(
+		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
 	grid_margin.add_child(_operation_grid)
 	operations.add_child(grid_margin)
 	_operation_grid.add_child(_mission)
-	var back := _button("BackToTitleButton", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), "Back to
-Title", true, &"secondary")
+	var back := _button("BackToTitleButton", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), "Back", true, &"secondary")
 	back.pressed.connect(_on_back_to_title)
 	_operation_grid.add_child(back)
 	for specification: Array in [
-		["BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable", "Barracks
-Unavailable"],
-		["RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable", "Recruit
-Unavailable"],
-		["TrainingButton", &"ui.staging.training_unavailable", "Training — Unavailable", "Training
-Unavailable"],
-		["ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable", "Armory
-Unavailable"],
-		["MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable", "Memorial
-Unavailable"],
+		["BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable", "Barracks"],
+		["RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable", "Recruit"],
+		["TrainingButton", &"ui.staging.training_unavailable", "Training — Unavailable", "Training"],
+		["ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable", "Armory"],
+		["MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable", "Memorial"],
 	]:
 		_operation_grid.add_child(_button(String(specification[0]), UiCopyType.text(StringName(specification[1]), String(specification[2])), String(specification[3]), false, &"disabled"))
 	_mission.focus_neighbor_top = _mission.get_path_to(back)
@@ -204,14 +196,13 @@ func _button(button_name: String, button_text: String, presentation_text: String
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
-	button.custom_minimum_size = Vector2(44.0, ACTION_BUTTON_HEIGHT)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.disabled = not enabled
 	button.apply_role(role)
 	button.set_presentation_text(button_text, presentation_text)
-	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
-	presentation.add_theme_font_size_override(&"font_size", ACTION_BUTTON_FONT_SIZE)
+	button.tooltip_text = button_text
+	button.apply_compact_action_layout()
 	if not enabled:
 		button.focus_mode = Control.FOCUS_NONE
 	return button
