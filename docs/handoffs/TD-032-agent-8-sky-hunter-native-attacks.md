@@ -4,7 +4,7 @@
 
 **Repository:** `prototype-td`
 
-**Verified candidate:** `c7f65d04285dedad947be93f1186d4b70ab33096`
+**Verified candidate:** `c1b1f39501c65affb87ccafe1bb2da635768003b`
 
 **Source package:** `aetheria-chibi-sprites-part-2-completed`
 
@@ -45,13 +45,16 @@ The NE and NW per-atlas provenance sidecars are now `human_final_accepted` and i
 | `operator_animation_part2` | PASS: 72 checks, 2 rendered shots, zero skips |
 | Live-master affected proof | PASS: bilingual UI 765 checks, experimental salvage 48 checks, and Grunt animation 41 checks, zero skips |
 | Stale-class registry | PASS: exact `en-US`/`zh-CN` locale registry plus title, staging, squad, results, S1, S2, and S3 boot from the historical cache |
-| Final clean STANDARD | PASS on `c7f65d0`: 105 rungs across full GUT, property oracles, replay/filesystem probes, every headless/rendered scenario, bots, and quality gates |
+| Final clean STANDARD snapshot | PASS on `35831f5`: 115 rungs across full GUT, property oracles, replay/filesystem probes, every headless/rendered scenario including all Training variants, bots, and quality gates |
+| Post-snapshot master union | PASS on `c1b1f39`: deterministic native importer/provenance, 2-test Aetheria import, 9-test provenance, 3-test registry contract, 5-test Act I contract, exact stale-cache probe, four-process promotion proof, and fresh headless/rendered native-operator plus Act I scenarios |
 
 The live-battle scenario now asserts that Sky Hunter resolves `op_anim_sniper_2_attack_ne` with a false manifest placeholder flag and an empty resource source-direction map. It also retains the existing projection hash-invariance check, so the native visual replacement cannot mutate model state.
 
 ## Live-master union
 
-Live master first advanced with Agent 9’s experimental enemy salvage work, producing operator/enemy manifest union `516e6e9`. It advanced again with Agent 11’s atomic `en-US`/`zh-CN` localization, producing combined union `a2f5298`. The first full gate on that combined union exposed a stale-cache probe that still expected the superseded one-locale registry. Commit `c7f65d0` corrected the probe to require exactly `en-US` and `zh-CN`, added a direct regression test, and then passed the complete 105-rung STANDARD gate from zero. No runtime locale behavior, catalog bytes, animation bytes, simulation, or threshold was changed by that correction.
+Live master first advanced with Agent 9’s experimental enemy salvage work, producing operator/enemy manifest union `516e6e9`, then with Agent 11’s atomic `en-US`/`zh-CN` localization, and then with Agent 2’s Training terminal. The combined candidate `35831f5` passed a complete 115-rung STANDARD run after exact stale-cache and four-process promotion corrections.
+
+During that snapshot, master advanced once more with the approved Act I V3 world art and an independently verified implementation of the same promotion cache fixes. Union `5e03b49` preserves master’s canonical shared simulation bytes and TD-032’s native animation/provenance bytes. The sealed Act I commit had left one scenario expecting the superseded pending-human state; `c1b1f39` corrected that oracle to require the exact approval token and `human_final_art == true`. Fresh headless and rendered Act I plus native-operator scenarios, exact stale-cache boot, four-process promotion checks, and all focused source/provenance contracts passed on the final union. Under the v3 snapshot rule, the already-green 115-rung STANDARD snapshot was not restarted for this disjoint post-snapshot union.
 
 ## Delivery
 
