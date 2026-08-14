@@ -31,19 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-032 — Replace Sky Hunter attack placeholders with native NE and NW
-
-- Status: in_progress
-- Owner: AGENT 8
-- Branch: `agent-8/td-032-sky-hunter-native-attacks`
-- Base: latest-master union at `a2f52987ee10ec3a8b406f98c5e99dce9614f39c`
-- Dependencies: TD-029 operator animation runtime; TD-031 Simplified Chinese localization
-- Owned files: `tools/probes/stale_class_registry_boot.gd`, `test/test_ui_registry_bootstrap.gd`, `docs/handoffs/TD-032-agent-8-sky-hunter-native-attacks.md`, and TD-032 claim/closure edits in `docs/todo.md` / `docs/completed.md`
-- Do not touch: localization catalogs, locale runtime behavior, simulation/save/replay/economy state, verification thresholds, or unrelated presentation files
-- Acceptance: stale-cache boot recognizes the exact shipped `en-US`/`zh-CN` locale set while all native Sky Hunter zero-placeholder contracts and prior affected proofs remain green
-- Required evidence: focused registry test, exact `scripts/probe_stale_class_registry.sh`, fresh `operator_animation_part2` and `ui_shell_floor`, then one uninterrupted `scripts/verify.sh --full`
-- Last update: 2026-08-14
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

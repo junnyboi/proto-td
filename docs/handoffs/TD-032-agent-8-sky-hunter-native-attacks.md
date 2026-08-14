@@ -4,7 +4,7 @@
 
 **Repository:** `prototype-td`
 
-**Verified union:** `516e6e9a7c2251629b4858b555ef7783b6a1c600`
+**Verified candidate:** `c7f65d04285dedad947be93f1186d4b70ab33096`
 
 **Source package:** `aetheria-chibi-sprites-part-2-completed`
 
@@ -43,14 +43,15 @@ The NE and NW per-atlas provenance sidecars are now `human_final_accepted` and i
 | Union enemy-manifest tests | PASS: experimental salvage, Art fallback, and enemy animator suites |
 | `operator_animation_catalog` | PASS: 39 checks, 14 rendered shots, zero skips |
 | `operator_animation_part2` | PASS: 72 checks, 2 rendered shots, zero skips |
-| Live-master affected proof | PASS: experimental salvage 48 checks and Grunt animation 41 checks, zero skips |
-| Final clean STANDARD | PASS: 105 rungs across full GUT, property oracles, replay/filesystem probes, every headless/rendered scenario, bots, and quality gates |
+| Live-master affected proof | PASS: bilingual UI 765 checks, experimental salvage 48 checks, and Grunt animation 41 checks, zero skips |
+| Stale-class registry | PASS: exact `en-US`/`zh-CN` locale registry plus title, staging, squad, results, S1, S2, and S3 boot from the historical cache |
+| Final clean STANDARD | PASS on `c7f65d0`: 105 rungs across full GUT, property oracles, replay/filesystem probes, every headless/rendered scenario, bots, and quality gates |
 
 The live-battle scenario now asserts that Sky Hunter resolves `op_anim_sniper_2_attack_ne` with a false manifest placeholder flag and an empty resource source-direction map. It also retains the existing projection hash-invariance check, so the native visual replacement cannot mutate model state.
 
 ## Live-master union
 
-Live master advanced during TD-032 with Agent 9’s completed experimental enemy salvage work, which also modified the shared asset manifest and Art loader. The final union `516e6e9` contains both parents without conflict. Deterministic importer/provenance checks and fresh rendered affected proof verified the operator, Grunt, and experimental-enemy manifests together before the final 105-rung STANDARD run.
+Live master first advanced with Agent 9’s experimental enemy salvage work, producing operator/enemy manifest union `516e6e9`. It advanced again with Agent 11’s atomic `en-US`/`zh-CN` localization, producing combined union `a2f5298`. The first full gate on that combined union exposed a stale-cache probe that still expected the superseded one-locale registry. Commit `c7f65d0` corrected the probe to require exactly `en-US` and `zh-CN`, added a direct regression test, and then passed the complete 105-rung STANDARD gate from zero. No runtime locale behavior, catalog bytes, animation bytes, simulation, or threshold was changed by that correction.
 
 ## Delivery
 
