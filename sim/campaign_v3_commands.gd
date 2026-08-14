@@ -53,6 +53,8 @@ static func prepare(
 	for promotion: Dictionary in state._data["promotion_receipts"]:
 		if promotion["command_id"] == command_id:
 			return _reject(&"command_id_conflict")
+	if not CampaignV3CommandHistory.can_append(state._data, state._context_ref()):
+		return _reject(&"command_history_unavailable")
 	if expected_revision != state.save_revision():
 		return _reject(&"stale_revision")
 	return {

@@ -376,6 +376,90 @@ func test_resolution_rejects_forged_payload_rows_and_terminal_facts_without_muta
 		)
 
 
+func test_restore_rejects_self_consistent_impossible_promotion_histories() -> void:
+	var context := ContextScript.build()
+	var resolved := _resolved_two_survivors()
+	var base: CampaignStateV3 = resolved["state"]
+	var hero_id := _ready_ids(base)[0]
+	var insufficient := _append_forged_promotion(
+		base.data_copy(),
+		hero_id,
+		"forged-first",
+		"mage_apprentice",
+		"caster_1",
+	)
+	insufficient = _append_forged_promotion(
+		insufficient,
+		hero_id,
+		"forged-advanced",
+		"sorcerer",
+		"caster_2",
+	)
+	assert_false(CampaignStateV3.restore(insufficient, context)["accepted"])
+	var begun := _begun_two()
+	var begun_state: CampaignStateV3 = begun["state"]
+	var ticket: Dictionary = begun_state.data_copy()["tickets"][-1]
+	var fallen_id: String = ticket["squad"][0]["hero_id"]
+	var death_result := _commit(
+		(
+			begun_state
+			. resolve_attempt(
+				"dead-resolve",
+				1,
+				_outcome(ticket, "clear", [fallen_id], 3),
+				2,
+			)
+		),
+		begun["store"],
+	)
+	var dead_state: CampaignStateV3 = death_result["payload"]["state"]
+	var dead_forgery := _append_forged_promotion(
+		dead_state.data_copy(),
+		fallen_id,
+		"forged-dead",
+		"defender",
+		"defender_1",
+	)
+	assert_false(CampaignStateV3.restore(dead_forgery, context)["accepted"])
+	var locked_setup := _resolved_two_survivors()
+	var locked_base: CampaignStateV3 = locked_setup["state"]
+	hero_id = _ready_ids(locked_base)[0]
+	var promotion := _commit(
+		(
+			locked_base
+			. confirm_promotions(
+				"legit-mage",
+				3,
+				[
+					{
+						"hero_id": hero_id,
+						"to_class_id": "mage_apprentice",
+					}
+				]
+			)
+		),
+		locked_setup["store"],
+	)
+	var experienced: CampaignStateV3 = promotion["payload"]["state"]
+	for ordinal: int in range(2, 5):
+		experienced = _play_clear(
+			experienced,
+			locked_setup["store"],
+			"s1",
+			"locked-xp-%d" % ordinal,
+		)
+	assert_eq(_hero(experienced.data_copy(), hero_id)["xp"], 400)
+	assert_false((experienced.data_copy()["class_entitlements"] as Array).has("sorcerer"))
+	var locked := _append_forged_promotion(
+		experienced.data_copy(),
+		hero_id,
+		"forged-locked",
+		"sorcerer",
+		"caster_2",
+	)
+	assert_false(CampaignStateV3.restore(locked, context)["accepted"])
+
+
 func _fresh() -> CampaignStateV3:
 	var created := CampaignStateV3.create(42, 1, ContextScript.build())
 	assert_true(created["accepted"], str(created.get("error_code", &"")))
@@ -519,6 +603,55 @@ func _hero(data: Dictionary, hero_id: String) -> Dictionary:
 		if hero["hero_id"] == hero_id:
 			return hero
 	return {}
+
+
+func _append_forged_promotion(
+	data: Dictionary,
+	hero_id: String,
+	command_id: String,
+	to_class_id: String,
+	operator_def_id: String,
+) -> Dictionary:
+	var forged: Dictionary = data.duplicate(true)
+	var hero := _hero(forged, hero_id)
+	var from_class_id := String(hero["current_class_id"])
+	var expected_revision := int(forged["save_revision"])
+	var receipt := {
+		"command_id": command_id,
+		"save_revision": expected_revision + 1,
+		"choices":
+		[
+			{
+				"hero_id": hero_id,
+				"from_class_id": from_class_id,
+				"to_class_id": to_class_id,
+			}
+		],
+	}
+	forged["promotion_receipts"].append(receipt)
+	(
+		forged["command_receipts"]
+		. append(
+			(
+				CampaignV3CommandCodec
+				. record(
+					command_id,
+					"confirm_promotions",
+					expected_revision,
+					{"choices": [{"hero_id": hero_id, "to_class_id": to_class_id}]},
+					{"promotion": receipt},
+				)
+			)
+		)
+	)
+	hero["operator_def_id"] = operator_def_id
+	hero["current_class_id"] = to_class_id
+	if hero["first_class_id"] == "recruit":
+		hero["first_class_id"] = to_class_id
+	else:
+		hero["advanced_class_id"] = to_class_id
+	forged["save_revision"] = expected_revision + 1
+	return forged
 
 
 func _snapshot(state: CampaignStateV3) -> Dictionary:

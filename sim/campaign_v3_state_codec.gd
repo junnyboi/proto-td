@@ -52,6 +52,9 @@ static func normalize_data(
 	if not commands["accepted"]:
 		return commands
 	ordered["command_receipts"] = commands["value"]
+	var command_history := CampaignV3CommandHistory.validate(ordered, context)
+	if not command_history["accepted"]:
+		return command_history
 	if ordered.keys() != data_keys:
 		return _reject(&"invalid_data_schema")
 	return _accept(ordered)

@@ -41,7 +41,7 @@ func run(h: SelfTestHarness) -> void:
 				h.check("v3 starter is Recruit", hero["current_class_id"] == "recruit")
 			h.check("v3 has five distinct starters", hero_ids.size() == 5, str(hero_ids.size()))
 			var v3_hash := CampaignV3Hash.of_data(fresh_v3["value"], v3_context)
-			h.check("v3 fresh strategic hash", v3_hash["hex"] == "bf4a5c25be2b0efd")
+			h.check("v3 fresh strategic hash", v3_hash["hex"] == "b62636c0071a53c4")
 		var graph: Dictionary = v3_context["class_by_id"]
 		h.check("v3 class graph has twelve nodes", graph.size() == 12, str(graph.size()))
 		h.check(

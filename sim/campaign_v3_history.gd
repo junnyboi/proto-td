@@ -368,7 +368,9 @@ static func _validate_current_from_anchor(
 		if receipt["save_revision"] != after["save_revision"] + offset + 1:
 			return _reject(&"post_resolution_revision_mismatch")
 		for choice: Dictionary in receipt["choices"]:
-			if not _apply_choice(expected_heroes, choice, context):
+			if not _apply_choice(
+				expected_heroes, after["class_entitlements"], choice, context,
+			):
 				return _reject(&"post_resolution_mutation_mismatch")
 	if current["heroes"] != expected_heroes:
 		return _reject(&"post_resolution_mutation_mismatch")
@@ -397,25 +399,38 @@ static func _post_resolution_ticket_count(current: Dictionary, after: Dictionary
 
 static func _apply_choice(
 	heroes: Array,
+	class_entitlements: Array,
 	choice: Dictionary,
 	context: Dictionary,
 ) -> bool:
+	var pre_state := {
+		"heroes": heroes,
+		"class_entitlements": class_entitlements,
+	}
+	var validated := CampaignV3PromotionRules.validate_choice(pre_state, context, {
+		"hero_id": choice["hero_id"],
+		"to_class_id": choice["to_class_id"],
+	})
+	if not validated["accepted"]:
+		return false
+	var result: Dictionary = validated["value"]
+	if result["from_class_id"] != choice["from_class_id"]:
+		return false
+	var hero := _hero_by_id(heroes, result["hero_id"])
+	hero["current_class_id"] = result["to_class_id"]
+	hero["operator_def_id"] = result["operator_def_id"]
+	if hero["first_class_id"] == "recruit":
+		hero["first_class_id"] = result["to_class_id"]
+	else:
+		hero["advanced_class_id"] = result["to_class_id"]
+	return true
+
+
+static func _hero_by_id(heroes: Array, hero_id: String) -> Dictionary:
 	for hero: Dictionary in heroes:
-		if hero["hero_id"] != choice["hero_id"]:
-			continue
-		if hero["current_class_id"] != choice["from_class_id"]:
-			return false
-		var target: Dictionary = context["class_by_id"].get(choice["to_class_id"], {})
-		if target.is_empty():
-			return false
-		hero["current_class_id"] = choice["to_class_id"]
-		hero["operator_def_id"] = target["operator_def_id"]
-		if hero["first_class_id"] == "recruit":
-			hero["first_class_id"] = choice["to_class_id"]
-		else:
-			hero["advanced_class_id"] = choice["to_class_id"]
-		return true
-	return false
+		if hero["hero_id"] == hero_id:
+			return hero
+	return {}
 
 
 static func _validate_stars(
