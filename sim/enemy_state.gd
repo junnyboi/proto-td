@@ -26,6 +26,8 @@ var blocked_by: int = -1
 var alive: bool = true
 var aerial: bool = false
 var atk_range_cells: int = 0
+# def-resolved constant copied at spawn (pinned by def_id, outside the hash)
+var target_policy: Dictionary = {}
 var stunned_until_tick: int = 0
 var damage_stagger_until_tick: int = 0
 var last_damage_tick: int = -1
