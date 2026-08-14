@@ -1,4 +1,4 @@
-# TD-036 — Accepted SFX runtime integration
+# TD-037 — Accepted SFX runtime integration
 
 | Field | Value |
 |---|---|
@@ -60,6 +60,6 @@ After TD-034 enemy-damage and font-cache work landed, the second union exposed t
 
 ## Merge and rollback
 
-Remote master allocated TD-032/TD-033 during branch verification, TD-034 after the first union, and TD-035 after the cache-bootstrap diagnosis. This SFX lane is therefore TD-036 without any source, asset, or acceptance rewrite. Candidate `8c4e418` prefers remote's canonical cache fixes, preserves the stricter dual-cache probe and remaining operator animations, retains complementary scratch-import stabilization, and passed the full gate. Never force-push.
+Remote master allocated TD-032/TD-033 during branch verification, TD-034 after the first union, and TD-035 after the cache-bootstrap diagnosis; Agent 8 then opened the active TD-036 Witch Doctor visual lease before publication. This completed SFX lane is therefore TD-037 without any source, asset, acceptance, or verified-candidate rewrite. Candidate `8c4e418` prefers canonical cache fixes, preserves the dual-cache probe and operator animations, retains complementary scratch-import stabilization, and passed the full gate. Never force-push.
 
-Rollback is `git revert` of the TD-036 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. Cache/bootstrap fixes now have canonical remote ownership and should be preserved independently of an SFX rollback.
+Rollback is `git revert` of the TD-037 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. Cache/bootstrap fixes now have canonical remote ownership and should be preserved independently of an SFX rollback.
