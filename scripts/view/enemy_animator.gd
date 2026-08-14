@@ -21,6 +21,16 @@ const SHADOW_FACE_SCALE := 0.3125
 const AERIAL_SHADOW_DROP := 10.0
 const FALLBACK_COLOR := Color("ef7d57")
 const CHARMED_COLOR := Color("41a6f6")
+const DAMAGE_FLASH_SHADER_SOURCE := """
+shader_type canvas_item;
+uniform vec4 flash_color : source_color = vec4(1.0);
+uniform float flash_strength : hint_range(0.0, 1.0) = 0.0;
+void fragment() {
+	vec4 pixel = texture(TEXTURE, UV);
+	vec3 flashed = mix(pixel.rgb, flash_color.rgb, flash_strength);
+	COLOR = vec4(flashed, COLOR.a);
+}
+"""
 const TYPE_COLORS := {
 	&"grunt": Color("ef7d57"),
 	&"runner": Color("f4d35e"),
@@ -44,6 +54,8 @@ const DIRECTIONAL_ENEMIES: Array[StringName] = [
 	&"spellcaster",
 	&"mini_boss",
 ]
+
+static var _damage_flash_shader: Shader = null
 
 
 static func uses_grunt(def_id: StringName) -> bool:
@@ -132,6 +144,36 @@ static func blend_alpha(frames_left: int, total_frames := BLEND_FRAMES) -> Vecto
 	return Vector2(old_alpha, 1.0 - old_alpha)
 
 
+static func damage_flash_color(
+	frames_left: int, total_frames: int, white: Color, red: Color
+) -> Color:
+	if frames_left <= 0 or total_frames <= 0:
+		return Color.WHITE
+	return white if frames_left * 2 > total_frames else red
+
+
+static func apply_damage_flash(
+	body: ColorRect, frames_left: int, total_frames: int, white: Color, red: Color
+) -> void:
+	var color := damage_flash_color(frames_left, total_frames, white, red)
+	for layer_name: String in ["Sprite", "BlendSprite"]:
+		var layer := body.get_node_or_null(layer_name) as TextureRect
+		if layer != null:
+			var shader_material := layer.material as ShaderMaterial
+			if shader_material != null:
+				shader_material.set_shader_parameter("flash_color", color)
+				shader_material.set_shader_parameter(
+					"flash_strength", 1.0 if frames_left > 0 else 0.0
+				)
+
+
+static func _shared_damage_flash_shader() -> Shader:
+	if _damage_flash_shader == null:
+		_damage_flash_shader = Shader.new()
+		_damage_flash_shader.code = DAMAGE_FLASH_SHADER_SOURCE
+	return _damage_flash_shader
+
+
 static func animation_id_for(enemy: EnemyState, battle: BattleModel) -> StringName:
 	var charmed := enemy.faction == EnemyState.Faction.CHARMED
 	var direction := direction_for_path(
@@ -192,6 +234,9 @@ static func _texture_rect(
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.size = sprite_size
+	var shader_material := ShaderMaterial.new()
+	shader_material.shader = _shared_damage_flash_shader()
+	sprite.material = shader_material
 	return sprite
 
 

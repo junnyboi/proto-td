@@ -6,6 +6,8 @@ const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const ENEMY_DAMAGE_FEEDBACK_SCRIPT := preload("res://scripts/view/enemy_damage_feedback.gd")
+const SKILL_READY_FEEDBACK_SCRIPT := preload("res://scripts/view/skill_ready_feedback.gd")
 const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.gd")
 const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
@@ -63,7 +65,7 @@ var _tracer_lines: Dictionary = {}
 var _tracer_seen_tick: Dictionary = {}
 var _tracer_frames_left: Dictionary = {}
 var _skill_seen_tick: Dictionary = {}
-var _skill_ready_state: Dictionary = {}
+var _skill_ready_feedback: RefCounted = SKILL_READY_FEEDBACK_SCRIPT.new()
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _continue_btn: Button = null
@@ -112,6 +114,7 @@ var _enemy_defs: Dictionary = {}
 var _enemy_anim_keys: Dictionary = {}
 var _enemy_blend_frames: Dictionary = {}
 var _enemy_anim_seconds := 0.0
+var _enemy_damage_feedback: RefCounted = ENEMY_DAMAGE_FEEDBACK_SCRIPT.new()
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
 
@@ -305,6 +308,7 @@ func _process(delta: float) -> void:
 	if model == null or _juice == null:
 		return
 	_enemy_anim_seconds += delta
+	_enemy_damage_feedback.process(delta, model, _enemy_rects, cfg)
 	_detect_deploys()
 	_detect_kills()
 	_detect_leaks()
@@ -341,12 +345,18 @@ func _age_view_transients() -> void:
 		if not _enemy_rects.has(enemy_id):
 			_enemy_blend_frames.erase(enemy_id)
 			continue
+		if (
+			enemy_id < model.enemies.size()
+			and _enemy_damage_feedback.is_staggered(model, model.enemies[enemy_id])
+		):
+			continue
 		var left := int(_enemy_blend_frames[enemy_id])
 		EnemyAnimator.apply_blend(_enemy_rects[enemy_id], left)
 		if left > 0:
 			_enemy_blend_frames[enemy_id] = left - 1
 		else:
 			_enemy_blend_frames.erase(enemy_id)
+	_enemy_damage_feedback.age(_enemy_rects, cfg)
 
 
 ## Single time-scale owner: strongest slowdown wins; empty stack restores 1.0.
@@ -624,11 +634,16 @@ func _project() -> void:
 	for e: EnemyState in model.enemies:
 		if e.alive and not _enemy_rects.has(e.id):
 			_enemy_rects[e.id] = _make_enemy_rect(e)
+			_enemy_damage_feedback.register(e)
 		elif not e.alive and _enemy_rects.has(e.id):
+			if _enemy_damage_feedback.retain_dead(e):
+				_update_hp_bar(_enemy_rects[e.id], _enemy_rects[e.id].size.x, e.hp, e.hp_max)
+				continue
 			_enemy_rects[e.id].queue_free()
 			_enemy_rects.erase(e.id)
 			_enemy_anim_keys.erase(e.id)
 			_enemy_blend_frames.erase(e.id)
+			_enemy_damage_feedback.remove(e.id)
 		if e.alive:
 			var pos := Pathing.position_of(model.path_for(e.path_idx), e.progress_units)
 			var center_p := pos + Vector2.ONE * 0.5
@@ -639,15 +654,16 @@ func _project() -> void:
 				+ Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y)
 			)
 			rect.z_index = IsoProjection.entity_z(center_p)
-			EnemyAnimator.refresh(
-				e,
-				model,
-				rect,
-				_enemy_anim_seconds,
-				_enemy_anim_keys,
-				_enemy_blend_frames,
-				_enemy_defs
-			)
+			if not _enemy_damage_feedback.is_staggered(model, e):
+				EnemyAnimator.refresh(
+					e,
+					model,
+					rect,
+					_enemy_damage_feedback.animation_seconds(_enemy_anim_seconds, e.id),
+					_enemy_anim_keys,
+					_enemy_blend_frames,
+					_enemy_defs
+				)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
 	_project_traps()
 	_project_units()
@@ -778,7 +794,7 @@ func _project_units() -> void:
 			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
 			_refresh_unit_sprite(u, body)
 			_update_hp_bar(body, body.size.x, u.hp, u.hp_max)
-			_update_sp_bar(body, u)
+			_skill_ready_feedback.update(body, u, SP_BAR_FILL, SP_FULL_FLASH)
 		_detect_skill_trigger(u)
 
 
@@ -809,25 +825,6 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var tex := Art.texture(def.sprite_id, frame)
 	if tex != null and sprite.texture != tex:
 		sprite.texture = tex
-
-
-## SP pip fills toward cost and flashes while ready.
-func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
-	if u.sp_cost <= 0:
-		return
-	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
-	fill.size.x = body.size.x * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
-	# readiness from the verb's own validator (rule 7, P14)
-	var is_ready := u.is_skill_ready()
-	var was_ready := bool(_skill_ready_state.get(u.id, false))
-	if is_ready and not was_ready:
-		Sfx.play("ability_ready")
-	_skill_ready_state[u.id] = is_ready
-	if is_ready:
-		var blink := (Engine.get_process_frames() / 8) % 2 == 0
-		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
-	else:
-		fill.color = SP_BAR_FILL
 
 
 ## Skill trigger flashes the portrait, bursts at the unit, and plays its sting.

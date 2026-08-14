@@ -1,7 +1,7 @@
 extends GutTest
 
 const SfxScript := preload("res://autoloads/sfx.gd")
-const BattleViewScript := preload("res://scripts/view/battle_view.gd")
+const SkillReadyFeedbackScript := preload("res://scripts/view/skill_ready_feedback.gd")
 const SFX_SCRIPT_PATH := "res://autoloads/sfx.gd"
 const SFX_CATALOG_SCRIPT_PATH := "res://assets/sfx/sfx_catalog.gd"
 const DEPLOY_BAR_SCRIPT_PATH := "res://scripts/ui/deploy_bar.gd"
@@ -156,30 +156,29 @@ func test_deploy_bar_wires_specialized_ui_cues_to_existing_edges() -> void:
 
 
 func test_ability_ready_plays_only_on_false_to_true_edges() -> void:
-	var view := BattleViewScript.new()
+	var feedback := SkillReadyFeedbackScript.new()
 	var body := _sp_bar_body()
-	view.add_child(body)
 	var unit := UnitState.new()
 	unit.id = 32032
 	unit.sp_cost = 10
 	unit.sp = 9
 	await get_tree().process_frame
 	var starts_before := int(Sfx.call("audible_start_count"))
-	view.call("_update_sp_bar", body, unit)
+	feedback.update(body, unit, Color.ORANGE, Color.WHITE)
 	assert_eq(int(Sfx.call("audible_start_count")), starts_before)
 	unit.sp = 10
-	view.call("_update_sp_bar", body, unit)
+	feedback.update(body, unit, Color.ORANGE, Color.WHITE)
 	assert_eq(int(Sfx.call("audible_start_count")), starts_before + 1)
 	await get_tree().process_frame
-	view.call("_update_sp_bar", body, unit)
+	feedback.update(body, unit, Color.ORANGE, Color.WHITE)
 	assert_eq(int(Sfx.call("audible_start_count")), starts_before + 1)
 	unit.sp = 0
-	view.call("_update_sp_bar", body, unit)
+	feedback.update(body, unit, Color.ORANGE, Color.WHITE)
 	unit.sp = 10
 	await get_tree().process_frame
-	view.call("_update_sp_bar", body, unit)
+	feedback.update(body, unit, Color.ORANGE, Color.WHITE)
 	assert_eq(int(Sfx.call("audible_start_count")), starts_before + 2)
-	view.free()
+	body.free()
 
 
 func test_stop_all_is_idempotent_and_keeps_the_voice_pool() -> void:

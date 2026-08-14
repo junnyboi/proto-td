@@ -15,6 +15,9 @@ extends Resource
 
 @export var skill_flash_frames: int = 24
 @export var skill_burst_frames: int = 8
+@export var damage_flash_frames: int = 6
+@export var damage_flash_white: Color = Color("ffffff")
+@export var damage_flash_red: Color = Color("ff3b30")
 @export var heal_burst_frames: int = 16
 @export var heal_burst_particles: int = 8
 @export var heal_burst_size_px: float = 8.0
