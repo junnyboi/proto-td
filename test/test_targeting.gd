@@ -1,132 +1,235 @@
 extends GutTest
 
-## Phase 4 targeting math (td-phase-4-5.md §3.2 G1-G4 core). Pure-function
-## tests over constructed candidates; battle integration cases (aerial
-## bypass, composition proof) land with the BattleModel wiring.
+const POLICY_DIR := "res://data/target_policies"
+const RIGHT := Targeting.FACING_RIGHT
 
-const SNIPER_OFFSETS_XS: Array[int] = [1, 2, 3, 4]
-const OFFSETS_YS: Array[int] = [-1, 0, 1]
+
+func _policy(policy_id: String) -> TargetPolicyDef:
+	return load("%s/%s.tres" % [POLICY_DIR, policy_id]) as TargetPolicyDef
+
+
+func _compiled(policy_id: String, owner_kind: int) -> Dictionary:
+	return Targeting.compile(_policy(policy_id), owner_kind)
+
+
+func _enemy(
+	id: int,
+	progress: int,
+	aerial: bool = false,
+	in_range: bool = true,
+	relation: String = Targeting.RELATION_NONE,
+	engagement_order: int = -1,
+) -> Dictionary:
+	return {
+		"id": id,
+		"alive": true,
+		"faction": Targeting.FACTION_ENEMY,
+		"relation": relation,
+		"in_range": in_range,
+		"aerial": aerial,
+		"progress_units": progress,
+		"distance": -1,
+		"engagement_order": engagement_order,
+	}
+
+
+func _unit(
+	id: int,
+	distance: int,
+	relation: String = Targeting.RELATION_DEPLOYED_UNIT,
+	in_range: bool = true,
+) -> Dictionary:
+	return {
+		"id": id,
+		"alive": true,
+		"faction": Targeting.FACTION_OPERATOR,
+		"relation": relation,
+		"in_range": in_range,
+		"aerial": false,
+		"progress_units": 0,
+		"distance": distance,
+	}
+
+
+func _row(decision: Dictionary, entity_id: int) -> Dictionary:
+	for value: Variant in decision["considered"]:
+		var candidate := value as Dictionary
+		if int(candidate["id"]) == entity_id:
+			return candidate
+	return {}
 
 
 func _forward_pattern(xs: Array[int]) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for x: int in xs:
-		for y: int in OFFSETS_YS:
+		for y: int in [-1, 0, 1]:
 			out.append(Vector2i(x, y))
 	return out
 
 
-func _candidate(id: int, cell: Vector2i, progress: int, aerial: bool = false) -> Dictionary:
-	return {"id": id, "cell": cell, "progress_units": progress, "aerial": aerial}
+func test_rotation_and_range_cells() -> void:
+	var offset := Vector2i(2, -1)
+	assert_eq(Targeting.rotate_offset(offset, Targeting.FACING_RIGHT), Vector2i(2, -1))
+	assert_eq(Targeting.rotate_offset(offset, Targeting.FACING_DOWN), Vector2i(1, 2))
+	assert_eq(Targeting.rotate_offset(offset, Targeting.FACING_LEFT), Vector2i(-2, 1))
+	assert_eq(Targeting.rotate_offset(offset, Targeting.FACING_UP), Vector2i(-1, -2))
+	var cells := Targeting.range_cells(
+		Vector2i(5, 3),
+		[Vector2i(1, 0), Vector2i(2, 1)] as Array[Vector2i],
+		Targeting.FACING_UP,
+	)
+	assert_true(cells.has(Vector2i(5, 2)))
+	assert_true(cells.has(Vector2i(6, 1)))
+	assert_eq(cells.size(), 2)
 
 
-func test_rotation_table() -> void:
-	var o := Vector2i(2, -1)
-	assert_eq(Targeting.rotate_offset(o, Targeting.FACING_RIGHT), Vector2i(2, -1), "RIGHT identity")
-	assert_eq(Targeting.rotate_offset(o, Targeting.FACING_DOWN), Vector2i(1, 2), "DOWN (-y,x)")
-	assert_eq(Targeting.rotate_offset(o, Targeting.FACING_LEFT), Vector2i(-2, 1), "LEFT (-x,-y)")
-	assert_eq(Targeting.rotate_offset(o, Targeting.FACING_UP), Vector2i(-1, -2), "UP (y,-x)")
-	# four rotations compose to identity for every pattern cell
-	for offset: Vector2i in _forward_pattern(SNIPER_OFFSETS_XS):
-		var once := Targeting.rotate_offset(offset, Targeting.FACING_DOWN)
-		var twice := Targeting.rotate_offset(once, Targeting.FACING_DOWN)
-		assert_eq(twice, Targeting.rotate_offset(offset, Targeting.FACING_LEFT),
-			"DOWN twice == LEFT for %s" % offset)
-
-
-func test_range_cells_rotated() -> void:
-	var origin := Vector2i(5, 3)
-	var offsets: Array[Vector2i] = [Vector2i(1, 0), Vector2i(2, 1)]
-	var right := Targeting.range_cells(origin, offsets, Targeting.FACING_RIGHT)
-	assert_true(right.has(Vector2i(6, 3)) and right.has(Vector2i(7, 4)), "RIGHT cells")
-	var up := Targeting.range_cells(origin, offsets, Targeting.FACING_UP)
-	assert_true(up.has(Vector2i(5, 2)) and up.has(Vector2i(6, 1)), "UP cells")
-	assert_eq(right.size(), 2, "no duplicate cells")
-
-
-func test_selection_max_progress_then_lowest_id() -> void:
-	var offsets := _forward_pattern([1, 2, 3])
-	var origin := Vector2i(0, 0)
-	var candidates: Array[Dictionary] = [
-		_candidate(7, Vector2i(1, 0), 500),
-		_candidate(3, Vector2i(2, 0), 900),
-		_candidate(5, Vector2i(3, 1), 900),
-		_candidate(1, Vector2i(9, 0), 9999),
+func test_frontmost_policy_is_permutation_invariant() -> void:
+	var policy := _compiled(
+		"operator_ground_only_frontmost", TargetPolicyDef.OwnerKind.OPERATOR
+	)
+	var a := _enemy(7, 500)
+	var b := _enemy(3, 900)
+	var c := _enemy(5, 900)
+	var permutations := [
+		[a, b, c], [a, c, b], [b, a, c],
+		[b, c, a], [c, a, b], [c, b, a],
 	]
-	var chosen := Targeting.select(
-		candidates, origin, offsets, Targeting.FACING_RIGHT, Targeting.Filter.STANDARD
-	)
-	assert_eq(chosen, 3, "max progress wins; tie at 900 broken by lower id; out-of-range ignored")
-	assert_eq(
-		Targeting.select([], origin, offsets, Targeting.FACING_RIGHT, Targeting.Filter.STANDARD),
-		-1,
-		"no candidates -> -1",
-	)
+	var expected := ""
+	for candidate_order: Array in permutations:
+		var decision := Targeting.decide(policy, "operator", 12, candidate_order)
+		assert_eq(int(decision["selected_id"]), 3)
+		assert_true(BattleObservation.recursive_primitive_only(decision))
+		var canonical := CanonicalJson.text(decision)
+		if expected == "":
+			expected = canonical
+		assert_eq(canonical, expected, "input order cannot change diagnostics")
+	var tied := Targeting.decide(policy, "operator", 12, [a, b, c])
+	assert_eq(tied["tie_break_reason"], "entity_id_tie_break")
+	assert_eq(_row(tied, 5)["rejection_reason"], "entity_id_tie_break")
 
 
-func test_range_edge_cells_in_and_out() -> void:
-	var offsets := _forward_pattern(SNIPER_OFFSETS_XS)
-	var origin := Vector2i(0, 0)
-	var edge_in := _candidate(1, Vector2i(4, 1), 100)
-	var edge_out := _candidate(2, Vector2i(5, 0), 100)
-	var behind := _candidate(3, Vector2i(-1, 0), 100)
-	var candidates: Array[Dictionary] = [edge_in, edge_out, behind]
+func test_aerial_first_and_ground_fallback_reasons() -> void:
+	var policy := _compiled(
+		"operator_aerial_first_frontmost", TargetPolicyDef.OwnerKind.OPERATOR
+	)
+	var decision := Targeting.decide(
+		policy,
+		"operator",
+		4,
+		[_enemy(1, 5000), _enemy(2, 100, true), _enemy(3, 9000, true, false)],
+	)
+	assert_eq(int(decision["selected_id"]), 2)
+	assert_eq(_row(decision, 1)["rejection_reason"], "aerial_bucket_lost")
+	assert_eq(_row(decision, 3)["rejection_reason"], "out_of_range")
+	var fallback := Targeting.decide(policy, "operator", 4, [_enemy(1, 5000)])
+	assert_eq(int(fallback["selected_id"]), 1)
+
+
+func test_ground_only_excludes_aerial_and_handles_empty() -> void:
+	var policy := _compiled(
+		"operator_ground_only_frontmost", TargetPolicyDef.OwnerKind.OPERATOR
+	)
+	var decision := Targeting.decide(
+		policy, "operator", 8, [_enemy(1, 9000, true), _enemy(2, 100)]
+	)
+	assert_eq(int(decision["selected_id"]), 2)
+	assert_eq(_row(decision, 1)["rejection_reason"], "aerial_excluded")
+	var empty := Targeting.decide(policy, "operator", 8, [])
+	assert_eq(int(empty["selected_id"]), Targeting.NO_TARGET)
+	assert_eq(empty["selection_reason"], "no_candidates")
+
+
+func test_blocked_policy_preserves_assignment_order() -> void:
+	var policy := _compiled(
+		"operator_blocked_assignment_order", TargetPolicyDef.OwnerKind.OPERATOR
+	)
+	var decision := Targeting.decide(
+		policy,
+		"operator",
+		0,
+		[
+			_enemy(9, 100, false, true, Targeting.RELATION_BLOCKED, 0),
+			_enemy(2, 10, false, true, Targeting.RELATION_BLOCKED, 1),
+			_enemy(1, 999),
+		],
+	)
+	assert_eq(int(decision["selected_id"]), 9)
+	assert_eq(_row(decision, 1)["rejection_reason"], "not_blocked")
+	assert_eq(_row(decision, 2)["rejection_reason"], "later_engagement")
+
+
+func test_enemy_blocker_then_nearest_is_explicit_and_stable() -> void:
+	var policy := _compiled(
+		"enemy_blocker_then_nearest", TargetPolicyDef.OwnerKind.ENEMY
+	)
+	var tied := Targeting.decide(policy, "enemy", 3, [_unit(7, 1), _unit(2, 1)])
+	assert_eq(int(tied["selected_id"]), 2)
+	assert_eq(tied["tie_break_reason"], "entity_id_tie_break")
+	var blocked := Targeting.decide(
+		policy,
+		"enemy",
+		3,
+		[
+			_unit(7, 0, Targeting.RELATION_CURRENT_BLOCKER),
+			_unit(2, 0, Targeting.RELATION_DEPLOYED_UNIT),
+		],
+	)
+	assert_eq(int(blocked["selected_id"]), 7)
+	assert_eq(_row(blocked, 2)["rejection_reason"], "blocker_preferred")
+
+
+func test_invalid_and_disabled_policies_fail_closed() -> void:
+	var null_policy := Targeting.compile(null, TargetPolicyDef.OwnerKind.OPERATOR)
+	var invalid := Targeting.decide(null_policy, "operator", 0, [_enemy(1, 100)])
+	assert_eq(int(invalid["selected_id"]), Targeting.NO_TARGET)
+	assert_eq(invalid["selection_reason"], "invalid_policy")
+	assert_eq(_row(invalid, 1)["rejection_reason"], "invalid_policy")
+
+	var unknown := TargetPolicyDef.new()
+	unknown.id = &"future_policy"
+	unknown.stable_entity_id_tie_break = true
 	assert_eq(
-		Targeting.select(
-			candidates, origin, offsets, Targeting.FACING_RIGHT, Targeting.Filter.STANDARD
+		Targeting.validation_reason(unknown, TargetPolicyDef.OwnerKind.OPERATOR),
+		"unknown_policy_id",
+	)
+	var contradictory := _policy("operator_ground_only_frontmost").duplicate(true)
+	contradictory.aerial_rule = TargetPolicyDef.AerialRule.PREFER
+	assert_eq(
+		Targeting.validation_reason(contradictory, TargetPolicyDef.OwnerKind.OPERATOR),
+		"contradictory_policy_shape",
+	)
+	var unstable := _policy("enemy_blocker_only").duplicate(true)
+	unstable.stable_entity_id_tie_break = false
+	assert_eq(
+		Targeting.validation_reason(unstable, TargetPolicyDef.OwnerKind.ENEMY),
+		"missing_stable_tie_break",
+	)
+	assert_eq(
+		Targeting.validation_reason(
+			_policy("enemy_blocker_only"), TargetPolicyDef.OwnerKind.OPERATOR
 		),
-		1,
-		"corner cell (4,1) is in; (5,0) and behind are out",
+		"owner_kind_mismatch",
 	)
-
-
-func test_sniper_prefers_aerial_over_further_ground() -> void:
-	var offsets := _forward_pattern([1, 2, 3])
-	var candidates: Array[Dictionary] = [
-		_candidate(1, Vector2i(1, 0), 5000, false),
-		_candidate(2, Vector2i(3, 0), 100, true),
-	]
-	var chosen := Targeting.select(
-		candidates, Vector2i.ZERO, offsets, Targeting.FACING_RIGHT,
-		Targeting.Filter.ANTI_AIR_PRIORITY
+	var disabled := Targeting.decide(
+		_compiled("no_automatic_target", TargetPolicyDef.OwnerKind.OPERATOR),
+		"operator",
+		5,
+		[_enemy(1, 100)],
 	)
-	assert_eq(chosen, 2, "aerial preferred even at far lower progress")
-	var ground_only: Array[Dictionary] = [_candidate(1, Vector2i(1, 0), 5000, false)]
-	assert_eq(
-		Targeting.select(
-			ground_only, Vector2i.ZERO, offsets, Targeting.FACING_RIGHT,
-			Targeting.Filter.ANTI_AIR_PRIORITY
-		),
-		1,
-		"falls back to ground when no aerial in range",
-	)
+	assert_eq(int(disabled["selected_id"]), Targeting.NO_TARGET)
+	assert_eq(disabled["selection_reason"], "automatic_target_disabled")
 
 
-func test_caster_excludes_aerial_entirely() -> void:
-	var offsets := _forward_pattern([1, 2, 3])
-	var candidates: Array[Dictionary] = [
-		_candidate(1, Vector2i(1, 0), 9000, true),
-		_candidate(2, Vector2i(2, 0), 100, false),
-	]
-	var chosen := Targeting.select(
-		candidates, Vector2i.ZERO, offsets, Targeting.FACING_RIGHT, Targeting.Filter.GROUND_ONLY
-	)
-	assert_eq(chosen, 2, "aerial never chosen by GROUND_ONLY")
-	var air_only: Array[Dictionary] = [_candidate(1, Vector2i(1, 0), 9000, true)]
-	assert_eq(
-		Targeting.select(
-			air_only, Vector2i.ZERO, offsets, Targeting.FACING_RIGHT, Targeting.Filter.GROUND_ONLY
-		),
-		-1,
-		"aerial-only field -> no target for a caster",
-	)
-
-
-func test_splash_cells_exactness() -> void:
-	var c3 := Targeting.splash_cells(Vector2i(4, 4), 3)
-	assert_eq(c3.size(), 9, "3x3 = 9 cells")
-	assert_true(c3.has(Vector2i(3, 3)) and c3.has(Vector2i(5, 5)), "corners in")
-	assert_false(c3.has(Vector2i(2, 4)) or c3.has(Vector2i(4, 6)), "just outside is out")
-	var c5 := Targeting.splash_cells(Vector2i(4, 4), 5)
-	assert_eq(c5.size(), 25, "5x5 = 25 cells (SPLASH_RADIUS_PLUS)")
-	assert_true(c5.has(Vector2i(2, 4)) and c5.has(Vector2i(6, 6)), "5x5 reaches radius 2")
+func test_range_edge_and_splash_exactness() -> void:
+	var cells := Targeting.range_cells(Vector2i.ZERO, _forward_pattern([1, 2, 3, 4]), RIGHT)
+	assert_true(cells.has(Vector2i(4, 1)))
+	assert_false(cells.has(Vector2i(5, 0)))
+	assert_false(cells.has(Vector2i(-1, 0)))
+	var splash_three := Targeting.splash_cells(Vector2i(4, 4), 3)
+	assert_eq(splash_three.size(), 9)
+	assert_true(splash_three.has(Vector2i(3, 3)))
+	assert_true(splash_three.has(Vector2i(5, 5)))
+	assert_false(splash_three.has(Vector2i(2, 4)))
+	var splash_five := Targeting.splash_cells(Vector2i(4, 4), 5)
+	assert_eq(splash_five.size(), 25)
+	assert_true(splash_five.has(Vector2i(2, 4)))

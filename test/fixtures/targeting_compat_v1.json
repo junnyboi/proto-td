@@ -1,0 +1,476 @@
+{
+  "schema_id": "prototype_td_targeting_compat_fixture",
+  "version": 1,
+  "captured_from_commit": "3b3fdfba2a749597e2f8ad1d87f74d365c18b231",
+  "selection_rows": [
+    {
+      "case_id": "frontmost_then_lowest_id",
+      "policy_id": "operator_ground_only_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 0,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "candidates": [
+        {
+          "id": 7,
+          "cell": {
+            "x": 1,
+            "y": 0
+          },
+          "progress_units": 500,
+          "aerial": false
+        },
+        {
+          "id": 3,
+          "cell": {
+            "x": 2,
+            "y": 0
+          },
+          "progress_units": 900,
+          "aerial": false
+        },
+        {
+          "id": 5,
+          "cell": {
+            "x": 3,
+            "y": 1
+          },
+          "progress_units": 900,
+          "aerial": false
+        },
+        {
+          "id": 1,
+          "cell": {
+            "x": 9,
+            "y": 0
+          },
+          "progress_units": 9999,
+          "aerial": false
+        }
+      ],
+      "selected_id": 3
+    },
+    {
+      "case_id": "aerial_first_with_ground_fallback",
+      "policy_id": "operator_aerial_first_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 1,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "candidates": [
+        {
+          "id": 1,
+          "cell": {
+            "x": 1,
+            "y": 0
+          },
+          "progress_units": 5000,
+          "aerial": false
+        },
+        {
+          "id": 2,
+          "cell": {
+            "x": 3,
+            "y": 0
+          },
+          "progress_units": 100,
+          "aerial": true
+        }
+      ],
+      "selected_id": 2
+    },
+    {
+      "case_id": "aerial_first_ground_fallback",
+      "policy_id": "operator_aerial_first_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 1,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "candidates": [
+        {
+          "id": 1,
+          "cell": {
+            "x": 1,
+            "y": 0
+          },
+          "progress_units": 5000,
+          "aerial": false
+        }
+      ],
+      "selected_id": 1
+    },
+    {
+      "case_id": "ground_only_excludes_air",
+      "policy_id": "operator_ground_only_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 2,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "candidates": [
+        {
+          "id": 1,
+          "cell": {
+            "x": 1,
+            "y": 0
+          },
+          "progress_units": 9000,
+          "aerial": true
+        },
+        {
+          "id": 2,
+          "cell": {
+            "x": 2,
+            "y": 0
+          },
+          "progress_units": 100,
+          "aerial": false
+        }
+      ],
+      "selected_id": 2
+    },
+    {
+      "case_id": "range_edge_in_out_behind",
+      "policy_id": "operator_ground_only_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 0,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": -1
+        },
+        {
+          "x": 4,
+          "y": 0
+        },
+        {
+          "x": 4,
+          "y": 1
+        }
+      ],
+      "candidates": [
+        {
+          "id": 1,
+          "cell": {
+            "x": 4,
+            "y": 1
+          },
+          "progress_units": 100,
+          "aerial": false
+        },
+        {
+          "id": 2,
+          "cell": {
+            "x": 5,
+            "y": 0
+          },
+          "progress_units": 100,
+          "aerial": false
+        },
+        {
+          "id": 3,
+          "cell": {
+            "x": -1,
+            "y": 0
+          },
+          "progress_units": 100,
+          "aerial": false
+        }
+      ],
+      "selected_id": 1
+    },
+    {
+      "case_id": "empty_candidates",
+      "policy_id": "operator_ground_only_frontmost",
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "facing": 0,
+      "filter": 0,
+      "offsets": [
+        {
+          "x": 1,
+          "y": -1
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": -1
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": -1
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "candidates": [],
+      "selected_id": -1
+    }
+  ],
+  "blocked_row": {
+    "case_id": "blocked_runtime_id_order",
+    "policy_id": "operator_blocked_assignment_order",
+    "blocked_ids": [
+      0,
+      1
+    ],
+    "selected_id": 0
+  },
+  "nearest_row": {
+    "case_id": "nearest_equal_distance_runtime_id_order",
+    "policy_id": "enemy_blocker_then_nearest",
+    "enemy_cell": {
+      "x": 1,
+      "y": 2
+    },
+    "range_cells": 2,
+    "units": [
+      {
+        "id": 0,
+        "cell": {
+          "x": 2,
+          "y": 1
+        }
+      },
+      {
+        "id": 1,
+        "cell": {
+          "x": 0,
+          "y": 1
+        }
+      }
+    ],
+    "selected_id": 0
+  },
+  "observation_baseline": {
+    "bot": "bot_stage_06_conditional",
+    "result": "clear",
+    "leaked": 1,
+    "terminal_tick": 1387,
+    "model_hash": "376a0c16c62dd32a",
+    "observation_sequence_sha256": "acd60c0336314a88ae5768b48451059893425f0c1d6dcb26d2a22bbfe2deecbf",
+    "trace_sha256": "9499ceccc213704444b242b507ffd31a827c25d7ca677d8d90e21fd29b4a0d09"
+  }
+}

@@ -33,6 +33,7 @@ var op_class: OperatorDef.OpClass = OperatorDef.OpClass.GUARD
 # def-resolved constant copied at deploy (pinned by op_id, outside the hash)
 var splash_dim_base: int = 0
 var range_offsets: Array[Vector2i] = []
+var target_policy: Dictionary = {}
 var last_attack_tick: int = -1
 var last_attack_cell: Vector2i = Vector2i(-1, -1)
 var sp: int = 0
