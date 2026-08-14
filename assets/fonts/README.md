@@ -1,6 +1,8 @@
 # Protos bundled font subset
 
-`ProtosSansSC-Subset.otf` is a glyph subset of **Noto Sans CJK SC Regular**, used only as the CJK fallback beneath Godot's built-in primary UI font. It contains the codepoints present in the canonical `localization/zh-CN.json` values at generation time; English and existing typography metrics remain owned by `ThemeDB.fallback_font`. `AetheriaTheme` constructs its `FontFile` directly from these tracked OTF bytes so a pulled worktree never depends on a generated `.godot/imported/*.fontdata` cache artifact. The Web export preset preserves the raw bytes; pack-only verification must prove that invariant.
+`ProtosSansSC-Subset.otf` is a glyph subset of **Noto Sans CJK SC Regular**, used only as the CJK fallback beneath Godot's built-in primary UI font. It contains the codepoints present in the canonical `localization/zh-CN.json` values at generation time; English and existing typography metrics remain owned by `ThemeDB.fallback_font`.
+
+At runtime, `AetheriaTheme` loads the tracked OTF source through `FontFile.load_dynamic_font()` before consulting Godot's imported-resource loader. Tests require the resulting in-memory font data to be byte-identical to the tracked source. This keeps pulled worktrees compilable when `.godot/imported/*.fontdata` is missing or stale, while exported packs retain a `ResourceLoader` fallback if the source path is not directly file-accessible. The Web export preset preserves the raw bytes, and pack-only verification proves that invariant. Generated `.fontdata` remains a disposable cache, never a source artifact.
 
 The source font was `/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf` from Ubuntu package `fonts-noto-cjk`, with SHA-256 `2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b`. The generated subset SHA-256 is `b7303b6a0226a30d069485752d2f5badc95ec20d4bcb745dfbea2ac3e8dfb947`.
 

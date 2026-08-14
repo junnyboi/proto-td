@@ -28,20 +28,34 @@ const COLORS := {
 
 
 func _init() -> void:
-	var cjk_bytes := FileAccess.get_file_as_bytes(CJK_FONT_PATH)
-	assert(not cjk_bytes.is_empty(), "Bundled CJK font bytes are missing")
-	var cjk_font := FontFile.new()
-	cjk_font.data = cjk_bytes
-	cjk_font.resource_name = "ProtosSansSC-Subset"
 	var composite_font := FontVariation.new()
 	composite_font.base_font = ThemeDB.fallback_font
-	composite_font.fallbacks = [cjk_font]
+	var cjk_font := _load_cjk_font()
+	if cjk_font != null:
+		composite_font.fallbacks = [cjk_font]
 	default_font = composite_font
 	default_font_size = 44
 	_build_buttons()
 	_build_locale_list()
 	_build_panels()
 	_build_labels()
+
+
+func _load_cjk_font() -> FontFile:
+	if FileAccess.file_exists(CJK_FONT_PATH):
+		var source_font := FontFile.new()
+		var source_error := source_font.load_dynamic_font(CJK_FONT_PATH)
+		if source_error == OK:
+			source_font.resource_name = "ProtosSansSC-Subset"
+			return source_font
+		push_warning(
+			"AetheriaTheme: source font load failed (%d); trying imported resource"
+			% source_error,
+		)
+	var imported_font := ResourceLoader.load(CJK_FONT_PATH, "FontFile") as FontFile
+	if imported_font == null:
+		push_error("AetheriaTheme: CJK font unavailable at %s" % CJK_FONT_PATH)
+	return imported_font
 
 
 func _build_buttons() -> void:
