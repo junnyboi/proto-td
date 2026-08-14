@@ -350,7 +350,7 @@
     "integration",
     "feel"
    ],
-   "status": "pending",
+   "status": "passing",
    "scenarios": [
     "sfx_playback",
     "juice_deploy",
@@ -358,7 +358,10 @@
     "juice_trap_charm",
     "wave_banner_victory"
    ],
-   "commits": []
+   "commits": [
+    "7790e03",
+    "55cff6d"
+   ]
   },
   {
    "id": "TITLE-1",
