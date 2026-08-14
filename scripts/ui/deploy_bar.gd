@@ -288,6 +288,7 @@ func _start_placement(op_id: StringName) -> void:
 	_hide_retreat_chip()
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
+	Sfx.play("operator_select")
 	_show_valid_highlights()
 	view.call("deploy_drag_started")
 
@@ -337,15 +338,18 @@ func _update_placement_hover() -> void:
 func _end_placement_drag() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	if not _placement_valid_at(cell):
+		Sfx.play("action_reject")
 		_cancel_placement()
 		return
 	if _placement_trap != &"":
 		# traps have no facing: the release IS the placement
-		model.apply_action([&"place_trap", _placement_trap, cell])
+		if not model.apply_action([&"place_trap", _placement_trap, cell]):
+			Sfx.play("action_reject")
 		_cancel_placement()
 		return
 	_pending_cell = cell
 	_cursor_rect.visible = false
+	Sfx.play("placement_ready")
 	# the slowdown HOLDS through the facing chooser (L7 verdict 2026-08-11:
 	# full-speed enemies charging while the player aims felt punishing);
 	# _confirm_deploy / _cancel_placement restore normal speed
@@ -388,7 +392,8 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
 	if _pending_cell.x >= 0:
-		model.apply_action([&"deploy", _placement_op, _pending_cell, int(facing)])
+		if not model.apply_action([&"deploy", _placement_op, _pending_cell, int(facing)]):
+			Sfx.play("action_reject")
 	_cancel_placement()
 
 

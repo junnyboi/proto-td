@@ -36,6 +36,17 @@ func test_admitted_catalog_and_manifest_contracts_are_exact() -> void:
 			)
 
 
+func test_witch_doctor_resolves_exact_mage_apprentice_visual_resource() -> void:
+	var mage := OperatorVisualCatalog.get_animation(&"caster_1")
+	var witch_doctor := OperatorVisualCatalog.get_animation(&"witch_doctor_1")
+	assert_not_null(mage)
+	assert_not_null(witch_doctor)
+	assert_true(witch_doctor == mage)
+	assert_eq(witch_doctor.idle_by_direction, mage.idle_by_direction)
+	assert_eq(witch_doctor.attack_by_direction, mage.attack_by_direction)
+	assert_false(&"witch_doctor_1" in OperatorVisualCatalog.template_ids())
+
+
 func test_resource_rejects_missing_unknown_and_duplicate_directions() -> void:
 	var value := _valid_def()
 	value.idle_by_direction.erase(&"sw")

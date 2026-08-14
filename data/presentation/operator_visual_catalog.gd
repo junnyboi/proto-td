@@ -17,10 +17,14 @@ const DEFINITIONS: Dictionary = {
 	&"vanguard_1": preload("res://data/presentation/operator_visuals/vanguard_1.tres"),
 	&"vanguard_2": preload("res://data/presentation/operator_visuals/vanguard_2.tres"),
 }
+const VISUAL_ALIASES: Dictionary = {
+	&"witch_doctor_1": &"caster_1",
+}
 
 
 static func get_animation(template_id: StringName) -> OperatorAnimationDefType:
-	var value: Variant = DEFINITIONS.get(template_id)
+	var resolved_id := StringName(VISUAL_ALIASES.get(template_id, template_id))
+	var value: Variant = DEFINITIONS.get(resolved_id)
 	return value as OperatorAnimationDefType if value is OperatorAnimationDefType else null
 
 

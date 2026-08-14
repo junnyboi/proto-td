@@ -30,6 +30,11 @@ func run(h: SelfTestHarness) -> void:
 		OperatorVisualCatalog.get_animation(&"guard_2") != null
 		and not OperatorVisualCatalog.get_animation(&"guard_2").placeholder,
 	)
+	h.check(
+		"Witch Doctor resolves exact Mage Apprentice visual resource",
+		OperatorVisualCatalog.get_animation(&"witch_doctor_1")
+		== OperatorVisualCatalog.get_animation(&"caster_1"),
+	)
 	var swordmaster := OperatorVisualCatalog.get_animation(&"guard_1")
 	h.check(
 		"Swordmaster declares exactly attack NE from SE",

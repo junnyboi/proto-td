@@ -17,9 +17,18 @@ func _initialize() -> void:
 	if training_script == null or not training_script.can_instantiate():
 		_fail("Training script unavailable")
 		return
-	var command_id := String(promotion_script.call(
-		"command_id", "campaign", 7, "0123456789abcdef", "sorcerer",
-	))
+	var command_id := String(
+		(
+			promotion_script
+			. call(
+				"command_id",
+				"campaign",
+				7,
+				"0123456789abcdef",
+				"sorcerer",
+			)
+		)
+	)
 	if command_id != "promote:campaign:7:0123456789abcdef:sorcerer":
 		_fail("promotion command seam changed")
 		return
