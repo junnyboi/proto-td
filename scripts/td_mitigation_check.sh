@@ -53,6 +53,7 @@ tests=(
   test/test_mitigation_paths.gd
   test/test_mitigation_persistence.gd
   test/test_hash_paranoia.gd
+  test/test_damage_stagger.gd
   test/test_combat.gd
   test/test_composition.gd
   test/test_spells.gd

@@ -1,5 +1,6 @@
 extends GutTest
 
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const STAGE_PATH := "res://data/stages/test_lane.tres"
 const CONFIG_PATH := "res://data/config/game.tres"
 const FAR_WAVE := {"tick": 100_000, "enemy_id": &"heavy", "path_idx": 0}
@@ -41,7 +42,7 @@ func _model(enemy_ids: Array[StringName]) -> BattleModel:
 
 
 func _damage(model: BattleModel, enemy: EnemyState, amount: int) -> void:
-	model.call("_damage_enemy", enemy, amount)
+	model.call("_damage_enemy", enemy, amount, int(DamageRulesScript.Kind.PHYSICAL))
 
 
 func test_config_uses_non_undershooting_nearest_tick_count() -> void:
