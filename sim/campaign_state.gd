@@ -7,6 +7,7 @@ extends "res://sim/campaign_training_projection.gd"
 ## enters only through deterministic CampaignMutation command seams.
 
 const CampaignPromotionScript := preload("res://sim/campaign_promotion.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const PROMOTION_RULES_PATH := "res://data/progression/mage_advanced_v1.tres"
 
 const P16_STARTERS: Array[StringName] = [
@@ -32,6 +33,7 @@ static func create(
 		return environment
 	var fresh := _fresh_data(
 		seed_value, generation, environment["definition"], environment["starting"],
+		environment["combat_rules_sha256"],
 	)
 	if not fresh["accepted"]:
 		return fresh
@@ -222,13 +224,19 @@ static func _build_environment(
 		return normalized_stages
 	var stages: Array = normalized_stages["value"]
 	var canonical_catalogs: Dictionary = normalized_catalogs["value"]
+	var combat_binding := CombatContentBindingScript.build(canonical_catalogs, stages)
+	if not combat_binding["accepted"]:
+		return combat_binding
 	var promotion_rules := CampaignProgressionType.normalize_promotion_rules(
 		load(PROMOTION_RULES_PATH), canonical_catalogs["operators"],
 	)
 	if not promotion_rules["accepted"]:
 		return promotion_rules
 	var environment_hash := CanonicalJson.sha256_hex(
-		_environment_manifest(canonical_catalogs, stages, promotion_rules["value"]),
+		_environment_manifest(
+			canonical_catalogs, stages, promotion_rules["value"],
+			combat_binding["manifest"],
+		),
 	)
 	if environment_hash != definition["value"]["environment_sha256"]:
 		return _reject(&"campaign_environment_mismatch")
@@ -239,7 +247,7 @@ static func _build_environment(
 		canonical_catalogs["operators"], canonical_catalogs["traps"],
 		canonical_catalogs["spells"], stages,
 		definition["value"]["paid_offers"], starting["traps"], starting["spells"],
-		promotion_rules["value"],
+		promotion_rules["value"], combat_binding["sha256"],
 	)
 	return {
 		"accepted": true,
@@ -247,6 +255,7 @@ static func _build_environment(
 		"context": context,
 		"command_context": _build_command_context(stages),
 		"starting": starting,
+		"combat_rules_sha256": combat_binding["sha256"],
 		"definition": definition["value"],
 		"campaign_def_resource": campaign_def,
 		"catalogs": canonical_catalogs,
@@ -259,6 +268,7 @@ static func _fresh_data(
 	generation: int,
 	campaign_def: Dictionary,
 	starting: Dictionary,
+	combat_rules_sha256: String,
 ) -> Dictionary:
 	if generation < 1:
 		return _reject(&"invalid_campaign_identity")
@@ -295,6 +305,7 @@ static func _fresh_data(
 			"next_attempt_id": 1,
 			"next_resolution_index": 1,
 			"marks": int(campaign_def["initial_marks"]),
+			"combat_rules_sha256": combat_rules_sha256,
 			"stage_stars": [],
 			"unlocked_traps": _strings(starting["traps"]),
 			"unlocked_spells": _strings(starting["spells"]),
@@ -678,6 +689,7 @@ static func _environment_manifest(
 	catalogs: Dictionary,
 	stages: Array,
 	promotion_rules: Dictionary,
+	combat_rules: Dictionary,
 ) -> Dictionary:
 	var stage_rows: Array[Dictionary] = []
 	for stage: StageDef in stages:
@@ -700,6 +712,7 @@ static func _environment_manifest(
 		"spells": _strings(catalogs["spells"]),
 		"stages": stage_rows,
 		"promotion_rules": promotion_rules.duplicate(true),
+		"combat_rules": combat_rules.duplicate(true),
 	}
 
 

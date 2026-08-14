@@ -69,10 +69,13 @@ func test_v1_migrates_to_byte_exact_v2_save_and_hash() -> void:
 	var decoded := CampaignCodec.decode_save(source, context)
 	assert_true(decoded["accepted"], str(decoded.get("error_code", &"")))
 	assert_eq(decoded["migrated_from_version"], 1)
-	assert_eq(decoded["text"], _text(SAVE_PATH))
+	var expected := CampaignCodec.decode_save(_text(SAVE_PATH), context)
+	assert_true(expected["accepted"], str(expected.get("error_code", &"")))
+	assert_eq(expected["migrated_from_version"], 2)
+	assert_eq(decoded["text"], expected["text"])
 	var root: Dictionary = JSON.parse_string(decoded["text"])
 	assert_eq(int(root["version"]), 2)
-	assert_eq(root["checksum"], "69270968b2fedd82f98de96cf6ad530ad8e694d241aabdba5ab97a396e1b664b")
+	assert_eq(root["checksum"], "c2b4b7aa1fd6671b8ff227da9279f119920327e8ae3f059a617e88fe757bad70")
 	var strategic := CampaignHash.of_data(decoded["data"], context)
 	assert_true(strategic["accepted"])
 	assert_eq(strategic["hex"], "baa4d62d418258a5")
@@ -81,7 +84,7 @@ func test_v1_migrates_to_byte_exact_v2_save_and_hash() -> void:
 	assert_null(restored["migrated_from_version"])
 	assert_eq(restored["text"], decoded["text"])
 	assert_eq(restored["data"], decoded["data"])
-	assert_eq(restored["sha256"], "899d8c44eb2b8f84ac255315a183b28bcc55c74407eef2a819bd1a8f7fc2b9fb")
+	assert_eq(restored["sha256"], "55f73ce3b738743c25379ac2b0e42ad33fd66c273037c7d0615aa358767f94de")
 
 	var legacy_resolved: Dictionary = _json(LEGACY_TRANSACTION_PATH)["resolved_save"]["value"]
 	assert_true(CampaignCodec.decode_save(_raw_save(legacy_resolved), context)["accepted"])
@@ -136,15 +139,17 @@ func test_transaction_goldens_are_byte_exact() -> void:
 	assert_true(encoded_save["accepted"])
 	assert_eq(
 		encoded_save["value"]["checksum"],
-		"09979db6f12dc37470fe76959cf12a6de88afb0d1075c5e326efae4304274804",
+		"d320beb49bf84932207ad17997e7b86ea3fdec1ff75151ca310d6a6c188164e1",
 	)
 	assert_eq(
 		encoded_save["sha256"],
-		"33fefbc6639fa30a56d339468e606c64c27ac60a68257452345115ceddaf950b",
+		"a890a242927ad80aab0f28c73f206df478d3d38460974edc5c084a75da9681f8",
 	)
-	var full_hash := CampaignHash.of_data(resolved["value"], _context())
+	var normalized := CampaignCodec.normalize_data(resolved["value"], _context())
+	assert_true(normalized["accepted"], str(normalized.get("error_code", &"")))
+	var full_hash := CampaignHash.of_data(normalized["value"], _context())
 	assert_eq(full_hash["hex"], "6c13f78c886d80cc")
-	var anchor: Dictionary = resolved["value"]["resolution_anchor"]
+	var anchor: Dictionary = normalized["value"]["resolution_anchor"]
 	var before_hash := CampaignHash.of_core_snapshot(anchor["before_core"], _context())
 	var after_hash := CampaignHash.of_core_snapshot(anchor["after_core"], _context())
 	assert_eq(before_hash["hex"], "39725890ee4a6a1a")

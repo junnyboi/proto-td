@@ -3,9 +3,12 @@ extends RefCounted
 
 ## FNV-1a 64-bit over BattleModel's canonical field order (ints only).
 ## EVERY mutable model field appears here — adding model state without
-## extending this hash is a defect (CLAUDE.md ban list). Def-resolved
-## constants (step_units, atk, aerial, charm_immune...) are pinned by
-## def_id and stay out. Extracted from battle_model.gd at the Phase 7
+## extending this hash is a defect (CLAUDE.md ban list). Most def-resolved
+## constants (step_units, atk, aerial, charm_immune...) are pinned by def_id
+## and stay out. TD-MITIGATION is the explicit exception: copied mitigation
+## constants use a sparse append-only extension, preserving every all-default
+## legacy hash while any non-default mutation flips it. Extracted from the
+## BattleModel at the Phase 7
 ## file-size budget; the field order is append-only.
 ## Float channel (P14 doc): skill-effect params are the ONE non-integer
 ## input — quantized x1000 at hash time in _append_unit; params must stay
@@ -78,6 +81,33 @@ static func of(m: BattleModel) -> int:
 	for e: EnemyState in m.enemies:
 		_append_int(bytes, e.damage_stagger_until_tick)
 		_append_int(bytes, e.last_damage_tick)
+	# TD-MITIGATION sparse append-only extension. Category + entity id make
+	# variable-length rows unambiguous; defaults append no bytes by design.
+	for u: UnitState in m.units:
+		if u.defense != 0 or u.resistance_permille != 0 or u.attack_damage_kind != 0:
+			_append_int(bytes, 1)
+			_append_int(bytes, u.id)
+			_append_int(bytes, u.defense)
+			_append_int(bytes, u.resistance_permille)
+			_append_int(bytes, u.attack_damage_kind)
+	for e: EnemyState in m.enemies:
+		if e.defense != 0 or e.resistance_permille != 0 or e.attack_damage_kind != 0:
+			_append_int(bytes, 2)
+			_append_int(bytes, e.id)
+			_append_int(bytes, e.defense)
+			_append_int(bytes, e.resistance_permille)
+			_append_int(bytes, e.attack_damage_kind)
+	for t: TrapState in m.traps:
+		if t.damage_kind != 0:
+			_append_int(bytes, 3)
+			_append_int(bytes, t.id)
+			_append_int(bytes, t.damage_kind)
+	for spell_id: StringName in m.spell_book.ids:
+		var damage_kind := m.spell_book.damage_kind(spell_id)
+		if damage_kind != 0:
+			_append_int(bytes, 4)
+			_append_int(bytes, spell_id.hash())
+			_append_int(bytes, damage_kind)
 	return _fnv1a64(bytes)
 
 

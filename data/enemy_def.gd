@@ -6,10 +6,14 @@ extends Resource
 ## Phase 3, aerial in Phase 4, charm_immune in Phase 7.
 
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 
 @export var id: StringName = &""
 @export var hp: int = 1
 @export var atk: int = 0
+@export var defense: int = 0
+@export_range(0, 1000) var resistance_permille: int = 0
+@export_enum("Physical", "Arts") var attack_damage_kind: int = DamageRulesScript.Kind.PHYSICAL
 @export var atk_interval_ticks: int = 30
 @export var speed_tiles_per_s: float = 1.0
 @export var aerial: bool = false

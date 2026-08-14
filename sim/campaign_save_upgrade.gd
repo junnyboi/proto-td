@@ -3,6 +3,8 @@ extends RefCounted
 
 const CampaignMigration := preload("res://sim/campaign_migration.gd")
 const CanonicalJson := preload("res://sim/canonical_json.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
+
 const PRE_PROMOTION_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
@@ -26,15 +28,29 @@ const PRE_PROOF_CORE_KEYS := [
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 	"promotion_receipts",
 ]
+const PRE_MITIGATION_DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs", "resolution_anchor", "last_resolution",
+]
+const PRE_MITIGATION_CORE_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs",
+]
 const CURRENT_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"combat_rules_sha256",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs", "resolution_anchor", "last_resolution",
 ]
 const CURRENT_CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"combat_rules_sha256",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs",
 ]
@@ -47,11 +63,24 @@ static func is_pre_promotion_v2(value: Variant) -> bool:
 	)
 
 
-static func upgrade(value: Dictionary) -> Dictionary:
-	if not is_pre_promotion_v2(value):
+static func needs_upgrade(value: Variant) -> bool:
+	return typeof(value) == TYPE_DICTIONARY and (
+		is_pre_promotion_v2(value)
+		or _exact_keys(value as Dictionary, PRE_MITIGATION_DATA_KEYS)
+	)
+
+
+static func upgrade(value: Dictionary, _context: Dictionary = {}) -> Dictionary:
+	if not needs_upgrade(value):
 		return {}
-	if value.has("promotion_receipts") and not value["promotion_receipts"].is_empty():
+	var promotion_upgrade := is_pre_promotion_v2(value)
+	if (
+		promotion_upgrade
+		and value.has("promotion_receipts")
+		and not value["promotion_receipts"].is_empty()
+	):
 		return {}
+	var binding := CombatContentBindingScript.LEGACY_ZERO_SHA256
 	var source: Dictionary = value.duplicate(true)
 	if source["resolution_anchor"] != null:
 		if typeof(source["resolution_anchor"]) != TYPE_DICTIONARY:
@@ -60,13 +89,18 @@ static func upgrade(value: Dictionary) -> Dictionary:
 			var prior: Variant = source["resolution_anchor"].get(key)
 			if typeof(prior) != TYPE_DICTIONARY:
 				return {}
-			var upgraded_core := _upgrade_core(prior)
+			var upgraded_core := _upgrade_core(prior, binding)
 			if upgraded_core.is_empty():
 				return {}
 			source["resolution_anchor"][key] = upgraded_core
 	var result := {}
 	for key: String in CURRENT_DATA_KEYS:
-		result[key] = [] if key in ["promotion_receipts", "promotion_proofs"] else source[key]
+		if key == "combat_rules_sha256":
+			result[key] = binding
+		elif key in ["promotion_receipts", "promotion_proofs"] and not source.has(key):
+			result[key] = []
+		else:
+			result[key] = source[key]
 	return result
 
 
@@ -78,7 +112,7 @@ static func decode(
 ) -> Dictionary:
 	var source_version := int(parsed["version"])
 	var legacy := source_version == 1
-	var additive := source_version == 2 and is_pre_promotion_v2(parsed["data"])
+	var additive := source_version == 2 and needs_upgrade(parsed["data"])
 	if not legacy and not additive:
 		return {"handled": false}
 	if CanonicalJson.text(parsed) != source:
@@ -102,17 +136,28 @@ static func decode(
 	}}
 
 
-static func _upgrade_core(value: Dictionary) -> Dictionary:
-	if (
-		not _exact_keys(value, PRE_PROMOTION_CORE_KEYS)
-		and not _exact_keys(value, PRE_PROOF_CORE_KEYS)
-	):
+static func _upgrade_core(value: Dictionary, binding: String) -> Dictionary:
+	var promotion_shape := (
+		_exact_keys(value, PRE_PROMOTION_CORE_KEYS)
+		or _exact_keys(value, PRE_PROOF_CORE_KEYS)
+	)
+	var mitigation_shape := _exact_keys(value, PRE_MITIGATION_CORE_KEYS)
+	if not promotion_shape and not mitigation_shape:
 		return {}
-	if value.has("promotion_receipts") and not value["promotion_receipts"].is_empty():
+	if (
+		promotion_shape
+		and value.has("promotion_receipts")
+		and not value["promotion_receipts"].is_empty()
+	):
 		return {}
 	var result := {}
 	for key: String in CURRENT_CORE_KEYS:
-		result[key] = [] if key in ["promotion_receipts", "promotion_proofs"] else value[key]
+		if key == "combat_rules_sha256":
+			result[key] = binding
+		elif key in ["promotion_receipts", "promotion_proofs"] and not value.has(key):
+			result[key] = []
+		else:
+			result[key] = value[key]
 	return result
 
 

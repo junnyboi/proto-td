@@ -7,6 +7,7 @@ extends RefCounted
 const CampaignCodec := preload("res://sim/campaign_codec.gd")
 const CampaignHash := preload("res://sim/campaign_hash.gd")
 const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const LegacyHashScript := preload("res://sim/campaign_legacy_hash.gd")
 
 const V1_HERO_KEYS := [
@@ -37,7 +38,8 @@ static func migrate_v1_data(data: Variant, context: Dictionary) -> Dictionary:
 	var migrated: Dictionary = (data as Dictionary).duplicate(true)
 	if not _legacy_integrity_is_valid(migrated):
 		return _reject(&"invalid_v1_integrity")
-	if not _migrate_core(migrated):
+	var combat_rules_sha256 := CombatContentBindingScript.LEGACY_ZERO_SHA256
+	if not _migrate_core(migrated, combat_rules_sha256):
 		return _reject(&"invalid_v1_data")
 	var resolution: Variant = migrated.get("last_resolution")
 	if resolution != null:
@@ -50,9 +52,13 @@ static func migrate_v1_data(data: Variant, context: Dictionary) -> Dictionary:
 		if typeof(anchor) != TYPE_DICTIONARY:
 			return _reject(&"invalid_v1_anchor")
 		var migrated_anchor: Dictionary = (anchor as Dictionary).duplicate(true)
-		if not _migrate_core(migrated_anchor.get("before_core", null)):
+		if not _migrate_core(
+			migrated_anchor.get("before_core", null), combat_rules_sha256,
+		):
 			return _reject(&"invalid_v1_anchor")
-		if not _migrate_core(migrated_anchor.get("after_core", null)):
+		if not _migrate_core(
+			migrated_anchor.get("after_core", null), combat_rules_sha256,
+		):
 			return _reject(&"invalid_v1_anchor")
 		var before_hash := CampaignHash.of_core_snapshot(migrated_anchor["before_core"], context)
 		var after_hash := CampaignHash.of_core_snapshot(migrated_anchor["after_core"], context)
@@ -97,7 +103,7 @@ static func _legacy_integrity_is_valid(data: Dictionary) -> bool:
 	)
 
 
-static func _migrate_core(value: Variant) -> bool:
+static func _migrate_core(value: Variant, combat_rules_sha256: String) -> bool:
 	if typeof(value) != TYPE_DICTIONARY:
 		return false
 	var core := value as Dictionary
@@ -112,8 +118,15 @@ static func _migrate_core(value: Variant) -> bool:
 			return false
 		migrated.append(row)
 	core["heroes"] = migrated
+	core["combat_rules_sha256"] = combat_rules_sha256
 	core["promotion_receipts"] = []
 	core["promotion_proofs"] = []
+	if not core.has("resolution_anchor"):
+		var ordered := {}
+		for key: String in CampaignCodec.CORE_KEYS:
+			ordered[key] = core[key]
+		core.clear()
+		core.merge(ordered)
 	return true
 
 

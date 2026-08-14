@@ -27,11 +27,13 @@ const ENEMY_ASSIGNMENTS := {
 }
 
 
-func _resource_paths(directory: String) -> Array[String]:
+func _resource_paths(directory: String, exclude_test_only: bool = false) -> Array[String]:
 	var names: Array[String] = []
 	for filename: String in DirAccess.open(directory).get_files():
 		var source := filename.trim_suffix(".remap")
 		if source.ends_with(".tres"):
+			if exclude_test_only and source.begins_with("test_"):
+				continue
 			names.append(source)
 	names.sort()
 	var paths: Array[String] = []
@@ -99,7 +101,7 @@ func test_every_canonical_operator_has_exact_explicit_policy() -> void:
 
 
 func test_every_canonical_enemy_has_exact_explicit_policy() -> void:
-	var paths := _resource_paths(ENEMY_DIR)
+	var paths := _resource_paths(ENEMY_DIR, true)
 	assert_eq(paths.size(), ENEMY_ASSIGNMENTS.size())
 	for path: String in paths:
 		var definition := load(path) as EnemyDef

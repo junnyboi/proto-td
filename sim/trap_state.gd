@@ -14,6 +14,7 @@ var charges_left: int = -1
 var trigger: int = 0
 var effect: int = 0
 var damage: int = 0
+var damage_kind: int = 0
 var slow_permille: int = 0
 var dp_cost: int = 0
 # tick of the most recent ON_ENTER trigger (-1 = never) — the sprung frame

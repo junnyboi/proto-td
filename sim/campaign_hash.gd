@@ -3,6 +3,7 @@ extends RefCounted
 
 const CampaignCodec := preload("res://sim/campaign_codec.gd")
 const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const CanonicalJson := preload("res://sim/canonical_json.gd")
 const HeroIdentity := preload("res://sim/hero_identity.gd")
 const HeroNames := preload("res://sim/hero_names.gd")
@@ -90,6 +91,11 @@ static func _bytes_of_normalized(
 	else:
 		_append_anchor_nullable(out, value["resolution_anchor"])
 		_append_resolution_nullable(out, value["last_resolution"])
+	# TD-MITIGATION append-only extension. The all-zero compatibility binding
+	# appends no bytes, preserving every pre-feature strategic hash exactly.
+	if value["combat_rules_sha256"] != CombatContentBindingScript.LEGACY_ZERO_SHA256:
+		out.append(0x4D)
+		_append_string(out, String(value["combat_rules_sha256"]))
 	return {"accepted": true, "error_code": &"", "bytes": out}
 
 
@@ -145,10 +151,17 @@ static func _append_anchor_nullable(out: PackedByteArray, value: Variant) -> voi
 	out.append(1)
 	_append_i64(out, int(value["resolution_index"]))
 	_append_i64(out, int(value["save_revision_after"]))
-	_append_string(out, CanonicalJson.text(value["before_core"]))
-	_append_string(out, CanonicalJson.text(value["after_core"]))
+	_append_string(out, CanonicalJson.text(_anchor_core_projection(value["before_core"])))
+	_append_string(out, CanonicalJson.text(_anchor_core_projection(value["after_core"])))
 	_append_string(out, String(value["strategic_body_hash_before"]))
 	_append_string(out, String(value["strategic_body_hash_after"]))
+
+
+static func _anchor_core_projection(value: Dictionary) -> Dictionary:
+	var projected := value.duplicate(true)
+	if projected["combat_rules_sha256"] == CombatContentBindingScript.LEGACY_ZERO_SHA256:
+		projected.erase("combat_rules_sha256")
+	return projected
 
 
 static func _append_offers(out: PackedByteArray, rows: Array) -> void:
