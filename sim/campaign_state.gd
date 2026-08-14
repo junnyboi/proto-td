@@ -1,5 +1,5 @@
 class_name CampaignState
-extends "res://sim/campaign_strategic_commands.gd"
+extends "res://sim/campaign_training_projection.gd"
 
 ## Canonical model-only P16 aggregate (D16-08). The private value is always a
 ## whole-document-normalized CampaignSave data object. P16.2 commands construct
@@ -121,7 +121,7 @@ func promotion_options(hero_id: Variant) -> Dictionary:
 	var hero_key := String(hero_id)
 	for hero: Dictionary in _data["heroes"]:
 		if hero["hero_id"] == hero_key:
-			return CampaignProgression.promotion_options(
+			return CampaignProgressionType.promotion_options(
 				hero, _context["promotion_rules"],
 			)
 	return _reject(&"unknown_hero")
@@ -222,7 +222,7 @@ static func _build_environment(
 		return normalized_stages
 	var stages: Array = normalized_stages["value"]
 	var canonical_catalogs: Dictionary = normalized_catalogs["value"]
-	var promotion_rules := CampaignProgression.normalize_promotion_rules(
+	var promotion_rules := CampaignProgressionType.normalize_promotion_rules(
 		load(PROMOTION_RULES_PATH), canonical_catalogs["operators"],
 	)
 	if not promotion_rules["accepted"]:
