@@ -7,7 +7,7 @@
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/panorama.png",
-    "sha256": "ae866db47b95a599323d320cf163d1b3643c2b45e9c2825f012fd484a221feee",
+    "sha256": "b61d874bdad4ccc8c9dcd8bcb25a39306cde4649bde6c5308e36b9b19bb302cd",
     "staging": "staging/assets/world/act1/panorama.png"
   },
   "human_final_art": false,
@@ -24,8 +24,8 @@
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/act1-alpine-panorama-flux-a.jpg",
-    "sha256": "eb7e0ebd9a7c5017c2686236140b7f53fb645d6879d6bf6d71586e374e393f01"
+    "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
+    "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b"
   },
   "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
 }

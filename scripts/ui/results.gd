@@ -94,19 +94,27 @@ func _ready() -> void:
 	_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_actions.add_theme_constant_override(&"h_separation", 16)
 	_actions.add_theme_constant_override(&"v_separation", 16)
-	column.add_child(_actions)
+	var actions_margin := MarginContainer.new()
+	actions_margin.name = "ActionRowMargin"
+	actions_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions_margin.add_theme_constant_override(
+		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
+	actions_margin.add_child(_actions)
+	column.add_child(actions_margin)
 	var focusable: Array[Button] = []
 	var retry: AetheriaButtonType = null
 	var next: AetheriaButtonType = null
 	if Game.campaign_active and Game.campaign != null:
 		retry = _button(
-			"RetryButton", UiCopyType.text(&"ui.results.retry", "Retry"), &"secondary",
+			"RetryButton", UiCopyType.text(&"ui.results.retry", "Retry"), "Retry", &"secondary",
 		)
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
 		next = _button(
 			"ReturnToStaging",
-			UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), &"primary",
+			UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"),
+			"Staging", &"primary",
 		)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
@@ -114,6 +122,7 @@ func _ready() -> void:
 		focusable.append(retry)
 	var title := _button(
 		"BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
+		UiCopyType.text(&"ui.common.back", "Back"),
 		&"secondary" if not focusable.is_empty() else &"primary",
 	)
 	title.pressed.connect(_on_back_to_title)
@@ -186,11 +195,14 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 
 
 func _button(
-		button_name: String, button_text: String, role: StringName,
-	) -> AetheriaButtonType:
+		button_name: String, button_text: String, presentation_text: String, role: StringName,
+		) -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.apply_role(role)
+	button.set_presentation_text(button_text, presentation_text)
+	button.tooltip_text = button_text
+	button.apply_compact_action_layout()
 	return button

@@ -118,22 +118,32 @@ func _ready() -> void:
 	var actions := HBoxContainer.new()
 	actions.name = "ActionRow"
 	actions.custom_minimum_size.x = 300.0
+	actions.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	actions.add_theme_constant_override(&"separation", 16)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	_footer.add_child(actions)
+	var actions_margin := MarginContainer.new()
+	actions_margin.name = "ActionRowMargin"
+	actions_margin.add_theme_constant_override(
+		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
+	actions_margin.add_child(actions)
+	_footer.add_child(actions_margin)
 	_back = AetheriaButtonType.new()
 	_back.name = "BackButton"
 	_back.apply_role(&"secondary")
 	_back.text = UiCopyType.text(&"ui.common.back", "Back")
 	_back.custom_minimum_size = Vector2(140.0, 100.0)
 	_back.set_presentation_text(_back.text, _back.text)
+	_back.apply_compact_action_layout()
 	_back.pressed.connect(_on_back)
 	actions.add_child(_back)
 	_start = AetheriaButtonType.new()
 	_start.name = "StartBattle"
 	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	_start.custom_minimum_size = Vector2(140.0, 100.0)
-	_start.set_presentation_text(_start.text, "Start\nBattle")
+	_start.set_presentation_text(_start.text, UiCopyType.text(&"ui.title.start", "Start"))
+	_start.tooltip_text = _start.text
+	_start.apply_compact_action_layout()
 	_start.pressed.connect(_on_start)
 	actions.add_child(_start)
 	_prefill()

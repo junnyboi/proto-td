@@ -39,7 +39,7 @@ entries = {
 "pattern": "res://assets/world/act1/panorama.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
-"provenance_sha256": "c6478a19d028b5402037049f483880a956d932a75d08ac722af2332aa5219879",
+"provenance_sha256": "d83eb9a33eeb752afb63d70f4781ffe0af27671a39c7ebcddb685c208bd50440",
 "size": Vector2i(512, 256)
 },
 &"world.act1.raised": {

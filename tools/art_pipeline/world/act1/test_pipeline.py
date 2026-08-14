@@ -34,7 +34,7 @@ SOURCE_HASHES = {
     "blocked": "db421085e6205a1e8b7b789b5426e7af7471c8b32a5c1cd4270a5d9193f15a51",
     "spawn": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
     "core": "f8eac627a503c431f6393ea87711f601554f03b485181d8c0530e4af33228662",
-    "panorama": "eb7e0ebd9a7c5017c2686236140b7f53fb645d6879d6bf6d71586e374e393f01",
+    "panorama": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
 }
 
 
@@ -66,7 +66,9 @@ class Act1WorldPipelineTest(unittest.TestCase):
             path = SOURCE / "synthesized-roles" / f"act1-{name}.png"
             self.assertEqual(digest(path), SOURCE_HASHES[name])
             self.assertEqual(manifest["roles"][name]["sha256"], SOURCE_HASHES[name])
-        self.assertEqual(digest(SOURCE / "act1-alpine-panorama-flux-a.jpg"), SOURCE_HASHES["panorama"])
+        panorama = SOURCE / "s1-alpine-escarpment-panorama-source.png"
+        self.assertEqual(digest(panorama), SOURCE_HASHES["panorama"])
+        self.assertEqual(manifest["panorama"]["sha256"], SOURCE_HASHES["panorama"])
 
     def test_exact_runtime_and_staging_inventory_and_bytes(self) -> None:
         for root in [RUNTIME, STAGING]:
