@@ -1,4 +1,3 @@
-class_name SkillReadyFeedback
 extends RefCounted
 
 const UnitStateType := preload("res://sim/unit_state.gd")
