@@ -4,6 +4,7 @@ extends RefCounted
 ## isolation, eight-tick movement/animation pause, blend pause, and T+8 resume;
 ## a lethal follow-up proves the flash completes before projection cleanup.
 
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const HEAVY_PROGRESS := 3 * Pathing.PROGRESS_SCALE
 
 
@@ -140,7 +141,7 @@ func run(h: SelfTestHarness) -> void:
 	await h.shot("enemy_damage_resumed")
 
 	# Killing blows complete the same body flash before projection cleanup.
-	model.call("_damage_enemy", heavy, 999)
+	model.call("_damage_enemy", heavy, 999, int(DamageRulesScript.Kind.PHYSICAL))
 	await h.physics_frames(1)
 	await h.frames(1)
 	(

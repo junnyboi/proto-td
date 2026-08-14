@@ -17,6 +17,7 @@ var _defs: Dictionary = {}
 var _ready_at: Dictionary = {}
 var _used_in_wave: Dictionary = {}
 var _casts: Dictionary = {}
+var _damage_kinds: Dictionary = {}
 
 
 static func create(spell_defs: Dictionary, stage_wave_starts: PackedInt32Array) -> SpellBook:
@@ -33,9 +34,11 @@ static func create(spell_defs: Dictionary, stage_wave_starts: PackedInt32Array) 
 	for n: String in names:
 		book.ids.append(StringName(n))
 	for spell_id: StringName in book.ids:
+		var spell_def: SpellDef = spell_defs[spell_id]
 		book._ready_at[spell_id] = 0
 		book._used_in_wave[spell_id] = -1
 		book._casts[spell_id] = 0
+		book._damage_kinds[spell_id] = spell_def.damage_kind
 	return book
 
 
@@ -98,6 +101,10 @@ func used_in_wave(spell_id: StringName) -> int:
 
 func casts(spell_id: StringName) -> int:
 	return int(_casts[spell_id])
+
+
+func damage_kind(spell_id: StringName) -> int:
+	return int(_damage_kinds[spell_id])
 
 
 func total_casts() -> int:

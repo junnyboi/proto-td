@@ -14,6 +14,8 @@ enum Availability { COOLDOWN, ONCE_PER_WAVE }
 enum TargetKind { CELL, ENEMY }
 enum Effect { BURST_DAMAGE, SLOW_FIELD, CHARM }
 
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
+
 @export var id: StringName = &""
 @export var display_name: String = ""
 @export var cooldown_ticks: int = 0
@@ -21,6 +23,7 @@ enum Effect { BURST_DAMAGE, SLOW_FIELD, CHARM }
 @export var target_kind: TargetKind = TargetKind.CELL
 @export var effect: Effect = Effect.BURST_DAMAGE
 @export var damage: int = 0
+@export_enum("Physical", "Arts") var damage_kind: int = DamageRulesScript.Kind.PHYSICAL
 @export var radius: int = 1
 @export var duration_ticks: int = 0
 @export var slow_permille: int = 0

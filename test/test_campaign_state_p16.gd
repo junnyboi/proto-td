@@ -10,7 +10,7 @@ func test_fresh_factory_matches_frozen_fixture_checksum_and_hash() -> void:
 	assert_true(fixture["accepted"])
 	assert_eq(state.data_copy(), fixture["data"])
 	assert_eq(state.encode_data()["sha256"],
-		"69270968b2fedd82f98de96cf6ad530ad8e694d241aabdba5ab97a396e1b664b")
+		"c2b4b7aa1fd6671b8ff227da9279f119920327e8ae3f059a617e88fe757bad70")
 	assert_eq(state.strategic_hash()["hex"], "baa4d62d418258a5")
 	assert_eq(state.campaign_uid(), "ce46150984346591")
 	assert_eq(state.next_recruitment_index(), 5)
@@ -206,7 +206,7 @@ func test_exact_environment_fingerprint_rejects_consistent_contract_drift() -> v
 	expanded_stages[7] = expanded
 	var expanded_result := _create(_definition(), expanded_catalog, expanded_stages)
 	assert_false(expanded_result["accepted"])
-	assert_eq(expanded_result["error_code"], &"campaign_environment_mismatch")
+	assert_eq(expanded_result["error_code"], &"invalid_combat_catalog")
 
 	var moved_reward_stages := _stages()
 	var source := (moved_reward_stages[3] as StageDef).duplicate(true) as StageDef

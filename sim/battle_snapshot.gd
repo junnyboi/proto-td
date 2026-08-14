@@ -5,6 +5,8 @@ extends RefCounted
 ## hash does not). Extracted from battle_model.gd at the P14 file-size
 ## budget — same concern seam precedent as BattleHash at Phase 7.
 
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
+
 
 static func of(m: BattleModel) -> Dictionary:
 	return {
@@ -29,4 +31,40 @@ static func of(m: BattleModel) -> Dictionary:
 		"charmed_dead": m.charmed_dead,
 		"charmed_exited": m.charmed_exited,
 		"spells_cast": m.spell_book.total_casts(),
+		"damage_rules_version": DamageRulesScript.VERSION,
+		"mitigation": _mitigation(m),
+	}
+
+
+static func _mitigation(m: BattleModel) -> Dictionary:
+	var units: Array[Dictionary] = []
+	for u: UnitState in m.units:
+		units.append({
+			"id": u.id,
+			"defense": u.defense,
+			"resistance_permille": u.resistance_permille,
+			"attack_damage_kind": u.attack_damage_kind,
+		})
+	var enemies: Array[Dictionary] = []
+	for e: EnemyState in m.enemies:
+		enemies.append({
+			"id": e.id,
+			"defense": e.defense,
+			"resistance_permille": e.resistance_permille,
+			"attack_damage_kind": e.attack_damage_kind,
+		})
+	var traps: Array[Dictionary] = []
+	for t: TrapState in m.traps:
+		traps.append({"id": t.id, "damage_kind": t.damage_kind})
+	var spells: Array[Dictionary] = []
+	for spell_id: StringName in m.spell_book.ids:
+		spells.append({
+			"id": String(spell_id),
+			"damage_kind": m.spell_book.damage_kind(spell_id),
+		})
+	return {
+		"units": units,
+		"enemies": enemies,
+		"traps": traps,
+		"spells": spells,
 	}

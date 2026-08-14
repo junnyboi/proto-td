@@ -51,6 +51,7 @@ enum Result { RUNNING, CLEAR, DEFEAT }
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const TargetDecisionProjectionScript := preload("res://sim/target_decision_projection.gd")
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 
@@ -269,6 +270,9 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.block = def.block
 	u.dp_cost = def.dp_cost
 	u.atk = def.atk
+	u.defense = def.defense
+	u.resistance_permille = def.resistance_permille
+	u.attack_damage_kind = def.attack_damage_kind
 	u.atk_interval_ticks = def.atk_interval_ticks
 	u.dp_generation_interval_ticks = def.dp_generation_interval_ticks
 	u.op_class = def.op_class
@@ -380,6 +384,7 @@ func _apply_place_trap(trap_id: StringName, cell: Vector2i) -> bool:
 	t.trigger = def.trigger
 	t.effect = def.effect
 	t.damage = def.damage
+	t.damage_kind = def.damage_kind
 	t.slow_permille = def.slow_permille
 	t.dp_cost = def.dp_cost
 	traps.append(t)
@@ -456,18 +461,32 @@ func _resolve_burst(center: Vector2i, def: SpellDef) -> void:
 		if maxi(absi(c.x - center.x), absi(c.y - center.y)) <= def.radius:
 			victims.append(e)
 	for v: EnemyState in victims:
-		_damage_enemy(v, def.damage)
+		_damage_enemy(v, def.damage, spell_book.damage_kind(def.id))
 
 
 ## One authoritative EnemyState damage seam. Positive damage stamps the
 ## presentation event and extends an integer-tick movement stagger before the
 ## existing faction-correct death path resolves. Attack cadence is unchanged.
-func _damage_enemy(e: EnemyState, damage: int) -> void:
+func _damage_enemy(e: EnemyState, raw_damage: int, damage_kind: int) -> void:
+	var damage := DamageRulesScript.resolve(
+		raw_damage, damage_kind, e.defense, e.resistance_permille,
+	)
 	if EnemyDamageScript.apply(e, damage, tick, config.damage_stagger_ticks):
 		if e.faction == EnemyState.Faction.CHARMED:
 			_kill_charmed(e)
 		else:
 			_kill_enemy(e)
+
+
+func _damage_unit(u: UnitState, raw_damage: int, damage_kind: int) -> void:
+	var damage := DamageRulesScript.resolve(
+		raw_damage, damage_kind, u.defense, u.resistance_permille,
+	)
+	if not u.alive or damage <= 0:
+		return
+	u.hp -= damage
+	if u.hp <= 0:
+		_kill_unit(u)
 
 
 ## Charm conversion (§2.4 steps 1-4): faction flip at current HP, stats
@@ -692,7 +711,7 @@ func _resolve_trap_triggers(entrants: Array[Dictionary]) -> void:
 		traps_triggered += 1
 		trap.last_trigger_tick = tick
 		if trap.effect == TrapDef.Effect.DAMAGE:
-			_damage_enemy(e, trap.damage)
+			_damage_enemy(e, trap.damage, trap.damage_kind)
 		if trap.charges_left > 0:
 			trap.charges_left -= 1
 			if trap.charges_left == 0:
@@ -760,7 +779,7 @@ func _tick_combat() -> void:
 			continue
 		var foe := enemies[a.engaged_with]
 		if a.atk > 0 and foe.alive:
-			_damage_enemy(foe, a.atk)
+			_damage_enemy(foe, a.atk, a.attack_damage_kind)
 			a.atk_counter = a.atk_interval_ticks - 1
 	for e: EnemyState in enemies:
 		if not e.alive or e.faction != EnemyState.Faction.ENEMY:
@@ -773,16 +792,14 @@ func _tick_combat() -> void:
 		if e.engaged_with >= 0:
 			var ally := enemies[e.engaged_with]
 			if e.atk > 0 and ally.alive:
-				_damage_enemy(ally, e.atk)
+				_damage_enemy(ally, e.atk, e.attack_damage_kind)
 				e.atk_counter = e.atk_interval_ticks - 1
 			continue
 		var decision := TargetDecisionProjectionScript.enemy_target_decision(self, e.id)
 		var victim := unit_by_id(int(decision["selected_id"]))
 		if e.atk > 0 and victim != null and victim.alive:
-			victim.hp -= e.atk
+			_damage_unit(victim, e.atk, e.attack_damage_kind)
 			e.atk_counter = e.atk_interval_ticks - 1
-			if victim.hp <= 0:
-				_kill_unit(victim)
 
 
 ## Automatic unit attacks consume the public decision query. Caster splash is
@@ -799,13 +816,13 @@ func _fire_unit(u: UnitState, primary: EnemyState) -> void:
 			if not e.alive or e.aerial or e.faction != EnemyState.Faction.ENEMY:
 				continue
 			if cells.has(Pathing.cell_of(path_for(e.path_idx), e.progress_units)):
-				_damage_enemy(e, damage)
+				_damage_enemy(e, damage, u.attack_damage_kind)
 	else:
 		_strike_enemy(u, primary)
 
 
 func _strike_enemy(u: UnitState, target: EnemyState) -> void:
-	_damage_enemy(target, u.effective_atk())
+	_damage_enemy(target, u.effective_atk(), u.attack_damage_kind)
 	u.atk_counter = u.effective_interval() - 1
 	u.last_attack_tick = tick
 	u.last_attack_cell = Pathing.cell_of(path_for(target.path_idx), target.progress_units)
@@ -928,6 +945,9 @@ func _spawn(entry: Dictionary) -> void:
 	e.leak_damage = def.leak_damage
 	e.block_weight = def.block_weight
 	e.atk = def.atk
+	e.defense = def.defense
+	e.resistance_permille = def.resistance_permille
+	e.attack_damage_kind = def.attack_damage_kind
 	e.atk_interval_ticks = def.atk_interval_ticks
 	e.aerial = def.aerial
 	e.atk_range_cells = def.atk_range_cells

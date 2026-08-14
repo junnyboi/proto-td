@@ -10,12 +10,15 @@ extends Resource
 enum Trigger { ON_ENTER, CELL_AURA }
 enum Effect { DAMAGE, SLOW }
 
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
+
 @export var id: StringName = &""
 @export var display_name: String = ""
 @export var dp_cost: int = 1
 @export var trigger: Trigger = Trigger.ON_ENTER
 @export var effect: Effect = Effect.DAMAGE
 @export var damage: int = 0
+@export_enum("Physical", "Arts") var damage_kind: int = DamageRulesScript.Kind.PHYSICAL
 @export var slow_permille: int = 0
 @export var charges: int = -1
 @export var sprite_id: StringName = &""

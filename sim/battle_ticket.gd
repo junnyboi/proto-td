@@ -8,6 +8,7 @@ const SCHEMA_VERSION := 1
 const U32_MAX := 4_294_967_295
 const U63_MAX := 9_223_372_036_854_775_807
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const KEYS := [
 	"schema_version", "campaign_uid", "attempt_id", "stage_id", "seed",
 	"expected_save_revision", "strategic_hash", "squad", "ticket_hash",
@@ -18,7 +19,8 @@ const ROW_KEYS := [
 	"visual_spec",
 ]
 const COMBAT_KEYS := [
-	"dp_cost", "block", "hp", "atk", "atk_interval_ticks", "placement",
+	"dp_cost", "block", "hp", "atk", "defense", "resistance_permille",
+	"attack_damage_kind", "atk_interval_ticks", "placement",
 	"range_cells", "dp_generation_interval_ticks", "splash_dim",
 ]
 const SKILL_KEYS := ["skill_id", "skill_content_sha256", "payload"]
@@ -122,12 +124,19 @@ static func _normalize_combat(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_DICTIONARY or not _exact_keys(value, COMBAT_KEYS):
 		return _reject(&"invalid_ticket_combat")
 	for key: String in [
-		"dp_cost", "block", "hp", "atk", "atk_interval_ticks", "placement",
+		"dp_cost", "block", "hp", "atk", "defense", "resistance_permille",
+		"attack_damage_kind", "atk_interval_ticks", "placement",
 		"dp_generation_interval_ticks", "splash_dim",
 	]:
 		if not _in_range(value[key], 0, U32_MAX):
 			return _reject(&"invalid_ticket_combat")
 	if value["hp"] == 0 or value["atk_interval_ticks"] == 0:
+		return _reject(&"invalid_ticket_combat")
+	if not DamageRulesScript.authored_values_valid(
+		int(value["attack_damage_kind"]),
+		int(value["defense"]),
+		int(value["resistance_permille"]),
+	):
 		return _reject(&"invalid_ticket_combat")
 	if typeof(value["range_cells"]) != TYPE_ARRAY or (value["range_cells"] as Array).is_empty():
 		return _reject(&"invalid_ticket_combat")

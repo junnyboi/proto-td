@@ -404,17 +404,49 @@ func test_target_policy_resource_is_bound_into_environment_hash() -> void:
 	assert_ne(changed["value"], baseline["value"])
 
 
-func test_legacy_v2_bytes_and_hash_remain_unchanged() -> void:
+func test_mitigation_semantics_are_bound_into_environment_hash() -> void:
+	var operators := _resources("res://data/operators")
+	var baseline := CampaignV3Codec.derive_environment_sha256(
+		operators, _resources("res://data/classes"), _ids("res://data/traps"),
+		_ids("res://data/spells"), _stages(), CAMPAIGN as CampaignDef, _locale_entries(),
+	)
+	assert_true(baseline["accepted"])
+	var recruit: OperatorDef = null
+	for definition: OperatorDef in operators:
+		if definition.id == &"recruit":
+			recruit = definition
+			break
+	assert_not_null(recruit)
+	if recruit == null:
+		return
+	var original := recruit.defense
+	recruit.defense = original + 1
+	var changed := CampaignV3Codec.derive_environment_sha256(
+		operators, _resources("res://data/classes"), _ids("res://data/traps"),
+		_ids("res://data/spells"), _stages(), CAMPAIGN as CampaignDef, _locale_entries(),
+	)
+	recruit.defense = original
+	assert_true(changed["accepted"])
+	assert_ne(changed["value"], baseline["value"])
+
+
+func test_pre_mitigation_v2_bytes_upgrade_once_and_repeat_exactly() -> void:
 	var context := ContextScript.build()
 	var legacy_context: Dictionary = context["legacy_context"]
 	var source := _text(V2_PATH)
 	var decoded := CampaignCodec.decode_save(source, legacy_context)
 	assert_true(decoded["accepted"], str(decoded.get("error_code", &"")))
-	assert_eq(decoded["text"], source)
+	assert_eq(decoded["migrated_from_version"], 2)
+	assert_ne(decoded["text"], source)
 	assert_eq(
-		CampaignHash.of_data(decoded["data"], legacy_context)["hex"],
-		"baa4d62d418258a5",
+		decoded["data"]["combat_rules_sha256"],
+		CombatContentBinding.LEGACY_ZERO_SHA256,
 	)
+	var repeated := CampaignCodec.decode_save(decoded["text"], legacy_context)
+	assert_true(repeated["accepted"], str(repeated.get("error_code", &"")))
+	assert_null(repeated["migrated_from_version"])
+	assert_eq(repeated["bytes"], decoded["bytes"])
+	assert_eq(repeated["sha256"], decoded["sha256"])
 
 
 func _resealed_ticket_forgery(
@@ -554,6 +586,7 @@ func _ticket_row(hero: Dictionary) -> Dictionary:
 		"operator_content_sha256": FileAccess.get_sha256("res://data/operators/recruit.tres"),
 		"combat_spec": {
 			"dp_cost": 8, "block": 1, "hp": 110, "atk": 4,
+			"defense": 0, "resistance_permille": 0, "attack_damage_kind": 0,
 			"atk_interval_ticks": 36, "placement": 0,
 			"range_cells": [{"x": 0, "y": 0}],
 			"dp_generation_interval_ticks": 0, "splash_dim": 0,

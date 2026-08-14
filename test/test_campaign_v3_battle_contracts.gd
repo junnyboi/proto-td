@@ -47,6 +47,13 @@ func test_ticket_canonical_bytes_and_hash_bind_every_persisted_field() -> void:
 		var sealed := BattleTicket.seal(changed)
 		assert_true(sealed["accepted"], row_field)
 		assert_ne(sealed["value"]["ticket_hash"], normalized["ticket_hash"], row_field)
+	for field: String in ["defense", "resistance_permille", "attack_damage_kind"]:
+		var changed: Dictionary = normalized.duplicate(true)
+		changed["squad"][0]["combat_spec"][field] = 1
+		changed.erase("ticket_hash")
+		var sealed := BattleTicket.seal(changed)
+		assert_true(sealed["accepted"], field)
+		assert_ne(sealed["value"]["ticket_hash"], normalized["ticket_hash"], field)
 
 
 func test_ticket_rejects_omitted_duplicate_and_noncanonical_rows_without_mutation() -> void:
@@ -85,6 +92,21 @@ func test_ticket_target_policy_nulls_reject_structurally_without_mutation() -> v
 		assert_true(rejected.has("accepted"), field)
 		assert_false(rejected["accepted"], field)
 		assert_eq(rejected["error_code"], &"invalid_ticket_target_policy", field)
+		assert_eq(CanonicalJson.text(candidate), before, field)
+
+
+func test_ticket_rejects_invalid_mitigation_without_mutation() -> void:
+	var data: Dictionary = CampaignV3Codec.create_fresh(42, 1, ContextScript.build())["value"]
+	var valid: Dictionary = _ticket(data)["value"]
+	for field: String in ["defense", "resistance_permille", "attack_damage_kind"]:
+		var candidate: Dictionary = valid.duplicate(true)
+		candidate["squad"][0]["combat_spec"][field] = (
+			-1 if field == "defense" else 1001 if field == "resistance_permille" else 2
+		)
+		var before := CanonicalJson.text(candidate)
+		var rejected := BattleTicket.normalize(candidate)
+		assert_false(rejected["accepted"], field)
+		assert_eq(rejected["error_code"], &"invalid_ticket_combat", field)
 		assert_eq(CanonicalJson.text(candidate), before, field)
 
 
@@ -194,6 +216,7 @@ func _ticket_row(hero: Dictionary, slot_index: int, battle_id: String) -> Dictio
 		"operator_content_sha256": FileAccess.get_sha256("res://data/operators/recruit.tres"),
 		"combat_spec": {
 			"dp_cost": 8, "block": 1, "hp": 110, "atk": 4,
+			"defense": 0, "resistance_permille": 0, "attack_damage_kind": 0,
 			"atk_interval_ticks": 36, "placement": 0,
 			"range_cells": [{"x": 0, "y": 0}],
 			"dp_generation_interval_ticks": 0, "splash_dim": 0,

@@ -1,7 +1,9 @@
 class_name CampaignCodec
 extends RefCounted
 const CampaignHeroCodec := preload("res://sim/campaign_hero_codec.gd")
+const CampaignContextValidatorScript := preload("res://sim/campaign_context_validator.gd")
 const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const CanonicalJson := preload("res://sim/canonical_json.gd")
 const HeroIdentity := preload("res://sim/hero_identity.gd")
 const HeroNames := preload("res://sim/hero_names.gd")
@@ -25,12 +27,14 @@ const MAX_ROSTER := 1024
 const DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"combat_rules_sha256",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs", "resolution_anchor", "last_resolution",
 ]
 const CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"combat_rules_sha256",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs",
 ]
@@ -49,8 +53,8 @@ const PROMOTION_RECEIPT_KEYS := PromotionReceiptCodecScript.RECEIPT_KEYS
 static func normalize_data(data: Variant, context: Dictionary = {}) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_validation_context")
-	if SaveUpgradeScript.is_pre_promotion_v2(data):
-		data = SaveUpgradeScript.upgrade(data)
+	if SaveUpgradeScript.needs_upgrade(data):
+		data = SaveUpgradeScript.upgrade(data, context)
 	if typeof(data) != TYPE_DICTIONARY or not _exact_keys(data, DATA_KEYS):
 		return _reject(&"invalid_data_schema")
 	var core_input := {}
@@ -99,6 +103,10 @@ static func normalize_core_snapshot(value: Variant, context: Dictionary) -> Dict
 		return _reject(&"invalid_counter")
 	if not _in_range(value["marks"], 0, MARKS_MAX):
 		return _reject(&"invalid_counter")
+	if not _is_hex(String(value["combat_rules_sha256"]), 64):
+		return _reject(&"invalid_combat_rules_hash")
+	if String(value["combat_rules_sha256"]) != String(context["combat_rules_sha256"]):
+		return _reject(&"combat_rules_mismatch")
 	var stage_rows := _normalize_stage_rows(value["stage_stars"])
 	if not stage_rows["accepted"]:
 		return stage_rows
@@ -133,6 +141,7 @@ static func normalize_core_snapshot(value: Variant, context: Dictionary) -> Dict
 	ordered["next_attempt_id"] = int(value["next_attempt_id"])
 	ordered["next_resolution_index"] = int(value["next_resolution_index"])
 	ordered["marks"] = int(value["marks"])
+	ordered["combat_rules_sha256"] = String(value["combat_rules_sha256"])
 	ordered["stage_stars"] = stage_rows["value"]
 	ordered["unlocked_traps"] = traps["value"]
 	ordered["unlocked_spells"] = spells["value"]
@@ -630,6 +639,7 @@ static func build_context(
 	starting_traps: Array = [],
 	starting_spells: Array = [],
 	promotion_rules: Dictionary = {},
+	combat_rules_sha256: String = CombatContentBindingScript.LEGACY_ZERO_SHA256,
 ) -> Dictionary:
 	operator_ids = operator_ids.filter(func(value: Variant) -> bool:
 		return String(value) != "recruit")
@@ -670,6 +680,7 @@ static func build_context(
 		"starting_traps": _sorted_strings(starting_traps),
 		"starting_spells": _sorted_strings(starting_spells),
 		"promotion_rules": normalized_promotion_rules,
+		"combat_rules_sha256": combat_rules_sha256,
 	}
 static func _validate_data_invariants(data: Dictionary, context: Dictionary) -> Dictionary:
 	var root := _validate_root_links(data)
@@ -919,18 +930,7 @@ static func _valid_source_pair(hero: Dictionary, context: Dictionary) -> bool:
 		_: return false
 
 static func _valid_context(context: Dictionary) -> bool:
-	var keys := [
-		"operator_ids", "trap_ids", "spell_ids", "stage_order", "stage_rewards",
-		"stage_recovery_rosters", "offers", "starting_traps", "starting_spells",
-		"promotion_rules",
-	]
-	if not _exact_keys(context, keys):
-		return false
-	var normalized := CampaignProgression.normalize_promotion_rules(
-		PromotionRulesResource,
-		(context["operator_ids"] as Dictionary).keys(),
-	)
-	return normalized["accepted"] and context["promotion_rules"] == normalized["value"]
+	return CampaignContextValidatorScript.valid(context)
 
 static func _string_set(values: Array) -> Dictionary:
 	var result := {}

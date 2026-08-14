@@ -10,6 +10,7 @@ extends Resource
 enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER, RECRUIT }
 enum Placement { GROUND, ELEVATED }
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+const DamageRulesScript := preload("res://sim/damage_rules.gd")
 
 @export var id: StringName = &""
 @export var display_name: String = ""
@@ -19,6 +20,9 @@ const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 @export var block: int = 1
 @export var hp: int = 100
 @export var atk: int = 10
+@export var defense: int = 0
+@export_range(0, 1000) var resistance_permille: int = 0
+@export_enum("Physical", "Arts") var attack_damage_kind: int = DamageRulesScript.Kind.PHYSICAL
 @export var atk_interval_ticks: int = 30
 @export var range_offsets: Array[Vector2i] = []
 @export var target_policy: TargetPolicyDefScript = null

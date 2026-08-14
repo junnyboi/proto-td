@@ -547,9 +547,13 @@ func test_historical_receipt_hashes_remain_closed_after_revision_advances() -> v
 
 
 func test_pre_command_v2_saves_upgrade_with_empty_promotion_history() -> void:
+	var transaction := CampaignCodec.normalize_data(
+		_json(TRANSACTION_PATH)["resolved_save"]["value"], _context(),
+	)
+	assert_true(transaction["accepted"], str(transaction.get("error_code", &"")))
 	for modern: Dictionary in [
 		_fresh().data_copy(),
-		_json(TRANSACTION_PATH)["resolved_save"]["value"],
+		transaction["value"],
 	]:
 		var old := _without_promotion_receipts(modern)
 		var root := {
@@ -615,7 +619,11 @@ func _resolved() -> CampaignState:
 
 
 func _resolved_promotion_state() -> CampaignState:
-	var data: Dictionary = _json(TRANSACTION_PATH)["resolved_save"]["value"]
+	var normalized := CampaignCodec.normalize_data(
+		_json(TRANSACTION_PATH)["resolved_save"]["value"], _context(),
+	)
+	assert_true(normalized["accepted"], str(normalized.get("error_code", &"")))
+	var data: Dictionary = normalized["value"]
 	for section: String in ["before_core", "after_core"]:
 		data["resolution_anchor"][section]["heroes"][0]["xp"] = 400
 	data["heroes"][0]["xp"] = 400
@@ -658,9 +666,12 @@ func _two_mage_state() -> CampaignState:
 
 func _without_promotion_receipts(data: Dictionary) -> Dictionary:
 	var result: Dictionary = data.duplicate(true)
+	result.erase("combat_rules_sha256")
 	result.erase("promotion_receipts")
 	result.erase("promotion_proofs")
 	if result["resolution_anchor"] != null:
+		result["resolution_anchor"]["before_core"].erase("combat_rules_sha256")
+		result["resolution_anchor"]["after_core"].erase("combat_rules_sha256")
 		result["resolution_anchor"]["before_core"].erase("promotion_receipts")
 		result["resolution_anchor"]["after_core"].erase("promotion_receipts")
 		result["resolution_anchor"]["before_core"].erase("promotion_proofs")

@@ -1,0 +1,40 @@
+{
+  "checks": [
+    {
+      "detail": "physical=8 arts=20",
+      "name": "armor exact mitigation",
+      "ok": true
+    },
+    {
+      "detail": "physical=20 arts=4",
+      "name": "ward exact mitigation",
+      "ok": true
+    },
+    {
+      "detail": "Arts 20 versus Physical 8",
+      "name": "Arts counters armor",
+      "ok": true
+    },
+    {
+      "detail": "Physical 20 versus Arts 4",
+      "name": "Physical counters ward",
+      "ok": true
+    },
+    {
+      "detail": "first=ac70aad6269947a2 repeated=ac70aad6269947a2",
+      "name": "mitigation replay is deterministic",
+      "ok": true
+    },
+    {
+      "detail": "version=1",
+      "name": "mitigation snapshot is primitive",
+      "ok": true
+    }
+  ],
+  "frames_used": 6,
+  "pixel_skipped": [],
+  "result": "pass",
+  "scenario": "mitigation_counter",
+  "seed": 42,
+  "shots": []
+}

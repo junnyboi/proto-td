@@ -365,7 +365,7 @@ func test_p16_union_environment_binds_witch_doctor_catalog_and_s7_reward() -> vo
 	var definition := load("res://data/campaigns/p16_v2.tres") as CampaignDef
 	assert_eq(
 		definition.environment_sha256,
-		"766d1404bfa53e650cc419c49fde338eb20334611b49a19cd095a789f6f525b5",
+		"693c3f42b492bde75c14940c1068d8a6e7ae551aa694d8551d5a49e26bdd9156",
 	)
 	var catalogs := _p16_catalog_ids()
 	var stages := _p16_stages()

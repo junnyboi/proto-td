@@ -122,14 +122,15 @@ func _campaign_contract_proof() -> Dictionary:
 	if not restored["accepted"]:
 		return _fail(2, "invalid transaction fixture integers")
 	var vector: Dictionary = restored["value"].get("resolved_save", {})
-	if vector.is_empty():
-		return _fail(2, "missing resolved save vector")
 	var context := _campaign_context()
-	var encoded := CampaignCodec.encode_save(vector["value"], context)
-	var full_hash := CampaignHash.of_data(vector["value"], context)
+	var current := _normalized_campaign_vector(vector, context)
+	if current.is_empty():
+		return _fail(3, "missing or rejected resolved save vector")
+	var encoded := CampaignCodec.encode_save(current, context)
+	var full_hash := CampaignHash.of_data(current, context)
 	if not encoded["accepted"] or not full_hash["accepted"]:
 		return _fail(3, "resolved save vector rejected")
-	var anchor: Dictionary = vector["value"]["resolution_anchor"]
+	var anchor: Dictionary = current["resolution_anchor"]
 	var before_hash := CampaignHash.of_core_snapshot(anchor["before_core"], context)
 	var after_hash := CampaignHash.of_core_snapshot(anchor["after_core"], context)
 	var actual := {
@@ -143,6 +144,13 @@ func _campaign_contract_proof() -> Dictionary:
 		if actual[key] != vector[key]:
 			return _fail(3, "resolved save pin mismatch: %s" % key)
 	return {"accepted": true, "value": actual}
+
+
+func _normalized_campaign_vector(vector: Dictionary, context: Dictionary) -> Dictionary:
+	if vector.is_empty() or typeof(vector.get("value")) != TYPE_DICTIONARY:
+		return {}
+	var normalized := CampaignCodec.normalize_data(vector["value"], context)
+	return normalized["value"] if normalized["accepted"] else {}
 
 
 func _campaign_context() -> Dictionary:

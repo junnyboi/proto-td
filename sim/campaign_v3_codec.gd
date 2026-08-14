@@ -14,6 +14,7 @@ const U63_MAX := 9_223_372_036_854_775_807
 const MARKS_MAX := 1_000_000_000
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 const TargetingScript := preload("res://sim/targeting.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
@@ -56,6 +57,13 @@ static func derive_environment_sha256(
 	var operator_ids: Array = []
 	for row: Dictionary in operator_rows["value"]:
 		operator_ids.append(StringName(row["id"]))
+	var combat := CombatContentBindingScript.build({
+		"operators": operator_ids,
+		"traps": trap_ids,
+		"spells": spell_ids,
+	}, _campaign_stages(stages))
+	if not combat["accepted"]:
+		return combat
 	var classes := ClassDef.normalize_catalog(class_defs, operator_ids, text_entries)
 	if not classes["accepted"]:
 		return classes
@@ -80,6 +88,7 @@ static func derive_environment_sha256(
 		"stage_order": stage_order["value"],
 		"traps": _sorted_unique_strings(trap_ids),
 		"spells": _sorted_unique_strings(spell_ids),
+		"combat_rules": combat["manifest"],
 	}
 	if (manifest["traps"] as Array).is_empty() or (manifest["spells"] as Array).is_empty():
 		return _reject(&"invalid_catalog")
@@ -113,6 +122,25 @@ static func build_context(
 	var operator_ticket_by_id := {}
 	for row: Dictionary in operator_rows["value"]:
 		operator_ids.append(StringName(row["id"]))
+	var combat := CombatContentBindingScript.build({
+		"operators": operator_ids,
+		"traps": trap_ids,
+		"spells": spell_ids,
+	}, _campaign_stages(stages))
+	if not combat["accepted"]:
+		return {}
+	var legacy_operator_ids := operator_ids.filter(func(value: Variant) -> bool:
+		return String(value) != RECRUIT_ID)
+	var legacy_combat := CombatContentBindingScript.build({
+		"operators": legacy_operator_ids,
+		"traps": trap_ids,
+		"spells": spell_ids,
+	}, _campaign_stages(stages))
+	if (
+		not legacy_combat["accepted"]
+		or String(legacy_context.get("combat_rules_sha256", "")) != legacy_combat["sha256"]
+	):
+		return {}
 	for definition: OperatorDef in operator_defs:
 		operator_ticket_by_id[String(definition.id)] = _ticket_projection(definition)
 	var classes := ClassDef.normalize_catalog(class_defs, operator_ids, text_entries)
@@ -325,7 +353,7 @@ static func from_v2_data(value: Dictionary, context: Dictionary) -> Dictionary:
 
 
 static func _normalize_legacy_projection(data: Dictionary, context: Dictionary) -> Dictionary:
-	var reversed := _reverse_data(data)
+	var reversed := _reverse_data(data, context)
 	if not reversed["accepted"]:
 		return reversed
 	var normalized := CampaignCodec.normalize_data(reversed["value"], context["legacy_context"])
@@ -443,10 +471,12 @@ static func _migrate_heroes(values: Array) -> Array[Dictionary]:
 	return result
 
 
-static func _reverse_data(value: Dictionary) -> Dictionary:
+static func _reverse_data(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in CampaignCodec.DATA_KEYS:
 		match key:
+			"combat_rules_sha256":
+				result[key] = context["legacy_context"]["combat_rules_sha256"]
 			"offers":
 				result[key] = _reverse_offers(value[key])
 			"heroes":
@@ -455,7 +485,7 @@ static func _reverse_data(value: Dictionary) -> Dictionary:
 					return heroes
 				result[key] = heroes["value"]
 			"resolution_anchor":
-				var anchor := _reverse_anchor(value[key])
+				var anchor := _reverse_anchor(value[key], context)
 				if not anchor["accepted"]:
 					return anchor
 				result[key] = anchor["value"]
@@ -465,10 +495,12 @@ static func _reverse_data(value: Dictionary) -> Dictionary:
 	return _accept(result)
 
 
-static func _reverse_core(value: Dictionary) -> Dictionary:
+static func _reverse_core(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in CampaignCodec.CORE_KEYS:
 		match key:
+			"combat_rules_sha256":
+				result[key] = context["legacy_context"]["combat_rules_sha256"]
 			"offers": result[key] = _reverse_offers(value[key])
 			"heroes":
 				var heroes := _reverse_heroes(value[key])
@@ -481,11 +513,11 @@ static func _reverse_core(value: Dictionary) -> Dictionary:
 	return _accept(result)
 
 
-static func _reverse_anchor(value: Variant) -> Dictionary:
+static func _reverse_anchor(value: Variant, context: Dictionary) -> Dictionary:
 	if value == null:
 		return _accept(null)
-	var before := _reverse_core(value["before_core"])
-	var after := _reverse_core(value["after_core"])
+	var before := _reverse_core(value["before_core"], context)
+	var after := _reverse_core(value["after_core"], context)
 	if not before["accepted"] or not after["accepted"]:
 		return _reject(&"invalid_resolution_anchor")
 	var result: Dictionary = value.duplicate(true)
@@ -654,6 +686,9 @@ static func _ticket_projection(definition: OperatorDef) -> Dictionary:
 			"block": definition.block,
 			"hp": definition.hp,
 			"atk": definition.atk,
+			"defense": definition.defense,
+			"resistance_permille": definition.resistance_permille,
+			"attack_damage_kind": definition.attack_damage_kind,
 			"atk_interval_ticks": definition.atk_interval_ticks,
 			"placement": int(definition.placement),
 			"range_cells": range_cells,
@@ -737,6 +772,9 @@ static func _normalize_operators(values: Array) -> Dictionary:
 			"block": definition.block,
 			"hp": definition.hp,
 			"atk": definition.atk,
+			"defense": definition.defense,
+			"resistance_permille": definition.resistance_permille,
+			"attack_damage_kind": definition.attack_damage_kind,
 			"atk_interval_ticks": definition.atk_interval_ticks,
 			"placement": int(definition.placement),
 			"dp_generation_interval_ticks": definition.dp_generation_interval_ticks,
@@ -768,6 +806,11 @@ static func _normalize_stage_order(values: Array) -> Dictionary:
 			return _reject(&"invalid_campaign_stage")
 		ids.append(String(rows[index]["stage_id"]))
 	return _accept(ids)
+
+
+static func _campaign_stages(values: Array) -> Array:
+	return values.filter(func(value: Variant) -> bool:
+		return value is StageDef and (value as StageDef).campaign_index >= 1)
 
 
 static func _validate_v3_reward_projection(

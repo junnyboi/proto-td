@@ -604,8 +604,33 @@
 	    "5dd5e4d",
 	    "c3e545a"
 	   ]
+	  },
+	  {
+	   "id": "TD-MITIGATION",
+	   "title": "Deterministic Physical and Arts damage mitigation",
+	   "acceptance": [
+	    "one pure integer-only DamageRules contract owns PHYSICAL flat-defense and ARTS permille-resistance formulas with a 5 percent minimum, raw-zero exception, and fail-closed invalid inputs",
+	    "operator, enemy, spell, and trap definitions carry compatibility defaults; BattleModel copies every authoritative mitigation constant and routes operator, enemy, Charm-duel, Bolt, Caster splash, and trap damage without changing tick, target, cadence, splash, death, or conservation order",
+	    "BattleHash append-only extensions and paranoia mutations cover every copied defense, resistance, and damage-kind field while zero-stat legacy fixtures preserve exact HP deltas, kill ticks, outcomes, action validity, and hashes",
+	    "campaign save data and environment fingerprints bind canonical mitigation semantics, pre-mitigation saves upgrade under legacy defaults, tampered bindings reject, and semantic replays are byte-identical across fresh processes",
+	    "test-only armor and ward fixtures prove opposite PHYSICAL/ARTS composition counters; no production combat values, visuals, audio, bot timelines, or human-owned thresholds change",
+	    "scripts/td_mitigation_check.sh passes 203 focused tests and 522774 assertions plus frozen legacy hashes, six-check mitigation_counter, TD-OBS, replay, model-roster, strategic-verbs, runtime damage-feedback, provenance, and source audits; independent adversarial review reports no blockers and all 130 STANDARD rungs pass on the exact latest-production union"
+	   ],
+	   "status": "passing",
+	   "scenarios": [
+	    "mitigation_counter"
+	   ],
+	   "commits": [
+	    "335197a",
+	    "36c9b42",
+	    "af34ef1",
+	    "c4d4cb0",
+	    "f25b33e",
+	    "2261a4c",
+	    "297f88e"
+	   ]
 	  }
- ],
+	 ],
  "deviations": [
   {
    "id": "D-SFX",
