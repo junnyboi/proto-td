@@ -1,6 +1,11 @@
 class_name CampaignHash
 extends RefCounted
 
+const CampaignCodec := preload("res://sim/campaign_codec.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 2
 const FNV_OFFSET := -3750763034362895579
