@@ -381,16 +381,24 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["provider"], "Higgsfield")
 			assert_eq(document["generation"]["model"], "Seedance 2.0 family")
-			assert_eq(
-				document["acceptance"]["state"],
-				"human_concept_accepted_runtime_review_pending",
-			)
-			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
-			assert_null(document["acceptance"]["accepting_commit"])
-			var expected_placeholder := id in [
+			var native_approved := id in [
 				"op_anim_sniper_2_attack_ne", "op_anim_sniper_2_attack_nw",
 			]
-			assert_eq(bool(manifest.entries[StringName(id)]["placeholder"]), expected_placeholder)
+			assert_eq(
+				document["acceptance"]["state"],
+				"human_final_accepted"
+				if native_approved
+				else "human_concept_accepted_runtime_review_pending",
+			)
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			if native_approved:
+				assert_eq(document["acceptance"]["accepted_at_utc"], "2026-08-14T06:41:55Z")
+				assert_eq(
+					document["acceptance"]["source"],
+					"res://docs/media/TD-032-SKY-HUNTER-NATIVE-APPROVAL.json",
+				)
+			assert_null(document["acceptance"]["accepting_commit"])
+			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
 		elif id.begins_with("grunt_anim_"):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
@@ -513,6 +521,10 @@ func _expected_sources(id: String) -> Array[String]:
 			)
 			animation_sources.append(
 				"res://tools/art_pipeline/characters/import_aetheria_part2_animations.py"
+			)
+		if id in ["op_anim_sniper_2_attack_ne", "op_anim_sniper_2_attack_nw"]:
+			animation_sources.append(
+				"res://docs/media/TD-032-SKY-HUNTER-NATIVE-APPROVAL.json"
 			)
 		animation_sources.sort()
 		return animation_sources

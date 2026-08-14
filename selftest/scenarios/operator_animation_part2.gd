@@ -65,7 +65,7 @@ func run(h: SelfTestHarness) -> void:
 
 	var attacked: Dictionary = {}
 	var advanced: Dictionary = {}
-	var sniper_placeholder_seen := false
+	var sniper_native_ne_seen := false
 	var budget := 240
 	while budget > 0 and (attacked.size() < HEROES.size() or advanced.size() < HEROES.size()):
 		model.step()
@@ -79,14 +79,14 @@ func run(h: SelfTestHarness) -> void:
 				_check_body(h, view, unit, &"attack")
 			if state == &"attack" and frame > 0:
 				advanced[unit.id] = true
-			if unit.op_id == &"sniper_2" and state == &"attack":
-				var logical_id := StringName(body.get_meta(&"operator_animation_id", &""))
-				var definition := OperatorVisualCatalog.get_animation(&"sniper_2")
-				sniper_placeholder_seen = (
-					logical_id == &"op_anim_sniper_2_attack_ne"
-					and bool(Art.metadata(logical_id).get(&"placeholder", false))
-					and definition.placeholder_source_direction(logical_id) == &"se"
-				)
+				if unit.op_id == &"sniper_2" and state == &"attack":
+					var logical_id := StringName(body.get_meta(&"operator_animation_id", &""))
+					var definition := OperatorVisualCatalog.get_animation(&"sniper_2")
+					sniper_native_ne_seen = (
+						logical_id == &"op_anim_sniper_2_attack_ne"
+						and not bool(Art.metadata(logical_id).get(&"placeholder", true))
+						and definition.placeholder_source_direction(logical_id).is_empty()
+					)
 		budget -= 1
 	h.check("all five heroes attacked in real combat", attacked.size() == HEROES.size())
 	if attacked.size() != HEROES.size():
@@ -96,7 +96,7 @@ func run(h: SelfTestHarness) -> void:
 		advanced.size() == HEROES.size(),
 		"advanced=%d" % advanced.size(),
 	)
-	h.check("sniper_2 projects its declared NE-from-SE attack placeholder", sniper_placeholder_seen)
+	h.check("sniper_2 projects its native NE attack with no placeholder", sniper_native_ne_seen)
 	await h.frames(3)
 	await h.shot("operator_animation_part2_attack_mid")
 	h.done()

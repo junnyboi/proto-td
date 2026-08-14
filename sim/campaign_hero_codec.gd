@@ -1,7 +1,9 @@
 class_name CampaignHeroCodec
 extends RefCounted
 
-const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const SOURCE_VALUES := ["starter", "contract", "reward", "recovery"]
 const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
@@ -101,7 +103,7 @@ static func _valid_identity_fields(row: Dictionary) -> bool:
 		return false
 	if row["advanced_class_id"] != null and not _is_ascii(row["advanced_class_id"]):
 		return false
-	return CampaignProgressionType.projection_is_valid(row)
+	return CampaignProgression.projection_is_valid(row)
 
 
 static func _valid_history_fields(row: Dictionary, recruitment_index: int) -> bool:

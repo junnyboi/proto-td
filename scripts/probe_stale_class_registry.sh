@@ -78,7 +78,7 @@ if grep -Eq "$FATAL_PATTERN" "$tmp_root/ui-boot.log"; then
 	exit 1
 fi
 grep -q '^\[STALE-CLASS-REGISTRY\] PASS ' "$tmp_root/ui-boot.log"
-grep -q 'title=ready staging=ready s1_squad=ready s1_results=ready s1=ready s2_children=55 s3_children=64 s2_backdrops=0 s3_backdrops=0' \
+grep -q 'title=ready staging=ready s1_squad=ready s1_results=ready s1=ready s2_children=61 s3_children=69 s2_backdrops=0 s3_backdrops=0' \
 	"$tmp_root/ui-boot.log"
 
 cp "$current_cache_full" "$current_cache"

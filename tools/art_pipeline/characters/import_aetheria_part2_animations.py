@@ -119,10 +119,7 @@ def source_rows(package: Path) -> tuple[dict[tuple[str, str, str], dict[str, Any
             raise ValueError(f"{key}: source geometry mismatch")
     placeholders = [row for row in rows.values() if bool(row.get("placeholder", False))]
     exact = sorted((row["hero"], row["state"], row["direction"], row.get("placeholder_source_direction")) for row in placeholders)
-    if exact != [
-        ("sniper_2", "attacking", "ne", "se"),
-        ("sniper_2", "attacking", "nw", "sw"),
-    ]:
+    if exact:
         raise ValueError(f"unexpected placeholder set: {exact}")
     return rows, raw
 
@@ -278,17 +275,8 @@ def build_compact_document(
     acceptance["blocked_classes_use_legacy_fallback"] = sorted(
         set(("vanguard_1", "vanguard_2", "guard_1", "guard_2", "defender_1", "defender_2", "sniper_1", "sniper_2", "caster_1", "caster_2")) - set(admitted)
     )
-    acceptance["status"] = "part2_runtime_integrated_with_two_declared_placeholders"
-    current["known_placeholders"] = [
-        {
-            "logical_id": "op_anim_sniper_2_attack_ne",
-            "source_direction": "se",
-        },
-        {
-            "logical_id": "op_anim_sniper_2_attack_nw",
-            "source_direction": "sw",
-        },
-    ]
+    acceptance["status"] = "part2_runtime_integrated_all_native"
+    current["known_placeholders"] = []
     current["source_packages"] = [
         {
             "name": "aetheria-chibi-sprites-part-2",
