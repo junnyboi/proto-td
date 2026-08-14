@@ -495,7 +495,7 @@
    "acceptance": [
     "Caster I, Caster II, Protector, Ranger, and Sky Hunter resolve independent SE, NE, NW, and SW idle/attack atlases through the existing view-only animation runtime",
     "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and no directional mirroring",
-    "exactly Sky Hunter attack NE-from-SE and NW-from-SW remain declared placeholders in source, runtime, manifest, and resource metadata",
+    "Sky Hunter attack NE and NW are native, hash-distinct from SE and SW, and every source/runtime/manifest/resource placeholder flag or source map is empty",
     "catalog and five-hero live-battle scenarios pass headless and windowed with fresh screenshots, model-hash invariance, completion sentinels, and zero render skips"
    ],
    "evidence_classes": [
@@ -512,7 +512,14 @@
     "a46056f",
     "4cb244e",
     "f30aa57",
-    "d2c5b33"
+    "d2c5b33",
+    "a51a322",
+    "a035948",
+    "516e6e9",
+    "a2f5298",
+    "c7f65d0",
+    "35831f5",
+    "c1b1f39"
    ]
   },
   {

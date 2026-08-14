@@ -15,7 +15,7 @@ func test_admitted_catalog_and_manifest_contracts_are_exact() -> void:
 		var animation := OperatorVisualCatalog.get_animation(template_id)
 		assert_not_null(animation)
 		assert_true(animation.validate_contract().is_empty(), String(template_id))
-		assert_eq(animation.placeholder, template_id == &"sniper_2")
+		assert_false(animation.placeholder)
 		for direction: StringName in OperatorAnimationDef.DIRECTIONS:
 			var idle_id := StringName(animation.idle_by_direction[direction])
 			var attack_id := StringName(animation.attack_by_direction[direction])
@@ -26,10 +26,6 @@ func test_admitted_catalog_and_manifest_contracts_are_exact() -> void:
 			assert_almost_eq(Art.fps(idle_id), 12.0, 0.0001)
 			assert_almost_eq(Art.fps(attack_id), 12.0, 0.0001)
 			var expected_source: StringName = &""
-			if template_id == &"sniper_2" and direction == &"ne":
-				expected_source = &"se"
-			elif template_id == &"sniper_2" and direction == &"nw":
-				expected_source = &"sw"
 			assert_eq(animation.placeholder_source_direction(attack_id), expected_source)
 			assert_eq(
 				bool(Art.metadata(attack_id).get(&"placeholder", true)),
@@ -88,8 +84,10 @@ func test_catalog_manifest_placeholder_check_is_not_fps_gated() -> void:
 	if admitted == null:
 		return
 	var altered := admitted.duplicate(true) as OperatorAnimationDef
-	altered.placeholder = false
-	altered.placeholder_source_by_logical_id = {}
+	altered.placeholder = true
+	altered.placeholder_source_by_logical_id = {
+		altered.attack_by_direction[&"ne"]: &"se",
+	}
 	var errors := OperatorVisualCatalog.validate_definitions({&"sniper_2": altered}, true)
 	assert_true(_contains(errors, "placeholder mismatch"))
 
