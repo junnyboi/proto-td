@@ -98,7 +98,13 @@ func _build_operations() -> VBoxContainer:
 	operations.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	operations.add_theme_constant_override(&"separation", 10)
 	operations.add_child(_label("OperationStatus", UiCopyType.text(&"ui.staging.operation_status", "OPERATIONS — UNAVAILABLE"), &"dense_detail"))
-	_mission = _button("MissionControlButton", UiCopyType.text(&"ui.staging.mission_control", "Mission Control"), "Mission", not _narrative_missing, &"primary" if not _narrative_missing else &"disabled")
+	_mission = _button(
+		"MissionControlButton", UiCopyType.text(
+			&"ui.staging.mission_control", "Mission Control",
+		), UiCopyType.text(&"ui.staging.mission_control_short", "Mission"),
+		not _narrative_missing,
+		&"primary" if not _narrative_missing else &"disabled",
+	)
 	_mission.pressed.connect(_on_mission_control)
 	_operation_grid = GridContainer.new()
 	_operation_grid.name = "OperationGrid"
@@ -115,17 +121,42 @@ func _build_operations() -> VBoxContainer:
 	grid_margin.add_child(_operation_grid)
 	operations.add_child(grid_margin)
 	_operation_grid.add_child(_mission)
-	var back := _button("BackToTitleButton", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), "Back", true, &"secondary")
+	var back := _button(
+		"BackToTitleButton",
+		UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
+		UiCopyType.text(&"ui.common.back", "Back"), true, &"secondary",
+	)
 	back.pressed.connect(_on_back_to_title)
 	_operation_grid.add_child(back)
 	for specification: Array in [
-		["BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable", "Barracks"],
-		["RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable", "Recruit"],
-		["TrainingButton", &"ui.staging.training_unavailable", "Training — Unavailable", "Training"],
-		["ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable", "Armory"],
-		["MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable", "Memorial"],
+		[
+			"BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable",
+			&"ui.staging.barracks_short", "Barracks",
+		],
+		[
+			"RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable",
+			&"ui.staging.recruit_short", "Recruit",
+		],
+		[
+			"TrainingButton", &"ui.staging.training_unavailable", "Training — Unavailable",
+			&"ui.staging.training_short", "Training",
+		],
+		[
+			"ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable",
+			&"ui.staging.armory_short", "Armory",
+		],
+		[
+			"MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable",
+			&"ui.staging.memorial_short", "Memorial",
+		],
 	]:
-		_operation_grid.add_child(_button(String(specification[0]), UiCopyType.text(StringName(specification[1]), String(specification[2])), String(specification[3]), false, &"disabled"))
+		_operation_grid.add_child(_button(
+			String(specification[0]), UiCopyType.text(
+				StringName(specification[1]), String(specification[2]),
+			), UiCopyType.text(
+				StringName(specification[3]), String(specification[4]),
+			), false, &"disabled",
+		))
 	_mission.focus_neighbor_top = _mission.get_path_to(back)
 	_mission.focus_previous = _mission.get_path_to(back)
 	_mission.focus_neighbor_bottom = _mission.get_path_to(back)
@@ -192,7 +223,10 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 	return label
 
 
-func _button(button_name: String, button_text: String, presentation_text: String, enabled: bool, role: StringName) -> AetheriaButtonType:
+func _button(
+		button_name: String, button_text: String, presentation_text: String,
+		enabled: bool, role: StringName,
+		) -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = button_name
 	button.text = button_text

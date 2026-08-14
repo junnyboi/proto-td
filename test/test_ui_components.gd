@@ -42,7 +42,14 @@ func test_theme_resource_has_exact_variations_items_and_values() -> void:
 	var theme := load(theme_path) as Theme
 	assert_not_null(theme)
 	assert_true(theme is AetheriaTheme)
-	assert_eq(theme.default_font, ThemeDB.fallback_font)
+	assert_true(theme.default_font is FontVariation)
+	var composite := theme.default_font as FontVariation
+	assert_eq(composite.base_font, ThemeDB.fallback_font)
+	assert_eq(composite.fallbacks.size(), 1)
+	assert_eq(
+		(composite.fallbacks[0] as Font).resource_path,
+		"res://assets/fonts/ProtosSansSC-Subset.otf",
+	)
 	assert_eq(theme.default_font_size, int(_contract["theme"]["default_font_size"]))
 	var expected_variations := _contract["theme"]["variations"] as Dictionary
 	var actual_variations: Array[String] = []
@@ -169,6 +176,7 @@ func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure
 	var button := AetheriaButton.new()
 	button.text = "Original"
 	assert_false(button.apply_compact_action_layout())
+	assert_false(bool(button.get_meta(&"compact_action_layout", false)))
 	assert_eq(button.custom_minimum_size, Vector2(44.0, 52.0))
 	assert_false(button.set_presentation_text("", "Visible"))
 	assert_eq(button.text, "Original")
@@ -181,7 +189,9 @@ func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure
 	assert_true(button.apply_compact_action_layout())
 	assert_eq(button.custom_minimum_size, Vector2(44.0, 80.0))
 	assert_eq(button.size_flags_vertical, Control.SIZE_SHRINK_BEGIN)
+	assert_eq(button.get_theme_font_size(&"font_size"), 34)
 	assert_eq(presented.get_theme_font_size(&"font_size"), 34)
+	assert_true(bool(button.get_meta(&"compact_action_layout", false)))
 	assert_eq(presented.text, "Barracks\nUnavailable")
 	assert_eq(presented.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	assert_eq(presented.theme_type_variation, &"AuiBodyLabel")
@@ -252,33 +262,33 @@ func test_screen_shell_dialog_scroll_uses_far_right_gutter() -> void:
 
 
 func test_locale_selector_exact_rows_selection_and_rejection() -> void:
+	assert_true(I18n.set_locale(&"en-US"))
 	var scene := load("res://scenes/ui/components/aetheria_locale_selector.tscn") as PackedScene
 	var selector := scene.instantiate() as AetheriaLocaleSelector
 	add_child_autofree(selector)
 	await get_tree().process_frame
 	assert_true(selector.refresh())
 	var list := selector.get_node("LocaleList") as ItemList
-	assert_eq(list.item_count, 1)
-	assert_eq(list.get_item_text(0), "English (US)")
+	assert_eq(list.item_count, 2)
+	assert_eq(list.get_item_text(0), "EN")
+	assert_eq(list.get_item_text(1), "中文")
 	assert_eq(typeof(list.get_item_metadata(0)), TYPE_STRING_NAME)
 	assert_eq(list.get_item_metadata(0), &"en-US")
+	assert_eq(typeof(list.get_item_metadata(1)), TYPE_STRING_NAME)
+	assert_eq(list.get_item_metadata(1), &"zh-CN")
 	assert_eq(list.get_selected_items(), PackedInt32Array([0]))
-	var presented := list.get_node("PresentationLabel") as AetheriaLabel
-	assert_eq(presented.text, "English (US)")
-	assert_eq(presented.mouse_filter, Control.MOUSE_FILTER_IGNORE)
-	assert_eq(presented.autowrap_mode, TextServer.AUTOWRAP_ARBITRARY)
-	assert_eq(
-		presented.get_theme_color(&"font_color"), AetheriaTheme.COLORS[&"dark_ink"],
-	)
+	assert_eq(list.max_columns, 2)
+	assert_true(list.same_column_width)
+	assert_eq(list.size_flags_horizontal, Control.SIZE_EXPAND_FILL)
+	assert_null(list.get_node_or_null("PresentationLabel"))
 	assert_gte(list.custom_minimum_size.x, 360.0)
-	assert_gte(list.custom_minimum_size.y, 72.0)
-	await get_tree().process_frame
-	assert_true(list.get_global_rect().encloses(presented.get_global_rect()))
+	assert_gte(list.custom_minimum_size.y, 90.0)
 	var selected_style := list.get_theme_stylebox(&"selected") as StyleBoxFlat
 	assert_not_null(selected_style)
 	assert_eq(selected_style.bg_color, AetheriaTheme.COLORS[&"selected"])
 	assert_gte(
-		_contrast(presented.get_theme_color(&"font_color"), selected_style.bg_color), 4.5,
+		_contrast(list.get_theme_color(&"font_selected_color"), selected_style.bg_color),
+		4.5,
 	)
 	list.grab_focus()
 	await get_tree().process_frame
@@ -289,6 +299,11 @@ func test_locale_selector_exact_rows_selection_and_rejection() -> void:
 	assert_eq(get_viewport().gui_get_focus_owner(), list)
 	selector.set_vertical_layout(false)
 	assert_false(selector.vertical)
+	watch_signals(selector)
+	assert_true(selector.select_locale(&"zh-CN"))
+	assert_signal_emitted_with_parameters(selector, "locale_selected", [&"zh-CN"])
+	assert_eq(I18n.locale(), &"zh-CN")
+	assert_eq(list.get_selected_items(), PackedInt32Array([1]))
 	assert_true(selector.select_locale(&"en-US"))
 	assert_false(selector.select_locale(&"fr-FR"))
 	assert_eq(I18n.locale(), &"en-US")
