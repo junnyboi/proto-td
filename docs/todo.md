@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-030 — Replace Sky Hunter attack placeholders with native NE and NW
+
+- Status: in_progress
+- Owner: AGENT 8
+- Branch: `agent-8/td-030-sky-hunter-native-attacks`
+- Base: `master` at `eb70940b4f8267afaaf3acfba1ea71fd8cf8fb43`
+- Dependencies: TD-029 view-only operator animation runtime; human-accepted native source package `aetheria-chibi-sprites-part-2-completed`
+- Owned files: `assets/sprites/operators/animated/sniper_2/attack_*.png`, `assets/provenance/operators/{aetheria-part2-source-manifest,operator-animation-v1}.json`, all generated `assets/provenance/op_anim_*.provenance.json`, `assets/manifest.tres`, `data/presentation/operator_visuals/sniper_2.tres`, `tools/art_pipeline/characters/{import_aetheria_part2_animations,validate_operator_animation_runtime}.py`, `test/{test_aetheria_part2_import,test_operator_animation_def,test_presentation_contracts}.gd`, `selftest/scenarios/operator_animation_part2.gd`, `FEATURES.json`, `docs/handoffs/TD-030-agent-8-sky-hunter-native-attacks.md`, and TD-030 claim/closure edits in `docs/todo.md` / `docs/completed.md`
+- Do not touch: `sim/**`, gameplay/tick/action/save/replay/economy semantics, gameplay `data/*.tres`, animation timing/pivot/normalization values, `scripts/verify.sh`, human-owned thresholds, unrelated art/UI/audio/localization, or non-Sky-Hunter source sheets
+- Acceptance: Sky Hunter attack NE and NW import as native hashes distinct from SE and SW; all source/runtime/resource/manifest/provenance placeholder flags and source maps are empty; runtime remains 13 frames at 12 fps, 192×192 binary-alpha cells, pivot `(0.5,0.94)`, 158 px normalization, no mirroring, and model-hash-invariant view projection
+- Required evidence: deterministic importer regeneration/check, runtime/provenance validators, focused GUT placeholder/hash/direction tests, fresh headless and windowed `operator_animation_catalog` plus `operator_animation_part2` with completion sentinels and zero render skips, one clean repository STANDARD gate, and current human visual ACCEPT bound to the native package hashes
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
