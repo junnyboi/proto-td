@@ -5,6 +5,10 @@ extends RefCounted
 ## exact retries resolve before revision checks, and every rejection leaves the
 ## caller-owned campaign Dictionary untouched.
 
+const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
+const CAMPAIGN_HASH_SCRIPT := preload("res://sim/campaign_hash.gd")
+const CAMPAIGN_PROGRESSION_SCRIPT := preload("res://sim/campaign_progression.gd")
+const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const COMMAND_KEYS := [
 	"version", "verb", "command_id", "hero_id", "advanced_class_id",
 	"expected_save_revision",
@@ -14,7 +18,7 @@ const REPLAY_ARG_KEYS := [
 	"version", "command_id", "hero_id", "advanced_class_id",
 	"expected_save_revision",
 ]
-const RECEIPT_KEYS := CampaignCodec.PROMOTION_RECEIPT_KEYS
+const RECEIPT_KEYS := CAMPAIGN_CODEC_SCRIPT.PROMOTION_RECEIPT_KEYS
 const U63_MAX := 9_223_372_036_854_775_807
 
 
@@ -39,19 +43,19 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 	var hero := _hero_by_id(data["heroes"], String(command["hero_id"]))
 	if hero.is_empty():
 		return _reject(&"unknown_hero")
-	var eligibility := CampaignProgression.promotion_eligibility(
+	var eligibility := CAMPAIGN_PROGRESSION_SCRIPT.promotion_eligibility(
 		hero, context["promotion_rules"],
 	)
 	if not eligibility["accepted"]:
 		return eligibility
-	var choice := CampaignProgression.promotion_choice(
+	var choice := CAMPAIGN_PROGRESSION_SCRIPT.promotion_choice(
 		context["promotion_rules"], String(command["advanced_class_id"]),
 	)
 	if choice.is_empty():
 		return _reject(&"invalid_choice")
 	if int(data["save_revision"]) >= U63_MAX:
 		return _reject(&"xp_overflow")
-	var before_hash := CampaignHash.of_data(data, context)
+	var before_hash := CAMPAIGN_HASH_SCRIPT.of_data(data, context)
 	if not before_hash["accepted"]:
 		return _reject(&"invalid_argument_type")
 	var before_snapshot := _proof_snapshot(data)
@@ -59,14 +63,14 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 	var working: Dictionary = data.duplicate(true)
 	var working_hero := _hero_by_id(working["heroes"], String(command["hero_id"]))
 	var prior_operator_def_id := String(working_hero["operator_def_id"])
-	CampaignProgression.apply_promotion(working_hero, choice)
+	CAMPAIGN_PROGRESSION_SCRIPT.apply_promotion(working_hero, choice)
 	working["save_revision"] = int(working["save_revision"]) + 1
 	var receipt := _receipt(
 		command, prior_operator_def_id, String(choice["operator_def_id"]),
 		String(before_hash["hex"]), int(working["save_revision"]),
 	)
 	working["promotion_receipts"].append(receipt)
-	var after_hash := CampaignHash.of_normalized_data(working, false)
+	var after_hash := CAMPAIGN_HASH_SCRIPT.of_normalized_data(working, false)
 	receipt["after_strategic_hash"] = String(after_hash["hex"])
 	var after_snapshot := _proof_snapshot(working)
 	working["promotion_proofs"].append({
@@ -74,7 +78,7 @@ static func execute(data: Dictionary, context: Dictionary, raw_command: Variant)
 		"before_data": before_snapshot,
 		"after_data": after_snapshot,
 	})
-	var canonical := CampaignCodec.normalize_data(working, context)
+	var canonical := CAMPAIGN_CODEC_SCRIPT.normalize_data(working, context)
 	if not canonical["accepted"]:
 		return _reject(&"invalid_argument_type")
 	data.clear()
@@ -165,14 +169,14 @@ static func encode_replay_rows(value: Variant) -> Dictionary:
 			return normalized
 		rows.append(replay_row(expected_seq, normalized["value"]))
 		expected_seq += 1
-	var text := CanonicalJson.text(rows)
+	var text := CANONICAL_JSON_SCRIPT.text(rows)
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": rows,
 		"text": text,
 		"bytes": text.to_utf8_buffer(),
-		"sha256": CanonicalJson.sha256_text(text),
+		"sha256": CANONICAL_JSON_SCRIPT.sha256_text(text),
 	}
 
 
@@ -221,7 +225,7 @@ static func _accepted(receipt: Dictionary) -> Dictionary:
 		"accepted": true,
 		"error_code": &"",
 		"receipt": canonical,
-		"receipt_bytes": CanonicalJson.text(canonical).to_utf8_buffer(),
+		"receipt_bytes": CANONICAL_JSON_SCRIPT.text(canonical).to_utf8_buffer(),
 	}
 
 

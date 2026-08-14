@@ -54,6 +54,17 @@ const CONTRACTS := [
 		"aliases": _SHELL_ALIASES,
 		"forbidden": _SHELL_FORBIDDEN,
 	},
+	{
+		"path": "res://sim/campaign_promotion.gd",
+		"aliases": [
+			"CAMPAIGN_CODEC_SCRIPT", "CAMPAIGN_HASH_SCRIPT",
+			"CAMPAIGN_PROGRESSION_SCRIPT", "CANONICAL_JSON_SCRIPT",
+		],
+		"forbidden": [
+			"\\bCampaignCodec\\b", "\\bCampaignHash\\b",
+			"\\bCampaignProgression\\b", "\\bCanonicalJson\\b",
+		],
+	},
 ]
 
 
