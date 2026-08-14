@@ -560,7 +560,7 @@ static func _validate_before(
 		return _reject(&"transaction_marks_before_mismatch")
 	if _stage_stars(before, ticket["stage_id"]) != int(resolution["stars_before"]):
 		return _reject(&"transaction_stars_before_mismatch")
-	var before_hash := CampaignHash._of_normalized_core(before)
+	var before_hash := _of_normalized_core(before)
 	if not before_hash["accepted"]:
 		return _reject(&"transaction_hash_before_mismatch")
 	if before_hash["hex"] != resolution["strategic_body_hash_before"]:
