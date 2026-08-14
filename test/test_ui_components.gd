@@ -46,10 +46,13 @@ func test_theme_resource_has_exact_variations_items_and_values() -> void:
 	var composite := theme.default_font as FontVariation
 	assert_eq(composite.base_font, ThemeDB.fallback_font)
 	assert_eq(composite.fallbacks.size(), 1)
-	assert_eq(
-		(composite.fallbacks[0] as Font).resource_path,
-		"res://assets/fonts/ProtosSansSC-Subset.otf",
-	)
+	assert_eq(AetheriaTheme.CJK_FONT_PATH, "res://assets/fonts/ProtosSansSC-Subset.otf")
+	var cjk_font := composite.fallbacks[0] as FontFile
+	assert_not_null(cjk_font)
+	assert_eq(cjk_font.resource_name, "ProtosSansSC-Subset")
+	assert_eq(cjk_font.resource_path, "")
+	assert_gt(cjk_font.data.size(), 0)
+	assert_true(cjk_font.has_char("中".unicode_at(0)))
 	assert_eq(theme.default_font_size, int(_contract["theme"]["default_font_size"]))
 	var expected_variations := _contract["theme"]["variations"] as Dictionary
 	var actual_variations: Array[String] = []
