@@ -86,10 +86,11 @@ func run(h: SelfTestHarness) -> void:
 	h.check("SP fill rect reset to zero width", sp_fill.size.x == 0.0, "w=%f" % sp_fill.size.x)
 	await h.frames(cfg.skill_flash_frames + 4)
 	var img_decay := await h.shot_grab("skill_flash_decay")
+	h.check("flash node hidden after its frame budget", not flash.visible)
 	h.check_pixels(
 		"flash gone after its frame budget", img_decay,
 		func(im: Image) -> bool:
-			return SelfTestProbes.color_in_rect(im, flash_rect, flash_color, 0.05) < 100,
+			return _changed_pixels_in_rect(img_flash, im, flash_rect, 0.05) > 2_000,
 	)
 
 	# WIRING CHECK: one click on the full-SP vanguard fires Rally
@@ -124,3 +125,18 @@ func run(h: SelfTestHarness) -> void:
 	await h.frames(2)
 	await h.shot("battle_end")
 	h.done()
+
+
+func _changed_pixels_in_rect(before: Image, after: Image, rect: Rect2i, tolerance: float) -> int:
+	var image_rect := Rect2i(Vector2i.ZERO, before.get_size())
+	var clipped := rect.intersection(image_rect).intersection(Rect2i(Vector2i.ZERO, after.get_size()))
+	var changed := 0
+	for y: int in range(clipped.position.y, clipped.end.y):
+		for x: int in range(clipped.position.x, clipped.end.x):
+			var lhs := before.get_pixel(x, y)
+			var rhs := after.get_pixel(x, y)
+			var delta := maxf(absf(lhs.r - rhs.r), absf(lhs.g - rhs.g))
+			delta = maxf(delta, maxf(absf(lhs.b - rhs.b), absf(lhs.a - rhs.a)))
+			if delta > tolerance:
+				changed += 1
+	return changed

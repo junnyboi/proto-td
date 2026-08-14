@@ -3,6 +3,7 @@ extends GutTest
 const REQUIRED_PATHS := [
 	"res://scenes/training.tscn",
 	"res://scripts/ui/training.gd",
+	"res://scripts/ui/components/training_support.gd",
 	"res://scripts/ui/components/training_roster_row.gd",
 	"res://scripts/ui/components/promotion_path_card.gd",
 ]
@@ -51,6 +52,8 @@ func test_game_and_staging_expose_guarded_training_route() -> void:
 	assert_true(game_source.contains("func open_training()"))
 	assert_true(staging_source.contains("Game.open_training()"))
 	assert_true(staging_source.contains("_training_available"))
+	assert_true(staging_source.contains("training_support.gd"))
+	assert_false(staging_source.contains('preload("res://scripts/ui/training.gd")'))
 
 
 func test_training_copy_has_total_english_fallbacks() -> void:

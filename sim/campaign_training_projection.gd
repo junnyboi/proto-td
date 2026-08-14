@@ -35,7 +35,7 @@ func training_roster() -> Array[Dictionary]:
 func _promotion_options(hero_id: String) -> Dictionary:
 	for hero: Dictionary in _data["heroes"]:
 		if hero["hero_id"] == hero_id:
-			return CampaignProgression.promotion_options(
+			return CampaignProgressionType.promotion_options(
 				hero, _context["promotion_rules"],
 			)
 	return {"accepted": false, "error_code": &"unknown_hero"}
