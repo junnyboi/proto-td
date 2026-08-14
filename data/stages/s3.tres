@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"s3"
 title = "The Choke"
-grid_rows = PackedStringArray("GGGGGGGGGG", "GGGGGGGGGG", "SGGGGXGGGG", "GGEGGXGGGG", "GGGGGGGGGB", "GGGGGGGGGG")
+grid_rows = PackedStringArray("XGGGGGGGGX", "GGGGGGGGGG", "SGGGGXGGGG", "GGEGGXGGGG", "GGGGGGGGGB", "GGGGGGGGGG")
 paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 4, 3, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4)])
 waves = Array[Dictionary]([{
 "enemy_id": &"runner",

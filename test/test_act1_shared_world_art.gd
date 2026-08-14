@@ -3,13 +3,17 @@ extends GutTest
 const EXPECTED := {
 	&"world.act1.ground": ["ground.png", Vector2i(64, 32)],
 	&"world.act1.route": ["route.png", Vector2i(64, 32)],
-	&"world.act1.raised": ["raised.png", Vector2i(64, 48)],
+	&"world.act1.raised": ["raised.png", Vector2i(64, 80)],
 	&"world.act1.blocked": ["blocked.png", Vector2i(64, 32)],
 	&"world.act1.spawn": ["spawn.png", Vector2i(64, 32)],
-	&"world.act1.core": ["core.png", Vector2i(64, 32)],
+	&"world.act1.core": ["core.png", Vector2i(128, 128)],
 	&"world.act1.panorama": ["panorama.png", Vector2i(512, 256)],
+	&"world.act1.env.boulder": ["env-boulder.png", Vector2i(64, 64)],
+	&"world.act1.env.barrel": ["env-barrel.png", Vector2i(64, 64)],
+	&"world.act1.env.wall": ["env-wall.png", Vector2i(64, 64)],
+	&"world.act1.env.crate": ["env-crate.png", Vector2i(64, 64)],
 }
-const COUNTS := {&"s1": 45, &"s2": 55, &"s3": 64}
+const COUNTS := {&"s1": 51, &"s2": 61, &"s3": 69}
 
 var base: AssetManifest
 var supplement: AssetManifest
@@ -26,13 +30,13 @@ func before_all() -> void:
 	Art._reset_manifests_for_test()
 
 
-func test_supplement_is_valid_disjoint_and_exactly_seven_placeholders() -> void:
+func test_supplement_is_valid_disjoint_and_exactly_eleven_placeholders() -> void:
 	assert_not_null(base)
 	assert_not_null(supplement)
 	assert_eq(base.validate_contract(), PackedStringArray())
 	assert_eq(supplement.validate_contract(), PackedStringArray())
-	assert_eq(supplement.entries.size(), 7)
-	assert_eq(EXPECTED.size(), 7)
+	assert_eq(supplement.entries.size(), 11)
+	assert_eq(EXPECTED.size(), 11)
 	for id: StringName in supplement.entries:
 		assert_true(EXPECTED.has(id), "unexpected supplemental ID %s" % id)
 		assert_false(base.entries.has(id), "duplicate across manifest layers: %s" % id)
@@ -64,8 +68,9 @@ func test_runtime_staging_bytes_textures_sizes_and_provenance_bindings() -> void
 		)
 		var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(fragment))
 		assert_eq(data["logical_id"], String(id))
-		assert_eq(data["approval"]["token"], "ACT-I-S1-S3-SYNTHESIS-V1")
-		assert_false(bool(data["human_final_art"]))
+		assert_eq(data["approval"]["token"], "ACT-I-S1-S3-VISUAL-PASS-V3")
+		assert_true(bool(data["human_final_art"]))
+		assert_eq(data["approval"]["manifest_sha256"], StageArtTheme.APPROVAL_MANIFEST_SHA256)
 		assert_eq(Art.size(id), size)
 		assert_not_null(Art.texture(id))
 
@@ -77,10 +82,15 @@ func test_all_three_themes_share_exact_contract_and_validate() -> void:
 		assert_eq(theme.validation_errors(stage), PackedStringArray(), "%s validates" % id)
 		assert_eq(theme.theme_id, StageArtTheme.SHARED_THEME_ID)
 		assert_eq(theme.approval_token, StageArtTheme.APPROVAL_TOKEN)
-		assert_false(theme.human_final_art)
+		assert_true(theme.human_final_art)
+		assert_eq(theme.approval_manifest_sha256, StageArtTheme.APPROVAL_MANIFEST_SHA256)
 		assert_eq(theme.surface_modulate, Color.WHITE)
-		assert_eq(theme.required_manifest_ids(), StageArtTheme.SHARED_IDS)
+		var required := StageArtTheme.SHARED_IDS.duplicate()
+		required.append_array(StageArtTheme.ENV_PROP_IDS)
+		assert_eq(theme.required_manifest_ids(), required)
 		assert_eq(theme.backdrop_panorama_id, &"world.act1.panorama")
+		assert_eq(theme.tile_id(StageDef.Tile.SPAWN, false), &"world.act1.ground")
+		assert_eq(theme.tile_id(StageDef.Tile.BASE, false), &"world.act1.ground")
 		assert_eq(
 			theme.resolve_cell(Vector2i(1, 1), StageDef.Tile.GROUND, false)["cadence_id"], &""
 		)
@@ -94,14 +104,17 @@ func test_exact_topology_role_textures_zero_cadence_and_node_counts() -> void:
 		assert_true(IsoGridBuilder.build_stage_with_theme(root, stage, theme, false))
 		assert_eq(root.get_child_count(), COUNTS[id], "%s GridRoot count" % id)
 		assert_eq(_prefix_count(root, "Cadence_"), 0, "%s cadence count" % id)
+		assert_eq(_prefix_count(root, "EnvProp_"), theme.env_prop_cells.size(), "%s props" % id)
 		assert_eq(_prefix_count(root, "Backdrop"), 1, "%s panorama count" % id)
 		_check_texture(root, "BackdropPanorama", &"world.act1.panorama")
 		_check_texture(root, "SpawnLandmark", &"world.act1.spawn")
 		_check_texture(root, "CoreLandmark", &"world.act1.core")
 		for cell: Vector2i in theme.elevated_cells:
+			_check_texture(root, "BaseTile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.raised")
-		for cell: Vector2i in theme.blocked_cells:
-			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.blocked")
+		for cell: Vector2i in theme.env_prop_cells:
+			assert_eq(stage.tile_at(cell), StageDef.Tile.BLOCKED, "%s blocker semantic" % cell)
+			_check_texture(root, "Tile_%d_%d" % [cell.x, cell.y], &"world.act1.ground")
 		root.free()
 
 

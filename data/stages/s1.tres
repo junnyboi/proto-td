@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"s1"
 title = "First Stand"
-grid_rows = PackedStringArray("GGGGGGGG", "GGGEGGGG", "SGGGGGGB", "GGGEGGGG", "GGGGGGGG")
+grid_rows = PackedStringArray("XGGGGGGX", "GGGEGGGG", "SGGGGGGB", "GGGEGGGG", "XGGGGGGX")
 paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2)])
 waves = Array[Dictionary]([{
 "enemy_id": &"grunt",

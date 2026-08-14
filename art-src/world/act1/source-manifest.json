@@ -1,0 +1,61 @@
+{
+  "schema_version": 3,
+  "approval_token": "ACT-I-S1-S3-VISUAL-PASS-V3",
+  "owner_direction": "Use the supplied ground and route tiles, a taller blocky elevated platform, the Cloud-Seal Orrery core, and environmental blockers across Act I.",
+  "owner_approval": {
+    "verdict": "APPROVED",
+    "approved_at": "2026-08-14T16:46:03+08:00",
+    "message": "Approve Act I V3 ground-base amendment",
+    "manifest_path": "art-src/world/act1/ACT-I-V3-GROUND-BASE-APPROVAL.json",
+    "manifest_sha256": "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
+  },
+  "sources": {
+    "ground": {
+      "path": "art-src/world/act1/owner-tiles/ground-source.png",
+      "sha256": "ab43310f885a50fe9a34a6ef32bfd16aa8f15d46e595557a544c6b9b8dbfa7b8",
+      "size": [1920, 1920]
+    },
+    "route": {
+      "path": "art-src/world/act1/owner-tiles/route-source.png",
+      "sha256": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9",
+      "size": [1920, 1920]
+    },
+    "raised": {
+      "path": "art-src/world/act1/owner-tiles/elevated-source.png",
+      "sha256": "a87160a0ec044297d798f837f7173e2a067080351baa88f2bd70d243f7720b6f",
+      "size": [1920, 1920]
+    },
+    "spawn_marker": {
+      "path": "art-src/world/act1/endpoint-markers/spawn-marker-source.png",
+      "sha256": "30f2dbfa61b1ecc494e54f76277ca5c171a08bd22e8575be009536d670c96bdf",
+      "size": [480, 264]
+    },
+    "core_orrery": {
+      "path": "art-src/world/act1/core-orrery-source.png",
+      "sha256": "0fb8897ebdcb407d32ea62dad255867ffdf1cb93853da76b4a6927743007deb3",
+      "size": [1920, 1920]
+    },
+    "env_blockers": {
+      "path": "art-src/world/act1/owner-tiles/env-blockers-sheet.png",
+      "sha256": "adf301a6863dc28e731ea43cde20babf69fd6b24979cb3c0e9dbff321f14ce24",
+      "size": [1920, 1920]
+    },
+    "panorama": {
+      "path": "art-src/world/act1/s1-alpine-escarpment-panorama-source.png",
+      "sha256": "5da7a563ecef9bebeb8244304cd894cafdbd9205bc5a80c7f42c8236fa358d5b",
+      "size": [2560, 1440]
+    }
+  },
+  "derived_roles": {
+    "ground": "ground source canvas strip, crop, and exact 64x32 fit",
+    "route": "route source canvas strip, crop, and exact 64x32 fit",
+    "raised": "transparent crop of blocky platform source and exact 64x80 fit",
+    "blocked": "ground source with deterministic muted contrast",
+    "spawn": "transparent red endpoint marker extracted from preserved approved marker source",
+    "core": "Cloud-Seal Orrery background removal and exact 128x128 fit",
+    "env-boulder": "top-left environmental prop extraction and exact 64x64 fit",
+    "env-barrel": "top-right environmental prop extraction and exact 64x64 fit",
+    "env-wall": "bottom-left environmental prop extraction and exact 64x64 fit",
+    "env-crate": "bottom-right environmental prop extraction and exact 64x64 fit"
+  }
+}

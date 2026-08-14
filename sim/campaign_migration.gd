@@ -4,6 +4,9 @@ extends RefCounted
 ## Total, deterministic migration from the immutable P16 v1 save shape to v2.
 ## Migration adds progression defaults and rewrites nested anchor integrity links.
 
+const CampaignCodec := preload("res://sim/campaign_codec.gd")
+const CampaignHash := preload("res://sim/campaign_hash.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
 const LegacyHashScript := preload("res://sim/campaign_legacy_hash.gd")
 
 const V1_HERO_KEYS := [
