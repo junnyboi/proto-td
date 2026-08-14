@@ -1,31 +1,34 @@
 {
   "approval": {
-    "human_final_art": false,
-    "scope": "shared Act I world-art direction for S1-S3",
-    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+    "human_final_art": true,
+    "manifest_path": "art-src/world/act1/ACT-I-V3-GROUND-BASE-APPROVAL.json",
+    "manifest_sha256": "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249",
+    "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
+    "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/raised.png",
-    "sha256": "379c82ebf86c98b2baeed5c5db1ab2de97b2401a704ae5fb75d89e027d0d9533",
+    "sha256": "27bd5070b6a085efeac0059f4a8c699f8ea52cd68cf8a5eb36863a4354f03339",
     "staging": "staging/assets/world/act1/raised.png"
   },
-  "human_final_art": false,
+  "human_final_art": true,
   "logical_id": "world.act1.raised",
   "normalization": {
     "alpha_preserved": true,
+    "operation": "transparent crop + fit to 64x80 raised platform",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
       64,
-      48
+      80
     ],
     "tool": "Pillow"
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/synthesized-roles/act1-raised.png",
-    "sha256": "faaee6a67f3066f244d72fffaed173b7b9ea1a7cbd247468b6e2e278966144e3"
+    "path": "art-src/world/act1/owner-tiles/elevated-source.png",
+    "sha256": "a87160a0ec044297d798f837f7173e2a067080351baa88f2bd70d243f7720b6f"
   },
-  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "HUMAN_FINAL_APPROVED"
 }

@@ -5,7 +5,8 @@ extends Resource
 ## campaign, save, replay, and music lanes never read this resource.
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
-const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-SYNTHESIS-V1"
+const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-VISUAL-PASS-V3"
+const APPROVAL_MANIFEST_SHA256 := "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
 const SHARED_THEME_ID: StringName = &"world.act1.alpine_shared"
 const SHARED_ENDPOINT_PIVOT := Vector2i(32, 16)
 const SHARED_IDS: Array[StringName] = [
@@ -17,12 +18,21 @@ const SHARED_IDS: Array[StringName] = [
 	&"world.act1.core",
 	&"world.act1.panorama",
 ]
+## Env prop pool — scattered on GROUND tiles by the grid builder.
+const ENV_PROP_IDS: Array[StringName] = [
+	&"world.act1.env.boulder",
+	&"world.act1.env.barrel",
+	&"world.act1.env.wall",
+	&"world.act1.env.crate",
+]
+## Core landmark is now 128x128; pivot is center-bottom of the 64x32 face.
+const SHARED_CORE_PIVOT := Vector2i(64, 108)
 const TOPOLOGY := {
 	&"s1":
 	{
 		"size": Vector2i(8, 5),
 		"elevated": [Vector2i(3, 1), Vector2i(3, 3)],
-		"blocked": [],
+		"blocked": [Vector2i(0, 0), Vector2i(7, 0), Vector2i(0, 4), Vector2i(7, 4)],
 		"spawn": Vector2i(0, 2),
 		"core": Vector2i(7, 2)
 	},
@@ -30,7 +40,7 @@ const TOPOLOGY := {
 	{
 		"size": Vector2i(10, 5),
 		"elevated": [Vector2i(3, 1), Vector2i(3, 3)],
-		"blocked": [],
+		"blocked": [Vector2i(0, 0), Vector2i(9, 0), Vector2i(0, 4), Vector2i(9, 4)],
 		"spawn": Vector2i(0, 2),
 		"core": Vector2i(9, 2)
 	},
@@ -38,7 +48,7 @@ const TOPOLOGY := {
 	{
 		"size": Vector2i(10, 6),
 		"elevated": [Vector2i(2, 3)],
-		"blocked": [Vector2i(5, 2), Vector2i(5, 3)],
+		"blocked": [Vector2i(0, 0), Vector2i(9, 0), Vector2i(5, 2), Vector2i(5, 3)],
 		"spawn": Vector2i(0, 2),
 		"core": Vector2i(9, 4)
 	},
@@ -67,6 +77,8 @@ const TOPOLOGY := {
 @export var core_cell: Vector2i = Vector2i(-1, -1)
 @export var core_pivot: Vector2i = Vector2i.ZERO
 @export var core_offset: Vector2i = Vector2i.ZERO
+@export var env_prop_cells: Array[Vector2i] = []
+@export var env_prop_ids: Array[StringName] = []
 
 
 static func expects_theme(stage: StageDef) -> bool:
@@ -117,6 +129,8 @@ func tile_id(tile: StageDef.Tile, is_route: bool) -> StringName:
 		return elevated_id
 	if tile == StageDef.Tile.BLOCKED:
 		return blocked_id
+	if tile == StageDef.Tile.SPAWN or tile == StageDef.Tile.BASE:
+		return ground_id
 	if is_route:
 		return route_id
 	if tile == StageDef.Tile.GROUND:
@@ -135,11 +149,16 @@ func tile_id_at(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> StringNa
 
 
 func resolve_cell(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> Dictionary:
-	return {"tile_id": tile_id_at(cell, tile, is_route), "cadence_id": &""}
+	var resolved_id := tile_id_at(cell, tile, is_route)
+	if env_prop_cells.has(cell):
+		resolved_id = ground_id
+	return {"tile_id": resolved_id, "cadence_id": &""}
 
 
 func required_manifest_ids() -> Array[StringName]:
-	return SHARED_IDS.duplicate()
+	var ids := SHARED_IDS.duplicate()
+	ids.append_array(ENV_PROP_IDS)
+	return ids
 
 
 func validation_errors(stage: StageDef) -> PackedStringArray:
@@ -151,15 +170,18 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 	if theme_id != SHARED_THEME_ID:
 		errors.append("theme_id is not the shared Act I alpine family")
 	if approval_token != APPROVAL_TOKEN:
-		errors.append("approval token is not the approved Act I S1-S3 synthesis direction")
-	if not approval_manifest_sha256.is_empty():
-		errors.append("approval manifest hash must remain empty until final owner verdict")
-	if human_final_art:
-		errors.append("shared Act I runtime candidate must not claim human-final art")
+		errors.append("approval token is not the owner-supplied Act I tile direction")
+	if approval_manifest_sha256 != APPROVAL_MANIFEST_SHA256:
+		errors.append("approval manifest hash does not match the approved Act I V3 candidate")
+	if not human_final_art:
+		errors.append("shared Act I runtime art is not sealed human-final")
 	if surface_modulate != Color.WHITE:
 		errors.append("shared Act I surface modulation must be Color.WHITE")
-	if spawn_pivot != SHARED_ENDPOINT_PIVOT or core_pivot != SHARED_ENDPOINT_PIVOT:
-		errors.append("shared Act I endpoint pivots do not match 64x32 native overlays")
+	# core landmark is now 128x128 (Orrery); spawn stays at 64x32 overlay pivot
+	if spawn_pivot != SHARED_ENDPOINT_PIVOT:
+		errors.append("spawn pivot does not match 64x32 native overlay")
+	if core_pivot != SHARED_ENDPOINT_PIVOT and core_pivot != SHARED_CORE_PIVOT:
+		errors.append("core pivot does not match 64x32 or 128x128 landmark size")
 	var actual_ids: Array[StringName] = [
 		ground_id,
 		route_id,
@@ -175,6 +197,15 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("elevated cells and IDs must have matching lengths")
 	if blocked_cells.size() != blocked_variant_ids.size():
 		errors.append("blocked cells and IDs must have matching lengths")
+	if env_prop_cells.size() != env_prop_ids.size():
+		errors.append("environment prop cells and IDs must have matching lengths")
+	for index: int in env_prop_ids.size():
+		var prop_id := env_prop_ids[index]
+		if prop_id not in ENV_PROP_IDS:
+			errors.append("environment prop is not in the shared Act I pool: %s" % prop_id)
+		var prop_cell := env_prop_cells[index]
+		if stage != null and stage.tile_at(prop_cell) != StageDef.Tile.BLOCKED:
+			errors.append("environment prop must occupy a blocked ground-base cell: %s" % prop_cell)
 	for id: StringName in elevated_variant_ids:
 		if id != elevated_id:
 			errors.append("elevated variant is not the shared raised role: %s" % id)
