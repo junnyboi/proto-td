@@ -22,7 +22,7 @@ func test_en_us_catalog_resolves_exact_product_title() -> void:
 	var i18n := I18nScript.new()
 	assert_true(i18n.reload_catalog())
 	assert_eq(i18n.t(TITLE_KEY, TITLE_FALLBACK), TITLE_FALLBACK)
-	assert_eq(i18n.supported_locales(), PackedStringArray(["en-US"]))
+	assert_eq(i18n.supported_locales(), PackedStringArray(["en-US", "zh-CN"]))
 	assert_eq(i18n.locale(), &"en-US")
 	i18n.free()
 
@@ -44,6 +44,13 @@ func test_unsupported_and_same_locale_preserve_state_without_signal() -> void:
 	assert_signal_not_emitted(i18n, "locale_changed")
 	assert_true(i18n.set_locale(&"en-US"))
 	assert_signal_not_emitted(i18n, "locale_changed")
+	assert_true(i18n.set_locale(&"zh-CN"))
+	assert_eq(i18n.locale(), &"zh-CN")
+	assert_eq(i18n.t(&"ui.title.start", "Start"), "开始游戏")
+	assert_signal_emitted_with_parameters(i18n, "locale_changed", [&"zh-CN"])
+	assert_false(i18n.set_locale(&"fr-FR"))
+	assert_eq(i18n.locale(), &"zh-CN")
+	assert_true(i18n.set_locale(&"en-US"))
 	i18n.free()
 
 
@@ -51,17 +58,24 @@ func test_catalog_has_exact_generated_key_value_set_and_order() -> void:
 	var text := FileAccess.get_file_as_string("res://localization/en-US.json")
 	var parsed := I18nScript.parse_catalog_text(text)
 	assert_false(parsed.is_empty())
+	var zh_text := FileAccess.get_file_as_string("res://localization/zh-CN.json")
+	var zh_parsed := I18nScript.parse_catalog_text(zh_text, &"zh-CN")
+	assert_false(zh_parsed.is_empty())
 	var entries := parsed["entries"] as Dictionary
+	var zh_entries := zh_parsed["entries"] as Dictionary
 	var expected := _expected_catalog()
 	var expected_keys: Array = expected.keys()
 	expected_keys.sort()
 	assert_eq(entries.keys(), expected_keys)
-	assert_eq(entries.size(), 199)
+	assert_eq(entries.size(), 208)
+	assert_eq(zh_entries.size(), 208)
+	assert_eq(zh_entries.keys(), expected_keys)
 	for key: Variant in expected_keys:
 		assert_eq(entries[key], expected[key], "catalog value %s" % key)
 	var i18n := I18nScript.new()
 	assert_true(i18n.reload_catalog())
 	assert_eq(i18n.catalog_keys(), PackedStringArray(expected_keys))
+	assert_eq(i18n.catalog_keys(&"zh-CN"), PackedStringArray(expected_keys))
 	i18n.free()
 
 
@@ -80,6 +94,11 @@ func test_duplicate_safe_parser_rejects_every_malformed_root_and_entry_shape() -
 	]
 	for source: String in malformed:
 		assert_eq(I18nScript.parse_catalog_text(source), {}, source)
+	assert_eq(
+		I18nScript.parse_catalog_text(
+			'{"locale":"en-US","entries":{}}', &"zh-CN",
+		), {},
+	)
 
 
 func test_named_formatting_accepts_exact_types_and_rejects_every_shape_error() -> void:
@@ -150,6 +169,8 @@ func test_ui_copy_dynamic_helpers_preserve_resource_fallbacks() -> void:
 
 
 func test_every_catalog_fallback_and_formatted_codepoint_exists_in_active_font() -> void:
+	var theme := load("res://data/presentation/ui/threshold_theme.tres") as Theme
+	var font := theme.default_font
 	var expected := _expected_catalog()
 	var corpus := ""
 	for value: Variant in expected.values():
@@ -164,10 +185,52 @@ func test_every_catalog_fallback_and_formatted_codepoint_exists_in_active_font()
 			continue
 		checked[codepoint] = true
 		assert_true(
-			ThemeDB.fallback_font.has_char(codepoint),
-			"fallback font lacks U+%04X" % codepoint,
+			font.has_char(codepoint), "project font lacks U+%04X" % codepoint,
 		)
 	assert_gt(checked.size(), 40)
+	var zh_entries := JSON.parse_string(
+		FileAccess.get_file_as_string("res://localization/zh-CN.json"),
+	)["entries"] as Dictionary
+	var missing: Array[int] = []
+	for raw_value: Variant in zh_entries.values():
+		for index: int in String(raw_value).length():
+			var codepoint := String(raw_value).unicode_at(index)
+			if codepoint != 10 and not font.has_char(codepoint):
+				if not missing.has(codepoint):
+					missing.append(codepoint)
+	assert_eq(missing, [], "project font missing zh-CN catalog codepoints")
+
+
+func test_zh_cn_values_are_complete_distinct_and_placeholder_exact() -> void:
+	var en_entries := JSON.parse_string(
+		FileAccess.get_file_as_string("res://localization/en-US.json"),
+	)["entries"] as Dictionary
+	var zh_entries := JSON.parse_string(
+		FileAccess.get_file_as_string("res://localization/zh-CN.json"),
+	)["entries"] as Dictionary
+	var en_keys := _sorted_keys(en_entries)
+	assert_eq(en_entries.size(), 208)
+	assert_eq(zh_entries.size(), 208)
+	assert_eq(_sorted_keys(zh_entries), en_keys)
+	var equal_allowed := [
+		"ui.campaign.cleared_suffix", "ui.campaign.row", "ui.game_title",
+		"ui.locale.en_us", "ui.locale.zh_cn", "ui.squad.operator_card",
+	]
+	var untranslated: Array[String] = []
+	var placeholder_mismatches: Array[String] = []
+	var missing_han: Array[String] = []
+	for key: String in en_keys:
+		var english := String(en_entries[key])
+		var chinese := String(zh_entries[key])
+		if chinese == english and not equal_allowed.has(key):
+			untranslated.append(key)
+		if _placeholder_names(chinese) != _placeholder_names(english):
+			placeholder_mismatches.append(key)
+		if not equal_allowed.has(key) and not _contains_han(chinese):
+			missing_han.append(key)
+	assert_eq(untranslated, [], "zh-CN values must not silently copy English")
+	assert_eq(placeholder_mismatches, [], "zh-CN placeholders must equal English")
+	assert_eq(missing_han, [], "translated values must contain Han characters")
 
 
 func test_locale_sources_are_excluded_from_deterministic_model_surfaces() -> void:
@@ -217,6 +280,32 @@ func _expected_catalog() -> Dictionary:
 		var spell := load("res://data/spells/%s.tres" % spell_id) as SpellDef
 		expected["data.spell.%s.name" % spell_id] = spell.display_name
 	return expected
+
+
+func _sorted_keys(values: Dictionary) -> Array[String]:
+	var keys: Array[String] = []
+	for raw_key: Variant in values:
+		keys.append(String(raw_key))
+	keys.sort()
+	return keys
+
+
+func _placeholder_names(text: String) -> Array[String]:
+	var matcher := RegEx.new()
+	assert_eq(matcher.compile("\\{([A-Za-z][A-Za-z0-9_]*)\\}"), OK)
+	var names: Array[String] = []
+	for result: RegExMatch in matcher.search_all(text):
+		names.append(result.get_string(1))
+	names.sort()
+	return names
+
+
+func _contains_han(text: String) -> bool:
+	for index: int in text.length():
+		var codepoint := text.unicode_at(index)
+		if codepoint >= 0x3400 and codepoint <= 0x9FFF:
+			return true
+	return false
 
 
 func _gd_files(root_path: String) -> Array[String]:

@@ -3,11 +3,7 @@ extends BoxContainer
 
 signal locale_selected(locale_id: StringName)
 
-const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
-const AetheriaThemeType := preload("res://scripts/ui/components/aetheria_theme.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-
-var _presentation: AetheriaLabelType = null
 
 @onready var _label: Label = $LocaleLabel
 @onready var _list: ItemList = $LocaleList
@@ -15,27 +11,12 @@ var _presentation: AetheriaLabelType = null
 
 func _ready() -> void:
 	add_theme_constant_override(&"separation", 16)
-	_list.custom_minimum_size = Vector2(360.0, 72.0)
+	_list.custom_minimum_size = Vector2(360.0, 90.0)
+	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.focus_mode = Control.FOCUS_ALL
 	_list.select_mode = ItemList.SELECT_SINGLE
-	for color_name: StringName in [
-		&"font_color", &"font_hovered_color", &"font_selected_color",
-		&"font_hovered_selected_color",
-	]:
-		_list.add_theme_color_override(color_name, Color.TRANSPARENT)
-	_presentation = AetheriaLabelType.new()
-	_presentation.name = "PresentationLabel"
-	_presentation.apply_role(&"body")
-	_presentation.add_theme_color_override(
-		&"font_color", AetheriaThemeType.COLORS[&"dark_ink"],
-	)
-	_presentation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_presentation.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_presentation.clip_text = true
-	_presentation.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	_presentation.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_presentation.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_list.add_child(_presentation)
+	_list.max_columns = 2
+	_list.same_column_width = true
 	_list.item_selected.connect(_on_item_selected)
 	refresh()
 
@@ -51,18 +32,17 @@ func refresh() -> bool:
 		return false
 	_label.text = UiCopyType.text(&"ui.locale.label", "Language")
 	_list.clear()
-	var active_display := ""
 	for locale_text: String in locales:
 		var locale_id := StringName(locale_text)
 		var display := locale_text
 		if locale_id == &"en-US":
-			display = UiCopyType.text(&"ui.locale.en_us", "English (US)")
+			display = UiCopyType.text(&"ui.locale.en_us", "EN")
+		elif locale_id == &"zh-CN":
+			display = UiCopyType.text(&"ui.locale.zh_cn", "中文")
 		_list.add_item(display)
 		_list.set_item_metadata(_list.item_count - 1, locale_id)
 		if locale_id == active:
 			_list.select(_list.item_count - 1)
-			active_display = display
-	_presentation.text = active_display
 	return true
 
 

@@ -124,7 +124,8 @@ func _build_operations() -> VBoxContainer:
 	_mission = _button(
 		"MissionControlButton",
 		UiCopyType.text(&"ui.staging.mission_control", "Mission Control"),
-		"Mission", not _narrative_missing,
+		UiCopyType.text(&"ui.staging.mission_control_short", "Mission"),
+		not _narrative_missing,
 		&"primary" if not _narrative_missing else &"disabled",
 	)
 	_mission.pressed.connect(_on_mission_control)
@@ -146,35 +147,35 @@ func _build_operations() -> VBoxContainer:
 	var back := _button(
 		"BackToTitleButton",
 		UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
-		"Back", true, &"secondary",
+		UiCopyType.text(&"ui.common.back", "Back"), true, &"secondary",
 	)
 	back.pressed.connect(_on_back_to_title)
 	_operation_grid.add_child(back)
 	var training_available := _training_available()
 	for specification: Array in [
 		[
-			"BarracksButton", &"ui.staging.barracks_unavailable",
-			"Barracks — Unavailable", "Barracks",
+			"BarracksButton", &"ui.staging.barracks_unavailable", "Barracks — Unavailable",
+			&"ui.staging.barracks_short", "Barracks",
 		],
 		[
-			"RecruitButton", &"ui.staging.recruit_unavailable",
-			"Recruit — Unavailable", "Recruit",
+			"RecruitButton", &"ui.staging.recruit_unavailable", "Recruit — Unavailable",
+			&"ui.staging.recruit_short", "Recruit",
 		],
 		[
-			"ArmoryButton", &"ui.staging.armory_unavailable",
-			"Armory — Unavailable", "Armory",
+			"ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable",
+			&"ui.staging.armory_short", "Armory",
 		],
 		[
-			"MemorialButton", &"ui.staging.memorial_unavailable",
-			"Memorial — Unavailable", "Memorial",
+			"MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable",
+			&"ui.staging.memorial_short", "Memorial",
 		],
 	]:
 		_operation_grid.add_child(_button(
-			String(specification[0]),
-			UiCopyType.text(
+			String(specification[0]), UiCopyType.text(
 				StringName(specification[1]), String(specification[2]),
-			),
-			String(specification[3]), false, &"disabled",
+			), UiCopyType.text(
+				StringName(specification[3]), String(specification[4]),
+			), false, &"disabled",
 		))
 	_training = _button(
 		"TrainingButton",
@@ -182,7 +183,7 @@ func _build_operations() -> VBoxContainer:
 			&"ui.staging.training" if training_available else &"ui.staging.training_unavailable",
 			"Training" if training_available else "Training — Unavailable",
 		),
-		"Training",
+		UiCopyType.text(&"ui.staging.training_short", "Training"),
 		training_available,
 		&"primary" if training_available else &"disabled",
 	)

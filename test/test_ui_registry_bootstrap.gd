@@ -20,8 +20,8 @@ const CONTRACTS := [
 	},
 	{
 		"path": "res://scripts/ui/components/aetheria_locale_selector.gd",
-		"aliases": ["AetheriaLabelType", "AetheriaThemeType", "UiCopyType"],
-		"forbidden": ["\\bAetheriaLabel\\b", "\\bAetheriaTheme\\b", "\\bUiCopy\\b"],
+		"aliases": ["UiCopyType"],
+		"forbidden": ["\\bUiCopy\\b"],
 	},
 	{
 		"path": "res://scripts/ui/title.gd",

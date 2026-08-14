@@ -79,5 +79,7 @@ func apply_compact_action_layout() -> bool:
 		COMPACT_ACTION_MINIMUM_HEIGHT,
 	)
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	add_theme_font_size_override(&"font_size", COMPACT_ACTION_FONT_SIZE)
 	label.add_theme_font_size_override(&"font_size", COMPACT_ACTION_FONT_SIZE)
+	set_meta(&"compact_action_layout", true)
 	return true
