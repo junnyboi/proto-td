@@ -12,6 +12,7 @@ const STAGE_IDS: Array[StringName] = [
 const OPERATOR_IDS: Array[StringName] = [
 	&"caster_1", &"caster_2", &"defender_1", &"defender_2", &"guard_1",
 	&"guard_2", &"sniper_1", &"sniper_2", &"vanguard_1", &"vanguard_2",
+	&"witch_doctor_1",
 ]
 const TRAP_IDS: Array[StringName] = [&"spike_plate", &"tar_pit"]
 const SPELL_IDS: Array[StringName] = [&"bolt", &"charm"]
@@ -55,7 +56,7 @@ func test_catalog_has_exact_generated_key_value_set_and_order() -> void:
 	var expected_keys: Array = expected.keys()
 	expected_keys.sort()
 	assert_eq(entries.keys(), expected_keys)
-	assert_eq(entries.size(), 137)
+	assert_eq(entries.size(), 199)
 	for key: Variant in expected_keys:
 		assert_eq(entries[key], expected[key], "catalog value %s" % key)
 	var i18n := I18nScript.new()
@@ -198,7 +199,10 @@ func _expected_catalog() -> Dictionary:
 		expected["data.stage.%s.hint" % stage_id] = stage.intro_hint
 	for record: StageNarrativeDefType in NARRATIVE_CATALOG.records:
 		for field: StageNarrativeDefType.Field in _narrative_fields():
-			expected["data.stage.%s.narrative.%s" % [record.id, record.field_slug(field)]] = record.fallback_for(field)
+			var key := "data.stage.%s.narrative.%s" % [
+				record.id, record.field_slug(field),
+			]
+			expected[key] = record.fallback_for(field)
 	for operator_id: StringName in OPERATOR_IDS:
 		var definition := load(
 			"res://data/operators/%s.tres" % operator_id,
