@@ -89,7 +89,8 @@ func retry_save(store: CampaignSaveStore) -> Dictionary:
 			var authority: Dictionary = store._consume_commit_authority()
 			var authoritative_state: Variant = authority.get("state")
 			var valid_authority: bool = (
-				authoritative_state is CampaignState
+				authoritative_state != null
+				and authoritative_state.has_method("_validated_save_text")
 				and authoritative_state != _prospective_state
 				and authoritative_state._validated_save_text() == _prospective_save
 			)
@@ -148,7 +149,10 @@ func _finalize_capability(
 	authority: Dictionary,
 ) -> void:
 	if _pending_attempt == null:
-		if _operation == &"begin_attempt" and committed:
+		if (
+			_operation == &"begin_attempt" and committed
+			and _result.get("ticket") is CampaignBattleTicket
+		):
 			var ticket: CampaignBattleTicket = _result["ticket"]
 			var issue: Callable = authority.get("pending_issue", Callable())
 			if issue.is_valid():
@@ -164,7 +168,7 @@ func _finalize_capability(
 
 func _committed_payload(committed_state: Variant) -> Dictionary:
 	var result := _result.duplicate(true)
-	if _operation == &"begin_attempt":
+	if _operation == &"begin_attempt" and _result.get("ticket") is CampaignBattleTicket:
 		result["pending_attempt"] = _pending_attempt
 	return {
 		"status": String(COMMITTED),

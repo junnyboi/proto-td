@@ -449,6 +449,27 @@ func test_pre_mitigation_v2_bytes_upgrade_once_and_repeat_exactly() -> void:
 	assert_eq(repeated["sha256"], decoded["sha256"])
 
 
+func test_precommand_v3_bytes_upgrade_once_and_repeat_exactly() -> void:
+	var context := ContextScript.build()
+	var fresh: Dictionary = CampaignV3Codec.create_fresh(42, 1, context)["value"]
+	fresh.erase("command_receipts")
+	var legacy := CanonicalJson.text({
+		"schema": "prototype_td_campaign",
+		"version": 3,
+		"checksum": CanonicalJson.sha256_hex(fresh),
+		"data": fresh,
+	})
+	var decoded := CampaignCodec.decode_save(legacy, context)
+	assert_true(decoded["accepted"], str(decoded.get("error_code", &"")))
+	assert_eq(decoded["migrated_from_version"], 3)
+	assert_eq(decoded["data"]["command_receipts"], [])
+	assert_ne(decoded["text"], legacy)
+	var repeated := CampaignCodec.decode_save(decoded["text"], context)
+	assert_true(repeated["accepted"], str(repeated.get("error_code", &"")))
+	assert_null(repeated["migrated_from_version"])
+	assert_eq(repeated["bytes"], decoded["bytes"])
+
+
 func _resealed_ticket_forgery(
 	valid: Dictionary,
 	mutate: Callable,

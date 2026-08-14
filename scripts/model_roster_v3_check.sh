@@ -27,10 +27,10 @@ run_one() {
 run_one process_a
 run_one process_b
 cmp -s "$TMP/process_a.result" "$TMP/process_b.result"
-grep -Fx 'CAMPAIGN_V3_MIGRATED_SHA256=81beccb348423bb83e431a4a94428c24f17872754add45ae4d51aa5dd7d347da' "$TMP/process_a.result" >/dev/null
-grep -Fx 'CAMPAIGN_V3_MIGRATED_HASH=da67f175d2ae8950' "$TMP/process_a.result" >/dev/null
-grep -Fx 'CAMPAIGN_V3_FRESH_SHA256=e348483cceee4651c697f323ad4db56dce5fedcd0c33f7551a36b5f35a9aff56' "$TMP/process_a.result" >/dev/null
-grep -Fx 'CAMPAIGN_V3_FRESH_HASH=bf4a5c25be2b0efd' "$TMP/process_a.result" >/dev/null
+grep -Fx 'CAMPAIGN_V3_MIGRATED_SHA256=2c87014e626af106e514434358f3c3148a9baa1e6da7f6c88718654d8b1101d5' "$TMP/process_a.result" >/dev/null
+grep -Fx 'CAMPAIGN_V3_MIGRATED_HASH=4160b69281d05165' "$TMP/process_a.result" >/dev/null
+grep -Fx 'CAMPAIGN_V3_FRESH_SHA256=a43eb6ca96e9b5c0004aa1527caa1f023e3aaf007fc1545c95485c1760e52c3c' "$TMP/process_a.result" >/dev/null
+grep -Fx 'CAMPAIGN_V3_FRESH_HASH=b62636c0071a53c4' "$TMP/process_a.result" >/dev/null
 grep -Fx 'CAMPAIGN_V3_VECTOR_OK' "$TMP/process_a.result" >/dev/null
 
 jq -n \

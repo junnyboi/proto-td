@@ -1,9 +1,13 @@
 extends SceneTree
 
+const ContextScript := preload("res://test/fixtures/p16/campaign_v3_context.gd")
 const ROOT := "user://p16_filesystem_probe"
 const MAIN := ROOT + "/main"
 const TMP := ROOT + "/tmp"
 const BAK := ROOT + "/bak"
+const V3_SLOT := ROOT + "/campaign.json"
+const V3_TMP := ROOT + "/campaign.tmp"
+const V3_BAK := ROOT + "/campaign.bak"
 const MAGIC := "P16FS1"
 
 var _failures: Array[String] = []
@@ -53,6 +57,50 @@ func _run_all() -> void:
 	_test_rename_replace_delete()
 	_test_failed_promotion_restores_backup()
 	_test_recovery_matrix()
+	_test_v3_store_round_trip()
+
+
+func _test_v3_store_round_trip() -> void:
+	_case_ids.append("v3_store_round_trip")
+	var created := CampaignStateV3.create(42, 1, ContextScript.build())
+	_check(created["accepted"], "v3 fresh authority creates")
+	if not created["accepted"]:
+		return
+	var state: CampaignStateV3 = created["value"]
+	var store_result := CampaignSaveStore.create(
+		V3_SLOT, state.restore_factory(), CampaignFileOps.new(),
+	)
+	_check(store_result["accepted"], "v3 store creates")
+	_check(_write(V3_SLOT, state.encode_save()["text"]), "v3 seed writes")
+	var hero_id: String = state.data_copy()["heroes"][0]["hero_id"]
+	var command := state.begin_attempt("filesystem-v3", "s1", [hero_id], 42, 1)
+	_check(command["accepted"], "v3 begin command creates prospective authority")
+	if not command["accepted"]:
+		return
+	var prospective: CampaignStateV3 = (
+		(command["payload"]["mutation"] as CampaignMutation)._prospective_state
+	)
+	var store: CampaignSaveStore = store_result["value"]
+	var saved := store.save(state._validated_save_text(), prospective)
+	_check(saved["status"] == &"committed", "v3 save commits")
+	_check(_read(V3_SLOT) == prospective.encode_save()["text"], "v3 save bytes exact")
+	var reopened := CampaignSaveStore.create(
+		V3_SLOT, state.restore_factory(), CampaignFileOps.new(),
+	)
+	_check(reopened["accepted"], "v3 store reopens after process boundary")
+	var loaded := (reopened["value"] as CampaignSaveStore).load()
+	_check(loaded["accepted"], "v3 store reloads")
+	if loaded["accepted"]:
+		var restored: CampaignStateV3 = loaded["state"]
+		_check(restored.save_revision() == 2, "v3 revision survives reload")
+		_check(
+			restored.encode_save()["text"] == prospective.encode_save()["text"],
+			"v3 canonical save survives reload",
+		)
+		_check(restored.data_copy()["command_receipts"].size() == 1,
+			"v3 command ledger survives")
+	_cleanup_v3_files()
+	_check(not FileAccess.file_exists(V3_SLOT), "v3 storage cleanup completes")
 
 
 func _test_write_and_truncate() -> void:
@@ -424,6 +472,13 @@ func _snapshot() -> Dictionary:
 
 func _cleanup_files() -> void:
 	for path: String in [MAIN, TMP, BAK]:
+		if FileAccess.file_exists(path):
+			_remove(path)
+	_cleanup_v3_files()
+
+
+func _cleanup_v3_files() -> void:
+	for path: String in [V3_SLOT, V3_TMP, V3_BAK]:
 		if FileAccess.file_exists(path):
 			_remove(path)
 

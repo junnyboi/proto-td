@@ -348,7 +348,8 @@ static func _validate_current_from_anchor(
 	]:
 		if current[key] != after[key]:
 			return _reject(&"post_resolution_mutation_mismatch")
-	if not _valid_post_resolution_tickets(current, after):
+	var appended_tickets := _post_resolution_ticket_count(current, after)
+	if appended_tickets < 0:
 		return _reject(&"post_resolution_mutation_mismatch")
 	var anchored_receipts: Array = after["promotion_receipts"]
 	var current_receipts: Array = current["promotion_receipts"]
@@ -358,7 +359,8 @@ static func _validate_current_from_anchor(
 		if anchored_receipts[index] != current_receipts[index]:
 			return _reject(&"post_resolution_mutation_mismatch")
 	var added := current_receipts.size() - anchored_receipts.size()
-	if current["save_revision"] != after["save_revision"] + added:
+	var revision_delta := int(current["save_revision"]) - int(after["save_revision"])
+	if revision_delta not in [added, added + appended_tickets]:
 		return _reject(&"post_resolution_revision_mismatch")
 	var expected_heroes: Array = after["heroes"].duplicate(true)
 	for offset: int in added:
@@ -373,24 +375,24 @@ static func _validate_current_from_anchor(
 	return _accept(null)
 
 
-static func _valid_post_resolution_tickets(current: Dictionary, after: Dictionary) -> bool:
+static func _post_resolution_ticket_count(current: Dictionary, after: Dictionary) -> int:
 	var anchored: Array = after["tickets"]
 	var present: Array = current["tickets"]
 	if present.size() not in [anchored.size(), anchored.size() + 1]:
-		return false
+		return -1
 	for index: int in anchored.size():
 		if present[index] != anchored[index]:
-			return false
+			return -1
 	var appended := present.size() - anchored.size()
 	if current["next_attempt_id"] != after["next_attempt_id"] + appended:
-		return false
+		return -1
 	if appended == 0:
-		return true
+		return 0
 	var tail: Dictionary = present[-1]
-	return (
+	return 1 if (
 		tail["attempt_id"] == after["next_attempt_id"]
 		and tail["expected_save_revision"] == current["save_revision"]
-	)
+	) else -1
 
 
 static func _apply_choice(

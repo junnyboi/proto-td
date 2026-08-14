@@ -229,6 +229,8 @@ if [[ -z "$ONLY" ]]; then
 		  scripts/model_roster_check.sh
 		run_rung "R3.5-strategic-verbs" "artifacts/strategic-verbs/summary.json" 35 \
 		  scripts/strategic_verbs_check.sh
+		run_rung "R3.5-strategic-verbs-v3" "artifacts/strategic-verbs-v3/summary.json" 35 \
+		  scripts/strategic_verbs_v3_check.sh
   run_rung "R3.6-filesystem-native" "artifacts/filesystem/native.json" 35 \
     scripts/probe_filesystem.sh "$GODOT" --out=artifacts/filesystem/native.json
   run_rung "R3.7-filesystem-web" "artifacts/filesystem/web/result.json" 360 \

@@ -46,6 +46,12 @@ static func normalize_data(
 	var ordered: Dictionary = core["value"].duplicate(true)
 	ordered["resolution_anchor"] = history["value"]["anchor"]
 	ordered["last_resolution"] = history["value"]["receipt"]
+	var commands := CampaignV3CommandCodec.normalize_records(
+		data["command_receipts"], ordered, context,
+	)
+	if not commands["accepted"]:
+		return commands
+	ordered["command_receipts"] = commands["value"]
 	if ordered.keys() != data_keys:
 		return _reject(&"invalid_data_schema")
 	return _accept(ordered)

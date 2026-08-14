@@ -20,6 +20,13 @@ const DATA_KEYS := [
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
 	"offers", "heroes", "promotion_receipts", "promotion_proofs",
+	"tickets", "memorial", "resolution_anchor", "last_resolution", "command_receipts",
+]
+const PRECOMMAND_DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
+	"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
+	"offers", "heroes", "promotion_receipts", "promotion_proofs",
 	"tickets", "memorial", "resolution_anchor", "last_resolution",
 ]
 const CORE_KEYS := [
@@ -38,7 +45,7 @@ const HERO_KEYS := [
 ]
 const CONTEXT_KEYS := [
 	"legacy_context", "operator_ids", "operator_ticket_by_id", "class_rows", "class_by_id", "campaign",
-	"stage_order", "trap_ids", "spell_ids", "environment_sha256",
+	"stage_order", "stage_squad_sizes", "trap_ids", "spell_ids", "environment_sha256",
 ]
 
 
@@ -151,6 +158,10 @@ static func build_context(
 	var class_by_id := {}
 	for row: Dictionary in classes["value"]:
 		class_by_id[String(row["class_id"])] = row.duplicate(true)
+	var stage_squad_sizes := {}
+	for raw_stage: Variant in stages:
+		if raw_stage is StageDef and (raw_stage as StageDef).campaign_index >= 1:
+			stage_squad_sizes[String((raw_stage as StageDef).id)] = (raw_stage as StageDef).squad_size
 	return {
 		"legacy_context": legacy_context.duplicate(true),
 		"operator_ids": _string_set(operator_ids),
@@ -159,6 +170,7 @@ static func build_context(
 		"class_by_id": class_by_id,
 		"campaign": campaign["value"],
 		"stage_order": stages_result["value"],
+		"stage_squad_sizes": stage_squad_sizes,
 		"trap_ids": _string_set(trap_ids),
 		"spell_ids": _string_set(spell_ids),
 		"environment_sha256": environment,
@@ -217,6 +229,7 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 		"memorial": [],
 		"resolution_anchor": null,
 		"last_resolution": null,
+		"command_receipts": [],
 	}
 	return normalize_data(data, context)
 
@@ -290,6 +303,29 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 	var checksum := String(parsed["checksum"])
 	if not _is_hex(checksum, 64):
 		return _reject(&"invalid_checksum")
+	if (
+		typeof(parsed["data"]) == TYPE_DICTIONARY
+		and (parsed["data"] as Dictionary).keys() == PRECOMMAND_DATA_KEYS
+	):
+		if checksum != CanonicalJson.sha256_hex(parsed["data"]):
+			return _reject(&"checksum_mismatch")
+		if CanonicalJson.text(parsed) != source:
+			return _reject(&"noncanonical_save")
+		var upgraded: Dictionary = (parsed["data"] as Dictionary).duplicate(true)
+		upgraded["command_receipts"] = []
+		var upgraded_save := encode_save(upgraded, context)
+		if not upgraded_save["accepted"]:
+			return upgraded_save
+		return {
+			"accepted": true,
+			"error_code": &"",
+			"data": upgraded_save["value"]["data"],
+			"value": upgraded_save["value"],
+			"text": upgraded_save["text"],
+			"bytes": upgraded_save["bytes"],
+			"sha256": upgraded_save["sha256"],
+			"migrated_from_version": SAVE_VERSION,
+		}
 	var encoded_data := encode_data(parsed["data"], context)
 	if not encoded_data["accepted"]:
 		return encoded_data
@@ -398,6 +434,8 @@ static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in DATA_KEYS:
 		match key:
+			"command_receipts":
+				result[key] = []
 			"class_entitlements":
 				result[key] = _entitlements_for_stars(value["stage_stars"], context)
 			"tickets", "memorial":

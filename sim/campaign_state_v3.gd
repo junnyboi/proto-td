@@ -1,0 +1,218 @@
+class_name CampaignStateV3
+extends RefCounted
+
+## Authoritative CampaignSave v3 aggregate. Every mutator constructs a fully
+## normalized prospective state and returns a CampaignMutation; authority changes
+## only after CampaignSaveStore commits and independently restores exact bytes.
+
+var _data: Dictionary = {}
+var _context: Dictionary = {}
+var _encoded_save_cache: Dictionary = {}
+var _strategic_hash_cache: Dictionary = {}
+var _core_hash_cache: Dictionary = {}
+var _data_checksum := ""
+
+
+static func create(seed_value: int, generation: int, context: Dictionary) -> Dictionary:
+	var fresh := CampaignV3Codec.create_fresh(seed_value, generation, context)
+	return _from_normalized_result(fresh, context)
+
+
+static func restore(data: Variant, context: Dictionary) -> Dictionary:
+	var normalized := CampaignV3Codec.normalize_data(data, context)
+	return _from_normalized_result(normalized, context)
+
+
+static func restore_source(source: String, context: Dictionary) -> Dictionary:
+	var decoded := CampaignCodec.decode_save(source, context)
+	if not decoded["accepted"]:
+		return _reject(decoded["error_code"])
+	return _from_normalized_result(
+		{
+			"accepted": true,
+			"error_code": &"",
+			"value": decoded["data"],
+		},
+		context
+	)
+
+
+func campaign_uid() -> String:
+	return String(_data["campaign_uid"])
+
+
+func campaign_seed() -> int:
+	return int(_data["campaign_seed"])
+
+
+func campaign_generation() -> int:
+	return int(_data["campaign_generation"])
+
+
+func save_revision() -> int:
+	return int(_data["save_revision"])
+
+
+func next_attempt_id() -> int:
+	return int(_data["next_attempt_id"])
+
+
+func next_resolution_index() -> int:
+	return int(_data["next_resolution_index"])
+
+
+func data_copy() -> Dictionary:
+	return _data.duplicate(true)
+
+
+func encode_data() -> Dictionary:
+	return _copy_encoded(CampaignV3Codec.encode_data(_data, _context))
+
+
+func encode_save() -> Dictionary:
+	return _copy_encoded(_encoded_save_cache)
+
+
+func strategic_hash() -> Dictionary:
+	return _copy_encoded(_strategic_hash_cache)
+
+
+func core_hash() -> Dictionary:
+	return _copy_encoded(_core_hash_cache)
+
+
+func promotion_options(hero_id: Variant) -> Dictionary:
+	return CampaignV3Promotion.options(_data, _context, hero_id)
+
+
+func begin_attempt(
+	command_id: Variant,
+	stage_id: Variant,
+	hero_ids: Variant,
+	seed: Variant,
+	expected_save_revision: Variant,
+) -> Dictionary:
+	return (
+		CampaignV3Attempts
+		. begin(
+			self,
+			command_id,
+			stage_id,
+			hero_ids,
+			seed,
+			expected_save_revision,
+		)
+	)
+
+
+func resolve_attempt(
+	command_id: Variant,
+	attempt_id: Variant,
+	outcome_document: Variant,
+	expected_save_revision: Variant,
+) -> Dictionary:
+	return (
+		CampaignV3Attempts
+		. resolve(
+			self,
+			command_id,
+			attempt_id,
+			outcome_document,
+			expected_save_revision,
+		)
+	)
+
+
+func confirm_promotions(
+	command_id: Variant,
+	expected_save_revision: Variant,
+	choices: Variant,
+) -> Dictionary:
+	return (
+		CampaignV3Promotion
+		. confirm(
+			self,
+			command_id,
+			expected_save_revision,
+			choices,
+		)
+	)
+
+
+func restore_factory() -> Callable:
+	return _authority_restore_factory()
+
+
+func restored_copy_without_pending() -> Dictionary:
+	return CampaignStateV3.restore(_data, _context)
+
+
+func _authority_restore_factory() -> Callable:
+	var context := _context
+	return func(source: String) -> Dictionary:
+		return CampaignStateV3.restore_source(source, context)
+
+
+func _validated_save_text() -> String:
+	return String(_encoded_save_cache["text"])
+
+
+func _validated_hash_hex() -> String:
+	return String(_strategic_hash_cache["hex"])
+
+
+func _validated_core_hash_hex() -> String:
+	return String(_core_hash_cache["hex"])
+
+
+func _certified_data_unchanged() -> bool:
+	return CanonicalJson.sha256_hex(_data) == _data_checksum
+
+
+func _prospective_state(data: Dictionary) -> Dictionary:
+	return CampaignStateV3.restore(data, _context)
+
+
+func _command_record(command_id: String) -> Dictionary:
+	return CampaignV3CommandCodec.by_id(_data["command_receipts"], command_id)
+
+
+func _context_ref() -> Dictionary:
+	return _context
+
+
+static func _from_normalized_result(result: Dictionary, context: Dictionary) -> Dictionary:
+	if not result["accepted"]:
+		return _reject(result["error_code"])
+	var data: Dictionary = result["value"]
+	var encoded := CampaignV3Codec.encode_save(data, context)
+	var full_hash := CampaignV3Hash.of_data(data, context)
+	var core := {}
+	for key: String in CampaignV3Codec.CORE_KEYS:
+		core[key] = data[key]
+	var core_hash := CampaignV3Hash.of_core(core, context)
+	if not encoded["accepted"] or not full_hash["accepted"] or not core_hash["accepted"]:
+		return _reject(&"invalid_campaign_state")
+	var state := CampaignStateV3.new()
+	state._data = data.duplicate(true)
+	state._context = context.duplicate(true)
+	state._encoded_save_cache = encoded
+	state._strategic_hash_cache = full_hash
+	state._core_hash_cache = core_hash
+	state._data_checksum = CanonicalJson.sha256_hex(state._data)
+	return {"accepted": true, "error_code": &"", "value": state}
+
+
+static func _copy_encoded(value: Dictionary) -> Dictionary:
+	var result := value.duplicate()
+	if result.get("value") is Dictionary or result.get("value") is Array:
+		result["value"] = result["value"].duplicate(true)
+	if result.get("bytes") is PackedByteArray:
+		result["bytes"] = (result["bytes"] as PackedByteArray).duplicate()
+	if result.get("bytes") is Array:
+		result["bytes"] = (result["bytes"] as Array).duplicate()
+	return result
+
+
+static func _reject(code: StringName) -> Dictionary:
+	return {"accepted": false, "error_code": code, "value": null}

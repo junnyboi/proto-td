@@ -23,8 +23,8 @@ version="$($GODOT --headless --version)"
   echo "[filesystem-probe] expected Godot 4.7.1, got $version" >&2
   exit 2
 }
-EXPECTED_CHECKS=150
-EXPECTED_CASES='["empty","main","main_bak","main_tmp","main_bak_tmp","main_equal_divergent_sidecars","bak","tmp","bak_tmp","corrupt_main_bak","corrupt_main_tmp","all_invalid","equal_version_divergence","tmp_not_newer_than_invalid_header","tmp_same_generation_higher_revision","tmp_same_generation_lower_than_invalid_bak","invalid_main_invalid_bak_newer_tmp"]'
+EXPECTED_CHECKS=162
+EXPECTED_CASES='["empty","main","main_bak","main_tmp","main_bak_tmp","main_equal_divergent_sidecars","bak","tmp","bak_tmp","corrupt_main_bak","corrupt_main_tmp","all_invalid","equal_version_divergence","tmp_not_newer_than_invalid_header","tmp_same_generation_higher_revision","tmp_same_generation_lower_than_invalid_bak","invalid_main_invalid_bak_newer_tmp","v3_store_round_trip"]'
 
 if [[ "$MODE" == "web" ]]; then
   [[ -n "$OUT_DIR" ]] || OUT_DIR="$root/web-result"

@@ -1,7 +1,7 @@
 class_name CampaignSaveStore
 extends RefCounted
 
-## Atomic CampaignSave storage with v1 admission and canonical v2 promotion.
+## Atomic CampaignSave storage with legacy admission and canonical v2/v3 promotion.
 ## The store owns bytes and winner selection;
 ## CampaignState owns codec context through the injected restore factory.
 
@@ -46,8 +46,8 @@ static func create(
 	return {"accepted": true, "error_code": &"", "value": store}
 
 
-static func create_production(state: CampaignState) -> Dictionary:
-	if state == null or state.get_script() != CAMPAIGN_STATE_SCRIPT:
+static func create_production(state: Variant) -> Dictionary:
+	if state == null or not state.has_method("_authority_restore_factory"):
 		return {"accepted": false, "error_code": &"invalid_store_config", "value": null}
 	var created := create(
 		PRODUCTION_SLOT, state._authority_restore_factory(), CampaignFileOps.new(),
@@ -100,7 +100,7 @@ func load() -> Dictionary:
 			_consume_commit_authority()
 			return _load_reject(&"store_migration_failed")
 		var authority := _consume_commit_authority()
-		if authority.get("state") is CampaignState:
+		if _is_authority_state(authority.get("state")):
 			winner["state"] = authority["state"]
 	return {
 		"accepted": true,
@@ -342,8 +342,8 @@ func _read_candidate(path: String, source: StringName) -> Dictionary:
 		return candidate
 	candidate["header"] = _comparable_header(candidate["text"])
 	var restored: Dictionary = _restore_factory.call(candidate["text"])
-	if restored.get("accepted", false) and restored.get("value") is CampaignState:
-		var state: CampaignState = restored["value"]
+	if restored.get("accepted", false) and _is_authority_state(restored.get("value")):
+		var state: Variant = restored["value"]
 		var encoded: Dictionary = state.encode_save()
 		if encoded["accepted"]:
 			candidate["valid"] = true
@@ -424,7 +424,10 @@ static func _comparable_header(source: String) -> Variant:
 	var keys := ["schema", "version", "checksum", "data"]
 	if root.keys() != keys or root.get("schema") != CampaignCodec.SAVE_SCHEMA:
 		return null
-	if typeof(root.get("version")) != TYPE_INT or int(root["version"]) != CampaignCodec.SAVE_VERSION:
+	if (
+		typeof(root.get("version")) != TYPE_INT
+		or int(root["version"]) not in [CampaignCodec.SAVE_VERSION, CampaignCodec.RECRUIT_SAVE_VERSION]
+	):
 		return null
 	if not _is_hex(String(root.get("checksum", "")), 64):
 		return null
@@ -499,6 +502,15 @@ static func _is_hex(value: String, length: int) -> bool:
 
 static func _save_result(status: StringName, code: StringName, revision: int) -> Dictionary:
 	return {"status": status, "error_code": code, "save_revision": revision}
+
+
+static func _is_authority_state(value: Variant) -> bool:
+	return (
+		value != null
+		and value.has_method("encode_save")
+		and value.has_method("save_revision")
+		and value.has_method("_validated_save_text")
+	)
 
 
 static func _load_reject(code: StringName) -> Dictionary:
