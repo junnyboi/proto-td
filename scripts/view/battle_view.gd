@@ -382,23 +382,36 @@ func deploy_drag_ended() -> void:
 ## item 1: landing juice keys off new unit ids (fires for seam deploys too)
 func _detect_deploys() -> void:
 	for u: UnitState in model.units:
-		if _deploy_seen.has(u.id):
+		var crouch_left := int(_deploy_seen.get(u.id, -1))
+		if crouch_left == 0:
 			continue
-		_deploy_seen[u.id] = true
+		var node: Node2D = _unit_nodes.get(u.id)
+		if node == null:
+			continue
 		var local_center := IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
-		var unit_top := IsoProjection.FEET_OFFSET - UNIT_PX - HP_BAR_HEIGHT - 3.0
-		var unit_bottom := IsoProjection.FEET_OFFSET + HP_BAR_HEIGHT + 3.0
+		if crouch_left < 0:
+			crouch_left = cfg.deploy_crouch_frames
+			_juice.dust(local_center)
+			_juice.crouch(node)
+			Sfx.play("deploy")
+		var next_left := maxi(crouch_left - 1, 0)
+		_deploy_seen[u.id] = next_left
+		var t := 1.0 - float(next_left) / float(cfg.deploy_crouch_frames)
+		var presentation_scale := Vector2(1.0, 0.7).lerp(Vector2.ONE, t)
+		var body := node.get_node("Body") as ColorRect
 		var unit_rect := Rect2(
-			local_center + Vector2(-UNIT_PX * 0.5, unit_top),
-			Vector2(UNIT_PX, unit_bottom - unit_top),
+			node.position + body.position * presentation_scale,
+			body.size * presentation_scale,
 		)
+		for bar_path: NodePath in [^"HpBarBg", ^"SpBarBg"]:
+			var bar := body.get_node_or_null(bar_path) as ColorRect
+			if bar != null:
+				unit_rect = unit_rect.merge(Rect2(
+				node.position + (body.position + bar.position) * presentation_scale,
+				bar.size * presentation_scale,
+			))
 		if _map_nav.ensure_local_rect_visible(unit_rect):
 			_apply_map_transform()
-		_juice.dust(local_center)
-		var node: Node2D = _unit_nodes.get(u.id)
-		if node != null:
-			_juice.crouch(node)
-		Sfx.play("deploy")
 
 
 ## item 3: sparks key off died_at_tick — kill paths only, either faction

@@ -81,6 +81,13 @@ func ensure_local_rect_visible(local_rect: Rect2) -> bool:
 		next_pan.y += visible_rect.position.y - screen.position.y
 	elif screen.end.y > visible_rect.end.y:
 		next_pan.y -= screen.end.y - visible_rect.end.y
+	# Large admitted presentation can extend beyond terrain-owned pan bounds.
+	# Expand only toward the exact minimum correction requested by this rect.
+	var expanded_min := Vector2(
+		minf(bounds.position.x, next_pan.x), minf(bounds.position.y, next_pan.y)
+	)
+	var expanded_max := Vector2(maxf(bounds.end.x, next_pan.x), maxf(bounds.end.y, next_pan.y))
+	bounds = Rect2(expanded_min, expanded_max - expanded_min)
 	next_pan = IsoProjection.clamp_pan(next_pan, bounds)
 	var changed := not next_pan.is_equal_approx(pan)
 	pan = next_pan
