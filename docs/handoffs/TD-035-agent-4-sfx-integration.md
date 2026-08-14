@@ -1,4 +1,4 @@
-# TD-034 — Accepted SFX runtime integration
+# TD-035 — Accepted SFX runtime integration
 
 | Field | Value |
 |---|---|
@@ -50,6 +50,6 @@ The first full union STANDARD attempt is also preserved as RED: Godot crashed in
 
 ## Merge and rollback
 
-Remote master allocated TD-032 and TD-033 while this lane was verifying, so this completed lane was reallocated to TD-034 without changing code or acceptance. Union `768ed59` preserves concurrent Training, native Sky Hunter, observation, world-art, and stale-cache work and passed the full union gate. Push the feature branch normally, fast-forward local and remote master only if remote master still equals audited parent `7228f03`, then run the final master gate. Never force-push.
+Remote master allocated TD-032 and TD-033 during branch verification, then allocated TD-034 after the first union passed. This completed lane is therefore TD-035 without any source, asset, acceptance, or verified-commit rewrite. Union `768ed59` preserves Training, native Sky Hunter, observation, world-art, and stale-cache work and passed the full gate; a second reconciliation must additionally preserve TD-034 enemy damage feedback and the font-cache fallback. Push normally only after the updated exact union passes; never force-push.
 
-Rollback is `git revert` of the TD-034 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
+Rollback is `git revert` of the TD-035 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
