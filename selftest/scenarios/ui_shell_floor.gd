@@ -53,7 +53,7 @@ var _release_challenge := ""
 
 
 func run(h: SelfTestHarness) -> void:
-	h.max_frames = 2700
+	h.max_frames = 3000
 	h.expect_done()
 	_release_challenge = _parse_release_challenge()
 	_inventory = JSON.parse_string(FileAccess.get_file_as_string(INVENTORY_PATH)) as Dictionary
@@ -69,10 +69,156 @@ func run(h: SelfTestHarness) -> void:
 			for screen: StringName in SCREENS:
 				for viewport: Vector2i in VIEWPORTS:
 					await _capture_screen_state(h, screen, viewport, mode)
+	await _capture_zh_cn_screens(h)
 	_write_supplemental_report(h)
 	h.check("ui_shell_floor inventory state count", _inventory_reports.size() == 60)
 	h.check("ui_shell_floor required report fields", _reports_have_required_fields())
 	h.done()
+
+
+func _capture_zh_cn_screens(h: SelfTestHarness) -> void:
+	var viewport := Vector2i(1280, 720)
+	h.root.size = viewport
+	await h.frames(2)
+	var title := await _open_screen(h, &"title")
+	var selector := title.find_child(
+		"LocaleSelector", true, false,
+	) as AetheriaLocaleSelector
+	h.check("zh-CN title locale selector exists", selector != null)
+	if selector == null:
+		return
+	h.check("zh-CN selected through Settings seam", selector.select_locale(&"zh-CN"))
+	await h.frames(4)
+	_check_zh_cn_screen(h, title, &"title", viewport)
+	await _locale_shot(h, title, &"title", viewport)
+	for screen: StringName in [&"staging", &"campaign", &"squad", &"results"]:
+		var content := await _open_screen(h, screen)
+		_check_zh_cn_screen(h, content, screen, viewport)
+		await _locale_shot(h, content, screen, viewport)
+		if screen in [&"staging", &"squad"]:
+			await _locale_actions_shot(h, content, screen, viewport)
+	h.check("zh-CN sweep restores English locale", I18n.set_locale(&"en-US"))
+
+
+func _check_zh_cn_screen(
+		h: SelfTestHarness, content: Control, screen: StringName, viewport: Vector2i,
+		) -> void:
+	h.check("%s zh-CN content exists" % screen, content != null)
+	if content == null:
+		return
+	var probes := {
+		&"title": [&"StartButton", &"ui.title.start", "Start"],
+		&"staging": [&"CompanyCommandHeading", &"ui.staging.command_heading", "COMPANY 33 COMMAND"],
+		&"campaign": [&"CampaignHeading", &"ui.campaign.heading", "Campaign"],
+		&"squad": [&"StartBattle", &"ui.squad.start_battle", "Start Battle"],
+		&"results": [&"ConsequenceHeading", &"ui.results.consequence", "Consequence"],
+	}
+	var probe := probes[screen] as Array
+	var control := content.find_child(String(probe[0]), true, false) as Control
+	var expected := I18n.t(StringName(probe[1]), String(probe[2]))
+	var actual := _logical_text(control) if control != null else ""
+	h.check(
+		"%s zh-CN primary copy exact" % screen,
+		control != null and actual == expected and _contains_han(actual),
+		"actual=%s expected=%s" % [actual, expected],
+	)
+	if screen == &"title":
+		var item_list := content.find_child("LocaleList", true, false) as ItemList
+		h.check(
+			"title zh-CN locale identity exact",
+			item_list.get_selected_items() == PackedInt32Array([1])
+			and item_list.get_item_text(1) == "中文",
+			"selected=%s item=%s" % [
+				item_list.get_selected_items(), item_list.get_item_text(1),
+			],
+		)
+	elif screen == &"squad":
+		var hint := content.find_child("TacticalHint", true, false) as Label
+		h.check(
+			"squad zh-CN tactical hint localized",
+			hint != null and _contains_han(hint.text) and not hint.text.contains("Tactical hint"),
+			hint.text if hint != null else "missing",
+		)
+	elif screen == &"results":
+		var consequence := content.find_child("ConsequenceLine", true, false) as Label
+		h.check(
+			"results zh-CN consequence localized",
+			consequence != null and _contains_han(consequence.text),
+			consequence.text if consequence != null else "missing",
+		)
+	var shell: AetheriaScreenShell = null
+	for node: Node in _all_nodes(content):
+		if node is AetheriaScreenShell:
+			shell = node as AetheriaScreenShell
+			break
+	h.check("%s zh-CN shell exists" % screen, shell != null)
+	if shell != null:
+		h.check(
+			"%s zh-CN plate inside viewport" % screen,
+			Rect2(Vector2.ZERO, Vector2(viewport)).encloses(
+				shell.reading_plate().get_global_rect(),
+			), str(shell.reading_plate().get_global_rect()),
+		)
+
+
+func _locale_shot(
+		h: SelfTestHarness, _content: Control, screen: StringName, viewport: Vector2i,
+		) -> void:
+	await h.frames(4)
+	var image := await h.shot_grab("ui_%s_1280x720_zh_cn" % screen)
+	if image != null:
+		h.check(
+			"%s zh-CN shot geometry" % screen, image.get_size() == viewport,
+			"image=%s viewport=%s" % [image.get_size(), viewport],
+		)
+
+
+func _locale_actions_shot(
+		h: SelfTestHarness, content: Control, screen: StringName, viewport: Vector2i,
+		) -> void:
+	var scroll_name := &"StagingScroll" if screen == &"staging" else &"SquadScroll"
+	var scroll := content.find_child(String(scroll_name), true, false) as ScrollContainer
+	h.check("%s zh-CN action scroll exists" % screen, scroll != null)
+	if scroll == null:
+		return
+	var button_names := (
+		[
+			&"MissionControlButton", &"BackToTitleButton", &"BarracksButton",
+			&"RecruitButton", &"TrainingButton", &"ArmoryButton", &"MemorialButton",
+		]
+		if screen == &"staging" else [&"BackButton", &"StartBattle"]
+	)
+	var missing_han: Array[String] = []
+	for button_name: StringName in button_names:
+		var button := content.find_child(String(button_name), true, false) as Button
+		var presented := (
+			button.get_node_or_null("PresentationLabel") as Label if button != null else null
+		)
+		if presented == null or not _contains_han(presented.text):
+			missing_han.append(String(button_name))
+	h.check(
+		"%s zh-CN compact actions localized" % screen,
+		missing_han.is_empty(), "missing_han=%s" % missing_han,
+	)
+	var original_scroll := scroll.scroll_vertical
+	scroll.scroll_vertical = ceili(_scroll_max_offset(scroll.get_v_scroll_bar()))
+	await h.frames(4)
+	var image := await h.shot_grab("ui_%s_1280x720_zh_cn_actions" % screen)
+	if image != null:
+		h.check(
+			"%s zh-CN action shot geometry" % screen, image.get_size() == viewport,
+			"image=%s viewport=%s" % [image.get_size(), viewport],
+		)
+	scroll.scroll_vertical = original_scroll
+	await h.frames(2)
+
+
+func _contains_han(text: String) -> bool:
+	for index: int in text.length():
+		var codepoint := text.unicode_at(index)
+		if codepoint >= 0x3400 and codepoint <= 0x9FFF:
+			return true
+	return false
 
 
 func _parse_release_challenge() -> String:
@@ -287,9 +433,13 @@ func _open_screen(h: SelfTestHarness, screen: StringName) -> Control:
 	var content := game.get("content") as Control
 	if screen == &"results" and content != null:
 		var consequence := content.find_child("ConsequenceLine", true, false) as Label
+		var expected := I18n.t(
+			&"data.stage.s1.narrative.clear_debrief",
+			"Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended.",
+		)
 		h.check(
 			"ui_shell_floor exact S1 clear consequence",
-			consequence != null and consequence.text == "Holding the line gives investigators time to recover a damaged evacuation seal. The pumps stay in service, and Company 33 confirms that the old order never ended.",
+			consequence != null and consequence.text == expected,
 			consequence.text if consequence != null else "missing",
 		)
 	return content
@@ -614,51 +764,57 @@ func _locale_evidence(content: Control, mode: StringName) -> Dictionary:
 			"selected_fill": "", "contrast": 0.0, "geometry_mismatches": [], "ok": true,
 		}
 	var item_list := selector.get_node("LocaleList") as ItemList
-	var presented := item_list.get_node("PresentationLabel") as AetheriaLabel
-	var metadata: Variant = item_list.get_item_metadata(0) if item_list.item_count > 0 else null
+	var metadata: Array[Variant] = []
+	var item_texts: Array[String] = []
+	for index: int in item_list.item_count:
+		metadata.append(item_list.get_item_metadata(index))
+		item_texts.append(item_list.get_item_text(index))
 	var selected: Array[int] = []
 	for index: int in item_list.get_selected_items():
 		selected.append(index)
-	if item_list.item_count != 1:
+	if item_list.item_count != 2:
 		mismatches.append("item_count")
-	if item_list.item_count > 0 and item_list.get_item_text(0) != "English (US)":
+	var expected_item_texts := ["EN", "中文"]
+	if mode == &"expand135":
+		expected_item_texts = [_expanded_text("EN"), _expanded_text("中文")]
+	if item_texts != expected_item_texts:
 		mismatches.append("item_text")
-	if typeof(metadata) != TYPE_STRING_NAME or metadata != &"en-US":
+	if metadata.size() != 2 or typeof(metadata[0]) != TYPE_STRING_NAME or (
+			metadata[0] != &"en-US" or typeof(metadata[1]) != TYPE_STRING_NAME
+			or metadata[1] != &"zh-CN"
+		):
 		mismatches.append("metadata")
 	if selected != [0]:
 		mismatches.append("selected_indices")
-	if item_list.custom_minimum_size.x < 360.0 or item_list.custom_minimum_size.y < 72.0:
+	if item_list.custom_minimum_size.x < 360.0 or item_list.custom_minimum_size.y < 90.0:
 		mismatches.append("minimum_target")
 	if item_list.size.x < 44.0 or item_list.size.y < 44.0:
 		mismatches.append("visible_target")
-	if not item_list.get_global_rect().encloses(presented.get_global_rect()):
-		mismatches.append("overlay_enclosure")
-	var expected_presentation := (
-		_expanded_text("English (US)") if mode == &"expand135" else "English (US)"
-	)
-	if presented.text != expected_presentation:
-		mismatches.append("overlay_text")
-	if presented.mouse_filter != Control.MOUSE_FILTER_IGNORE:
-		mismatches.append("overlay_mouse_filter")
-	if presented.autowrap_mode != TextServer.AUTOWRAP_ARBITRARY or not presented.clip_text:
-		mismatches.append("overlay_wrap_clip")
-	var overlay_color := presented.get_theme_color(&"font_color")
+	if item_list.max_columns != 2 or not item_list.same_column_width:
+		mismatches.append("native_columns")
+	if item_list.get_node_or_null("PresentationLabel") != null:
+		mismatches.append("legacy_overlay")
+	var selected_font_color := item_list.get_theme_color(&"font_selected_color")
 	var expected_color := AetheriaTheme.COLORS[&"dark_ink"] as Color
-	if overlay_color != expected_color:
-		mismatches.append("overlay_color")
+	if selected_font_color != expected_color:
+		mismatches.append("selected_font_color")
 	var selected_style := item_list.get_theme_stylebox(&"selected") as StyleBoxFlat
 	var selected_fill := selected_style.bg_color if selected_style != null else Color.TRANSPARENT
-	var contrast := _contrast_ratio(overlay_color, selected_fill)
+	var contrast := _contrast_ratio(selected_font_color, selected_fill)
 	if selected_fill != AetheriaTheme.COLORS[&"selected"] or contrast < 4.5:
 		mismatches.append("overlay_contrast")
 	return {
 		"item_count": item_list.item_count,
-		"item_text": item_list.get_item_text(0) if item_list.item_count > 0 else "",
-		"metadata_type": type_string(typeof(metadata)),
-		"metadata": String(metadata) if metadata != null else "",
+		"item_text": "|".join(item_texts),
+		"metadata_type": "|".join(metadata.map(
+			func(value: Variant) -> String: return type_string(typeof(value))
+		)),
+		"metadata": "|".join(metadata.map(
+			func(value: Variant) -> String: return String(value)
+		)),
 		"selected_indices": selected,
 		"focus_identity": String(item_list.name),
-		"overlay_color": overlay_color.to_html(false),
+		"overlay_color": selected_font_color.to_html(false),
 		"selected_fill": selected_fill.to_html(false),
 		"contrast": contrast,
 		"geometry_mismatches": mismatches,
@@ -779,8 +935,10 @@ func _expand_visible_text(root: Node) -> void:
 			continue
 		if node is AetheriaLocaleSelector:
 			var locale_list := node.get_node("LocaleList") as ItemList
-			var locale_label := locale_list.get_node("PresentationLabel") as Label
-			locale_label.text = _expanded_text(locale_list.get_item_text(0))
+			for index: int in locale_list.item_count:
+				locale_list.set_item_text(
+					index, _expanded_text(locale_list.get_item_text(index)),
+				)
 		elif node is AetheriaButton:
 			var button := node as AetheriaButton
 			var presented := button.get_node_or_null("PresentationLabel") as Label
@@ -1060,7 +1218,11 @@ func _row_issues(node: Control, row: Dictionary, targets: bool) -> Array[String]
 		issues.append("variation=%s" % node.theme_type_variation)
 	if _active_mode == &"text200" and BASE_FONT_SIZES.has(node.theme_type_variation):
 		var expected_size := int(BASE_FONT_SIZES[node.theme_type_variation]) * 2
-		var actual_size := node.get_theme_font_size(&"font_size")
+		var font_owner := node
+		if node is AetheriaButton and bool(node.get_meta(&"compact_action_layout", false)):
+			expected_size = AetheriaButton.COMPACT_ACTION_FONT_SIZE * 2
+			font_owner = node.get_node("PresentationLabel") as Control
+		var actual_size := font_owner.get_theme_font_size(&"font_size")
 		if actual_size != expected_size:
 			issues.append("font_size=%d expected=%d" % [actual_size, expected_size])
 	var owner := _ancestor_named(node, StringName(row["owner"]))
@@ -1196,19 +1358,23 @@ func _nearest_scroll(node: Node) -> ScrollContainer:
 
 
 func _item_list_text_fits(item_list: ItemList) -> bool:
-	var required := _item_list_required_width(item_list)
-	if required <= item_list.size.x:
-		return true
-	var presented := item_list.get_node_or_null("PresentationLabel") as Label
-	if presented == null or presented.text.is_empty():
-		return false
-	var line_count := ceili(required / item_list.size.x)
 	var font := item_list.get_theme_font(&"font")
 	var font_size := item_list.get_theme_font_size(&"font_size")
-	return font.get_height(font_size) * line_count + 32.0 <= item_list.size.y
+	for index: int in item_list.item_count:
+		var text_width := font.get_string_size(
+			item_list.get_item_text(index), HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size,
+		).x
+		if text_width + 32.0 > item_list.get_item_rect(index).size.x:
+			return false
+	return true
 
 
 func _item_list_required_width(item_list: ItemList) -> float:
+	var columns := mini(maxi(item_list.max_columns, 1), maxi(item_list.item_count, 1))
+	return _item_list_item_required_width(item_list) * columns
+
+
+func _item_list_item_required_width(item_list: ItemList) -> float:
 	var font := item_list.get_theme_font(&"font")
 	var font_size := item_list.get_theme_font_size(&"font_size")
 	var required := 0.0

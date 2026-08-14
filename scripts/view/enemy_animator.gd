@@ -10,6 +10,8 @@ const LOOP_FRAME_COUNT := FRAME_COUNT - 1
 const WALK_FPS := 12.0
 const BLEND_FRAMES := 6
 const BODY_PX := 64.0
+const EXPERIMENTAL_BODY_PX := 48.0
+const EXPERIMENTAL_PREFIX := "experimental_salvage_"
 const LEGACY_ENEMY_PX := 40.0
 const LEGACY_AERIAL_PX := 24.0
 const LEGACY_SPRITE_SCALE := 2
@@ -34,10 +36,26 @@ const BASIC_ENEMIES: Array[StringName] = [
 	&"drone",
 	&"spellcaster",
 ]
+const DIRECTIONAL_ENEMIES: Array[StringName] = [
+	&"grunt",
+	&"runner",
+	&"heavy",
+	&"drone",
+	&"spellcaster",
+	&"mini_boss",
+]
 
 
 static func uses_grunt(def_id: StringName) -> bool:
 	return BASIC_ENEMIES.has(def_id)
+
+
+static func uses_directional_animation(def_id: StringName) -> bool:
+	return DIRECTIONAL_ENEMIES.has(def_id)
+
+
+static func uses_experimental_state(def_id: StringName, state: StringName) -> bool:
+	return uses_directional_animation(def_id) and (def_id != &"grunt" or state == &"attack")
 
 
 static func direction_from_tangent(tangent: Vector2i, reverse := false) -> StringName:
@@ -91,6 +109,16 @@ static func animation_id(state: StringName, direction: StringName, charmed := fa
 	return StringName("grunt_anim_%s_%s%s" % [state, direction, suffix])
 
 
+static func experimental_animation_id(
+	def_id: StringName, state: StringName, direction: StringName
+) -> StringName:
+	return StringName("%s%s_%s_%s" % [EXPERIMENTAL_PREFIX, def_id, state, direction])
+
+
+static func is_experimental_id(animation: StringName) -> bool:
+	return String(animation).begins_with(EXPERIMENTAL_PREFIX)
+
+
 static func faction_palette_changed(old_id: StringName, new_id: StringName) -> bool:
 	return String(old_id).ends_with("_charmed") != String(new_id).ends_with("_charmed")
 
@@ -110,6 +138,8 @@ static func animation_id_for(enemy: EnemyState, battle: BattleModel) -> StringNa
 		battle.path_for(enemy.path_idx), enemy.progress_units, charmed
 	)
 	var state := &"attack" if is_attacking(enemy) else &"walk"
+	if not charmed and uses_experimental_state(enemy.def_id, state):
+		return experimental_animation_id(enemy.def_id, state, direction)
 	return animation_id(state, direction, charmed)
 
 
@@ -125,18 +155,22 @@ static func make_body(enemy: EnemyState, battle: BattleModel, definitions: Dicti
 	var body := ColorRect.new()
 	body.name = "Enemy%d" % enemy.id
 	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var basic := uses_grunt(enemy.def_id)
+	var directional := uses_directional_animation(enemy.def_id)
 	var sprite_id := (
-		animation_id_for(enemy, battle) if basic else legacy_sprite_id(enemy, definitions)
+		animation_id_for(enemy, battle) if directional else legacy_sprite_id(enemy, definitions)
 	)
 	var texture := Art.texture(sprite_id, 0)
 	var body_px := LEGACY_AERIAL_PX if enemy.aerial else LEGACY_ENEMY_PX
 	if texture != null:
 		body.color = Color(0.0, 0.0, 0.0, 0.0)
-		body_px = BODY_PX if basic else float(texture.get_width() * LEGACY_SPRITE_SCALE)
+		body_px = (
+			EXPERIMENTAL_BODY_PX
+			if directional
+			else float(texture.get_width() * LEGACY_SPRITE_SCALE)
+		)
 		body.size = Vector2.ONE * body_px
 		body.add_child(_texture_rect("Sprite", texture, body.size))
-		if basic:
+		if directional:
 			var blend := _texture_rect("BlendSprite", null, body.size)
 			blend.visible = false
 			body.add_child(blend)
@@ -180,12 +214,15 @@ static func is_attacking(enemy: EnemyState) -> bool:
 
 
 static func frame_for(enemy: EnemyState, sprite_id: StringName, seconds: float) -> int:
+	var frame_count := Art.frame_count(sprite_id)
 	if String(sprite_id).contains("_attack_"):
-		return attack_frame(enemy.atk_counter, enemy.atk_interval_ticks)
+		return attack_frame(enemy.atk_counter, enemy.atk_interval_ticks, frame_count)
 	var animation_fps := Art.fps(sprite_id)
 	if animation_fps <= 0.0:
 		animation_fps = WALK_FPS
-	return walk_frame(seconds, animation_fps, Art.frame_count(sprite_id), enemy.id)
+	if is_experimental_id(sprite_id):
+		return posmod(floori(maxf(seconds, 0.0) * animation_fps) + enemy.id, maxi(1, frame_count))
+	return walk_frame(seconds, animation_fps, frame_count, enemy.id)
 
 
 static func refresh(
@@ -202,7 +239,7 @@ static func refresh(
 		if enemy.faction == EnemyState.Faction.CHARMED:
 			body.color = CHARMED_COLOR
 		return
-	if not uses_grunt(enemy.def_id):
+	if not uses_directional_animation(enemy.def_id):
 		var legacy_id := legacy_sprite_id(enemy, definitions)
 		var legacy_frame := 0
 		if Art.frame_count(legacy_id) > 1:

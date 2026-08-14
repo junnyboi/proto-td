@@ -5,11 +5,14 @@
     "binary_sha256": "32f8d7596c4b41185512b1c49d69f2da3be018fd784a53e349fa92a98a97bcde"
   },
   "font": {
-    "provider": "ThemeDB.fallback_font",
-    "runtime_class": "FontFile",
+    "provider": "FontVariation: ThemeDB.fallback_font primary plus ProtosSansSC-Subset.otf fallback",
+    "runtime_class": "FontVariation",
     "resource_path": "",
-    "custom_fallbacks": [],
-    "glyph_coverage": "Every Unicode codepoint in the exact catalog values, English fallbacks, and representative formatted strings must return true from ThemeDB.fallback_font.has_char(codepoint)."
+    "base_font": "ThemeDB.fallback_font",
+    "custom_fallbacks": [
+      "res://assets/fonts/ProtosSansSC-Subset.otf"
+    ],
+    "glyph_coverage": "Every Unicode codepoint in both exact catalogs, English fallbacks, and representative formatted strings must return true from the composed Theme default font."
   },
   "tokens": {
     "colors": {
@@ -662,7 +665,7 @@
     "class_name": "AetheriaTheme",
     "resource": "res://data/presentation/ui/threshold_theme.tres",
     "material": "res://data/presentation/ui/threshold_material.tres",
-    "default_font": "ThemeDB.fallback_font",
+    "default_font": "FontVariation(ThemeDB.fallback_font + res://assets/fonts/ProtosSansSC-Subset.otf)",
     "default_font_size": 44,
     "button_constants": {
       "outline_size": 0,
@@ -1283,7 +1286,7 @@
       "methods": {
         "apply_role": "(StringName)->bool; unknown returns false and preserves prior role/variation",
         "set_presentation_text": "(String logical_text, String rendered_text)->bool; preserves exact logical text in Button.text for automation/copy parity, hides built-in glyph paint without removing semantics, creates or updates one mouse-ignored AuiBodyLabel child named PresentationLabel, constrains that child to the Button rect with arbitrary wrapping and clipping, and rejects empty arguments",
-        "apply_compact_action_layout": "()->bool; requires PresentationLabel, preserves at least 44px width, sets an exact 80px logical minimum with vertical shrink, permits only the observed 80-81px GridContainer rendered allocation, sets a 34px visible label, and returns false without mutating a button that lacks semantic presentation text"
+        "apply_compact_action_layout": "()->bool; requires PresentationLabel, preserves at least 44px width, sets an exact 80px logical minimum with vertical shrink, permits only the observed 80-81px GridContainer rendered allocation, sets both hidden logical and visible label metrics to 34px, marks compact_action_layout metadata only after success, and returns false without mutating a button that lacks semantic presentation text"
       },
       "signals": [],
       "defaults": {
@@ -1394,7 +1397,7 @@
       ],
       "properties": {},
       "methods": {
-        "refresh": "()->bool; false only when supported locale list is empty or active locale is absent; selects the exact active locale row and mirrors its full localized display through one mouse-ignored wrapped AuiBodyLabel named LocaleList/PresentationLabel while retaining logical ItemList item text and metadata",
+        "refresh": "()->bool; false only when supported locale list is empty or active locale is absent; renders exact ordered EN/en-US and 中文/zh-CN native ItemList rows and selects the exact active locale row while retaining logical text and StringName metadata",
         "select_locale": "(StringName)->bool; delegates to I18n.set_locale and emits only on accepted change",
         "set_vertical_layout": "(bool)->void; switches between horizontal and vertical child flow without changing locale items, active selection, or focus identity"
       },
@@ -1404,26 +1407,27 @@
       "defaults": {
         "minimum_each_interactive_target": [
           360,
-          72
+          90
         ],
         "locale_list_type": "ItemList",
         "selection_mode": "SELECT_SINGLE",
+        "max_columns": 2,
+        "same_column_width": true,
+        "size_flags_horizontal": "SIZE_EXPAND_FILL",
         "vertical": false
       },
-      "runtime_semantic_overlay": {
-        "path": "LocaleList/PresentationLabel",
-        "class_name": "AetheriaLabel",
-        "theme_variation": "AuiBodyLabel",
-        "font_token": "dark_ink",
+      "native_locale_rows": {
+        "paths": [
+          "LocaleList[0]",
+          "LocaleList[1]"
+        ],
+        "selected_font_token": "dark_ink",
+        "normal_font_token": "body",
         "selected_fill_token": "selected",
         "contrast_pair": "dark_on_selected_normal",
         "minimum_contrast": 4.5,
-        "mouse_filter": "MOUSE_FILTER_IGNORE",
-        "autowrap_mode": "AUTOWRAP_ARBITRARY",
-        "clip_text": true,
-        "geometry": "full rect of LocaleList and enclosed by LocaleList global rect",
-        "text": "exact active ItemList item text",
-        "logical_identity": "LocaleList retains exact item text, StringName metadata, sole selected index, focus ownership, and minimum target"
+        "geometry": "two equal native columns inside the LocaleList target",
+        "logical_identity": "LocaleList retains both exact item texts, StringName metadata, one selected index, focus ownership, and minimum target"
       }
     }
   ],
