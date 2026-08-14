@@ -1,4 +1,4 @@
-# TD-035 — Accepted SFX runtime integration
+# TD-036 — Accepted SFX runtime integration
 
 | Field | Value |
 |---|---|
@@ -57,6 +57,6 @@ After TD-034 enemy-damage and font-cache work landed, the second union exposed t
 
 ## Merge and rollback
 
-Remote master allocated TD-032 and TD-033 during branch verification, then TD-034 after the first union passed. This lane is TD-035 without any source, asset, or acceptance rewrite. Candidate `85c6d33` preserves Training, native Sky Hunter, observation, world art, enemy damage, font fallback, and stale-cache work and passed the full gate. Push normally only if remote master still equals audited parent `1db9986`; never force-push.
+Remote master allocated TD-032/TD-033 during branch verification, TD-034 after the first union, and TD-035 after the cache-bootstrap diagnosis. This SFX lane is therefore TD-036 without any source, asset, or acceptance rewrite. Candidate `85c6d33` passed its full gate; final reconciliation must prefer remote's canonical equivalent cache fixes, preserve the stricter cache probe and remaining operator animations, and retain only complementary scratch-import stabilization. Never force-push.
 
-Rollback is `git revert` of the TD-035 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
+Rollback is `git revert` of the TD-036 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. Cache/bootstrap fixes now have canonical remote ownership and should be preserved independently of an SFX rollback.
