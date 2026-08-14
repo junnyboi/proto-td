@@ -296,8 +296,8 @@ func _try_s3_grid() -> void:
 		return
 	print(
 		(
-				"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
-				+ "s1_squad=ready s1_results=ready s1=ready "
+			"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
+			+ "s1_squad=ready s1_results=ready s1=ready "
 			+ (
 				"s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
 				% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]

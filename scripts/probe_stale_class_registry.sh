@@ -4,6 +4,7 @@ set -euo pipefail
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT/scripts/godot_import_profile.sh"
 OLD_CACHE_COMMIT="${OLD_CACHE_COMMIT:-7babf28}"
 UI_PROBE_SCRIPT="res://tools/probes/stale_class_registry_boot.gd"
 PROMOTION_PROBE_SCRIPT="res://tools/probes/promotion_cache_boot.gd"
@@ -21,6 +22,8 @@ current_commit="$(git rev-parse HEAD)"
 tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
 old_tree="$tmp_root/old"
 current_tree="$tmp_root/current"
+import_config="$tmp_root/editor-config"
+protos_write_single_threaded_import_profile "$import_config"
 cleanup() {
 	git -C "$ROOT" worktree remove --force "$old_tree" >/dev/null 2>&1 || true
 	git -C "$ROOT" worktree remove --force "$current_tree" >/dev/null 2>&1 || true
@@ -29,7 +32,8 @@ cleanup() {
 trap cleanup EXIT
 
 git worktree add --detach "$old_tree" "$OLD_CACHE_COMMIT" >/dev/null
-timeout 240s "$GODOT" --headless --path "$old_tree" --import >"$tmp_root/old-import.log" 2>&1
+XDG_CONFIG_HOME="$import_config" timeout 240s "$GODOT" --headless --recovery-mode \
+	--path "$old_tree" --import >"$tmp_root/old-import.log" 2>&1
 old_cache="$old_tree/.godot/global_script_class_cache.cfg"
 [[ -s "$old_cache" ]] || { echo '[stale-class-registry] old UI cache missing' >&2; exit 1; }
 if grep -Eq "$NEW_UI_CLASSES" "$old_cache"; then
@@ -38,7 +42,8 @@ if grep -Eq "$NEW_UI_CLASSES" "$old_cache"; then
 fi
 
 git worktree add --detach "$current_tree" "$current_commit" >/dev/null
-timeout 240s "$GODOT" --headless --path "$current_tree" --import \
+XDG_CONFIG_HOME="$import_config" timeout 240s "$GODOT" --headless --recovery-mode \
+	--path "$current_tree" --import \
 	>"$tmp_root/current-import.log" 2>&1
 current_cache="$current_tree/.godot/global_script_class_cache.cfg"
 current_cache_full="$tmp_root/current-cache-full.cfg"

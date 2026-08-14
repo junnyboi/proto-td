@@ -5,6 +5,7 @@ const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.g
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
 const ENEMY_DAMAGE_FEEDBACK_SCRIPT := preload("res://scripts/view/enemy_damage_feedback.gd")
+const SKILL_READY_FEEDBACK_SCRIPT := preload("res://scripts/view/skill_ready_feedback.gd")
 const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.gd")
 const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
@@ -59,6 +60,7 @@ var _tracer_lines: Dictionary = {}
 var _tracer_seen_tick: Dictionary = {}
 var _tracer_frames_left: Dictionary = {}
 var _skill_seen_tick: Dictionary = {}
+var _skill_ready_feedback: RefCounted = SKILL_READY_FEEDBACK_SCRIPT.new()
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _continue_btn: Button = null
@@ -404,10 +406,15 @@ func _detect_deploys() -> void:
 		for bar_path: NodePath in [^"HpBarBg", ^"SpBarBg"]:
 			var bar := body.get_node_or_null(bar_path) as ColorRect
 			if bar != null:
-				unit_rect = unit_rect.merge(Rect2(
-				node.position + (body.position + bar.position) * presentation_scale,
-				bar.size * presentation_scale,
-			))
+				unit_rect = (
+					unit_rect
+					. merge(
+						Rect2(
+							node.position + (body.position + bar.position) * presentation_scale,
+							bar.size * presentation_scale,
+						)
+					)
+				)
 		if _map_nav.ensure_local_rect_visible(unit_rect):
 			_apply_map_transform()
 
@@ -793,7 +800,7 @@ func _project_units() -> void:
 			var body := (_unit_nodes[u.id] as Node2D).get_node("Body") as ColorRect
 			_refresh_unit_sprite(u, body)
 			_update_hp_bar(body, body.size.x, u.hp, u.hp_max)
-			_update_sp_bar(body, u)
+			_skill_ready_feedback.update(body, u, SP_BAR_FILL, SP_FULL_FLASH)
 		_detect_skill_trigger(u)
 
 
@@ -824,20 +831,6 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var tex := Art.texture(def.sprite_id, frame)
 	if tex != null and sprite.texture != tex:
 		sprite.texture = tex
-
-
-## SP pip fills toward cost and flashes while ready.
-func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
-	if u.sp_cost <= 0:
-		return
-	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
-	fill.size.x = body.size.x * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
-	# readiness from the verb's own validator (rule 7, P14)
-	if u.is_skill_ready():
-		var blink := (Engine.get_process_frames() / 8) % 2 == 0
-		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
-	else:
-		fill.color = SP_BAR_FILL
 
 
 ## Skill trigger flashes the portrait, bursts at the unit, and plays its sting.
