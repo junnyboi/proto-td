@@ -1,6 +1,11 @@
 class_name CampaignInvariants
 extends RefCounted
 
+const CampaignPromotionHistoryType := preload("res://sim/campaign_promotion_history.gd")
+const CampaignHashType := preload("res://sim/campaign_hash.gd")
+const CampaignCodecType := preload("res://sim/campaign_codec.gd")
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CanonicalJsonType := preload("res://sim/canonical_json.gd")
 const STARTERS := [&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1"]
 const INITIAL_MARKS := 120
 const U63_MAX := 9_223_372_036_854_775_807
@@ -89,7 +94,7 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	var events := _validate_global_events(data)
 	if not events["accepted"]:
 		return events
-	var promotions := CampaignPromotionHistory.validate(data, context)
+	var promotions := CampaignPromotionHistoryType.validate(data, context)
 	if not promotions["accepted"]:
 		return promotions
 	return _validate_latest_receipt(data, context, latest_deaths)
@@ -354,8 +359,8 @@ static func _validate_latest_receipt(
 		return _reject(&"resolution_anchor_transition_mismatch")
 	if int(after_core["marks"]) != int(receipt["marks_after"]):
 		return _reject(&"resolution_anchor_transition_mismatch")
-	var anchored_before := CampaignHash._of_normalized_core(before_core)
-	var anchored_after := CampaignHash._of_normalized_core(after_core)
+	var anchored_before := CampaignHashType._of_normalized_core(before_core)
+	var anchored_after := CampaignHashType._of_normalized_core(after_core)
 	if not anchored_before["accepted"] or not anchored_after["accepted"]:
 		return _reject(&"resolution_anchor_hash_mismatch")
 	if anchored_before["hex"] != anchor["strategic_body_hash_before"]:
@@ -497,7 +502,7 @@ static func _validate_current_from_anchor(
 
 static func _core_snapshot(data: Dictionary) -> Dictionary:
 	var snapshot := {}
-	for key: String in CampaignCodec.CORE_KEYS:
+	for key: String in CampaignCodecType.CORE_KEYS:
 		snapshot[key] = data[key]
 	return snapshot
 
@@ -528,7 +533,7 @@ static func _reverse_latest(data: Dictionary, receipt: Dictionary) -> Dictionary
 		if receipt["dead_hero_ids"].has(hero["hero_id"]):
 			hero["life_status"] = "ready"
 			hero["death"] = null
-	if not CampaignProgression.reverse_xp(before["heroes"], receipt["xp_awards"]):
+	if not CampaignProgressionType.reverse_xp(before["heroes"], receipt["xp_awards"]):
 		return {}
 	if int(receipt["stars_before"]) == 0:
 		before["stage_stars"] = before["stage_stars"].filter(
@@ -560,7 +565,7 @@ static func _same_set(left: Array, right: Array[String]) -> bool:
 
 
 static func _source_key(stage_id: String, operator_id: String) -> String:
-	return CanonicalJson.text([stage_id, operator_id])
+	return CanonicalJsonType.text([stage_id, operator_id])
 
 
 static func _accept() -> Dictionary:

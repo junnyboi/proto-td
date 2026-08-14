@@ -6,6 +6,10 @@ const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snap
 const SaveUpgradeScript := preload("res://sim/campaign_save_upgrade.gd")
 const CanonicalJsonType := preload("res://sim/canonical_json.gd")
 const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CampaignHeroCodecType := preload("res://sim/campaign_hero_codec.gd")
+const HeroIdentityType := preload("res://sim/hero_identity.gd")
+const HeroNamesType := preload("res://sim/hero_names.gd")
+const CAMPAIGN_INVARIANTS_PATH := "res://sim/campaign_invariants.gd"
 const PromotionRulesResource := preload("res://data/progression/mage_advanced_v1.tres")
 const SAVE_SCHEMA := "prototype_td_campaign"
 const LEGACY_SAVE_VERSION := 1
@@ -538,7 +542,7 @@ static func _normalize_offers(value: Variant) -> Dictionary:
 		out.append(ordered)
 	return _accept(out)
 static func _normalize_heroes(value: Variant) -> Dictionary:
-	return CampaignHeroCodec.normalize_heroes(value)
+	return CampaignHeroCodecType.normalize_heroes(value)
 static func _normalize_manifest(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
 		return _reject(&"invalid_manifest")
@@ -677,9 +681,10 @@ static func _validate_data_invariants(data: Dictionary, context: Dictionary) -> 
 	var receipt := _validate_receipt_links(data, context)
 	if not receipt["accepted"]:
 		return receipt
-	return CampaignInvariants.validate(data, context)
+	var invariants: Variant = load(CAMPAIGN_INVARIANTS_PATH)
+	return invariants.validate(data, context)
 static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictionary) -> Dictionary:
-	var expected_uid := HeroIdentity.campaign_uid(
+	var expected_uid := HeroIdentityType.campaign_uid(
 		int(data["campaign_seed"]), int(data["campaign_generation"]),
 	)
 	if data["campaign_uid"] != expected_uid:
@@ -689,7 +694,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 		var hero: Dictionary = data["heroes"][position]
 		if int(hero["recruitment_index"]) != position:
 			return _reject(&"recruitment_history_gap")
-		var allocated := HeroIdentity.allocate_hero_id(
+		var allocated := HeroIdentityType.allocate_hero_id(
 			int(data["campaign_seed"]), int(data["campaign_generation"]), position,
 			func(candidate: String) -> bool: return allocated_ids.has(candidate),
 		)
@@ -705,7 +710,8 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 	]:
 		if not result["accepted"]:
 			return result
-	var expected_marks := CampaignInvariants.INITIAL_MARKS
+	var invariants: Variant = load(CAMPAIGN_INVARIANTS_PATH)
+	var expected_marks: int = invariants.INITIAL_MARKS
 	for offer: Dictionary in data["offers"]:
 		if offer["consumed"]:
 			expected_marks -= int(offer["cost"])
@@ -714,7 +720,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 	)
 
 static func _validate_root_links(data: Dictionary) -> Dictionary:
-	var expected_uid := HeroIdentity.campaign_uid(
+	var expected_uid := HeroIdentityType.campaign_uid(
 		int(data["campaign_seed"]),
 		int(data["campaign_generation"]),
 	)
@@ -725,7 +731,7 @@ static func _validate_root_links(data: Dictionary) -> Dictionary:
 		var hero: Dictionary = data["heroes"][position]
 		if int(hero["recruitment_index"]) != position:
 			return _reject(&"recruitment_history_gap")
-		var allocated := HeroIdentity.allocate_hero_id(
+		var allocated := HeroIdentityType.allocate_hero_id(
 			int(data["campaign_seed"]),
 			int(data["campaign_generation"]),
 			int(hero["recruitment_index"]),
@@ -801,13 +807,13 @@ static func _validate_hero_context(data: Dictionary, context: Dictionary) -> Dic
 			or not context["operator_ids"].has(String(hero["identity_portrait_id"]))
 		):
 			return _reject(&"unknown_operator")
-		if int(hero["name_version"]) != HeroNames.VERSION:
+		if int(hero["name_version"]) != HeroNamesType.VERSION:
 			return _reject(&"unsupported_name_version")
 		if not _valid_source_pair(hero, context):
 			return _reject(&"invalid_hero_source")
-		if not CampaignHeroCodec.valid_callsign(hero["custom_callsign"]):
+		if not CampaignHeroCodecType.valid_callsign(hero["custom_callsign"]):
 			return _reject(&"invalid_callsign")
-		var display := CampaignHeroCodec.display_callsign(hero)
+		var display := CampaignHeroCodecType.display_callsign(hero)
 		if not display["accepted"]:
 			return display
 		var folded := String(display["value"]).to_lower()

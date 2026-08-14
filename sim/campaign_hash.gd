@@ -4,6 +4,8 @@ extends RefCounted
 const CampaignCodecType := preload("res://sim/campaign_codec.gd")
 const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
 const CanonicalJsonType := preload("res://sim/canonical_json.gd")
+const HeroIdentityType := preload("res://sim/hero_identity.gd")
+const HeroNamesType := preload("res://sim/hero_names.gd")
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const VERSION := 2
 const FNV_OFFSET := -3750763034362895579
@@ -92,7 +94,7 @@ static func _bytes_of_normalized(
 
 
 static func format_hex(bits: int) -> String:
-	return HeroIdentity.format_u64_hex(bits)
+	return HeroIdentityType.format_u64_hex(bits)
 
 
 static func _hash(
@@ -669,7 +671,7 @@ static func _derive_rewards_and_heroes(
 	for reward: Dictionary in authored:
 		var hero_id: Variant = null
 		if reward["kind"] == "operator":
-			var allocated := HeroIdentity.allocate_hero_id(
+			var allocated := HeroIdentityType.allocate_hero_id(
 				int(before["campaign_seed"]), int(before["campaign_generation"]),
 				recruitment_index, func(candidate: String) -> bool: return taken.has(candidate),
 			)
@@ -685,7 +687,7 @@ static func _derive_rewards_and_heroes(
 				"recruited_after_resolution_index": resolution["resolution_index"],
 				"recruit_source": "reward",
 				"source_id": outcome["stage_id"],
-				"name_version": HeroNames.VERSION,
+				"name_version": HeroNamesType.VERSION,
 				"custom_callsign": null,
 				"life_status": "ready",
 				"death": null,

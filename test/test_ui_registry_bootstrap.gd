@@ -70,15 +70,53 @@ const SIMULATION_CONTRACTS := [
 	},
 	{
 		"path": "res://sim/campaign_codec.gd",
-		"aliases": ["CanonicalJsonType", "CampaignProgressionType"],
-		"forbidden": ["\\bCanonicalJson\\b", "\\bCampaignProgression\\b"],
+		"aliases": [
+			"CanonicalJsonType", "CampaignProgressionType", "CampaignHeroCodecType",
+			"HeroIdentityType", "HeroNamesType",
+		],
+		"forbidden": [
+			"\\bCanonicalJson\\b", "\\bCampaignProgression\\b", "\\bCampaignHeroCodec\\b",
+			"\\bHeroIdentity\\b", "\\bHeroNames\\b", "\\bCampaignInvariants\\.",
+		],
 	},
 	{
 		"path": "res://sim/campaign_hash.gd",
-		"aliases": ["CampaignCodecType", "CampaignProgressionType", "CanonicalJsonType"],
+		"aliases": [
+			"CampaignCodecType", "CampaignProgressionType", "CanonicalJsonType",
+			"HeroIdentityType", "HeroNamesType",
+		],
 		"forbidden": [
 			"\\bCampaignCodec\\.", "\\bCampaignProgression\\.", "\\bCanonicalJson\\.",
-			"\\bCampaignHash\\.",
+			"\\bCampaignHash\\.", "\\bHeroIdentity\\.", "\\bHeroNames\\.",
+		],
+	},
+	{
+		"path": "res://sim/campaign_hero_codec.gd",
+		"aliases": ["HeroIdentityType", "HeroNamesType", "CampaignProgressionType"],
+		"forbidden": [
+			"\\bHeroIdentity\\.", "\\bHeroNames\\.", "\\bCampaignProgression\\.",
+		],
+	},
+	{
+		"path": "res://sim/hero_names.gd",
+		"aliases": ["HeroIdentityType", "HeroNamesV1Type"],
+		"forbidden": ["\\bHeroIdentity\\.", "\\bHeroNamesV1\\."],
+	},
+	{
+		"path": "res://sim/campaign_promotion_history.gd",
+		"aliases": ["CampaignHashType", "CampaignProgressionType"],
+		"forbidden": ["\\bCampaignHash\\.", "\\bCampaignProgression\\."],
+	},
+	{
+		"path": "res://sim/campaign_invariants.gd",
+		"aliases": [
+			"CampaignPromotionHistoryType", "CampaignHashType", "CampaignCodecType",
+			"CampaignProgressionType", "CanonicalJsonType",
+		],
+		"forbidden": [
+			"\\bCampaignPromotionHistory\\.", "\\bCampaignHash\\.",
+			"\\bCampaignCodec\\.", "\\bCampaignProgression\\.",
+			"\\bCanonicalJson\\.",
 		],
 	},
 ]
@@ -128,3 +166,8 @@ func test_training_promotion_dependencies_preload_stale_cache_helpers() -> void:
 			var expression := RegEx.new()
 			assert_eq(expression.compile(String(raw_pattern)), OK, path)
 			assert_null(expression.search(source), "%s still uses %s" % [path, raw_pattern])
+	var codec_source := FileAccess.get_file_as_string("res://sim/campaign_codec.gd")
+	assert_true(codec_source.contains(
+		'const CAMPAIGN_INVARIANTS_PATH := "res://sim/campaign_invariants.gd"',
+	))
+	assert_true(codec_source.contains("load(CAMPAIGN_INVARIANTS_PATH)"))
