@@ -5,7 +5,6 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OLD_CACHE_COMMIT="${OLD_CACHE_COMMIT:-7babf28}"
-CAMPAIGN_CACHE_COMMIT="${CAMPAIGN_CACHE_COMMIT:-7025ceaf5120f8863ebbfc7c4ef776b6bbe226ee}"
 UI_PROBE_SCRIPT="res://tools/probes/stale_class_registry_boot.gd"
 PROMOTION_PROBE_SCRIPT="res://tools/probes/promotion_cache_boot.gd"
 NEW_UI_CLASSES='MusicCatalog|StageArtTheme|StageNarrative(Def|Catalog)|UiCopy|UiMaterialTier|Aetheria(Button|Label|LocaleSelector|Panel|ScreenShell|Theme)'
@@ -21,11 +20,9 @@ current_commit="$(git rev-parse HEAD)"
 
 tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
 old_tree="$tmp_root/old"
-campaign_cache_tree="$tmp_root/campaign-cache"
 current_tree="$tmp_root/current"
 cleanup() {
 	git -C "$ROOT" worktree remove --force "$old_tree" >/dev/null 2>&1 || true
-	git -C "$ROOT" worktree remove --force "$campaign_cache_tree" >/dev/null 2>&1 || true
 	git -C "$ROOT" worktree remove --force "$current_tree" >/dev/null 2>&1 || true
 	rm -rf "$tmp_root"
 }
@@ -40,27 +37,13 @@ if grep -Eq "$NEW_UI_CLASSES" "$old_cache"; then
 	exit 1
 fi
 
-git worktree add --detach "$campaign_cache_tree" "$CAMPAIGN_CACHE_COMMIT" >/dev/null
-timeout 240s "$GODOT" --headless --path "$campaign_cache_tree" --import \
-	>"$tmp_root/campaign-cache-import.log" 2>&1
-campaign_cache="$campaign_cache_tree/.godot/global_script_class_cache.cfg"
-[[ -s "$campaign_cache" ]] || {
-	echo '[stale-class-registry] pre-progression campaign cache missing' >&2
-	exit 1
-}
-for class_name in CampaignCodec CampaignHash CanonicalJson; do
-	grep -q "$class_name" "$campaign_cache"
-done
-if grep -q 'CampaignProgression' "$campaign_cache"; then
-	echo '[stale-class-registry] pre-progression cache knows CampaignProgression' >&2
-	exit 1
-fi
-
 git worktree add --detach "$current_tree" "$current_commit" >/dev/null
 timeout 240s "$GODOT" --headless --path "$current_tree" --import \
 	>"$tmp_root/current-import.log" 2>&1
 current_cache="$current_tree/.godot/global_script_class_cache.cfg"
+current_cache_full="$tmp_root/current-cache-full.cfg"
 [[ -s "$current_cache" ]] || { echo '[stale-class-registry] current cache missing' >&2; exit 1; }
+cp "$current_cache" "$current_cache_full"
 for class_name in \
 	MusicCatalog StageArtTheme StageNarrativeDef StageNarrativeCatalog \
 	UiCopy UiMaterialTier \
@@ -68,7 +51,7 @@ for class_name in \
 	AetheriaPanel AetheriaScreenShell AetheriaTheme \
 	CampaignProgression TrainingScreen
 do
-	grep -q "$class_name" "$current_cache"
+	grep -q "$class_name" "$current_cache_full"
 done
 font_import="$current_tree/assets/fonts/ProtosSansSC-Subset.otf.import"
 font_cache_path="$(awk -F'"' '/^path=/{print $2; exit}' "$font_import")"
@@ -98,7 +81,17 @@ grep -q '^\[STALE-CLASS-REGISTRY\] PASS ' "$tmp_root/ui-boot.log"
 grep -q 'title=ready staging=ready s1_squad=ready s1_results=ready s1=ready s2_children=55 s3_children=64 s2_backdrops=0 s3_backdrops=0' \
 	"$tmp_root/ui-boot.log"
 
-cp "$campaign_cache" "$current_cache"
+cp "$current_cache_full" "$current_cache"
+perl -0pi -e 's/\}, \{\n"base": &"RefCounted",\n"class": &"CampaignProgression",\n"icon": "",\n"is_abstract": false,\n"is_tool": false,\n"language": &"GDScript",\n"path": "res:\/\/sim\/campaign_progression\.gd"\n\}, \{/\}, \{/' \
+	"$current_cache"
+if grep -q 'CampaignProgression' "$current_cache"; then
+	echo '[stale-class-registry] failed to remove CampaignProgression cache entry' >&2
+	exit 1
+fi
+grep '^"class":' "$current_cache_full" | grep -v 'CampaignProgression' \
+	>"$tmp_root/expected-classes.txt"
+grep '^"class":' "$current_cache" >"$tmp_root/actual-classes.txt"
+cmp "$tmp_root/expected-classes.txt" "$tmp_root/actual-classes.txt"
 set +e
 timeout 120s "$GODOT" --headless --fixed-fps 60 --path "$current_tree" \
 	-s "$PROMOTION_PROBE_SCRIPT" >"$tmp_root/promotion-boot.log" 2>&1
@@ -113,5 +106,5 @@ fi
 grep -q '^\[PROMOTION-CACHE-BOOT\] PASS training=ready promotion=ready$' \
 	"$tmp_root/promotion-boot.log"
 
-printf '[stale-class-registry] PASS ui-cache=%s campaign-cache=%s current=%s fontdata=absent\n' \
-	"$OLD_CACHE_COMMIT" "$CAMPAIGN_CACHE_COMMIT" "$current_commit"
+printf '[stale-class-registry] PASS ui-cache=%s promotion-cache=current-minus-CampaignProgression current=%s fontdata=absent\n' \
+	"$OLD_CACHE_COMMIT" "$current_commit"
