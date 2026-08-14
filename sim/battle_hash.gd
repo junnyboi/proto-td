@@ -74,6 +74,10 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, e.died_at_tick)
 	for t: TrapState in m.traps:
 		_append_int(bytes, t.last_trigger_tick)
+	# TD-034 append-only extension: preserve every prior canonical byte.
+	for e: EnemyState in m.enemies:
+		_append_int(bytes, e.damage_stagger_until_tick)
+		_append_int(bytes, e.last_damage_tick)
 	return _fnv1a64(bytes)
 
 

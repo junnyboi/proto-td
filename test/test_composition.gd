@@ -12,10 +12,19 @@ const CONFIG_PATH := "res://data/config/game.tres"
 const STAGE_LANE := "res://data/stages/test_lane.tres"
 const STAGE_DRONE := "res://data/stages/test_drone.tres"
 const ENEMY_IDS: Array[StringName] = [
-	&"grunt", &"runner", &"heavy", &"drone", &"spellcaster", &"mini_boss",
+	&"grunt",
+	&"runner",
+	&"heavy",
+	&"drone",
+	&"spellcaster",
+	&"mini_boss",
 ]
 const OP_IDS: Array[StringName] = [
-	&"vanguard_1", &"defender_1", &"defender_2", &"sniper_1", &"caster_1",
+	&"vanguard_1",
+	&"defender_1",
+	&"defender_2",
+	&"sniper_1",
+	&"caster_1",
 ]
 
 const RIGHT := int(UnitState.Facing.RIGHT)
@@ -106,7 +115,8 @@ func test_aerial_bypass_never_blocked() -> void:
 ## clear. Deploy at 150: grunt (spawn 30) is at 3_999_960, drone (spawn 60)
 ## at 3_600_000 — both in the 4x3 range from (2,1) facing RIGHT (cells
 ## x3..6, y0..2). Hits at 150/180/210 kill the 30 hp drone at 210; the grunt
-## takes one fallback hit at 240 and leaks at 30 + 211 = 241.
+## takes one fallback hit at 240, freezes through 247, resumes at 248, and leaks
+## at 249 instead of the unstaggered 241.
 func test_sniper_anti_air_priority_battle() -> void:
 	var waves: Array[Dictionary] = [
 		{"tick": 30, "enemy_id": &"grunt", "path_idx": 0},
@@ -123,7 +133,10 @@ func test_sniper_anti_air_priority_battle() -> void:
 	assert_false(model.enemies[1].alive)
 	model.step(242 - model.tick)
 	assert_eq(model.enemies[0].hp, 30, "one fallback ground hit at 240")
-	assert_eq(model.leaked, 1, "grunt leaks at 241")
+	assert_eq(model.leaked, 0, "damage stagger prevents the old tick-241 leak")
+	assert_eq(model.result, BattleModel.Result.RUNNING)
+	model.step(249 - model.tick)
+	assert_eq(model.leaked, 1, "grunt leaks exactly eight ticks later at 249")
 	assert_eq(model.result, BattleModel.Result.CLEAR)
 
 
@@ -280,9 +293,10 @@ func test_determinism_oracle_class_heavy() -> void:
 	]
 	var runs: Array = []
 	for run_i: int in 2:
-		var stage := ResourceLoader.load(
-			STAGE_LANE, "", ResourceLoader.CACHE_MODE_IGNORE
-		).duplicate(true) as StageDef
+		var stage := (
+			ResourceLoader.load(STAGE_LANE, "", ResourceLoader.CACHE_MODE_IGNORE).duplicate(true)
+			as StageDef
+		)
 		stage.waves = waves
 		var config := ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
 		var enemy_defs: Dictionary = {}

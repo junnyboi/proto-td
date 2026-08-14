@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-034 — Add enemy damage flash and deterministic stagger
+
+- Status: in_progress
+- Owner: AGENT 9
+- Branch: `agent-9/enemy-damage-feedback`
+- Base: `master` at `49686474b85f2c2abe626d9a3c6b48f26364ed78`
+- Dependencies: TD-030 enemy animation projection; no external lane
+- Owned files: `sim/enemy_state.gd`, `sim/enemy_damage.gd`, `sim/enemy_damage.gd.uid`, `sim/battle_model.gd`, `sim/battle_hash.gd`, `data/game_config.gd`, `data/config/game.tres`, `data/juice_config.gd`, `data/juice_config.tres`, `scripts/view/battle_view.gd`, `scripts/view/enemy_animator.gd`, `scripts/view/enemy_damage_feedback.gd`, `scripts/view/enemy_damage_feedback.gd.uid`, `playtests/replays/v1/expectations.json`, `test/test_damage_stagger.gd`, `test/test_damage_stagger.gd.uid`, `test/test_hash_paranoia.gd`, `test/test_enemy_animator.gd`, `test/test_juice_fields.gd`, `test/test_composition.gd`, `test/test_witch_doctor.gd`, `selftest/scenarios/enemy_damage_feedback.gd`, `selftest/scenarios/enemy_damage_feedback.gd.uid`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-034-agent-9-enemy-damage-feedback.md`
+- Do not touch: damage values, targeting, cooldowns, stage/enemy/operator definitions, simulation tick rate, `FEATURES.json`, `scripts/verify.sh`, thresholds, audio, unrelated assets or UI
+- Acceptance: every positive `EnemyState` damage path records one hash-covered damage tick and an eight-tick (266.7 ms at 30 Hz) max-extending stagger; hostile and charmed movement plus rendered animation/direction blend pause through ticks T..T+7 and resume at T+8 while attack cadence remains unchanged; each record triggers one white-to-red sprite flash that restores neutral modulation without altering HP bars or outcomes beyond the requested movement pause
+- Required evidence: focused damage/hash/animator GUT, fresh headless and windowed `enemy_damage_feedback` scenario with white/red/restored/resumed proof, cross-process replay identity, Stage 1 playtest bot, and one clean repository STANDARD gate
+- Last update: 2026-08-14
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
