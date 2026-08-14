@@ -162,7 +162,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "f0ab96b6ae7fc3252a28d98a6a5fb09881e301a4f1a69129f3fbc2236a88acd2",
+"provenance_sha256": "7efb8d802e852cf8ac043d5828cccd6938e1d561ca2ef7069e49b89123ac775e",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_ne_charmed": {
@@ -178,7 +178,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_ne_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "0eb147caf80fbd41633fe523de9537744abd6be6578c0a332838874af8fdd9fe",
+"provenance_sha256": "b6e52050ad6fdd33e517ffac8715f0247b60c4a6f5e8442ccb2f76a2e7b9dd76",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_nw": {
@@ -194,7 +194,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "60d8606ec71ce4bb423a77aa9c4d43ce8c3a0f6a3d60a97cb111c50d2e358361",
+"provenance_sha256": "215d2d714fd59ae3ffff71dc984acbf41071cba24e32640460fdbc88f24bc6a6",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_nw_charmed": {
@@ -210,7 +210,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_nw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "aa1c458d166c36d376d67c68b7fac807fc5eea520870ffd75d50c68f201c6993",
+"provenance_sha256": "8e41c83775c19275a4525a81c16f8e9017fb69f0a51c00ab7a0608b7dc928dd8",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_se": {
@@ -226,7 +226,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "8ef9a4a58dc11c468ec2198c1070fe83d6f7840348fe8897e3513b2173e05c28",
+"provenance_sha256": "c18a2b9835b0d46aa852dea3667f336f03f9820e521324137f60033e84045f22",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_se_charmed": {
@@ -242,7 +242,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_se_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "a42e70fdb8a688bf9a8a867777fcea7bdb439c786dfc5b22631f48f41d11beef",
+"provenance_sha256": "9d69e495b391fa0aac77fa7702a25bae3897536d11531680c0814d96c95bda40",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_sw": {
@@ -258,7 +258,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "1f57474e18e89e626d25611a44850182deab5e0dbf15270f2e6b5574540eabe5",
+"provenance_sha256": "cc9e9fb2fd498542d6c5db77fb05cba93d30662922fe23561b52be1a2ec69721",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_attack_sw_charmed": {
@@ -274,7 +274,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_attack_sw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "6c416792a7138c0bebe4bb8d55ccc93da145685455447ae37089984113112023",
+"provenance_sha256": "eaa0d165b7ee68f24d4be393b378780a3bae64176f95137f1ec0d7881ba555e1",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_ne": {
@@ -290,7 +290,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "79f020c225aca311e6d42141b187386c8b385ebf206a0fb2daa5d68fd6ec72b7",
+"provenance_sha256": "c2238d4bba29b9eeec6ab8b64cf8f17beda6a404fda338ab501cadaca09ae8b4",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_ne_charmed": {
@@ -306,7 +306,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_ne_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "070fd02b754139f81bab53e028aa35f175236a6a3a4b85f708120b909c4fa683",
+"provenance_sha256": "393cd4327452a7534a0b887277e5d388d19ccf8913c945c5eb875e273610a680",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_nw": {
@@ -322,7 +322,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "9ded91b441a6e99b5d66d2039244989eaf682a84f0e500222c707099dae820c0",
+"provenance_sha256": "e347c21f7038fc75e70af6ce854d855c480dbbcf82a0e25720edbcc8f68d97a3",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_nw_charmed": {
@@ -338,7 +338,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_nw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "d16f9f5fe7ad9e837ae3c90e45c2bbbd88c85b2e01bae80f45b3aa763f3da584",
+"provenance_sha256": "5c6d8d6cad1b7c2ecd099a6a12111e88beafd0da945d0d005cd871e1bcf7eee2",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_se": {
@@ -354,7 +354,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "6e3a5551bd36568bf476c8a2a836b241754e8527ba0e8dc2b1e13b38fa7c223e",
+"provenance_sha256": "1d87b17889d04da87ba1e6569df6773a8af3bbba42ea1065730daeb3b566c078",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_se_charmed": {
@@ -370,7 +370,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_se_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "dfe49e90ae16d8d77452af3ac10da7b977603920f7ebffa4aea8dd9e2bc43b7e",
+"provenance_sha256": "0aafa29e60fd1c1d775269ed6ace98432297926cb48e0c54657714688bbf6b25",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_sw": {
@@ -386,7 +386,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "2745117d8fd80719fede17a57f4e9333740ee363422079664f2f46b966fb9384",
+"provenance_sha256": "3e91168aa69004dad968ae98a68ecd27d9c1618a3b9a5c188228b1cea9e6cfa9",
 "size": Vector2i(256, 256)
 },
 &"grunt_anim_walk_sw_charmed": {
@@ -402,7 +402,7 @@ entries = {
 "pattern": "res://assets/sprites/grunt_anim_walk_sw_charmed.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_sha256": "e0642b1a1964da62de09bbf38305d4fb5bd456c6638174b729820a262b2ba46c",
+"provenance_sha256": "3f7e61e5625b2a06b26f2b300f3328f30d6769e17339ba0e5925c2f9ca10b97b",
 "size": Vector2i(256, 256)
 },
 &"grunt_charmed": {
