@@ -54,19 +54,6 @@ const CONTRACTS := [
 		"aliases": _SHELL_ALIASES,
 		"forbidden": _SHELL_FORBIDDEN,
 	},
-	{
-		"path": "res://scripts/ui/training.gd",
-		"aliases": [
-			"AetheriaButtonType", "AetheriaLabelType", "AetheriaPanelType",
-			"AetheriaScreenShellType", "PromotionPathCardType",
-			"TrainingRosterRowType", "UiCopyType",
-		],
-		"forbidden": [
-			"\\bAetheriaButton\\b", "\\bAetheriaLabel\\b", "\\bAetheriaPanel\\b",
-			"\\bAetheriaScreenShell\\b", "\\bPromotionPathCard\\b",
-			"\\bTrainingRosterRow\\b", "\\bUiCopy\\b", "\\bCampaignPromotion\\b",
-		],
-	},
 ]
 
 

@@ -16,6 +16,7 @@ extends Control
 ## never a copy).
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
+const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
 
 const FONT_SIZE := 32
 const BAR_HEIGHT := 88.0
@@ -55,6 +56,8 @@ var _retreat_chip: Button = null
 var _retreat_unit_id: int = -1
 var _heal_source_unit_id: int = -1
 var _heal_cursor: Polygon2D = null
+var _selected_unit_id: int = -1
+var _selection_ring: Node2D = null
 
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
@@ -104,6 +107,7 @@ func relayout() -> void:
 		_layout_facing_buttons(_pending_cell)
 	if _heal_source_unit_id >= 0:
 		_show_heal_highlights()
+	_update_selection_ring()
 
 
 func _process(_delta: float) -> void:
@@ -118,6 +122,7 @@ func _process(_delta: float) -> void:
 	# changes so granted operators get slots
 	if _slots.size() != model.squad.size():
 		_rebuild_slots()
+	_update_selection_ring()
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
 		slot.disabled = not model.is_deployable(op_id)
@@ -261,6 +266,11 @@ func _build_overlays() -> void:
 	_retreat_chip.visible = false
 	_retreat_chip.pressed.connect(_confirm_retreat)
 	add_child(_retreat_chip)
+	_selection_ring = SELECTION_RING_SCRIPT.new()
+	_selection_ring.name = "SelectionRing"
+	_selection_ring.visible = false
+	_selection_ring.z_index = -1
+	add_child(_selection_ring)
 
 
 ## Footprints are origin-centered face diamonds (P12.2) sized by the live
@@ -371,7 +381,9 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 		var btn: Button = _facing_buttons[facing]
 		var slot: Vector2i = spec["slot"]
 		btn.size = button_size
-		btn.position = cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
+		btn.position = (
+			cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
+		)
 
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
@@ -403,8 +415,10 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		_hide_retreat_chip()
 		return
 	if unit == null:
+		_select_unit(-1)
 		_hide_retreat_chip()
 		return
+	_select_unit(unit.id)
 	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
 	# its skill; the retreat chip only opens while the skill is not ready.
 	# Readiness comes from the verb's own validator (rule 7, P14).
@@ -417,14 +431,38 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		return
 	_retreat_unit_id = unit.id
 	var center: Vector2 = view.call("cell_center", cell)
-	_retreat_chip.position = center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)
+	_retreat_chip.position = (
+		center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)
+	)
 	_retreat_chip.visible = true
 
 
 func _confirm_retreat() -> void:
 	if _retreat_unit_id >= 0:
 		model.apply_action([&"retreat", _retreat_unit_id])
+		_select_unit(-1)
 	_hide_retreat_chip()
+
+
+func _select_unit(unit_id: int) -> void:
+	_selected_unit_id = unit_id
+	_update_selection_ring()
+
+
+func _update_selection_ring() -> void:
+	if _selection_ring == null or model == null or view == null:
+		return
+	if _selected_unit_id < 0:
+		_selection_ring.visible = false
+		return
+	var unit := model.unit_by_id(_selected_unit_id)
+	if unit == null or not unit.alive:
+		_selected_unit_id = -1
+		_selection_ring.visible = false
+		return
+	_selection_ring.position = view.call("cell_center", unit.cell)
+	_selection_ring.scale = Vector2.ONE * float(view.call("grid_scale"))
+	_selection_ring.visible = true
 
 
 func _hide_retreat_chip() -> void:
@@ -458,8 +496,7 @@ func _update_heal_hover() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	var target := model.alive_unit_at(cell)
 	var valid := (
-		target != null
-		and HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id)
+		target != null and HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id)
 	)
 	_heal_cursor.color = HEAL_VALID_COLOR if valid else INVALID_COLOR
 	_heal_cursor.position = view.call("cell_center", cell)

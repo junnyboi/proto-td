@@ -1,5 +1,10 @@
 class_name CampaignCodec
 extends RefCounted
+const CampaignHeroCodec := preload("res://sim/campaign_hero_codec.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNames := preload("res://sim/hero_names.gd")
 const PromotionReceiptCodecScript := preload("res://sim/campaign_promotion_receipt_codec.gd")
 const PromotionProofCodecScript := preload("res://sim/campaign_promotion_proof_codec.gd")
 const PromotionSnapshotCodecScript := preload("res://sim/campaign_promotion_snapshot_codec.gd")
@@ -675,7 +680,7 @@ static func _validate_data_invariants(data: Dictionary, context: Dictionary) -> 
 	var receipt := _validate_receipt_links(data, context)
 	if not receipt["accepted"]:
 		return receipt
-	return CampaignInvariants.validate(data, context)
+	return _campaign_invariants().validate(data, context)
 static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictionary) -> Dictionary:
 	var expected_uid := HeroIdentity.campaign_uid(
 		int(data["campaign_seed"]), int(data["campaign_generation"]),
@@ -703,7 +708,7 @@ static func _validate_core_snapshot_invariants(data: Dictionary, context: Dictio
 	]:
 		if not result["accepted"]:
 			return result
-	var expected_marks := CampaignInvariants.INITIAL_MARKS
+	var expected_marks: int = _campaign_invariants().INITIAL_MARKS
 	for offer: Dictionary in data["offers"]:
 		if offer["consumed"]:
 			expected_marks -= int(offer["cost"])
@@ -948,6 +953,9 @@ static func _encoded(value: Variant) -> Dictionary:
 		"bytes": source.to_utf8_buffer(),
 		"sha256": CanonicalJson.sha256_text(source),
 	}
+
+static func _campaign_invariants() -> Script:
+	return load("res://sim/campaign_invariants.gd") as Script
 
 static func _accept(value: Variant) -> Dictionary:
 	return {"accepted": true, "error_code": &"", "value": value}

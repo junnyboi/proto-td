@@ -1,6 +1,12 @@
 class_name CampaignInvariants
 extends RefCounted
 
+const CampaignCodec := preload("res://sim/campaign_codec.gd")
+const CampaignHash := preload("res://sim/campaign_hash.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
+const CampaignPromotionHistory := preload("res://sim/campaign_promotion_history.gd")
+const CanonicalJson := preload("res://sim/canonical_json.gd")
+const HeroIdentity := preload("res://sim/hero_identity.gd")
 const STARTERS := [&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1"]
 const INITIAL_MARKS := 120
 const U63_MAX := 9_223_372_036_854_775_807

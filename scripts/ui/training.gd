@@ -9,6 +9,7 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const CampaignPromotionScript := preload("res://sim/campaign_promotion.gd")
 
 const SHELL_SIZE := Vector2(1160.0, 640.0)
 const COMPACT_SHELL_SIZE := Vector2(880.0, 640.0)
@@ -115,9 +116,9 @@ static func build_command(campaign: Variant, hero_id: String, choice_id: String)
 	return {
 		"version": 1,
 		"verb": "promote_hero",
-		"command_id": "promote:%s:%d:%s:%s" % [
+		"command_id": CampaignPromotionScript.command_id(
 			campaign_uid, revision, hero_id, choice_id,
-		],
+		),
 		"hero_id": hero_id,
 		"advanced_class_id": choice_id,
 		"expected_save_revision": revision,

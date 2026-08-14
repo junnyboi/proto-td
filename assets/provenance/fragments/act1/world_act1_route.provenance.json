@@ -1,19 +1,22 @@
 {
   "approval": {
-    "human_final_art": false,
-    "scope": "shared Act I world-art direction for S1-S3",
-    "token": "ACT-I-S1-S3-SYNTHESIS-V1"
+    "human_final_art": true,
+    "manifest_path": "art-src/world/act1/ACT-I-V3-GROUND-BASE-APPROVAL.json",
+    "manifest_sha256": "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249",
+    "scope": "Act I V3 platform, Orrery, environmental props, and shared tiles",
+    "token": "ACT-I-S1-S3-VISUAL-PASS-V3"
   },
   "candidate_files": {
     "bytes_identical": true,
     "runtime": "assets/world/act1/route.png",
-    "sha256": "1c352f3548aee2c4f6e47c01b79bdb8badebe012a390ed88e9a3d65b7ea3d860",
+    "sha256": "1f7ffc57a2158269c6538f25bbbc734fc494b61c43bfff7274bd338ed21a995e",
     "staging": "staging/assets/world/act1/route.png"
   },
-  "human_final_art": false,
+  "human_final_art": true,
   "logical_id": "world.act1.route",
   "normalization": {
     "alpha_preserved": true,
+    "operation": "canvas strip + crop + fit to 2:1 face",
     "panorama_center_crop_to_2_1": false,
     "resampling": "LANCZOS",
     "target_size": [
@@ -24,8 +27,8 @@
   },
   "schema_version": 1,
   "source": {
-    "path": "art-src/world/act1/synthesized-roles/act1-route.png",
-    "sha256": "3894361e2b3f79dfab379ef0745f52ea3bac5ecf7bbbd649e44aa247bd5b94c8"
+    "path": "art-src/world/act1/owner-tiles/route-source.png",
+    "sha256": "47bd6cebd166aec79f0d90cd852e16d8ab7da9c70908ab8324aea4197fea17e9"
   },
-  "state": "SYNTHESIS_DIRECTION_APPROVED_RUNTIME_CAPTURE_PENDING"
+  "state": "HUMAN_FINAL_APPROVED"
 }

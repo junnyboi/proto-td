@@ -1,6 +1,8 @@
 class_name HeroNames
 extends RefCounted
 
+const HeroIdentity := preload("res://sim/hero_identity.gd")
+const HeroNamesV1 := preload("res://data/names/hero_names_v1.gd")
 const VERSION := 1
 const D_NAME_FIRST := 4354685564936845355
 const D_NAME_LAST := 5348507299053160145
