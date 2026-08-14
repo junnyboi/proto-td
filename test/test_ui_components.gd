@@ -195,6 +195,11 @@ func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure
 	assert_eq(presented.text, "Barracks\nUnavailable")
 	assert_eq(presented.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	assert_eq(presented.theme_type_variation, &"AuiBodyLabel")
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
+	]:
+		assert_eq(button.get_theme_color(color_name).a, 0.0, String(color_name))
 	assert_true(button.set_presentation_text("Recruit — Unavailable", "Recruit\nUnavailable"))
 	assert_eq(button.text, "Recruit — Unavailable")
 	assert_eq(button.get_children().filter(

@@ -1,5 +1,5 @@
 class_name CampaignState
-extends "res://sim/campaign_strategic_commands.gd"
+extends "res://sim/campaign_training_projection.gd"
 
 ## Canonical model-only P16 aggregate (D16-08). The private value is always a
 ## whole-document-normalized CampaignSave data object. P16.2 commands construct
