@@ -33,7 +33,7 @@ func test_manifest_v2_preserves_every_legacy_path_frame_size_and_loadability() -
 	assert_eq(snapshot.get("base_tree"), BASE_TREE)
 	assert_eq(manifest.validate_contract(), PackedStringArray())
 	var expected: Dictionary = snapshot.get("entries", {})
-	assert_eq(manifest.entries.size(), expected.size() + 86)
+	assert_eq(manifest.entries.size(), expected.size() + 110)
 	for healer_id: StringName in [&"witch_doctor_1", &"portrait_witch_doctor_1"]:
 		assert_true(manifest.entries.has(healer_id), "%s added through the manifest" % healer_id)
 		assert_true(manifest.entries[healer_id][&"placeholder"], "%s remains placeholder" % healer_id)
@@ -379,8 +379,22 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
 		elif id.begins_with("op_anim_"):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
-			assert_eq(document["generation"]["provider"], "Higgsfield")
-			assert_eq(document["generation"]["model"], "Seedance 2.0 family")
+			var remaining_class := (
+				id.begins_with("op_anim_guard_1_")
+				or id.begins_with("op_anim_guard_2_")
+				or id.begins_with("op_anim_vanguard_1_")
+			)
+			if remaining_class:
+				assert_true(document["generation"]["provider"] in ["Higgsfield", "Manus"])
+				var expected_model := (
+					"Veo 3.1 Fast"
+					if document["generation"]["provider"] == "Manus"
+					else "Seedance 2.0 family"
+				)
+				assert_eq(document["generation"]["model"], expected_model)
+			else:
+				assert_eq(document["generation"]["provider"], "Higgsfield")
+				assert_eq(document["generation"]["model"], "Seedance 2.0 family")
 			assert_eq(
 				document["acceptance"]["state"],
 				"human_concept_accepted_runtime_review_pending",
@@ -388,6 +402,7 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
 			assert_null(document["acceptance"]["accepting_commit"])
 			var expected_placeholder := id in [
+				"op_anim_guard_1_attack_ne",
 				"op_anim_sniper_2_attack_ne", "op_anim_sniper_2_attack_nw",
 			]
 			assert_eq(bool(manifest.entries[StringName(id)]["placeholder"]), expected_placeholder)
@@ -513,6 +528,13 @@ func _expected_sources(id: String) -> Array[String]:
 			)
 			animation_sources.append(
 				"res://tools/art_pipeline/characters/import_aetheria_part2_animations.py"
+			)
+		if class_id in ["guard_1", "guard_2", "vanguard_1"]:
+			animation_sources.append(
+				"res://assets/provenance/operators/td-025-remaining-source-manifest.json"
+			)
+			animation_sources.append(
+				"res://tools/art_pipeline/characters/import_operator_animations.py"
 			)
 		animation_sources.sort()
 		return animation_sources

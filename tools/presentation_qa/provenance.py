@@ -67,7 +67,12 @@ OPERATOR_ANIMATION_GENERATOR = (
 OPERATOR_ANIMATION_PART2_CLASSES = {
     "caster_1", "caster_2", "defender_2", "sniper_1", "sniper_2",
 }
-OPERATOR_ANIMATION_CLASSES = {"defender_1", "vanguard_2"} | OPERATOR_ANIMATION_PART2_CLASSES
+OPERATOR_ANIMATION_REMAINING_CLASSES = {"guard_1", "guard_2", "vanguard_1"}
+OPERATOR_ANIMATION_CLASSES = (
+    {"defender_1", "vanguard_2"}
+    | OPERATOR_ANIMATION_PART2_CLASSES
+    | OPERATOR_ANIMATION_REMAINING_CLASSES
+)
 OPERATOR_ANIMATION_COMMON_SOURCES = {
     "res://assets/provenance/operators/operator-animation-v1.json",
     "res://data/presentation/operator_animation_def.gd",
@@ -80,9 +85,14 @@ OPERATOR_ANIMATION_COMMON_SOURCES = {
 }
 OPERATOR_ANIMATION_APPROVED_AT_UTC = "2026-08-13T16:45:41Z"
 OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC = "2026-08-13T18:58:27Z"
+OPERATOR_ANIMATION_REMAINING_APPROVED_AT_UTC = "2026-08-14T06:36:15Z"
 OPERATOR_ANIMATION_PART2_SOURCES = {
     "res://assets/provenance/operators/aetheria-part2-source-manifest.json",
     "res://tools/art_pipeline/characters/import_aetheria_part2_animations.py",
+}
+OPERATOR_ANIMATION_REMAINING_SOURCES = {
+    "res://assets/provenance/operators/td-025-remaining-source-manifest.json",
+    "res://tools/art_pipeline/characters/import_operator_animations.py",
 }
 
 
@@ -103,6 +113,24 @@ def operator_animation_class(logical_id: str) -> str | None:
         if suffix.startswith(f"{class_id}_"):
             return class_id
     return None
+
+
+def operator_animation_generation(repo: Path, logical_id: str) -> tuple[str, str]:
+    compact = json.loads(
+        (repo / "assets/provenance/operators/operator-animation-v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    for class_row in compact.get("classes", []):
+        class_id = str(class_row.get("template_id", ""))
+        for state in ("idle", "attack"):
+            for direction, asset in class_row.get("families", {}).get(state, {}).items():
+                if logical_id == f"op_anim_{class_id}_{state}_{direction}":
+                    return (
+                        str(asset.get("generation_provider", "Higgsfield")),
+                        str(asset.get("generation_model", "Seedance 2.0 family")),
+                    )
+    raise ValueError(f"missing operator animation generation metadata: {logical_id}")
 
 
 def validate_schema(value: Any, schema: dict[str, Any], root: dict[str, Any], path: str = "$") -> None:
@@ -207,6 +235,8 @@ def source_paths(logical_id: str) -> list[str]:
         result.add(f"res://data/presentation/operator_visuals/{animation_class}.tres")
         if animation_class in OPERATOR_ANIMATION_PART2_CLASSES:
             result.update(OPERATOR_ANIMATION_PART2_SOURCES)
+        if animation_class in OPERATOR_ANIMATION_REMAINING_CLASSES:
+            result.update(OPERATOR_ANIMATION_REMAINING_SOURCES)
         return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
@@ -384,6 +414,8 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
     if animation_class is not None:
         generator = digest_row(repo, OPERATOR_ANIMATION_GENERATOR)
         part2 = animation_class in OPERATOR_ANIMATION_PART2_CLASSES
+        remaining = animation_class in OPERATOR_ANIMATION_REMAINING_CLASSES
+        provider, model = operator_animation_generation(repo, logical_id)
         return {
             "schema_version": 1,
             "logical_id": logical_id,
@@ -397,12 +429,12 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "generator_sha256": generator["sha256"],
             },
             "generation": {
-                "provider": "Higgsfield",
-                "model": "Seedance 2.0 family",
+                "provider": provider,
+                "model": model,
                 "generation_id": None,
                 "seed": None,
                 "unsupported_reason": (
-                    "provider does not expose stable seeds; selected motion clips, runtime atlases, "
+                    "provider does not expose stable seeds; selected source clips, runtime atlases, "
                     "and compact class provenance are hash-pinned"
                 ),
             },
@@ -418,7 +450,11 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "accepted_at_utc": (
                     OPERATOR_ANIMATION_PART2_APPROVED_AT_UTC
                     if part2
-                    else OPERATOR_ANIMATION_APPROVED_AT_UTC
+                    else (
+                        OPERATOR_ANIMATION_REMAINING_APPROVED_AT_UTC
+                        if remaining
+                        else OPERATOR_ANIMATION_APPROVED_AT_UTC
+                    )
                 ),
                 "accepting_commit": None,
                 "source": "FEATURES.json:OPANIM-2" if part2 else "FEATURES.json:OPANIM-1",
@@ -426,14 +462,19 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                     "Poseidon explicitly requested integration of the completed Part 2 package; "
                     "the two declared sniper direction substitutions remain placeholders pending replacement"
                     if part2
-                    else "Poseidon approved the class candidates and premium repair authority; the "
-                    "current runtime bytes are an internal canary pending exact final release review"
+                    else (
+                        "Poseidon explicitly authorized consolidating all available clips and using "
+                        "counterpart facing directions as declared placeholders before integration"
+                        if remaining
+                        else "Poseidon approved the class candidates and premium repair authority; the "
+                        "current runtime bytes are an internal canary pending exact final release review"
+                    )
                 ),
             },
             "license": {
                 "spdx": "LicenseRef-Project-Owned",
                 "source": (
-                    "original GPT Image 2 keyframes and Higgsfield Seedance motion with "
+                    "original GPT Image 2 keyframes and Higgsfield Seedance or Manus Veo motion with "
                     "deterministic runtime normalization"
                 ),
                 "human_contribution": (

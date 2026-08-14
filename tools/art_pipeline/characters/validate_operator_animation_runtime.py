@@ -13,8 +13,11 @@ EXPECTED_CLASSES = {
     "caster_2",
     "defender_1",
     "defender_2",
+    "guard_1",
+    "guard_2",
     "sniper_1",
     "sniper_2",
+    "vanguard_1",
     "vanguard_2",
 }
 EXPECTED_STATES = {"idle": 24, "attack": 13}
@@ -22,6 +25,7 @@ EXPECTED_DIRECTIONS = {"se", "ne", "nw", "sw"}
 EXPECTED_CELL = (192, 192)
 EXPECTED_PIVOT = (0.5, 0.94)
 EXPECTED_PLACEHOLDERS = {
+    ("guard_1", "attack", "ne"): "se",
     ("sniper_2", "attack", "ne"): "se",
     ("sniper_2", "attack", "nw"): "sw",
 }
@@ -90,6 +94,7 @@ def validate(repo: Path) -> None:
         raise ValueError(f"operator animation atlas count mismatch: {len(seen)}")
     known = document.get("known_placeholders")
     expected_known = [
+        {"logical_id": "op_anim_guard_1_attack_ne", "source_direction": "se"},
         {"logical_id": "op_anim_sniper_2_attack_ne", "source_direction": "se"},
         {"logical_id": "op_anim_sniper_2_attack_nw", "source_direction": "sw"},
     ]

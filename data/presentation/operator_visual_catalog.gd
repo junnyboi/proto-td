@@ -10,8 +10,11 @@ const DEFINITIONS: Dictionary = {
 	&"caster_2": preload("res://data/presentation/operator_visuals/caster_2.tres"),
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
 	&"defender_2": preload("res://data/presentation/operator_visuals/defender_2.tres"),
+	&"guard_1": preload("res://data/presentation/operator_visuals/guard_1.tres"),
+	&"guard_2": preload("res://data/presentation/operator_visuals/guard_2.tres"),
 	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
 	&"sniper_2": preload("res://data/presentation/operator_visuals/sniper_2.tres"),
+	&"vanguard_1": preload("res://data/presentation/operator_visuals/vanguard_1.tres"),
 	&"vanguard_2": preload("res://data/presentation/operator_visuals/vanguard_2.tres"),
 }
 

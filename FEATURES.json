@@ -460,11 +460,12 @@
 	  },
 	  {
 	   "id": "OPANIM-1",
-	   "title": "Directional operator animation canary",
+	   "title": "Directional operator animation core roster",
 	   "acceptance": [
-	    "Banner Guard and Defender use independent SE, NE, NW, and SW idle/attack atlases with no mirroring",
+	    "Banner Guard, Defender, Shock Trooper, Swordmaster, and Sword Saint resolve SE, NE, NW, and SW idle/attack atlases through the view-only animation runtime",
+	    "runtime normalization is reproducible at 192x192 cells, 24-frame idle loops, 13-frame attacks, 12 fps, bottom anchors, binary alpha, and class-relative display heights",
+	    "exactly Swordmaster attack NE-from-SE remains a declared placeholder in source, runtime, manifest, and resource metadata",
 	    "animation state is projected from existing model facing and last_attack_tick without changing simulation state",
-	    "all other operator templates retain the legacy sprite path until their own asset families pass admission",
 	    "catalog and live-battle scenarios pass headless and windowed with fresh screenshots and zero pixel skips"
 	   ],
 	   "evidence_classes": [
