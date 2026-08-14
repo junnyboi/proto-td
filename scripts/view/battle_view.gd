@@ -63,6 +63,7 @@ var _tracer_lines: Dictionary = {}
 var _tracer_seen_tick: Dictionary = {}
 var _tracer_frames_left: Dictionary = {}
 var _skill_seen_tick: Dictionary = {}
+var _skill_ready_state: Dictionary = {}
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _continue_btn: Button = null
@@ -817,7 +818,12 @@ func _update_sp_bar(body: ColorRect, u: UnitState) -> void:
 	var fill := body.get_node("SpBarBg/SpBarFill") as ColorRect
 	fill.size.x = body.size.x * clampf(float(u.sp) / float(u.sp_cost), 0.0, 1.0)
 	# readiness from the verb's own validator (rule 7, P14)
-	if u.is_skill_ready():
+	var is_ready := u.is_skill_ready()
+	var was_ready := bool(_skill_ready_state.get(u.id, false))
+	if is_ready and not was_ready:
+		Sfx.play("ability_ready")
+	_skill_ready_state[u.id] = is_ready
+	if is_ready:
 		var blink := (Engine.get_process_frames() / 8) % 2 == 0
 		fill.color = SP_FULL_FLASH if blink else SP_BAR_FILL
 	else:

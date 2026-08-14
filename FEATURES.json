@@ -317,7 +317,7 @@
     "music structural gate green: stereo 48 kHz Ogg Vorbis, 160-180 seconds, approximately -18 LUFS, loop-enabled, prompt/provenance-linked, no detected speech",
     "human listening accepts act identity, pair coherence, cross-act descent, loop seams, gameplay space, fatigue, vocal absence, and originality before placeholder flags clear",
     "one global catalog-backed AudioStreamPlayer starts the stage BGM once, hard-switches once at the data-owned act-final boss boundary, never layers cues, and never restarts the current logical id",
-    "all non-battle screens stop music while synthesized SFX remains deliberately silent"
+    "all non-battle screens stop music; sound-effect playback is independently owned by SFX-1"
    ],
    "status": "passing",
    "scenarios": [
@@ -334,6 +334,31 @@
     "bb5c384",
     "234ae94"
    ]
+  },
+  {
+   "id": "SFX-1",
+   "title": "Accepted UI and combat SFX with bounded runtime playback",
+   "acceptance": [
+    "Poseidon's 2026-08-14 ACCEPT binds all ten Batch 01 generated candidates by exact source SHA-256 and clears their subjective warning state without weakening structural checks",
+    "accepted 48 kHz stereo 24-bit PCM masters remain immutable while deterministic 48 kHz stereo 16-bit PCM runtime derivatives satisfy Godot 4.7.1 and import uncompressed with separate hashes",
+    "one global catalog-backed Sfx owner reuses exactly eight AudioStreamPlayer voices and starts at most one instance of a resolved semantic cue per render frame",
+    "every logical request emits exactly one raw sfx_played telemetry event; closed aliases adapt existing combat IDs only for audio and unknown IDs reject with zero playback state change",
+    "existing deploy, breach, trap, victory, defeat, and UI-click events play accepted cues; operator selection, valid placement, invalid action, and ability-ready use presentation-only edges without model/hash/save/replay changes",
+    "focused catalog/player GUT, sfx_playback, affected gameplay scenarios, fresh STANDARD, and final merged-master verification are green"
+   ],
+   "evidence_classes": [
+    "integration",
+    "feel"
+   ],
+   "status": "pending",
+   "scenarios": [
+    "sfx_playback",
+    "juice_deploy",
+    "juice_kill_leak",
+    "juice_trap_charm",
+    "wave_banner_victory"
+   ],
+   "commits": []
   },
   {
    "id": "TITLE-1",

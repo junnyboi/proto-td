@@ -278,6 +278,7 @@ func _start_placement(op_id: StringName) -> void:
 	_hide_retreat_chip()
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
+	Sfx.play("operator_select")
 	_show_valid_highlights()
 	view.call("deploy_drag_started")
 
@@ -327,15 +328,18 @@ func _update_placement_hover() -> void:
 func _end_placement_drag() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	if not _placement_valid_at(cell):
+		Sfx.play("action_reject")
 		_cancel_placement()
 		return
 	if _placement_trap != &"":
 		# traps have no facing: the release IS the placement
-		model.apply_action([&"place_trap", _placement_trap, cell])
+		if not model.apply_action([&"place_trap", _placement_trap, cell]):
+			Sfx.play("action_reject")
 		_cancel_placement()
 		return
 	_pending_cell = cell
 	_cursor_rect.visible = false
+	Sfx.play("placement_ready")
 	# the slowdown HOLDS through the facing chooser (L7 verdict 2026-08-11:
 	# full-speed enemies charging while the player aims felt punishing);
 	# _confirm_deploy / _cancel_placement restore normal speed
@@ -371,12 +375,15 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 		var btn: Button = _facing_buttons[facing]
 		var slot: Vector2i = spec["slot"]
 		btn.size = button_size
-		btn.position = cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
+		btn.position = (
+			cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
+		)
 
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
 	if _pending_cell.x >= 0:
-		model.apply_action([&"deploy", _placement_op, _pending_cell, int(facing)])
+		if not model.apply_action([&"deploy", _placement_op, _pending_cell, int(facing)]):
+			Sfx.play("action_reject")
 	_cancel_placement()
 
 
@@ -417,7 +424,9 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		return
 	_retreat_unit_id = unit.id
 	var center: Vector2 = view.call("cell_center", cell)
-	_retreat_chip.position = center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)
+	_retreat_chip.position = (
+		center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)
+	)
 	_retreat_chip.visible = true
 
 
@@ -458,8 +467,7 @@ func _update_heal_hover() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	var target := model.alive_unit_at(cell)
 	var valid := (
-		target != null
-		and HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id)
+		target != null and HealingRulesScript.is_valid(model, _heal_source_unit_id, target.id)
 	)
 	_heal_cursor.color = HEAL_VALID_COLOR if valid else INVALID_COLOR
 	_heal_cursor.position = view.call("cell_center", cell)

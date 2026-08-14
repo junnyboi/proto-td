@@ -159,11 +159,14 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
-## Audio: approved runtime music; SFX remains silent
+## Audio: approved music and generated SFX are active
 
-The 2026-08-11 owner decision made the build silent. On 2026-08-12 the owner approved the
-six-cue score and explicitly authorized runtime music. `Music` is the sole catalog-backed
-owner and must retain exactly one `AudioStreamPlayer`: never layer cues, never restart the
-current logical ID, and hard-replace only when the ID changes. Stage act/boss routing lives
-in `StageDef` data. Do not restore synth SFX; the `sfx_played` telemetry seam stays wired.
-See `docs/decisions/D-SFX.md`.
+`Music` remains the sole catalog-backed music owner and must retain exactly one
+`AudioStreamPlayer`: never layer cues, never restart the current logical ID, and hard-replace
+only when the ID changes. Stage act/boss routing lives in `StageDef` data. Poseidon's
+2026-08-14 acceptance closed the SFX silence waiver: `Sfx` owns the exact accepted catalog,
+eight bounded voices, one semantic start per render frame, and a closed alias map. Every
+logical call still emits one raw `sfx_played` event even when unknown or audio-deduped. Keep
+accepted 24-bit masters immutable as `.wav.source`; runtime 16-bit WAV derivatives must be
+48 kHz stereo, uncompressed on import, and independently hash-bound. Never restore synth
+placeholders or put audio state into simulation/hash/save/replay. See `docs/decisions/D-SFX.md`.

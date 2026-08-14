@@ -1,0 +1,74 @@
+{
+  "schema": "protos.sfx.video_audio_batch.v1",
+  "date": "2026-08-14",
+  "preferred_model": "gemini-omni-flash-preview",
+  "quality_challenger": "veo3.1",
+  "capacity_fallback": "veo3.1-fast",
+  "aspect_ratio": "landscape",
+  "resolution": "720p",
+  "default_duration_seconds": 3,
+  "generate_audio": true,
+  "common_audio_constraint": "Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. One isolated event with a clean silent lead-in and tail. The audio track is otherwise silent.",
+  "cues": [
+    {
+      "id": "operator_select",
+      "lane": "ui",
+      "target_duration_ms": [40, 85],
+      "prompt": "Locked-off macro studio shot on a plain dark neutral background. A single gloved fingertip deliberately taps one small felt-covered tactical roster card at the center exactly once after a clean silent lead-in; the card depresses by one millimeter and immediately returns, then the scene stays completely still. Audio: one nearly inaudible soft felt-card contact fused with a microscopic muted electromechanical relay pip, dry, narrow, centered, high-passed, neutral, 40 to 85 milliseconds, virtually no tail. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No glass, bell, sparkle, bass, bright click, reward sting, reverb, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "ability_ready",
+      "lane": "ui",
+      "target_duration_ms": [100, 180],
+      "prompt": "Locked-off macro studio shot on a plain dark neutral background. A small brushed-metal readiness indicator rises a few millimeters on a compact tactical console exactly once after a silent lead-in, settles into its socket, and remains still. Audio: one subtle soft air lift ending in a single dim brushed-metal pip, quiet, restrained, dry, narrow, centered, high-passed, 100 to 180 milliseconds with a very short clean tail. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No glassy sparkle, chime, bass, fanfare, warning tone, shimmer cloud, reverb, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "action_reject",
+      "lane": "ui",
+      "target_duration_ms": [55, 105],
+      "prompt": "Locked-off macro studio shot on a plain dark neutral background. A small warm wooden tactical slider moves once and meets a padded felt stop after a clean silent lead-in; it halts immediately without bouncing and remains still. Audio: one gentle muted felt-and-wood blocked detent with a restrained low relay stop, quiet, helpful, neutral, dry, narrow, centered, high-passed, 55 to 105 milliseconds, no tail. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No buzzer, alarm, descending tone, bass, glass, sparkle, harsh treble, comedy, reverb, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "ui_click",
+      "lane": "ui",
+      "target_duration_ms": [30, 60],
+      "prompt": "Locked-off macro studio shot on a plain dark neutral background. One tiny soft-felt wooden console button is pressed exactly once after a clean silent lead-in and immediately returns; nothing else moves. Audio: one near-subliminal warm felt-and-wood contact with a microscopic muted relay edge, the quietest useful feedback, dry, narrow, centered, high-passed, 30 to 60 milliseconds, virtually no tail. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No glass, bell, sparkle, bass, stereo flourish, reward character, reverb, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "placement_ready",
+      "lane": "ui",
+      "target_duration_ms": [50, 100],
+      "prompt": "Locked-off macro studio shot on a plain dark neutral background. A small magnetic tactical placement token slides one centimeter and settles exactly once into a padded felt orientation socket after a clean silent lead-in, then remains still. Audio: one barely audible soft magnetic-felt settle ending in a muted mechanical detent, anticipatory rather than rewarding, thin, dry, narrow, centered, high-passed, 50 to 100 milliseconds, no shimmer or meaningful tail. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No impact, bass, metal ring, glass, sparkle, reverb, stereo flourish, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "base_breach",
+      "lane": "combat",
+      "target_duration_ms": [280, 560],
+      "prompt": "Locked-off close studio shot of a compact fantasy-tech defense gate against a plain dark battlefield backdrop. After a clean silent lead-in, one enemy force strikes once: the luminous shield surface forms one sharp crack while its stone-and-metal brace jolts backward and an urgent warning shutter snaps open; the action ends immediately and debris settles. Audio: exactly one tactile layered breach event combining a hard shield-crack transient, compact structural low-mid thump, and bright urgent warning snap, dangerous and decisive, dry to very short room, mostly centered, 280 to 560 milliseconds with controlled tail and laptop-speaker readability. Sound effect only. No speech, voice, music, melody, rhythm, or continuous ambience. No siren, monster growl, explosion wash, trailer boom, long reverb, or second impact. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "victory",
+      "lane": "combat",
+      "target_duration_ms": [900, 1300],
+      "prompt": "Locked-off close studio shot on a plain dark neutral background. After a clean silent lead-in, one heavy engraved metal shield stamp descends once onto a tactical victory seal; the impact triggers a brief warm brass-colored mechanical lift and one bright electronic seal light that resolves, then all motion stops. Audio: one compact earned victory sound effect: stamped shield impact, very short warm brass-like mechanical lift, and bright FM-style sealing tone resolving confidently, 900 to 1300 milliseconds, controlled low end and restrained width, clearly an effect rather than a song. Sound effect only. No speech, voice, vocals, choir, music, melody, rhythm, fanfare, applause, coins, continuous ambience, excessive reverb, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "defeat",
+      "lane": "combat",
+      "target_duration_ms": [750, 1100],
+      "prompt": "Locked-off close studio shot on a plain dark neutral background. After a clean silent lead-in, one worn metal command marker drops once onto a padded tactical table as a cracked electromechanical relay releases and one shield indicator dims downward; everything becomes still. Audio: one compact sober defeat sound effect combining a controlled low-tom-like impact, cracked relay drop, and short descending FM shield decay, weighty and conclusive without horror or melodrama, 750 to 1100 milliseconds, centered, short dry decay, controlled sub, softer peak than victory. Sound effect only. No speech, voice, scream, music, melody, rhythm, buzzer, alarm, monster sound, huge boom, long reverb, continuous ambience, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "deploy",
+      "lane": "combat",
+      "target_duration_ms": [220, 420],
+      "prompt": "Locked-off low close shot of one armored operator boot above a compact fantasy-tech deployment tile on a plain dark battlefield backdrop. After a clean silent lead-in, the boot lands firmly exactly once as a gear clasp snaps and a tiny arc-tech confirmation light releases; the operator holds still and dust immediately settles. Audio: one confident tactile deployment event combining a planted armored-boot thump, crisp gear-and-cloth snap, and short arc-tech confirmation tail, physical and immediately readable, centered, compact low-mid body, 220 to 420 milliseconds. Sound effect only. No speech, voice, shout, music, melody, rhythm, explosion, weapon strike, bell, long whoosh, deep sub boom, long reverb, continuous ambience, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    },
+    {
+      "id": "trap_trigger",
+      "lane": "combat",
+      "target_duration_ms": [150, 300],
+      "prompt": "Locked-off close studio shot of one compact spring-loaded fantasy-tech spike trap on a plain dark earthen tile. After a clean silent lead-in, the mechanism triggers exactly once: a tension spring releases, two metal jaws snap together, and the frame makes one compact ground contact; it immediately locks still. Audio: one forceful satisfying trap event combining a razor-fast spring snap, hard metal-jaw bite, and compact ground/body contact, crisp, dry, centered, controlled low-mid bite, 150 to 300 milliseconds with an aggressively short tail. Sound effect only. No speech, voice, scream, music, melody, rhythm, gunshot, gore, explosion, giant bass boom, long resonance, reverb, continuous ambience, or second event. The audio track is otherwise silent. No on-screen text, logos, or watermarks."
+    }
+  ]
+}

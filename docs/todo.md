@@ -175,3 +175,16 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Acceptance: each feature declares `logic|integration|visual|feel` evidence and names the required existing artifact; human-only rows cannot pass without a `PLAYTEST.md` verdict
 - Required evidence: ledger lint over every row, adversarial mapping review, and unchanged gameplay verification
 - Last update: 2026-08-12
+
+## TD-032 — Integrate accepted SFX into runtime playback
+
+- Status: in_progress
+- Owner: AGENT 4
+- Branch: `agent-4/sfx-integration`
+- Base: `master` at `bec1f32600074d6a119ea184837659662546caaf`
+- Dependencies: Poseidon accepted all ten Batch 01 candidate hashes on 2026-08-14; clean `juice_deploy` baseline PASS
+- Owned files: `autoloads/sfx.gd`; `assets/sfx/**`; `scripts/ui/deploy_bar.gd`; `scripts/view/battle_view.gd`; `test/test_sfx_player.gd*`; `selftest/scenarios/sfx_playback.gd*`; `docs/decisions/D-SFX.md`; `docs/handoffs/TD-032-agent-4-sfx-integration.md`; this TD-032 row; TD-032 closure line in `docs/completed.md`; D-SFX/SFX-1 entries in `FEATURES.json`; SFX section in `CLAUDE.md`
+- Do not touch: simulation/model/hash/save/replay; music controller/catalog; localization; unrelated UI components; `scripts/verify.sh`; thresholds; existing tests/scenarios except targeted SFX additions
+- Acceptance: ten exact accepted WAVs resolve through one catalog-backed global SFX owner; eight bounded voices; one audible semantic cue per render frame; raw telemetry remains one event per logical call; closed aliases wire existing combat events; four specialized UI cues use presentation-only edges; unknown IDs fail closed
+- Required evidence: catalog/player GUT; `sfx_playback` and affected existing scenarios; fresh import/boot; one branch STANDARD; reconciled-union gate; final master gate; hash-bound Poseidon acceptance record
+- Last update: 2026-08-14
