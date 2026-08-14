@@ -8,12 +8,15 @@
 | SFX implementation | `7790e03ee2f1f28439fb6cd034c3c2f4225e89c6` |
 | Stale-locale oracle remediation | `55cff6d9cb24aa56c3277239c8b7670d06246bf4` |
 | Reallocated closure | `98e2fa65e2fd40852b38648a289fc3c324bcf7fc` |
-| Reconciled union | `768ed59b549c5bfa56c8eb112b26713e8896c087` over remote master `7228f0300e6c75b69c377b252a4e140ce6150e41` |
-| Verified candidate | `768ed59b549c5bfa56c8eb112b26713e8896c087` |
+| First reconciled union | `768ed59b549c5bfa56c8eb112b26713e8896c087` over remote master `7228f0300e6c75b69c377b252a4e140ce6150e41` |
+| Final reconciled union | `458e6deac139380b4d1c662003636b54c4251ba3` over remote master `1db9986ead0f4d9de8726f015783dfde172679b2` |
+| Cache-independent fixes | helper registry `8e3b1fe`; damage feedback preload `d953165`; scratch import hardening `85c6d33` |
+| Verified candidate | `85c6d334a2d7bebae483c583f846d0a257c2e5ef` |
 | Human verdict | Poseidon ACCEPT, all ten exact Batch 01 source hashes, 2026-08-14 |
 | Branch STANDARD | PASS, 107 rungs and 70 headless/windowed scenario runs |
 | Union STANDARD | PASS, 121 rungs and 80 headless/windowed scenario runs |
-| Evidence | External `td034-union-standard-768ed59b549c5bfa56c8eb112b26713e8896c087-attempt2/` |
+| Final STANDARD | PASS, 124 rungs and 82 headless/windowed scenario runs |
+| Evidence | External `td035-green-standard-85c6d334a2d7bebae483c583f846d0a257c2e5ef/` |
 
 ## Outcome
 
@@ -38,7 +41,9 @@ All ten Poseidon-accepted 48 kHz stereo 24-bit PCM candidates are immutable unde
 | Fresh STANDARD | 107/107 rungs; 35 headless + 35 windowed scenarios; stale-registry, music cold boot, bots, and gates PASS on `55cff6d` |
 | Reconciled union targeted proof | Focused SFX GUT 9/9; `sfx_playback`, `juice_deploy`, and stronger bilingual/world stale-registry probe PASS |
 | Fresh union STANDARD | 121/121 rungs; 40 headless + 40 windowed scenarios; Training, native Sky Hunter, Act I V3, observations, stale-registry, music cold boot, bots, and gates PASS on `768ed59` |
-| Candidate identity | clean worktree at `768ed59b549c5bfa56c8eb112b26713e8896c087` |
+| Final-union targeted proof | Focused SFX GUT 9/9; `sfx_playback`, `skill_timing`, `enemy_damage_feedback`, `juice_deploy`, Web filesystem twice, and stale registry twice PASS |
+| Fresh final STANDARD | 124/124 rungs; 41 headless + 41 windowed scenarios; all prior surfaces plus enemy damage and font cold-cache PASS on `85c6d33` |
+| Candidate identity | clean worktree at `85c6d334a2d7bebae483c583f846d0a257c2e5ef` |
 
 ## Preserved reds and deviations
 
@@ -48,8 +53,10 @@ The generation fallback used `generate_video(generate_audio=true)` because built
 
 The first full union STANDARD attempt is also preserved as RED: Godot crashed in a worker thread during the Web filesystem probe's copied-project fresh import after 12 earlier rungs passed. The unchanged exact union then passed that isolated Web rung with 150 checks across 17 cases. A second full run from empty artifacts passed all 121 rungs. No game code, asset, test, threshold, or environment variable changed between the red and green attempts.
 
+After TD-034 enemy-damage and font-cache work landed, the second union exposed two more truths. First, `EnemyDamageFeedback` referenced the newly introduced `EnemyAnimator` only through the global class cache; commit `d953165` replaces that runtime dependency with an explicit preload. Second, Godot 4.7.1 repeatedly crashed after otherwise-complete full-worktree scratch imports. Commit `85c6d33` keeps ordinary R2 import unchanged but runs only disposable scratch imports in recovery mode with an isolated serial-import editor profile. Both crash-prone probes passed twice before the 124-rung final STANDARD. All crash attempts remain preserved as RED.
+
 ## Merge and rollback
 
-Remote master allocated TD-032 and TD-033 during branch verification, then allocated TD-034 after the first union passed. This completed lane is therefore TD-035 without any source, asset, acceptance, or verified-commit rewrite. Union `768ed59` preserves Training, native Sky Hunter, observation, world-art, and stale-cache work and passed the full gate; a second reconciliation must additionally preserve TD-034 enemy damage feedback and the font-cache fallback. Push normally only after the updated exact union passes; never force-push.
+Remote master allocated TD-032 and TD-033 during branch verification, then TD-034 after the first union passed. This lane is TD-035 without any source, asset, or acceptance rewrite. Candidate `85c6d33` preserves Training, native Sky Hunter, observation, world art, enemy damage, font fallback, and stale-cache work and passed the full gate. Push normally only if remote master still equals audited parent `1db9986`; never force-push.
 
 Rollback is `git revert` of the TD-035 integration commits after stopping gameplay. Reverting `7790e03` restores the silent SFX seam and removes all SFX runtime assets and triggers. The locale oracle change in `55cff6d` was independently superseded by remote master commit `c7f65d0`; preserve the remote implementation unless the product locale set is intentionally rolled back.
