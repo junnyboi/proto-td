@@ -37,13 +37,13 @@ func process(delta: float, model: BattleModel, rects: Dictionary, cfg: JuiceConf
 		(
 			EnemyAnimatorType
 			. apply_damage_flash(
-					rects[enemy.id],
-					cfg.damage_flash_frames,
-					cfg.damage_flash_frames,
-					cfg.damage_flash_white,
-					cfg.damage_flash_red,
-				)
+				rects[enemy.id],
+				cfg.damage_flash_frames,
+				cfg.damage_flash_frames,
+				cfg.damage_flash_white,
+				cfg.damage_flash_red,
 			)
+		)
 
 
 func age(rects: Dictionary, cfg: JuiceConfig) -> void:
@@ -55,13 +55,13 @@ func age(rects: Dictionary, cfg: JuiceConfig) -> void:
 		(
 			EnemyAnimatorType
 			. apply_damage_flash(
-					rects[enemy_id],
-					left,
-					cfg.damage_flash_frames,
-					cfg.damage_flash_white,
-					cfg.damage_flash_red,
-				)
+				rects[enemy_id],
+				left,
+				cfg.damage_flash_frames,
+				cfg.damage_flash_white,
+				cfg.damage_flash_red,
 			)
+		)
 		if left > 0:
 			_flash_frames[enemy_id] = left - 1
 		else:
