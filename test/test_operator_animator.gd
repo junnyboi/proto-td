@@ -64,12 +64,19 @@ func test_admitted_texture_projection_sets_metadata_without_flipping() -> void:
 	Art._reset_manifests_for_test()
 
 
-func test_catalog_boundary_preserves_legacy_fallback_for_blocked_classes() -> void:
-	for admitted: StringName in [&"caster_1", &"caster_2", &"defender_2", &"sniper_1", &"sniper_2"]:
+func test_catalog_boundary_admits_exact_roster_and_rejects_unknown() -> void:
+	for admitted: StringName in [
+		&"caster_1", &"caster_2", &"defender_1", &"defender_2",
+		&"guard_1", &"guard_2", &"sniper_1", &"sniper_2",
+		&"vanguard_1", &"vanguard_2",
+	]:
 		assert_not_null(OperatorVisualCatalog.get_animation(admitted), String(admitted))
-	assert_null(OperatorVisualCatalog.get_animation(&"vanguard_1"))
-	assert_null(OperatorVisualCatalog.get_animation(&"guard_1"))
-	assert_null(OperatorVisualCatalog.get_animation(&"guard_2"))
+	var swordmaster := OperatorVisualCatalog.get_animation(&"guard_1")
+	assert_true(swordmaster.placeholder)
+	assert_eq(
+		swordmaster.placeholder_source_by_logical_id,
+		{&"op_anim_guard_1_attack_ne": &"se"},
+	)
 	assert_null(OperatorVisualCatalog.get_animation(&"unknown"))
 
 
