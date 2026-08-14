@@ -61,7 +61,14 @@ func _ready() -> void:
 	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rows.add_theme_constant_override(&"h_separation", 8)
 	_rows.add_theme_constant_override(&"v_separation", 8)
-	column.add_child(_rows)
+	var rows_margin := MarginContainer.new()
+	rows_margin.name = "StageRowsMargin"
+	rows_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rows_margin.add_theme_constant_override(
+		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
+	)
+	rows_margin.add_child(_rows)
+	column.add_child(rows_margin)
 
 	var next_hint := ""
 	var next_hint_tooltip := ""
@@ -77,6 +84,7 @@ func _ready() -> void:
 		row.disabled = not unlocked
 		row.apply_role(&"primary" if unlocked else &"disabled")
 		row.set_presentation_text(row.text, _row_presentation_text(stage))
+		row.apply_compact_action_layout()
 		row.tooltip_text = row.text
 		if not unlocked:
 			row.focus_mode = Control.FOCUS_NONE
@@ -99,6 +107,7 @@ func _ready() -> void:
 	back.apply_role(&"secondary")
 	back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
 	back.set_presentation_text(back.text, UiCopyType.text(&"ui.common.back", "Back"))
+	back.apply_compact_action_layout()
 	back.tooltip_text = back.text
 	back.pressed.connect(_on_back_to_staging)
 	_header.add_child(back)
