@@ -31,6 +31,10 @@ func test_contract_fixtures_have_exact_schema_and_cardinality() -> void:
 	assert_eq(int(_inventory["states"]["squad_s2_expanded"]["text_count"]), 16)
 	assert_eq(int(_inventory["states"]["results_campaign_clear"]["text_count"]), 9)
 	assert_eq(int(_inventory["states"]["results_standalone_defeat"]["text_count"]), 5)
+	var metrics := _contract["tokens"]["metrics"] as Dictionary
+	assert_eq(metrics["compact_action_minimum"], [44.0, 80.0])
+	assert_eq(int(metrics["compact_action_font_size"]), 34)
+	assert_eq(int(metrics["compact_action_row_top_padding"]), 20)
 
 
 func test_theme_resource_has_exact_variations_items_and_values() -> void:
@@ -171,6 +175,9 @@ func test_component_roles_fail_closed_and_preserve_prior_state() -> void:
 func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure() -> void:
 	var button := AetheriaButton.new()
 	button.text = "Original"
+	assert_false(button.apply_compact_action_layout())
+	assert_false(bool(button.get_meta(&"compact_action_layout", false)))
+	assert_eq(button.custom_minimum_size, Vector2(44.0, 52.0))
 	assert_false(button.set_presentation_text("", "Visible"))
 	assert_eq(button.text, "Original")
 	assert_null(button.get_node_or_null("PresentationLabel"))
@@ -179,6 +186,12 @@ func test_semantic_button_presentation_has_one_inventory_owner_and_exact_failure
 	assert_true(button.set_presentation_text("Barracks — Unavailable", "Barracks\nUnavailable"))
 	assert_eq(button.text, "Barracks — Unavailable")
 	var presented := button.get_node("PresentationLabel") as AetheriaLabel
+	assert_true(button.apply_compact_action_layout())
+	assert_eq(button.custom_minimum_size, Vector2(44.0, 80.0))
+	assert_eq(button.size_flags_vertical, Control.SIZE_SHRINK_BEGIN)
+	assert_eq(button.get_theme_font_size(&"font_size"), 34)
+	assert_eq(presented.get_theme_font_size(&"font_size"), 34)
+	assert_true(bool(button.get_meta(&"compact_action_layout", false)))
 	assert_eq(presented.text, "Barracks\nUnavailable")
 	assert_eq(presented.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	assert_eq(presented.theme_type_variation, &"AuiBodyLabel")

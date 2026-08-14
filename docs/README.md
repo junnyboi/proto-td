@@ -13,6 +13,7 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 | [`handoffs/`](handoffs/) | Agent transfers after a lane is verified: branch, base, commits, files, gates, risks, next action. |
 | [`media/`](media/) | Small collaboration evidence or references; never bulk generated output. |
 | [`art/`](art/) | Pre-existing TORCHLIGHT & STEEL references and provenance; not a collaboration-ledger surface. |
+| [`ui/COMPONENT-STYLE-GUIDE.md`](ui/COMPONENT-STYLE-GUIDE.md) | Canonical human-readable Aetheria component measurements, compact-action hierarchy, spacing, responsive behavior, and verification route. |
 
 ## Authority map
 

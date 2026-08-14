@@ -43,6 +43,12 @@
         44,
         52
       ],
+      "compact_action_minimum": [
+        44,
+        80
+      ],
+      "compact_action_font_size": 34,
+      "compact_action_row_top_padding": 20,
       "button_content_margins": [
         18,
         10,
@@ -1279,7 +1285,8 @@
       },
       "methods": {
         "apply_role": "(StringName)->bool; unknown returns false and preserves prior role/variation",
-        "set_presentation_text": "(String logical_text, String rendered_text)->bool; preserves exact logical text in Button.text for automation/copy parity, hides built-in glyph paint without removing semantics, creates or updates one mouse-ignored AuiBodyLabel child named PresentationLabel, constrains that child to the Button rect with arbitrary wrapping and clipping, and rejects empty arguments"
+        "set_presentation_text": "(String logical_text, String rendered_text)->bool; preserves exact logical text in Button.text for automation/copy parity, hides built-in glyph paint without removing semantics, creates or updates one mouse-ignored AuiBodyLabel child named PresentationLabel, constrains that child to the Button rect with arbitrary wrapping and clipping, and rejects empty arguments",
+        "apply_compact_action_layout": "()->bool; requires PresentationLabel, preserves at least 44px width, sets an exact 80px logical minimum with vertical shrink, permits only the observed 80-81px GridContainer rendered allocation, sets both hidden logical and visible label metrics to 34px, marks compact_action_layout metadata only after success, and returns false without mutating a button that lacks semantic presentation text"
       },
       "signals": [],
       "defaults": {
