@@ -155,8 +155,8 @@ func _start_title() -> void:
 	if i18n == null or not i18n.has_method("supported_locales"):
 		_fail("I18n autoload unavailable")
 		return
-	if i18n.call("supported_locales") != PackedStringArray(["en-US"]):
-		_fail("en-US locale unavailable")
+	if i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"]):
+		_fail("exact en-US/zh-CN locale set unavailable")
 		return
 	_catalog = load(NARRATIVE_CATALOG_PATH) as Resource
 	_s1_record = load(S1_RECORD_PATH) as Resource
