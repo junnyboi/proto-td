@@ -157,7 +157,7 @@ func _start_title() -> void:
 		_fail("I18n autoload unavailable")
 		return
 	if i18n.call("supported_locales") != PackedStringArray(["en-US", "zh-CN"]):
-		_fail("supported locale catalog unavailable")
+		_fail("exact en-US/zh-CN locales unavailable")
 		return
 	_catalog = load(NARRATIVE_CATALOG_PATH) as Resource
 	_s1_record = load(S1_RECORD_PATH) as Resource
@@ -291,8 +291,8 @@ func _try_s3_grid() -> void:
 		return
 	print(
 		(
-			"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
-			+ "s1_squad=ready s1_results=ready s1=ready "
+				"[STALE-CLASS-REGISTRY] PASS title=ready staging=ready "
+				+ "s1_squad=ready s1_results=ready s1=ready "
 			+ (
 				"s2_children=%d s3_children=%d s2_backdrops=0 s3_backdrops=0 frames=%d"
 				% [EXPECTED_S2_CHILDREN, EXPECTED_S3_CHILDREN, _frames]

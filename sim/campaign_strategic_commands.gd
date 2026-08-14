@@ -3,6 +3,8 @@ extends RefCounted
 ## Inherited P16.2 command surface. CampaignState keeps the frozen P16.1
 ## projection API; this base keeps each lint-owned public seam below 20 methods.
 
+const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+
 var _data: Dictionary = {}
 var _context: Dictionary = {}
 var _command_context: Dictionary = {}
@@ -232,7 +234,7 @@ func _plan_allocation(source: Dictionary) -> Dictionary:
 	)
 	if not allocated["accepted"]:
 		return allocated
-	var row := CampaignProgression.add_initial_fields({
+	var row := CampaignProgressionType.add_initial_fields({
 		"hero_id": allocated["hero_id"],
 		"operator_def_id": String(source["operator_def_id"]),
 		"recruitment_index": rows.size(),

@@ -11,8 +11,8 @@ const StageNarrativeCatalogType := preload(
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
+const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-const TrainingScreenType := preload("res://scripts/ui/training.gd")
 const SHELL_SIZE := Vector2(1080.0, 620.0)
 
 var _briefing: GridContainer = null
@@ -268,7 +268,7 @@ func _on_back_to_title() -> void:
 
 
 func _training_available() -> bool:
-	return TrainingScreenType.supports_campaign(Game.campaign)
+	return TrainingSupportType.supports_campaign(Game.campaign)
 
 
 func _stage_stars() -> Dictionary:
