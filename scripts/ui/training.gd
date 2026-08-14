@@ -8,16 +8,13 @@ const AetheriaPanelType := preload("res://scripts/ui/components/aetheria_panel.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
+const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const CampaignPromotionScript := preload("res://sim/campaign_promotion.gd")
 
 const SHELL_SIZE := Vector2(1160.0, 640.0)
 const COMPACT_SHELL_SIZE := Vector2(880.0, 640.0)
 const PORTRAIT_SHELL_SIZE := Vector2(640.0, 1120.0)
-const REQUIRED_CAMPAIGN_METHODS := [
-	&"training_roster", &"promotion_options", &"promote_hero", &"campaign_uid",
-	&"save_revision", &"strategic_hash",
-]
 const ERROR_KEYS := {
 	&"invalid_argument_type": &"ui.training.error.invalid_request",
 	&"unknown_hero": &"ui.training.error.unknown_hero",
@@ -100,12 +97,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 static func supports_campaign(value: Variant) -> bool:
-	if value == null:
-		return false
-	for method_name: StringName in REQUIRED_CAMPAIGN_METHODS:
-		if not value.has_method(method_name):
-			return false
-	return true
+	return TrainingSupportType.supports_campaign(value)
 
 
 static func build_command(campaign: Variant, hero_id: String, choice_id: String) -> Dictionary:
