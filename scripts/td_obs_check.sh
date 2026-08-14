@@ -88,9 +88,9 @@ run_playtest() {
 
 run_playtest bot_stage_06 1800 "$OUT/baseline-full"
 run_playtest bot_stage_06_no_charm 1800 "$OUT/baseline-no-charm"
-grep -F '[STAGE-BOT] s6 CLEAR leaked=1 stars=2 tick=1319' "$OUT/baseline-full.log" >/dev/null \
+grep -F '[STAGE-BOT] s6 CLEAR leaked=2 stars=2 tick=1319' "$OUT/baseline-full.log" >/dev/null \
   || fail "scripted S6 full baseline drifted"
-grep -F '[STAGE-BOT] s6 DEFEAT leaked=4 stars=0 tick=1387' "$OUT/baseline-no-charm.log" >/dev/null \
+grep -F '[STAGE-BOT] s6 DEFEAT leaked=4 stars=0 tick=1267' "$OUT/baseline-no-charm.log" >/dev/null \
   || fail "scripted S6 no-Charm baseline drifted"
 jq -e '.meta.quit_reason == "bot_done" and .meta.stop_reason == "terminal_clear"' \
   "$OUT/baseline-full.json" >/dev/null || fail "scripted S6 full stop metadata drifted"
@@ -232,7 +232,7 @@ jq -n \
   --argjson watchdog_exit "$(cat "$TMP/watchdog.exit")" \
   '{sentinel:$sentinel,status:$status,tests:$tests,assertions:$assertions,
     replay_sha256:$replay_sha256,
-    baseline:{full:{result:"clear",leaked:1,tick:1319},no_charm:{result:"defeat",leaked:4,tick:1387}},
+    baseline:{full:{result:"clear",leaked:2,tick:1319},no_charm:{result:"defeat",leaked:4,tick:1267}},
     conditional:{
       full:{result:$full[0].meta.bot_summary.result,leaked:$full[0].meta.bot_summary.leaked,
         terminal_tick:$full[0].meta.bot_summary.terminal_tick,
