@@ -9,6 +9,7 @@ const CampaignStateV3Script := preload("res://sim/campaign_state_v3.gd")
 const CampaignSaveStoreScript := preload("res://sim/campaign_save_store.gd")
 const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
 const CommandHistoryScript := preload("res://sim/campaign_v3_command_history.gd")
+const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
 const CampaignMutationScript := preload("res://sim/campaign_mutation.gd")
 
 
@@ -77,8 +78,11 @@ static func start_new(seed_value: int, context: Dictionary) -> Dictionary:
 static func commit(command: Dictionary, store: Variant) -> Dictionary:
 	if not command.get("accepted", false):
 		return _reject(command.get("error_code", &"invalid_command"))
-	var mutation: Variant = command.get("payload", {}).get("mutation")
-	if mutation == null or store == null:
+	var payload: Dictionary = command.get("payload", {})
+	var mutation: Variant = payload.get("mutation")
+	if mutation == null:
+		return _publish_duplicate(command, store)
+	if store == null:
 		return _reject(&"invalid_runtime_mutation")
 	var committed: Dictionary = mutation.retry_save(store)
 	if not committed["accepted"]:
@@ -96,6 +100,42 @@ static func commit(command: Dictionary, store: Variant) -> Dictionary:
 		"state": committed["payload"]["state"],
 		"result": committed["payload"]["result"].duplicate(true),
 		"events": (committed["events"] as Array).duplicate(true),
+	}
+
+
+static func _publish_duplicate(command: Dictionary, store: Variant) -> Dictionary:
+	var result: Dictionary = command.get("payload", {})
+	if (
+		store == null
+		or not store.has_method("_is_authority_store")
+		or not store._is_authority_store()
+		or result.get("fresh", true) != false
+		or not result.has("receipt_bytes")
+	):
+		return _reject(&"invalid_runtime_mutation")
+	var loaded: Dictionary = store.load()
+	if not loaded["accepted"]:
+		return _reject(loaded["error_code"])
+	var state: Variant = loaded["state"]
+	var durable := false
+	for record: Dictionary in state.data_copy()["command_receipts"]:
+		var expected: Dictionary = CommandsScript.duplicate_result(record)
+		if (
+			expected["payload"] == result
+			and expected["events"] == command.get("events", [])
+		):
+			durable = true
+			break
+	if not durable:
+		return _reject(&"duplicate_authority_mismatch")
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"retryable": false,
+		"mutation": null,
+		"state": state,
+		"result": result.duplicate(true),
+		"events": (command.get("events", []) as Array).duplicate(true),
 	}
 
 

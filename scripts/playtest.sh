@@ -31,7 +31,8 @@ mkdir -p "$OUT"
 PLAYTEST_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-playtest.XXXXXX")"
 export XDG_DATA_HOME="$PLAYTEST_USER_ROOT/data"
 export XDG_CONFIG_HOME="$PLAYTEST_USER_ROOT/config"
-mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME"
+export XDG_CACHE_HOME="$PLAYTEST_USER_ROOT/cache"
+mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
 cleanup_user_root() {
 	rm -rf "$PLAYTEST_USER_ROOT"
 }

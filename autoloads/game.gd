@@ -244,7 +244,10 @@ func record_result(result: int, stars: int) -> bool:
 		var command_id := "runtime:resolve:%s:%d" % [campaign.campaign_uid(), attempt_id]
 		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
 			campaign.resolve_attempt(
-				command_id, attempt_id, outcome, campaign.save_revision(),
+				command_id,
+				attempt_id,
+				outcome,
+				int(_pending_battle_ticket["expected_save_revision"]),
 			),
 			campaign_store,
 		)

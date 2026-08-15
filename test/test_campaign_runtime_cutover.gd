@@ -178,6 +178,55 @@ func test_campaign_result_retry_uses_original_accepted_outcome() -> void:
 	assert_eq(_game.campaign_projection()["stage_stars"][&"s1"], accepted_outcome["stars"])
 
 
+func test_runtime_duplicate_resolution_publishes_durable_accepted_outcome() -> void:
+	assert_true(_game.start_campaign(false))
+	var hero_ids: Array[StringName] = []
+	for hero: Dictionary in _game.campaign_projection()["ready_heroes"].slice(0, 3):
+		hero_ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = _game.start_stage(&"s1", hero_ids, false)
+	assert_true(begun["accepted"])
+	var ticket: Dictionary = begun["ticket"]
+	var model := _model_from_launch(_game.battle_launch())
+	assert_not_null(model)
+	_game.current_battle = model
+	_run(model, _winner(ticket))
+	assert_eq(model.result, BattleModel.Result.CLEAR)
+	var outcome: Dictionary = model.snapshot()["outcome"].duplicate(true)
+	var command_id := "runtime:resolve:%s:%d" % [
+		_game.campaign.campaign_uid(), ticket["attempt_id"],
+	]
+	var first: Dictionary = _game.commit_campaign_command(
+		_game.campaign.resolve_attempt(
+			command_id,
+			ticket["attempt_id"],
+			outcome,
+			ticket["expected_save_revision"],
+		)
+	)
+	assert_true(first["accepted"], str(first.get("error_code", &"")))
+	assert_true(first["result"]["fresh"])
+	var durable_text: String = _game.campaign.encode_save()["text"]
+	var duplicate: Dictionary = _game.campaign.resolve_attempt(
+		command_id,
+		ticket["attempt_id"],
+		outcome,
+		ticket["expected_save_revision"],
+	)
+	assert_true(duplicate["accepted"])
+	var forged: Dictionary = duplicate.duplicate(true)
+	forged["payload"]["outcome"]["stars"] = 0
+	var rejected: Dictionary = _game.commit_campaign_command(forged)
+	assert_false(rejected["accepted"])
+	assert_eq(rejected["error_code"], &"duplicate_authority_mismatch")
+	assert_eq(_game.campaign.encode_save()["text"], durable_text)
+	assert_true(_game.record_result(BattleModel.Result.DEFEAT, 0))
+	assert_eq(_game.campaign.encode_save()["text"], durable_text)
+	assert_eq(_game.last_result["stage_id"], &"s1")
+	assert_eq(_game.last_result["result"], BattleModel.Result.CLEAR)
+	for key: String in ["stars", "leaks", "kills"]:
+		assert_eq(_game.last_result[key], outcome[key])
+
+
 func test_rejected_stage_and_squad_requests_leave_every_authority_fact_exact() -> void:
 	assert_true(_game.start_campaign(false))
 	var hero_id := StringName(_game.campaign_projection()["ready_heroes"][0]["hero_id"])

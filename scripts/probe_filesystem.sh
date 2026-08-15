@@ -17,6 +17,7 @@ done
 root="$(mktemp -d)"
 trap 'rm -rf "$root"' EXIT
 mkdir -p "$root/data" "$root/config" "$root/cache"
+export XDG_CACHE_HOME="$root/cache"
 
 version="$($GODOT --headless --version)"
 [[ "$version" == 4.7.1.stable.official.* ]] || {
@@ -55,8 +56,10 @@ SCENE
 	    cd "$root/project"
 	    import_config="$root/editor-config"
 	    protos_write_single_threaded_import_profile "$import_config"
-	    XDG_CONFIG_HOME="$import_config" timeout 120s "$GODOT" --headless --recovery-mode --path . --import
-		    XDG_CONFIG_HOME="$import_config" timeout 180s "$GODOT" --headless --path . --export-release Web "$root/export/index.html"
+		    XDG_CONFIG_HOME="$import_config" XDG_CACHE_HOME="$root/cache" \
+		      timeout 120s "$GODOT" --headless --recovery-mode --path . --import
+			    XDG_CONFIG_HOME="$import_config" XDG_CACHE_HOME="$root/cache" \
+			      timeout 180s "$GODOT" --headless --path . --export-release Web "$root/export/index.html"
 		  ) >"$OUT_DIR/export.log" 2>&1
 	  python3 - "$root/export/index.html" <<'PY'
 from pathlib import Path

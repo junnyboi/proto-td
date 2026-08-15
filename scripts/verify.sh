@@ -11,6 +11,7 @@ GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WEB_TEMPLATE_SOURCE="$HOME/.local/share/godot/export_templates/4.7.1.stable/web_nothreads_release.zip"
 WEB_TEMPLATE_SHA256="b7b7d7da29fc6cc2f4934fdd26cc571a40e7af57f716ea3eb7e18da720dae28a"
+VERIFY_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-verify.XXXXXX")"
 cd "$ROOT"
 mkdir -p artifacts
 
@@ -43,7 +44,12 @@ quiet_windows() {
   fi
 }
 cleanup_quiet() { [[ $QUIET -eq 1 ]] && rm -f override.cfg; }
-trap cleanup_quiet EXIT
+cleanup_verify() {
+	cleanup_quiet
+	chmod -R u+w "$VERIFY_USER_ROOT" 2>/dev/null || true
+	rm -rf "$VERIFY_USER_ROOT"
+}
+trap cleanup_verify EXIT
 
 RESULTS="[]"
 record() { # rung status seconds artifact
@@ -80,7 +86,7 @@ res://test/test_replay_codec.gd 5/5 passed.
 res://test/test_hero_state.gd 3/3 passed.
 res://test/test_roster_state.gd 5/5 passed.
 res://test/test_campaign_state_p16.gd 11/11 passed.
-res://test/test_campaign_runtime_cutover.gd 8/8 passed.
+res://test/test_campaign_runtime_cutover.gd 9/9 passed.
 res://test/test_campaign_v3_recruitment.gd 4/4 passed.
 res://test/test_game_campaign_compat.gd 3/3 passed.
 res://test/test_campaign_commands.gd 12/12 passed.
@@ -88,7 +94,7 @@ res://test/test_campaign_resolution.gd 10/10 passed.
 res://test/test_campaign_save_store.gd 22/22 passed.
 EOF
 }
-P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_campaign_runtime_cutover.gd\n8/8 passed.\nres://test/test_campaign_v3_recruitment.gd\n4/4 passed.\nres://test/test_game_campaign_compat.gd\n3/3 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
+P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_campaign_runtime_cutover.gd\n9/9 passed.\nres://test/test_campaign_v3_recruitment.gd\n4/4 passed.\nres://test/test_game_campaign_compat.gd\n3/3 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
 P16_GATE_GOOD=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_BAD=$'res://test/test_dp_economy.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_INJECTED=$'res://test/test_p16_contract_fixtures.gd\nWARNING: 15/15 passed.\n15/15 passed.\n14/15 passed.\n'"$P16_GATE_TAIL"
@@ -157,9 +163,9 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	shift 3
 	local t0 t1 out code user_key user_root
 	user_key=$(tr -c 'A-Za-z0-9_.-' '_' <<< "$rung")
-	user_root="$ROOT/.godot/verify-user/$user_key"
+	user_root="$VERIFY_USER_ROOT/$user_key"
 	rm -rf "$user_root"
-	mkdir -p "$user_root/data/godot" "$user_root/config"
+	mkdir -p "$user_root/data/godot" "$user_root/config" "$user_root/cache"
 	if [[ "$rung" == "R3.7-filesystem-web" ]]; then
 		local template_dir template_copy
 		template_dir="$user_root/data/godot/export_templates/4.7.1.stable"
@@ -181,6 +187,7 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	t0=$(date +%s)
 	out=$(timeout "$budget" env \
 		XDG_DATA_HOME="$user_root/data" XDG_CONFIG_HOME="$user_root/config" \
+		XDG_CACHE_HOME="$user_root/cache" \
 		"$@" 2>&1)
   code=$?
   t1=$(date +%s)
