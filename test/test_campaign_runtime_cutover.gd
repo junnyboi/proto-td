@@ -61,6 +61,35 @@ func test_fresh_runtime_owns_five_distinct_recruits_and_durable_ticket() -> void
 	assert_eq(loaded["state"].encode_save()["text"], _game.campaign.encode_save()["text"])
 
 
+func test_restart_after_durable_begin_restores_exact_ticket_and_resolves() -> void:
+	assert_true(_game.start_campaign(false))
+	var hero_ids: Array[StringName] = []
+	for hero: Dictionary in _game.campaign_projection()["ready_heroes"].slice(0, 3):
+		hero_ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = _game.start_stage(&"s1", hero_ids, false)
+	assert_true(begun["accepted"])
+	var ticket: Dictionary = begun["ticket"]
+	var begun_text: String = _game.campaign.encode_save()["text"]
+	_game.free()
+	_game = GameScript.new()
+	_game.set_run_seed(42)
+	assert_true(_game.start_campaign(false))
+	assert_eq(_game.campaign.encode_save()["text"], begun_text)
+	assert_eq(_game.selected_stage_id, &"s1")
+	assert_eq(_game.selected_squad, hero_ids)
+	var launch: Dictionary = _game.battle_launch()
+	assert_eq(launch["input"], ticket)
+	assert_eq(launch["trusted_ticket_hashes"], [ticket["ticket_hash"]])
+	var model := _model_from_launch(launch)
+	assert_not_null(model)
+	_game.current_battle = model
+	_run(model, _winner(ticket))
+	assert_eq(model.result, BattleModel.Result.CLEAR)
+	assert_true(_game.record_result(model.result, model.stars))
+	assert_eq(_game.campaign.save_revision(), 3)
+	assert_eq(_game.campaign.next_attempt_id(), _game.campaign.next_resolution_index())
+
+
 func test_player_battle_resolves_model_outcome_and_reloads_exact_authority() -> void:
 	assert_true(_game.start_campaign(false))
 	var initial: Array = _game.campaign_projection()["ready_heroes"]

@@ -7,7 +7,9 @@ extends RefCounted
 
 const CampaignStateV3Script := preload("res://sim/campaign_state_v3.gd")
 const CampaignSaveStoreScript := preload("res://sim/campaign_save_store.gd")
+const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
 const CommandHistoryScript := preload("res://sim/campaign_v3_command_history.gd")
+const CampaignMutationScript := preload("res://sim/campaign_mutation.gd")
 
 
 static func load_or_create(seed_value: int, context: Dictionary) -> Dictionary:
@@ -19,10 +21,10 @@ static func load_or_create(seed_value: int, context: Dictionary) -> Dictionary:
 	var store_result := CampaignSaveStoreScript.create_production(bootstrap["value"])
 	if not store_result["accepted"]:
 		return _reject(store_result["error_code"])
-	var store: CampaignSaveStore = store_result["value"]
+	var store: Variant = store_result["value"]
 	var loaded: Dictionary = store.load()
 	if loaded["accepted"]:
-		var state: CampaignStateV3 = loaded["state"]
+		var state: Variant = loaded["state"]
 		if CommandHistoryScript.can_append(state.data_copy(), context):
 			return {"accepted": true, "error_code": &"", "state": state, "store": store}
 		# Legacy/pre-command bytes remain valid migration inputs, but cannot
@@ -42,13 +44,13 @@ static func start_new(seed_value: int, context: Dictionary) -> Dictionary:
 	var store_result := CampaignSaveStoreScript.create_production(bootstrap["value"])
 	if not store_result["accepted"]:
 		return _reject(store_result["error_code"])
-	var store: CampaignSaveStore = store_result["value"]
-	var existing := store.load()
+	var store: Variant = store_result["value"]
+	var existing: Dictionary = store.load()
 	var generation := 1
 	var expected_preimage := ""
 	if existing["accepted"]:
 		var prior: Variant = existing["state"]
-		if prior.campaign_generation() >= CampaignV3Codec.U63_MAX:
+		if prior.campaign_generation() >= CampaignV3CodecScript.U63_MAX:
 			return _reject(&"generation_counter_exhausted")
 		generation = prior.campaign_generation() + 1
 		expected_preimage = prior._validated_save_text()
@@ -57,7 +59,7 @@ static func start_new(seed_value: int, context: Dictionary) -> Dictionary:
 	var fresh := CampaignStateV3Script.create(seed_value, generation, context)
 	if not fresh["accepted"]:
 		return _reject(fresh["error_code"])
-	var saved := store.save(expected_preimage, fresh["value"])
+	var saved: Dictionary = store.save(expected_preimage, fresh["value"])
 	if saved["status"] != CampaignSaveStoreScript.COMMITTED:
 		return _reject(saved["error_code"])
 	var authority: Dictionary = store._consume_commit_authority()
@@ -72,7 +74,7 @@ static func start_new(seed_value: int, context: Dictionary) -> Dictionary:
 	}
 
 
-static func commit(command: Dictionary, store: CampaignSaveStore) -> Dictionary:
+static func commit(command: Dictionary, store: Variant) -> Dictionary:
 	if not command.get("accepted", false):
 		return _reject(command.get("error_code", &"invalid_command"))
 	var mutation: Variant = command.get("payload", {}).get("mutation")
@@ -83,7 +85,7 @@ static func commit(command: Dictionary, store: CampaignSaveStore) -> Dictionary:
 		return {
 			"accepted": false,
 			"error_code": committed["error_code"],
-			"retryable": mutation.status() == CampaignMutation.PENDING,
+			"retryable": mutation.status() == CampaignMutationScript.PENDING,
 			"mutation": mutation,
 		}
 	return {
@@ -97,15 +99,15 @@ static func commit(command: Dictionary, store: CampaignSaveStore) -> Dictionary:
 	}
 
 
-static func retry(mutation: CampaignMutation, store: CampaignSaveStore) -> Dictionary:
+static func retry(mutation: Variant, store: Variant) -> Dictionary:
 	if mutation == null or store == null:
 		return _reject(&"invalid_runtime_mutation")
-	var committed := mutation.retry_save(store)
+	var committed: Dictionary = mutation.retry_save(store)
 	if not committed["accepted"]:
 		return {
 			"accepted": false,
 			"error_code": committed["error_code"],
-			"retryable": mutation.status() == CampaignMutation.PENDING,
+			"retryable": mutation.status() == CampaignMutationScript.PENDING,
 			"mutation": mutation,
 		}
 	return {

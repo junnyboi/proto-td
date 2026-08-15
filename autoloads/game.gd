@@ -69,9 +69,31 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
 	_campaign_battle_active = false
+	_restore_pending_attempt()
 	if open_campaign_ui:
-		open_staging()
+		if _campaign_battle_active:
+			_queue_battle(selected_stage_id)
+		else:
+			open_staging()
 	return true
+
+
+func _restore_pending_attempt() -> void:
+	var data: Dictionary = campaign.data_copy()
+	if int(data["next_attempt_id"]) != int(data["next_resolution_index"]) + 1:
+		return
+	var tickets: Array = data["tickets"]
+	if tickets.is_empty():
+		return
+	var ticket: Dictionary = tickets[-1]
+	if int(ticket["attempt_id"]) != int(data["next_resolution_index"]):
+		return
+	selected_stage_id = StringName(ticket["stage_id"])
+	selected_squad = []
+	for row: Dictionary in ticket["squad"]:
+		selected_squad.append(StringName(row["hero_id"]))
+	_pending_battle_ticket = ticket.duplicate(true)
+	_campaign_battle_active = true
 
 
 ## Player campaign launch is an authoritative strategic command. Selection and
@@ -86,14 +108,29 @@ func start_stage(
 		selected_squad = squad.duplicate()
 		start_battle(stage_id, open_battle)
 		return {"accepted": true, "error_code": &"", "ticket": {}}
-	var command_id := "runtime:begin:%s:%d" % [
-		campaign.campaign_uid(), campaign.next_attempt_id(),
-	]
-	var command: Dictionary = campaign.begin_attempt(
-		command_id, stage_id, squad, run_seed, campaign.save_revision(),
+	var command_id := (
+		"runtime:begin:%s:%d"
+		% [
+			campaign.campaign_uid(),
+			campaign.next_attempt_id(),
+		]
 	)
-	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
-		command, campaign_store,
+	var command: Dictionary = (
+		campaign
+		. begin_attempt(
+			command_id,
+			stage_id,
+			squad,
+			run_seed,
+			campaign.save_revision(),
+		)
+	)
+	var committed: Dictionary = (
+		CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT
+		. commit(
+			command,
+			campaign_store,
+		)
 	)
 	if not committed["accepted"]:
 		return committed
@@ -120,22 +157,14 @@ func _battle_squad() -> Array[StringName]:
 
 func battle_launch() -> Dictionary:
 	return {
-		"input": (
-			_pending_battle_ticket.duplicate(true)
-			if _campaign_battle_active
-			else _battle_squad()
-		),
-		"trusted_ticket_hashes": (
-			[String(_pending_battle_ticket["ticket_hash"])]
-			if _campaign_battle_active
-			else []
-		),
-		"trap_ids": loadout_trap_ids() if _campaign_battle_active else _scan_ids(
-			"res://data/traps"
-		),
-		"spell_ids": loadout_spell_ids() if _campaign_battle_active else _scan_ids(
-			"res://data/spells"
-		),
+		"input":
+		_pending_battle_ticket.duplicate(true) if _campaign_battle_active else _battle_squad(),
+		"trusted_ticket_hashes":
+		[String(_pending_battle_ticket["ticket_hash"])] if _campaign_battle_active else [],
+		"trap_ids":
+		loadout_trap_ids() if _campaign_battle_active else _scan_ids("res://data/traps"),
+		"spell_ids":
+		loadout_spell_ids() if _campaign_battle_active else _scan_ids("res://data/spells"),
 	}
 
 
@@ -146,9 +175,7 @@ func is_stage_unlocked(stage_id: StringName) -> bool:
 	var position := (projection["stage_ids"] as Array).find(stage_id)
 	return (
 		position <= 0
-		or (projection["stage_stars"] as Dictionary).has(
-			projection["stage_ids"][position - 1]
-		)
+		or (projection["stage_stars"] as Dictionary).has(projection["stage_ids"][position - 1])
 	)
 
 
@@ -214,17 +241,30 @@ func record_result(result: int, stars: int) -> bool:
 		return false
 	var committed: Dictionary
 	if _pending_campaign_mutation != null:
-		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
-			_pending_campaign_mutation, campaign_store,
+		committed = (
+			CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT
+			. retry(
+				_pending_campaign_mutation,
+				campaign_store,
+			)
 		)
 	else:
 		var attempt_id := int(_pending_battle_ticket["attempt_id"])
 		var command_id := "runtime:resolve:%s:%d" % [campaign.campaign_uid(), attempt_id]
-		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
-			campaign.resolve_attempt(
-				command_id, attempt_id, outcome, campaign.save_revision(),
-			),
-			campaign_store,
+		committed = (
+			CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT
+			. commit(
+				(
+					campaign
+					. resolve_attempt(
+						command_id,
+						attempt_id,
+						outcome,
+						campaign.save_revision(),
+					)
+				),
+				campaign_store,
+			)
 		)
 	if not committed["accepted"]:
 		last_campaign_error = committed["error_code"]
@@ -241,9 +281,7 @@ func record_result(result: int, stars: int) -> bool:
 		"leaks": current_battle.leaked,
 		"kills": current_battle.killed,
 		"rewards_granted": resolution["rewards_granted"].duplicate(true),
-		"class_entitlements_granted": (
-			resolution["class_entitlements_granted"].duplicate()
-		),
+		"class_entitlements_granted": resolution["class_entitlements_granted"].duplicate(),
 		"xp_awards": resolution["xp_awards"].duplicate(true),
 		"dead_hero_ids": resolution["dead_hero_ids"].duplicate(),
 	}
@@ -255,8 +293,12 @@ func record_result(result: int, stars: int) -> bool:
 func commit_campaign_command(command: Dictionary) -> Dictionary:
 	if not campaign_active or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
-	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
-		command, campaign_store,
+	var committed: Dictionary = (
+		CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT
+		. commit(
+			command,
+			campaign_store,
+		)
 	)
 	if committed["accepted"]:
 		campaign = committed["state"]
