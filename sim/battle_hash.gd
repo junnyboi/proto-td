@@ -15,6 +15,8 @@ extends RefCounted
 ## within that resolution or the hash under-reads them (covered by the
 ## paranoia table in test_hash_paranoia.gd).
 
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
+
 
 static func of(m: BattleModel) -> int:
 	var bytes := PackedByteArray()
@@ -115,7 +117,7 @@ static func of(m: BattleModel) -> int:
 	if m._is_ticketed():
 		_append_int(bytes, 5)
 		_append_ascii(bytes, String(m._ticket["ticket_hash"]))
-		_append_ascii(bytes, CanonicalJson.sha256_hex(m._ticket))
+		_append_ascii(bytes, CanonicalJsonScript.sha256_hex(m._ticket))
 		_append_ascii(bytes, String(m.terminal_reason))
 		for record: Dictionary in m._battle_records:
 			_append_ascii(bytes, String(record["battle_id"]))
@@ -124,8 +126,8 @@ static func of(m: BattleModel) -> int:
 			_append_int(bytes, int(record["retreats"]))
 			_append_int(bytes, 1 if bool(record["fell"]) else 0)
 			_append_int(bytes, -1 if record["first_fall_tick"] == null else int(record["first_fall_tick"]))
-		_append_ascii(bytes, CanonicalJson.sha256_hex(m._battle_records))
-		_append_ascii(bytes, CanonicalJson.sha256_hex(m._outcome))
+		_append_ascii(bytes, CanonicalJsonScript.sha256_hex(m._battle_records))
+		_append_ascii(bytes, CanonicalJsonScript.sha256_hex(m._outcome))
 	return _fnv1a64(bytes)
 
 

@@ -4,6 +4,8 @@ extends RefCounted
 ## The sole tactical BattleOutcome producer. UI and campaign code consume the
 ## already-sealed model result; they never reconstruct terminal attribution.
 
+const BattleOutcomeV3Script := preload("res://sim/battle_outcome_v3.gd")
+
 
 static func seal(model: BattleModel) -> Dictionary:
 	if not model._is_ticketed() or model.result == BattleModel.Result.RUNNING:
@@ -12,10 +14,10 @@ static func seal(model: BattleModel) -> Dictionary:
 	for record: Dictionary in model._battle_records:
 		rows.append(record.duplicate(true))
 	var sealed := (
-		BattleOutcomeV3
+		BattleOutcomeV3Script
 		. seal(
 			{
-				"schema_version": BattleOutcomeV3.SCHEMA_VERSION,
+				"schema_version": BattleOutcomeV3Script.SCHEMA_VERSION,
 				"attempt_id": model._ticket["attempt_id"],
 				"ticket_hash": model._ticket["ticket_hash"],
 				"result": "clear" if model.result == BattleModel.Result.CLEAR else "defeat",

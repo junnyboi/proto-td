@@ -20,6 +20,8 @@ const OP_CLASS_BY_OPERATOR := {
 	"witch_doctor_1": OperatorDef.OpClass.HEALER,
 	"recruit": OperatorDef.OpClass.RECRUIT,
 }
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 
 
@@ -57,14 +59,14 @@ static func configure(
 static func prepare(value: Variant, stage: StageDef) -> Dictionary:
 	if stage == null:
 		return _reject(&"invalid_ticket_stage")
-	var normalized := BattleTicket.normalize(value)
+	var normalized := BattleTicketScript.normalize(value)
 	if not normalized["accepted"]:
 		return normalized
 	var ticket: Dictionary = normalized["value"]
 	for index: int in ticket["squad"].size():
 		var row: Dictionary = ticket["squad"][index]
 		var expected_battle_id := (
-			CanonicalJson
+			CanonicalJsonScript
 			. sha256_hex(
 				[
 					ticket["campaign_uid"],
