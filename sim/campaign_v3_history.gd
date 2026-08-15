@@ -22,6 +22,9 @@ const RECEIPT_KEYS := [
 ]
 const REWARD_KEYS := ["id", "kind"]
 const XP_KEYS := ["hero_id", "delta"]
+const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
+const HashScript := preload("res://sim/campaign_v3_hash.gd")
+const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
 
 
 static func normalize(
@@ -65,16 +68,16 @@ static func _normalize_anchor(
 		return _reject(&"invalid_resolution_anchor")
 	if not _in_range(value["save_revision_after"], 2, U63_MAX):
 		return _reject(&"invalid_resolution_anchor")
-	var before := CampaignV3StateCodec.normalize_core(
-		value["before_core"], context, core_keys, hero_keys,
+	var before: Dictionary = load(STATE_CODEC_PATH).call(
+		"normalize_core", value["before_core"], context, core_keys, hero_keys,
 	)
-	var after := CampaignV3StateCodec.normalize_core(
-		value["after_core"], context, core_keys, hero_keys,
+	var after: Dictionary = load(STATE_CODEC_PATH).call(
+		"normalize_core", value["after_core"], context, core_keys, hero_keys,
 	)
 	if not before["accepted"] or not after["accepted"]:
 		return _reject(&"invalid_resolution_anchor")
-	var before_hash := CampaignV3Hash.of_core(before["value"], context)
-	var after_hash := CampaignV3Hash.of_core(after["value"], context)
+	var before_hash: Dictionary = HashScript.of_core(before["value"], context)
+	var after_hash: Dictionary = HashScript.of_core(after["value"], context)
 	if not before_hash["accepted"] or not after_hash["accepted"]:
 		return _reject(&"resolution_anchor_hash_mismatch")
 	if (
@@ -285,7 +288,7 @@ static func _validate_ticket_snapshot(
 	var pre_attempt: Dictionary = before.duplicate(true)
 	pre_attempt["tickets"].pop_back()
 	pre_attempt["next_attempt_id"] = ticket["attempt_id"]
-	var strategic := CampaignV3Hash.of_core(pre_attempt, context)
+	var strategic: Dictionary = HashScript.of_core(pre_attempt, context)
 	if not strategic["accepted"] or strategic["hex"] != ticket["strategic_hash"]:
 		return _reject(&"ticket_snapshot_mismatch")
 	var heroes_by_id := {}
@@ -420,7 +423,7 @@ static func _apply_choice(
 		"heroes": heroes,
 		"class_entitlements": class_entitlements,
 	}
-	var validated := CampaignV3PromotionRules.validate_choice(pre_state, context, {
+	var validated: Dictionary = PromotionRulesScript.validate_choice(pre_state, context, {
 		"hero_id": choice["hero_id"],
 		"to_class_id": choice["to_class_id"],
 	})

@@ -20,6 +20,15 @@ const MEMORIAL_KEYS := [
 const DEATH_KEYS := [
 	"resolution_index", "attempt_id", "stage_id", "terminal_reason", "terminal_tick",
 ]
+const COMMAND_CODEC_PATH := "res://sim/campaign_v3_command_codec.gd"
+const HISTORY_PATH := "res://sim/campaign_v3_history.gd"
+const COMMAND_HISTORY_PATH := "res://sim/campaign_v3_command_history.gd"
+const HASH_PATH := "res://sim/campaign_v3_hash.gd"
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
+const ClassDefScript := preload("res://data/class_def.gd")
+const HeroNamesScript := preload("res://sim/hero_names.gd")
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 
 
 
@@ -37,7 +46,7 @@ static func normalize_data(
 	var core := normalize_core(core_input, context, core_keys, hero_keys)
 	if not core["accepted"]:
 		return core
-	var commands := CampaignV3CommandCodec.normalize_records(
+	var commands: Dictionary = load(COMMAND_CODEC_PATH).call("normalize_records",
 		data["command_receipts"], core["value"], context,
 	)
 	if not commands["accepted"]:
@@ -46,7 +55,7 @@ static func normalize_data(
 	current["command_receipts"] = commands["value"]
 	current["resolution_anchor"] = data["resolution_anchor"]
 	current["last_resolution"] = data["last_resolution"]
-	var history := CampaignV3History.normalize(
+	var history: Dictionary = load(HISTORY_PATH).call("normalize",
 		data["resolution_anchor"], data["last_resolution"], current, context,
 		core_keys, hero_keys,
 	)
@@ -54,7 +63,9 @@ static func normalize_data(
 		return history
 	current["resolution_anchor"] = history["value"]["anchor"]
 	current["last_resolution"] = history["value"]["receipt"]
-	var command_history := CampaignV3CommandHistory.validate(current, context)
+	var command_history: Dictionary = load(COMMAND_HISTORY_PATH).call(
+		"validate", current, context,
+	)
 	if not command_history["accepted"]:
 		return command_history
 	var ordered := {}
@@ -81,7 +92,7 @@ static func normalize_core(
 		return _reject(&"invalid_campaign_uid")
 	if (
 		value["campaign_uid"]
-		!= HeroIdentity.campaign_uid(value["campaign_seed"], value["campaign_generation"])
+			!= HeroIdentityScript.campaign_uid(value["campaign_seed"], value["campaign_generation"])
 	):
 		return _reject(&"campaign_uid_mismatch")
 	for key: String in [
@@ -258,7 +269,7 @@ static func _normalize_heroes(value: Variant, context: Dictionary, hero_keys: Ar
 			return _reject(&"invalid_hero")
 		if raw["recruitment_index"] != index or not _is_hex(String(raw["hero_id"]), 16):
 			return _reject(&"invalid_hero")
-		if raw["progression_rules_version"] != ClassDef.RULES_VERSION:
+		if raw["progression_rules_version"] != ClassDefScript.RULES_VERSION:
 			return _reject(&"invalid_progression_rules_version")
 		if raw["acquisition_operator_def_id"] != "recruit":
 			return _reject(&"specialist_creation_forbidden")
@@ -268,13 +279,13 @@ static func _normalize_heroes(value: Variant, context: Dictionary, hero_keys: Ar
 			return _reject(&"invalid_hero")
 		if not _in_range(raw["recruited_after_resolution_index"], 0, U63_MAX):
 			return _reject(&"invalid_hero")
-		if raw["name_version"] != HeroNames.VERSION:
+		if raw["name_version"] != HeroNamesScript.VERSION:
 			return _reject(&"invalid_hero")
 		if String(raw["recruit_source"]) not in SOURCE_VALUES:
 			return _reject(&"invalid_hero")
 		if not _ascii(String(raw["source_id"]), true):
 			return _reject(&"invalid_hero")
-		if not CampaignHeroCodec.valid_callsign(raw["custom_callsign"]):
+		if not HeroCodecScript.valid_callsign(raw["custom_callsign"]):
 			return _reject(&"invalid_hero")
 		if String(raw["life_status"]) not in LIFE_VALUES:
 			return _reject(&"invalid_hero")
@@ -323,7 +334,7 @@ static func _validate_class_projection(hero: Dictionary, context: Dictionary) ->
 		return false
 	if class_id == "recruit":
 		return hero["first_class_id"] == "recruit" and hero["advanced_class_id"] == null
-	if int(row["stage"]) == ClassDef.Stage.STANDARD:
+	if int(row["stage"]) == ClassDefScript.Stage.STANDARD:
 		return hero["first_class_id"] == class_id and hero["advanced_class_id"] == null
 	return (
 		hero["first_class_id"] == row["promotion_from_class_id"]
@@ -375,7 +386,7 @@ static func _normalize_tickets(value: Variant, campaign_uid: String) -> Dictiona
 	var out: Array[Dictionary] = []
 	var previous_attempt := 0
 	for raw: Variant in value:
-		var ticket := BattleTicket.normalize(raw)
+		var ticket := BattleTicketScript.normalize(raw)
 		if not ticket["accepted"]:
 			return ticket
 		if ticket["value"]["campaign_uid"] != campaign_uid:
@@ -531,7 +542,7 @@ static func _validate_unresolved_ticket_issuance(
 	var pre_attempt: Dictionary = core.duplicate(true)
 	pre_attempt["tickets"] = tickets.slice(0, tickets.size() - 1)
 	pre_attempt["next_attempt_id"] = int(core["next_attempt_id"]) - 1
-	var expected_hash := CampaignV3Hash._of_normalized_core(pre_attempt)
+	var expected_hash: Dictionary = load(HASH_PATH).call("_of_normalized_core", pre_attempt)
 	if ticket["strategic_hash"] != expected_hash["hex"]:
 		return _reject(&"ticket_issuance_mismatch")
 	return _accept(null)

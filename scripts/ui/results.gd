@@ -17,6 +17,7 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ClassDefType := preload("res://data/class_def.gd")
 const NARRATIVE_CATALOG := preload(
 	"res://data/presentation/narrative/stage_narrative_catalog.tres"
 )
@@ -193,7 +194,7 @@ func _reward_name(reward: Dictionary) -> String:
 
 
 func _class_name(class_id: String) -> String:
-	var definition := load("res://data/classes/%s.tres" % class_id) as ClassDef
+	var definition := load("res://data/classes/%s.tres" % class_id) as ClassDefType
 	return UiCopyType.text(definition.name_key, definition.name) if definition != null else class_id
 
 

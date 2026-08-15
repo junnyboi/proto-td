@@ -9,6 +9,7 @@ const COMMITTED := &"committed"
 const ABANDONED := &"abandoned"
 const BLOCKED := &"blocked"
 const SAVE_STORE_SCRIPT := preload("res://sim/campaign_save_store.gd")
+const BATTLE_TICKET_PATH := "res://sim/campaign_battle_ticket.gd"
 
 var _operation: StringName
 var _status := PENDING
@@ -20,7 +21,7 @@ var _pre_hash := ""
 var _prospective_hash := ""
 var _staged_events: Array[Dictionary] = []
 var _result: Dictionary = {}
-var _pending_attempt: CampaignPendingAttempt
+var _pending_attempt: Variant
 var _pending_authority: Callable
 
 
@@ -30,10 +31,10 @@ static func _create(
 	prospective_state: Variant,
 	staged_events: Array[Dictionary],
 	result: Dictionary,
-	pending_attempt: CampaignPendingAttempt = null,
+	pending_attempt: Variant = null,
 	pending_authority: Callable = Callable(),
 ) -> Dictionary:
-	var mutation := CampaignMutation.new()
+	var mutation: Variant = (load("res://sim/campaign_mutation.gd") as GDScript).new()
 	mutation._operation = operation_name
 	mutation._pre_state = pre_state
 	mutation._prospective_state = prospective_state
@@ -74,18 +75,18 @@ func prospective_hash() -> String:
 	return _prospective_hash
 
 
-func retry_save(store: CampaignSaveStore) -> Dictionary:
+func retry_save(store: Variant) -> Dictionary:
 	if _status != PENDING or store == null:
 		return _reject(&"mutation_not_pending")
 	if store.get_script() != SAVE_STORE_SCRIPT or not store._is_authority_store():
 		return _reject(&"invalid_save_store")
-	var save_result := store.save(_pre_save, _prospective_state)
+	var save_result: Dictionary = store.save(_pre_save, _prospective_state)
 	var save_code: StringName = save_result["error_code"]
 	var events: Array[Dictionary] = [
 		_event(&"autosave_attempted", _save_payload(&"")),
 	]
 	match save_result["status"]:
-		CampaignSaveStore.COMMITTED:
+		SAVE_STORE_SCRIPT.COMMITTED:
 			var authority: Dictionary = store._consume_commit_authority()
 			var authoritative_state: Variant = authority.get("state")
 			var valid_authority: bool = (
@@ -107,7 +108,7 @@ func retry_save(store: CampaignSaveStore) -> Dictionary:
 			events.append(_event(&"autosave_succeeded", _save_payload(&"")))
 			events.append_array(_staged_events.duplicate(true))
 			return _accepted(events, _committed_payload(authoritative_state))
-		CampaignSaveStore.RETRYABLE:
+		SAVE_STORE_SCRIPT.RETRYABLE:
 			events.append(_event(&"autosave_failed", _save_payload(save_code)))
 			return _failed(save_code, events, {"status": String(PENDING)})
 		_:
@@ -151,9 +152,9 @@ func _finalize_capability(
 	if _pending_attempt == null:
 		if (
 			_operation == &"begin_attempt" and committed
-			and _result.get("ticket") is CampaignBattleTicket
-		):
-			var ticket: CampaignBattleTicket = _result["ticket"]
+				and _is_legacy_ticket(_result.get("ticket"))
+			):
+			var ticket: Variant = _result["ticket"]
 			var issue: Callable = authority.get("pending_issue", Callable())
 			if issue.is_valid():
 				var issued: Dictionary = issue.call(
@@ -168,13 +169,17 @@ func _finalize_capability(
 
 func _committed_payload(committed_state: Variant) -> Dictionary:
 	var result := _result.duplicate(true)
-	if _operation == &"begin_attempt" and _result.get("ticket") is CampaignBattleTicket:
+	if _operation == &"begin_attempt" and _is_legacy_ticket(_result.get("ticket")):
 		result["pending_attempt"] = _pending_attempt
 	return {
 		"status": String(COMMITTED),
 		"state": committed_state,
 		"result": result,
 	}
+
+
+static func _is_legacy_ticket(value: Variant) -> bool:
+	return typeof(value) == TYPE_OBJECT and value.get_script() == load(BATTLE_TICKET_PATH)
 
 
 func _save_payload(code: StringName) -> Dictionary:

@@ -9,6 +9,12 @@ const RECRUIT_ID := "recruit"
 const ATTEMPT_RULES_PATH := "res://sim/campaign_v3_attempts.gd"
 const HASH_PATH := "res://sim/campaign_v3_hash.gd"
 const RECRUITMENT_RULES_PATH := "res://sim/campaign_v3_recruitment.gd"
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
+const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
+const ClassDefScript := preload("res://data/class_def.gd")
+const HeroNamesScript := preload("res://sim/hero_names.gd")
 
 
 static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
@@ -107,10 +113,10 @@ static func _replay_begin(
 	if not strategic["accepted"]:
 		return _reject(&"command_history_transition_mismatch")
 	var ticket := (
-		BattleTicket
+		BattleTicketScript
 		. seal(
 			{
-				"schema_version": BattleTicket.SCHEMA_VERSION,
+				"schema_version": BattleTicketScript.SCHEMA_VERSION,
 				"campaign_uid": data["campaign_uid"],
 				"attempt_id": data["next_attempt_id"],
 				"stage_id": payload["stage_id"],
@@ -154,7 +160,7 @@ static func _replay_resolution(
 		or ticket["expected_save_revision"] != data["save_revision"]
 	):
 		return _reject(&"command_history_transition_mismatch")
-	var outcome := BattleOutcomeV3.normalize(payload["outcome"], ticket)
+	var outcome := BattleOutcomeScript.normalize(payload["outcome"], ticket)
 	if not outcome["accepted"]:
 		return _reject(&"command_history_transition_mismatch")
 	var derived: Dictionary = (
@@ -183,7 +189,7 @@ static func _replay_promotions(
 		return _reject(&"command_history_transition_mismatch")
 	var validated: Array[Dictionary] = []
 	for choice: Dictionary in record["payload"]["choices"]:
-		var result := CampaignV3PromotionRules.validate_choice(data, context, choice)
+		var result := PromotionRulesScript.validate_choice(data, context, choice)
 		if not result["accepted"]:
 			return _reject(&"command_history_transition_mismatch")
 		validated.append(result["value"])
@@ -265,7 +271,7 @@ static func _fresh_data(seed_value: int, generation: int, context: Dictionary) -
 	var campaign: Dictionary = context["campaign"]
 	var heroes: Array[Dictionary] = []
 	for index: int in (campaign["starter_rows"] as Array).size():
-		var allocated := HeroIdentity.allocate_hero_id(
+		var allocated := HeroIdentityScript.allocate_hero_id(
 			seed_value,
 			generation,
 			index,
@@ -294,7 +300,7 @@ static func _fresh_data(seed_value: int, generation: int, context: Dictionary) -
 		)
 	return _accept(
 		{
-			"campaign_uid": HeroIdentity.campaign_uid(seed_value, generation),
+			"campaign_uid": HeroIdentityScript.campaign_uid(seed_value, generation),
 			"campaign_seed": seed_value,
 			"campaign_generation": generation,
 			"save_revision": 1,
@@ -328,7 +334,7 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"current_class_id": RECRUIT_ID,
 		"first_class_id": RECRUIT_ID,
 		"advanced_class_id": null,
-		"progression_rules_version": ClassDef.RULES_VERSION,
+		"progression_rules_version": ClassDefScript.RULES_VERSION,
 		"xp": 0,
 		"identity_portrait_id": portrait_asset_id,
 		"portrait_instance_id": "portrait:%s" % hero_id,
@@ -337,7 +343,7 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"recruited_after_resolution_index": 0,
 		"recruit_source": "starter",
 		"source_id": "",
-		"name_version": HeroNames.VERSION,
+		"name_version": HeroNamesScript.VERSION,
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,

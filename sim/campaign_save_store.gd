@@ -13,7 +13,6 @@ const COMMITTED := &"committed"
 const RETRYABLE := &"retryable"
 const INDETERMINATE := &"indeterminate"
 const PRODUCTION_SLOT := "user://campaign_v1.json"
-const CAMPAIGN_STATE_SCRIPT := preload("res://sim/campaign_state.gd")
 const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
 const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const FILE_OPS_SCRIPT := preload("res://sim/campaign_file_ops.gd")
@@ -39,7 +38,7 @@ static func create(
 	)
 	if not valid:
 		return {"accepted": false, "error_code": &"invalid_store_config", "value": null}
-	var store := CampaignSaveStore.new()
+	var store: Variant = (load("res://sim/campaign_save_store.gd") as GDScript).new()
 	store._main_path = slot_path
 	store._tmp_path = slot_path.get_basename() + ".tmp"
 	store._bak_path = slot_path.get_basename() + ".bak"

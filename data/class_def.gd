@@ -35,9 +35,9 @@ static func normalize_catalog(
 	var by_id := {}
 	var operator_owners := {}
 	for value: Variant in resources:
-		if not value is ClassDef:
+		if not value is Resource or value.get_script() != load("res://data/class_def.gd"):
 			return _reject(&"invalid_class_resource")
-		var definition := value as ClassDef
+		var definition := value as Resource
 		var row := _normalize_row(definition, operators, locale_entries)
 		if not row["accepted"]:
 			return row
@@ -66,7 +66,7 @@ static func normalize_catalog(
 	return {"accepted": true, "error_code": &"", "value": rows}
 
 
-static func validate_obtainability(rows: Array, campaign_def: CampaignDef) -> Dictionary:
+static func validate_obtainability(rows: Array, campaign_def: Variant) -> Dictionary:
 	if campaign_def == null or campaign_def.schema_version != 3:
 		return _reject(&"invalid_campaign_definition")
 	var by_id := {}
@@ -109,7 +109,7 @@ static func validate_obtainability(rows: Array, campaign_def: CampaignDef) -> Di
 
 
 static func _normalize_row(
-	definition: ClassDef,
+	definition: Resource,
 	operators: Dictionary,
 	locale_entries: Dictionary,
 ) -> Dictionary:

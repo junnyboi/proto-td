@@ -18,6 +18,11 @@ const CHOICE_KEYS := ["hero_id", "to_class_id"]
 const VERBS := [
 	"begin_attempt", "resolve_attempt", "confirm_promotions", "recruit_person",
 ]
+const HISTORY_PATH := "res://sim/campaign_v3_history.gd"
+const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
+const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 
 
 static func normalize_records(
@@ -107,7 +112,7 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			var ticket := _ticket_by_attempt(data.get("tickets", []), int(value["attempt_id"]))
 			if ticket.is_empty():
 				return _reject(&"missing_resolution_ticket")
-			var outcome := BattleOutcomeV3.normalize(value["outcome"], ticket)
+			var outcome := BattleOutcomeScript.normalize(value["outcome"], ticket)
 			if not outcome["accepted"]:
 				return outcome
 			return _accept(
@@ -185,7 +190,7 @@ static func by_id(records: Array, command_id: String) -> Dictionary:
 
 
 static func canonical_bytes(record_row: Dictionary) -> PackedByteArray:
-	return CanonicalJson.text(record_row).to_utf8_buffer()
+	return CanonicalJsonScript.text(record_row).to_utf8_buffer()
 
 
 static func _normalize_receipt(
@@ -203,7 +208,7 @@ static func _normalize_receipt(
 		"begin_attempt":
 			if value.keys() != ["ticket"]:
 				return _reject(&"invalid_command_receipt")
-			var ticket := BattleTicket.normalize(value["ticket"])
+			var ticket := BattleTicketScript.normalize(value["ticket"])
 			if not ticket["accepted"]:
 				return ticket
 			var normalized: Dictionary = ticket["value"]
@@ -222,7 +227,9 @@ static func _normalize_receipt(
 		"resolve_attempt":
 			if value.keys() != ["resolution"]:
 				return _reject(&"invalid_command_receipt")
-			var resolution := CampaignV3History._normalize_receipt(value["resolution"])
+			var resolution: Dictionary = load(HISTORY_PATH).call(
+				"_normalize_receipt", value["resolution"],
+			)
 			if not resolution["accepted"]:
 				return resolution
 			var normalized: Dictionary = resolution["value"]
@@ -240,11 +247,10 @@ static func _normalize_receipt(
 		"confirm_promotions":
 			if value.keys() != ["promotion"]:
 				return _reject(&"invalid_command_receipt")
-			var promotions := (
-				CampaignV3StateCodec
-				. _normalize_receipts(
-					[value["promotion"]],
-					context,
+			var promotions: Dictionary = (
+				load(STATE_CODEC_PATH)
+				. call(
+					"_normalize_receipts", [value["promotion"]], context,
 				)
 			)
 			if not promotions["accepted"]:

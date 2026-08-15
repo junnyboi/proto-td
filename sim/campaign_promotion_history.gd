@@ -2,6 +2,7 @@ class_name CampaignPromotionHistory
 extends RefCounted
 
 const CampaignProgressionType := preload("res://sim/campaign_progression.gd")
+const CampaignHashType := preload("res://sim/campaign_hash.gd")
 
 static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	var receipts: Array = data["promotion_receipts"]
@@ -62,8 +63,8 @@ static func _validate_transition(
 	expected["promotion_receipts"].append(receipt.duplicate(true))
 	if expected != after:
 		return _reject(&"promotion_history_mismatch")
-	var before_hash := CampaignHash.of_normalized_data(before, false)
-	var after_hash := CampaignHash.of_normalized_data(after, false)
+	var before_hash := CampaignHashType.of_normalized_data(before, false)
+	var after_hash := CampaignHashType.of_normalized_data(after, false)
 	if (
 		before_hash["hex"] != receipt["before_strategic_hash"]
 		or after_hash["hex"] != receipt["after_strategic_hash"]

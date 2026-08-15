@@ -2,7 +2,7 @@ class_name CampaignV3Codec
 extends RefCounted
 
 ## CampaignSave v3 lives beside the immutable v1/v2 codec until the runtime
-## cutover. Legacy documents are validated by CampaignCodec first, then mapped
+## cutover. Legacy documents are validated by CampaignCodecScript first, then mapped
 ## through one deterministic projection. Fresh rules-v2 documents start with
 ## five distinct persistent Recruit heroes.
 
@@ -15,6 +15,15 @@ const MARKS_MAX := 1_000_000_000
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 const TargetingScript := preload("res://sim/targeting.gd")
 const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
+const CampaignDefType := preload("res://data/campaign_def.gd")
+const ClassDefScript := preload("res://data/class_def.gd")
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
+const StateCodecScript := preload("res://sim/campaign_v3_state_codec.gd")
+const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
+const HeroNamesScript := preload("res://sim/hero_names.gd")
+const CampaignProgressionScript := preload("res://sim/campaign_progression.gd")
+const CampaignInvariantsScript := preload("res://sim/campaign_invariants.gd")
 const DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
@@ -55,7 +64,7 @@ static func derive_environment_sha256(
 	trap_ids: Array,
 	spell_ids: Array,
 	stages: Array,
-	campaign_def: CampaignDef,
+	campaign_def: CampaignDefType,
 	text_entries: Dictionary,
 ) -> Dictionary:
 	var operator_rows := _normalize_operators(operator_defs)
@@ -71,10 +80,10 @@ static func derive_environment_sha256(
 	}, _campaign_stages(stages))
 	if not combat["accepted"]:
 		return combat
-	var classes := ClassDef.normalize_catalog(class_defs, operator_ids, text_entries)
+	var classes := ClassDefScript.normalize_catalog(class_defs, operator_ids, text_entries)
 	if not classes["accepted"]:
 		return classes
-	var obtainable := ClassDef.validate_obtainability(classes["value"], campaign_def)
+	var obtainable := ClassDefScript.validate_obtainability(classes["value"], campaign_def)
 	if not obtainable["accepted"]:
 		return obtainable
 	var campaign := _normalize_campaign(campaign_def, classes["value"], false)
@@ -99,7 +108,7 @@ static func derive_environment_sha256(
 	}
 	if (manifest["traps"] as Array).is_empty() or (manifest["spells"] as Array).is_empty():
 		return _reject(&"invalid_catalog")
-	return _accept(CanonicalJson.sha256_hex(manifest))
+	return _accept(CanonicalJsonScript.sha256_hex(manifest))
 
 
 static func build_context(
@@ -108,7 +117,7 @@ static func build_context(
 	trap_ids: Array,
 	spell_ids: Array,
 	stages: Array,
-	campaign_def: CampaignDef,
+	campaign_def: CampaignDefType,
 	text_entries: Dictionary,
 	legacy_context: Dictionary,
 ) -> Dictionary:
@@ -121,7 +130,7 @@ static func build_context(
 	if (
 		campaign_def == null
 		or campaign_def.environment_sha256 != environment
-		or CampaignDef.P16_V3_ENVIRONMENT_SHA256 != environment
+		or CampaignDefType.P16_V3_ENVIRONMENT_SHA256 != environment
 	):
 		return {}
 	var operator_rows := _normalize_operators(operator_defs)
@@ -150,7 +159,7 @@ static func build_context(
 		return {}
 	for definition: OperatorDef in operator_defs:
 		operator_ticket_by_id[String(definition.id)] = _ticket_projection(definition)
-	var classes := ClassDef.normalize_catalog(class_defs, operator_ids, text_entries)
+	var classes := ClassDefScript.normalize_catalog(class_defs, operator_ids, text_entries)
 	var campaign := _normalize_campaign(campaign_def, classes["value"], true)
 	var stages_result := _normalize_stage_order(stages)
 	if not campaign["accepted"] or not stages_result["accepted"]:
@@ -185,7 +194,7 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 	var campaign: Dictionary = context["campaign"]
 	var heroes: Array[Dictionary] = []
 	for index: int in (campaign["starter_rows"] as Array).size():
-		var allocated := HeroIdentity.allocate_hero_id(
+		var allocated := HeroIdentityScript.allocate_hero_id(
 			seed_value,
 			generation,
 			index,
@@ -209,7 +218,7 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 			"consumed": false,
 		})
 	var data := {
-		"campaign_uid": HeroIdentity.campaign_uid(seed_value, generation),
+		"campaign_uid": HeroIdentityScript.campaign_uid(seed_value, generation),
 		"campaign_seed": seed_value,
 		"campaign_generation": generation,
 		"save_revision": 1,
@@ -251,7 +260,7 @@ static func normalize_data(value: Variant, context: Dictionary) -> Dictionary:
 		return _reject(&"mixed_progression_rules")
 	if rules_versions.has(1):
 		return _normalize_legacy_projection(data, context)
-	if rules_versions.has(ClassDef.RULES_VERSION):
+	if rules_versions.has(ClassDefScript.RULES_VERSION):
 		return _normalize_fresh_rules_v2(data, context)
 	return _reject(&"invalid_progression_rules_version")
 
@@ -259,7 +268,7 @@ static func normalize_data(value: Variant, context: Dictionary) -> Dictionary:
 static func normalize_core(value: Variant, context: Dictionary) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_validation_context")
-	return CampaignV3StateCodec.normalize_core(value, context, CORE_KEYS, HERO_KEYS)
+	return StateCodecScript.normalize_core(value, context, CORE_KEYS, HERO_KEYS)
 
 
 static func encode_data(value: Variant, context: Dictionary) -> Dictionary:
@@ -287,7 +296,7 @@ static func decode_save(source: String, context: Dictionary) -> Dictionary:
 	var parser := JSON.new()
 	if parser.parse(source) != OK:
 		return _reject(&"malformed_json")
-	var restored := CanonicalJson.restore_exact_integers(source, parser.data)
+	var restored := CanonicalJsonScript.restore_exact_integers(source, parser.data)
 	if not restored["accepted"]:
 		return restored
 	return decode_parsed(restored["value"], source, context)
@@ -307,9 +316,9 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 		typeof(parsed["data"]) == TYPE_DICTIONARY
 		and (parsed["data"] as Dictionary).keys() == PRECOMMAND_DATA_KEYS
 	):
-		if checksum != CanonicalJson.sha256_hex(parsed["data"]):
+		if checksum != CanonicalJsonScript.sha256_hex(parsed["data"]):
 			return _reject(&"checksum_mismatch")
-		if CanonicalJson.text(parsed) != source:
+		if CanonicalJsonScript.text(parsed) != source:
 			return _reject(&"noncanonical_save")
 		var upgraded: Dictionary = (parsed["data"] as Dictionary).duplicate(true)
 		upgraded["command_receipts"] = []
@@ -352,13 +361,13 @@ static func migrate_legacy_source(source: String, context: Dictionary) -> Dictio
 	var parser := JSON.new()
 	if parser.parse(source) != OK:
 		return _reject(&"malformed_json")
-	var restored := CanonicalJson.restore_exact_integers(source, parser.data)
+	var restored := CanonicalJsonScript.restore_exact_integers(source, parser.data)
 	if not restored["accepted"] or typeof(restored["value"]) != TYPE_DICTIONARY:
 		return _reject(&"malformed_json")
 	var root: Dictionary = restored["value"]
 	if not root.has("version") or int(root["version"]) not in [1, 2]:
 		return _reject(&"unsupported_save")
-	var legacy := CampaignCodec.decode_save(source, context["legacy_context"])
+	var legacy := CampaignCodecScript.decode_save(source, context["legacy_context"])
 	if not legacy["accepted"]:
 		return legacy
 	var migrated := from_v2_data(legacy["data"], context)
@@ -382,7 +391,7 @@ static func migrate_legacy_source(source: String, context: Dictionary) -> Dictio
 static func from_v2_data(value: Dictionary, context: Dictionary) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_validation_context")
-	var normalized := CampaignCodec.normalize_data(value, context["legacy_context"])
+	var normalized := CampaignCodecScript.normalize_data(value, context["legacy_context"])
 	if not normalized["accepted"]:
 		return normalized
 	return _accept(_migrate_data(normalized["value"], context))
@@ -392,17 +401,17 @@ static func _normalize_legacy_projection(data: Dictionary, context: Dictionary) 
 	var reversed := _reverse_data(data, context)
 	if not reversed["accepted"]:
 		return reversed
-	var normalized := CampaignCodec.normalize_data(reversed["value"], context["legacy_context"])
+	var normalized := CampaignCodecScript.normalize_data(reversed["value"], context["legacy_context"])
 	if not normalized["accepted"]:
 		return normalized
 	var expected := _migrate_data(normalized["value"], context)
-	if CanonicalJson.text(expected) != CanonicalJson.text(data):
+	if CanonicalJsonScript.text(expected) != CanonicalJsonScript.text(data):
 		return _reject(&"noncanonical_v3_migration")
 	return _accept(expected)
 
 
 static func _normalize_fresh_rules_v2(data: Dictionary, context: Dictionary) -> Dictionary:
-	return CampaignV3StateCodec.normalize_data(data, context, DATA_KEYS, CORE_KEYS, HERO_KEYS)
+	return StateCodecScript.normalize_data(data, context, DATA_KEYS, CORE_KEYS, HERO_KEYS)
 
 
 static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dictionary:
@@ -414,7 +423,7 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"current_class_id": RECRUIT_ID,
 		"first_class_id": RECRUIT_ID,
 		"advanced_class_id": null,
-		"progression_rules_version": ClassDef.RULES_VERSION,
+		"progression_rules_version": ClassDefScript.RULES_VERSION,
 		"xp": 0,
 		"identity_portrait_id": portrait_asset_id,
 		"portrait_instance_id": "portrait:%s" % hero_id,
@@ -423,7 +432,7 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"recruited_after_resolution_index": 0,
 		"recruit_source": "starter",
 		"source_id": "",
-		"name_version": HeroNames.VERSION,
+		"name_version": HeroNamesScript.VERSION,
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
@@ -511,7 +520,7 @@ static func _migrate_heroes(values: Array) -> Array[Dictionary]:
 
 static func _reverse_data(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
-	for key: String in CampaignCodec.DATA_KEYS:
+	for key: String in CampaignCodecScript.DATA_KEYS:
 		match key:
 			"combat_rules_sha256":
 				result[key] = context["legacy_context"]["combat_rules_sha256"]
@@ -535,7 +544,7 @@ static func _reverse_data(value: Dictionary, context: Dictionary) -> Dictionary:
 
 static func _reverse_core(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
-	for key: String in CampaignCodec.CORE_KEYS:
+	for key: String in CampaignCodecScript.CORE_KEYS:
 		match key:
 			"combat_rules_sha256":
 				result[key] = context["legacy_context"]["combat_rules_sha256"]
@@ -590,7 +599,7 @@ static func _reverse_heroes(values: Array) -> Dictionary:
 		):
 			return _reject(&"invalid_legacy_projection")
 		var row := {}
-		for key: String in CampaignProgression.HERO_FIELD_ORDER:
+		for key: String in CampaignProgressionScript.HERO_FIELD_ORDER:
 			row[key] = source[key].duplicate(true) \
 				if source[key] is Array or source[key] is Dictionary else source[key]
 		result.append(row)
@@ -610,15 +619,15 @@ static func _entitlements_for_stars(stage_rows: Array, context: Dictionary) -> A
 
 
 static func _normalize_campaign(
-	definition: CampaignDef,
+	definition: CampaignDefType,
 	class_rows: Array,
 	check_environment: bool,
 ) -> Dictionary:
 	if (
 		definition == null
 		or definition.schema_version != SAVE_VERSION
-		or definition.name_version != HeroNames.VERSION
-		or definition.initial_marks != CampaignInvariants.INITIAL_MARKS
+		or definition.name_version != HeroNamesScript.VERSION
+		or definition.initial_marks != CampaignInvariantsScript.INITIAL_MARKS
 		or definition.starter_rows.size() != 5
 		or definition.portrait_asset_ids.size() != 8
 		or definition.paid_offers.size() != 1
@@ -662,7 +671,7 @@ static func _normalize_campaign(
 		"offer_id": "p16_caster_contract", "operator_def_id": RECRUIT_ID, "cost": 80,
 	}]:
 		return _reject(&"invalid_campaign_definition")
-	var obtainable := ClassDef.validate_obtainability(class_rows, definition)
+	var obtainable := ClassDefScript.validate_obtainability(class_rows, definition)
 	if not obtainable["accepted"]:
 		return obtainable
 	var entitlements: Array[Dictionary] = []
@@ -707,7 +716,7 @@ static func _ticket_projection(definition: OperatorDef) -> Dictionary:
 		return "%+03d:%+03d" % [a["x"], a["y"]] < "%+03d:%+03d" % [b["x"], b["y"]])
 	var skill_spec := {
 		"skill_id": "",
-		"skill_content_sha256": CanonicalJson.sha256_hex({}),
+		"skill_content_sha256": CanonicalJsonScript.sha256_hex({}),
 		"payload": {},
 	}
 	if definition.skill != null:
@@ -803,7 +812,7 @@ static func _normalize_operators(values: Array) -> Dictionary:
 			"content_sha256": FileAccess.get_sha256(definition.resource_path),
 			"skill_content_sha256": (
 				FileAccess.get_sha256(definition.skill.resource_path)
-				if definition.skill != null else CanonicalJson.sha256_hex({})
+				if definition.skill != null else CanonicalJsonScript.sha256_hex({})
 			),
 			"op_class": int(definition.op_class),
 			"dp_cost": definition.dp_cost,
@@ -884,11 +893,11 @@ static func _validate_v3_reward_projection(
 			var class_row: Dictionary = class_by_operator[operator_id]
 			var class_id := String(class_row["class_id"])
 			var is_starting_standard := (
-				int(class_row["stage"]) == ClassDef.Stage.STANDARD
+				int(class_row["stage"]) == ClassDefScript.Stage.STANDARD
 				and (campaign["starting_class_ids"] as Array).has(class_id)
 			)
 			var is_stage_entitlement := (
-				int(class_row["stage"]) == ClassDef.Stage.ADVANCED
+				int(class_row["stage"]) == ClassDefScript.Stage.ADVANCED
 				and entitlement_by_stage.has(String(stage.id))
 				and (entitlement_by_stage[String(stage.id)] as Array).has(class_id)
 			)
@@ -967,14 +976,14 @@ static func _is_hex(value: String, length: int) -> bool:
 
 
 static func _encoded(value: Variant) -> Dictionary:
-	var source := CanonicalJson.text(value)
+	var source := CanonicalJsonScript.text(value)
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"value": value,
 		"text": source,
 		"bytes": source.to_utf8_buffer(),
-		"sha256": CanonicalJson.sha256_text(source),
+		"sha256": CanonicalJsonScript.sha256_text(source),
 	}
 
 

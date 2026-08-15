@@ -1,12 +1,19 @@
 class_name CampaignV3Attempts
 extends RefCounted
 
-const XP_PER_OPERATION := CampaignProgression.XP_PER_OPERATION
+const XP_PER_OPERATION := CampaignProgressionScript.XP_PER_OPERATION
 const U63_MAX := 9_223_372_036_854_775_807
+const CODEC_PATH := "res://sim/campaign_v3_codec.gd"
+const CampaignProgressionScript := preload("res://sim/campaign_progression.gd")
+const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
+const HashScript := preload("res://sim/campaign_v3_hash.gd")
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 
 
 static func begin(
-	state: CampaignStateV3,
+	state: Variant,
 	command_id: Variant,
 	stage_id: Variant,
 	hero_ids: Variant,
@@ -14,7 +21,7 @@ static func begin(
 	expected_revision: Variant,
 ) -> Dictionary:
 	var prepared := (
-		CampaignV3Commands
+		CommandsScript
 		. prepare(
 			state,
 			command_id,
@@ -32,20 +39,20 @@ static func begin(
 	if prepared["duplicate"]:
 		return prepared["result"]
 	if _has_unresolved_ticket(state._data):
-		return CampaignV3Commands.rejected(&"attempt_pending")
+		return CommandsScript.rejected(&"attempt_pending")
 	var payload: Dictionary = prepared["payload"]
 	var stage_check := _validate_stage(state._data, state._context_ref(), payload["stage_id"])
 	if not stage_check["accepted"]:
-		return CampaignV3Commands.rejected(stage_check["error_code"])
+		return CommandsScript.rejected(stage_check["error_code"])
 	if (
 		(payload["hero_ids"] as Array).size()
 		> int(
 			state._context_ref()["stage_squad_sizes"][payload["stage_id"]],
 		)
 	):
-		return CampaignV3Commands.rejected(&"squad_too_large")
+		return CommandsScript.rejected(&"squad_too_large")
 	if state.next_attempt_id() >= U63_MAX:
-		return CampaignV3Commands.rejected(&"attempt_counter_exhausted")
+		return CommandsScript.rejected(&"attempt_counter_exhausted")
 	var squad := _squad(
 		state._data,
 		state._context_ref(),
@@ -53,18 +60,18 @@ static func begin(
 		state.next_attempt_id(),
 	)
 	if not squad["accepted"]:
-		return CampaignV3Commands.rejected(squad["error_code"])
+		return CommandsScript.rejected(squad["error_code"])
 	var working: Dictionary = state._data.duplicate(true)
 	working["save_revision"] = state.save_revision() + 1
 	var pre_ticket_core := _core(working)
-	var strategic := CampaignV3Hash.of_core(pre_ticket_core, state._context_ref())
+	var strategic := HashScript.of_core(pre_ticket_core, state._context_ref())
 	if not strategic["accepted"]:
-		return CampaignV3Commands.rejected(&"invalid_campaign_state")
+		return CommandsScript.rejected(&"invalid_campaign_state")
 	var ticket := (
-		BattleTicket
+		BattleTicketScript
 		. seal(
 			{
-				"schema_version": BattleTicket.SCHEMA_VERSION,
+				"schema_version": BattleTicketScript.SCHEMA_VERSION,
 				"campaign_uid": state.campaign_uid(),
 				"attempt_id": state.next_attempt_id(),
 				"stage_id": payload["stage_id"],
@@ -76,12 +83,12 @@ static func begin(
 		)
 	)
 	if not ticket["accepted"]:
-		return CampaignV3Commands.rejected(ticket["error_code"])
+		return CommandsScript.rejected(ticket["error_code"])
 	working["tickets"] = (working["tickets"] as Array).duplicate(true)
 	working["tickets"].append(ticket["value"])
 	working["next_attempt_id"] = state.next_attempt_id() + 1
 	var record := (
-		CampaignV3CommandCodec
+		CommandCodecScript
 		. record(
 			prepared["command_id"],
 			"begin_attempt",
@@ -92,11 +99,11 @@ static func begin(
 	)
 	working["command_receipts"] = (working["command_receipts"] as Array).duplicate(true)
 	working["command_receipts"].append(record)
-	var prospective := state._prospective_state(working)
+	var prospective: Dictionary = state._prospective_state(working)
 	if not prospective["accepted"]:
-		return CampaignV3Commands.rejected(prospective["error_code"])
+		return CommandsScript.rejected(prospective["error_code"])
 	return (
-		CampaignV3Commands
+		CommandsScript
 		. mutation(
 			state,
 			"begin_attempt",
@@ -120,14 +127,14 @@ static func begin(
 
 
 static func resolve(
-	state: CampaignStateV3,
+	state: Variant,
 	command_id: Variant,
 	attempt_id: Variant,
 	outcome_document: Variant,
 	expected_revision: Variant,
 ) -> Dictionary:
 	var prepared := (
-		CampaignV3Commands
+		CommandsScript
 		. prepare(
 			state,
 			command_id,
@@ -146,15 +153,15 @@ static func resolve(
 	var payload: Dictionary = prepared["payload"]
 	var ticket := _ticket_by_attempt(state._data["tickets"], payload["attempt_id"])
 	if ticket.is_empty():
-		return CampaignV3Commands.rejected(&"missing_resolution_ticket")
+		return CommandsScript.rejected(&"missing_resolution_ticket")
 	if (
 		payload["attempt_id"] != state.next_resolution_index()
 		or payload["attempt_id"] + 1 != state.next_attempt_id()
 		or ticket != state._data["tickets"][-1]
 	):
-		return CampaignV3Commands.rejected(&"wrong_attempt")
+		return CommandsScript.rejected(&"wrong_attempt")
 	if ticket["expected_save_revision"] != state.save_revision():
-		return CampaignV3Commands.rejected(&"ticket_revision_mismatch")
+		return CommandsScript.rejected(&"ticket_revision_mismatch")
 	var derived := _derive_resolution(
 		state._data,
 		state._context_ref(),
@@ -162,10 +169,10 @@ static func resolve(
 		payload["outcome"],
 	)
 	if not derived["accepted"]:
-		return CampaignV3Commands.rejected(derived["error_code"])
+		return CommandsScript.rejected(derived["error_code"])
 	var working: Dictionary = derived["data"]
 	var record := (
-		CampaignV3CommandCodec
+		CommandCodecScript
 		. record(
 			prepared["command_id"],
 			"resolve_attempt",
@@ -176,9 +183,9 @@ static func resolve(
 	)
 	working["command_receipts"] = (working["command_receipts"] as Array).duplicate(true)
 	working["command_receipts"].append(record)
-	var prospective := state._prospective_state(working)
+	var prospective: Dictionary = state._prospective_state(working)
 	if not prospective["accepted"]:
-		return CampaignV3Commands.rejected(prospective["error_code"])
+		return CommandsScript.rejected(prospective["error_code"])
 	var events: Array[Dictionary] = [
 		_event(
 			&"campaign_resolution_committed",
@@ -206,7 +213,7 @@ static func resolve(
 			)
 		)
 	return (
-		CampaignV3Commands
+		CommandsScript
 		. mutation(
 			state,
 			"resolve_attempt",
@@ -274,8 +281,8 @@ static func _derive_resolution(
 		before["class_entitlements"],
 	)
 	after["heroes"] = (after["heroes"] as Array).duplicate(true)
-	var xp_awards := CampaignProgression.derive_xp_awards(outcome["rows"], before["heroes"])
-	if not CampaignProgression.apply_xp(after["heroes"], xp_awards):
+	var xp_awards := CampaignProgressionScript.derive_xp_awards(outcome["rows"], before["heroes"])
+	if not CampaignProgressionScript.apply_xp(after["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	after["memorial"] = (after["memorial"] as Array).duplicate(true)
 	var dead_ids: Array[String] = []
@@ -317,8 +324,8 @@ static func _derive_resolution(
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return String(a["hero_id"]) < String(b["hero_id"])
 	)
-	var before_hash := CampaignV3Hash.of_core(before, context)
-	var after_hash := CampaignV3Hash.of_core(after, context)
+	var before_hash := HashScript.of_core(before, context)
+	var after_hash := HashScript.of_core(after, context)
 	if not before_hash["accepted"] or not after_hash["accepted"]:
 		return _reject(&"invalid_campaign_state")
 	var resolution := {
@@ -346,7 +353,7 @@ static func _derive_resolution(
 		"strategic_body_hash_after": after_hash["hex"],
 	}
 	var working: Dictionary = data.duplicate(true)
-	for key: String in CampaignV3Codec.CORE_KEYS:
+	for key: String in _codec().CORE_KEYS:
 		working[key] = after[key]
 	working["resolution_anchor"] = {
 		"resolution_index": resolution["resolution_index"],
@@ -384,7 +391,7 @@ static func _squad(
 		if projection.is_empty():
 			return _reject(&"missing_catalog")
 		var battle_id := (
-			CanonicalJson
+			CanonicalJsonScript
 			. sha256_hex(
 				[
 					data["campaign_uid"],
@@ -470,7 +477,7 @@ static func _hero_by_id(heroes: Array, hero_id: String) -> Dictionary:
 
 static func _core(data: Dictionary) -> Dictionary:
 	var core := {}
-	for key: String in CampaignV3Codec.CORE_KEYS:
+	for key: String in _codec().CORE_KEYS:
 		core[key] = (
 			data[key].duplicate(true)
 			if data[key] is Array or data[key] is Dictionary
@@ -512,6 +519,10 @@ static func _difference(after: Array, before: Array) -> Array[String]:
 			result.append(value)
 	result.sort()
 	return result
+
+
+static func _codec() -> GDScript:
+	return load(CODEC_PATH) as GDScript
 
 
 static func _event(name: StringName, data: Dictionary) -> Dictionary:

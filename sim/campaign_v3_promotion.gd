@@ -1,6 +1,10 @@
 class_name CampaignV3Promotion
 extends RefCounted
 
+const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
+const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
+const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
+
 
 static func options(data: Dictionary, context: Dictionary, hero_id_value: Variant) -> Dictionary:
 	if typeof(hero_id_value) not in [TYPE_STRING, TYPE_STRING_NAME]:
@@ -56,13 +60,13 @@ static func options(data: Dictionary, context: Dictionary, hero_id_value: Varian
 
 
 static func confirm(
-	state: CampaignStateV3,
+	state: Variant,
 	command_id: Variant,
 	expected_revision: Variant,
 	choices_value: Variant,
 ) -> Dictionary:
 	var prepared := (
-		CampaignV3Commands
+		CommandsScript
 		. prepare(
 			state,
 			command_id,
@@ -78,15 +82,15 @@ static func confirm(
 	if prepared["duplicate"]:
 		return prepared["result"]
 	if int(state._data["next_attempt_id"]) != int(state._data["next_resolution_index"]):
-		return CampaignV3Commands.rejected(&"attempt_pending")
+		return CommandsScript.rejected(&"attempt_pending")
 	var payload: Dictionary = prepared["payload"]
 	var validated: Array[Dictionary] = []
 	for choice: Dictionary in payload["choices"]:
-		var result := CampaignV3PromotionRules.validate_choice(
+		var result := PromotionRulesScript.validate_choice(
 			state._data, state._context_ref(), choice,
 		)
 		if not result["accepted"]:
-			return CampaignV3Commands.rejected(result["error_code"])
+			return CommandsScript.rejected(result["error_code"])
 		validated.append(result["value"])
 	var working: Dictionary = state._data.duplicate(true)
 	working["heroes"] = (working["heroes"] as Array).duplicate(true)
@@ -118,7 +122,7 @@ static func confirm(
 	working["promotion_receipts"] = (working["promotion_receipts"] as Array).duplicate(true)
 	working["promotion_receipts"].append(promotion_receipt)
 	var record := (
-		CampaignV3CommandCodec
+		CommandCodecScript
 		. record(
 			prepared["command_id"],
 			"confirm_promotions",
@@ -129,11 +133,11 @@ static func confirm(
 	)
 	working["command_receipts"] = (working["command_receipts"] as Array).duplicate(true)
 	working["command_receipts"].append(record)
-	var prospective := state._prospective_state(working)
+	var prospective: Dictionary = state._prospective_state(working)
 	if not prospective["accepted"]:
-		return CampaignV3Commands.rejected(prospective["error_code"])
+		return CommandsScript.rejected(prospective["error_code"])
 	return (
-		CampaignV3Commands
+		CommandsScript
 		. mutation(
 			state,
 			"confirm_promotions",

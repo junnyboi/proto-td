@@ -1,6 +1,13 @@
 class_name CampaignV3Recruitment
 extends RefCounted
 
+const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
+const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
+const StateCodecScript := preload("res://sim/campaign_v3_state_codec.gd")
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
+const ClassDefScript := preload("res://data/class_def.gd")
+const HeroNamesScript := preload("res://sim/hero_names.gd")
+
 ## Every nonlegacy persistent person enters as a Recruit. Source-specific policy
 ## authorizes creation, but identity/class/portrait construction has one path.
 
@@ -8,14 +15,14 @@ const RECRUIT_ID := "recruit"
 
 
 static func execute(
-	state: CampaignStateV3,
+	state: Variant,
 	command_id: Variant,
 	expected_revision: Variant,
 	source_value: Variant,
 	source_id_value: Variant,
 ) -> Dictionary:
 	var prepared := (
-		CampaignV3Commands
+		CommandsScript
 		. prepare(
 			state,
 			command_id,
@@ -34,13 +41,13 @@ static func execute(
 		prepared["payload"],
 	)
 	if not derived["accepted"]:
-		return CampaignV3Commands.rejected(derived["error_code"])
+		return CommandsScript.rejected(derived["error_code"])
 	var working: Dictionary = derived["data"]
 	working["save_revision"] = state.save_revision() + 1
 	var receipt: Dictionary = derived["receipt"]
 	receipt["save_revision"] = working["save_revision"]
 	var record := (
-		CampaignV3CommandCodec
+		CommandCodecScript
 		. record(
 			prepared["command_id"],
 			"recruit_person",
@@ -51,11 +58,11 @@ static func execute(
 	)
 	working["command_receipts"] = (working["command_receipts"] as Array).duplicate(true)
 	working["command_receipts"].append(record)
-	var prospective := state._prospective_state(working)
+	var prospective: Dictionary = state._prospective_state(working)
 	if not prospective["accepted"]:
-		return CampaignV3Commands.rejected(prospective["error_code"])
+		return CommandsScript.rejected(prospective["error_code"])
 	return (
-		CampaignV3Commands
+		CommandsScript
 		. mutation(
 			state,
 			"recruit_person",
@@ -85,7 +92,7 @@ static func _derive(
 ) -> Dictionary:
 	if int(data["next_attempt_id"]) != int(data["next_resolution_index"]):
 		return _reject(&"attempt_pending")
-	if (data["heroes"] as Array).size() >= CampaignV3StateCodec.MAX_ROSTER:
+	if (data["heroes"] as Array).size() >= StateCodecScript.MAX_ROSTER:
 		return _reject(&"roster_limit")
 	var source := String(payload["source"])
 	var source_id := String(payload["source_id"])
@@ -95,7 +102,7 @@ static func _derive(
 	if not policy["accepted"]:
 		return policy
 	var index := int(data["next_recruitment_index"])
-	var allocated := HeroIdentity.allocate_hero_id(
+	var allocated := HeroIdentityScript.allocate_hero_id(
 		int(data["campaign_seed"]),
 		int(data["campaign_generation"]),
 		index,
@@ -182,7 +189,7 @@ static func _fresh_hero(
 		"current_class_id": RECRUIT_ID,
 		"first_class_id": RECRUIT_ID,
 		"advanced_class_id": null,
-		"progression_rules_version": ClassDef.RULES_VERSION,
+		"progression_rules_version": ClassDefScript.RULES_VERSION,
 		"xp": 0,
 		"identity_portrait_id": portrait_asset_id,
 		"portrait_instance_id": "portrait:%s" % hero_id,
@@ -191,7 +198,7 @@ static func _fresh_hero(
 		"recruited_after_resolution_index": recruited_after_resolution_index,
 		"recruit_source": source,
 		"source_id": source_id,
-		"name_version": HeroNames.VERSION,
+		"name_version": HeroNamesScript.VERSION,
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,

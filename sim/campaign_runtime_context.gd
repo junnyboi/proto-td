@@ -7,6 +7,9 @@ extends RefCounted
 
 const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
 const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
+const CampaignDefType := preload("res://data/campaign_def.gd")
+const ClassDefType := preload("res://data/class_def.gd")
+const StageDefType := preload("res://data/stage_def.gd")
 const LEGACY_CAMPAIGN := preload("res://data/campaigns/p16_v2.tres")
 const RECRUIT_CAMPAIGN := preload("res://data/campaigns/p16_v3.tres")
 
@@ -18,7 +21,7 @@ static func build() -> Dictionary:
 	var spells := _ids("res://data/spells")
 	var stages: Array = []
 	for index: int in range(1, 9):
-		stages.append(load("res://data/stages/s%d.tres" % index) as StageDef)
+		stages.append(load("res://data/stages/s%d.tres" % index) as StageDefType)
 	var text_entries := _class_text_entries(classes)
 	var legacy_context := (
 		CampaignCodecScript
@@ -27,7 +30,7 @@ static func build() -> Dictionary:
 			traps,
 			spells,
 			stages,
-			(LEGACY_CAMPAIGN as CampaignDef).paid_offers,
+			(LEGACY_CAMPAIGN as CampaignDefType).paid_offers,
 		)
 	)
 	return (
@@ -38,7 +41,7 @@ static func build() -> Dictionary:
 			traps,
 			spells,
 			stages,
-			RECRUIT_CAMPAIGN as CampaignDef,
+			RECRUIT_CAMPAIGN as CampaignDefType,
 			text_entries,
 			legacy_context,
 		)
@@ -47,7 +50,7 @@ static func build() -> Dictionary:
 
 static func _class_text_entries(classes: Array) -> Dictionary:
 	var result := {}
-	for definition: ClassDef in classes:
+	for definition: ClassDefType in classes:
 		result[String(definition.name_key)] = definition.name
 		result[String(definition.role_key)] = definition.role
 		result[String(definition.description_key)] = definition.description

@@ -10,6 +10,9 @@ const CORE_MAGIC := "PTD-CAMPAIGN-CORE-HASH"
 const VERSION := 3
 const FNV_OFFSET := -3750763034362895579
 const FNV_PRIME := 1099511628211
+const CODEC_PATH := "res://sim/campaign_v3_codec.gd"
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 
 
 static func of_data(value: Variant, context: Dictionary) -> Dictionary:
@@ -20,7 +23,7 @@ static func of_data(value: Variant, context: Dictionary) -> Dictionary:
 
 
 static func of_core(value: Variant, context: Dictionary) -> Dictionary:
-	var normalized := CampaignV3Codec.normalize_core(value, context)
+	var normalized: Dictionary = load(CODEC_PATH).call("normalize_core", value, context)
 	if not normalized["accepted"]:
 		return normalized
 	return _of_normalized_core(normalized["value"])
@@ -32,7 +35,7 @@ static func _of_normalized_core(value: Dictionary) -> Dictionary:
 
 
 static func bytes_of(value: Variant, context: Dictionary) -> Dictionary:
-	var normalized := CampaignV3Codec.normalize_data(value, context)
+	var normalized: Dictionary = load(CODEC_PATH).call("normalize_data", value, context)
 	if not normalized["accepted"]:
 		return normalized
 	return _bytes_of_normalized(normalized["value"])
@@ -44,7 +47,7 @@ static func _bytes_of_normalized(value: Dictionary, magic: String = MAGIC) -> Di
 	payload.append(0)
 	for shift: int in [0, 8, 16, 24]:
 		payload.append((VERSION >> shift) & 0xFF)
-	payload.append_array(CanonicalJson.text(value).to_utf8_buffer())
+	payload.append_array(CanonicalJsonScript.text(value).to_utf8_buffer())
 	return {"accepted": true, "error_code": &"", "bytes": payload}
 
 
@@ -57,6 +60,6 @@ static func _hash_encoded(bytes: PackedByteArray) -> Dictionary:
 		"accepted": true,
 		"error_code": &"",
 		"bits": bits,
-		"hex": HeroIdentity.format_u64_hex(bits),
+		"hex": HeroIdentityScript.format_u64_hex(bits),
 		"bytes": bytes,
 	}
