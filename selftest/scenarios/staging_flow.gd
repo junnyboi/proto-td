@@ -101,7 +101,10 @@ func _defeat_round_trip(
 	var results_scroll := _find(results, "ResultsScroll") as ScrollContainer
 	results_scroll.ensure_control_visible(return_button)
 	await h.frames(3)
-	h.check("Return to Staging lies inside Results viewport after scroll", results_scroll.get_global_rect().intersects(return_button.get_global_rect()))
+	h.check(
+		"Return to Staging lies inside Results viewport after scroll",
+		results_scroll.get_global_rect().intersects(return_button.get_global_rect()),
+	)
 	await h.shot("results_return_to_staging")
 	await h.click_view(return_button.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
@@ -152,10 +155,30 @@ func _check_initial_staging(
 		"campaign summary starts at 0/8",
 		summary.text.contains("0/8"), summary.text,
 	)
-	h.check("command heading names Company 33", command_heading.text == "COMPANY 33 COMMAND", command_heading.text)
-	h.check("command body states canon premise", command_body.text.contains("Great Flare") and command_body.text.contains("the Fall") and command_body.text.contains("Custodians") and command_body.text.contains("Hearthcross"), command_body.text)
-	h.check("next operation exact title", next_mission.text == "NEXT 1: First Stand", next_mission.text)
-	h.check("next operation gives full objective", next_objective.text == "Hold the Hearthcross water-works line while investigators trace the evacuation order carried by the attackers.", next_objective.text)
+	h.check(
+		"command heading names Company 33",
+		command_heading.text == "COMPANY 33 COMMAND", command_heading.text,
+	)
+	h.check(
+		"command body states canon premise",
+		command_body.text.contains("Great Flare")
+		and command_body.text.contains("the Fall")
+		and command_body.text.contains("Custodians")
+		and command_body.text.contains("Hearthcross"),
+		command_body.text,
+	)
+	h.check(
+		"next operation exact title",
+		next_mission.text == "NEXT 1: First Stand", next_mission.text,
+	)
+	h.check(
+		"next operation gives full objective",
+		next_objective.text == (
+			"Hold the Hearthcross water-works line while investigators trace "
+			+ "the evacuation order carried by the attackers."
+		),
+		next_objective.text,
+	)
 	h.check(
 		"operation status marks future work unavailable",
 		status.text.contains("UNAVAILABLE"), status.text,
@@ -208,7 +231,10 @@ func _check_initial_staging(
 		h.check("%s is unfocusable" % button_name, button.focus_mode == Control.FOCUS_NONE)
 		h.check("%s says unavailable" % button_name, button.text.contains("Unavailable"), button.text)
 		await _scroll_to_control(h, staging, button)
-		h.check("%s lies inside viewport after scroll" % button_name, VIEWPORT_RECT.encloses(button.get_global_rect()))
+		h.check(
+			"%s lies inside viewport after scroll" % button_name,
+			VIEWPORT_RECT.encloses(button.get_global_rect()),
+		)
 		await h.click_view(button.get_global_rect().get_center())
 		h.check("%s click keeps Staging open" % button_name, game.get("content") == staging)
 		_check_snapshot(h, game, initial, "%s disabled click" % button_name)
@@ -223,13 +249,12 @@ func _scroll_to_control(h: SelfTestHarness, screen: Control, control: Control) -
 
 
 func _snapshot(game: Node) -> Dictionary:
-	var campaign: LegacyCampaignAdapter = game.get("campaign")
+	var campaign: CampaignStateV3 = game.get("campaign")
+	var projection: Dictionary = game.call("campaign_projection")
 	return {
-		"campaign": campaign,
-		"stars": campaign.stage_stars.duplicate(true),
-		"operators": campaign.unlocked_operators.duplicate(),
-		"traps": campaign.unlocked_traps.duplicate(),
-		"spells": campaign.unlocked_spells.duplicate(),
+		"campaign_uid": campaign.campaign_uid(),
+		"save_text": campaign.encode_save()["text"],
+		"projection": projection.duplicate(true),
 		"stage": game.get("selected_stage_id"),
 		"squad": (game.get("selected_squad") as Array).duplicate(),
 	}
@@ -237,10 +262,12 @@ func _snapshot(game: Node) -> Dictionary:
 
 func _check_snapshot(h: SelfTestHarness, game: Node, expected: Dictionary, label: String) -> void:
 	var current := _snapshot(game)
-	h.check("%s preserves campaign object" % label, current["campaign"] == expected["campaign"])
-	h.check("%s preserves stars" % label, current["stars"] == expected["stars"])
-	h.check("%s preserves unlocks" % label, current["operators"] == expected["operators"] \
-		and current["traps"] == expected["traps"] and current["spells"] == expected["spells"])
+	h.check(
+		"%s preserves campaign identity" % label,
+		current["campaign_uid"] == expected["campaign_uid"],
+	)
+	h.check("%s preserves save bytes" % label, current["save_text"] == expected["save_text"])
+	h.check("%s preserves projection" % label, current["projection"] == expected["projection"])
 	h.check("%s preserves selection" % label, current["stage"] == expected["stage"] \
 		and current["squad"] == expected["squad"])
 

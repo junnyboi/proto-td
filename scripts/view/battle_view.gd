@@ -116,7 +116,7 @@ var _unit_attack_seen: Dictionary = {}
 
 func _init() -> void:
 	theme_resolver = Callable(self, "_resolve_stage_theme")
-	model_factory = Callable(self, "_create_battle_model")
+	model_factory = Callable(BattleModel, "create")
 
 
 func _ready() -> void:
@@ -141,8 +141,17 @@ func _ready() -> void:
 	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
+	var launch: Dictionary = Game.battle_launch()
 	var candidate_model: BattleModel = model_factory.call(
-		stage, Game.battle_squad(), Game.run_seed, config, defs, _op_defs, _trap_defs, _spell_defs
+		stage,
+		launch["input"],
+		Game.run_seed,
+		config,
+		defs,
+		_op_defs,
+		_trap_defs,
+		_spell_defs,
+		launch["trusted_ticket_hashes"],
 	)
 	if candidate_model == null:
 		push_error("battle_view: model factory failed")
@@ -169,7 +178,7 @@ func _ready() -> void:
 	# unlocked sets while a campaign runs, the full catalogs otherwise —
 	# the model stays catalog-validated either way
 	var bar_traps: Dictionary = {}
-	for trap_id: StringName in Game.loadout_trap_ids():
+	for trap_id: StringName in launch["trap_ids"]:
 		if _trap_defs.has(trap_id):
 			bar_traps[trap_id] = _trap_defs[trap_id]
 	_deploy_bar = DeployBar.new()
@@ -181,7 +190,7 @@ func _ready() -> void:
 	_spell_bar.name = "SpellBar"
 	_spell_bar.z_index = UI_OVERLAY_Z
 	add_child(_spell_bar)
-	_spell_bar.setup(candidate_model, self, Game.loadout_spell_ids())
+	_spell_bar.setup(candidate_model, self, launch["spell_ids"])
 	_controls = BattleControls.new()
 	_controls.name = "BattleControls"
 	_controls.z_index = UI_OVERLAY_Z
@@ -196,21 +205,6 @@ func _ready() -> void:
 
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
 	return StageArtThemeType.resolve_for(stage)
-
-
-func _create_battle_model(
-	stage: StageDef,
-	squad: Array[StringName],
-	seed_value: int,
-	config: GameConfig,
-	enemy_defs: Dictionary,
-	op_defs: Dictionary,
-	trap_defs: Dictionary,
-	spell_defs: Dictionary
-) -> BattleModel:
-	return BattleModel.create(
-		stage, squad, seed_value, config, enemy_defs, op_defs, trap_defs, spell_defs
-	)
 
 
 ## Screen center of a cell's visible face; elevated cells include their lift.
@@ -458,8 +452,9 @@ func _detect_wave() -> void:
 func _detect_result_stamp() -> void:
 	if _stamp_shown or model.result == BattleModel.Result.RUNNING:
 		return
+	if not Game.record_result(model.result, model.stars):
+		return
 	_stamp_shown = true
-	Game.record_result(model.result, model.stars)
 	if model.result == BattleModel.Result.CLEAR:
 		_juice.stamp("CLEAR", model.stars)
 		Sfx.play("victory")
@@ -828,7 +823,8 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 		frame = 2
 	else:
 		frame = (Engine.get_process_frames() / IDLE_BOB_FRAMES + u.id) % 2
-	var tex := Art.texture(def.sprite_id, frame)
+	var art_id := u.sprite_id if not u.sprite_id.is_empty() else def.sprite_id
+	var tex := Art.texture(art_id, frame)
 	if tex != null and sprite.texture != tex:
 		sprite.texture = tex
 

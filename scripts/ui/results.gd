@@ -17,9 +17,15 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
-const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
-const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const NARRATIVE_CATALOG := preload(
+	"res://data/presentation/narrative/stage_narrative_catalog.tres"
+)
+const StageNarrativeDefType := preload(
+	"res://data/presentation/narrative/stage_narrative_def.gd"
+)
+const StageNarrativeCatalogType := preload(
+	"res://data/presentation/narrative/stage_narrative_catalog.gd"
+)
 
 var _actions: GridContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -78,13 +84,39 @@ func _ready() -> void:
 				),
 				&"dense_body",
 			))
+	var entitlements: Array = result.get("class_entitlements_granted", [])
+	for i: int in entitlements.size():
+		column.add_child(_label(
+			"Entitlement%d" % i,
+			UiCopyType.format_text(
+				&"ui.results.reward", "Unlocked: {name}",
+				{&"name": _class_name(String(entitlements[i]))},
+			),
+			&"dense_body",
+		))
 
 	var stage_id := StringName(result.get("stage_id", &""))
-	var record: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id) if not String(stage_id).is_empty() else null
-	column.add_child(_label("ConsequenceHeading", UiCopyType.text(&"ui.results.consequence", "Consequence"), &"dense_heading"))
-	var consequence := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
+	var record: StageNarrativeDefType = (
+		(NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
+		if not String(stage_id).is_empty()
+		else null
+	)
+	column.add_child(_label(
+		"ConsequenceHeading",
+		UiCopyType.text(&"ui.results.consequence", "Consequence"),
+		&"dense_heading",
+	))
+	var consequence := UiCopyType.text(
+		&"ui.error.missing_stage_narrative",
+		"Mission record unavailable. Return to Mission Control.",
+	)
 	if record != null:
-		consequence = UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.CLEAR_DEBRIEF if cleared else StageNarrativeDefType.Field.DEFEAT_DEBRIEF)
+		var field: int = (
+			StageNarrativeDefType.Field.CLEAR_DEBRIEF
+			if cleared
+			else StageNarrativeDefType.Field.DEFEAT_DEBRIEF
+		)
+		consequence = UiCopyType.stage_narrative_text(record, field)
 	var consequence_line := _label("ConsequenceLine", consequence, &"dense_body")
 	column.add_child(consequence_line)
 
@@ -158,6 +190,11 @@ func _reward_name(reward: Dictionary) -> String:
 	if definition is SpellDef:
 		return UiCopyType.spell_name(definition)
 	return ""
+
+
+func _class_name(class_id: String) -> String:
+	var definition := load("res://data/classes/%s.tres" % class_id) as ClassDef
+	return UiCopyType.text(definition.name_key, definition.name) if definition != null else class_id
 
 
 func _wire_focus(focusable: Array[Button]) -> void:

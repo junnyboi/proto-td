@@ -44,6 +44,7 @@ var _slots: Dictionary = {}
 var _trap_slots: Dictionary = {}
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
+var _ticket_rows: Dictionary = {}
 var _slot_box: GridContainer = null
 var _placement_op: StringName = &""
 var _placement_trap: StringName = &""
@@ -72,6 +73,9 @@ func setup(
 	view = battle_view
 	_op_defs = op_defs
 	_trap_defs = trap_defs
+	var ticket: Dictionary = battle_model.snapshot().get("ticket", {})
+	for row: Dictionary in ticket.get("squad", []):
+		_ticket_rows[StringName(row["battle_id"])] = row.duplicate(true)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -120,7 +124,7 @@ func _process(_delta: float) -> void:
 			_cancel_placement()
 	# squad is mutable now (Phase 8 debug grants): rebuild the strip when it
 	# changes so granted operators get slots
-	if _slots.size() != model.squad.size():
+	if _slots.size() != _deployment_ids().size():
 		_rebuild_slots()
 	_update_selection_ring()
 	for op_id: StringName in _slots:
@@ -186,18 +190,27 @@ func _build_slots(op_defs: Dictionary) -> void:
 	box.add_theme_constant_override("v_separation", 8)
 	add_child(box)
 	_slot_box = box
-	for op_id: StringName in model.squad:
+	for deployment_id: StringName in _deployment_ids():
+		var row: Dictionary = _ticket_rows.get(deployment_id, {})
+		var op_id := StringName(row.get("operator_def_id", deployment_id))
 		if not op_defs.has(op_id):
 			continue
 		var def: OperatorDef = op_defs[op_id]
 		var slot := Button.new()
-		slot.name = "Slot_%s" % op_id
-		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
-		slot.icon = Art.texture(def.sprite_id, 0)
+		slot.name = "Slot_%s" % deployment_id
+		var dp_cost := def.dp_cost
+		var sprite_id := def.sprite_id
+		var identity_suffix := ""
+		if not row.is_empty():
+			dp_cost = int(row["combat_spec"]["dp_cost"])
+			sprite_id = StringName(row["visual_spec"]["sprite_id"])
+			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
+		slot.text = "%s%s  %d DP" % [def.display_name, identity_suffix, dp_cost]
+		slot.icon = Art.texture(sprite_id, 0)
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
-		slot.button_down.connect(_start_placement.bind(op_id))
+		slot.button_down.connect(_start_placement.bind(deployment_id))
 		box.add_child(slot)
-		_slots[op_id] = slot
+		_slots[deployment_id] = slot
 	# String-copy sort (P14): StringName sort is interning-ordered — slot
 	# order would vary across launches
 	var trap_names: Array = []
@@ -218,6 +231,12 @@ func _build_slots(op_defs: Dictionary) -> void:
 		box.add_child(slot)
 		_trap_slots[trap_id] = slot
 	_layout_slot_box()
+
+
+func _deployment_ids() -> Array[StringName]:
+	if not model.battle_squad.is_empty():
+		return model.battle_squad.duplicate()
+	return model.squad.duplicate()
 
 
 func _layout_slot_box() -> void:

@@ -45,7 +45,7 @@ func run(h: SelfTestHarness) -> void:
 	game.call("open_title")
 	await h.frames(4)
 	h.check("Title clears debug override", not bool(game.get("_debug_catalog_override")))
-	h.check("Title clears legacy campaign", game.get("campaign") == null)
+	h.check("Title clears playable campaign", game.get("campaign") == null)
 	h.done()
 
 
@@ -62,22 +62,21 @@ func _await_game(h: SelfTestHarness) -> Node:
 
 func _check_debug_override(h: SelfTestHarness, game: Node) -> void:
 	game.call("start_campaign", false)
-	var legacy: LegacyCampaignAdapter = game.get("campaign")
-	var before := {
-		"operators": legacy.unlocked_operators.duplicate(),
-		"traps": legacy.unlocked_traps.duplicate(),
-		"spells": legacy.unlocked_spells.duplicate(),
-		"stars": legacy.stage_stars.duplicate(true),
-	}
-	game.call("debug_unlock_all")
+	var campaign: CampaignStateV3 = game.get("campaign")
+	var before: String = campaign.encode_save()["text"]
+	game.call("_debug_unlock_all")
 	h.check("debug override reaches full operator catalog",
 		(game.call("loadout_operator_ids") as Array).size() == 12)
-	h.check("debug override does not mutate legacy roster",
-		legacy.unlocked_operators == before["operators"])
+	h.check(
+		"debug override does not mutate v3 save bytes",
+		campaign.encode_save()["text"] == before,
+	)
 	game.call("start_campaign", false)
 	h.check("New Campaign clears debug override", not bool(game.get("_debug_catalog_override")))
-	h.check("New Campaign restores five legacy starters",
-		(game.call("loadout_operator_ids") as Array).size() == 5)
+	h.check(
+		"New Campaign restores Recruit-first operator projection",
+		game.call("loadout_operator_ids") == [&"recruit"],
+	)
 
 
 func _paid_data(state: CampaignState) -> Dictionary:

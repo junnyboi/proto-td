@@ -1,9 +1,8 @@
 extends Node
 
-## Session state + scene flow (all in-memory; every launch starts fresh, no
-## persistence — per the POC scope). start_battle() swaps the content scene
-## manually so it works both under the normal main-scene boot and under the
-## selftest harness (which parents the main scene to root itself).
+## Scene flow plus one crash-safe CampaignSave v3 authority. Player campaign
+## transitions publish only SaveStore-restored states; start_battle() remains an
+## isolated template-only debug/replay-v1 lane that cannot resolve campaign data.
 
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
@@ -13,6 +12,8 @@ const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
 const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
+const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_context.gd")
+const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -21,15 +22,21 @@ var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null
 
-# D16-08 runtime compatibility session. Canonical P16 CampaignState remains
-# model-only until real ticket/outcome production permits the P16.3 cutover.
-# campaign_active == false preserves full-catalog direct-battle seams.
+# Player campaigns use one durable CampaignStateV3 authority. Direct harness and
+# replay-v1 battles stay in an explicit template-only compatibility lane and can
+# never submit an outcome to this authority.
 var campaign: Variant = null
+var campaign_store: Variant = null
 var campaign_active: bool = false
 var selected_stage_id: StringName = &""
 var selected_squad: Array[StringName] = []
 var last_result: Dictionary = {}
+var last_campaign_error: StringName = &""
 var _debug_catalog_override: bool = false
+var _campaign_context: Dictionary = {}
+var _pending_battle_ticket: Dictionary = {}
+var _pending_campaign_mutation: Variant = null
+var _campaign_battle_active := false
 
 
 func set_run_seed(value: int) -> void:
@@ -37,50 +44,124 @@ func set_run_seed(value: int) -> void:
 	seed(value)
 
 
-## Fresh campaign run (always from scratch — no persistence by design).
-## Bots pass open_campaign_ui = false and drive start_stage directly.
-func start_campaign(open_campaign_ui: bool = true) -> void:
+## Resume a valid durable campaign by default. Explicit fresh starts first
+## restore/migrate the prior slot, then replace it through expected-preimage CAS.
+func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_debug_catalog_override = false
-	campaign = LEGACY_CAMPAIGN_ADAPTER_SCRIPT.create(_catalogs(), _all_stage_defs())
+	_campaign_context = CAMPAIGN_RUNTIME_CONTEXT_SCRIPT.build()
+	var started: Dictionary = (
+		CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.start_new(run_seed, _campaign_context)
+		if fresh
+		else CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.load_or_create(run_seed, _campaign_context)
+	)
+	if not started["accepted"]:
+		push_error("Game.start_campaign: %s" % started["error_code"])
+		return false
+	campaign = started["state"]
+	campaign_store = started["store"]
 	campaign_active = true
 	pending_stage = null
 	current_battle = null
 	selected_stage_id = &""
 	selected_squad = []
 	last_result = {}
+	last_campaign_error = &""
+	_pending_battle_ticket = {}
+	_pending_campaign_mutation = null
+	_campaign_battle_active = false
 	if open_campaign_ui:
 		open_staging()
+	return true
 
 
-## Lock enforcement lives in the stage-select UI (and is asserted by the
-## campaign bot/scenario) — the seam trusts its caller so per-stage bots
-## can run standalone (§2.2.6).
-func start_stage(stage_id: StringName, squad: Array[StringName]) -> void:
+## Player campaign launch is an authoritative strategic command. Selection and
+## scene state publish only after the BattleTicket is durably committed.
+func start_stage(
+	stage_id: StringName,
+	squad: Array[StringName],
+	open_battle: bool = true,
+) -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		selected_stage_id = stage_id
+		selected_squad = squad.duplicate()
+		start_battle(stage_id, open_battle)
+		return {"accepted": true, "error_code": &"", "ticket": {}}
+	var command_id := "runtime:begin:%s:%d" % [
+		campaign.campaign_uid(), campaign.next_attempt_id(),
+	]
+	var command: Dictionary = campaign.begin_attempt(
+		command_id, stage_id, squad, run_seed, campaign.save_revision(),
+	)
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+		command, campaign_store,
+	)
+	if not committed["accepted"]:
+		return committed
+	campaign = committed["state"]
+	var ticket: Dictionary = committed["result"]["ticket"].duplicate(true)
 	selected_stage_id = stage_id
 	selected_squad = squad.duplicate()
-	start_battle(stage_id)
+	_pending_battle_ticket = ticket
+	_campaign_battle_active = true
+	if open_battle:
+		_queue_battle(stage_id)
+	return {"accepted": true, "error_code": &"", "ticket": ticket.duplicate(true)}
 
 
 ## The squad the next battle boots with: an explicit start_stage selection
 ## wins (campaign runs AND standalone per-stage bots — §2.2.6 lets bots run
 ## without clearing predecessors); start_battle-only harness/debug paths
 ## never set one and keep the default squad.
-func battle_squad() -> Array[StringName]:
+func _battle_squad() -> Array[StringName]:
 	if not selected_squad.is_empty():
-		return selected_squad
+		return selected_squad.duplicate()
 	return default_squad
+
+
+func battle_launch() -> Dictionary:
+	return {
+		"input": (
+			_pending_battle_ticket.duplicate(true)
+			if _campaign_battle_active
+			else _battle_squad()
+		),
+		"trusted_ticket_hashes": (
+			[String(_pending_battle_ticket["ticket_hash"])]
+			if _campaign_battle_active
+			else []
+		),
+		"trap_ids": loadout_trap_ids() if _campaign_battle_active else _scan_ids(
+			"res://data/traps"
+		),
+		"spell_ids": loadout_spell_ids() if _campaign_battle_active else _scan_ids(
+			"res://data/spells"
+		),
+	}
 
 
 func is_stage_unlocked(stage_id: StringName) -> bool:
 	if campaign == null:
 		return true
-	return campaign.is_stage_unlocked(stage_id)
+	var projection: Dictionary = campaign.runtime_projection()
+	var position := (projection["stage_ids"] as Array).find(stage_id)
+	return (
+		position <= 0
+		or (projection["stage_stars"] as Dictionary).has(
+			projection["stage_ids"][position - 1]
+		)
+	)
 
 
 func campaign_stage_ids() -> Array[StringName]:
 	if campaign == null:
 		return []
-	return campaign.campaign_stage_ids()
+	return campaign.runtime_projection()["stage_ids"].duplicate()
+
+
+func campaign_projection() -> Dictionary:
+	if not campaign_active or campaign == null:
+		return {}
+	return campaign.runtime_projection()
 
 
 ## Loadout sets for the UI (model stays catalog-validated — td-phase-6-7
@@ -90,7 +171,7 @@ func loadout_operator_ids() -> Array[StringName]:
 	if _debug_catalog_override:
 		return _scan_ids("res://data/operators")
 	if campaign_active and campaign != null:
-		return campaign.unlocked_operators
+		return campaign.runtime_projection()["unlocked_operators"]
 	return _scan_ids("res://data/operators")
 
 
@@ -98,7 +179,7 @@ func loadout_trap_ids() -> Array[StringName]:
 	if _debug_catalog_override:
 		return _scan_ids("res://data/traps")
 	if campaign_active and campaign != null:
-		return campaign.unlocked_traps
+		return campaign.runtime_projection()["unlocked_traps"]
 	return _scan_ids("res://data/traps")
 
 
@@ -106,33 +187,83 @@ func loadout_spell_ids() -> Array[StringName]:
 	if _debug_catalog_override:
 		return _scan_ids("res://data/spells")
 	if campaign_active and campaign != null:
-		return campaign.unlocked_spells
+		return campaign.runtime_projection()["unlocked_spells"]
 	return _scan_ids("res://data/spells")
 
 
-## Records a terminal battle result (called once per battle by the view's
-## result edge); grants first-clear rewards and stores last_result for the
-## results screen. Idempotent by LegacyCampaignAdapter construction.
-func record_result(result: int, stars: int) -> void:
+## Commit the model-owned canonical BattleOutcome. The view supplies only the
+## result edge; rewards, XP, deaths, stars, and Memorial facts come from the
+## resolved strategic receipt.
+func record_result(result: int, stars: int) -> bool:
 	if current_battle == null:
-		return
+		return false
 	var stage := current_battle.stage
-	var granted: Array[Dictionary] = []
-	# campaign_active guard (Phase 13, Q4): a harness/debug direct battle
-	# must never grant rewards through a stale compatibility campaign.
-	if campaign != null and campaign_active:
-		granted = campaign.record_result(stage, result, stars)
+	if not _campaign_battle_active:
+		last_result = {
+			"stage_id": stage.id,
+			"result": result,
+			"stars": stars,
+			"leaks": current_battle.leaked,
+			"kills": current_battle.killed,
+			"rewards_granted": [],
+		}
+		return true
+	var artifacts := current_battle.snapshot()
+	var outcome: Dictionary = artifacts.get("outcome", {})
+	if outcome.is_empty():
+		return false
+	var committed: Dictionary
+	if _pending_campaign_mutation != null:
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+			_pending_campaign_mutation, campaign_store,
+		)
+	else:
+		var attempt_id := int(_pending_battle_ticket["attempt_id"])
+		var command_id := "runtime:resolve:%s:%d" % [campaign.campaign_uid(), attempt_id]
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+			campaign.resolve_attempt(
+				command_id, attempt_id, outcome, campaign.save_revision(),
+			),
+			campaign_store,
+		)
+	if not committed["accepted"]:
+		last_campaign_error = committed["error_code"]
+		_pending_campaign_mutation = committed.get("mutation")
+		return false
+	last_campaign_error = &""
+	_pending_campaign_mutation = null
+	campaign = committed["state"]
+	var resolution: Dictionary = committed["result"]["resolution"]
 	last_result = {
 		"stage_id": stage.id,
 		"result": result,
 		"stars": stars,
 		"leaks": current_battle.leaked,
 		"kills": current_battle.killed,
-		"rewards_granted": granted,
+		"rewards_granted": resolution["rewards_granted"].duplicate(true),
+		"class_entitlements_granted": (
+			resolution["class_entitlements_granted"].duplicate()
+		),
+		"xp_awards": resolution["xp_awards"].duplicate(true),
+		"dead_hero_ids": resolution["dead_hero_ids"].duplicate(),
 	}
+	_pending_battle_ticket = {}
+	_campaign_battle_active = false
+	return true
 
 
-func debug_unlock_all() -> void:
+func commit_campaign_command(command: Dictionary) -> Dictionary:
+	if not campaign_active or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+		command, campaign_store,
+	)
+	if committed["accepted"]:
+		campaign = committed["state"]
+	return committed
+
+
+func _debug_unlock_all() -> void:
 	_debug_catalog_override = true
 
 
@@ -142,16 +273,21 @@ func open_title() -> void:
 	pending_stage = null
 	current_battle = null
 	campaign = null
+	campaign_store = null
 	campaign_active = false
 	selected_stage_id = &""
 	selected_squad = []
 	last_result = {}
 	_debug_catalog_override = false
+	_campaign_context = {}
+	_pending_battle_ticket = {}
+	_pending_campaign_mutation = null
+	_campaign_battle_active = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
-## P15 campaign-home seam. Returning here only swaps the projection; the
-## existing LegacyCampaignAdapter remains authoritative and unchanged.
+## Campaign-home projection. Returning here swaps presentation only; the current
+## immutable CampaignStateV3 and durable store remain authoritative.
 func open_staging() -> void:
 	_swap_content.call_deferred(STAGING_SCENE_PATH)
 
@@ -212,7 +348,14 @@ func stage_ids() -> Array[StringName]:
 	return _scan_ids("res://data/stages")
 
 
-func start_battle(stage_id: StringName) -> void:
+func start_battle(stage_id: StringName, open_battle: bool = true) -> void:
+	_campaign_battle_active = false
+	_pending_battle_ticket = {}
+	if open_battle:
+		_queue_battle(stage_id)
+
+
+func _queue_battle(stage_id: StringName) -> void:
 	var stage_path := "res://data/stages/%s.tres" % stage_id
 	if not ResourceLoader.exists(stage_path):
 		push_error("unknown stage: " + stage_path)

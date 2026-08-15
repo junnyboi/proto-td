@@ -8,6 +8,7 @@ extends RefCounted
 const RECRUIT_ID := "recruit"
 const ATTEMPT_RULES_PATH := "res://sim/campaign_v3_attempts.gd"
 const HASH_PATH := "res://sim/campaign_v3_hash.gd"
+const RECRUITMENT_RULES_PATH := "res://sim/campaign_v3_recruitment.gd"
 
 
 static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
@@ -57,6 +58,8 @@ static func _replay_record(
 			return _replay_resolution(data, context, record)
 		"confirm_promotions":
 			return _replay_promotions(data, context, record)
+		"recruit_person":
+			return _replay_recruitment(data, context, record)
 	return _reject(&"invalid_command_history")
 
 
@@ -215,6 +218,32 @@ static func _replay_promotions(
 		return _reject(&"command_history_receipt_mismatch")
 	working["promotion_receipts"] = (working["promotion_receipts"] as Array).duplicate(true)
 	working["promotion_receipts"].append(promotion)
+	_append_record(working, record)
+	return _accept(working)
+
+
+static func _replay_recruitment(
+	data: Dictionary,
+	context: Dictionary,
+	record: Dictionary,
+) -> Dictionary:
+	var derived: Dictionary = (
+		load(RECRUITMENT_RULES_PATH)
+		. call(
+			"_derive",
+			data,
+			context,
+			record["payload"],
+		)
+	)
+	if not derived["accepted"]:
+		return _reject(&"command_history_transition_mismatch")
+	var working: Dictionary = derived["data"]
+	working["save_revision"] = int(data["save_revision"]) + 1
+	var receipt: Dictionary = derived["receipt"]
+	receipt["save_revision"] = working["save_revision"]
+	if record["receipt"] != {"recruitment": receipt}:
+		return _reject(&"command_history_receipt_mismatch")
 	_append_record(working, record)
 	return _accept(working)
 

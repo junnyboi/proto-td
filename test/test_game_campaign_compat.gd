@@ -1,5 +1,7 @@
 extends GutTest
 
+const GameScript := preload("res://autoloads/game.gd")
+
 
 func test_legacy_adapter_preserves_exact_start_and_first_clear_behavior() -> void:
 	var adapter: LegacyCampaignAdapter = LegacyCampaignAdapter.create(_catalogs(), _stages())
@@ -23,59 +25,60 @@ func test_legacy_adapter_preserves_exact_start_and_first_clear_behavior() -> voi
 
 
 func test_debug_unlock_is_projection_only_and_new_campaign_clears_it() -> void:
-	var game := get_node("/root/Game")
-	var saved := _save_game(game)
-	game.call("start_campaign", false)
-	var campaign: LegacyCampaignAdapter = game.get("campaign")
-	var before := _legacy_snapshot(campaign)
-	assert_eq((game.call("loadout_operator_ids") as Array).size(), 5)
+	_cleanup_slot()
+	var game := GameScript.new()
+	assert_true(game.start_campaign(false))
+	var campaign: CampaignStateV3 = game.campaign
+	var before := String(campaign.encode_save()["text"])
+	assert_eq(game.loadout_operator_ids(), [&"recruit"])
 	assert_eq((game.call("loadout_trap_ids") as Array).size(), 0)
 	assert_eq((game.call("loadout_spell_ids") as Array).size(), 0)
 
-	game.call("debug_unlock_all")
+	game.call("_debug_unlock_all")
 	assert_true(bool(game.get("_debug_catalog_override")))
 	assert_eq((game.call("loadout_operator_ids") as Array).size(), 12)
 	assert_eq((game.call("loadout_trap_ids") as Array).size(), 2)
 	assert_eq((game.call("loadout_spell_ids") as Array).size(), 2)
-	assert_eq(_legacy_snapshot(campaign), before)
+	assert_eq(campaign.encode_save()["text"], before)
 
-	game.call("start_campaign", false)
+	assert_true(game.start_campaign(false))
 	assert_false(bool(game.get("_debug_catalog_override")))
-	assert_eq((game.call("loadout_operator_ids") as Array).size(), 5)
-	_restore_game(game, saved)
+	assert_eq(game.loadout_operator_ids(), [&"recruit"])
+	assert_eq(game.campaign.encode_save()["text"], before)
+	var resumed_generation: int = game.campaign.campaign_generation()
+	var resumed_uid: String = game.campaign.campaign_uid()
+	assert_true(game.start_campaign(false, true))
+	assert_eq(game.campaign.campaign_generation(), resumed_generation + 1)
+	assert_ne(game.campaign.campaign_uid(), resumed_uid)
+	assert_eq(game.loadout_operator_ids(), [&"recruit"])
+	game.free()
+	_cleanup_slot()
 
 
-func _legacy_snapshot(campaign: LegacyCampaignAdapter) -> Dictionary:
-	return {
-		"operators": campaign.unlocked_operators.duplicate(),
-		"traps": campaign.unlocked_traps.duplicate(),
-		"spells": campaign.unlocked_spells.duplicate(),
-		"stars": campaign.stage_stars.duplicate(true),
-	}
-
-
-func _save_game(game: Node) -> Dictionary:
-	return {
-		"campaign": game.get("campaign"),
-		"campaign_active": game.get("campaign_active"),
-		"pending_stage": game.get("pending_stage"),
-		"current_battle": game.get("current_battle"),
-		"selected_stage_id": game.get("selected_stage_id"),
-		"selected_squad": (game.get("selected_squad") as Array).duplicate(),
-		"last_result": (game.get("last_result") as Dictionary).duplicate(true),
-		"debug_override": game.get("_debug_catalog_override"),
-	}
-
-
-func _restore_game(game: Node, saved: Dictionary) -> void:
-	game.set("campaign", saved["campaign"])
-	game.set("campaign_active", saved["campaign_active"])
-	game.set("pending_stage", saved["pending_stage"])
-	game.set("current_battle", saved["current_battle"])
-	game.set("selected_stage_id", saved["selected_stage_id"])
-	game.set("selected_squad", saved["selected_squad"])
-	game.set("last_result", saved["last_result"])
-	game.set("_debug_catalog_override", saved["debug_override"])
+func test_legacy_slot_rolls_into_a_playable_recruit_generation() -> void:
+	_cleanup_slot()
+	var legacy_text := FileAccess.get_file_as_string(
+		"res://test/fixtures/p16/campaign_v1_seed42.json"
+	)
+	var file := FileAccess.open(CampaignSaveStore.PRODUCTION_SLOT, FileAccess.WRITE)
+	assert_not_null(file)
+	file.store_string(legacy_text)
+	file.close()
+	var game := GameScript.new()
+	game.set_run_seed(42)
+	assert_true(game.start_campaign(false))
+	assert_eq(game.campaign.campaign_generation(), 2)
+	var ready: Array = game.campaign_projection()["ready_heroes"]
+	assert_eq(ready.size(), 5)
+	var ids: Array[StringName] = []
+	for hero: Dictionary in ready.slice(0, 3):
+		assert_eq(hero["operator_def_id"], "recruit")
+		ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = game.start_stage(&"s1", ids, false)
+	assert_true(begun["accepted"], str(begun.get("error_code", &"")))
+	assert_eq(game.campaign.save_revision(), 2)
+	game.free()
+	_cleanup_slot()
 
 
 func _catalogs() -> Dictionary:
@@ -102,3 +105,10 @@ func _catalog_ids(path: String) -> Array[StringName]:
 	ids.sort_custom(func(a: StringName, b: StringName) -> bool:
 		return String(a) < String(b))
 	return ids
+
+
+func _cleanup_slot() -> void:
+	for suffix: String in ["", ".bak", ".tmp"]:
+		DirAccess.remove_absolute(
+			ProjectSettings.globalize_path("user://campaign_v1.json%s" % suffix)
+		)

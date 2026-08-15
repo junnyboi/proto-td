@@ -36,13 +36,12 @@ func _run() -> Dictionary:
 		{"hero_id": hero_ids[1], "to_class_id": "defender"},
 		{"hero_id": hero_ids[0], "to_class_id": "swordmaster"},
 	]
-	var promotion_command := state.confirm_promotions("v3-promote-0001", 3, choices)
-	var promoted := _apply(promotion_command, store)
-	if not promoted["accepted"]:
-		return promoted
-	state = _reload(store)
-	if state == null:
-		return _reject(&"reload_failed")
+	var progression := _promote_and_recruit(state, store, choices)
+	if not progression["accepted"]:
+		return progression
+	state = progression["state"]
+	var promoted: Dictionary = progression["promoted"]
+	var recruited: Dictionary = progression["recruited"]
 	var duplicate_begin := (
 		state
 		. begin_attempt(
@@ -55,7 +54,15 @@ func _run() -> Dictionary:
 	)
 	var duplicate_resolve := state.resolve_attempt("v3-resolve-0001", 1, outcome, 2)
 	var duplicate_promote := state.confirm_promotions("v3-promote-0001", 3, choices)
-	for duplicate: Dictionary in [duplicate_begin, duplicate_resolve, duplicate_promote]:
+	var duplicate_recruit := state.recruit_person(
+		"v3-recruit-0001", 4, "contract", "p16_caster_contract"
+	)
+	for duplicate: Dictionary in [
+		duplicate_begin,
+		duplicate_resolve,
+		duplicate_promote,
+		duplicate_recruit,
+	]:
 		if not duplicate["accepted"] or duplicate["payload"]["fresh"]:
 			return _reject(&"duplicate_retry_failed")
 	var conflicting := (
@@ -97,15 +104,49 @@ func _run() -> Dictionary:
 				"begin": _receipt_text(begun),
 				"resolve": _receipt_text(resolved),
 				"promote": _receipt_text(promoted),
+				"recruit": _receipt_text(recruited),
 			},
 			"duplicate_receipt_texts":
 			{
 				"begin": _duplicate_text(duplicate_begin),
 				"resolve": _duplicate_text(duplicate_resolve),
 				"promote": _duplicate_text(duplicate_promote),
+				"recruit": _duplicate_text(duplicate_recruit),
 			},
 			"conflict_error": String(conflicting["error_code"]),
 		},
+	}
+
+
+func _promote_and_recruit(
+	state: CampaignStateV3,
+	store: CampaignSaveStore,
+	choices: Array,
+) -> Dictionary:
+	var promoted := _apply(
+		state.confirm_promotions("v3-promote-0001", 3, choices),
+		store,
+	)
+	if not promoted["accepted"]:
+		return promoted
+	state = _reload(store)
+	if state == null:
+		return _reject(&"reload_failed")
+	var recruited := _apply(
+		state.recruit_person("v3-recruit-0001", 4, "contract", "p16_caster_contract"),
+		store,
+	)
+	if not recruited["accepted"]:
+		return recruited
+	state = _reload(store)
+	if state == null:
+		return _reject(&"reload_failed")
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"state": state,
+		"promoted": promoted,
+		"recruited": recruited,
 	}
 
 

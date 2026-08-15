@@ -567,22 +567,22 @@
         }
       ],
       "focus_order": [
-        "Pick_caster_1",
-        "Pick_defender_1",
-        "Pick_defender_2",
-        "Pick_guard_1",
-        "Pick_vanguard_1",
+        "Pick_7179faeace82abbe",
+        "Pick_cb0a9db634ff05af",
+        "Pick_3ffd85bae32fdb57",
+        "Pick_1dfb65faeaddb4df",
+        "Pick_f6775da4ffcc6738",
         "BackButton"
       ],
       "target_count": 7,
       "text_count": 15,
       "focus_expansions": {
         "Pick_*": [
-          "Pick_caster_1",
-          "Pick_defender_1",
-          "Pick_defender_2",
-          "Pick_guard_1",
-          "Pick_vanguard_1"
+          "Pick_7179faeace82abbe",
+          "Pick_cb0a9db634ff05af",
+          "Pick_3ffd85bae32fdb57",
+          "Pick_1dfb65faeaddb4df",
+          "Pick_f6775da4ffcc6738"
         ]
       }
     },

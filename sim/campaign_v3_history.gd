@@ -341,9 +341,8 @@ static func _validate_current_from_anchor(
 	if current["save_revision"] < after["save_revision"]:
 		return _reject(&"post_resolution_mutation_mismatch")
 	for key: String in [
-		"campaign_uid", "campaign_seed", "campaign_generation", "next_recruitment_index",
-		"next_resolution_index", "marks", "stage_stars",
-		"unlocked_traps", "unlocked_spells", "class_entitlements", "offers",
+		"campaign_uid", "campaign_seed", "campaign_generation", "next_resolution_index",
+		"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
 		"promotion_proofs", "memorial",
 	]:
 		if current[key] != after[key]:
@@ -359,6 +358,20 @@ static func _validate_current_from_anchor(
 		if anchored_receipts[index] != current_receipts[index]:
 			return _reject(&"post_resolution_mutation_mismatch")
 	var added := current_receipts.size() - anchored_receipts.size()
+	var recruited := (current["heroes"] as Array).size() - (after["heroes"] as Array).size()
+	if recruited < 0:
+		return _reject(&"post_resolution_mutation_mismatch")
+	if recruited > 0:
+		if (current["command_receipts"] as Array).is_empty():
+			return _reject(&"post_resolution_mutation_mismatch")
+		var command_history: Dictionary = (
+			load("res://sim/campaign_v3_command_history.gd")
+			. call("validate", current, context)
+		)
+		return _accept(null) if command_history["accepted"] else command_history
+	for key: String in ["next_recruitment_index", "marks", "offers"]:
+		if current[key] != after[key]:
+			return _reject(&"post_resolution_mutation_mismatch")
 	var revision_delta := int(current["save_revision"]) - int(after["save_revision"])
 	if revision_delta not in [added, added + appended_tickets]:
 		return _reject(&"post_resolution_revision_mismatch")
@@ -506,12 +519,17 @@ static func _validate_memorial(
 ) -> Dictionary:
 	if after.size() < before.size():
 		return _reject(&"resolution_memorial_mismatch")
-	for index: int in before.size():
-		if before[index] != after[index]:
-			return _reject(&"resolution_memorial_mismatch")
+	var before_by_id := {}
+	for row: Dictionary in before:
+		before_by_id[row["memorial_id"]] = row
 	var new_ids: Array[String] = []
-	for index: int in range(before.size(), after.size()):
-		new_ids.append(String(after[index]["memorial_id"]))
+	for row: Dictionary in after:
+		var memorial_id := String(row["memorial_id"])
+		if before_by_id.has(memorial_id):
+			if before_by_id[memorial_id] != row:
+				return _reject(&"resolution_memorial_mismatch")
+		else:
+			new_ids.append(memorial_id)
 	new_ids.sort()
 	if new_ids != receipt["memorial_ids"]:
 		return _reject(&"resolution_memorial_mismatch")

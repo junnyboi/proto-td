@@ -1,7 +1,7 @@
 extends Control
 
-## Campaign squad select: toggle up to squad_size unlocked operators and route
-## through the existing Game seams. The model accepts the unchanged selected IDs.
+## Campaign squad select: toggle ready persistent people by hero_id. Combat
+## templates may repeat; stable person identity never does.
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
@@ -10,9 +10,13 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const HeroIdentityScript := preload("res://sim/hero_identity.gd")
+const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
-const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const StageNarrativeCatalogType := preload(
+	"res://data/presentation/narrative/stage_narrative_catalog.gd"
+)
 
 var _stage: StageDef = null
 var _picked: Array[StringName] = []
@@ -20,6 +24,7 @@ var _narrative: StageNarrativeDefType = null
 var _narrative_missing := false
 var _briefing: GridContainer = null
 var _buttons: Dictionary = {}
+var _hero_order: Array[StringName] = []
 var _counter: Label = null
 var _start: AetheriaButtonType = null
 var _back: AetheriaButtonType = null
@@ -71,34 +76,36 @@ func _ready() -> void:
 	_grid.add_theme_constant_override(&"h_separation", 10)
 	_grid.add_theme_constant_override(&"v_separation", 10)
 	column.add_child(_grid)
-	for op_id: StringName in Game.loadout_operator_ids():
+	for hero: Dictionary in Game.campaign_projection()["ready_heroes"]:
+		var hero_id := StringName(hero["hero_id"])
+		var op_id := StringName(hero["operator_def_id"])
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
 		var pick := AetheriaButtonType.new()
-		pick.name = "Pick_%s" % op_id
+		pick.name = "Pick_%s" % hero_id
 		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		pick.toggle_mode = true
 		pick.apply_role(&"secondary")
 		var card_text := UiCopyType.format_text(
 			&"ui.squad.operator_card", "{name}\n{cost} DP",
-			{&"name": UiCopyType.operator_name(definition), &"cost": definition.dp_cost},
+			{&"name": _hero_label(hero), &"cost": definition.dp_cost},
 		)
-		var compact_card := "%s\n%d DP" % [
-			_compact_operator_name(UiCopyType.operator_name(definition)), definition.dp_cost,
-		]
+		var compact_card := card_text
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
-		pick.icon = Art.texture(StringName("portrait_%s" % definition.portrait_id))
+		pick.icon = Art.texture(StringName(hero["portrait_asset_id"]))
 		pick.expand_icon = true
 		pick.add_theme_constant_override(&"icon_max_width", 80)
 		pick.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pick.custom_minimum_size = Vector2(170.0, 190.0)
+		pick.custom_minimum_size = Vector2(170.0, 220.0)
 		pick.set_presentation_text(card_text, compact_card)
 		var card_label := pick.get_node("PresentationLabel") as Label
 		card_label.offset_top = 70.0
-		pick.toggled.connect(_on_pick_toggled.bind(op_id))
+		card_label.add_theme_font_size_override(&"font_size", 30)
+		pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 		_grid.add_child(pick)
-		_buttons[op_id] = pick
+		_buttons[hero_id] = pick
+		_hero_order.append(hero_id)
 
 	_footer = GridContainer.new()
 	_footer.name = "SquadFooter"
@@ -166,10 +173,22 @@ func _build_mission_briefing() -> GridContainer:
 	_briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_theme_constant_override(&"h_separation", 20)
 	_briefing.add_theme_constant_override(&"v_separation", 6)
-	_add_briefing_value("BriefingObjective", &"ui.squad.briefing.objective", "Objective", StageNarrativeDefType.Field.OBJECTIVE)
-	_add_briefing_value("BriefingThreat", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
-	_add_briefing_value("BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
-	_add_briefing_value("BriefingClue", &"ui.squad.briefing.clue", "Field note", StageNarrativeDefType.Field.CLUE)
+	_add_briefing_value(
+		"BriefingObjective", &"ui.squad.briefing.objective", "Objective",
+		StageNarrativeDefType.Field.OBJECTIVE,
+	)
+	_add_briefing_value(
+		"BriefingThreat", &"ui.squad.briefing.threat", "Threat",
+		StageNarrativeDefType.Field.THREAT,
+	)
+	_add_briefing_value(
+		"BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters",
+		StageNarrativeDefType.Field.HUMAN_REASON,
+	)
+	_add_briefing_value(
+		"BriefingClue", &"ui.squad.briefing.clue", "Field note",
+		StageNarrativeDefType.Field.CLUE,
+	)
 	var hint := _label(
 		"TacticalHint", UiCopyType.format_text(
 			&"ui.squad.tactical_hint", "Tactical hint — {hint}",
@@ -181,21 +200,33 @@ func _build_mission_briefing() -> GridContainer:
 	return _briefing
 
 
-func _add_briefing_value(node_name: String, key: StringName, fallback: String, field: StageNarrativeDefType.Field) -> void:
+func _add_briefing_value(
+	node_name: String,
+	key: StringName,
+	fallback: String,
+	field: StageNarrativeDefType.Field,
+) -> void:
 	var heading := UiCopyType.text(key, fallback)
-	var value := UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.") if _narrative_missing else UiCopyType.stage_narrative_text(_narrative, field)
+	var value := (
+		UiCopyType.text(
+			&"ui.error.missing_stage_narrative",
+			"Mission record unavailable. Return to Mission Control.",
+		)
+		if _narrative_missing
+		else UiCopyType.stage_narrative_text(_narrative, field)
+	)
 	var label := _label(node_name, "%s — %s" % [heading, value], &"dense_detail")
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_briefing.add_child(label)
 
 
 func _prefill() -> void:
-	for op_id: StringName in Game.selected_squad:
+	for hero_id: StringName in Game.selected_squad:
 		if _picked.size() >= _stage.squad_size:
 			break
-		if _buttons.has(op_id):
-			_picked.append(op_id)
-			(_buttons[op_id] as Button).set_pressed_no_signal(true)
+		if _buttons.has(hero_id):
+			_picked.append(hero_id)
+			(_buttons[hero_id] as Button).set_pressed_no_signal(true)
 
 
 func _loadout_text() -> String:
@@ -216,14 +247,14 @@ func _loadout_text() -> String:
 	)
 
 
-func _on_pick_toggled(pressed: bool, op_id: StringName) -> void:
+func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 	if pressed:
 		if _picked.size() >= _stage.squad_size:
-			(_buttons[op_id] as Button).set_pressed_no_signal(false)
+			(_buttons[hero_id] as Button).set_pressed_no_signal(false)
 			return
-		_picked.append(op_id)
+		_picked.append(hero_id)
 	else:
-		_picked.erase(op_id)
+		_picked.erase(hero_id)
 	_refresh()
 
 
@@ -233,9 +264,9 @@ func _refresh() -> void:
 		{&"selected": _picked.size(), &"limit": _stage.squad_size},
 	)
 	for raw_id: Variant in _buttons:
-		var op_id := StringName(raw_id)
-		(_buttons[op_id] as AetheriaButtonType).apply_role(
-			&"selected" if _picked.has(op_id) else &"secondary",
+		var hero_id := StringName(raw_id)
+		(_buttons[hero_id] as AetheriaButtonType).apply_role(
+			&"selected" if _picked.has(hero_id) else &"secondary",
 		)
 	_start.disabled = _picked.is_empty() or _narrative_missing
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
@@ -245,8 +276,8 @@ func _refresh() -> void:
 
 func _wire_focus() -> void:
 	var focusable: Array[Button] = []
-	for op_id: StringName in Game.loadout_operator_ids():
-		focusable.append(_buttons[op_id] as Button)
+	for hero_id: StringName in _hero_order:
+		focusable.append(_buttons[hero_id] as Button)
 	focusable.append(_back)
 	if not _start.disabled:
 		focusable.append(_start)
@@ -260,11 +291,28 @@ func _wire_focus() -> void:
 		focusable[0].grab_focus.call_deferred()
 
 
-func _compact_operator_name(full_name: String) -> String:
-	const LIMIT := 4
-	if full_name.length() <= LIMIT:
-		return full_name
-	return full_name.left(LIMIT)
+func _hero_label(hero: Dictionary) -> String:
+	var class_id := String(hero["current_class_id"])
+	var class_label := UiCopyType.text(
+		StringName("ui.training.class.%s" % class_id),
+		class_id.replace("_", " ").capitalize(),
+	)
+	var callsign := ""
+	if hero["custom_callsign"] != null:
+		callsign = String(hero["custom_callsign"])
+	else:
+		var parsed := HeroIdentityScript.parse_u64_hex(String(hero["hero_id"]))
+		if parsed["accepted"]:
+			var name_result := HeroNamesScript.default_name(
+				int(parsed["bits"]), int(hero["name_version"]),
+			)
+			callsign = String(name_result.get("value", hero["hero_id"]))
+	if callsign.is_empty():
+		callsign = UiCopyType.operator_name(
+			load("res://data/operators/%s.tres" % hero["operator_def_id"]) as OperatorDef
+		)
+	var short_callsign := callsign.get_slice(" ", 0)
+	return "%s #%d\n%s" % [short_callsign, int(hero["recruitment_index"]) + 1, class_label]
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:

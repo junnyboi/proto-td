@@ -72,6 +72,7 @@ func _ready() -> void:
 
 	var next_hint := ""
 	var next_hint_tooltip := ""
+	var stage_stars: Dictionary = Game.campaign_projection()["stage_stars"]
 	var enabled_rows: Array[Button] = []
 	for stage_id: StringName in Game.campaign_stage_ids():
 		var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
@@ -92,7 +93,7 @@ func _ready() -> void:
 			enabled_rows.append(row)
 		row.pressed.connect(_on_stage_pressed.bind(stage_id))
 		_rows.add_child(row)
-		if unlocked and not Game.campaign.stage_stars.has(stage_id):
+		if unlocked and not stage_stars.has(stage_id):
 			next_hint = UiCopyType.stage_title(stage)
 			next_hint_tooltip = UiCopyType.stage_hint(stage)
 
@@ -122,7 +123,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _row_text(stage: StageDef, unlocked: bool) -> String:
-	var stars := int(Game.campaign.stage_stars.get(stage.id, 0))
+	var stars := int(Game.campaign_projection()["stage_stars"].get(stage.id, 0))
 	var suffix := ""
 	if not unlocked:
 		suffix = UiCopyType.text(&"ui.campaign.locked_suffix", "  LOCKED")
@@ -142,7 +143,7 @@ func _row_text(stage: StageDef, unlocked: bool) -> String:
 
 
 func _row_presentation_text(stage: StageDef) -> String:
-	var stars := int(Game.campaign.stage_stars.get(stage.id, 0))
+	var stars := int(Game.campaign_projection()["stage_stars"].get(stage.id, 0))
 	var suffix := ""
 	if stars > 0:
 		suffix = " " + "*".repeat(stars)

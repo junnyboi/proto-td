@@ -61,6 +61,56 @@ func next_resolution_index() -> int:
 	return int(_data["next_resolution_index"])
 
 
+func runtime_projection() -> Dictionary:
+	var stage_ids: Array[StringName] = []
+	for stage_id: String in _context["stage_order"]:
+		stage_ids.append(StringName(stage_id))
+	var stars := {}
+	for row: Dictionary in _data["stage_stars"]:
+		stars[StringName(row["stage_id"])] = int(row["stars"])
+	var heroes: Array[Dictionary] = []
+	for hero: Dictionary in _data["heroes"]:
+		if hero["life_status"] == "ready":
+			heroes.append(hero.duplicate(true))
+	heroes.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return (
+				int(a["recruitment_index"]) < int(b["recruitment_index"])
+				or (
+					int(a["recruitment_index"]) == int(b["recruitment_index"])
+					and String(a["hero_id"]) < String(b["hero_id"])
+				)
+			)
+	)
+	var operators: Array[StringName] = []
+	for hero: Dictionary in heroes:
+		var operator_id := StringName(hero["operator_def_id"])
+		if not operators.has(operator_id):
+			operators.append(operator_id)
+	operators.sort_custom(
+		func(a: StringName, b: StringName) -> bool: return String(a) < String(b)
+	)
+	var traps: Array[StringName] = []
+	for trap_id: String in _data["unlocked_traps"]:
+		traps.append(StringName(trap_id))
+	var spells: Array[StringName] = []
+	for spell_id: String in _data["unlocked_spells"]:
+		spells.append(StringName(spell_id))
+	return {
+		"campaign_uid": String(_data["campaign_uid"]),
+		"save_revision": int(_data["save_revision"]),
+		"next_attempt_id": int(_data["next_attempt_id"]),
+		"marks": int(_data["marks"]),
+		"stage_ids": stage_ids,
+		"ready_heroes": heroes,
+		"unlocked_operators": operators,
+		"unlocked_traps": traps,
+		"unlocked_spells": spells,
+		"stage_stars": stars,
+		"offers": (_data["offers"] as Array).duplicate(true),
+	}
+
+
 func data_copy() -> Dictionary:
 	return _data.duplicate(true)
 
@@ -136,6 +186,17 @@ func confirm_promotions(
 			expected_save_revision,
 			choices,
 		)
+		)
+
+
+func recruit_person(
+	command_id: Variant,
+	expected_save_revision: Variant,
+	source: Variant,
+	source_id: Variant,
+) -> Dictionary:
+	return CampaignV3Recruitment.execute(
+		self, command_id, expected_save_revision, source, source_id,
 	)
 
 
@@ -191,6 +252,8 @@ static func _from_normalized_result(result: Dictionary, context: Dictionary) -> 
 	for key: String in CampaignV3Codec.CORE_KEYS:
 		core[key] = data[key]
 	var core_hash := CampaignV3Hash.of_core(core, context)
+	if not core_hash["accepted"] and _read_only_legacy_rules(data):
+		core_hash = CampaignV3Hash._of_normalized_core(core)
 	if not encoded["accepted"] or not full_hash["accepted"] or not core_hash["accepted"]:
 		return _reject(&"invalid_campaign_state")
 	var state := CampaignStateV3.new()
@@ -201,6 +264,15 @@ static func _from_normalized_result(result: Dictionary, context: Dictionary) -> 
 	state._core_hash_cache = core_hash
 	state._data_checksum = CanonicalJson.sha256_hex(state._data)
 	return {"accepted": true, "error_code": &"", "value": state}
+
+
+static func _read_only_legacy_rules(data: Dictionary) -> bool:
+	if not (data["command_receipts"] as Array).is_empty():
+		return false
+	for hero: Dictionary in data["heroes"]:
+		if hero["progression_rules_version"] != 1:
+			return false
+	return true
 
 
 static func _copy_encoded(value: Dictionary) -> Dictionary:

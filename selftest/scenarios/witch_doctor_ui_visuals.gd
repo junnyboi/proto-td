@@ -10,50 +10,40 @@ func run(h: SelfTestHarness) -> void:
 	if game == null:
 		return
 	game.call("start_campaign", false)
-	var campaign := game.get("campaign") as LegacyCampaignAdapter
-	h.check("campaign exists", campaign != null)
+	var campaign: CampaignStateV3 = game.get("campaign")
+	h.check("v3 campaign exists", campaign != null)
 	if campaign == null:
 		return
-	var campaign_before := {
-		"operators": campaign.unlocked_operators.duplicate(),
-		"traps": campaign.unlocked_traps.duplicate(),
-		"spells": campaign.unlocked_spells.duplicate(),
-		"stars": campaign.stage_stars.duplicate(true),
-	}
-	game.call("debug_unlock_all")
-	game.set("selected_stage_id", &"s1")
-	game.call("open_squad_select")
-	await h.frames(8)
-	var screen := game.get("content") as Control
-	var witch_pick := screen.find_child("Pick_witch_doctor_1", true, false) as Button
-	var mage_pick := screen.find_child("Pick_caster_1", true, false) as Button
-	var expected := Art.texture(&"portrait_caster_1")
-	var old_portrait := Art.texture(&"portrait_witch_doctor_1")
-	h.check("Witch Doctor squad portrait exists", witch_pick != null and witch_pick.icon != null)
-	h.check("Mage Apprentice squad portrait exists", mage_pick != null and mage_pick.icon != null)
+	var save_before: String = campaign.encode_save()["text"]
+	game.call("_debug_unlock_all")
+	var mage := load("res://data/operators/caster_1.tres") as OperatorDef
+	var witch_doctor := load("res://data/operators/witch_doctor_1.tres") as OperatorDef
+	var expected: Texture2D = Art.texture(StringName("portrait_%s" % mage.portrait_id))
+	var witch: Texture2D = Art.texture(StringName("portrait_%s" % witch_doctor.portrait_id))
+	var old_portrait: Texture2D = Art.texture(&"portrait_witch_doctor_1")
+	h.check("Witch Doctor portrait exists", witch != null)
 	h.check(
 		"Witch Doctor portrait is the exact Mage Apprentice portrait",
-		witch_pick != null
-		and mage_pick != null
-		and witch_pick.icon == expected
-		and witch_pick.icon == mage_pick.icon
-		and witch_pick.icon != old_portrait,
+		witch == expected and witch != old_portrait,
 	)
 	h.check(
-		"portrait remap preserves campaign state",
-		campaign.unlocked_operators == campaign_before["operators"]
-		and campaign.unlocked_traps == campaign_before["traps"]
-		and campaign.unlocked_spells == campaign_before["spells"]
-		and campaign.stage_stars == campaign_before["stars"],
+		"debug portrait inspection preserves CampaignSave v3 bytes",
+		campaign.encode_save()["text"] == save_before,
 	)
-	var scroll := screen.find_child("SquadScroll", true, false) as ScrollContainer
-	if scroll != null and witch_pick != null:
-		scroll.ensure_control_visible(witch_pick)
-		await h.frames(3)
-		h.check(
-			"Witch Doctor portrait card is visible",
-			scroll.get_global_rect().intersects(witch_pick.get_global_rect()),
-		)
+	var panel := HBoxContainer.new()
+	panel.name = "DebugPortraitComparison"
+	panel.position = Vector2(360.0, 220.0)
+	panel.add_theme_constant_override(&"separation", 48)
+	for texture: Texture2D in [expected, witch]:
+		var preview := TextureRect.new()
+		preview.texture = texture
+		preview.custom_minimum_size = Vector2(192.0, 192.0)
+		preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		panel.add_child(preview)
+	game.get_tree().root.add_child(panel)
+	await h.frames(3)
 	await h.shot("witch_doctor_mage_portrait")
+	panel.queue_free()
 	print("WITCH_DOCTOR_UI_VISUALS_COMPLETED")
 	h.done()

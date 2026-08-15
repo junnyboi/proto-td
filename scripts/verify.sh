@@ -78,13 +78,15 @@ res://test/test_replay_codec.gd 5/5 passed.
 res://test/test_hero_state.gd 3/3 passed.
 res://test/test_roster_state.gd 5/5 passed.
 res://test/test_campaign_state_p16.gd 11/11 passed.
-res://test/test_game_campaign_compat.gd 2/2 passed.
+res://test/test_campaign_runtime_cutover.gd 5/5 passed.
+res://test/test_campaign_v3_recruitment.gd 4/4 passed.
+res://test/test_game_campaign_compat.gd 3/3 passed.
 res://test/test_campaign_commands.gd 12/12 passed.
 res://test/test_campaign_resolution.gd 10/10 passed.
 res://test/test_campaign_save_store.gd 22/22 passed.
 EOF
 }
-P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_game_campaign_compat.gd\n2/2 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
+P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_campaign_runtime_cutover.gd\n5/5 passed.\nres://test/test_campaign_v3_recruitment.gd\n4/4 passed.\nres://test/test_game_campaign_compat.gd\n3/3 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
 P16_GATE_GOOD=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_BAD=$'res://test/test_dp_economy.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_INJECTED=$'res://test/test_p16_contract_fixtures.gd\nWARNING: 15/15 passed.\n15/15 passed.\n14/15 passed.\n'"$P16_GATE_TAIL"
@@ -241,16 +243,21 @@ fi
 
 # R4: scenarios. Headless lane always; windowed lane with --full.
 scenario_cmd() { # lane scenario
-  local lane="$1" s="$2"
-  if [[ "$lane" == "headless" ]]; then
-    run_rung "R4a-$s" "artifacts/$s/report.json" 120 \
-      "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
-      --scenario="$s" --seed=42 --shots="res://artifacts/$s"
-  else
-    run_rung "R4b-$s" "artifacts/$s/report.json" 120 \
-      "$GODOT" --path . --resolution 1280x720 -s selftest/harness.gd -- \
-      --scenario="$s" --seed=42 --shots="res://artifacts/$s"
-  fi
+	local lane="$1" s="$2" user_root
+	user_root=".godot/selftest-user/$lane/$s"
+	rm -rf "$user_root"
+	mkdir -p "$user_root/data" "$user_root/config"
+	if [[ "$lane" == "headless" ]]; then
+		run_rung "R4a-$s" "artifacts/$s/report.json" 120 \
+		  env XDG_DATA_HOME="$ROOT/$user_root/data" XDG_CONFIG_HOME="$ROOT/$user_root/config" \
+		  "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
+		  --scenario="$s" --seed=42 --shots="res://artifacts/$s"
+	else
+		run_rung "R4b-$s" "artifacts/$s/report.json" 120 \
+		  env XDG_DATA_HOME="$ROOT/$user_root/data" XDG_CONFIG_HOME="$ROOT/$user_root/config" \
+		  "$GODOT" --path . --resolution 1280x720 -s selftest/harness.gd -- \
+		  --scenario="$s" --seed=42 --shots="res://artifacts/$s"
+	fi
 }
 
 SCENARIOS=()

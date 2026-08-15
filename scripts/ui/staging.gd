@@ -274,9 +274,7 @@ func _training_available() -> bool:
 func _stage_stars() -> Dictionary:
 	if Game.campaign == null:
 		return {}
-	if Game.campaign.has_method("compatibility_projection"):
-		return Game.campaign.compatibility_projection()["stage_stars"]
-	return Game.campaign.stage_stars
+	return Game.campaign_projection()["stage_stars"]
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:

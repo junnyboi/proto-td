@@ -198,7 +198,7 @@ func _build_dp_hp_row() -> HFlowContainer:
 		row.add_child(btn)
 	# the P8 "session-unlock strip" pointer lands here (td-phase-10.md §2.3.5)
 	var unlock := _make_button("UnlockAll", "Unlock all")
-	unlock.pressed.connect(func() -> void: Game.debug_unlock_all())
+	unlock.pressed.connect(func() -> void: Game._debug_unlock_all())
 	row.add_child(unlock)
 	return row
 

@@ -15,7 +15,9 @@ const RECORD_KEYS := [
 	"receipt",
 ]
 const CHOICE_KEYS := ["hero_id", "to_class_id"]
-const VERBS := ["begin_attempt", "resolve_attempt", "confirm_promotions"]
+const VERBS := [
+	"begin_attempt", "resolve_attempt", "confirm_promotions", "recruit_person",
+]
 
 
 static func normalize_records(
@@ -119,6 +121,19 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 				return _reject(&"invalid_command_payload")
 			var choices := normalize_choices(value["choices"])
 			return _accept({"choices": choices["value"]}) if choices["accepted"] else choices
+		"recruit_person":
+			if value.keys() != ["source", "source_id"]:
+				return _reject(&"invalid_command_payload")
+			var source := String(value["source"])
+			var source_id := String(value["source_id"])
+			if (
+				typeof(value["source"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+				or typeof(value["source_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+				or source not in ["contract", "recovery", "replacement", "reward"]
+				or not _ascii(source_id)
+			):
+				return _reject(&"invalid_command_payload")
+			return _accept({"source": source, "source_id": source_id})
 	return _reject(&"invalid_command_payload")
 
 
@@ -254,6 +269,29 @@ static func _normalize_receipt(
 			):
 				return _reject(&"command_receipt_mismatch")
 			return _accept({"promotion": normalized})
+		"recruit_person":
+			if value.keys() != ["recruitment"]:
+				return _reject(&"invalid_command_receipt")
+			var recruitment: Variant = value["recruitment"]
+			if (
+				typeof(recruitment) != TYPE_DICTIONARY
+				or recruitment.keys()
+				!= ["hero", "marks_before", "marks_after", "save_revision"]
+				or typeof(recruitment["hero"]) != TYPE_DICTIONARY
+				or recruitment["save_revision"] != save_revision
+			):
+				return _reject(&"invalid_command_receipt")
+			var hero: Dictionary = recruitment["hero"]
+			var persisted := _hero_by_id(data["heroes"], String(hero.get("hero_id", "")))
+			if (
+				persisted.is_empty()
+				or not _same_acquisition_identity(persisted, hero)
+				or hero.get("recruit_source") != payload["source"]
+				or hero.get("source_id") != payload["source_id"]
+				or not _is_fresh_recruit(hero)
+			):
+				return _reject(&"command_receipt_mismatch")
+			return _accept({"recruitment": recruitment.duplicate(true)})
 	return _reject(&"invalid_command_receipt")
 
 
@@ -276,6 +314,38 @@ static func _ticket_by_attempt(tickets: Array, attempt_id: int) -> Dictionary:
 		if ticket["attempt_id"] == attempt_id:
 			return ticket
 	return {}
+
+
+static func _hero_by_id(heroes: Array, hero_id: String) -> Dictionary:
+	for hero: Dictionary in heroes:
+		if hero["hero_id"] == hero_id:
+			return hero
+	return {}
+
+
+static func _same_acquisition_identity(current: Dictionary, recruited: Dictionary) -> bool:
+	for key: String in [
+		"hero_id", "acquisition_operator_def_id", "progression_rules_version",
+		"identity_portrait_id", "portrait_instance_id", "portrait_asset_id",
+		"recruitment_index", "recruited_after_resolution_index", "recruit_source",
+		"source_id", "name_version", "custom_callsign",
+	]:
+		if current.get(key) != recruited.get(key):
+			return false
+	return true
+
+
+static func _is_fresh_recruit(hero: Dictionary) -> bool:
+	return (
+		hero.get("acquisition_operator_def_id") == "recruit"
+		and hero.get("operator_def_id") == "recruit"
+		and hero.get("current_class_id") == "recruit"
+		and hero.get("first_class_id") == "recruit"
+		and hero.get("advanced_class_id") == null
+		and hero.get("xp") == 0
+		and hero.get("life_status") == "ready"
+		and hero.get("death") == null
+	)
 
 
 static func _signed_63(value: Variant) -> bool:

@@ -12,16 +12,13 @@ extends RefCounted
 
 const RESIGN_TICK := 150  # mid-wave, before s1's first possible leak
 const BAND_COLOR := Color("1a1c2c")
-const PICKS: Array[StringName] = [&"vanguard_1", &"guard_1", &"defender_1"]
-
-
 func run(h: SelfTestHarness) -> void:
 	h.max_frames = 1200
 	await h.frames(10)
 	var game := h.autoload("Game")
 	h.expect_done()
 
-	var campaign_ref := await _start_campaign_battle(h, game)
+	var campaign_ref: Variant = await _start_campaign_battle(h, game)
 	if campaign_ref == null:
 		return
 	var model := await _await_battle(h, game)
@@ -91,23 +88,31 @@ func _resign_to_results(
 	h.check("back to title offered", back_btn != null)
 	if retry == null or return_btn == null or back_btn == null:
 		return null
-	var results_scroll := results.find_child("ResultsScroll", true, false) as ScrollContainer
+	var results_scroll := (
+		results.find_child("ResultsScroll", true, false) as ScrollContainer
+	)
 	results_scroll.ensure_control_visible(retry)
 	await h.frames(3)
-	h.check("Retry visible for real input", results_scroll.get_global_rect().intersects(retry.get_global_rect()))
+	h.check(
+		"Retry visible for real input",
+		results_scroll.get_global_rect().intersects(retry.get_global_rect()),
+	)
 	await h.shot("results_defeat")
 	return results
 
 
 func _retry_then_return_to_staging(
 		h: SelfTestHarness, game: Node, results: Control,
-			campaign_ref: LegacyCampaignAdapter,
+			campaign_uid: String,
 ) -> Control:
 	var retry := results.find_child("RetryButton", true, false) as Button
 	await h.click_view(retry.get_global_rect().get_center())
 	var squad := await _await_screen(h, game, "SquadColumn")
 	h.check("Retry returns to squad select", squad != null)
-	h.check("Retry preserves campaign object", game.get("campaign") == campaign_ref)
+	h.check(
+		"Retry preserves campaign identity",
+		String(game.get("campaign").campaign_uid()) == campaign_uid,
+	)
 	h.check("Retry preserves selected stage", game.get("selected_stage_id") == &"s1")
 	if squad == null:
 		return null
@@ -121,14 +126,22 @@ func _retry_then_return_to_staging(
 	h.check("Return to Staging survives result reopen", return_btn != null)
 	if return_btn == null:
 		return null
-	var results_scroll := results.find_child("ResultsScroll", true, false) as ScrollContainer
+	var results_scroll := (
+		results.find_child("ResultsScroll", true, false) as ScrollContainer
+	)
 	results_scroll.ensure_control_visible(return_btn)
 	await h.frames(3)
-	h.check("Return to Staging visible for real input", results_scroll.get_global_rect().intersects(return_btn.get_global_rect()))
+	h.check(
+		"Return to Staging visible for real input",
+		results_scroll.get_global_rect().intersects(return_btn.get_global_rect()),
+	)
 	await h.click_view(return_btn.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("campaign defeat returns to Staging", staging != null)
-	h.check("Staging preserves campaign object", game.get("campaign") == campaign_ref)
+	h.check(
+		"Staging preserves campaign identity",
+		String(game.get("campaign").campaign_uid()) == campaign_uid,
+	)
 	return staging
 
 
@@ -139,11 +152,16 @@ func _return_to_title(
 	h.check("Staging offers Back to Title", staging_back != null)
 	if staging_back == null:
 		return false
-	var staging_scroll := staging.find_child("StagingScroll", true, false) as ScrollContainer
+	var staging_scroll := (
+		staging.find_child("StagingScroll", true, false) as ScrollContainer
+	)
 	staging_scroll.ensure_control_visible(staging_back)
 	await h.frames(3)
-	h.check("Back to Title visible for real input", staging_scroll.get_global_rect().intersects(staging_back.get_global_rect()))
-	game.call("debug_unlock_all")
+	h.check(
+		"Back to Title visible for real input",
+		staging_scroll.get_global_rect().intersects(staging_back.get_global_rect()),
+	)
+	game.call("_debug_unlock_all")
 	h.check("debug catalog override enabled", bool(game.get("_debug_catalog_override")))
 	await h.click_view(staging_back.get_global_rect().get_center())
 	var title := await _await_screen(h, game, "TitleBox")
@@ -173,7 +191,7 @@ func _return_to_title(
 	return true
 
 
-func _start_campaign_battle(h: SelfTestHarness, game: Node) -> LegacyCampaignAdapter:
+func _start_campaign_battle(h: SelfTestHarness, game: Node) -> Variant:
 	var title := game.get("content") as Control
 	var start := title.find_child("StartButton", true, false) as Button
 	h.check("Start button on the title", start != null and start.text == "Start")
@@ -183,12 +201,15 @@ func _start_campaign_battle(h: SelfTestHarness, game: Node) -> LegacyCampaignAda
 	await h.click_view(start.get_global_rect().get_center())
 	var staging := await _await_screen(h, game, "StagingRoot")
 	h.check("Start opens campaign Staging", staging != null)
-	var campaign: LegacyCampaignAdapter = game.get("campaign")
+	var campaign: CampaignStateV3 = game.get("campaign")
 	h.check("campaign is active", campaign != null and bool(game.get("campaign_active")))
 	if staging == null or campaign == null:
 		return null
-	game.call("start_stage", &"s1", PICKS)
-	return campaign
+	var picks: Array[StringName] = []
+	for hero: Dictionary in game.call("campaign_projection")["ready_heroes"].slice(0, 3):
+		picks.append(StringName(hero["hero_id"]))
+	game.call("start_stage", &"s1", picks)
+	return campaign.campaign_uid()
 
 
 func _await_battle(h: SelfTestHarness, game: Node) -> BattleModel:

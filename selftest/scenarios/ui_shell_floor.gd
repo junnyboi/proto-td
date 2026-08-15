@@ -198,7 +198,7 @@ func _locale_actions_shot(
 			missing_han.append(String(button_name))
 	h.check(
 		"%s zh-CN compact actions localized" % screen,
-		missing_han.is_empty(), "missing_han=%s" % missing_han,
+		missing_han.is_empty(), "missing_han=%s" % [missing_han],
 	)
 	var original_scroll := scroll.scroll_vertical
 	scroll.scroll_vertical = ceili(_scroll_max_offset(scroll.get_v_scroll_bar()))

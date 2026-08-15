@@ -31,15 +31,15 @@ run_once() {
 	fi
 	sed -n 's/^STRATEGIC_VERBS_V3_RESULT=//p' "$log" >"$json"
 	jq -e '
-		.save_revision == 4
+			.save_revision == 5
 		and .next_attempt_id == 2
 		and .next_resolution_index == 2
-		and (.heroes | length) == 5
+			and (.heroes | length) == 6
 		and (.tickets | length) == 1
 		and (.memorial | length) == 0
 		and (.promotion_receipts | length) == 1
-		and (.command_receipts | length) == 3
-		and ([.command_receipts[].verb] == ["begin_attempt","resolve_attempt","confirm_promotions"])
+			and (.command_receipts | length) == 4
+			and ([.command_receipts[].verb] == ["begin_attempt","resolve_attempt","confirm_promotions","recruit_person"])
 		and .receipt_texts == .duplicate_receipt_texts
 		and .conflict_error == "command_id_conflict"
 	' "$json" >/dev/null

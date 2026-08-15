@@ -37,26 +37,29 @@ static func normalize_data(
 	var core := normalize_core(core_input, context, core_keys, hero_keys)
 	if not core["accepted"]:
 		return core
+	var commands := CampaignV3CommandCodec.normalize_records(
+		data["command_receipts"], core["value"], context,
+	)
+	if not commands["accepted"]:
+		return commands
+	var current: Dictionary = core["value"].duplicate(true)
+	current["command_receipts"] = commands["value"]
+	current["resolution_anchor"] = data["resolution_anchor"]
+	current["last_resolution"] = data["last_resolution"]
 	var history := CampaignV3History.normalize(
-		data["resolution_anchor"], data["last_resolution"], core["value"], context,
+		data["resolution_anchor"], data["last_resolution"], current, context,
 		core_keys, hero_keys,
 	)
 	if not history["accepted"]:
 		return history
-	var ordered: Dictionary = core["value"].duplicate(true)
-	ordered["resolution_anchor"] = history["value"]["anchor"]
-	ordered["last_resolution"] = history["value"]["receipt"]
-	var commands := CampaignV3CommandCodec.normalize_records(
-		data["command_receipts"], ordered, context,
-	)
-	if not commands["accepted"]:
-		return commands
-	ordered["command_receipts"] = commands["value"]
-	var command_history := CampaignV3CommandHistory.validate(ordered, context)
+	current["resolution_anchor"] = history["value"]["anchor"]
+	current["last_resolution"] = history["value"]["receipt"]
+	var command_history := CampaignV3CommandHistory.validate(current, context)
 	if not command_history["accepted"]:
 		return command_history
-	if ordered.keys() != data_keys:
-		return _reject(&"invalid_data_schema")
+	var ordered := {}
+	for key: String in data_keys:
+		ordered[key] = current[key]
 	return _accept(ordered)
 
 

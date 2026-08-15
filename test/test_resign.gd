@@ -111,9 +111,10 @@ func test_resign_timeline_is_deterministic() -> void:
 func test_record_result_requires_active_campaign() -> void:
 	var game: Node = get_node("/root/Game")
 	var saved_battle: BattleModel = game.get("current_battle")
-	var saved_campaign: LegacyCampaignAdapter = game.get("campaign")
+	var saved_campaign: Variant = game.get("campaign")
 	var saved_active: bool = game.get("campaign_active")
 	var saved_last: Dictionary = game.get("last_result")
+	var saved_battle_active: bool = game.get("_campaign_battle_active")
 
 	var stage := load("res://data/stages/s1.tres") as StageDef
 	var model := BattleModel.create(
@@ -126,6 +127,7 @@ func test_record_result_requires_active_campaign() -> void:
 	)
 	game.set("current_battle", model)
 	game.set("campaign", campaign)
+	game.set("_campaign_battle_active", false)
 
 	game.set("campaign_active", false)
 	game.call("record_result", BattleModel.Result.CLEAR, 3)
@@ -143,3 +145,4 @@ func test_record_result_requires_active_campaign() -> void:
 	game.set("campaign", saved_campaign)
 	game.set("campaign_active", saved_active)
 	game.set("last_result", saved_last)
+	game.set("_campaign_battle_active", saved_battle_active)
