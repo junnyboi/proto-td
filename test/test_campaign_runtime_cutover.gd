@@ -123,6 +123,27 @@ func test_player_battle_resolves_model_outcome_and_reloads_exact_authority() -> 
 	assert_eq(_authority_facts(), before_reject)
 
 
+func test_campaign_results_ignore_mismatched_caller_terminal_facts() -> void:
+	assert_true(_game.start_campaign(false))
+	var hero_ids: Array[StringName] = []
+	for hero: Dictionary in _game.campaign_projection()["ready_heroes"].slice(0, 3):
+		hero_ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = _game.start_stage(&"s1", hero_ids, false)
+	assert_true(begun["accepted"])
+	var model := _model_from_launch(_game.battle_launch())
+	assert_not_null(model)
+	_game.current_battle = model
+	_run(model, _winner(begun["ticket"]))
+	assert_eq(model.result, BattleModel.Result.CLEAR)
+	assert_true(_game.record_result(BattleModel.Result.DEFEAT, 0))
+	assert_eq(_game.last_result["stage_id"], &"s1")
+	assert_eq(_game.last_result["result"], BattleModel.Result.CLEAR)
+	assert_eq(_game.last_result["stars"], model.stars)
+	assert_eq(_game.last_result["leaks"], model.leaked)
+	assert_eq(_game.last_result["kills"], model.killed)
+	assert_eq(_game.campaign_projection()["stage_stars"][&"s1"], model.stars)
+
+
 func test_rejected_stage_and_squad_requests_leave_every_authority_fact_exact() -> void:
 	assert_true(_game.start_campaign(false))
 	var hero_id := StringName(_game.campaign_projection()["ready_heroes"][0]["hero_id"])

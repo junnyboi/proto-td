@@ -256,12 +256,17 @@ func record_result(result: int, stars: int) -> bool:
 	_pending_campaign_mutation = null
 	campaign = committed["state"]
 	var resolution: Dictionary = committed["result"]["resolution"]
+	var canonical_result := (
+		BattleModel.Result.CLEAR
+		if String(outcome["result"]) == "clear"
+		else BattleModel.Result.DEFEAT
+	)
 	last_result = {
-		"stage_id": stage.id,
-		"result": result,
-		"stars": stars,
-		"leaks": current_battle.leaked,
-		"kills": current_battle.killed,
+		"stage_id": StringName(resolution["stage_id"]),
+		"result": canonical_result,
+		"stars": int(outcome["stars"]),
+		"leaks": int(outcome["leaks"]),
+		"kills": int(outcome["kills"]),
 		"rewards_granted": resolution["rewards_granted"].duplicate(true),
 		"class_entitlements_granted": (
 			resolution["class_entitlements_granted"].duplicate()

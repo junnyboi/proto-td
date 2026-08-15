@@ -7,8 +7,11 @@ extends RefCounted
 ## Raw input once per new surface; every screen node fetched only after the
 ## deferred swap lands (the P9 null-rect lesson); completion sentinel on.
 
+const MAX_MODEL_TICKS := 2_400
+
+
 func run(h: SelfTestHarness) -> void:
-	h.max_frames = 3000
+	h.max_frames = 2100
 	await h.frames(10)
 	var game := h.autoload("Game")
 	h.expect_done()
@@ -153,7 +156,7 @@ func _battle_and_progress(
 		[420, &"deploy", StringName(ticket["squad"][2]["battle_id"]), Vector2i(2, 2), 0],
 	]
 	var idx := 0
-	while model.result == BattleModel.Result.RUNNING and model.tick < 4000:
+	while model.result == BattleModel.Result.RUNNING and model.tick < MAX_MODEL_TICKS:
 		while idx < rows_tl.size() and int(rows_tl[idx][0]) == model.tick:
 			h.check(
 				"s1 timeline action accepted",
@@ -163,7 +166,11 @@ func _battle_and_progress(
 		model.step()
 		if model.tick % 300 == 0:
 			await h.frames(1)
-	h.check("s1 cleared", model.result == BattleModel.Result.CLEAR, "leaked=%d" % model.leaked)
+	h.check(
+		"s1 cleared within pinned model budget",
+		model.result == BattleModel.Result.CLEAR,
+		"tick=%d/%d leaked=%d" % [model.tick, MAX_MODEL_TICKS, model.leaked],
+	)
 	await h.frames(4)
 
 	# terminal -> Continue button -> results
