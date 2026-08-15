@@ -78,7 +78,7 @@ res://test/test_replay_codec.gd 5/5 passed.
 res://test/test_hero_state.gd 3/3 passed.
 res://test/test_roster_state.gd 5/5 passed.
 res://test/test_campaign_state_p16.gd 11/11 passed.
-res://test/test_campaign_runtime_cutover.gd 7/7 passed.
+res://test/test_campaign_runtime_cutover.gd 8/8 passed.
 res://test/test_campaign_v3_recruitment.gd 4/4 passed.
 res://test/test_game_campaign_compat.gd 3/3 passed.
 res://test/test_campaign_commands.gd 12/12 passed.
@@ -86,7 +86,7 @@ res://test/test_campaign_resolution.gd 10/10 passed.
 res://test/test_campaign_save_store.gd 22/22 passed.
 EOF
 }
-P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_campaign_runtime_cutover.gd\n7/7 passed.\nres://test/test_campaign_v3_recruitment.gd\n4/4 passed.\nres://test/test_game_campaign_compat.gd\n3/3 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
+P16_GATE_TAIL=$'res://test/test_replay_codec.gd\n5/5 passed.\nres://test/test_hero_state.gd\n3/3 passed.\nres://test/test_roster_state.gd\n5/5 passed.\nres://test/test_campaign_state_p16.gd\n11/11 passed.\nres://test/test_campaign_runtime_cutover.gd\n8/8 passed.\nres://test/test_campaign_v3_recruitment.gd\n4/4 passed.\nres://test/test_game_campaign_compat.gd\n3/3 passed.\nres://test/test_campaign_commands.gd\n12/12 passed.\nres://test/test_campaign_resolution.gd\n10/10 passed.\nres://test/test_campaign_save_store.gd\n22/22 passed.'
 P16_GATE_GOOD=$'res://test/test_p16_contract_fixtures.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_BAD=$'res://test/test_dp_economy.gd\n15/15 passed.\n'"$P16_GATE_TAIL"
 P16_GATE_INJECTED=$'res://test/test_p16_contract_fixtures.gd\nWARNING: 15/15 passed.\n15/15 passed.\n14/15 passed.\n'"$P16_GATE_TAIL"
@@ -157,7 +157,11 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	user_key=$(tr -c 'A-Za-z0-9_.-' '_' <<< "$rung")
 	user_root="$ROOT/.godot/verify-user/$user_key"
 	rm -rf "$user_root"
-	mkdir -p "$user_root/data" "$user_root/config"
+	mkdir -p "$user_root/data/godot" "$user_root/config"
+	if [[ -d "$HOME/.local/share/godot/export_templates" ]]; then
+		ln -s "$HOME/.local/share/godot/export_templates" \
+			"$user_root/data/godot/export_templates"
+	fi
 	t0=$(date +%s)
 	out=$(timeout "$budget" env \
 		XDG_DATA_HOME="$user_root/data" XDG_CONFIG_HOME="$user_root/config" \

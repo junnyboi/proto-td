@@ -144,6 +144,40 @@ func test_campaign_results_ignore_mismatched_caller_terminal_facts() -> void:
 	assert_eq(_game.campaign_projection()["stage_stars"][&"s1"], model.stars)
 
 
+func test_campaign_result_retry_uses_original_accepted_outcome() -> void:
+	assert_true(_game.start_campaign(false))
+	var hero_ids: Array[StringName] = []
+	for hero: Dictionary in _game.campaign_projection()["ready_heroes"].slice(0, 3):
+		hero_ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = _game.start_stage(&"s1", hero_ids, false)
+	assert_true(begun["accepted"])
+	var model := _model_from_launch(_game.battle_launch())
+	assert_not_null(model)
+	_game.current_battle = model
+	_run(model, _winner(begun["ticket"]))
+	assert_eq(model.result, BattleModel.Result.CLEAR)
+	var accepted_outcome: Dictionary = model.snapshot()["outcome"].duplicate(true)
+	assert_true(_game.campaign_store._is_authority_store())
+	var tmp_path := ProjectSettings.globalize_path("user://campaign_v1.tmp")
+	assert_eq(DirAccess.make_dir_absolute(tmp_path), OK)
+	assert_false(_game.record_result(BattleModel.Result.DEFEAT, 0))
+	assert_eq(_game.last_campaign_error, &"store_write_failed")
+	assert_eq(DirAccess.remove_absolute(tmp_path), OK)
+	var conflicting_outcome: Dictionary = accepted_outcome.duplicate(true)
+	conflicting_outcome["result"] = "defeat"
+	conflicting_outcome["terminal_reason"] = "base_defeat"
+	conflicting_outcome["stars"] = 0
+	conflicting_outcome["leaks"] = 999
+	conflicting_outcome["kills"] = 0
+	model._outcome = conflicting_outcome
+	assert_true(_game.record_result(BattleModel.Result.DEFEAT, 0))
+	assert_eq(_game.last_result["stage_id"], &"s1")
+	assert_eq(_game.last_result["result"], BattleModel.Result.CLEAR)
+	for key: String in ["stars", "leaks", "kills"]:
+		assert_eq(_game.last_result[key], accepted_outcome[key])
+	assert_eq(_game.campaign_projection()["stage_stars"][&"s1"], accepted_outcome["stars"])
+
+
 func test_rejected_stage_and_squad_requests_leave_every_authority_fact_exact() -> void:
 	assert_true(_game.start_campaign(false))
 	var hero_id := StringName(_game.campaign_projection()["ready_heroes"][0]["hero_id"])

@@ -108,6 +108,21 @@ static func mutation(
 
 
 static func duplicate_result(record_row: Dictionary) -> Dictionary:
+	var result := {
+		"fresh": false,
+		"receipt": record_row["receipt"].duplicate(true),
+		"receipt_bytes": load(COMMAND_CODEC_PATH).call("canonical_bytes", record_row),
+	}
+	match String(record_row["verb"]):
+		"begin_attempt":
+			result["ticket"] = record_row["receipt"]["ticket"].duplicate(true)
+		"resolve_attempt":
+			result["resolution"] = record_row["receipt"]["resolution"].duplicate(true)
+			result["outcome"] = record_row["payload"]["outcome"].duplicate(true)
+		"confirm_promotions":
+			result["promotion"] = record_row["receipt"]["promotion"].duplicate(true)
+		"recruit_person":
+			result["recruitment"] = record_row["receipt"]["recruitment"].duplicate(true)
 	return {
 		"accepted": true,
 		"error_code": &"",
@@ -122,12 +137,7 @@ static func duplicate_result(record_row: Dictionary) -> Dictionary:
 				}
 			)
 		],
-		"payload":
-		{
-			"fresh": false,
-			"receipt": record_row["receipt"].duplicate(true),
-			"receipt_bytes": load(COMMAND_CODEC_PATH).call("canonical_bytes", record_row),
-		},
+		"payload": result,
 	}
 
 

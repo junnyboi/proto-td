@@ -220,7 +220,10 @@ static func resolve(
 			prospective["value"],
 			record,
 			events,
-			{"resolution": derived["resolution"].duplicate(true)},
+			{
+				"resolution": derived["resolution"].duplicate(true),
+				"outcome": payload["outcome"].duplicate(true),
+			},
 		)
 	)
 

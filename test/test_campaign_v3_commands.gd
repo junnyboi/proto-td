@@ -45,6 +45,7 @@ func test_clear_resolution_commits_survivor_xp_death_memorial_and_exact_retry() 
 	var after: CampaignStateV3 = committed["payload"]["state"]
 	var data := after.data_copy()
 	var resolution: Dictionary = committed["payload"]["result"]["resolution"]
+	assert_eq(committed["payload"]["result"]["outcome"], outcome)
 	assert_eq(after.save_revision(), 3)
 	assert_eq(after.next_resolution_index(), 2)
 	assert_eq(data["stage_stars"][0]["stars"], 3)
@@ -72,6 +73,8 @@ func test_clear_resolution_commits_survivor_xp_death_memorial_and_exact_retry() 
 	assert_true(duplicate["accepted"])
 	assert_false(duplicate["payload"]["fresh"])
 	assert_eq(duplicate["payload"]["receipt_bytes"], receipt_bytes)
+	assert_eq(duplicate["payload"]["resolution"], resolution)
+	assert_eq(duplicate["payload"]["outcome"], outcome)
 	assert_eq(_snapshot(loaded), _snapshot(after))
 
 
