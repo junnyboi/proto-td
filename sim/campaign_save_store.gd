@@ -14,6 +14,8 @@ const RETRYABLE := &"retryable"
 const INDETERMINATE := &"indeterminate"
 const PRODUCTION_SLOT := "user://campaign_v1.json"
 const CAMPAIGN_STATE_SCRIPT := preload("res://sim/campaign_state.gd")
+const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
+const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const FILE_OPS_SCRIPT := preload("res://sim/campaign_file_ops.gd")
 
 static var _authority_store_ref: WeakRef
@@ -22,14 +24,14 @@ var _main_path := ""
 var _tmp_path := ""
 var _bak_path := ""
 var _restore_factory: Callable
-var _ops: CampaignFileOps
+var _ops: Variant
 var _committed_authority: Dictionary = {}
 
 
 static func create(
 	slot_path: String,
 	restore_factory: Callable,
-	file_ops: CampaignFileOps,
+	file_ops: Variant,
 ) -> Dictionary:
 	var valid := (
 		not slot_path.is_empty() and slot_path.ends_with(".json")
@@ -50,7 +52,7 @@ static func create_production(state: Variant) -> Dictionary:
 	if state == null or not state.has_method("_authority_restore_factory"):
 		return {"accepted": false, "error_code": &"invalid_store_config", "value": null}
 	var created := create(
-		PRODUCTION_SLOT, state._authority_restore_factory(), CampaignFileOps.new(),
+		PRODUCTION_SLOT, state._authority_restore_factory(), FILE_OPS_SCRIPT.new(),
 	)
 	if created["accepted"]:
 		_authority_store_ref = weakref(created["value"])
@@ -158,7 +160,7 @@ func _write_validated_tmp(
 	prospective: String,
 	prospective_bytes: PackedByteArray,
 ) -> Dictionary:
-	var write := _ops.write_bytes(_tmp_path, prospective_bytes)
+	var write: Dictionary = _ops.write_bytes(_tmp_path, prospective_bytes)
 	if not write["accepted"]:
 		return _stage_reject(&"store_write_failed")
 	var tmp := _read_candidate(_tmp_path, TMP)
@@ -171,15 +173,15 @@ func _write_validated_tmp(
 
 func _promote_tmp() -> Dictionary:
 	if _ops.file_exists(_bak_path):
-		var removed := _ops.remove_path(_bak_path)
+		var removed: Dictionary = _ops.remove_path(_bak_path)
 		if not removed["accepted"]:
 			return _promotion_reject(&"store_cleanup_failed", false, false)
-	var had_main := _ops.file_exists(_main_path)
+	var had_main: bool = _ops.file_exists(_main_path)
 	if had_main:
-		var rotated := _ops.rename_path(_main_path, _bak_path)
+		var rotated: Dictionary = _ops.rename_path(_main_path, _bak_path)
 		if not rotated["accepted"]:
 			return _promotion_reject(&"store_rotate_failed", false, had_main)
-	var promoted := _ops.rename_path(_tmp_path, _main_path)
+	var promoted: Dictionary = _ops.rename_path(_tmp_path, _main_path)
 	if not promoted["accepted"]:
 		return _promotion_reject(
 			&"store_promote_failed", _rollback_main(had_main), had_main,
@@ -278,7 +280,7 @@ func _restore_preimage(expected: String, bytes: PackedByteArray) -> bool:
 		and bak["text"] == expected and bak["bytes"] == bytes
 	):
 		return _ops.rename_path(_bak_path, _main_path)["accepted"]
-	var write := _ops.write_bytes(_main_path, bytes)
+	var write: Dictionary = _ops.write_bytes(_main_path, bytes)
 	if not write["accepted"]:
 		return false
 	var restored := _read_candidate(_main_path, MAIN)
@@ -293,10 +295,10 @@ func _restore_preimage(expected: String, bytes: PackedByteArray) -> bool:
 func _rollback_main(had_main: bool) -> bool:
 	var failed := false
 	if _ops.file_exists(_main_path):
-		var removed := _ops.remove_path(_main_path)
+		var removed: Dictionary = _ops.remove_path(_main_path)
 		failed = not removed["accepted"]
 	if had_main and _ops.file_exists(_bak_path) and not _ops.file_exists(_main_path):
-		var restored := _ops.rename_path(_bak_path, _main_path)
+		var restored: Dictionary = _ops.rename_path(_bak_path, _main_path)
 		failed = failed or not restored["accepted"]
 	return failed
 
@@ -331,7 +333,7 @@ func _read_candidate(path: String, source: StringName) -> Dictionary:
 	}
 	if not candidate["exists"]:
 		return candidate
-	var read := _ops.read_bytes(path)
+	var read: Dictionary = _ops.read_bytes(path)
 	if not read["accepted"]:
 		candidate["read_error"] = true
 		return candidate
@@ -417,16 +419,18 @@ static func _comparable_header(source: String) -> Variant:
 	var parser := JSON.new()
 	if parser.parse(source) != OK:
 		return null
-	var restored := CanonicalJson.restore_exact_integers(source, parser.data)
+	var restored := CANONICAL_JSON_SCRIPT.restore_exact_integers(source, parser.data)
 	if not restored["accepted"] or typeof(restored["value"]) != TYPE_DICTIONARY:
 		return null
 	var root: Dictionary = restored["value"]
 	var keys := ["schema", "version", "checksum", "data"]
-	if root.keys() != keys or root.get("schema") != CampaignCodec.SAVE_SCHEMA:
+	if root.keys() != keys or root.get("schema") != CAMPAIGN_CODEC_SCRIPT.SAVE_SCHEMA:
 		return null
 	if (
 		typeof(root.get("version")) != TYPE_INT
-		or int(root["version"]) not in [CampaignCodec.SAVE_VERSION, CampaignCodec.RECRUIT_SAVE_VERSION]
+		or int(root["version"]) not in [
+			CAMPAIGN_CODEC_SCRIPT.SAVE_VERSION, CAMPAIGN_CODEC_SCRIPT.RECRUIT_SAVE_VERSION
+		]
 	):
 		return null
 	if not _is_hex(String(root.get("checksum", "")), 64):
@@ -437,7 +441,7 @@ static func _comparable_header(source: String) -> Variant:
 	for key: String in ["campaign_generation", "save_revision"]:
 		if typeof(data.get(key)) != TYPE_INT:
 			return null
-		if int(data[key]) < 1 or int(data[key]) > CampaignCodec.U63_MAX:
+		if int(data[key]) < 1 or int(data[key]) > CAMPAIGN_CODEC_SCRIPT.U63_MAX:
 			return null
 	return {
 		"campaign_generation": int(data["campaign_generation"]),
