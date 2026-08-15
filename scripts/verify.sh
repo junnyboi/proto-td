@@ -9,6 +9,8 @@
 set -u
 GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+WEB_TEMPLATE_SOURCE="$HOME/.local/share/godot/export_templates/4.7.1.stable/web_nothreads_release.zip"
+WEB_TEMPLATE_SHA256="b7b7d7da29fc6cc2f4934fdd26cc571a40e7af57f716ea3eb7e18da720dae28a"
 cd "$ROOT"
 mkdir -p artifacts
 
@@ -158,9 +160,23 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	user_root="$ROOT/.godot/verify-user/$user_key"
 	rm -rf "$user_root"
 	mkdir -p "$user_root/data/godot" "$user_root/config"
-	if [[ -d "$HOME/.local/share/godot/export_templates" ]]; then
-		ln -s "$HOME/.local/share/godot/export_templates" \
-			"$user_root/data/godot/export_templates"
+	if [[ "$rung" == "R3.7-filesystem-web" ]]; then
+		local template_dir template_copy
+		template_dir="$user_root/data/godot/export_templates/4.7.1.stable"
+		template_copy="$template_dir/web_nothreads_release.zip"
+		if ! printf '%s  %s\n' "$WEB_TEMPLATE_SHA256" "$WEB_TEMPLATE_SOURCE" \
+			| sha256sum -c - >/dev/null 2>&1; then
+			echo "[verify] missing or invalid pinned Web export template" >&2
+			finish 2
+		fi
+		mkdir -p "$template_dir"
+		install -m 0444 "$WEB_TEMPLATE_SOURCE" "$template_copy"
+		if ! printf '%s  %s\n' "$WEB_TEMPLATE_SHA256" "$template_copy" \
+			| sha256sum -c - >/dev/null 2>&1; then
+			echo "[verify] isolated Web export template copy failed verification" >&2
+			finish 2
+		fi
+		chmod 0555 "$user_root/data/godot/export_templates" "$template_dir"
 	fi
 	t0=$(date +%s)
 	out=$(timeout "$budget" env \
