@@ -61,11 +61,8 @@ var stage: StageDef = null
 var squad: Array[StringName] = []
 var run_seed: int = 0
 var config: GameConfig = null
-var ticket: Dictionary = {}
 var battle_squad: Array[StringName] = []
-var battle_records: Array[Dictionary] = []
 var terminal_reason: StringName = &""
-var outcome: Dictionary = {}
 
 var tick: int = 0
 var base_hp: int = 0
@@ -104,7 +101,10 @@ var _path_lengths: Array[int] = []
 var _next_enemy_id: int = 0
 var _next_unit_id: int = 0
 var _next_trap_id: int = 0
+var _ticket: Dictionary = {}
 var _ticket_rows: Dictionary = {}
+var _battle_records: Array[Dictionary] = []
+var _outcome: Dictionary = {}
 
 
 static func create(
@@ -116,10 +116,13 @@ static func create(
 	operator_defs: Dictionary = {},
 	trap_defs: Dictionary = {},
 	spell_defs: Dictionary = {},
+	trusted_ticket_hashes: Array = [],
 	) -> BattleModel:
 	var model := BattleModel.new()
 	model.stage = stage_def
-	if not BattleTicketRuntimeScript.configure(model, battle_input, stage_def, seed_value):
+	if not BattleTicketRuntimeScript.configure(
+		model, battle_input, stage_def, seed_value, trusted_ticket_hashes,
+	):
 		return null
 	model.config = game_config
 	model.base_hp = game_config.base_hp_start
@@ -137,7 +140,7 @@ static func create(
 
 
 func _is_ticketed() -> bool:
-	return not ticket.is_empty()
+	return not _ticket.is_empty()
 
 
 func step(n: int = 1) -> void:
@@ -145,10 +148,7 @@ func step(n: int = 1) -> void:
 		_step_one()
 
 
-## Runs a scripted action timeline (replay/bot/test format) up to until_tick.
-## Same-tick entries apply in AUTHORED order via an index tie-break internal
-## to this sort (introsort is unstable past ~16 elements — P14); the row
-## format [tick, verb, args...] is unchanged.
+## Preserves authored same-tick order; rows stay [tick, verb, args...] (P14).
 func run_timeline(actions: Array, until_tick: int) -> void:
 	var sorted: Array = []
 	for i: int in actions.size():
@@ -284,7 +284,7 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	u.facing = facing as UnitState.Facing
 	if _is_ticketed():
 		BattleTicketRuntimeScript.copy_unit(_ticket_rows[op_id], u)
-		var record := BattleTicketRuntimeScript.record_for(battle_records, op_id)
+		var record := BattleTicketRuntimeScript.record_for(_battle_records, op_id)
 		record["deployments"] += 1
 	else:
 		var def: OperatorDef = _op_defs[op_id]
@@ -342,7 +342,7 @@ func _apply_retreat(unit_id: int) -> bool:
 	u.alive = false
 	_release_all_blocked(u)
 	if _is_ticketed():
-		var record := BattleTicketRuntimeScript.record_for(battle_records, u.battle_id)
+		var record := BattleTicketRuntimeScript.record_for(_battle_records, u.battle_id)
 		record["retreats"] += 1
 	retreated += 1
 	var refund := floori(u.dp_cost * config.retreat_refund_percent / 100.0)
@@ -521,7 +521,7 @@ func _apply_resign() -> bool:
 	result = Result.DEFEAT
 	if _is_ticketed():
 		terminal_reason = &"resign"
-		outcome = BattleOutcomeBuilderScript.seal(self)
+		_outcome = BattleOutcomeBuilderScript.seal(self)
 	return true
 
 
@@ -638,7 +638,7 @@ func _step_one() -> void:
 	_check_terminal()
 	tick += 1
 	if _is_ticketed() and result != Result.RUNNING:
-		outcome = BattleOutcomeBuilderScript.seal(self)
+		_outcome = BattleOutcomeBuilderScript.seal(self)
 
 
 ## D12: blocked enemies skip; the block check runs after the advance, in spawn
@@ -881,7 +881,7 @@ func _kill_charmed(ally: EnemyState) -> void:
 func _kill_unit(u: UnitState) -> void:
 	u.alive = false
 	if _is_ticketed():
-		var record := BattleTicketRuntimeScript.record_for(battle_records, u.battle_id)
+		var record := BattleTicketRuntimeScript.record_for(_battle_records, u.battle_id)
 		if not bool(record["fell"]):
 			record["fell"] = true
 			record["first_fall_tick"] = tick

@@ -6,6 +6,7 @@ FIXTURES="res://playtests/replays/v1"
 OUT_DIR="artifacts/replay"
 HASH_EVERY=100
 MAX_TICKS=6000
+TRUSTED_TICKET_HASH=""
 
 for arg in "$@"; do
   case "$arg" in
@@ -13,6 +14,7 @@ for arg in "$@"; do
     --out=*) OUT_DIR="${arg#*=}" ;;
     --hash-every=*) HASH_EVERY="${arg#*=}" ;;
     --max-ticks=*) MAX_TICKS="${arg#*=}" ;;
+    --trusted-ticket-hash=*) TRUSTED_TICKET_HASH="${arg#*=}" ;;
     *) echo "[replay-check] unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -43,10 +45,15 @@ rm -f "$OUT_DIR/run-1.json" "$OUT_DIR/run-2.json" \
 
 run_one() {
   local output="$1"
+  local trust_args=()
+  if [[ -n "$TRUSTED_TICKET_HASH" ]]; then
+    trust_args+=("--trusted-ticket-hash=$TRUSTED_TICKET_HASH")
+  fi
   timeout 12s "$GODOT" --headless --path . \
     -s tools/replay_runner.gd -- \
     "--fixtures=$FIXTURES" "--out=$output" \
-    "--hash-every=$HASH_EVERY" "--max-ticks=$MAX_TICKS"
+    "--hash-every=$HASH_EVERY" "--max-ticks=$MAX_TICKS" \
+    "${trust_args[@]}"
 }
 
 if ! run_one "$OUT_DIR/run-1.json"; then

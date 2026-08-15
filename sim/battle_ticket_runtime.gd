@@ -28,18 +28,21 @@ static func configure(
 	battle_input: Variant,
 	stage: StageDef,
 	seed_value: int,
+	trusted_ticket_hashes: Array,
 ) -> bool:
 	if typeof(battle_input) == TYPE_DICTIONARY:
 		var prepared := prepare(battle_input, stage)
 		if not prepared["accepted"]:
 			return false
-		model.ticket = prepared["ticket"]
-		model.run_seed = int(model.ticket["seed"])
+		if not trusted_ticket_hashes.has(prepared["ticket"]["ticket_hash"]):
+			return false
+		model._ticket = prepared["ticket"]
+		model.run_seed = int(model._ticket["seed"])
 		for row: Dictionary in prepared["rows"]:
 			var battle_id := StringName(row["battle_id"])
 			model.battle_squad.append(battle_id)
 			model._ticket_rows[battle_id] = row.duplicate(true)
-			model.battle_records.append(_fresh_record(row))
+			model._battle_records.append(_fresh_record(row))
 		return true
 	if typeof(battle_input) != TYPE_ARRAY:
 		return false
@@ -58,6 +61,22 @@ static func prepare(value: Variant, stage: StageDef) -> Dictionary:
 	if not normalized["accepted"]:
 		return normalized
 	var ticket: Dictionary = normalized["value"]
+	for index: int in ticket["squad"].size():
+		var row: Dictionary = ticket["squad"][index]
+		var expected_battle_id := (
+			CanonicalJson
+			. sha256_hex(
+				[
+					ticket["campaign_uid"],
+					ticket["attempt_id"],
+					index,
+					row["hero_id"],
+				]
+			)
+			. substr(0, 16)
+		)
+		if row["battle_id"] != expected_battle_id:
+			return _reject(&"battle_id_mismatch")
 	if ticket["stage_id"] != String(stage.id):
 		return _reject(&"ticket_stage_mismatch")
 	if (ticket["squad"] as Array).size() > stage.squad_size:
@@ -140,7 +159,7 @@ static func copy_legacy_unit(definition: OperatorDef, unit: UnitState) -> void:
 static func is_deployable(model: BattleModel, battle_id: StringName) -> bool:
 	if not model._ticket_rows.has(battle_id):
 		return false
-	var record := record_for(model.battle_records, battle_id)
+	var record := record_for(model._battle_records, battle_id)
 	if record.is_empty() or bool(record["fell"]):
 		return false
 	for unit: UnitState in model.units:

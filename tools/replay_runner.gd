@@ -10,6 +10,7 @@ var _fixtures_dir := DEFAULT_FIXTURES
 var _out_path := ""
 var _hash_every := DEFAULT_HASH_EVERY
 var _max_ticks := DEFAULT_MAX_TICKS
+var _trusted_ticket_hashes: Array[String] = []
 var _catalogs := {}
 
 
@@ -46,6 +47,8 @@ func _parse_args() -> bool:
 			_hash_every = int(arg.trim_prefix("--hash-every="))
 		elif arg.begins_with("--max-ticks="):
 			_max_ticks = int(arg.trim_prefix("--max-ticks="))
+		elif arg.begins_with("--trusted-ticket-hash="):
+			_trusted_ticket_hashes.append(arg.trim_prefix("--trusted-ticket-hash="))
 		else:
 			printerr("[replay-runner] unknown argument: %s" % arg)
 			return false
@@ -210,6 +213,7 @@ func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictio
 		_catalogs["operators"],
 		_catalogs["traps"],
 		_catalogs["spells"],
+		_trusted_ticket_hashes,
 	)
 	var rows: Array = replay["timeline"]
 	var verdicts := _expected_verdicts(expected)
@@ -302,9 +306,10 @@ func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictio
 	value["terminal"] = terminal
 	value["telemetry"] = _normalized_telemetry(model, terminal)
 	if replay["version"] == ReplayCodec.VERSION_2:
+		var outcome: Dictionary = model.snapshot()["outcome"]
 		value["ticket_hash"] = String(replay["ticket"]["ticket_hash"])
-		value["outcome"] = model.outcome.duplicate(true)
-		value["outcome_sha256"] = CanonicalJson.sha256_hex(model.outcome)
+		value["outcome"] = outcome
+		value["outcome_sha256"] = CanonicalJson.sha256_hex(outcome)
 	return {"accepted": true, "value": value}
 
 
@@ -324,7 +329,7 @@ func _completion_error(
 		return "expectation count mismatch"
 	if semantic_count != post_expectation_count:
 		return "post-action expectation coverage mismatch"
-	if model._is_ticketed() and model.outcome.is_empty():
+	if model._is_ticketed() and model.snapshot()["outcome"].is_empty():
 		return "ticketed battle emitted no outcome"
 	return ""
 
@@ -571,6 +576,7 @@ func _replay_context() -> Dictionary:
 		_catalogs["spells"],
 		_catalogs["stages"],
 		load("res://data/config/game.tres") as GameConfig,
+		_trusted_ticket_hashes,
 	)
 
 

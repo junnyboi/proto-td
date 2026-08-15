@@ -86,9 +86,10 @@ func test_retreat_redeploy_and_duplicate_live_identity_are_accounted_exactly() -
 	model.step(60)
 	assert_true(model.apply_action([&"deploy", battle_id, Vector2i(1, 2), 0]))
 	assert_true(model.apply_action([&"resign"]))
-	assert_eq(model.outcome["rows"][0]["deployments"], 2)
-	assert_eq(model.outcome["rows"][0]["retreats"], 1)
-	assert_false(model.outcome["rows"][0]["fell"])
+	var outcome: Dictionary = model.snapshot()["outcome"]
+	assert_eq(outcome["rows"][0]["deployments"], 2)
+	assert_eq(outcome["rows"][0]["retreats"], 1)
+	assert_false(outcome["rows"][0]["fell"])
 
 
 func test_fallen_identity_cannot_redeploy_and_records_first_fall_tick() -> void:
@@ -103,8 +104,22 @@ func test_fallen_identity_cannot_redeploy_and_records_first_fall_tick() -> void:
 	assert_false(model.apply_action([&"deploy", battle_id, Vector2i(1, 2), 0]))
 	assert_eq(model.state_hash(), rejected_preimage)
 	assert_true(model.apply_action([&"resign"]))
-	assert_true(model.outcome["rows"][0]["fell"])
-	assert_eq(model.outcome["rows"][0]["first_fall_tick"], 0)
+	var outcome: Dictionary = model.snapshot()["outcome"]
+	assert_true(outcome["rows"][0]["fell"])
+	assert_eq(outcome["rows"][0]["first_fall_tick"], 0)
+
+
+func test_private_artifact_tampering_cannot_preserve_the_battle_hash() -> void:
+	var ticket: Dictionary = _issued_ticket()["ticket"]
+	var running := _model(ticket)
+	var running_preimage := running.state_hash()
+	running._ticket["squad"][0]["combat_spec"]["atk"] = 777
+	assert_ne(running.state_hash(), running_preimage)
+
+	var completed := _run(ticket, _winner(ticket))["model"] as BattleModel
+	var completed_preimage := completed.state_hash()
+	completed._outcome["rows"][0]["deployments"] = 999
+	assert_ne(completed.state_hash(), completed_preimage)
 
 
 func test_winning_timeline_emits_the_only_canonical_ticket_bound_outcome() -> void:
@@ -117,24 +132,23 @@ func test_winning_timeline_emits_the_only_canonical_ticket_bound_outcome() -> vo
 	assert_eq(model.tick, 1_202)
 	assert_eq(model.killed, 4)
 	assert_eq(model.leaked, 2)
-	assert_false(model.outcome.is_empty())
-	var normalized := BattleOutcomeV3.normalize(model.outcome, ticket)
+	var outcome: Dictionary = model.snapshot()["outcome"]
+	assert_false(outcome.is_empty())
+	var normalized := BattleOutcomeV3.normalize(outcome, ticket)
 	assert_true(normalized["accepted"], str(normalized.get("error_code", &"")))
-	assert_eq(normalized["value"], model.outcome)
-	assert_eq(model.outcome["terminal_tick"], model.tick)
-	assert_eq(model.outcome["result"], "clear")
-	assert_eq(model.outcome["terminal_reason"], "clear")
+	assert_eq(normalized["value"], outcome)
+	assert_eq(outcome["terminal_tick"], model.tick)
+	assert_eq(outcome["result"], "clear")
+	assert_eq(outcome["terminal_reason"], "clear")
 	assert_eq(
-		model.outcome["rows"].map(func(row: Dictionary) -> int: return row["deployments"]),
+		outcome["rows"].map(func(row: Dictionary) -> int: return row["deployments"]),
 		[1, 1, 1],
 	)
 	assert_eq(
-		model.outcome["rows"].map(func(row: Dictionary) -> String: return row["hero_id"]),
+		outcome["rows"].map(func(row: Dictionary) -> String: return row["hero_id"]),
 		ticket["squad"].map(func(row: Dictionary) -> String: return row["hero_id"]),
 	)
-	assert_eq(
-		model.outcome["rows"].filter(func(row: Dictionary) -> bool: return row["fell"]).size(), 2
-	)
+	assert_eq(outcome["rows"].filter(func(row: Dictionary) -> bool: return row["fell"]).size(), 2)
 
 
 func test_filtered_one_recruit_timeline_underperforms_from_same_source() -> void:
@@ -160,21 +174,34 @@ func test_post_battle_promotion_cannot_rewrite_frozen_tactical_artifacts() -> vo
 	var begun: CampaignStateV3 = issued["state"]
 	var timeline := _winner(ticket)
 	var model := _run(ticket, timeline)["model"] as BattleModel
-	var replay := ReplayCodec.encode_document_v2(ticket, timeline, _replay_context())
+	var replay_context := _replay_context([ticket["ticket_hash"]])
+	var replay := ReplayCodec.encode_document_v2(ticket, timeline, replay_context)
 	assert_true(replay["accepted"])
+	var artifacts := model.snapshot()
+	var outcome: Dictionary = artifacts["outcome"]
 	var before := {
-		"ticket": CanonicalJson.text(model.ticket),
-		"outcome": CanonicalJson.text(model.outcome),
+		"ticket": CanonicalJson.text(artifacts["ticket"]),
+		"outcome": CanonicalJson.text(outcome),
+		"records": CanonicalJson.text(artifacts["battle_rows"]),
 		"hash": model.state_hash(),
 		"snapshot": model.snapshot(),
 		"replay": replay["text"],
 	}
+	var exposed := model.snapshot()
+	exposed["ticket"]["squad"][0]["combat_spec"]["atk"] = 777
+	exposed["outcome"]["rows"][0]["deployments"] = 999
+	exposed["battle_rows"][0]["deployments"] = 999
+	var after_exposure := model.snapshot()
+	assert_eq(CanonicalJson.text(after_exposure["ticket"]), before["ticket"])
+	assert_eq(CanonicalJson.text(after_exposure["outcome"]), before["outcome"])
+	assert_eq(CanonicalJson.text(after_exposure["battle_rows"]), before["records"])
+	assert_eq(model.state_hash(), before["hash"])
 	var resolved := _advance(
-		begun.resolve_attempt("p3-resolve", ticket["attempt_id"], model.outcome, 2),
+		begun.resolve_attempt("p3-resolve", ticket["attempt_id"], outcome, 2),
 		context,
 	)
 	var survivor_id := ""
-	for row: Dictionary in model.outcome["rows"]:
+	for row: Dictionary in outcome["rows"]:
 		if not row["fell"]:
 			survivor_id = String(row["hero_id"])
 			break
@@ -190,12 +217,14 @@ func test_post_battle_promotion_cannot_rewrite_frozen_tactical_artifacts() -> vo
 		),
 		context,
 	)
-	assert_eq(CanonicalJson.text(model.ticket), before["ticket"])
-	assert_eq(CanonicalJson.text(model.outcome), before["outcome"])
+	var after_promotion := model.snapshot()
+	assert_eq(CanonicalJson.text(after_promotion["ticket"]), before["ticket"])
+	assert_eq(CanonicalJson.text(after_promotion["outcome"]), before["outcome"])
+	assert_eq(CanonicalJson.text(after_promotion["battle_rows"]), before["records"])
 	assert_eq(model.state_hash(), before["hash"])
 	assert_eq(model.snapshot(), before["snapshot"])
 	assert_eq(
-		ReplayCodec.encode_document_v2(model.ticket, timeline, _replay_context())["text"],
+		ReplayCodec.encode_document_v2(after_promotion["ticket"], timeline, replay_context)["text"],
 		before["replay"],
 	)
 	var later := _advance(
@@ -251,11 +280,15 @@ func _model(ticket: Dictionary) -> BattleModel:
 			-999,
 			CONFIG as GameConfig,
 			{&"grunt": GRUNT as EnemyDef},
+			{},
+			{},
+			{},
+			[ticket["ticket_hash"]],
 		)
 	)
 
 
-func _replay_context() -> Dictionary:
+func _replay_context(trusted_ticket_hashes: Array = []) -> Dictionary:
 	return (
 		ReplayCodec
 		. build_context(
@@ -264,6 +297,7 @@ func _replay_context() -> Dictionary:
 			_catalog("res://data/spells"),
 			_catalog("res://data/stages"),
 			CONFIG as GameConfig,
+			trusted_ticket_hashes,
 		)
 	)
 

@@ -435,13 +435,21 @@ static func build_context(
 	spells: Dictionary,
 	stages: Dictionary,
 	config: GameConfig,
+	trusted_ticket_hashes: Array = [],
 ) -> Dictionary:
+	var trusted: Array[String] = []
+	for value: Variant in trusted_ticket_hashes:
+		var ticket_hash := String(value)
+		if not trusted.has(ticket_hash):
+			trusted.append(ticket_hash)
+	trusted.sort()
 	return {
 		"operators": operators,
 		"traps": traps,
 		"spells": spells,
 		"stages": stages,
 		"config": config,
+		"trusted_ticket_hashes": trusted,
 	}
 
 
@@ -478,6 +486,8 @@ static func _validate_contextual_v2(
 	var prepared := BattleTicketRuntimeScript.prepare(ticket, stage)
 	if not prepared["accepted"]:
 		return prepared
+	if not context["trusted_ticket_hashes"].has(ticket["ticket_hash"]):
+		return _reject(&"untrusted_ticket_hash")
 	var rows := {}
 	for frozen: Dictionary in prepared["rows"]:
 		rows[StringName(frozen["battle_id"])] = frozen
@@ -535,7 +545,17 @@ static func _validate_action_context(
 
 
 static func _valid_context(context: Dictionary) -> bool:
-	return _exact_keys(context, ["operators", "traps", "spells", "stages", "config"])
+	if not _exact_keys(
+		context,
+		["operators", "traps", "spells", "stages", "config", "trusted_ticket_hashes"],
+	):
+		return false
+	if typeof(context["trusted_ticket_hashes"]) != TYPE_ARRAY:
+		return false
+	for value: Variant in context["trusted_ticket_hashes"]:
+		if not _is_hex(String(value), 64):
+			return false
+	return true
 
 
 static func _exact_keys(value: Dictionary, expected: Array) -> bool:
@@ -570,6 +590,15 @@ static func _in_nonnegative_i32(value: Variant) -> bool:
 
 static func _in_i64(value: Variant) -> bool:
 	return _is_integer(value)
+
+
+static func _is_hex(value: String, length: int) -> bool:
+	if value.length() != length:
+		return false
+	for character: String in value:
+		if character not in "0123456789abcdef":
+			return false
+	return true
 
 
 static func _accept(value: Variant) -> Dictionary:

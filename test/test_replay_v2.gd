@@ -6,7 +6,7 @@ const CONFIG := preload("res://data/config/game.tres")
 const GRUNT := preload("res://data/enemies/grunt.tres")
 const REPLAY_SHA256 := "fef34b5901cdc5d6eb00cc98e101d2a8bd71516392ea760de2f529b0fb697531"
 const TICKET_HASH := "a4dd3dd15efe297c1dd8bff779cd45b09cb3e62023ecffe44ae256a21612f736"
-const TERMINAL_HASH := "aa7b32a4218cc15d"
+const TERMINAL_HASH := "14b6302bf57674e7"
 const OUTCOME_HASH := "185140c95ce217d3bbdf8ef1df720e935f3b9c29990832c3cdacba1fbda7a189"
 
 
@@ -100,6 +100,50 @@ func test_v2_schema_and_identity_rejections_expose_no_partial_timeline() -> void
 	)
 
 
+func test_v2_rejects_resealed_content_and_identity_forgery() -> void:
+	var replay := ReplayCodec.load_file(FIXTURE, _context())
+	var forged_content: Dictionary = replay["ticket"].duplicate(true)
+	forged_content["squad"][0]["combat_spec"]["atk"] = 4_000
+	_reseal(forged_content)
+	var content_result := ReplayCodec.encode_document_v2(
+		forged_content, replay["timeline"], _context()
+	)
+	assert_false(content_result["accepted"])
+	assert_eq(content_result["error_code"], &"untrusted_ticket_hash")
+	assert_null(
+		(
+			BattleModel
+			. create(
+				S1 as StageDef,
+				forged_content,
+				0,
+				CONFIG as GameConfig,
+				{&"grunt": GRUNT as EnemyDef},
+				{},
+				_catalog("res://data/traps"),
+				_catalog("res://data/spells"),
+				[TICKET_HASH],
+			)
+		)
+	)
+
+	var partial_identity: Dictionary = replay["ticket"].duplicate(true)
+	partial_identity["squad"][0]["hero_id"] = "0000000000000001"
+	_reseal(partial_identity)
+	var partial_result := ReplayCodec.encode_document_v2(
+		partial_identity, replay["timeline"], _context()
+	)
+	assert_false(partial_result["accepted"])
+	assert_eq(partial_result["error_code"], &"battle_id_mismatch")
+
+	var resealed_identity: Dictionary = partial_identity.duplicate(true)
+	resealed_identity["squad"][0]["battle_id"] = _battle_id(resealed_identity, 0)
+	_reseal(resealed_identity)
+	var identity_result := ReplayCodec.encode_document_v2(resealed_identity, [], _context())
+	assert_false(identity_result["accepted"])
+	assert_eq(identity_result["error_code"], &"untrusted_ticket_hash")
+
+
 func test_v1_fixture_decoder_and_bytes_remain_immutable() -> void:
 	var replay := ReplayCodec.load_file("res://playtests/replays/v1/s1.json", _context())
 	assert_true(replay["accepted"], str(replay.get("error_code", &"")))
@@ -131,13 +175,15 @@ func test_model_run_matches_pinned_v2_terminal_and_outcome_hashes() -> void:
 			{},
 			_catalog("res://data/traps"),
 			_catalog("res://data/spells"),
+			[TICKET_HASH],
 		)
 	)
 	model.run_timeline(replay["timeline"], 2_400)
 	assert_eq(model.result, BattleModel.Result.CLEAR)
 	assert_eq(HeroIdentity.format_u64_hex(model.state_hash()), TERMINAL_HASH)
-	assert_eq(model.outcome["outcome_hash"], OUTCOME_HASH)
-	assert_eq(BattleOutcomeV3.normalize(model.outcome, replay["ticket"])["value"], model.outcome)
+	var outcome: Dictionary = model.snapshot()["outcome"]
+	assert_eq(outcome["outcome_hash"], OUTCOME_HASH)
+	assert_eq(BattleOutcomeV3.normalize(outcome, replay["ticket"])["value"], outcome)
 
 
 func _context(operators: Variant = null) -> Dictionary:
@@ -149,6 +195,7 @@ func _context(operators: Variant = null) -> Dictionary:
 			_catalog("res://data/spells"),
 			_catalog("res://data/stages"),
 			CONFIG as GameConfig,
+			[TICKET_HASH],
 		)
 	)
 
@@ -161,3 +208,23 @@ func _catalog(path: String) -> Dictionary:
 			var resource: Resource = load("%s/%s" % [path, source])
 			result[resource.get("id")] = resource
 	return result
+
+
+func _battle_id(ticket: Dictionary, slot_index: int) -> String:
+	return (
+		CanonicalJson
+		. sha256_hex(
+			[
+				ticket["campaign_uid"],
+				ticket["attempt_id"],
+				slot_index,
+				ticket["squad"][slot_index]["hero_id"],
+			]
+		)
+		. substr(0, 16)
+	)
+
+
+func _reseal(ticket: Dictionary) -> void:
+	ticket.erase("ticket_hash")
+	ticket["ticket_hash"] = CanonicalJson.sha256_hex(ticket)

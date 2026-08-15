@@ -1,1 +1,1 @@
-{"schema":"prototype_td_replay_expectations","version":1,"fixtures":{"s1_recruits.json":{"verdicts":[true,false,true,true],"post_actions":[],"terminal":{"result":"clear","reason":"clear","tick":1202,"stars":2,"killed":4,"leaked":2,"base_hp":8,"hash":"aa7b32a4218cc15d"}}}}
+{"schema":"prototype_td_replay_expectations","version":1,"fixtures":{"s1_recruits.json":{"verdicts":[true,false,true,true],"post_actions":[],"terminal":{"result":"clear","reason":"clear","tick":1202,"stars":2,"killed":4,"leaked":2,"base_hp":8,"hash":"14b6302bf57674e7"}}}}

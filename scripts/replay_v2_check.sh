@@ -4,7 +4,7 @@ set -euo pipefail
 OUT_DIR="${1:-artifacts/replay-v2}"
 REPLAY_SHA="fef34b5901cdc5d6eb00cc98e101d2a8bd71516392ea760de2f529b0fb697531"
 TICKET_HASH="a4dd3dd15efe297c1dd8bff779cd45b09cb3e62023ecffe44ae256a21612f736"
-TERMINAL_HASH="aa7b32a4218cc15d"
+TERMINAL_HASH="14b6302bf57674e7"
 OUTCOME_SHA="ab3f5b6a49a8e9624d06c71e755f99bb7e7d0c5959975bf536568db02a30efaa"
 OUTCOME_HASH="185140c95ce217d3bbdf8ef1df720e935f3b9c29990832c3cdacba1fbda7a189"
 
@@ -12,7 +12,8 @@ scripts/replay_check.sh \
   --fixtures=res://playtests/replays/v2 \
   --out="$OUT_DIR" \
   --hash-every=100 \
-  --max-ticks=2400
+  --max-ticks=2400 \
+  --trusted-ticket-hash="$TICKET_HASH"
 
 jq -e \
   --arg replay_sha "$REPLAY_SHA" \

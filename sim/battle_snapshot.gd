@@ -35,8 +35,10 @@ static func of(m: BattleModel) -> Dictionary:
 		"mitigation": _mitigation(m),
 	}
 	if m._is_ticketed():
-		snapshot["ticket_hash"] = String(m.ticket["ticket_hash"])
-		snapshot["battle_rows"] = m.battle_records.duplicate(true)
+		snapshot["ticket_hash"] = String(m._ticket["ticket_hash"])
+		snapshot["ticket"] = m._ticket.duplicate(true)
+		snapshot["battle_rows"] = m._battle_records.duplicate(true)
+		snapshot["outcome"] = m._outcome.duplicate(true)
 	return snapshot
 
 
