@@ -276,18 +276,13 @@ fi
 
 # R4: scenarios. Headless lane always; windowed lane with --full.
 scenario_cmd() { # lane scenario
-	local lane="$1" s="$2" user_root
-	user_root=".godot/selftest-user/$lane/$s"
-	rm -rf "$user_root"
-	mkdir -p "$user_root/data" "$user_root/config"
+	local lane="$1" s="$2"
 	if [[ "$lane" == "headless" ]]; then
 		run_rung "R4a-$s" "artifacts/$s/report.json" 120 \
-		  env XDG_DATA_HOME="$ROOT/$user_root/data" XDG_CONFIG_HOME="$ROOT/$user_root/config" \
 		  "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
 		  --scenario="$s" --seed=42 --shots="res://artifacts/$s"
 	else
 		run_rung "R4b-$s" "artifacts/$s/report.json" 120 \
-		  env XDG_DATA_HOME="$ROOT/$user_root/data" XDG_CONFIG_HOME="$ROOT/$user_root/config" \
 		  "$GODOT" --path . --resolution 1280x720 -s selftest/harness.gd -- \
 		  --scenario="$s" --seed=42 --shots="res://artifacts/$s"
 	fi
