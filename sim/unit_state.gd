@@ -15,7 +15,12 @@ extends RefCounted
 enum Facing { RIGHT, DOWN, LEFT, UP }
 
 var id: int = 0
+var battle_id: StringName = &""
+var hero_id: StringName = &""
+var class_id: StringName = &""
 var op_id: StringName = &""
+var sprite_id: StringName = &""
+var portrait_asset_id: StringName = &""
 var cell: Vector2i = Vector2i.ZERO
 var facing: Facing = Facing.RIGHT
 var hp: int = 1

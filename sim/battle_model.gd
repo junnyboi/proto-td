@@ -54,11 +54,18 @@ const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const TargetDecisionProjectionScript := preload("res://sim/target_decision_projection.gd")
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
+const BattleTicketRuntimeScript := preload("res://sim/battle_ticket_runtime.gd")
+const BattleOutcomeBuilderScript := preload("res://sim/battle_outcome_builder.gd")
 
 var stage: StageDef = null
 var squad: Array[StringName] = []
 var run_seed: int = 0
 var config: GameConfig = null
+var ticket: Dictionary = {}
+var battle_squad: Array[StringName] = []
+var battle_records: Array[Dictionary] = []
+var terminal_reason: StringName = &""
+var outcome: Dictionary = {}
 
 var tick: int = 0
 var base_hp: int = 0
@@ -97,22 +104,23 @@ var _path_lengths: Array[int] = []
 var _next_enemy_id: int = 0
 var _next_unit_id: int = 0
 var _next_trap_id: int = 0
+var _ticket_rows: Dictionary = {}
 
 
 static func create(
-	stage_def: StageDef,
-	squad_ids: Array[StringName],
-	seed_value: int,
+		stage_def: StageDef,
+		battle_input: Variant,
+		seed_value: int,
 	game_config: GameConfig,
 	enemy_defs: Dictionary,
 	operator_defs: Dictionary = {},
 	trap_defs: Dictionary = {},
 	spell_defs: Dictionary = {},
-) -> BattleModel:
+	) -> BattleModel:
 	var model := BattleModel.new()
 	model.stage = stage_def
-	model.squad = squad_ids.duplicate()
-	model.run_seed = seed_value
+	if not BattleTicketRuntimeScript.configure(model, battle_input, stage_def, seed_value):
+		return null
 	model.config = game_config
 	model.base_hp = game_config.base_hp_start
 	model.dp = game_config.dp_start
@@ -126,6 +134,10 @@ static func create(
 		model._paths.append(cells)
 		model._path_lengths.append(Pathing.length_units(cells))
 	return model
+
+
+func _is_ticketed() -> bool:
+	return not ticket.is_empty()
 
 
 func step(n: int = 1) -> void:
@@ -210,6 +222,8 @@ func apply_action(action: Array) -> bool:
 func is_deployable(op_id: StringName) -> bool:
 	if result != Result.RUNNING:
 		return false
+	if _is_ticketed():
+		return BattleTicketRuntimeScript.is_deployable(self, op_id)
 	if not squad.has(op_id) or not _op_defs.has(op_id):
 		return false
 	for u: UnitState in units:
@@ -225,6 +239,11 @@ func is_deployable(op_id: StringName) -> bool:
 func can_deploy_at(op_id: StringName, cell: Vector2i) -> bool:
 	if not is_deployable(op_id):
 		return false
+	if _is_ticketed():
+		return (
+			BattleTicketRuntimeScript.cell_in_domain(_ticket_rows[op_id], stage, cell)
+			and alive_unit_at(cell) == null
+		)
 	var def: OperatorDef = _op_defs[op_id]
 	if not stage.operator_cell_in_domain(def, cell):
 		return false
@@ -258,36 +277,21 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 		return false
 	if not can_deploy_at(op_id, cell):
 		return false
-	var def: OperatorDef = _op_defs[op_id]
 	var u := UnitState.new()
 	u.id = _next_unit_id
 	_next_unit_id += 1
-	u.op_id = def.id
 	u.cell = cell
 	u.facing = facing as UnitState.Facing
-	u.hp = def.hp
-	u.hp_max = def.hp
-	u.block = def.block
-	u.dp_cost = def.dp_cost
-	u.atk = def.atk
-	u.defense = def.defense
-	u.resistance_permille = def.resistance_permille
-	u.attack_damage_kind = def.attack_damage_kind
-	u.atk_interval_ticks = def.atk_interval_ticks
-	u.dp_generation_interval_ticks = def.dp_generation_interval_ticks
-	u.op_class = def.op_class
-	u.splash_dim_base = def.splash_dim
-	u.range_offsets = def.range_offsets.duplicate()
-	u.target_policy = Targeting.compile(def.target_policy, TargetPolicyDefScript.OwnerKind.OPERATOR)
-	if def.skill != null:
-		u.skill_id = def.skill.id
-		u.sp_cost = def.skill.sp_cost
-		u.skill_effect = def.skill.effect
-		u.skill_params = def.skill.params.duplicate()
-		u.skill_duration_ticks = def.skill.duration_ticks
+	if _is_ticketed():
+		BattleTicketRuntimeScript.copy_unit(_ticket_rows[op_id], u)
+		var record := BattleTicketRuntimeScript.record_for(battle_records, op_id)
+		record["deployments"] += 1
+	else:
+		var def: OperatorDef = _op_defs[op_id]
+		BattleTicketRuntimeScript.copy_legacy_unit(def, u)
 	units.append(u)
-	dp -= def.dp_cost
-	dp_spent += def.dp_cost
+	dp -= u.dp_cost
+	dp_spent += u.dp_cost
 	return true
 
 
@@ -337,6 +341,9 @@ func _apply_retreat(unit_id: int) -> bool:
 		return false
 	u.alive = false
 	_release_all_blocked(u)
+	if _is_ticketed():
+		var record := BattleTicketRuntimeScript.record_for(battle_records, u.battle_id)
+		record["retreats"] += 1
 	retreated += 1
 	var refund := floori(u.dp_cost * config.retreat_refund_percent / 100.0)
 	dp_refunded += refund
@@ -512,6 +519,9 @@ func _resolve_charm(e: EnemyState) -> void:
 ## BattleHash needs no extension; stars stays 0 like any defeat.
 func _apply_resign() -> bool:
 	result = Result.DEFEAT
+	if _is_ticketed():
+		terminal_reason = &"resign"
+		outcome = BattleOutcomeBuilderScript.seal(self)
 	return true
 
 
@@ -522,6 +532,8 @@ func _apply_resign() -> bool:
 ## keeps the ledger exact via the signed dp_debug_adjusted bucket; set-HP
 ## reaches DEFEAT only through the untouched _check_terminal.
 func _apply_debug_grant_operator(op_id: StringName) -> bool:
+	if _is_ticketed():
+		return false
 	if not _op_defs.has(op_id) or squad.has(op_id):
 		return false
 	squad.append(op_id)
@@ -529,6 +541,8 @@ func _apply_debug_grant_operator(op_id: StringName) -> bool:
 
 
 func _apply_debug_remove_operator(op_id: StringName) -> bool:
+	if _is_ticketed():
+		return false
 	if not squad.has(op_id):
 		return false
 	squad.erase(op_id)
@@ -623,6 +637,8 @@ func _step_one() -> void:
 		_spawn(entry)
 	_check_terminal()
 	tick += 1
+	if _is_ticketed() and result != Result.RUNNING:
+		outcome = BattleOutcomeBuilderScript.seal(self)
 
 
 ## D12: blocked enemies skip; the block check runs after the advance, in spawn
@@ -864,6 +880,11 @@ func _kill_charmed(ally: EnemyState) -> void:
 ## progress on the next tick's advance); no DP refund on death.
 func _kill_unit(u: UnitState) -> void:
 	u.alive = false
+	if _is_ticketed():
+		var record := BattleTicketRuntimeScript.record_for(battle_records, u.battle_id)
+		if not bool(record["fell"]):
+			record["fell"] = true
+			record["first_fall_tick"] = tick
 	_release_all_blocked(u)
 
 
@@ -963,7 +984,11 @@ func _check_terminal() -> void:
 	if leaked > stage.leak_limit or base_hp <= 0:
 		result = Result.DEFEAT
 		stars = 0
+		if _is_ticketed():
+			terminal_reason = &"base_defeat" if base_hp <= 0 else &"leak_defeat"
 		return
 	if timeline.exhausted() and alive_enemy_count() == 0:
 		result = Result.CLEAR
 		stars = StarCalc.star_for(leaked, stage.leak_limit)
+		if _is_ticketed():
+			terminal_reason = &"clear"

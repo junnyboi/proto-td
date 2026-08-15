@@ -97,7 +97,7 @@ func _project_operators(model: BattleModel) -> Array:
 			var blocked_enemy := _enemy_by_id(model, enemy_id)
 			if blocked_enemy != null:
 				blocked_weight += blocked_enemy.block_weight
-		rows.append({
+		var row := {
 			"id": unit.id,
 			"op_id": String(unit.op_id),
 			"alive": unit.alive,
@@ -113,7 +113,12 @@ func _project_operators(model: BattleModel) -> Array:
 			"sp_cost": unit.sp_cost,
 			"skill_id": String(unit.skill_id),
 			"skill_ready": unit.is_skill_ready(),
-		})
+		}
+		if not unit.battle_id.is_empty():
+			row["battle_id"] = String(unit.battle_id)
+			row["hero_id"] = String(unit.hero_id)
+			row["class_id"] = String(unit.class_id)
+		rows.append(row)
 	return rows
 
 

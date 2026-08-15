@@ -198,12 +198,12 @@ func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictio
 		ResourceLoader.CACHE_MODE_IGNORE,
 	) as GameConfig
 	var squad: Array[StringName] = replay["squad"]
-	var input_error := _validate_model_inputs(stage, config, squad)
+	var input_error := _validate_model_inputs(stage, config, squad, int(replay["version"]))
 	if not input_error.is_empty():
 		return _fail(2, "%s: %s" % [filename, input_error])
 	var model := BattleModel.create(
 		stage,
-		squad,
+		replay["ticket"] if replay["version"] == ReplayCodec.VERSION_2 else squad,
 		int(replay["seed"]),
 		config,
 		_catalogs["enemies"],
@@ -289,6 +289,7 @@ func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictio
 	value["fixture"] = filename
 	value["canonical_replay_sha256"] = replay["sha256"]
 	value["canonical_replay"] = replay["text"]
+	value["replay_version"] = int(replay["version"])
 	value["stage_id"] = String(stage_id)
 	value["seed"] = int(replay["seed"])
 	value["action_count"] = rows.size()
@@ -300,6 +301,10 @@ func _run_one(filename: String, replay: Dictionary, expected: Variant) -> Dictio
 	value["hashes"] = hashes
 	value["terminal"] = terminal
 	value["telemetry"] = _normalized_telemetry(model, terminal)
+	if replay["version"] == ReplayCodec.VERSION_2:
+		value["ticket_hash"] = String(replay["ticket"]["ticket_hash"])
+		value["outcome"] = model.outcome.duplicate(true)
+		value["outcome_sha256"] = CanonicalJson.sha256_hex(model.outcome)
 	return {"accepted": true, "value": value}
 
 
@@ -319,6 +324,8 @@ func _completion_error(
 		return "expectation count mismatch"
 	if semantic_count != post_expectation_count:
 		return "post-action expectation coverage mismatch"
+	if model._is_ticketed() and model.outcome.is_empty():
+		return "ticketed battle emitted no outcome"
 	return ""
 
 
@@ -452,7 +459,7 @@ func _model_state(model: BattleModel) -> Dictionary:
 func _unit_state(model: BattleModel) -> Dictionary:
 	var units := {}
 	for unit: UnitState in model.units:
-		units[String.num_int64(unit.id)] = {
+		var row := {
 			"hp": unit.hp,
 			"hp_max": unit.hp_max,
 			"alive": unit.alive,
@@ -460,6 +467,13 @@ func _unit_state(model: BattleModel) -> Dictionary:
 			"skill_triggered_tick": unit.skill_triggered_tick,
 			"skill_target_unit_id": unit.skill_target_unit_id,
 		}
+		if not unit.battle_id.is_empty():
+			row["battle_id"] = String(unit.battle_id)
+			row["hero_id"] = String(unit.hero_id)
+			row["class_id"] = String(unit.class_id)
+			row["sprite_id"] = String(unit.sprite_id)
+			row["portrait_asset_id"] = String(unit.portrait_asset_id)
+		units[String.num_int64(unit.id)] = row
 	return units
 
 
@@ -504,6 +518,8 @@ func _normalized_telemetry(model: BattleModel, terminal: Dictionary) -> Dictiona
 		"name": "result",
 		"data": {"result": terminal["result"], "reason": terminal["reason"], "stars": model.stars},
 	}]
+	if model._is_ticketed():
+		telemetry["battle_rows"] = snapshot["battle_rows"]
 	return telemetry
 
 
@@ -511,13 +527,14 @@ func _validate_model_inputs(
 	stage: StageDef,
 	config: GameConfig,
 	squad: Array[StringName],
+	replay_version: int,
 ) -> String:
 	var error := ""
 	if stage == null or config == null:
 		error = "stage/config load failed"
 	elif squad.is_empty() or squad.size() > stage.squad_size:
 		error = "squad size violates stage capacity"
-	else:
+	elif replay_version == ReplayCodec.VERSION:
 		for operator_id: StringName in squad:
 			if not _catalogs["operators"].has(operator_id):
 				error = "unknown operator %s" % operator_id

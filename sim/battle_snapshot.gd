@@ -9,7 +9,7 @@ const DamageRulesScript := preload("res://sim/damage_rules.gd")
 
 
 static func of(m: BattleModel) -> Dictionary:
-	return {
+	var snapshot := {
 		"tick": m.tick,
 		"base_hp": m.base_hp,
 		"result": m.result,
@@ -34,17 +34,25 @@ static func of(m: BattleModel) -> Dictionary:
 		"damage_rules_version": DamageRulesScript.VERSION,
 		"mitigation": _mitigation(m),
 	}
+	if m._is_ticketed():
+		snapshot["ticket_hash"] = String(m.ticket["ticket_hash"])
+		snapshot["battle_rows"] = m.battle_records.duplicate(true)
+	return snapshot
 
 
 static func _mitigation(m: BattleModel) -> Dictionary:
 	var units: Array[Dictionary] = []
 	for u: UnitState in m.units:
-		units.append({
+		var row := {
 			"id": u.id,
 			"defense": u.defense,
 			"resistance_permille": u.resistance_permille,
 			"attack_damage_kind": u.attack_damage_kind,
-		})
+		}
+		if not u.battle_id.is_empty():
+			row["battle_id"] = String(u.battle_id)
+			row["hero_id"] = String(u.hero_id)
+		units.append(row)
 	var enemies: Array[Dictionary] = []
 	for e: EnemyState in m.enemies:
 		enemies.append({

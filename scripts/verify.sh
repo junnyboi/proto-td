@@ -225,6 +225,8 @@ if [[ -z "$ONLY" ]]; then
 				  -gtest=res://test/test_campaign_recovery_property.gd -gexit
 			done
 	run_rung "R3.5-replay" "artifacts/replay/summary.json" 35 scripts/replay_check.sh
+	run_rung "R3.5-replay-v2" "artifacts/replay-v2/summary.json" 35 \
+	  scripts/replay_v2_check.sh artifacts/replay-v2
 		run_rung "R3.5-model-roster" "artifacts/model-roster/summary.json" 35 \
 		  scripts/model_roster_check.sh
 		run_rung "R3.5-strategic-verbs" "artifacts/strategic-verbs/summary.json" 35 \

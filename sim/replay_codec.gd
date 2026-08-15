@@ -3,7 +3,10 @@ extends RefCounted
 
 const SCHEMA := "prototype_td_replay"
 const VERSION := 1
+const VERSION_2 := 2
 const ROOT_KEYS := ["schema", "version", "stage_id", "seed", "squad", "actions"]
+const ROOT_KEYS_V2 := ["schema", "version", "ticket", "actions"]
+const BattleTicketRuntimeScript := preload("res://sim/battle_ticket_runtime.gd")
 
 
 static func load_file(path: String, context: Dictionary) -> Dictionary:
@@ -23,8 +26,16 @@ static func load_file(path: String, context: Dictionary) -> Dictionary:
 	var decoded := decode_document(coerced["value"], context)
 	if not decoded["accepted"]:
 		return decoded
-	var encoded := encode_document(
-		decoded["stage_id"], decoded["squad"], decoded["seed"], decoded["timeline"], context,
+	var encoded := (
+		encode_document(
+			decoded["stage_id"],
+			decoded["squad"],
+			decoded["seed"],
+			decoded["timeline"],
+			context,
+		)
+		if decoded["version"] == VERSION
+		else encode_document_v2(decoded["ticket"], decoded["timeline"], context)
 	)
 	if not encoded["accepted"] or encoded["text"] != source:
 		return _reject(&"noncanonical_replay")
@@ -36,6 +47,12 @@ static func load_file(path: String, context: Dictionary) -> Dictionary:
 static func decode_document(document: Variant, context: Dictionary) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_replay_context")
+	if (
+		typeof(document) == TYPE_DICTIONARY
+		and document.get("schema") == SCHEMA
+		and document.get("version") == VERSION_2
+	):
+		return _decode_v2(document, context)
 	if typeof(document) != TYPE_DICTIONARY or not _exact_keys(document, ROOT_KEYS):
 		return _reject(&"invalid_replay_schema")
 	if document["schema"] != SCHEMA or not _is_integer(document["version"]):
@@ -61,16 +78,58 @@ static func decode_document(document: Variant, context: Dictionary) -> Dictionar
 		previous_tick = tick
 		timeline.append(decoded["timeline_row"])
 	var contextual := _validate_contextual(
-		String(document["stage_id"]), squad_result["value"], timeline, context,
+		String(document["stage_id"]),
+		squad_result["value"],
+		timeline,
+		context,
 	)
 	if not contextual["accepted"]:
 		return contextual
 	return {
 		"accepted": true,
 		"error_code": &"",
+		"version": VERSION,
 		"stage_id": StringName(document["stage_id"]),
 		"seed": int(document["seed"]),
 		"squad": squad_result["value"],
+		"timeline": timeline,
+	}
+
+
+static func _decode_v2(document: Dictionary, context: Dictionary) -> Dictionary:
+	if not _exact_keys(document, ROOT_KEYS_V2):
+		return _reject(&"invalid_replay_schema")
+	var ticket_result := BattleTicket.normalize(document["ticket"])
+	if not ticket_result["accepted"]:
+		return ticket_result
+	if typeof(document["actions"]) != TYPE_ARRAY:
+		return _reject(&"invalid_actions")
+	var timeline: Array = []
+	var previous_tick := -1
+	for row: Variant in document["actions"]:
+		var decoded := _decode_action(row, VERSION_2)
+		if not decoded["accepted"]:
+			return decoded
+		var tick := int(decoded["tick"])
+		if tick < previous_tick:
+			return _reject(&"actions_out_of_order")
+		previous_tick = tick
+		timeline.append(decoded["timeline_row"])
+	var ticket: Dictionary = ticket_result["value"]
+	var contextual := _validate_contextual_v2(ticket, timeline, context)
+	if not contextual["accepted"]:
+		return contextual
+	var squad: Array[StringName] = []
+	for frozen: Dictionary in ticket["squad"]:
+		squad.append(StringName(frozen["battle_id"]))
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"version": VERSION_2,
+		"stage_id": StringName(ticket["stage_id"]),
+		"seed": int(ticket["seed"]),
+		"squad": squad,
+		"ticket": ticket,
 		"timeline": timeline,
 	}
 
@@ -118,6 +177,43 @@ static func encode_document(
 	}
 
 
+static func encode_document_v2(
+	ticket_value: Variant,
+	timeline: Array,
+	context: Dictionary,
+) -> Dictionary:
+	var ticket_result := BattleTicket.normalize(ticket_value)
+	if not ticket_result["accepted"]:
+		return ticket_result
+	var actions: Array = []
+	var previous_tick := -1
+	for timeline_row: Variant in timeline:
+		var encoded := _encode_action(timeline_row, VERSION_2)
+		if not encoded["accepted"]:
+			return encoded
+		var tick := int(encoded["value"]["tick"])
+		if tick < previous_tick:
+			return _reject(&"actions_out_of_order")
+		previous_tick = tick
+		actions.append(encoded["value"])
+	var root := {}
+	root["schema"] = SCHEMA
+	root["version"] = VERSION_2
+	root["ticket"] = ticket_result["value"]
+	root["actions"] = actions
+	var validated := decode_document(root, context)
+	if not validated["accepted"]:
+		return validated
+	var source := CanonicalJson.text(root)
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"value": root,
+		"text": source,
+		"sha256": CanonicalJson.sha256_text(source),
+	}
+
+
 static func _decode_squad(value: Variant) -> Dictionary:
 	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
 		return _reject(&"invalid_squad")
@@ -129,7 +225,7 @@ static func _decode_squad(value: Variant) -> Dictionary:
 	return _accept(out)
 
 
-static func _decode_action(row: Variant) -> Dictionary:
+static func _decode_action(row: Variant, version: int = VERSION) -> Dictionary:
 	if typeof(row) != TYPE_DICTIONARY or not _exact_keys(row, ["tick", "verb", "args"]):
 		return _reject(&"invalid_action_schema")
 	if not _in_u32(row["tick"]):
@@ -141,14 +237,17 @@ static func _decode_action(row: Variant) -> Dictionary:
 	var action: Array = [StringName(verb)]
 	match verb:
 		"deploy":
-			if not _exact_keys(args, ["operator_id", "cell", "facing"]):
+			var identity_key := "operator_id" if version == VERSION else "battle_id"
+			if not _exact_keys(args, [identity_key, "cell", "facing"]):
 				return _reject(&"invalid_action_args")
 			var cell := _decode_cell(args["cell"])
-			if not cell["accepted"] or not _nonempty_string(args["operator_id"]):
+			if not cell["accepted"] or not _nonempty_string(args[identity_key]):
 				return _reject(&"invalid_action_args")
 			if not _is_integer(args["facing"]) or int(args["facing"]) not in [0, 1, 2, 3]:
 				return _reject(&"invalid_action_args")
-			action.append_array([StringName(args["operator_id"]), cell["value"], int(args["facing"])])
+			action.append_array(
+				[StringName(args[identity_key]), cell["value"], int(args["facing"])]
+			)
 		"retreat", "trigger_skill":
 			if not _exact_keys(args, ["unit_id"]) or not _in_nonnegative_i32(args["unit_id"]):
 				return _reject(&"invalid_action_args")
@@ -161,10 +260,15 @@ static func _decode_action(row: Variant) -> Dictionary:
 				or not _in_nonnegative_i32(args["target_unit_id"])
 			):
 				return _reject(&"invalid_action_args")
-			action.append_array([
-				int(args["healer_unit_id"]),
-				int(args["target_unit_id"]),
-			])
+			(
+				action
+				. append_array(
+					[
+						int(args["healer_unit_id"]),
+						int(args["target_unit_id"]),
+					]
+				)
+			)
 		"place_trap":
 			if not _exact_keys(args, ["trap_id", "cell"]):
 				return _reject(&"invalid_action_args")
@@ -173,7 +277,10 @@ static func _decode_action(row: Variant) -> Dictionary:
 				return _reject(&"invalid_action_args")
 			action.append_array([StringName(args["trap_id"]), cell["value"]])
 		"cast":
-			if not _exact_keys(args, ["spell_id", "target"]) or not _nonempty_string(args["spell_id"]):
+			if (
+				not _exact_keys(args, ["spell_id", "target"])
+				or not _nonempty_string(args["spell_id"])
+			):
 				return _reject(&"invalid_action_args")
 			var target := _decode_target(args["target"])
 			if not target["accepted"]:
@@ -183,14 +290,23 @@ static func _decode_action(row: Variant) -> Dictionary:
 			if not args.is_empty():
 				return _reject(&"invalid_action_args")
 		"debug_grant_operator", "debug_remove_operator":
-			if not _exact_keys(args, ["operator_def_id"]) or not _nonempty_string(args["operator_def_id"]):
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
+			if (
+				not _exact_keys(args, ["operator_def_id"])
+				or not _nonempty_string(args["operator_def_id"])
+			):
 				return _reject(&"invalid_action_args")
 			action.append(StringName(args["operator_def_id"]))
 		"debug_set_dp", "debug_set_base_hp":
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
 			if not _exact_keys(args, ["value"]) or not _in_i32(args["value"]):
 				return _reject(&"invalid_action_args")
 			action.append(int(args["value"]))
 		"debug_reset_spell":
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
 			if not _exact_keys(args, ["spell_id"]) or not _nonempty_string(args["spell_id"]):
 				return _reject(&"invalid_action_args")
 			action.append(StringName(args["spell_id"]))
@@ -204,7 +320,7 @@ static func _decode_action(row: Variant) -> Dictionary:
 	}
 
 
-static func _encode_action(row: Variant) -> Dictionary:
+static func _encode_action(row: Variant, version: int = VERSION) -> Dictionary:
 	if typeof(row) != TYPE_ARRAY or (row as Array).size() < 2:
 		return _reject(&"invalid_timeline_row")
 	if not _in_u32(row[0]):
@@ -219,7 +335,7 @@ static func _encode_action(row: Variant) -> Dictionary:
 				return _reject(&"invalid_timeline_row")
 			if int(row[4]) not in [0, 1, 2, 3]:
 				return _reject(&"invalid_timeline_row")
-			args["operator_id"] = String(row[2])
+			args["operator_id" if version == VERSION else "battle_id"] = String(row[2])
 			args["cell"] = [row[3].x, row[3].y]
 			args["facing"] = int(row[4])
 		"retreat", "trigger_skill":
@@ -262,14 +378,20 @@ static func _encode_action(row: Variant) -> Dictionary:
 			if row.size() != 2:
 				return _reject(&"invalid_timeline_row")
 		"debug_grant_operator", "debug_remove_operator":
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
 			if row.size() != 3:
 				return _reject(&"invalid_timeline_row")
 			args["operator_def_id"] = String(row[2])
 		"debug_set_dp", "debug_set_base_hp":
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
 			if row.size() != 3 or not _in_i32(row[2]):
 				return _reject(&"invalid_timeline_row")
 			args["value"] = int(row[2])
 		"debug_reset_spell":
+			if version != VERSION:
+				return _reject(&"unknown_action_verb")
 			if row.size() != 3:
 				return _reject(&"invalid_timeline_row")
 			args["spell_id"] = String(row[2])
@@ -344,6 +466,36 @@ static func _validate_contextual(
 	return _accept(true)
 
 
+static func _validate_contextual_v2(
+	ticket: Dictionary,
+	timeline: Array,
+	context: Dictionary,
+) -> Dictionary:
+	var stage_id := StringName(ticket["stage_id"])
+	if not context["stages"].has(stage_id):
+		return _reject(&"unknown_replay_stage")
+	var stage: StageDef = context["stages"][stage_id]
+	var prepared := BattleTicketRuntimeScript.prepare(ticket, stage)
+	if not prepared["accepted"]:
+		return prepared
+	var rows := {}
+	for frozen: Dictionary in prepared["rows"]:
+		rows[StringName(frozen["battle_id"])] = frozen
+	var empty_squad: Array[StringName] = []
+	for row: Array in timeline:
+		if row[1] == &"deploy":
+			if (
+				not rows.has(row[2])
+				or not BattleTicketRuntimeScript.cell_in_domain(rows[row[2]], stage, row[3])
+			):
+				return _reject(&"invalid_deploy_context")
+			continue
+		var action_check := _validate_action_context(row, empty_squad, stage, context)
+		if not action_check["accepted"]:
+			return action_check
+	return _accept(true)
+
+
 static func _validate_action_context(
 	row: Array,
 	squad: Array[StringName],
@@ -409,11 +561,7 @@ static func _in_u32(value: Variant) -> bool:
 
 
 static func _in_i32(value: Variant) -> bool:
-	return (
-		_is_integer(value)
-		and int(value) >= -2_147_483_648
-		and int(value) <= 2_147_483_647
-	)
+	return _is_integer(value) and int(value) >= -2_147_483_648 and int(value) <= 2_147_483_647
 
 
 static func _in_nonnegative_i32(value: Variant) -> bool:

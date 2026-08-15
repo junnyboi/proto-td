@@ -108,6 +108,21 @@ static func of(m: BattleModel) -> int:
 			_append_int(bytes, 4)
 			_append_int(bytes, spell_id.hash())
 			_append_int(bytes, damage_kind)
+	# Recruit Phase 3 sparse domain: legacy/template battles append nothing.
+	# A normalized ticket hash binds every frozen combat, targeting, skill,
+	# visual, class, hero, and battle identity field. Mutable per-identity
+	# outcome counters are then appended in canonical ticket order.
+	if m._is_ticketed():
+		_append_int(bytes, 5)
+		_append_ascii(bytes, String(m.ticket["ticket_hash"]))
+		_append_ascii(bytes, String(m.terminal_reason))
+		for record: Dictionary in m.battle_records:
+			_append_ascii(bytes, String(record["battle_id"]))
+			_append_ascii(bytes, String(record["hero_id"]))
+			_append_int(bytes, int(record["deployments"]))
+			_append_int(bytes, int(record["retreats"]))
+			_append_int(bytes, 1 if bool(record["fell"]) else 0)
+			_append_int(bytes, -1 if record["first_fall_tick"] == null else int(record["first_fall_tick"]))
 	return _fnv1a64(bytes)
 
 
@@ -141,11 +156,21 @@ static func _append_unit(bytes: PackedByteArray, u: UnitState) -> void:
 		_append_int(bytes, bid)
 	# TD-021 append-only healer presentation/replay record.
 	_append_int(bytes, u.skill_target_unit_id)
+	if not u.battle_id.is_empty():
+		_append_ascii(bytes, String(u.battle_id))
+		_append_ascii(bytes, String(u.hero_id))
+		_append_ascii(bytes, String(u.class_id))
 
 
 static func _append_int(bytes: PackedByteArray, v: int) -> void:
 	for i: int in 8:
 		bytes.append((v >> (i * 8)) & 0xFF)
+
+
+static func _append_ascii(bytes: PackedByteArray, value: String) -> void:
+	_append_int(bytes, value.length())
+	for character: String in value:
+		bytes.append(character.unicode_at(0))
 
 
 static func _fnv1a64(bytes: PackedByteArray) -> int:
