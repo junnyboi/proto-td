@@ -7,6 +7,7 @@ extends RefCounted
 const SCHEMA_VERSION := 1
 const U32_MAX := 4_294_967_295
 const U63_MAX := 9_223_372_036_854_775_807
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
 const KEYS := [
@@ -61,7 +62,7 @@ static func normalize(value: Variant) -> Dictionary:
 		"strategic_hash": String(value["strategic_hash"]),
 		"squad": squad["value"],
 	}
-	var expected_hash := CanonicalJson.sha256_hex(ordered)
+	var expected_hash := CanonicalJsonScript.sha256_hex(ordered)
 	if String(value["ticket_hash"]) != expected_hash:
 		return _reject(&"ticket_hash_mismatch")
 	ordered["ticket_hash"] = expected_hash
@@ -70,7 +71,7 @@ static func normalize(value: Variant) -> Dictionary:
 
 static func seal(value_without_hash: Dictionary) -> Dictionary:
 	var candidate: Dictionary = value_without_hash.duplicate(true)
-	candidate["ticket_hash"] = CanonicalJson.sha256_hex(candidate)
+	candidate["ticket_hash"] = CanonicalJsonScript.sha256_hex(candidate)
 	return normalize(candidate)
 
 

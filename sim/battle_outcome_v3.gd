@@ -7,6 +7,8 @@ extends RefCounted
 const SCHEMA_VERSION := 1
 const U32_MAX := 4_294_967_295
 const U63_MAX := 9_223_372_036_854_775_807
+const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const RESULT_VALUES := ["clear", "defeat"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
 const KEYS := [
@@ -46,7 +48,7 @@ static func normalize(value: Variant, ticket: Variant = null) -> Dictionary:
 		return _reject(&"invalid_outcome_terminal")
 	var normalized_ticket: Variant = null
 	if ticket != null:
-		var ticket_result := BattleTicket.normalize(ticket)
+		var ticket_result := BattleTicketScript.normalize(ticket)
 		if not ticket_result["accepted"]:
 			return _reject(&"invalid_outcome_ticket")
 		normalized_ticket = ticket_result["value"]
@@ -70,7 +72,7 @@ static func normalize(value: Variant, ticket: Variant = null) -> Dictionary:
 		"kills": int(value["kills"]),
 		"rows": rows["value"],
 	}
-	var expected_hash := CanonicalJson.sha256_hex(ordered)
+	var expected_hash := CanonicalJsonScript.sha256_hex(ordered)
 	if value["outcome_hash"] != expected_hash:
 		return _reject(&"outcome_hash_mismatch")
 	ordered["outcome_hash"] = expected_hash
@@ -79,7 +81,7 @@ static func normalize(value: Variant, ticket: Variant = null) -> Dictionary:
 
 static func seal(value_without_hash: Dictionary, ticket: Dictionary) -> Dictionary:
 	var candidate: Dictionary = value_without_hash.duplicate(true)
-	candidate["outcome_hash"] = CanonicalJson.sha256_hex(candidate)
+	candidate["outcome_hash"] = CanonicalJsonScript.sha256_hex(candidate)
 	return normalize(candidate, ticket)
 
 
