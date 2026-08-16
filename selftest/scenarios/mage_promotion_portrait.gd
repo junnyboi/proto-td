@@ -25,6 +25,29 @@ func run(h: SelfTestHarness) -> void:
 		"portrait shell selects portrait mode",
 		shell != null and shell.layout_mode() == &"portrait",
 	)
+	var row := support.find(training, "Recruit_%s" % prepared["target_id"]) as Control
+	var roster_text_fit := row != null
+	var roster_details: Array[String] = []
+	for node_name: String in ["Callsign", "CurrentClass", "XpProgress", "EligibilityReason"]:
+		var label := row.find_child(node_name, true, false) as Label if row != null else null
+		var fits := (
+			label != null and not label.text.strip_edges().is_empty()
+			and label.is_visible_in_tree() and label.size.x > 1.0 and label.size.y > 1.0
+			and row.get_global_rect().encloses(label.get_global_rect())
+		)
+		roster_text_fit = roster_text_fit and fits
+		if not fits:
+			roster_details.append("%s=%s text=%s" % [
+				node_name, label.get_global_rect() if label != null else Rect2(),
+				label.text if label != null else "missing",
+			])
+	h.check(
+		"portrait roster identity facts fit inside each row",
+		roster_text_fit,
+		"; ".join(roster_details),
+	)
+	await h.frames(6)
+	await h.shot("training_recruit_roster_portrait")
 	var view_paths := support.find(training, "ViewPaths") as Button
 	await support.ensure_visible(h, view_paths)
 	await h.click_view(view_paths.get_global_rect().get_center())

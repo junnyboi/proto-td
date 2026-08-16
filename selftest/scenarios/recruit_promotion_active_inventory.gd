@@ -2,13 +2,19 @@ extends RefCounted
 
 const INVENTORY_PATH := "res://test/test_ui_components.gd.inventory.json"
 const SupportType := preload("res://selftest/recruit_promotion_support.gd")
-const VIEWPORT := Vector2i(1280, 720)
+const VariantSupportType := preload("res://selftest/recruit_promotion_variant_support.gd")
+const VIEWPORTS := [
+	{"size": Vector2i(1280, 720), "tag": "1280x720"},
+	{"size": Vector2i(960, 720), "tag": "960x720"},
+	{"size": Vector2i(720, 1280), "tag": "720x1280"},
+]
+const VARIANTS: Array[StringName] = [&"standard", &"scaled", &"expanded"]
 
 
 func run(h: SelfTestHarness) -> void:
 	h.expect_done()
-	h.max_frames = 600
-	h.root.size = VIEWPORT
+	h.max_frames = 1200
+	h.root.size = VIEWPORTS[0]["size"]
 	await h.frames(3)
 	var game := h.autoload("Game")
 	var support := SupportType.new()
@@ -19,44 +25,74 @@ func run(h: SelfTestHarness) -> void:
 	h.check("Training-active inventory contract loads", not inventory.is_empty())
 	if inventory.is_empty():
 		return
-	game.call("open_staging")
-	await h.frames(5)
-	_check_state(h, game.get("content") as Control, inventory, "staging_training_active")
-	game.call("open_results")
-	await h.frames(5)
-	_check_state(h, game.get("content") as Control, inventory, "results_training_active")
+	var variant_support := VariantSupportType.new()
+	var cells := 0
+	for variant: StringName in VARIANTS:
+		for config: Dictionary in VIEWPORTS:
+			await _capture(
+				h, game, variant_support, inventory, variant, config, &"staging",
+			)
+			await _capture(
+				h, game, variant_support, inventory, variant, config, &"results",
+			)
+			cells += 2
+	h.check("Training-active exact inventory matrix covers 18 cells", cells == 18)
 	print("RECRUIT_PROMOTION_ACTIVE_INVENTORY_COMPLETED")
 	h.done()
 
 
+func _capture(
+		h: SelfTestHarness,
+		game: Node,
+		variant_support: RefCounted,
+		inventory: Dictionary,
+		variant: StringName,
+		config: Dictionary,
+		screen: StringName,
+	) -> void:
+	h.root.size = Vector2i(config["size"])
+	await h.frames(3)
+	game.call("open_staging" if screen == &"staging" else "open_results")
+	await h.frames(5)
+	var content := game.get("content") as Control
+	if variant != &"standard":
+		variant_support.call("_apply_variant", content, variant)
+		await h.frames(5)
+	var state_name := "%s_training_active" % screen
+	var label := "%s %s %s" % [state_name, variant, config["tag"]]
+	_check_state(h, content, inventory, state_name, label)
+
+
 func _check_state(
-		h: SelfTestHarness, content: Control, inventory: Dictionary, state_name: String,
+		h: SelfTestHarness,
+		content: Control,
+		inventory: Dictionary,
+		state_name: String,
+		label: String,
 	) -> void:
 	var state := (inventory["states"] as Dictionary)[state_name] as Dictionary
 	var targets := _visible_targets(content)
 	var texts := _visible_text(content)
 	h.check(
-		"%s target inventory exact" % state_name,
+		"%s target inventory exact" % label,
 		_check_rows(targets, state["targets"] as Array, true)
 		and targets.size() == int(state["target_count"]),
 		"actual=%s expected=%s" % [targets.keys(), _selectors(state["targets"] as Array)],
 	)
 	h.check(
-		"%s text inventory exact" % state_name,
+		"%s text inventory exact" % label,
 		_check_rows(texts, state["text"] as Array, false)
 		and texts.size() == int(state["text_count"]),
 		"actual=%s expected=%s" % [texts.keys(), _selectors(state["text"] as Array)],
 	)
 	h.check(
-		"%s focus order exact" % state_name,
+		"%s focus order exact" % label,
 		_focus_order_exact(content, state["focus_order"] as Array),
 		str(state["focus_order"]),
 	)
 
 
-func _check_rows(
-		actual: Dictionary, expected: Array, check_enabled: bool,
-	) -> bool:
+func _check_rows(actual: Dictionary, expected: Array, check_enabled: bool) -> bool:
 	if actual.size() != expected.size():
 		return false
 	for row: Dictionary in expected:

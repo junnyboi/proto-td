@@ -42,7 +42,7 @@ func _exercise_failure(
 	if made != OK:
 		return
 	var confirm := support.find(training, "ConfirmTraining") as Button
-	await support.ensure_visible(h, confirm)
+	await _assert_focus_visible(h, confirm, "standard Confirm action")
 	await h.click_view(confirm.get_global_rect().get_center())
 	await h.frames(5)
 	var error := support.find(training, "TrainingReviewError") as Label
@@ -58,7 +58,8 @@ func _exercise_failure(
 	h.check(
 		"save failure focus lands on the error and blocks escape",
 		training.get_viewport().gui_get_focus_owner() == error
-		and back != null and back.disabled and retry != null and not retry.disabled,
+		and back != null and back.disabled and back.focus_mode == Control.FOCUS_NONE
+		and retry != null and not retry.disabled,
 	)
 	h.check(
 		"retry label fits its primary action",
@@ -77,7 +78,7 @@ func _exercise_failure(
 	h.check("production save fault is removed", removed == OK, error_string(removed))
 	if removed != OK:
 		return
-	await support.ensure_visible(h, retry)
+	await _assert_focus_visible(h, retry, "standard Retry action")
 	await h.click_view(retry.get_global_rect().get_center())
 	var staging := await support.await_screen(h, game, "StagingRoot")
 	h.check("retry accepts and returns to Staging", staging != null)
@@ -111,3 +112,21 @@ func _exercise_failure(
 	await h.shot("recruit_promotion_retry_success")
 	print("RECRUIT_PROMOTION_PERSISTENCE_FAILURE_COMPLETED")
 	h.done()
+
+
+func _assert_focus_visible(
+		h: SelfTestHarness, control: Control, label: String,
+	) -> void:
+	control.get_viewport().gui_release_focus()
+	await h.frames(1)
+	control.grab_focus()
+	await h.frames(4)
+	var visible := control.get_viewport().gui_get_focus_owner() == control
+	var parent := control.get_parent()
+	while parent != null:
+		if parent is ScrollContainer:
+			visible = visible and (parent as ScrollContainer).get_global_rect().has_point(
+				control.get_global_rect().get_center(),
+			)
+		parent = parent.get_parent()
+	h.check("%s focus auto-scrolls through ancestors" % label, visible)

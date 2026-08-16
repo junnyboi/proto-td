@@ -21,7 +21,10 @@ func run(h: SelfTestHarness) -> void:
 	if training == null:
 		return
 	var row := support.find(training, "Recruit_%s" % prepared["target_id"]) as Button
-	var callsign := row.find_child("RecruitCallsign", true, false) as Control
+	var callsign := row.find_child("Callsign", true, false) as Control
+	h.check("standard roster focus target exists", row != null and callsign != null)
+	if row == null or callsign == null:
+		return
 	await _assert_focus_visible(h, row, callsign, "standard roster row")
 	row.pressed.emit()
 	var view_paths := support.find(training, "ViewPaths") as Button

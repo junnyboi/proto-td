@@ -17,7 +17,7 @@ var _progress: ProgressBar
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size = Vector2(500.0, 126.0)
+	custom_minimum_size = Vector2(500.0, 250.0)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	set_presentation_text("Training recruit", " ")
 	_build_content()
@@ -52,7 +52,7 @@ func set_selected(value: bool) -> void:
 
 
 func set_compact(value: bool) -> void:
-	custom_minimum_size.y = 154.0 if value else 126.0
+	custom_minimum_size.y = 260.0 if value else 250.0
 	_portrait.custom_minimum_size = Vector2(82.0, 104.0) if value else Vector2(96.0, 104.0)
 
 
@@ -90,9 +90,12 @@ func _build_content() -> void:
 	status_line.name = "StatusLine"
 	status_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_status = _label("LifeStatus", &"dense_detail")
+	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.size_flags_stretch_ratio = 0.7
 	_xp = _label("XpProgress", &"dense_detail")
 	_xp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_xp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_xp.size_flags_stretch_ratio = 1.3
 	status_line.add_child(_status)
 	status_line.add_child(_xp)
 	_progress = ProgressBar.new()
@@ -111,4 +114,6 @@ func _label(node_name: String, role: StringName) -> TrainingLabelType:
 	label.apply_role(role)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.custom_minimum_size.y = 52.0
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return label

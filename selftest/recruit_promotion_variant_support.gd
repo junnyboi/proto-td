@@ -19,17 +19,15 @@ func run_flow(h: SelfTestHarness, variant: StringName) -> void:
 	if prepared.is_empty():
 		return
 	var before := support.authority_facts(game)
-	h.root.size = VIEWPORTS[0]["size"]
-	await h.frames(4)
-	var training := await _open_paths(h, game, support, prepared)
-	h.check("Training paths open for geometry stress", training != null)
-	if training == null:
-		return
-	_apply_variant(training, variant)
-	training.call("_apply_footer_layouts")
 	for config: Dictionary in VIEWPORTS:
 		h.root.size = config["size"]
 		await h.frames(4)
+		var training := await _open_paths(h, game, support, prepared)
+		h.check("Training paths open for geometry stress", training != null)
+		if training == null:
+			return
+		_apply_variant(training, variant)
+		training.call("_apply_footer_layouts")
 		for card: Control in support.find(training, "PathCards").get_children():
 			if is_instance_of(card, PromotionPathCardType):
 				(card as PromotionPathCardType).fit_to_content()
@@ -37,6 +35,20 @@ func run_flow(h: SelfTestHarness, variant: StringName) -> void:
 		await h.frames(6)
 		await _check_path_geometry(h, support, training, config, variant)
 		await h.shot("training_%s_%s" % [variant, config["tag"]])
+		var add := support.find(training, "ChoosePath") as Button
+		add.pressed.emit()
+		await h.frames(3)
+		var review := support.find(training, "ReviewPlan") as Button
+		await _focus_through_scrolls(
+			h, review, review, "%s %s Review action" % [variant, config["tag"]],
+		)
+		review.pressed.emit()
+		await h.frames(3)
+		_apply_variant(training, variant)
+		training.call("_apply_footer_layouts")
+		await h.frames(6)
+		await _check_review_geometry(h, support, training, config, variant)
+		await h.shot("training_review_%s_%s" % [variant, config["tag"]])
 	h.check(
 		"%s geometry stress changes no campaign authority" % variant,
 		support.authority_facts(game) == before,
@@ -94,6 +106,8 @@ func _open_paths(
 	support: RecruitPromotionScenarioSupport,
 	prepared: Dictionary,
 ) -> Control:
+	game.call("open_staging")
+	await h.frames(3)
 	game.call("training_call", &"open", &"staging")
 	await h.frames(3)
 	var training := await support.await_screen(h, game, "TrainingRoot")
@@ -251,6 +265,32 @@ func _check_error_geometry(
 	h.check(
 		"%s %s error action labels fit" % [variant, config["tag"]],
 		_button_label_fits(back) and _button_label_fits(confirm),
+	)
+
+
+func _check_review_geometry(
+		h: SelfTestHarness,
+		support: RecruitPromotionScenarioSupport,
+		training: Control,
+		config: Dictionary,
+		variant: StringName,
+	) -> void:
+	var error := support.find(training, "TrainingReviewError") as Label
+	var back := support.find(training, "ReviewBack") as Button
+	var confirm := support.find(training, "ConfirmTraining") as Button
+	h.check(
+		"%s %s healthy Review has no error" % [variant, config["tag"]],
+		error != null and error.text.is_empty(),
+	)
+	h.check(
+		"%s %s healthy Review actions enabled" % [variant, config["tag"]],
+		back != null and not back.disabled and confirm != null and not confirm.disabled,
+	)
+	await _focus_through_scrolls(
+		h, back, back, "%s %s Review Back" % [variant, config["tag"]],
+	)
+	await _focus_through_scrolls(
+		h, confirm, confirm, "%s %s Review Confirm" % [variant, config["tag"]],
 	)
 
 

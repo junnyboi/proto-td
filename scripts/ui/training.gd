@@ -666,6 +666,9 @@ func _apply_roster_layout() -> void:
 	if body == null:
 		return
 	body.vertical = _layout_mode == &"portrait"
+	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
+	if scroll != null:
+		scroll.custom_minimum_size.y = 520.0 if _layout_mode == &"portrait" else 0.0
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
 

@@ -228,6 +228,20 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 			out+=$'\n[verify] strategic_verbs sentinel missing or duplicated'
 		fi
 	fi
+	if [[ "$rung" =~ ^R4[ab]- && $code -eq 0 ]]; then
+		local scenario_clean result_count expected_scenario
+		scenario_clean=$(awk '{ gsub(/\033\[[0-?]*[ -\/]*[@-~]/, ""); print }' <<< "$out")
+		result_count=$(grep -Ec '^\[RESULT\] pass \(' <<< "$scenario_clean")
+		expected_scenario="${rung#R4a-}"
+		expected_scenario="${expected_scenario#R4b-}"
+		if [[ "$result_count" -ne 1 || ! -s "$artifact" ]] \
+				|| ! jq -e --arg scenario "$expected_scenario" \
+				'.result == "pass" and .scenario == $scenario and (.checks | length) > 0' \
+				"$artifact" >/dev/null 2>&1; then
+			code=1
+			out+=$'\n[verify] scenario result sentinel/report missing, duplicated, or not passing'
+		fi
+	fi
   if [[ $code -ne 0 ]]; then
     echo "==== $rung FAILED (exit $code) ===="
     echo "$out"
@@ -282,6 +296,7 @@ fi
 # R4: scenarios. Headless lane always; windowed lane with --full.
 scenario_cmd() { # lane scenario
 	local lane="$1" s="$2"
+	rm -f "artifacts/$s/report.json"
 	if [[ "$lane" == "headless" ]]; then
 		run_rung "R4a-$s" "artifacts/$s/report.json" 120 \
 		  "$GODOT" --headless --fixed-fps 60 --path . -s selftest/harness.gd -- \
