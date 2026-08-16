@@ -25,6 +25,7 @@ func run(h: SelfTestHarness) -> void:
 	h.check("Training-active inventory contract loads", not inventory.is_empty())
 	if inventory.is_empty():
 		return
+	_check_duplicate_rejection(h)
 	var variant_support := VariantSupportType.new()
 	var cells := 0
 	for variant: StringName in VARIANTS:
@@ -39,6 +40,25 @@ func run(h: SelfTestHarness) -> void:
 	h.check("Training-active exact inventory matrix covers 18 cells", cells == 18)
 	print("RECRUIT_PROMOTION_ACTIVE_INVENTORY_COMPLETED")
 	h.done()
+
+
+func _check_duplicate_rejection(h: SelfTestHarness) -> void:
+	var first := Button.new()
+	var second := Button.new()
+	first.name = "DuplicateSelector"
+	second.name = "DuplicateSelector"
+	var controls: Array[Control] = [first, second]
+	var expected := [{
+		"selector": "DuplicateSelector", "type": "Button",
+		"variation": [""], "owner": "", "enabled": true,
+	}]
+	h.check(
+		"duplicate inventory selectors fail closed",
+		_control_names(controls) == ["DuplicateSelector", "DuplicateSelector"]
+		and not _check_rows(controls, expected, true),
+	)
+	first.free()
+	second.free()
 
 
 func _capture(
@@ -77,13 +97,13 @@ func _check_state(
 		"%s target inventory exact" % label,
 		_check_rows(targets, state["targets"] as Array, true)
 		and targets.size() == int(state["target_count"]),
-		"actual=%s expected=%s" % [targets.keys(), _selectors(state["targets"] as Array)],
+		"actual=%s expected=%s" % [_control_names(targets), _selectors(state["targets"] as Array)],
 	)
 	h.check(
 		"%s text inventory exact" % label,
 		_check_rows(texts, state["text"] as Array, false)
 		and texts.size() == int(state["text_count"]),
-		"actual=%s expected=%s" % [texts.keys(), _selectors(state["text"] as Array)],
+		"actual=%s expected=%s" % [_control_names(texts), _selectors(state["text"] as Array)],
 	)
 	h.check(
 		"%s focus order exact" % label,
@@ -92,22 +112,30 @@ func _check_state(
 	)
 
 
-func _check_rows(actual: Dictionary, expected: Array, check_enabled: bool) -> bool:
-	if actual.size() != expected.size():
-		return false
+func _check_rows(actual: Array[Control], expected: Array, check_enabled: bool) -> bool:
+	var valid := actual.size() == expected.size()
 	for row: Dictionary in expected:
+		if not valid:
+			break
 		var selector := String(row["selector"])
-		var node := actual.get(selector) as Control
-		if node == null or not node.is_class(StringName(row["type"])):
-			return false
-		if String(node.theme_type_variation) not in row["variation"]:
-			return false
-		if not _has_ancestor(node, StringName(row["owner"])):
-			return false
+		var matches: Array[Control] = []
+		for candidate: Control in actual:
+			if String(candidate.name) == selector:
+				matches.append(candidate)
+		if matches.size() != 1:
+			valid = false
+			continue
+		var node := matches[0]
+		valid = (
+			node.is_class(StringName(row["type"]))
+			and String(node.theme_type_variation) in row["variation"]
+			and _has_ancestor(node, StringName(row["owner"]))
+		)
 		if check_enabled and node is BaseButton:
-			if (not (node as BaseButton).disabled) != bool(row["enabled"]):
-				return false
-	return true
+			valid = valid and (
+				(not (node as BaseButton).disabled) == bool(row["enabled"])
+			)
+	return valid
 
 
 func _focus_order_exact(content: Control, expected: Array) -> bool:
@@ -125,25 +153,32 @@ func _focus_order_exact(content: Control, expected: Array) -> bool:
 	return true
 
 
-func _visible_targets(content: Control) -> Dictionary:
-	var result := {}
+func _visible_targets(content: Control) -> Array[Control]:
+	var result: Array[Control] = []
 	for node: Node in _all_nodes(content):
 		if node is Control and (node is BaseButton or node is ItemList):
 			var control := node as Control
 			if control.is_visible_in_tree():
-				result[String(control.name)] = control
+				result.append(control)
 	return result
 
 
-func _visible_text(content: Control) -> Dictionary:
-	var result := {}
+func _visible_text(content: Control) -> Array[Control]:
+	var result: Array[Control] = []
 	for node: Node in _all_nodes(content):
 		if not node is Control or not (node as Control).is_visible_in_tree():
 			continue
 		if node is Label and node.name != &"PresentationLabel":
-			result[String(node.name)] = node
+			result.append(node)
 		elif node is BaseButton and not (node as BaseButton).text.strip_edges().is_empty():
-			result[String(node.name)] = node
+			result.append(node)
+	return result
+
+
+func _control_names(controls: Array[Control]) -> Array[String]:
+	var result: Array[String] = []
+	for control: Control in controls:
+		result.append(String(control.name))
 	return result
 
 

@@ -5,6 +5,9 @@ const SupportType := preload("res://selftest/recruit_promotion_support.gd")
 const PromotionPathCardType := preload(
 	"res://scripts/ui/components/promotion_path_card.gd"
 )
+const TrainingRosterRowType := preload(
+	"res://scripts/ui/components/training_roster_row.gd"
+)
 const VIEWPORTS := [
 	{"size": Vector2i(1280, 720), "mode": &"regular_landscape", "tag": "1280x720"},
 	{"size": Vector2i(960, 720), "mode": &"compact_landscape", "tag": "960x720"},
@@ -22,7 +25,7 @@ func run_flow(h: SelfTestHarness, variant: StringName) -> void:
 	for config: Dictionary in VIEWPORTS:
 		h.root.size = config["size"]
 		await h.frames(4)
-		var training := await _open_paths(h, game, support, prepared)
+		var training := await _open_paths(h, game, support, prepared, variant)
 		h.check("Training paths open for geometry stress", training != null)
 		if training == null:
 			return
@@ -105,6 +108,7 @@ func _open_paths(
 	game: Node,
 	support: RecruitPromotionScenarioSupport,
 	prepared: Dictionary,
+	variant: StringName,
 ) -> Control:
 	game.call("open_staging")
 	await h.frames(3)
@@ -113,17 +117,52 @@ func _open_paths(
 	var training := await support.await_screen(h, game, "TrainingRoot")
 	if training == null:
 		return null
+	_apply_variant(training, variant)
+	training.call("_apply_footer_layouts")
+	await h.frames(6)
 	var row := support.find(
 		training, "Recruit_%s" % prepared["target_id"],
 	) as Button
+	_check_roster_text_fit(h, row, variant)
 	var callsign := row.find_child("Callsign", true, false) as Control
 	await _focus_through_scrolls(h, row, callsign, "roster row")
+	await h.shot("training_roster_%s_%sx%s" % [
+		variant, h.root.size.x, h.root.size.y,
+	])
 	row.pressed.emit()
+	await h.frames(3)
+	_apply_variant(training, variant)
+	training.call("_apply_footer_layouts")
+	await h.frames(6)
 	var view_paths := support.find(training, "ViewPaths") as Button
 	await _focus_through_scrolls(h, view_paths, view_paths, "View Paths action")
 	view_paths.pressed.emit()
 	await h.frames(4)
 	return training
+
+
+func _check_roster_text_fit(
+		h: SelfTestHarness, row: Control, variant: StringName,
+	) -> void:
+	var valid := row != null
+	var details: Array[String] = []
+	for node_name: String in ["Callsign", "CurrentClass", "XpProgress", "EligibilityReason"]:
+		var label := row.find_child(node_name, true, false) as Label if row != null else null
+		var line_height := 0.0
+		if label != null:
+			line_height = ceilf(label.get_theme_font(&"font").get_height(
+				label.get_theme_font_size(&"font_size"),
+			))
+		var fits := (
+			label != null and label.size.y >= line_height
+			and row.get_global_rect().encloses(label.get_global_rect())
+		)
+		valid = valid and fits
+		if not fits:
+			details.append("%s=%s line=%.1f" % [
+				node_name, label.get_global_rect() if label != null else Rect2(), line_height,
+			])
+	h.check("%s roster text fits measured font height" % variant, valid, "; ".join(details))
 
 
 func _apply_variant(root: Control, variant: StringName) -> void:
@@ -139,6 +178,8 @@ func _apply_variant(root: Control, variant: StringName) -> void:
 	for node: Node in nodes:
 		if is_instance_of(node, PromotionPathCardType):
 			(node as PromotionPathCardType).fit_to_content()
+		elif is_instance_of(node, TrainingRosterRowType):
+			(node as TrainingRosterRowType).fit_to_content()
 	for index: int in range(nodes.size() - 1, -1, -1):
 		if nodes[index] is Control:
 			(nodes[index] as Control).update_minimum_size()

@@ -30,16 +30,22 @@ func run(h: SelfTestHarness) -> void:
 	var roster_details: Array[String] = []
 	for node_name: String in ["Callsign", "CurrentClass", "XpProgress", "EligibilityReason"]:
 		var label := row.find_child(node_name, true, false) as Label if row != null else null
+		var line_height := 0.0
+		if label != null:
+			line_height = ceilf(label.get_theme_font(&"font").get_height(
+				label.get_theme_font_size(&"font_size"),
+			))
 		var fits := (
 			label != null and not label.text.strip_edges().is_empty()
-			and label.is_visible_in_tree() and label.size.x > 1.0 and label.size.y > 1.0
+			and label.is_visible_in_tree() and label.size.x > 1.0
+			and label.size.y >= line_height
 			and row.get_global_rect().encloses(label.get_global_rect())
 		)
 		roster_text_fit = roster_text_fit and fits
 		if not fits:
-			roster_details.append("%s=%s text=%s" % [
+			roster_details.append("%s=%s line=%.1f text=%s" % [
 				node_name, label.get_global_rect() if label != null else Rect2(),
-				label.text if label != null else "missing",
+				line_height, label.text if label != null else "missing",
 			])
 	h.check(
 		"portrait roster identity facts fit inside each row",

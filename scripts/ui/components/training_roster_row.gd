@@ -17,7 +17,7 @@ var _progress: ProgressBar
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size = Vector2(500.0, 250.0)
+	custom_minimum_size.x = 500.0
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	set_presentation_text("Training recruit", " ")
 	_build_content()
@@ -52,8 +52,21 @@ func set_selected(value: bool) -> void:
 
 
 func set_compact(value: bool) -> void:
-	custom_minimum_size.y = 260.0 if value else 250.0
 	_portrait.custom_minimum_size = Vector2(82.0, 104.0) if value else Vector2(96.0, 104.0)
+	fit_to_content()
+
+
+func fit_to_content() -> void:
+	var callsign_height := _fit_label(_callsign)
+	var class_height := _fit_label(_class_name)
+	var status_height := maxf(_fit_label(_status), _fit_label(_xp))
+	var reason_height := _fit_label(_reason)
+	var details_height := (
+		callsign_height + class_height + status_height
+		+ _progress.custom_minimum_size.y + reason_height
+	)
+	custom_minimum_size.y = ceilf(maxf(details_height, _portrait.custom_minimum_size.y) + 24.0)
+	update_minimum_size()
 
 
 func _build_content() -> void:
@@ -114,6 +127,12 @@ func _label(node_name: String, role: StringName) -> TrainingLabelType:
 	label.apply_role(role)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	label.custom_minimum_size.y = 52.0
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return label
+
+
+func _fit_label(label: Label) -> float:
+	var font_size := label.get_theme_font_size(&"font_size")
+	var line_height := ceilf(label.get_theme_font(&"font").get_height(font_size))
+	label.custom_minimum_size.y = line_height
+	return line_height

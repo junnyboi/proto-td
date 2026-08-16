@@ -943,7 +943,7 @@ func _ensure_focus_visible(
 ) -> void:
 	if not is_instance_valid(scroll) or not is_instance_valid(control):
 		return
-	scroll.call_deferred("ensure_control_visible", control)
+	scroll.ensure_control_visible(control)
 	if scroll != outer_scroll and is_instance_valid(outer_scroll):
 		outer_scroll.call_deferred("ensure_control_visible", control)
 
