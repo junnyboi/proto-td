@@ -11,7 +11,6 @@ GODOT="${GODOT:-$HOME/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WEB_TEMPLATE_SOURCE="$HOME/.local/share/godot/export_templates/4.7.1.stable/web_nothreads_release.zip"
 WEB_TEMPLATE_SHA256="b7b7d7da29fc6cc2f4934fdd26cc571a40e7af57f716ea3eb7e18da720dae28a"
-VERIFY_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-verify.XXXXXX")"
 cd "$ROOT"
 mkdir -p artifacts
 
@@ -37,6 +36,7 @@ fi
 # happened); it exists only while harness windows run, so human playtests
 # keep normal focus. The trap removes it on every exit path.
 QUIET=0
+VERIFY_USER_ROOT=""
 quiet_windows() {
   if [[ $QUIET -eq 0 ]]; then
     printf '[display]\nwindow/size/no_focus=true\n' > override.cfg
@@ -46,11 +46,14 @@ quiet_windows() {
 cleanup_quiet() { [[ $QUIET -eq 1 ]] && rm -f override.cfg; }
 cleanup_verify() {
 	cleanup_quiet
-	chmod -R u+w "$VERIFY_USER_ROOT" 2>/dev/null || true
-	rm -rf "$VERIFY_USER_ROOT"
+	if [[ -n "$VERIFY_USER_ROOT" ]]; then
+		chmod -R u+w "$VERIFY_USER_ROOT" 2>/dev/null || true
+		rm -rf "$VERIFY_USER_ROOT"
+	fi
 	git -C "$ROOT" worktree prune >/dev/null 2>&1 || true
 }
 trap cleanup_verify EXIT
+VERIFY_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-verify.XXXXXX")"
 
 RESULTS="[]"
 record() { # rung status seconds artifact
