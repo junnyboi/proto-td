@@ -28,7 +28,13 @@ mkdir -p "$OUT"
 # Bots exercise real production save paths, so their Godot user data must never
 # resolve to a developer/player profile. Generic inherited XDG variables are
 # not proof of isolation, so every invocation gets a fresh disposable root.
-PLAYTEST_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-playtest.XXXXXX")"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	PLAYTEST_USER_ROOT="$MGS_RUNG_ROOT/playtest"
+	rm -rf "$PLAYTEST_USER_ROOT"
+	mkdir -p "$PLAYTEST_USER_ROOT"
+else
+	PLAYTEST_USER_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/prototype-td-playtest.XXXXXX")"
+fi
 export XDG_DATA_HOME="$PLAYTEST_USER_ROOT/data"
 export XDG_CONFIG_HOME="$PLAYTEST_USER_ROOT/config"
 export XDG_CACHE_HOME="$PLAYTEST_USER_ROOT/cache"

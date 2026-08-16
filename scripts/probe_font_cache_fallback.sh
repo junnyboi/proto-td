@@ -3,7 +3,13 @@ set -euo pipefail
 
 GODOT="${1:-${GODOT:-$HOME/bin/godot}}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-WORK_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/protos-font-cache.XXXXXX")"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	WORK_ROOT="$MGS_RUNG_ROOT/font-cache"
+	rm -rf "$WORK_ROOT"
+	mkdir -p "$WORK_ROOT"
+else
+	WORK_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/protos-font-cache.XXXXXX")"
+fi
 PROJECT="$WORK_ROOT/project"
 LOG="$WORK_ROOT/font-cache.log"
 FONT_REL="assets/fonts/ProtosSansSC-Subset.otf"

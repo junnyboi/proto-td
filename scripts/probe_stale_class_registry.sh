@@ -19,7 +19,13 @@ cd "$ROOT"
 }
 current_commit="$(git rev-parse HEAD)"
 
-tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	tmp_root="$MGS_RUNG_ROOT/stale-class-registry"
+	rm -rf "$tmp_root"
+	mkdir -p "$tmp_root"
+else
+	tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/protos-stale-class-registry.XXXXXX")"
+fi
 old_tree="$tmp_root/old"
 current_tree="$tmp_root/current"
 import_config="$tmp_root/editor-config"

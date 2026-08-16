@@ -12,7 +12,13 @@ for arg in "$@"; do
 done
 cd "$ROOT"
 mkdir -p "$(dirname "$OUT")"
-TMP="$(mktemp -d)"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	TMP="$MGS_RUNG_ROOT/model-roster"
+	rm -rf "$TMP"
+	mkdir -p "$TMP"
+else
+	TMP="$(mktemp -d)"
+fi
 trap 'rm -rf "$TMP"' EXIT
 
 run_one() {

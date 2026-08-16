@@ -48,6 +48,7 @@ cleanup_verify() {
 	cleanup_quiet
 	chmod -R u+w "$VERIFY_USER_ROOT" 2>/dev/null || true
 	rm -rf "$VERIFY_USER_ROOT"
+	git -C "$ROOT" worktree prune >/dev/null 2>&1 || true
 }
 trap cleanup_verify EXIT
 
@@ -165,7 +166,7 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	user_key=$(tr -c 'A-Za-z0-9_.-' '_' <<< "$rung")
 	user_root="$VERIFY_USER_ROOT/$user_key"
 	rm -rf "$user_root"
-	mkdir -p "$user_root/data/godot" "$user_root/config" "$user_root/cache"
+	mkdir -p "$user_root/data/godot" "$user_root/config" "$user_root/cache" "$user_root/work"
 	if [[ "$rung" == "R3.7-filesystem-web" ]]; then
 		local template_dir template_copy
 		template_dir="$user_root/data/godot/export_templates/4.7.1.stable"
@@ -187,7 +188,7 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 	t0=$(date +%s)
 	out=$(timeout "$budget" env \
 		XDG_DATA_HOME="$user_root/data" XDG_CONFIG_HOME="$user_root/config" \
-		XDG_CACHE_HOME="$user_root/cache" \
+		XDG_CACHE_HOME="$user_root/cache" MGS_RUNG_ROOT="$user_root/work" \
 		"$@" 2>&1)
   code=$?
   t1=$(date +%s)

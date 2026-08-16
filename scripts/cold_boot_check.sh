@@ -15,7 +15,13 @@ fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUDGET_SECONDS="${COLD_BOOT_BUDGET_SECONDS:-180}"
 SOURCE_CACHE="$ROOT/.godot/global_script_class_cache.cfg"
-WORK_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/protos-cold-boot.XXXXXX")"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	WORK_ROOT="$MGS_RUNG_ROOT/cold-boot"
+	rm -rf "$WORK_ROOT"
+	mkdir -p "$WORK_ROOT"
+else
+	WORK_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/protos-cold-boot.XXXXXX")"
+fi
 PROJECT="$WORK_ROOT/project"
 LOG="${COLD_BOOT_LOG:-$WORK_ROOT/cold-boot.log}"
 TIMEOUT_MARKER="$WORK_ROOT/timed-out"

@@ -14,7 +14,13 @@ for arg in "$@"; do
   esac
 done
 
-root="$(mktemp -d)"
+if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
+	root="$MGS_RUNG_ROOT/filesystem"
+	rm -rf "$root"
+	mkdir -p "$root"
+else
+	root="$(mktemp -d)"
+fi
 trap 'rm -rf "$root"' EXIT
 mkdir -p "$root/data" "$root/config" "$root/cache"
 export XDG_CACHE_HOME="$root/cache"
