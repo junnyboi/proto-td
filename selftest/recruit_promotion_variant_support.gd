@@ -68,9 +68,13 @@ func run_failure(h: SelfTestHarness, variant: StringName) -> void:
 		if made != OK:
 			return
 		var confirm := support.find(training, "ConfirmTraining") as Button
-		await support.ensure_visible(h, confirm)
+		await _focus_through_scrolls(h, confirm, confirm, "%s confirm" % config["tag"])
 		await h.click_view(confirm.get_global_rect().get_center())
 		await h.frames(5)
+		h.check(
+			"%s confirm dispatches once" % config["tag"],
+			int(training.get("_promotion_dispatch_count")) == 1,
+		)
 		_apply_variant(training, variant)
 		training.call("_apply_footer_layouts")
 		await h.frames(8)
@@ -98,11 +102,12 @@ func _open_paths(
 	var row := support.find(
 		training, "Recruit_%s" % prepared["target_id"],
 	) as Button
-	await support.ensure_visible(h, row)
-	await h.click_view(row.get_global_rect().get_center())
+	var callsign := row.find_child("Callsign", true, false) as Control
+	await _focus_through_scrolls(h, row, callsign, "roster row")
+	row.pressed.emit()
 	var view_paths := support.find(training, "ViewPaths") as Button
-	await support.ensure_visible(h, view_paths)
-	await h.click_view(view_paths.get_global_rect().get_center())
+	await _focus_through_scrolls(h, view_paths, view_paths, "View Paths action")
+	view_paths.pressed.emit()
 	await h.frames(4)
 	return training
 
@@ -167,7 +172,11 @@ func _check_path_geometry(
 		"; ".join(details),
 	)
 	var footer := support.find(training, "PathActions") as Control
-	await support.ensure_visible(h, footer)
+	var back := support.find(training, "PathBack") as Button
+	var add := support.find(training, "ChoosePath") as Button
+	await _focus_through_scrolls(
+		h, back, back, "%s %s Back action" % [variant, config["tag"]],
+	)
 	h.check(
 		"%s %s footer is reachable" % [variant, config["tag"]],
 		footer != null and viewport.encloses(footer.get_global_rect()),
@@ -186,8 +195,8 @@ func _check_path_geometry(
 		training.get_viewport().gui_get_focus_owner() == last
 		and heading != null and clip.has_point(heading.get_global_rect().get_center()),
 	)
-	var back := support.find(training, "PathBack") as Button
-	var add := support.find(training, "ChoosePath") as Button
+	last.pressed.emit()
+	await h.frames(2)
 	h.check(
 		"%s %s action targets meet 44px floor" % [variant, config["tag"]],
 		back.size.x >= 44.0 and back.size.y >= 44.0
@@ -197,7 +206,9 @@ func _check_path_geometry(
 		"%s %s action labels fit" % [variant, config["tag"]],
 		_button_label_fits(back) and _button_label_fits(add),
 	)
-	await support.ensure_visible(h, footer)
+	await _focus_through_scrolls(
+		h, add, add, "%s %s final Add action" % [variant, config["tag"]],
+	)
 
 
 func _check_error_geometry(
@@ -212,11 +223,23 @@ func _check_error_geometry(
 	var back := support.find(training, "ReviewBack") as Button
 	var confirm := support.find(training, "ConfirmTraining") as Button
 	var footer := support.find(training, "ReviewActions") as Control
-	await support.ensure_visible(h, footer)
 	h.check(
 		"%s %s save error stays visible and focused" % [variant, config["tag"]],
 		error != null and not error.text.is_empty()
 		and training.get_viewport().gui_get_focus_owner() == error,
+		"focus=%s error=%s text=%s mode=%s pending=%s last=%s content=%s" % [
+			training.get_viewport().gui_get_focus_owner(), error,
+			error.text if error != null else "missing",
+			training.call("mode"), Game.training_call(&"retry_pending"),
+			Game.get("last_campaign_error"), Game.content,
+		],
+	)
+	h.check(
+		"%s %s error Back stays unavailable during retry" % [variant, config["tag"]],
+		back.disabled and back.focus_mode == Control.FOCUS_NONE,
+	)
+	await _focus_through_scrolls(
+		h, confirm, confirm, "%s %s error Confirm action" % [variant, config["tag"]],
 	)
 	h.check(
 		"%s %s error actions remain reachable" % [variant, config["tag"]],
@@ -228,6 +251,31 @@ func _check_error_geometry(
 	h.check(
 		"%s %s error action labels fit" % [variant, config["tag"]],
 		_button_label_fits(back) and _button_label_fits(confirm),
+	)
+
+
+func _focus_through_scrolls(
+		h: SelfTestHarness, control: Control, target: Control, label: String,
+	) -> void:
+	control.get_viewport().gui_release_focus()
+	await h.frames(1)
+	control.grab_focus()
+	await h.frames(4)
+	var visible := control.get_viewport().gui_get_focus_owner() == control and target != null
+	var details: Array[String] = []
+	var parent := target.get_parent() if target != null else null
+	while parent != null:
+		if parent is ScrollContainer:
+			var rect := (parent as ScrollContainer).get_global_rect()
+			var point := target.get_global_rect().get_center()
+			visible = visible and rect.has_point(point)
+			details.append("%s has %s=%s" % [rect, point, rect.has_point(point)])
+		parent = parent.get_parent()
+	h.check(
+		"%s focus auto-scrolls through ancestors" % label, visible,
+		"focus=%s target=%s %s" % [
+			control.get_viewport().gui_get_focus_owner(), target, "; ".join(details),
+		],
 	)
 
 

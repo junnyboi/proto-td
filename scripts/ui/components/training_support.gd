@@ -55,6 +55,7 @@ static func roster(value: Variant) -> Array[Dictionary]:
 				"life_status": String(hero.get("life_status", "")),
 				"xp": int(hero.get("xp", 0)),
 				"xp_required": required,
+				"model_can_promote": model_accepted,
 				"can_promote": model_accepted and projection_accepted,
 				"eligibility_error": (
 					StringName(projection["error_code"])
@@ -79,8 +80,14 @@ static func roster(value: Variant) -> Array[Dictionary]:
 
 static func eligible_count(value: Variant) -> int:
 	var count := 0
-	for row: Dictionary in roster(value):
-		if bool(row["can_promote"]):
+	if not supports_campaign(value):
+		return count
+	var data: Dictionary = value.call("data_copy")
+	for hero: Dictionary in data.get("heroes", []):
+		var projected: Dictionary = value.call(
+			"promotion_options", String(hero.get("hero_id", "")),
+		)
+		if bool(projected.get("accepted", false)):
 			count += 1
 	return count
 

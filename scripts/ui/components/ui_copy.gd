@@ -116,7 +116,10 @@ const STATIC_FALLBACKS := {
 	&"ui.training.error.save_pending": "The previous save must be retried before leaving.",
 	&"ui.training.field_record": "FIELD RECORD",
 	&"ui.training.format.dp": "{value} DP",
-	&"ui.training.combat_facts": "{cost} DP • {placement} • Block {block} • Range {range}",
+	&"ui.training.combat_facts": (
+		"{cost} DP • {placement} • Block {block} • Range {range} • ATK {cadence}T"
+	),
+	&"ui.training.skill_facts": "Skill: {skill}",
 	&"ui.training.placement.ground": "Ground",
 	&"ui.training.placement.elevated": "Elevated",
 	&"ui.training.field_kit": "FIELD KIT • EQUIPMENT ISSUED AFTER CONFIRMATION",
@@ -174,7 +177,9 @@ const PLACEHOLDER_TYPES := {
 	&"ui.training.format.dp": {&"value": &"int"},
 	&"ui.training.combat_facts": {
 		&"cost": &"int", &"placement": &"String", &"block": &"int", &"range": &"int",
+		&"cadence": &"int",
 	},
+	&"ui.training.skill_facts": {&"skill": &"String"},
 	&"ui.training.draft_choice": {&"class_name": &"String"},
 	&"ui.training.review_entry": {&"callsign": &"String", &"class_name": &"String"},
 	&"ui.training.removed_entry": {

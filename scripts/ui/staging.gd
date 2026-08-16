@@ -193,7 +193,7 @@ func _build_operations() -> VBoxContainer:
 		),
 		UiCopyType.text(&"ui.staging.training_short", "Training"),
 		training_available,
-		&"primary" if training_available else &"disabled",
+		&"secondary" if training_available else &"disabled",
 	)
 	_training.pressed.connect(_on_training)
 	_operation_grid.add_child(_training)
@@ -275,7 +275,7 @@ func _on_back_to_title() -> void:
 
 
 func _training_available() -> bool:
-	return TrainingSupportType.eligible_count(Game.campaign) > 0
+	return int(Game.training_call(&"eligible_count")) > 0
 
 
 func _training_acknowledgement_text() -> String:

@@ -20,7 +20,12 @@ func run(h: SelfTestHarness) -> void:
 	h.check("focus v3 Training opens", training != null)
 	if training == null:
 		return
+	var row := support.find(training, "Recruit_%s" % prepared["target_id"]) as Button
+	var callsign := row.find_child("RecruitCallsign", true, false) as Control
+	await _assert_focus_visible(h, row, callsign, "standard roster row")
+	row.pressed.emit()
 	var view_paths := support.find(training, "ViewPaths") as Button
+	await _assert_focus_visible(h, view_paths, view_paths, "standard View Paths action")
 	view_paths.pressed.emit()
 	await h.frames(3)
 	var first := support.find(training, "Path_defender") as Button
@@ -42,7 +47,12 @@ func run(h: SelfTestHarness) -> void:
 			last_heading.get_global_rect(),
 		],
 	)
-	(support.find(training, "PathBack") as Button).pressed.emit()
+	last.pressed.emit()
+	var add := support.find(training, "ChoosePath") as Button
+	var path_back := support.find(training, "PathBack") as Button
+	await _assert_focus_visible(h, add, add, "standard Add action")
+	await _assert_focus_visible(h, path_back, path_back, "standard path Back action")
+	path_back.pressed.emit()
 	await h.frames(3)
 	if not await support.draft_choice(
 		h, training, String(prepared["target_id"]), "defender",
@@ -61,6 +71,8 @@ func run(h: SelfTestHarness) -> void:
 	)
 	if back == null or confirm == null:
 		return
+	await _assert_focus_visible(h, back, back, "standard Review Back action")
+	await _assert_focus_visible(h, confirm, confirm, "standard Confirm action")
 	confirm.grab_focus()
 	await h.frames(2)
 	var contained := true
@@ -75,6 +87,24 @@ func run(h: SelfTestHarness) -> void:
 	await h.shot("training_review_focus")
 	print("MAGE_PROMOTION_FOCUS_COMPLETED")
 	h.done()
+
+
+func _assert_focus_visible(
+		h: SelfTestHarness, control: Control, target: Control, label: String,
+	) -> void:
+	control.get_viewport().gui_release_focus()
+	await h.frames(1)
+	control.grab_focus()
+	await h.frames(4)
+	var visible := control.get_viewport().gui_get_focus_owner() == control
+	var parent := target.get_parent()
+	while parent != null:
+		if parent is ScrollContainer:
+			visible = visible and (parent as ScrollContainer).get_global_rect().has_point(
+				target.get_global_rect().get_center(),
+			)
+		parent = parent.get_parent()
+	h.check("%s focus auto-scrolls through ancestors" % label, visible)
 
 
 func _press_action(h: SelfTestHarness, action: StringName) -> void:

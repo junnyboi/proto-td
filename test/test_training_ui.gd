@@ -22,6 +22,7 @@ const REQUIRED_KEYS: Array[StringName] = [
 		&"ui.training.review_entry",
 		&"ui.training.removed_heading",
 		&"ui.training.removed_entry",
+		&"ui.training.skill_facts",
 	&"ui.training.not_now",
 	&"ui.training.permanent_warning",
 	&"ui.training.confirm_action",
@@ -157,6 +158,15 @@ func test_recruit_choice_screen_projects_exactly_five_standard_classes() -> void
 	var expected := [
 		"defender", "gunner", "mage_apprentice", "shock_trooper", "swordmaster",
 	]
+	var skill_names := {
+		"defender": "Hold the Line", "gunner": "Deadeye",
+		"mage_apprentice": "Conflagration", "shock_trooper": "Rally",
+		"swordmaster": "Flurry",
+	}
+	var cadences := {
+		"defender": 30, "gunner": 30, "mage_apprentice": 45,
+		"shock_trooper": 30, "swordmaster": 24,
+	}
 	for class_id: String in expected:
 		var card := screen.find_child("Path_%s" % class_id, true, false) as Button
 		assert_not_null(card, class_id)
@@ -164,6 +174,8 @@ func test_recruit_choice_screen_projects_exactly_five_standard_classes() -> void
 			card.text.contains(TrainingScreenType.class_label(class_id).to_upper()), class_id,
 		)
 		assert_true(card.text.contains("DP"), class_id)
+		assert_true(card.text.contains("Skill: %s" % skill_names[class_id]), class_id)
+		assert_true(card.text.contains("ATK %sT" % cadences[class_id]), class_id)
 		assert_true(card.text.contains("CLASS KIT"), class_id)
 	assert_eq(screen.find_children("Path_*", "Button", true, false).size(), 5)
 	assert_not_null(screen.find_child("PermanentWarning", true, false))
@@ -254,10 +266,8 @@ func test_missing_presentation_resource_surfaces_focused_catalog_error() -> void
 	var projected := TrainingSupportType.options(campaign, "hero_a")
 	assert_false(projected["accepted"])
 	assert_eq(projected["error_code"], &"missing_catalog")
+	assert_eq(TrainingSupportType.eligible_count(campaign), 2)
 	var screen := await _screen_fixture(campaign)
-	await _select_roster(screen, "hero_a")
-	screen.call("_show_paths")
-	await get_tree().process_frame
 	assert_eq(screen.call("mode"), &"roster")
 	var error := screen.find_child("TrainingRosterError", true, false) as Label
 	assert_not_null(error)

@@ -72,8 +72,8 @@ func test_catalog_has_exact_generated_key_value_set_and_order() -> void:
 	var expected_keys: Array = expected.keys()
 	expected_keys.sort()
 	assert_eq(entries.keys(), expected_keys)
-	assert_eq(entries.size(), 274)
-	assert_eq(zh_entries.size(), 274)
+	assert_eq(entries.size(), 275)
+	assert_eq(zh_entries.size(), 275)
 	assert_eq(zh_entries.keys(), expected_keys)
 	for key: Variant in expected_keys:
 		assert_eq(entries[key], expected[key], "catalog value %s" % key)
@@ -214,8 +214,8 @@ func test_zh_cn_values_are_complete_distinct_and_placeholder_exact() -> void:
 		FileAccess.get_file_as_string("res://localization/zh-CN.json"),
 	)["entries"] as Dictionary
 	var en_keys := _sorted_keys(en_entries)
-	assert_eq(en_entries.size(), 274)
-	assert_eq(zh_entries.size(), 274)
+	assert_eq(en_entries.size(), 275)
+	assert_eq(zh_entries.size(), 275)
 	assert_eq(_sorted_keys(zh_entries), en_keys)
 	var equal_allowed := [
 		"ui.campaign.cleared_suffix", "ui.campaign.row", "ui.game_title",

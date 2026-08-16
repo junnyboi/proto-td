@@ -10,6 +10,7 @@ var _portrait: TextureRect
 var _class_name: TrainingLabelType
 var _placeholder: TrainingLabelType
 var _role_label: TrainingLabelType
+var _description: TrainingLabelType
 var _skill: TrainingLabelType
 var _cost: TrainingLabelType
 var _kit: TrainingLabelType
@@ -28,6 +29,7 @@ func configure(
 	choice: Dictionary,
 	class_label: String,
 	role_text: String,
+	description_text: String,
 	skill_text: String,
 	cost_text: String,
 	placeholder_text: String,
@@ -37,13 +39,14 @@ func configure(
 	operator_def_id = String(choice["operator_def_id"])
 	_class_name.text = class_label.to_upper()
 	_role_label.text = role_text.to_upper()
+	_description.text = description_text
 	_skill.text = skill_text
 	_cost.text = cost_text
 	_placeholder.text = placeholder_text
 	_kit.text = kit_text
 	_portrait.texture = ArtType.texture(StringName("portrait_%s" % operator_def_id))
-	text = "%s — %s — %s — %s — %s — %s" % [
-		_class_name.text, _role_label.text, _skill.text, _cost.text,
+	text = "%s — %s — %s — %s — %s — %s — %s" % [
+		_class_name.text, _role_label.text, _description.text, _skill.text, _cost.text,
 		_placeholder.text, _kit.text,
 	]
 	tooltip_text = text
@@ -129,9 +132,11 @@ func _build_content() -> void:
 	_role_label = _label("AdvancedRole", &"dense_detail")
 	identity.add_child(_class_name)
 	identity.add_child(_role_label)
+	_description = _label("ClassDescription", &"dense_detail")
 	_skill = _label("SkillFacts", &"dense_detail")
 	_cost = _label("DeployCost", &"cost_badge")
 	_kit = _label("FieldKit", &"dense_detail")
+	_content.add_child(_description)
 	_content.add_child(_skill)
 	_content.add_child(_cost)
 	_content.add_child(_kit)

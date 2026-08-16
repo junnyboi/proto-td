@@ -117,7 +117,7 @@ func _ready() -> void:
 	Game.content = self
 	_build_shell()
 	_refresh_roster()
-	_show_roster()
+	_show_roster(_roster_projection_error())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -376,6 +376,7 @@ func _show_paths() -> void:
 				StringName(choice["description_key"]),
 				String(choice["description_fallback"]),
 			),
+			_skill_text(choice),
 			_combat_text(choice),
 			_t(&"ui.training.class_kit_placeholder", "CLASS KIT"),
 			_t(
@@ -761,6 +762,13 @@ func _selected_can_promote() -> bool:
 	return not summary.is_empty() and bool(summary["can_promote"])
 
 
+func _roster_projection_error() -> StringName:
+	for summary: Dictionary in _roster_rows:
+		if bool(summary.get("model_can_promote", false)) and not bool(summary["can_promote"]):
+			return StringName(summary.get("eligibility_error", &"missing_catalog"))
+	return &""
+
+
 func _selected_choice() -> Dictionary:
 	var options: Dictionary = TrainingSupportType.options(_campaign, _selected_hero_id)
 	if not bool(options.get("accepted", false)):
@@ -828,13 +836,21 @@ func _combat_text(choice: Dictionary) -> String:
 	)
 	return _fmt(
 		&"ui.training.combat_facts",
-		"{cost} DP • {placement} • Block {block} • Range {range}",
+		"{cost} DP • {placement} • Block {block} • Range {range} • ATK {cadence}T",
 		{
 			&"cost": int(choice["dp_cost"]),
 			&"placement": placement,
 			&"block": int(choice["block"]),
 			&"range": int(choice["range_cells"]),
+			&"cadence": int(choice["attack_interval_ticks"]),
 		},
+	)
+
+
+func _skill_text(choice: Dictionary) -> String:
+	return _fmt(
+		&"ui.training.skill_facts", "Skill: {skill}",
+		{&"skill": String(choice.get("skill_name", "None"))},
 	)
 
 
@@ -926,7 +942,7 @@ func _ensure_focus_visible(
 		return
 	scroll.call_deferred("ensure_control_visible", control)
 	if scroll != outer_scroll and is_instance_valid(outer_scroll):
-		outer_scroll.call_deferred("ensure_control_visible", scroll)
+		outer_scroll.call_deferred("ensure_control_visible", control)
 
 
 func _all_nodes(root: Node) -> Array[Node]:

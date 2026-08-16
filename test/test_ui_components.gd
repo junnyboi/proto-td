@@ -21,7 +21,7 @@ func test_contract_fixtures_have_exact_schema_and_cardinality() -> void:
 	assert_eq((_contract["styleboxes"] as Dictionary).size(), 31)
 	assert_eq((_contract["components"] as Array).size(), 5)
 	assert_eq(int(_inventory.get("schema_version")), 1)
-	assert_eq((_inventory["states"] as Dictionary).size(), 12)
+	assert_eq((_inventory["states"] as Dictionary).size(), 14)
 	assert_eq(int(_inventory["states"]["title"]["target_count"]), 2)
 	assert_eq(int(_inventory["states"]["staging"]["target_count"]), 7)
 	assert_eq(int(_inventory["states"]["staging"]["text_count"]), 13)
