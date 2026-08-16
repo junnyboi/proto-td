@@ -73,6 +73,8 @@ const STATIC_FALLBACKS := {
 	&"ui.training.review_plan": "Review Plan",
 	&"ui.training.review_title": "REVIEW TRAINING PLAN",
 	&"ui.training.review_entry": "{callsign} to {class_name}",
+	&"ui.training.removed_heading": "REMOVED AFTER ROSTER REFRESH",
+	&"ui.training.removed_entry": "{callsign} to {class_name}: {reason}",
 	&"ui.training.not_now": "Not Now",
 	&"ui.training.draft_choice": "Planned: {class_name}",
 	&"ui.training.choose_recruit": "Choose a recruit to train.",
@@ -175,6 +177,9 @@ const PLACEHOLDER_TYPES := {
 	},
 	&"ui.training.draft_choice": {&"class_name": &"String"},
 	&"ui.training.review_entry": {&"callsign": &"String", &"class_name": &"String"},
+	&"ui.training.removed_entry": {
+		&"callsign": &"String", &"class_name": &"String", &"reason": &"String",
+	},
 	&"ui.training.ack_entry": {&"callsign": &"String", &"class_name": &"String"},
 	&"ui.training.acknowledgement": {&"assignments": &"String"},
 	&"ui.training.hero_progress": {

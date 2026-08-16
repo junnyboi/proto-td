@@ -255,6 +255,8 @@
     "ui.training.reason.already_promoted": "进阶训练已完成。",
     "ui.training.reason.dead": "已阵亡。无法训练。",
     "ui.training.reason.no_path": "没有进阶职业路线。",
+    "ui.training.removed_entry": "{callsign} 转为 {class_name}: {reason}",
+    "ui.training.removed_heading": "名册变更后不可用",
     "ui.training.review_entry": "{callsign} 转为 {class_name}",
     "ui.training.review_plan": "查看计划",
     "ui.training.review_title": "查看训练计划",

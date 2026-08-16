@@ -197,10 +197,9 @@ func _build_operations() -> VBoxContainer:
 	)
 	_training.pressed.connect(_on_training)
 	_operation_grid.add_child(_training)
-	var focus_actions: Array[Control] = [_mission]
+	var focus_actions: Array[Control] = [_mission, back]
 	if training_available:
 		focus_actions.append(_training)
-	focus_actions.append(back)
 	for index: int in focus_actions.size():
 		var current := focus_actions[index]
 		var previous := focus_actions[

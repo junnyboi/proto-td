@@ -39,6 +39,9 @@ static func roster(value: Variant) -> Array[Dictionary]:
 		var definition := class_definition(current_class_id)
 		var required := int(definition.promotion_xp_required) if definition != null else 0
 		var options: Dictionary = value.call("promotion_options", hero_id)
+		var projection := enrich_choices(options.get("choices", []))
+		var model_accepted := bool(options.get("accepted", false))
+		var projection_accepted := bool(projection["accepted"])
 		rows.append(
 			{
 				"hero_id": hero_id,
@@ -52,9 +55,13 @@ static func roster(value: Variant) -> Array[Dictionary]:
 				"life_status": String(hero.get("life_status", "")),
 				"xp": int(hero.get("xp", 0)),
 				"xp_required": required,
-				"can_promote": bool(options.get("accepted", false)),
-				"eligibility_error": StringName(options.get("error_code", &"")),
-				"choices": enrich_choices(options.get("choices", [])),
+				"can_promote": model_accepted and projection_accepted,
+				"eligibility_error": (
+					StringName(projection["error_code"])
+					if model_accepted and not projection_accepted
+					else StringName(options.get("error_code", &""))
+				),
+				"choices": projection["choices"],
 			}
 		)
 	rows.sort_custom(
@@ -95,24 +102,20 @@ static func options(value: Variant, hero_id: String) -> Dictionary:
 			"error_code": StringName(result.get("error_code", &"unknown_error")),
 			"choices": [],
 		}
-	return {
-		"accepted": true,
-		"error_code": &"",
-		"choices": enrich_choices(result.get("choices", [])),
-	}
+	return enrich_choices(result.get("choices", []))
 
 
-static func enrich_choices(raw_choices: Array) -> Array[Dictionary]:
+static func enrich_choices(raw_choices: Array) -> Dictionary:
 	var result: Array[Dictionary] = []
 	for raw: Variant in raw_choices:
 		if typeof(raw) != TYPE_DICTIONARY:
-			continue
+			return {"accepted": false, "error_code": &"missing_catalog", "choices": []}
 		var choice := (raw as Dictionary).duplicate(true)
 		var class_id := String(choice.get("to_class_id", ""))
 		var definition := class_definition(class_id)
 		var operator := operator_definition(String(choice.get("operator_def_id", "")))
 		if definition == null or operator == null:
-			continue
+			return {"accepted": false, "error_code": &"missing_catalog", "choices": []}
 		choice["class_name_key"] = definition.name_key
 		choice["class_name_fallback"] = definition.name
 		choice["role_key"] = definition.role_key
@@ -130,7 +133,9 @@ static func enrich_choices(raw_choices: Array) -> Array[Dictionary]:
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return String(a["to_class_id"]) < String(b["to_class_id"])
 	)
-	return result
+	if result.is_empty():
+		return {"accepted": false, "error_code": &"missing_catalog", "choices": []}
+	return {"accepted": true, "error_code": &"", "choices": result}
 
 
 static func callsign(hero: Dictionary) -> String:

@@ -192,14 +192,22 @@ func _refresh_roster() -> void:
 			_selected_hero_id = String(_roster_rows[0]["hero_id"])
 
 
-func _show_roster() -> void:
+func _show_roster(error_code: StringName = &"") -> void:
 	_mode = &"roster"
 	_selected_choice_id = ""
 	_clear_page()
 	_page.add_child(_header(
 		"TrainingTitle", _t(&"ui.training.title", "TRAINING"),
-		_t(&"ui.training.choose_recruit", "Choose a recruit to train."),
-	))
+			_t(&"ui.training.choose_recruit", "Choose a recruit to train."),
+		))
+	var roster_error: AetheriaLabelType = null
+	if not String(error_code).is_empty():
+		roster_error = _label(
+			"TrainingRosterError", _error_text(error_code), &"dense_detail",
+		)
+		roster_error.focus_mode = Control.FOCUS_ALL
+		_bind_focus_scroll(roster_error, _dialog_scroll)
+		_page.add_child(roster_error)
 	var ready_count := 0
 	for summary: Dictionary in _roster_rows:
 		if bool(summary["can_promote"]):
@@ -244,7 +252,10 @@ func _show_roster() -> void:
 	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), false)
-	_focus_selected_row_or(back)
+	if roster_error != null:
+		roster_error.grab_focus.call_deferred()
+	else:
+		_focus_selected_row_or(back)
 
 
 func _build_roster_list() -> ScrollContainer:
@@ -278,6 +289,7 @@ func _build_roster_list() -> ScrollContainer:
 			)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
+		_bind_focus_scroll(row, scroll)
 		list.add_child(row)
 		_roster_buttons.append(row)
 	return scroll
@@ -322,7 +334,7 @@ func _build_inspector() -> AetheriaPanelType:
 func _show_paths() -> void:
 	var options: Dictionary = TrainingSupportType.options(_campaign, _selected_hero_id)
 	if not bool(options.get("accepted", false)):
-		_show_roster()
+		_show_roster(StringName(options.get("error_code", &"missing_catalog")))
 		return
 	_mode = &"paths"
 	_clear_page()
@@ -374,6 +386,7 @@ func _show_paths() -> void:
 		card.pressed.connect(
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
+		_bind_focus_scroll(card, scroll, card.focus_visibility_target())
 		cards.add_child(card)
 		_path_cards.append(card)
 	_page.add_child(scroll)
@@ -432,8 +445,8 @@ func _add_selected_choice() -> void:
 	_show_roster()
 
 
-func _show_review(error_code: StringName = &"") -> void:
-	if _draft.is_empty():
+func _show_review(error_code: StringName = &"", removed_rows: Array = []) -> void:
+	if _draft.is_empty() and String(error_code).is_empty():
 		_show_roster()
 		return
 	_mode = &"review"
@@ -466,8 +479,30 @@ func _show_review(error_code: StringName = &"") -> void:
 			&"dense_body",
 		)
 		list.add_child(entry)
+	if not removed_rows.is_empty():
+		list.add_child(_label(
+			"RemovedAssignmentsHeading",
+			_t(&"ui.training.removed_heading", "REMOVED AFTER ROSTER REFRESH"),
+			&"dense_heading",
+		))
+		for raw: Variant in removed_rows:
+			var removed := raw as Dictionary
+			list.add_child(_label(
+				"Removed_%s" % removed["hero_id"],
+				_fmt(
+					&"ui.training.removed_entry",
+					"{callsign} to {class_name}: {reason}",
+					{
+						&"callsign": String(removed["callsign"]),
+						&"class_name": class_label(String(removed["to_class_id"])),
+						&"reason": _error_text(StringName(removed["error_code"])),
+					},
+				),
+				&"dense_body",
+			))
 	_review_error = _label("TrainingReviewError", "", &"dense_detail")
 	_review_error.focus_mode = Control.FOCUS_ALL
+	_bind_focus_scroll(_review_error, _dialog_scroll)
 	if not String(error_code).is_empty():
 		_review_error.text = _error_text(error_code)
 	_page.add_child(_review_error)
@@ -481,8 +516,8 @@ func _show_review(error_code: StringName = &"") -> void:
 	_review_confirm = _button(
 		"ConfirmTraining",
 		_t(&"ui.training.confirm_action", "Confirm Training"),
-		true,
-		&"primary",
+		not _draft.is_empty(),
+		&"primary" if not _draft.is_empty() else &"disabled",
 	)
 	_review_confirm.custom_minimum_size.x = 320.0
 	_review_confirm.pressed.connect(_confirm_review)
@@ -525,9 +560,12 @@ func _confirm_review() -> void:
 	)
 	if not committed["accepted"]:
 		_confirmation_consumed = false
+		var removed_rows: Array = []
 		if not bool(Game.training_call(&"retry_pending")):
-			_reconcile_draft()
-		_show_review(StringName(committed.get("error_code", &"unknown_error")))
+			removed_rows = _reconcile_draft()
+		_show_review(
+			StringName(committed.get("error_code", &"unknown_error")), removed_rows,
+		)
 		return
 	_confirmation_consumed = false
 	Game.open_staging()
@@ -549,17 +587,34 @@ func _draft_choices() -> Array[Dictionary]:
 	return choices
 
 
-func _reconcile_draft() -> void:
+func _reconcile_draft() -> Array:
+	var previous_rows := {}
+	for summary: Dictionary in _roster_rows:
+		previous_rows[String(summary["hero_id"])] = summary.duplicate(true)
 	_refresh_roster()
 	var retained := {}
+	var removed: Array[Dictionary] = []
 	for hero_id: String in _draft:
 		var options := TrainingSupportType.options(_campaign, hero_id)
-		if not options["accepted"]:
-			continue
+		var retained_choice := false
 		for choice: Dictionary in options["choices"]:
 			if String(choice["to_class_id"]) == String(_draft[hero_id]):
 				retained[hero_id] = _draft[hero_id]
+				retained_choice = true
+		if retained_choice:
+			continue
+		var summary: Dictionary = previous_rows.get(hero_id, {})
+		var removal_error := StringName(options.get("error_code", &"invalid_choice"))
+		if String(removal_error).is_empty():
+			removal_error = &"invalid_choice"
+		removed.append({
+			"hero_id": hero_id,
+			"callsign": String(summary.get("callsign", hero_id)),
+			"to_class_id": String(_draft[hero_id]),
+			"error_code": removal_error,
+		})
 	_draft = retained
+	return removed
 
 
 func _on_not_now() -> void:
@@ -664,6 +719,7 @@ func _button(
 	button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	button.apply_role(role)
 	button.set_presentation_text(button_text, button_text)
+	_bind_focus_scroll(button, _dialog_scroll)
 	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
 	presentation.apply_role(&"dense_body")
 	return button
@@ -850,6 +906,27 @@ func _wire_focus(controls: Array[Control], horizontal: bool) -> void:
 		else:
 			current.focus_neighbor_top = current.get_path_to(previous)
 			current.focus_neighbor_bottom = current.get_path_to(following)
+
+
+func _bind_focus_scroll(
+	control: Control, scroll: ScrollContainer, visibility_target: Control = null,
+) -> void:
+	if control == null or scroll == null:
+		return
+	var target := visibility_target if visibility_target != null else control
+	control.focus_entered.connect(
+		_ensure_focus_visible.bind(scroll, _dialog_scroll, target),
+	)
+
+
+func _ensure_focus_visible(
+	scroll: ScrollContainer, outer_scroll: ScrollContainer, control: Control,
+) -> void:
+	if not is_instance_valid(scroll) or not is_instance_valid(control):
+		return
+	scroll.call_deferred("ensure_control_visible", control)
+	if scroll != outer_scroll and is_instance_valid(outer_scroll):
+		outer_scroll.call_deferred("ensure_control_visible", scroll)
 
 
 func _all_nodes(root: Node) -> Array[Node]:

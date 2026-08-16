@@ -174,9 +174,11 @@ func _check_path_geometry(
 		str(footer.get_global_rect() if footer != null else Rect2()),
 	)
 	var last := support.find(training, "Path_swordmaster") as Button
+	(support.find(training, "Path_defender") as Button).grab_focus()
+	await h.frames(2)
 	last.grab_focus()
 	var heading := last.find_child("AdvancedClassName", true, false) as Control
-	await support.ensure_visible(h, heading)
+	await h.frames(4)
 	var scroll := support.find(training, "PathCardsScroll") as ScrollContainer
 	var clip := scroll.get_global_rect().intersection(viewport)
 	h.check(

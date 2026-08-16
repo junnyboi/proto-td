@@ -25,6 +25,17 @@ func run(h: SelfTestHarness) -> void:
 		available != null and available.text.contains("3"),
 		available.text if available != null else "missing",
 	)
+	var train := support.find(results, "TrainRecruits") as Button
+	var retry := support.find(results, "RetryButton") as Button
+	var return_to_staging := support.find(results, "ReturnToStaging") as Button
+	h.check(
+		"Results has one Training primary and visual-order focus traversal",
+		train != null and retry != null and return_to_staging != null
+		and StringName(train.get("role")) == &"primary"
+		and StringName(return_to_staging.get("role")) == &"secondary"
+		and train.focus_next == train.get_path_to(retry)
+		and retry.focus_next == retry.get_path_to(return_to_staging),
+	)
 	await support.ensure_visible(h, support.find(results, "TrainRecruits") as Control)
 	await h.shot("recruit_promotion_results")
 	var training := await support.open_training_from_results(h, game, results)
@@ -124,6 +135,16 @@ func run(h: SelfTestHarness) -> void:
 	h.check("accepted promotion returns to Staging", staging != null)
 	if staging == null:
 		return
+	var mission := support.find(staging, "MissionControlButton") as Button
+	var title := support.find(staging, "BackToTitleButton") as Button
+	var training_action := support.find(staging, "TrainingButton") as Button
+	h.check(
+		"Staging enabled focus traversal follows visual order",
+		mission != null and title != null and training_action != null
+		and mission.focus_next == mission.get_path_to(title)
+		and title.focus_next == title.get_path_to(training_action)
+		and training_action.focus_next == training_action.get_path_to(mission),
+	)
 	var after := support.hero_by_id(game, hero_id)
 	var second_after := support.hero_by_id(game, second_id)
 	var before_person: Dictionary = prepared["target_before"]

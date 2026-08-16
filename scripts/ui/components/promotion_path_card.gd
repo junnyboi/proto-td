@@ -54,6 +54,10 @@ func set_selected(value: bool) -> void:
 	apply_role(&"selected" if value else &"secondary")
 
 
+func focus_visibility_target() -> Control:
+	return _class_name
+
+
 func _get_minimum_size() -> Vector2:
 	var minimum := custom_minimum_size
 	if _content != null:

@@ -141,7 +141,8 @@ func _ready() -> void:
 	var next: AetheriaButtonType = null
 	if Game.campaign_active and Game.campaign != null:
 		var eligible_count := int(Game.training_call(&"eligible_count"))
-		if eligible_count > 0:
+		var training_available := eligible_count > 0
+		if training_available:
 			column.add_child(_label(
 				"TrainingAvailable",
 				UiCopyType.format_text(
@@ -166,15 +167,15 @@ func _ready() -> void:
 		)
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
+		focusable.append(retry)
 		next = _button(
 			"ReturnToStaging",
 			UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"),
-			"Staging", &"primary",
+			"Staging", &"secondary" if training_available else &"primary",
 		)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
-		focusable.append(retry)
 	var title := _button(
 		"BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
 		UiCopyType.text(&"ui.common.back", "Back"),

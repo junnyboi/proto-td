@@ -18,8 +18,10 @@ const REQUIRED_KEYS: Array[StringName] = [
 	&"ui.training.choose_recruit",
 	&"ui.training.add_to_plan",
 	&"ui.training.review_plan",
-	&"ui.training.review_title",
-	&"ui.training.review_entry",
+		&"ui.training.review_title",
+		&"ui.training.review_entry",
+		&"ui.training.removed_heading",
+		&"ui.training.removed_entry",
 	&"ui.training.not_now",
 	&"ui.training.permanent_warning",
 	&"ui.training.confirm_action",
@@ -203,17 +205,64 @@ func test_review_cancel_sequence_retains_draft() -> void:
 	assert_eq(screen.get("_draft"), {"hero_a": "defender"})
 
 
-func test_review_error_is_focused_and_draft_survives() -> void:
-	var screen := await _screen_fixture(_campaign_fixture())
+func test_stale_reconciliation_lists_removed_rows_and_retains_legal_draft() -> void:
+	var campaign := _campaign_fixture()
+	var screen := await _screen_fixture(campaign)
 	await _draft_choice(screen, "hero_a", "defender")
-	screen.call("_show_review", &"stale_revision")
+	await _draft_choice(screen, "hero_b", "gunner")
+	campaign.options_by_id["hero_a"] = {
+		"accepted": false, "error_code": &"dead_hero", "choices": [],
+	}
+	var removed := screen.call("_reconcile_draft") as Array
+	screen.call("_show_review", &"stale_revision", removed)
 	await get_tree().process_frame
 	var error := screen.find_child("TrainingReviewError", true, false) as Label
 	assert_not_null(error)
 	assert_false(error.text.is_empty())
 	assert_eq(screen.get_viewport().gui_get_focus_owner(), error)
-	assert_eq(screen.get("_draft"), {"hero_a": "defender"})
+	assert_eq(screen.get("_draft"), {"hero_b": "gunner"})
+	var removed_entry := screen.find_child("Removed_hero_a", true, false) as Label
+	assert_not_null(removed_entry)
+	assert_true(removed_entry.text.contains("Defender"))
+	assert_true(removed_entry.text.contains("Dead recruits cannot train"))
 	assert_false((screen.find_child("ConfirmTraining", true, false) as Button).disabled)
+
+
+func test_stale_total_invalidation_stays_in_focused_review_with_confirm_disabled() -> void:
+	var campaign := _campaign_fixture()
+	var screen := await _screen_fixture(campaign)
+	await _draft_choice(screen, "hero_a", "defender")
+	campaign.options_by_id["hero_a"] = {
+		"accepted": false, "error_code": &"dead_hero", "choices": [],
+	}
+	var removed := screen.call("_reconcile_draft") as Array
+	screen.call("_show_review", &"stale_revision", removed)
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"review")
+	assert_true((screen.get("_draft") as Dictionary).is_empty())
+	assert_not_null(screen.find_child("Removed_hero_a", true, false))
+	var error := screen.find_child("TrainingReviewError", true, false) as Label
+	assert_eq(screen.get_viewport().gui_get_focus_owner(), error)
+	assert_true((screen.find_child("ConfirmTraining", true, false) as Button).disabled)
+	assert_false((screen.find_child("ReviewBack", true, false) as Button).disabled)
+
+
+func test_missing_presentation_resource_surfaces_focused_catalog_error() -> void:
+	var campaign := _campaign_fixture()
+	var choices := campaign.options_by_id["hero_a"]["choices"] as Array
+	(choices[0] as Dictionary)["operator_def_id"] = "missing"
+	var projected := TrainingSupportType.options(campaign, "hero_a")
+	assert_false(projected["accepted"])
+	assert_eq(projected["error_code"], &"missing_catalog")
+	var screen := await _screen_fixture(campaign)
+	await _select_roster(screen, "hero_a")
+	screen.call("_show_paths")
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"roster")
+	var error := screen.find_child("TrainingRosterError", true, false) as Label
+	assert_not_null(error)
+	assert_false(error.text.is_empty())
+	assert_eq(screen.get_viewport().gui_get_focus_owner(), error)
 
 
 func test_error_map_is_total_with_unknown_fallback() -> void:

@@ -255,6 +255,8 @@
     "ui.training.reason.already_promoted": "Advanced training complete.",
     "ui.training.reason.dead": "Dead. Training unavailable.",
     "ui.training.reason.no_path": "No advanced class path.",
+    "ui.training.removed_entry": "{callsign} to {class_name}: {reason}",
+    "ui.training.removed_heading": "REMOVED AFTER ROSTER REFRESH",
     "ui.training.review_entry": "{callsign} to {class_name}",
     "ui.training.review_plan": "Review Plan",
     "ui.training.review_title": "REVIEW TRAINING PLAN",

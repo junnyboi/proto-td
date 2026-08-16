@@ -20,6 +20,30 @@ func run(h: SelfTestHarness) -> void:
 	h.check("focus v3 Training opens", training != null)
 	if training == null:
 		return
+	var view_paths := support.find(training, "ViewPaths") as Button
+	view_paths.pressed.emit()
+	await h.frames(3)
+	var first := support.find(training, "Path_defender") as Button
+	var last := support.find(training, "Path_swordmaster") as Button
+	first.grab_focus()
+	await h.frames(2)
+	for index: int in 4:
+		await _press_action(h, &"ui_focus_next")
+	var cards_scroll := support.find(training, "PathCardsScroll") as ScrollContainer
+	var last_heading := last.find_child("AdvancedClassName", true, false) as Control
+	h.check(
+		"directional focus automatically scrolls fifth path into view",
+		training.get_viewport().gui_get_focus_owner() == last
+		and cards_scroll.get_global_rect().has_point(
+			last_heading.get_global_rect().get_center(),
+		),
+		"focus=%s scroll=%s heading=%s" % [
+			training.get_viewport().gui_get_focus_owner(), cards_scroll.get_global_rect(),
+			last_heading.get_global_rect(),
+		],
+	)
+	(support.find(training, "PathBack") as Button).pressed.emit()
+	await h.frames(3)
 	if not await support.draft_choice(
 		h, training, String(prepared["target_id"]), "defender",
 	):
