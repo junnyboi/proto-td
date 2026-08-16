@@ -22,12 +22,16 @@ var _training: AetheriaButtonType = null
 var _next_record: StageNarrativeDefType = null
 var _next_stage: StageDef = null
 var _narrative_missing := false
+var _training_acknowledgement: Array[Dictionary] = []
 
 
 func _ready() -> void:
 	Game.content = self
+	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
 	_build_screen()
+	if not _training_acknowledgement.is_empty():
+		Game.training_call(&"consume_acknowledgement")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -66,6 +70,10 @@ func _build_screen() -> void:
 	column.add_theme_constant_override(&"separation", 10)
 	scroll_content.add_child(column)
 	column.add_child(_build_briefing())
+	if not _training_acknowledgement.is_empty():
+		column.add_child(_label(
+			"TrainingAcknowledgement", _training_acknowledgement_text(), &"dense_heading",
+		))
 	column.add_child(_build_operations())
 	_on_layout_mode_changed(shell.layout_mode())
 
@@ -259,7 +267,7 @@ func _on_training() -> void:
 	if not _training_available():
 		return
 	Sfx.play("ui_click")
-	Game.open_training()
+	Game.training_call(&"open", &"staging")
 
 
 func _on_back_to_title() -> void:
@@ -268,7 +276,29 @@ func _on_back_to_title() -> void:
 
 
 func _training_available() -> bool:
-	return TrainingSupportType.supports_campaign(Game.campaign)
+	return TrainingSupportType.eligible_count(Game.campaign) > 0
+
+
+func _training_acknowledgement_text() -> String:
+	var entries: Array[String] = []
+	for row: Dictionary in _training_acknowledgement:
+		var summary := TrainingSupportType.summary_by_id(
+			Game.campaign, String(row["hero_id"]),
+		)
+		var definition := TrainingSupportType.class_definition(String(row["to_class_id"]))
+		if summary.is_empty() or definition == null:
+			continue
+		entries.append(UiCopyType.format_text(
+			&"ui.training.ack_entry", "{callsign} to {class_name}",
+			{
+				&"callsign": String(summary["callsign"]),
+				&"class_name": UiCopyType.text(definition.name_key, definition.name),
+			},
+		))
+	return UiCopyType.format_text(
+		&"ui.training.acknowledgement", "Training complete: {assignments}",
+		{&"assignments": ", ".join(entries)},
+	)
 
 
 func _stage_stars() -> Dictionary:

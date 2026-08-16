@@ -293,6 +293,58 @@ func test_direct_debug_battle_cannot_mutate_campaign_authority() -> void:
 	assert_eq(_authority_facts(), before)
 
 
+func test_training_batch_commits_once_and_acknowledges_fresh_result() -> void:
+	var hero_id := _prepare_eligible_recruit()
+	assert_eq(int(_game.training_call(&"eligible_count")), 1)
+	var before_revision: int = _game.campaign.save_revision()
+	var before := _hero_row(hero_id)
+	var committed: Dictionary = _game.training_call(
+		&"commit", [{"hero_id": hero_id, "to_class_id": "defender"}],
+	)
+	assert_true(committed["accepted"], str(committed.get("error_code", &"")))
+	assert_true(committed["result"]["fresh"])
+	assert_eq(_game.campaign.save_revision(), before_revision + 1)
+	var after := _hero_row(hero_id)
+	assert_eq(after["hero_id"], before["hero_id"])
+	assert_eq(after["portrait_instance_id"], before["portrait_instance_id"])
+	assert_eq(after["current_class_id"], "defender")
+	assert_eq(after["operator_def_id"], "defender_1")
+	var acknowledgement := _game.training_call(&"peek_acknowledgement") as Array
+	assert_eq(acknowledgement.size(), 1)
+	assert_eq(acknowledgement[0]["hero_id"], hero_id)
+	assert_eq(acknowledgement[0]["to_class_id"], "defender")
+	_game.training_call(&"consume_acknowledgement")
+	assert_true((_game.training_call(&"peek_acknowledgement") as Array).is_empty())
+	var persisted: Dictionary = _game.campaign_store.load()
+	assert_true(persisted["accepted"])
+	assert_eq(persisted["state"].encode_save()["text"], _game.campaign.encode_save()["text"])
+
+
+func test_training_store_failure_retries_exact_pending_mutation_once() -> void:
+	var hero_id := _prepare_eligible_recruit()
+	var before := _authority_facts()
+	var tmp_path := ProjectSettings.globalize_path("user://campaign_v1.tmp")
+	assert_eq(DirAccess.make_dir_absolute(tmp_path), OK)
+	var failed: Dictionary = _game.training_call(
+		&"commit", [{"hero_id": hero_id, "to_class_id": "gunner"}],
+	)
+	assert_false(failed["accepted"])
+	assert_true(failed["retryable"])
+	assert_true(bool(_game.training_call(&"retry_pending")))
+	assert_eq(_authority_facts(), before)
+	assert_eq(DirAccess.remove_absolute(tmp_path), OK)
+	var retried: Dictionary = _game.training_call(&"retry")
+	assert_true(retried["accepted"], str(retried.get("error_code", &"")))
+	assert_false(bool(_game.training_call(&"retry_pending")))
+	assert_eq(_game.campaign.save_revision(), int(before["revision"]) + 1)
+	assert_eq(_hero_row(hero_id)["current_class_id"], "gunner")
+	assert_eq(_game.campaign.data_copy()["promotion_receipts"].size(), 1)
+	assert_eq((_game.training_call(&"peek_acknowledgement") as Array).size(), 1)
+	var persisted: Dictionary = _game.campaign_store.load()
+	assert_true(persisted["accepted"])
+	assert_eq(persisted["state"].encode_save()["text"], _game.campaign.encode_save()["text"])
+
+
 func _authority_facts() -> Dictionary:
 	return {
 		"text": _game.campaign.encode_save()["text"],
@@ -302,6 +354,30 @@ func _authority_facts() -> Dictionary:
 		"selection": _game.selected_squad.duplicate(),
 		"stage": _game.selected_stage_id,
 	}
+
+
+func _prepare_eligible_recruit() -> String:
+	assert_true(_game.start_campaign(false))
+	var hero_ids: Array[StringName] = []
+	for hero: Dictionary in _game.campaign_projection()["ready_heroes"].slice(0, 3):
+		hero_ids.append(StringName(hero["hero_id"]))
+	var begun: Dictionary = _game.start_stage(&"s1", hero_ids, false)
+	assert_true(begun["accepted"], str(begun.get("error_code", &"")))
+	var model := _model_from_launch(_game.battle_launch())
+	assert_not_null(model)
+	_game.current_battle = model
+	_run(model, _winner(begun["ticket"]))
+	assert_eq(model.result, BattleModel.Result.CLEAR)
+	assert_true(_game.record_result(model.result, model.stars))
+	assert_eq(_game.last_result["xp_awards"].size(), 1)
+	return String(_game.last_result["xp_awards"][0]["hero_id"])
+
+
+func _hero_row(hero_id: String) -> Dictionary:
+	for row: Dictionary in _game.campaign.data_copy()["heroes"]:
+		if String(row["hero_id"]) == hero_id:
+			return row
+	return {}
 
 
 func _model_from_launch(launch: Dictionary) -> BattleModel:

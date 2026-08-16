@@ -39,9 +39,7 @@ func configure(
 	_reason.text = reason_text
 	_progress.max_value = int(summary["xp_required"])
 	_progress.value = mini(int(summary["xp"]), int(summary["xp_required"]))
-	_portrait.texture = ArtType.texture(
-		StringName("portrait_%s" % summary["identity_portrait_id"]),
-	)
+	_portrait.texture = ArtType.texture(StringName(summary["portrait_asset_id"]))
 	text = "%s — %s — %s — %s — %s" % [
 		_callsign.text, _class_name.text, _status.text, _xp.text, _reason.text,
 	]

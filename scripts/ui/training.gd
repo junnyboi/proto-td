@@ -10,7 +10,6 @@ const PromotionPathCardType := preload("res://scripts/ui/components/promotion_pa
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-const CampaignPromotionScript := preload("res://sim/campaign_promotion.gd")
 
 const SHELL_SIZE := Vector2(1160.0, 640.0)
 const COMPACT_SHELL_SIZE := Vector2(880.0, 640.0)
@@ -27,6 +26,26 @@ const ERROR_KEYS := {
 	&"command_id_conflict": &"ui.training.error.command_conflict",
 	&"xp_overflow": &"ui.training.error.progression_failed",
 	&"save_failed": &"ui.save.write_failed",
+	&"dead_hero": &"ui.training.error.dead_hero",
+	&"locked_class": &"ui.training.error.locked_class",
+	&"already_promoted_class": &"ui.training.error.already_promoted_class",
+	&"illegal_class_edge": &"ui.training.error.illegal_class_edge",
+	&"missing_catalog": &"ui.training.error.missing_catalog",
+	&"attempt_pending": &"ui.training.error.attempt_pending",
+	&"store_write_failed": &"ui.training.error.store_write_failed",
+	&"campaign_inactive": &"ui.training.error.campaign_inactive",
+	&"malformed_hero_id": &"ui.training.error.invalid_request",
+	&"malformed_command": &"ui.training.error.invalid_request",
+	&"invalid_promotion_choice": &"ui.training.error.invalid_request",
+	&"invalid_promotion_choices": &"ui.training.error.invalid_request",
+	&"duplicate_hero_choice": &"ui.training.error.invalid_request",
+	&"command_history_unavailable": &"ui.training.error.integrity",
+	&"store_integrity_failure": &"ui.training.error.integrity",
+	&"mutation_restore_mismatch": &"ui.training.error.integrity",
+	&"duplicate_authority_mismatch": &"ui.training.error.integrity",
+	&"invalid_runtime_mutation": &"ui.training.error.integrity",
+	&"promotion_retry_pending": &"ui.training.error.save_pending",
+	&"no_promotion_retry": &"ui.training.error.invalid_request",
 }
 const ERROR_FALLBACKS := {
 	&"invalid_argument_type": "Training request was invalid.",
@@ -40,6 +59,20 @@ const ERROR_FALLBACKS := {
 	&"command_id_conflict": "This training request conflicts with an earlier command.",
 	&"xp_overflow": "Training progression could not be applied.",
 	&"save_failed": "The campaign could not be saved.",
+	&"dead_hero": "Dead recruits cannot train.",
+	&"locked_class": "This training path is not unlocked yet.",
+	&"already_promoted_class": "No further training path is available.",
+	&"illegal_class_edge": "That class is not a legal next duty.",
+	&"missing_catalog": "Training records are incomplete.",
+	&"attempt_pending": "Finish the active operation before training.",
+	&"store_write_failed": "The campaign could not be saved.",
+	&"campaign_inactive": "No active campaign is available.",
+	&"command_history_unavailable": "Training records could not be authenticated.",
+	&"store_integrity_failure": "The saved campaign could not be authenticated.",
+	&"mutation_restore_mismatch": "The saved training result did not match the request.",
+	&"duplicate_authority_mismatch": "The saved training receipt could not be authenticated.",
+	&"invalid_runtime_mutation": "Training authority is unavailable.",
+	&"promotion_retry_pending": "The previous save must be retried before leaving.",
 }
 const CLASS_LABELS := {
 	"shock_trooper": "Shock Trooper",
@@ -66,16 +99,14 @@ var _roster_buttons: Array[TrainingRosterRowType] = []
 var _path_cards: Array[PromotionPathCardType] = []
 var _selected_hero_id := ""
 var _selected_choice_id := ""
+var _last_edited_hero_id := ""
+var _draft: Dictionary = {}
 var _view_paths: AetheriaButtonType
 var _choose_path: AetheriaButtonType
-var _modal_layer: Control
-var _modal_error: AetheriaLabelType
-var _modal_cancel: AetheriaButtonType
-var _modal_confirm: AetheriaButtonType
-var _modal_background_focus: Array[Dictionary] = []
+var _review_confirm: AetheriaButtonType
+var _review_error: AetheriaLabelType
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
-var _success_text := ""
 
 
 func _ready() -> void:
@@ -90,31 +121,19 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("ui_cancel") or _modal_layer == null:
+	if not event.is_action_pressed("ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
-	_close_confirmation()
+	if _mode == &"review":
+		_on_review_back()
+	elif _mode == &"paths":
+		_show_roster()
+	else:
+		_on_not_now()
 
 
 static func supports_campaign(value: Variant) -> bool:
 	return TrainingSupportType.supports_campaign(value)
-
-
-static func build_command(campaign: Variant, hero_id: String, choice_id: String) -> Dictionary:
-	if not supports_campaign(campaign) or hero_id.is_empty() or choice_id.is_empty():
-		return {}
-	var revision := int(campaign.call("save_revision"))
-	var campaign_uid := String(campaign.call("campaign_uid"))
-	return {
-		"version": 1,
-		"verb": "promote_hero",
-		"command_id": CampaignPromotionScript.command_id(
-			campaign_uid, revision, hero_id, choice_id,
-		),
-		"hero_id": hero_id,
-		"advanced_class_id": choice_id,
-		"expected_save_revision": revision,
-	}
 
 
 static func error_key(error_code: StringName) -> StringName:
@@ -161,7 +180,8 @@ func _build_shell() -> void:
 
 
 func _refresh_roster() -> void:
-	_roster_rows = _campaign.call("training_roster") as Array[Dictionary]
+	_campaign = Game.campaign
+	_roster_rows = TrainingSupportType.roster(_campaign)
 	if _selected_hero_id.is_empty() or _summary_by_id(_selected_hero_id).is_empty():
 		_selected_hero_id = ""
 		for summary: Dictionary in _roster_rows:
@@ -203,18 +223,25 @@ func _show_roster() -> void:
 	body.add_child(_build_inspector())
 	var footer := _footer("RosterActions")
 	var back := _button(
-		"TrainingBack", _t(&"ui.common.back", "Back"), true, &"secondary",
+		"TrainingBack", _t(&"ui.training.not_now", "Not Now"), true, &"secondary",
 	)
-	back.pressed.connect(_on_back_to_staging)
+	back.pressed.connect(_on_not_now)
 	_view_paths = _button(
 		"ViewPaths", _t(&"ui.training.view_paths", "View Paths"),
 		_selected_can_promote(), &"primary" if _selected_can_promote() else &"disabled",
 	)
 	_view_paths.pressed.connect(_on_view_paths)
+	var review := _button(
+		"ReviewPlan", _t(&"ui.training.review_plan", "Review Plan"),
+		not _draft.is_empty(), &"primary" if not _draft.is_empty() else &"disabled",
+	)
+	review.pressed.connect(_show_review)
 	footer.add_child(back)
 	footer.add_child(_view_paths)
+	footer.add_child(review)
 	_page.add_child(footer)
 	_apply_roster_layout()
+	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), false)
 	_focus_selected_row_or(back)
@@ -247,8 +274,8 @@ func _build_roster_list() -> ScrollContainer:
 					&"required": int(summary["xp_required"]),
 				},
 			),
-			_eligibility_text(summary),
-		)
+				_eligibility_text(summary),
+			)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
 		list.add_child(row)
@@ -289,13 +316,11 @@ func _build_inspector() -> AetheriaPanelType:
 		column.add_child(_label(
 			"SelectedRecruitStatus", _eligibility_text(selected), &"dense_body",
 		))
-	if not _success_text.is_empty():
-		column.add_child(_label("TrainingSuccess", _success_text, &"dense_heading"))
 	return panel
 
 
 func _show_paths() -> void:
-	var options: Dictionary = _campaign.call("promotion_options", _selected_hero_id)
+	var options: Dictionary = TrainingSupportType.options(_campaign, _selected_hero_id)
 	if not bool(options.get("accepted", false)):
 		_show_roster()
 		return
@@ -304,7 +329,7 @@ func _show_paths() -> void:
 	var summary := _summary_by_id(_selected_hero_id)
 	_page.add_child(_header(
 		"ChooseTrainingTitle",
-		_t(&"ui.training.choose_advanced", "CHOOSE ADVANCED TRAINING"),
+			_t(&"ui.training.choose_advanced", "CHOOSE TRAINING PATH"),
 		_fmt(
 			&"ui.training.hero_progress", "{callsign} — {class_name} — XP {current} / {required}",
 			{
@@ -330,19 +355,24 @@ func _show_paths() -> void:
 	for raw_choice: Variant in options["choices"]:
 		var choice := raw_choice as Dictionary
 		var card := PromotionPathCardType.new()
-		card.name = "Path_%s" % choice["advanced_class_id"]
+		card.name = "Path_%s" % choice["to_class_id"]
 		card.configure(
-			choice, class_label(String(choice["advanced_class_id"])),
-			_role_text(String(choice["role"])), _skill_text(choice),
-			_fmt(
-				&"ui.training.format.dp", "{value} DP",
-				{&"value": int(choice["dp_cost"])},
+			choice,
+			_t(StringName(choice["class_name_key"]), String(choice["class_name_fallback"])),
+			_t(StringName(choice["role_key"]), String(choice["role_fallback"])),
+			_t(
+				StringName(choice["description_key"]),
+				String(choice["description_fallback"]),
 			),
-			_t(&"ui.training.class_kit_placeholder", "CLASS KIT\nTEMP ART"),
-			_kit_text(String(choice["advanced_class_id"])),
+			_combat_text(choice),
+			_t(&"ui.training.class_kit_placeholder", "CLASS KIT"),
+			_t(
+				&"ui.training.field_kit",
+				"FIELD KIT • EQUIPMENT ISSUED AFTER CONFIRMATION",
+			),
 		)
 		card.pressed.connect(
-			_on_path_selected.bind(String(choice["advanced_class_id"])),
+			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
 		cards.add_child(card)
 		_path_cards.append(card)
@@ -358,14 +388,15 @@ func _show_paths() -> void:
 	)
 	back.pressed.connect(_show_roster)
 	_choose_path = _button(
-		"ChoosePath", _t(&"ui.training.choose_path", "Choose Path"),
+		"ChoosePath", _t(&"ui.training.add_to_plan", "Add to Plan"),
 		false, &"disabled",
 	)
-	_choose_path.pressed.connect(_open_confirmation)
+	_choose_path.pressed.connect(_add_selected_choice)
 	footer.add_child(back)
 	footer.add_child(_choose_path)
 	_page.add_child(footer)
 	_apply_paths_layout()
+	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
 	if not _path_cards.is_empty():
@@ -388,284 +419,154 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 	return panel
 
 
-func _open_confirmation() -> void:
-	if _selected_choice_id.is_empty() or _modal_layer != null:
-		return
-	var summary := _summary_by_id(_selected_hero_id)
-	var choice := _selected_choice()
-	if summary.is_empty() or choice.is_empty():
-		return
-	_confirmation_consumed = false
-	_suspend_background_focus()
-	_modal_layer = Control.new()
-	_modal_layer.name = "PromotionConfirmationLayer"
-	_modal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_modal_layer.theme = _shell.theme
-	add_child(_modal_layer)
-	var dim := ColorRect.new()
-	dim.name = "ModalDim"
-	dim.color = Color(0.02, 0.04, 0.08, 0.82)
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	_modal_layer.add_child(dim)
-	var center := CenterContainer.new()
-	center.name = "ModalCenter"
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_modal_layer.add_child(center)
-	var panel := AetheriaPanelType.new()
-	panel.name = "PromotionConfirmation"
-	panel.apply_role(&"modal")
-	panel.custom_minimum_size = (
-		Vector2(640.0, 1120.0)
-		if _layout_mode == &"portrait" else Vector2(1120.0, 660.0)
-	)
-	center.add_child(panel)
-	var modal_scroll := ScrollContainer.new()
-	modal_scroll.name = "ConfirmationScroll"
-	modal_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	modal_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	modal_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	panel.add_child(modal_scroll)
-	var modal_gutter := MarginContainer.new()
-	modal_gutter.name = "ConfirmationGutter"
-	modal_gutter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for side: StringName in [
-		&"margin_left", &"margin_top", &"margin_right", &"margin_bottom",
-	]:
-		modal_gutter.add_theme_constant_override(side, 20)
-	modal_scroll.add_child(modal_gutter)
-	var column := VBoxContainer.new()
-	column.name = "ConfirmationColumn"
-	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override(&"separation", 10)
-	modal_gutter.add_child(column)
-	column.add_child(_label(
-		"ConfirmationTitle",
-		_fmt(
-			&"ui.training.confirm_title", "CONFIRM {class_name} TRAINING?",
-			{&"class_name": class_label(_selected_choice_id).to_upper()},
-		),
-		&"dense_heading",
-	))
-	var hero_line := _label("ConfirmationCallsign", String(summary["callsign"]), &"dense_body")
-	hero_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(hero_line)
-	column.add_child(_label(
-		"ClassTransition",
-		"%s → %s" % [
-			class_label(String(summary["current_class_id"])),
-			class_label(_selected_choice_id),
-		],
-		&"dense_body",
-	))
-	column.add_child(_identity_strip(summary))
-	column.add_child(_confirmation_identity_row(summary, choice))
-	column.add_child(_label(
-		"ConfirmationFacts",
-		"%s • %s • %d DP" % [
-			_role_text(String(choice["role"])), _skill_text(choice),
-			int(choice["dp_cost"]),
-		],
-		&"dense_body",
-	))
-	column.add_child(_label(
-		"ConfirmationPermanent",
-		_t(
-			&"ui.training.confirm_permanent",
-			"This training choice cannot be changed.",
-		),
-		&"dense_heading",
-	))
-	if _selected_choice_id == "witch_doctor":
-		column.add_child(_label(
-			"NoReviveWarning",
-			_t(
-				&"ui.training.no_revive_warning",
-				"Death remains permanent. Mend cannot revive the dead.",
-			),
-			&"dense_detail",
-		))
-	_modal_error = _label("ConfirmationError", "", &"dense_detail")
-	column.add_child(_modal_error)
-	var actions := _footer("ConfirmationActions")
-	_modal_cancel = _button(
-		"CancelTraining", _t(&"ui.training.cancel", "Cancel"), true, &"secondary",
-	)
-	_modal_confirm = _button(
-		"ConfirmTraining", _t(&"ui.training.confirm_action", "Confirm Training"),
-		true, &"primary",
-	)
-	_modal_cancel.pressed.connect(_close_confirmation)
-	_modal_confirm.pressed.connect(_confirm_training)
-	actions.add_child(_modal_cancel)
-	actions.add_child(_modal_confirm)
-	column.add_child(actions)
-	var boundary := _label(
-		"StateBoundary",
-		_t(
-			&"ui.training.state_after_confirmation",
-			"State changes only after confirmation.",
-		),
-		&"dense_detail",
-	)
-	boundary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(boundary)
-	_wire_modal_focus()
-	_modal_cancel.grab_focus.call_deferred()
-
-
-func _confirmation_identity_row(
-	summary: Dictionary, choice: Dictionary,
-) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.name = "ConfirmationIdentityRow"
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override(&"separation", 18)
-	row.add_child(_identity_card(
-		"CurrentIdentity", summary,
-		class_label(String(summary["current_class_id"])),
-	))
-	row.add_child(_label(
-		"TrainingAssignment",
-		_t(
-			&"ui.training.assignment",
-			"COMPANY 33\nTRAINING ASSIGNMENT\nNEW FIELD KIT",
-		),
-		&"dense_detail",
-	))
-	row.add_child(_identity_card(
-		"NewDutyIdentity", summary,
-		class_label(String(choice["advanced_class_id"])),
-	))
-	return row
-
-
-func _identity_card(
-	node_name: String, summary: Dictionary, duty: String,
-) -> AetheriaPanelType:
-	var panel := AetheriaPanelType.new()
-	panel.name = node_name
-	panel.apply_role(&"card")
-	panel.custom_minimum_size = Vector2(250.0, 176.0)
-	var column := VBoxContainer.new()
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(column)
-	var portrait := TextureRect.new()
-	portrait.name = "%sPortrait" % node_name
-	portrait.texture = Art.texture(
-		StringName("portrait_%s" % summary["identity_portrait_id"]),
-	)
-	portrait.custom_minimum_size = Vector2(140.0, 110.0)
-	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	portrait.tooltip_text = _fmt(
-		&"ui.training.identity_portrait_alt", "Identity portrait for {callsign}",
-		{&"callsign": String(summary["callsign"])},
-	)
-	column.add_child(portrait)
-	var label := _label("%sDuty" % node_name, duty.to_upper(), &"dense_detail")
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(label)
-	return panel
-
-
-func _suspend_background_focus() -> void:
-	_modal_background_focus.clear()
-	for control: Control in _focusable_controls():
-		_modal_background_focus.append({
-			"control": control,
-			"focus_mode": int(control.focus_mode),
-		})
-		control.focus_mode = Control.FOCUS_NONE
-
-
-func _restore_background_focus() -> void:
-	for entry: Dictionary in _modal_background_focus:
-		var control := entry["control"] as Control
-		if control != null and is_instance_valid(control):
-			control.focus_mode = int(entry["focus_mode"])
-	_modal_background_focus.clear()
-
-
-func _wire_modal_focus() -> void:
-	for current: Control in [_modal_cancel, _modal_confirm]:
-		var other := _modal_confirm if current == _modal_cancel else _modal_cancel
-		var path := current.get_path_to(other)
-		current.focus_previous = path
-		current.focus_next = path
-		current.focus_neighbor_left = path
-		current.focus_neighbor_right = path
-		current.focus_neighbor_top = path
-		current.focus_neighbor_bottom = path
-
-
-func _set_modal_actions_enabled(enabled: bool) -> void:
-	for control: AetheriaButtonType in [_modal_cancel, _modal_confirm]:
-		if control == null:
-			continue
-		control.disabled = not enabled
-		control.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
-
-
-func _release_confirmation_retry(error_code: StringName) -> void:
-	if _modal_error != null:
-		_modal_error.text = _error_text(error_code)
-	_confirmation_consumed = false
-	_set_modal_actions_enabled(true)
-	_wire_modal_focus()
-	_modal_confirm.grab_focus.call_deferred()
-
-
-func _close_confirmation() -> void:
-	if _modal_layer == null:
-		return
-	_modal_layer.queue_free()
-	_modal_layer = null
-	_modal_error = null
-	_modal_cancel = null
-	_modal_confirm = null
-	_confirmation_consumed = false
-	_restore_background_focus()
-	if _choose_path != null:
-		_choose_path.grab_focus.call_deferred()
-
-
-func _confirm_training() -> void:
-	if _confirmation_consumed or _modal_layer == null:
-		return
-	_confirmation_consumed = true
-	_set_modal_actions_enabled(false)
-	var command := build_command(_campaign, _selected_hero_id, _selected_choice_id)
-	if command.is_empty():
-		_release_confirmation_retry(&"invalid_argument_type")
-		return
-	_promotion_dispatch_count += 1
-	var result: Dictionary = _campaign.call("promote_hero", command)
-	if not bool(result.get("accepted", false)):
-		_release_confirmation_retry(StringName(result.get("error_code", &"")))
-		return
-	var summary := _summary_by_id(_selected_hero_id)
-	_success_text = _fmt(
-		&"ui.training.success", "{callsign} is now a {class_name}.",
-		{
-			&"callsign": String(summary.get("callsign", _selected_hero_id)),
-			&"class_name": class_label(_selected_choice_id),
-		},
-	)
-	_modal_layer.queue_free()
-	_modal_layer = null
-	_modal_error = null
-	_modal_cancel = null
-	_modal_confirm = null
-	_restore_background_focus()
-	_refresh_roster()
-	_show_roster()
-
-
 func _on_roster_selected(hero_id: String) -> void:
 	_selected_hero_id = hero_id
-	_success_text = ""
 	_show_roster()
+
+
+func _add_selected_choice() -> void:
+	if _selected_hero_id.is_empty() or _selected_choice_id.is_empty():
+		return
+	_draft[_selected_hero_id] = _selected_choice_id
+	_last_edited_hero_id = _selected_hero_id
+	_show_roster()
+
+
+func _show_review(error_code: StringName = &"") -> void:
+	if _draft.is_empty():
+		_show_roster()
+		return
+	_mode = &"review"
+	_clear_page()
+	_page.add_child(_header(
+		"ReviewTrainingTitle",
+		_t(&"ui.training.review_title", "REVIEW TRAINING PLAN"),
+		_t(
+			&"ui.training.confirm_permanent",
+			"These training choices cannot be changed.",
+		),
+	))
+	var list := VBoxContainer.new()
+	list.name = "TrainingReviewList"
+	list.add_theme_constant_override(&"separation", 10)
+	_page.add_child(list)
+	for summary: Dictionary in _roster_rows:
+		var hero_id := String(summary["hero_id"])
+		if not _draft.has(hero_id):
+			continue
+		var entry := _label(
+			"Review_%s" % hero_id,
+			_fmt(
+				&"ui.training.review_entry", "{callsign} to {class_name}",
+				{
+					&"callsign": String(summary["callsign"]),
+					&"class_name": class_label(String(_draft[hero_id])),
+				},
+			),
+			&"dense_body",
+		)
+		list.add_child(entry)
+	_review_error = _label("TrainingReviewError", "", &"dense_detail")
+	_review_error.focus_mode = Control.FOCUS_ALL
+	if not String(error_code).is_empty():
+		_review_error.text = _error_text(error_code)
+	_page.add_child(_review_error)
+	var pending := bool(Game.training_call(&"retry_pending"))
+	var footer := _footer("ReviewActions")
+	var back := _button(
+		"ReviewBack", _t(&"ui.common.back", "Back"), not pending,
+		&"secondary" if not pending else &"disabled",
+	)
+	back.pressed.connect(_on_review_back)
+	_review_confirm = _button(
+		"ConfirmTraining",
+		_t(&"ui.training.confirm_action", "Confirm Training"),
+		true,
+		&"primary",
+	)
+	_review_confirm.custom_minimum_size.x = 320.0
+	_review_confirm.pressed.connect(_confirm_review)
+	footer.add_child(back)
+	footer.add_child(_review_confirm)
+	_page.add_child(footer)
+	_apply_footer_layouts()
+	_reset_outer_scroll()
+	_wire_focus(_focusable_controls(), false)
+	if not String(error_code).is_empty():
+		_review_error.grab_focus.call_deferred()
+	else:
+		_review_confirm.grab_focus.call_deferred()
+
+
+func _on_review_back() -> void:
+	if bool(Game.training_call(&"retry_pending")):
+		return
+	var hero_id := _last_edited_hero_id
+	if hero_id.is_empty() or not _draft.has(hero_id):
+		_show_roster()
+		return
+	_selected_hero_id = hero_id
+	var choice_id := String(_draft[hero_id])
+	_show_paths()
+	_on_path_selected(choice_id)
+
+
+func _confirm_review() -> void:
+	if _confirmation_consumed or _draft.is_empty():
+		return
+	_confirmation_consumed = true
+	_review_confirm.disabled = true
+	_review_confirm.focus_mode = Control.FOCUS_NONE
+	_promotion_dispatch_count += 1
+	var committed: Dictionary = (
+		Game.training_call(&"retry")
+		if bool(Game.training_call(&"retry_pending"))
+		else Game.training_call(&"commit", _draft_choices())
+	)
+	if not committed["accepted"]:
+		_confirmation_consumed = false
+		if not bool(Game.training_call(&"retry_pending")):
+			_reconcile_draft()
+		_show_review(StringName(committed.get("error_code", &"unknown_error")))
+		return
+	_confirmation_consumed = false
+	Game.open_staging()
+
+
+func _draft_choices() -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for hero_id: String in _draft:
+		choices.append(
+			{
+				"hero_id": hero_id,
+				"to_class_id": String(_draft[hero_id]),
+			}
+		)
+	choices.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return String(a["hero_id"]) < String(b["hero_id"])
+	)
+	return choices
+
+
+func _reconcile_draft() -> void:
+	_refresh_roster()
+	var retained := {}
+	for hero_id: String in _draft:
+		var options := TrainingSupportType.options(_campaign, hero_id)
+		if not options["accepted"]:
+			continue
+		for choice: Dictionary in options["choices"]:
+			if String(choice["to_class_id"]) == String(_draft[hero_id]):
+				retained[hero_id] = _draft[hero_id]
+	_draft = retained
+
+
+func _on_not_now() -> void:
+	if bool(Game.training_call(&"retry_pending")):
+		return
+	Sfx.play("ui_click")
+	Game.training_call(&"leave")
 
 
 func _on_view_paths() -> void:
@@ -676,16 +577,11 @@ func _on_view_paths() -> void:
 func _on_path_selected(choice_id: String) -> void:
 	_selected_choice_id = choice_id
 	for card: PromotionPathCardType in _path_cards:
-		card.set_selected(card.advanced_class_id == choice_id)
+		card.set_selected(card.class_id == choice_id)
 	_choose_path.disabled = false
 	_choose_path.focus_mode = Control.FOCUS_ALL
 	_choose_path.apply_role(&"primary")
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
-
-
-func _on_back_to_staging() -> void:
-	Sfx.play("ui_click")
-	Game.open_staging()
 
 
 func _on_layout_mode_changed(value: StringName) -> void:
@@ -695,8 +591,9 @@ func _on_layout_mode_changed(value: StringName) -> void:
 		_shell.preferred_size = target_size
 	if _mode == &"paths":
 		_apply_paths_layout()
-	else:
+	elif _mode == &"roster":
 		_apply_roster_layout()
+	_apply_footer_layouts()
 	_reset_outer_scroll()
 
 
@@ -722,22 +619,19 @@ func _apply_paths_layout() -> void:
 	if cards == null:
 		return
 	var scroll := cards.get_parent() as ScrollContainer
-	cards.vertical = _layout_mode != &"regular_landscape"
+	cards.vertical = _layout_mode != &"regular_landscape" or _path_cards.size() > 2
 	scroll.custom_minimum_size.y = (
 		580.0 if _layout_mode == &"portrait" else 540.0
 	)
 	for card: PromotionPathCardType in _path_cards:
 		card.set_compact(_layout_mode == &"portrait")
+		card.fit_to_content()
 
 
 func _reset_outer_scroll() -> void:
 	if _dialog_scroll == null:
 		return
-	_dialog_scroll.vertical_scroll_mode = (
-		ScrollContainer.SCROLL_MODE_DISABLED
-		if _mode == &"paths" and _layout_mode == &"portrait"
-		else ScrollContainer.SCROLL_MODE_AUTO
-	)
+	_dialog_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	_dialog_scroll.scroll_vertical = 0
 
 
@@ -750,9 +644,10 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	return header
 
 
-func _footer(node_name: String) -> HBoxContainer:
-	var footer := HBoxContainer.new()
+func _footer(node_name: String) -> BoxContainer:
+	var footer := BoxContainer.new()
 	footer.name = node_name
+	footer.vertical = _layout_mode == &"portrait"
 	footer.alignment = BoxContainer.ALIGNMENT_END
 	footer.add_theme_constant_override(&"separation", 16)
 	return footer
@@ -794,6 +689,8 @@ func _clear_page() -> void:
 	_path_cards.clear()
 	_view_paths = null
 	_choose_path = null
+	_review_confirm = null
+	_review_error = null
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -809,38 +706,54 @@ func _selected_can_promote() -> bool:
 
 
 func _selected_choice() -> Dictionary:
-	var options: Dictionary = _campaign.call("promotion_options", _selected_hero_id)
+	var options: Dictionary = TrainingSupportType.options(_campaign, _selected_hero_id)
 	if not bool(options.get("accepted", false)):
 		return {}
 	for choice: Dictionary in options["choices"]:
-		if choice["advanced_class_id"] == _selected_choice_id:
+		if choice["to_class_id"] == _selected_choice_id:
 			return choice
 	return {}
 
 
 func _eligibility_text(summary: Dictionary) -> String:
+	var hero_id := String(summary["hero_id"])
+	if _draft.has(hero_id):
+		return _fmt(
+			&"ui.training.draft_choice", "Planned: {class_name}",
+			{&"class_name": class_label(String(_draft[hero_id]))},
+		)
 	if bool(summary["can_promote"]):
 		return _t(&"ui.training.promotion_ready", "Promotion ready.")
 	var code := StringName(summary["eligibility_error"])
+	var result := ""
 	match code:
 		&"hero_not_ready":
-			return _t(&"ui.training.reason.dead", "Dead. Training unavailable.")
+			result = _t(&"ui.training.reason.dead", "Dead. Training unavailable.")
 		&"insufficient_xp":
-			return _fmt(
+			result = _fmt(
 				&"ui.training.xp_needed", "Needs {remaining} XP.",
 				{&"remaining": maxi(0, int(summary["xp_required"]) - int(summary["xp"]))},
 			)
 		&"wrong_source_class":
-			return _t(&"ui.training.reason.no_path", "No advanced class path.")
+			result = _t(&"ui.training.reason.no_path", "No advanced class path.")
 		&"already_promoted":
-			return _t(&"ui.training.reason.already_promoted", "Advanced training complete.")
-	return _error_text(code)
-
-
-func _role_text(role_id: String) -> String:
-	if role_id == "healer_support":
-		return _t(&"ui.training.role.healer_support", "Healer / Support")
-	return _t(&"ui.training.role.damage_control", "Damage / Control")
+			result = _t(
+				&"ui.training.reason.already_promoted", "Advanced training complete.",
+			)
+		&"dead_hero":
+			result = _t(&"ui.training.reason.dead", "Dead. Training unavailable.")
+		&"locked_class":
+			result = _t(
+				&"ui.training.error.locked_class", "This training path is not unlocked yet.",
+			)
+		&"already_promoted_class":
+			result = _t(
+				&"ui.training.error.already_promoted_class",
+				"No further training path is available.",
+			)
+		_:
+			result = _error_text(code)
+	return result
 
 
 func _status_text(life_status: String) -> String:
@@ -849,32 +762,52 @@ func _status_text(life_status: String) -> String:
 	return _t(&"ui.training.status.dead", "DEAD")
 
 
-func _skill_text(choice: Dictionary) -> String:
-	var operator := load(
-		"res://data/operators/%s.tres" % choice["operator_def_id"],
-	) as OperatorDef
-	if operator == null or operator.skill == null:
-		return String(choice["skill_id"]).capitalize()
-	if choice["skill_id"] == "mend":
-		return _fmt(
-			&"ui.training.skill.mend", "Mend — Heal one living ally for {amount} HP",
-			{&"amount": int(operator.skill.params["amount"])},
-		)
-	return _t(
-		&"ui.training.skill.tempest", "Tempest — Wide-range pressure attack",
+func _combat_text(choice: Dictionary) -> String:
+	var placement := _t(
+		&"ui.training.placement.elevated",
+		"Elevated",
+	) if int(choice["placement"]) == OperatorDef.Placement.ELEVATED else _t(
+		&"ui.training.placement.ground",
+		"Ground",
+	)
+	return _fmt(
+		&"ui.training.combat_facts",
+		"{cost} DP • {placement} • Block {block} • Range {range}",
+		{
+			&"cost": int(choice["dp_cost"]),
+			&"placement": placement,
+			&"block": int(choice["block"]),
+			&"range": int(choice["range_cells"]),
+		},
 	)
 
 
-func _kit_text(choice_id: String) -> String:
-	if choice_id == "witch_doctor":
-		return _t(
-			&"ui.training.kit.witch_doctor",
-			"Kit: medicine, charge, repair tools.",
-		)
-	return _t(
-		&"ui.training.kit.sorcerer",
-		"Kit: conductors, weather rods, control marks.",
-	)
+func _apply_footer_layouts() -> void:
+	for node: Node in _all_nodes(_page):
+		if node is BoxContainer and String(node.name).ends_with("Actions"):
+			var footer := node as BoxContainer
+			footer.vertical = _layout_mode == &"portrait"
+			var actions: Array[Control] = []
+			for child: Node in footer.get_children():
+				if child is AetheriaButtonType:
+					actions.append(child as Control)
+			var available := maxf(
+				44.0, maxf(_page.size.x, _shell.preferred_size.x - 64.0),
+			)
+			var visible_width := get_viewport_rect().size.x - _page.global_position.x - 8.0
+			if visible_width >= 44.0:
+				available = minf(available, visible_width)
+			if not footer.vertical and not actions.is_empty():
+				available = maxf(
+					44.0,
+					(available - footer.get_theme_constant(&"separation")
+					* (actions.size() - 1)) / actions.size(),
+				)
+			for action: Control in actions:
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				(action as AetheriaButtonType).fit_presentation(
+					available, 240.0, 64.0,
+				)
 
 
 func _error_text(error_code: StringName) -> String:

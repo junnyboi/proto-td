@@ -4,7 +4,7 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 
-var advanced_class_id := ""
+var class_id := ""
 var operator_def_id := ""
 var _portrait: TextureRect
 var _class_name: TrainingLabelType
@@ -13,11 +13,12 @@ var _role_label: TrainingLabelType
 var _skill: TrainingLabelType
 var _cost: TrainingLabelType
 var _kit: TrainingLabelType
+var _content: VBoxContainer
 
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size = Vector2(492.0, 650.0)
+	custom_minimum_size = Vector2(492.0, 420.0)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	set_presentation_text("Advanced training path", " ")
 	_build_content()
@@ -32,7 +33,7 @@ func configure(
 	placeholder_text: String,
 	kit_text: String,
 ) -> void:
-	advanced_class_id = String(choice["advanced_class_id"])
+	class_id = String(choice["to_class_id"])
 	operator_def_id = String(choice["operator_def_id"])
 	_class_name.text = class_label.to_upper()
 	_role_label.text = role_text.to_upper()
@@ -53,11 +54,29 @@ func set_selected(value: bool) -> void:
 	apply_role(&"selected" if value else &"secondary")
 
 
+func _get_minimum_size() -> Vector2:
+	var minimum := custom_minimum_size
+	if _content != null:
+		var content_minimum := _content.get_combined_minimum_size() + Vector2(28.0, 28.0)
+		minimum.x = maxf(minimum.x, content_minimum.x)
+		minimum.y = maxf(minimum.y, content_minimum.y)
+	return minimum
+
+
 func set_compact(value: bool) -> void:
-	custom_minimum_size = Vector2(540.0, 650.0) if value else Vector2(492.0, 650.0)
+	custom_minimum_size = Vector2(540.0, 780.0) if value else Vector2(492.0, 420.0)
 	_portrait.custom_minimum_size = (
 		Vector2(200.0, 220.0) if value else Vector2(190.0, 184.0)
 	)
+
+
+func fit_to_content() -> void:
+	if _content == null:
+		return
+	var content_minimum := _content.get_combined_minimum_size() + Vector2(28.0, 28.0)
+	custom_minimum_size.x = maxf(custom_minimum_size.x, content_minimum.x)
+	custom_minimum_size.y = maxf(custom_minimum_size.y, content_minimum.y)
+	update_minimum_size()
 
 
 func _build_content() -> void:
@@ -70,16 +89,16 @@ func _build_content() -> void:
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 		margin.add_theme_constant_override(side, 14)
 	add_child(margin)
-	var content := VBoxContainer.new()
-	content.name = "PathCardContent"
-	content.add_theme_constant_override(&"separation", 8)
-	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_child(content)
+	_content = VBoxContainer.new()
+	_content.name = "PathCardContent"
+	_content.add_theme_constant_override(&"separation", 8)
+	_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(_content)
 	var header := HBoxContainer.new()
 	header.name = "PathIdentityHeader"
 	header.add_theme_constant_override(&"separation", 12)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(header)
+	_content.add_child(header)
 	var portrait_column := VBoxContainer.new()
 	portrait_column.name = "ClassKitColumn"
 	portrait_column.custom_minimum_size.x = 210.0
@@ -109,9 +128,9 @@ func _build_content() -> void:
 	_skill = _label("SkillFacts", &"dense_detail")
 	_cost = _label("DeployCost", &"cost_badge")
 	_kit = _label("FieldKit", &"dense_detail")
-	content.add_child(_skill)
-	content.add_child(_cost)
-	content.add_child(_kit)
+	_content.add_child(_skill)
+	_content.add_child(_cost)
+	_content.add_child(_kit)
 
 
 func _label(node_name: String, role: StringName) -> TrainingLabelType:

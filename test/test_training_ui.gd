@@ -1,5 +1,9 @@
 extends GutTest
 
+const TrainingScreenType := preload("res://scripts/ui/training.gd")
+const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
 const REQUIRED_PATHS := [
 	"res://scenes/training.tscn",
 	"res://scripts/ui/training.gd",
@@ -8,37 +12,92 @@ const REQUIRED_PATHS := [
 	"res://scripts/ui/components/promotion_path_card.gd",
 ]
 const REQUIRED_KEYS: Array[StringName] = [
+	&"ui.results.training_available",
+	&"ui.results.train_recruits",
 	&"ui.training.title",
 	&"ui.training.choose_recruit",
-	&"ui.training.view_paths",
-	&"ui.training.choose_path",
+	&"ui.training.add_to_plan",
+	&"ui.training.review_plan",
+	&"ui.training.review_title",
+	&"ui.training.review_entry",
+	&"ui.training.not_now",
 	&"ui.training.permanent_warning",
 	&"ui.training.confirm_action",
-	&"ui.training.success",
+	&"ui.training.acknowledgement",
 	&"ui.error.unknown",
 ]
 const EXPECTED_ERRORS: Array[StringName] = [
-	&"invalid_argument_type", &"unknown_hero", &"hero_not_ready",
-	&"insufficient_xp", &"wrong_source_class", &"invalid_choice",
-	&"already_promoted", &"stale_revision", &"command_id_conflict",
-	&"xp_overflow", &"save_failed",
+	&"unknown_hero", &"dead_hero", &"insufficient_xp", &"locked_class",
+	&"already_promoted_class", &"illegal_class_edge", &"missing_catalog",
+	&"attempt_pending", &"malformed_hero_id", &"malformed_command",
+	&"invalid_promotion_choice", &"invalid_promotion_choices",
+	&"duplicate_hero_choice", &"stale_revision", &"command_id_conflict",
+	&"command_history_unavailable", &"store_write_failed",
+	&"store_integrity_failure", &"mutation_restore_mismatch",
+	&"duplicate_authority_mismatch", &"invalid_runtime_mutation",
+	&"campaign_inactive", &"promotion_retry_pending", &"no_promotion_retry",
 ]
 
+
+class FakeCampaign:
+	extends RefCounted
+
+	var heroes: Array[Dictionary]
+	var options_by_id: Dictionary
+
+
+	func _init(hero_rows: Array[Dictionary], option_rows: Dictionary) -> void:
+		heroes = hero_rows.duplicate(true)
+		options_by_id = option_rows.duplicate(true)
+
+
+	func data_copy() -> Dictionary:
+		return {"heroes": heroes.duplicate(true)}
+
+
+	func promotion_options(hero_id: String) -> Dictionary:
+		return options_by_id.get(
+			hero_id, {"accepted": false, "error_code": &"unknown_hero", "choices": []},
+		).duplicate(true)
+
+
+	func campaign_uid() -> String:
+		return "0123456789abcdef"
+
+
+	func save_revision() -> int:
+		return 7
+
+
+	func strategic_hash() -> Dictionary:
+		return {"schema_version": 3, "full": "fake", "body": "fake"}
+
+
 var _previous_campaign: Variant = null
+var _previous_store: Variant = null
 var _previous_content: Node = null
 var _previous_active := false
+var _previous_return_path: StringName = &"staging"
+var _previous_pending: Variant = null
 
 
 func before_each() -> void:
 	_previous_campaign = Game.campaign
+	_previous_store = Game.campaign_store
 	_previous_content = Game.content
 	_previous_active = Game.campaign_active
+	_previous_return_path = Game.training_return_path
+	_previous_pending = Game.get("_pending_promotion_mutation")
+	Game.set("_pending_promotion_mutation", null)
 
 
 func after_each() -> void:
 	Game.campaign = _previous_campaign
+	Game.campaign_store = _previous_store
 	Game.content = _previous_content
 	Game.campaign_active = _previous_active
+	Game.training_return_path = _previous_return_path
+	Game.set("_pending_promotion_mutation", _previous_pending)
 
 
 func test_training_runtime_surfaces_exist() -> void:
@@ -46,219 +105,141 @@ func test_training_runtime_surfaces_exist() -> void:
 		assert_true(ResourceLoader.exists(path), path)
 
 
-func test_game_and_staging_expose_guarded_training_route() -> void:
+func test_game_results_and_staging_use_guarded_training_dispatch() -> void:
 	var game_source := FileAccess.get_file_as_string("res://autoloads/game.gd")
+	var results_source := FileAccess.get_file_as_string("res://scripts/ui/results.gd")
 	var staging_source := FileAccess.get_file_as_string("res://scripts/ui/staging.gd")
-	assert_true(game_source.contains("func open_training()"))
-	assert_true(staging_source.contains("Game.open_training()"))
+	assert_true(game_source.contains("func training_call("))
+	assert_true(results_source.contains('training_call(&"open", &"results")'))
+	assert_true(staging_source.contains('training_call(&"open", &"staging")'))
 	assert_true(staging_source.contains("_training_available"))
 	assert_true(staging_source.contains("training_support.gd"))
 	assert_false(staging_source.contains('preload("res://scripts/ui/training.gd")'))
 
 
-func test_training_copy_has_total_english_fallbacks() -> void:
-	var fallbacks := UiCopy.static_fallbacks()
+func test_training_copy_has_total_bilingual_fallbacks_and_parity() -> void:
+	var fallbacks := UiCopyType.static_fallbacks()
+	var english := _catalog("en-US")
+	var chinese := _catalog("zh-CN")
+	assert_eq(english.keys(), chinese.keys())
 	for key: StringName in REQUIRED_KEYS:
 		assert_true(fallbacks.has(key), String(key))
 		assert_false(String(fallbacks.get(key, "")).is_empty(), String(key))
+		assert_false(String(english.get(String(key), "")).is_empty(), String(key))
+		assert_false(String(chinese.get(String(key), "")).is_empty(), String(key))
 
 
-func test_witch_doctor_name_is_localized() -> void:
-	var source := JSON.parse_string(
-		FileAccess.get_file_as_string("res://localization/en-US.json"),
-	) as Dictionary
-	assert_eq(
-		source["entries"].get("data.operator.witch_doctor_1.name"),
-		"Witch Doctor",
-	)
+func test_v3_support_guard_and_roster_projection_are_stable() -> void:
+	var campaign := _campaign_fixture()
+	assert_true(TrainingSupportType.supports_campaign(campaign))
+	assert_false(TrainingSupportType.supports_campaign(RefCounted.new()))
+	assert_false(TrainingSupportType.supports_campaign(null))
+	var rows := TrainingSupportType.roster(campaign)
+	assert_eq(rows.map(func(row: Dictionary) -> int: return row["recruitment_index"]), [0, 1, 2, 3])
+	assert_eq(TrainingSupportType.eligible_count(campaign), 2)
+	assert_true(rows[0]["can_promote"])
+	assert_eq(rows[0]["xp"], 100)
+	assert_eq(rows[0]["xp_required"], 100)
+	assert_eq((rows[0]["choices"] as Array).size(), 5)
+	assert_false(rows[2]["can_promote"])
+	assert_eq(rows[2]["eligibility_error"], &"insufficient_xp")
+	assert_false(rows[3]["can_promote"])
+	assert_eq(rows[3]["eligibility_error"], &"dead_hero")
 
 
-func test_training_roster_is_stable_and_model_owns_eligibility() -> void:
-	var state := _promotion_state(400)
-	var rows := state.training_roster()
-	assert_eq(rows.size(), state.roster().all().size())
-	for index: int in rows.size():
-		assert_eq(rows[index]["hero_id"], state.roster().all()[index].hero_id())
-	var mage := _mage_summary(rows)
-	assert_true(mage["can_promote"])
-	assert_eq(mage["eligibility_error"], &"")
-	assert_eq(mage["xp"], 400)
-	assert_eq(mage["xp_required"], 400)
-	assert_eq((mage["choices"] as Array).size(), 2)
-	var non_mage: Dictionary = rows.filter(
-		func(row: Dictionary) -> bool:
-			return row["first_class_id"] != "mage_apprentice"
-	)[0]
-	assert_false(non_mage["can_promote"])
-	assert_eq(non_mage["eligibility_error"], &"wrong_source_class")
+func test_recruit_choice_screen_projects_exactly_five_standard_classes() -> void:
+	var screen := await _screen_fixture(_campaign_fixture())
+	(screen.find_child("ViewPaths", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"paths")
+	var expected := [
+		"defender", "gunner", "mage_apprentice", "shock_trooper", "swordmaster",
+	]
+	for class_id: String in expected:
+		var card := screen.find_child("Path_%s" % class_id, true, false) as Button
+		assert_not_null(card, class_id)
+		assert_true(
+			card.text.contains(TrainingScreenType.class_label(class_id).to_upper()), class_id,
+		)
+		assert_true(card.text.contains("DP"), class_id)
+		assert_true(card.text.contains("CLASS KIT"), class_id)
+	assert_eq(screen.find_children("Path_*", "Button", true, false).size(), 5)
+	assert_not_null(screen.find_child("PermanentWarning", true, false))
 
 
-func test_training_roster_pins_399_boundary_without_ui_inference() -> void:
-	var state := _promotion_state(399)
-	var mage := _mage_summary(state.training_roster())
-	assert_false(mage["can_promote"])
-	assert_eq(mage["eligibility_error"], &"insufficient_xp")
-	assert_eq(mage["xp_required"] - mage["xp"], 1)
-
-
-func test_support_guard_rejects_legacy_and_accepts_canonical() -> void:
-	var legacy: Variant = LegacyCampaignAdapter.create(_catalogs(), _stages())
-	assert_false(TrainingScreen.supports_campaign(legacy))
-	assert_true(TrainingScreen.supports_campaign(_promotion_state(400)))
-	assert_false(TrainingScreen.supports_campaign(null))
-
-
-func test_command_uses_current_uid_revision_hero_and_choice() -> void:
-	var state := _promotion_state(400)
-	var mage := _mage_summary(state.training_roster())
-	var command: Dictionary = TrainingScreen.build_command(
-		state, mage["hero_id"], "witch_doctor",
-	)
-	assert_eq(command.keys(), [
-		"version", "verb", "command_id", "hero_id", "advanced_class_id",
-		"expected_save_revision",
+func test_two_recruits_remain_distinct_and_review_once_each() -> void:
+	var screen := await _screen_fixture(_campaign_fixture())
+	await _draft_choice(screen, "hero_a", "defender")
+	await _select_roster(screen, "hero_b")
+	await _draft_choice(screen, "hero_b", "gunner")
+	var review := screen.find_child("ReviewPlan", true, false) as Button
+	assert_not_null(review)
+	review.pressed.emit()
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"review")
+	assert_not_null(screen.find_child("Review_hero_a", true, false))
+	assert_not_null(screen.find_child("Review_hero_b", true, false))
+	assert_eq(screen.find_children("Review_hero_*", "Label", true, false).size(), 2)
+	var choices := screen.call("_draft_choices") as Array[Dictionary]
+	assert_eq(choices, [
+		{"hero_id": "hero_a", "to_class_id": "defender"},
+		{"hero_id": "hero_b", "to_class_id": "gunner"},
 	])
-	assert_eq(command["version"], 1)
-	assert_eq(command["verb"], "promote_hero")
-	assert_eq(command["hero_id"], mage["hero_id"])
-	assert_eq(command["advanced_class_id"], "witch_doctor")
-	assert_eq(command["expected_save_revision"], state.save_revision())
-	assert_eq(
-		command["command_id"],
-		CampaignPromotion.command_id(
-			state.campaign_uid(), state.save_revision(), mage["hero_id"],
-			"witch_doctor",
-		),
-	)
 
 
-func test_error_map_is_exhaustive_with_unknown_fallback() -> void:
+func test_review_cancel_sequence_retains_draft() -> void:
+	var screen := await _screen_fixture(_campaign_fixture())
+	await _draft_choice(screen, "hero_a", "defender")
+	(screen.find_child("ReviewPlan", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"review")
+	screen.call("_unhandled_input", _cancel_event())
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"paths")
+	assert_eq(screen.call("selected_choice_id"), "defender")
+	screen.call("_unhandled_input", _cancel_event())
+	await get_tree().process_frame
+	assert_eq(screen.call("mode"), &"roster")
+	assert_eq(screen.get("_draft"), {"hero_a": "defender"})
+
+
+func test_review_error_is_focused_and_draft_survives() -> void:
+	var screen := await _screen_fixture(_campaign_fixture())
+	await _draft_choice(screen, "hero_a", "defender")
+	screen.call("_show_review", &"stale_revision")
+	await get_tree().process_frame
+	var error := screen.find_child("TrainingReviewError", true, false) as Label
+	assert_not_null(error)
+	assert_false(error.text.is_empty())
+	assert_eq(screen.get_viewport().gui_get_focus_owner(), error)
+	assert_eq(screen.get("_draft"), {"hero_a": "defender"})
+	assert_false((screen.find_child("ConfirmTraining", true, false) as Button).disabled)
+
+
+func test_error_map_is_total_with_unknown_fallback() -> void:
 	for code: StringName in EXPECTED_ERRORS:
-		assert_ne(TrainingScreen.error_key(code), &"ui.error.unknown", String(code))
-	assert_eq(TrainingScreen.error_key(&"future_error"), &"ui.error.unknown")
+		assert_ne(TrainingScreenType.error_key(code), &"ui.error.unknown", String(code))
+	assert_eq(TrainingScreenType.error_key(&"future_error"), &"ui.error.unknown")
 
 
-func test_path_screen_projects_both_exact_destination_facts() -> void:
-	var fixture := await _screen_fixture(_promotion_state(400))
-	var screen := fixture as TrainingScreen
-	assert_not_null(screen)
-	if screen == null:
-		return
-	(screen.find_child("ViewPaths", true, false) as Button).pressed.emit()
+func test_pending_storage_retry_disables_review_back() -> void:
+	var screen := await _screen_fixture(_campaign_fixture())
+	await _draft_choice(screen, "hero_a", "defender")
+	Game.set("_pending_promotion_mutation", RefCounted.new())
+	screen.call("_show_review", &"store_write_failed")
 	await get_tree().process_frame
-	assert_eq(screen.mode(), &"paths")
-	var witch := screen.find_child("Path_witch_doctor", true, false) as Button
-	var sorcerer := screen.find_child("Path_sorcerer", true, false) as Button
-	assert_not_null(witch)
-	assert_not_null(sorcerer)
-	assert_true(witch.text.contains("WITCH DOCTOR"))
-	assert_true(witch.text.contains("HEALER / SUPPORT"))
-	assert_true(witch.text.contains("Mend"))
-	assert_true(witch.text.contains("60 HP"))
-	assert_true(witch.text.contains("18 DP"))
-	assert_true(witch.text.contains("CLASS KIT"))
-	assert_true(sorcerer.text.contains("SORCERER"))
-	assert_true(sorcerer.text.contains("DAMAGE / CONTROL"))
-	assert_true(sorcerer.text.contains("Tempest"))
-	assert_true(sorcerer.text.contains("20 DP"))
-	assert_true(sorcerer.text.contains("CLASS KIT"))
-
-
-func test_cancel_confirmation_is_state_and_hash_equal() -> void:
-	var state := _promotion_state(400)
-	var before_data := state.data_copy()
-	var before_hash := state.strategic_hash().duplicate(true)
-	var screen := (await _screen_fixture(state)) as TrainingScreen
-	await _open_confirmation(screen, "witch_doctor")
-	var cancel := screen.find_child("CancelTraining", true, false) as Button
-	assert_not_null(cancel)
-	cancel.pressed.emit()
-	await get_tree().process_frame
-	assert_null(screen.find_child("PromotionConfirmationLayer", true, false))
-	assert_eq(state.data_copy(), before_data)
-	assert_eq(state.strategic_hash(), before_hash)
-
-
-func test_confirm_promotes_same_identity_once_and_announces_success() -> void:
-	var state := _promotion_state(400)
-	var before := _mage_hero(state)
-	var hero_id := before.hero_id()
-	var portrait_id := before.identity_portrait_id()
-	var callsign := String(before.display_callsign()["value"])
-	var screen := (await _screen_fixture(state)) as TrainingScreen
-	await _open_confirmation(screen, "witch_doctor")
+	var back := screen.find_child("ReviewBack", true, false) as Button
 	var confirm := screen.find_child("ConfirmTraining", true, false) as Button
-	assert_not_null(confirm)
-	confirm.pressed.emit()
+	assert_true(back.disabled)
+	assert_false(confirm.disabled)
+	screen.call("_unhandled_input", _cancel_event())
 	await get_tree().process_frame
-	var after := state.roster().by_id(hero_id)
-	assert_eq(after.hero_id(), hero_id)
-	assert_eq(after.identity_portrait_id(), portrait_id)
-	assert_eq(String(after.display_callsign()["value"]), callsign)
-	assert_eq(after.advanced_class_id(), &"witch_doctor")
-	assert_eq(after.operator_def_id(), &"witch_doctor_1")
-	assert_eq(state.save_revision(), 2)
-	assert_eq(state.data_copy()["promotion_receipts"].size(), 1)
-	var success := screen.find_child("TrainingSuccess", true, false) as Label
-	assert_not_null(success)
-	assert_true(success.text.contains(callsign))
-	assert_true(success.text.contains("Witch Doctor"))
+	assert_eq(screen.call("mode"), &"review")
 
 
-func test_confirmation_traps_every_focus_direction_and_restores_background() -> void:
-	var screen := (await _screen_fixture(_promotion_state(400))) as TrainingScreen
-	await _open_confirmation(screen, "witch_doctor")
-	var cancel := screen.find_child("CancelTraining", true, false) as Button
-	var confirm := screen.find_child("ConfirmTraining", true, false) as Button
-	var path := screen.find_child("Path_witch_doctor", true, false) as Button
-	assert_eq(path.focus_mode, Control.FOCUS_NONE)
-	for current: Control in [cancel, confirm]:
-		var other := confirm if current == cancel else cancel
-		var expected := current.get_path_to(other)
-		for actual: NodePath in [
-			current.focus_previous, current.focus_next,
-			current.focus_neighbor_left, current.focus_neighbor_right,
-			current.focus_neighbor_top, current.focus_neighbor_bottom,
-		]:
-			assert_eq(actual, expected)
-	cancel.pressed.emit()
-	await get_tree().process_frame
-	assert_eq(path.focus_mode, Control.FOCUS_ALL)
-
-
-func test_confirm_dispatch_is_consumed_before_duplicate_signal() -> void:
-	var state := _promotion_state(400)
-	var screen := (await _screen_fixture(state)) as TrainingScreen
-	await _open_confirmation(screen, "witch_doctor")
-	var confirm := screen.find_child("ConfirmTraining", true, false) as Button
-	confirm.pressed.emit()
-	confirm.pressed.emit()
-	await get_tree().process_frame
-	assert_eq(int(screen.get("_promotion_dispatch_count")), 1)
-	assert_eq(state.save_revision(), 2)
-	assert_eq(state.data_copy()["promotion_receipts"].size(), 1)
-
-
-func test_ui_cancel_is_modal_only_in_roster_and_path_modes() -> void:
-	var state := _promotion_state(400)
-	var before := state.data_copy()
-	var screen := (await _screen_fixture(state)) as TrainingScreen
-	screen._unhandled_input(_cancel_event())
-	await get_tree().process_frame
-	assert_eq(screen.mode(), &"roster")
-	assert_eq(Game.content, screen)
-	(screen.find_child("ViewPaths", true, false) as Button).pressed.emit()
-	await get_tree().process_frame
-	assert_eq(screen.mode(), &"paths")
-	screen._unhandled_input(_cancel_event())
-	await get_tree().process_frame
-	assert_eq(screen.mode(), &"paths")
-	assert_eq(Game.content, screen)
-	assert_eq(state.data_copy(), before)
-
-
-func _screen_fixture(state: CampaignState) -> Control:
-	Game.campaign = state
+func _screen_fixture(campaign: FakeCampaign) -> Control:
+	Game.campaign = campaign
+	Game.campaign_store = null
 	Game.campaign_active = true
 	var scene := load("res://scenes/training.tscn") as PackedScene
 	var screen := scene.instantiate() as Control
@@ -268,74 +249,91 @@ func _screen_fixture(state: CampaignState) -> Control:
 	return screen
 
 
-func _cancel_event() -> InputEventAction:
-	var event := InputEventAction.new()
-	event.action = &"ui_cancel"
-	event.pressed = true
-	return event
-
-
-func _open_confirmation(screen: TrainingScreen, choice_id: String) -> void:
+func _draft_choice(screen: Control, hero_id: String, class_id: String) -> void:
+	if String(screen.call("selected_hero_id")) != hero_id:
+		await _select_roster(screen, hero_id)
 	(screen.find_child("ViewPaths", true, false) as Button).pressed.emit()
 	await get_tree().process_frame
-	var path := screen.find_child("Path_%s" % choice_id, true, false) as Button
-	path.pressed.emit()
+	(screen.find_child("Path_%s" % class_id, true, false) as Button).pressed.emit()
 	await get_tree().process_frame
 	(screen.find_child("ChoosePath", true, false) as Button).pressed.emit()
 	await get_tree().process_frame
 
 
-func _promotion_state(xp: int) -> CampaignState:
-	var created := CampaignState.create(42, 1, _definition(), _catalogs(), _stages())
-	assert_true(created["accepted"], str(created.get("error_code", &"")))
-	var data: Dictionary = (created["value"] as CampaignState).data_copy()
-	for row: Dictionary in data["heroes"]:
-		if row["first_class_id"] == "mage_apprentice":
-			row["xp"] = xp
-	var restored := CampaignState.restore(
-		data, _definition(), _catalogs(), _stages(),
+func _select_roster(screen: Control, hero_id: String) -> void:
+	var row := screen.find_child("Recruit_%s" % hero_id, true, false) as Button
+	assert_not_null(row, hero_id)
+	row.pressed.emit()
+	await get_tree().process_frame
+
+
+func _campaign_fixture() -> FakeCampaign:
+	var heroes: Array[Dictionary] = [
+		_hero("hero_c", 2, 99, "ready", "portrait_recruit_02"),
+		_hero("hero_a", 0, 100, "ready", "portrait_recruit_00"),
+		_hero("hero_dead", 3, 100, "dead", "portrait_recruit_03"),
+		_hero("hero_b", 1, 100, "ready", "portrait_recruit_01"),
+	]
+	var choices := _standard_choices()
+	return FakeCampaign.new(
+		heroes,
+		{
+			"hero_a": {"accepted": true, "error_code": &"", "choices": choices},
+			"hero_b": {"accepted": true, "error_code": &"", "choices": choices},
+			"hero_c": {
+				"accepted": false, "error_code": &"insufficient_xp", "choices": [],
+			},
+			"hero_dead": {"accepted": false, "error_code": &"dead_hero", "choices": []},
+		},
 	)
-	assert_true(restored["accepted"], str(restored.get("error_code", &"")))
-	return restored["value"]
 
 
-func _mage_summary(rows: Array[Dictionary]) -> Dictionary:
-	for row: Dictionary in rows:
-		if row["first_class_id"] == "mage_apprentice":
-			return row
-	return {}
-
-
-func _mage_hero(state: CampaignState) -> HeroState:
-	for hero: HeroState in state.roster().all():
-		if hero.first_class_id() == &"mage_apprentice":
-			return hero
-	return null
-
-
-func _definition() -> CampaignDef:
-	return load("res://data/campaigns/p16_v2.tres") as CampaignDef
-
-
-func _catalogs() -> Dictionary:
+func _hero(
+	hero_id: String, index: int, xp: int, life_status: String, portrait: String,
+) -> Dictionary:
 	return {
-		"operators": _catalog_ids("res://data/operators"),
-		"traps": _catalog_ids("res://data/traps"),
-		"spells": _catalog_ids("res://data/spells"),
+		"hero_id": hero_id,
+		"current_class_id": "recruit",
+		"operator_def_id": "recruit",
+		"portrait_asset_id": portrait,
+		"identity_portrait_id": portrait,
+		"recruitment_index": index,
+		"name_version": 1,
+		"custom_callsign": "Recruit %d" % (index + 1),
+		"life_status": life_status,
+		"xp": xp,
 	}
 
 
-func _stages() -> Array:
-	var values: Array = []
-	for index: int in range(1, 9):
-		values.append(load("res://data/stages/s%d.tres" % index) as StageDef)
-	return values
+func _standard_choices() -> Array[Dictionary]:
+	return [
+		_choice("shock_trooper", "vanguard_1"),
+		_choice("swordmaster", "guard_1"),
+		_choice("defender", "defender_1"),
+		_choice("gunner", "sniper_1"),
+		_choice("mage_apprentice", "caster_1"),
+	]
 
 
-func _catalog_ids(path: String) -> Array[StringName]:
-	var values: Array[StringName] = []
-	for filename: String in DirAccess.open(path).get_files():
-		var source := filename.trim_suffix(".remap")
-		if source.ends_with(".tres"):
-			values.append(StringName(source.trim_suffix(".tres")))
-	return values
+func _choice(class_id: String, operator_id: String) -> Dictionary:
+	return {
+		"hero_id": "",
+		"from_class_id": "recruit",
+		"to_class_id": class_id,
+		"operator_def_id": operator_id,
+		"xp_required": 100,
+	}
+
+
+func _catalog(locale: String) -> Dictionary:
+	var payload := JSON.parse_string(
+		FileAccess.get_file_as_string("res://localization/%s.json" % locale),
+	) as Dictionary
+	return payload["entries"]
+
+
+func _cancel_event() -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = &"ui_cancel"
+	event.pressed = true
+	return event

@@ -14,6 +14,8 @@ const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
 const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
 const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_context.gd")
 const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
+const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
+const TRAINING_SUPPORT_SCRIPT := preload("res://scripts/ui/components/training_support.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -32,10 +34,13 @@ var selected_stage_id: StringName = &""
 var selected_squad: Array[StringName] = []
 var last_result: Dictionary = {}
 var last_campaign_error: StringName = &""
+var training_return_path: StringName = &"staging"
+var training_acknowledgement: Array[Dictionary] = []
 var _debug_catalog_override: bool = false
 var _campaign_context: Dictionary = {}
 var _pending_battle_ticket: Dictionary = {}
 var _pending_campaign_mutation: Variant = null
+var _pending_promotion_mutation: Variant = null
 var _campaign_battle_active := false
 
 
@@ -66,8 +71,11 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	selected_squad = []
 	last_result = {}
 	last_campaign_error = &""
+	training_return_path = &"staging"
+	training_acknowledgement.clear()
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
+	_pending_promotion_mutation = null
 	_campaign_battle_active = false
 	_restore_pending_attempt()
 	if open_campaign_ui:
@@ -294,6 +302,96 @@ func commit_campaign_command(command: Dictionary) -> Dictionary:
 	return committed
 
 
+func training_call(action: StringName, payload: Variant = null) -> Variant:
+	var result: Variant = null
+	match action:
+		&"eligible_count":
+			result = TRAINING_SUPPORT_SCRIPT.eligible_count(campaign) if campaign_active else 0
+		&"commit":
+			result = _commit_promotions(payload as Array)
+		&"retry":
+			result = _retry_promotions()
+		&"retry_pending":
+			result = _pending_promotion_mutation != null
+		&"peek_acknowledgement":
+			result = training_acknowledgement.duplicate(true)
+		&"consume_acknowledgement":
+			training_acknowledgement.clear()
+			result = true
+		&"open":
+			_open_training(StringName(payload))
+			result = true
+		&"leave":
+			_leave_training()
+			result = true
+	return result
+
+
+## Build and durably commit one atomic, canonical promotion batch. The UI owns
+## only its local draft; CampaignStateV3 remains the sole legality authority.
+func _commit_promotions(choices: Array) -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if _pending_promotion_mutation != null:
+		return {"accepted": false, "error_code": &"promotion_retry_pending"}
+	var canonical: Array[Dictionary] = []
+	for raw: Variant in choices:
+		if typeof(raw) != TYPE_DICTIONARY:
+			return {"accepted": false, "error_code": &"invalid_promotion_choice"}
+		var row := raw as Dictionary
+		canonical.append(
+			{
+				"hero_id": String(row.get("hero_id", "")),
+				"to_class_id": String(row.get("to_class_id", "")),
+			}
+		)
+	canonical.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return String(a["hero_id"]) < String(b["hero_id"])
+	)
+	var revision: int = campaign.save_revision()
+	var digest := CANONICAL_JSON_SCRIPT.sha256_hex(canonical).substr(0, 16)
+	var command_id := "runtime:promote:%s:%d:%s" % [
+		campaign.campaign_uid(), revision, digest,
+	]
+	var command: Dictionary = campaign.confirm_promotions(
+		command_id, revision, canonical,
+	)
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+		command, campaign_store,
+	)
+	if not committed["accepted"]:
+		if committed.get("retryable", false):
+			_pending_promotion_mutation = committed.get("mutation")
+		return committed
+	_publish_promotion_commit(committed)
+	return committed
+
+
+func _retry_promotions() -> Dictionary:
+	if _pending_promotion_mutation == null:
+		return {"accepted": false, "error_code": &"no_promotion_retry"}
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+		_pending_promotion_mutation, campaign_store,
+	)
+	if not committed["accepted"]:
+		if not committed.get("retryable", false):
+			_pending_promotion_mutation = null
+		return committed
+	_pending_promotion_mutation = null
+	_publish_promotion_commit(committed)
+	return committed
+
+
+func _publish_promotion_commit(committed: Dictionary) -> void:
+	campaign = committed["state"]
+	if not bool(committed["result"].get("fresh", true)):
+		return
+	training_acknowledgement.clear()
+	for row: Dictionary in committed["result"]["promotion"]["choices"]:
+		training_acknowledgement.append(row.duplicate(true))
+
+
 func _debug_unlock_all() -> void:
 	_debug_catalog_override = true
 
@@ -309,10 +407,13 @@ func open_title() -> void:
 	selected_stage_id = &""
 	selected_squad = []
 	last_result = {}
+	training_return_path = &"staging"
+	training_acknowledgement.clear()
 	_debug_catalog_override = false
 	_campaign_context = {}
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
+	_pending_promotion_mutation = null
 	_campaign_battle_active = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
@@ -323,8 +424,16 @@ func open_staging() -> void:
 	_swap_content.call_deferred(STAGING_SCENE_PATH)
 
 
-func open_training() -> void:
+func _open_training(return_path: StringName = &"staging") -> void:
+	training_return_path = return_path if return_path in [&"results", &"staging"] else &"staging"
 	_swap_content.call_deferred(TRAINING_SCENE_PATH)
+
+
+func _leave_training() -> void:
+	if training_return_path == &"results":
+		open_results()
+	else:
+		open_staging()
 
 
 func open_stage_select() -> void:

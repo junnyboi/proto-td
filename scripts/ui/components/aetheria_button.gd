@@ -31,7 +31,13 @@ func _init() -> void:
 
 
 func _get_minimum_size() -> Vector2:
-	return custom_minimum_size
+	var minimum := custom_minimum_size
+	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType
+	if label != null:
+		var label_minimum := label.get_combined_minimum_size() + Vector2(32.0, 20.0)
+		minimum.x = maxf(minimum.x, label_minimum.x)
+		minimum.y = maxf(minimum.y, label_minimum.y)
+	return minimum
 
 
 func apply_role(value: StringName) -> bool:
@@ -67,6 +73,29 @@ func set_presentation_text(logical_text: String, rendered_text: String) -> bool:
 		label.apply_role(&"body")
 		add_child(label)
 	label.text = rendered_text
+	return true
+
+
+func fit_presentation(
+	max_width: float,
+	minimum_width: float = 44.0,
+	minimum_height: float = 52.0,
+) -> bool:
+	var label := get_node_or_null("PresentationLabel") as AetheriaLabelType
+	if label == null or max_width < 44.0:
+		return false
+	var font := label.get_theme_font(&"font")
+	var font_size := label.get_theme_font_size(&"font_size")
+	var text_width := font.get_string_size(
+		label.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size,
+	).x
+	var width := clampf(maxf(minimum_width, text_width + 32.0), 44.0, max_width)
+	var line_width := maxf(1.0, width - 32.0)
+	var line_count := maxi(1, ceili(text_width / line_width))
+	var height := maxf(minimum_height, font.get_height(font_size) * line_count + 20.0)
+	custom_minimum_size = Vector2(width, height)
+	label.clip_text = false
+	update_minimum_size()
 	return true
 
 

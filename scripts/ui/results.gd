@@ -30,6 +30,7 @@ const StageNarrativeCatalogType := preload(
 
 var _actions: GridContainer = null
 var _shell: AetheriaScreenShellType = null
+var _landscape_action_columns := 3
 
 
 func _ready() -> void:
@@ -139,6 +140,27 @@ func _ready() -> void:
 	var retry: AetheriaButtonType = null
 	var next: AetheriaButtonType = null
 	if Game.campaign_active and Game.campaign != null:
+		var eligible_count := int(Game.training_call(&"eligible_count"))
+		if eligible_count > 0:
+			column.add_child(_label(
+				"TrainingAvailable",
+				UiCopyType.format_text(
+					&"ui.results.training_available",
+					"{count} recruits ready for training.",
+					{&"count": eligible_count},
+				),
+				&"dense_heading",
+			))
+			var training := _button(
+				"TrainRecruits",
+				UiCopyType.text(&"ui.results.train_recruits", "Train Recruits"),
+				UiCopyType.text(&"ui.results.train_short", "Train"),
+				&"primary",
+			)
+			training.pressed.connect(_on_train_recruits)
+			_actions.add_child(training)
+			focusable.append(training)
+			_landscape_action_columns = 2
 		retry = _button(
 			"RetryButton", UiCopyType.text(&"ui.results.retry", "Retry"), "Retry", &"secondary",
 		)
@@ -173,7 +195,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_layout_mode_changed(mode: StringName) -> void:
 	if _actions != null:
-		_actions.columns = 1 if mode == &"portrait" else 3
+		_actions.columns = 1 if mode == &"portrait" else _landscape_action_columns
 	if _shell != null:
 		_shell.preferred_size = PORTRAIT_SIZE if mode == &"portrait" else LANDSCAPE_SIZE
 
@@ -211,6 +233,11 @@ func _wire_focus(focusable: Array[Button]) -> void:
 func _on_return_to_staging() -> void:
 	Sfx.play("ui_click")
 	Game.open_staging()
+
+
+func _on_train_recruits() -> void:
+	Sfx.play("ui_click")
+	Game.training_call(&"open", &"results")
 
 
 func _on_retry() -> void:
