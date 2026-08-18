@@ -202,6 +202,43 @@ class RecruitApprovalTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.validate(current_manifest=extra)
 
+    def test_current_manifest_rejects_duplicate_recruit_keys_in_every_position(self) -> None:
+        text = self.current_manifest.decode("utf-8")
+
+        def prepend(entry: str) -> bytes:
+            return text.replace("entries = {\n", "entries = {\n" + entry + "\n", 1).encode(
+                "utf-8"
+            )
+
+        def append(entry: str) -> bytes:
+            head, tail = text.rsplit("\n}", 1)
+            return (head + "\n" + entry + "\n}" + tail).encode("utf-8")
+
+        duplicate_entries: list[str] = []
+        for logical_id in approval.APPROVED_LOGICAL_IDS:
+            entry = approval._manifest_entry(text, logical_id)
+            hostile = entry
+            if logical_id.startswith("portrait_recruit_"):
+                hostile = re.sub(r"recruit_[0-7]\.png", "recruit_07.png", entry, count=1)
+            else:
+                hostile = entry.replace("recruit_%d.png", "recruit_hostile_%d.png", 1)
+            duplicate_entries.append(hostile)
+            for position, payload in {
+                "prepended_exact": prepend(entry),
+                "appended_exact": append(entry),
+                "prepended_hostile": prepend(hostile),
+                "appended_hostile": append(hostile),
+            }.items():
+                with self.subTest(logical_id=logical_id, position=position):
+                    with self.assertRaises(ValueError):
+                        self.validate(current_manifest=payload)
+
+        all_nine = "\n".join(duplicate_entries)
+        with self.assertRaises(ValueError):
+            self.validate(current_manifest=prepend(all_nine))
+        with self.assertRaises(ValueError):
+            self.validate(current_manifest=append(all_nine))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

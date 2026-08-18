@@ -123,9 +123,13 @@ def _manifest_entry(text: str, logical_id: str) -> str:
     raise ValueError(f"Recruit manifest entry is unterminated: {logical_id}")
 
 
-def _recruit_manifest_ids(text: str) -> set[str]:
-    ids = set(re.findall(r'^&"([^"]+)": \{$', text, flags=re.MULTILINE))
-    return {logical_id for logical_id in ids if logical_id == "recruit" or logical_id.startswith("portrait_recruit_")}
+def _recruit_manifest_ids(text: str) -> list[str]:
+    ids = re.findall(r'^&"([^"]+)": \{$', text, flags=re.MULTILINE)
+    return [
+        logical_id
+        for logical_id in ids
+        if logical_id == "recruit" or logical_id.startswith("portrait_recruit_")
+    ]
 
 
 def _closed_manifest_entry(repo: Path, approved_entry: str, logical_id: str) -> str:
@@ -156,9 +160,11 @@ def _validate_current_manifest(
     except UnicodeDecodeError as error:
         raise ValueError("Recruit manifest is not UTF-8") from error
     expected_ids = set(APPROVED_LOGICAL_IDS)
-    if _recruit_manifest_ids(approved_text) != expected_ids:
+    approved_ids = _recruit_manifest_ids(approved_text)
+    current_ids = _recruit_manifest_ids(current_text)
+    if len(approved_ids) != len(expected_ids) or set(approved_ids) != expected_ids:
         raise ValueError("Recruit approved manifest logical ID closure mismatch")
-    if _recruit_manifest_ids(current_text) != expected_ids:
+    if len(current_ids) != len(expected_ids) or set(current_ids) != expected_ids:
         raise ValueError("Recruit current manifest logical ID closure mismatch")
     for logical_id in APPROVED_LOGICAL_IDS:
         approved_entry = _manifest_entry(approved_text, logical_id)
@@ -307,6 +313,7 @@ def authenticate_recruit_approval(
     generated_contact_sheet: bytes | None = None,
     candidate_manifest: bytes | None = None,
     current_manifest: bytes | None = None,
+    file_overrides: dict[str, bytes] | None = None,
 ) -> dict[str, Any]:
     repo = repo.resolve()
     approval_file = _disk_path(repo, APPROVAL_PATH)
@@ -325,4 +332,5 @@ def authenticate_recruit_approval(
         generated_contact_sheet=generated_contact_sheet,
         candidate_manifest=candidate_manifest,
         current_manifest=current_manifest,
+        file_overrides=file_overrides,
     )

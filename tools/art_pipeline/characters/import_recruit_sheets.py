@@ -46,6 +46,10 @@ MAGENTA_MIN_BLUE = 220
 PRIMARY_COMPONENT_MIN_RATIO = 0.95
 SECONDARY_COMPONENT_MAX_RATIO = 0.05
 PORTRAIT_IDS = [f"recruit_{index:02d}" for index in range(8)]
+PORTRAIT_SOURCE_RESOURCE = (
+    "res://art-src/characters/recruit/recruit-portrait-treatment-sheet.png"
+)
+FIELD_SOURCE_RESOURCE = "res://art-src/characters/recruit/recruit-field-master.png"
 RESERVED_RGB = {
     tuple(bytes.fromhex("f4f4f4")),
     tuple(bytes.fromhex("41a6f6")),
@@ -80,6 +84,20 @@ def png_bytes(image: Image.Image) -> bytes:
     output = io.BytesIO()
     image.save(output, format="PNG", optimize=False, compress_level=9)
     return output.getvalue()
+
+
+def authenticate_source_bytes(
+    repo: Path,
+    portrait_source_bytes: bytes,
+    field_source_bytes: bytes,
+) -> None:
+    authenticate_recruit_approval(
+        repo,
+        file_overrides={
+            PORTRAIT_SOURCE_RESOURCE: portrait_source_bytes,
+            FIELD_SOURCE_RESOURCE: field_source_bytes,
+        },
+    )
 
 
 def source_background(image: Image.Image) -> tuple[int, int, int]:
@@ -134,7 +152,12 @@ def foreground_components(image: Image.Image, min_alpha: int = 32) -> list[dict[
     return components
 
 
-def validate_source_subject(source: Image.Image, label: str, field: bool) -> None:
+def validate_source_subject(
+    source: Image.Image,
+    label: str,
+    field: bool,
+    approved_lower_bust_crop: bool = False,
+) -> None:
     background = source_background(source)
     if not (
         background[0] >= MAGENTA_MIN_RED
@@ -196,13 +219,13 @@ def validate_source_subject(source: Image.Image, label: str, field: bool) -> Non
         if left_contact or right_contact or left <= 0 or right >= source.width:
             raise ValueError(f"{label}: field subject is clipped at a side edge")
     else:
-        upper_limit = round(source.height * 0.60)
-        upper_left_contact = any(alpha.getpixel((0, y)) >= 32 for y in range(upper_limit))
-        upper_right_contact = any(
-            alpha.getpixel((source.width - 1, y)) >= 32 for y in range(upper_limit)
+        side_limit = round(source.height * 0.60) if approved_lower_bust_crop else source.height
+        left_contact = any(alpha.getpixel((0, y)) >= 32 for y in range(side_limit))
+        right_contact = any(
+            alpha.getpixel((source.width - 1, y)) >= 32 for y in range(side_limit)
         )
-        if upper_left_contact or upper_right_contact:
-            raise ValueError(f"{label}: portrait head or upper body is clipped at a side edge")
+        if left_contact or right_contact:
+            raise ValueError(f"{label}: portrait subject is clipped at a side edge")
     if width_ratio < min_width or height_ratio < 0.50 or area_ratio < min_area:
         raise ValueError(
             f"{label}: incomplete foreground occupancy width={width_ratio:.4f} "
@@ -403,8 +426,11 @@ def run(repo: Path, review_dir: Path | None) -> None:
     source_root = repo / "art-src/characters/recruit"
     portrait_source_path = source_root / "recruit-portrait-treatment-sheet.png"
     field_source_path = source_root / "recruit-field-master.png"
-    portrait_source = Image.open(portrait_source_path).convert("RGBA")
-    field_source = Image.open(field_source_path).convert("RGBA")
+    portrait_source_bytes = portrait_source_path.read_bytes()
+    field_source_bytes = field_source_path.read_bytes()
+    authenticate_source_bytes(repo, portrait_source_bytes, field_source_bytes)
+    portrait_source = Image.open(io.BytesIO(portrait_source_bytes)).convert("RGBA")
+    field_source = Image.open(io.BytesIO(field_source_bytes)).convert("RGBA")
     if portrait_source.size != PORTRAIT_SOURCE_SIZE:
         raise ValueError(
             f"unexpected portrait source size: {portrait_source.size}; expected {PORTRAIT_SOURCE_SIZE}"
@@ -421,7 +447,12 @@ def run(repo: Path, review_dir: Path | None) -> None:
     generated_assets: dict[str, bytes] = {}
     for index, portrait_id in enumerate(PORTRAIT_IDS):
         source_crop = portrait_source.crop(portrait_crop(index))
-        validate_source_subject(source_crop, f"Recruit portrait source {index:02d}", False)
+        validate_source_subject(
+            source_crop,
+            f"Recruit portrait source {index:02d}",
+            False,
+            approved_lower_bust_crop=True,
+        )
         portrait = normalize_subject(
             source_crop,
             PORTRAIT_SIZE,

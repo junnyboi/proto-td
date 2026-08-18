@@ -33,6 +33,7 @@ class RecruitImporterTests(unittest.TestCase):
                 portraits.crop(importer.portrait_crop(index)),
                 f"accepted portrait {index}",
                 False,
+                approved_lower_bust_crop=True,
             )
 
     def test_empty_wrong_background_and_top_clipped_sources_reject(self) -> None:
@@ -78,7 +79,9 @@ class RecruitImporterTests(unittest.TestCase):
     def test_connected_portrait_subject_clipped_at_each_edge_rejects(self) -> None:
         boxes = {
             "left": (0, 35, 145, 180),
+            "lower_left": (0, 130, 145, 180),
             "right": (55, 35, 199, 180),
+            "lower_right": (55, 130, 199, 180),
             "top": (25, 0, 175, 180),
             "bottom": (25, 20, 175, 199),
         }
@@ -103,19 +106,17 @@ class RecruitImporterTests(unittest.TestCase):
                 portrait_sheet = Image.new("RGBA", (800, 400), (244, 12, 232, 255))
                 ImageDraw.Draw(portrait_sheet).rectangle(box, fill=(20, 40, 60, 255))
 
-                def source_open(path: Path) -> Image.Image:
-                    return (
-                        portrait_sheet.copy()
-                        if "portrait-treatment" in str(path)
-                        else valid_field.copy()
-                    )
-
                 review_dir = Path(temp) / "review"
                 with (
                     mock.patch.object(importer, "PORTRAIT_SOURCE_SIZE", (800, 400)),
                     mock.patch.object(importer, "FIELD_SOURCE_SIZE", (200, 200)),
                     mock.patch.object(importer, "PORTRAIT_CELL_SIZE", (200, 200)),
-                    mock.patch.object(importer.Image, "open", side_effect=source_open),
+                    mock.patch.object(
+                        importer.Image,
+                        "open",
+                        side_effect=[portrait_sheet.copy(), valid_field.copy()],
+                    ),
+                    mock.patch.object(importer, "authenticate_source_bytes"),
                     mock.patch.object(importer, "save_atomic") as save,
                     mock.patch.object(importer, "authenticate_recruit_approval") as authenticate,
                 ):
@@ -124,6 +125,62 @@ class RecruitImporterTests(unittest.TestCase):
                     save.assert_not_called()
                     authenticate.assert_not_called()
                     self.assertFalse(review_dir.exists())
+
+    def test_exact_source_authentication_rejects_lower_side_source_mutation(self) -> None:
+        portrait_path = REPO / importer.PORTRAIT_SOURCE_RESOURCE.removeprefix("res://")
+        field_path = REPO / importer.FIELD_SOURCE_RESOURCE.removeprefix("res://")
+        portrait_bytes = portrait_path.read_bytes()
+        field_bytes = field_path.read_bytes()
+        importer.authenticate_source_bytes(REPO, portrait_bytes, field_bytes)
+        changed = Image.open(portrait_path).convert("RGBA")
+        ImageDraw.Draw(changed).line((220, 600, 0, 690), fill=(20, 40, 60, 255), width=12)
+        with self.assertRaises(ValueError):
+            importer.authenticate_source_bytes(
+                REPO,
+                importer.png_bytes(changed),
+                field_bytes,
+            )
+
+    def test_full_run_lower_side_source_mutation_writes_nothing(self) -> None:
+        portrait_path = REPO / importer.PORTRAIT_SOURCE_RESOURCE.removeprefix("res://")
+        original_read_bytes = Path.read_bytes
+        changed = Image.open(portrait_path).convert("RGBA")
+        ImageDraw.Draw(changed).line((220, 600, 0, 690), fill=(20, 40, 60, 255), width=12)
+        changed_bytes = importer.png_bytes(changed)
+
+        def read_with_tamper(path: Path) -> bytes:
+            return changed_bytes if path == portrait_path else original_read_bytes(path)
+
+        with TemporaryDirectory() as temp:
+            review_dir = Path(temp) / "review"
+            with (
+                mock.patch.object(Path, "read_bytes", read_with_tamper),
+                mock.patch.object(importer.Image, "open") as decode,
+                mock.patch.object(importer, "save_atomic") as save,
+            ):
+                with self.assertRaises(ValueError):
+                    importer.run(REPO, review_dir)
+                decode.assert_not_called()
+                save.assert_not_called()
+                self.assertFalse(review_dir.exists())
+
+    def test_source_authentication_failure_precedes_decode_and_every_write(self) -> None:
+        with TemporaryDirectory() as temp:
+            review_dir = Path(temp) / "review"
+            with (
+                mock.patch.object(
+                    importer,
+                    "authenticate_source_bytes",
+                    side_effect=ValueError("tampered source"),
+                ),
+                mock.patch.object(importer.Image, "open") as decode,
+                mock.patch.object(importer, "save_atomic") as save,
+            ):
+                with self.assertRaises(ValueError):
+                    importer.run(REPO, review_dir)
+                decode.assert_not_called()
+                save.assert_not_called()
+                self.assertFalse(review_dir.exists())
 
     def test_approval_failure_occurs_before_any_output_write(self) -> None:
         image = Image.new("RGBA", (2, 2), (0, 0, 0, 0))

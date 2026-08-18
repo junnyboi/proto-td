@@ -1946,7 +1946,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_00.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "875bab809b985bc26595042174dc222410bf1a5e7adaad6f9a4d85df80cbd463",
+"provenance_sha256": "06cfe27d3521e92167e8b1393b506bc9da03817d333a8eb18a70b2be008e4067",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_01": {
@@ -1962,7 +1962,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_01.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "a81cf21fe00c11a587fcacb36fcfd7198c6cad9a11eafd1898bab35643531b53",
+"provenance_sha256": "0db8746c9842c4cc7165c87adcef98c1334d6540c7797ddaf109fd0b32c91755",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_02": {
@@ -1978,7 +1978,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_02.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "e04da69270518fd202a85b7d635969cce8ca31b10ee050ddd0d587a4eef466db",
+"provenance_sha256": "2093eddb95bd5e3939ba174dd8e7d8ebc2ea74369312236d4bde64cb0f4bd3b1",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_03": {
@@ -1994,7 +1994,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_03.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "a586179c82a29d2f01eb1b06c23bccafce1e6ad183711288c03e0e2a2e2c9f32",
+"provenance_sha256": "1f878477e30bb6c1dbc8ddf495398a5e972a8f096b6891190874825b131ced6e",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_04": {
@@ -2010,7 +2010,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_04.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "91d5529551fbc88d79d0194ec60de11da63f692b13c508a0fd96fd29238d939c",
+"provenance_sha256": "7fbc703258854e53b96fa94fd0c812b3e213447359ba1ab2ae3506dd146bdaf3",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_05": {
@@ -2026,7 +2026,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_05.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "eed3f38ef6a99c399d23cbc78ac14d79a5549e83b629f0ac070d749b4b3ac72d",
+"provenance_sha256": "7bf44e8ebcf4e1a0978248fc794b4cf29c806bbe5603303e0d749efde2ee8445",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_06": {
@@ -2042,7 +2042,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_06.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "2c0c56e16f17897a020221b7f9aebf6b28b03aa5976a9a9273ab994107cb75e3",
+"provenance_sha256": "25b8188579e437bde2166b44550092b3d46b83eaa3c5f23d5209add20db6c829",
 "size": Vector2i(128, 128)
 },
 &"portrait_recruit_07": {
@@ -2058,7 +2058,7 @@ entries = {
 "pattern": "res://assets/portraits/recruit_07.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"provenance_sha256": "2776d9bd0b35c5371b2c3ca86d9cada70c4e4c6c5984142df471fe75f35d3a84",
+"provenance_sha256": "ec187214e0105f9d0175f7d642f89bf007d1874be062b409f5bc20936a8765a8",
 "size": Vector2i(128, 128)
 },
 &"portrait_sniper_1": {
@@ -2166,7 +2166,7 @@ entries = {
 "pattern": "res://assets/sprites/recruit_%d.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
-"provenance_sha256": "47cdca5480d76d0ee6129a6df024abd0a88860459fbfae6ac3c348f2978c1854",
+"provenance_sha256": "76487caeddf0802581a71dff25d2de2e1d31bea75f9ac1b114f1d7392a939cd0",
 "size": Vector2i(32, 32)
 },
 &"runner": {
