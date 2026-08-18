@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import re
@@ -123,8 +124,70 @@ def _manifest_entry(text: str, logical_id: str) -> str:
     raise ValueError(f"Recruit manifest entry is unterminated: {logical_id}")
 
 
+def _manifest_entry_keys(text: str) -> list[str]:
+    match = re.search(r"\bentries\s*=\s*\{", text)
+    if match is None:
+        raise ValueError("Recruit manifest entries dictionary is missing")
+    index = text.find("{", match.start())
+    depth = 0
+    keys: list[str] = []
+    while index < len(text):
+        char = text[index]
+        if char == "#" or text.startswith("//", index):
+            newline = text.find("\n", index)
+            index = len(text) if newline < 0 else newline + 1
+            continue
+        if char == '"':
+            start = index
+            index += 1
+            escaped = False
+            while index < len(text):
+                current = text[index]
+                if escaped:
+                    escaped = False
+                elif current == "\\":
+                    escaped = True
+                elif current == '"':
+                    break
+                index += 1
+            if index >= len(text):
+                raise ValueError("Recruit manifest contains an unterminated string")
+            raw = text[start : index + 1]
+            after = index + 1
+            while after < len(text):
+                while after < len(text) and text[after].isspace():
+                    after += 1
+                if after < len(text) and text[after] == "#":
+                    newline = text.find("\n", after)
+                    after = len(text) if newline < 0 else newline + 1
+                    continue
+                if text.startswith("//", after):
+                    newline = text.find("\n", after)
+                    after = len(text) if newline < 0 else newline + 1
+                    continue
+                break
+            if depth == 1 and after < len(text) and text[after] == ":":
+                try:
+                    key = ast.literal_eval(raw)
+                except (SyntaxError, ValueError) as error:
+                    raise ValueError("Recruit manifest key escape is invalid") from error
+                if not isinstance(key, str):
+                    raise ValueError("Recruit manifest dictionary key is not text")
+                keys.append(key)
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return keys
+            if depth < 0:
+                raise ValueError("Recruit manifest entries dictionary is malformed")
+        index += 1
+    raise ValueError("Recruit manifest entries dictionary is unterminated")
+
+
 def _recruit_manifest_ids(text: str) -> list[str]:
-    ids = re.findall(r'^&"([^"]+)": \{$', text, flags=re.MULTILINE)
+    ids = _manifest_entry_keys(text)
     return [
         logical_id
         for logical_id in ids

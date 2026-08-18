@@ -195,9 +195,11 @@ class RecruitApprovalTests(unittest.TestCase):
         removed = text.replace(portrait, "", 1).encode("utf-8")
         with self.assertRaises(ValueError):
             self.validate(current_manifest=removed)
+        head, tail = text.rsplit("\n}", 1)
         extra = (
-            text
-            + '\n&"portrait_recruit_08": {\n"frames": 1\n}\n'
+            head
+            + '\n&"portrait_recruit_08": {\n"frames": 1\n}\n}'
+            + tail
         ).encode("utf-8")
         with self.assertRaises(ValueError):
             self.validate(current_manifest=extra)
@@ -223,15 +225,30 @@ class RecruitApprovalTests(unittest.TestCase):
             else:
                 hostile = entry.replace("recruit_%d.png", "recruit_hostile_%d.png", 1)
             duplicate_entries.append(hostile)
-            for position, payload in {
-                "prepended_exact": prepend(entry),
-                "appended_exact": append(entry),
-                "prepended_hostile": prepend(hostile),
-                "appended_hostile": append(hostile),
-            }.items():
-                with self.subTest(logical_id=logical_id, position=position):
-                    with self.assertRaises(ValueError):
-                        self.validate(current_manifest=payload)
+            marker = f'&"{logical_id}": {{'
+            escaped_id = logical_id.replace("i", "\\u0069", 1)
+            key_variants = {
+                "string_name": marker,
+                "spaced_colon": f'&"{logical_id}" : {{',
+                "tab_newline": f'&"{logical_id}"\t:\n{{',
+                "plain_string": f'"{logical_id}": {{',
+                "escaped_plain_string": f'"{escaped_id}": {{',
+                "hash_comment": f'&"{logical_id}" # }} ignored\n : {{',
+                "slash_comment": f'"{logical_id}" // {{ ignored\n : {{',
+            }
+            for spelling, replacement in key_variants.items():
+                variant = hostile.replace(marker, replacement, 1)
+                for position, payload in {
+                    "prepended": prepend(variant),
+                    "appended": append(variant),
+                }.items():
+                    with self.subTest(
+                        logical_id=logical_id,
+                        spelling=spelling,
+                        position=position,
+                    ):
+                        with self.assertRaises(ValueError):
+                            self.validate(current_manifest=payload)
 
         all_nine = "\n".join(duplicate_entries)
         with self.assertRaises(ValueError):
