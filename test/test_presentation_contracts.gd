@@ -367,6 +367,13 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 				document["acceptance"]["accepting_commit"],
 				"60b69a6004a9c843851d9f6c9aee84c88389cb1f",
 			)
+		elif id == "recruit" or id.begins_with("portrait_recruit_"):
+			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
+			assert_eq(document["generation"]["model"], "gpt-image-2")
+			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
+			assert_null(document["acceptance"]["human_accepter"])
+			assert_null(document["acceptance"]["accepting_commit"])
+			assert_true(bool(manifest.entries[StringName(id)]["placeholder"]))
 		elif _is_round5_character(id):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
@@ -578,18 +585,23 @@ func _expected_sources(id: String) -> Array[String]:
 			"res://assets/asset_manifest.gd",
 			"res://data/operator_def.gd",
 			"res://data/operators/recruit.tres",
-			"res://docs/decisions/AUI-DESIGN-APPROVALS.md",
-			"res://docs/decisions/AUI-ROUND5-RUNTIME-BINDING.md",
+			"res://art-src/characters/round5/roster-style-board.png",
+			"res://tools/art_pipeline/characters/import_recruit_sheets.py",
 			"res://tools/art_pipeline/characters/import_round5_sheets.py",
 			"res://tools/gen_assets.gd",
 			"res://tools/pixel/palette.gd",
-			"res://tools/pixel/pix.gd",
 		]
-		recruit_sources.append(
-			"res://art-src/characters/round5/portrait-treatment-sheet.png"
-			if id.begins_with("portrait_")
-			else "res://art-src/characters/round5/roster-style-board.png"
-		)
+		if id.begins_with("portrait_"):
+			recruit_sources.append(
+				"res://art-src/characters/recruit/recruit-portrait-treatment-sheet.png"
+			)
+			recruit_sources.append(
+				"res://art-src/characters/round5/portrait-treatment-sheet.png"
+			)
+		else:
+			recruit_sources.append(
+				"res://art-src/characters/recruit/recruit-field-master.png"
+			)
 		recruit_sources.sort()
 		return recruit_sources
 	if _is_round5_character(id):

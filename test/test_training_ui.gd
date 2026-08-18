@@ -138,7 +138,7 @@ func test_v3_support_guard_and_roster_projection_are_stable() -> void:
 	assert_false(TrainingSupportType.supports_campaign(RefCounted.new()))
 	assert_false(TrainingSupportType.supports_campaign(null))
 	var rows := TrainingSupportType.roster(campaign)
-	assert_eq(rows.map(func(row: Dictionary) -> int: return row["recruitment_index"]), [0, 1, 2, 3])
+	assert_eq(rows.map(func(row: Dictionary) -> int: return row["recruitment_index"]), [0, 1, 2])
 	assert_eq(TrainingSupportType.eligible_count(campaign), 2)
 	assert_true(rows[0]["can_promote"])
 	assert_eq(rows[0]["xp"], 100)
@@ -146,8 +146,7 @@ func test_v3_support_guard_and_roster_projection_are_stable() -> void:
 	assert_eq((rows[0]["choices"] as Array).size(), 5)
 	assert_false(rows[2]["can_promote"])
 	assert_eq(rows[2]["eligibility_error"], &"insufficient_xp")
-	assert_false(rows[3]["can_promote"])
-	assert_eq(rows[3]["eligibility_error"], &"dead_hero")
+	assert_false(rows.any(func(row: Dictionary) -> bool: return row["life_status"] == "dead"))
 
 
 func test_recruit_choice_screen_projects_exactly_five_standard_classes() -> void:

@@ -19,6 +19,7 @@ var _briefing: GridContainer = null
 var _operation_grid: GridContainer = null
 var _mission: AetheriaButtonType = null
 var _training: AetheriaButtonType = null
+var _memorial: AetheriaButtonType = null
 var _next_record: StageNarrativeDefType = null
 var _next_stage: StageDef = null
 var _narrative_missing := false
@@ -173,10 +174,6 @@ func _build_operations() -> VBoxContainer:
 			"ArmoryButton", &"ui.staging.armory_unavailable", "Armory — Unavailable",
 			&"ui.staging.armory_short", "Armory",
 		],
-		[
-			"MemorialButton", &"ui.staging.memorial_unavailable", "Memorial — Unavailable",
-			&"ui.staging.memorial_short", "Memorial",
-		],
 	]:
 		_operation_grid.add_child(_button(
 			String(specification[0]), UiCopyType.text(
@@ -185,6 +182,19 @@ func _build_operations() -> VBoxContainer:
 				StringName(specification[3]), String(specification[4]),
 			), false, &"disabled",
 		))
+	var memorial_available := _memorial_available()
+	_memorial = _button(
+		"MemorialButton",
+		UiCopyType.text(
+			&"ui.staging.memorial" if memorial_available else &"ui.staging.memorial_unavailable",
+			"Memorial" if memorial_available else "Memorial — Unavailable",
+		),
+		UiCopyType.text(&"ui.staging.memorial_short", "Memorial"),
+		memorial_available,
+		&"secondary" if memorial_available else &"disabled",
+	)
+	_memorial.pressed.connect(_on_memorial)
+	_operation_grid.add_child(_memorial)
 	_training = _button(
 		"TrainingButton",
 		UiCopyType.text(
@@ -198,6 +208,8 @@ func _build_operations() -> VBoxContainer:
 	_training.pressed.connect(_on_training)
 	_operation_grid.add_child(_training)
 	var focus_actions: Array[Control] = [_mission, back]
+	if memorial_available:
+		focus_actions.append(_memorial)
 	if training_available:
 		focus_actions.append(_training)
 	for index: int in focus_actions.size():
@@ -269,6 +281,13 @@ func _on_training() -> void:
 	Game.training_call(&"open", &"staging")
 
 
+func _on_memorial() -> void:
+	if not _memorial_available():
+		return
+	Sfx.play("ui_click")
+	Game.training_call(&"memorial_open")
+
+
 func _on_back_to_title() -> void:
 	Sfx.play("ui_click")
 	Game.open_title()
@@ -276,6 +295,10 @@ func _on_back_to_title() -> void:
 
 func _training_available() -> bool:
 	return int(Game.training_call(&"eligible_count")) > 0
+
+
+func _memorial_available() -> bool:
+	return int(Game.training_call(&"memorial_count")) > 0
 
 
 func _training_acknowledgement_text() -> String:

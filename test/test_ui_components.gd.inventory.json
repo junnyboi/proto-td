@@ -1760,6 +1760,188 @@
       "target_count": 7,
       "text_count": 13
     },
+    "staging_memorial_active": {
+      "screen_marker": "StagingShell",
+      "targets": [
+        {
+          "selector": "MissionControlButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "BarracksButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "RecruitButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "TrainingButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "ArmoryButton",
+          "type": "Button",
+          "enabled": false,
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "MemorialButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "BackToTitleButton",
+          "type": "Button",
+          "enabled": true,
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationsColumn"
+        }
+      ],
+      "text": [
+        {
+          "selector": "CompanyCommandHeading",
+          "type": "Label",
+          "variation": [
+            "AuiDenseHeadingLabel"
+          ],
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "CompanyCommandBody",
+          "type": "Label",
+          "variation": [
+            "AuiDenseDetailLabel"
+          ],
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "CampaignSummary",
+          "type": "Label",
+          "variation": [
+            "AuiDenseBodyLabel"
+          ],
+          "owner": "BriefingRow"
+        },
+        {
+          "selector": "NextOperationTitle",
+          "type": "Label",
+          "variation": [
+            "AuiDenseBodyLabel"
+          ],
+          "owner": "NextOperationCard"
+        },
+        {
+          "selector": "NextOperationObjective",
+          "type": "Label",
+          "variation": [
+            "AuiDenseDetailLabel"
+          ],
+          "owner": "NextOperationCard"
+        },
+        {
+          "selector": "OperationStatus",
+          "type": "Label",
+          "variation": [
+            "AuiDenseDetailLabel"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "MissionControlButton",
+          "type": "Button",
+          "variation": [
+            "AuiPrimaryButton"
+          ],
+          "owner": "OperationsColumn"
+        },
+        {
+          "selector": "BarracksButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "RecruitButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "TrainingButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "ArmoryButton",
+          "type": "Button",
+          "variation": [
+            "AuiDisabledButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "MemorialButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationGrid"
+        },
+        {
+          "selector": "BackToTitleButton",
+          "type": "Button",
+          "variation": [
+            "AuiSecondaryButton"
+          ],
+          "owner": "OperationsColumn"
+        }
+      ],
+      "focus_order": [
+        "MissionControlButton",
+        "BackToTitleButton",
+        "MemorialButton",
+        "TrainingButton"
+      ],
+      "target_count": 7,
+      "text_count": 13
+    },
     "results_training_active": {
       "screen_marker": "ResultsColumn",
       "targets": [

@@ -32,6 +32,7 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.training_short": "Training",
 	&"ui.staging.armory_unavailable": "Armory — Unavailable",
 	&"ui.staging.armory_short": "Armory",
+	&"ui.staging.memorial": "Memorial",
 	&"ui.staging.memorial_unavailable": "Memorial — Unavailable",
 	&"ui.staging.memorial_short": "Memorial",
 	&"ui.common.back_to_title": "Back to Title",
@@ -154,6 +155,24 @@ const STATIC_FALLBACKS := {
 	&"ui.training.view_paths": "View Paths",
 	&"ui.training.xp_needed": "Needs {remaining} XP.",
 	&"ui.training.xp_progress": "XP {current} / {required}",
+	&"ui.memorial.back": "Back to Staging",
+	&"ui.memorial.class_at_death": "Class at death: {class_name}",
+	&"ui.memorial.death_context": (
+		"Fell during {stage} • {reason} • tick {tick} • attempt {attempt}"
+	),
+	&"ui.memorial.deeds": (
+		"Operations {operations} • deployments {deployments} • clears {clears} • "
+		+ "retreats {retreats} • XP {xp}"
+	),
+	&"ui.memorial.doctrine": "Their records remain here. They do not return to service.",
+	&"ui.memorial.motto": "Company 33 protects the living. We remember the dead.",
+	&"ui.memorial.portrait_alt": "Identity portrait for {callsign}",
+	&"ui.memorial.service": "Company 33 service record {number}",
+	&"ui.memorial.terminal.base_defeat": "Base lost",
+	&"ui.memorial.terminal.clear": "Operation cleared",
+	&"ui.memorial.terminal.leak_defeat": "Line breached",
+	&"ui.memorial.terminal.resign": "Withdrawal ordered",
+	&"ui.memorial.title": "MEMORIAL",
 	&"ui.save.write_failed": "The campaign could not be saved.",
 	&"ui.error.unknown": "Training failed. Review the roster and try again.",
 }
@@ -197,6 +216,16 @@ const PLACEHOLDER_TYPES := {
 	&"ui.training.success": {&"callsign": &"String", &"class_name": &"String"},
 	&"ui.training.xp_needed": {&"remaining": &"int"},
 	&"ui.training.xp_progress": {&"current": &"int", &"required": &"int"},
+	&"ui.memorial.class_at_death": {&"class_name": &"String"},
+	&"ui.memorial.death_context": {
+		&"stage": &"String", &"reason": &"String", &"tick": &"int", &"attempt": &"int",
+	},
+	&"ui.memorial.deeds": {
+		&"operations": &"int", &"deployments": &"int", &"clears": &"int",
+		&"retreats": &"int", &"xp": &"int",
+	},
+	&"ui.memorial.portrait_alt": {&"callsign": &"String"},
+	&"ui.memorial.service": {&"number": &"int"},
 }
 
 

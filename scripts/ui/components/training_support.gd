@@ -34,6 +34,8 @@ static func roster(value: Variant) -> Array[Dictionary]:
 		return rows
 	var data: Dictionary = value.call("data_copy")
 	for hero: Dictionary in data.get("heroes", []):
+		if String(hero.get("life_status", "")) != "ready":
+			continue
 		var hero_id := String(hero.get("hero_id", ""))
 		var current_class_id := String(hero.get("current_class_id", ""))
 		var definition := class_definition(current_class_id)

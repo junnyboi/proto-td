@@ -8,6 +8,7 @@ const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const TRAINING_SCENE_PATH := "res://scenes/training.tscn"
+const MEMORIAL_SCENE_PATH := "res://scenes/memorial.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -16,6 +17,7 @@ const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_con
 const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
 const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const TRAINING_SUPPORT_SCRIPT := preload("res://scripts/ui/components/training_support.gd")
+const MEMORIAL_SUPPORT_SCRIPT := preload("res://scripts/ui/components/memorial_support.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"test_lane"
@@ -307,6 +309,8 @@ func training_call(action: StringName, payload: Variant = null) -> Variant:
 	match action:
 		&"eligible_count":
 			result = TRAINING_SUPPORT_SCRIPT.eligible_count(campaign) if campaign_active else 0
+		&"memorial_count":
+			result = MEMORIAL_SUPPORT_SCRIPT.count(campaign) if campaign_active else 0
 		&"commit":
 			result = _commit_promotions(payload as Array)
 		&"retry":
@@ -321,6 +325,12 @@ func training_call(action: StringName, payload: Variant = null) -> Variant:
 		&"open":
 			_open_training(StringName(payload))
 			result = true
+		&"memorial_open":
+			if campaign_active and MEMORIAL_SUPPORT_SCRIPT.count(campaign) > 0:
+				_swap_content.call_deferred(MEMORIAL_SCENE_PATH)
+				result = true
+			else:
+				result = false
 		&"leave":
 			_leave_training()
 			result = true
