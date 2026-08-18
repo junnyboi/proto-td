@@ -195,8 +195,12 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 		XDG_CACHE_HOME="$user_root/cache" MGS_RUNG_ROOT="$user_root/work" \
 		"$@" 2>&1)
   code=$?
-  t1=$(date +%s)
-	if [[ "$rung" == "R3-gut" && $code -eq 0 ]]; then
+	t1=$(date +%s)
+	if [[ $code -eq 0 && $(((t1 - t0) * 5)) -gt $((budget * 4)) ]]; then
+		code=1
+		out+=$'\n[verify] rung consumed more than 80% of its explicit shell budget'
+	fi
+		if [[ "$rung" == "R3-gut" && $code -eq 0 ]]; then
     local tests
     tests=$(grep -Eo 'Tests[[:space:]]+[0-9]+' <<< "$out" | tail -1 | awk '{print $2}')
     if [[ -z "$tests" || "$tests" -eq 0 ]]; then
@@ -234,12 +238,29 @@ run_rung() { # rung_name artifact_hint timeout_s cmd...
 		result_count=$(grep -Ec '^\[RESULT\] pass \(' <<< "$scenario_clean")
 		expected_scenario="${rung#R4a-}"
 		expected_scenario="${expected_scenario#R4b-}"
-		if [[ "$result_count" -ne 1 || ! -s "$artifact" ]] \
-				|| ! jq -e --arg scenario "$expected_scenario" \
-				'.result == "pass" and .scenario == $scenario and (.checks | length) > 0' \
-				"$artifact" >/dev/null 2>&1; then
-			code=1
-			out+=$'\n[verify] scenario result sentinel/report missing, duplicated, or not passing'
+			if [[ "$result_count" -ne 1 || ! -s "$artifact" ]] \
+					|| ! jq -e --arg scenario "$expected_scenario" \
+					'.result == "pass"
+					and .scenario == $scenario
+					and (.checks | length) > 0
+					and .max_frames_explicit == true
+					and (.max_frames | type) == "number"
+					and .max_frames > 0
+					and (.frames_used | type) == "number"
+					and .frames_used >= 0
+					and .frames_used <= .max_frames
+					and (.frames_used * 5) <= (.max_frames * 4)
+					and has("terminal_model_tick")
+					and (
+						.terminal_model_tick == null
+						or (
+							(.terminal_model_tick | type) == "number"
+							and .terminal_model_tick >= 0
+						)
+					)' \
+					"$artifact" >/dev/null 2>&1; then
+				code=1
+				out+=$'\n[verify] scenario result/watchdog report missing, duplicated, incomplete, over budget, or not passing'
 		fi
 	fi
   if [[ $code -ne 0 ]]; then
@@ -270,7 +291,7 @@ if [[ -z "$ONLY" ]]; then
 			[[ "$test_path" == "test/test_campaign_recovery_property.gd" ]] && continue
 			GUT_ARGS+=("-gtest=res://$test_path")
 		done < <(find test -type f -name 'test_*.gd' | sort)
-		run_rung "R3-gut" "" 300 "$GODOT" --headless -d \
+			run_rung "R3-gut" "" 420 "$GODOT" --headless -d \
 		  -s addons/gut/gut_cmdln.gd "${GUT_ARGS[@]}" -gexit
 			for property_segment in subsets first second third fourth; do
 				run_rung "R3.1-p16-properties-$property_segment" "" 300 env \

@@ -17,13 +17,21 @@ const DEFAULT_MAX_FRAMES := 3600
 const SYNTHETIC_DEVICE := 4242
 
 var seed_value: int = 42
-var max_frames: int = DEFAULT_MAX_FRAMES
+var max_frames: int:
+	set(value):
+		_max_frames = value
+		_max_frames_explicit = true
+	get:
+		return _max_frames
 var scene: Node
 
 var _scenario_name := ""
 var _shots_dir := "res://artifacts/misc"
 var _requested_viewport := Vector2i.ZERO
 var _frames_used := 0
+var _max_frames := DEFAULT_MAX_FRAMES
+var _max_frames_explicit := false
+var _terminal_model_tick: Variant = null
 var _checks: Array[Dictionary] = []
 var _shots: Array[String] = []
 var _pixel_skipped: Array[String] = []
@@ -256,6 +264,7 @@ func _run() -> void:
 
 func _on_frame() -> void:
 	_frames_used += 1
+	_capture_terminal_model_tick()
 	if not _finished and _frames_used > max_frames:
 		check("watchdog: frame budget", false, "exceeded %d frames" % max_frames)
 		_finish()
@@ -265,6 +274,7 @@ func _finish() -> void:
 	if _finished:
 		return
 	_finished = true
+	_capture_terminal_model_tick()
 	# defensive teardown: a scenario that failed mid-drag/mid-beat must not
 	# poison the next run's wall clock (td-phase-9.md §2.1.3)
 	Engine.time_scale = 1.0
@@ -281,6 +291,9 @@ func _finish() -> void:
 		"shots": _shots,
 		"pixel_skipped": _pixel_skipped,
 		"frames_used": _frames_used,
+		"max_frames": max_frames,
+		"max_frames_explicit": _max_frames_explicit,
+		"terminal_model_tick": _terminal_model_tick,
 		"result": "pass" if all_ok else "fail",
 	}
 	var report_path := ProjectSettings.globalize_path(_shots_dir + "/report.json")
@@ -292,3 +305,14 @@ func _finish() -> void:
 		report["result"], _checks.size(), _shots.size(), _frames_used,
 	])
 	quit(0 if all_ok else 1)
+
+
+func _capture_terminal_model_tick() -> void:
+	var game := root.get_node_or_null("Game")
+	if game == null:
+		return
+	var model: Variant = game.get("current_battle")
+	if model is Object:
+		var tick: Variant = (model as Object).get("tick")
+		if tick is int:
+			_terminal_model_tick = tick
