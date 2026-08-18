@@ -19,6 +19,7 @@ const OUT_SPRITES := "res://assets/sprites"
 const OUT_PORTRAITS := "res://assets/portraits"
 const OUT_SHEET := "res://artifacts/lane_a"
 const ROUND5_IMPORTER := "res://tools/art_pipeline/characters/import_round5_sheets.py"
+const RECRUIT_IMPORTER := "res://tools/art_pipeline/characters/import_recruit_sheets.py"
 const PROVENANCE_TOOL := "res://tools/presentation_qa/provenance.py"
 const PROVENANCE_INVENTORY := "user://aui00_provenance_inventory.json"
 const ROUND5_CHARACTER_PLACEHOLDER := false
@@ -26,9 +27,13 @@ const GRUNT_ANIMATION_PROVENANCE := "res://assets/sprites/grunt_animation.proven
 
 var _failed := false
 var _manifest := AssetManifest.new()
+var _preserved_manifest_entries: Dictionary = {}
 
 
 func _initialize() -> void:
+	var current_manifest := load("res://assets/manifest.tres") as AssetManifest
+	if current_manifest != null:
+		_preserved_manifest_entries = current_manifest.entries.duplicate(true)
 	for dir: String in [OUT_SPRITES, OUT_PORTRAITS, OUT_SHEET]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
 	var sheet_cells: Array[Image] = []
@@ -70,7 +75,7 @@ func _initialize() -> void:
 				reserved_free
 			)
 			_record(
-				def.sprite_id,
+				op_id,
 				"%s/%s_%%d.png" % [OUT_SPRITES, op_id],
 				frames.size(),
 				ArtOperators.SIZE,
@@ -87,7 +92,7 @@ func _initialize() -> void:
 		)
 		# Existing accepted art remains final; the new healer stays placeholder.
 		_record(
-			StringName("portrait_%s" % def.portrait_id),
+			StringName("portrait_%s" % op_id),
 			"%s/%s.png" % [OUT_PORTRAITS, op_id],
 			1,
 			ArtPortraits.SIZE * ArtPortraits.UPSCALE,
@@ -139,6 +144,9 @@ func _initialize() -> void:
 	if not _import_round5_character_art():
 		quit(1)
 		return
+	if not _import_recruit_character_art():
+		quit(1)
+		return
 	if not _record_grunt_animation_assets():
 		quit(1)
 		return
@@ -166,6 +174,7 @@ func _initialize() -> void:
 	_write_sheet(sheet_cells, "calibration.png")
 	_write_sheet(portrait_cells, "portraits.png")
 	_write_stage_collage(tiles)
+	_preserve_externally_managed_entries()
 	if _failed:
 		quit(1)
 		return
@@ -204,6 +213,38 @@ func _import_round5_character_art() -> bool:
 	return true
 
 
+func _import_recruit_character_art() -> bool:
+	var output: Array = []
+	var code := (
+		OS
+		. execute(
+			"/usr/bin/python3",
+			[
+				ProjectSettings.globalize_path(RECRUIT_IMPORTER),
+				"--repo",
+				ProjectSettings.globalize_path("res://"),
+				"--review-dir",
+				ProjectSettings.globalize_path(OUT_SHEET + "/recruit"),
+			],
+			output,
+			true,
+		)
+	)
+	if code != 0:
+		push_error("[gen_assets] Recruit import failed (%d): %s" % [code, "\n".join(output)])
+		return false
+	_record(&"recruit", OUT_SPRITES + "/recruit_%d.png", 5, Vector2i(32, 32), true)
+	for index: int in 8:
+		_record(
+			StringName("portrait_recruit_%02d" % index),
+			OUT_PORTRAITS + "/recruit_%02d.png" % index,
+			1,
+			Vector2i(128, 128),
+			true,
+		)
+	return true
+
+
 ## Every entry carries its native size (P12.1 manifest schema pin) — a
 ## zero size is a generator red, so no asset ships unsized.
 func _record(
@@ -222,6 +263,16 @@ func _record(
 		"animations": AssetManifest.legacy_animations(frames),
 		"provenance_sha256": "0".repeat(64),
 	}
+
+
+func _preserve_externally_managed_entries() -> void:
+	var ids: Array[StringName] = []
+	for raw_id: Variant in _preserved_manifest_entries:
+		ids.append(StringName(raw_id))
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	for id: StringName in ids:
+		if not _manifest.entries.has(id):
+			_manifest.entries[id] = (_preserved_manifest_entries[id] as Dictionary).duplicate(true)
 
 
 func _record_s1_world_assets() -> void:

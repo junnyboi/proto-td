@@ -111,11 +111,16 @@ class ProvenanceContractTests(unittest.TestCase):
         logical_id = "portrait_recruit_00"
         path = REPO / f"assets/provenance/{logical_id}.provenance.json"
         document = json.loads(path.read_text(encoding="utf-8"))
-        entry = {"pattern": "res://assets/portraits/vanguard_1.png", "frames": 1}
+        entry = {"pattern": "res://assets/portraits/recruit_00.png", "frames": 1}
         MODULE.validate_schema(document, self.schema, self.schema)
         MODULE.validate_document(REPO, document, logical_id, entry)
         self.assertEqual(document["source_type"], "ai_assisted_deterministic_normalization")
         self.assertEqual(document["generation"]["model"], "gpt-image-2")
+        self.assertEqual(document["recipe"]["generator_path"], MODULE.RECRUIT_IMPORTER)
+        self.assertIn(
+            "res://art-src/characters/recruit/recruit-portrait-treatment-sheet.png",
+            [row["path"] for row in document["source_files"]],
+        )
         self.assertEqual(document["acceptance"]["state"], "unknown_per_current_byte")
         self.assertIsNone(document["acceptance"]["accepting_commit"])
 

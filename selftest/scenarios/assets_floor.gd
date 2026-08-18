@@ -8,6 +8,7 @@ extends RefCounted
 ## Runs both lanes; the shot is windowed-only like every shot.
 
 const CELL := 72.0
+const Palette := preload("res://tools/pixel/palette.gd")
 
 
 func run(h: SelfTestHarness) -> void:
@@ -31,9 +32,7 @@ func run(h: SelfTestHarness) -> void:
 		var stored: Variant = manifest.entries[id].get("size")
 		if not (stored is Vector2i) or stored == Vector2i.ZERO:
 			missing_size += 1
-	h.check(
-		"every manifest entry carries a size", missing_size == 0, "missing=%d" % missing_size
-	)
+	h.check("every manifest entry carries a size", missing_size == 0, "missing=%d" % missing_size)
 
 	# every entry's every frame loads at a sane native size
 	var bad_frames := 0
@@ -56,6 +55,42 @@ func run(h: SelfTestHarness) -> void:
 			and Art.texture(StringName("portrait_%s" % def.portrait_id)) != null
 		)
 	h.check("every operator has 5 frames + a portrait", op_ok)
+
+	# Phase 6 Recruit assets: genuine paths, exact geometry, hard alpha,
+	# project-palette membership, and reserved probe-color absence.
+	var recruit_ok := Art.frame_count(&"recruit") == 5 and Art.size(&"recruit") == Vector2i(32, 32)
+	for frame: int in 5:
+		var texture := Art.texture(&"recruit", frame)
+		var source_path := "res://assets/sprites/recruit_%d.png" % frame
+		var source := Image.load_from_file(ProjectSettings.globalize_path(source_path))
+		recruit_ok = (
+			recruit_ok and texture != null and source != null and _recruit_pixels_valid(source)
+		)
+	var recruit_portrait_ids: Array[StringName] = []
+	var recruit_portrait_hashes := {}
+	for index: int in 8:
+		var portrait_id := StringName("portrait_recruit_%02d" % index)
+		recruit_portrait_ids.append(portrait_id)
+		var portrait := Art.texture(portrait_id)
+		var portrait_path := "res://assets/portraits/recruit_%02d.png" % index
+		var portrait_source := Image.load_from_file(ProjectSettings.globalize_path(portrait_path))
+		recruit_ok = (
+			recruit_ok
+			and portrait != null
+			and Art.size(portrait_id) == Vector2i(128, 128)
+			and portrait_source != null
+			and _recruit_pixels_valid(portrait_source)
+		)
+		if portrait != null:
+			recruit_portrait_hashes[FileAccess.get_sha256(portrait_path)] = true
+	(
+		h
+		. check(
+			"Recruit atlas and eight portraits satisfy native pixel contracts",
+			recruit_ok and recruit_portrait_hashes.size() == 8,
+			"portrait_hashes=%d" % recruit_portrait_hashes.size(),
+		)
+	)
 
 	# enemies: 2 walk frames; charmed variants exactly for the charmables
 	var charm_ok := true
@@ -86,7 +121,11 @@ func run(h: SelfTestHarness) -> void:
 	# distinctness proxy: class representatives pairwise differ substantially
 	var reps: Array[Image] = []
 	for rep_id: StringName in [
-		&"vanguard_1", &"guard_1", &"defender_1", &"sniper_1", &"caster_1",
+		&"vanguard_1",
+		&"guard_1",
+		&"defender_1",
+		&"sniper_1",
+		&"caster_1",
 		&"witch_doctor_1",
 	]:
 		reps.append(Art.texture(rep_id, 0).get_image())
@@ -124,6 +163,28 @@ func run(h: SelfTestHarness) -> void:
 	await h.frames(2)
 	await h.shot("assets_contact_sheet")
 	sheet.queue_free()
+
+	var recruit_sheet := Node2D.new()
+	recruit_sheet.name = "RecruitAssetsSheet"
+	h.root.add_child(recruit_sheet)
+	for index: int in recruit_portrait_ids.size():
+		var portrait_cell := TextureRect.new()
+		portrait_cell.texture = Art.texture(recruit_portrait_ids[index])
+		portrait_cell.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		portrait_cell.size = Vector2(144, 144)
+		portrait_cell.position = Vector2(80 + (index % 4) * 168, 24 + (index / 4) * 168)
+		recruit_sheet.add_child(portrait_cell)
+	for frame: int in 5:
+		var frame_cell := TextureRect.new()
+		frame_cell.texture = Art.texture(&"recruit", frame)
+		frame_cell.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		frame_cell.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		frame_cell.size = Vector2(104, 104)
+		frame_cell.position = Vector2(98 + frame * 128, 382)
+		recruit_sheet.add_child(frame_cell)
+	await h.frames(2)
+	await h.shot("recruit_assets_contact_sheet")
+	recruit_sheet.queue_free()
 	h.done()
 
 
@@ -144,3 +205,21 @@ func _diff(a: Image, b: Image) -> int:
 			if a.get_pixel(x, y).to_html() != b.get_pixel(x, y).to_html():
 				count += 1
 	return count
+
+
+func _recruit_pixels_valid(source: Image) -> bool:
+	var image: Image = source.duplicate()
+	image.convert(Image.FORMAT_RGBA8)
+	var bytes: PackedByteArray = image.get_data()
+	for offset: int in range(0, bytes.size(), 4):
+		var alpha := int(bytes[offset + 3])
+		if alpha != 0 and alpha != 255:
+			return false
+		if alpha == 0:
+			if bytes[offset] != 0 or bytes[offset + 1] != 0 or bytes[offset + 2] != 0:
+				return false
+			continue
+		var color := Color8(bytes[offset], bytes[offset + 1], bytes[offset + 2], alpha)
+		if not Palette.ALL.has(color) or color == Palette.WHITE or color == Palette.SKY:
+			return false
+	return true

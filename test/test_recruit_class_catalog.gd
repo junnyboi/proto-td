@@ -2,12 +2,25 @@ extends GutTest
 
 const CAMPAIGN := preload("res://data/campaigns/p16_v3.tres")
 const CLASS_IDS: Array[String] = [
-	"banner_guard", "defender", "gunner", "immovable", "mage_apprentice",
-	"recruit", "shock_trooper", "sniper", "sorcerer", "sword_saint",
-	"swordmaster", "witch_doctor",
+	"banner_guard",
+	"defender",
+	"gunner",
+	"immovable",
+	"mage_apprentice",
+	"recruit",
+	"shock_trooper",
+	"sniper",
+	"sorcerer",
+	"sword_saint",
+	"swordmaster",
+	"witch_doctor",
 ]
 const STANDARD_IDS: Array[StringName] = [
-	&"defender", &"gunner", &"mage_apprentice", &"shock_trooper", &"swordmaster",
+	&"defender",
+	&"gunner",
+	&"mage_apprentice",
+	&"shock_trooper",
+	&"swordmaster",
 ]
 const ADVANCED_STAGE_ROWS := [
 	{"class_id": "sword_saint", "stage_id": "s1"},
@@ -47,25 +60,46 @@ func test_operator_ordinals_and_production_recruit_are_exact() -> void:
 
 
 func test_class_graph_and_v3_obtainability_are_exact() -> void:
-	var normalized := ClassDef.normalize_catalog(
-		_class_resources(), _operator_ids(), _locale_entries(),
+	var normalized := (
+		ClassDef
+		. normalize_catalog(
+			_class_resources(),
+			_operator_ids(),
+			_locale_entries(),
+		)
 	)
 	assert_true(normalized["accepted"], str(normalized.get("error_code", &"")))
 	var rows: Array = normalized["value"]
 	assert_eq(rows.size(), 12)
 	var by_id := _by_id(rows)
-	assert_eq(by_id["recruit"]["promotion_to_class_ids"], [
-		"defender", "gunner", "mage_apprentice", "shock_trooper", "swordmaster",
-	])
-	assert_eq(by_id["mage_apprentice"]["promotion_to_class_ids"], [
-		"sorcerer", "witch_doctor",
-	])
+	assert_eq(
+		by_id["recruit"]["promotion_to_class_ids"],
+		[
+			"defender",
+			"gunner",
+			"mage_apprentice",
+			"shock_trooper",
+			"swordmaster",
+		]
+	)
+	assert_eq(
+		by_id["mage_apprentice"]["promotion_to_class_ids"],
+		[
+			"sorcerer",
+			"witch_doctor",
+		]
+	)
 	assert_eq(by_id["shock_trooper"]["promotion_to_class_ids"], ["banner_guard"])
 	assert_eq(by_id["swordmaster"]["promotion_to_class_ids"], ["sword_saint"])
 	assert_eq(by_id["defender"]["promotion_to_class_ids"], ["immovable"])
 	assert_eq(by_id["gunner"]["promotion_to_class_ids"], ["sniper"])
 	for advanced_id: String in [
-		"banner_guard", "immovable", "sniper", "sorcerer", "sword_saint", "witch_doctor",
+		"banner_guard",
+		"immovable",
+		"sniper",
+		"sorcerer",
+		"sword_saint",
+		"witch_doctor",
 	]:
 		assert_true((by_id[advanced_id]["promotion_to_class_ids"] as Array).is_empty())
 	var campaign := CAMPAIGN as CampaignDef
@@ -73,16 +107,19 @@ func test_class_graph_and_v3_obtainability_are_exact() -> void:
 	assert_eq(campaign.schema_version, 3)
 	assert_eq(campaign.starting_class_ids, STANDARD_IDS)
 	assert_eq(campaign.stage_class_entitlements, ADVANCED_STAGE_ROWS)
-	assert_eq(campaign.v3_stage_rewards, [
-		{"rewards": [], "stage_id": "s1"},
-		{"rewards": [{"id": "spike_plate", "kind": "trap"}], "stage_id": "s2"},
-		{"rewards": [{"id": "tar_pit", "kind": "trap"}], "stage_id": "s3"},
-		{"rewards": [{"id": "bolt", "kind": "spell"}], "stage_id": "s4"},
-		{"rewards": [{"id": "charm", "kind": "spell"}], "stage_id": "s5"},
-		{"rewards": [], "stage_id": "s6"},
-		{"rewards": [], "stage_id": "s7"},
-		{"rewards": [], "stage_id": "s8"},
-	])
+	assert_eq(
+		campaign.v3_stage_rewards,
+		[
+			{"rewards": [], "stage_id": "s1"},
+			{"rewards": [{"id": "spike_plate", "kind": "trap"}], "stage_id": "s2"},
+			{"rewards": [{"id": "tar_pit", "kind": "trap"}], "stage_id": "s3"},
+			{"rewards": [{"id": "bolt", "kind": "spell"}], "stage_id": "s4"},
+			{"rewards": [{"id": "charm", "kind": "spell"}], "stage_id": "s5"},
+			{"rewards": [], "stage_id": "s6"},
+			{"rewards": [], "stage_id": "s7"},
+			{"rewards": [], "stage_id": "s8"},
+		]
+	)
 	var obtainable := ClassDef.validate_obtainability(rows, campaign)
 	assert_true(obtainable["accepted"], str(obtainable.get("error_code", &"")))
 
@@ -119,10 +156,12 @@ func test_class_graph_rejects_illegal_catalog_mutations() -> void:
 
 	var missing_locale := locale.duplicate()
 	missing_locale.erase("data.class.recruit.description")
-	assert_false(ClassDef.normalize_catalog(_class_resources(), operators, missing_locale)["accepted"])
+	assert_false(
+		ClassDef.normalize_catalog(_class_resources(), operators, missing_locale)["accepted"]
+	)
 
 
-func test_starter_rows_and_placeholder_portraits_are_distinct() -> void:
+func test_starter_rows_and_recruit_runtime_assets_are_distinct_and_review_pending() -> void:
 	var campaign := CAMPAIGN as CampaignDef
 	assert_eq(campaign.starter_rows.size(), 5)
 	assert_eq(campaign.portrait_asset_ids.size(), 8)
@@ -135,13 +174,28 @@ func test_starter_rows_and_placeholder_portraits_are_distinct() -> void:
 	var manifest := load("res://assets/manifest.tres") as AssetManifest
 	assert_true(bool(manifest.entries[&"recruit"]["placeholder"]))
 	assert_eq(manifest.entries[&"recruit"]["frames"], 5)
+	assert_eq(manifest.entries[&"recruit"]["pattern"], "res://assets/sprites/recruit_%d.png")
+	assert_eq(manifest.entries[&"recruit"]["size"], Vector2i(32, 32))
+	assert_eq(manifest.entries[&"recruit"]["pivot"], Vector2(0.5, 1.0))
+	assert_eq(manifest.entries[&"recruit"]["animations"], AssetManifest.legacy_animations(5))
+	for frame: int in 5:
+		assert_true(FileAccess.file_exists("res://assets/sprites/recruit_%d.png" % frame))
 	var patterns := {}
+	var portrait_hashes := {}
 	for portrait_id: StringName in campaign.portrait_asset_ids:
 		assert_true(manifest.entries.has(portrait_id), String(portrait_id))
 		var entry: Dictionary = manifest.entries[portrait_id]
 		assert_true(bool(entry["placeholder"]), String(portrait_id))
+		assert_eq(entry["frames"], 1, String(portrait_id))
+		assert_eq(entry["size"], Vector2i(128, 128), String(portrait_id))
+		assert_eq(entry["pivot"], Vector2(0.5, 0.5), String(portrait_id))
+		assert_eq(entry["animations"], AssetManifest.legacy_animations(1), String(portrait_id))
+		assert_true(String(entry["pattern"]).begins_with("res://assets/portraits/recruit_"))
+		assert_true(FileAccess.file_exists(entry["pattern"]), String(portrait_id))
 		patterns[String(entry["pattern"])] = true
+		portrait_hashes[FileAccess.get_sha256(entry["pattern"])] = true
 	assert_eq(patterns.size(), 8)
+	assert_eq(portrait_hashes.size(), 8)
 
 
 func test_legacy_runtime_starting_set_ignores_future_recruit() -> void:
@@ -155,9 +209,16 @@ func test_legacy_runtime_starting_set_ignores_future_recruit() -> void:
 	}
 	var starting := LegacyCampaignAdapter.derive_starting_unlocks(catalogs, stages)
 	assert_false((starting["operators"] as Array).has(&"recruit"))
-	assert_eq(starting["operators"], [
-		&"caster_1", &"defender_1", &"defender_2", &"guard_1", &"vanguard_1",
-	])
+	assert_eq(
+		starting["operators"],
+		[
+			&"caster_1",
+			&"defender_1",
+			&"defender_2",
+			&"guard_1",
+			&"vanguard_1",
+		]
+	)
 
 
 func _class_resources() -> Array:
@@ -177,8 +238,7 @@ func _ids(path: String) -> Array:
 		var source := filename.trim_suffix(".remap")
 		if source.ends_with(".tres"):
 			ids.append(StringName(source.trim_suffix(".tres")))
-	ids.sort_custom(func(a: StringName, b: StringName) -> bool:
-		return String(a) < String(b))
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	return ids
 
 

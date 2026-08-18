@@ -39,6 +39,20 @@ ROUND5_APPROVED_AT_UTC = "2026-08-13T10:13:37Z"
 RECRUIT_PLACEHOLDER_IDS = {"recruit"} | {
     f"portrait_recruit_{index:02d}" for index in range(8)
 }
+RECRUIT_IMPORTER = "res://tools/art_pipeline/characters/import_recruit_sheets.py"
+RECRUIT_COMMAND = (
+    "python3 tools/art_pipeline/characters/import_recruit_sheets.py "
+    "--repo . --review-dir artifacts/lane_a/recruit"
+)
+RECRUIT_COMMON_SOURCES = {
+    "res://assets/asset_manifest.gd",
+    "res://data/operator_def.gd",
+    "res://data/operators/recruit.tres",
+    "res://tools/art_pipeline/characters/import_round5_sheets.py",
+    RECRUIT_IMPORTER,
+    "res://tools/gen_assets.gd",
+    "res://tools/pixel/palette.gd",
+}
 ROUND5_COMMON_SOURCES = {
     "res://assets/asset_manifest.gd",
     "res://docs/decisions/AUI-DESIGN-APPROVALS.md",
@@ -254,18 +268,22 @@ def source_paths(logical_id: str) -> list[str]:
             result.add(OPERATOR_ANIMATION_NATIVE_APPROVAL)
         return sorted(result)
     if is_recruit_placeholder(logical_id):
-        result = set(ROUND5_COMMON_SOURCES)
-        result.update(
-            {
-                "res://data/operator_def.gd",
-                "res://data/operators/recruit.tres",
-                (
-                    "res://art-src/characters/round5/portrait-treatment-sheet.png"
-                    if logical_id.startswith("portrait_")
-                    else "res://art-src/characters/round5/roster-style-board.png"
-                ),
-            }
-        )
+        result = set(RECRUIT_COMMON_SOURCES)
+        if logical_id.startswith("portrait_"):
+            result.update(
+                {
+                    "res://art-src/characters/recruit/recruit-portrait-treatment-sheet.png",
+                    "res://art-src/characters/round5/portrait-treatment-sheet.png",
+                    "res://art-src/characters/round5/roster-style-board.png",
+                }
+            )
+        else:
+            result.update(
+                {
+                    "res://art-src/characters/recruit/recruit-field-master.png",
+                    "res://art-src/characters/round5/roster-style-board.png",
+                }
+            )
         return sorted(result)
     if is_round5_character(logical_id):
         result = set(ROUND5_COMMON_SOURCES)
@@ -529,8 +547,7 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
             },
         }
     if is_recruit_placeholder(logical_id):
-        generator_path = "res://tools/art_pipeline/characters/import_round5_sheets.py"
-        generator = digest_row(repo, generator_path)
+        generator = digest_row(repo, RECRUIT_IMPORTER)
         return {
             "schema_version": 1,
             "logical_id": logical_id,
@@ -538,9 +555,9 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
             "final_files": [digest_row(repo, path) for path in sorted(final_paths(entry))],
             "source_files": [digest_row(repo, path) for path in source_paths(logical_id)],
             "recipe": {
-                "command": "godot --headless --path . -s tools/gen_assets.gd",
+                "command": RECRUIT_COMMAND,
                 "godot_version": GODOT_VERSION,
-                "generator_path": generator_path,
+                "generator_path": RECRUIT_IMPORTER,
                 "generator_sha256": generator["sha256"],
             },
             "generation": {
@@ -549,7 +566,8 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "generation_id": None,
                 "seed": None,
                 "unsupported_reason": (
-                    "service does not expose a stable seed; exact approved concept sheets are retained"
+                    "service does not expose stable seeds or provider request IDs; retained "
+                    "references, contracts, intermediates, and outputs are hash-pinned"
                 ),
             },
             "migration": {
@@ -563,13 +581,10 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "human_accepter": None,
                 "accepted_at_utc": None,
                 "accepting_commit": None,
-                "source": (
-                    "FEATURES.json:LA records family-level Lane A acceptance at c8ee84d and 218aaea "
-                    "but does not prove every current byte"
-                ),
+                "source": "Phase 6 exact-byte Recruit visual review pending",
                 "reason": (
-                    "current inventory includes later additions or modifications, so no immutable "
-                    "per-asset human acceptance fact was inferred"
+                    "current Recruit output is structurally authenticated and remains placeholder "
+                    "art until Poseidon accepts the complete hash-bound candidate"
                 ),
             },
             "license": {
@@ -578,8 +593,8 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                     "original GPT Image 2 concepts and project-controlled deterministic normalization"
                 ),
                 "human_contribution": (
-                    "direction, selection, concept approval, runtime-binding direction, and "
-                    "normalization review"
+                    "direction, identity constraints, normalization contract, and pending "
+                    "exact-byte visual review"
                 ),
             },
         }
