@@ -1,6 +1,7 @@
 .godot/
 .DS_Store
 artifacts/
+docs/media/*.png.import
 override.cfg
 __pycache__/
 *.py[cod]

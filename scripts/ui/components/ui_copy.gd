@@ -167,6 +167,7 @@ const STATIC_FALLBACKS := {
 	&"ui.memorial.doctrine": "Their records remain here. They do not return to service.",
 	&"ui.memorial.motto": "Company 33 protects the living. We remember the dead.",
 	&"ui.memorial.portrait_alt": "Identity portrait for {callsign}",
+	&"ui.memorial.record_unavailable": "Memorial record unavailable",
 	&"ui.memorial.service": "Company 33 service record {number}",
 	&"ui.memorial.terminal.base_defeat": "Base lost",
 	&"ui.memorial.terminal.clear": "Operation cleared",

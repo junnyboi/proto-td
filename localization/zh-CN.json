@@ -151,6 +151,7 @@
     "ui.memorial.doctrine": "阵亡队员的记录留在这里。阵亡队员无法重返战斗。",
     "ui.memorial.motto": "第33连队保护生者。我们记得阵亡队员。",
     "ui.memorial.portrait_alt": "{callsign} 的身份头像",
+    "ui.memorial.record_unavailable": "纪念记录暂不可用",
     "ui.memorial.service": "第33连队服役记录 {number}",
     "ui.memorial.terminal.base_defeat": "基地失守",
     "ui.memorial.terminal.clear": "行动完成",

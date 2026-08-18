@@ -1,6 +1,7 @@
 extends GutTest
 
 const MemorialSupportType := preload("res://scripts/ui/components/memorial_support.gd")
+const MemorialScreenType := preload("res://scripts/ui/memorial.gd")
 
 
 func test_projection_is_read_only_sorted_and_uses_committed_identity_at_death() -> void:
@@ -48,6 +49,37 @@ func test_malformed_or_orphaned_rows_fail_closed() -> void:
 	var data := _fixture()
 	(data["heroes"] as Array).clear()
 	assert_eq(MemorialSupportType.rows_from_data(data), [])
+
+
+func test_missing_death_presentation_never_exposes_internal_ids() -> void:
+	var screen := MemorialScreenType.new()
+	var internal_ids: Array[String] = [
+		"internal_stage_template",
+		"internal_terminal_reason",
+		"internal_class_id",
+		"portrait_internal_asset",
+		"internal_hero_id",
+	]
+	var row := {
+		"hero_id": internal_ids[4],
+		"portrait_asset_id": internal_ids[3],
+		"class_id": internal_ids[2],
+		"death": {
+			"stage_id": internal_ids[0],
+			"terminal_reason": internal_ids[1],
+			"terminal_tick": 7,
+			"attempt_id": 9,
+		},
+	}
+	var text := String(screen.call("_death_text", row))
+	assert_eq(text, "Memorial record unavailable")
+	for internal_id: String in internal_ids:
+		assert_false(text.contains(internal_id), internal_id)
+	row["death"]["stage_id"] = "s1"
+	text = String(screen.call("_death_text", row))
+	assert_eq(text, "Memorial record unavailable")
+	assert_false(text.contains(internal_ids[1]))
+	screen.free()
 
 
 func _fixture() -> Dictionary:

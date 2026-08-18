@@ -4,8 +4,12 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from recruit_approval import authenticate_recruit_approval
 
 BASELINE_COMMIT = "975261e8e00a20a0b25fe17e7976d743d509c14b"
 BASELINE_TREE = "cf4b3e1c0d8ae826c668765d994a032acbb8c0ad"
@@ -44,6 +48,7 @@ RECRUIT_APPROVED_AT_UTC = "2026-08-18T07:05:49Z"
 RECRUIT_APPROVED_MANIFEST_SHA256 = "9d0b170c899b23ce9220dd1b649e27ab9a1118121eff405787f88ddca3d60641"
 RECRUIT_APPROVED_ASSET_SET_SHA256 = "378c4aa274de77c336f8847c21d589c8f9d9db30a4ccbfd50bafefccd89f0bf8"
 RECRUIT_APPROVAL = "res://docs/media/PHASE-6-RECRUIT-EXACT-BYTE-APPROVAL.json"
+RECRUIT_APPROVAL_TOOL = "res://tools/recruit_approval.py"
 RECRUIT_CONTACT_SHEETS = {
     "res://docs/media/phase6-recruit-final-contact-sheet.png",
     "res://docs/media/phase6-recruit-runtime-contact-sheet.png",
@@ -60,6 +65,7 @@ RECRUIT_COMMON_SOURCES = {
     "res://tools/art_pipeline/characters/import_round5_sheets.py",
     RECRUIT_IMPORTER,
     RECRUIT_APPROVAL,
+    RECRUIT_APPROVAL_TOOL,
     *RECRUIT_CONTACT_SHEETS,
     "res://tools/gen_assets.gd",
     "res://tools/pixel/palette.gd",
@@ -558,6 +564,7 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
             },
         }
     if is_recruit_asset(logical_id):
+        authenticate_recruit_approval(repo)
         generator = digest_row(repo, RECRUIT_IMPORTER)
         return {
             "schema_version": 1,

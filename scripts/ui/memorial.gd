@@ -13,6 +13,12 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const SHELL_SIZE := Vector2(1160.0, 640.0)
 const COMPACT_SHELL_SIZE := Vector2(880.0, 640.0)
 const PORTRAIT_SHELL_SIZE := Vector2(640.0, 1120.0)
+const TERMINAL_REASON_KEYS := {
+	"base_defeat": &"ui.memorial.terminal.base_defeat",
+	"clear": &"ui.memorial.terminal.clear",
+	"leak_defeat": &"ui.memorial.terminal.leak_defeat",
+	"resign": &"ui.memorial.terminal.resign",
+}
 
 var _shell: AetheriaScreenShellType
 var _page: VBoxContainer
@@ -252,9 +258,15 @@ func _deeds_text(row: Dictionary) -> String:
 func _death_text(row: Dictionary) -> String:
 	var death := row["death"] as Dictionary
 	var stage_id := String(death.get("stage_id", ""))
-	var stage := load("res://data/stages/%s.tres" % stage_id) as StageDef
-	var stage_title := UiCopyType.stage_title(stage) if stage != null else stage_id
-	var reason := _terminal_reason(String(death.get("terminal_reason", "")))
+	var terminal_reason := String(death.get("terminal_reason", ""))
+	var stage_path := "res://data/stages/%s.tres" % stage_id
+	if not ResourceLoader.exists(stage_path) or not TERMINAL_REASON_KEYS.has(terminal_reason):
+		return _record_unavailable()
+	var stage := load(stage_path) as StageDef
+	if stage == null:
+		return _record_unavailable()
+	var stage_title := UiCopyType.stage_title(stage)
+	var reason := _terminal_reason(terminal_reason)
 	return (
 		UiCopyType
 		. format_text(
@@ -271,8 +283,16 @@ func _death_text(row: Dictionary) -> String:
 
 
 func _terminal_reason(value: String) -> String:
-	var fallback := value.replace("_", " ").capitalize()
-	return UiCopyType.text(StringName("ui.memorial.terminal.%s" % value), fallback)
+	if not TERMINAL_REASON_KEYS.has(value):
+		return _record_unavailable()
+	return UiCopyType.text(TERMINAL_REASON_KEYS[value], _record_unavailable())
+
+
+func _record_unavailable() -> String:
+	return UiCopyType.text(
+		&"ui.memorial.record_unavailable",
+		"Memorial record unavailable",
+	)
 
 
 func _on_layout_mode_changed(value: StringName) -> void:

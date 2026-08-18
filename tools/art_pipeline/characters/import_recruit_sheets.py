@@ -3,11 +3,16 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
+import sys
 from pathlib import Path
 from typing import Iterable
 
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from recruit_approval import authenticate_recruit_approval
 
 from import_round5_sheets import (
     PALETTE,
@@ -33,6 +38,13 @@ PORTRAIT_SIZE = (128, 128)
 FIELD_SIZE = (32, 32)
 PORTRAIT_MARGIN = 3
 FIELD_MARGIN = 2
+FIELD_BACKGROUND = (241, 29, 236)
+FIELD_BACKGROUND_MAX_DISTANCE = 32
+MAGENTA_MIN_RED = 235
+MAGENTA_MAX_GREEN = 40
+MAGENTA_MIN_BLUE = 220
+PRIMARY_COMPONENT_MIN_RATIO = 0.95
+SECONDARY_COMPONENT_MAX_RATIO = 0.05
 PORTRAIT_IDS = [f"recruit_{index:02d}" for index in range(8)]
 RESERVED_RGB = {
     tuple(bytes.fromhex("f4f4f4")),
@@ -64,6 +76,12 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def png_bytes(image: Image.Image) -> bytes:
+    output = io.BytesIO()
+    image.save(output, format="PNG", optimize=False, compress_level=9)
+    return output.getvalue()
+
+
 def source_background(image: Image.Image) -> tuple[int, int, int]:
     rgba = image.convert("RGBA")
     corners = [
@@ -73,6 +91,103 @@ def source_background(image: Image.Image) -> tuple[int, int, int]:
         rgba.getpixel((rgba.width - 1, rgba.height - 1))[:3],
     ]
     return tuple(sorted(channel)[len(channel) // 2] for channel in zip(*corners))
+
+
+def foreground_components(image: Image.Image, min_alpha: int = 32) -> list[dict[str, object]]:
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    opaque = bytearray(1 if value >= min_alpha else 0 for value in rgba.getchannel("A").tobytes())
+    seen = bytearray(width * height)
+    components: list[dict[str, object]] = []
+    for key, value in enumerate(opaque):
+        if not value or seen[key]:
+            continue
+        stack = [key]
+        seen[key] = 1
+        keys: list[int] = []
+        while stack:
+            current = stack.pop()
+            keys.append(current)
+            x = current % width
+            y = current // width
+            for neighbor_x, neighbor_y in (
+                (x - 1, y),
+                (x + 1, y),
+                (x, y - 1),
+                (x, y + 1),
+            ):
+                if neighbor_x < 0 or neighbor_x >= width or neighbor_y < 0 or neighbor_y >= height:
+                    continue
+                neighbor = neighbor_y * width + neighbor_x
+                if opaque[neighbor] and not seen[neighbor]:
+                    seen[neighbor] = 1
+                    stack.append(neighbor)
+        xs = [component_key % width for component_key in keys]
+        ys = [component_key // width for component_key in keys]
+        components.append(
+            {
+                "pixels": len(keys),
+                "bbox": (min(xs), min(ys), max(xs) + 1, max(ys) + 1),
+            }
+        )
+    components.sort(key=lambda row: int(row["pixels"]), reverse=True)
+    return components
+
+
+def validate_source_subject(source: Image.Image, label: str, field: bool) -> None:
+    background = source_background(source)
+    if not (
+        background[0] >= MAGENTA_MIN_RED
+        and background[1] <= MAGENTA_MAX_GREEN
+        and background[2] >= MAGENTA_MIN_BLUE
+    ):
+        raise ValueError(f"{label}: source background is not the approved magenta key: {background}")
+    if field:
+        if background != FIELD_BACKGROUND:
+            raise ValueError(f"{label}: field background signature changed: {background}")
+        border: list[tuple[int, int, int]] = []
+        rgba = source.convert("RGBA")
+        for x in range(rgba.width):
+            border.extend([rgba.getpixel((x, 0))[:3], rgba.getpixel((x, rgba.height - 1))[:3]])
+        for y in range(rgba.height):
+            border.extend([rgba.getpixel((0, y))[:3], rgba.getpixel((rgba.width - 1, y))[:3]])
+        if any(
+            distance_sq(pixel, FIELD_BACKGROUND) > FIELD_BACKGROUND_MAX_DISTANCE**2
+            for pixel in border
+        ):
+            raise ValueError(f"{label}: field border is not the approved solid chroma-key field")
+    keyed = remove_chroma_fringe(border_background(source), background)
+    components = foreground_components(keyed)
+    if not components:
+        raise ValueError(f"{label}: source contains no foreground subject")
+    total_pixels = sum(int(row["pixels"]) for row in components)
+    primary_pixels = int(components[0]["pixels"])
+    primary_ratio = primary_pixels / total_pixels
+    if primary_ratio < PRIMARY_COMPONENT_MIN_RATIO:
+        raise ValueError(
+            f"{label}: ambiguous or detached foreground components, primary_ratio={primary_ratio:.6f}"
+        )
+    if len(components) > 1:
+        secondary_ratio = int(components[1]["pixels"]) / primary_pixels
+        if secondary_ratio > SECONDARY_COMPONENT_MAX_RATIO:
+            raise ValueError(
+                f"{label}: peer foreground component, secondary_ratio={secondary_ratio:.6f}"
+            )
+    left, top, right, bottom = components[0]["bbox"]
+    width_ratio = (right - left) / source.width
+    height_ratio = (bottom - top) / source.height
+    area_ratio = primary_pixels / (source.width * source.height)
+    min_width = 0.15 if field else 0.40
+    min_area = 0.05 if field else 0.20
+    if top < round(source.height * 0.03):
+        raise ValueError(f"{label}: principal subject is clipped at the top edge")
+    if left <= 0 and field or right >= source.width and field:
+        raise ValueError(f"{label}: field subject is clipped at a side edge")
+    if width_ratio < min_width or height_ratio < 0.50 or area_ratio < min_area:
+        raise ValueError(
+            f"{label}: incomplete foreground occupancy width={width_ratio:.4f} "
+            f"height={height_ratio:.4f} area={area_ratio:.4f}"
+        )
 
 
 def remove_chroma_fringe(
@@ -226,8 +341,7 @@ def checker_card(image: Image.Image, scale: int, card_size: tuple[int, int]) -> 
 def build_contact_sheet(
     portraits: Iterable[Image.Image],
     frames: Iterable[Image.Image],
-    output_path: Path,
-) -> None:
+) -> Image.Image:
     portrait_cards = [checker_card(image, 2, (272, 272)) for image in portraits]
     frame_cards = [checker_card(image, 5, (176, 176)) for image in frames]
     pad = 16
@@ -243,8 +357,26 @@ def build_contact_sheet(
     frame_y = pad + 2 * (272 + pad) + 24
     for index, card in enumerate(frame_cards):
         canvas.alpha_composite(card, (frame_x + index * (176 + pad), frame_y))
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(output_path, format="PNG", optimize=False, compress_level=9)
+    return canvas
+
+
+def publish_approved_outputs(
+    repo: Path,
+    pending_images: list[tuple[Path, Image.Image]],
+    generated_assets: dict[str, bytes],
+    contact_image: Image.Image,
+    contact_path: Path | None,
+) -> None:
+    authenticate_recruit_approval(
+        repo,
+        generated_assets=generated_assets,
+        generated_contact_sheet=png_bytes(contact_image),
+    )
+    for path, image in pending_images:
+        save_atomic(image, path)
+    if contact_path is not None:
+        contact_path.parent.mkdir(parents=True, exist_ok=True)
+        save_atomic(contact_image, contact_path)
 
 
 def run(repo: Path, review_dir: Path | None) -> None:
@@ -261,24 +393,32 @@ def run(repo: Path, review_dir: Path | None) -> None:
         raise ValueError(
             f"unexpected field source size: {field_source.size}; expected {FIELD_SOURCE_SIZE}"
         )
+    validate_source_subject(field_source, "Recruit field source", True)
 
     portraits: list[Image.Image] = []
     final_rows: list[dict[str, object]] = []
+    pending_images: list[tuple[Path, Image.Image]] = []
+    generated_assets: dict[str, bytes] = {}
     for index, portrait_id in enumerate(PORTRAIT_IDS):
+        source_crop = portrait_source.crop(portrait_crop(index))
+        validate_source_subject(source_crop, f"Recruit portrait source {index:02d}", False)
         portrait = normalize_subject(
-            portrait_source.crop(portrait_crop(index)),
+            source_crop,
             PORTRAIT_SIZE,
             PORTRAIT_MARGIN,
         )
         stats = validate_native(portrait, PORTRAIT_SIZE, portrait_id)
         path = repo / f"assets/portraits/{portrait_id}.png"
-        save_atomic(portrait, path)
+        encoded = png_bytes(portrait)
+        resource_path = f"res://{path.relative_to(repo).as_posix()}"
+        generated_assets[resource_path] = encoded
+        pending_images.append((path, portrait))
         portraits.append(portrait)
         final_rows.append(
             {
                 "logical_id": f"portrait_{portrait_id}",
                 "path": path.relative_to(repo).as_posix(),
-                "sha256": sha256_file(path),
+                "sha256": hashlib.sha256(encoded).hexdigest(),
                 "size": list(PORTRAIT_SIZE),
                 "stats": stats,
             }
@@ -297,13 +437,16 @@ def run(repo: Path, review_dir: Path | None) -> None:
         stats = validate_native(frame, FIELD_SIZE, f"recruit_{index}")
         bottom_rows.append(int(stats["bottom"]))
         path = repo / f"assets/sprites/recruit_{index}.png"
-        save_atomic(frame, path)
+        encoded = png_bytes(frame)
+        resource_path = f"res://{path.relative_to(repo).as_posix()}"
+        generated_assets[resource_path] = encoded
+        pending_images.append((path, frame))
         final_rows.append(
             {
                 "logical_id": "recruit",
                 "frame": index,
                 "path": path.relative_to(repo).as_posix(),
-                "sha256": sha256_file(path),
+                "sha256": hashlib.sha256(encoded).hexdigest(),
                 "size": list(FIELD_SIZE),
                 "stats": stats,
             }
@@ -315,10 +458,19 @@ def run(repo: Path, review_dir: Path | None) -> None:
     if len(set(portrait_hashes)) != 8:
         raise ValueError("Recruit portraits are not byte-distinct")
 
+    contact_image = build_contact_sheet(portraits, frames)
+    contact_path = review_dir / "recruit-final-contact-sheet.png" if review_dir is not None else None
+    publish_approved_outputs(
+        repo,
+        pending_images,
+        generated_assets,
+        contact_image,
+        contact_path,
+    )
+
     if review_dir is not None:
         review_dir.mkdir(parents=True, exist_ok=True)
-        contact_path = review_dir / "recruit-final-contact-sheet.png"
-        build_contact_sheet(portraits, frames, contact_path)
+        assert contact_path is not None
         report = {
             "schema_version": 1,
             "source_files": [

@@ -130,6 +130,7 @@ class ProvenanceContractTests(unittest.TestCase):
         )
         source_paths = {row["path"] for row in document["source_files"]}
         self.assertIn(MODULE.RECRUIT_APPROVAL, source_paths)
+        self.assertIn(MODULE.RECRUIT_APPROVAL_TOOL, source_paths)
         self.assertTrue(MODULE.RECRUIT_CONTACT_SHEETS.issubset(source_paths))
         approval = json.loads(
             (REPO / MODULE.RECRUIT_APPROVAL.removeprefix("res://")).read_text(encoding="utf-8")

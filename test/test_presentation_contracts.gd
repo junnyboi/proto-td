@@ -466,6 +466,21 @@ func test_presentation_contract_sources_never_reference_simulation() -> void:
 			assert_false(file.get_as_text().contains("sim/"), "%s has no sim import" % file_name)
 
 
+func test_recruit_production_authentication_and_source_rejection_are_green() -> void:
+	for test_path: String in [
+		"res://tools/test_recruit_approval.py",
+		"res://tools/art_pipeline/characters/test_import_recruit_sheets.py",
+	]:
+		var output: Array = []
+		var code := OS.execute(
+			"/usr/bin/python3",
+			[ProjectSettings.globalize_path(test_path)],
+			output,
+			true,
+		)
+		assert_eq(code, 0, "%s\n%s" % [test_path, "\n".join(output)])
+
+
 func _stage() -> StagePresentationDef:
 	var value := StagePresentationDef.new()
 	value.stage_id = &"s1"
@@ -597,6 +612,7 @@ func _expected_sources(id: String) -> Array[String]:
 			"res://tools/art_pipeline/characters/import_round5_sheets.py",
 			"res://tools/gen_assets.gd",
 			"res://tools/pixel/palette.gd",
+			"res://tools/recruit_approval.py",
 		]
 		if id.begins_with("portrait_"):
 			recruit_sources.append(
