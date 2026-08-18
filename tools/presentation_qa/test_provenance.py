@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import unittest
@@ -107,7 +108,7 @@ class ProvenanceContractTests(unittest.TestCase):
             MODULE.ROUND5_APPROVED_CANDIDATE,
         )
 
-    def test_recruit_placeholder_is_canonical_and_review_pending(self) -> None:
+    def test_recruit_assets_are_canonical_and_exact_byte_accepted(self) -> None:
         logical_id = "portrait_recruit_00"
         path = REPO / f"assets/provenance/{logical_id}.provenance.json"
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -121,8 +122,39 @@ class ProvenanceContractTests(unittest.TestCase):
             "res://art-src/characters/recruit/recruit-portrait-treatment-sheet.png",
             [row["path"] for row in document["source_files"]],
         )
-        self.assertEqual(document["acceptance"]["state"], "unknown_per_current_byte")
-        self.assertIsNone(document["acceptance"]["accepting_commit"])
+        self.assertEqual(document["acceptance"]["state"], "human_final_accepted")
+        self.assertEqual(document["acceptance"]["human_accepter"], "Poseidon")
+        self.assertEqual(document["acceptance"]["accepted_at_utc"], MODULE.RECRUIT_APPROVED_AT_UTC)
+        self.assertEqual(
+            document["acceptance"]["accepting_commit"], MODULE.RECRUIT_APPROVED_CANDIDATE
+        )
+        source_paths = {row["path"] for row in document["source_files"]}
+        self.assertIn(MODULE.RECRUIT_APPROVAL, source_paths)
+        self.assertTrue(MODULE.RECRUIT_CONTACT_SHEETS.issubset(source_paths))
+        approval = json.loads(
+            (REPO / MODULE.RECRUIT_APPROVAL.removeprefix("res://")).read_text(encoding="utf-8")
+        )
+        self.assertEqual(approval["verdict"], "ACCEPT")
+        self.assertEqual(approval["accepted_candidate_commit"], MODULE.RECRUIT_APPROVED_CANDIDATE)
+        self.assertEqual(
+            approval["approved_manifest_sha256"], MODULE.RECRUIT_APPROVED_MANIFEST_SHA256
+        )
+        self.assertEqual(
+            approval["ordered_asset_set_sha256"], MODULE.RECRUIT_APPROVED_ASSET_SET_SHA256
+        )
+        self.assertEqual(len(approval["ordered_assets"]), 13)
+        canonical_lines = []
+        for row in approval["ordered_assets"]:
+            path = REPO / row["path"].removeprefix("res://")
+            self.assertEqual(path.stat().st_size, row["bytes"])
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), row["sha256"])
+            canonical_lines.append(
+                f"{row['path'].removeprefix('res://')}\t{row['sha256']}\n"
+            )
+        self.assertEqual(
+            hashlib.sha256("".join(canonical_lines).encode("utf-8")).hexdigest(),
+            MODULE.RECRUIT_APPROVED_ASSET_SET_SHA256,
+        )
 
     def test_single_file_atlas_path_is_not_expanded_as_printf_pattern(self) -> None:
         entry = {"pattern": "res://assets/sprites/grunt_anim_walk_se.png", "frames": 25}

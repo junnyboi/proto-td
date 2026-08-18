@@ -233,14 +233,14 @@ func _import_recruit_character_art() -> bool:
 	if code != 0:
 		push_error("[gen_assets] Recruit import failed (%d): %s" % [code, "\n".join(output)])
 		return false
-	_record(&"recruit", OUT_SPRITES + "/recruit_%d.png", 5, Vector2i(32, 32), true)
+	_record(&"recruit", OUT_SPRITES + "/recruit_%d.png", 5, Vector2i(32, 32), false)
 	for index: int in 8:
 		_record(
 			StringName("portrait_recruit_%02d" % index),
 			OUT_PORTRAITS + "/recruit_%02d.png" % index,
 			1,
 			Vector2i(128, 128),
-			true,
+			false,
 		)
 	return true
 

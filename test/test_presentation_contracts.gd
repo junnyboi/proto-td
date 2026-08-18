@@ -370,10 +370,14 @@ func test_provenance_is_canonical_truthful_complete_and_manifest_bound() -> void
 		elif id == "recruit" or id.begins_with("portrait_recruit_"):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
-			assert_eq(document["acceptance"]["state"], "unknown_per_current_byte")
-			assert_null(document["acceptance"]["human_accepter"])
-			assert_null(document["acceptance"]["accepting_commit"])
-			assert_true(bool(manifest.entries[StringName(id)]["placeholder"]))
+			assert_eq(document["acceptance"]["state"], "human_final_accepted")
+			assert_eq(document["acceptance"]["human_accepter"], "Poseidon")
+			assert_eq(document["acceptance"]["accepted_at_utc"], "2026-08-18T07:05:49Z")
+			assert_eq(
+				document["acceptance"]["accepting_commit"],
+				"f43c6dcdaba4e8df188b27a09363cbbba410afd2",
+			)
+			assert_false(bool(manifest.entries[StringName(id)]["placeholder"]))
 		elif _is_round5_character(id):
 			assert_eq(document["source_type"], "ai_assisted_deterministic_normalization")
 			assert_eq(document["generation"]["model"], "gpt-image-2")
@@ -586,6 +590,9 @@ func _expected_sources(id: String) -> Array[String]:
 			"res://data/operator_def.gd",
 			"res://data/operators/recruit.tres",
 			"res://art-src/characters/round5/roster-style-board.png",
+			"res://docs/media/PHASE-6-RECRUIT-EXACT-BYTE-APPROVAL.json",
+			"res://docs/media/phase6-recruit-final-contact-sheet.png",
+			"res://docs/media/phase6-recruit-runtime-contact-sheet.png",
 			"res://tools/art_pipeline/characters/import_recruit_sheets.py",
 			"res://tools/art_pipeline/characters/import_round5_sheets.py",
 			"res://tools/gen_assets.gd",

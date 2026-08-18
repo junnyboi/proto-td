@@ -161,7 +161,7 @@ func test_class_graph_rejects_illegal_catalog_mutations() -> void:
 	)
 
 
-func test_starter_rows_and_recruit_runtime_assets_are_distinct_and_review_pending() -> void:
+func test_starter_rows_and_recruit_runtime_assets_are_distinct_and_final() -> void:
 	var campaign := CAMPAIGN as CampaignDef
 	assert_eq(campaign.starter_rows.size(), 5)
 	assert_eq(campaign.portrait_asset_ids.size(), 8)
@@ -172,7 +172,7 @@ func test_starter_rows_and_recruit_runtime_assets_are_distinct_and_review_pendin
 		portraits[String(row["portrait_asset_id"])] = true
 	assert_eq(portraits.size(), 5)
 	var manifest := load("res://assets/manifest.tres") as AssetManifest
-	assert_true(bool(manifest.entries[&"recruit"]["placeholder"]))
+	assert_false(bool(manifest.entries[&"recruit"]["placeholder"]))
 	assert_eq(manifest.entries[&"recruit"]["frames"], 5)
 	assert_eq(manifest.entries[&"recruit"]["pattern"], "res://assets/sprites/recruit_%d.png")
 	assert_eq(manifest.entries[&"recruit"]["size"], Vector2i(32, 32))
@@ -185,7 +185,7 @@ func test_starter_rows_and_recruit_runtime_assets_are_distinct_and_review_pendin
 	for portrait_id: StringName in campaign.portrait_asset_ids:
 		assert_true(manifest.entries.has(portrait_id), String(portrait_id))
 		var entry: Dictionary = manifest.entries[portrait_id]
-		assert_true(bool(entry["placeholder"]), String(portrait_id))
+		assert_false(bool(entry["placeholder"]), String(portrait_id))
 		assert_eq(entry["frames"], 1, String(portrait_id))
 		assert_eq(entry["size"], Vector2i(128, 128), String(portrait_id))
 		assert_eq(entry["pivot"], Vector2(0.5, 0.5), String(portrait_id))

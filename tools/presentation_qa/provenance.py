@@ -36,8 +36,17 @@ ROUND5_OPERATOR_IDS = {
 ROUND5_ENEMY_IDS = {"drone", "grunt", "heavy", "mini_boss", "runner", "spellcaster"}
 ROUND5_APPROVED_CANDIDATE = "441cb80b079ee89195ef751dbc26e67b426600d0"
 ROUND5_APPROVED_AT_UTC = "2026-08-13T10:13:37Z"
-RECRUIT_PLACEHOLDER_IDS = {"recruit"} | {
+RECRUIT_ASSET_IDS = {"recruit"} | {
     f"portrait_recruit_{index:02d}" for index in range(8)
+}
+RECRUIT_APPROVED_CANDIDATE = "f43c6dcdaba4e8df188b27a09363cbbba410afd2"
+RECRUIT_APPROVED_AT_UTC = "2026-08-18T07:05:49Z"
+RECRUIT_APPROVED_MANIFEST_SHA256 = "9d0b170c899b23ce9220dd1b649e27ab9a1118121eff405787f88ddca3d60641"
+RECRUIT_APPROVED_ASSET_SET_SHA256 = "378c4aa274de77c336f8847c21d589c8f9d9db30a4ccbfd50bafefccd89f0bf8"
+RECRUIT_APPROVAL = "res://docs/media/PHASE-6-RECRUIT-EXACT-BYTE-APPROVAL.json"
+RECRUIT_CONTACT_SHEETS = {
+    "res://docs/media/phase6-recruit-final-contact-sheet.png",
+    "res://docs/media/phase6-recruit-runtime-contact-sheet.png",
 }
 RECRUIT_IMPORTER = "res://tools/art_pipeline/characters/import_recruit_sheets.py"
 RECRUIT_COMMAND = (
@@ -50,6 +59,8 @@ RECRUIT_COMMON_SOURCES = {
     "res://data/operators/recruit.tres",
     "res://tools/art_pipeline/characters/import_round5_sheets.py",
     RECRUIT_IMPORTER,
+    RECRUIT_APPROVAL,
+    *RECRUIT_CONTACT_SHEETS,
     "res://tools/gen_assets.gd",
     "res://tools/pixel/palette.gd",
 }
@@ -124,8 +135,8 @@ def is_round5_character(logical_id: str) -> bool:
     return base_id in ROUND5_OPERATOR_IDS or base_id in ROUND5_ENEMY_IDS
 
 
-def is_recruit_placeholder(logical_id: str) -> bool:
-    return logical_id in RECRUIT_PLACEHOLDER_IDS
+def is_recruit_asset(logical_id: str) -> bool:
+    return logical_id in RECRUIT_ASSET_IDS
 
 
 def is_grunt_animation(logical_id: str) -> bool:
@@ -267,7 +278,7 @@ def source_paths(logical_id: str) -> list[str]:
         if logical_id in OPERATOR_ANIMATION_NATIVE_IDS:
             result.add(OPERATOR_ANIMATION_NATIVE_APPROVAL)
         return sorted(result)
-    if is_recruit_placeholder(logical_id):
+    if is_recruit_asset(logical_id):
         result = set(RECRUIT_COMMON_SOURCES)
         if logical_id.startswith("portrait_"):
             result.update(
@@ -546,7 +557,7 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 ),
             },
         }
-    if is_recruit_placeholder(logical_id):
+    if is_recruit_asset(logical_id):
         generator = digest_row(repo, RECRUIT_IMPORTER)
         return {
             "schema_version": 1,
@@ -577,14 +588,14 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                 "status": "new_runtime_asset_authenticated",
             },
             "acceptance": {
-                "state": "unknown_per_current_byte",
-                "human_accepter": None,
-                "accepted_at_utc": None,
-                "accepting_commit": None,
-                "source": "Phase 6 exact-byte Recruit visual review pending",
+                "state": "human_final_accepted",
+                "human_accepter": "Poseidon",
+                "accepted_at_utc": RECRUIT_APPROVED_AT_UTC,
+                "accepting_commit": RECRUIT_APPROVED_CANDIDATE,
+                "source": RECRUIT_APPROVAL,
                 "reason": (
-                    "current Recruit output is structurally authenticated and remains placeholder "
-                    "art until Poseidon accepts the complete hash-bound candidate"
+                    "Poseidon accepted the exact Phase 6 Recruit candidate bound to the complete "
+                    "13-file asset set, manifest, source authority, and contact sheets"
                 ),
             },
             "license": {
@@ -593,8 +604,8 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
                     "original GPT Image 2 concepts and project-controlled deterministic normalization"
                 ),
                 "human_contribution": (
-                    "direction, identity constraints, normalization contract, and pending "
-                    "exact-byte visual review"
+                    "direction, identity constraints, normalization contract, exact-byte visual "
+                    "review, and final acceptance"
                 ),
             },
         }
