@@ -179,10 +179,30 @@ def validate_source_subject(source: Image.Image, label: str, field: bool) -> Non
     area_ratio = primary_pixels / (source.width * source.height)
     min_width = 0.15 if field else 0.40
     min_area = 0.05 if field else 0.20
-    if top < round(source.height * 0.03):
+    alpha = keyed.getchannel("A")
+    top_contact = any(alpha.getpixel((x, 0)) >= 32 for x in range(source.width))
+    bottom_contact = any(
+        alpha.getpixel((x, source.height - 1)) >= 32 for x in range(source.width)
+    )
+    if top_contact or top < round(source.height * 0.03):
         raise ValueError(f"{label}: principal subject is clipped at the top edge")
-    if left <= 0 and field or right >= source.width and field:
-        raise ValueError(f"{label}: field subject is clipped at a side edge")
+    if bottom_contact:
+        raise ValueError(f"{label}: principal subject is clipped at the bottom edge")
+    if field:
+        left_contact = any(alpha.getpixel((0, y)) >= 32 for y in range(source.height))
+        right_contact = any(
+            alpha.getpixel((source.width - 1, y)) >= 32 for y in range(source.height)
+        )
+        if left_contact or right_contact or left <= 0 or right >= source.width:
+            raise ValueError(f"{label}: field subject is clipped at a side edge")
+    else:
+        upper_limit = round(source.height * 0.60)
+        upper_left_contact = any(alpha.getpixel((0, y)) >= 32 for y in range(upper_limit))
+        upper_right_contact = any(
+            alpha.getpixel((source.width - 1, y)) >= 32 for y in range(upper_limit)
+        )
+        if upper_left_contact or upper_right_contact:
+            raise ValueError(f"{label}: portrait head or upper body is clipped at a side edge")
     if width_ratio < min_width or height_ratio < 0.50 or area_ratio < min_area:
         raise ValueError(
             f"{label}: incomplete foreground occupancy width={width_ratio:.4f} "

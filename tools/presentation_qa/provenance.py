@@ -135,6 +135,8 @@ OPERATOR_ANIMATION_REMAINING_SOURCES = {
     "res://tools/art_pipeline/characters/import_operator_animations.py",
 }
 
+_RECRUIT_APPROVAL_AUTHENTICATED = False
+
 
 def is_round5_character(logical_id: str) -> bool:
     base_id = logical_id.removeprefix("portrait_").removesuffix("_charmed")
@@ -564,7 +566,8 @@ def build_document(repo: Path, logical_id: str, entry: dict[str, Any]) -> dict[s
             },
         }
     if is_recruit_asset(logical_id):
-        authenticate_recruit_approval(repo)
+        if not _RECRUIT_APPROVAL_AUTHENTICATED:
+            authenticate_recruit_approval(repo)
         generator = digest_row(repo, RECRUIT_IMPORTER)
         return {
             "schema_version": 1,
@@ -730,7 +733,12 @@ def load_inventory(path: Path) -> dict[str, dict[str, Any]]:
 
 
 def run(repo: Path, inventory_path: Path, write: bool) -> None:
+    global _RECRUIT_APPROVAL_AUTHENTICATED
     entries = load_inventory(inventory_path)
+    has_recruit = any(is_recruit_asset(logical_id) for logical_id in entries)
+    if has_recruit:
+        authenticate_recruit_approval(repo)
+        _RECRUIT_APPROVAL_AUTHENTICATED = True
     schema = json.loads((repo / "tools/presentation_qa/provenance_schema_v1.json").read_text(encoding="utf-8"))
     output = repo / "assets/provenance"
     output.mkdir(parents=True, exist_ok=True)
@@ -739,22 +747,25 @@ def run(repo: Path, inventory_path: Path, write: bool) -> None:
     extras = existing_names - expected_names
     if extras:
         raise ValueError(f"unexpected provenance sidecars: {sorted(extras)}")
-    for logical_id in sorted(entries):
-        entry = entries[logical_id]
-        document = build_document(repo, logical_id, entry)
-        target = output / f"{logical_id}.provenance.json"
-        if write:
-            target.write_bytes(canonical_bytes(document))
-        if not target.is_file():
-            raise FileNotFoundError(target)
-        raw = target.read_bytes()
-        if not raw.endswith(b"\n") or raw.count(b"\n") != 1:
-            raise ValueError(f"noncanonical newline/whitespace: {logical_id}")
-        parsed = json.loads(raw)
-        validate_schema(parsed, schema, schema)
-        validate_document(repo, parsed, logical_id, entry)
-        if raw != canonical_bytes(parsed):
-            raise ValueError(f"noncanonical bytes: {logical_id}")
+    try:
+        for logical_id in sorted(entries):
+            entry = entries[logical_id]
+            document = build_document(repo, logical_id, entry)
+            target = output / f"{logical_id}.provenance.json"
+            if write:
+                target.write_bytes(canonical_bytes(document))
+            if not target.is_file():
+                raise FileNotFoundError(target)
+            raw = target.read_bytes()
+            if not raw.endswith(b"\n") or raw.count(b"\n") != 1:
+                raise ValueError(f"noncanonical newline/whitespace: {logical_id}")
+            parsed = json.loads(raw)
+            validate_schema(parsed, schema, schema)
+            validate_document(repo, parsed, logical_id, entry)
+            if raw != canonical_bytes(parsed):
+                raise ValueError(f"noncanonical bytes: {logical_id}")
+    finally:
+        _RECRUIT_APPROVAL_AUTHENTICATED = False
 
 
 def main() -> int:

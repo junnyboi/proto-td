@@ -19,6 +19,20 @@ const TERMINAL_REASON_KEYS := {
 	"leak_defeat": &"ui.memorial.terminal.leak_defeat",
 	"resign": &"ui.memorial.terminal.resign",
 }
+const MEMORIAL_CLASS_IDS := {
+	"banner_guard": true,
+	"defender": true,
+	"gunner": true,
+	"immovable": true,
+	"mage_apprentice": true,
+	"recruit": true,
+	"shock_trooper": true,
+	"sniper": true,
+	"sorcerer": true,
+	"sword_saint": true,
+	"swordmaster": true,
+	"witch_doctor": true,
+}
 
 var _shell: AetheriaScreenShellType
 var _page: VBoxContainer
@@ -196,19 +210,12 @@ func _memorial_card(row: Dictionary) -> AetheriaPanelType:
 	)
 	(
 		details
-		. add_child(
-			_label(
-				"Class_%s" % row["hero_id"],
-				(
-					UiCopyType
-					. format_text(
-						&"ui.memorial.class_at_death",
-						"Class at death: {class_name}",
-						{&"class_name": TrainingScreenType.class_label(String(row["class_id"]))},
-					)
-				),
-				&"dense_body",
-			)
+			. add_child(
+				_label(
+					"Class_%s" % row["hero_id"],
+					_class_at_death_text(row),
+					&"dense_body",
+				)
 		)
 	)
 	(
@@ -251,6 +258,20 @@ func _deeds_text(row: Dictionary) -> String:
 				&"retreats": int(deeds["retreats"]),
 				&"xp": int(row["xp"]),
 			},
+		)
+	)
+
+
+func _class_at_death_text(row: Dictionary) -> String:
+	var class_id := String(row.get("class_id", ""))
+	if not MEMORIAL_CLASS_IDS.has(class_id):
+		return _record_unavailable()
+	return (
+		UiCopyType
+		. format_text(
+			&"ui.memorial.class_at_death",
+			"Class at death: {class_name}",
+			{&"class_name": TrainingScreenType.class_label(class_id)},
 		)
 	)
 

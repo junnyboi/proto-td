@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 from PIL import Image, ImageDraw
@@ -73,6 +74,56 @@ class RecruitImporterTests(unittest.TestCase):
         draw.rectangle((115, 30, 190, 190), fill=(20, 40, 60, 255))
         with self.assertRaises(ValueError):
             importer.validate_source_subject(cross_cell, "cross-cell portrait", False)
+
+    def test_connected_portrait_subject_clipped_at_each_edge_rejects(self) -> None:
+        boxes = {
+            "left": (0, 35, 145, 180),
+            "right": (55, 35, 199, 180),
+            "top": (25, 0, 175, 180),
+            "bottom": (25, 20, 175, 199),
+        }
+        for edge, box in boxes.items():
+            with self.subTest(edge=edge):
+                clipped = self.portrait_source()
+                ImageDraw.Draw(clipped).rectangle(box, fill=(20, 40, 60, 255))
+                with self.assertRaises(ValueError):
+                    importer.validate_source_subject(clipped, f"portrait {edge}", False)
+
+    def test_full_run_writes_nothing_for_each_clipped_portrait_edge(self) -> None:
+        boxes = {
+            "left": (0, 35, 145, 180),
+            "right": (55, 35, 199, 180),
+            "top": (25, 0, 175, 180),
+            "bottom": (25, 20, 175, 199),
+        }
+        valid_field = self.field_source()
+        ImageDraw.Draw(valid_field).rectangle((60, 20, 140, 180), fill=(20, 40, 60, 255))
+        for edge, box in boxes.items():
+            with self.subTest(edge=edge), TemporaryDirectory() as temp:
+                portrait_sheet = Image.new("RGBA", (800, 400), (244, 12, 232, 255))
+                ImageDraw.Draw(portrait_sheet).rectangle(box, fill=(20, 40, 60, 255))
+
+                def source_open(path: Path) -> Image.Image:
+                    return (
+                        portrait_sheet.copy()
+                        if "portrait-treatment" in str(path)
+                        else valid_field.copy()
+                    )
+
+                review_dir = Path(temp) / "review"
+                with (
+                    mock.patch.object(importer, "PORTRAIT_SOURCE_SIZE", (800, 400)),
+                    mock.patch.object(importer, "FIELD_SOURCE_SIZE", (200, 200)),
+                    mock.patch.object(importer, "PORTRAIT_CELL_SIZE", (200, 200)),
+                    mock.patch.object(importer.Image, "open", side_effect=source_open),
+                    mock.patch.object(importer, "save_atomic") as save,
+                    mock.patch.object(importer, "authenticate_recruit_approval") as authenticate,
+                ):
+                    with self.assertRaises(ValueError):
+                        importer.run(REPO, review_dir)
+                    save.assert_not_called()
+                    authenticate.assert_not_called()
+                    self.assertFalse(review_dir.exists())
 
     def test_approval_failure_occurs_before_any_output_write(self) -> None:
         image = Image.new("RGBA", (2, 2), (0, 0, 0, 0))

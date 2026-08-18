@@ -75,6 +75,9 @@ func test_missing_death_presentation_never_exposes_internal_ids() -> void:
 	assert_eq(text, "Memorial record unavailable")
 	for internal_id: String in internal_ids:
 		assert_false(text.contains(internal_id), internal_id)
+	var class_text := String(screen.call("_class_at_death_text", row))
+	assert_eq(class_text, "Memorial record unavailable")
+	assert_false(class_text.contains(internal_ids[2]))
 	row["death"]["stage_id"] = "s1"
 	text = String(screen.call("_death_text", row))
 	assert_eq(text, "Memorial record unavailable")

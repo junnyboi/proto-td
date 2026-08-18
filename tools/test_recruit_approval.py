@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import copy
 import json
+import re
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -20,17 +22,15 @@ class RecruitApprovalTests(unittest.TestCase):
         cls.approval_path = REPO / approval.APPROVAL_PATH.removeprefix("res://")
         cls.raw = cls.approval_path.read_bytes()
         cls.document = json.loads(cls.raw)
-        cls.manifest = (
-            __import__("subprocess")
-            .check_output(
-                [
-                    "git",
-                    "-C",
-                    str(REPO),
-                    "show",
-                    f"{approval.APPROVED_CANDIDATE}:assets/manifest.tres",
-                ]
-            )
+        cls.current_manifest = (REPO / "assets/manifest.tres").read_bytes()
+        cls.manifest = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(REPO),
+                "show",
+                f"{approval.APPROVED_CANDIDATE}:assets/manifest.tres",
+            ]
         )
 
     def validate(
@@ -41,6 +41,7 @@ class RecruitApprovalTests(unittest.TestCase):
         generated_assets: dict[str, bytes] | None = None,
         generated_contact_sheet: bytes | None = None,
         candidate_manifest: bytes | None = None,
+        current_manifest: bytes | None = None,
         file_overrides: dict[str, bytes] | None = None,
     ) -> None:
         chosen = copy.deepcopy(self.document if document is None else document)
@@ -51,6 +52,9 @@ class RecruitApprovalTests(unittest.TestCase):
             generated_assets=generated_assets,
             generated_contact_sheet=generated_contact_sheet,
             candidate_manifest=self.manifest if candidate_manifest is None else candidate_manifest,
+            current_manifest=(
+                self.current_manifest if current_manifest is None else current_manifest
+            ),
             file_overrides=file_overrides,
         )
 
@@ -141,6 +145,62 @@ class RecruitApprovalTests(unittest.TestCase):
             self.validate(generated_contact_sheet=approved_contact + b"tamper")
         with self.assertRaises(ValueError):
             self.validate(candidate_manifest=self.manifest + b"tamper")
+
+    def test_current_manifest_rejects_every_unauthorized_recruit_mutation(self) -> None:
+        text = self.current_manifest.decode("utf-8")
+        for logical_id in approval.APPROVED_LOGICAL_IDS:
+            entry = approval._manifest_entry(text, logical_id)
+            for field, changed_entry in {
+                "placeholder": entry.replace('"placeholder": false', '"placeholder": true', 1),
+                "provenance": re.sub(
+                    r'"provenance_sha256": "[0-9a-f]{64}"',
+                    '"provenance_sha256": "' + "0" * 64 + '"',
+                    entry,
+                    count=1,
+                ),
+            }.items():
+                with self.subTest(logical_id=logical_id, field=field):
+                    mutated = text.replace(entry, changed_entry, 1).encode("utf-8")
+                    with self.assertRaises(ValueError):
+                        self.validate(current_manifest=mutated)
+
+        portrait = approval._manifest_entry(text, "portrait_recruit_00")
+        portrait_mutations = {
+            "mapping_swap": portrait.replace("recruit_00.png", "recruit_01.png", 1),
+            "frames": portrait.replace('"frames": 1', '"frames": 2', 1),
+            "size": portrait.replace("Vector2i(128, 128)", "Vector2i(127, 128)", 1),
+            "pivot": portrait.replace("Vector2(0.5, 0.5)", "Vector2(0.4, 0.5)", 1),
+            "fps": portrait.replace('"fps": 1.0', '"fps": 2.0', 1),
+            "length": portrait.replace('"length": 1', '"length": 2', 1),
+            "loop": portrait.replace('"loop": true', '"loop": false', 1),
+            "start": portrait.replace('"start": 0', '"start": 1', 1),
+        }
+        for field, changed_entry in portrait_mutations.items():
+            with self.subTest(logical_id="portrait_recruit_00", field=field):
+                mutated = text.replace(portrait, changed_entry, 1).encode("utf-8")
+                with self.assertRaises(ValueError):
+                    self.validate(current_manifest=mutated)
+
+        recruit = approval._manifest_entry(text, "recruit")
+        for field, changed_entry in {
+            "pattern": recruit.replace("recruit_%d.png", "recruit_alt_%d.png", 1),
+            "frames": recruit.replace('"frames": 5', '"frames": 4', 1),
+            "attack_fps": recruit.replace('"fps": 8.0', '"fps": 7.0', 1),
+        }.items():
+            with self.subTest(logical_id="recruit", field=field):
+                mutated = text.replace(recruit, changed_entry, 1).encode("utf-8")
+                with self.assertRaises(ValueError):
+                    self.validate(current_manifest=mutated)
+
+        removed = text.replace(portrait, "", 1).encode("utf-8")
+        with self.assertRaises(ValueError):
+            self.validate(current_manifest=removed)
+        extra = (
+            text
+            + '\n&"portrait_recruit_08": {\n"frames": 1\n}\n'
+        ).encode("utf-8")
+        with self.assertRaises(ValueError):
+            self.validate(current_manifest=extra)
 
 
 if __name__ == "__main__":

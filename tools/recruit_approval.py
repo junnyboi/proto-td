@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -92,6 +93,80 @@ def _candidate_manifest(repo: Path) -> bytes:
     return result.stdout
 
 
+def _manifest_entry(text: str, logical_id: str) -> str:
+    marker = f'&"{logical_id}": {{'
+    start = text.find(marker)
+    if start < 0:
+        raise ValueError(f"Recruit manifest entry missing: {logical_id}")
+    brace = text.find("{", start)
+    depth = 0
+    quoted = False
+    escaped = False
+    for index in range(brace, len(text)):
+        char = text[index]
+        if quoted:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                quoted = False
+            continue
+        if char == '"':
+            quoted = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : index + 1]
+    raise ValueError(f"Recruit manifest entry is unterminated: {logical_id}")
+
+
+def _recruit_manifest_ids(text: str) -> set[str]:
+    ids = set(re.findall(r'^&"([^"]+)": \{$', text, flags=re.MULTILINE))
+    return {logical_id for logical_id in ids if logical_id == "recruit" or logical_id.startswith("portrait_recruit_")}
+
+
+def _closed_manifest_entry(repo: Path, approved_entry: str, logical_id: str) -> str:
+    expected = approved_entry.replace('"placeholder": true', '"placeholder": false', 1)
+    sidecar = repo / f"assets/provenance/{logical_id}.provenance.json"
+    if not sidecar.is_file():
+        raise ValueError(f"Recruit provenance sidecar is missing: {logical_id}")
+    provenance_digest = _digest(sidecar.read_bytes())
+    expected, count = re.subn(
+        r'"provenance_sha256": "[0-9a-f]{64}"',
+        f'"provenance_sha256": "{provenance_digest}"',
+        expected,
+        count=1,
+    )
+    if count != 1:
+        raise ValueError(f"Recruit approved manifest provenance field is malformed: {logical_id}")
+    return expected
+
+
+def _validate_current_manifest(
+    repo: Path,
+    approved_manifest: bytes,
+    current_manifest: bytes,
+) -> None:
+    try:
+        approved_text = approved_manifest.decode("utf-8")
+        current_text = current_manifest.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("Recruit manifest is not UTF-8") from error
+    expected_ids = set(APPROVED_LOGICAL_IDS)
+    if _recruit_manifest_ids(approved_text) != expected_ids:
+        raise ValueError("Recruit approved manifest logical ID closure mismatch")
+    if _recruit_manifest_ids(current_text) != expected_ids:
+        raise ValueError("Recruit current manifest logical ID closure mismatch")
+    for logical_id in APPROVED_LOGICAL_IDS:
+        approved_entry = _manifest_entry(approved_text, logical_id)
+        current_entry = _manifest_entry(current_text, logical_id)
+        if current_entry != _closed_manifest_entry(repo, approved_entry, logical_id):
+            raise ValueError(f"Recruit current manifest projection mismatch: {logical_id}")
+
+
 def _validate_rows(
     repo: Path,
     rows: Any,
@@ -145,6 +220,7 @@ def validate_recruit_approval(
     generated_assets: dict[str, bytes] | None = None,
     generated_contact_sheet: bytes | None = None,
     candidate_manifest: bytes | None = None,
+    current_manifest: bytes | None = None,
     file_overrides: dict[str, bytes] | None = None,
 ) -> dict[str, Any]:
     repo = repo.resolve()
@@ -215,6 +291,12 @@ def validate_recruit_approval(
     manifest_bytes = candidate_manifest if candidate_manifest is not None else _candidate_manifest(repo)
     if _digest(manifest_bytes) != APPROVED_MANIFEST_SHA256:
         raise ValueError("Recruit approval candidate manifest digest mismatch")
+    current_manifest_bytes = (
+        current_manifest
+        if current_manifest is not None
+        else (repo / "assets/manifest.tres").read_bytes()
+    )
+    _validate_current_manifest(repo, manifest_bytes, current_manifest_bytes)
     return document
 
 
@@ -224,6 +306,7 @@ def authenticate_recruit_approval(
     generated_assets: dict[str, bytes] | None = None,
     generated_contact_sheet: bytes | None = None,
     candidate_manifest: bytes | None = None,
+    current_manifest: bytes | None = None,
 ) -> dict[str, Any]:
     repo = repo.resolve()
     approval_file = _disk_path(repo, APPROVAL_PATH)
@@ -241,4 +324,5 @@ def authenticate_recruit_approval(
         generated_assets=generated_assets,
         generated_contact_sheet=generated_contact_sheet,
         candidate_manifest=candidate_manifest,
+        current_manifest=current_manifest,
     )
