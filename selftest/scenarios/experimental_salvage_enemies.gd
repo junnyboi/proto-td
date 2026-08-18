@@ -206,7 +206,9 @@ func _check_walk_gallery(h: SelfTestHarness, view: Node2D, model: BattleModel) -
 			h
 			. check(
 				"%s uses the readable directional body" % ENEMY_IDS[index],
-				body != null and body.size == Vector2.ONE * RUNTIME_BODY_PX,
+				body != null and body.size.is_equal_approx(Vector2.ONE * RUNTIME_BODY_PX),
+				"size=%s expected=%s"
+				% [body.size if body != null else Vector2.ZERO, Vector2.ONE * RUNTIME_BODY_PX],
 			)
 		)
 		if body == null:
