@@ -2,10 +2,11 @@ class_name AetheriaButton
 extends Button
 
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const COMPACT_ACTION_MINIMUM_WIDTH := 44.0
-const COMPACT_ACTION_MINIMUM_HEIGHT := 80.0
-const COMPACT_ACTION_FONT_SIZE := 34
-const COMPACT_ACTION_ROW_TOP_PADDING := 20
+const COMPACT_ACTION_MINIMUM_HEIGHT := 64.0
+const COMPACT_ACTION_FONT_SIZE := GameTypographyType.BODY
+const COMPACT_ACTION_ROW_TOP_PADDING := 12
 
 const ROLE_VARIATIONS := {
 	&"primary": &"AuiPrimaryButton",

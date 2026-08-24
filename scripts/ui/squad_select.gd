@@ -10,6 +10,7 @@ const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -101,7 +102,7 @@ func _ready() -> void:
 		pick.set_presentation_text(card_text, compact_card)
 		var card_label := pick.get_node("PresentationLabel") as Label
 		card_label.offset_top = 70.0
-		card_label.add_theme_font_size_override(&"font_size", 30)
+		card_label.add_theme_font_size_override(&"font_size", GameTypographyType.BODY)
 		pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 		_grid.add_child(pick)
 		_buttons[hero_id] = pick

@@ -5,6 +5,7 @@ extends Control
 
 const LOADING_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const TITLE_SCENE := preload("res://scenes/title.tscn")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const GOLD := Color("d8b978")
 const MOON_CYAN := Color("86cbd4")
 const IVORY := Color("eee8dc")
@@ -81,12 +82,12 @@ func _build_screen() -> void:
 	header_row.add_theme_constant_override(&"separation", 16)
 	header.add_child(header_row)
 
-	var faction := _label("LUNARIS RELIQUARY", 17, GOLD)
+	var faction := _label("LUNARIS RELIQUARY", GameTypographyType.BADGE, GOLD)
 	faction.name = "FactionLabel"
 	faction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_row.add_child(faction)
 
-	var chapter := _label("MOON ARCHIVE // 00", 14, IVORY)
+	var chapter := _label("MOON ARCHIVE // 00", GameTypographyType.MICRO_LABEL, IVORY)
 	chapter.name = "ArchiveLabel"
 	chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	header_row.add_child(chapter)
@@ -112,7 +113,7 @@ func _build_screen() -> void:
 	stack.add_theme_constant_override(&"separation", 9)
 	footer.add_child(stack)
 
-	var wordmark := _label("PROTOS", 46, IVORY)
+	var wordmark := _label("PROTOS", GameTypographyType.SCREEN_TITLE, IVORY)
 	wordmark.name = "Wordmark"
 	wordmark.add_theme_constant_override(&"outline_size", 8)
 	wordmark.add_theme_color_override(&"font_outline_color", Color(0.01, 0.02, 0.03, 0.7))
@@ -122,12 +123,12 @@ func _build_screen() -> void:
 	status_row.add_theme_constant_override(&"separation", 18)
 	stack.add_child(status_row)
 
-	_status = _label("AWAKENING RELIQUARY", 14, MUTED)
+	_status = _label("AWAKENING RELIQUARY", GameTypographyType.STATUS, MUTED)
 	_status.name = "StatusLabel"
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status_row.add_child(_status)
 
-	_percentage = _label("00%", 14, MOON_CYAN)
+	_percentage = _label("00%", GameTypographyType.STATUS, MOON_CYAN)
 	_percentage.name = "PercentageLabel"
 	_percentage.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	status_row.add_child(_percentage)
@@ -141,7 +142,11 @@ func _build_screen() -> void:
 	_progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
 	stack.add_child(_progress)
 
-	var detail := _label("CUSTODIANS OF MEMORY, GRAVITY, AND RITUAL GEOMETRY", 11, Color(0.64, 0.72, 0.74))
+	var detail := _label(
+		"CUSTODIANS OF MEMORY, GRAVITY, AND RITUAL GEOMETRY",
+		GameTypographyType.CAPTION,
+		Color(0.64, 0.72, 0.74),
+	)
 	detail.name = "DetailLabel"
 	detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	stack.add_child(detail)

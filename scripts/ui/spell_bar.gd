@@ -1,6 +1,8 @@
 class_name SpellBar
 extends Control
 
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+
 ## Raw-input adapter for the cast verb (architecture rule 3: a thin adapter
 ## over apply_action, validated once per spell kind by charm_runback.gd).
 ## Interaction: click a spell button -> targeting mode (a Chebyshev-sized
@@ -12,7 +14,7 @@ extends Control
 ## rect proportional to max(0, ready_at - tick) / cooldown; ONCE_PER_WAVE
 ## spells show a "1/wave" label and dim while used.
 
-const FONT_SIZE := 32
+const FONT_SIZE := GameTypographyType.BODY
 const SWEEP_HEIGHT := 8.0
 const SWEEP_COLOR := Color(0.96, 0.71, 0.2, 0.85)
 const CURSOR_VALID := Color(0.55, 0.75, 1.0, 0.4)
@@ -65,6 +67,7 @@ func _build_buttons() -> void:
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id
 		slot.text = _label_for(def)
+		slot.custom_minimum_size.y = 52.0
 		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		slot.button_down.connect(_start_targeting.bind(spell_id))

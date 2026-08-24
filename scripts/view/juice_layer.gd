@@ -1,6 +1,8 @@
 class_name JuiceLayer
 extends Node2D
 
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+
 ## Manifest-backed presentation effects. Pure view: spawns and ages transients,
 ## never reads or writes the model; BattleView owns all model-edge detection and
 ## calls in. Effects age in _process, all magnitudes come from JuiceConfig, and
@@ -13,8 +15,8 @@ const VFX_CHARM_SWIRL := &"vfx_charm_swirl"
 const VFX_WAVE_BANNER := &"vfx_wave_banner"
 const VFX_RESULT_STAMP := &"vfx_result_stamp"
 const KNOCK_COLOR := Color(1.0, 0.3, 0.3)
-const BANNER_TEXT_SIZE := 48
-const STAMP_TEXT_SIZE := 64
+const BANNER_TEXT_SIZE := GameTypographyType.DISPLAY
+const STAMP_TEXT_SIZE := GameTypographyType.RESULT_DISPLAY
 const STAR_COLOR := Color("f4b41b")
 const SPRUNG_COLOR := Color("f4f4f4")
 

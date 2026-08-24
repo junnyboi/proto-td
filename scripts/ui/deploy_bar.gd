@@ -15,8 +15,9 @@ extends Control
 
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
-const FONT_SIZE := 32
+const FONT_SIZE := GameTypographyType.BODY
 const BAR_HEIGHT := 88.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
@@ -203,6 +204,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 			sprite_id = StringName(row["visual_spec"]["sprite_id"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
 		slot.text = "%s%s  %d DP" % [def.display_name, identity_suffix, dp_cost]
+		slot.custom_minimum_size.y = 52.0
 		slot.icon = Art.texture(sprite_id, 0)
 		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		slot.button_down.connect(_start_placement.bind(deployment_id))
@@ -220,6 +222,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
 		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
+		slot.custom_minimum_size.y = 52.0
 		slot.icon = Art.texture(
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
 		)
@@ -278,6 +281,7 @@ func _build_overlays() -> void:
 	_retreat_chip = Button.new()
 	_retreat_chip.name = "RetreatChip"
 	_retreat_chip.text = "Retreat"
+	_retreat_chip.custom_minimum_size = Vector2(88.0, 52.0)
 	_retreat_chip.add_theme_font_size_override("font_size", FONT_SIZE)
 	_retreat_chip.visible = false
 	_retreat_chip.pressed.connect(_confirm_retreat)
