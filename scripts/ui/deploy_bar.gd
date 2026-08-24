@@ -349,6 +349,7 @@ func _build_overlays() -> void:
 		btn.text = ""
 		btn.custom_minimum_size = FACING_BUTTON_SIZE
 		btn.z_index = FACING_BUTTON_Z
+		_apply_facing_button_styles(btn)
 		btn.visible = false
 		btn.pressed.connect(_confirm_deploy.bind(facing))
 		btn.mouse_entered.connect(_refresh_facing_icon.bind(facing))
@@ -379,6 +380,19 @@ func _build_overlays() -> void:
 	_selection_ring.visible = false
 	_selection_ring.z_index = -1
 	add_child(_selection_ring)
+
+
+func _apply_facing_button_styles(button: Button) -> void:
+	var transparent := StyleBoxEmpty.new()
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		button.add_theme_stylebox_override(state, transparent)
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = Color.TRANSPARENT
+	focus.border_color = Color(0.95, 0.78, 0.32, 0.96)
+	focus.set_border_width_all(2)
+	focus.set_corner_radius_all(10)
+	focus.set_expand_margin_all(2.0)
+	button.add_theme_stylebox_override(&"focus", focus)
 
 
 ## Footprints are origin-centered face diamonds (P12.2) sized by the live
