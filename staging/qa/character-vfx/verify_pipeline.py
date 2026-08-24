@@ -51,7 +51,7 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--input-root", type=Path, required=True)
     parser.add_argument("--process-timeout-seconds", type=int, required=True)
     parser.add_argument("--evidence-root", type=Path, required=True)
-    parser.add_argument("--godot", type=Path, default=Path(os.environ.get("GODOT", Path.home() / "bin/godot")))
+    parser.add_argument("--godot", type=Path, default=Path(os.environ.get("GODOT", Path.home() / ".local/bin/godot")))
     return parser.parse_args()
 
 

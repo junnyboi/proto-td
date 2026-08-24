@@ -11,7 +11,7 @@ This is the authoritative multi-agent coordination queue. It contains **incomple
 - Existing domain IDs remain valid; new general coordination items use `TD-###`.
 - Completed items move to `docs/completed.md`; they never remain in both files.
 - Preserve every valid concurrent entry during merges; never resolve a shared-ledger conflict by dropping the other lane wholesale.
-- Shared hot files (`FEATURES.json`, these ledgers, `scripts/verify.sh`, tick semantics, thresholds) are serial integration surfaces.
+- Shared hot files (`FEATURES.json`, these ledgers, `scripts/validate.sh`, tick semantics, thresholds) are serial integration surfaces.
 
 ## Claiming an item
 
@@ -30,6 +30,23 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Required evidence: named tests, scenarios, screenshots, replay diffs, or documents
 - Last update: YYYY-MM-DD
 ```
+
+## TD-VERIFY-LITE — Replace stale verification and Godot version policy
+
+- Status: in_progress
+- Owner: AGENT 1
+- Branch: `agent-1/lightweight-validation`
+- Base: `master` at `a9237ee67202817e412d57f6b44783a074804248`
+- Dependencies: `TD-VERIFY-REMOVE`
+- Owned files: `CLAUDE.md`, `docs/README.md`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-VERIFY-LITE-agent-1.md`, `scripts/*.sh`, `export_presets.cfg`
+- Do not touch: gameplay code, tests, thresholds, product acceptance records, immutable historical evidence, or generated media
+- Acceptance: current policy and executable helpers use Godot 4.7.2 at `~/.local/bin/godot`, a bounded lightweight validation entrypoint replaces the removed aggregate workflow, active references no longer require `verify.sh`, and historical evidence remains intact and explicitly classified
+- Required evidence: exhaustive reference inventory, shell syntax checks, lightweight validation pass, Web export file/hash proof, and clean synchronized `master`
+- [x] Classify every tracked `verify.sh`, Godot 4.7.1, `$HOME/bin/godot`, and legacy export-path reference as active policy, executable helper, or historical evidence.
+- [x] Define and implement a bounded lightweight validation entrypoint.
+- [x] Reconcile active policy, helper defaults, version checks, and export paths with Godot 4.7.2.
+- [x] Prove the replacement workflow and document intentionally preserved historical references.
+- Last update: 2026-08-24
 
 ## L7-R1 — Human playtest round 1
 
@@ -52,7 +69,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; candidate paths are `scripts/quality_gate.sh`, `playtests/thresholds.json`, data resources named by verdicts, and required tests
 - Do not touch: human verdict wording; thresholds before `L7-R1`; unrelated model/view files
 - Acceptance: transcribe human-owned bands, implement evaluator, commit first baselines, apply verdict-driven data edits, and preserve all tier-1 gates
-- Required evidence: fresh `scripts/verify.sh --full`, tier-2 gate report, and updated verdict arithmetic
+- Required evidence: fresh `scripts/validate.sh`, tier-2 gate report, and updated verdict arithmetic
 - Last update: 2026-08-12
 
 ## L7-R2 — Human playtest round 2 and acceptance closure
@@ -74,9 +91,9 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Branch: N/A until claimed
 - Dependencies: none; coordinate with `POLISH-BOLT` if one presentation lane owns both
 - Owned files: none until claimed; exact manifest, asset, view, and scenario paths must be pinned before work
-- Do not touch: simulation core, `scripts/verify.sh`, thresholds, or unrelated shared hot files
+- Do not touch: simulation core, `scripts/validate.sh`, thresholds, or unrelated shared hot files
 - Acceptance: dust, sparks, vignette, swirl, banner, and stamp use manifest-backed final assets while preserving model semantics and probe reservations
-- Required evidence: affected GUT/scenarios, fresh render-lane PNGs, falsifiable visual checklist, and `scripts/verify.sh --full`
+- Required evidence: affected focused GUT/scenarios, fresh render-lane PNGs, falsifiable visual checklist, and `scripts/validate.sh --scenario=<affected_scenario> --render --web`
 - Last update: 2026-08-12
 
 ## POLISH-BOLT — Add a readable Bolt impact visual
@@ -87,7 +104,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; next owner must pin exact presentation, model-record, manifest, asset, test, and scenario paths before editing
 - Do not touch: spell damage/cooldown/targeting semantics, audio policy, verification thresholds, or unrelated presentation lanes
 - Acceptance: Bolt impact is visually identifiable at 1× without relying on audio or changing combat outcomes; any adopted deterministic event record must remain hash-covered and zero-state-change on rejection
-- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, cross-process campaign replay diff, independent adversarial review, and a fresh uninterrupted `scripts/verify.sh --full`
+- Required evidence: seeded Bolt scenario, present/absent pixel proof, fresh PNG review, cross-process campaign replay diff, independent adversarial review, and `scripts/validate.sh --scenario=<bolt_scenario> --render --web`
 - Last release: 2026-08-12 — Poseidon reassigned AGENT 7 before integration. `agent-7/polish-bolt` remains intentionally unmerged and owns no active files or contracts.
 - Last release: 2026-08-12 — Poseidon unassigned AGENT 10 during final audit. `agent-10/bolt-impact` remains intentionally unmerged and owns no active files or contracts; partial audit artifacts were deleted.
 - Last update: 2026-08-12
@@ -101,7 +118,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; pin the event producer, view consumer, data resource, and scenario paths
 - Do not touch: model outcomes, tick semantics, unrelated shake magnitudes, thresholds
 - Acceptance: `boss_hit` drives the existing data-configured presentation slot through an observable deterministic seam
-- Required evidence: seam test, seeded scenario, render proof, and `scripts/verify.sh --full`
+- Required evidence: seam test, seeded scenario, render proof, and `scripts/validate.sh --scenario=<boss_hit_scenario> --render`
 - Last update: 2026-08-12
 
 ## POLISH-PORTRAIT — Decide and execute portrait fidelity beyond v2
@@ -113,7 +130,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; pin exact manifest, palette, portrait asset, normalization, and `assets_floor` paths
 - Do not touch: unrelated battle sprites, gameplay semantics, probe-color reservations, thresholds
 - Acceptance: either record that v2 portrait fidelity is accepted, or upgrade only the human-identified portraits while preserving manifest contracts
-- Required evidence: linked human verdict/decision; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/verify.sh --full`
+- Required evidence: linked human verdict/decision; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/validate.sh --scenario=assets_floor --render --web`
 - Last update: 2026-08-12
 
 ## JUICE-FINAL — Close the final juice-automation verdict
@@ -125,7 +142,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; candidate paths are `JUICE_VERDICT.md`, linked evidence, and only data/assets named by final verdicts
 - Do not touch: historical verdict text, human-owned thresholds, or waived audio decision `D-SFX`
 - Acceptance: record the final automation verdict against the post-playtest/post-polish build, with every open item closed, deferred, or linked to an active todo
-- Required evidence: updated `JUICE_VERDICT.md`, linked final-run artifacts, and `scripts/verify.sh --full` for any build change
+- Required evidence: updated `JUICE_VERDICT.md`, linked final-run artifacts, and scope-selected `scripts/validate.sh` evidence for any build change
 - Last update: 2026-08-12
 
 ## VERIFY-MOVIE — Decide and, if retained, re-prove Movie Maker lane
@@ -149,7 +166,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; candidate paths are presentation configuration/data and associated render checks
 - Do not touch: model tick semantics, tests, thresholds
 - Acceptance: human verdict determines whether current frame-counted lifetimes remain or migrate to a render-time data schema
-- Required evidence: linked L7 verdict; if changed, multi-refresh render proof and `scripts/verify.sh --full`
+- Required evidence: linked L7 verdict; if changed, multi-refresh render proof and `scripts/validate.sh --scenario=<affected_scenario> --render`
 - Last update: 2026-08-12
 
 ## L7-PALETTE — Judge operator/enemy palette separation
@@ -161,7 +178,7 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Owned files: none until claimed; candidate paths are manifests, palettes, sprite assets, and `assets_floor` evidence
 - Do not touch: gameplay semantics, unrelated art classes, probe-color reservations
 - Acceptance: human verdict confirms current separation or identifies exact classes/states needing palette adjustment
-- Required evidence: linked L7 verdict; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/verify.sh --full`
+- Required evidence: linked L7 verdict; if changed, asset QA, contact sheet, `assets_floor`, and `scripts/validate.sh --scenario=assets_floor --render --web`
 - Last update: 2026-08-12
 
 ## PROC-FEATURE-EVIDENCE — Add explicit evidence classes to the feature ledger

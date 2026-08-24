@@ -20,7 +20,7 @@ AUI-34 produces **no approved Aetheria runtime art**. It does not install assets
 |---|---|
 | Python | 3.12.3 |
 | Pillow | 12.3.0 |
-| Godot | 4.7.1 stable regular build |
+| Godot | 4.7.2 stable regular build |
 | GDScript lint | `gdlint` 4.5.0 |
 | Network | unavailable and unnecessary during normalization and QA |
 | Verification seed | 42; the pixel pipeline itself is seedless |
@@ -93,7 +93,7 @@ python3 -B tools/art_pipeline/character_vfx/normalize.py validate \
 ### Godot build
 
 ```bash
-export GODOT="${GODOT:-$HOME/bin/godot}"
+export GODOT="${GODOT:-$HOME/.local/bin/godot}"
 timeout 60 "$GODOT" --headless --path . \
   -s res://tools/art_pipeline/character_vfx/godot/normalize.gd -- \
   build --backend godot \

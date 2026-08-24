@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/artifacts/td-obs"
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/protos-td-obs.XXXXXX")"

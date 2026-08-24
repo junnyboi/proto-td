@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="artifacts/model-roster/summary.json"
 for arg in "$@"; do

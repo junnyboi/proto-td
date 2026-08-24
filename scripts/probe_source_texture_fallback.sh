@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 export GODOT_SILENCE_ROOT_WARNING=1
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROBE_SCRIPT="res://tools/probes/source_texture_fallback.gd"
 IMPORT_FILE="assets/sprites/grunt_anim_walk_se.png.import"

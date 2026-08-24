@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 FIXTURES="res://playtests/replays/v1"
 OUT_DIR="artifacts/replay"
 HASH_EVERY=100

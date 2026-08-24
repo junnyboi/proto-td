@@ -1,7 +1,7 @@
 extends RefCounted
 
 const PIPELINE_VERSION := "1.0.0"
-const PINNED_GODOT_VERSION := "4.7.1-stable (official)"
+const PINNED_GODOT_VERSION := "4.7.2-stable (official)"
 const PixelOps = preload("res://tools/art_pipeline/character_vfx/godot/pixel_ops.gd")
 const SpecContract = preload("res://tools/art_pipeline/character_vfx/godot/spec_contract.gd")
 
@@ -20,7 +20,7 @@ static func check_backend_version(version_info: Dictionary) -> Dictionary:
 	var exact: bool = (
 		version_info.get("major") == 4
 		and version_info.get("minor") == 7
-		and version_info.get("patch") == 1
+		and version_info.get("patch") == 2
 		and version_info.get("status") == "stable"
 		and version_info.get("build") == "official"
 		and actual == PINNED_GODOT_VERSION

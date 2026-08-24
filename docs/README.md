@@ -21,13 +21,14 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 - `PLAYTEST.md` owns human verdict capture.
 - `FINAL_REPORT.md` is the audit record, not the active queue.
 - `CLAUDE.md` owns repository-local standing agent rules.
+- [`validation.md`](validation.md) owns the current scope-aware validation policy and command matrix.
 
 ## Operating rules
 
-1. Pull the current default branch before development; start clean and establish a green baseline with `scripts/verify.sh`.
+1. Pull the current default branch before development; start clean and establish a green baseline with `scripts/validate.sh`.
 2. Claim exactly one stable item in `todo.md` before implementation. Record one owner, one branch, an exclusive file set, dependencies, non-owned files, acceptance, and required evidence. Existing domain IDs remain valid; new general coordination IDs use `TD-###`.
 3. Branches use `agent-N/<lane>` and commits use the exact prefix `AGENT N - `. Completed feature owners merge current `origin/master` into their feature branch, resolve and reverify there, push the branch, then fast-forward and reverify `master` before pushing it.
-4. Parallelize only across disjoint files. The simulation core, `scripts/verify.sh`, tick semantics, thresholds, and shared ledgers remain serial unless explicitly sequenced.
+4. Parallelize only across disjoint files. The simulation core, `scripts/validate.sh`, tick semantics, thresholds, and shared ledgers remain serial unless explicitly sequenced.
 5. Never write into a checkout another agent is actively verifying. Auto-discovered tests, scenarios, and bots can invalidate an in-flight run.
 6. Verify each lane locally. The integrating agent independently reruns the merged union; lane green does not prove union green.
 7. On closure, remove the item from `todo.md`, append one auditable line to `completed.md`, and write a handoff with exact commits, evidence, risks, and next action.
@@ -40,6 +41,11 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 ## Repository anchors
 
 - Default branch: `master`
-- Verification entrypoint: [`../scripts/verify.sh`](../scripts/verify.sh)
+- Validation entrypoint: [`../scripts/validate.sh`](../scripts/validate.sh)
+- Validation policy: [`validation.md`](validation.md)
 - Product feature ledger: [`../FEATURES.json`](../FEATURES.json)
 - Repository rules: [`../CLAUDE.md`](../CLAUDE.md)
+
+Historical plans, handoffs, media manifests, feature evidence, and final reports may retain exact
+Godot 4.7.1 and retired `verify.sh` references as evidence of what ran at those commits. They are not
+current execution instructions; use the authority map above.

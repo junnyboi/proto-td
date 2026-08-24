@@ -1530,7 +1530,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     for name in value_options:
         parser.add_argument(f"--{name.replace('_', '-')}")
-    parser.add_argument("--godot", default=str(Path.home() / "bin/godot"))
+    parser.add_argument("--godot", default=str(Path.home() / ".local/bin/godot"))
     parser.add_argument("--chromium", default=shutil.which("chromium") or "chromium")
     parser.add_argument("--test-browser-fixture", help=argparse.SUPPRESS)
     return parser

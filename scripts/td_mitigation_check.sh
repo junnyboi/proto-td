@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${TD_MITIGATION_OUT:-$ROOT/artifacts/td-mitigation}"
 FIXTURE="$ROOT/test/fixtures/mitigation_legacy_v1.json"

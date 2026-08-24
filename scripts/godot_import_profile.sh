@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Godot 4.7.1 can crash its importer worker pool while a gate imports a complete
+# Full-worktree scratch imports can overload importer worker pools while a gate imports a complete
 # copied worktree. Scratch gates use this isolated editor profile so the exact
 # same resources are imported serially without mutating the user's settings.
 protos_write_single_threaded_import_profile() {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GODOT="${1:-${GODOT:-$HOME/bin/godot}}"
+GODOT="${1:-${GODOT:-$HOME/.local/bin/godot}}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 if [[ -n "${MGS_RUNG_ROOT:-}" ]]; then
 	WORK_ROOT="$MGS_RUNG_ROOT/font-cache"

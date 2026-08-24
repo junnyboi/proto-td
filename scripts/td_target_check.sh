@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${TD_TARGET_OUT:-$ROOT/artifacts/td-target}"
 FIXTURE="$ROOT/test/fixtures/targeting_compat_v1.json"

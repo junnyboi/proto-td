@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MODE="native"
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 OUT_DIR=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/godot_import_profile.sh"
@@ -26,8 +26,8 @@ mkdir -p "$root/data" "$root/config" "$root/cache"
 export XDG_CACHE_HOME="$root/cache"
 
 version="$($GODOT --headless --version)"
-[[ "$version" == 4.7.1.stable.official.* ]] || {
-  echo "[filesystem-probe] expected Godot 4.7.1, got $version" >&2
+[[ "$version" == 4.7.2.stable.official.* ]] || {
+  echo "[filesystem-probe] expected Godot 4.7.2, got $version" >&2
   exit 2
 }
 EXPECTED_CHECKS=162

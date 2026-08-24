@@ -6,7 +6,7 @@
 # frames + wav (exercised from Phase 9 on). On Linux the headless lane runs
 # under xvfb-run -a unchanged.
 set -u
-GODOT="${GODOT:-$HOME/bin/godot}"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BOT="${1:?usage: playtest.sh <bot> [--seed N] [--ticks N] [--render] [--out DIR]}"
 shift

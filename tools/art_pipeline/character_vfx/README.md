@@ -1,6 +1,6 @@
 # AUI-34 Character/VFX Pipeline
 
-This package owns an **offline, deterministic, runtime-unbound** normalization contract for staged character and VFX frame sets. Python 3.12.3 with Pillow 12.3.0 is the canonical PNG encoder. Godot 4.7.1 `Image` is the fallback. Both implement the same integer pixel algorithm, atlas geometry, contact-sheet raster, strict source containment, packet validation, and rollback-safe publication.
+This package owns an **offline, deterministic, runtime-unbound** normalization contract for staged character and VFX frame sets. Python 3.12.3 with Pillow 12.3.0 is the canonical PNG encoder. Godot 4.7.2 `Image` is the fallback. Both implement the same integer pixel algorithm, atlas geometry, contact-sheet raster, strict source containment, packet validation, and rollback-safe publication.
 
 The package never edits `assets/**`, canonical manifests, Agent F presentation contracts, gameplay, tests, thresholds, localization, or human acceptance state.
 
@@ -17,7 +17,7 @@ python3 -B tools/art_pipeline/character_vfx/normalize.py build \
 ## Godot Image fallback
 
 ```bash
-export GODOT="${GODOT:-$HOME/bin/godot}"
+export GODOT="${GODOT:-$HOME/.local/bin/godot}"
 timeout 60 "$GODOT" --headless --path . \
   -s res://tools/art_pipeline/character_vfx/godot/normalize.gd -- \
   build --backend godot \

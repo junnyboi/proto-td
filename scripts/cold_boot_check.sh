@@ -5,8 +5,10 @@ GODOT="${GODOT:-}"
 if [[ -z "$GODOT" ]]; then
 	if command -v godot >/dev/null 2>&1; then
 		GODOT="$(command -v godot)"
-	elif [[ -x "$HOME/bin/godot" ]]; then
-		GODOT="$HOME/bin/godot"
+	elif command -v godot4 >/dev/null 2>&1; then
+		GODOT="$(command -v godot4)"
+	elif [[ -x "$HOME/.local/bin/godot" ]]; then
+		GODOT="$HOME/.local/bin/godot"
 	else
 		echo '[cold-boot] RED Godot executable not found (set GODOT or add godot to PATH)' >&2
 		exit 127

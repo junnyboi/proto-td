@@ -52,8 +52,8 @@ func _initialize() -> void:
 	var actual := Engine.get_version_info()
 	_require(bool(Pipeline.check_backend_version(actual)["ok"]), "actual version rejected")
 	for pair: Array in [
-		["major", 5], ["minor", 8], ["patch", 2], ["status", "dev"],
-		["build", "custom"], ["string", "4.7.1-stable (custom)"]
+		["major", 5], ["minor", 8], ["patch", 1], ["status", "dev"],
+		["build", "custom"], ["string", "4.7.2-stable (custom)"]
 	]:
 		var mismatched := actual.duplicate()
 		mismatched[pair[0]] = pair[1]

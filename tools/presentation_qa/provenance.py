@@ -9,6 +9,8 @@ from typing import Any
 
 BASELINE_COMMIT = "975261e8e00a20a0b25fe17e7976d743d509c14b"
 BASELINE_TREE = "cf4b3e1c0d8ae826c668765d994a032acbb8c0ad"
+# Historical recipe identity for frozen v1 sidecars. This is provenance data,
+# not the supported runtime/tooling engine declared by docs/validation.md.
 GODOT_VERSION = "4.7.1.stable.official.a13da4feb"
 COMMON_SOURCES = {
     "res://tools/gen_assets.gd",

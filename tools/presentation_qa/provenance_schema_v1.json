@@ -16,7 +16,7 @@
       "required": ["command", "godot_version", "generator_path", "generator_sha256"],
       "properties": {
         "command": {"oneOf": [{"const": "godot --headless --path . -s tools/gen_assets.gd"}, {"const": "python3 tools/art_pipeline/world/normalize_s1_world.py && python3 tools/art_pipeline/world/generate_s1_revision_v2.py"}, {"const": "python3 tools/artgen/compile_grunt_animations.py --input-dir <frozen-sheets> --output-dir assets/sprites --provenance assets/sprites/grunt_animation.provenance.json --generation-receipt assets/sprites/grunt_animation.generation_receipt.json --generation-bundle <immutable-bundle>"}, {"const": "python3 tools/art_pipeline/characters/generate_operator_animation_provenance.py --repo . --write"}]},
-        "godot_version": {"const": "4.7.1.stable.official.a13da4feb"},
+        "godot_version": {"const": "4.7.1.stable.official.a13da4feb", "description": "Historical engine identity that produced the frozen v1 asset bytes; not the current runtime/tooling requirement."},
         "generator_path": {"oneOf": [{"const": "res://tools/gen_assets.gd"}, {"const": "res://tools/art_pipeline/world/generate_s1_revision_v2.py"}, {"const": "res://tools/art_pipeline/characters/import_round5_sheets.py"}, {"const": "res://tools/artgen/compile_grunt_animations.py"}, {"const": "res://tools/art_pipeline/characters/generate_operator_animation_provenance.py"}]},
         "generator_sha256": {"$ref": "#/$defs/sha256"}
       }

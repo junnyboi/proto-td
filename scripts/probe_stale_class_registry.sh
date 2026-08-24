@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
-GODOT="${GODOT:-$HOME/bin/godot}"
+export PATH="$HOME/.local/bin:$PATH"
+GODOT="${GODOT:-$HOME/.local/bin/godot}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/godot_import_profile.sh"
 OLD_CACHE_COMMIT="${OLD_CACHE_COMMIT:-7babf28}"

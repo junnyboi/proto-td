@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "engine": {
-    "version": "4.7.1.stable.official.a13da4feb",
-    "binary_sha256": "32f8d7596c4b41185512b1c49d69f2da3be018fd784a53e349fa92a98a97bcde"
+    "version": "4.7.2.stable.official.ed1daf0bf",
+    "binary_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
   },
   "font": {
     "provider": "FontVariation: ThemeDB.fallback_font primary plus cache-independent ProtosSansSC-Subset source fallback",

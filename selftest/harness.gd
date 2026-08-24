@@ -3,8 +3,8 @@ extends SceneTree
 
 ## Scenario self-test runner (game-agnostic). Runs in two lanes with the same
 ## scenario file:
-##   headless (fast, default in verify.sh): shots no-op with [SHOT-SKIPPED]
-##   windowed (pixels): ~/bin/godot --path . --resolution 1280x720 \
+##   headless (fast, default in scripts/validate.sh): shots no-op with [SHOT-SKIPPED]
+##   windowed (pixels): ~/.local/bin/godot --path . --resolution 1280x720 \
 ##       -s selftest/harness.gd -- --scenario=<name> --seed=42 \
 ##       --shots=res://artifacts/<name>
 ## Scenarios live at res://selftest/scenarios/<name>.gd:
