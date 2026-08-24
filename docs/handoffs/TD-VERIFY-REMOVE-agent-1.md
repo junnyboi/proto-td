@@ -33,3 +33,6 @@ The user explicitly requested removal of the repository’s slow canonical aggre
 
 The owner should choose a replacement verification policy rather than silently letting the deleted script’s references persist as requirements. A lightweight option is to keep direct import, bounded boot, one deterministic scenario, and a Web browser smoke check as the normal loop, with focused GUT or bot checks selected only for affected systems. If that policy is accepted, update `CLAUDE.md`, `docs/README.md`, `docs/todo.md`, and active plan files in one dedicated cleanup lane while preserving historical handoffs and evidence verbatim.
 
+## Closure
+
+The deletion landed on `master` in implementation commit `f1c8e251fc1b635b90fa1dae80efac2e53062053`. The final fullscreen WebDev preview passed desktop 1280×720 and portrait 390×844 screenshot checks, managed-storage HTTP/MIME validation, and a real keyboard transition from the title screen into campaign staging. The saved preview checkpoint is `234d73aa`.
