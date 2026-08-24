@@ -265,6 +265,10 @@ func map_dragging() -> bool:
 	return _map_nav.is_dragging()
 
 
+func consume_map_primary_click_suppression() -> bool:
+	return _map_nav.consume_primary_click_suppression()
+
+
 func _input(event: InputEvent) -> void:
 	_map_nav.recover_missed_release(event)
 
@@ -309,6 +313,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if _grid_root != null and _map_nav.is_inertia_active():
+		if _map_navigation_blocked():
+			_map_nav.cancel_inertia()
+		elif _map_nav.advance_inertia(delta):
+			_apply_map_transform()
 	if model == null or _juice == null:
 		return
 	_enemy_anim_seconds += delta
