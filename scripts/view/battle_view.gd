@@ -10,6 +10,7 @@ const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.
 const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
 )
+const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutorial.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
@@ -68,6 +69,7 @@ var _continue_btn: Button = null
 var _deploy_bar: DeployBar = null
 var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
+var _tutorial: FirstStandTutorial = null
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
@@ -177,11 +179,44 @@ func _ready() -> void:
 	_controls.z_index = UI_OVERLAY_Z
 	add_child(_controls)
 	_controls.setup(candidate_model, self)
+	model = candidate_model
+	_start_first_stand_tutorial()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
-	model = candidate_model
 	startup_succeeded = true
+
+
+func _start_first_stand_tutorial() -> void:
+	if not _should_show_first_stand_tutorial():
+		return
+	_tutorial = FIRST_STAND_TUTORIAL_SCRIPT.new()
+	_tutorial.name = "FirstStandTutorial"
+	_tutorial.hold_changed.connect(_on_tutorial_hold_changed)
+	_tutorial.tutorial_finished.connect(_on_tutorial_finished)
+	add_child(_tutorial)
+	_tutorial.setup(model, self, _deploy_bar)
+
+
+func _should_show_first_stand_tutorial() -> bool:
+	if _stage == null or _stage.id != &"s1" or not Game.campaign_active:
+		return false
+	var projection: Dictionary = Game.campaign_projection()
+	var stars := projection.get("stage_stars", {}) as Dictionary
+	return not stars.has(&"s1") and not stars.has("s1")
+
+
+func _on_tutorial_hold_changed(held: bool) -> void:
+	if held:
+		juice_time_push(&"first_stand_tutorial", 0.0)
+	else:
+		juice_time_pop(&"first_stand_tutorial")
+	if _controls != null:
+		_controls.set_interaction_enabled(not held)
+
+
+func _on_tutorial_finished(_skipped: bool) -> void:
+	_tutorial = null
 
 
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
@@ -597,6 +632,8 @@ func _relayout() -> void:
 		_spell_bar.relayout()
 	if _controls != null:
 		_controls.relayout()
+	if _tutorial != null and is_instance_valid(_tutorial):
+		_tutorial.relayout()
 	if _juice != null:
 		_juice.relayout(viewport)
 
