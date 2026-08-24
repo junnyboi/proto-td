@@ -246,11 +246,15 @@ func _make_button(button_name: String, variation: StringName) -> Button:
 func _set_step(next: Step) -> void:
 	_step = next
 	_feedback = ""
+	deploy_bar.set_facing_emphasis(-1)
 	match _step:
 		Step.ROUTE:
 			deploy_bar.set_operator_interaction_enabled(false)
-		Step.DEPLOY, Step.FACING:
+		Step.DEPLOY:
 			deploy_bar.set_operator_interaction_enabled(true)
+		Step.FACING:
+			deploy_bar.set_operator_interaction_enabled(true)
+			deploy_bar.set_facing_emphasis(int(RECOMMENDED_FACING))
 		Step.BLOCK:
 			deploy_bar.set_operator_interaction_enabled(false)
 		Step.LIVE, Step.DONE:
@@ -439,6 +443,7 @@ func _finish(skipped: bool) -> void:
 	_step = Step.DONE
 	_live_serial += 1
 	deploy_bar.set_operator_interaction_enabled(true)
+	deploy_bar.set_facing_emphasis(-1)
 	for marker: Polygon2D in _route_markers:
 		marker.visible = false
 	_target_marker.visible = false

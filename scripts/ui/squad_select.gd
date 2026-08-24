@@ -1,37 +1,40 @@
 extends Control
 
-## Campaign squad select: toggle ready persistent people by hero_id. Combat
-## templates may repeat; stable person identity never does.
-
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
-const AetheriaScreenShellType := preload(
-	"res://scripts/ui/components/aetheria_screen_shell.gd"
-)
+const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
+const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
-const StageNarrativeCatalogType := preload(
-	"res://data/presentation/narrative/stage_narrative_catalog.gd"
-)
+const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
+const SHELL_SIZE := Vector2(1210.0, 660.0)
+const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
+const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
 
 var _stage: StageDef = null
+var _shell: AetheriaScreenShellType = null
 var _picked: Array[StringName] = []
 var _narrative: StageNarrativeDefType = null
 var _narrative_missing := false
-var _briefing: GridContainer = null
 var _buttons: Dictionary = {}
 var _hero_order: Array[StringName] = []
 var _counter: Label = null
+var _selected_line: Label = null
 var _start: AetheriaButtonType = null
+var _training: AetheriaButtonType = null
 var _back: AetheriaButtonType = null
 var _grid: GridContainer = null
-var _footer: GridContainer = null
+var _body: GridContainer = null
+var _roster_scroll: ScrollContainer = null
+var _intel_scroll: ScrollContainer = null
+var _footer: BoxContainer = null
 var _header: BoxContainer = null
+var _actions: GridContainer = null
 
 
 func _ready() -> void:
@@ -39,44 +42,136 @@ func _ready() -> void:
 	_stage = load("res://data/stages/%s.tres" % Game.selected_stage_id) as StageDef
 	_narrative = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(Game.selected_stage_id)
 	_narrative_missing = _narrative == null
-	var shell := SHELL_SCENE.instantiate() as AetheriaScreenShellType
-	shell.name = "SquadShell"
-	shell.preferred_size = Vector2(1160.0, 640.0)
-	add_child(shell)
-	shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	LunarisOpsType.add_backdrop(self, BACKDROP)
+	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
+	_shell.name = "MissionCommandShell"
+	_shell.preferred_size = SHELL_SIZE
+	add_child(_shell)
+	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	LunarisOpsType.apply_panel(_shell.reading_plate() as PanelContainer, &"screen")
 
 	var scroll := ScrollContainer.new()
-	scroll.name = "SquadScroll"
-	var scroll_content := shell.add_dialog_scroll(scroll)
-
+	scroll.name = "MissionCommandScroll"
+	var scroll_content := _shell.add_dialog_scroll(scroll)
 	var column := VBoxContainer.new()
-	column.name = "SquadColumn"
+	column.name = "MissionCommandColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override(&"separation", 12)
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 16)
 	scroll_content.add_child(column)
-	_header = BoxContainer.new()
-	_header.name = "SquadHeader"
-	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_header.add_theme_constant_override(&"separation", 16)
-	column.add_child(_header)
-	var full_heading := UiCopyType.format_text(
-		&"ui.squad.heading", "{stage} — pick your squad",
-		{&"stage": UiCopyType.stage_title(_stage)},
-	)
-	var heading := _label("SquadHeading", UiCopyType.stage_title(_stage), &"dense_heading")
-	heading.tooltip_text = full_heading
-	heading.custom_minimum_size.x = 320.0
-	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_header.add_child(heading)
-	column.add_child(_build_mission_briefing())
+	column.add_child(_build_header())
+	column.add_child(_build_body())
+	column.add_child(_build_footer())
 
+	_prefill()
+	_refresh()
+	_on_layout_mode_changed(_shell.layout_mode())
+
+
+func _build_header() -> BoxContainer:
+	_header = BoxContainer.new()
+	_header.name = "MissionHeader"
+	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header.add_theme_constant_override(&"separation", 18)
+	var title_block := VBoxContainer.new()
+	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_block.add_theme_constant_override(&"separation", 0)
+	title_block.add_child(_label("MissionIndex", "MISSION 01 / OLD CUT", &"eyebrow"))
+	title_block.add_child(_label("MissionTitle", UiCopyType.stage_title(_stage).to_upper(), &"title"))
+	_header.add_child(title_block)
+	var status := VBoxContainer.new()
+	status.custom_minimum_size.x = 220.0
+	status.alignment = BoxContainer.ALIGNMENT_CENTER
+	var threat := _label("ThreatLabel", "RELIQUARY THREAT", &"eyebrow")
+	threat.autowrap_mode = TextServer.AUTOWRAP_OFF
+	threat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	status.add_child(threat)
+	var limit := _label("SquadLimit", "SQUAD LIMIT %d" % _stage.squad_size, &"metric")
+	limit.autowrap_mode = TextServer.AUTOWRAP_OFF
+	limit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	status.add_child(limit)
+	_header.add_child(status)
+	return _header
+
+
+func _build_body() -> GridContainer:
+	_body = GridContainer.new()
+	_body.name = "MissionBody"
+	_body.columns = 2
+	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_body.custom_minimum_size.y = 300.0
+	_body.add_theme_constant_override(&"h_separation", 16)
+	_body.add_theme_constant_override(&"v_separation", 16)
+
+	var roster_panel := PanelContainer.new()
+	roster_panel.name = "FieldTeamPanel"
+	roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	roster_panel.size_flags_stretch_ratio = 2.1
+	roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_panel(roster_panel, &"quiet")
+	var roster_column := VBoxContainer.new()
+	roster_column.add_theme_constant_override(&"separation", 12)
+	roster_panel.add_child(roster_column)
+	var roster_heading := HBoxContainer.new()
+	var roster_title := _label("FieldTeamHeading", "FIELD TEAM", &"heading")
+	roster_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	roster_heading.add_child(roster_title)
+	_counter = _label("PickCounter", "", &"metric")
+	_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	roster_heading.add_child(_counter)
+	roster_column.add_child(roster_heading)
+	_roster_scroll = ScrollContainer.new()
+	_roster_scroll.name = "OperatorRosterScroll"
+	_roster_scroll.custom_minimum_size.y = 270.0
+	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	roster_column.add_child(_roster_scroll)
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
-	_grid.columns = 5
+	_grid.columns = 3
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_grid.add_theme_constant_override(&"h_separation", 10)
 	_grid.add_theme_constant_override(&"v_separation", 10)
-	column.add_child(_grid)
+	_roster_scroll.add_child(_grid)
+	_build_operator_cards()
+	_body.add_child(roster_panel)
+
+	var briefing_panel := PanelContainer.new()
+	briefing_panel.name = "MissionIntelligencePanel"
+	briefing_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	briefing_panel.size_flags_stretch_ratio = 1.0
+	briefing_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_panel(briefing_panel, &"quiet")
+	_intel_scroll = ScrollContainer.new()
+	_intel_scroll.name = "MissionIntelScroll"
+	_intel_scroll.custom_minimum_size.y = 270.0
+	_intel_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_intel_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_intel_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	briefing_panel.add_child(_intel_scroll)
+	var intel := VBoxContainer.new()
+	intel.add_theme_constant_override(&"separation", 9)
+	intel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_intel_scroll.add_child(intel)
+	intel.add_child(_label("MissionIntelHeading", "MISSION INTELLIGENCE", &"heading"))
+	_add_intel_item(intel, "OBJECTIVE", StageNarrativeDefType.Field.OBJECTIVE)
+	_add_intel_item(intel, "THREAT", StageNarrativeDefType.Field.THREAT)
+	_add_intel_item(intel, "WHY IT MATTERS", StageNarrativeDefType.Field.HUMAN_REASON)
+	_add_intel_item(intel, "FIELD NOTE", StageNarrativeDefType.Field.CLUE)
+	intel.add_child(_label("TacticalHeading", "TACTICAL ASSET", &"eyebrow"))
+	intel.add_child(_label("TacticalHint", UiCopyType.stage_hint(_stage), &"body"))
+	intel.add_child(_label("LoadoutHeading", "LOADOUT", &"eyebrow"))
+	intel.add_child(_label("LoadoutStrip", _loadout_text(), &"detail"))
+	_selected_line = _label("SelectedSquadLine", "", &"detail")
+	intel.add_child(_selected_line)
+	_body.add_child(briefing_panel)
+	return _body
+
+
+func _build_operator_cards() -> void:
 	for hero: Dictionary in Game.campaign_projection()["ready_heroes"]:
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
@@ -84,141 +179,82 @@ func _ready() -> void:
 		var pick := AetheriaButtonType.new()
 		pick.name = "Pick_%s" % hero_id
 		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pick.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		pick.toggle_mode = true
-		pick.apply_role(&"secondary")
-		var card_text := UiCopyType.format_text(
-			&"ui.squad.operator_card", "{name}\n{cost} DP",
-			{&"name": _hero_label(hero), &"cost": definition.dp_cost},
-		)
-		var compact_card := card_text
+		var card_text := "%s\n%d DP • READY" % [_hero_label(hero), definition.dp_cost]
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
 		pick.icon = Art.texture(StringName(hero["portrait_asset_id"]))
 		pick.expand_icon = true
-		pick.add_theme_constant_override(&"icon_max_width", 80)
+		pick.add_theme_constant_override(&"icon_max_width", 112)
 		pick.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pick.custom_minimum_size = Vector2(170.0, 220.0)
-		pick.set_presentation_text(card_text, compact_card)
+		pick.custom_minimum_size = Vector2(190.0, 220.0)
+		pick.set_presentation_text(card_text, card_text)
 		var card_label := pick.get_node("PresentationLabel") as Label
-		card_label.offset_top = 70.0
-		card_label.add_theme_font_size_override(&"font_size", GameTypographyType.BODY)
+		card_label.offset_top = 106.0
+		card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 		_grid.add_child(pick)
 		_buttons[hero_id] = pick
 		_hero_order.append(hero_id)
 
-	_footer = GridContainer.new()
-	_footer.name = "SquadFooter"
-	_footer.columns = 3
-	_footer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_footer.add_theme_constant_override(&"h_separation", 16)
-	_footer.add_theme_constant_override(&"v_separation", 12)
-	column.add_child(_footer)
-	_counter = _label("PickCounter", "", &"dense_body")
-	_counter.custom_minimum_size = Vector2(180.0, 50.0)
-	_footer.add_child(_counter)
-	var loadout := _label("LoadoutStrip", _loadout_text(), &"dense_detail")
-	loadout.custom_minimum_size = Vector2(300.0, 50.0)
-	loadout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_footer.add_child(loadout)
 
-	var actions := HBoxContainer.new()
-	actions.name = "ActionRow"
-	actions.custom_minimum_size.x = 300.0
-	actions.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	actions.add_theme_constant_override(&"separation", 16)
-	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	var actions_margin := MarginContainer.new()
-	actions_margin.name = "ActionRowMargin"
-	actions_margin.add_theme_constant_override(
-		&"margin_top", AetheriaButtonType.COMPACT_ACTION_ROW_TOP_PADDING,
-	)
-	actions_margin.add_child(actions)
-	_footer.add_child(actions_margin)
-	_back = AetheriaButtonType.new()
-	_back.name = "BackButton"
-	_back.apply_role(&"secondary")
-	_back.text = UiCopyType.text(&"ui.common.back", "Back")
-	_back.custom_minimum_size = Vector2(140.0, 100.0)
-	_back.set_presentation_text(_back.text, _back.text)
-	_back.apply_compact_action_layout()
+func _build_footer() -> BoxContainer:
+	_footer = BoxContainer.new()
+	_footer.name = "MissionActionDock"
+	_footer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_footer.add_theme_constant_override(&"separation", 16)
+	var readiness := VBoxContainer.new()
+	readiness.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	readiness.add_child(_label("ReadinessEyebrow", "PRE-DEPLOYMENT", &"eyebrow"))
+	readiness.add_child(_label("ReadinessCopy", "Train, review, then commit the field team.", &"detail"))
+	_footer.add_child(readiness)
+	_actions = GridContainer.new()
+	_actions.name = "MissionActions"
+	_actions.columns = 3
+	_actions.add_theme_constant_override(&"h_separation", 10)
+	_actions.add_theme_constant_override(&"v_separation", 10)
+	_footer.add_child(_actions)
+	_back = _action("BackButton", "BACK", &"secondary")
 	_back.pressed.connect(_on_back)
-	actions.add_child(_back)
-	_start = AetheriaButtonType.new()
-	_start.name = "StartBattle"
-	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
-	_start.custom_minimum_size = Vector2(140.0, 100.0)
-	_start.set_presentation_text(
-		_start.text, UiCopyType.text(&"ui.squad.start_battle_short", "Start"),
-	)
-	_start.tooltip_text = _start.text
-	_start.apply_compact_action_layout()
+	_actions.add_child(_back)
+	_training = _action("TrainingButton", "TRAIN OPERATORS", &"gold")
+	_training.pressed.connect(_on_training)
+	_actions.add_child(_training)
+	_start = _action("StartBattle", "DEPLOY SQUAD", &"primary")
 	_start.pressed.connect(_on_start)
-	actions.add_child(_start)
-	_prefill()
-	_refresh()
-	_on_layout_mode_changed(shell.layout_mode())
+	_actions.add_child(_start)
+	return _footer
+
+
+func _action(node_name: String, text_value: String, role: StringName) -> AetheriaButtonType:
+	var button := AetheriaButtonType.new()
+	button.name = node_name
+	button.text = text_value
+	button.custom_minimum_size = Vector2(170.0, 62.0)
+	button.set_presentation_text(text_value, text_value)
+	LunarisOpsType.apply_button(button, role)
+	var presentation := button.get_node("PresentationLabel") as Label
+	presentation.add_theme_font_size_override(&"font_size", 18)
+	return button
+
+
+func _add_intel_item(parent: VBoxContainer, heading: String, field: StageNarrativeDefType.Field) -> void:
+	parent.add_child(_label("%sLabel" % heading.replace(" ", ""), heading, &"eyebrow"))
+	var value := (
+		"Mission record unavailable. Return to Mission Control."
+		if _narrative_missing
+		else UiCopyType.stage_narrative_text(_narrative, field)
+	)
+	parent.add_child(_label("%sValue" % heading.replace(" ", ""), value, &"detail"))
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_back()
-
-
-func _build_mission_briefing() -> GridContainer:
-	_briefing = GridContainer.new()
-	_briefing.name = "MissionBriefingPanel"
-	_briefing.columns = 2
-	_briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_briefing.add_theme_constant_override(&"h_separation", 20)
-	_briefing.add_theme_constant_override(&"v_separation", 6)
-	_add_briefing_value(
-		"BriefingObjective", &"ui.squad.briefing.objective", "Objective",
-		StageNarrativeDefType.Field.OBJECTIVE,
-	)
-	_add_briefing_value(
-		"BriefingThreat", &"ui.squad.briefing.threat", "Threat",
-		StageNarrativeDefType.Field.THREAT,
-	)
-	_add_briefing_value(
-		"BriefingHumanReason", &"ui.squad.briefing.human_reason", "Why it matters",
-		StageNarrativeDefType.Field.HUMAN_REASON,
-	)
-	_add_briefing_value(
-		"BriefingClue", &"ui.squad.briefing.clue", "Field note",
-		StageNarrativeDefType.Field.CLUE,
-	)
-	var hint := _label(
-		"TacticalHint", UiCopyType.format_text(
-			&"ui.squad.tactical_hint", "Tactical hint — {hint}",
-			{&"hint": UiCopyType.stage_hint(_stage)},
-		), &"dense_detail",
-	)
-	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_briefing.add_child(hint)
-	return _briefing
-
-
-func _add_briefing_value(
-	node_name: String,
-	key: StringName,
-	fallback: String,
-	field: StageNarrativeDefType.Field,
-) -> void:
-	var heading := UiCopyType.text(key, fallback)
-	var value := (
-		UiCopyType.text(
-			&"ui.error.missing_stage_narrative",
-			"Mission record unavailable. Return to Mission Control.",
-		)
-		if _narrative_missing
-		else UiCopyType.stage_narrative_text(_narrative, field)
-	)
-	var label := _label(node_name, "%s — %s" % [heading, value], &"dense_detail")
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_briefing.add_child(label)
 
 
 func _prefill() -> void:
@@ -238,14 +274,7 @@ func _loadout_text() -> String:
 	for spell_id: StringName in Game.loadout_spell_ids():
 		var spell := load("res://data/spells/%s.tres" % spell_id) as SpellDef
 		gear.append(UiCopyType.spell_name(spell))
-	if gear.is_empty():
-		return UiCopyType.text(
-			&"ui.squad.loadout_none", "Loadout: nothing unlocked yet",
-		)
-	return UiCopyType.format_text(
-		&"ui.squad.loadout_available", "Loadout (always available): {items}",
-		{&"items": ", ".join(gear)},
-	)
+	return "NOTHING UNLOCKED" if gear.is_empty() else " • ".join(gear).to_upper()
 
 
 func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
@@ -260,18 +289,20 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 
 
 func _refresh() -> void:
-	_counter.text = UiCopyType.format_text(
-		&"ui.squad.selected_count", "{selected}/{limit} selected",
-		{&"selected": _picked.size(), &"limit": _stage.squad_size},
-	)
+	_counter.text = "%d / %d SELECTED" % [_picked.size(), _stage.squad_size]
+	var selected_names: Array[String] = []
 	for raw_id: Variant in _buttons:
 		var hero_id := StringName(raw_id)
-		(_buttons[hero_id] as AetheriaButtonType).apply_role(
-			&"selected" if _picked.has(hero_id) else &"secondary",
-		)
+		var button := _buttons[hero_id] as AetheriaButtonType
+		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
+		if _picked.has(hero_id):
+			selected_names.append(button.text.get_slice("\n", 0))
+	_selected_line.text = "FIELD TEAM // %s" % (
+		"AWAITING SELECTION" if selected_names.is_empty() else " • ".join(selected_names)
+	)
 	_start.disabled = _picked.is_empty() or _narrative_missing
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
-	_start.apply_role(&"disabled" if _start.disabled else &"primary")
+	LunarisOpsType.apply_button(_start, &"disabled" if _start.disabled else &"primary")
 	_wire_focus()
 
 
@@ -280,6 +311,7 @@ func _wire_focus() -> void:
 	for hero_id: StringName in _hero_order:
 		focusable.append(_buttons[hero_id] as Button)
 	focusable.append(_back)
+	focusable.append(_training)
 	if not _start.disabled:
 		focusable.append(_start)
 	for index: int in focusable.size():
@@ -295,8 +327,7 @@ func _wire_focus() -> void:
 func _hero_label(hero: Dictionary) -> String:
 	var class_id := String(hero["current_class_id"])
 	var class_label := UiCopyType.text(
-		StringName("ui.training.class.%s" % class_id),
-		class_id.replace("_", " ").capitalize(),
+		StringName("ui.training.class.%s" % class_id), class_id.replace("_", " ").capitalize(),
 	)
 	var callsign := ""
 	if hero["custom_callsign"] != null:
@@ -304,30 +335,51 @@ func _hero_label(hero: Dictionary) -> String:
 	else:
 		var parsed := HeroIdentityScript.parse_u64_hex(String(hero["hero_id"]))
 		if parsed["accepted"]:
-			var name_result := HeroNamesScript.default_name(
+			callsign = String(HeroNamesScript.default_name(
 				int(parsed["bits"]), int(hero["name_version"]),
-			)
-			callsign = String(name_result.get("value", hero["hero_id"]))
+			).get("value", hero["hero_id"]))
 	if callsign.is_empty():
 		callsign = UiCopyType.operator_name(
-			load("res://data/operators/%s.tres" % hero["operator_def_id"]) as OperatorDef
+			load("res://data/operators/%s.tres" % hero["operator_def_id"]) as OperatorDef,
 		)
-	var short_callsign := callsign.get_slice(" ", 0)
-	return "%s #%d\n%s" % [short_callsign, int(hero["recruitment_index"]) + 1, class_label]
+	return "%s #%d\n%s" % [
+		callsign.get_slice(" ", 0).to_upper(), int(hero["recruitment_index"]) + 1,
+		class_label.to_upper(),
+	]
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
+	if _shell != null:
+		var target_size := SHELL_SIZE
+		if mode == &"portrait":
+			target_size = PORTRAIT_SHELL_SIZE
+		elif mode == &"compact_landscape":
+			target_size = COMPACT_SHELL_SIZE
+		if _shell.preferred_size != target_size:
+			_shell.preferred_size = target_size
 	if _header != null:
 		_header.vertical = mode == &"portrait"
-	if _briefing != null:
-		_briefing.columns = 1 if mode == &"portrait" or mode == &"compact_landscape" else 2
-	if _grid == null:
-		return
-	_grid.columns = 2 if mode == &"portrait" else 5
+	if _body != null:
+		_body.columns = 1 if mode == &"portrait" else 2
+	if _roster_scroll != null:
+		_roster_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
+	if _intel_scroll != null:
+		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
+	if _grid != null:
+		_grid.columns = 1 if mode == &"portrait" else (2 if mode == &"compact_landscape" else 3)
 	for button: Button in _buttons.values():
-		button.custom_minimum_size.x = 150.0 if mode == &"compact_landscape" else 170.0
+		button.custom_minimum_size = Vector2(
+			180.0, 190.0 if mode == &"portrait" else 220.0,
+		)
 	if _footer != null:
-		_footer.columns = 1 if mode == &"portrait" else 3
+		_footer.vertical = mode == &"portrait"
+	if _actions != null:
+		_actions.columns = 1 if mode == &"portrait" else 3
+
+
+func _on_training() -> void:
+	Sfx.play("ui_click")
+	Game.training_call(&"open", &"mission")
 
 
 func _on_back() -> void:
@@ -344,6 +396,10 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 	var label := AetheriaLabelType.new()
 	label.name = label_name
 	label.text = label_text
-	label.apply_role(role)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = (
+		TextServer.AUTOWRAP_WORD_SMART if role in [&"body", &"detail"]
+		else TextServer.AUTOWRAP_OFF
+	)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_label(label, role)
 	return label

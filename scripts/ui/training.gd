@@ -10,10 +10,12 @@ const PromotionPathCardType := preload("res://scripts/ui/components/promotion_pa
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
-const SHELL_SIZE := Vector2(1160.0, 640.0)
-const COMPACT_SHELL_SIZE := Vector2(880.0, 640.0)
-const PORTRAIT_SHELL_SIZE := Vector2(640.0, 1120.0)
+const SHELL_SIZE := Vector2(1210.0, 660.0)
+const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
+const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
 const ERROR_KEYS := {
 	&"invalid_argument_type": &"ui.training.error.invalid_request",
 	&"unknown_hero": &"ui.training.error.unknown_hero",
@@ -105,6 +107,7 @@ var _view_paths: AetheriaButtonType
 var _choose_path: AetheriaButtonType
 var _review_confirm: AetheriaButtonType
 var _review_error: AetheriaLabelType
+var _return_mission: AetheriaButtonType
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
 
@@ -160,17 +163,19 @@ func selected_choice_id() -> String:
 
 
 func _build_shell() -> void:
+	LunarisOpsType.add_backdrop(self, BACKDROP)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
-	_shell.name = "TrainingScreenShell"
+	_shell.name = "ReliquaryAtelierShell"
 	_shell.preferred_size = SHELL_SIZE
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
 	(_shell.reading_plate() as PanelContainer).name = "TrainingShell"
+	LunarisOpsType.apply_panel(_shell.reading_plate() as PanelContainer, &"screen")
 	_page = VBoxContainer.new()
 	_page.name = "TrainingPage"
 	_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_page.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_page.add_theme_constant_override(&"separation", 10)
+	_page.add_theme_constant_override(&"separation", 16)
 	_dialog_scroll = ScrollContainer.new()
 	_dialog_scroll.name = "TrainingDialogScroll"
 	var content_gutter := _shell.add_dialog_scroll(_dialog_scroll)
@@ -265,6 +270,7 @@ func _build_roster_list() -> ScrollContainer:
 	scroll.size_flags_stretch_ratio = 1.7
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(500.0, 250.0)
 	var list := VBoxContainer.new()
 	list.name = "TrainingRosterList"
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -299,21 +305,64 @@ func _build_inspector() -> AetheriaPanelType:
 	var panel := AetheriaPanelType.new()
 	panel.name = "TrainingInspector"
 	panel.apply_role(&"inspector")
+	LunarisOpsType.apply_panel(panel, &"selected")
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_stretch_ratio = 1.0
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var column := VBoxContainer.new()
 	column.name = "InspectorColumn"
 	column.add_theme_constant_override(&"separation", 12)
-	panel.add_child(column)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var inspector_scroll := ScrollContainer.new()
+	inspector_scroll.name = "TrainingInspectorScroll"
+	inspector_scroll.custom_minimum_size.y = 250.0
+	inspector_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inspector_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	inspector_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(inspector_scroll)
+	inspector_scroll.add_child(column)
+	column.add_child(_label("AtelierEyebrow", "SELECTED OPERATOR", &"eyebrow"))
+	var selected := _summary_by_id(_selected_hero_id)
+	if not selected.is_empty():
+		var dossier := BoxContainer.new()
+		dossier.name = "SelectedOperatorDossier"
+		dossier.add_theme_constant_override(&"separation", 16)
+		var portrait := TextureRect.new()
+		portrait.name = "SelectedOperatorPortrait"
+		portrait.texture = Art.texture(StringName(selected["portrait_asset_id"]))
+		portrait.custom_minimum_size = Vector2(126.0, 160.0)
+		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		dossier.add_child(portrait)
+		var identity := VBoxContainer.new()
+		identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		identity.add_theme_constant_override(&"separation", 6)
+		identity.add_child(_label(
+			"SelectedCallsign", String(selected["callsign"]).to_upper(), &"title",
+		))
+		identity.add_child(_label(
+			"SelectedClass", class_label(String(selected["current_class_id"])).to_upper(),
+			&"heading",
+		))
+		identity.add_child(_label(
+			"SelectedContinuity", "SAME PERSON. NEW DUTY.", &"eyebrow",
+		))
+		var xp_bar := ProgressBar.new()
+		xp_bar.name = "SelectedXpBar"
+		xp_bar.max_value = int(selected["xp_required"])
+		xp_bar.value = mini(int(selected["xp"]), int(selected["xp_required"]))
+		xp_bar.show_percentage = false
+		xp_bar.custom_minimum_size.y = 10.0
+		LunarisOpsType.apply_progress(xp_bar)
+		identity.add_child(xp_bar)
+		identity.add_child(_label(
+			"SelectedXp", "XP %d / %d" % [selected["xp"], selected["xp_required"]],
+			&"metric",
+		))
+		dossier.add_child(identity)
+		column.add_child(dossier)
 	column.add_child(_label(
-		"FieldRecordHeading", _t(&"ui.training.field_record", "FIELD RECORD"),
-		&"dense_heading",
-	))
-	column.add_child(_label(
-		"SameRecruitNewJob",
-		_t(&"ui.training.same_recruit_new_job", "Same recruit. New job."),
-		&"dense_body",
+		"FieldRecordHeading", _t(&"ui.training.field_record", "FIELD RECORD"), &"heading",
 	))
 	column.add_child(_label(
 		"TrainingExplainer",
@@ -321,13 +370,16 @@ func _build_inspector() -> AetheriaPanelType:
 			&"ui.training.training_explainer",
 			"Advanced training changes equipment, duties, and field role. It does not replace the person.",
 		),
-		&"dense_detail",
+		&"detail",
 	))
-	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
 		column.add_child(_label(
-			"SelectedRecruitStatus", _eligibility_text(selected), &"dense_body",
+			"SelectedRecruitStatus", _eligibility_text(selected).to_upper(), &"metric",
 		))
+	column.add_child(_label(
+		"PermanenceNote", "PROMOTION CHANGES DUTY, EQUIPMENT, AND FIELD ROLE PERMANENTLY.",
+		&"eyebrow",
+	))
 	return panel
 
 
@@ -668,7 +720,7 @@ func _apply_roster_layout() -> void:
 	body.vertical = _layout_mode == &"portrait"
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
 	if scroll != null:
-		scroll.custom_minimum_size.y = 520.0 if _layout_mode == &"portrait" else 0.0
+		scroll.custom_minimum_size.y = 300.0 if _layout_mode == &"portrait" else 250.0
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
 
@@ -697,9 +749,25 @@ func _reset_outer_scroll() -> void:
 func _header(node_name: String, title: String, subtitle: String) -> VBoxContainer:
 	var header := VBoxContainer.new()
 	header.name = node_name
-	header.add_theme_constant_override(&"separation", 0)
-	header.add_child(_label("%sHeading" % node_name, title, &"dense_heading"))
-	header.add_child(_label("%sSubtitle" % node_name, subtitle, &"dense_detail"))
+	header.add_theme_constant_override(&"separation", 8)
+	var top := BoxContainer.new()
+	top.name = "%sTop" % node_name
+	top.add_theme_constant_override(&"separation", 16)
+	var title_block := VBoxContainer.new()
+	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_block.add_theme_constant_override(&"separation", 0)
+	title_block.add_child(_label("%sEyebrow" % node_name, "RELIQUARY ATELIER", &"eyebrow"))
+	title_block.add_child(_label("%sHeading" % node_name, title.to_upper(), &"title"))
+	top.add_child(title_block)
+	if Game.training_return_path == &"mission":
+		_return_mission = _button(
+			"ReturnToMission", "<- RETURN TO MISSION", true, &"gold",
+		)
+		_return_mission.custom_minimum_size = Vector2(230.0, 58.0)
+		_return_mission.pressed.connect(_on_not_now)
+		top.add_child(_return_mission)
+	header.add_child(top)
+	header.add_child(_label("%sSubtitle" % node_name, subtitle, &"detail"))
 	return header
 
 
@@ -721,11 +789,11 @@ func _button(
 	button.custom_minimum_size = Vector2(240.0, 64.0)
 	button.disabled = not enabled
 	button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
-	button.apply_role(role)
 	button.set_presentation_text(button_text, button_text)
+	LunarisOpsType.apply_button(button, role)
 	_bind_focus_scroll(button, _dialog_scroll)
 	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
-	presentation.apply_role(&"dense_body")
+	LunarisOpsType.apply_label(presentation, &"body")
 	return button
 
 
@@ -738,6 +806,15 @@ func _label(
 	label.apply_role(role)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	match role:
+		&"dense_heading":
+			LunarisOpsType.apply_label(label, &"heading")
+		&"dense_body":
+			LunarisOpsType.apply_label(label, &"body")
+		&"dense_detail":
+			LunarisOpsType.apply_label(label, &"detail")
+		_:
+			LunarisOpsType.apply_label(label, role)
 	return label
 
 
@@ -751,6 +828,7 @@ func _clear_page() -> void:
 	_choose_path = null
 	_review_confirm = null
 	_review_error = null
+	_return_mission = null
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:

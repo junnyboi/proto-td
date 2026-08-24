@@ -3,6 +3,7 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
+const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 var hero_id := ""
 var can_promote := false
@@ -48,7 +49,7 @@ func configure(
 
 func set_selected(value: bool) -> void:
 	button_pressed = value
-	apply_role(&"selected" if value else &"secondary")
+	LunarisOpsType.apply_button(self, &"selected" if value else &"secondary")
 
 
 func set_compact(value: bool) -> void:
@@ -116,6 +117,7 @@ func _build_content() -> void:
 	_progress.show_percentage = false
 	_progress.custom_minimum_size.y = 8.0
 	_progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	LunarisOpsType.apply_progress(_progress)
 	_reason = _label("EligibilityReason", &"dense_detail")
 	for control: Control in [_callsign, _class_name, status_line, _progress, _reason]:
 		details.add_child(control)
