@@ -191,6 +191,12 @@ func _build_operator_cards() -> void:
 		pick.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		pick.toggle_mode = true
 		var card_text := "%s\n%d DP • READY" % [_hero_label(hero), definition.dp_cost]
+		if hero.get("hero_kind", "recruit") == "premium":
+			var lives := int(hero.get("premium_lives", 0))
+			card_text = "%s\n%d DP • PREMIUM • %d %s" % [
+				_hero_label(hero), definition.dp_cost, lives,
+				"LIFE" if lives == 1 else "LIVES",
+			]
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
 		pick.icon = Art.texture(StringName(hero["portrait_asset_id"]))

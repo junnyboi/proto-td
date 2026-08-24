@@ -40,6 +40,7 @@ const GLASS := Color(0.012, 0.03, 0.048, 0.94)
 const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
 
 var _mission: AetheriaButtonType = null
+var _recruit: StagingCommandTileType = null
 var _training: StagingCommandTileType = null
 var _back: Button = null
 var _next_record: StageNarrativeDefType = null
@@ -475,11 +476,17 @@ func _build_command_content() -> VBoxContainer:
 		&"ui.staging.barracks_short", "Barracks",
 		&"ui.staging.barracks_unavailable", "Barracks — Unavailable",
 	)
-	_add_locked_operation(
-		"RecruitButton", StagingGlyphType.Kind.RECRUIT,
-		&"ui.staging.recruit_short", "Recruit",
-		&"ui.staging.recruit_unavailable", "Recruit — Unavailable",
+	_recruit = StagingCommandTileType.new()
+	_recruit.name = "RecruitButton"
+	_recruit.configure(
+		StagingGlyphType.Kind.RECRUIT,
+		UiCopyType.text(&"ui.staging.recruit_short", "Resonance"),
+		UiCopyType.text(&"ui.staging.recruit", "Premium Resonance"),
+		true,
 	)
+	_recruit.pressed.connect(_on_recruit)
+	_command_tiles.append(_recruit)
+	_operation_grid.add_child(_recruit)
 	_add_locked_operation(
 		"ArmoryButton", StagingGlyphType.Kind.ARMORY,
 		&"ui.staging.armory_short", "Armory",
@@ -713,6 +720,8 @@ func _add_locked_operation(
 
 func _connect_focus_cycle() -> void:
 	var actions: Array[Control] = [_mission, _back]
+	if _recruit != null and not _recruit.disabled:
+		actions.append(_recruit)
 	if _training != null and not _training.disabled:
 		actions.append(_training)
 	for index: int in actions.size():
@@ -852,6 +861,11 @@ func _on_mission_control() -> void:
 		return
 	Sfx.play("ui_click")
 	Game.open_stage_select()
+
+
+func _on_recruit() -> void:
+	Sfx.play("ui_click")
+	Game.open_gacha()
 
 
 func _on_training() -> void:

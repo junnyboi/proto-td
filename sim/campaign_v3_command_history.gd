@@ -9,6 +9,7 @@ const RECRUIT_ID := "recruit"
 const ATTEMPT_RULES_PATH := "res://sim/campaign_v3_attempts.gd"
 const HASH_PATH := "res://sim/campaign_v3_hash.gd"
 const RECRUITMENT_RULES_PATH := "res://sim/campaign_v3_recruitment.gd"
+const GACHA_RULES_PATH := "res://sim/campaign_v3_gacha.gd"
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
 const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
@@ -64,6 +65,8 @@ static func _replay_record(
 			return _replay_resolution(data, context, record)
 		"confirm_promotions":
 			return _replay_promotions(data, context, record)
+		"pull_premium_hero":
+			return _replay_premium_pull(data, context, record)
 		"recruit_person":
 			return _replay_recruitment(data, context, record)
 	return _reject(&"invalid_command_history")
@@ -228,6 +231,24 @@ static func _replay_promotions(
 	return _accept(working)
 
 
+static func _replay_premium_pull(
+	data: Dictionary,
+	context: Dictionary,
+	record: Dictionary,
+) -> Dictionary:
+	var derived: Dictionary = load(GACHA_RULES_PATH).call("_derive", data, context)
+	if not derived["accepted"]:
+		return _reject(&"command_history_transition_mismatch")
+	var working: Dictionary = derived["data"]
+	working["save_revision"] = int(data["save_revision"]) + 1
+	var receipt: Dictionary = derived["receipt"]
+	receipt["save_revision"] = working["save_revision"]
+	if record["receipt"] != {"premium_pull": receipt}:
+		return _reject(&"command_history_receipt_mismatch")
+	_append_record(working, record)
+	return _accept(working)
+
+
 static func _replay_recruitment(
 	data: Dictionary,
 	context: Dictionary,
@@ -307,6 +328,7 @@ static func _fresh_data(seed_value: int, generation: int, context: Dictionary) -
 			"next_recruitment_index": heroes.size(),
 			"next_attempt_id": 1,
 			"next_resolution_index": 1,
+			"next_premium_pull_index": 0,
 			"marks": int(campaign["initial_marks"]),
 			"stage_stars": [],
 			"unlocked_traps": [],
@@ -347,6 +369,10 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
+		"hero_kind": "recruit",
+		"premium_id": null,
+		"premium_lives": 0,
+		"premium_pull_count": 0,
 	}
 
 

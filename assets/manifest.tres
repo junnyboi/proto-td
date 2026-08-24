@@ -2252,6 +2252,51 @@ entries = {
 "placeholder": true,
 "size": Vector2i(128, 128)
 },
+&"portrait_archive_caster": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/archive_caster_premium.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_lunaris_vessel": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/lunaris_vessel_premium.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_reliquary_duelist": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/reliquary_duelist_premium.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
 &"recruit": {
 "animations": {
 &"attack": {

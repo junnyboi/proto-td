@@ -32,9 +32,9 @@ The obsolete documentation-only refinement has been removed. This deletion does 
 
 | Design ID | Role | Full-figure production sheet | In-game chibi sheet |
 |---|---|---|---|
-| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | [`lunaris_vessel_design_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_design_sheet.png) | [`lunaris_vessel_chibi_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_chibi_sheet.png) |
-| `reliquary_duelist` | Jade-cyan spellblade duelist | [`reliquary_duelist_design_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_design_sheet.png) | [`reliquary_duelist_chibi_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_chibi_sheet.png) |
-| `archive_caster` | Orbital-astrolabe ritual caster | [`archive_caster_design_sheet.png`](characters/lunaris-reliquary/archive_caster_design_sheet.png) | [`archive_caster_chibi_sheet.png`](characters/lunaris-reliquary/archive_caster_chibi_sheet.png) |
+| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | [`lunaris_vessel_design_sheet.png`](lunaris-reliquary/lunaris_vessel_design_sheet.png) | [`lunaris_vessel_chibi_sheet.png`](lunaris-reliquary/lunaris_vessel_chibi_sheet.png) |
+| `reliquary_duelist` | Jade-cyan spellblade duelist | [`reliquary_duelist_design_sheet.png`](lunaris-reliquary/reliquary_duelist_design_sheet.png) | [`reliquary_duelist_chibi_sheet.png`](lunaris-reliquary/reliquary_duelist_chibi_sheet.png) |
+| `archive_caster` | Orbital-astrolabe ritual caster | [`archive_caster_design_sheet.png`](lunaris-reliquary/archive_caster_design_sheet.png) | [`archive_caster_chibi_sheet.png`](lunaris-reliquary/archive_caster_chibi_sheet.png) |
 
 The sheets preserve the approved loading and title identities while expanding hidden costume and weapon construction for future portraits, animated sprite references, UI art, and gameplay readability. Personal names remain intentionally unassigned until narrative naming is approved.
 

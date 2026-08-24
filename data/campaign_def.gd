@@ -7,7 +7,7 @@ extends Resource
 const P16_ENVIRONMENT_SHA256 := \
 	"693c3f42b492bde75c14940c1068d8a6e7ae551aa694d8551d5a49e26bdd9156"
 const P16_V3_ENVIRONMENT_SHA256 := \
-		"3b3fc312c6cb6ad3290b5fc2918a1b1e2670da951ae954b68a56e5a46a080443"
+		"c8707ad886034a045eec9fdf85264a20898359e6b5802de874f93a9832a81480"
 
 @export var schema_version: int = 2
 @export var name_version: int = 1
@@ -22,3 +22,6 @@ const P16_V3_ENVIRONMENT_SHA256 := \
 @export var stage_class_entitlements: Array[Dictionary] = []
 @export var v3_stage_rewards: Array[Dictionary] = []
 @export var portrait_asset_ids: Array[StringName] = []
+## Premium hero pool additions. Legacy resources keep the zero/empty defaults.
+@export var premium_pull_cost: int = 0
+@export var premium_hero_rows: Array[Dictionary] = []

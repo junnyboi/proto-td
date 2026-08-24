@@ -30,7 +30,34 @@ static func of_core(value: Variant, context: Dictionary) -> Dictionary:
 
 ## Internal codec seam. Callers must supply the exact canonical normalize_core output.
 static func _of_normalized_core(value: Dictionary) -> Dictionary:
-	return _hash_encoded(_bytes_of_normalized(value, CORE_MAGIC)["bytes"])
+	return _hash_encoded(_bytes_of_normalized(_core_hash_payload(value), CORE_MAGIC)["bytes"])
+
+
+static func _core_hash_payload(value: Dictionary) -> Dictionary:
+	if int(value.get("next_premium_pull_index", 0)) != 0:
+		return value
+	for hero: Dictionary in value.get("heroes", []):
+		if (
+			hero.get("hero_kind", "recruit") != "recruit"
+			or hero.get("premium_id") != null
+			or int(hero.get("premium_lives", 0)) != 0
+			or int(hero.get("premium_pull_count", 0)) != 0
+		):
+			return value
+	var codec: GDScript = load(CODEC_PATH) as GDScript
+	var legacy := {}
+	for key: String in codec.LEGACY_CORE_KEYS:
+		if key == "heroes":
+			var heroes: Array[Dictionary] = []
+			for source: Dictionary in value["heroes"]:
+				var row := {}
+				for hero_key: String in codec.LEGACY_HERO_KEYS:
+					row[hero_key] = source[hero_key]
+				heroes.append(row)
+			legacy[key] = heroes
+		else:
+			legacy[key] = value[key]
+	return legacy
 
 
 static func bytes_of(value: Variant, context: Dictionary) -> Dictionary:

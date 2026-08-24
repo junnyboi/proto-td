@@ -97,6 +97,18 @@ func _ready() -> void:
 			&"dense_body",
 		))
 
+	var premium_losses: Array = result.get("premium_life_losses", [])
+	for i: int in premium_losses.size():
+		var loss: Dictionary = premium_losses[i]
+		var life_copy := "%s spent 1 life • %d remaining" % [
+			_premium_name(String(loss["premium_id"])), int(loss["lives_after"]),
+		]
+		if bool(loss["locked_out"]):
+			life_copy = "%s spent their last life • LOCKED until pulled again" % _premium_name(
+				String(loss["premium_id"]),
+			)
+		column.add_child(_label("PremiumLifeLoss%d" % i, life_copy, &"dense_body"))
+
 	var stage_id := StringName(result.get("stage_id", &""))
 	var record: StageNarrativeDefType = (
 		(NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
@@ -214,6 +226,10 @@ func _reward_name(reward: Dictionary) -> String:
 	if definition is SpellDef:
 		return UiCopyType.spell_name(definition)
 	return ""
+
+
+func _premium_name(premium_id: String) -> String:
+	return premium_id.replace("_", " ").capitalize()
 
 
 func _class_name(class_id: String) -> String:
