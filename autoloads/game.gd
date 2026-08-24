@@ -405,13 +405,17 @@ func open_staging() -> void:
 
 
 func _open_training(return_path: StringName = &"staging") -> void:
-	training_return_path = return_path if return_path in [&"results", &"staging"] else &"staging"
+	training_return_path = (
+		return_path if return_path in [&"results", &"staging", &"mission"] else &"staging"
+	)
 	_swap_content.call_deferred(TRAINING_SCENE_PATH)
 
 
 func _leave_training() -> void:
 	if training_return_path == &"results":
 		open_results()
+	elif training_return_path == &"mission":
+		open_squad_select()
 	else:
 		open_staging()
 
