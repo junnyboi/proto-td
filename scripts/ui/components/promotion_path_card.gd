@@ -3,6 +3,7 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
 var class_id := ""
 var operator_def_id := ""
@@ -119,7 +120,7 @@ func _build_content() -> void:
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_column.add_child(_portrait)
 	_placeholder = _label("ClassKitPlaceholder", &"dense_detail")
-	_placeholder.add_theme_font_size_override(&"font_size", 30)
+	_placeholder.add_theme_font_size_override(&"font_size", GameTypographyType.DETAIL)
 	_placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	portrait_column.add_child(_placeholder)
 	var identity := VBoxContainer.new()

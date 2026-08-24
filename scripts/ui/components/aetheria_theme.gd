@@ -1,6 +1,7 @@
 class_name AetheriaTheme
 extends Theme
 
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC-Subset.otf"
 const COLORS := {
 	&"backdrop": Color("111827"),
@@ -34,7 +35,7 @@ func _init() -> void:
 	if cjk_font != null:
 		composite_font.fallbacks = [cjk_font]
 	default_font = composite_font
-	default_font_size = 44
+	default_font_size = GameTypographyType.BODY
 	_build_buttons()
 	_build_locale_list()
 	_build_panels()
@@ -83,7 +84,7 @@ func _button(
 		pressed: StringName, ink: StringName, base: StringName = &"Button",
 		) -> void:
 	set_type_variation(variation, base)
-	set_font_size(&"font_size", variation, 44)
+	set_font_size(&"font_size", variation, GameTypographyType.ACTION)
 	for item_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
 	]:
@@ -102,7 +103,7 @@ func _button(
 func _build_locale_list() -> void:
 	var variation := &"AuiLocaleList"
 	set_type_variation(variation, &"ItemList")
-	set_font_size(&"font_size", variation, 44)
+	set_font_size(&"font_size", variation, GameTypographyType.BODY)
 	set_color(&"font_color", variation, COLORS[&"body"])
 	set_color(&"font_hovered_color", variation, COLORS[&"body"])
 	set_color(&"font_selected_color", variation, COLORS[&"dark_ink"])
@@ -165,14 +166,14 @@ func _panel(
 
 
 func _build_labels() -> void:
-	_label(&"AuiTitleLabel", 64, &"primary")
-	_label(&"AuiHeadingLabel", 48, &"primary")
-	_label(&"AuiBodyLabel", 44, &"body")
-	_label(&"AuiDetailLabel", 44, &"muted")
-	_label(&"AuiDenseHeadingLabel", 34, &"primary")
-	_label(&"AuiDenseBodyLabel", 34, &"body")
-	_label(&"AuiDenseDetailLabel", 34, &"muted")
-	_label(&"AuiLocaleLabel", 44, &"body")
+	_label(&"AuiTitleLabel", GameTypographyType.SCREEN_TITLE, &"primary")
+	_label(&"AuiHeadingLabel", GameTypographyType.SECTION_HEADING, &"primary")
+	_label(&"AuiBodyLabel", GameTypographyType.BODY, &"body")
+	_label(&"AuiDetailLabel", GameTypographyType.DETAIL, &"muted")
+	_label(&"AuiDenseHeadingLabel", GameTypographyType.DENSE_HEADING, &"primary")
+	_label(&"AuiDenseBodyLabel", GameTypographyType.DETAIL, &"body")
+	_label(&"AuiDenseDetailLabel", GameTypographyType.BADGE, &"muted")
+	_label(&"AuiLocaleLabel", GameTypographyType.BODY, &"body")
 	_badge(&"AuiClassBadge", &"class_badge", &"selected", &"dark_ink")
 	_badge(&"AuiCostBadge", &"cost_badge", &"primary", &"dark_ink")
 	_badge(&"AuiCooldownBadge", &"cooldown_badge", &"secondary", &"body")
@@ -192,7 +193,7 @@ func _badge(
 		variation: StringName, _style_id: StringName, background: StringName,
 		ink: StringName,
 		) -> void:
-	_label(variation, 44, ink)
+	_label(variation, GameTypographyType.BADGE, ink)
 	set_stylebox(
 		&"normal", variation,
 		_box(background, &"boundary", 2, 8, [8, 4, 8, 4]),

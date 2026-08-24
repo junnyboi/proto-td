@@ -11,8 +11,9 @@ const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
 )
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
-const HUD_FONT_SIZE := 32
+const HUD_FONT_SIZE := GameTypographyType.ACTION
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
 const IDLE_BOB_FRAMES := 24
 const ATTACK_POSE_FRAMES := 8
@@ -448,7 +449,7 @@ func _detect_result_stamp() -> void:
 	next.text = "Continue"
 	# (and Space, once terminal) also proceeds — the "what do I click now"
 	next.custom_minimum_size = Vector2(260.0, 64.0)
-	next.add_theme_font_size_override("font_size", 40)
+	next.add_theme_font_size_override("font_size", GameTypographyType.ACTION)
 	next.z_index = HUD_Z
 	add_child(next)
 	var viewport := get_viewport_rect().size

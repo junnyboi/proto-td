@@ -1,6 +1,8 @@
 class_name BattleControls
 extends Control
 
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+
 ## pause/resume, speed cycle 1x/2x/4x, resign behind a code-built confirm
 ## UI over the verbs (rule 5): every write goes through the view's
 ## ticks_per_frame_scale seam or model.apply_action([&"resign"]) — the same
@@ -8,9 +10,9 @@ extends Control
 ## battle_pause action does not match synthetic device-4242 keys (probed,
 ## deviation D1).
 
-const FONT_SIZE := 24
+const FONT_SIZE := GameTypographyType.BODY
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
-const PAUSED_LABEL_MIN_WIDTH := 130.0  # fixed slot: no row re-layout on toggle
+const PAUSED_LABEL_MIN_WIDTH := 96.0  # fixed slot: no row re-layout on toggle
 
 var model: BattleModel = null
 var view: Node2D = null
@@ -82,15 +84,15 @@ func _build_confirm() -> void:
 	add_child(_confirm)
 	var margin := MarginContainer.new()
 	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_%s" % side, 24)
+		margin.add_theme_constant_override("margin_%s" % side, 18)
 	_confirm.add_child(margin)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 14)
+	column.add_theme_constant_override("separation", 10)
 	margin.add_child(column)
 	var question := Label.new()
 	question.name = "ResignQuestion"
 	question.text = "Resign this battle?"
-	question.add_theme_font_size_override("font_size", 32)
+	question.add_theme_font_size_override("font_size", GameTypographyType.SECTION_HEADING)
 	question.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(question)
 	var note := Label.new()
@@ -117,6 +119,7 @@ func _make_button(button_name: String, text: String) -> Button:
 	btn.name = button_name
 	btn.text = text
 	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(44.0, 44.0)
 	btn.add_theme_font_size_override("font_size", FONT_SIZE)
 	return btn
 
