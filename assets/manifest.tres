@@ -2578,5 +2578,95 @@ entries = {
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(32, 32)
+},
+&"vfx_deploy_dust": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_deploy_dust.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(12, 12)
+},
+&"vfx_kill_spark": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_kill_spark.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(12, 12)
+},
+&"vfx_leak_vignette": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_leak_vignette.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(64, 64)
+},
+&"vfx_charm_swirl": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_charm_swirl.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(48, 48)
+},
+&"vfx_wave_banner": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_wave_banner.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(96, 32)
+},
+&"vfx_result_stamp": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_result_stamp.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(96, 64)
 }
 }
