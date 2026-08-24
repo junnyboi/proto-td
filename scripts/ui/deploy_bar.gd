@@ -1,6 +1,11 @@
 class_name DeployBar
 extends Control
 
+signal placement_started(deployment_id: StringName)
+signal placement_rejected(deployment_id: StringName, cell: Vector2i)
+signal facing_requested(deployment_id: StringName, cell: Vector2i)
+signal deployment_committed(deployment_id: StringName, cell: Vector2i, facing: int)
+
 ## Raw-input adapter for the deploy/retreat/place_trap/mend verbs (architecture
 ## rule 3: a thin adapter over apply_action, validated once per verb by
 ## deploy_flow.gd / trap_flow.gd).
@@ -58,6 +63,7 @@ var _heal_source_unit_id: int = -1
 var _heal_cursor: Polygon2D = null
 var _selected_unit_id: int = -1
 var _selection_ring: Node2D = null
+var _operator_interaction_enabled := true
 
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
@@ -84,6 +90,29 @@ func setup(
 
 func is_mend_targeting() -> bool:
 	return _heal_source_unit_id >= 0
+
+
+func set_operator_interaction_enabled(enabled: bool) -> void:
+	_operator_interaction_enabled = enabled
+
+
+func first_deployment_id() -> StringName:
+	var ids := _deployment_ids()
+	return ids[0] if not ids.is_empty() else &""
+
+
+func slot_screen_rect(deployment_id: StringName) -> Rect2:
+	var slot := _slots.get(deployment_id) as Button
+	return slot.get_global_rect() if slot != null else Rect2()
+
+
+func is_facing_pending() -> bool:
+	return _pending_cell.x >= 0
+
+
+func facing_button_screen_rect(facing: int) -> Rect2:
+	var button := _facing_buttons.get(facing) as Button
+	return button.get_global_rect() if button != null and button.visible else Rect2()
 
 
 ## Dynamic canvas fit: CALLED BY battle_view._relayout() after the grid
@@ -127,10 +156,10 @@ func _process(_delta: float) -> void:
 	_update_selection_ring()
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
-		slot.disabled = not model.is_deployable(op_id)
+		slot.disabled = not _operator_interaction_enabled or not model.is_deployable(op_id)
 	for trap_id: StringName in _trap_slots:
 		var slot: Button = _trap_slots[trap_id]
-		slot.disabled = not model.is_trap_placeable(trap_id)
+		slot.disabled = not _operator_interaction_enabled or not model.is_trap_placeable(trap_id)
 
 
 func _input(event: InputEvent) -> void:
@@ -311,6 +340,7 @@ func _start_placement(op_id: StringName) -> void:
 	Sfx.play("operator_select")
 	_show_valid_highlights()
 	view.call("deploy_drag_started")
+	placement_started.emit(op_id)
 
 
 func _start_trap_placement(trap_id: StringName) -> void:
@@ -359,6 +389,8 @@ func _end_placement_drag() -> void:
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	if not _placement_valid_at(cell):
 		Sfx.play("action_reject")
+		if _placement_op != &"":
+			placement_rejected.emit(_placement_op, cell)
 		_cancel_placement()
 		return
 	if _placement_trap != &"":
@@ -370,6 +402,7 @@ func _end_placement_drag() -> void:
 	_pending_cell = cell
 	_cursor_rect.visible = false
 	Sfx.play("placement_ready")
+	facing_requested.emit(_placement_op, cell)
 	# the slowdown HOLDS through the facing chooser (L7 verdict 2026-08-11:
 	# full-speed enemies charging while the player aims felt punishing);
 	# _confirm_deploy / _cancel_placement restore normal speed
@@ -412,8 +445,13 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
 	if _pending_cell.x >= 0:
-		if not model.apply_action([&"deploy", _placement_op, _pending_cell, int(facing)]):
+		var deployment_id := _placement_op
+		var cell := _pending_cell
+		if model.apply_action([&"deploy", deployment_id, cell, int(facing)]):
+			deployment_committed.emit(deployment_id, cell, int(facing))
+		else:
 			Sfx.play("action_reject")
+			placement_rejected.emit(deployment_id, cell)
 	_cancel_placement()
 
 

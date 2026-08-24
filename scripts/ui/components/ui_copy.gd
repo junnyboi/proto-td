@@ -5,6 +5,48 @@ const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
 	&"ui.title.start": "Start",
 	&"ui.title.seed": "seed {seed}",
+	&"ui.tutorial.block.action": "Start battle",
+	&"ui.tutorial.block.body": (
+		"A Recruit blocks 1 ground enemy and loses HP while fighting. "
+		+ "Deploy another when DP refills."
+	),
+	&"ui.tutorial.block.step": "4 / 4  BLOCK",
+	&"ui.tutorial.block.title": "Hold the line",
+	&"ui.tutorial.deploy.body": (
+		"DP pays for units. Drag a Recruit card onto any green path tile; "
+		+ "the gold marker is a safe starting position."
+	),
+	&"ui.tutorial.deploy.cancelled": (
+		"Placement cancelled. Drag a Recruit onto a green path tile when ready."
+	),
+	&"ui.tutorial.deploy.dragging": (
+		"Green tiles are valid. Release on the gold marker or any green path tile."
+	),
+	&"ui.tutorial.deploy.invalid": (
+		"That cell cannot hold this Recruit. Use a green path tile."
+	),
+	&"ui.tutorial.deploy.step": "2 / 4  DEPLOY",
+	&"ui.tutorial.deploy.title": "Deploy a Recruit",
+	&"ui.tutorial.dismiss": "Dismiss",
+	&"ui.tutorial.facing.body": (
+		"Facing rotates attack coverage. Aim toward the incoming route; "
+		+ "any arrow deploys the unit."
+	),
+	&"ui.tutorial.facing.step": "3 / 4  FACING",
+	&"ui.tutorial.facing.title": "Choose facing",
+	&"ui.tutorial.live.body": (
+		"Spend refilling DP, reinforce the route, and stop the 4th leak."
+	),
+	&"ui.tutorial.live.step": "FIELD REMINDER",
+	&"ui.tutorial.live.title": "Defend the base",
+	&"ui.tutorial.route.action": "Show deployment",
+	&"ui.tutorial.route.body": (
+		"Enemies enter at red and follow the lit path to your blue base. "
+		+ "First Stand allows 3 leaks; the 4th ends the mission."
+	),
+	&"ui.tutorial.route.step": "1 / 4  ROUTE",
+	&"ui.tutorial.route.title": "Read the route",
+	&"ui.tutorial.skip": "Skip tutorial",
 	&"ui.locale.label": "Language",
 	&"ui.locale.en_us": "EN",
 	&"ui.locale.zh_cn": "中文",
@@ -18,9 +60,11 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.next_operation_title": "NEXT {index}: {title}",
 	&"ui.staging.campaign_summary": "{cleared}/{total} CLEARED",
 	&"ui.staging.next_none": "NEXT: No active campaign",
+	&"ui.staging.next_label": "NEXT OPERATION",
 	&"ui.staging.next_detail": "NEXT: {index}. {title}",
 	&"ui.staging.next_complete": "NEXT: Campaign complete",
 	&"ui.staging.operation_status": "OPERATIONS — UNAVAILABLE",
+	&"ui.staging.operations": "OPERATIONS",
 	&"ui.staging.mission_control": "Mission Control",
 	&"ui.staging.mission_control_short": "Mission",
 	&"ui.staging.barracks_unavailable": "Barracks — Unavailable",

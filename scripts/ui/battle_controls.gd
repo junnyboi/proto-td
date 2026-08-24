@@ -24,6 +24,7 @@ var _paused_label: Label = null
 var _confirm: PanelContainer = null
 var _resume_scale: float = 1.0
 var _pre_confirm_scale: float = 1.0
+var _interaction_enabled := true
 
 
 func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
@@ -39,6 +40,16 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 
 ## confirm panel centered; called by battle_view._relayout() (one resize
 ## owner — self-owned listeners raced the grid recompute).
+func set_interaction_enabled(enabled: bool) -> void:
+	_interaction_enabled = enabled
+	if _pause_button != null:
+		_pause_button.disabled = not enabled
+	if _speed_button != null:
+		_speed_button.disabled = not enabled
+	if _resign_button != null:
+		_resign_button.disabled = not enabled or model.result != BattleModel.Result.RUNNING
+
+
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	var box := get_node_or_null("ControlsBox") as HBoxContainer
@@ -143,10 +154,14 @@ func _process(_delta: float) -> void:
 	_pause_button.text = ">" if paused else "II"
 	_paused_label.text = "PAUSED" if paused and not _confirm.visible else ""
 	_speed_button.text = "%dx" % int(round(_resume_scale))
-	_resign_button.disabled = model.result != BattleModel.Result.RUNNING
+	_pause_button.disabled = not _interaction_enabled
+	_speed_button.disabled = not _interaction_enabled
+	_resign_button.disabled = not _interaction_enabled or model.result != BattleModel.Result.RUNNING
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _interaction_enabled:
+		return
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.is_echo():
 		return
@@ -159,6 +174,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_pause_pressed() -> void:
+	if not _interaction_enabled:
+		return
 	Sfx.play("ui_click")
 	if _current_scale() == 0.0:
 		_set_scale(_resume_scale)
@@ -169,6 +186,8 @@ func _on_pause_pressed() -> void:
 ## Cycles 1x -> 2x -> 4x -> 1x; while paused it sets the new speed AND
 ## unpauses (one less stuck state). A seam-written off-cycle value (e.g. a
 func _on_speed_pressed() -> void:
+	if not _interaction_enabled:
+		return
 	Sfx.play("ui_click")
 	var base := _current_scale()
 	if base == 0.0:
@@ -180,6 +199,8 @@ func _on_speed_pressed() -> void:
 
 ## Opening the confirm forces pause; Cancel restores the prior scale.
 func _on_resign_pressed() -> void:
+	if not _interaction_enabled:
+		return
 	Sfx.play("ui_click")
 	_pre_confirm_scale = _current_scale()
 	_set_scale(0.0)
