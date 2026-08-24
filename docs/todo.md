@@ -31,6 +31,19 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-039 — Establish lightweight post-verify housekeeping
+
+- Status: in_progress
+- Owner: AGENT 3
+- Branch: `agent-3/post-verify-housekeeping`
+- Base: `master` at `a9237ee67202817e412d57f6b44783a074804248`
+- Dependencies: `TD-VERIFY-REMOVE` complete
+- Owned files: `CLAUDE.md`, `docs/README.md`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-039-agent-3-post-verify-housekeeping.md`, `scripts/quick_check.sh`, `scripts/probe_filesystem.sh`
+- Do not touch: `scripts/verify.sh`, `docs/handoffs/TD-VERIFY-REMOVE-agent-1.md`, `FEATURES.json`, historical evidence, gameplay code, tests, thresholds, assets, or Web preview state
+- Acceptance: one fast bounded entrypoint resolves the project-pinned engine and passes import, boot, and a deterministic scenario; live standing rules and active todos no longer require the deleted aggregate workflow; the filesystem probe accepts Godot 4.7.2
+- Required evidence: `git diff --check`, Shell syntax checks, `scripts/quick_check.sh`, native `scripts/probe_filesystem.sh`, ledger audit, and exact engine version
+- Last update: 2026-08-24
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
