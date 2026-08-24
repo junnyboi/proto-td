@@ -13,7 +13,7 @@ The battle map now uses the textured multi-pass terrain approach from [`junnyboi
 | Frozen | Tundra snow | Blue ice | Iron rock | Snow rock and frozen pine |
 | Lava | Lava basalt | Volcanic ash | Iron rock | Basalt chimney and obsidian cluster |
 
-`StageDef.Tile.ELEVATED` and `StageDef.Tile.BLOCKED` both receive source-style raised wall geometry. Deployable elevated cells use smaller obstacle silhouettes so operator sprites and their cell footprint remain readable. Blocked cells use the full obstacle scale. Spawn and base cells retain explicit cyan and amber edge accents, and existing endpoint landmarks remain manifest-backed.
+`StageDef.Tile.ELEVATED` and `StageDef.Tile.BLOCKED` both receive source-style raised wall geometry. Deployable elevated cells remain completely clear because they are reserved for ranged and special tower placement. Only blocked cells receive full-scale obstacle sprites. Spawn and base cells retain explicit cyan and amber edge accents, and existing endpoint landmarks remain manifest-backed.
 
 ## Replaced assets
 
@@ -21,4 +21,8 @@ The implementation removes the previous generic `assets/sprites/tile_*` set, obs
 
 ## Validation
 
-The deterministic `test/agent4_isometric_renderer_smoke.gd` check loads every stage from S1 through S8, builds the new renderer, verifies the expected biome cycle, confirms all source textures exist, and confirms selected legacy tile files are absent. `test/agent4_isometric_visual_harness.tscn` launches any stage selected by the `AGENT4_STAGE` environment variable for repeatable 1280×720 visual captures.
+The deterministic `test/agent4_isometric_renderer_smoke.gd` check loads every stage from S1 through S8, builds the new renderer, verifies the expected biome cycle, confirms all source textures exist, confirms selected legacy tile files are absent, and enforces that obstacle sprites appear only on blocked cells—not deployable elevated cells. `test/agent4_isometric_visual_harness.tscn` launches any stage selected by the `AGENT4_STAGE` environment variable for repeatable 1280×720 visual captures.
+
+## Elevated placement visual check
+
+The corrected S1 and S4 gameplay captures verify the rule at both compact and large map sizes: every `ELEVATED` platform is a clean, textured raised face with no decorative object occupying its placement footprint. Source obstacle sprites remain restricted to `BLOCKED` cells, so ranged and special towers can be placed without visual overlap.

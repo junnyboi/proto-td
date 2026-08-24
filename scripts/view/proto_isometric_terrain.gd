@@ -157,7 +157,7 @@ func _draw() -> void:
 	for cell: Vector2i in cells:
 		_draw_tile_details(cell)
 	for cell: Vector2i in cells:
-		if _is_obstacle_cell(cell):
+		if _is_blocked_obstacle_cell(cell):
 			_draw_elevated_obstacle(cell)
 
 
@@ -319,15 +319,13 @@ func _draw_elevated_obstacle(cell: Vector2i) -> void:
 	var kind := obstacle_kind_at(cell)
 	var texture := OBSTACLE_TEXTURES.get(kind) as Texture2D
 	var size := OBSTACLE_DISPLAY_SIZES.get(kind, Vector2.ZERO) as Vector2
-	var is_deployable_platform := _stage.tile_at(cell) == StageDef.Tile.ELEVATED
 	if texture != null and size != Vector2.ZERO:
-		var scale := 0.32 if is_deployable_platform else 0.64
-		var display_size := size * scale
+		var display_size := size * 0.64
 		var bottom_center := center + Vector2(0.0, 7.0)
 		var rect := Rect2(bottom_center - Vector2(display_size.x * 0.5, display_size.y), display_size)
 		draw_texture_rect(texture, rect, false)
 		return
-	_draw_desert_rock(center, 0.5 if is_deployable_platform else 1.0)
+	_draw_desert_rock(center, 1.0)
 
 
 func _draw_desert_rock(center: Vector2, scale: float) -> void:
@@ -474,6 +472,10 @@ func _cell_in_stage(cell: Vector2i) -> bool:
 func _is_obstacle_cell(cell: Vector2i) -> bool:
 	var tile := _stage.tile_at(cell)
 	return tile == StageDef.Tile.ELEVATED or tile == StageDef.Tile.BLOCKED
+
+
+func _is_blocked_obstacle_cell(cell: Vector2i) -> bool:
+	return _stage.tile_at(cell) == StageDef.Tile.BLOCKED
 
 
 static func _biome_for_stage(stage_id: StringName) -> StringName:

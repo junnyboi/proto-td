@@ -55,9 +55,16 @@ func _run() -> void:
 				failures.append("wrong biome for %s" % stage_id)
 			for y: int in stage.grid_size().y:
 				for x: int in stage.grid_size().x:
-					var terrain_id: StringName = terrain.call("terrain_id_at", Vector2i(x, y))
+					var cell := Vector2i(x, y)
+					var terrain_id: StringName = terrain.call("terrain_id_at", cell)
 					if terrain_id == &"":
-						failures.append("empty terrain id at %s %s" % [stage_id, Vector2i(x, y)])
+						failures.append("empty terrain id at %s %s" % [stage_id, cell])
+					var has_obstacle_sprite: bool = terrain.call("_is_blocked_obstacle_cell", cell)
+					var tile := stage.tile_at(cell)
+					if tile == StageDef.Tile.ELEVATED and has_obstacle_sprite:
+						failures.append("deployable elevated cell has obstacle: %s %s" % [stage_id, cell])
+					if tile == StageDef.Tile.BLOCKED and not has_obstacle_sprite:
+						failures.append("blocked cell lacks obstacle: %s %s" % [stage_id, cell])
 		root.remove_child(root_node)
 		root_node.free()
 	if failures.is_empty():
