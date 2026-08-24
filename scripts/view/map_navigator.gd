@@ -1,8 +1,9 @@
 class_name MapNavigator
 extends RefCounted
 
-## TD-008 view-only map navigation. Owns height-fill layout, bounded pan state,
-## and pointer/trackpad gesture interpretation; it never reads or writes the model.
+## TD-008 view-only map navigation. Owns height-fill layout, bounded two-axis
+## pan state, and pointer/trackpad gesture interpretation; it never reads or
+## writes the model.
 
 const WHEEL_STEP_PX := 96.0
 const PRIMARY_DRAG_THRESHOLD_PX := 10.0
@@ -33,8 +34,8 @@ var _primary_press_position := Vector2.ZERO
 var _primary_pointer_position := Vector2.ZERO
 var _primary_touch_index := -1
 var _suppress_primary_click := false
-var _drag_velocity_x := 0.0
-var _inertia_velocity_x := 0.0
+var _drag_velocity := Vector2.ZERO
+var _inertia_velocity := Vector2.ZERO
 var _last_drag_sample_usec := 0
 var _initialized := false
 
@@ -46,15 +47,14 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 	if _is_portrait():
 		var content := _content_box(stage)
 		# Portrait deliberately fills from the rendered terrain height. The same
-		# scalar is applied on both axes, so wide maps overflow only horizontally.
+		# scalar is applied on both axes. Each content axis unlocks only when its
+		# rendered envelope exceeds the viewport on that axis.
 		scale = IsoProjection.height_fill_scale(stage, viewport)
 		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
 		_safe_rect = Rect2(Vector2.ZERO, viewport)
 		bounds = _pan_bounds_for(content, _safe_rect)
-		bounds.position.y = 0.0
-		bounds.size.y = 0.0
 		if not _initialized:
-			pan = Vector2(bounds.position.x, 0.0)
+			pan = Vector2(bounds.position.x, clampf(0.0, bounds.position.y, bounds.end.y))
 			_initialized = true
 		else:
 			pan = IsoProjection.clamp_pan(pan, bounds)
@@ -98,12 +98,15 @@ func is_dragging() -> bool:
 
 
 func is_inertia_active() -> bool:
-	return absf(_inertia_velocity_x) >= INERTIA_STOP_SPEED_PX_PER_SECOND
+	return (
+		absf(_inertia_velocity.x) >= INERTIA_STOP_SPEED_PX_PER_SECOND
+		or absf(_inertia_velocity.y) >= INERTIA_STOP_SPEED_PX_PER_SECOND
+	)
 
 
 func cancel_inertia() -> void:
-	_inertia_velocity_x = 0.0
-	_drag_velocity_x = 0.0
+	_inertia_velocity = Vector2.ZERO
+	_drag_velocity = Vector2.ZERO
 	_last_drag_sample_usec = 0
 
 
@@ -114,25 +117,42 @@ func advance_inertia(delta: float) -> bool:
 		if not _is_portrait():
 			cancel_inertia()
 		return false
-	var previous_x := pan.x
-	pan.x = clampf(
-		pan.x + _inertia_velocity_x * maxf(delta, 0.0),
-		bounds.position.x,
-		bounds.end.x,
+	var frame_delta := maxf(delta, 0.0)
+	var previous_pan := pan
+	pan = IsoProjection.clamp_pan(pan + _inertia_velocity * frame_delta, bounds)
+	var hit_x_edge := (
+		(is_equal_approx(pan.x, bounds.position.x) and _inertia_velocity.x < 0.0)
+		or (is_equal_approx(pan.x, bounds.end.x) and _inertia_velocity.x > 0.0)
 	)
-	var hit_min := is_equal_approx(pan.x, bounds.position.x) and _inertia_velocity_x < 0.0
-	var hit_max := is_equal_approx(pan.x, bounds.end.x) and _inertia_velocity_x > 0.0
-	if hit_min or hit_max:
-		cancel_inertia()
-	else:
-		_inertia_velocity_x = move_toward(
-			_inertia_velocity_x,
+	var hit_y_edge := (
+		(is_equal_approx(pan.y, bounds.position.y) and _inertia_velocity.y < 0.0)
+		or (is_equal_approx(pan.y, bounds.end.y) and _inertia_velocity.y > 0.0)
+	)
+	_inertia_velocity.x = (
+		0.0
+		if hit_x_edge
+		else move_toward(
+			_inertia_velocity.x,
 			0.0,
-			INERTIA_DECELERATION_PX_PER_SECOND_SQUARED * maxf(delta, 0.0),
+			INERTIA_DECELERATION_PX_PER_SECOND_SQUARED * frame_delta,
 		)
-		if absf(_inertia_velocity_x) < INERTIA_STOP_SPEED_PX_PER_SECOND:
-			cancel_inertia()
-	return not is_equal_approx(previous_x, pan.x)
+	)
+	_inertia_velocity.y = (
+		0.0
+		if hit_y_edge
+		else move_toward(
+			_inertia_velocity.y,
+			0.0,
+			INERTIA_DECELERATION_PX_PER_SECOND_SQUARED * frame_delta,
+		)
+	)
+	if absf(_inertia_velocity.x) < INERTIA_STOP_SPEED_PX_PER_SECOND:
+		_inertia_velocity.x = 0.0
+	if absf(_inertia_velocity.y) < INERTIA_STOP_SPEED_PX_PER_SECOND:
+		_inertia_velocity.y = 0.0
+	if not is_inertia_active():
+		cancel_inertia()
+	return not previous_pan.is_equal_approx(pan)
 
 
 func consume_primary_click_suppression() -> bool:
@@ -152,20 +172,16 @@ func ensure_local_rect_visible(local_rect: Rect2) -> bool:
 		next_pan.x += visible_rect.position.x - screen.position.x
 	elif screen.end.x > visible_rect.end.x:
 		next_pan.x -= screen.end.x - visible_rect.end.x
-	if not _is_portrait():
-		if screen.position.y < visible_rect.position.y:
-			next_pan.y += visible_rect.position.y - screen.position.y
-		elif screen.end.y > visible_rect.end.y:
-			next_pan.y -= screen.end.y - visible_rect.end.y
-	else:
-		next_pan.y = 0.0
+	if screen.position.y < visible_rect.position.y:
+		next_pan.y += visible_rect.position.y - screen.position.y
+	elif screen.end.y > visible_rect.end.y:
+		next_pan.y -= screen.end.y - visible_rect.end.y
 	# Large admitted presentation can extend beyond terrain-owned pan bounds.
 	# Expand only toward the exact minimum correction requested by this rect.
-	var expanded_min := Vector2(minf(bounds.position.x, next_pan.x), bounds.position.y)
-	var expanded_max := Vector2(maxf(bounds.end.x, next_pan.x), bounds.end.y)
-	if not _is_portrait():
-		expanded_min.y = minf(bounds.position.y, next_pan.y)
-		expanded_max.y = maxf(bounds.end.y, next_pan.y)
+	var expanded_min := Vector2(
+		minf(bounds.position.x, next_pan.x), minf(bounds.position.y, next_pan.y)
+	)
+	var expanded_max := Vector2(maxf(bounds.end.x, next_pan.x), maxf(bounds.end.y, next_pan.y))
 	bounds = Rect2(expanded_min, expanded_max - expanded_min)
 	next_pan = IsoProjection.clamp_pan(next_pan, bounds)
 	var changed := not next_pan.is_equal_approx(pan)
@@ -327,9 +343,9 @@ func _handle_primary_motion(event: InputEventMouseMotion) -> bool:
 		)
 	if not _primary_dragging:
 		return false
-	var previous_x := pan.x
-	pan.x = clampf(pan.x + event.relative.x, bounds.position.x, bounds.end.x)
-	_sample_drag_velocity(pan.x - previous_x)
+	var previous_pan := pan
+	pan = IsoProjection.clamp_pan(pan + event.relative, bounds)
+	_sample_drag_velocity(pan - previous_pan)
 	_suppress_primary_click = true
 	return true
 
@@ -364,9 +380,9 @@ func _handle_touch_drag(event: InputEventScreenDrag) -> bool:
 		)
 	if not _primary_dragging:
 		return false
-	var previous_x := pan.x
-	pan.x = clampf(pan.x + event.relative.x, bounds.position.x, bounds.end.x)
-	_sample_drag_velocity(pan.x - previous_x)
+	var previous_pan := pan
+	pan = IsoProjection.clamp_pan(pan + event.relative, bounds)
+	_sample_drag_velocity(pan - previous_pan)
 	_suppress_primary_click = true
 	return true
 
@@ -380,12 +396,8 @@ func _finish_primary_drag() -> void:
 	_primary_touch_index = -1
 
 
-func _sample_drag_velocity(actual_delta_x: float) -> void:
+func _sample_drag_velocity(actual_delta: Vector2) -> void:
 	var now := Time.get_ticks_usec()
-	if is_zero_approx(actual_delta_x):
-		_drag_velocity_x = 0.0
-		_last_drag_sample_usec = now
-		return
 	var seconds := INERTIA_SAMPLE_MIN_SECONDS
 	if _last_drag_sample_usec > 0:
 		seconds = clampf(
@@ -393,16 +405,29 @@ func _sample_drag_velocity(actual_delta_x: float) -> void:
 			INERTIA_SAMPLE_MIN_SECONDS,
 			INERTIA_SAMPLE_MAX_SECONDS,
 		)
-	var measured := clampf(
-		actual_delta_x / seconds,
-		-INERTIA_MAX_SPEED_PX_PER_SECOND,
-		INERTIA_MAX_SPEED_PX_PER_SECOND,
+	var measured := Vector2(
+		clampf(
+			actual_delta.x / seconds,
+			-INERTIA_MAX_SPEED_PX_PER_SECOND,
+			INERTIA_MAX_SPEED_PX_PER_SECOND,
+		),
+		clampf(
+			actual_delta.y / seconds,
+			-INERTIA_MAX_SPEED_PX_PER_SECOND,
+			INERTIA_MAX_SPEED_PX_PER_SECOND,
+		),
 	)
-	if is_zero_approx(_drag_velocity_x) or signf(measured) != signf(_drag_velocity_x):
-		_drag_velocity_x = measured
-	else:
-		_drag_velocity_x = lerpf(_drag_velocity_x, measured, INERTIA_VELOCITY_BLEND)
+	_drag_velocity.x = _blend_velocity_component(_drag_velocity.x, measured.x, actual_delta.x)
+	_drag_velocity.y = _blend_velocity_component(_drag_velocity.y, measured.y, actual_delta.y)
 	_last_drag_sample_usec = now
+
+
+func _blend_velocity_component(current: float, measured: float, actual_delta: float) -> float:
+	if is_zero_approx(actual_delta):
+		return 0.0
+	if is_zero_approx(current) or signf(measured) != signf(current):
+		return measured
+	return lerpf(current, measured, INERTIA_VELOCITY_BLEND)
 
 
 func _start_inertia() -> void:
@@ -412,12 +437,22 @@ func _start_inertia() -> void:
 	if Time.get_ticks_usec() - _last_drag_sample_usec > INERTIA_RELEASE_MAX_IDLE_USEC:
 		cancel_inertia()
 		return
-	if absf(_drag_velocity_x) < INERTIA_START_SPEED_PX_PER_SECOND:
-		cancel_inertia()
-		return
-	_inertia_velocity_x = clampf(
-		_drag_velocity_x,
-		-INERTIA_MAX_SPEED_PX_PER_SECOND,
-		INERTIA_MAX_SPEED_PX_PER_SECOND,
+	_inertia_velocity = Vector2(
+		clampf(
+			_drag_velocity.x,
+			-INERTIA_MAX_SPEED_PX_PER_SECOND,
+			INERTIA_MAX_SPEED_PX_PER_SECOND,
+		)
+		if absf(_drag_velocity.x) >= INERTIA_START_SPEED_PX_PER_SECOND
+		else 0.0,
+		clampf(
+			_drag_velocity.y,
+			-INERTIA_MAX_SPEED_PX_PER_SECOND,
+			INERTIA_MAX_SPEED_PX_PER_SECOND,
+		)
+		if absf(_drag_velocity.y) >= INERTIA_START_SPEED_PX_PER_SECOND
+		else 0.0,
 	)
-	_drag_velocity_x = 0.0
+	_drag_velocity = Vector2.ZERO
+	if not is_inertia_active():
+		cancel_inertia()
