@@ -30,7 +30,7 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 3. Branches use `agent-N/<lane>` and commits use the exact prefix `AGENT N - `. Completed feature owners merge current `origin/master` into their feature branch, resolve and reverify there, push the branch, then fast-forward and reverify `master` before pushing it.
 4. Parallelize only across disjoint files. The simulation core, `scripts/validate.sh`, tick semantics, thresholds, and shared ledgers remain serial unless explicitly sequenced.
 5. Never write into a checkout another agent is actively verifying. Auto-discovered tests, scenarios, and bots can invalidate an in-flight run.
-6. Verify each lane locally. The integrating agent independently reruns the merged union; lane green does not prove union green.
+6. Verify each lane locally with the scope required by `validation.md`; `scripts/quick_check.sh` remains available as a narrower import/boot/scenario diagnostic. The integrating agent independently reruns the merged union; lane green does not prove union green.
 7. On closure, remove the item from `todo.md`, append one auditable line to `completed.md`, and write a handoff with exact commits, evidence, risks, and next action.
 8. Force-push is forbidden in every form, including `--force-with-lease`. The accepted integration sequence is recorded in [D-001](decisions/D-001-autonomous-feature-integration.md).
 
@@ -43,6 +43,7 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 - Default branch: `master`
 - Validation entrypoint: [`../scripts/validate.sh`](../scripts/validate.sh)
 - Validation policy: [`validation.md`](validation.md)
+- Narrow compatibility check: [`../scripts/quick_check.sh`](../scripts/quick_check.sh)
 - Product feature ledger: [`../FEATURES.json`](../FEATURES.json)
 - Repository rules: [`../CLAUDE.md`](../CLAUDE.md)
 

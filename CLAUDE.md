@@ -108,11 +108,14 @@ scripts/validate.sh
 scripts/validate.sh --test=res://test/<focused_test>.gd --scenario=<affected_scenario>
 scripts/validate.sh --scenario=<affected_scenario> --render
 scripts/validate.sh --scenario=<affected_scenario> --render --web
+scripts/quick_check.sh  # narrower compatibility baseline: import + boot + boot scenario
 scripts/playtest.sh <bot>
 ```
 
 Run the scope required by `docs/validation.md` before every commit and repeat that same scope on
-the merged `master`. Do not run unrelated suites merely to satisfy an aggregate gate.
+the merged `master`. `scripts/quick_check.sh` remains a valid fast diagnostic, but it does not
+replace the focused GUT and optional render/Web evidence selected by the policy. Do not run
+unrelated suites merely to satisfy an aggregate gate.
 
 ### Failure routing
 
