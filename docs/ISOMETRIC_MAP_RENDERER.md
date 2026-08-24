@@ -17,7 +17,7 @@ The battle map now uses the textured multi-pass terrain approach from [`junnyboi
 
 ## Replaced assets
 
-The implementation removes the previous generic `assets/sprites/tile_*` set, obsolete S1 terrain/backdrop tile set, and obsolete Act I ground, route, raised, blocked, panorama, and environment-prop images. Their manifest entries were removed. The full source terrain texture and elevated obstacle set now lives in `assets/terrain/proto_isometric/`; its `README.md` records the exact source revision and SHA-256 checksums.
+The implementation removes the previous generic `assets/sprites/tile_*` set, obsolete S1 terrain/backdrop tile set, and obsolete Act I ground, route, raised, blocked, and environment-prop images. Their battle-art manifest entries were removed. `assets/world/act1/panorama.png` remains solely as mission-card artwork for the staging UI and is not read by the battle renderer. The full source terrain texture and elevated obstacle set now lives in `assets/terrain/proto_isometric/`; its `README.md` records the exact source revision and SHA-256 checksums.
 
 ## Validation
 
