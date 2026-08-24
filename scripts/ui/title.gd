@@ -39,6 +39,12 @@ func _ready() -> void:
 	_apply_responsive_layout()
 	_start_button.grab_focus.call_deferred()
 	Game.content = self
+	Music.play_cue(&"title_lunaris")
+
+
+func _exit_tree() -> void:
+	if Music.current_id() == &"title_lunaris":
+		Music.stop()
 
 
 func _build_screen() -> void:
@@ -195,6 +201,7 @@ func _build_screen() -> void:
 
 func _on_start_pressed() -> void:
 	Sfx.play("ui_click")
+	Music.stop()
 	Game.start_campaign()
 
 
