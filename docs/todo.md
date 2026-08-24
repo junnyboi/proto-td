@@ -31,23 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-VERIFY-LITE — Replace stale verification and Godot version policy
-
-- Status: in_progress
-- Owner: AGENT 1
-- Branch: `agent-1/lightweight-validation`
-- Base: `master` at `a9237ee67202817e412d57f6b44783a074804248`
-- Dependencies: `TD-VERIFY-REMOVE`
-- Owned files: `CLAUDE.md`, `docs/README.md`, `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-VERIFY-LITE-agent-1.md`, `scripts/*.sh`, `export_presets.cfg`
-- Do not touch: gameplay code, tests, thresholds, product acceptance records, immutable historical evidence, or generated media
-- Acceptance: current policy and executable helpers use Godot 4.7.2 at `~/.local/bin/godot`, a bounded lightweight validation entrypoint replaces the removed aggregate workflow, active references no longer require `verify.sh`, and historical evidence remains intact and explicitly classified
-- Required evidence: exhaustive reference inventory, shell syntax checks, lightweight validation pass, Web export file/hash proof, and clean synchronized `master`
-- [x] Classify every tracked `verify.sh`, Godot 4.7.1, `$HOME/bin/godot`, and legacy export-path reference as active policy, executable helper, or historical evidence.
-- [x] Define and implement a bounded lightweight validation entrypoint.
-- [x] Reconcile active policy, helper defaults, version checks, and export paths with Godot 4.7.2.
-- [x] Prove the replacement workflow and document intentionally preserved historical references.
-- Last update: 2026-08-24
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

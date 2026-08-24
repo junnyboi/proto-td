@@ -41,3 +41,7 @@ The final live-source audit found no `$HOME/bin/godot` default, no active 4.7.1 
 ## Preserved history
 
 Historical plans, handoffs, media manifests, `FEATURES.json`, `FINAL_REPORT.md`, asset provenance, staging provenance, and historical decision evidence were not rewritten. Their exact engine and command strings describe what ran at those commits and are now explicitly subordinate to the current authority map in `docs/README.md` and `docs/validation.md`.
+
+## Implementation
+
+The validated implementation is commit `5b18084603a1489763ac88d1e7b1ad48c87fd550` on `agent-1/lightweight-validation`.
