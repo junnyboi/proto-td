@@ -151,9 +151,9 @@ func resolve_cell(cell: Vector2i, tile: StageDef.Tile, is_route: bool) -> Dictio
 
 
 func required_manifest_ids() -> Array[StringName]:
-	var ids := SHARED_IDS.duplicate()
-	ids.append_array(ENV_PROP_IDS)
-	return ids
+	# The proto-isometric renderer owns terrain, backdrop, and obstacle textures
+	# directly. Only the strategic endpoint landmarks remain manifest-backed.
+	return [spawn_landmark_id, core_landmark_id]
 
 
 func validation_errors(stage: StageDef) -> PackedStringArray:
