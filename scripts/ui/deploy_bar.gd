@@ -28,17 +28,54 @@ const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
 const HEAL_VALID_COLOR := Color(0.65, 0.94, 0.44, 0.5)
-const FACING_BUTTON_SIZE := Vector2(56.0, 56.0)
+const FACING_BUTTON_SIZE := Vector2(64.0, 64.0)
 const FACING_BUTTON_GAP := 12.0
 const FACING_SAFE_MARGIN := 12.0
 const FACING_SAFE_TOP := 104.0
 const FACING_BUTTON_Z := 15
+const FACING_ICON_INSET := 6.0
+const FACING_BOUNCE_AMPLITUDE := 4.5
+const FACING_PULSE_AMPLITUDE := 0.04
+const FACING_ANIMATION_PERIOD := 0.9
 
 const FACING_BUTTONS := {
-	UnitState.Facing.RIGHT: {"name": "FacingRight", "text": "↘", "slot": Vector2i(1, 1)},
-	UnitState.Facing.DOWN: {"name": "FacingDown", "text": "↙", "slot": Vector2i(0, 1)},
-	UnitState.Facing.LEFT: {"name": "FacingLeft", "text": "↖", "slot": Vector2i(0, 0)},
-	UnitState.Facing.UP: {"name": "FacingUp", "text": "↗", "slot": Vector2i(1, 0)},
+	UnitState.Facing.RIGHT: {"name": "FacingRight", "slot": Vector2i(1, 1)},
+	UnitState.Facing.DOWN: {"name": "FacingDown", "slot": Vector2i(0, 1)},
+	UnitState.Facing.LEFT: {"name": "FacingLeft", "slot": Vector2i(0, 0)},
+	UnitState.Facing.UP: {"name": "FacingUp", "slot": Vector2i(1, 0)},
+}
+
+const FACING_DIRECTIONS := {
+	UnitState.Facing.RIGHT: Vector2(0.70710678, 0.70710678),
+	UnitState.Facing.DOWN: Vector2(-0.70710678, 0.70710678),
+	UnitState.Facing.LEFT: Vector2(-0.70710678, -0.70710678),
+	UnitState.Facing.UP: Vector2(0.70710678, -0.70710678),
+}
+
+const FACING_PHASES := {
+	UnitState.Facing.RIGHT: 0.0,
+	UnitState.Facing.DOWN: PI * 0.5,
+	UnitState.Facing.LEFT: PI,
+	UnitState.Facing.UP: PI * 1.5,
+}
+
+const FACING_ARROW_TEXTURES := {
+	UnitState.Facing.RIGHT: {
+		"gold": preload("res://assets/ui/facing_arrows/facing_arrow_se_gold.png"),
+		"blue": preload("res://assets/ui/facing_arrows/facing_arrow_se_blue.png"),
+	},
+	UnitState.Facing.DOWN: {
+		"gold": preload("res://assets/ui/facing_arrows/facing_arrow_sw_gold.png"),
+		"blue": preload("res://assets/ui/facing_arrows/facing_arrow_sw_blue.png"),
+	},
+	UnitState.Facing.LEFT: {
+		"gold": preload("res://assets/ui/facing_arrows/facing_arrow_nw_gold.png"),
+		"blue": preload("res://assets/ui/facing_arrows/facing_arrow_nw_blue.png"),
+	},
+	UnitState.Facing.UP: {
+		"gold": preload("res://assets/ui/facing_arrows/facing_arrow_ne_gold.png"),
+		"blue": preload("res://assets/ui/facing_arrows/facing_arrow_ne_blue.png"),
+	},
 }
 
 var model: BattleModel = null
@@ -57,6 +94,9 @@ var _pointer := Vector2.ZERO
 var _highlight_root: Control = null
 var _cursor_rect: Polygon2D = null
 var _facing_buttons: Dictionary = {}
+var _facing_icons: Dictionary = {}
+var _facing_icon_origins: Dictionary = {}
+var _facing_emphasis: int = -1
 var _retreat_chip: Button = null
 var _retreat_unit_id: int = -1
 var _heal_source_unit_id: int = -1
@@ -115,6 +155,12 @@ func facing_button_screen_rect(facing: int) -> Rect2:
 	return button.get_global_rect() if button != null and button.visible else Rect2()
 
 
+func set_facing_emphasis(facing: int = -1) -> void:
+	_facing_emphasis = facing
+	for raw_facing: UnitState.Facing in _facing_buttons:
+		_refresh_facing_icon(raw_facing)
+
+
 ## Dynamic canvas fit: CALLED BY battle_view._relayout() after the grid
 ## scale recomputes (P14 — a self-owned size_changed listener raced the
 ## view's recompute and re-derived footprints from the STALE scale).
@@ -145,6 +191,7 @@ func relayout() -> void:
 func _process(_delta: float) -> void:
 	if model == null:
 		return
+	_animate_facing_icons()
 	if Input.is_action_just_pressed("ui_cancel"):
 		if is_mend_targeting():
 			_cancel_heal_targeting()
@@ -299,14 +346,27 @@ func _build_overlays() -> void:
 		var spec: Dictionary = FACING_BUTTONS[facing]
 		var btn := Button.new()
 		btn.name = spec["name"]
-		btn.text = spec["text"]
+		btn.text = ""
 		btn.custom_minimum_size = FACING_BUTTON_SIZE
-		btn.add_theme_font_size_override("font_size", FONT_SIZE)
 		btn.z_index = FACING_BUTTON_Z
+		_apply_facing_button_styles(btn)
 		btn.visible = false
 		btn.pressed.connect(_confirm_deploy.bind(facing))
+		btn.mouse_entered.connect(_refresh_facing_icon.bind(facing))
+		btn.mouse_exited.connect(_refresh_facing_icon.bind(facing))
+		btn.focus_entered.connect(_refresh_facing_icon.bind(facing))
+		btn.focus_exited.connect(_refresh_facing_icon.bind(facing))
 		add_child(btn)
 		_facing_buttons[facing] = btn
+		var icon := TextureRect.new()
+		icon.name = "ArrowIcon"
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		btn.add_child(icon)
+		_facing_icons[facing] = icon
+		_layout_facing_icon(facing, FACING_BUTTON_SIZE)
+		_refresh_facing_icon(facing)
 	_retreat_chip = Button.new()
 	_retreat_chip.name = "RetreatChip"
 	_retreat_chip.text = "Retreat"
@@ -320,6 +380,19 @@ func _build_overlays() -> void:
 	_selection_ring.visible = false
 	_selection_ring.z_index = -1
 	add_child(_selection_ring)
+
+
+func _apply_facing_button_styles(button: Button) -> void:
+	var transparent := StyleBoxEmpty.new()
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		button.add_theme_stylebox_override(state, transparent)
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = Color.TRANSPARENT
+	focus.border_color = Color(0.95, 0.78, 0.32, 0.96)
+	focus.set_border_width_all(2)
+	focus.set_corner_radius_all(10)
+	focus.set_expand_margin_all(2.0)
+	button.add_theme_stylebox_override(&"focus", focus)
 
 
 ## Footprints are origin-centered face diamonds (P12.2) sized by the live
@@ -441,6 +514,50 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 		btn.position = (
 			cluster_origin + Vector2(slot) * (button_size + Vector2.ONE * FACING_BUTTON_GAP)
 		)
+		_layout_facing_icon(facing, button_size)
+
+
+func _layout_facing_icon(facing: UnitState.Facing, button_size: Vector2) -> void:
+	var icon := _facing_icons.get(facing) as TextureRect
+	if icon == null:
+		return
+	icon.size = button_size - Vector2.ONE * FACING_ICON_INSET * 2.0
+	icon.pivot_offset = icon.size * 0.5
+	var origin := (button_size - icon.size) * 0.5
+	_facing_icon_origins[facing] = origin
+	icon.position = origin
+
+
+func _refresh_facing_icon(facing: UnitState.Facing) -> void:
+	var button := _facing_buttons.get(facing) as Button
+	var icon := _facing_icons.get(facing) as TextureRect
+	if button == null or icon == null:
+		return
+	var use_blue := int(facing) == _facing_emphasis or button.is_hovered() or button.has_focus()
+	var textures := FACING_ARROW_TEXTURES[facing] as Dictionary
+	icon.texture = textures["blue" if use_blue else "gold"] as Texture2D
+
+
+func _animate_facing_icons() -> void:
+	var animation_seconds := fmod(
+		float(Time.get_ticks_msec()) / 1000.0, FACING_ANIMATION_PERIOD
+	)
+	for facing: UnitState.Facing in _facing_icons:
+		var button := _facing_buttons[facing] as Button
+		var icon := _facing_icons[facing] as TextureRect
+		if button == null or icon == null:
+			continue
+		var origin: Vector2 = _facing_icon_origins.get(facing, icon.position)
+		if not button.visible:
+			icon.position = origin
+			icon.scale = Vector2.ONE
+			continue
+		var phase := float(FACING_PHASES[facing])
+		var angle := TAU * animation_seconds / FACING_ANIMATION_PERIOD + phase
+		var direction: Vector2 = FACING_DIRECTIONS[facing]
+		icon.position = origin + direction * sin(angle) * FACING_BOUNCE_AMPLITUDE
+		var pulse := 1.0 + sin(angle + PI * 0.5) * FACING_PULSE_AMPLITUDE
+		icon.scale = Vector2.ONE * pulse
 
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
@@ -461,8 +578,14 @@ func _cancel_placement() -> void:
 	_placement_trap = &""
 	_pending_cell = Vector2i(-1, -1)
 	_cursor_rect.visible = false
+	set_facing_emphasis(-1)
 	for facing: UnitState.Facing in _facing_buttons:
-		(_facing_buttons[facing] as Button).visible = false
+		var button := _facing_buttons[facing] as Button
+		var icon := _facing_icons[facing] as TextureRect
+		button.visible = false
+		button.release_focus()
+		icon.position = _facing_icon_origins.get(facing, icon.position)
+		icon.scale = Vector2.ONE
 	for child: Node in _highlight_root.get_children():
 		child.queue_free()
 
