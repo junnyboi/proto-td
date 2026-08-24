@@ -52,12 +52,12 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 		previous_created_after = created_after
 		if source == "starter":
 			if created_after != 0 or index >= STARTERS.size():
-				return _reject(&"starter_provenance_mismatch")
+				return _reject(&"starter_origin_mismatch")
 			if StringName(operator_id) != STARTERS[index]:
-				return _reject(&"starter_provenance_mismatch")
+				return _reject(&"starter_origin_mismatch")
 			starter_seen[index] = true
 		elif index < STARTERS.size():
-			return _reject(&"starter_provenance_mismatch")
+			return _reject(&"starter_origin_mismatch")
 		if source == "contract" and not _consumed_contract(data["offers"], source_id):
 			return _reject(&"contract_history_mismatch")
 		if source in ["reward", "recovery"]:
@@ -83,7 +83,7 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 			return death_check
 		_update_operator_history(operator_history, hero)
 	if starter_seen.size() != STARTERS.size():
-		return _reject(&"starter_provenance_mismatch")
+		return _reject(&"starter_origin_mismatch")
 	if int(data["marks"]) != _expected_marks(data["offers"]):
 		return _reject(&"contract_marks_mismatch")
 	var rewards := _validate_reward_history(data, context, reward_counts, reward_stages)

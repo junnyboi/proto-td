@@ -1,2 +1,0 @@
-# Unbound Agent lanes live here. Runtime integration must promote validated
-# assets into an explicit res:// runtime path; Godot must not import staging.

@@ -2,8 +2,6 @@ class_name EnemyDef
 extends Resource
 
 ## Enemy archetype (all balance is data — architecture rule 4). Full schema
-## declared from Phase 1; combat fields (atk, block_weight) activate in
-## Phase 3, aerial in Phase 4, charm_immune in Phase 7.
 
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
 const DamageRulesScript := preload("res://sim/damage_rules.gd")

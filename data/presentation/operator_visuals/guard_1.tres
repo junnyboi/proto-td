@@ -24,7 +24,6 @@ fps = 12.0
 pivot = Vector2(0.5, 0.94)
 display_height_px = 60
 normalized_subject_height_px = 142
-provenance_sha256 = "52cccbe562f126b2e678baee28710ee32a12c8778c35f34ef24c32c732e04140"
 placeholder = true
 placeholder_source_by_logical_id = {
 &"op_anim_guard_1_attack_ne": &"se"

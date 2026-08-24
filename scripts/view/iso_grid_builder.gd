@@ -23,7 +23,6 @@ const BACKDROP_TILE_COLOR := Color("232634")
 ## Filler ring beyond the stage bounds (dynamic-fit requirement): no bare
 ## canvas around the playfield.
 const BACKDROP_RING := 10
-## 32px-native art on the 64px face grid (pinned 2x integer, same pin as
 ## battle_view.SPRITE_SCALE)
 const SPRITE_SCALE := 2
 const HIGH_RES_WORLD_PREFIX := "world.act1."
@@ -226,7 +225,6 @@ static func _backdrop_art_id(
 
 
 ## Manifest-sized tile sprite anchored at the face's TOP corner (the canvas
-## is the face plus optional baked wall rows below, drawn at the pinned 2x).
 ## Returns false when the id has no art — the flat-color fallback lane runs.
 static func _add_tile_sprite(
 	grid_root: Node2D,

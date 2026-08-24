@@ -1,51 +1,12 @@
 class_name BattleModel
 extends RefCounted
 
-## The battle is a database; the engine is a view (architecture rules 1-3).
-## Authoritative state is plain integer data, stepped one tick at a time,
-## engine-independent and RNG-free (v1) — entire battles run inside GUT.
+## Authoritative battle state is engine-independent integer data advanced one
+## deterministic tick at a time. Runtime nodes only project this state.
 ##
-## Tick order inside _step_one (pinned in td-phase-0-1.md §4.3): advance
-## alive enemies + resolve leaks FIRST, then spawn due wave entries, then
-## evaluate terminal state. An enemy spawned at tick T takes its first step
-## at tick T+1, so its leak tick is exactly spawn_tick + ceil(len/step).
-##
-## A battle is fully described by (stage_id, squad, seed, [[tick, verb,
-## args...]]) — that tuple is the replay format, the bot format, and the
-## test format. Verbs: deploy(op_id, cell, facing), retreat(unit_id),
-## trigger_skill(unit_id), mend(healer_unit_id, target_unit_id),
-## place_trap(trap_id, cell), cast(spell_id, target),
-## plus the debug verbs (Phase 8, rule 5 — the overlay is a client of this
-## dispatcher, never a parallel path): debug_grant_operator(op_id),
-## debug_remove_operator(op_id), debug_set_dp(value),
-## debug_set_base_hp(value), debug_reset_spell(spell_id).
-##
-## Traps (td-phase-6-7.md §2.2/§3.3): placed on GROUND path cells, one per
-## cell, DP through the ledger's spent bucket, no refund. ON_ENTER entrants
-## are recorded during the advance pass (an "entry" is a cell_of transition
-## between consecutive ticks) and resolved after it, before combat, in
-## path-progress-descending order (tie: lower id) — a trap-killed enemy
-## never attacks that tick. CELL_AURA slow samples the cell an enemy
-## occupies at the START of its tick; strongest source applies; aerial
-## enemies ignore traps entirely.
-##
-## DP ledger (td-phase-2-3.md D4/D5, extended by Phase 5's skill bucket):
-## regen/generation/refunds/bursts accrue gross; points that would exceed
-## dp_cap land in dp_lost_to_cap, so at every tick dp == dp_start + regen +
-## vanguard + refunded + skill_granted - spent - lost_to_cap +
-## debug_adjusted exactly (dp_debug_adjusted is the signed Phase 8 bucket —
-## zero on any timeline that never uses debug_set_dp).
-##
-## Spells + Charm (td-phase-6-7.md §2.3/§2.4, M1/M4/M5): cast(spell_id,
-## target) validates against the SpellBook (readiness = arithmetic over
-## tick). Charm flips a non-aerial, non-immune ENEMY to CHARMED at current
-## HP; it reverses along its own path, duels walking enemies (the only
-## ally<->enemy combat), and despawns at progress <= 0. Conservation:
-## spawned == alive_enemy + killed + leaked + charmed and
-## charmed == alive_charmed + charmed_dead + charmed_exited, every tick.
-##
-## Adding a mutable field here without extending state_hash() is a defect
-## (CLAUDE.md ban list).
+## Each tick advances existing enemies and resolves leaks, spawns scheduled
+## enemies, resolves combat and abilities, and then evaluates terminal state.
+## Mutable state that affects battle outcomes must be included in state_hash().
 
 enum Result { RUNNING, CLEAR, DEFEAT }
 
@@ -82,7 +43,6 @@ var dp_refunded: int = 0
 var dp_spent: int = 0
 var dp_lost_to_cap: int = 0
 var dp_skill_granted: int = 0
-var dp_debug_adjusted: int = 0
 var retreated: int = 0
 var skills_fired: int = 0
 var units: Array[UnitState] = []
@@ -201,16 +161,6 @@ func apply_action(action: Array) -> bool:
 			ok = n == 3 and _apply_cast(action[1], action[2])
 		&"resign":
 			ok = n == 1 and _apply_resign()
-		&"debug_grant_operator":
-			ok = n == 2 and _apply_debug_grant_operator(action[1])
-		&"debug_remove_operator":
-			ok = n == 2 and _apply_debug_remove_operator(action[1])
-		&"debug_set_dp":
-			ok = n == 2 and _apply_debug_set_dp(int(action[1]))
-		&"debug_set_base_hp":
-			ok = n == 2 and _apply_debug_set_base_hp(int(action[1]))
-		&"debug_reset_spell":
-			ok = n == 2 and _apply_debug_reset_spell(action[1])
 		_:
 			push_warning("apply_action: unknown verb '%s'" % [verb])
 	return ok
@@ -295,7 +245,6 @@ func _apply_deploy(op_id: StringName, cell: Vector2i, facing: int) -> bool:
 	return true
 
 
-## trigger_skill (td-phase-4-5.md §2): valid iff the unit exists, is alive,
 ## has a skill, and SP is exactly full; any rejection is zero state change.
 ## Instant effects (DP_BURST through the ledger, STUN_IN_RANGE on non-aerial
 ## enemies in the square around the unit) apply now; timed effects join
@@ -513,7 +462,6 @@ func _resolve_charm(e: EnemyState) -> void:
 	charmed += 1
 
 
-## Player concedes (Phase 13, DC1): an immediate result write — DEFEAT is
 ## observable at the current tick and the next step() no-ops via the
 ## terminal early-return. Writes only already-hashed fields (result), so
 ## BattleHash needs no extension; stars stays 0 like any defeat.
@@ -522,52 +470,6 @@ func _apply_resign() -> bool:
 	if _is_ticketed():
 		terminal_reason = &"resign"
 		_outcome = BattleOutcomeBuilderScript.seal(self)
-	return true
-
-
-## Debug verbs (Phase 8, td-phase-8.md §2.2). Same reject discipline as the
-## player verbs: false + zero state change. A granted operator deploys
-## through the untouched can_deploy_at; removal only edits the squad (an
-## already-deployed unit stays — retreat is the verb for the field); set-DP
-## keeps the ledger exact via the signed dp_debug_adjusted bucket; set-HP
-## reaches DEFEAT only through the untouched _check_terminal.
-func _apply_debug_grant_operator(op_id: StringName) -> bool:
-	if _is_ticketed():
-		return false
-	if not _op_defs.has(op_id) or squad.has(op_id):
-		return false
-	squad.append(op_id)
-	return true
-
-
-func _apply_debug_remove_operator(op_id: StringName) -> bool:
-	if _is_ticketed():
-		return false
-	if not squad.has(op_id):
-		return false
-	squad.erase(op_id)
-	return true
-
-
-func _apply_debug_set_dp(value: int) -> bool:
-	if not config.debug_dp_value_valid(value):
-		return false
-	dp_debug_adjusted += value - dp
-	dp = value
-	return true
-
-
-func _apply_debug_set_base_hp(value: int) -> bool:
-	if not config.debug_base_hp_value_valid(value):
-		return false
-	base_hp = value
-	return true
-
-
-func _apply_debug_reset_spell(spell_id: StringName) -> bool:
-	if not spell_book.has_spell(spell_id):
-		return false
-	spell_book.debug_reset(spell_id, tick)
 	return true
 
 
@@ -606,17 +508,12 @@ func state_hash() -> int:
 	return BattleHash.of(self)
 
 
-## Debug/telemetry projection (views read this; the hash does not); the
 ## field map lives in sim/battle_snapshot.gd (P14 file-size seam).
 func snapshot() -> Dictionary:
 	return BattleSnapshot.of(self)
 
 
-## Sub-step order pinned in td-phase-2-3.md D9: (1) DP regen + vanguard
-## generation (Phase 5 prepends effect expiry and appends SP accrual inside
 ## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
-## (2.5) ON_ENTER trap resolution (Phase 6, td-phase-6-7.md M2),
-## (2.6) duel assignment (Phase 7 — after movement + traps, before combat),
 ## (3) combat — units strike first, then charmed allies, then enemies;
 ## deaths resolve immediately,
 ## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
@@ -644,7 +541,6 @@ func _step_one() -> void:
 ## D12: blocked enemies skip; the block check runs after the advance, in spawn
 ## order. An enemy that finds no spare capacity keeps walking (overflow rule);
 ## a blocked enemy can never leak. Aerial enemies bypass block assignment
-## entirely (the absolute-counter pin, td-phase-4-5.md §2): they never freeze,
 ## never occupy capacity, and only leak or die to ranged damage — and they
 ## ignore traps (no ON_ENTER, no aura slow). For ground enemies the
 ## start-of-tick cell is sampled once, before advancing: it decides this
@@ -691,7 +587,6 @@ func _advance_enemies() -> Array[Dictionary]:
 	return entrants
 
 
-## Aura slow, strongest-applies, integer permille (td-phase-6-7.md §2.1):
 ## effective step = step_units * (1000 - slow) / 1000, floored once per tick.
 func _effective_step(e: EnemyState, start_cell: Vector2i) -> int:
 	var slow := _slow_permille_at(start_cell)
@@ -765,7 +660,6 @@ func _assign_duels() -> void:
 				break
 
 
-## D14/D15 + Phase 4 targeting: ready-at-contact cadence — fire when the
 ## counter is 0 and a target exists (counter then resets to interval - 1 so
 ## shots land exactly atk_interval_ticks apart); otherwise the counter ticks
 ## down and holds at 0. Units strike before enemies, so an enemy killed on its
@@ -919,7 +813,6 @@ func _tick_dp() -> void:
 ## Timed effects lapse when tick reaches their expires_tick — derived stats
 ## fall back to base by construction. A lapsed BLOCK_PLUS may leave a unit
 ## over capacity: release most-recently-blocked first until the held weight
-## fits (the pinned edge rule); released enemies resume from frozen progress.
 func _expire_effects() -> void:
 	for u: UnitState in units:
 		if not u.alive or u.active_effects.is_empty():

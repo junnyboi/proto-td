@@ -1,11 +1,9 @@
 class_name JuiceLayer
 extends Node2D
 
-## Placeholder-VFX effects layer (Phase 9, td-phase-9.md §2.2 — rects and
 ## polygons until Lane A's manifest swap). Pure view: spawns and ages
 ## transients, never reads or writes the model (rule 6); battle_view owns
 ## all model-edge detection and calls in. Ages in _process so transient
-## lifetimes count the SAME render frames the harness's frames(n) awaits —
 ## that alignment is what makes the two-probe decay checks deterministic
 ## (§2.1.9). All magnitudes come from JuiceConfig (rule 4); every Control
 ## sets MOUSE_FILTER_IGNORE (J1).
@@ -136,7 +134,6 @@ func skill_burst(local_center: Vector2) -> void:
 
 
 ## TD-021: target-side Mend ring. All visible magnitudes live in JuiceConfig;
-## the stable node name is the harness probe seam.
 func heal_burst(local_center: Vector2) -> void:
 	var half := Vector2.ONE * cfg.heal_burst_size_px * 0.5
 	for i: int in cfg.heal_burst_particles:

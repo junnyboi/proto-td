@@ -1,8 +1,6 @@
 extends Node
 
-## Scene flow plus one crash-safe CampaignSave v3 authority. Player campaign
-## transitions publish only SaveStore-restored states; start_battle() remains an
-## isolated template-only debug/replay-v1 lane that cannot resolve campaign data.
+## Scene flow and crash-safe campaign state management.
 
 const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
@@ -18,15 +16,13 @@ const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const TRAINING_SUPPORT_SCRIPT := preload("res://scripts/ui/components/training_support.gd")
 
 var run_seed: int = 42
-var default_stage_id: StringName = &"test_lane"
+var default_stage_id: StringName = &"s1"
 var default_squad: Array[StringName] = [&"vanguard_1", &"defender_1"]
 var pending_stage: StageDef = null
 var current_battle: BattleModel = null
 var content: Node = null
 
-# Player campaigns use one durable CampaignStateV3 authority. Direct harness and
-# replay-v1 battles stay in an explicit template-only compatibility lane and can
-# never submit an outcome to this authority.
+# Direct battles cannot submit outcomes to an active campaign.
 var campaign: Variant = null
 var campaign_store: Variant = null
 var campaign_active: bool = false
@@ -36,7 +32,6 @@ var last_result: Dictionary = {}
 var last_campaign_error: StringName = &""
 var training_return_path: StringName = &"staging"
 var training_acknowledgement: Array[Dictionary] = []
-var _debug_catalog_override: bool = false
 var _campaign_context: Dictionary = {}
 var _pending_battle_ticket: Dictionary = {}
 var _pending_campaign_mutation: Variant = null
@@ -52,7 +47,6 @@ func set_run_seed(value: int) -> void:
 ## Resume a valid durable campaign by default. Explicit fresh starts first
 ## restore/migrate the prior slot, then replace it through expected-preimage CAS.
 func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
-	_debug_catalog_override = false
 	_campaign_context = CAMPAIGN_RUNTIME_CONTEXT_SCRIPT.build()
 	var started: Dictionary = (
 		CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.start_new(run_seed, _campaign_context)
@@ -140,7 +134,6 @@ func start_stage(
 
 ## The squad the next battle boots with: an explicit start_stage selection
 ## wins (campaign runs AND standalone per-stage bots — §2.2.6 lets bots run
-## without clearing predecessors); start_battle-only harness/debug paths
 ## never set one and keep the default squad.
 func _battle_squad() -> Array[StringName]:
 	if not selected_squad.is_empty():
@@ -194,28 +187,21 @@ func campaign_projection() -> Dictionary:
 	return campaign.runtime_projection()
 
 
-## Loadout sets for the UI (model stays catalog-validated — td-phase-6-7
-## §2.1): unlocked sets while a campaign runs, full catalogs for internal
-## harness/debug direct-battle seams.
+## Loadout sets for the UI: unlocked sets during a campaign, full catalogs
+## for direct battles.
 func loadout_operator_ids() -> Array[StringName]:
-	if _debug_catalog_override:
-		return _scan_ids("res://data/operators")
 	if campaign_active and campaign != null:
 		return campaign.runtime_projection()["unlocked_operators"]
 	return _scan_ids("res://data/operators")
 
 
 func loadout_trap_ids() -> Array[StringName]:
-	if _debug_catalog_override:
-		return _scan_ids("res://data/traps")
 	if campaign_active and campaign != null:
 		return campaign.runtime_projection()["unlocked_traps"]
 	return _scan_ids("res://data/traps")
 
 
 func loadout_spell_ids() -> Array[StringName]:
-	if _debug_catalog_override:
-		return _scan_ids("res://data/spells")
 	if campaign_active and campaign != null:
 		return campaign.runtime_projection()["unlocked_spells"]
 	return _scan_ids("res://data/spells")
@@ -392,11 +378,6 @@ func _publish_promotion_commit(committed: Dictionary) -> void:
 		training_acknowledgement.append(row.duplicate(true))
 
 
-func _debug_unlock_all() -> void:
-	_debug_catalog_override = true
-
-
-## Back to the starting menu (Phase 13). Resets the campaign session so the
 ## next Start always creates a fresh campaign with no stale selection.
 func open_title() -> void:
 	pending_stage = null
@@ -409,7 +390,6 @@ func open_title() -> void:
 	last_result = {}
 	training_return_path = &"staging"
 	training_acknowledgement.clear()
-	_debug_catalog_override = false
 	_campaign_context = {}
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
@@ -480,7 +460,6 @@ func _scan_ids(dir_path: String) -> Array[StringName]:
 	return ids
 
 
-## Every stage id on disk, sorted (deterministic). The debug overlay's jump
 ## list and the debug_reach sweep both read this scan, so Lane B stages
 ## appear in both with zero code changes.
 func stage_ids() -> Array[StringName]:

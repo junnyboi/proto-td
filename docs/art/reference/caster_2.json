@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_caster_2.py",
-  "iterations": 7,
-  "lint": "clean",
-  "spec_name": "Severin Thal"
-}

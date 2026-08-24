@@ -31,7 +31,6 @@ var _cursor_rect: Polygon2D = null
 
 ## Call after add_child: sized from the viewport (a Control under a Node2D
 ## parent gets no anchor-based layout). spell_ids is the caller's loadout
-## and filters STRICTLY (Phase 10 UI-only gating — the model stays
 ## catalog-validated): an empty loadout means an empty bar. There is no
 ## show-everything sentinel — the campaign's starting spell set is
 ## legitimately empty, and a fail-open default let Bolt/Charm be cast from
@@ -83,7 +82,6 @@ func _build_buttons() -> void:
 	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
 
 
-## Dynamic canvas fit: keep the strip pinned top-right; called by
 ## battle_view._relayout() after the grid recompute (P14 ordering).
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size

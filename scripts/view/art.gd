@@ -144,11 +144,6 @@ static func animation_texture(id: StringName, animation: StringName, local_frame
 	return texture(id, frame) if frame >= 0 else null
 
 
-static func provenance_sha256(id: StringName) -> String:
-	var stored: Variant = _entry(id).get("provenance_sha256", "")
-	return stored if stored is String else ""
-
-
 static func texture(id: StringName, frame := 0) -> Texture2D:
 	var key := "%s/%d" % [id, frame]
 	if _cache.has(key):

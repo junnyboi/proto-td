@@ -3,7 +3,6 @@ extends Resource
 
 ## Operator active skill (all balance is data — architecture rule 4). One
 ## skill per operator; SP caps at sp_cost and trigger_skill requires full SP
-## (td-phase-4-5.md §2). duration_ticks 0 = instant effect. params by effect:
 ##   ATK_MULT {mult}   ATK_INTERVAL_MULT {mult}   BLOCK_PLUS {amount}
 ##   DP_BURST {amount}   SPLASH_RADIUS_PLUS {dim}   STUN_IN_RANGE {stun_ticks, dim}
 ##   HEAL_TARGET {amount, range_cells}

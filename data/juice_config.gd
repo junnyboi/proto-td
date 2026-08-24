@@ -1,13 +1,8 @@
 class_name JuiceConfig
 extends Resource
 
-## Every juice timing/magnitude (rule 4: juice tuning is data edits, same as
-## balance — td-phase-9.md §2.1). Durations are integer RENDER frames,
-## matching the view's transient convention; known limitation: visual
-## duration halves at 120 Hz vs 60 Hz (logged in JUICE_VERDICT.md; switching
-## to seconds is a schema-level data edit reserved for human-round verdicts).
-## The view is the only consumer — the model never sees this resource
-## (rule 6: juice can never change outcomes).
+## Presentation-only timing and magnitude values. The simulation never loads
+## this resource, so visual tuning cannot change battle outcomes.
 
 @export var deploy_drag_time_scale: float = 0.3
 @export var deploy_crouch_frames: int = 6
@@ -49,5 +44,4 @@ extends Resource
 
 # shake/hit-stop whitelist (parent plan: reserved for boss hits, leaks and
 # the charm beat ONLY); boss_hit stays unwired until a boss-attack model
-# record exists (Phase 10)
 @export var shake_events: PackedStringArray = ["leak", "charm_beat", "boss_hit"]

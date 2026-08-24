@@ -1,15 +1,10 @@
 class_name BattleControls
 extends Control
 
-## Phase 13b (td-phase-13.md §4): always-visible in-battle QoL controls —
 ## pause/resume, speed cycle 1x/2x/4x, resign behind a code-built confirm
-## panel (never a native ConfirmationDialog: subwindows are a harness trap).
 ## UI over the verbs (rule 5): every write goes through the view's
 ## ticks_per_frame_scale seam or model.apply_action([&"resign"]) — the same
-## seams the debug overlay, scenarios, and bots drive. Button labels
-## re-derive from the LIVE scale each frame, so direct seam writes (debug
 ## overlay, scenarios) never desync the display. Space toggles pause by
-## physical keycode, the debug.gd F12 precedent — the registered
 ## battle_pause action does not match synthetic device-4242 keys (probed,
 ## deviation D1).
 
@@ -33,7 +28,6 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	model = battle_model
 	view = battle_view
 	# Control under a Node2D: no anchor layout — explicit viewport sizing
-	# (CLAUDE.md ban list), same pattern as the deploy/spell bars
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -41,7 +35,6 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	_build_confirm()
 
 
-## Dynamic canvas fit (P14): keep the strip pinned top-right and the
 ## confirm panel centered; called by battle_view._relayout() (one resize
 ## owner — self-owned listeners raced the grid recompute).
 func relayout() -> void:
@@ -172,7 +165,6 @@ func _on_pause_pressed() -> void:
 
 ## Cycles 1x -> 2x -> 4x -> 1x; while paused it sets the new speed AND
 ## unpauses (one less stuck state). A seam-written off-cycle value (e.g. a
-## scenario's 8x) cycles back to 1x.
 func _on_speed_pressed() -> void:
 	Sfx.play("ui_click")
 	var base := _current_scale()

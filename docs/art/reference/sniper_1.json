@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_sniper_1.py",
-  "iterations": 6,
-  "lint": "clean",
-  "spec_name": "Rennick Thorne"
-}

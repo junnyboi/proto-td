@@ -7,7 +7,6 @@ extends RefCounted
 ## append-only: retreated and dead units stay in it (alive = false) for hash
 ## stability and history; redeploying creates a fresh UnitState.
 ##
-## Phase 5 skill effects live in active_effects ({effect, params,
 ## expires_tick}); combat reads the effective_* getters, which fold active
 ## effects over base stats — base stats are NEVER mutated in place, so
 ## "expiry restores base exactly" holds by construction.
@@ -38,7 +37,6 @@ var dp_generation_interval_ticks: int = 0
 var dp_generation_counter: int = 0
 var blocked_ids: Array[int] = []
 var op_class: OperatorDef.OpClass = OperatorDef.OpClass.GUARD
-# def-resolved constant copied at deploy (pinned by op_id, outside the hash)
 var splash_dim_base: int = 0
 var range_offsets: Array[Vector2i] = []
 var target_policy: Dictionary = {}

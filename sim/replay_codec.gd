@@ -289,27 +289,6 @@ static func _decode_action(row: Variant, version: int = VERSION) -> Dictionary:
 		"resign":
 			if not args.is_empty():
 				return _reject(&"invalid_action_args")
-		"debug_grant_operator", "debug_remove_operator":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if (
-				not _exact_keys(args, ["operator_def_id"])
-				or not _nonempty_string(args["operator_def_id"])
-			):
-				return _reject(&"invalid_action_args")
-			action.append(StringName(args["operator_def_id"]))
-		"debug_set_dp", "debug_set_base_hp":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if not _exact_keys(args, ["value"]) or not _in_i32(args["value"]):
-				return _reject(&"invalid_action_args")
-			action.append(int(args["value"]))
-		"debug_reset_spell":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if not _exact_keys(args, ["spell_id"]) or not _nonempty_string(args["spell_id"]):
-				return _reject(&"invalid_action_args")
-			action.append(StringName(args["spell_id"]))
 		_:
 			return _reject(&"unknown_action_verb")
 	return {
@@ -377,24 +356,6 @@ static func _encode_action(row: Variant, version: int = VERSION) -> Dictionary:
 		"resign":
 			if row.size() != 2:
 				return _reject(&"invalid_timeline_row")
-		"debug_grant_operator", "debug_remove_operator":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if row.size() != 3:
-				return _reject(&"invalid_timeline_row")
-			args["operator_def_id"] = String(row[2])
-		"debug_set_dp", "debug_set_base_hp":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if row.size() != 3 or not _in_i32(row[2]):
-				return _reject(&"invalid_timeline_row")
-			args["value"] = int(row[2])
-		"debug_reset_spell":
-			if version != VERSION:
-				return _reject(&"unknown_action_verb")
-			if row.size() != 3:
-				return _reject(&"invalid_timeline_row")
-			args["spell_id"] = String(row[2])
 		_:
 			return _reject(&"unknown_action_verb")
 	var action := {}
@@ -529,18 +490,6 @@ static func _validate_action_context(
 			var spell_def: SpellDef = context["spells"][row[2]]
 			if not stage.spell_target_in_domain(spell_def, row[3]):
 				return _reject(&"invalid_spell_context")
-		"debug_set_dp":
-			if not context["config"].debug_dp_value_valid(int(row[2])):
-				return _reject(&"invalid_debug_dp_context")
-		"debug_set_base_hp":
-			if not context["config"].debug_base_hp_value_valid(int(row[2])):
-				return _reject(&"invalid_debug_base_hp_context")
-		"debug_grant_operator", "debug_remove_operator":
-			if not context["operators"].has(row[2]):
-				return _reject(&"invalid_debug_operator")
-		"debug_reset_spell":
-			if not context["spells"].has(row[2]):
-				return _reject(&"invalid_debug_spell")
 	return _accept(true)
 
 

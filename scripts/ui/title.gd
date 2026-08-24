@@ -1,7 +1,6 @@
 extends Control
 
 ## Protos entry screen. The campaign is the only player-facing game flow;
-## direct battle startup remains a harness/debug seam, never a title action.
 
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const LOCALE_SCENE := preload("res://scenes/ui/components/aetheria_locale_selector.tscn")

@@ -1,8 +1,7 @@
 class_name SfxCatalog
 extends Resource
 
-## Logical SFX id -> accepted cue metadata. Raw presentation ids may resolve
-## through aliases, while Telemetry always keeps the original raw id.
+## Logical SFX id to cue metadata, with optional aliases for presentation events.
 
 @export var entries: Dictionary = {}
 @export var aliases: Dictionary = {}

@@ -2,7 +2,6 @@ class_name TrapDef
 extends Resource
 
 ## Trap archetype (all balance is data — architecture rule 4). Traps are the
-## second deployable class (td-phase-6-7.md §2.2): placed ON enemy-walkable
 ## GROUND path cells, DP-costed, no refund, no block, no unit slot. ON_ENTER
 ## traps spend one charge per triggered enemy and are removed at 0 charges;
 ## CELL_AURA traps (charges -1) are permanent. slow_permille: 500 = -50%.

@@ -12,7 +12,6 @@ const ALIASES: Array[StringName] = [&"idle", &"move", &"attack", &"skill", &"dep
 @export var display_height_px: int = 72
 @export var contour_px: float = 1.0
 @export var animation_aliases: Dictionary = {}
-@export var provenance_sha256: String = ""
 
 
 func validate_contract() -> PackedStringArray:
@@ -41,7 +40,4 @@ func validate_contract() -> PackedStringArray:
 			errors.append("animation_aliases: unexpected key %s" % raw_key)
 		if typeof(value) != TYPE_STRING_NAME or value == &"":
 			errors.append("animation_aliases.%s: expected nonempty StringName" % raw_key)
-	if provenance_sha256.length() != 64 or not provenance_sha256.is_valid_hex_number() \
-		or provenance_sha256 != provenance_sha256.to_lower():
-		errors.append("provenance_sha256: expected lowercase 64-hex")
 	return errors

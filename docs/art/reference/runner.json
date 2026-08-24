@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_runner.py",
-  "iterations": 11,
-  "lint": "clean",
-  "spec_name": "Snik"
-}

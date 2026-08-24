@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_defender_2.py",
-  "iterations": 8,
-  "lint": "clean",
-  "spec_name": "Sigrid Valebright"
-}

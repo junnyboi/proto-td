@@ -1,7 +1,6 @@
 extends Node
 
 ## Presentation-only localization seam. Locale and catalog data never enter
-## simulation, save, hash, replay, bot input, or telemetry state.
 
 signal locale_changed(locale_id: StringName)
 

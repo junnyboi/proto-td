@@ -4,7 +4,6 @@ extends Resource
 const SCHEMA_VERSION := 2
 const ENTRY_KEYS: Array[String] = [
 	"pattern", "frames", "size", "placeholder", "pivot", "animations",
-	"provenance_sha256",
 ]
 const REGION_KEYS: Array[StringName] = [&"start", &"length", &"fps", &"loop"]
 
@@ -32,7 +31,7 @@ func validate_contract() -> PackedStringArray:
 func entry_diagnostics(id: StringName, entry: Dictionary) -> PackedStringArray:
 	var errors := PackedStringArray()
 	if entry.size() != ENTRY_KEYS.size():
-		errors.append("shape: expected exact seven fields")
+		errors.append("shape: expected exact six fields")
 	for key: String in ENTRY_KEYS:
 		if not entry.has(key):
 			errors.append("shape: missing %s" % key)
@@ -53,9 +52,6 @@ func entry_diagnostics(id: StringName, entry: Dictionary) -> PackedStringArray:
 	var pivot: Variant = entry.get(&"pivot")
 	if typeof(pivot) != TYPE_VECTOR2 or not _normalized_vector(pivot):
 		errors.append("pivot: expected finite normalized Vector2")
-	var digest: Variant = entry.get(&"provenance_sha256")
-	if typeof(digest) != TYPE_STRING or not _valid_digest(String(digest)):
-		errors.append("provenance_sha256: expected lowercase 64-hex")
 	var animations: Variant = entry.get(&"animations")
 	if typeof(animations) != TYPE_DICTIONARY:
 		errors.append("animations: expected Dictionary")
@@ -155,7 +151,3 @@ static func _regions_overlap(a: Dictionary, b: Dictionary) -> bool:
 static func _normalized_vector(value: Vector2) -> bool:
 	return is_finite(value.x) and is_finite(value.y) and value.x >= 0.0 and value.x <= 1.0 \
 		and value.y >= 0.0 and value.y <= 1.0
-
-
-static func _valid_digest(value: String) -> bool:
-	return value.length() == 64 and value == value.to_lower() and value.is_valid_hex_number()

@@ -74,7 +74,7 @@ func sync_stage_wave(stage: StageDef, wave_index: int) -> bool:
 	return play_stage_bgm(stage)
 
 
-## Valid repeats are successful no-ops: no seek, no restart, no new telemetry.
+## Valid repeats are successful no-ops: no seek and no restart.
 ## Invalid requests validate before touching the one player or controller state.
 func play_cue(cue_id: StringName) -> bool:
 	if cue_id.is_empty():
@@ -98,7 +98,6 @@ func play_cue(cue_id: StringName) -> bool:
 	_current_id = cue_id
 	player.play()
 	_start_count += 1
-	_emit_event("music_started", {"cue_id": String(cue_id)})
 	return true
 
 
@@ -153,16 +152,8 @@ func _ensure_player() -> AudioStreamPlayer:
 
 
 func _stop_active() -> void:
-	var stopped_id := _current_id
 	var player := _ensure_player()
 	player.stop()
 	player.stream = null
 	_current_id = &""
 	_stop_count += 1
-	_emit_event("music_stopped", {"cue_id": String(stopped_id)})
-
-
-func _emit_event(event_name: String, data: Dictionary) -> void:
-	var telemetry := get_node_or_null("/root/Telemetry")
-	if telemetry != null:
-		telemetry.call("event", event_name, data)

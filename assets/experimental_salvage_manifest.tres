@@ -14,15 +14,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "896d35c6892e1226b90b44867ccfe61a92b1e49ca713554b7067bef36bddc75c",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_attack_nw": {
@@ -34,15 +29,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "8f8f4ce7a866b2f3a7ed94c99baf8bc2a4134e9a5bd99c5680ab522d0551090a",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_attack_se": {
@@ -54,15 +44,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "999ed32c9da8bbb777d3f7036a87cb0324d8043e83ed10df8cb38118d8021bb5",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_attack_sw": {
@@ -74,15 +59,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "4426325fa8915366afa06c9c865db2943fffc38fc4917cb518927ac5aa12c7d3",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_walk_ne": {
@@ -94,15 +74,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "aa637a37a31b20173cfb557cfab0d51a9340d2f2b6fd925dd32b3cc97fafe420",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_walk_nw": {
@@ -114,15 +89,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "88aea64989a215044230c2f20b8d5ab8231da4d2189f2b8ef163446dbe06a3df",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_walk_se": {
@@ -134,15 +104,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "34392c3cca8ca6bd86fc23e77245b02705e8b7a6bd401c889cd624117ea0d8fc",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_drone_walk_sw": {
@@ -154,15 +119,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/drone_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "d54d0bf25a08451907d974c1fea3089eebe8441b87b0d7c69c5771c961a08579",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_grunt_attack_ne": {
@@ -174,15 +134,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/grunt_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "e4ee17fc0b2f780d9f6ac95004bb70d8277aa1a4c2e09c752d46c5ac3a309ef1",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_grunt_attack_nw": {
@@ -194,15 +149,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/grunt_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "34dc12863b413b4c635718153c60827658e929a084583c0da465f564dfc88300",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_grunt_attack_se": {
@@ -214,15 +164,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/grunt_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "f167299d83d0e1022bf3e6167bf18f4f7347084bc61c5ed2634f9d765e42942b",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_grunt_attack_sw": {
@@ -234,15 +179,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/grunt_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "c1b08b4d4dfee7964a11ed68c79e00049513553ecfce8581693821022b8f9dcb",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_attack_ne": {
@@ -254,15 +194,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "577e6790f1814bd9ff25a0bfda3c2a5a68850dd93d2cfc43c3c53e7e97133b39",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_attack_nw": {
@@ -274,15 +209,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "8ac93cd338ca029bdaa3815893a90495f77b7422aaa288b9e31b8296da1b35a4",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_attack_se": {
@@ -294,15 +224,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "89fe047519ff4e1c0b050b98327755060b62082c43e2a900d23929a8bd5a3a08",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_attack_sw": {
@@ -314,15 +239,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "436dad83bf7ada18c6b5acd31fcdfd41f0ce870d65c47ffdf789d1ad02900401",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_walk_ne": {
@@ -334,15 +254,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "990ea46f63af1bdb93834ceab4d1dc7b3bf53c3e36808f14f0d8bd7c22e499dd",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_walk_nw": {
@@ -354,15 +269,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "3580aebcc0747ccdce2c640f19eb66b8535e1ae704a4235cf62fcd2fdafc2c5a",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_walk_se": {
@@ -374,15 +284,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "cf32d692a86521e728644bc2acde9c56a2fdfb965b5fadcd3d6a406b24da68e6",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_heavy_walk_sw": {
@@ -394,15 +299,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/heavy_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "0968494d91c325c30aea519c31db17f3c74a2c098cbbd09976078d537886d8d5",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_attack_ne": {
@@ -414,15 +314,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "97f425d35c00b330a784a6d45cdd32f207860f7ef33254573ac0620a8e938f80",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_attack_nw": {
@@ -434,15 +329,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "66c96b196061fcec8830ed4a81c1be5d5632d70f686c7c0e511fcf06f0f88b28",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_attack_se": {
@@ -454,15 +344,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "0721dfde169fcd717a3c11f03463d82c5bdff281e809f35c036ff31f00b43662",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_attack_sw": {
@@ -474,15 +359,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "611c4b20e84e414973e122365e31a7a41671e18c3203af90062f91a04ce15791",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_walk_ne": {
@@ -494,15 +374,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "8053b958093d64d07e2d44375b4d38d466c221c7c35c94e4917e9816c2b6a314",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_walk_nw": {
@@ -514,15 +389,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "643477e0e7da925f94f247075d2782bb25e4c874dae512e518882caf72ccd51e",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_walk_se": {
@@ -534,15 +404,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "09a7915d4c8b8269d97a0ff4ad5743f4a3afde2f705eeb086db07869e54c1304",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_mini_boss_walk_sw": {
@@ -554,15 +419,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/mini-boss_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "9bf968d14b3f16bab94b193934bd15966c4ea3f9ef93aec4f203fda3212e4328",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_attack_ne": {
@@ -574,15 +434,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "8ec62b19c1fc9b3cf640abe68ee93d2cce784b98bf29755481107c23bf3817c8",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_attack_nw": {
@@ -594,15 +449,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "20c26e7ffad0b4651248df6ddaa47c689e7a545f256a3e39923b53cf6847a31e",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_attack_se": {
@@ -614,15 +464,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "10c8f21d4c559d14664cfda31e47973fa6513868fb1f08da48a67dd02841d8fa",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_attack_sw": {
@@ -634,15 +479,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "de39641fe83abb8d15e6456058032b4bdda78e8dc1e3e0c1442750c05f1fba2d",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_walk_ne": {
@@ -654,15 +494,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "44937b65c99f2eb33fcd7c46c5cd5947c51c1f48c4ed02120c845f3ede272f6f",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_walk_nw": {
@@ -674,15 +509,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "611d39049f08c6d12b33a5cc020de4b6c4cd1419ffb020f3f1e29bc8eadde21e",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_walk_se": {
@@ -694,15 +524,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "e0243eee0d9c2779924dee0c719812cd1154f0ac2b0a4700cfd6de233b3732f6",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_runner_walk_sw": {
@@ -714,15 +539,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/runner_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "f0c4001b821519654729a4caf18bf88a86b1131dd1f82a07bacfa6bc58588086",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_attack_ne": {
@@ -734,15 +554,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_attack_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "ab47debd83dfbc017f2b145a473703295482cb7af49c4aef63709196f2c43c9c",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_attack_nw": {
@@ -754,15 +569,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_attack_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "3af04703f9572df1b33c9986c9e1606683be0df1116b1b4bb2daf0ca2f03d769",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_attack_se": {
@@ -774,15 +584,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_attack_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "c543abfb5e4fddef251026d8330910bc37eccbf9c17ecdd421143235eec8d040",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_attack_sw": {
@@ -794,15 +599,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_attack_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "1fe18e552a13463439a949caa66a4672a8ebec5170718ce30b0b3e14484047df",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_walk_ne": {
@@ -814,15 +614,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_walk_ne.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "c552145367b3d8227cefadf400ecde59d274e7b2f6a9e0a0cc94123a8a933dae",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_walk_nw": {
@@ -834,15 +629,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_walk_nw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "f791ebc5c73584b593ea42a653dc19cf6159cf63abdacd007258c97035f51b3f",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_walk_se": {
@@ -854,15 +644,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_walk_se.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "22ca4612ac623badd154559c9d6119cd76557772d948077d2bc40f2025fda487",
 "size": Vector2i(256, 256)
 },
 &"experimental_salvage_spellcaster_walk_sw": {
@@ -874,15 +659,10 @@ entries = {
 &"start": 0
 }
 },
-"experimental": true,
 "frames": 8,
-"namespace": &"experimental_salvage",
 "pattern": "res://assets/experimental_salvage/enemies/spellcaster_walk_sw.png",
 "pivot": Vector2(0.5, 1),
 "placeholder": true,
-"provenance_path": "res://assets/experimental_salvage/provenance.json",
-"provenance_sha256": "8ad204833efbc2439712f54685e8509d422a7f8acd12724df0f9728516b5ff3a",
-"sheet_sha256": "d6fdc65ace705a2178cc894512faeb2b1d26ce741edc14fcbf61d7307c216853",
 "size": Vector2i(256, 256)
 }
 }

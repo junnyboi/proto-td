@@ -24,7 +24,6 @@ fps = 12.0
 pivot = Vector2(0.5, 0.94)
 display_height_px = 58
 normalized_subject_height_px = 106
-provenance_sha256 = "700290ec255b6cf5ccefd5aa406402ab20c95dbc3ad77f4d817aa90395710283"
 placeholder = false
 placeholder_source_by_logical_id = {
 }

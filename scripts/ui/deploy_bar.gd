@@ -4,11 +4,9 @@ extends Control
 ## Raw-input adapter for the deploy/retreat/place_trap/mend verbs (architecture
 ## rule 3: a thin adapter over apply_action, validated once per verb by
 ## deploy_flow.gd / trap_flow.gd).
-## Interaction (td-phase-2-3.md D21): press a slot -> drag with valid-cell
 ## highlights -> release on a cell -> facing chooser (4 arrows) -> click one
 ## -> deploy verb fires. Trap slots share the drag but place on release
 ## directly (traps have no facing) under AMBER highlights, distinct from the
-## unit green (td-phase-6-7.md §3.5). Release on an invalid cell or
 ## ui_cancel/right-click cancels. Clicking an alive unit opens a chip with a
 ## Retreat button. Enabled state of every slot reads model.is_deployable /
 ## model.is_trap_placeable (single source of truth); highlight queries read
@@ -122,7 +120,6 @@ func _process(_delta: float) -> void:
 			_cancel_heal_targeting()
 		elif _placement_op != &"" or _placement_trap != &"":
 			_cancel_placement()
-	# squad is mutable now (Phase 8 debug grants): rebuild the strip when it
 	# changes so granted operators get slots
 	if _slots.size() != _deployment_ids().size():
 		_rebuild_slots()
@@ -443,7 +440,6 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 		_hide_retreat_chip()
 		return
 	_select_unit(unit.id)
-	# Skill-trigger adapter (Phase 5): clicking a unit whose SP is full fires
 	# its skill; the retreat chip only opens while the skill is not ready.
 	# Readiness comes from the verb's own validator (rule 7, P14).
 	if unit.is_skill_ready():

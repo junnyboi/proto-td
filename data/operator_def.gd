@@ -2,9 +2,6 @@ class_name OperatorDef
 extends Resource
 
 ## Operator archetype (all balance is data — architecture rule 4). Full schema
-## declared from Phase 2; range_offsets/facing rotation activate in Phase 4;
-## the skill field lands in Phase 5 with the SkillDef class (as pinned in
-## td-phase-2-3.md §3.2).
 
 ## Append-only: .tres resources serialize this enum by integer ordinal.
 enum OpClass { VANGUARD, GUARD, DEFENDER, SNIPER, CASTER, HEALER, RECRUIT }

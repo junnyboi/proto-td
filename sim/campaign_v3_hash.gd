@@ -3,7 +3,6 @@ extends RefCounted
 
 ## V3 uses a versioned canonical-document payload. Because normalize_data owns
 ## exact key order and nested canonicality, every persisted field is included;
-## there is no hand-maintained ban list to forget when the schema grows.
 
 const MAGIC := "PTD-CAMPAIGN-HASH"
 const CORE_MAGIC := "PTD-CAMPAIGN-CORE-HASH"

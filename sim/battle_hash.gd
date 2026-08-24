@@ -3,12 +3,9 @@ extends RefCounted
 
 ## FNV-1a 64-bit over BattleModel's canonical field order (ints only).
 ## EVERY mutable model field appears here — adding model state without
-## extending this hash is a defect (CLAUDE.md ban list). Most def-resolved
-## constants (step_units, atk, aerial, charm_immune...) are pinned by def_id
 ## and stay out. TD-MITIGATION is the explicit exception: copied mitigation
 ## constants use a sparse append-only extension, preserving every all-default
 ## legacy hash while any non-default mutation flips it. Extracted from the
-## BattleModel at the Phase 7
 ## file-size budget; the field order is append-only.
 ## Float channel (P14 doc): skill-effect params are the ONE non-integer
 ## input — quantized x1000 at hash time in _append_unit; params must stay
@@ -68,18 +65,14 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, m.spell_book.ready_at(spell_id))
 		_append_int(bytes, m.spell_book.used_in_wave(spell_id))
 		_append_int(bytes, m.spell_book.casts(spell_id))
-	# Phase 8: squad is mutable now (debug grant/remove) and the set-DP
-	# bucket is model state — both hash or the oracle goes vacuously green.
-	_append_int(bytes, m.dp_debug_adjusted)
 	_append_int(bytes, m.squad.size())
 	for op_id: StringName in m.squad:
 		_append_int(bytes, op_id.hash())
-	# Phase 9: the two juice-facing sim records (td-phase-9.md §2.1.6)
+	# Presentation-facing simulation records.
 	for e: EnemyState in m.enemies:
 		_append_int(bytes, e.died_at_tick)
 	for t: TrapState in m.traps:
 		_append_int(bytes, t.last_trigger_tick)
-	# TD-034 append-only extension: preserve every prior canonical byte.
 	for e: EnemyState in m.enemies:
 		_append_int(bytes, e.damage_stagger_until_tick)
 		_append_int(bytes, e.last_damage_tick)
@@ -110,7 +103,6 @@ static func of(m: BattleModel) -> int:
 			_append_int(bytes, 4)
 			_append_int(bytes, spell_id.hash())
 			_append_int(bytes, damage_kind)
-	# Recruit Phase 3 sparse domain: legacy/template battles append nothing.
 	# A normalized ticket hash binds every frozen combat, targeting, skill,
 	# visual, class, hero, and battle identity field. Mutable per-identity
 	# outcome counters are then appended in canonical ticket order.

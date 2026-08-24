@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_heavy.py",
-  "iterations": 10,
-  "lint": "clean",
-  "spec_name": "Korvag"
-}

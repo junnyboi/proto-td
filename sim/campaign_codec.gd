@@ -882,7 +882,7 @@ static func _validate_receipt_links(data: Dictionary, context: Dictionary) -> Di
 			or created["recruit_source"] != "reward"
 			or created["source_id"] != receipt["stage_id"]
 		):
-			return _reject(&"created_hero_provenance_mismatch")
+			return _reject(&"created_hero_origin_mismatch")
 	for hero_id: String in receipt["dead_hero_ids"]:
 		if not heroes_by_id.has(hero_id):
 			return _reject(&"missing_dead_hero")

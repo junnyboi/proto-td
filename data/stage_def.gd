@@ -5,10 +5,8 @@ extends Resource
 ## grid_rows: one string per row, one char per tile (hand-authorable):
 ##   . VOID   G GROUND   E ELEVATED   S SPAWN   B BASE   X BLOCKED
 ## paths: flat Vector2 lists (converted to cells via path_cells());
-## waves: {tick, enemy_id, path_idx}. Full schema from Phase 1; reward and
 ## squad_size activate in later phases.
 ## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
-## (td-phase-6-7.md §2.3). Empty means one window covering the whole battle;
 ## non-empty must be strictly ascending and start at 0 (stage_lint).
 ## Music routing is presentation metadata: act selects the catalog pair;
 ## boss_wave_index -1 means BGM for the whole battle, otherwise the view
@@ -36,7 +34,6 @@ const TILE_CHARS := {
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
 @export var recovery_roster: Array[StringName] = []
-# campaign metadata (Phase 10, td-phase-10.md §2.1): rewards granted on
 # first clear ({kind: operator|trap|spell, id}); campaign_index -1 = not a
 # campaign stage (campaign order = ascending index, never scan order);
 # requires = unlockable ids this stage's lesson depends on (lint-enforced

@@ -2,7 +2,6 @@ class_name SpellDef
 extends Resource
 
 ## Player-cast spell archetype (all balance is data — architecture rule 4).
-## Spells are global player verbs (td-phase-6-7.md §2.3): no DP cost, cast
 ## from the spell bar, validated by the model against the full catalog.
 ## COOLDOWN spells are castable when tick >= ready_at_tick; ONCE_PER_WAVE
 ## spells are castable once per wave window (windows delimited by

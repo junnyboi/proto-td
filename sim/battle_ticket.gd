@@ -2,7 +2,6 @@ class_name BattleTicket
 extends RefCounted
 
 ## Canonical immutable attempt snapshot. This contract owns plain data only;
-## BattleModel consumption begins in Phase 3.
 
 const SCHEMA_VERSION := 1
 const U32_MAX := 4_294_967_295

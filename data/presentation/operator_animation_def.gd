@@ -16,7 +16,6 @@ const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
 @export var pivot: Vector2 = Vector2(0.5, 0.94)
 @export var display_height_px: int = 64
 @export var normalized_subject_height_px: int = 168
-@export var provenance_sha256: String = ""
 @export var placeholder: bool = true
 @export var placeholder_source_by_logical_id: Dictionary = {}
 
@@ -41,8 +40,6 @@ func validate_contract() -> PackedStringArray:
 		errors.append("display_height_px: expected positive int")
 	if normalized_subject_height_px <= 0 or normalized_subject_height_px > 192:
 		errors.append("normalized_subject_height_px: expected 1..192")
-	if not provenance_sha256.is_valid_hex_number(false) or provenance_sha256.length() != 64:
-		errors.append("provenance_sha256: expected lowercase 64-hex")
 	_validate_placeholders(errors)
 	return errors
 

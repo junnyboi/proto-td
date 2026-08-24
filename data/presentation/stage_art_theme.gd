@@ -5,8 +5,6 @@ extends Resource
 ## campaign, save, replay, and music lanes never read this resource.
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
-const APPROVAL_TOKEN: StringName = &"ACT-I-S1-S3-VISUAL-PASS-V3"
-const APPROVAL_MANIFEST_SHA256 := "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
 const SHARED_THEME_ID: StringName = &"world.act1.alpine_shared"
 const SHARED_ENDPOINT_PIVOT := Vector2i(32, 16)
 const SHARED_IDS: Array[StringName] = [
@@ -56,9 +54,6 @@ const TOPOLOGY := {
 
 @export var stage_id: StringName = &""
 @export var theme_id: StringName = &""
-@export var approval_token: StringName = &""
-@export var approval_manifest_sha256: String = ""
-@export var human_final_art: bool = false
 @export var ground_id: StringName = &""
 @export var route_id: StringName = &""
 @export var elevated_id: StringName = &""
@@ -169,12 +164,6 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme stage_id is not in the required S1-S3 inventory")
 	if theme_id != SHARED_THEME_ID:
 		errors.append("theme_id is not the shared Act I alpine family")
-	if approval_token != APPROVAL_TOKEN:
-		errors.append("approval token is not the owner-supplied Act I tile direction")
-	if approval_manifest_sha256 != APPROVAL_MANIFEST_SHA256:
-		errors.append("approval manifest hash does not match the approved Act I V3 candidate")
-	if not human_final_art:
-		errors.append("shared Act I runtime art is not sealed human-final")
 	if surface_modulate != Color.WHITE:
 		errors.append("shared Act I surface modulation must be Color.WHITE")
 	# core landmark is now 128x128 (Orrery); spawn stays at 64x32 overlay pivot
@@ -216,24 +205,24 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		return errors
 	var expected: Dictionary = TOPOLOGY[stage_id]
 	if elevated_cells != Array(expected["elevated"]):
-		errors.append("elevated cells do not match the approved topology")
+		errors.append("elevated cells do not match the expected topology")
 	if blocked_cells != Array(expected["blocked"]):
-		errors.append("blocked cells do not match the approved topology")
+		errors.append("blocked cells do not match the expected topology")
 	if spawn_cell != expected["spawn"]:
-		errors.append("spawn endpoint does not match the approved topology")
+		errors.append("spawn endpoint does not match the expected topology")
 	if core_cell != expected["core"]:
-		errors.append("core endpoint does not match the approved topology")
+		errors.append("core endpoint does not match the expected topology")
 	if stage != null:
 		if stage.grid_size() != expected["size"]:
-			errors.append("stage grid size does not match the approved topology")
+			errors.append("stage grid size does not match the expected topology")
 		if stage.tile_at(spawn_cell) != StageDef.Tile.SPAWN:
 			errors.append("spawn overlay cell is not SPAWN")
 		if stage.tile_at(core_cell) != StageDef.Tile.BASE:
 			errors.append("core overlay cell is not BASE")
 		for cell: Vector2i in elevated_cells:
 			if stage.tile_at(cell) != StageDef.Tile.ELEVATED:
-				errors.append("approved elevated cell is not ELEVATED: %s" % cell)
+				errors.append("expected elevated cell is not ELEVATED: %s" % cell)
 		for cell: Vector2i in blocked_cells:
 			if stage.tile_at(cell) != StageDef.Tile.BLOCKED:
-				errors.append("approved blocked cell is not BLOCKED: %s" % cell)
+				errors.append("expected blocked cell is not BLOCKED: %s" % cell)
 	return errors

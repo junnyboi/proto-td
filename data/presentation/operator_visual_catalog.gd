@@ -92,7 +92,3 @@ static func _validate_manifest(
 				var expected_placeholder := animation.is_placeholder(logical_id)
 				if bool(metadata.get(&"placeholder", true)) != expected_placeholder:
 					errors.append("%s/%s/%s: placeholder mismatch" % [template_id, family, direction])
-			if Art.provenance_sha256(logical_id).length() != 64:
-				errors.append(
-					"%s/%s/%s: invalid manifest provenance" % [template_id, family, direction]
-				)

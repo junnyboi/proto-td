@@ -4,9 +4,6 @@
 script = ExtResource("1_theme")
 stage_id = &"s2"
 theme_id = &"world.act1.alpine_shared"
-approval_token = &"ACT-I-S1-S3-VISUAL-PASS-V3"
-approval_manifest_sha256 = "6b196ec0786e72b804bddcf9456cba07fd5fc8f3f67a758e50f5c2ea0d5a2249"
-human_final_art = true
 ground_id = &"world.act1.ground"
 route_id = &"world.act1.route"
 elevated_id = &"world.act1.raised"

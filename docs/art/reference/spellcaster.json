@@ -1,6 +1,0 @@
-{
-  "generator": "tools/artgen/gen_spellcaster.py",
-  "iterations": 6,
-  "lint": "clean",
-  "spec_name": "Vesper"
-}

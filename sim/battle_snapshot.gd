@@ -1,9 +1,7 @@
 class_name BattleSnapshot
 extends RefCounted
 
-## Debug/telemetry projection of BattleModel counters (views read this; the
 ## hash does not). Extracted from battle_model.gd at the P14 file-size
-## budget — same concern seam precedent as BattleHash at Phase 7.
 
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
 

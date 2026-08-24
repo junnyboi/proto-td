@@ -1,7 +1,6 @@
 class_name IsoProjection
 extends RefCounted
 
-## Pure 2:1 dimetric projection (td-phase-12 pinned parameters). All
 ## functions are static and operate in GRID-LOCAL space: cell (0,0)'s top
 ## diamond corner sits at the local origin and the view adds
 ## _grid_root.position. A cell's diamond top face in screen space is exactly
@@ -30,11 +29,9 @@ static func unproject(local: Vector2) -> Vector2:
 	return Vector2((u + v) * 0.5, (v - u) * 0.5)
 
 
-## Elevation-aware picking (td-phase-12 closed form). A point on a lifted
 ## face inverts to p' = p_flat - (0.5, 0.5), and lifted faces tile flat cell
 ## space disjointly, so the unique lifted-face owner is
 ## floor(p' + (0.5, 0.5)). Wall-band clicks fall through to the naive cell
-## (pinned; D3 reserved). Corner tie (found by the round-trip GUT property):
 ## a lifted diamond's TOP corner coincides exactly with the face center of
 ## its NW flat neighbor — the tie breaks to the flat cell so
 ## cell_at(cell_center(c)) == c holds for EVERY cell.
@@ -94,7 +91,6 @@ static func depth(p: Vector2) -> int:
 	return int(floorf(p.x) + floorf(p.y))
 
 
-## Z bands (td-phase-12 pin): grid content 0-40 — tiles at 2*depth,
 ## entities/traps/tracers at 2*depth + 1; UI overlays 50; juice 60; HUD 70.
 static func tile_z(cell: Vector2i) -> int:
 	return 2 * (cell.x + cell.y)
@@ -104,7 +100,6 @@ static func entity_z(p: Vector2) -> int:
 	return 2 * depth(p) + 1
 
 
-## The stage's diamond content box in grid-local space (pinned): horizontal
 ## = the diamond's exact span; vertical from -ELEV_LIFT_PX - 64 (sprite
 ## headroom, top-padded only) to span * TILE_H / 2 + 8.
 static func content_box(grid_size: Vector2i) -> Rect2:

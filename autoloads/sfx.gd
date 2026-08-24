@@ -1,8 +1,7 @@
 extends Node
 
-## Sole runtime SFX owner. Every logical request emits raw telemetry first;
-## only the audio side effect is alias-resolved and deduplicated per render frame.
-## Playback is presentation-only and never enters model/hash/save/replay state.
+## Sole runtime SFX owner. Playback is alias-resolved, deduplicated per render
+## frame, and remains presentation-only.
 
 const CATALOG_PATH := "res://assets/sfx/catalog.tres"
 const SFX_CATALOG_SCRIPT: GDScript = preload("res://assets/sfx/sfx_catalog.gd")
@@ -69,10 +68,8 @@ func _aliases_contract_valid(entries: Dictionary, aliases: Dictionary) -> bool:
 	return true
 
 
-## The raw event is unconditional: unknown and same-frame-deduped requests still
-## count exactly once. A true return means one AudioStreamPlayer started.
+## A true return means one AudioStreamPlayer started.
 func play(id: String) -> bool:
-	_emit_event("sfx_played", {"id": id})
 	var raw_id := StringName(id)
 	if raw_id.is_empty():
 		return false
@@ -198,9 +195,3 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 			add_child(player)
 		_players.append(player)
 	return _players
-
-
-func _emit_event(event_name: String, data: Dictionary) -> void:
-	var telemetry := get_node_or_null("/root/Telemetry")
-	if telemetry != null:
-		telemetry.call("event", event_name, data)

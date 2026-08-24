@@ -73,7 +73,6 @@ var _spell_defs: Dictionary = {}
 var _trap_rects: Dictionary = {}
 var _trap_kinds: Dictionary = {}
 var _spell_casts_last: Dictionary = {}
-var _charm_events_last: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
 var _juice: JuiceLayer = null
@@ -88,23 +87,6 @@ var _stamp_shown := false
 var _snaps_seen := 0
 var _trap_trigger_seen: Dictionary = {}
 var _charm_seen: Dictionary = {}
-var _pushed: Dictionary = {
-	"enemies_spawned": "spawned",
-	"enemies_leaked": "leaked",
-	"enemies_killed": "killed",
-	"deploys": "deploys",
-	"retreats": "retreated",
-	"dp_spent": "dp_spent",
-	"skills_fired": "skills_fired",
-	"traps_placed": "traps_placed",
-	"trap_triggers": "trap_triggers",
-	"enemies_charmed": "charmed",
-	"charmed_dead": "charmed_dead",
-	"charmed_exited": "charmed_exited",
-	"spells_cast": "spells_cast",
-}
-var _pushed_last: Dictionary = {}
-var _result_reported := false
 var _enemy_defs: Dictionary = {}
 var _enemy_anim_keys: Dictionary = {}
 var _enemy_blend_frames: Dictionary = {}
@@ -137,7 +119,6 @@ func _ready() -> void:
 	var defs := _load_enemy_defs(stage)
 	_enemy_defs = defs
 	# operators load as a full catalog too (squad stays the model's loadout
-	# filter) so debug grants can resolve any operator on disk (Phase 8)
 	_op_defs = _load_catalog("res://data/operators", "OperatorDef")
 	_trap_defs = _load_catalog("res://data/traps", "TrapDef")
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
@@ -174,7 +155,6 @@ func _ready() -> void:
 	_portrait_flash.visible = false
 	_portrait_flash.z_index = HUD_Z
 	add_child(_portrait_flash)
-	# loadout gating is UI-only (td-phase-6-7 §2.1): the bars see the
 	# unlocked sets while a campaign runs, the full catalogs otherwise —
 	# the model stays catalog-validated either way
 	var bar_traps: Dictionary = {}
@@ -288,11 +268,10 @@ func _physics_process(delta: float) -> void:
 	while _tick_accum >= 1.0:
 		_tick_accum -= 1.0
 		model.step()
-		_push_telemetry()
+		_push_spell_sfx()
 	_project()
 
 
-## Juice detection and harness decay share render-frame timing and cfg magnitudes.
 func _process(delta: float) -> void:
 	if model == null or _juice == null:
 		return
@@ -463,16 +442,11 @@ func _detect_result_stamp() -> void:
 		Sfx.play("defeat")
 	# a real Button (the juice layer is MOUSE_FILTER_IGNORE territory) under
 	# the stamp band; no auto-swap — scenarios and bots must be able to
-	# inspect the terminal state (td-phase-10.md §2.6). Every terminal gets
-	# one (Phase 13): quick battles used to dead-end on the stamp.
 	var next := Button.new()
 	next.name = "ContinueButton"
 	_continue_btn = next
 	next.text = "Continue"
-	# Phase 13b prominence: the largest button on screen, focused so Enter
 	# (and Space, once terminal) also proceeds — the "what do I click now"
-	# fix from the playtest screenshot. HUD z band so it never sinks under
-	# the iso grid (td-phase-12).
 	next.custom_minimum_size = Vector2(260.0, 64.0)
 	next.add_theme_font_size_override("font_size", 40)
 	next.z_index = HUD_Z
@@ -771,7 +745,6 @@ func _project_tracers() -> void:
 				line.default_color = TRACER_COLOR
 				_grid_root.add_child(line)
 				_tracer_lines[u.id] = line
-			# depth from the shooter's cell (td-phase-12 pin)
 			line.z_index = IsoProjection.entity_z(Vector2(u.cell) + Vector2.ONE * 0.5)
 			line.points = PackedVector2Array(
 				[
@@ -799,7 +772,6 @@ func _project_units() -> void:
 		_detect_skill_trigger(u)
 
 
-## Admitted templates animate; legacy sprites retain pinned bob/attack frames.
 func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
@@ -942,7 +914,6 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	chevron.color = CHEVRON_COLOR
 	chevron.polygon = PackedVector2Array([Vector2(-5, -7), Vector2(-5, 7), Vector2(7, 0)])
 	# grid-cardinal facing projected into iso screen space: the arrow points
-	# along the grid axis, not the screen axis (td-phase-12 pin)
 	var dir := IsoProjection.project(Vector2.RIGHT.rotated(u.facing * PI * 0.5)).normalized()
 	chevron.position = dir * (maxf(UNIT_PX, rect.size.x) * 0.5 + 6.0)
 	chevron.rotation = dir.angle()
@@ -951,39 +922,10 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	return node
 
 
-func _push_telemetry() -> void:
-	Telemetry.current_tick = model.tick
-	var s := model.snapshot()
-	for counter_name: String in _pushed:
-		var value := int(s[_pushed[counter_name]])
-		var delta := value - int(_pushed_last.get(counter_name, 0))
-		if delta > 0:
-			Telemetry.count(counter_name, delta)
-			_pushed_last[counter_name] = value
-	_push_spell_telemetry()
-	Telemetry.sample("base_hp", float(model.base_hp))
-	Telemetry.sample("dp", float(model.dp))
-	if model.result != BattleModel.Result.RUNNING and not _result_reported:
-		_result_reported = true
-		Telemetry.event("result", {"result": model.result, "stars": model.stars})
-
-
-## Spell counters/SFX and charm lifecycle events are projected per cast.
-func _push_spell_telemetry() -> void:
+func _push_spell_sfx() -> void:
 	for spell_id: StringName in model.spell_book.ids:
 		var casts := model.spell_book.casts(spell_id)
 		var delta := casts - int(_spell_casts_last.get(spell_id, 0))
 		if delta > 0:
 			_spell_casts_last[spell_id] = casts
-			Telemetry.count("spells_cast_%s" % spell_id, delta)
 			Sfx.play(String(spell_id))
-	var transitions := {
-		"charm_convert": model.charmed,
-		"charm_dead": model.charmed_dead,
-		"charm_exit": model.charmed_exited,
-	}
-	for event_name: String in transitions:
-		var value := int(transitions[event_name])
-		if value > int(_charm_events_last.get(event_name, 0)):
-			_charm_events_last[event_name] = value
-			Telemetry.event(event_name, {"count": value})
