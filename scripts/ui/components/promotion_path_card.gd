@@ -3,7 +3,6 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
-const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
 var class_id := ""
 var operator_def_id := ""
