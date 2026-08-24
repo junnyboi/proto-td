@@ -313,6 +313,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if _grid_root != null and _map_nav.is_inertia_active():
+		if _map_navigation_blocked():
+			_map_nav.cancel_inertia()
+		elif _map_nav.advance_inertia(delta):
+			_apply_map_transform()
 	if model == null or _juice == null:
 		return
 	_enemy_anim_seconds += delta

@@ -6,6 +6,14 @@ extends RefCounted
 
 const WHEEL_STEP_PX := 96.0
 const PRIMARY_DRAG_THRESHOLD_PX := 10.0
+const INERTIA_MAX_SPEED_PX_PER_SECOND := 1800.0
+const INERTIA_START_SPEED_PX_PER_SECOND := 90.0
+const INERTIA_STOP_SPEED_PX_PER_SECOND := 18.0
+const INERTIA_DECELERATION_PX_PER_SECOND_SQUARED := 2600.0
+const INERTIA_VELOCITY_BLEND := 0.45
+const INERTIA_SAMPLE_MIN_SECONDS := 1.0 / 240.0
+const INERTIA_SAMPLE_MAX_SECONDS := 0.08
+const INERTIA_RELEASE_MAX_IDLE_USEC := 120_000
 const SHARED_ACT1_FIT_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
 const SHARED_ACT1_PANORAMA_SIZE := Vector2(512.0, 256.0)
 const SAFE_MARGIN_X := 16.0
@@ -25,10 +33,14 @@ var _primary_press_position := Vector2.ZERO
 var _primary_pointer_position := Vector2.ZERO
 var _primary_touch_index := -1
 var _suppress_primary_click := false
+var _drag_velocity_x := 0.0
+var _inertia_velocity_x := 0.0
+var _last_drag_sample_usec := 0
 var _initialized := false
 
 
 func relayout(stage: StageDef, viewport: Vector2) -> void:
+	cancel_inertia()
 	_stage = stage
 	_viewport = viewport
 	if _is_portrait():
@@ -83,6 +95,44 @@ func content_screen_rect() -> Rect2:
 
 func is_dragging() -> bool:
 	return _middle_dragging or _primary_dragging
+
+
+func is_inertia_active() -> bool:
+	return absf(_inertia_velocity_x) >= INERTIA_STOP_SPEED_PX_PER_SECOND
+
+
+func cancel_inertia() -> void:
+	_inertia_velocity_x = 0.0
+	_drag_velocity_x = 0.0
+	_last_drag_sample_usec = 0
+
+
+## Advances view-only momentum in render time. Returns true only when the pan
+## changed and BattleView needs to re-apply the map transform.
+func advance_inertia(delta: float) -> bool:
+	if not _is_portrait() or _primary_pressed or _middle_dragging or not is_inertia_active():
+		if not _is_portrait():
+			cancel_inertia()
+		return false
+	var previous_x := pan.x
+	pan.x = clampf(
+		pan.x + _inertia_velocity_x * maxf(delta, 0.0),
+		bounds.position.x,
+		bounds.end.x,
+	)
+	var hit_min := is_equal_approx(pan.x, bounds.position.x) and _inertia_velocity_x < 0.0
+	var hit_max := is_equal_approx(pan.x, bounds.end.x) and _inertia_velocity_x > 0.0
+	if hit_min or hit_max:
+		cancel_inertia()
+	else:
+		_inertia_velocity_x = move_toward(
+			_inertia_velocity_x,
+			0.0,
+			INERTIA_DECELERATION_PX_PER_SECOND_SQUARED * maxf(delta, 0.0),
+		)
+		if absf(_inertia_velocity_x) < INERTIA_STOP_SPEED_PX_PER_SECOND:
+			cancel_inertia()
+	return not is_equal_approx(previous_x, pan.x)
 
 
 func consume_primary_click_suppression() -> bool:
@@ -215,12 +265,15 @@ func handle_input(event: InputEvent) -> bool:
 
 func _handle_button(event: InputEventMouseButton) -> bool:
 	if event.button_index == MOUSE_BUTTON_MIDDLE:
+		if event.pressed:
+			cancel_inertia()
 		_middle_dragging = event.pressed
 		return true
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		return _handle_primary_button(event)
 	if not event.pressed:
 		return false
+	cancel_inertia()
 	var delta := Vector2.ZERO
 	match event.button_index:
 		MOUSE_BUTTON_WHEEL_UP:
@@ -247,6 +300,7 @@ func _handle_primary_button(event: InputEventMouseButton) -> bool:
 	if event.pressed:
 		if not _is_portrait() or _primary_touch_index >= 0:
 			return false
+		cancel_inertia()
 		_suppress_primary_click = false
 		_primary_pressed = true
 		_primary_dragging = false
@@ -273,7 +327,9 @@ func _handle_primary_motion(event: InputEventMouseMotion) -> bool:
 		)
 	if not _primary_dragging:
 		return false
+	var previous_x := pan.x
 	pan.x = clampf(pan.x + event.relative.x, bounds.position.x, bounds.end.x)
+	_sample_drag_velocity(pan.x - previous_x)
 	_suppress_primary_click = true
 	return true
 
@@ -282,6 +338,7 @@ func _handle_touch(event: InputEventScreenTouch) -> bool:
 	if event.pressed:
 		if not _is_portrait() or _primary_touch_index >= 0:
 			return false
+		cancel_inertia()
 		_suppress_primary_click = false
 		_primary_pressed = true
 		_primary_dragging = false
@@ -307,7 +364,9 @@ func _handle_touch_drag(event: InputEventScreenDrag) -> bool:
 		)
 	if not _primary_dragging:
 		return false
+	var previous_x := pan.x
 	pan.x = clampf(pan.x + event.relative.x, bounds.position.x, bounds.end.x)
+	_sample_drag_velocity(pan.x - previous_x)
 	_suppress_primary_click = true
 	return true
 
@@ -315,6 +374,50 @@ func _handle_touch_drag(event: InputEventScreenDrag) -> bool:
 func _finish_primary_drag() -> void:
 	if _primary_dragging:
 		_suppress_primary_click = true
+		_start_inertia()
 	_primary_pressed = false
 	_primary_dragging = false
 	_primary_touch_index = -1
+
+
+func _sample_drag_velocity(actual_delta_x: float) -> void:
+	var now := Time.get_ticks_usec()
+	if is_zero_approx(actual_delta_x):
+		_drag_velocity_x = 0.0
+		_last_drag_sample_usec = now
+		return
+	var seconds := INERTIA_SAMPLE_MIN_SECONDS
+	if _last_drag_sample_usec > 0:
+		seconds = clampf(
+			float(now - _last_drag_sample_usec) / 1_000_000.0,
+			INERTIA_SAMPLE_MIN_SECONDS,
+			INERTIA_SAMPLE_MAX_SECONDS,
+		)
+	var measured := clampf(
+		actual_delta_x / seconds,
+		-INERTIA_MAX_SPEED_PX_PER_SECOND,
+		INERTIA_MAX_SPEED_PX_PER_SECOND,
+	)
+	if is_zero_approx(_drag_velocity_x) or signf(measured) != signf(_drag_velocity_x):
+		_drag_velocity_x = measured
+	else:
+		_drag_velocity_x = lerpf(_drag_velocity_x, measured, INERTIA_VELOCITY_BLEND)
+	_last_drag_sample_usec = now
+
+
+func _start_inertia() -> void:
+	if not _is_portrait() or _last_drag_sample_usec <= 0:
+		cancel_inertia()
+		return
+	if Time.get_ticks_usec() - _last_drag_sample_usec > INERTIA_RELEASE_MAX_IDLE_USEC:
+		cancel_inertia()
+		return
+	if absf(_drag_velocity_x) < INERTIA_START_SPEED_PX_PER_SECOND:
+		cancel_inertia()
+		return
+	_inertia_velocity_x = clampf(
+		_drag_velocity_x,
+		-INERTIA_MAX_SPEED_PX_PER_SECOND,
+		INERTIA_MAX_SPEED_PX_PER_SECOND,
+	)
+	_drag_velocity_x = 0.0
