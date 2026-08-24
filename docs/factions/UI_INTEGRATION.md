@@ -20,6 +20,10 @@ The full-resolution canonical sources remain in `docs/factions/symbols/` and `do
 | **Squad selection** | The mission-command header uses the canonical Lunaris symbol beside the mission title. |
 | **Training** | The Reliquary Atelier header uses the canonical Lunaris symbol beside the training title. |
 
+## Post-merge visual verification
+
+The fully merged premium staging skin and faction-heraldry system were captured at **1280×720** and **720×1280** under Xvfb. Both layouts display all four banner-and-symbol pairs in a readable two-column grid, retain the Company 33 active treatment only on Lunaris, and preserve the command deck’s mission card, controls, resource bar, scroll containment, and concept-fidelity frame treatment without overlap or clipping. Campaign, squad-selection, and training captures also retain the canonical Lunaris header symbol.
+
 ## Responsive rules
 
 The standards panel uses a readable two-column grid in regular landscape, compact landscape, and portrait. Each card preserves its banner, symbol, faction name, approved identity subtitle, and specialization tooltip. Header symbols shrink rather than disappear at narrow widths. All heraldry is presentation-only and ignores pointer input unless a future faction-selection feature explicitly adds interaction.
