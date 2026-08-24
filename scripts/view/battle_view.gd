@@ -265,6 +265,10 @@ func map_dragging() -> bool:
 	return _map_nav.is_dragging()
 
 
+func consume_map_primary_click_suppression() -> bool:
+	return _map_nav.consume_primary_click_suppression()
+
+
 func _input(event: InputEvent) -> void:
 	_map_nav.recover_missed_release(event)
 
