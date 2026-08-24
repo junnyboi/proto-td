@@ -1,27 +1,22 @@
 class_name JuiceLayer
 extends Node2D
 
-## polygons until Lane A's manifest swap). Pure view: spawns and ages
-## transients, never reads or writes the model (rule 6); battle_view owns
-## all model-edge detection and calls in. Ages in _process so transient
-## that alignment is what makes the two-probe decay checks deterministic
-## (§2.1.9). All magnitudes come from JuiceConfig (rule 4); every Control
-## sets MOUSE_FILTER_IGNORE (J1).
+## Manifest-backed presentation effects. Pure view: spawns and ages transients,
+## never reads or writes the model; BattleView owns all model-edge detection and
+## calls in. Effects age in _process, all magnitudes come from JuiceConfig, and
+## every Control ignores mouse input.
 
-# sand-tinted so pixel probes never collide with the f4f4f4 chevron/tracer
-const DUST_COLOR := Color("efe1a7")
-const SPARK_COLOR := Color("ffcd75")
-const VIGNETTE_COLOR := Color(0.9, 0.1, 0.1, 1.0)
-const VIGNETTE_THICKNESS := 10.0
-const VIGNETTE_NAMES := [&"VignetteTop", &"VignetteBottom", &"VignetteLeft", &"VignetteRight"]
+const VFX_DEPLOY_DUST := &"vfx_deploy_dust"
+const VFX_KILL_SPARK := &"vfx_kill_spark"
+const VFX_LEAK_VIGNETTE := &"vfx_leak_vignette"
+const VFX_CHARM_SWIRL := &"vfx_charm_swirl"
+const VFX_WAVE_BANNER := &"vfx_wave_banner"
+const VFX_RESULT_STAMP := &"vfx_result_stamp"
 const KNOCK_COLOR := Color(1.0, 0.3, 0.3)
-const BANNER_BACK := Color("1a1c2c")
 const BANNER_TEXT_SIZE := 48
 const STAMP_TEXT_SIZE := 64
 const STAR_COLOR := Color("f4b41b")
 const SPRUNG_COLOR := Color("f4f4f4")
-const HEART_COLOR := Color("ef7d57")
-const SWIRL_COLOR := Color("41a6f6")
 
 var cfg: JuiceConfig = null
 
@@ -30,7 +25,7 @@ var _grid_base_pos := Vector2.ZERO
 var _map_transient_root: Node2D = null
 var _transients: Array[Dictionary] = []
 var _spark_live := 0
-var _vignette_rects: Array[ColorRect] = []
+var _vignette: NinePatchRect = null
 var _vignette_frames_left := 0
 var _knock_target: CanvasItem = null
 var _knock_frames_left := 0
@@ -65,20 +60,13 @@ func refresh_base() -> void:
 
 func relayout(view_size: Vector2) -> void:
 	if _banner != null:
-		var banner_back := _banner.get_parent() as ColorRect
+		var banner_back := _banner.get_parent() as NinePatchRect
 		banner_back.size = Vector2(view_size.x, 72.0)
 		banner_back.position.y = view_size.y * 0.48
 		_banner.size = banner_back.size
-	if not _vignette_rects.is_empty():
-		var specs := [
-			Rect2(0, 0, view_size.x, VIGNETTE_THICKNESS),
-			Rect2(0, view_size.y - VIGNETTE_THICKNESS, view_size.x, VIGNETTE_THICKNESS),
-			Rect2(0, 0, VIGNETTE_THICKNESS, view_size.y),
-			Rect2(view_size.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, view_size.y),
-		]
-		for i: int in _vignette_rects.size():
-			_vignette_rects[i].position = specs[i].position
-			_vignette_rects[i].size = specs[i].size
+	if _vignette != null:
+		_vignette.position = Vector2.ZERO
+		_vignette.size = view_size
 	if _stamp != null:
 		_stamp.size = Vector2(view_size.x, 200.0)
 		_stamp.position = Vector2(0, (view_size.y - 200.0) * 0.5)
@@ -96,18 +84,18 @@ func _process(_delta: float) -> void:
 	_age_shake()
 
 
-## item 1: dust ring at the grid-local landing cell (6 rects outward)
+## item 1: manifest-backed dust ring at the grid-local landing cell
 func dust(local_center: Vector2) -> void:
 	for i: int in 6:
-		var rect := _make_map_rect(DUST_COLOR, Vector2(6, 6), "MapTransientDust")
-		rect.position = local_center - Vector2(3, 3) / _grid_root.scale.x
+		var sprite := _make_map_texture(VFX_DEPLOY_DUST, Vector2(12, 12), "MapTransientDust")
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 6.0)
 		_transients.append({
-			"node": rect, "left": cfg.deploy_dust_frames,
+			"node": sprite, "left": cfg.deploy_dust_frames,
 			"total": cfg.deploy_dust_frames, "velocity_screen": dir * 4.0,
-			"map_anchor": local_center, "offset_screen": Vector2(-3, -3),
+			"map_anchor": local_center, "offset_screen": Vector2(-6, -6),
 			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
+		_position_map_transient(_transients.back())
 
 
 ## item 1: landing crouch — Y-squash on the unit node, restored linearly
@@ -119,32 +107,33 @@ func crouch(unit_node: Node2D) -> void:
 	})
 
 
-## item 2: radial burst ring at the triggering unit's grid-local cell
+## item 2: manifest-backed radial burst at the triggering unit's grid-local cell
 func skill_burst(local_center: Vector2) -> void:
 	for i: int in 8:
-		var rect := _make_map_rect(SPARK_COLOR, Vector2(5, 5), "MapTransientSkill")
-		rect.position = local_center - Vector2(2.5, 2.5) / _grid_root.scale.x
+		var sprite := _make_map_texture(VFX_KILL_SPARK, Vector2(12, 12), "MapTransientSkill")
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 8.0)
 		_transients.append({
-			"node": rect, "left": cfg.skill_burst_frames,
+			"node": sprite, "left": cfg.skill_burst_frames,
 			"total": cfg.skill_burst_frames, "velocity_screen": dir * 7.0,
-			"map_anchor": local_center, "offset_screen": Vector2(-2.5, -2.5),
+			"map_anchor": local_center, "offset_screen": Vector2(-6, -6),
 			"travel_screen": Vector2.ZERO, "kind": "dust",
 		})
+		_position_map_transient(_transients.back())
 
 
 ## TD-021: target-side Mend ring. All visible magnitudes live in JuiceConfig;
 func heal_burst(local_center: Vector2) -> void:
 	var half := Vector2.ONE * cfg.heal_burst_size_px * 0.5
 	for i: int in cfg.heal_burst_particles:
-		var rect := _make_map_rect(
-			cfg.heal_burst_color,
+		var sprite := _make_map_texture(
+			VFX_KILL_SPARK,
 			Vector2.ONE * cfg.heal_burst_size_px,
 			"MapTransientHeal",
 		)
+		sprite.modulate = cfg.heal_burst_color
 		var dir := Vector2.RIGHT.rotated(TAU * float(i) / float(cfg.heal_burst_particles))
 		_transients.append({
-			"node": rect,
+			"node": sprite,
 			"left": cfg.heal_burst_frames,
 			"total": cfg.heal_burst_frames,
 			"velocity_screen": dir * cfg.heal_burst_speed_px,
@@ -156,48 +145,40 @@ func heal_burst(local_center: Vector2) -> void:
 		_position_map_transient(_transients.back())
 
 
-## item 3: expanding grid-local spark at a corpse; capped instances
+## item 3: manifest-backed expanding spark at a corpse; capped instances
 func spark(local_center: Vector2) -> void:
 	if _spark_live >= cfg.kill_spark_cap:
 		return
 	_spark_live += 1
 	for i: int in 4:
-		var rect := _make_map_rect(SPARK_COLOR, Vector2(5, 5), "MapTransientSpark")
-		rect.position = local_center - Vector2(2.5, 2.5) / _grid_root.scale.x
+		var sprite := _make_map_texture(VFX_KILL_SPARK, Vector2(12, 12), "MapTransientSpark")
 		var dir := Vector2.RIGHT.rotated(TAU * (0.125 + float(i) / 4.0))
 		var owner_flag := i == 0
 		_transients.append({
-			"node": rect, "left": cfg.kill_spark_frames, "total": cfg.kill_spark_frames,
+			"node": sprite, "left": cfg.kill_spark_frames, "total": cfg.kill_spark_frames,
 			"velocity_screen": dir * 6.0,
-			"map_anchor": local_center, "offset_screen": Vector2(-2.5, -2.5),
+			"map_anchor": local_center, "offset_screen": Vector2(-6, -6),
 			"travel_screen": Vector2.ZERO,
 			"kind": "spark_owner" if owner_flag else "dust",
 		})
+		_position_map_transient(_transients.back())
 
 
 func spark_count() -> int:
 	return _spark_live
 
 
-## item 4: screen-edge red vignette
+## item 4: manifest-backed screen-edge red vignette
 func vignette() -> void:
-	if _vignette_rects.is_empty():
-		var view_size := get_viewport_rect().size
-		var specs := [
-			Rect2(0, 0, view_size.x, VIGNETTE_THICKNESS),
-			Rect2(0, view_size.y - VIGNETTE_THICKNESS, view_size.x, VIGNETTE_THICKNESS),
-			Rect2(0, 0, VIGNETTE_THICKNESS, view_size.y),
-			Rect2(view_size.x - VIGNETTE_THICKNESS, 0, VIGNETTE_THICKNESS, view_size.y),
-		]
-		for i: int in specs.size():
-			var spec: Rect2 = specs[i]
-			var rect := _make_rect(VIGNETTE_COLOR, spec.size)
-			rect.name = VIGNETTE_NAMES[i]
-			rect.position = spec.position
-			rect.visible = false
-			_vignette_rects.append(rect)
-	for rect: ColorRect in _vignette_rects:
-		rect.visible = true
+	if _vignette == null:
+		_vignette = _make_nine_patch(
+			VFX_LEAK_VIGNETTE,
+			get_viewport_rect().size,
+			Vector4i(18, 18, 18, 18),
+		)
+		_vignette.name = "LeakVignette"
+		_vignette.visible = false
+	_vignette.visible = true
 	_vignette_frames_left = cfg.leak_vignette_frames
 
 
@@ -208,30 +189,32 @@ func knock(target: CanvasItem) -> void:
 	_knock_frames_left = cfg.leak_vignette_frames
 
 
-## item 5: wave banner — centered strip, slides through over its lifetime
+## item 5: manifest-backed wave banner; slides through over its lifetime
 func banner(text: String) -> void:
 	if _banner == null:
 		var view_size := get_viewport_rect().size
-		var back := _make_rect(BANNER_BACK, Vector2(view_size.x, 72))
+		var back := _make_nine_patch(
+			VFX_WAVE_BANNER,
+			Vector2(view_size.x, 72),
+			Vector4i(24, 8, 24, 8),
+		)
 		back.name = "WaveBannerBack"
-		# TD-008 height-fill enlarges the playable terrain through the old 32%
-		# strip. Keep the transient centered lower so the upper road remains
-		# readable while the banner is present.
 		back.position = Vector2(0, view_size.y * 0.48)
 		_banner = Label.new()
 		_banner.name = "WaveBanner"
 		_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_banner.add_theme_font_size_override("font_size", BANNER_TEXT_SIZE)
 		_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_banner.size = back.size
 		back.add_child(_banner)
 	_banner.text = text
-	(_banner.get_parent() as ColorRect).visible = true
+	(_banner.get_parent() as NinePatchRect).visible = true
 	_banner_frames_left = cfg.wave_banner_frames
 
 
 func banner_visible() -> bool:
-	return _banner != null and (_banner.get_parent() as ColorRect).visible
+	return _banner != null and (_banner.get_parent() as NinePatchRect).visible
 
 
 ## item 5: terminal stamp — CLEAR/DEFEAT + one star per model star,
@@ -240,7 +223,11 @@ func stamp(result_text: String, stars: int) -> void:
 	if _stamp != null:
 		return
 	var view_size := get_viewport_rect().size
-	_stamp = _make_rect(BANNER_BACK, Vector2(view_size.x, 200))
+	_stamp = _make_nine_patch(
+		VFX_RESULT_STAMP,
+		Vector2(view_size.x, 200),
+		Vector4i(24, 16, 24, 16),
+	)
 	_stamp.name = "ResultStamp"
 	_stamp.position = Vector2(0, (view_size.y - 200.0) * 0.5)
 	var label := Label.new()
@@ -292,28 +279,20 @@ func shimmer_on() -> bool:
 	return (Engine.get_process_frames() / half) % 2 == 0
 
 
-## item 7: grid-local conversion swirl — rotating quads + heart pixels
+## item 7: manifest-backed grid-local conversion swirl
 func swirl(local_center: Vector2) -> void:
-	for i: int in 4:
-		var rect := _make_map_rect(SWIRL_COLOR, Vector2(7, 7), "MapTransientSwirl")
-		rect.position = local_center - Vector2(3.5, 3.5) / _grid_root.scale.x
-		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 4.0)
-		_transients.append({
-			"node": rect, "left": cfg.charm_swirl_frames, "total": cfg.charm_swirl_frames,
-			"velocity_screen": dir * 3.0, "orbit": true,
-			"map_anchor": local_center, "offset_screen": Vector2(-3.5, -3.5),
-			"travel_screen": Vector2.ZERO, "kind": "dust",
-		})
-	for i: int in 3:
-		var heart := _make_map_rect(HEART_COLOR, Vector2(4, 4), "MapTransientHeart")
-		heart.position = local_center + Vector2(-8.0 + 8.0 * i, -34.0) \
-			/ _grid_root.scale.x
-		_transients.append({
-			"node": heart, "left": cfg.charm_swirl_frames, "total": cfg.charm_swirl_frames,
-			"map_anchor": local_center,
-			"offset_screen": Vector2(-8.0 + 8.0 * i, -34.0),
-			"travel_screen": Vector2.ZERO, "kind": "dust",
-		})
+	var sprite := _make_map_texture(VFX_CHARM_SWIRL, Vector2(48, 48), "MapTransientSwirl")
+	_transients.append({
+		"node": sprite,
+		"left": cfg.charm_swirl_frames,
+		"total": cfg.charm_swirl_frames,
+		"map_anchor": local_center,
+		"offset_screen": Vector2(-24, -24),
+		"travel_screen": Vector2.ZERO,
+		"spin": 0.16,
+		"kind": "dust",
+	})
+	_position_map_transient(_transients.back())
 
 
 ## shake through the config whitelist ONLY (parent plan: boss hits, leaks,
@@ -326,13 +305,37 @@ func shake(event: String, amplitude_px: float, frames: int) -> void:
 	_shake_total = frames
 
 
-func _make_rect(color: Color, rect_size: Vector2) -> ColorRect:
-	var rect := ColorRect.new()
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rect.color = color
-	rect.size = rect_size
-	add_child(rect)
-	return rect
+func _make_nine_patch(
+	asset_id: StringName, panel_size: Vector2, margins: Vector4i
+) -> NinePatchRect:
+	var panel := NinePatchRect.new()
+	panel.texture = Art.texture(asset_id)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	panel.draw_center = true
+	panel.size = panel_size
+	panel.set_patch_margin(SIDE_LEFT, margins.x)
+	panel.set_patch_margin(SIDE_TOP, margins.y)
+	panel.set_patch_margin(SIDE_RIGHT, margins.z)
+	panel.set_patch_margin(SIDE_BOTTOM, margins.w)
+	add_child(panel)
+	return panel
+
+
+func _make_map_texture(
+	asset_id: StringName, rect_size: Vector2, node_name: String
+) -> TextureRect:
+	var sprite := TextureRect.new()
+	sprite.name = node_name
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.texture = Art.texture(asset_id)
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite.size = rect_size
+	sprite.scale = Vector2.ONE / _grid_root.scale.x
+	_map_transient_root.add_child(sprite)
+	return sprite
 
 
 func _make_map_rect(color: Color, rect_size: Vector2, node_name: String) -> ColorRect:
@@ -380,11 +383,10 @@ func _age_transients() -> void:
 			continue
 		if tr.has("velocity_screen"):
 			var vel: Vector2 = tr["velocity_screen"]
-			if tr.get("orbit", false):
-				vel = vel.rotated(0.35)
-				tr["velocity_screen"] = vel
 			tr["travel_screen"] = (tr["travel_screen"] as Vector2) + vel
 			_position_map_transient(tr)
+		if tr.has("spin"):
+			(tr["node"] as Control).rotation += float(tr["spin"])
 		if kind == "crouch":
 			var node := tr["node"] as Node2D
 			var t := 1.0 - float(tr["left"]) / float(tr["total"])
@@ -417,9 +419,8 @@ func _age_vignette() -> void:
 	if _vignette_frames_left <= 0:
 		return
 	_vignette_frames_left -= 1
-	if _vignette_frames_left == 0:
-		for rect: ColorRect in _vignette_rects:
-			rect.visible = false
+	if _vignette_frames_left == 0 and _vignette != null:
+		_vignette.visible = false
 
 
 func _age_knock() -> void:
@@ -434,7 +435,7 @@ func _age_banner() -> void:
 	if _banner_frames_left <= 0:
 		return
 	_banner_frames_left -= 1
-	var back := _banner.get_parent() as ColorRect
+	var back := _banner.get_parent() as NinePatchRect
 	var t := 1.0 - float(_banner_frames_left) / float(maxi(cfg.wave_banner_frames, 1))
 	back.position.x = lerpf(-60.0, 60.0, t)
 	if _banner_frames_left == 0:
