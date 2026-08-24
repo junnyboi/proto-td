@@ -31,6 +31,23 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
+## TD-VERIFY-REMOVE — Remove the canonical `verify.sh` workflow
+
+- Status: in_progress
+- Owner: AGENT 1
+- Branch: `agent-1/remove-verify-sh`
+- Base: `master` at `099f4fa9d4de6e83727ae013b98850c9f82b7c3d`
+- Dependencies: none
+- Owned files: `scripts/verify.sh`, `docs/todo.md`, `docs/handoffs/TD-VERIFY-REMOVE-agent-1.md`
+- Do not touch: tests, thresholds, gameplay code, `FEATURES.json`, or unrelated verification helpers
+- Acceptance: the canonical aggregate workflow is removed as explicitly requested while bounded engine import, boot, windowed scenario, Web export, and browser checks remain recorded for this task
+- Required evidence: deletion diff, clean targeted Godot checks, Web bundle hashes, and working WebDev preview checkpoint
+- [x] Delete `scripts/verify.sh` on the Agent 1 branch.
+- [x] Preserve targeted headless, windowed, export, and browser validation evidence without invoking the aggregate workflow again.
+- [x] Record repository rules, version pins, and legacy artifacts that conflict with or slow the current workflow.
+- [ ] Finish and validate the fullscreen WebDev preview.
+- Last update: 2026-08-24
+
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked
