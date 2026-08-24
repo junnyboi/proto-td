@@ -2,7 +2,7 @@
 
 > **Canonical visual promise:** Protos presents premium adult gacha heroes with exceptional beauty, glamour, confident sensuality, striking physiques, fashion-editorial combat couture, memorable hair and color identities, and immediate high-rarity “must-pull” presence.
 
-This document is the visual source of truth for character concepts, portraits, promotional ensembles, loading and title imagery, UI illustrations, chibi units, animated sprites, and future generated assets. The approved faction concepts in [`docs/`](./) define the reference quality bar; the refined **Lunaris Reliquary** loading image is the launch benchmark.
+This document is the visual source of truth for character concepts, portraits, promotional ensembles, loading and title imagery, UI illustrations, chibi units, animated sprites, and future generated assets. The approved faction concepts in [`docs/`](./) define the reference quality bar; the locked **Lunaris Reliquary** runtime loading art, title keyframe, and production character sheets remain the launch benchmark.
 
 ## Non-negotiable character contract
 
@@ -48,10 +48,10 @@ Simplify micro-filigree into a hierarchy of large, medium, and small shapes. Pre
 
 | Faction | Visual identity |
 |---|---|
-| **Solcrest Accord** | Disciplined heroic tailoring in black, teal, plum, and warm gold; oath-bound martial silhouettes; polearms, spellblades, and reliquary-hunter equipment. |
-| **Vesper Circuit** | Midnight couture, wine red, cyan, ivory, and gold; espionage glamour; shields, crossbows, control technology, and dangerous urban charisma. |
-| **Lunaris Reliquary** | Ivory, moon-cyan, violet-black, and brushed gold; ceremonial elegance; lunar rings, sacred mechanisms, gravity and memory motifs; prestige flagship casters and duelists. |
-| **Crimson Aegis** | Scarlet, black, forest green, cyan, and weapon gold; athletic action silhouettes; lances, heavy shields, rifles, bruiser gear, and momentum-driven effects. |
+| **Solcrest Accord** | The Dawn Phalanx: white-gold civic lamellar over black, deep-teal oath-sashes, plum seals, broad shields, upright standards, sunstone beacons, linked ward planes, and disciplined formation silhouettes. |
+| **Vesper Circuit** | The Midnight Relay: midnight technical couture, wine-red interference glass, cyan signal filaments, ivory masks, micro-gold mechanisms, narrow asymmetry, drones, and information-warfare equipment. |
+| **Lunaris Reliquary** | Locked: ivory, moon-cyan, violet-black, and brushed gold; ceremonial elegance; lunar rings, sacred mechanisms, gravity and memory motifs; prestige flagship casters and duelists. |
+| **Crimson Aegis** | The Breach Caravan: scarlet shock-sails, blackened impact plate, forest-green field webbing, weapon-gold breach edges, forward wedges, ram-lances, recoil shields, and momentum-driven effects. |
 
 Faction palettes differentiate heroes but never replace individual identity. Within every faction, separate characters by hair color, silhouette, weapon, accent placement, and costume rhythm.
 
@@ -65,11 +65,14 @@ Reject assets with ambiguous age, juvenile styling, generic costume design, dupl
 
 | Priority | Repository reference |
 |---:|---|
-| 1 | `docs/Faction - Lunaris Reliquary - Refined.png` |
+| 1 | `assets/loading/lunaris_reliquary_loading.png` |
 | 2 | `docs/animations/lunaris-reliquary/lunaris-title-keyframe.png` |
-| 3 | `docs/Faction - Lunaris Reliquary.webp` |
-| 4 | `docs/Faction - Solcrest Accord.webp` |
-| 5 | `docs/Faction - Vesper Circuit.webp` |
-| 6 | `docs/Faction - Crimson Aegis.webp` |
+| 3 | `docs/LUNARIS_CHARACTER_DESIGNS.md` and its production sheets |
+| 4 | `docs/Faction - Lunaris Reliquary.webp` |
+| 5 | `docs/Faction - Solcrest Accord - Redesign.png` |
+| 6 | `docs/Faction - Vesper Circuit - Redesign.png` |
+| 7 | `docs/Faction - Crimson Aegis - Redesign.png` |
+| 8 | `docs/factions/symbols/` and `docs/factions/banners/` |
+| 9 | `docs/FACTION_REDESIGN_PROPOSAL.md` |
 
 Future art guidance may add faction-specific details, but it must not weaken the adult-age rule, non-explicit presentation, premium finish, or must-pull character promise defined here.

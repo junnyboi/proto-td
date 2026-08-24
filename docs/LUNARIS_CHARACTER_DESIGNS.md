@@ -2,7 +2,7 @@
 
 The Lunaris Reliquary is the launch/loading faction. Its three ensemble anchors are the canonical starting-faction characters for visual development. Personal names remain unassigned; use the stable design IDs below in filenames, prompts, and asset manifests until narrative naming is approved.
 
-All three heroes are clearly adult, age 21 or older, and follow [`ART_DIRECTION.md`](ART_DIRECTION.md). Their approved identity references are `Faction - Lunaris Reliquary - Refined.png` and `animations/lunaris-reliquary/lunaris-title-keyframe.png`.
+All three heroes are clearly adult, age 21 or older, and follow [`ART_DIRECTION.md`](ART_DIRECTION.md). Their approved identity references are the runtime loading art at `res://assets/loading/lunaris_reliquary_loading.png`, `Faction - Lunaris Reliquary.webp`, and `animations/lunaris-reliquary/lunaris-title-keyframe.png`.
 
 ## Asset matrix
 

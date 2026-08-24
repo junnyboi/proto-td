@@ -1,26 +1,43 @@
 # Protos Faction Concepts
 
-These faction names turn the four loading-screen explorations into reusable character-pool directions for future recruitment banners. All future faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). The concept images remain directional rather than a promise that every background character ships unchanged; the three launch **Lunaris Reliquary** anchors are now locked through the production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md).
+The four factions are designed as distinct character pools, gameplay promises, and heraldic identities for future recruitment banners. All faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). **Lunaris Reliquary is locked** through the approved launch ensemble and production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md); the other three factions use the redesign directions documented in [`FACTION_REDESIGN_PROPOSAL.md`](FACTION_REDESIGN_PROPOSAL.md).
 
-| Faction | Identity | Character-pool promise | Concept file |
+## Canonical faction directions
+
+| Faction | Identity and palette | Character-pool and specialization promise | Canonical concept | Symbol | Banner |
+|---|---|---|---|---|---|
+| **Solcrest Accord** | **The Dawn Phalanx**: a radiant coalition holding the last sunlit causeways. Black under-armor, deep teal oath-sashes, plum seals, white-gold lamellar, and warm sunstone gold. | Broad heroic appeal with oath-marshals, spellblade adjudicators, reliquary hunters, and ward engineers. Gameplay emphasizes formation defense, linked wards, rally commands, interception, coordinated counterattacks, and anti-reliquary hunts. | [`Faction - Solcrest Accord - Redesign.png`](Faction%20-%20Solcrest%20Accord%20-%20Redesign.png) | [`solcrest_accord_symbol.png`](factions/symbols/solcrest_accord_symbol.png) | [`solcrest_accord_banner.png`](factions/banners/solcrest_accord_banner.png) |
+| **Vesper Circuit** | **The Midnight Relay**: a nocturnal intelligence network operating through suspended urban infrastructure. Midnight navy, wine red, cyan signal light, ivory masks, and restrained micro-gold. | Fashion-forward operatives including relay directors, decoy artists, shield hackers, and signal runners. Gameplay emphasizes stealth deployment, marks, decoys, signal hijacking, enemy rerouting, traps, debuffs, and precision execution. | [`Faction - Vesper Circuit - Redesign.png`](Faction%20-%20Vesper%20Circuit%20-%20Redesign.png) | [`vesper_circuit_symbol.png`](factions/symbols/vesper_circuit_symbol.png) | [`vesper_circuit_banner.png`](factions/banners/vesper_circuit_banner.png) |
+| **Lunaris Reliquary** | Locked custodians of a moon-powered sacred machine. Ivory, moon-cyan, violet-black, and brushed gold; crescents, orbital rings, gravity geometry, and ceremonial symmetry. | Prestige flagship heroes, elegant ceremonial combat, high-rarity casters and duelists, memory manipulation, gravity effects, and ritual geometry. Existing characters and costume construction do not change. | [`Faction - Lunaris Reliquary.webp`](Faction%20-%20Lunaris%20Reliquary.webp) | [`lunaris_reliquary_symbol.png`](factions/symbols/lunaris_reliquary_symbol.png) | [`lunaris_reliquary_banner.png`](factions/banners/lunaris_reliquary_banner.png) |
+| **Crimson Aegis** | **The Breach Caravan**: a mobile strike order that converts forward momentum into siege-breaking impact. Scarlet shock-sails, blackened impact plate, forest-green field webbing, weapon gold, and small cyan targeting lights. | Action-led fighters including breach captains, recoil-shield bruisers, grapnel outriders, demolition medics, and shock-sail lancers. Gameplay emphasizes movement, displacement, armor fracture, breach marks, combo chains, temporary forward deployment, and lane-changing bonuses. | [`Faction - Crimson Aegis - Redesign.png`](Faction%20-%20Crimson%20Aegis%20-%20Redesign.png) | [`crimson_aegis_symbol.png`](factions/symbols/crimson_aegis_symbol.png) | [`crimson_aegis_banner.png`](factions/banners/crimson_aegis_banner.png) |
+
+## Visual separation contract
+
+The factions must not rely on palette alone. Each faction owns a protected combination of silhouette, material family, energy geometry, environment, and battlefield posture.
+
+| Faction | Silhouette and environment | Energy geometry | Heraldic thesis |
 |---|---|---|---|
-| **Solcrest Accord** | A disciplined coalition guarding the last sunlit causeways with oath-bound vanguards and reliquary hunters. Its colors are black, teal, plum, and warm gold. | Broad heroic appeal, balanced mixed-gender roster, martial tailoring, polearms, spellblades, and command-focused kits. | `Faction - Solcrest Accord.webp` |
-| **Vesper Circuit** | A nocturnal intelligence network operating between suspended mineral cities, where couture, espionage, and precision technology are inseparable. Its colors are midnight navy, wine red, cyan, ivory, and gold. | Fashion-forward limited banners, dangerous charisma, urban operatives, shields, crossbows, and control-oriented kits. | `Faction - Vesper Circuit.webp` |
-| **Lunaris Reliquary** | Custodians of a moon-powered sacred machine whose chosen vessels channel memory, gravity, and ritual geometry. Its colors are ivory, moon-cyan, violet-black, and brushed gold. | Prestige flagship heroes, elegant ceremonial combat, mechanically sacred motifs, high-rarity casters and duelists, and visually iconic “must-pull” units. | `Faction - Lunaris Reliquary.webp` |
-| **Crimson Aegis** | A mobile strike order that breaks siege lines along shattered causeways before enemy reliquaries can anchor. Its colors are scarlet, black, forest green, cyan, and weapon gold. | Action-led event banners, athletic frontline silhouettes, high-motion weapons, bruisers, lancers, snipers, and momentum-driven kits. | `Faction - Crimson Aegis.webp` |
+| **Solcrest Accord** | Broad upright shields, standards, disciplined ranks, sunstone civic armor, arches, terraced causeways, beacon towers, and sunrise depth. | Straight linked ward planes, hexagons, bridge interlocks, and controlled solar rays. | A crowned sun rising over an interlocking bridge-shield. |
+| **Vesper Circuit** | Narrow asymmetric couture, masks, folding weapons, interference glass, drones, rain-dark markets, cable lifts, and layered night bridges. | Triangulation lines, split planes, fine signal routes, eyes, and folded moth wings. | A split circuit-moth whose central negative space forms a watchful eye. |
+| **Lunaris Reliquary** | Flowing ivory and violet-black ceremonial layers, sacred machines, reflective planes, monumental pale architecture, and serene symmetry. | Crescents, orbital rings, astrolabes, memory stars, and gravity circles. | A crescent reliquary enclosing an orbital memory star. |
+| **Crimson Aegis** | Compressed forward wedges, impact plate, shock-sails, field webbing, assault crawlers, moving bridges, and collapsing fortifications. | Spearheads, chevrons, fracture lines, recoil arcs, and acceleration streaks. | A downward spearhead breaking a fortress ring. |
 
-## Selected loading direction
+## Locked Lunaris launch direction
 
-**Lunaris Reliquary** is the selected launch/loading faction. Its centered flagship heroine, mechanical lunar halo, and dark reflective lower plane provide the strongest permanent brand silhouette and the clearest space for a restrained **Protos** wordmark plus progress treatment. The production refinement should preserve the heroine and flanking adults, strengthen face/hand fidelity and fabric detail, deepen the ivory-machine world, and simplify the lower quarter for readable loading UI.
+**Lunaris Reliquary** remains the selected launch and loading faction. Its centered flagship heroine, mechanical lunar halo, adult supporting heroes, ivory-machine world, and dark reflective lower plane provide the permanent launch silhouette. The repository’s runtime loading copy remains `res://assets/loading/lunaris_reliquary_loading.png`, while [`animations/lunaris-reliquary/lunaris-title-keyframe.png`](animations/lunaris-reliquary/lunaris-title-keyframe.png) and the production character sheets preserve the approved identities.
 
-The approved production refinement is archived as `Faction - Lunaris Reliquary - Refined.png`. It preserves the three adult faction anchors while increasing the mechanical-city detail, face and costume finish, silhouette separation, and the lower dark band reserved for loading UI. The Godot runtime copy lives at `res://assets/loading/lunaris_reliquary_loading.png`.
+The obsolete documentation-only refinement has been removed. This deletion does **not** alter the locked runtime loading art, title keyframe, launch trio, costumes, weapons, or faction specialization.
 
-## Canonical launch trio
+## Canonical Lunaris launch trio
 
 | Design ID | Role | Full-figure production sheet | In-game chibi sheet |
 |---|---|---|---|
-| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | `characters/lunaris-reliquary/lunaris_vessel_design_sheet.png` | `characters/lunaris-reliquary/lunaris_vessel_chibi_sheet.png` |
-| `reliquary_duelist` | Jade-cyan spellblade duelist | `characters/lunaris-reliquary/reliquary_duelist_design_sheet.png` | `characters/lunaris-reliquary/reliquary_duelist_chibi_sheet.png` |
-| `archive_caster` | Orbital-astrolabe ritual caster | `characters/lunaris-reliquary/archive_caster_design_sheet.png` | `characters/lunaris-reliquary/archive_caster_chibi_sheet.png` |
+| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | [`lunaris_vessel_design_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_design_sheet.png) | [`lunaris_vessel_chibi_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_chibi_sheet.png) |
+| `reliquary_duelist` | Jade-cyan spellblade duelist | [`reliquary_duelist_design_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_design_sheet.png) | [`reliquary_duelist_chibi_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_chibi_sheet.png) |
+| `archive_caster` | Orbital-astrolabe ritual caster | [`archive_caster_design_sheet.png`](characters/lunaris-reliquary/archive_caster_design_sheet.png) | [`archive_caster_chibi_sheet.png`](characters/lunaris-reliquary/archive_caster_chibi_sheet.png) |
 
-The sheets preserve the approved loading/title identities while expanding hidden costume and weapon construction for future portraits, animated sprite references, UI art, and gameplay readability. Personal names remain intentionally unassigned until narrative naming is approved.
+The sheets preserve the approved loading and title identities while expanding hidden costume and weapon construction for future portraits, animated sprite references, UI art, and gameplay readability. Personal names remain intentionally unassigned until narrative naming is approved.
+
+## Historical concept archive
+
+The original directional explorations remain in the repository as `Faction - Solcrest Accord.webp`, `Faction - Vesper Circuit.webp`, `Faction - Lunaris Reliquary.webp`, and `Faction - Crimson Aegis.webp`. For Solcrest, Vesper, and Crimson, the new `- Redesign.png` files supersede the original exploration as the forward-looking concept direction. Lunaris continues to use its locked original ensemble and production references.

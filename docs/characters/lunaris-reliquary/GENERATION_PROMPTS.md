@@ -1,6 +1,6 @@
 # Lunaris Reliquary Character-Sheet Generation Record
 
-The six sheets in this directory were generated with **GPT Image 2** at high quality in a vertical 3:4 format. They preserve the launch ensemble in `../../Faction - Lunaris Reliquary - Refined.png` and `../../animations/lunaris-reliquary/lunaris-title-keyframe.png`, and follow [`../../ART_DIRECTION.md`](../../ART_DIRECTION.md) plus [`../../LUNARIS_CHARACTER_DESIGNS.md`](../../LUNARIS_CHARACTER_DESIGNS.md).
+The six sheets in this directory were generated with **GPT Image 2** at high quality in a vertical 3:4 format. They preserve the locked launch ensemble represented by `../../../assets/loading/lunaris_reliquary_loading.png`, `../../Faction - Lunaris Reliquary.webp`, and `../../animations/lunaris-reliquary/lunaris-title-keyframe.png`, and follow [`../../ART_DIRECTION.md`](../../ART_DIRECTION.md) plus [`../../LUNARIS_CHARACTER_DESIGNS.md`](../../LUNARIS_CHARACTER_DESIGNS.md).
 
 ## Shared full-figure prompt contract
 
