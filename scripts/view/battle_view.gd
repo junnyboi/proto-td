@@ -105,19 +105,25 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	var stage := Game.pending_stage
-	if stage == null:
+	var source_stage := Game.pending_stage
+	if source_stage == null:
 		push_error("battle_view: no pending stage")
 		return
-	# Required world presentation is preflighted before any catalog or model load.
-	# Keep this explicit preload-backed call: stale global-class registries must not
-	# be able to bypass Act II activation.
-	var theme_result: Dictionary = theme_resolver.call(stage)
+	# Required world presentation is preflighted against the authored landscape
+	# resource before the portrait copy rotates cell-indexed presentation metadata.
+	var theme_result: Dictionary = theme_resolver.call(source_stage)
 	var theme_error := String(theme_result["error"])
 	if not theme_error.is_empty():
 		push_error("battle_view: stage art preflight failed: %s" % theme_error)
 		return
 	_stage_theme = theme_result["theme"] as Resource
+	var viewport_size := get_viewport_rect().size
+	var portrait_mode := viewport_size.y > viewport_size.x
+	var stage := source_stage.copy_for_viewport(viewport_size)
+	if portrait_mode and _stage_theme != null:
+		_stage_theme = (_stage_theme as StageArtTheme).clockwise_rotated_copy(
+			source_stage.grid_size()
+		)
 	var config := load("res://data/config/game.tres") as GameConfig
 	var defs := _load_enemy_defs(stage)
 	_enemy_defs = defs

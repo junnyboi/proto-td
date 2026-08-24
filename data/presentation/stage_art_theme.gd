@@ -29,26 +29,26 @@ const TOPOLOGY := {
 	&"s1":
 	{
 		"size": Vector2i(8, 5),
-		"elevated": [Vector2i(3, 1), Vector2i(3, 3)],
-		"blocked": [Vector2i(0, 0), Vector2i(7, 0), Vector2i(0, 4), Vector2i(7, 4)],
-		"spawn": Vector2i(0, 2),
-		"core": Vector2i(7, 2)
+		"elevated": [],
+		"blocked": [Vector2i(2, 2), Vector2i(4, 2)],
+		"spawn": Vector2i(0, 1),
+		"core": Vector2i(7, 3)
 	},
 	&"s2":
 	{
 		"size": Vector2i(10, 5),
-		"elevated": [Vector2i(3, 1), Vector2i(3, 3)],
-		"blocked": [Vector2i(0, 0), Vector2i(9, 0), Vector2i(0, 4), Vector2i(9, 4)],
-		"spawn": Vector2i(0, 2),
-		"core": Vector2i(9, 2)
+		"elevated": [Vector2i(2, 0), Vector2i(6, 2)],
+		"blocked": [Vector2i(3, 2), Vector2i(5, 2)],
+		"spawn": Vector2i(0, 1),
+		"core": Vector2i(9, 3)
 	},
 	&"s3":
 	{
 		"size": Vector2i(10, 6),
-		"elevated": [Vector2i(2, 3)],
-		"blocked": [Vector2i(0, 0), Vector2i(9, 0), Vector2i(5, 2), Vector2i(5, 3)],
-		"spawn": Vector2i(0, 2),
-		"core": Vector2i(9, 4)
+		"elevated": [Vector2i(5, 2)],
+		"blocked": [Vector2i(2, 2), Vector2i(4, 2), Vector2i(2, 4), Vector2i(4, 4)],
+		"spawn": Vector2i(0, 1),
+		"core": Vector2i(9, 3)
 	},
 }
 
@@ -117,6 +117,25 @@ static func load_for(stage: StageDef) -> StageArtTheme:
 
 func applies_to(stage: StageDef) -> bool:
 	return stage != null and stage.id == stage_id
+
+
+## BattleView validates the authored landscape theme first, then rotates this
+## presentation copy with the same source dimensions as the portrait stage.
+func clockwise_rotated_copy(source_size: Vector2i) -> StageArtTheme:
+	var rotated := duplicate(true) as StageArtTheme
+	rotated.elevated_cells = _rotated_cells(elevated_cells, source_size)
+	rotated.blocked_cells = _rotated_cells(blocked_cells, source_size)
+	rotated.env_prop_cells = _rotated_cells(env_prop_cells, source_size)
+	rotated.spawn_cell = StageDef.rotate_cell_clockwise(spawn_cell, source_size)
+	rotated.core_cell = StageDef.rotate_cell_clockwise(core_cell, source_size)
+	return rotated
+
+
+static func _rotated_cells(cells: Array[Vector2i], source_size: Vector2i) -> Array[Vector2i]:
+	var rotated: Array[Vector2i] = []
+	for cell: Vector2i in cells:
+		rotated.append(StageDef.rotate_cell_clockwise(cell, source_size))
+	return rotated
 
 
 func tile_id(tile: StageDef.Tile, is_route: bool) -> StringName:
@@ -203,7 +222,10 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 			errors.append("blocked variant is not the shared blocked role: %s" % id)
 	if not TOPOLOGY.has(stage_id):
 		return errors
-	var expected: Dictionary = TOPOLOGY[stage_id]
+	var expected := _expected_topology(stage)
+	if expected.is_empty():
+		errors.append("stage grid size matches neither landscape nor portrait topology")
+		return errors
 	if elevated_cells != Array(expected["elevated"]):
 		errors.append("elevated cells do not match the expected topology")
 	if blocked_cells != Array(expected["blocked"]):
@@ -226,3 +248,25 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 			if stage.tile_at(cell) != StageDef.Tile.BLOCKED:
 				errors.append("expected blocked cell is not BLOCKED: %s" % cell)
 	return errors
+
+
+func _expected_topology(stage: StageDef) -> Dictionary:
+	var authored: Dictionary = TOPOLOGY[stage_id]
+	if stage == null or stage.grid_size() == authored["size"]:
+		return authored
+	var source_size: Vector2i = authored["size"]
+	if stage.grid_size() != Vector2i(source_size.y, source_size.x):
+		return {}
+	var rotated_elevated: Array[Vector2i] = []
+	for cell: Vector2i in authored["elevated"]:
+		rotated_elevated.append(StageDef.rotate_cell_clockwise(cell, source_size))
+	var rotated_blocked: Array[Vector2i] = []
+	for cell: Vector2i in authored["blocked"]:
+		rotated_blocked.append(StageDef.rotate_cell_clockwise(cell, source_size))
+	return {
+		"size": Vector2i(source_size.y, source_size.x),
+		"elevated": rotated_elevated,
+		"blocked": rotated_blocked,
+		"spawn": StageDef.rotate_cell_clockwise(authored["spawn"], source_size),
+		"core": StageDef.rotate_cell_clockwise(authored["core"], source_size),
+	}

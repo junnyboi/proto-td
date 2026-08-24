@@ -6,20 +6,20 @@
 script = ExtResource("1")
 id = &"s1"
 title = "First Stand"
-grid_rows = PackedStringArray("XGGGGGGX", "GGGEGGGG", "SGGGGGGB", "GGGEGGGG", "XGGGGGGX")
-paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2)])
+grid_rows = PackedStringArray("........", "SGGG....", "..XGX...", "...GGGGB", "........")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 3, 2, 3, 3, 4, 3, 5, 3, 6, 3, 7, 3)])
 waves = Array[Dictionary]([{
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 60
+"tick": 90
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 180
+"tick": 240
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 300
+"tick": 390
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
@@ -27,13 +27,13 @@ waves = Array[Dictionary]([{
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 540
+"tick": 570
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 660
+"tick": 600
 }])
-wave_starts = PackedInt32Array(0, 360)
+wave_starts = PackedInt32Array(0, 330)
 music_act = 1
 music_boss_wave_index = -1
 leak_limit = 3
@@ -45,4 +45,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 1
 requires = Array[StringName]([])
-intro_hint = "Deploy on the path and block. Two melee fighters hold a lane."
+intro_hint = "Open with the Shock Trooper, then reinforce after the bend before the paired push arrives."

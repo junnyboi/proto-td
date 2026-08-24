@@ -5,10 +5,6 @@ extends RefCounted
 ## and mouse/trackpad gesture interpretation; it never reads or writes the model.
 
 const WHEEL_STEP_PX := 96.0
-const SHARED_ACT1_FIT_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
-const SHARED_ACT1_PANORAMA_SIZE := Vector2(512.0, 256.0)
-const SAFE_MARGIN_X := 16.0
-const SAFE_TOP := 104.0
 
 var scale := 1.0
 var origin := Vector2.ZERO
@@ -24,26 +20,24 @@ var _initialized := false
 func relayout(stage: StageDef, viewport: Vector2) -> void:
 	_stage = stage
 	_viewport = viewport
-	_safe_rect = (
-		_shared_act1_safe_rect(viewport) if stage.id in SHARED_ACT1_FIT_STAGE_IDS else Rect2()
+	_safe_rect = Rect2()
+	var portrait_mode := viewport.y > viewport.x
+	scale = (
+		IsoProjection.fit_scale(stage.grid_size(), viewport)
+		if portrait_mode
+		else IsoProjection.height_fill_scale(stage, viewport)
 	)
-	if not _safe_rect.has_area():
-		scale = (
-			IsoProjection.fit_scale(stage.grid_size(), viewport)
-			if viewport.x < viewport.y
-			else IsoProjection.height_fill_scale(stage, viewport)
-		)
-		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
-		bounds = IsoProjection.pan_bounds(stage, viewport, scale)
-	else:
-		var content := shared_act1_content_box(stage)
-		scale = shared_act1_fit_scale(stage, _safe_rect.size)
-		origin = _safe_rect.get_center() - content.get_center() * scale
-		bounds = _safe_pan_bounds(content)
+	origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
+	bounds = IsoProjection.pan_bounds(stage, viewport, scale)
 	if not _initialized:
-		# TD stages terminate at the base on the right: boot with that critical
-		# edge visible, while Y stays centered until the player scrolls.
-		pan = Vector2(bounds.position.x, 0.0)
+		# Landscape-authored stages terminate on the right. Their portrait copy is
+		# rotated clockwise, so the same critical base edge terminates at the bottom.
+		pan = (
+			Vector2(0.0, bounds.position.y)
+			if portrait_mode
+			else Vector2(bounds.position.x, 0.0)
+		)
+		pan = IsoProjection.clamp_pan(pan, bounds)
 		_initialized = true
 	else:
 		pan = IsoProjection.clamp_pan(pan, bounds)
@@ -54,11 +48,7 @@ func root_position() -> Vector2:
 
 
 func content_screen_rect() -> Rect2:
-	var content := (
-		shared_act1_content_box(_stage)
-		if _stage.id in SHARED_ACT1_FIT_STAGE_IDS
-		else IsoProjection.content_box(_stage.grid_size())
-	)
+	var content := IsoProjection.content_box(_stage.grid_size())
 	return Rect2(origin + pan + content.position * scale, content.size * scale)
 
 
@@ -92,40 +82,6 @@ func ensure_local_rect_visible(local_rect: Rect2) -> bool:
 	var changed := not next_pan.is_equal_approx(pan)
 	pan = next_pan
 	return changed
-
-
-static func shared_act1_content_box(stage: StageDef) -> Rect2:
-	var content := IsoProjection.terrain_box(stage)
-	var center := IsoProjection.project(Vector2(stage.grid_size()) * 0.5)
-	var panorama := Rect2(center - SHARED_ACT1_PANORAMA_SIZE * 0.5, SHARED_ACT1_PANORAMA_SIZE)
-	return content.merge(panorama)
-
-
-static func shared_act1_fit_scale(stage: StageDef, available: Vector2) -> float:
-	var content := shared_act1_content_box(stage)
-	var candidate := minf(available.x / content.size.x, available.y / content.size.y)
-	return clampf(floorf(candidate * 4.0) * 0.25, 1.0, 3.0)
-
-
-func _shared_act1_safe_rect(viewport: Vector2) -> Rect2:
-	var bottom := 374.0 if viewport.x < viewport.y else (218.0 if viewport.x < 1200.0 else 154.0)
-	return Rect2(
-		Vector2(SAFE_MARGIN_X, SAFE_TOP),
-		Vector2(viewport.x - SAFE_MARGIN_X * 2.0, viewport.y - SAFE_TOP - bottom),
-	)
-
-
-func _safe_pan_bounds(content: Rect2) -> Rect2:
-	var screen := Rect2(origin + content.position * scale, content.size * scale)
-	var min_pan := Vector2.ZERO
-	var max_pan := Vector2.ZERO
-	if screen.size.x > _safe_rect.size.x:
-		min_pan.x = _safe_rect.end.x - screen.end.x
-		max_pan.x = _safe_rect.position.x - screen.position.x
-	if screen.size.y > _safe_rect.size.y:
-		min_pan.y = _safe_rect.end.y - screen.end.y
-		max_pan.y = _safe_rect.position.y - screen.position.y
-	return Rect2(min_pan, max_pan - min_pan)
 
 
 func recover_missed_release(event: InputEvent) -> void:

@@ -26,3 +26,9 @@ The deterministic `test/agent4_isometric_renderer_smoke.gd` check loads every st
 ## Elevated placement visual check
 
 The corrected S1 and S4 gameplay captures verify the rule at both compact and large map sizes: every `ELEVATED` platform is a clean, textured raised face with no decorative object occupying its placement footprint. Source obstacle sprites remain restricted to `BLOCKED` cells, so ranged and special towers can be placed without visual overlap.
+
+## Landscape and portrait maps
+
+Campaign resources are authored in landscape orientation. At battle startup, portrait viewports receive a 90-degree clockwise `StageDef` copy; the simulation, renderer, deployment domains, picking, and navigation all consume that same transformed resource. S1–S3 landmark themes rotate their cell-indexed metadata with the stage after the landscape resource passes normal preflight. Orientation remains fixed during a battle, while viewport resizing continues to refit the active map.
+
+The eight redesigned stage contracts are documented in `docs/LEVEL_DESIGNS.md`. `test/stage_redesign_smoke.gd` validates their tactical topology and wave invariants, while `test/stage_orientation_smoke.gd` validates transform fidelity in portrait mode.

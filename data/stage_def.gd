@@ -50,6 +50,40 @@ func grid_size() -> Vector2i:
 	return Vector2i(grid_rows[0].length(), grid_rows.size())
 
 
+## Portrait battles snapshot one clockwise-rotated stage copy at startup. The
+## source resource remains the landscape authoring contract; all non-spatial
+## metadata (waves, unlocks, music, roster, rewards) is preserved by duplicate.
+func copy_for_viewport(viewport_size: Vector2) -> StageDef:
+	return clockwise_rotated_copy() if viewport_size.y > viewport_size.x else self
+
+
+func clockwise_rotated_copy() -> StageDef:
+	var source_size := grid_size()
+	var rotated := duplicate(true) as StageDef
+	if source_size == Vector2i.ZERO:
+		return rotated
+	var rotated_rows := PackedStringArray()
+	for destination_y: int in source_size.x:
+		var row := ""
+		for destination_x: int in source_size.y:
+			var source_cell := Vector2i(destination_y, source_size.y - 1 - destination_x)
+			row += grid_rows[source_cell.y][source_cell.x]
+		rotated_rows.append(row)
+	rotated.grid_rows = rotated_rows
+	var rotated_paths: Array[PackedVector2Array] = []
+	for source_path: PackedVector2Array in paths:
+		var rotated_path := PackedVector2Array()
+		for point: Vector2 in source_path:
+			rotated_path.append(Vector2(rotate_cell_clockwise(Vector2i(point), source_size)))
+		rotated_paths.append(rotated_path)
+	rotated.paths = rotated_paths
+	return rotated
+
+
+static func rotate_cell_clockwise(cell: Vector2i, source_size: Vector2i) -> Vector2i:
+	return Vector2i(source_size.y - 1 - cell.y, cell.x)
+
+
 func tile_at(cell: Vector2i) -> Tile:
 	if cell.y < 0 or cell.y >= grid_rows.size():
 		return Tile.VOID
