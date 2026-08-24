@@ -3,18 +3,15 @@ extends Button
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 
-const GOLD := Color("d8b978")
-const MOON_CYAN := Color("86cbd4")
-const IVORY := Color("eee8dc")
-const MUTED := Color("93a4ad")
-const VOID := Color("071019")
-const PANEL := Color(0.018, 0.043, 0.065, 0.94)
-const PANEL_HOVER := Color(0.035, 0.082, 0.11, 0.97)
+const GOLD := Color("d9b96e")
+const IVORY := Color("f5efe1")
+const MUTED := Color("8d9aa3")
 
-var _glyph: StagingGlyphType
+var _glyph: TextureRect
 var _title_label: Label
-var _status_indicator: ColorRect
+var _status_indicator: TextureRect
 
 
 func _init() -> void:
@@ -38,18 +35,23 @@ func configure(
 	mouse_default_cursor_shape = (
 		Control.CURSOR_POINTING_HAND if enabled else Control.CURSOR_ARROW
 	)
-	_glyph.kind = glyph_kind
-	_glyph.line_color = GOLD if enabled else MUTED
+	_glyph.texture = StagingSkinType.icon_for_glyph(glyph_kind)
+	_glyph.modulate = Color.WHITE if enabled else Color(0.58, 0.60, 0.62, 0.74)
 	_title_label.text = title_text.to_upper()
-	_title_label.add_theme_color_override(&"font_color", IVORY if enabled else MUTED)
-	_status_indicator.color = MOON_CYAN if enabled else Color(MUTED, 0.34)
+	_title_label.add_theme_color_override(&"font_color", GOLD if enabled else MUTED)
+	_status_indicator.modulate = Color.WHITE if enabled else Color(0.46, 0.54, 0.58, 0.44)
 	_apply_styles()
 
 
 func set_compact(compact: bool) -> void:
 	custom_minimum_size.y = 60.0 if compact else 68.0
-	_title_label.add_theme_font_size_override(
-		&"font_size", GameTypographyType.DETAIL if compact else GameTypographyType.BODY,
+	_glyph.custom_minimum_size = Vector2(38.0, 38.0) if compact else Vector2(44.0, 44.0)
+	_status_indicator.custom_minimum_size = Vector2(15.0, 15.0) if compact else Vector2(18.0, 18.0)
+	StagingSkinType.apply_display_type(
+		_title_label,
+		GameTypographyType.DETAIL if compact else GameTypographyType.BODY,
+		MUTED if disabled else GOLD,
+		540,
 	)
 
 
@@ -65,10 +67,10 @@ func _build_content() -> void:
 	margin.name = "TileMargin"
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_theme_constant_override(&"margin_left", 16)
-	margin.add_theme_constant_override(&"margin_top", 10)
-	margin.add_theme_constant_override(&"margin_right", 14)
-	margin.add_theme_constant_override(&"margin_bottom", 10)
+	margin.add_theme_constant_override(&"margin_left", 18)
+	margin.add_theme_constant_override(&"margin_top", 8)
+	margin.add_theme_constant_override(&"margin_right", 16)
+	margin.add_theme_constant_override(&"margin_bottom", 8)
 	add_child(margin)
 
 	var row := HBoxContainer.new()
@@ -77,32 +79,30 @@ func _build_content() -> void:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(row)
 
-	_glyph = StagingGlyphType.new()
+	_glyph = TextureRect.new()
 	_glyph.name = "Glyph"
-	_glyph.custom_minimum_size = Vector2(34.0, 34.0)
+	_glyph.custom_minimum_size = Vector2(44.0, 44.0)
+	_glyph.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(_glyph)
-
-	var rule := ColorRect.new()
-	rule.name = "Rule"
-	rule.custom_minimum_size = Vector2(1.0, 26.0)
-	rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	rule.color = Color(GOLD, 0.34)
-	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(rule)
 
 	_title_label = Label.new()
 	_title_label.name = "Title"
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	_title_label.add_theme_font_size_override(&"font_size", GameTypographyType.BODY)
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	StagingSkinType.apply_display_type(_title_label, GameTypographyType.BODY, GOLD, 540)
 	row.add_child(_title_label)
 
-	_status_indicator = ColorRect.new()
+	_status_indicator = TextureRect.new()
 	_status_indicator.name = "StatusIndicator"
-	_status_indicator.custom_minimum_size = Vector2(8.0, 8.0)
+	_status_indicator.custom_minimum_size = Vector2(18.0, 18.0)
+	_status_indicator.texture = StagingSkinType.STATUS_DIAMOND
+	_status_indicator.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_status_indicator.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_status_indicator.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_status_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(_status_indicator)
@@ -110,22 +110,11 @@ func _build_content() -> void:
 
 func _apply_styles() -> void:
 	if disabled:
-		add_theme_stylebox_override(&"normal", _style(Color(PANEL, 0.58), Color(MUTED, 0.32), 1))
-		add_theme_stylebox_override(&"disabled", _style(Color(PANEL, 0.58), Color(MUTED, 0.32), 1))
+		var disabled_tint := Color(0.56, 0.58, 0.60, 0.78)
+		add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style(disabled_tint))
+		add_theme_stylebox_override(&"disabled", StagingSkinType.operation_tile_style(disabled_tint))
 	else:
-		add_theme_stylebox_override(&"normal", _style(PANEL, Color(GOLD, 0.42), 1))
-		add_theme_stylebox_override(&"hover", _style(PANEL_HOVER, MOON_CYAN, 1))
-		add_theme_stylebox_override(&"pressed", _style(Color("143343"), GOLD, 2))
-	add_theme_stylebox_override(&"focus", _style(Color(MOON_CYAN, 0.08), GOLD, 2))
-
-
-func _style(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(3)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.34)
-	style.shadow_size = 4
-	style.shadow_offset = Vector2(0.0, 2.0)
-	return style
+		add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style())
+		add_theme_stylebox_override(&"hover", StagingSkinType.operation_tile_style(Color(1.0, 1.03, 1.08, 1.0)))
+		add_theme_stylebox_override(&"pressed", StagingSkinType.operation_tile_style(Color(0.76, 0.84, 0.88, 1.0)))
+	add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(GOLD))
