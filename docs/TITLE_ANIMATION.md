@@ -5,7 +5,7 @@
 | Dimension | Specification |
 |---|---|
 | Purpose | A seamless premium title-loop that extends the loading-screen world into the playable title screen and reinforces high-rarity gacha character appeal. |
-| Duration and format | 4.0 seconds, seamless loop, 16:9, silent. Source MP4, optimized 12 fps GIF, and a Godot-compatible frame sequence derived from the same loop. |
+| Duration and format | 8.0 seconds, continuous forward seamless loop, 1920×1080, 16:9, silent. High-bitrate MP4 master, optimized 12 fps GIF, and a full-1080p Godot Ogg Theora runtime derivative. |
 | Rendering | Original polished anime tactical-fantasy illustration with crisp mature faces, painterly atmosphere, couture fabric, ivory sacred machinery, and fine gold/cyan effects. |
 | Color and light | Moon-cyan volumetric energy, ivory ceramic, violet-black shadows, restrained brushed gold, and warm skin highlights against a deep mineral-blue city. |
 | Camera | Locked heroic wide shot. No zoom, pan, reframing, parallax lurch, or shake. The first and last frame should align visually. |
@@ -22,14 +22,18 @@ The central **Lunaris vessel** is the same clearly adult champagne-blond heroine
 | Narrative purpose | Establish the faction’s premium aura and provide continuous ambient motion behind the title controls. |
 | Pacing | Slow, restrained, hypnotic. |
 | Scene | Moon-powered reliquary city with a colossal ivory ring, suspended towers, distant drones, cyan energy seams, and delicate constellation geometry. |
-| Content action | Hair tips and loose fabric drift in one gentle cycle; gold/cyan aura pulses once; constellation rings rotate a few degrees and return to loop alignment; distant structures hover by only a few pixels. |
-| Transition description | All three clearly adult characters, their costumes, weapons, faces, hands, and exact positions are present from the first frame and remain continuously visible. The heroine’s loose hair and cape edges lift slowly as if moved by low lunar gravity, the duelist’s ponytail and the caster’s translucent panels follow with smaller delayed motion, then all settle back into the starting silhouettes by the final frame. Moon-cyan aura gently brightens around the central reliquary and along gold mechanisms while thin constellation arcs rotate slowly behind the trio; distant drones and towers hover subtly without entering or leaving the shot. The camera stays perfectly locked, no character speaks or changes expression, and the final visual state matches the first for a seamless loop. |
+| Content action | Hair tips and loose fabric complete one forward low-gravity wave cycle; gold/cyan aura completes two breathing pulses; constellation rings rotate continuously through whole-circle cycles; distant structures follow small closed hover paths. |
+| Transition description | All three clearly adult characters, their costumes, weapons, faces, hands, and exact positions are present from the first frame and remain continuously visible. The heroine’s loose hair and cape edges travel through one smooth low-gravity wave while the duelist’s ponytail and caster’s translucent panels follow with restrained delayed motion; nothing reverses like rewound footage, and each material returns naturally to its opening phase by the final frame. Moon-cyan aura completes two soft breathing pulses while thin constellation mechanisms rotate continuously forward through full cycles; distant drones and towers follow small closed hover paths without entering or leaving the shot. The camera stays perfectly locked, no character speaks or changes expression, and the eighth-second visual state matches the first for immediate seamless repetition. |
 | First keyframe | Approved Lunaris artwork composition, regenerated only as a motion-ready identity-preserving reference. |
 | Sound | None. No background music. |
 
 ## Implementation note
 
-The GIF is the requested archival and browser-compatible animation. Godot does not use an animated GIF decoder for this runtime path, so the title scene plays an Ogg Theora stream encoded from the same deterministic ping-pong master. This preserves the requested motion and appearance while keeping native and Web exports efficient.
+The GIF remains the archival and browser-compatible animation. Godot does not use an animated GIF decoder for this runtime path, so the title scene plays a 1920×1080 Ogg Theora stream encoded directly from the continuous forward Veo master. No frames are reversed and no ping-pong construction remains.
+
+## Continuous 1080p replacement
+
+The replacement uses identical loop-locked opening and closing keyframes with an eight-second Veo 3.1 Fast generation. The selected source reports 1920×1080, 24 fps, exactly 8.0 seconds, and approximately 20.2 Mbps. A forward-only 0.6-second closing cross-dissolve into the opening keyframe improves the first/last PSNR from 16.31 dB to 33.63 dB while the first/mid-cycle PSNR remains 12.97 dB, proving the seam is substantially closer than the visible internal motion without introducing reversed frames. The final production master reports approximately 30.96 Mbps; the runtime Theora derivative retains 1920×1080, 24 fps, and exactly 8.0 seconds. The updated GIF is 960×540 at 12 fps for a sharper archival preview. Detailed motion and seam requirements are preserved in `docs/animations/lunaris-reliquary/CONTINUOUS_1080P_PLAN.md`.
 
 ## Native visual verification
 
@@ -60,3 +64,13 @@ The title now applies local font and minimum-size overrides without altering the
 The final 74,800,752-byte managed PCK repeats the unified loader-to-title flow successfully in Chromium. The title-specific locale override is present in the Web export: Language, EN, and 中文 are readable, the selector remains fully contained, the cyan Start action remains dominant, and the adult character animation continues behind fixed controls.
 
 The final browser console remains empty, and pressing **Enter** again replaces the animated title with the synchronized Company Command screen. Final Web runtime, decoder shutdown, focus, and scene-transition checks pass.
+
+## Native 1080p continuous-loop verification
+
+Godot `4.7.2.stable.official.ed1daf0bf` imports and bounded-boots the replacement cleanly. A native 1920×1080 Xvfb pass produces two full-resolution title captures four seconds apart with different hashes. Both frames retain crisp eyes, hair strands, couture seams, gold mechanisms, constellation linework, moon-city architecture, fixed UI placement, and stable clearly adult character identities; the halo, hair, fabric, aura, and hovering background states advance visibly rather than reversing. Native 1080p playback and presentation pass.
+
+The refreshed WebDev host downloads the new 120,728,848-byte managed PCK through the unified Lunaris loader and reaches the title successfully. The Web canvas shows materially sharper facial, hair, fabric, halo, and city detail than the retired 720p stream while preserving fixed controls and stable identities. The displayed state several seconds after handoff differs visibly from the opening state, confirming active forward playback in the browser.
+
+Two later Web observations show distinct forward halo alignments, aura phases, hair silhouettes, and hover states while the characters and title controls remain fixed. The sequence continues across multiple eight-second cycles without the previous visible play-then-rewind behavior, freezing, or identity drift. Continuous Web looping passes.
+
+The browser console remains empty after multiple 1080p cycles. Pressing **Enter** replaces the title with the synchronized premium Company Command screen, confirming the larger Theora decoder shuts down cleanly and the Start flow remains intact.
