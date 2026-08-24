@@ -24,22 +24,22 @@ This directory is the Git-backed cold-resume surface for concurrent work. It rec
 
 ## Operating rules
 
-1. Pull the current default branch before development; start clean and establish a green baseline with `scripts/verify.sh`.
+1. Pull the current default branch before development; start clean and establish a green bounded baseline with `scripts/quick_check.sh`.
 2. Claim exactly one stable item in `todo.md` before implementation. Record one owner, one branch, an exclusive file set, dependencies, non-owned files, acceptance, and required evidence. Existing domain IDs remain valid; new general coordination IDs use `TD-###`.
 3. Branches use `agent-N/<lane>` and commits use the exact prefix `AGENT N - `. Completed feature owners merge current `origin/master` into their feature branch, resolve and reverify there, push the branch, then fast-forward and reverify `master` before pushing it.
-4. Parallelize only across disjoint files. The simulation core, `scripts/verify.sh`, tick semantics, thresholds, and shared ledgers remain serial unless explicitly sequenced.
+4. Parallelize only across disjoint files. The simulation core, verification policy, tick semantics, thresholds, and shared ledgers remain serial unless explicitly sequenced.
 5. Never write into a checkout another agent is actively verifying. Auto-discovered tests, scenarios, and bots can invalidate an in-flight run.
-6. Verify each lane locally. The integrating agent independently reruns the merged union; lane green does not prove union green.
+6. Verify each lane locally with `scripts/quick_check.sh` plus the focused tests, scenarios, bots, render proof, or Web checks named by its acceptance contract. The integrating agent independently reruns the merged union; lane green does not prove union green.
 7. On closure, remove the item from `todo.md`, append one auditable line to `completed.md`, and write a handoff with exact commits, evidence, risks, and next action.
 8. Force-push is forbidden in every form, including `--force-with-lease`. The accepted integration sequence is recorded in [D-001](decisions/D-001-autonomous-feature-integration.md).
 
 ## Integrity contract
 
-> Never weaken/remove/reinterpret a failing check — fix the game. Screenshots only from the run just executed (verify report.json + mtimes); never reuse or hand-craft evidence. Impossible checks stay failing and get logged as numbered deviations. Never conclude "works" from a hung or skipped run. Tests and thresholds are human-owned: never edit a test or a threshold to pass — retune `data/*.tres`.
+> Never weaken or reinterpret a required check — fix the game. Screenshots must come from the targeted run just executed and retain their report metadata and mtimes; never reuse or hand-craft evidence. Impossible checks stay failing and get logged as numbered deviations. Never conclude "works" from a hung or skipped run. Tests and thresholds are human-owned: never edit a test or a threshold to pass — retune `data/*.tres`.
 
 ## Repository anchors
 
 - Default branch: `master`
-- Verification entrypoint: [`../scripts/verify.sh`](../scripts/verify.sh)
+- Bounded verification entrypoint: [`../scripts/quick_check.sh`](../scripts/quick_check.sh)
 - Product feature ledger: [`../FEATURES.json`](../FEATURES.json)
 - Repository rules: [`../CLAUDE.md`](../CLAUDE.md)

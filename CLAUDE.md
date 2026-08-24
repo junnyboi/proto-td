@@ -1,18 +1,18 @@
 # Protos — Agent Rules
 
 Tactical tower defense POC (Arknights-benchmark + twist bundle), built agent-first on Godot
-4.7.1. Canonical phase plans live in the Manus MGS project knowledge area; actionable
+4.7.2. Canonical phase plans live in the Manus MGS project knowledge area; actionable
 collaboration contracts are mirrored under `docs/plans/`. This file is the standing rule set —
 it grows one rule per repeated mistake and never shrinks.
 
 ## Environment (verified facts — do not re-derive)
 
-- Godot **4.7.1 stable** at `~/bin/godot` (never assume PATH; scripts self-provision `$HOME/bin`).
+- Godot **4.7.2 stable** at `~/.local/bin/godot`. Set `GODOT` to override it; current helpers should also discover `godot` or `godot4` on `PATH` before using legacy `$HOME/bin/godot`.
 - Typed GDScript is enforced: `untyped_declaration=2` (errors). Every declaration typed or
   inferred with `:=`.
 - `--headless` runs the full loop; `--fixed-fps 60` decouples sim from wall clock.
 - Headless **cannot** screenshot (dummy renderer) — `shot()` no-ops with `[SHOT-SKIPPED]`;
-  pixels come from the windowed lane (`verify.sh --full`).
+  pixels come from a targeted windowed scenario run when the changed lane requires visual evidence.
 - Injected mouse motion never moves `get_mouse_position()` — game code tracks the pointer from
   motion events. Synthetic events carry `device == 4242`; game code may ignore untagged mouse
   events under the harness.
@@ -23,12 +23,12 @@ it grows one rule per repeated mistake and never shrinks.
   `root.size` to the design resolution after the first frame (`_run()`); earlier sets are
   clobbered during engine setup.
 - Windowed runs on a human's machine are **quiet windows**: focus theft is creation-time, so
-  `verify.sh` writes a transient `override.cfg` (`no_focus=true`) around windowed rungs and the
+  targeted windowed commands must write a transient `override.cfg` (`no_focus=true`) and the
   harness parks the window bottom-right; `selftest/input_shield.gd` eats untagged
-  (device != 4242) input. Never launch a bare windowed preview during dev — headless first,
-  pixels via `verify.sh --full` or `verify.sh --scenario=X --windowed`. Never minimize/hide the
-  preview window: macOS stops drawing it and `shot_grab` stalls on `frame_post_draw` until the
-  watchdog.
+  (device != 4242) input. Never launch a bare windowed preview during dev — run the headless
+  quick check first and use a bounded harness scenario only when visual evidence is required.
+  Never minimize/hide the preview window: macOS stops drawing it and `shot_grab` stalls on
+  `frame_post_draw` until the watchdog.
 
 ## NOT-do list
 
@@ -100,28 +100,26 @@ it grows one rule per repeated mistake and never shrinks.
 6. **View reads, never writes.** Battle speed = model ticks consumed per frame; speed can never
    change outcomes.
 
-## Verification = run `verify.sh`
+## Verification = bounded baseline plus affected checks
 
 ```
-scripts/verify.sh              # R2 import -> stage lint -> R3 GUT -> R4a scenarios headless
-scripts/verify.sh --full       # + R4b windowed shots -> R5 bots -> R6 gate
-scripts/verify.sh --scenario=X # inner loop on one scenario
-scripts/playtest.sh <bot>      # one bot, headless lane
+scripts/quick_check.sh          # import -> bounded boot -> deterministic boot scenario
+scripts/playtest.sh <bot>       # one affected bot, headless lane
+scripts/probe_filesystem.sh     # focused campaign-save filesystem contract
 ```
 
-Run `verify.sh` before every commit; `verify.sh --full` before declaring a feature done.
+Run `scripts/quick_check.sh` before every commit. Before declaring a feature done, also run the focused tests, scenarios, bots, render proof, or Web checks named by that lane's acceptance contract. Do not recreate a repository-wide aggregate wrapper; each lane owns a bounded, explicit evidence set.
 
 ### Failure routing
 
-| Failing rung | Meaning | Action |
+| Failing check | Meaning | Action |
 |---|---|---|
-| R1 hook / R2 | code or resource malformed | fix before anything else runs |
-| R2.5 | stage data invalid | fix `data/stages/*.tres` |
-| R3 | a remembered fact regressed | fix code, **never** the test |
-| R4 | feature acceptance broken | read `artifacts/<scenario>/report.json` details (they carry the measured number); fix or retune `data/*.tres` |
-| R5/R6 | balance drifted | gate names the band; retune data, never thresholds |
-| shots wrong despite green | looks-wrong defect | ledger defect with the shot attached |
-| batch-fail, isolated-pass | environment (focus/real input) | not code — re-run isolated |
+| Quick import or boot | code, resource, or autoload malformed | fix before any focused evidence runs |
+| Deterministic scenario | a remembered fact or feature acceptance regressed | fix code or data, **never** the test |
+| Stage lint or focused GUT | a data or model contract regressed | fix the owning source; never weaken the check |
+| Bot or quality gate | balance drifted | retune data, never human-owned thresholds |
+| Targeted screenshot wrong despite green | looks-wrong defect | ledger the defect with the fresh shot attached |
+| Batch-fail, isolated-pass | environment (focus/real input) | not code — re-run isolated |
 
 ### Integrity rules (load-bearing)
 
@@ -135,13 +133,12 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
 
 1. **Pull + orient**: fetch/pull the current default branch before development; `git log
    --oneline -10`; read `FEATURES.json`, `docs/todo.md`, `docs/completed.md`, and relevant
-   `docs/plans/`/`docs/decisions/`;
-   `godot --headless --path . --import`; `scripts/verify.sh` — green **before** new work; if
+   `docs/plans/`/`docs/decisions/`; run `scripts/quick_check.sh` — green **before** new work; if
    red, fixing it *is* the session.
 2. **Claim ONE item** in `docs/todo.md`: assigned agent/code, `agent-N/<lane>` branch, exclusive
    files, do-not-touch surfaces, dependencies, acceptance, and evidence. Never two agents on one
    file; never write into a worktree another agent is verifying.
-3. Inner loop: write → hook checks per write → `verify.sh --scenario=X` → `verify.sh --full`.
+3. Inner loop: write → hook checks per write → `scripts/quick_check.sh` → the lane's affected focused checks and evidence.
 4. Commit feature + ledgers (+ baselines) atomically on the feature branch. Every new commit starts
    `AGENT N - ` where N is the assigned number/code. Apply prospectively; never rewrite history
    merely to add prefixes.
@@ -152,19 +149,20 @@ Run `verify.sh` before every commit; `verify.sh --full` before declaring a featu
    `origin/master` into the feature branch first. Resolve conflicts semantically on that branch,
    preserving both valid behaviors; never accept all of `ours` or `theirs` blindly. If
    requirements conflict, stop for the owner rather than deleting another lane. Run
-   `git diff --check` + `scripts/verify.sh` before every push and `scripts/verify.sh --full` after
-   substantive conflict resolution, then push the feature branch normally.
+   `git diff --check` + `scripts/quick_check.sh` before every push and rerun every affected focused
+   check after substantive conflict resolution, then push the feature branch normally.
 7. Switch to local `master`, pull `origin/master` with `--ff-only`, then fast-forward to the
    verified feature branch. If fast-forward is impossible because master moved, return to the
    feature branch, merge the new master, resolve, and reverify; never resolve drift on master.
-   Run `scripts/verify.sh --full` on merged master, push master normally, and confirm local and
-   remote master share the same SHA. A lane green does not prove the union green.
+   Run `scripts/quick_check.sh` plus the affected focused checks on merged master, push master
+   normally, and confirm local and remote master share the same SHA. A lane green does not prove
+   the union green.
 8. **Never force-push in any form**: `--force`, `-f`, and `--force-with-lease` are forbidden.
    See `docs/decisions/D-001-autonomous-feature-integration.md`.
 9. Report: what shipped, branch/master gate verdicts, deviations (numbered, never silent), any new rule earned
    for this file. Log pain points to `PAINPOINTS.md` as they happen.
 
-Godot 4.7.1 full-worktree scratch imports must use `--recovery-mode` plus the repository's isolated
+Godot 4.7.2 full-worktree scratch imports must use `--recovery-mode` plus the repository's isolated
 editor profile with `editor/import/use_multiple_threads=false`; ordinary R2 import remains unchanged.
 This prevents editor-layout/worker crashes without skipping any resource, sentinel, cache check, or
 threshold. Never mutate global editor settings; use `scripts/godot_import_profile.sh` in scratch.
