@@ -163,7 +163,7 @@ func _build_screen() -> void:
 
 	var utility := VBoxContainer.new()
 	utility.name = "UtilityStack"
-	utility.custom_minimum_size = Vector2(270.0, 0.0)
+	utility.custom_minimum_size = Vector2(420.0, 0.0)
 	utility.add_theme_constant_override(&"separation", 5)
 	_action_row.add_child(utility)
 
@@ -178,7 +178,11 @@ func _build_screen() -> void:
 	_locale_selector.locale_selected.connect(_on_locale_selected)
 	utility.add_child(_locale_selector)
 
+	var locale_label := _locale_selector.get_node("LocaleLabel") as Label
+	locale_label.add_theme_font_size_override(&"font_size", 18)
 	var locale_list := _locale_selector.get_node("LocaleList") as ItemList
+	locale_list.custom_minimum_size = Vector2(330.0, 58.0)
+	locale_list.add_theme_font_size_override(&"font_size", 22)
 	_start_button.focus_neighbor_top = _start_button.get_path_to(locale_list)
 	_start_button.focus_previous = _start_button.get_path_to(locale_list)
 	_start_button.focus_neighbor_bottom = _start_button.get_path_to(locale_list)

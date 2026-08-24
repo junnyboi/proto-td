@@ -52,3 +52,11 @@ A later Web title frame shows a different hair silhouette, aura state, constella
 Pressing **Enter** on the focused Web Start control replaces the animated title with Company Command as intended. The console remains empty after the transition, confirming the title video shuts down with the scene and does not leak decoder or runtime errors into the campaign flow.
 
 Final WebDev screenshots show the complete animated title at 1280×720 with the heroine-led ensemble above the faction-branded Start and language controls. At 720×1280, the host correctly preserves the game’s 16:9 canvas with dark letterboxing while the unified loading layout retains its gold header, artwork, wordmark, cyan progress line, percentage, and detail copy without clipping.
+
+After synchronizing with the latest master responsive-typography work, the merged-final 74,800,624-byte pack again passes the unified browser loader and animated title handoff. The merge reduces the locale-selector type and button scale too aggressively on this cinematic title, making the language utility visually weaker than the Start action; this title-specific regression must be corrected before the final checkpoint and Git integration.
+
+The title now applies local font and minimum-size overrides without altering the shared responsive components. A fresh 1280×720 native capture shows a balanced utility column: **Language**, **EN**, and **中文** are readable at a glance, the complete selector remains inside the lower panel, and the Start action retains clear primary dominance. The merged-baseline title layout is accepted.
+
+The final 74,800,752-byte managed PCK repeats the unified loader-to-title flow successfully in Chromium. The title-specific locale override is present in the Web export: Language, EN, and 中文 are readable, the selector remains fully contained, the cyan Start action remains dominant, and the adult character animation continues behind fixed controls.
+
+The final browser console remains empty, and pressing **Enter** again replaces the animated title with the synchronized Company Command screen. Final Web runtime, decoder shutdown, focus, and scene-transition checks pass.
