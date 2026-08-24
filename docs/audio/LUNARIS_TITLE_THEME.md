@@ -38,3 +38,7 @@ Instrumental title music with wordless choir textures and no lyrics or vocal sol
 The generator returned a 58.096-second stereo MP3 source. The production loop rotates past the opening five-second pickup and uses a five-second forward equal-power crossfade back into that pickup, yielding a 52.500-second cycle with no reversed audio, no fade-out, and no terminal cadence. The Godot Ogg Vorbis derivative measures −16.3 LUFS integrated, 9.6 LU loudness range, and −2.1 dBFS true peak at 48 kHz stereo.
 
 The Music autoload remains the sole runtime owner. The title requests cue `title_lunaris`; campaign entry stops or replaces that cue cleanly. Source, lossless production master, checksums, and construction details are archived under `docs/audio/lunaris-title-theme/`.
+
+## Web validation
+
+The merged managed PCK loaded successfully through the fullscreen WebDev host and reached the animated Lunaris title without parser, resource, or startup failure. Browser audio remains subject to the standard user-gesture unlock. A neutral click on the title background unlocked the browser audio context with no AudioContext, decoder, stream, or Music lifecycle console errors. Activating Start then reached Company Command with a clean console, confirming the title cue stops cleanly and does not leak into the staging interface.
