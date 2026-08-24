@@ -1,12 +1,12 @@
 # Faction Redesign Asset Validation
 
-The faction-redesign deliverables were checked as final individual assets rather than contact sheets. The pass confirms the requested model output, required faction coverage, distinct visual direction, adult character presentation, banner palette visibility, symbol consistency, file integrity, and documentation links.
+The approved faction deliverables were checked as final individual assets rather than contact sheets. The pass confirms canonical filename promotion, required faction coverage, distinct visual direction, adult character presentation, banner palette visibility, symbol consistency, file integrity, and documentation links.
 
 ## Deliverable matrix
 
 | Deliverable class | Expected | Produced | Technical result |
 |---|---:|---:|---|
-| Unlocked-faction redesign concepts | 3 | 3 | PNG, RGB, 2560×1440 each |
+| Canonical unlocked-faction concepts | 3 | 3 | WebP, RGB, 2560×1440 each |
 | Faction symbols | 4 | 4 | PNG, RGB, 1920×1920 each |
 | Faction banners | 4 | 4 | PNG, RGB, 1536×2304 each |
 | Deleted obsolete Lunaris documentation refinement | 1 | 1 | Removed from `docs/` |

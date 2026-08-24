@@ -69,9 +69,9 @@ Reject assets with ambiguous age, juvenile styling, generic costume design, dupl
 | 2 | `docs/animations/lunaris-reliquary/lunaris-title-keyframe.png` |
 | 3 | `docs/LUNARIS_CHARACTER_DESIGNS.md` and its production sheets |
 | 4 | `docs/Faction - Lunaris Reliquary.webp` |
-| 5 | `docs/Faction - Solcrest Accord - Redesign.png` |
-| 6 | `docs/Faction - Vesper Circuit - Redesign.png` |
-| 7 | `docs/Faction - Crimson Aegis - Redesign.png` |
+| 5 | `docs/Faction - Solcrest Accord.webp` |
+| 6 | `docs/Faction - Vesper Circuit.webp` |
+| 7 | `docs/Faction - Crimson Aegis.webp` |
 | 8 | `docs/factions/symbols/` and `docs/factions/banners/` |
 | 9 | `docs/FACTION_REDESIGN_PROPOSAL.md` |
 
