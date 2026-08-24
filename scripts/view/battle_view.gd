@@ -825,11 +825,24 @@ func _project_units() -> void:
 		_detect_skill_trigger(u)
 
 
+func _operator_visual_template_id(u: UnitState) -> StringName:
+	if u.op_id != &"recruit":
+		return u.op_id
+	var identity := String(u.hero_id)
+	if identity.is_empty():
+		identity = String(u.portrait_asset_id)
+	var parity := posmod(u.id, 2) if identity.is_empty() else 0
+	for index: int in identity.length():
+		parity = posmod(parity + identity.unicode_at(index), 2)
+	return &"recruit_female" if parity == 0 else &"recruit_male"
+
+
 func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
 		return
-	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(u.op_id)
+	var visual_template_id := _operator_visual_template_id(u)
+	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(visual_template_id)
 	var animated := (
 		animation != null
 		and OPERATOR_ANIMATOR_SCRIPT.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
@@ -923,7 +936,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	var op_class := def.op_class if def != null else OperatorDef.OpClass.GUARD
-	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(u.op_id)
+	var visual_template_id := _operator_visual_template_id(u)
+	var animation := OPERATOR_VISUAL_CATALOG_SCRIPT.get_animation(visual_template_id)
 	var direction := OPERATOR_ANIMATOR_SCRIPT.direction_for_facing(u.facing)
 	var animation_id := (
 		StringName(animation.idle_by_direction.get(direction, &"")) if animation != null else &""
@@ -950,7 +964,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		rect.add_child(sprite)
 		if animated:
 			rect.set_meta(&"operator_animation", true)
-			rect.set_meta(&"operator_template_id", u.op_id)
+			rect.set_meta(&"operator_template_id", visual_template_id)
 	else:
 		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
