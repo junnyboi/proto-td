@@ -246,6 +246,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed:
+			if bool(view.call("consume_map_primary_click_suppression")):
+				return
 			_handle_grid_click(mb.position)
 
 

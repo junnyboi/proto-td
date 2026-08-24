@@ -6,90 +6,98 @@
 script = ExtResource("1")
 id = &"s7"
 title = "Full Kit"
-grid_rows = PackedStringArray("GGGGGGGGGGGG", "GGGGGEGGEGGG", "SGGGGGGGGGGB", "GGGGGGGGGGGG", "SGGGGGGGGGGB", "GGGGGEGGGGGG")
-paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2, 8, 2, 9, 2, 10, 2, 11, 2), PackedVector2Array(0, 4, 1, 4, 2, 4, 3, 4, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4, 10, 4, 11, 4)])
+grid_rows = PackedStringArray("SGGGGGG.....", "SGGGG.G.....", "...EGXGE....", "....GGGGGGGB", "...EGX..E...", "SGGGG.......", "............")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 4, 2, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3), PackedVector2Array(0, 5, 1, 5, 2, 5, 3, 5, 4, 5, 4, 4, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3), PackedVector2Array(0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 6, 1, 6, 2, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3)])
 waves = Array[Dictionary]([{
 "enemy_id": &"grunt",
-"path_idx": 1,
+"path_idx": 0,
 "tick": 60
 }, {
 "enemy_id": &"grunt",
 "path_idx": 1,
-"tick": 150
+"tick": 120
 }, {
-"enemy_id": &"grunt",
+"enemy_id": &"runner",
+"path_idx": 0,
+"tick": 180
+}, {
+"enemy_id": &"runner",
 "path_idx": 1,
 "tick": 240
 }, {
+"enemy_id": &"drone",
+"path_idx": 2,
+"tick": 300
+}, {
+"enemy_id": &"drone",
+"path_idx": 2,
+"tick": 390
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 540
+}, {
+"enemy_id": &"spellcaster",
+"path_idx": 0,
+"tick": 560
+}, {
+"enemy_id": &"spellcaster",
+"path_idx": 0,
+"tick": 580
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 600
+}, {
+"enemy_id": &"drone",
+"path_idx": 2,
+"tick": 620
+}, {
+"enemy_id": &"spellcaster",
+"path_idx": 1,
+"tick": 640
+}, {
+"enemy_id": &"spellcaster",
+"path_idx": 1,
+"tick": 660
+}, {
+"enemy_id": &"drone",
+"path_idx": 2,
+"tick": 720
+}, {
+"enemy_id": &"heavy",
+"path_idx": 0,
+"tick": 900
+}, {
+"enemy_id": &"grunt",
+"path_idx": 0,
+"tick": 960
+}, {
+"enemy_id": &"runner",
+"path_idx": 0,
+"tick": 990
+}, {
+"enemy_id": &"drone",
+"path_idx": 2,
+"tick": 1020
+}, {
+"enemy_id": &"heavy",
+"path_idx": 1,
+"tick": 1080
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 1140
+}, {
 "enemy_id": &"runner",
 "path_idx": 1,
-"tick": 255
+"tick": 1170
 }, {
 "enemy_id": &"drone",
-"path_idx": 0,
-"tick": 505
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 330
-}, {
-"enemy_id": &"runner",
-"path_idx": 1,
-"tick": 345
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 410
-}, {
-"enemy_id": &"drone",
-"path_idx": 0,
-"tick": 625
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 500
-}, {
-"enemy_id": &"drone",
-"path_idx": 0,
-"tick": 745
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 590
-}, {
-"enemy_id": &"drone",
-"path_idx": 0,
-"tick": 865
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 680
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 770
-}, {
-"enemy_id": &"drone",
-"path_idx": 0,
-"tick": 985
-}, {
-"enemy_id": &"heavy",
-"path_idx": 0,
-"tick": 800
-}, {
-"enemy_id": &"grunt",
-"path_idx": 1,
-"tick": 860
-}, {
-"enemy_id": &"heavy",
-"path_idx": 0,
-"tick": 1000
-}, {
-"enemy_id": &"heavy",
-"path_idx": 0,
-"tick": 1200
+"path_idx": 2,
+"tick": 1230
 }])
-wave_starts = PackedInt32Array(0, 700)
+wave_starts = PackedInt32Array(0, 500, 850)
 music_act = 2
 music_boss_wave_index = -1
 leak_limit = 3
@@ -100,5 +108,5 @@ rewards = Array[Dictionary]([{
 "kind": &"operator"
 }])
 campaign_index = 7
-requires = Array[StringName]([])
-intro_hint = "Everything at once. Spend every tool you own, on time."
+requires = Array[StringName]([&"spike_plate", &"tar_pit", &"sniper_1", &"bolt", &"charm"])
+intro_hint = "Three fronts converge on one corridor. Sequence traps, Bolt, anti-air, and Charm instead of solving each lane alone."

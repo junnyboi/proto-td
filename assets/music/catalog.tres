@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_music")
 entries = {
+&"title_lunaris": {"path": "res://assets/music/lunaris_astra_memoriam_title.ogg"},
 &"act_1_bgm": {"path": "res://assets/music/act_1_guild_threshold_bgm.ogg"},
 &"act_1_boss": {"path": "res://assets/music/act_1_guild_threshold_boss.ogg"},
 &"act_2_bgm": {"path": "res://assets/music/act_2_twilight_grotto_bgm.ogg"},

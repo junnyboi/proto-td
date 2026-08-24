@@ -26,10 +26,14 @@ func _process(_delta: float) -> void:
 	if game == null:
 		return
 	var battle := game.get("current_battle") as BattleModel
-	var content := game.get("content") as Node
-	if battle == null or content == null or not is_instance_valid(content) or not content is Node2D:
+	var content_value: Variant = game.get("content")
+	if battle == null or content_value == null or not is_instance_valid(content_value):
 		_active_battle_instance_id = 0
 		return
+	if not content_value is Node2D:
+		_active_battle_instance_id = 0
+		return
+	var content := content_value as Node2D
 	var battle_instance_id := int(content.get_instance_id())
 	if battle_instance_id != _active_battle_instance_id:
 		_active_battle_instance_id = battle_instance_id
