@@ -13,6 +13,10 @@ const StagingCommandTileType := preload(
 	"res://scripts/ui/components/staging_command_tile.gd"
 )
 const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd")
+const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
+const FactionStandardCardType := preload(
+	"res://scripts/ui/components/faction_standard_card.gd"
+)
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
@@ -48,6 +52,7 @@ var _portrait_spacer: Control = null
 var _command_content: VBoxContainer = null
 var _mission_grid: GridContainer = null
 var _operation_grid: GridContainer = null
+var _faction_grid: GridContainer = null
 var _hero_identity: VBoxContainer = null
 var _campaign_chip: Label = null
 var _top_identity: Label = null
@@ -55,6 +60,7 @@ var _top_status_chip: PanelContainer = null
 var _top_summary: Label = null
 var _hero_art: TextureRect = null
 var _command_tiles: Array[StagingCommandTileType] = []
+var _faction_cards: Array[FactionStandardCardType] = []
 var _portrait := false
 
 
@@ -146,10 +152,8 @@ func _build_top_bar() -> void:
 	row.add_theme_constant_override(&"separation", 14)
 	margin.add_child(row)
 
-	var crest := StagingGlyphType.new()
+	var crest := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0)
 	crest.name = "FactionCrest"
-	crest.kind = StagingGlyphType.Kind.CREST
-	crest.custom_minimum_size = Vector2(42.0, 42.0)
 	crest.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(crest)
 
@@ -309,10 +313,11 @@ func _build_command_content() -> VBoxContainer:
 	progress_row.name = "CampaignProgressRow"
 	progress_row.add_theme_constant_override(&"separation", 10)
 	content.add_child(progress_row)
-	var progress_glyph := StagingGlyphType.new()
+	var progress_glyph := FactionHeraldryType.make_symbol(
+		FactionHeraldryType.ACTIVE_FACTION, 30.0,
+	)
 	progress_glyph.name = "CampaignGlyph"
-	progress_glyph.kind = StagingGlyphType.Kind.CREST
-	progress_glyph.custom_minimum_size = Vector2(28.0, 28.0)
+	progress_glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	progress_row.add_child(progress_glyph)
 	var command_title := _label(
 		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"),
@@ -343,6 +348,8 @@ func _build_command_content() -> VBoxContainer:
 	progress.add_theme_stylebox_override(&"background", _bar_style(Color(MUTED, 0.18)))
 	progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
 	content.add_child(progress)
+
+	_build_faction_standards(content)
 
 	var next_label := _label(
 		"NextOperationLabel", UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION"),
@@ -422,6 +429,46 @@ func _build_command_content() -> VBoxContainer:
 	_command_tiles.append(_training)
 	content.add_child(_training)
 	return content
+
+
+func _build_faction_standards(content: VBoxContainer) -> void:
+	var heading := HBoxContainer.new()
+	heading.name = "FactionStandardsHeading"
+	heading.add_theme_constant_override(&"separation", 10)
+	content.add_child(heading)
+
+	var title := _label(
+		"FactionStandardsLabel",
+		UiCopyType.text(&"ui.staging.faction_standards", "FACTION STANDARDS"),
+		GameTypographyType.BADGE,
+		GOLD,
+	)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.add_child(title)
+
+	var rule := ColorRect.new()
+	rule.name = "FactionStandardsRule"
+	rule.custom_minimum_size = Vector2(80.0, 1.0)
+	rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	rule.color = Color(MOON_CYAN, 0.32)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	heading.add_child(rule)
+
+	_faction_grid = GridContainer.new()
+	_faction_grid.name = "FactionStandardsGrid"
+	_faction_grid.columns = 2
+	_faction_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_faction_grid.add_theme_constant_override(&"h_separation", 8)
+	_faction_grid.add_theme_constant_override(&"v_separation", 8)
+	content.add_child(_faction_grid)
+
+	for faction_id: StringName in FactionHeraldryType.ORDER:
+		var card := FactionStandardCardType.new()
+		card.name = "%sStandard" % String(faction_id).to_pascal_case()
+		card.configure(faction_id)
+		_faction_cards.append(card)
+		_faction_grid.add_child(card)
 
 
 func _build_mission_card() -> PanelContainer:
@@ -597,6 +644,8 @@ func _apply_responsive_layout() -> void:
 	)
 	for tile: StagingCommandTileType in _command_tiles:
 		tile.set_compact(compact)
+	for card: FactionStandardCardType in _faction_cards:
+		card.set_compact(compact)
 	_connect_focus_cycle()
 
 

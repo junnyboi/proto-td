@@ -5,6 +5,7 @@ const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
@@ -73,12 +74,20 @@ func _build_header() -> BoxContainer:
 	_header.name = "MissionHeader"
 	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_theme_constant_override(&"separation", 18)
+	var identity := HBoxContainer.new()
+	identity.name = "MissionFactionIdentity"
+	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_theme_constant_override(&"separation", 12)
+	var symbol := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 52.0)
+	symbol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	identity.add_child(symbol)
 	var title_block := VBoxContainer.new()
 	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_block.add_theme_constant_override(&"separation", 0)
 	title_block.add_child(_label("MissionIndex", "MISSION 01 / OLD CUT", &"eyebrow"))
 	title_block.add_child(_label("MissionTitle", UiCopyType.stage_title(_stage).to_upper(), &"title"))
-	_header.add_child(title_block)
+	identity.add_child(title_block)
+	_header.add_child(identity)
 	var status := VBoxContainer.new()
 	status.custom_minimum_size.x = 220.0
 	status.alignment = BoxContainer.ALIGNMENT_CENTER

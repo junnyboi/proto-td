@@ -9,6 +9,7 @@ const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.g
 const AetheriaScreenShellType := preload(
 	"res://scripts/ui/components/aetheria_screen_shell.gd"
 )
+const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _rows: GridContainer = null
@@ -40,13 +41,21 @@ func _ready() -> void:
 	_header.add_theme_constant_override(&"h_separation", 16)
 	_header.add_theme_constant_override(&"v_separation", 12)
 	column.add_child(_header)
+	var identity := HBoxContainer.new()
+	identity.name = "CampaignIdentity"
+	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_theme_constant_override(&"separation", 10)
+	identity.add_child(FactionHeraldryType.make_symbol(
+		FactionHeraldryType.ACTIVE_FACTION, 44.0,
+	))
 	var heading := AetheriaLabelType.new()
 	heading.name = "CampaignHeading"
 	heading.apply_role(&"heading")
 	heading.text = UiCopyType.text(&"ui.campaign.heading", "Campaign")
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_header.add_child(heading)
+	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	identity.add_child(heading)
+	_header.add_child(identity)
 	var hint := AetheriaLabelType.new()
 	hint.name = "NextHint"
 	hint.apply_role(&"detail")

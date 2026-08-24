@@ -11,6 +11,7 @@ const TrainingRosterRowType := preload("res://scripts/ui/components/training_ros
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const SHELL_SIZE := Vector2(1210.0, 660.0)
@@ -753,12 +754,20 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	var top := BoxContainer.new()
 	top.name = "%sTop" % node_name
 	top.add_theme_constant_override(&"separation", 16)
+	var identity := HBoxContainer.new()
+	identity.name = "%sFactionIdentity" % node_name
+	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_theme_constant_override(&"separation", 12)
+	var symbol := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0)
+	symbol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	identity.add_child(symbol)
 	var title_block := VBoxContainer.new()
 	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_block.add_theme_constant_override(&"separation", 0)
 	title_block.add_child(_label("%sEyebrow" % node_name, "RELIQUARY ATELIER", &"eyebrow"))
 	title_block.add_child(_label("%sHeading" % node_name, title.to_upper(), &"title"))
-	top.add_child(title_block)
+	identity.add_child(title_block)
+	top.add_child(identity)
 	if Game.training_return_path == &"mission":
 		_return_mission = _button(
 			"ReturnToMission", "<- RETURN TO MISSION", true, &"gold",

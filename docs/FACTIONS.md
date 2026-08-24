@@ -1,6 +1,6 @@
 # Protos Faction Concepts
 
-The four factions are designed as distinct character pools, gameplay promises, and heraldic identities for future recruitment banners. All faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). **Lunaris Reliquary is locked** through the approved launch ensemble and production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md); the other three factions use the redesign directions documented in [`FACTION_REDESIGN_PROPOSAL.md`](FACTION_REDESIGN_PROPOSAL.md).
+The four factions are designed as distinct character pools, gameplay promises, and heraldic identities for future recruitment banners. All faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). **Lunaris Reliquary is locked** through the approved launch ensemble and production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md); the other three factions use the redesign directions documented in [`FACTION_REDESIGN_PROPOSAL.md`](FACTION_REDESIGN_PROPOSAL.md). Runtime presentation rules for these canonical symbols and banners are defined in [`factions/UI_INTEGRATION.md`](factions/UI_INTEGRATION.md).
 
 ## Canonical faction directions
 

@@ -52,6 +52,7 @@ const STATIC_FALLBACKS := {
 	&"ui.locale.zh_cn": "中文",
 	&"ui.staging.heading": "STAGING",
 	&"ui.staging.command_heading": "COMPANY 33 COMMAND",
+	&"ui.staging.faction_standards": "FACTION STANDARDS",
 	&"ui.staging.command_body": (
 		"Commander, the Great Flare was a massive solar flare that corrupted connected "
 		+ "systems two centuries ago and caused the Fall. Custodians are still forcing "
