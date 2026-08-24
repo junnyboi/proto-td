@@ -31,23 +31,6 @@ Replace `unassigned` with the assigned agent identity, create `agent-N/<lane>`, 
 - Last update: YYYY-MM-DD
 ```
 
-## TD-040 — Create Proto-TD loading-screen concept art
-
-- Status: in_progress
-- Owner: AGENT 1
-- Branch: `agent-1/loading-screen-concepts`
-- Base: `master` at `bb1e66e3ea7916e2a9928b49ad8adab7a196142f`
-- Dependencies: none
-- Owned files: `docs/todo.md`, `docs/completed.md`, `docs/handoffs/TD-040-agent-1-loading-screen-concepts.md`, `docs/media/loading-screen-concepts/**`
-- Do not touch: gameplay code, project/export settings, existing accepted art assets, loading-screen implementation, or the live WebDev preview
-- Acceptance: generate multiple clearly distinct 16:9 loading-screen concepts using GPT Image 2; every character is visibly adult (21+), original, highly attractive, non-explicit, and compatible with Proto-TD’s anime tactical identity; concepts preserve usable logo/loading-progress negative space
-- Required evidence: concept brief, generation prompts, standalone full-resolution image files, and a comparative recommendation
-- [x] Inspect current game branding, title screen, character language, and loading-screen constraints.
-- [x] Define at least three distinct adult ensemble compositions with strong gacha-banner appeal.
-- [x] Generate and review the concept set with GPT Image 2.
-- [x] Deliver the individual images and selection guidance without implementing a winner.
-- Last update: 2026-08-24
-
 ## L7-R1 — Human playtest round 1
 
 - Status: blocked

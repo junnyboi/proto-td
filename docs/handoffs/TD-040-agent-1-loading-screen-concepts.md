@@ -22,3 +22,7 @@ Godot `4.7.2.stable.official.ed1daf0bf` was confirmed before work. `scripts/vali
 Concept **C — Moonlit Reliquary** is recommended for refinement because it has the clearest centered lower loading-UI plane, the strongest permanent flagship aura, and the most distinctive silhouette at startup. Concept **B — Velvet Siege** should be retained as the alternate if the owner prioritizes fashion-forward character thirst and acquisition marketing.
 
 The next lane should begin only after the owner selects one direction. It should refine that single image, define the exact **Protos** wordmark/loading treatment, implement either `application/boot_splash` or a dedicated pre-title loading scene, refresh the Web export, and validate desktop plus portrait behavior. This lane intentionally changes no runtime or preview code.
+
+## Implementation
+
+The validated concept documentation is commit `74b8ee1caab725e1ee485d4ab2d7953686f955a2` on `agent-1/loading-screen-concepts`.
