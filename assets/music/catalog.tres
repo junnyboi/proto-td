@@ -5,5 +5,8 @@
 [resource]
 script = ExtResource("1_music")
 entries = {
-&"title_lunaris": {"path": "res://assets/music/lunaris_astra_memoriam_title.ogg"}
+&"title_lunaris": {"path": "res://assets/music/lunaris_astra_memoriam_title.ogg"},
+&"gacha_lunaris_vessel": {"path": "res://assets/cinematics/gacha/audio/lunaris-vessel-cinematic.ogg"},
+&"gacha_reliquary_duelist": {"path": "res://assets/cinematics/gacha/audio/reliquary-duelist-cinematic.ogg"},
+&"gacha_archive_caster": {"path": "res://assets/cinematics/gacha/audio/archive-caster-cinematic.ogg"}
 }
