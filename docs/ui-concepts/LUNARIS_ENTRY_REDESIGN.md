@@ -71,3 +71,5 @@ The current Web session console is empty after title, Settings, reduced-motion, 
 After merging the latest custom naming, faction roster filters, Vahalla, premium gacha, and terrain placement feedback work, Godot import, bounded boot, and all five focused SceneTree regressions pass. The repeated 2560×1080 captures preserve the top-aligned PROTOS DEFENSE title and show Company Command’s animated backdrop coexisting with the new Vahalla operation tile and incoming staging content without overlap or lost controls.
 
 The final merged 134,086,324-byte PCK loads in the reconciled shared preview and reaches the redesigned animated PROTOS DEFENSE title. The top celestial edge, centered controls, full-opacity animation, title music, and latest synchronized gameplay assets coexist in the same final bundle.
+
+The later published portrait map-navigation branch was also merged into the definitive candidate. Its orientation, overlay, and placement-feedback smoke markers pass alongside the rendered Lunaris entry probe, preserving two-axis portrait panning, elastic edge feedback, recenter controls, and the redesigned entry/command screens in one source tree.
