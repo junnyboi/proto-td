@@ -336,7 +336,7 @@ func _build_landscape_layout() -> void:
 	_landscape_deck.custom_minimum_size.x = 470.0
 	_landscape_deck.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_landscape_deck.size_flags_stretch_ratio = 0.92
-	_landscape_deck.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_landscape_deck.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_landscape_deck.add_theme_stylebox_override(&"panel", StagingSkinType.command_deck_style())
 	_landscape_layout.add_child(_landscape_deck)
 	_landscape_host = _build_scroll_host(_landscape_deck, "LandscapeCommandScroll")
@@ -748,6 +748,7 @@ func _apply_responsive_layout() -> void:
 	_landscape_layout.offset_top = 86.0 if compact else 94.0
 	_landscape_layout.offset_bottom = -20.0 if compact else -28.0
 	_landscape_deck.custom_minimum_size.x = clampf(viewport_size.x * 0.41, 410.0, 520.0)
+	_landscape_deck.custom_minimum_size.y = clampf(viewport_size.y * 0.62, 560.0, 600.0)
 	_hero_identity.visible = viewport_size.x >= 1040.0
 
 	_portrait_layout.offset_left = 12.0 if viewport_size.x < 620.0 else 18.0
