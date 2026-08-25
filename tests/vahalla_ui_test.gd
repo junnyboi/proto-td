@@ -62,8 +62,12 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var vahalla_tile := staging.find_child("VahallaButton", true, false) as Button
+	var faction_heading := staging.find_child("FactionStandardsHeading", true, false)
+	var faction_grid := staging.find_child("FactionStandardsGrid", true, false)
 	_check(vahalla_tile != null, "Company Command Vahalla tile missing")
 	_check(vahalla_tile != null and not vahalla_tile.disabled, "Company Command Vahalla tile disabled")
+	_check(faction_heading == null, "Company Command faction standards heading still visible")
+	_check(faction_grid == null, "Company Command faction standards grid still visible")
 	_dispose(staging)
 	game.set("content", null)
 	await process_frame
