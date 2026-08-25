@@ -217,6 +217,7 @@ func _build_reveal_layer() -> void:
 
 	_cinematic_player = CinematicPlayerType.new()
 	_cinematic_player.name = "GachaCinematicPlayer"
+	_cinematic_player.cinematic_started.connect(_on_cinematic_started)
 	_reveal_layer.add_child(_cinematic_player)
 
 	_reveal_burst = Control.new()
@@ -522,11 +523,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_kill_reveal_tween()
 	_stop_cinematic()
 	var motion_reduced := reduced_motion or bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
-	var motion_started := _cinematic_player.play_cinematic(premium_id, motion_reduced)
-	if motion_started:
-		var cue_id := _cinematic_player.music_id()
-		if not cue_id.is_empty():
-			Music.play_cue(cue_id)
+	_cinematic_player.play_cinematic(premium_id, motion_reduced)
 	if motion_reduced:
 		_reveal_layer.modulate.a = 1.0
 		_cinematic_player.show_final_plate()
@@ -548,6 +545,12 @@ func _begin_reveal(pull: Dictionary) -> void:
 	).set_trans(Tween.TRANS_BACK)
 	_reveal_tween.tween_interval(CINEMATIC_RESULT_SETTLE_SECONDS)
 	_reveal_tween.tween_callback(_skip_button.grab_focus)
+
+
+func _on_cinematic_started(cue_id: StringName) -> void:
+	if not _is_revealing or cue_id.is_empty():
+		return
+	Music.play_cue(cue_id)
 
 
 func _ignite_stars(rarity: int) -> void:
