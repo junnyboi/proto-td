@@ -80,6 +80,9 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_1", &"guard_2", &"de
 rewards = Array[Dictionary]([{
 "id": &"vanguard_2",
 "kind": &"operator"
+}, {
+"id": &"slow_field",
+"kind": &"spell"
 }])
 campaign_index = 6
 requires = Array[StringName]([&"charm"])

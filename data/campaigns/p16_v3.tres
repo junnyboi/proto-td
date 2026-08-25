@@ -13,7 +13,7 @@ paid_offers = Array[Dictionary]([{
 "offer_id": "p16_caster_contract",
 "operator_def_id": "recruit"
 }])
-environment_sha256 = "f935fa8d0f7d81b9537d45c41e7e4fd319bed62b8b4e62b661f8de2f8a2d4bd5"
+environment_sha256 = "4ee7ce25ec20bc7c7d6570d7ee22b7e3ca0bba8b377a10804bf2cd43c08591e4"
 starter_rows = Array[Dictionary]([{
 "class_id": "recruit",
 "operator_def_id": "recruit",
@@ -71,7 +71,7 @@ v3_stage_rewards = Array[Dictionary]([{
 "rewards": [{"id": "charm", "kind": "spell"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s5"
 }, {
-"rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],
+"rewards": [{"id": "slow_field", "kind": "spell"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s6"
 }, {
 "rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],

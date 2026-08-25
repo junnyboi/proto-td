@@ -78,6 +78,7 @@ var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
 var _trap_rects: Dictionary = {}
 var _trap_kinds: Dictionary = {}
+var _slow_field_rects: Dictionary = {}
 var _spell_casts_last: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
@@ -740,6 +741,7 @@ func _project() -> void:
 					_enemy_defs
 				)
 			_update_hp_bar(rect, rect.size.x, e.hp, e.hp_max)
+	_project_slow_fields()
 	_project_traps()
 	_project_units()
 	_project_tracers()
@@ -819,6 +821,57 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 		core.position = (rect.size - core.size) * 0.5
 		rect.add_child(core)
 	rect.z_index = IsoProjection.tile_z(t.cell) + 1
+	_grid_root.add_child(rect)
+	return rect
+
+
+## Active Slow Field geometry is a read-only projection of model records. The
+## generated 96×48 art is authored for radius 1 (3×3 cells) at the pinned 2×
+## sprite scale; other radii scale proportionally without changing rules.
+func _project_slow_fields() -> void:
+	var live: Dictionary = {}
+	for field: SlowFieldState in model.slow_fields:
+		live[field.id] = true
+		if not _slow_field_rects.has(field.id):
+			_slow_field_rects[field.id] = _make_slow_field_rect(field)
+	for field_id: int in _slow_field_rects.keys():
+		if not live.has(field_id):
+			(_slow_field_rects[field_id] as ColorRect).queue_free()
+			_slow_field_rects.erase(field_id)
+
+
+func _make_slow_field_rect(field: SlowFieldState) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.name = "SlowField%d" % field.id
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.color = Color(0, 0, 0, 0)
+	var span_scale := float(field.radius * 2 + 1) / 3.0
+	var native_size := Art.size(&"vfx_slow_field")
+	if native_size == Vector2i.ZERO:
+		native_size = Vector2i(96, 48)
+	rect.size = Vector2(native_size) * SPRITE_SCALE * span_scale
+	rect.position = IsoProjection.face_center(field.center) - rect.size * 0.5
+	rect.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	var tex := Art.texture(&"vfx_slow_field")
+	if tex != null:
+		var sprite := TextureRect.new()
+		sprite.name = "Aura"
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.texture = tex
+		sprite.stretch_mode = TextureRect.STRETCH_SCALE
+		sprite.size = rect.size
+		rect.add_child(sprite)
+	else:
+		var fallback := Polygon2D.new()
+		fallback.color = Color(0.36, 0.91, 0.95, 0.45)
+		fallback.polygon = PackedVector2Array([
+			Vector2(rect.size.x * 0.5, 0.0),
+			Vector2(rect.size.x, rect.size.y * 0.5),
+			Vector2(rect.size.x * 0.5, rect.size.y),
+			Vector2(0.0, rect.size.y * 0.5),
+		])
+		rect.add_child(fallback)
+	rect.z_index = IsoProjection.tile_z(field.center) + 1
 	_grid_root.add_child(rect)
 	return rect
 

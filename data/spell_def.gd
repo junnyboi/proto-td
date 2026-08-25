@@ -8,6 +8,8 @@ extends Resource
 ## StageDef.wave_starts; a cast on the wave-start tick itself is allowed).
 ## radius is Chebyshev (1 = the 3x3 square). target_kind CELL takes a
 ## Vector2i grid cell; ENEMY takes an enemy id.
+## SLOW_FIELD persists for duration_ticks and applies strongest-only movement
+## slow_permille to ground enemies inside its Chebyshev radius.
 
 enum Availability { COOLDOWN, ONCE_PER_WAVE }
 enum TargetKind { CELL, ENEMY }

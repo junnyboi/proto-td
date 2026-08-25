@@ -29,6 +29,7 @@ static func of(m: BattleModel) -> Dictionary:
 		"charmed_dead": m.charmed_dead,
 		"charmed_exited": m.charmed_exited,
 		"spells_cast": m.spell_book.total_casts(),
+		"slow_fields_active": m.slow_fields.size(),
 		"damage_rules_version": DamageRulesScript.VERSION,
 		"mitigation": _mitigation(m),
 	}

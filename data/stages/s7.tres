@@ -106,5 +106,5 @@ rewards = Array[Dictionary]([{
 "kind": &"operator"
 }])
 campaign_index = 7
-requires = Array[StringName]([&"spike_plate", &"tar_pit", &"sniper_1", &"bolt", &"charm"])
-intro_hint = "Three fronts converge on one corridor. Sequence traps, Bolt, anti-air, and Charm instead of solving each lane alone."
+requires = Array[StringName]([&"spike_plate", &"tar_pit", &"sniper_1", &"bolt", &"charm", &"slow_field"])
+intro_hint = "Three fronts converge on one corridor. Hold Slow Field for the shared lane, then sequence traps, Bolt, anti-air, and Charm."
