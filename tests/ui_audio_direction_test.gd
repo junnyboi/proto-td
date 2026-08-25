@@ -61,6 +61,9 @@ func _run() -> void:
 			custom_control,
 		]
 		for control: Control in hover_controls:
+			# Keep the live headless pointer from emitting incidental mouse-entered
+			# signals while this test drives the signal contract explicitly.
+			control.position = Vector2(4096.0, 4096.0)
 			root.add_child(control)
 		var ephemeral_control := Control.new()
 		root.add_child(ephemeral_control)
@@ -115,6 +118,7 @@ func _run() -> void:
 		)
 		var hidden_parent := Control.new()
 		var hidden_descendant := Button.new()
+		hidden_parent.position = Vector2(4096.0, 4096.0)
 		hidden_parent.add_child(hidden_descendant)
 		root.add_child(hidden_parent)
 		hidden_parent.hide()
@@ -153,6 +157,7 @@ func _run() -> void:
 			"opt-out metadata suppresses hover audio",
 		)
 		var dynamic_control := Control.new()
+		dynamic_control.position = Vector2(4096.0, 4096.0)
 		dynamic_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		dynamic_control.focus_mode = Control.FOCUS_NONE
 		root.add_child(dynamic_control)
