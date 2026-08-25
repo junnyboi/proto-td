@@ -136,3 +136,17 @@ Proceed with **Phases 0–2 in order**. Phase 0 is release-blocking because it c
 Do **not** commission new art or reopen gameplay/economy/navigation design for this pass. The repository already contains sufficient canonical art, cinematic plates, video, frames, seals, stars, icons, portraits, and native controls to deliver the approved corrections.
 
 **Failed family audits:** none.
+
+## Implementation closure
+
+The approved pass completed the release-blocking Phase 0 and the material hierarchy work from Phase 1 without introducing new gameplay authority. Shared dialogs now own responsive sheet geometry, local scrolling, focus lifecycle, veil dominance, and reduced-motion-aware entry. Company Command no longer presents fabricated economy or inert utility chrome. Campaign, Training, Premium Resonance, Vahalla, Results, and battle command surfaces now match the approved information hierarchy materially more closely while preserving every existing route, command, receipt, and model projection.
+
+| Closure gate | Evidence |
+|---|---|
+| Authority and mutation boundaries | Expanded campaign, gacha, Vahalla, Results, battle, and modal regressions pass; Confirm-only mutations and Cancel invariance remain asserted. |
+| Responsive/accessibility | Narrow 540×960 sheet bounds/action stacking, 720×1280 bottom sheets, persistent Training actions, battle deck separation, focusable commands, and safe focus restoration are covered and visually verified. |
+| Localization | English and Simplified Chinese catalogs contain 470 parity-checked keys with typed placeholders for the added surfaces. |
+| Native validation | Godot 4.7.2 import, bounded boot, and all 29 current repository tests pass. |
+| Visual evidence | Twelve non-battle and eight battle captures pass at 1280×720 and 720×1280; logs scan clean. |
+
+The implementation is accepted for Web export and deployment. Detailed evidence is recorded in [`ApprovedUnifiedUIImplementationCompletion.md`](ApprovedUnifiedUIImplementationCompletion.md) and [`verification/approved-phase0/inspection-notes.md`](ui-concepts/ui-revamp/verification/approved-phase0/inspection-notes.md).

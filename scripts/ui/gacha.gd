@@ -5,6 +5,7 @@ const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const HARD_PITY_WINDOW := 10
@@ -106,15 +107,15 @@ func _build_screen() -> void:
 	content.add_child(_header_grid)
 	_back_button = Button.new()
 	_back_button.name = "BackButton"
-	_back_button.text = "← COMMAND DECK"
+	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
 	_back_button.pressed.connect(_on_back_pressed)
 	Style.apply_button(_back_button, &"quiet")
 	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(title_box)
-	title_box.add_child(_label("LUNARIS RELIQUARY", &"eyebrow"))
-	title_box.add_child(_label("Premium Resonance", &"title"))
+	title_box.add_child(_label(_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow"))
+	title_box.add_child(_label(_copy(&"ui.gacha.title", "Premium Resonance"), &"title"))
 	_marks_label = _label("0 MARKS", &"metric")
 	_marks_label.name = "MarksLabel"
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -127,8 +128,7 @@ func _build_screen() -> void:
 	intro_box.add_theme_constant_override(&"separation", 10)
 	intro.add_child(intro_box)
 	var intro_text := _label(
-		"Every resonance grants one life. Premium heroes keep fixed elite kits and "
-		+ "cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls.",
+		_copy(&"ui.gacha.intro", "Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls."),
 		&"body",
 	)
 	intro_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -136,7 +136,7 @@ func _build_screen() -> void:
 	var pity_row := HBoxContainer.new()
 	pity_row.add_theme_constant_override(&"separation", 12)
 	intro_box.add_child(pity_row)
-	_pity_label = _label("5-STAR GUARANTEE", &"detail")
+	_pity_label = _label(_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"detail")
 	_pity_label.name = "PityLabel"
 	_pity_label.custom_minimum_size.x = 210
 	pity_row.add_child(_pity_label)
@@ -157,20 +157,25 @@ func _build_screen() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content.add_child(scroll)
+	var hero_stage := CenterContainer.new()
+	hero_stage.name = "PremiumHeroStage"
+	hero_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hero_stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(hero_stage)
 	_hero_grid = GridContainer.new()
 	_hero_grid.name = "PremiumHeroGrid"
 	_hero_grid.columns = 3
-	_hero_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hero_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hero_grid.add_theme_constant_override(&"h_separation", 16)
 	_hero_grid.add_theme_constant_override(&"v_separation", 16)
-	scroll.add_child(_hero_grid)
+	hero_stage.add_child(_hero_grid)
 
 	_action_grid = GridContainer.new()
 	_action_grid.columns = 2
 	_action_grid.add_theme_constant_override(&"h_separation", 18)
 	_action_grid.add_theme_constant_override(&"v_separation", 10)
 	content.add_child(_action_grid)
-	_status_label = _label("The pool is ready.", &"detail")
+	_status_label = _label(_copy(&"ui.gacha.ready", "The pool is ready."), &"detail")
 	_status_label.name = "PullStatusLabel"
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -187,10 +192,10 @@ func _build_pull_confirmation() -> void:
 	_pull_confirmation = DialogType.create(
 		self,
 		"PullConfirmationLayer",
-		"CONFIRM RESONANCE",
-		"Align one signal through the random premium pool.",
-		"RESONATE",
-		"CANCEL",
+		_copy(&"ui.gacha.confirm_title", "CONFIRM RESONANCE"),
+		_copy(&"ui.gacha.confirm_intro", "Align one signal through the random premium pool."),
+		_copy(&"ui.gacha.resonate", "RESONATE"),
+		_copy(&"ui.common.cancel", "CANCEL"),
 	)
 	var confirm := _pull_confirmation.get(&"confirm") as Button
 	var cancel := _pull_confirmation.get(&"cancel") as Button
@@ -254,7 +259,7 @@ func _build_reveal_layer() -> void:
 	top_row.add_child(top_spacer)
 	_skip_button = Button.new()
 	_skip_button.name = "SkipRevealButton"
-	_skip_button.text = "SKIP REVEAL"
+	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_skip_button.pressed.connect(_finish_reveal)
 	Style.apply_button(_skip_button, &"quiet")
 	top_row.add_child(_skip_button)
@@ -288,10 +293,10 @@ func _build_reveal_layer() -> void:
 	reveal_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	reveal_box.add_theme_constant_override(&"separation", 8)
 	info_margin.add_child(reveal_box)
-	_reveal_eyebrow = _label("SIGNAL LOCK", &"eyebrow")
+	_reveal_eyebrow = _label(_copy(&"ui.gacha.signal_lock", "SIGNAL LOCK"), &"eyebrow")
 	_reveal_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reveal_box.add_child(_reveal_eyebrow)
-	_reveal_title = _label("RESONANCE", &"title")
+	_reveal_title = _label(_copy(&"ui.gacha.reveal_title", "RESONANCE"), &"title")
 	_reveal_title.name = "RevealTitle"
 	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reveal_box.add_child(_reveal_title)
@@ -305,16 +310,16 @@ func _build_reveal_layer() -> void:
 		star.name = "Star_%d" % (index + 1)
 		star.set_state(Style.GOLD, false)
 		_reveal_stars.add_child(star)
-	_reveal_result = _label("SIGNAL ACQUIRED", &"heading")
+	_reveal_result = _label(_copy(&"ui.gacha.signal_acquired", "SIGNAL ACQUIRED"), &"heading")
 	_reveal_result.name = "RevealResult"
 	_reveal_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_reveal_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	reveal_box.add_child(_reveal_result)
-	_reveal_lives = _label("1 LIFE READY", &"metric")
+	_reveal_lives = _label(_copy(&"ui.gacha.one_life_ready", "1 LIFE READY"), &"metric")
 	_reveal_lives.name = "RevealLives"
 	_reveal_lives.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reveal_box.add_child(_reveal_lives)
-	_reveal_pity = _label("5-star guaranteed within 10 pulls", &"detail")
+	_reveal_pity = _label(_copy(&"ui.gacha.guarantee_default", "5-star guaranteed within 10 pulls"), &"detail")
 	_reveal_pity.name = "RevealPity"
 	_reveal_pity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reveal_box.add_child(_reveal_pity)
@@ -322,40 +327,40 @@ func _build_reveal_layer() -> void:
 
 func _refresh() -> void:
 	if _game == null or not bool(_game.get("campaign_active")) or _game.get("campaign") == null:
-		_marks_label.text = "CAMPAIGN OFFLINE"
-		_pull_button.text = "PULL UNAVAILABLE"
+		_marks_label.text = _copy(&"ui.gacha.campaign_offline", "CAMPAIGN OFFLINE")
+		_pull_button.text = _copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE")
 		_pull_button.disabled = true
 		_back_button.disabled = _is_revealing
 		Style.apply_button(_pull_button, &"disabled")
-		_status_label.text = "Start or continue a campaign to access premium resonance."
+		_status_label.text = _copy(&"ui.gacha.campaign_required", "Start or continue a campaign to access premium resonance.")
 		return
 	var projection: Dictionary = _game.get("campaign").runtime_projection()
 	var marks := int(projection["marks"])
 	var cost := int(projection["premium_pull_cost"])
 	var pity_streak := int(projection.get("premium_pity_streak", 0))
 	var guarantee_in := int(projection.get("premium_guarantee_in", HARD_PITY_WINDOW))
-	_marks_label.text = "%d MARKS" % marks
-	_pull_button.text = "RESONATE • %d MARKS" % cost
+	_marks_label.text = _format(&"ui.gacha.marks", "{count} MARKS", {&"count": marks})
+	_pull_button.text = _format(&"ui.gacha.pull_action", "RESONATE • {cost} MARKS", {&"cost": cost})
 	var attempt_pending := bool(projection.get("attempt_pending", false))
 	_pull_button.disabled = marks < cost or attempt_pending or _is_revealing
 	_back_button.disabled = _is_revealing
 	Style.apply_button(_pull_button, &"disabled" if _pull_button.disabled else &"gold")
-	_pity_label.text = "5-STAR GUARANTEED IN %d %s" % [
-		guarantee_in, "PULL" if guarantee_in == 1 else "PULLS",
-	]
+	_pity_label.text = _format(&"ui.gacha.guarantee_in", "5-STAR GUARANTEED IN {count} {unit}", {
+		&"count": guarantee_in, &"unit": _pull_unit(guarantee_in).to_upper(),
+	})
 	for index: int in _pity_segments.get_child_count():
 		var segment := _pity_segments.get_child(index) as ColorRect
 		segment.color = Style.GOLD if index < pity_streak else Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
 	var confirm_body := _pull_confirmation.get(&"body") as Label
 	if confirm_body != null:
-		confirm_body.text = (
-			"One random signal • %d Marks\nBalance  %d → %d Marks\n"
-			+ "5-star guarantee in %d %s. Every accepted resonance grants exactly one life."
-		) % [cost, marks, maxi(0, marks - cost), guarantee_in, "pull" if guarantee_in == 1 else "pulls"]
+		confirm_body.text = _format(&"ui.gacha.confirm_body", "One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.", {
+			&"cost": cost, &"before": marks, &"after": maxi(0, marks - cost),
+			&"count": guarantee_in, &"unit": _pull_unit(guarantee_in),
+		})
 	if attempt_pending:
-		_status_label.text = "Resolve the active operation before using premium resonance."
+		_status_label.text = _copy(&"ui.gacha.attempt_pending", "Resolve the active operation before using premium resonance.")
 	elif marks < cost:
-		_status_label.text = "Earn %d more Marks for another resonance pull." % (cost - marks)
+		_status_label.text = _format(&"ui.gacha.marks_needed", "Earn {count} more Marks for another resonance pull.", {&"count": cost - marks})
 	_rebuild_cards(projection)
 
 
@@ -376,21 +381,21 @@ func _rebuild_cards(projection: Dictionary) -> void:
 func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var rarity := int(catalog.get("rarity", 4))
-	panel.custom_minimum_size = Vector2(360 if rarity == FIVE_STAR_RARITY else 260, 410 if rarity == FIVE_STAR_RARITY else 350)
+	panel.custom_minimum_size = Vector2(460 if rarity == FIVE_STAR_RARITY else 250, 430 if rarity == FIVE_STAR_RARITY else 350)
 	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else (&"result" if rarity == FIVE_STAR_RARITY else &"quiet"))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 9)
 	panel.add_child(box)
-	var rarity_label := _label("%d-STAR PREMIUM" % rarity, &"eyebrow")
+	var rarity_label := _label(_format(&"ui.gacha.rarity", "{rarity}-STAR PREMIUM", {&"rarity": rarity}), &"eyebrow")
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rarity_label.add_theme_color_override(&"font_color", Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN)
 	box.add_child(rarity_label)
 	var portrait := TextureRect.new()
 	portrait.name = "Portrait"
 	portrait.texture = Art.texture(StringName(catalog["portrait_asset_id"]))
-	portrait.custom_minimum_size = Vector2(260 if rarity == FIVE_STAR_RARITY else 200, 250 if rarity == FIVE_STAR_RARITY else 190)
+	portrait.custom_minimum_size = Vector2(340 if rarity == FIVE_STAR_RARITY else 190, 270 if rarity == FIVE_STAR_RARITY else 190)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(portrait)
@@ -401,15 +406,15 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var role := _label(display_class.to_upper(), &"detail")
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(role)
-	var status := "UNACQUIRED"
-	var detail := "Pull to recruit • Fixed elite kit"
+	var status := _copy(&"ui.gacha.unacquired", "UNACQUIRED")
+	var detail := _copy(&"ui.gacha.pull_to_recruit", "Pull to recruit • Fixed elite kit")
 	if not hero.is_empty():
 		var lives := int(hero["premium_lives"])
-		status = "%d %s" % [lives, "LIFE" if lives == 1 else "LIVES"]
-		detail = "%d total copies • Fixed elite kit" % int(hero["premium_pull_count"])
+		status = _format(&"ui.gacha.lives", "{count} {unit}", {&"count": lives, &"unit": _life_unit(lives)})
+		detail = _format(&"ui.gacha.total_copies", "{count} total copies • Fixed elite kit", {&"count": int(hero["premium_pull_count"])})
 		if lives == 0:
-			status = "LOCKED • 0 LIVES"
-			detail = "Pull this hero again to restore deployment"
+			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
+			detail = _copy(&"ui.gacha.restore_hint", "Pull this hero again to restore deployment")
 	var status_label := _label(status, &"metric")
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.add_theme_color_override(
@@ -464,9 +469,9 @@ func _on_confirm_pull() -> void:
 	var overlay := _pull_confirmation.get(&"overlay") as Control
 	if overlay == null or not overlay.visible:
 		return
-	DialogType.set_pending(_pull_confirmation, true, "ALIGNING…")
+	DialogType.set_pending(_pull_confirmation, true, _copy(&"ui.gacha.aligning_short", "ALIGNING…"))
 	_pull_button.disabled = true
-	_status_label.text = "Aligning the reliquary signal…"
+	_status_label.text = _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
 	var committed: Dictionary = _game.call("pull_premium_hero")
 	if not committed.get("accepted", false):
 		DialogType.set_pending(_pull_confirmation, false)
@@ -499,20 +504,16 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_panel.modulate = Color(1, 1, 1, 0)
 	_reveal_portrait.texture = Art.texture(StringName(row.get("portrait_asset_id", "")))
 	_reveal_portrait.modulate = Color.WHITE
-	_reveal_eyebrow.text = "GUARANTEE FULFILLED" if bool(pull.get("pity_forced", false)) else "SIGNAL ACQUIRED"
+	_reveal_eyebrow.text = _copy(&"ui.gacha.guarantee_fulfilled", "GUARANTEE FULFILLED") if bool(pull.get("pity_forced", false)) else _copy(&"ui.gacha.signal_acquired", "SIGNAL ACQUIRED")
 	_reveal_eyebrow.add_theme_color_override(&"font_color", accent)
-	_reveal_title.text = "%d-STAR RESONANCE" % rarity
+	_reveal_title.text = _format(&"ui.gacha.resonance_rarity", "{rarity}-STAR RESONANCE", {&"rarity": rarity})
 	_reveal_title.add_theme_color_override(&"font_color", accent)
 	_reveal_result.text = "%s — %s" % [callsign, _result_kind(pull)]
 	_reveal_result.add_theme_color_override(&"font_color", accent)
-	_reveal_lives.text = "%d %s READY" % [
-		int(pull.get("lives_after", 1)),
-		"LIFE" if int(pull.get("lives_after", 1)) == 1 else "LIVES",
-	]
-	_reveal_pity.text = "Next 5-star guaranteed in %d %s" % [
-		int(pull.get("guarantee_in_after", HARD_PITY_WINDOW)),
-		"pull" if int(pull.get("guarantee_in_after", HARD_PITY_WINDOW)) == 1 else "pulls",
-	]
+	var lives_after := int(pull.get("lives_after", 1))
+	_reveal_lives.text = _format(&"ui.gacha.lives_ready", "{count} {unit} READY", {&"count": lives_after, &"unit": _life_unit(lives_after)})
+	var guarantee_after := int(pull.get("guarantee_in_after", HARD_PITY_WINDOW))
+	_reveal_pity.text = _format(&"ui.gacha.next_guarantee", "Next 5-star guaranteed in {count} {unit}", {&"count": guarantee_after, &"unit": _pull_unit(guarantee_after)})
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		star.set_state(accent, false)
@@ -594,24 +595,22 @@ func _center_reveal_pivot() -> void:
 
 func _result_kind(pull: Dictionary) -> String:
 	if bool(pull.get("new_hero", false)):
-		return "NEW HERO"
+		return _copy(&"ui.gacha.result_new", "NEW HERO")
 	if bool(pull.get("revived", false)):
-		return "REVIVED"
-	return "LIFE +1"
+		return _copy(&"ui.gacha.result_revived", "REVIVED")
+	return _copy(&"ui.gacha.result_life", "LIFE +1")
 
 
 func _result_copy(pull: Dictionary) -> String:
 	var callsign := _callsign_for(String(pull.get("premium_id", "")))
 	var rarity := int(pull.get("rarity", 4))
 	var guarantee := int(pull.get("guarantee_in_after", HARD_PITY_WINDOW))
-	var prefix := "%d-STAR" % rarity
+	var prefix := _format(&"ui.gacha.rarity_short", "{rarity}-STAR", {&"rarity": rarity})
 	if bool(pull.get("new_hero", false)):
-		return "%s SIGNAL — %s joins with 1 life. Next 5-star in %d pulls." % [prefix, callsign, guarantee]
+		return _format(&"ui.gacha.receipt_new", "{rarity} SIGNAL — {callsign} joins with 1 life. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
 	if bool(pull.get("revived", false)):
-		return "%s RESTORED — %s returns with 1 life. Next 5-star in %d pulls." % [prefix, callsign, guarantee]
-	return "%s DUPLICATE — %s gains +1 life (%d total). Next 5-star in %d pulls." % [
-		prefix, callsign, int(pull.get("lives_after", 0)), guarantee,
-	]
+		return _format(&"ui.gacha.receipt_restored", "{rarity} RESTORED — {callsign} returns with 1 life. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
+	return _format(&"ui.gacha.receipt_duplicate", "{rarity} DUPLICATE — {callsign} gains +1 life ({lives} total). Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"lives": int(pull.get("lives_after", 0)), &"guarantee": guarantee})
 
 
 func _pool_row(premium_id: String) -> Dictionary:
@@ -635,11 +634,27 @@ func _class_name(class_id: String) -> String:
 
 func _error_copy(code: StringName) -> String:
 	match code:
-		&"insufficient_marks": return "Not enough Marks for another resonance pull."
-		&"attempt_pending": return "Resolve the active operation before using the reliquary."
-		&"premium_life_cap": return "This hero has reached the maximum stored-life count."
-		&"campaign_inactive": return "No active campaign is available."
-		_: return "The resonance failed safely (%s). Please try again." % String(code)
+		&"insufficient_marks": return _copy(&"ui.gacha.error.insufficient_marks", "Not enough Marks for another resonance pull.")
+		&"attempt_pending": return _copy(&"ui.gacha.error.attempt_pending", "Resolve the active operation before using the reliquary.")
+		&"premium_life_cap": return _copy(&"ui.gacha.error.life_cap", "This hero has reached the maximum stored-life count.")
+		&"campaign_inactive": return _copy(&"ui.gacha.error.campaign_inactive", "No active campaign is available.")
+		_: return _format(&"ui.gacha.error.unknown", "The resonance failed safely ({code}). Please try again.", {&"code": String(code)})
+
+
+func _pull_unit(count: int) -> String:
+	return _copy(&"ui.gacha.pull_singular", "pull") if count == 1 else _copy(&"ui.gacha.pull_plural", "pulls")
+
+
+func _life_unit(count: int) -> String:
+	return _copy(&"ui.gacha.life_singular", "LIFE") if count == 1 else _copy(&"ui.gacha.life_plural", "LIVES")
+
+
+func _copy(key: StringName, fallback: String) -> String:
+	return UiCopyType.text(key, fallback)
+
+
+func _format(key: StringName, fallback: String, args: Dictionary) -> String:
+	return UiCopyType.format_text(key, fallback, args)
 
 
 func _on_back_pressed() -> void:

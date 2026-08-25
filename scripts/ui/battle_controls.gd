@@ -4,6 +4,7 @@ extends Control
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 ## Pause/resume, speed cycle 1x/2x/4x, and resign. Every write remains on
 ## ticks_per_frame_scale or model.apply_action([&"resign"]); presentation never
@@ -67,13 +68,13 @@ func _build_row() -> void:
 	box.name = "ControlsBox"
 	box.add_theme_constant_override(&"separation", 10)
 	_controls_deck.add_child(box)
-	_pause_button = _make_button("PauseButton", "PAUSE", &"secondary")
+	_pause_button = _make_button("PauseButton", _copy(&"ui.battle.pause", "PAUSE"), &"secondary")
 	_pause_button.pressed.connect(_on_pause_pressed)
 	box.add_child(_pause_button)
 	_speed_button = _make_button("SpeedButton", "1×", &"secondary")
 	_speed_button.pressed.connect(_on_speed_pressed)
 	box.add_child(_speed_button)
-	_resign_button = _make_button("ResignButton", "RESIGN", &"danger")
+	_resign_button = _make_button("ResignButton", _copy(&"ui.battle.resign", "RESIGN"), &"danger")
 	_resign_button.pressed.connect(_on_resign_pressed)
 	box.add_child(_resign_button)
 	_paused_label = Label.new()
@@ -91,10 +92,10 @@ func _build_confirm() -> void:
 	_confirm_dialog = DialogType.create(
 		self,
 		"ResignConfirmLayer",
-		"WITHDRAW FROM OPERATION?",
-		"Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved.",
-		"CONFIRM DEFEAT",
-		"RETURN TO BATTLE",
+		_copy(&"ui.battle.withdraw_title", "WITHDRAW FROM OPERATION?"),
+		_copy(&"ui.battle.withdraw_body", "Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved."),
+		_copy(&"ui.battle.confirm_defeat", "CONFIRM DEFEAT"),
+		_copy(&"ui.battle.return", "RETURN TO BATTLE"),
 	)
 	_confirm = _confirm_dialog.get(&"overlay") as Control
 	var panel := _confirm_dialog.get(&"panel") as PanelContainer
@@ -109,14 +110,11 @@ func _build_confirm() -> void:
 	cancel.pressed.connect(_on_cancel_resign)
 
 
-## Main battle controls stay FOCUS_NONE so Space reaches the pause shortcut.
-## Modal actions intentionally retain focus; Space then activates the safe
-## focused Cancel action instead of leaking through to pause.
 func _make_button(button_name: String, text: String, role: StringName) -> Button:
 	var btn := Button.new()
 	btn.name = button_name
 	btn.text = text
-	btn.focus_mode = Control.FOCUS_NONE
+	btn.focus_mode = Control.FOCUS_ALL
 	btn.custom_minimum_size = Vector2(76.0, 46.0)
 	Style.apply_button(btn, role)
 	return btn
@@ -138,8 +136,8 @@ func _process(_delta: float) -> void:
 		_resume_scale = current
 	var paused := current == 0.0
 	var running := model.result == BattleModel.Result.RUNNING
-	_pause_button.text = "RESUME" if paused else "PAUSE"
-	_paused_label.text = "PAUSED" if paused and not _confirm.visible else ""
+	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if paused else _copy(&"ui.battle.pause", "PAUSE")
+	_paused_label.text = _copy(&"ui.battle.paused", "PAUSED") if paused and not _confirm.visible else ""
 	_speed_button.text = "%d×" % int(round(_resume_scale))
 	_pause_button.disabled = not _interaction_enabled or not running
 	_speed_button.disabled = not _interaction_enabled or not running
@@ -161,6 +159,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.is_echo():
 		return
 	if key.physical_keycode != KEY_SPACE or _confirm.visible:
+		return
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused is BaseButton:
 		return
 	_on_pause_pressed()
 	get_viewport().set_input_as_handled()
@@ -206,8 +207,12 @@ func _on_cancel_resign() -> void:
 
 func _on_confirm_resign() -> void:
 	Sfx.play("ui_confirm")
-	DialogType.set_pending(_confirm_dialog, true, "WITHDRAWING…")
+	DialogType.set_pending(_confirm_dialog, true, _copy(&"ui.battle.withdrawing", "WITHDRAWING…"))
 	model.apply_action([&"resign"])
 	DialogType.set_pending(_confirm_dialog, false)
 	DialogType.hide_dialog(_confirm_dialog)
 	_set_scale(_pre_confirm_scale)
+
+
+func _copy(key: StringName, fallback: String) -> String:
+	return UiCopyType.text(key, fallback)

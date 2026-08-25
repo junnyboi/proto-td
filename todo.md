@@ -19,9 +19,9 @@
 # Approved Unified Interface Continuation
 
 - [x] Preserve the user-approved concept and implementation plan verbatim under repository-root `docs/`.
-- [ ] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
-- [ ] Close material visual/interaction gaps while preserving every authoritative behavior contract.
-- [ ] Run full Godot, responsive visual, Web export, browser, and deployment gates; push each accepted implementation phase.
+- [x] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
+- [x] Close material visual/interaction gaps while preserving every authoritative behavior contract.
+- [ ] Run final Web export, browser, WebDev checkpoint, public deployment, and push gates on the accepted implementation.
 
 # Faction-Led Soundtrack Redesign
 

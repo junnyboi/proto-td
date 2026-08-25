@@ -54,21 +54,29 @@ func _ready() -> void:
 
 
 func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> void:
+	var outcome_plate := PanelContainer.new()
+	outcome_plate.name = "OutcomeCeremony"
+	outcome_plate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outcome_plate.custom_minimum_size.y = 112.0
+	Style.apply_panel(outcome_plate, &"result" if cleared else &"danger")
+	layout.add_child(outcome_plate)
 	var header := GridContainer.new()
 	header.name = "ResultsHeader"
 	header.columns = 3
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_theme_constant_override(&"h_separation", 16)
-	layout.add_child(header)
+	outcome_plate.add_child(header)
 	var identity := VBoxContainer.new()
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var eyebrow := _label("OutcomeEyebrow", "AFTER-ACTION RELIQUARY", &"dense_detail")
+	var eyebrow := _label("OutcomeEyebrow", UiCopyType.text(&"ui.results.eyebrow", "AFTER-ACTION RELIQUARY"), &"dense_detail")
 	identity.add_child(eyebrow)
-	identity.add_child(_label(
+	var headline := _label(
 		"Headline",
 		UiCopyType.text(&"ui.results.clear" if cleared else &"ui.results.defeat", "VICTORY" if cleared else "DEFEAT").to_upper(),
 		&"title",
-	))
+	)
+	headline.add_theme_font_size_override(&"font_size", 40)
+	identity.add_child(headline)
 	header.add_child(identity)
 	var stage_id := StringName(result.get("stage_id", &""))
 	var stage_title := String(stage_id).to_upper()
@@ -132,23 +140,23 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	rewards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rewards.add_theme_constant_override(&"separation", 10)
 	rewards_scroll.add_child(rewards)
-	rewards.add_child(_label("RewardsHeading", "MISSION YIELD", &"heading"))
+	rewards.add_child(_label("RewardsHeading", UiCopyType.text(&"ui.results.yield", "MISSION YIELD"), &"heading"))
 	var granted: Array = result.get("rewards_granted", [])
 	if granted.is_empty():
-		rewards.add_child(_result_card("RewardNone", "NO NEW MATERIAL REWARDS", "Operation record preserved."))
+		rewards.add_child(_result_card("RewardNone", UiCopyType.text(&"ui.results.no_rewards", "NO NEW MATERIAL REWARDS"), UiCopyType.text(&"ui.results.record_preserved", "Operation record preserved.")))
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
 		if reward.get("kind") == "currency" and reward.get("id") == "marks":
-			rewards.add_child(_result_card("Reward%d" % i, "+%d MARKS" % int(reward.get("amount", 0)), "Premium Resonance fund"))
+			rewards.add_child(_result_card("Reward%d" % i, UiCopyType.format_text(&"ui.results.marks_reward", "+{count} MARKS", {&"count": int(reward.get("amount", 0))}), UiCopyType.text(&"ui.results.premium_fund", "Premium Resonance fund")))
 		else:
-			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), "UNLOCKED · %s" % String(reward.get("kind", "record")).to_upper()))
+			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), UiCopyType.format_text(&"ui.results.unlocked_kind", "UNLOCKED · {kind}", {&"kind": String(reward.get("kind", "record")).to_upper()})))
 	var entitlements: Array = result.get("class_entitlements_granted", [])
 	for i: int in entitlements.size():
-		rewards.add_child(_result_card("Entitlement%d" % i, _class_name(String(entitlements[i])).to_upper(), "ADVANCED TRAINING PATH UNLOCKED"))
+		rewards.add_child(_result_card("Entitlement%d" % i, _class_name(String(entitlements[i])).to_upper(), UiCopyType.text(&"ui.results.training_path_unlocked", "ADVANCED TRAINING PATH UNLOCKED")))
 	var xp_awards: Array = result.get("xp_awards", [])
 	for i: int in xp_awards.size():
 		var award: Dictionary = xp_awards[i]
-		rewards.add_child(_result_card("XpAward%d" % i, _hero_name(String(award.get("hero_id", ""))).to_upper(), "+%d XP" % int(award.get("xp", award.get("amount", 0)))))
+		rewards.add_child(_result_card("XpAward%d" % i, _hero_name(String(award.get("hero_id", ""))).to_upper(), UiCopyType.format_text(&"ui.results.xp_reward", "+{count} XP", {&"count": int(award.get("xp", award.get("amount", 0)))})))
 
 	var consequence_panel := PanelContainer.new()
 	consequence_panel.name = "ConsequencePanel"
@@ -173,17 +181,17 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	consequences.add_child(consequence_line)
 	var dead_ids: Array = result.get("dead_hero_ids", [])
 	for i: int in dead_ids.size():
-		consequences.add_child(_result_card("FallenHero%d" % i, _hero_name(String(dead_ids[i])).to_upper(), "FALLEN · MEMORIAL RECORD SEALED", true))
+		consequences.add_child(_result_card("FallenHero%d" % i, _hero_name(String(dead_ids[i])).to_upper(), UiCopyType.text(&"ui.results.fallen_record", "FALLEN · MEMORIAL RECORD SEALED"), true))
 	var premium_losses: Array = result.get("premium_life_losses", [])
 	for i: int in premium_losses.size():
 		var loss: Dictionary = premium_losses[i]
 		var callsign := _premium_name(String(loss["premium_id"]))
-		var detail := "1 RESERVE LIFE SPENT · %d REMAINING" % int(loss["lives_after"])
+		var detail := UiCopyType.format_text(&"ui.results.reserve_life_spent", "1 RESERVE LIFE SPENT · {count} REMAINING", {&"count": int(loss["lives_after"])})
 		if bool(loss["locked_out"]):
-			detail = "FINAL LIFE SPENT · LOCKED UNTIL SAME IDENTITY IS PULLED AGAIN"
+			detail = UiCopyType.text(&"ui.results.final_life_spent", "FINAL LIFE SPENT · LOCKED UNTIL SAME IDENTITY IS PULLED AGAIN")
 		consequences.add_child(_result_card("PremiumLifeLoss%d" % i, callsign.to_upper(), detail, bool(loss["locked_out"])))
 	if dead_ids.is_empty() and premium_losses.is_empty():
-		consequences.add_child(_result_card("NoCasualties", "COMPANY INTACT", "No terminal losses recorded."))
+		consequences.add_child(_result_card("NoCasualties", UiCopyType.text(&"ui.results.company_intact", "COMPANY INTACT"), UiCopyType.text(&"ui.results.no_losses", "No terminal losses recorded.")))
 
 
 func _build_actions(layout: VBoxContainer) -> void:

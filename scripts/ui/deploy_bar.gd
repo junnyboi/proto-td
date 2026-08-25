@@ -1,6 +1,8 @@
 class_name DeployBar
 extends Control
 
+const UI_COPY := preload("res://scripts/ui/components/ui_copy.gd")
+
 signal placement_started(deployment_id: StringName)
 signal placement_rejected(deployment_id: StringName, cell: Vector2i)
 signal facing_requested(deployment_id: StringName, cell: Vector2i)
@@ -386,7 +388,7 @@ func _build_overlays() -> void:
 		_refresh_facing_icon(facing)
 	_retreat_chip = Button.new()
 	_retreat_chip.name = "RetreatChip"
-	_retreat_chip.text = "Retreat"
+	_retreat_chip.text = UI_COPY.text(&"ui.battle.retreat", "Retreat")
 	_retreat_chip.custom_minimum_size = Vector2(88.0, 52.0)
 	Style.apply_button(_retreat_chip, &"danger")
 	_retreat_chip.visible = false

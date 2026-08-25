@@ -11,6 +11,14 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
+const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
+const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const REWARD_DIRS := {
+	&"operator": "res://data/operators",
+	&"trap": "res://data/traps",
+	&"spell": "res://data/spells",
+}
 
 var _rows: GridContainer = null
 var _header: GridContainer = null
@@ -18,6 +26,9 @@ var _body: GridContainer = null
 var _dossier_title: AetheriaLabelType = null
 var _dossier_status: AetheriaLabelType = null
 var _dossier_facts: AetheriaLabelType = null
+var _dossier_objective: AetheriaLabelType = null
+var _dossier_threat: AetheriaLabelType = null
+var _dossier_reward: AetheriaLabelType = null
 var _dossier_hint: AetheriaLabelType = null
 var _dossier_stars: HBoxContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -155,10 +166,17 @@ func _build_body(column: VBoxContainer) -> void:
 	dossier.custom_minimum_size.x = 420
 	Style.apply_panel(dossier, &"result")
 	_body.add_child(dossier)
+	var dossier_scroll := ScrollContainer.new()
+	dossier_scroll.name = "MissionDossierScroll"
+	dossier_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dossier_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	dossier_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	dossier.add_child(dossier_scroll)
 	var dossier_stack := VBoxContainer.new()
 	dossier_stack.name = "DossierContent"
-	dossier_stack.add_theme_constant_override(&"separation", 12)
-	dossier.add_child(dossier_stack)
+	dossier_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dossier_stack.add_theme_constant_override(&"separation", 8)
+	dossier_scroll.add_child(dossier_stack)
 	var dossier_eyebrow := AetheriaLabelType.new()
 	dossier_eyebrow.apply_role(&"dense_detail")
 	dossier_eyebrow.text = "SELECTED OPERATION"
@@ -175,11 +193,27 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_stars.name = "DossierStars"
 	_dossier_stars.add_theme_constant_override(&"separation", 8)
 	dossier_stack.add_child(_dossier_stars)
+	_dossier_objective = AetheriaLabelType.new()
+	_dossier_objective.name = "DossierObjective"
+	_dossier_objective.apply_role(&"body")
+	_dossier_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dossier_stack.add_child(_dossier_objective)
+	_dossier_threat = AetheriaLabelType.new()
+	_dossier_threat.name = "DossierThreat"
+	_dossier_threat.apply_role(&"detail")
+	_dossier_threat.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dossier_stack.add_child(_dossier_threat)
 	_dossier_facts = AetheriaLabelType.new()
 	_dossier_facts.name = "DossierFacts"
 	_dossier_facts.apply_role(&"body")
 	_dossier_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dossier_stack.add_child(_dossier_facts)
+	_dossier_reward = AetheriaLabelType.new()
+	_dossier_reward.name = "DossierReward"
+	_dossier_reward.apply_role(&"dense_heading")
+	_dossier_reward.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dossier_stack.add_child(_dossier_reward)
+	dossier_stack.move_child(_dossier_reward, _dossier_facts.get_index())
 	_dossier_hint = AetheriaLabelType.new()
 	_dossier_hint.name = "DossierHint"
 	_dossier_hint.apply_role(&"detail")
@@ -237,12 +271,26 @@ func _show_dossier(stage_id: StringName) -> void:
 		_dossier_status.text = "CLEARED · REPLAY AVAILABLE"
 	else:
 		_dossier_status.text = "NEXT OPERATION · READY"
-	_dossier_facts.text = "SQUAD LIMIT  %d\nWAVE WINDOWS  %d\nREWARD RECORDS  %d\nLEAK LIMIT  %d" % [
+	var narrative: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
+	_dossier_objective.text = UiCopyType.format_text(&"ui.campaign.objective", "OBJECTIVE — {text}", {
+		&"text": UiCopyType.stage_narrative_text(narrative, StageNarrativeDefType.Field.OBJECTIVE),
+	})
+	_dossier_threat.text = UiCopyType.format_text(&"ui.campaign.threat", "THREAT — {text}", {
+		&"text": UiCopyType.stage_narrative_text(narrative, StageNarrativeDefType.Field.THREAT),
+	})
+	_dossier_facts.text = "SQUAD  %d  ·  WAVE WINDOWS  %d\nREWARD RECORDS  %d  ·  LEAK LIMIT  %d" % [
 		stage.squad_size,
 		stage.wave_starts.size(),
 		stage.rewards.size(),
 		stage.leak_limit,
 	]
+	var reward_names: Array[String] = []
+	for reward: Dictionary in stage.rewards:
+		reward_names.append(_reward_name(reward).to_upper())
+	_dossier_reward.text = UiCopyType.format_text(
+		&"ui.campaign.first_clear_reward", "FIRST CLEAR — {rewards}",
+		{&"rewards": ", ".join(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
+	)
 	_dossier_hint.text = UiCopyType.stage_hint(stage)
 	for child: Node in _dossier_stars.get_children():
 		child.queue_free()
@@ -318,3 +366,18 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 func _on_back_to_staging() -> void:
 	Sfx.play("ui_back")
 	Game.open_staging()
+
+
+func _reward_name(reward: Dictionary) -> String:
+	var kind := StringName(reward.get("kind", &""))
+	var identifier := StringName(reward.get("id", &""))
+	if not REWARD_DIRS.has(kind):
+		return String(identifier).replace("_", " ").capitalize()
+	var definition: Resource = load("%s/%s.tres" % [REWARD_DIRS[kind], identifier])
+	if definition is OperatorDef:
+		return UiCopyType.operator_name(definition)
+	if definition is TrapDef:
+		return UiCopyType.trap_name(definition)
+	if definition is SpellDef:
+		return UiCopyType.spell_name(definition)
+	return String(identifier).replace("_", " ").capitalize()

@@ -14,11 +14,7 @@ const StagingCommandTileType := preload(
 )
 const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
-const StagingResourceChipType := preload(
-	"res://scripts/ui/components/staging_resource_chip.gd"
-)
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
-const StagingMockWalletType := preload("res://scripts/ui/staging_mock_wallet.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const LunarisBackdropType := preload(
 	"res://scripts/ui/components/lunaris_animated_backdrop.gd"
@@ -69,9 +65,6 @@ var _top_summary: Label = null
 var _top_bar: PanelContainer = null
 var _top_row: HBoxContainer = null
 var _top_crest: TextureRect = null
-var _resource_row: HBoxContainer = null
-var _resource_chips: Array[StagingResourceChipType] = []
-var _utility_row: HBoxContainer = null
 var _exit_label: Label = null
 var _backdrop: LunarisBackdropType = null
 var _command_tiles: Array[StagingCommandTileType] = []
@@ -136,6 +129,7 @@ func _build_screen() -> void:
 func _build_backdrop() -> void:
 	_backdrop = LunarisBackdropType.new()
 	_backdrop.name = "LunarisBackdrop"
+	_backdrop.set_reduced_motion(_reduced_motion)
 	add_child(_backdrop)
 
 	var atmosphere := ColorRect.new()
@@ -211,24 +205,6 @@ func _build_top_bar() -> void:
 	StagingSkinType.apply_display_type(_top_summary, 15, IVORY, 520)
 	status_row.add_child(_top_summary)
 
-	_resource_row = HBoxContainer.new()
-	_resource_row.name = "MockResourceWallet"
-	_resource_row.add_theme_constant_override(&"separation", 6)
-	_top_row.add_child(_resource_row)
-	for resource: Dictionary in StagingMockWalletType.resources():
-		var chip := StagingResourceChipType.new()
-		chip.name = "%sChip" % String(resource.get(&"id", &"resource")).to_pascal_case()
-		chip.configure(resource)
-		_resource_chips.append(chip)
-		_resource_row.add_child(chip)
-
-	_utility_row = HBoxContainer.new()
-	_utility_row.name = "UtilityIcons"
-	_utility_row.add_theme_constant_override(&"separation", 5)
-	_utility_row.add_child(_utility_icon("Messages", StagingSkinType.MESSAGE_ICON))
-	_utility_row.add_child(_utility_icon("Settings", StagingSkinType.SETTINGS_ICON))
-	_top_row.add_child(_utility_row)
-
 	_back = Button.new()
 	_back.name = "ExitButton"
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
@@ -275,13 +251,6 @@ func _texture_icon(node_name: String, texture: Texture2D, minimum: Vector2) -> T
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return icon
-
-
-func _utility_icon(node_name: String, texture: Texture2D) -> TextureRect:
-	var icon := _texture_icon(node_name, texture, Vector2(36.0, 36.0))
-	icon.modulate = Color(0.82, 0.86, 0.88, 0.88)
-	icon.tooltip_text = "%s — unavailable" % node_name
 	return icon
 
 
@@ -764,11 +733,6 @@ func _apply_responsive_layout() -> void:
 	_top_identity.custom_minimum_size.x = 76.0 if narrow_top else (122.0 if compact_top else 190.0)
 	_top_crest.custom_minimum_size = Vector2(42.0, 42.0) if compact_top else Vector2(52.0, 52.0)
 	StagingSkinType.apply_display_type(_top_identity, 13 if compact_top else 16, IVORY, 560)
-	_utility_row.visible = not _portrait and viewport_size.x >= 1260.0
-	for index: int in _resource_chips.size():
-		var chip := _resource_chips[index]
-		chip.visible = index < 2 or (not compact_top and index == 2)
-		chip.set_compact(compact_top)
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
 	_exit_label.visible = not narrow_top

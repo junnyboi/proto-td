@@ -169,7 +169,7 @@ func _build_recenter_button() -> void:
 		"Reset the battlefield view (R)",
 	)
 	_recenter_button.theme_type_variation = &"AuiSecondaryButton"
-	_recenter_button.focus_mode = Control.FOCUS_NONE
+	_recenter_button.focus_mode = Control.FOCUS_ALL
 	_recenter_button.custom_minimum_size = Vector2(112.0, 46.0)
 	_recenter_button.pressed.connect(_on_recenter_pressed)
 	add_child(_recenter_button)

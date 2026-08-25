@@ -78,8 +78,12 @@ func _run() -> void:
 	await process_frame
 	var memorial_grid := memorial.find_child("VahallaMemorialGrid", true, false) as GridContainer
 	var honor := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
+	var portrait := memorial.find_child("SelectedMemorialPortrait", true, false) as TextureRect
+	var ledger := memorial.find_child("ServiceLedger", true, false) as PanelContainer
 	_check(memorial_grid != null and memorial_grid.get_child_count() == 1, "Vahalla memorial card missing")
 	_check(honor != null and not honor.disabled, "Vahalla honor action unavailable")
+	_check(portrait != null and portrait.custom_minimum_size.y >= 380.0, "selected memorial identity is not visually dominant")
+	_check(ledger != null and ledger.custom_minimum_size.y >= 132.0, "terminal service ledger hierarchy is missing")
 	if honor != null:
 		honor.pressed.emit()
 		await process_frame
