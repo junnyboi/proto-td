@@ -3,6 +3,7 @@ extends SceneTree
 const LANDSCAPE := Vector2i(1280, 720)
 const PORTRAIT := Vector2i(720, 1280)
 const EPSILON := 0.05
+const PREFERENCES_PATH := "user://title_ui_scale_test.cfg"
 
 var _failures: Array[String] = []
 var _title: Control = null
@@ -13,8 +14,10 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_remove_preferences()
 	root.size = LANDSCAPE
 	_title = load("res://scenes/title.tscn").instantiate() as Control
+	_title.call("set_preferences_path", PREFERENCES_PATH)
 	root.add_child(_title)
 	await process_frame
 	await process_frame
@@ -26,6 +29,7 @@ func _run() -> void:
 	_verify_portrait()
 	await _verify_settings_typography()
 	await _cleanup()
+	_remove_preferences()
 	call_deferred("_finish")
 
 
@@ -106,6 +110,11 @@ func _cleanup() -> void:
 	# retire that one-shot playback before the standalone SceneTree runs its
 	# ObjectDB and resource-lifetime checks.
 	await create_timer(0.5).timeout
+
+
+func _remove_preferences() -> void:
+	if FileAccess.file_exists(PREFERENCES_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PREFERENCES_PATH))
 
 
 func _finish() -> void:
