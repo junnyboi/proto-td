@@ -295,7 +295,7 @@ func _try_bind_hover(control: Control) -> void:
 
 func _on_control_hovered(control: Control) -> void:
 	var hover_owner := _hover_owner_for(control)
-	if hover_owner == null or not hover_owner.visible:
+	if hover_owner == null or not _hover_hierarchy_visible(hover_owner):
 		return
 	var now_msec := Time.get_ticks_msec()
 	if now_msec < int(hover_owner.get_meta(HOVER_READY_META, 0)):
@@ -344,3 +344,12 @@ func _hover_owner_for(control: Control) -> Control:
 			owner = candidate
 		cursor = cursor.get_parent()
 	return owner
+
+
+func _hover_hierarchy_visible(control: Control) -> bool:
+	var cursor: Node = control
+	while cursor != null:
+		if cursor is CanvasItem and not (cursor as CanvasItem).visible:
+			return false
+		cursor = cursor.get_parent()
+	return true
