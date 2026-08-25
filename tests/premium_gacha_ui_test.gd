@@ -47,6 +47,15 @@ func _run() -> void:
 			if card != null:
 				var portrait := card.find_child("Portrait", true, false) as TextureRect
 				_check(portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
+				var fullsize_id := StringName("portrait_%s_fullsize" % premium_id)
+				_check(
+					Art.size(fullsize_id) == Vector2i(640, 800),
+					"gacha card is not using the full-size design-sheet portrait for %s" % premium_id,
+				)
+				_check(
+					String(Art.metadata(fullsize_id).get("pattern", "")).contains("/fullsize/"),
+					"full-size portrait manifest path is incorrect for %s" % premium_id,
+				)
 
 	var before_cancel: Dictionary = game.get("campaign").runtime_projection()
 	root.size = Vector2i(540, 960)
@@ -94,26 +103,42 @@ func _run() -> void:
 	await process_frame
 	var reveal_layer := screen.find_child("PullRevealLayer", true, false) as Control
 	var reveal_title := screen.find_child("RevealTitle", true, false) as Label
-	var reveal_result := screen.find_child("RevealResult", true, false) as Label
+	var reveal_stack := screen.find_child("CinematicIdentityReveal", true, false) as VBoxContainer
+	var reveal_stars := screen.find_child("RarityStars", true, false) as HBoxContainer
 	var skip := screen.find_child("SkipRevealButton", true, false) as Button
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
 	var cinematic_video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
 	var final_plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
 	_check(reveal_layer != null and reveal_layer.visible, "five-star reveal layer did not open")
 	_check(pull.disabled and back.disabled, "reveal did not lock pull and back actions")
-	_check(reveal_title != null and reveal_title.text == "5-STAR RESONANCE", "five-star title is incorrect")
-	_check(reveal_result != null and reveal_result.text.contains("NEW HERO"), "reveal result kind is missing")
+	_check(reveal_title != null and reveal_title.text == "LUNARIS VESSEL", "character title is incorrect")
+	_check(reveal_stack != null and not reveal_stack.visible, "character title appeared before video completion")
+	_check(reveal_stars != null and reveal_stars.get_child_count() == 5, "five-star reveal stage is incomplete")
 	_check(skip != null and skip.visible and not skip.disabled, "skip action is unavailable")
 	_check(cinematic != null, "cinematic player is missing")
 	_check(cinematic_video != null and cinematic_video.stream != null, "five-star cinematic stream did not load")
 	_check(cinematic_video != null and cinematic_video.is_playing(), "five-star cinematic did not start")
 	_check(final_plate != null and final_plate.texture != null, "five-star final identity plate did not load")
 	_check(StringName(music.call("current_id")) == &"gacha_lunaris_vessel", "five-star cinematic mix did not start")
-	screen.call("_finish_reveal")
+	cinematic.call("_on_video_finished")
 	await process_frame
-	_check(not reveal_layer.visible, "skipped reveal layer remained visible")
-	_check(not pull.disabled and not back.disabled, "skip did not restore navigation input")
-	_check(cinematic_video != null and cinematic_video.stream == null, "skip did not release the video stream")
+	_check(reveal_stack != null and reveal_stack.visible, "video completion did not begin character reveal")
+	await create_timer(4.0).timeout
+	_check(is_equal_approx(reveal_title.modulate.a, 1.0), "character name did not finish fading in")
+	if reveal_stars != null:
+		for index: int in 5:
+			var star := reveal_stars.get_child(index) as ResonanceStar
+			_check(star.visible and star.modulate.a > 0.99, "five-star item %d did not fade in" % (index + 1))
+			_check(absf(star.rotation) < 0.01, "five-star item %d did not stop spinning" % (index + 1))
+			_check(star.scale.x >= 0.99 and star.scale.x <= 1.07, "five-star item %d is not pulsing at full size" % (index + 1))
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	screen.call("_on_reveal_gui_input", click)
+	await process_frame
+	_check(not reveal_layer.visible, "click-anywhere skip left the reveal layer visible")
+	_check(not pull.disabled and not back.disabled, "click-anywhere skip did not restore navigation input")
+	_check(cinematic_video != null and cinematic_video.stream == null, "click-anywhere skip did not release the video stream")
 	_check(
 		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
 		"skip did not resume Company Command audio",
@@ -125,11 +150,15 @@ func _run() -> void:
 	var four_star := _sample_pull(4, false)
 	screen.call("_begin_reveal", four_star)
 	await process_frame
-	var portrait := screen.find_child("RevealPortrait", true, false) as TextureRect
 	_check(reveal_layer.visible, "reduced-motion reveal did not open")
-	_check(portrait != null and is_equal_approx(portrait.modulate.a, 1.0), "reduced motion did not settle instantly")
+	_check(reveal_stack != null and reveal_stack.visible, "reduced motion did not reveal the identity instantly")
+	_check(reveal_title.text == "ARCHIVE CASTER", "reduced-motion character title is incorrect")
 	_check(final_plate != null and final_plate.visible and final_plate.texture != null, "reduced motion did not show the final identity plate")
 	_check(cinematic_video != null and cinematic_video.stream == null, "reduced motion loaded a video stream")
+	if reveal_stars != null:
+		for index: int in 5:
+			var star := reveal_stars.get_child(index) as ResonanceStar
+			_check(star.visible == (index < 4), "reduced motion rendered the wrong four-star count")
 	_check(
 		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
 		"reduced motion replaced Company Command audio",
