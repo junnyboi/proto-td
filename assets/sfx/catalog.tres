@@ -29,6 +29,7 @@ aliases = {
 &"slow_field": &"ability_ready",
 &"trap_snap": &"trap_trigger",
 &"ui_select": &"ui_click",
+&"ui_hover": &"ui_click",
 &"ui_accept": &"ui_confirm",
 &"menu_transition": &"menu_open"
 }

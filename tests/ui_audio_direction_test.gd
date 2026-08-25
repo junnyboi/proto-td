@@ -34,6 +34,7 @@ func _run() -> void:
 			await process_frame
 		_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
 		_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
+		_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_click", "hover alias resolves")
 		for spell_id: StringName in [&"bolt", &"charm", &"slow_field"]:
 			_check(
 				sfx.call("resolved_id_for", spell_id) == &"ability_ready",

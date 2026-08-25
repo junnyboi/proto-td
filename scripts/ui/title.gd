@@ -25,6 +25,10 @@ const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.30
 const TITLE_UI_SCALE := 1.15
+const ENTRY_FADE_SECONDS := 0.56
+const ENTRY_STAGGER_SECONDS := 0.09
+const HOVER_SCALE := Vector2(1.025, 1.025)
+const HOVER_TWEEN_SECONDS := 0.16
 const FRAME_LIMITS := [0, 30, 60, 120]
 const MASTER_BUS := &"Master"
 const MUSIC_BUS := &"Music"
@@ -34,6 +38,7 @@ var _backdrop: LunarisBackdropType = null
 var _entry_host: MarginContainer = null
 var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
+var _orbit_rule: HBoxContainer = null
 var _start_button: Button = null
 var _settings_button: Button = null
 var _settings_overlay: Control = null
@@ -63,6 +68,10 @@ var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
 var _focus_pulse_colors: Dictionary = {}
+var _entry_tween: Tween = null
+var _hover_tweens: Dictionary = {}
+var _highlighted_actions: Dictionary = {}
+var _interaction_feedback_ready := false
 
 
 func _ready() -> void:
@@ -79,6 +88,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_refresh_copy()
 	_apply_responsive_layout()
+	_begin_title_reveal.call_deferred()
 	_start_button.grab_focus.call_deferred()
 	Game.content = self
 	Music.set_enabled(_title_music_enabled)
@@ -87,6 +97,11 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if _entry_tween != null and _entry_tween.is_valid():
+		_entry_tween.kill()
+	for tween_value: Variant in _hover_tweens.values():
+		if tween_value is Tween and (tween_value as Tween).is_valid():
+			(tween_value as Tween).kill()
 	if _backdrop != null:
 		_backdrop.stop()
 
@@ -142,12 +157,12 @@ func _build_screen() -> void:
 	StagingSkinType.apply_display_type(_wordmark, _title_font_size(66), IVORY, 650)
 	_entry_stack.add_child(_wordmark)
 
-	var orbit_rule := HBoxContainer.new()
-	orbit_rule.name = "OrbitRule"
-	orbit_rule.alignment = BoxContainer.ALIGNMENT_CENTER
-	orbit_rule.add_theme_constant_override(&"separation", 8)
-	_entry_stack.add_child(orbit_rule)
-	orbit_rule.add_child(_rule(Color(GOLD, 0.72)))
+	_orbit_rule = HBoxContainer.new()
+	_orbit_rule.name = "OrbitRule"
+	_orbit_rule.alignment = BoxContainer.ALIGNMENT_CENTER
+	_orbit_rule.add_theme_constant_override(&"separation", 8)
+	_entry_stack.add_child(_orbit_rule)
+	_orbit_rule.add_child(_rule(Color(GOLD, 0.72)))
 	var seal := TextureRect.new()
 	seal.name = "LunarisSeal"
 	seal.custom_minimum_size = Vector2(26.0, 26.0)
@@ -155,8 +170,8 @@ func _build_screen() -> void:
 	seal.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	seal.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orbit_rule.add_child(seal)
-	orbit_rule.add_child(_rule(Color(MOON_CYAN, 0.72)))
+	_orbit_rule.add_child(seal)
+	_orbit_rule.add_child(_rule(Color(MOON_CYAN, 0.72)))
 
 	_start_button = _entry_button("StartButton", true)
 	_start_button.pressed.connect(_on_start_pressed)
@@ -165,6 +180,8 @@ func _build_screen() -> void:
 	_settings_button = _entry_button("SettingsButton", false)
 	_settings_button.pressed.connect(_open_settings)
 	_entry_stack.add_child(_settings_button)
+	_wire_title_action_feedback(_start_button)
+	_wire_title_action_feedback(_settings_button)
 	_wire_entry_focus()
 
 	_build_settings_overlay()
@@ -394,6 +411,88 @@ func _wire_entry_focus() -> void:
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_next = current.get_path_to(following)
+
+
+func _begin_title_reveal() -> void:
+	var reveal_nodes: Array[CanvasItem] = [_wordmark, _orbit_rule, _start_button, _settings_button]
+	_interaction_feedback_ready = false
+	if _entry_tween != null and _entry_tween.is_valid():
+		_entry_tween.kill()
+	for item: CanvasItem in reveal_nodes:
+		item.modulate.a = 1.0 if _reduced_motion else 0.0
+	if _reduced_motion:
+		_finish_title_reveal()
+		return
+	_entry_tween = create_tween().set_parallel(true)
+	_entry_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	for index: int in reveal_nodes.size():
+		_entry_tween.tween_property(
+			reveal_nodes[index],
+			"modulate:a",
+			1.0,
+			ENTRY_FADE_SECONDS,
+		).set_delay(float(index) * ENTRY_STAGGER_SECONDS)
+	_entry_tween.chain().tween_callback(_finish_title_reveal)
+
+
+func _finish_title_reveal() -> void:
+	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _settings_button]:
+		if item != null:
+			item.modulate.a = 1.0
+	_interaction_feedback_ready = true
+
+
+func _wire_title_action_feedback(button: Button) -> void:
+	_highlighted_actions[button] = false
+	button.resized.connect(_center_action_pivot.bind(button))
+	button.mouse_entered.connect(_on_title_action_hover_changed.bind(button, true))
+	button.mouse_exited.connect(_on_title_action_hover_changed.bind(button, false))
+	_center_action_pivot.call_deferred(button)
+
+
+func _center_action_pivot(button: Button) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	button.pivot_offset = button.size * 0.5
+
+
+func _on_title_action_hover_changed(button: Button, highlighted: bool) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	if bool(_highlighted_actions.get(button, false)) == highlighted:
+		return
+	_highlighted_actions[button] = highlighted
+	if highlighted and _interaction_feedback_ready:
+		Sfx.play("ui_hover")
+	_animate_action_scale(button, HOVER_SCALE if highlighted else Vector2.ONE)
+
+
+func _animate_action_scale(button: Button, target: Vector2) -> void:
+	var active_value: Variant = _hover_tweens.get(button)
+	if active_value is Tween and (active_value as Tween).is_valid():
+		(active_value as Tween).kill()
+	if _reduced_motion:
+		button.scale = Vector2.ONE
+		return
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", target, HOVER_TWEEN_SECONDS)
+	_hover_tweens[button] = tween
+
+
+func _reset_title_action_feedback() -> void:
+	for button_value: Variant in _highlighted_actions.keys():
+		var button := button_value as Button
+		if button == null or not is_instance_valid(button):
+			continue
+		_highlighted_actions[button] = false
+		var tween_value: Variant = _hover_tweens.get(button)
+		if tween_value is Tween and (tween_value as Tween).is_valid():
+			(tween_value as Tween).kill()
+		button.scale = Vector2.ONE
+	_hover_tweens.clear()
+
+
 func _rule(color: Color) -> ColorRect:
 	var rule := ColorRect.new()
 	rule.custom_minimum_size = Vector2(116.0, 2.0)
@@ -419,6 +518,7 @@ func _on_start_pressed() -> void:
 
 func _open_settings() -> void:
 	Sfx.play("menu_open")
+	_reset_title_action_feedback()
 	_entry_host.visible = false
 	_settings_overlay.visible = true
 	_master_volume_slider.grab_focus.call_deferred()
@@ -502,6 +602,8 @@ func _toggle_reduced_motion() -> void:
 	ViewPreferencesType.set_reduced_motion(_reduced_motion, _preferences_path)
 	_apply_graphics_settings()
 	_backdrop.set_reduced_motion(_reduced_motion)
+	if _reduced_motion:
+		_reset_title_action_feedback()
 	_refresh_copy()
 
 
