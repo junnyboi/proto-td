@@ -20,6 +20,9 @@ const MOON_CYAN := Color("91eaf1")
 const IVORY := Color("f5efe1")
 const MUTED := Color("aebfd0")
 const VOID := Color("071019")
+const FOCUS_PULSE_SECONDS := 2.8
+const FOCUS_PULSE_MIN_ALPHA := 0.12
+const FOCUS_PULSE_MAX_ALPHA := 0.30
 
 var _backdrop: LunarisBackdropType = null
 var _entry_host: MarginContainer = null
@@ -36,6 +39,9 @@ var _motion_button: Button = null
 var _settings_back: Button = null
 var _title_music_enabled := true
 var _reduced_motion := false
+var _focus_pulse_elapsed := 0.0
+var _focus_pulse_styles: Dictionary = {}
+var _focus_pulse_colors: Dictionary = {}
 
 
 func _ready() -> void:
@@ -56,6 +62,19 @@ func _exit_tree() -> void:
 		_backdrop.stop()
 	if Music.current_id() == &"title_lunaris":
 		Music.stop()
+
+
+func _process(delta: float) -> void:
+	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
+	var pulse := 0.20
+	if not _reduced_motion:
+		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
+		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
+	for button in _focus_pulse_styles:
+		var style: StyleBoxFlat = _focus_pulse_styles[button]
+		var accent: Color = _focus_pulse_colors[button]
+		style.bg_color = Color(accent, pulse)
+		(button as Button).queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -201,13 +220,29 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	StagingSkinType.apply_display_type(button, 24 if primary else 20, IVORY, 600)
+	button.add_theme_color_override(&"font_focus_color", BRIGHT_GOLD if primary else MOON_CYAN)
 	button.add_theme_stylebox_override(
 		&"normal",
-		StagingSkinType.primary_button_style(Color(0.72, 0.9, 0.94, 1.0) if primary else Color(0.34, 0.48, 0.56, 0.92)),
+		StagingSkinType.clean_button_style(
+			Color(0.025, 0.08, 0.11, 0.96) if primary else Color(0.014, 0.035, 0.055, 0.94),
+			Color(MOON_CYAN, 0.62) if primary else Color(GOLD, 0.40),
+		),
 	)
-	button.add_theme_stylebox_override(&"hover", StagingSkinType.primary_button_style(Color(0.92, 1.05, 1.08, 1.0)))
-	button.add_theme_stylebox_override(&"pressed", StagingSkinType.primary_button_style(Color(0.42, 0.66, 0.72, 1.0)))
-	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(BRIGHT_GOLD))
+	button.add_theme_stylebox_override(
+		&"hover",
+		StagingSkinType.clean_button_style(
+			Color(MOON_CYAN, 0.24) if primary else Color(GOLD, 0.16),
+			Color(MOON_CYAN, 0.90) if primary else Color(BRIGHT_GOLD, 0.74),
+		),
+	)
+	button.add_theme_stylebox_override(
+		&"pressed",
+		StagingSkinType.clean_button_style(
+			Color(MOON_CYAN, 0.34) if primary else Color(GOLD, 0.24),
+			MOON_CYAN if primary else BRIGHT_GOLD,
+		),
+	)
+	_register_focus_pulse(button, BRIGHT_GOLD if primary else MOON_CYAN)
 	return button
 
 
@@ -218,11 +253,28 @@ func _settings_action(node_name: String) -> Button:
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	StagingSkinType.apply_display_type(button, 17, IVORY, 560)
-	button.add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style(Color(0.52, 0.62, 0.68, 0.96)))
-	button.add_theme_stylebox_override(&"hover", StagingSkinType.operation_tile_style(Color(0.82, 0.94, 0.98, 1.0)))
-	button.add_theme_stylebox_override(&"pressed", StagingSkinType.operation_tile_style(Color(0.42, 0.58, 0.66, 1.0)))
-	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(MOON_CYAN))
+	button.add_theme_color_override(&"font_focus_color", MOON_CYAN)
+	button.add_theme_stylebox_override(
+		&"normal",
+		StagingSkinType.clean_button_style(Color(0.014, 0.035, 0.055, 0.96), Color(MOON_CYAN, 0.34)),
+	)
+	button.add_theme_stylebox_override(
+		&"hover",
+		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.16), Color(MOON_CYAN, 0.72)),
+	)
+	button.add_theme_stylebox_override(
+		&"pressed",
+		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.26), MOON_CYAN),
+	)
+	_register_focus_pulse(button, MOON_CYAN)
 	return button
+
+
+func _register_focus_pulse(button: Button, accent: Color) -> void:
+	var style := StagingSkinType.transparent_focus_style(accent)
+	button.add_theme_stylebox_override(&"focus", style)
+	_focus_pulse_styles[button] = style
+	_focus_pulse_colors[button] = accent
 
 
 func _rule(color: Color) -> ColorRect:

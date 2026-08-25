@@ -99,6 +99,26 @@ static func primary_button_style(modulate: Color = Color.WHITE) -> StyleBoxTextu
 	return _texture_style(PRIMARY_BUTTON_FRAME, Vector4(58.0, 30.0, 58.0, 30.0), modulate)
 
 
+static func clean_button_style(
+	fill: Color,
+	edge: Color,
+	corner_radius: int = 4,
+) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = edge
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(corner_radius)
+	style.content_margin_left = 24.0
+	style.content_margin_top = 10.0
+	style.content_margin_right = 24.0
+	style.content_margin_bottom = 10.0
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.34)
+	style.shadow_size = 4
+	style.shadow_offset = Vector2(0.0, 2.0)
+	return style
+
+
 static func resource_chip_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
 	return _texture_style(RESOURCE_CHIP_FRAME, Vector4(38.0, 24.0, 54.0, 24.0), modulate)
 
@@ -109,14 +129,14 @@ static func navbar_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
 
 static func transparent_focus_style(color: Color = MOON_CYAN) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(color, 0.08)
-	style.border_color = color
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(2)
-	style.expand_margin_left = 2.0
-	style.expand_margin_top = 2.0
-	style.expand_margin_right = 2.0
-	style.expand_margin_bottom = 2.0
+	style.bg_color = Color(color, 0.14)
+	style.border_color = Color.TRANSPARENT
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(4)
+	style.expand_margin_left = 3.0
+	style.expand_margin_top = 3.0
+	style.expand_margin_right = 3.0
+	style.expand_margin_bottom = 3.0
 	return style
 
 

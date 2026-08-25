@@ -6,12 +6,19 @@ const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd"
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 
 const GOLD := Color("d9b96e")
+const BRIGHT_GOLD := Color("f0d89a")
 const IVORY := Color("f5efe1")
 const MUTED := Color("8d9aa3")
+const FOCUS_PULSE_SECONDS := 2.8
+const FOCUS_PULSE_MIN_ALPHA := 0.10
+const FOCUS_PULSE_MAX_ALPHA := 0.26
 
 var _glyph: TextureRect
 var _title_label: Label
 var _status_indicator: TextureRect
+var _focus_style: StyleBoxFlat
+var _focus_pulse_elapsed := 0.0
+var _reduced_motion := false
 
 
 func _init() -> void:
@@ -19,7 +26,20 @@ func _init() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	focus_mode = Control.FOCUS_ALL
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+	_focus_style = StagingSkinType.transparent_focus_style(GOLD)
+	add_theme_stylebox_override(&"focus", _focus_style)
 	_build_content()
+
+
+func _process(delta: float) -> void:
+	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
+	var pulse := 0.18
+	if not _reduced_motion:
+		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
+		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
+	_focus_style.bg_color = Color(GOLD, pulse)
+	queue_redraw()
 
 
 func configure(
@@ -110,11 +130,22 @@ func _build_content() -> void:
 
 func _apply_styles() -> void:
 	if disabled:
-		var disabled_tint := Color(0.56, 0.58, 0.60, 0.78)
-		add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style(disabled_tint))
-		add_theme_stylebox_override(&"disabled", StagingSkinType.operation_tile_style(disabled_tint))
+		var disabled_style := StagingSkinType.clean_button_style(
+			Color(0.018, 0.028, 0.038, 0.78),
+			Color(MUTED, 0.22),
+		)
+		add_theme_stylebox_override(&"normal", disabled_style)
+		add_theme_stylebox_override(&"disabled", disabled_style)
 	else:
-		add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style())
-		add_theme_stylebox_override(&"hover", StagingSkinType.operation_tile_style(Color(1.0, 1.03, 1.08, 1.0)))
-		add_theme_stylebox_override(&"pressed", StagingSkinType.operation_tile_style(Color(0.76, 0.84, 0.88, 1.0)))
-	add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(GOLD))
+		add_theme_stylebox_override(
+			&"normal",
+			StagingSkinType.clean_button_style(Color(0.018, 0.043, 0.065, 0.96), Color(GOLD, 0.34)),
+		)
+		add_theme_stylebox_override(
+			&"hover",
+			StagingSkinType.clean_button_style(Color(GOLD, 0.16), Color(BRIGHT_GOLD, 0.72)),
+		)
+		add_theme_stylebox_override(
+			&"pressed",
+			StagingSkinType.clean_button_style(Color(GOLD, 0.24), BRIGHT_GOLD),
+		)

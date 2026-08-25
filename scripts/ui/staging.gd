@@ -40,6 +40,9 @@ const VOID := Color("071019")
 const DEEP_NAVY := Color("0a1724")
 const GLASS := Color(0.012, 0.03, 0.048, 0.94)
 const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
+const FOCUS_PULSE_SECONDS := 2.8
+const FOCUS_PULSE_MIN_ALPHA := 0.12
+const FOCUS_PULSE_MAX_ALPHA := 0.28
 
 var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
@@ -78,10 +81,15 @@ var _backdrop: LunarisBackdropType = null
 var _command_tiles: Array[StagingCommandTileType] = []
 var _faction_cards: Array[FactionStandardCardType] = []
 var _portrait := false
+var _reduced_motion := false
+var _focus_pulse_elapsed := 0.0
+var _focus_pulse_styles: Dictionary = {}
+var _focus_pulse_colors: Dictionary = {}
 
 
 func _ready() -> void:
 	theme = STAGING_THEME
+	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 	Game.content = self
 	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
@@ -91,6 +99,19 @@ func _ready() -> void:
 	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
 	if not _training_acknowledgement.is_empty():
 		Game.training_call(&"consume_acknowledgement")
+
+
+func _process(delta: float) -> void:
+	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
+	var pulse := 0.20
+	if not _reduced_motion:
+		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
+		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
+	for button in _focus_pulse_styles:
+		var style: StyleBoxFlat = _focus_pulse_styles[button]
+		var accent: Color = _focus_pulse_colors[button]
+		style.bg_color = Color(accent, pulse)
+		(button as Button).queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -230,7 +251,7 @@ func _build_top_bar() -> void:
 	_back.add_theme_stylebox_override(&"normal", _panel_style(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
 	_back.add_theme_stylebox_override(&"hover", _panel_style(Color(GOLD, 0.10), Color(GOLD, 0.34), 1, 2))
 	_back.add_theme_stylebox_override(&"pressed", _panel_style(Color(MOON_CYAN, 0.10), Color(MOON_CYAN, 0.48), 1, 2))
-	_back.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(GOLD))
+	_register_focus_pulse(_back, GOLD)
 	var exit_margin := MarginContainer.new()
 	exit_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	exit_margin.add_theme_constant_override(&"margin_left", 8)
@@ -665,14 +686,24 @@ func _build_mission_button() -> AetheriaButtonType:
 	label.add_theme_color_override(&"font_outline_color", Color(VOID, 0.92))
 	button.add_theme_stylebox_override(
 		&"normal",
-		StagingSkinType.primary_button_style(
-			Color.WHITE if not button.disabled else Color(0.52, 0.54, 0.56, 0.78),
+		StagingSkinType.clean_button_style(
+			Color(0.025, 0.08, 0.11, 0.96) if not button.disabled else Color(0.025, 0.035, 0.045, 0.78),
+			Color(MOON_CYAN, 0.62) if not button.disabled else Color(MUTED, 0.26),
 		),
 	)
-	button.add_theme_stylebox_override(&"hover", StagingSkinType.primary_button_style(Color(1.08, 1.04, 0.94, 1.0)))
-	button.add_theme_stylebox_override(&"pressed", StagingSkinType.primary_button_style(Color(0.78, 0.84, 0.88, 1.0)))
-	button.add_theme_stylebox_override(&"disabled", StagingSkinType.primary_button_style(Color(0.52, 0.54, 0.56, 0.78)))
-	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(MOON_CYAN))
+	button.add_theme_stylebox_override(
+		&"hover",
+		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.22), Color(MOON_CYAN, 0.90)),
+	)
+	button.add_theme_stylebox_override(
+		&"pressed",
+		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.32), MOON_CYAN),
+	)
+	button.add_theme_stylebox_override(
+		&"disabled",
+		StagingSkinType.clean_button_style(Color(0.025, 0.035, 0.045, 0.78), Color(MUTED, 0.26)),
+	)
+	_register_focus_pulse(button, MOON_CYAN)
 	var mission_icon := _texture_icon("MissionActionGlyph", StagingSkinType.MISSION_ICON, Vector2(38.0, 38.0))
 	mission_icon.set_anchors_preset(Control.PRESET_CENTER_LEFT)
 	mission_icon.offset_left = 18.0
@@ -681,6 +712,13 @@ func _build_mission_button() -> AetheriaButtonType:
 	mission_icon.offset_bottom = 19.0
 	button.add_child(mission_icon)
 	return button
+
+
+func _register_focus_pulse(button: Button, accent: Color) -> void:
+	var style := StagingSkinType.transparent_focus_style(accent)
+	button.add_theme_stylebox_override(&"focus", style)
+	_focus_pulse_styles[button] = style
+	_focus_pulse_colors[button] = accent
 
 
 func _build_acknowledgement() -> PanelContainer:
