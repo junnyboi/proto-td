@@ -9,7 +9,9 @@ func _init() -> void:
 
 func _run() -> void:
 	var game: Node = root.get_node_or_null("Game")
+	var music: Node = root.get_node_or_null("Music")
 	_check(game != null, "Game autoload missing")
+	_check(music != null, "Music autoload missing")
 	if game == null:
 		_finish()
 		return
@@ -81,15 +83,25 @@ func _run() -> void:
 	var reveal_title := screen.find_child("RevealTitle", true, false) as Label
 	var reveal_result := screen.find_child("RevealResult", true, false) as Label
 	var skip := screen.find_child("SkipRevealButton", true, false) as Button
+	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
+	var cinematic_video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
+	var final_plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
 	_check(reveal_layer != null and reveal_layer.visible, "five-star reveal layer did not open")
 	_check(pull.disabled and back.disabled, "reveal did not lock pull and back actions")
 	_check(reveal_title != null and reveal_title.text == "5-STAR RESONANCE", "five-star title is incorrect")
 	_check(reveal_result != null and reveal_result.text.contains("NEW HERO"), "reveal result kind is missing")
 	_check(skip != null and skip.visible and not skip.disabled, "skip action is unavailable")
+	_check(cinematic != null, "cinematic player is missing")
+	_check(cinematic_video != null and cinematic_video.stream != null, "five-star cinematic stream did not load")
+	_check(cinematic_video != null and cinematic_video.is_playing(), "five-star cinematic did not start")
+	_check(final_plate != null and final_plate.texture != null, "five-star final identity plate did not load")
+	_check(StringName(music.call("current_id")) == &"gacha_lunaris_vessel", "five-star cinematic mix did not start")
 	screen.call("_finish_reveal")
 	await process_frame
 	_check(not reveal_layer.visible, "skipped reveal layer remained visible")
 	_check(not pull.disabled and not back.disabled, "skip did not restore navigation input")
+	_check(cinematic_video != null and cinematic_video.stream == null, "skip did not release the video stream")
+	_check(StringName(music.call("current_id")).is_empty(), "skip did not stop cinematic audio")
 	var status := screen.find_child("PullStatusLabel", true, false) as Label
 	_check(status != null and status.text.contains("5-STAR SIGNAL"), "skip did not apply final result copy")
 
@@ -100,6 +112,9 @@ func _run() -> void:
 	var portrait := screen.find_child("RevealPortrait", true, false) as TextureRect
 	_check(reveal_layer.visible, "reduced-motion reveal did not open")
 	_check(portrait != null and is_equal_approx(portrait.modulate.a, 1.0), "reduced motion did not settle instantly")
+	_check(final_plate != null and final_plate.visible and final_plate.texture != null, "reduced motion did not show the final identity plate")
+	_check(cinematic_video != null and cinematic_video.stream == null, "reduced motion loaded a video stream")
+	_check(StringName(music.call("current_id")).is_empty(), "reduced motion started cinematic audio")
 	screen.call("_finish_reveal")
 	await process_frame
 	_check(not reveal_layer.visible, "reduced-motion reveal did not finalize")
@@ -111,7 +126,6 @@ func _run() -> void:
 	if parent != null:
 		parent.remove_child(screen)
 	screen.free()
-	var music := root.get_node_or_null("Music")
 	if music != null and music.has_method("stop"):
 		music.call("stop")
 	var sfx := root.get_node_or_null("Sfx")
