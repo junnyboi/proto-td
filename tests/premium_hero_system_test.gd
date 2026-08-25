@@ -125,6 +125,19 @@ func _test_gacha_and_lifecycle() -> void:
 	_check(premium["premium_lives"] == 0, "last fall did not consume final life")
 	_check(premium["life_status"] == "dead", "zero-life hero was not locked")
 	_check(not _memorial(data["memorial"], premium["hero_id"]).is_empty(), "zero-life memorial missing")
+	var fallen_projection: Dictionary = state.runtime_projection()
+	_check(
+		_premium(fallen_projection["ready_heroes"], target_premium_id).is_empty(),
+		"terminally dead premium hero remained in ready roster projection",
+	)
+	_check(
+		not _premium(fallen_projection["fallen_heroes"], target_premium_id).is_empty(),
+		"terminally dead premium hero missing from fallen roster projection",
+	)
+	_check(
+		not _memorial(fallen_projection["memorial"], premium["hero_id"]).is_empty(),
+		"runtime memorial projection omitted terminally dead premium hero",
+	)
 	var locked: Dictionary = state.begin_attempt(
 		"test:locked", "s1", [premium["hero_id"]], 42, state.save_revision(),
 	)
@@ -143,6 +156,15 @@ func _test_gacha_and_lifecycle() -> void:
 	_check(revived, "repeat pull did not revive zero-life premium hero")
 	_check(premium["premium_lives"] >= 1, "revived hero has no life")
 	_check(_memorial(data["memorial"], premium["hero_id"]).is_empty(), "revival left memorial behind")
+	var revived_projection: Dictionary = state.runtime_projection()
+	_check(
+		not _premium(revived_projection["ready_heroes"], target_premium_id).is_empty(),
+		"revived premium hero did not return to ready roster projection",
+	)
+	_check(
+		_premium(revived_projection["fallen_heroes"], target_premium_id).is_empty(),
+		"revived premium hero remained in fallen roster projection",
+	)
 
 
 func _advance_pull(state: Variant, context: Dictionary, index: int) -> Variant:

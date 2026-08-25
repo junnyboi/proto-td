@@ -60,8 +60,16 @@ static func roster(value: Variant) -> Array[Dictionary]:
 				"premium_id": hero.get("premium_id"),
 				"premium_lives": int(hero.get("premium_lives", 0)),
 				"premium_pull_count": int(hero.get("premium_pull_count", 0)),
-				"is_premium": is_premium,
-				"xp": int(hero.get("xp", 0)),
+					"is_premium": is_premium,
+					"can_rename": not is_premium and String(hero.get("life_status", "")) == "ready",
+					"rename_error": (
+						&"premium_name_locked"
+						if is_premium
+						else &"hero_not_ready"
+						if String(hero.get("life_status", "")) != "ready"
+						else &""
+					),
+					"xp": int(hero.get("xp", 0)),
 				"xp_required": required,
 				"model_can_promote": model_accepted,
 				"can_promote": model_accepted and projection_accepted,

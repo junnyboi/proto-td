@@ -15,3 +15,7 @@ The five-star reveal remains fully contained with safe margins. Its title, five 
 ## Motion and interaction
 
 The reveal begins only after a successful authoritative pull, locks Back and Pull actions, exposes explicit skip plus confirm/cancel shortcuts, kills active tweens on exit, and restores focus when finalized. Reduced-motion mode bypasses rotation and scale overshoot while presenting the same final information.
+
+## Web-specific correction
+
+Live Web validation found that the exported fallback font did not contain the Unicode star glyph used by the first implementation. The reveal now renders each rarity star as code-drawn five-point geometry with a rarity-colored fill, soft glow, and light outline. Corrected desktop and portrait captures show five crisp, evenly spaced stars without font dependence or clipping.

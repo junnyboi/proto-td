@@ -7,6 +7,7 @@ const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const TRAINING_SCENE_PATH := "res://scenes/training.tscn"
 const GACHA_SCENE_PATH := "res://scenes/gacha.tscn"
+const VAHALLA_SCENE_PATH := "res://scenes/vahalla.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -306,6 +307,27 @@ func pull_premium_hero() -> Dictionary:
 	return committed
 
 
+func rename_hero(hero_id: String, callsign: String) -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	var revision: int = campaign.save_revision()
+	var digest := CANONICAL_JSON_SCRIPT.sha256_hex(
+		{"hero_id": hero_id, "callsign": callsign},
+	).substr(0, 16)
+	var command_id := "runtime:rename:%s:%d:%s:%s" % [
+		campaign.campaign_uid(), revision, hero_id, digest,
+	]
+	var command: Dictionary = campaign.rename_hero(
+		command_id, revision, hero_id, callsign,
+	)
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+		command, campaign_store,
+	)
+	if committed["accepted"]:
+		campaign = committed["state"]
+	return committed
+
+
 func training_call(action: StringName, payload: Variant = null) -> Variant:
 	var result: Variant = null
 	match action:
@@ -440,6 +462,10 @@ func _leave_training() -> void:
 
 func open_gacha() -> void:
 	_swap_content.call_deferred(GACHA_SCENE_PATH)
+
+
+func open_vahalla() -> void:
+	_swap_content.call_deferred(VAHALLA_SCENE_PATH)
 
 
 func open_stage_select() -> void:

@@ -6,6 +6,8 @@ const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
+const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
+const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
@@ -36,6 +38,11 @@ var _intel_scroll: ScrollContainer = null
 var _footer: BoxContainer = null
 var _header: BoxContainer = null
 var _actions: GridContainer = null
+var _filter_bar: RosterFilterBarType = null
+var _roster_empty: Label = null
+var _all_roster_rows: Array[Dictionary] = []
+var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
+var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 
 
 func _ready() -> void:
@@ -130,6 +137,20 @@ func _build_body() -> GridContainer:
 	_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	roster_heading.add_child(_counter)
 	roster_column.add_child(roster_heading)
+	_all_roster_rows = _campaign_roster_rows()
+	_filter_bar = RosterFilterBarType.new()
+	_filter_bar.configure(
+		_all_roster_rows, true, RosterFilterType.STATUS_ACTIVE, RosterFilterType.FACTION_ALL,
+	)
+	_filter_bar.filters_changed.connect(_on_filters_changed)
+	roster_column.add_child(_filter_bar)
+	_roster_empty = _label(
+		"RosterEmptyState",
+		UiCopyType.text(&"ui.roster.empty", "No soldiers match the selected roster filters."),
+		&"detail",
+	)
+	_roster_empty.visible = false
+	roster_column.add_child(_roster_empty)
 	_roster_scroll = ScrollContainer.new()
 	_roster_scroll.name = "OperatorRosterScroll"
 	_roster_scroll.custom_minimum_size.y = 270.0
@@ -145,7 +166,7 @@ func _build_body() -> GridContainer:
 	_grid.add_theme_constant_override(&"h_separation", 10)
 	_grid.add_theme_constant_override(&"v_separation", 10)
 	_roster_scroll.add_child(_grid)
-	_build_operator_cards()
+	_rebuild_operator_cards()
 	_body.add_child(roster_panel)
 
 	var briefing_panel := PanelContainer.new()
@@ -180,8 +201,25 @@ func _build_body() -> GridContainer:
 	return _body
 
 
-func _build_operator_cards() -> void:
-	for hero: Dictionary in Game.campaign_projection()["ready_heroes"]:
+func _campaign_roster_rows() -> Array[Dictionary]:
+	var projection: Dictionary = Game.campaign_projection()
+	var rows: Array = []
+	rows.append_array(projection.get("ready_heroes", []))
+	rows.append_array(projection.get("fallen_heroes", []))
+	return RosterFilterType.annotate_all(rows)
+
+
+func _rebuild_operator_cards() -> void:
+	for child: Node in _grid.get_children():
+		_grid.remove_child(child)
+		child.queue_free()
+	_buttons.clear()
+	_hero_order.clear()
+	var visible := RosterFilterType.filter_rows(
+		_all_roster_rows, _filter_status, _filter_faction,
+	)
+	_roster_empty.visible = visible.is_empty()
+	for hero: Dictionary in visible:
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
@@ -189,7 +227,8 @@ func _build_operator_cards() -> void:
 		pick.name = "Pick_%s" % hero_id
 		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		pick.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		pick.toggle_mode = true
+		var fallen := bool(hero.get("fallen", false))
+		pick.toggle_mode = not fallen
 		var card_text := "%s\n%d DP • READY" % [_hero_label(hero), definition.dp_cost]
 		if hero.get("hero_kind", "recruit") == "premium":
 			var lives := int(hero.get("premium_lives", 0))
@@ -197,6 +236,8 @@ func _build_operator_cards() -> void:
 				_hero_label(hero), definition.dp_cost, lives,
 				"LIFE" if lives == 1 else "LIVES",
 			]
+		if fallen:
+			card_text = "%s\nFALLEN • VAHALLA" % _hero_label(hero)
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
 		pick.icon = Art.texture(StringName(hero["portrait_asset_id"]))
@@ -206,14 +247,21 @@ func _build_operator_cards() -> void:
 		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		pick.custom_minimum_size = Vector2(190.0, 220.0)
 		pick.set_presentation_text(card_text, card_text)
+		pick.disabled = fallen
+		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
 		var card_label := pick.get_node("PresentationLabel") as Label
 		card_label.offset_top = 106.0
 		card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		pick.toggled.connect(_on_pick_toggled.bind(hero_id))
+		if not fallen:
+			pick.set_pressed_no_signal(_picked.has(hero_id))
+			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 		_grid.add_child(pick)
-		_buttons[hero_id] = pick
-		_hero_order.append(hero_id)
+		if not fallen:
+			_buttons[hero_id] = pick
+			_hero_order.append(hero_id)
+		else:
+			LunarisOpsType.apply_button(pick, &"disabled")
 
 
 func _build_footer() -> BoxContainer:
@@ -310,8 +358,10 @@ func _refresh() -> void:
 		var hero_id := StringName(raw_id)
 		var button := _buttons[hero_id] as AetheriaButtonType
 		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
-		if _picked.has(hero_id):
-			selected_names.append(button.text.get_slice("\n", 0))
+	for hero_id: StringName in _picked:
+		var hero := _hero_by_id(hero_id)
+		if not hero.is_empty():
+			selected_names.append(_hero_label(hero).get_slice("\n", 0))
 	_selected_line.text = "FIELD TEAM // %s" % (
 		"AWAITING SELECTION" if selected_names.is_empty() else " • ".join(selected_names)
 	)
@@ -319,6 +369,20 @@ func _refresh() -> void:
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
 	LunarisOpsType.apply_button(_start, &"disabled" if _start.disabled else &"primary")
 	_wire_focus()
+
+
+func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
+	_filter_status = status
+	_filter_faction = faction_id
+	_rebuild_operator_cards()
+	_refresh()
+
+
+func _hero_by_id(hero_id: StringName) -> Dictionary:
+	for hero: Dictionary in _all_roster_rows:
+		if StringName(hero["hero_id"]) == hero_id:
+			return hero
+	return {}
 
 
 func _wire_focus() -> void:
@@ -382,6 +446,8 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
 	if _grid != null:
 		_grid.columns = 1 if mode == &"portrait" else (2 if mode == &"compact_landscape" else 3)
+	if _filter_bar != null:
+		_filter_bar.set_compact(mode != &"regular_landscape")
 	for button: Button in _buttons.values():
 		button.custom_minimum_size = Vector2(
 			180.0, 190.0 if mode == &"portrait" else 220.0,

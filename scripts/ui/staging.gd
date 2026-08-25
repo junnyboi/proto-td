@@ -43,6 +43,7 @@ const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
 
 var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
+var _vahalla: StagingCommandTileType = null
 var _training: StagingCommandTileType = null
 var _back: Button = null
 var _next_record: StageNarrativeDefType = null
@@ -489,11 +490,17 @@ func _build_command_content() -> VBoxContainer:
 		&"ui.staging.armory_short", "Armory",
 		&"ui.staging.armory_unavailable", "Armory — Unavailable",
 	)
-	_add_locked_operation(
-		"MemorialButton", StagingGlyphType.Kind.MEMORIAL,
-		&"ui.staging.memorial_short", "Memorial",
-		&"ui.staging.memorial_unavailable", "Memorial — Unavailable",
+	_vahalla = StagingCommandTileType.new()
+	_vahalla.name = "VahallaButton"
+	_vahalla.configure(
+		StagingGlyphType.Kind.MEMORIAL,
+		UiCopyType.text(&"ui.staging.vahalla_short", "Vahalla"),
+		UiCopyType.text(&"ui.staging.vahalla", "Vahalla"),
+		true,
 	)
+	_vahalla.pressed.connect(_on_vahalla)
+	_command_tiles.append(_vahalla)
+	_operation_grid.add_child(_vahalla)
 
 	var training_available := _training_available()
 	_training = StagingCommandTileType.new()
@@ -719,6 +726,8 @@ func _connect_focus_cycle() -> void:
 	var actions: Array[Control] = [_mission, _back]
 	if _recruit != null and not _recruit.disabled:
 		actions.append(_recruit)
+	if _vahalla != null and not _vahalla.disabled:
+		actions.append(_vahalla)
 	if _training != null and not _training.disabled:
 		actions.append(_training)
 	for index: int in actions.size():
@@ -864,6 +873,11 @@ func _on_mission_control() -> void:
 func _on_recruit() -> void:
 	Sfx.play("ui_click")
 	Game.open_gacha()
+
+
+func _on_vahalla() -> void:
+	Sfx.play("ui_click")
+	Game.open_vahalla()
 
 
 func _on_training() -> void:

@@ -7,6 +7,15 @@ extends Resource
 @export var deploy_drag_time_scale: float = 0.3
 @export var deploy_crouch_frames: int = 6
 @export var deploy_dust_frames: int = 10
+@export var deploy_ground_particles: int = 8
+@export var deploy_ground_speed_px: float = 4.5
+@export var deploy_ground_color: Color = Color("d9a35f")
+@export var deploy_elevated_frames: int = 18
+@export var deploy_elevated_shards: int = 8
+@export var deploy_elevated_shard_speed_px: float = 6.0
+@export var deploy_elevated_shard_color: Color = Color("b9f7ff")
+@export var deploy_elevated_ring_color: Color = Color("65eaff")
+@export var deploy_elevated_beam_color: Color = Color(0.45, 0.95, 1.0, 0.5)
 
 @export var skill_flash_frames: int = 24
 @export var skill_burst_frames: int = 8

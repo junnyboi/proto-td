@@ -17,7 +17,7 @@ const RECORD_KEYS := [
 const CHOICE_KEYS := ["hero_id", "to_class_id"]
 const VERBS := [
 	"begin_attempt", "resolve_attempt", "confirm_promotions", "pull_premium_hero",
-	"recruit_person",
+	"recruit_person", "rename_hero",
 ]
 const PREMIUM_PULL_KEYS := [
 	"premium_id", "hero_id", "pull_index", "new_hero", "revived", "lives_before",
@@ -30,6 +30,7 @@ const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
 const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 
 
 static func normalize_records(
@@ -150,6 +151,19 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			):
 				return _reject(&"invalid_command_payload")
 			return _accept({"source": source, "source_id": source_id})
+		"rename_hero":
+			if value.keys() != ["hero_id", "callsign"]:
+				return _reject(&"invalid_command_payload")
+			if (
+				typeof(value["hero_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+				or typeof(value["callsign"]) != TYPE_STRING
+			):
+				return _reject(&"invalid_command_payload")
+			var hero_id := String(value["hero_id"])
+			var callsign := _trim_callsign(String(value["callsign"]))
+			if not _is_hex(hero_id, 16) or not HeroCodecScript.valid_callsign(callsign):
+				return _reject(&"invalid_callsign")
+			return _accept({"hero_id": hero_id, "callsign": callsign})
 	return _reject(&"invalid_command_payload")
 
 
@@ -381,6 +395,24 @@ static func _normalize_receipt(
 			):
 				return _reject(&"command_receipt_mismatch")
 			return _accept({"recruitment": recruitment.duplicate(true)})
+		"rename_hero":
+			if value.keys() != ["rename"]:
+				return _reject(&"invalid_command_receipt")
+			var rename: Variant = value["rename"]
+			if (
+				typeof(rename) != TYPE_DICTIONARY
+				or rename.keys()
+				!= ["hero_id", "old_callsign", "new_callsign", "save_revision"]
+				or typeof(rename["old_callsign"]) != TYPE_STRING
+				or typeof(rename["new_callsign"]) != TYPE_STRING
+				or rename["hero_id"] != payload["hero_id"]
+				or rename["new_callsign"] != payload["callsign"]
+				or rename["save_revision"] != save_revision
+				or not HeroCodecScript.valid_callsign(rename["old_callsign"])
+				or not HeroCodecScript.valid_callsign(rename["new_callsign"])
+			):
+				return _reject(&"invalid_command_receipt")
+			return _accept({"rename": rename.duplicate(true)})
 	return _reject(&"invalid_command_receipt")
 
 
@@ -450,6 +482,16 @@ static func _signed_63(value: Variant) -> bool:
 
 static func _in_range(value: Variant, minimum: int, maximum: int) -> bool:
 	return typeof(value) == TYPE_INT and int(value) >= minimum and int(value) <= maximum
+
+
+static func _trim_callsign(value: String) -> String:
+	var first := 0
+	var last := value.length()
+	while first < last and value.substr(first, 1) in [" ", "\t"]:
+		first += 1
+	while last > first and value.substr(last - 1, 1) in [" ", "\t"]:
+		last -= 1
+	return value.substr(first, last - first)
 
 
 static func _ascii(value: String) -> bool:

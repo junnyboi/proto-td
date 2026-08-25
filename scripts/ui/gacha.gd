@@ -2,6 +2,7 @@ extends Control
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const ClassDefType := preload("res://data/class_def.gd")
+const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 
 const HARD_PITY_WINDOW := 10
 const FIVE_STAR_RARITY := 5
@@ -226,10 +227,9 @@ func _build_reveal_layer() -> void:
 	_reveal_stars.add_theme_constant_override(&"separation", 8)
 	reveal_box.add_child(_reveal_stars)
 	for index: int in FIVE_STAR_RARITY:
-		var star := _label("★", &"heading")
+		var star := ResonanceStarType.new()
 		star.name = "Star_%d" % (index + 1)
-		star.add_theme_font_size_override(&"font_size", 30)
-		star.modulate = Color(0.35, 0.45, 0.52, 0.2)
+		star.set_state(Style.GOLD, false)
 		_reveal_stars.add_child(star)
 	_reveal_portrait = TextureRect.new()
 	_reveal_portrait.name = "RevealPortrait"
@@ -419,8 +419,8 @@ func _begin_reveal(pull: Dictionary) -> void:
 		"pull" if int(pull.get("guarantee_in_after", HARD_PITY_WINDOW)) == 1 else "pulls",
 	]
 	for index: int in _reveal_stars.get_child_count():
-		var star := _reveal_stars.get_child(index) as Label
-		star.modulate = Color(accent.r, accent.g, accent.b, 0.16)
+		var star := _reveal_stars.get_child(index) as ResonanceStar
+		star.set_state(accent, false)
 	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
 	_reveal_burst.rotation = -0.08
 	call_deferred("_center_reveal_pivot")
@@ -448,10 +448,10 @@ func _begin_reveal(pull: Dictionary) -> void:
 
 func _ignite_stars(rarity: int) -> void:
 	for index: int in _reveal_stars.get_child_count():
-		var star := _reveal_stars.get_child(index) as Label
+		var star := _reveal_stars.get_child(index) as ResonanceStar
 		var lit := index < rarity
 		var color := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
-		star.modulate = color if lit else Color(0.35, 0.45, 0.52, 0.2)
+		star.set_state(color, lit)
 
 
 func _finish_reveal() -> void:

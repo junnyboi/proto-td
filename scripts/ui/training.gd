@@ -12,6 +12,8 @@ const TrainingSupportType := preload("res://scripts/ui/components/training_suppo
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
+const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
+const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const SHELL_SIZE := Vector2(1210.0, 660.0)
@@ -50,6 +52,11 @@ const ERROR_KEYS := {
 	&"invalid_runtime_mutation": &"ui.training.error.integrity",
 	&"promotion_retry_pending": &"ui.training.error.save_pending",
 	&"no_promotion_retry": &"ui.training.error.invalid_request",
+	&"invalid_callsign": &"ui.rename.error.invalid",
+	&"duplicate_callsign": &"ui.rename.error.duplicate",
+	&"callsign_unchanged": &"ui.rename.error.unchanged",
+	&"premium_name_locked": &"ui.rename.error.premium_locked",
+	&"invalid_campaign_state": &"ui.training.error.integrity",
 }
 const ERROR_FALLBACKS := {
 	&"invalid_argument_type": "Training request was invalid.",
@@ -78,6 +85,11 @@ const ERROR_FALLBACKS := {
 	&"duplicate_authority_mismatch": "The saved training receipt could not be authenticated.",
 	&"invalid_runtime_mutation": "Training authority is unavailable.",
 	&"promotion_retry_pending": "The previous save must be retried before leaving.",
+	&"invalid_callsign": "Enter a name from 1 to 20 characters without control characters.",
+	&"duplicate_callsign": "Another unit already uses that name.",
+	&"callsign_unchanged": "Enter a different name.",
+	&"premium_name_locked": "Premium hero names are fixed.",
+	&"invalid_campaign_state": "The roster could not be authenticated.",
 }
 const CLASS_LABELS := {
 	"shock_trooper": "Shock Trooper",
@@ -101,6 +113,9 @@ var _mode: StringName = &"roster"
 var _layout_mode: StringName = &"regular_landscape"
 var _roster_rows: Array[Dictionary] = []
 var _roster_buttons: Array[TrainingRosterRowType] = []
+var _filter_bar: RosterFilterBarType = null
+var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
+var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _path_cards: Array[PromotionPathCardType] = []
 var _selected_hero_id := ""
 var _selected_choice_id := ""
@@ -111,6 +126,11 @@ var _choose_path: AetheriaButtonType
 var _review_confirm: AetheriaButtonType
 var _review_error: AetheriaLabelType
 var _return_mission: AetheriaButtonType
+var _rename_row: BoxContainer
+var _rename_input: LineEdit
+var _rename_action: AetheriaButtonType
+var _rename_error: AetheriaLabelType
+var _rename_dispatching := false
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
 
@@ -189,15 +209,9 @@ func _build_shell() -> void:
 
 func _refresh_roster() -> void:
 	_campaign = Game.campaign
-	_roster_rows = TrainingSupportType.roster(_campaign)
+	_roster_rows = RosterFilterType.annotate_all(TrainingSupportType.roster(_campaign))
 	if _selected_hero_id.is_empty() or _summary_by_id(_selected_hero_id).is_empty():
-		_selected_hero_id = ""
-		for summary: Dictionary in _roster_rows:
-			if bool(summary["can_promote"]):
-				_selected_hero_id = String(summary["hero_id"])
-				break
-		if _selected_hero_id.is_empty() and not _roster_rows.is_empty():
-			_selected_hero_id = String(_roster_rows[0]["hero_id"])
+		_select_first_visible()
 
 
 func _show_roster(error_code: StringName = &"") -> void:
@@ -206,7 +220,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_clear_page()
 	_page.add_child(_header(
 		"TrainingTitle", _t(&"ui.training.title", "TRAINING"),
-			_t(&"ui.training.choose_recruit", "Choose a recruit to train."),
+			_t(&"ui.training.manage_personnel", "Manage callsigns and training paths."),
 		))
 	var roster_error: AetheriaLabelType = null
 	if not String(error_code).is_empty():
@@ -230,6 +244,10 @@ func _show_roster(error_code: StringName = &"") -> void:
 	)
 	ready.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_page.add_child(ready)
+	_filter_bar = RosterFilterBarType.new()
+	_filter_bar.configure(_roster_rows, true, _filter_status, _filter_faction)
+	_filter_bar.filters_changed.connect(_on_filters_changed)
+	_page.add_child(_filter_bar)
 	var body := BoxContainer.new()
 	body.name = "TrainingRosterBody"
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -280,7 +298,16 @@ func _build_roster_list() -> ScrollContainer:
 	list.add_theme_constant_override(&"separation", 8)
 	scroll.add_child(list)
 	_roster_buttons.clear()
-	for summary: Dictionary in _roster_rows:
+	var visible_rows := _visible_roster_rows()
+	if visible_rows.is_empty():
+		var empty := _label(
+			"TrainingRosterEmpty",
+			_t(&"ui.roster.empty", "No soldiers match the selected roster filters."),
+			&"dense_detail",
+		)
+		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		list.add_child(empty)
+	for summary: Dictionary in visible_rows:
 		var row := TrainingRosterRowType.new()
 		row.name = "Recruit_%s" % summary["hero_id"]
 		row.configure(
@@ -321,6 +348,7 @@ func _build_inspector() -> AetheriaPanelType:
 	column.add_child(_label("AtelierEyebrow", "SELECTED OPERATOR", &"eyebrow"))
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
+		column.add_child(_build_rename_panel(selected))
 		var dossier := BoxContainer.new()
 		dossier.name = "SelectedOperatorDossier"
 		dossier.add_theme_constant_override(&"separation", 16)
@@ -388,6 +416,122 @@ func _build_inspector() -> AetheriaPanelType:
 		&"eyebrow",
 	))
 	return panel
+
+
+func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
+	var panel := AetheriaPanelType.new()
+	panel.name = "RenameUnitPanel"
+	panel.apply_role(&"hud")
+	LunarisOpsType.apply_panel(panel, &"quiet")
+	var column := VBoxContainer.new()
+	column.name = "RenameUnitColumn"
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 8)
+	column.add_child(_label(
+		"RenameUnitHeading", _t(&"ui.rename.heading", "FIELD CALLSIGN"), &"heading",
+	))
+	if not bool(summary.get("can_rename", false)):
+		var locked_key := (
+			&"ui.rename.premium_locked"
+			if bool(summary.get("is_premium", false))
+			else &"ui.rename.not_ready"
+		)
+		var locked_fallback := (
+			"Premium hero names are fixed."
+			if bool(summary.get("is_premium", false))
+			else "Only ready non-premium units can be renamed."
+		)
+		column.add_child(_label(
+			"RenameUnitLocked", _t(locked_key, locked_fallback), &"dense_detail",
+		))
+		panel.add_child(column)
+		return panel
+	column.add_child(_label(
+		"RenameUnitGuidance",
+		_t(&"ui.rename.guidance", "Choose a unique name of 1–20 characters."),
+		&"dense_detail",
+	))
+	_rename_row = BoxContainer.new()
+	_rename_row.name = "RenameUnitControls"
+	_rename_row.vertical = _layout_mode == &"portrait"
+	_rename_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_row.add_theme_constant_override(&"separation", 10)
+	_rename_input = LineEdit.new()
+	_rename_input.name = "RenameUnitInput"
+	_rename_input.text = String(summary["callsign"])
+	_rename_input.placeholder_text = _t(&"ui.rename.placeholder", "Enter callsign")
+	_rename_input.max_length = 20
+	_rename_input.clear_button_enabled = true
+	_rename_input.select_all_on_focus = true
+	_rename_input.custom_minimum_size = Vector2(280.0, 58.0)
+	_rename_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_input.text_changed.connect(_on_rename_text_changed)
+	_rename_input.text_submitted.connect(_on_rename_submitted)
+	LunarisOpsType.apply_line_edit(_rename_input)
+	_bind_focus_scroll(_rename_input, _dialog_scroll)
+	_rename_row.add_child(_rename_input)
+	_rename_action = _button(
+		"RenameUnitAction", _t(&"ui.rename.action", "Rename"), false, &"disabled",
+	)
+	_rename_action.custom_minimum_size = Vector2(180.0, 58.0)
+	_rename_action.pressed.connect(_submit_rename)
+	_rename_row.add_child(_rename_action)
+	column.add_child(_rename_row)
+	_rename_error = _label("RenameUnitError", "", &"dense_detail")
+	_rename_error.custom_minimum_size.y = 24.0
+	column.add_child(_rename_error)
+	panel.add_child(column)
+	return panel
+
+
+func _on_rename_text_changed(value: String) -> void:
+	if _rename_error != null:
+		_rename_error.text = ""
+	if _rename_input != null:
+		LunarisOpsType.apply_line_edit(_rename_input)
+	var summary := _summary_by_id(_selected_hero_id)
+	var candidate := value.strip_edges()
+	var enabled := (
+		not _rename_dispatching
+		and not summary.is_empty()
+		and bool(summary.get("can_rename", false))
+		and not candidate.is_empty()
+		and candidate.length() <= 20
+		and candidate != String(summary["callsign"])
+	)
+	if _rename_action != null:
+		_rename_action.disabled = not enabled
+		_rename_action.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+		LunarisOpsType.apply_button(
+			_rename_action, &"primary" if enabled else &"disabled",
+		)
+
+
+func _on_rename_submitted(_value: String) -> void:
+	_submit_rename()
+
+
+func _submit_rename() -> void:
+	if _rename_dispatching or _rename_input == null or _rename_action == null:
+		return
+	if _rename_action.disabled:
+		return
+	_rename_dispatching = true
+	_rename_action.disabled = true
+	_rename_action.focus_mode = Control.FOCUS_NONE
+	LunarisOpsType.apply_button(_rename_action, &"disabled")
+	var committed: Dictionary = Game.rename_hero(_selected_hero_id, _rename_input.text)
+	_rename_dispatching = false
+	if not committed["accepted"]:
+		var error_code := StringName(committed.get("error_code", &"invalid_callsign"))
+		_rename_error.text = _error_text(error_code)
+		LunarisOpsType.apply_line_edit(_rename_input, true)
+		_on_rename_text_changed(_rename_input.text)
+		_rename_error.text = _error_text(error_code)
+		_rename_input.grab_focus.call_deferred()
+		return
+	_refresh_roster()
+	_show_roster()
 
 
 func _show_paths() -> void:
@@ -494,6 +638,20 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 
 func _on_roster_selected(hero_id: String) -> void:
 	_selected_hero_id = hero_id
+	_show_roster()
+
+
+func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
+	_filter_status = status
+	_filter_faction = faction_id
+	var visible := _visible_roster_rows()
+	var selected_visible := false
+	for summary: Dictionary in visible:
+		if String(summary["hero_id"]) == _selected_hero_id:
+			selected_visible = true
+			break
+	if not selected_visible:
+		_selected_hero_id = String(visible[0]["hero_id"]) if not visible.is_empty() else ""
 	_show_roster()
 
 
@@ -728,8 +886,12 @@ func _apply_roster_layout() -> void:
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
 	if scroll != null:
 		scroll.custom_minimum_size.y = 300.0 if _layout_mode == &"portrait" else 250.0
+	if _filter_bar != null:
+		_filter_bar.set_compact(_layout_mode != &"regular_landscape")
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
+	if _rename_row != null:
+		_rename_row.vertical = _layout_mode == &"portrait"
 
 
 func _apply_paths_layout() -> void:
@@ -844,6 +1006,12 @@ func _clear_page() -> void:
 	_review_confirm = null
 	_review_error = null
 	_return_mission = null
+	_filter_bar = null
+	_rename_row = null
+	_rename_input = null
+	_rename_action = null
+	_rename_error = null
+	_rename_dispatching = false
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -851,6 +1019,21 @@ func _summary_by_id(hero_id: String) -> Dictionary:
 		if summary["hero_id"] == hero_id:
 			return summary
 	return {}
+
+
+func _visible_roster_rows() -> Array[Dictionary]:
+	return RosterFilterType.filter_rows(_roster_rows, _filter_status, _filter_faction)
+
+
+func _select_first_visible() -> void:
+	_selected_hero_id = ""
+	var visible := _visible_roster_rows()
+	for summary: Dictionary in visible:
+		if bool(summary["can_promote"]):
+			_selected_hero_id = String(summary["hero_id"])
+			return
+	if not visible.is_empty():
+		_selected_hero_id = String(visible[0]["hero_id"])
 
 
 func _selected_can_promote() -> bool:
@@ -1018,6 +1201,10 @@ func _focusable_controls() -> Array[Control]:
 			var button := node as BaseButton
 			if button.visible and not button.disabled and button.focus_mode != Control.FOCUS_NONE:
 				controls.append(button)
+		elif node is LineEdit:
+			var field := node as LineEdit
+			if field.visible and field.editable and field.focus_mode != Control.FOCUS_NONE:
+				controls.append(field)
 	return controls
 
 
