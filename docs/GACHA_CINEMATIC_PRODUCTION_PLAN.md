@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Proposal; no media generation or runtime implementation has begun |
 | **Author** | Manus AI, Agent 7 |
-| **Source candidate** | `e4fcb845de799dae47f720d785f3a88c6c68cac1` |
+| **Source candidate** | `8cecde1bb4fcee44bd25cd47997f64c0cbcb9f37` |
 | **Target runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
 | **Scope** | Lunaris Vessel, Reliquary Duelist, and Archive Caster |
 
@@ -158,11 +158,11 @@ The final plate begins at **7.440 seconds**. Godot runs the hero/frame rise from
 
 All three heroes are clearly adult, age 21 or older. The target is **luxury-editorial combat glamour**, not explicit sexual content.
 
-| Hero | Positive direction | Reject |
-|---|---|---|
-| Lunaris Vessel | Statuesque curves, regal drapery, asymmetric exposed shoulder, elegant hip-weight shift, measured wrist motion, direct calm gaze | Cleavage-first camera, anatomy bounce, accidental exposure, bedroom coding, submissive posture |
-| Reliquary Duelist | Broad shoulders, powerful bare arms, narrow fitted waist, over-shoulder eye contact, immaculate ponytail motion, restrained half-smile | Bare-chest redesign, crotch emphasis, sweat fetish, torn clothing, voyeuristic rear framing |
-| Archive Caster | Mature knowing gaze, poised curvy silhouette, exposed shoulders, fitted bodice, controlled slit revealed naturally by motion | Up-skirt angle, lingerie redesign, transparent exposure, exaggerated physics, body-part isolation |
+| Hero | Positive direction |
+|---|---|
+| Lunaris Vessel | Statuesque curves, regal drapery, asymmetric exposed shoulder, elegant hip-weight shift, measured wrist motion, direct calm gaze |
+| Reliquary Duelist | Broad shoulders, powerful bare arms, narrow fitted waist, over-shoulder eye contact, immaculate ponytail motion, restrained half-smile |
+| Archive Caster | Mature knowing gaze, poised curvy silhouette, exposed shoulders, fitted bodice, controlled slit revealed naturally by motion |
 
 ## Identity and weapon locks
 
