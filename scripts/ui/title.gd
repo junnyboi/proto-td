@@ -147,6 +147,7 @@ func _build_screen() -> void:
 	_music_pack_status = MusicPackStatusType.new()
 	_music_pack_status.set_act(Music.active_content_pack_act(1))
 	_music_pack_status.retry_requested.connect(_on_music_pack_retry_requested)
+	_music_pack_status.retry_availability_changed.connect(_on_music_pack_retry_availability_changed)
 	_music_pack_status.visibility_changed.connect(_on_music_pack_visibility_changed)
 	_entry_stack.add_child(_music_pack_status)
 	_wire_entry_focus()
@@ -309,6 +310,12 @@ func _on_music_pack_visibility_changed() -> void:
 
 func _on_music_pack_retry_requested(_act: int) -> void:
 	Sfx.play("ui_click")
+
+
+func _on_music_pack_retry_availability_changed(_available: bool) -> void:
+	if not is_node_ready():
+		return
+	_wire_entry_focus()
 
 
 func _rule(color: Color) -> ColorRect:

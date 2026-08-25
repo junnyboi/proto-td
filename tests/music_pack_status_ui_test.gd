@@ -28,6 +28,10 @@ func _run() -> void:
 
 	var status := STATUS_SCRIPT.new()
 	status.set_act(1)
+	var retry_availability: Array[bool] = []
+	status.retry_availability_changed.connect(
+		func(available: bool) -> void: retry_availability.append(available)
+	)
 	root.add_child(status)
 	await process_frame
 	_check(not status.visible, "configured idle pack status should remain unobtrusive")
@@ -47,6 +51,10 @@ func _run() -> void:
 	_check(status.visible, "failed pack status disappeared")
 	_check(progress != null and not progress.visible, "failed pack kept progress bar visible")
 	_check(retry != null and retry.visible, "failed pack did not expose retry")
+	_check(
+		not retry_availability.is_empty() and retry_availability[-1],
+		"retry availability did not notify focus owners",
+	)
 	_check(retry != null and retry.focus_mode == Control.FOCUS_ALL, "retry is not keyboard focusable")
 	_check(label != null and label.text.contains("DOWNLOAD INTERRUPTED"), "failure copy missing")
 
@@ -79,9 +87,36 @@ func _run() -> void:
 			"pack status leaked outside title/start surfaces: %s" % path,
 		)
 
+	music.call("configure_content_packs", fake_spec)
+	music.call("_set_pack_state", 1, &"loading")
+	var title: Node = load("res://scenes/title.tscn").instantiate()
+	root.add_child(title)
+	await process_frame
+	music.call("_set_pack_state", 1, &"failed")
+	await process_frame
+	var title_start := title.find_child("StartButton", true, false) as Button
+	var title_retry := title.find_child("RetryButton", true, false) as Button
+	_check(title_retry != null and title_retry.visible, "title Retry did not appear after dynamic failure")
+	_check(
+		title_start != null and title_retry != null
+		and title_start.focus_previous == title_start.get_path_to(title_retry),
+		"title focus cycle did not dynamically include Retry",
+	)
+	if title_retry != null:
+		title_retry.grab_focus()
+		await process_frame
+		_check(root.gui_get_focus_owner() == title_retry, "title Retry could not receive keyboard focus")
+
 	music.call("configure_content_packs", {})
+	var game: Node = root.get_node_or_null("Game")
+	if game != null:
+		game.set("content", null)
+	music.call("stop")
+	title.queue_free()
 	status.queue_free()
-	for _frame: int in range(4):
+	title = null
+	status = null
+	for _frame: int in range(8):
 		await process_frame
 	_finish()
 
