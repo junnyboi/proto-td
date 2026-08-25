@@ -16,6 +16,13 @@
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 
+# Approved Unified Interface Continuation
+
+- [x] Preserve the user-approved concept and implementation plan verbatim under repository-root `docs/`.
+- [ ] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
+- [ ] Close material visual/interaction gaps while preserving every authoritative behavior contract.
+- [ ] Run full Godot, responsive visual, Web export, browser, and deployment gates; push each accepted implementation phase.
+
 # Faction-Led Soundtrack Redesign
 
 - [x] Phase 0: remove rejected staging/battle music and obsolete pack infrastructure; retain `Astra Memoriam` for loading/title only; publish the canonical proposal.
