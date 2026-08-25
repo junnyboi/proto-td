@@ -26,6 +26,7 @@ func _run() -> void:
 	if failures.is_empty():
 		print("STAGE_ORIENTATION_SMOKE_OK")
 		quit(0)
+		return
 	for failure: String in failures:
 		push_error(failure)
 	quit(1)

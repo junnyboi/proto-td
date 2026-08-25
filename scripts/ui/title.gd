@@ -12,6 +12,7 @@ const LunarisBackdropType := preload(
 )
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 
 const GOLD := Color("d8b978")
@@ -39,6 +40,7 @@ var _motion_button: Button = null
 var _settings_back: Button = null
 var _title_music_enabled := true
 var _reduced_motion := false
+var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
 var _focus_pulse_colors: Dictionary = {}
@@ -46,6 +48,7 @@ var _focus_pulse_colors: Dictionary = {}
 
 func _ready() -> void:
 	theme = STAGING_THEME
+	_title_music_enabled = ViewPreferencesType.title_music_enabled(_preferences_path)
 	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 	_build_screen()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
@@ -306,11 +309,22 @@ func _close_settings() -> void:
 
 func _toggle_music() -> void:
 	_title_music_enabled = not _title_music_enabled
+	ViewPreferencesType.set_title_music_enabled(_title_music_enabled, _preferences_path)
 	if _title_music_enabled:
 		Music.play_cue(&"title_lunaris")
 	else:
 		Music.stop()
 	_refresh_copy()
+
+
+func set_preferences_path(path: String) -> void:
+	if is_node_ready() or path.is_empty():
+		return
+	_preferences_path = path
+
+
+func title_music_enabled() -> bool:
+	return _title_music_enabled
 
 
 func _toggle_reduced_motion() -> void:
