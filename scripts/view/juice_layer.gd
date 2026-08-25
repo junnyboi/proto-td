@@ -2,6 +2,7 @@ class_name JuiceLayer
 extends Node2D
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 ## Manifest-backed presentation effects. Pure view: spawns and ages transients,
 ## never reads or writes the model; BattleView owns all model-edge detection and
@@ -291,7 +292,9 @@ func banner(text: String) -> void:
 		_banner = Label.new()
 		_banner.name = "WaveBanner"
 		_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		Style.apply_label(_banner, &"title")
 		_banner.add_theme_font_size_override("font_size", BANNER_TEXT_SIZE)
+		_banner.add_theme_color_override(&"font_color", Style.GOLD)
 		_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_banner.size = back.size
@@ -322,7 +325,9 @@ func stamp(result_text: String, stars: int) -> void:
 	label.name = "ResultStampLabel"
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text = result_text
+	Style.apply_label(label, &"title")
 	label.add_theme_font_size_override("font_size", STAMP_TEXT_SIZE)
+	label.add_theme_color_override(&"font_color", Style.IVORY)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.size = Vector2(view_size.x, 90)
 	_stamp.add_child(label)

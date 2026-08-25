@@ -5,6 +5,7 @@ signal recenter_requested
 
 const AETHERIA_THEME := preload("res://scripts/ui/components/aetheria_theme.gd")
 const AETHERIA_PANEL := preload("res://scripts/ui/components/aetheria_panel.gd")
+const LUNARIS_STYLE := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const VIEW_PREFERENCES := preload("res://scripts/view/view_preferences.gd")
 
 const HINT_LIVE_SECONDS := 7.0
@@ -64,13 +65,15 @@ func relayout() -> void:
 		_recenter_button.position = Vector2(PORTRAIT_MARGIN, CONTROL_TOP)
 	if _hint_panel != null:
 		var width := minf(size.x - PORTRAIT_MARGIN * 2.0, 340.0)
-		_hint_panel.custom_minimum_size = Vector2(width, 0.0)
+		var height := 126.0
+		_hint_panel.custom_minimum_size = Vector2(width, height)
 		_hint_panel.reset_size()
-		_hint_panel.size.x = width
 		_hint_panel.position = Vector2(
 			(size.x - width) * 0.5,
-			maxf(CONTROL_TOP + 64.0, size.y - 228.0),
+			maxf(CONTROL_TOP + 64.0, size.y - height - 320.0),
 		)
+		_hint_panel.size = Vector2(width, height)
+		_hint_panel.set_deferred(&"size", Vector2(width, height))
 
 
 func notify_pan_used() -> void:
@@ -94,6 +97,7 @@ func recenter_enabled() -> bool:
 func _process(delta: float) -> void:
 	if _hint_panel == null or not _hint_panel.visible:
 		return
+	_enforce_hint_rect()
 	_hint_elapsed += maxf(delta, 0.0)
 	if _hint_elapsed >= HINT_LIVE_SECONDS:
 		_hint_expired = true
@@ -104,10 +108,21 @@ func _process(delta: float) -> void:
 	_hint_direction.modulate.a = pulse
 
 
+func _enforce_hint_rect() -> void:
+	var width := minf(size.x - PORTRAIT_MARGIN * 2.0, 340.0)
+	var height := 126.0
+	_hint_panel.position = Vector2(
+		(size.x - width) * 0.5,
+		maxf(CONTROL_TOP + 64.0, size.y - height - 320.0),
+	)
+	_hint_panel.size = Vector2(width, height)
+
+
 func _build_hint() -> void:
 	_hint_panel = AETHERIA_PANEL.new()
 	_hint_panel.name = "MapPanHint"
 	_hint_panel.apply_role(&"hud")
+	LUNARIS_STYLE.apply_panel(_hint_panel, &"selected")
 	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hint_panel)
 	var row := HBoxContainer.new()
@@ -123,6 +138,7 @@ func _build_hint() -> void:
 	row.add_child(_hint_direction)
 	var copy_column := VBoxContainer.new()
 	copy_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	copy_column.custom_minimum_size.x = 230.0
 	copy_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	copy_column.add_theme_constant_override("separation", 2)
 	row.add_child(copy_column)

@@ -45,6 +45,8 @@ static func apply_panel(panel: PanelContainer, role: StringName) -> void:
 static func panel_style(role: StringName) -> StyleBox:
 	if role == &"screen" or role == &"dialog":
 		return _texture_margin(StagingSkinType.command_deck_style(), 22.0)
+	if role == &"hud":
+		return _texture_margin(StagingSkinType.command_deck_style(), 10.0)
 	if role == &"result" or role == &"memorial":
 		var tint := Color.WHITE if role == &"result" else Color(0.88, 0.78, 0.90, 1.0)
 		return _texture_margin(StagingSkinType.mission_card_style(tint), 18.0)

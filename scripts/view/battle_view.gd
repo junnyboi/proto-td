@@ -14,6 +14,7 @@ const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutor
 const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_overlay.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -523,10 +524,10 @@ func _detect_result_stamp() -> void:
 	var next := Button.new()
 	next.name = "ContinueButton"
 	_continue_btn = next
-	next.text = "Continue"
+	next.text = "CONTINUE TO DEBRIEF"
 	# (and Space, once terminal) also proceeds — the "what do I click now"
-	next.custom_minimum_size = Vector2(260.0, 64.0)
-	next.add_theme_font_size_override("font_size", GameTypographyType.ACTION)
+	next.custom_minimum_size = Vector2(360.0, 64.0)
+	LunarisOpsType.apply_button(next, &"primary")
 	next.z_index = HUD_Z
 	add_child(next)
 	var viewport := get_viewport_rect().size
@@ -657,12 +658,13 @@ func _refresh_map_navigation_overlay() -> void:
 		return
 	var viewport := get_viewport_rect().size
 	var tutorial_holding := _tutorial != null and _tutorial.is_holding_battle()
+	var battle_running := model == null or model.result == BattleModel.Result.RUNNING
 	_map_navigation_overlay.set_context(
 		viewport.y > viewport.x,
-		_map_nav.has_pan_range(),
-		not tutorial_holding,
+		_map_nav.has_pan_range() and battle_running,
+		not tutorial_holding and battle_running,
 		_map_nav.is_centered(),
-		not _map_navigation_blocked(),
+		not _map_navigation_blocked() and battle_running,
 	)
 
 

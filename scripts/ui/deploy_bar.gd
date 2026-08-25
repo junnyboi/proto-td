@@ -21,6 +21,7 @@ signal deployment_committed(deployment_id: StringName, cell: Vector2i, facing: i
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 const FONT_SIZE := GameTypographyType.BODY
 const BAR_HEIGHT := 88.0
@@ -86,6 +87,7 @@ var _trap_slots: Dictionary = {}
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _ticket_rows: Dictionary = {}
+var _slot_deck: PanelContainer = null
 var _slot_box: GridContainer = null
 var _placement_op: StringName = &""
 var _placement_trap: StringName = &""
@@ -252,19 +254,27 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _rebuild_slots() -> void:
-	if _slot_box != null:
-		_slot_box.queue_free()
+	if _slot_deck != null:
+		_slot_deck.queue_free()
+	_slot_deck = null
+	_slot_box = null
 	_slots.clear()
 	_trap_slots.clear()
 	_build_slots(_op_defs)
 
 
 func _build_slots(op_defs: Dictionary) -> void:
+	var deck := PanelContainer.new()
+	deck.name = "DeploymentCommandDeck"
+	deck.mouse_filter = Control.MOUSE_FILTER_PASS
+	Style.apply_panel(deck, &"hud")
+	add_child(deck)
+	_slot_deck = deck
 	var box := GridContainer.new()
 	box.name = "SlotBox"
 	box.add_theme_constant_override("h_separation", 16)
 	box.add_theme_constant_override("v_separation", 8)
-	add_child(box)
+	deck.add_child(box)
 	_slot_box = box
 	for deployment_id: StringName in _deployment_ids():
 		var row: Dictionary = _ticket_rows.get(deployment_id, {})
@@ -281,10 +291,12 @@ func _build_slots(op_defs: Dictionary) -> void:
 			dp_cost = int(row["combat_spec"]["dp_cost"])
 			sprite_id = StringName(row["visual_spec"]["sprite_id"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
-		slot.text = "%s%s  %d DP" % [def.display_name, identity_suffix, dp_cost]
-		slot.custom_minimum_size.y = 52.0
+		slot.text = "%s%s\n%d DP" % [def.display_name.to_upper(), identity_suffix, dp_cost]
+		slot.custom_minimum_size = Vector2(230.0, 58.0)
 		slot.icon = Art.texture(sprite_id, 0)
-		slot.add_theme_font_size_override("font_size", FONT_SIZE)
+		slot.expand_icon = true
+		slot.add_theme_constant_override(&"icon_max_width", 44)
+		Style.apply_button(slot, &"secondary")
 		slot.button_down.connect(_start_placement.bind(deployment_id))
 		box.add_child(slot)
 		_slots[deployment_id] = slot
@@ -299,12 +311,14 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var def: TrapDef = _trap_defs[trap_id]
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
-		slot.text = "%s  %d DP" % [def.display_name, def.dp_cost]
-		slot.custom_minimum_size.y = 52.0
+		slot.text = "%s\n%d DP" % [def.display_name.to_upper(), def.dp_cost]
+		slot.custom_minimum_size = Vector2(190.0, 58.0)
 		slot.icon = Art.texture(
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
 		)
-		slot.add_theme_font_size_override("font_size", FONT_SIZE)
+		slot.expand_icon = true
+		slot.add_theme_constant_override(&"icon_max_width", 44)
+		Style.apply_button(slot, &"gold")
 		slot.button_down.connect(_start_trap_placement.bind(trap_id))
 		box.add_child(slot)
 		_trap_slots[trap_id] = slot
@@ -318,7 +332,7 @@ func _deployment_ids() -> Array[StringName]:
 
 
 func _layout_slot_box() -> void:
-	if _slot_box == null:
+	if _slot_box == null or _slot_deck == null:
 		return
 	if size.x < size.y:
 		_slot_box.columns = 1
@@ -329,8 +343,9 @@ func _layout_slot_box() -> void:
 	else:
 		_slot_box.columns = 4
 	_slot_box.reset_size()
-	var y := size.y - _slot_box.get_combined_minimum_size().y - 8.0
-	_slot_box.position = Vector2(16.0, y)
+	_slot_deck.reset_size()
+	var y := size.y - _slot_deck.get_combined_minimum_size().y - 8.0
+	_slot_deck.position = Vector2(16.0, y)
 
 
 func _build_overlays() -> void:
@@ -373,7 +388,7 @@ func _build_overlays() -> void:
 	_retreat_chip.name = "RetreatChip"
 	_retreat_chip.text = "Retreat"
 	_retreat_chip.custom_minimum_size = Vector2(88.0, 52.0)
-	_retreat_chip.add_theme_font_size_override("font_size", FONT_SIZE)
+	Style.apply_button(_retreat_chip, &"danger")
 	_retreat_chip.visible = false
 	_retreat_chip.pressed.connect(_confirm_retreat)
 	add_child(_retreat_chip)
@@ -500,9 +515,12 @@ func _layout_facing_buttons(cell: Vector2i) -> void:
 	var cluster_size := button_size * 2.0 + Vector2.ONE * FACING_BUTTON_GAP
 	var desired_origin: Vector2 = view.call("cell_center", cell) - cluster_size * 0.5
 	var safe_min := Vector2(FACING_SAFE_MARGIN, FACING_SAFE_TOP)
+	var deck_height := BAR_HEIGHT
+	if _slot_deck != null:
+		deck_height = maxf(deck_height, _slot_deck.get_combined_minimum_size().y)
 	var safe_max := Vector2(
 		maxf(safe_min.x, size.x - FACING_SAFE_MARGIN - cluster_size.x),
-		maxf(safe_min.y, size.y - BAR_HEIGHT - FACING_SAFE_MARGIN - cluster_size.y),
+		maxf(safe_min.y, size.y - deck_height - FACING_SAFE_MARGIN - cluster_size.y),
 	)
 	var cluster_origin := Vector2(
 		clampf(desired_origin.x, safe_min.x, safe_max.x),

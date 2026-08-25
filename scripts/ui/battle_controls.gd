@@ -2,17 +2,16 @@ class_name BattleControls
 extends Control
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
 
-## pause/resume, speed cycle 1x/2x/4x, resign behind a code-built confirm
-## UI over the verbs (rule 5): every write goes through the view's
-## ticks_per_frame_scale seam or model.apply_action([&"resign"]) — the same
-## overlay, scenarios) never desync the display. Space toggles pause by
-## battle_pause action does not match synthetic device-4242 keys (probed,
-## deviation D1).
+## Pause/resume, speed cycle 1x/2x/4x, and resign. Every write remains on
+## ticks_per_frame_scale or model.apply_action([&"resign"]); presentation never
+## enters deterministic state.
 
 const FONT_SIZE := GameTypographyType.BODY
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
-const PAUSED_LABEL_MIN_WIDTH := 96.0  # fixed slot: no row re-layout on toggle
+const PAUSED_LABEL_MIN_WIDTH := 96.0
 
 var model: BattleModel = null
 var view: Node2D = null
@@ -21,16 +20,18 @@ var _pause_button: Button = null
 var _speed_button: Button = null
 var _resign_button: Button = null
 var _paused_label: Label = null
-var _confirm: PanelContainer = null
+var _controls_deck: PanelContainer = null
+var _confirm: Control = null
+var _confirm_dialog: Dictionary = {}
 var _resume_scale: float = 1.0
 var _pre_confirm_scale: float = 1.0
 var _interaction_enabled := true
+var _last_paused := false
 
 
 func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	model = battle_model
 	view = battle_view
-	# Control under a Node2D: no anchor layout — explicit viewport sizing
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
@@ -38,8 +39,6 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	_build_confirm()
 
 
-## confirm panel centered; called by battle_view._relayout() (one resize
-## owner — self-owned listeners raced the grid recompute).
 func set_interaction_enabled(enabled: bool) -> void:
 	_interaction_enabled = enabled
 	if _pause_button != null:
@@ -52,86 +51,74 @@ func set_interaction_enabled(enabled: bool) -> void:
 
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
-	var box := get_node_or_null("ControlsBox") as HBoxContainer
-	if box != null:
-		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
-	if _confirm != null and _confirm.visible:
-		_confirm.position = (size - _confirm.size) * 0.5
+	if _controls_deck != null:
+		_controls_deck.reset_size()
+		var y := 98.0 if size.y > size.x else 64.0
+		_controls_deck.position = Vector2(size.x - _controls_deck.get_combined_minimum_size().x - 16.0, y)
 
 
 func _build_row() -> void:
+	_controls_deck = PanelContainer.new()
+	_controls_deck.name = "BattleCommandDeck"
+	_controls_deck.mouse_filter = Control.MOUSE_FILTER_PASS
+	Style.apply_panel(_controls_deck, &"hud")
+	add_child(_controls_deck)
 	var box := HBoxContainer.new()
 	box.name = "ControlsBox"
-	box.add_theme_constant_override("separation", 12)
-	add_child(box)
-	_pause_button = _make_button("PauseButton", "II")
+	box.add_theme_constant_override(&"separation", 10)
+	_controls_deck.add_child(box)
+	_pause_button = _make_button("PauseButton", "PAUSE", &"secondary")
 	_pause_button.pressed.connect(_on_pause_pressed)
 	box.add_child(_pause_button)
-	_speed_button = _make_button("SpeedButton", "1x")
+	_speed_button = _make_button("SpeedButton", "1×", &"secondary")
 	_speed_button.pressed.connect(_on_speed_pressed)
 	box.add_child(_speed_button)
-	_resign_button = _make_button("ResignButton", "Resign")
+	_resign_button = _make_button("ResignButton", "RESIGN", &"danger")
 	_resign_button.pressed.connect(_on_resign_pressed)
 	box.add_child(_resign_button)
 	_paused_label = Label.new()
 	_paused_label.name = "PausedLabel"
 	_paused_label.text = ""
 	_paused_label.custom_minimum_size = Vector2(PAUSED_LABEL_MIN_WIDTH, 0)
-	_paused_label.add_theme_font_size_override("font_size", FONT_SIZE)
-	_paused_label.add_theme_color_override("font_color", Color("f4b41b"))
+	_paused_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	Style.apply_label(_paused_label, &"status")
 	box.add_child(_paused_label)
-	# right-aligned strip BELOW the spell bar (as-built D5: top-center is NOT
-	# free — the HUD status line reaches past center-x once tick/result text
-	# grows, and the R4b shot caught the overlap); the box knows its width
-	# only after buttons exist
-	box.reset_size()
-	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 64.0)
+	_controls_deck.reset_size()
+	relayout()
 
 
 func _build_confirm() -> void:
-	_confirm = PanelContainer.new()
-	_confirm.name = "ResignConfirm"
-	_confirm.visible = false
-	add_child(_confirm)
-	var margin := MarginContainer.new()
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_%s" % side, 18)
-	_confirm.add_child(margin)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
-	margin.add_child(column)
-	var question := Label.new()
-	question.name = "ResignQuestion"
-	question.text = "Resign this battle?"
-	question.add_theme_font_size_override("font_size", GameTypographyType.SECTION_HEADING)
-	question.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(question)
-	var note := Label.new()
-	note.text = "Counts as a defeat."
-	note.add_theme_font_size_override("font_size", FONT_SIZE)
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(note)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(row)
-	var confirm := _make_button("ConfirmResign", "Resign")
+	_confirm_dialog = DialogType.create(
+		self,
+		"ResignConfirmLayer",
+		"WITHDRAW FROM OPERATION?",
+		"Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved.",
+		"CONFIRM DEFEAT",
+		"RETURN TO BATTLE",
+	)
+	_confirm = _confirm_dialog.get(&"overlay") as Control
+	var panel := _confirm_dialog.get(&"panel") as PanelContainer
+	panel.name = "ResignConfirm"
+	var confirm := _confirm_dialog.get(&"confirm") as Button
+	var cancel := _confirm_dialog.get(&"cancel") as Button
+	confirm.name = "ConfirmResign"
+	cancel.name = "CancelResign"
+	Style.apply_button(confirm, &"danger")
+	Style.apply_button(cancel, &"secondary")
 	confirm.pressed.connect(_on_confirm_resign)
-	row.add_child(confirm)
-	var cancel := _make_button("CancelResign", "Cancel")
 	cancel.pressed.connect(_on_cancel_resign)
-	row.add_child(cancel)
 
 
-## FOCUS_NONE on every button (incl. the confirm pair): Space activates the
-## focused Control as GUI input before _unhandled_input ever sees it.
-func _make_button(button_name: String, text: String) -> Button:
+## Main battle controls stay FOCUS_NONE so Space reaches the pause shortcut.
+## Modal actions intentionally retain focus; Space then activates the safe
+## focused Cancel action instead of leaking through to pause.
+func _make_button(button_name: String, text: String, role: StringName) -> Button:
 	var btn := Button.new()
 	btn.name = button_name
 	btn.text = text
 	btn.focus_mode = Control.FOCUS_NONE
-	btn.custom_minimum_size = Vector2(44.0, 44.0)
-	btn.add_theme_font_size_override("font_size", FONT_SIZE)
+	btn.custom_minimum_size = Vector2(76.0, 46.0)
+	Style.apply_button(btn, role)
 	return btn
 
 
@@ -143,7 +130,6 @@ func _set_scale(value: float) -> void:
 	view.set("ticks_per_frame_scale", value)
 
 
-## Display derives from the live seam value every frame — never written back.
 func _process(_delta: float) -> void:
 	if view == null or model == null:
 		return
@@ -151,30 +137,37 @@ func _process(_delta: float) -> void:
 	if current > 0.0:
 		_resume_scale = current
 	var paused := current == 0.0
-	_pause_button.text = ">" if paused else "II"
+	var running := model.result == BattleModel.Result.RUNNING
+	_pause_button.text = "RESUME" if paused else "PAUSE"
 	_paused_label.text = "PAUSED" if paused and not _confirm.visible else ""
-	_speed_button.text = "%dx" % int(round(_resume_scale))
-	_pause_button.disabled = not _interaction_enabled
-	_speed_button.disabled = not _interaction_enabled
-	_resign_button.disabled = not _interaction_enabled or model.result != BattleModel.Result.RUNNING
+	_speed_button.text = "%d×" % int(round(_resume_scale))
+	_pause_button.disabled = not _interaction_enabled or not running
+	_speed_button.disabled = not _interaction_enabled or not running
+	_resign_button.disabled = not _interaction_enabled or not running
+	if paused != _last_paused:
+		Style.apply_button(_pause_button, &"selected" if paused else &"secondary")
+		_last_paused = paused
+		relayout()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _interaction_enabled:
 		return
+	if _confirm.visible and event.is_action_pressed("ui_cancel"):
+		_on_cancel_resign()
+		get_viewport().set_input_as_handled()
+		return
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.is_echo():
 		return
-	if key.physical_keycode != KEY_SPACE:
-		return
-	if _confirm.visible:
+	if key.physical_keycode != KEY_SPACE or _confirm.visible:
 		return
 	_on_pause_pressed()
 	get_viewport().set_input_as_handled()
 
 
 func _on_pause_pressed() -> void:
-	if not _interaction_enabled:
+	if not _interaction_enabled or model.result != BattleModel.Result.RUNNING:
 		return
 	Sfx.play("ui_click")
 	if _current_scale() == 0.0:
@@ -183,8 +176,6 @@ func _on_pause_pressed() -> void:
 		_set_scale(0.0)
 
 
-## Cycles 1x -> 2x -> 4x -> 1x; while paused it sets the new speed AND
-## unpauses (one less stuck state). A seam-written off-cycle value (e.g. a
 func _on_speed_pressed() -> void:
 	if not _interaction_enabled:
 		return
@@ -197,26 +188,25 @@ func _on_speed_pressed() -> void:
 	_set_scale(next)
 
 
-## Opening the confirm forces pause; Cancel restores the prior scale.
 func _on_resign_pressed() -> void:
 	if not _interaction_enabled:
 		return
 	Sfx.play("ui_click")
 	_pre_confirm_scale = _current_scale()
 	_set_scale(0.0)
-	_confirm.visible = true
-	_confirm.reset_size()
-	_confirm.position = (size - _confirm.size) * 0.5
+	DialogType.show_dialog(_confirm_dialog, _resign_button)
 
 
 func _on_cancel_resign() -> void:
 	Sfx.play("ui_click")
-	_confirm.visible = false
+	DialogType.hide_dialog(_confirm_dialog)
 	_set_scale(_pre_confirm_scale)
 
 
 func _on_confirm_resign() -> void:
 	Sfx.play("ui_click")
-	_confirm.visible = false
+	DialogType.set_pending(_confirm_dialog, true, "WITHDRAWING…")
 	model.apply_action([&"resign"])
+	DialogType.set_pending(_confirm_dialog, false)
+	DialogType.hide_dialog(_confirm_dialog)
 	_set_scale(_pre_confirm_scale)

@@ -2,6 +2,7 @@ class_name SpellBar
 extends Control
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 ## Raw-input adapter for the cast verb (architecture rule 3: a thin adapter
 ## over apply_action, validated once per spell kind by charm_runback.gd).
@@ -26,6 +27,7 @@ var view: Node2D = null
 var _allowed: Array[StringName] = []
 var _buttons: Dictionary = {}
 var _sweeps: Dictionary = {}
+var _deck: PanelContainer = null
 var _targeting: StringName = &""
 var _pointer := Vector2.ZERO
 var _cursor_rect: Polygon2D = null
@@ -56,10 +58,15 @@ func setup(
 
 
 func _build_buttons() -> void:
+	_deck = PanelContainer.new()
+	_deck.name = "SpellCommandDeck"
+	_deck.mouse_filter = Control.MOUSE_FILTER_PASS
+	Style.apply_panel(_deck, &"hud")
+	add_child(_deck)
 	var box := HBoxContainer.new()
 	box.name = "SpellBox"
-	box.add_theme_constant_override("separation", 16)
-	add_child(box)
+	box.add_theme_constant_override("separation", 10)
+	_deck.add_child(box)
 	for spell_id: StringName in model.spell_book.ids:
 		if not _allowed.has(spell_id):
 			continue
@@ -67,9 +74,11 @@ func _build_buttons() -> void:
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id
 		slot.text = _label_for(def)
-		slot.custom_minimum_size.y = 52.0
+		slot.custom_minimum_size = Vector2(150.0, 58.0)
 		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
-		slot.add_theme_font_size_override("font_size", FONT_SIZE)
+		slot.expand_icon = true
+		slot.add_theme_constant_override(&"icon_max_width", 42)
+		Style.apply_button(slot, &"gold")
 		slot.button_down.connect(_start_targeting.bind(spell_id))
 		box.add_child(slot)
 		_buttons[spell_id] = slot
@@ -80,9 +89,8 @@ func _build_buttons() -> void:
 		sweep.size = Vector2(0, SWEEP_HEIGHT)
 		slot.add_child(sweep)
 		_sweeps[spell_id] = sweep
-	# top-right strip; the box knows its width only after buttons exist
-	box.reset_size()
-	box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
+	_deck.visible = box.get_child_count() > 0
+	relayout()
 
 
 ## battle_view._relayout() after the grid recompute (P14 ordering).
@@ -90,13 +98,16 @@ func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	var box := get_node_or_null("SpellBox") as HBoxContainer
 	if box != null:
-		box.position = Vector2(size.x - box.get_combined_minimum_size().x - 16.0, 8.0)
+		box.reset_size()
+	if _deck != null:
+		_deck.reset_size()
+		_deck.position = Vector2(size.x - _deck.get_combined_minimum_size().x - 16.0, 8.0)
 
 
 func _label_for(def: SpellDef) -> String:
 	if def.availability == SpellDef.Availability.ONCE_PER_WAVE:
-		return "%s 1/wave" % def.display_name
-	return def.display_name
+		return "%s\n1 / WAVE" % def.display_name.to_upper()
+	return "%s\nREADY" % def.display_name.to_upper()
 
 
 func _process(_delta: float) -> void:
