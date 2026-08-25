@@ -40,6 +40,8 @@ func _run() -> void:
 	var owner := Control.new()
 	owner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(owner)
+	root.size = Vector2i(540, 960)
+	await process_frame
 	var return_focus := Button.new()
 	return_focus.focus_mode = Control.FOCUS_ALL
 	owner.add_child(return_focus)
@@ -47,8 +49,17 @@ func _run() -> void:
 	var overlay := dialog[&"overlay"] as Control
 	var confirm := dialog[&"confirm"] as Button
 	var cancel := dialog[&"cancel"] as Button
+	var panel := dialog[&"panel"] as PanelContainer
+	var placement := dialog[&"placement"] as VBoxContainer
+	var actions := dialog[&"actions"] as GridContainer
 	_check(overlay != null and not overlay.visible, "dialog should start hidden")
 	_check(confirm.custom_minimum_size.y >= 44.0 and cancel.custom_minimum_size.y >= 44.0, "dialog actions are not touch safe")
+	_check(panel.custom_minimum_size.x <= 516.0, "narrow dialog exceeds the 540px safe width")
+	_check(placement.alignment == BoxContainer.ALIGNMENT_END, "narrow dialog is not bottom attached")
+	_check(actions.columns == 1, "narrow dialog actions do not stack")
+	_check(cancel.focus_neighbor_top == cancel.get_path_to(confirm), "dialog top focus escapes its scope")
+	_check(confirm.focus_neighbor_bottom == confirm.get_path_to(cancel), "dialog bottom focus escapes its scope")
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	_check(DialogType.show_dialog(dialog, return_focus), "dialog did not open")
 	await process_frame
 	_check(overlay.visible, "dialog overlay remained hidden")
@@ -60,6 +71,14 @@ func _run() -> void:
 	await process_frame
 	_check(not overlay.visible, "dialog did not close")
 	_check(return_focus.has_focus(), "dialog did not restore focus")
+	var invalid_return := Button.new()
+	owner.add_child(invalid_return)
+	_check(DialogType.show_dialog(dialog, invalid_return), "dialog did not reopen for invalid return-focus coverage")
+	await process_frame
+	invalid_return.queue_free()
+	await process_frame
+	_check(DialogType.hide_dialog(dialog), "dialog failed to close after return focus was invalidated")
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 	owner.queue_free()
 	shell.queue_free()

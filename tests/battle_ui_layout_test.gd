@@ -8,6 +8,8 @@ func _init() -> void:
 
 
 func _run() -> void:
+	root.size = Vector2i(1280, 720)
+	await process_frame
 	var game := root.get_node_or_null("Game")
 	_check(game != null, "Game autoload missing")
 	if game == null:
@@ -28,7 +30,9 @@ func _run() -> void:
 	var slot_box := battle.find_child("SlotBox", true, false) as GridContainer
 	var controls_deck := battle.find_child("BattleCommandDeck", true, false) as PanelContainer
 	var pause := battle.find_child("PauseButton", true, false) as Button
+	var speed := battle.find_child("SpeedButton", true, false) as Button
 	var resign := battle.find_child("ResignButton", true, false) as Button
+	var recenter := battle.find_child("RecenterMap", true, false) as Button
 	var tutorial_card := battle.find_child("TutorialCard", true, false) as PanelContainer
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
@@ -38,8 +42,21 @@ func _run() -> void:
 		for child: Node in slot_box.get_children():
 			_check(child is Button and (child as Button).custom_minimum_size.y >= 44.0, "deployment slot is not touch safe")
 	_check(controls_deck != null and controls_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "battle command deck is not textured")
-	_check(pause != null and resign != null and pause.focus_mode == Control.FOCUS_NONE, "battle shortcut controls changed focus semantics")
+	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
+	_check(recenter != null and recenter.focus_mode == Control.FOCUS_ALL, "map recenter is not controller focusable")
 	_check(tutorial_card != null and tutorial_card.get_theme_stylebox(&"panel") is StyleBoxTexture, "tutorial card did not inherit the Lunaris modal frame")
+	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control
+	spell_probe.name = "Phase0SpellProbe"
+	battle.add_child(spell_probe)
+	spell_probe.call("setup", game.get("current_battle"), battle, [&"slow_field"] as Array[StringName])
+	await process_frame
+	var spell_deck := spell_probe.find_child("SpellCommandDeck", true, false) as PanelContainer
+	_check(
+		spell_deck != null and not spell_deck.get_global_rect().intersects(controls_deck.get_global_rect()),
+		"landscape spell and battle command hit regions overlap; controls=%s spell=%s" % [
+			controls_deck.get_global_rect(), spell_deck.get_global_rect() if spell_deck != null else Rect2(),
+		],
+	)
 
 	if skip != null:
 		skip.pressed.emit()
@@ -66,6 +83,7 @@ func _run() -> void:
 		await process_frame
 		_check(not resign_layer.visible, "Cancel did not close resign confirmation")
 		_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "Cancel did not restore prior speed")
+		_check(resign.has_focus(), "Cancel did not restore focus to Resign")
 		_check(int(game.get("current_battle").result) == BattleModel.Result.RUNNING, "Cancel mutated battle result")
 		controls.call("_on_resign_pressed")
 		await process_frame

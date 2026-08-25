@@ -16,6 +16,7 @@ const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
@@ -402,7 +403,7 @@ func _process(delta: float) -> void:
 			not requested_music_state.is_empty()
 			and Music.request_battle_state(
 				requested_music_state,
-				requested_music_state in [&"high", &"boss"],
+				requested_music_state in [&"high", &"critical", &"boss", &"boss_critical"],
 			)
 		):
 			_music_director.accept_state(requested_music_state, _music_elapsed_seconds)
@@ -583,7 +584,7 @@ func _detect_result_stamp() -> void:
 	var next := Button.new()
 	next.name = "ContinueButton"
 	_continue_btn = next
-	next.text = "CONTINUE TO DEBRIEF"
+	next.text = UiCopyType.text(&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF")
 	# (and Space, once terminal) also proceeds — the "what do I click now"
 	next.custom_minimum_size = Vector2(360.0, 64.0)
 	LunarisOpsType.apply_button(next, &"primary")

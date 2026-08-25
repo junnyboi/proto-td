@@ -114,6 +114,8 @@ var _campaign: Variant = null
 var _shell: AetheriaScreenShellType
 var _page: VBoxContainer
 var _dialog_scroll: ScrollContainer
+var _workspace: VBoxContainer
+var _action_dock: VBoxContainer
 var _mode: StringName = &"roster"
 var _layout_mode: StringName = &"regular_landscape"
 var _roster_rows: Array[Dictionary] = []
@@ -220,6 +222,19 @@ func _build_shell() -> void:
 	_dialog_scroll.name = "TrainingDialogScroll"
 	var content_gutter := _shell.add_dialog_scroll(_dialog_scroll)
 	content_gutter.add_child(_page)
+	var content_host := _shell.content_host()
+	content_host.remove_child(_dialog_scroll)
+	_workspace = VBoxContainer.new()
+	_workspace.name = "TrainingWorkspace"
+	_workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_workspace.add_theme_constant_override(&"separation", 12)
+	content_host.add_child(_workspace)
+	_workspace.add_child(_dialog_scroll)
+	_action_dock = VBoxContainer.new()
+	_action_dock.name = "TrainingActionDock"
+	_action_dock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_workspace.add_child(_action_dock)
 	_layout_mode = _shell.layout_mode()
 	_shell.preferred_size = _shell_size_for(_layout_mode)
 
@@ -316,7 +331,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	footer.add_child(back)
 	footer.add_child(_view_paths)
 	footer.add_child(review)
-	_page.add_child(footer)
+	_set_action_footer(footer)
 	_apply_roster_layout()
 	_apply_footer_layouts()
 	_reset_outer_scroll()
@@ -834,7 +849,7 @@ func _show_paths() -> void:
 	_choose_path.pressed.connect(_add_selected_choice)
 	footer.add_child(back)
 	footer.add_child(_choose_path)
-	_page.add_child(footer)
+	_set_action_footer(footer)
 	_apply_paths_layout()
 	_apply_footer_layouts()
 	_reset_outer_scroll()
@@ -964,7 +979,7 @@ func _show_review(error_code: StringName = &"", removed_rows: Array = []) -> voi
 	_review_confirm.pressed.connect(_confirm_review)
 	footer.add_child(back)
 	footer.add_child(_review_confirm)
-	_page.add_child(footer)
+	_set_action_footer(footer)
 	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), false)
@@ -1230,6 +1245,10 @@ func _clear_page() -> void:
 	for child: Node in _page.get_children():
 		_page.remove_child(child)
 		child.queue_free()
+	if _action_dock != null:
+		for child: Node in _action_dock.get_children():
+			_action_dock.remove_child(child)
+			child.queue_free()
 	_roster_buttons.clear()
 	_path_cards.clear()
 	_view_paths = null
@@ -1385,7 +1404,8 @@ func _skill_text(choice: Dictionary) -> String:
 
 
 func _apply_footer_layouts() -> void:
-	for node: Node in _all_nodes(_page):
+	var footer_root: Node = _action_dock if _action_dock != null else _page
+	for node: Node in _all_nodes(footer_root):
 		if node is BoxContainer and String(node.name).ends_with("Actions"):
 			var footer := node as BoxContainer
 			footer.vertical = _layout_mode == &"portrait"
@@ -1474,9 +1494,20 @@ func _ensure_focus_visible(
 ) -> void:
 	if not is_instance_valid(scroll) or not is_instance_valid(control):
 		return
+	if not scroll.is_ancestor_of(control):
+		return
 	scroll.ensure_control_visible(control)
 	if scroll != outer_scroll and is_instance_valid(outer_scroll):
 		outer_scroll.call_deferred("ensure_control_visible", control)
+
+
+func _set_action_footer(footer: BoxContainer) -> void:
+	if _action_dock == null or footer == null:
+		return
+	for child: Node in _action_dock.get_children():
+		_action_dock.remove_child(child)
+		child.queue_free()
+	_action_dock.add_child(footer)
 
 
 func _all_nodes(root: Node) -> Array[Node]:

@@ -8,6 +8,12 @@ const SFX_CATALOG_SCRIPT: GDScript = preload("res://assets/sfx/sfx_catalog.gd")
 const VOICE_COUNT := 8
 const PLAYER_PREFIX := "Voice"
 const BUS_NAME := &"SFX"
+const HOVER_CUE_ID := "ui_hover"
+const HOVER_BIND_META := &"_sfx_hover_bound"
+const HOVER_READY_META := &"_sfx_hover_ready_msec"
+const HOVER_DISABLED_META := &"sfx_hover_disabled"
+const HOVER_BIND_DELAY_MSEC := 120
+const HOVER_DEBOUNCE_MSEC := 65
 
 var _catalog: Resource = null
 var _players: Array[AudioStreamPlayer] = []
@@ -18,11 +24,17 @@ var _last_raw_id := &""
 var _last_resolved_id := &""
 var _last_stream_path := ""
 var _last_started_frame_by_id: Dictionary = {}
+var _last_hovered_control: Control = null
+var _last_hover_play_msec := -HOVER_DEBOUNCE_MSEC
+var _hover_binding_count := 0
+var _hover_play_count := 0
 
 
 func _ready() -> void:
 	reload_catalog()
 	_ensure_players()
+	get_tree().node_added.connect(_on_tree_node_added)
+	_bind_hover_descendants(get_tree().root)
 
 
 func reload_catalog() -> bool:
@@ -166,6 +178,50 @@ func dedupe_count() -> int:
 	return _dedupe_count
 
 
+func hover_binding_count() -> int:
+	return _hover_binding_count
+
+
+func hover_play_count() -> int:
+	return _hover_play_count
+
+
+func hover_is_bound(control: Control) -> bool:
+	return control != null and bool(control.get_meta(HOVER_BIND_META, false))
+
+
+func hover_target_eligible(control: Control) -> bool:
+	if not _hover_target_bindable(control):
+		return false
+	if control is BaseButton:
+		return not (control as BaseButton).disabled
+	if control is LineEdit:
+		return (control as LineEdit).editable
+	if control is TextEdit:
+		return (control as TextEdit).editable
+	if control is Slider:
+		return (control as Slider).editable
+	if control is SpinBox:
+		return (control as SpinBox).editable
+	if control is ScrollBar:
+		return true
+	if control is Range:
+		return false
+	if control is TabBar:
+		var tab_bar := control as TabBar
+		var tab_index := tab_bar.get_tab_idx_at_point(tab_bar.get_local_mouse_position())
+		return tab_index >= 0 and not tab_bar.is_tab_disabled(tab_index)
+	if control is ItemList:
+		var item_list := control as ItemList
+		var item_index := item_list.get_item_at_position(item_list.get_local_mouse_position(), true)
+		return item_index >= 0 and not item_list.is_item_disabled(item_index)
+	if control is MenuBar:
+		var menu_bar := control as MenuBar
+		var menu_index: int = menu_bar.get_menu_idx_at_point(menu_bar.get_local_mouse_position())
+		return menu_index >= 0 and not menu_bar.is_menu_disabled(menu_index)
+	return control.focus_mode != Control.FOCUS_NONE
+
+
 func last_raw_id() -> StringName:
 	return _last_raw_id
 
@@ -207,3 +263,84 @@ func _ensure_bus() -> void:
 		return
 	AudioServer.add_bus()
 	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS_NAME)
+
+
+func _on_tree_node_added(node: Node) -> void:
+	if node is Control:
+		_try_bind_hover_by_id.call_deferred(node.get_instance_id())
+
+
+func _try_bind_hover_by_id(instance_id: int) -> void:
+	var value := instance_from_id(instance_id)
+	if value is Control:
+		_try_bind_hover(value as Control)
+
+
+func _bind_hover_descendants(node: Node) -> void:
+	if node is Control:
+		_try_bind_hover(node as Control)
+	for child: Node in node.get_children():
+		_bind_hover_descendants(child)
+
+
+func _try_bind_hover(control: Control) -> void:
+	if not is_instance_valid(control) or bool(control.get_meta(HOVER_BIND_META, false)):
+		return
+	control.set_meta(HOVER_BIND_META, true)
+	control.set_meta(HOVER_READY_META, Time.get_ticks_msec() + HOVER_BIND_DELAY_MSEC)
+	control.mouse_entered.connect(_on_control_hovered.bind(control))
+	control.mouse_exited.connect(_on_control_unhovered.bind(control))
+	_hover_binding_count += 1
+
+
+func _on_control_hovered(control: Control) -> void:
+	var hover_owner := _hover_owner_for(control)
+	if hover_owner == null or not hover_owner.is_visible_in_tree():
+		return
+	var now_msec := Time.get_ticks_msec()
+	if now_msec < int(hover_owner.get_meta(HOVER_READY_META, 0)):
+		return
+	if hover_owner == _last_hovered_control or now_msec - _last_hover_play_msec < HOVER_DEBOUNCE_MSEC:
+		return
+	if play(HOVER_CUE_ID):
+		_last_hovered_control = hover_owner
+		_last_hover_play_msec = now_msec
+		_hover_play_count += 1
+
+
+func _on_control_unhovered(control: Control) -> void:
+	var hover_owner := _hover_owner_for(control)
+	if hover_owner == _last_hovered_control:
+		_last_hovered_control = null
+
+
+func _hover_target_bindable(control: Control) -> bool:
+	if control == null or bool(control.get_meta(HOVER_DISABLED_META, false)):
+		return false
+	if control.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+		return false
+	return (
+		control is BaseButton
+		or control is Slider
+		or control is SpinBox
+		or control is ScrollBar
+		or control is LineEdit
+		or control is TextEdit
+		or control is ItemList
+		or control is TabBar
+		or control is MenuBar
+		or control.focus_mode != Control.FOCUS_NONE
+	)
+
+
+func _hover_owner_for(control: Control) -> Control:
+	if control == null:
+		return null
+	var owner: Control = null
+	var cursor: Node = control
+	while cursor is Control:
+		var candidate := cursor as Control
+		if hover_target_eligible(candidate):
+			owner = candidate
+		cursor = cursor.get_parent()
+	return owner

@@ -17,12 +17,20 @@
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
 
+# Company Command Sizing Reimplementation
+
+- [x] Audit the supplied screenshot, measured runtime geometry, decorative safe areas, and mature gacha lobby sizing patterns.
+- [x] Generate divider-free Company Command HUD and navigation-rail frames with GPT Image 2; retain all copy, state, focus, and interaction as native Godot controls.
+- [x] Recompose standard landscape into segmented HUD, navigation rail, protected hero stage, and 620–700px command deck with explicit per-frame content-safe margins.
+- [x] Implement compact-landscape and portrait command-sheet reflow with display-safe-area insets, local scrolling, 72px actions, and typography floors.
+- [x] Add English/Chinese exact-resolution layout regressions and accept 1280×720, 1280×1100, 1024×768, and 720×1280 native renders with clean runtime logs.
+
 # Approved Unified Interface Continuation
 
 - [x] Preserve the user-approved concept and implementation plan verbatim under repository-root `docs/`.
-- [ ] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
-- [ ] Close material visual/interaction gaps while preserving every authoritative behavior contract.
-- [ ] Run full Godot, responsive visual, Web export, browser, and deployment gates; push each accepted implementation phase.
+- [x] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
+- [x] Close material visual/interaction gaps while preserving every authoritative behavior contract.
+- [ ] Run final Web export, browser, WebDev checkpoint, public deployment, and push gates on the accepted implementation.
 
 # Faction-Led Soundtrack Redesign
 
@@ -32,5 +40,7 @@
 - [x] Phase 3: generate and integrate Lunaris early-campaign and Air Raid adaptive battle suites for S1–S4.
 - [x] Phase 4: generate and integrate Lunaris late-campaign, Gatecrasher boss, results, and tactical transition cues for S5–S8.
 - [x] Produce and route the moon-glass UI click, back, confirm, menu-open, and menu-close suite through GPT Image 2 carrier anchors and audio-capable video extraction.
+- [x] Produce a dedicated quiet moon-glass hover cue and bind it globally to eligible interactive controls with readiness, debounce, disabled/hidden suppression, semantic opt-out, and lifecycle coverage.
+- [x] Escalate battle music below 30% base health through urgent next-bar critical/boss-critical states and an 8% tempo lift with hysteretic recovery.
 - [ ] Phase 5: complete loudness, SFX-masking, mono/mobile, accessibility, Web packaging, playthrough, and release validation.
 - [ ] Phase 6: produce Solcrest, Crimson, and Vesper suites only as their playable faction content enters production.

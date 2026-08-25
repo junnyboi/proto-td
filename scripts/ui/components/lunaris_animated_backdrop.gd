@@ -27,7 +27,7 @@ void fragment() {
 var _fallback: TextureRect = null
 var _video: VideoStreamPlayer = null
 var _video_ready := false
-var _reduced_motion := false
+var _reduced_motion := bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 
 
 func _ready() -> void:
@@ -113,20 +113,25 @@ func _build_layers() -> void:
 	_video = VideoStreamPlayer.new()
 	_video.name = "LunarisTitleLoop"
 	_video.stream = TITLE_LOOP
-	_video.autoplay = true
+	_video.autoplay = not _reduced_motion
 	_video.loop = true
 	_video.expand = true
 	_video.volume_db = -80.0
 	_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_video.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_video.modulate.a = 1.0
+	_video.visible = not _reduced_motion
 	var shader := Shader.new()
 	shader.code = VIDEO_SHADER
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	_video.material = material
 	add_child(_video)
-	_video.play()
+	if not _reduced_motion:
+		_video.play()
+	else:
+		_video.paused = true
+		set_process(false)
 
 
 func _fit_current_viewport() -> void:

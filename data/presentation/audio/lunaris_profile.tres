@@ -8,9 +8,9 @@ id = &"lunaris"
 faction_id = &"lunaris_reliquary"
 staging_cue_id = &"lunaris_staging_archive_command"
 battle_variants = {
-&"air_raid": {&"low": &"lunaris_battle_air_raid_low", &"medium": &"lunaris_battle_air_raid_medium", &"high": &"lunaris_battle_air_raid_high"},
-&"gravity_lattice": {&"low": &"lunaris_battle_gravity_lattice_low", &"medium": &"lunaris_battle_gravity_lattice_medium", &"high": &"lunaris_battle_gravity_lattice_high"},
-&"orbit_early": {&"low": &"lunaris_battle_orbit_early_low", &"medium": &"lunaris_battle_orbit_early_medium", &"high": &"lunaris_battle_orbit_early_high"}
+&"air_raid": {&"low": &"lunaris_battle_air_raid_low", &"medium": &"lunaris_battle_air_raid_medium", &"high": &"lunaris_battle_air_raid_high", &"critical": &"lunaris_battle_air_raid_high"},
+&"gravity_lattice": {&"low": &"lunaris_battle_gravity_lattice_low", &"medium": &"lunaris_battle_gravity_lattice_medium", &"high": &"lunaris_battle_gravity_lattice_high", &"critical": &"lunaris_battle_gravity_lattice_high"},
+&"orbit_early": {&"low": &"lunaris_battle_orbit_early_low", &"medium": &"lunaris_battle_orbit_early_medium", &"high": &"lunaris_battle_orbit_early_high", &"critical": &"lunaris_battle_orbit_early_high"}
 }
 boss_cue_id = &"lunaris_boss_gatecrasher"
 victory_cue_id = &"lunaris_result_victory"

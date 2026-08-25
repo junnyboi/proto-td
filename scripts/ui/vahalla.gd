@@ -117,7 +117,7 @@ func _build_screen() -> void:
 
 	_roster_panel = PanelContainer.new()
 	_roster_panel.name = "MemorialRosterPanel"
-	_roster_panel.custom_minimum_size.x = 360
+	_roster_panel.custom_minimum_size.x = 320
 	_roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_roster_panel, &"quiet")
@@ -141,7 +141,7 @@ func _build_screen() -> void:
 
 	_dossier_panel = PanelContainer.new()
 	_dossier_panel.name = "MemorialDossier"
-	_dossier_panel.custom_minimum_size.x = 620
+	_dossier_panel.custom_minimum_size.x = 680
 	_dossier_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_dossier_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_dossier_panel, &"memorial")
@@ -198,7 +198,7 @@ func _rebuild_dossier() -> void:
 		_dossier_panel.remove_child(child)
 		child.queue_free()
 	if _selected_hero_id.is_empty():
-		var empty := _label("NO MEMORIAL RECORD SELECTED", &"body")
+		var empty := _label(UiCopyType.text(&"ui.vahalla.no_selection", "NO MEMORIAL RECORD SELECTED"), &"body")
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_dossier_panel.add_child(empty)
 		return
@@ -214,7 +214,7 @@ func _rebuild_dossier() -> void:
 	var portrait := TextureRect.new()
 	portrait.name = "SelectedMemorialPortrait"
 	portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
-	portrait.custom_minimum_size = Vector2(260, 360)
+	portrait.custom_minimum_size = Vector2(320, 420)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -238,15 +238,29 @@ func _rebuild_dossier() -> void:
 	if not title.is_empty():
 		details.add_child(_label(title, &"heading"))
 	details.add_child(_label(_class_name(String(hero["current_class_id"])).to_upper(), &"metric"))
-	var terminal := _label("TERMINAL SERVICE RECORD", &"eyebrow")
+	var rule := ColorRect.new()
+	rule.custom_minimum_size = Vector2(0, 2)
+	rule.color = Color(Style.CYAN, 0.5)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	details.add_child(rule)
+	var service_ledger := PanelContainer.new()
+	service_ledger.name = "ServiceLedger"
+	service_ledger.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	service_ledger.custom_minimum_size.y = 132.0
+	Style.apply_panel(service_ledger, &"quiet")
+	details.add_child(service_ledger)
+	var ledger_stack := VBoxContainer.new()
+	ledger_stack.add_theme_constant_override(&"separation", 8)
+	service_ledger.add_child(ledger_stack)
+	var terminal := _label(UiCopyType.text(&"ui.vahalla.terminal_record", "TERMINAL SERVICE RECORD"), &"eyebrow")
 	terminal.add_theme_color_override(&"font_color", Style.DANGER)
-	details.add_child(terminal)
+	ledger_stack.add_child(terminal)
 	var record := _label(_death_record(hero), &"body")
 	record.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	details.add_child(record)
-	var continuity := _label("Identity sealed by stable hero record. Ordinary loss remains permanent.", &"detail")
+	ledger_stack.add_child(record)
+	var continuity := _label(UiCopyType.text(&"ui.vahalla.permanence", "Identity sealed by stable hero record. Ordinary loss remains permanent."), &"detail")
 	continuity.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	details.add_child(continuity)
+	ledger_stack.add_child(continuity)
 	var honor := Button.new()
 	honor.name = "Honor_%s" % _selected_hero_id
 	honor.text = (
@@ -261,7 +275,7 @@ func _rebuild_dossier() -> void:
 	details.add_child(honor)
 	if get_viewport_rect().size.y > get_viewport_rect().size.x:
 		layout.columns = 1
-		portrait.custom_minimum_size = Vector2(0, 300)
+		portrait.custom_minimum_size = Vector2(0, 380)
 
 
 func _hero_for_id(hero_id: String) -> Dictionary:
@@ -323,8 +337,8 @@ func _apply_responsive_layout() -> void:
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 		_screen_margin.add_theme_constant_override(side, margin)
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
-	_roster_panel.custom_minimum_size = Vector2(0 if portrait else 360, 230 if portrait else 0)
-	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 620, 520 if portrait else 0)
+	_roster_panel.custom_minimum_size = Vector2(0 if portrait else 320, 230 if portrait else 0)
+	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 620 if portrait else 0)
 	_body_grid.move_child(_dossier_panel, 0 if portrait else 1)
 	_rebuild_dossier()
 

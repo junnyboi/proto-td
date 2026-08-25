@@ -34,6 +34,8 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var shell := screen.find_child("ResultsShell", true, false)
+	var ceremony := screen.find_child("OutcomeCeremony", true, false) as PanelContainer
+	var headline := screen.find_child("Headline", true, false) as Label
 	var stars := screen.find_child("ResultStars", true, false) as HBoxContainer
 	var reward := screen.find_child("Reward0", true, false) as PanelContainer
 	var entitlement := screen.find_child("Entitlement0", true, false) as PanelContainer
@@ -43,6 +45,7 @@ func _run() -> void:
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
 	var title := screen.find_child("BackToTitle", true, false) as Button
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
+	_check(ceremony != null and headline != null and headline.get_theme_font_size(&"font_size") >= 40, "Results outcome ceremony is not dominant")
 	_check(stars != null and stars.get_child_count() == 3, "native result stars are missing")
 	_check(reward != null and entitlement != null and xp != null, "typed result payload cards are incomplete")
 	_check(no_casualties != null, "no-casualty state is missing")

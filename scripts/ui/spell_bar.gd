@@ -148,9 +148,10 @@ func relayout() -> void:
 		box.reset_size()
 	if _deck != null:
 		_deck.reset_size()
-		var deck_y := 64.0 if size.x >= size.y else 18.0
+		var deck_size := _deck.get_combined_minimum_size()
+		var deck_y := maxf(96.0, size.y - deck_size.y - 18.0) if size.x >= size.y else 18.0
 		_deck.position = Vector2(
-			size.x - _deck.get_combined_minimum_size().x - 16.0,
+			size.x - deck_size.x - 16.0,
 			deck_y,
 		)
 

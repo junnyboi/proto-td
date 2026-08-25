@@ -61,6 +61,37 @@ func _exercise_runtime(music: Node) -> void:
 	_check(bool(music.call("commit_pending_now_for_test")), "danger state can be committed")
 	await process_frame
 	_check(music.call("current_state_id") == &"high", "danger commit switches state")
+	_check(bool(music.call("request_battle_state", &"critical", true)), "critical request schedules")
+	_check(
+		int(music.call("pending_due_msec")) <= 2500,
+		"critical transition targets the next single-bar boundary",
+	)
+	_check(bool(music.call("commit_pending_now_for_test")), "critical state can be committed")
+	await process_frame
+	_check(music.call("current_state_id") == &"critical", "critical commit switches state")
+	_check(
+		music.call("current_id") == &"lunaris_battle_orbit_early_high",
+		"critical state reuses the authored high-intensity arrangement",
+	)
+	_check(
+		is_equal_approx(float(music.call("current_tempo_scale")), 1.08),
+		"critical state raises battle tempo by eight percent",
+	)
+	_check(bool(music.call("request_battle_state", &"high", false)), "critical recovery schedules")
+	_check(music.call("pending_state_id") == &"high", "critical recovery is pending")
+	_check(bool(music.call("request_battle_state", &"critical", true)), "critical incumbent reaffirms")
+	_check(
+		StringName(music.call("pending_state_id")).is_empty(),
+		"critical reaffirmation cancels stale recovery",
+	)
+	_check(bool(music.call("request_battle_state", &"high", false)), "critical recovery reschedules")
+	_check(bool(music.call("commit_pending_now_for_test")), "critical recovery can be committed")
+	await process_frame
+	_check(music.call("current_state_id") == &"high", "critical recovery restores high state")
+	_check(
+		is_equal_approx(float(music.call("current_tempo_scale")), 1.0),
+		"critical recovery restores authored tempo",
+	)
 	var before_invalid_profile := StringName(music.call("current_profile_id"))
 	var before_invalid_variant := StringName(music.call("current_variant_id"))
 	var before_invalid_state := StringName(music.call("current_state_id"))
@@ -105,6 +136,32 @@ func _exercise_director() -> void:
 		enemy.id = index
 		model.enemies.append(enemy)
 	_check(director.desired_state(model, &"orbit_early") == &"medium", "four enemies request medium")
+	model.base_hp = 3
+	_check(
+		director.desired_state(model, &"orbit_early") == &"high",
+		"exactly thirty-percent health does not enter critical state",
+	)
+	model.base_hp = 2
+	_check(
+		director.desired_state(model, &"orbit_early") == &"critical",
+		"health below thirty percent requests critical state",
+	)
+	var critical_director: MusicDirector = MUSIC_DIRECTOR_SCRIPT.new()
+	critical_director.configure(8.0)
+	critical_director.reset(&"low", 0.0)
+	_check(
+		critical_director.update(model, &"orbit_early", 0.05).is_empty(),
+		"critical health begins a short anti-flap candidate window",
+	)
+	_check(
+		critical_director.update(model, &"orbit_early", 0.25) == &"critical",
+		"critical health bypasses the routine minimum hold after stabilization",
+	)
+	_check(
+		critical_director.desired_state(model, &"boss") == &"boss_critical",
+		"low-health boss remains explicitly boss-authored while escalating",
+	)
+	model.base_hp = 10
 	_check(director.update(model, &"orbit_early", 1.0).is_empty(), "candidate respects hold time")
 	_check(director.update(model, &"orbit_early", 9.0) == &"medium", "stable pressure promotes medium")
 	director.accept_state(&"medium", 9.0)

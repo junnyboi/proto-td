@@ -443,6 +443,7 @@ func _finish_title_reveal() -> void:
 
 
 func _wire_title_action_feedback(button: Button) -> void:
+	button.set_meta(&"sfx_hover_disabled", true)
 	_highlighted_actions[button] = false
 	button.resized.connect(_center_action_pivot.bind(button))
 	button.mouse_entered.connect(_on_title_action_hover_changed.bind(button, true))

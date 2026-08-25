@@ -1,6 +1,5 @@
+# Final Non-Battle UI Matrix
 
-**Mission final recheck:** the expanded action grid keeps `BACK`, `TRAIN OPERATORS`, and `DEPLOY SQUAD` inside their frames in portrait and preserves the compact landscape dock. The screen now passes both orientations.
+All six screen families pass at `1280×720` and `720×1280`. Campaign preserves route and selected-operation scroll ownership while exposing objective, threat, first-clear identity, constraints, stars, and hint. Mission retains its proven command/briefing layout and persistent actions. Training uses a persistent bottom action dock independent of roster and dossier scrolling. Premium Resonance uses an asymmetric five-star featured identity with two secondary identities and a responsive confirmation sheet. Vahalla gives the selected fallen identity primacy through an enlarged portrait and structured terminal-service ledger. Results opens with a dominant outcome ceremony while retaining typed payloads and all three routes.
 
-## Acceptance
-
-All six redesigned non-battle families pass the final `1280×720` and `720×1280` capture matrix. The accepted set contains twelve checksummed WebP images. Runtime logs contain no script, resource, renderer, fatal, or crash errors. Native labels, keyboard focus, cancel paths, disabled states, filters, Honor, reduced motion, reveal Skip, selected IDs, result payloads, and authoritative transaction boundaries remain integrated.
+The capture runtime logs passed the Godot error scan. Detailed corrective findings are in `../approved-phase0/inspection-notes.md`.

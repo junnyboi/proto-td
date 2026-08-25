@@ -6,6 +6,7 @@ extends RefCounted
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 
 static func create(font_size: int, z_index: int, viewport: Vector2) -> Label:
@@ -40,16 +41,20 @@ static func relayout(hud: Label, viewport: Vector2) -> void:
 
 
 static func text_for(snapshot: Dictionary, viewport: Vector2) -> String:
-	var result_text: String = ["ACTIVE", "CLEAR", "DEFEAT"][int(snapshot["result"])]
+	var result_text: String = [
+		UiCopyType.text(&"ui.battle.state_active", "ACTIVE"),
+		UiCopyType.text(&"ui.battle.state_clear", "CLEAR"),
+		UiCopyType.text(&"ui.battle.state_defeat", "DEFEAT"),
+	][int(snapshot["result"])]
 	if _uses_compact_layout(viewport):
-		return "CORE %d   DP %d\nELIMS %d   TICK %d   %s" % [
-			snapshot["base_hp"], snapshot["dp"], snapshot["killed"],
-			snapshot["tick"], result_text,
-		]
-	return "CORE  %d    DP  %d    ELIMINATIONS  %d    TICK  %d    %s" % [
-		snapshot["base_hp"], snapshot["dp"], snapshot["killed"],
-		snapshot["tick"], result_text,
-	]
+		return UiCopyType.format_text(&"ui.battle.hud_compact", "CORE {core}   DP {dp}\nELIMS {eliminations}   {state}", {
+			&"core": int(snapshot["base_hp"]), &"dp": int(snapshot["dp"]),
+			&"eliminations": int(snapshot["killed"]), &"state": result_text,
+		})
+	return UiCopyType.format_text(&"ui.battle.hud_wide", "CORE  {core}    DP  {dp}    ELIMINATIONS  {eliminations}    {state}", {
+		&"core": int(snapshot["base_hp"]), &"dp": int(snapshot["dp"]),
+		&"eliminations": int(snapshot["killed"]), &"state": result_text,
+	})
 
 
 static func _uses_compact_layout(viewport: Vector2) -> bool:

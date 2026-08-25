@@ -25,9 +25,9 @@ All music masters were generated as original instrumental material with the Manu
 
 ## Adaptive behavior
 
-`MusicProfile` declares faction cue routing and transition timing. Each `StageDef` references a `music_profile_id` and `music_variant_id`; no file path or generic act number appears in stage data. `MusicDirector` reads presentation-safe facts from the already authoritative `BattleModel` and requests low, medium, high, or boss states. Escalation requires stable pressure, de-escalation is deliberately slower, and an eight-second minimum hold prevents musical chatter.
+`MusicProfile` declares faction cue routing and transition timing. Each `StageDef` references a `music_profile_id` and `music_variant_id`; no file path or generic act number appears in stage data. `MusicDirector` reads presentation-safe facts from the already authoritative `BattleModel` and requests low, medium, high, critical, or boss states. Escalation requires stable pressure, de-escalation is deliberately slower, and an eight-second minimum hold prevents musical chatter.
 
-Routine state changes quantize to a four-bar boundary. Danger changes quantize to the next bar. Scheduling follows the audio playback clock rather than wall time, so pauses, suspended tabs, and device stalls cannot advance a transition off-grid. The `Music` autoload owns two players and performs bounded crossfades; missing profiles, cues, or streams reject without changing routing metadata, battle state, or navigation. Result routing interrupts the adaptive queue with the appropriate non-looping stinger. The global persisted music setting now governs title, staging, battle, boss, result, and premium-cinematic music.
+Routine state changes quantize to a four-bar boundary. Danger changes quantize to the next bar. When base health falls **below 30%**, a 150 ms anti-flap window bypasses the routine hold, reuses the authored high-intensity arrangement, and raises playback tempo by 8%; recovery returns to the ordinary state ladder through normal de-escalation hysteresis. Scheduling follows the audio playback clock rather than wall time, so pauses, suspended tabs, and device stalls cannot advance a transition off-grid. The `Music` autoload owns two players and performs bounded crossfades; missing profiles, cues, or streams reject without changing routing metadata, battle state, or navigation. Result routing interrupts the adaptive queue with the appropriate non-looping stinger. The global persisted music setting now governs title, staging, battle, boss, result, and premium-cinematic music.
 
 The synchronized title Settings surface provides persisted Master, Music, and SFX volume sliders. Both adaptive players route through the `Music` bus, all pooled interaction voices route through `SFX`, and browser/native sessions restore the same levels. Existing premium-reveal cinematic cues remain in the mixed catalog; finishing or skipping a reveal returns to the Company Command loop instead of leaving the gacha surface silent.
 
@@ -39,13 +39,14 @@ The complementary UI suite uses a **moon-glass and brushed-gold mechanism** voca
 
 | Cue | Interaction | Sound brief |
 |---|---|---|
+| `ui_hover` | Pointer enters any eligible interactive control | Quiet glass-filament shimmer and airy focus tick, globally debounced and suppressed for hidden or disabled controls |
 | `ui_click` | Ordinary button activation | Close-miked glass tick, tiny gold latch, short orbital shimmer |
 | `ui_back` | Back navigation | Descending glass gesture, soft gravity retreat, muted release |
 | `ui_confirm` | Mission launch and decisive acceptance | Gold-cyan convergence, three aligned orbit points, compact gravity seal |
 | `menu_open` | Modal or scene deck opening | Layered glass planes unfolding with clockwork alignment |
 | `menu_close` | Modal or scene deck dismissal | Descending retraction and one clean archive latch |
 
-The catalog retains aliases for `ui_select`, `ui_accept`, and `menu_transition`. Existing combat SFX remain intact. New routing covers title settings, scene changes, stage launch, squad confirmation, battle pause/resume, resign dialogs, result continuation, and all existing ordinary button-click call sites.
+The catalog retains aliases for `ui_select`, `ui_accept`, and `menu_transition`. Existing combat SFX remain intact. The `Sfx` autoload automatically binds hover audio to eligible buttons, sliders, selectors, text inputs, tabs, lists, and custom focusable controls as they enter the scene tree. A short readiness delay prevents newly opened menus from sounding under a stationary pointer, and a global debounce prevents dense control grids from producing chatter.
 
 ## Reproduction
 

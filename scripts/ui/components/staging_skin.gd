@@ -27,6 +27,12 @@ const OPERATION_TILE_FRAME := preload("res://assets/ui/staging/frames/operation_
 const PRIMARY_BUTTON_FRAME := preload("res://assets/ui/staging/frames/primary_button.png")
 const RESOURCE_CHIP_FRAME := preload("res://assets/ui/staging/frames/resource_chip.png")
 const NAVBAR_FRAME := preload("res://assets/ui/staging/frames/navbar.png")
+const COMPANY_HUD_PLATE_FRAME := preload(
+	"res://assets/ui/staging/frames/company_hud_plate.png"
+)
+const COMPANY_NAVIGATION_RAIL_FRAME := preload(
+	"res://assets/ui/staging/frames/company_navigation_rail.png"
+)
 
 const GOLD := Color("d9b96e")
 const BRIGHT_GOLD := Color("f0d89a")
@@ -84,19 +90,39 @@ static func icon_for_glyph(kind: StagingGlyphType.Kind) -> Texture2D:
 
 
 static func command_deck_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(COMMAND_DECK_FRAME, Vector4(68.0, 52.0, 68.0, 52.0), modulate)
+	return _texture_style(
+		COMMAND_DECK_FRAME,
+		Vector4(68.0, 52.0, 68.0, 52.0),
+		Vector4(48.0, 36.0, 48.0, 36.0),
+		modulate,
+	)
 
 
 static func mission_card_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(MISSION_CARD_FRAME, Vector4(62.0, 42.0, 62.0, 42.0), modulate)
+	return _texture_style(
+		MISSION_CARD_FRAME,
+		Vector4(62.0, 42.0, 62.0, 42.0),
+		Vector4(44.0, 32.0, 44.0, 32.0),
+		modulate,
+	)
 
 
 static func operation_tile_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(OPERATION_TILE_FRAME, Vector4(56.0, 28.0, 56.0, 28.0), modulate)
+	return _texture_style(
+		OPERATION_TILE_FRAME,
+		Vector4(56.0, 28.0, 56.0, 28.0),
+		Vector4(28.0, 16.0, 28.0, 16.0),
+		modulate,
+	)
 
 
 static func primary_button_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(PRIMARY_BUTTON_FRAME, Vector4(58.0, 30.0, 58.0, 30.0), modulate)
+	return _texture_style(
+		PRIMARY_BUTTON_FRAME,
+		Vector4(58.0, 30.0, 58.0, 30.0),
+		Vector4(34.0, 18.0, 34.0, 18.0),
+		modulate,
+	)
 
 
 static func clean_button_style(
@@ -120,11 +146,41 @@ static func clean_button_style(
 
 
 static func resource_chip_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(RESOURCE_CHIP_FRAME, Vector4(38.0, 24.0, 54.0, 24.0), modulate)
+	return _texture_style(
+		RESOURCE_CHIP_FRAME,
+		Vector4(38.0, 24.0, 54.0, 24.0),
+		Vector4.ZERO,
+		modulate,
+	)
 
 
 static func navbar_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(NAVBAR_FRAME, Vector4(68.0, 34.0, 68.0, 34.0), modulate)
+	return _texture_style(
+		NAVBAR_FRAME,
+		Vector4(68.0, 34.0, 68.0, 34.0),
+		Vector4.ZERO,
+		modulate,
+	)
+
+
+static func company_hud_plate_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
+	return _texture_style(
+		COMPANY_HUD_PLATE_FRAME,
+		Vector4(72.0, 54.0, 72.0, 54.0),
+		Vector4(20.0, 14.0, 20.0, 14.0),
+		modulate,
+	)
+
+
+static func company_navigation_rail_style(
+	modulate: Color = Color.WHITE,
+) -> StyleBoxTexture:
+	return _texture_style(
+		COMPANY_NAVIGATION_RAIL_FRAME,
+		Vector4(56.0, 72.0, 56.0, 72.0),
+		Vector4(18.0, 64.0, 18.0, 36.0),
+		modulate,
+	)
 
 
 static func transparent_focus_style(color: Color = MOON_CYAN) -> StyleBoxFlat:
@@ -133,28 +189,29 @@ static func transparent_focus_style(color: Color = MOON_CYAN) -> StyleBoxFlat:
 	style.border_color = Color.TRANSPARENT
 	style.set_border_width_all(0)
 	style.set_corner_radius_all(4)
-	style.expand_margin_left = 3.0
-	style.expand_margin_top = 3.0
-	style.expand_margin_right = 3.0
-	style.expand_margin_bottom = 3.0
+	style.expand_margin_left = 4.0
+	style.expand_margin_top = 4.0
+	style.expand_margin_right = 4.0
+	style.expand_margin_bottom = 4.0
 	return style
 
 
 static func _texture_style(
 	texture: Texture2D,
-	margins: Vector4,
+	texture_margins: Vector4,
+	content_margins: Vector4,
 	modulate: Color,
 ) -> StyleBoxTexture:
 	var style := StyleBoxTexture.new()
 	style.texture = texture
-	style.texture_margin_left = margins.x
-	style.texture_margin_top = margins.y
-	style.texture_margin_right = margins.z
-	style.texture_margin_bottom = margins.w
-	style.content_margin_left = 0.0
-	style.content_margin_top = 0.0
-	style.content_margin_right = 0.0
-	style.content_margin_bottom = 0.0
+	style.texture_margin_left = texture_margins.x
+	style.texture_margin_top = texture_margins.y
+	style.texture_margin_right = texture_margins.z
+	style.texture_margin_bottom = texture_margins.w
+	style.content_margin_left = content_margins.x
+	style.content_margin_top = content_margins.y
+	style.content_margin_right = content_margins.z
+	style.content_margin_bottom = content_margins.w
 	style.modulate_color = modulate
 	style.draw_center = true
 	return style

@@ -16,6 +16,20 @@ func _run() -> void:
 	game.call("set_run_seed", 1701)
 	_check(bool(game.call("start_campaign", false, true)), "campaign layout fixture failed")
 	game.set("selected_stage_id", &"s1")
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	var staging: Node = load("res://scenes/staging.tscn").instantiate()
+	root.add_child(staging)
+	await process_frame
+	await process_frame
+	var backdrop_video := staging.find_child("LunarisTitleLoop", true, false) as VideoStreamPlayer
+	var backdrop_fallback := staging.find_child("LunarisFallback", true, false) as TextureRect
+	_check(staging.find_child("MockResourceWallet", true, false) == null, "Company Command still presents the fabricated wallet")
+	_check(staging.find_child("UtilityIcons", true, false) == null, "Company Command still presents inert utility chrome")
+	_check(backdrop_video != null and not backdrop_video.visible and not backdrop_video.is_playing(), "reduced motion did not suppress Company Command video playback")
+	_check(backdrop_fallback != null and backdrop_fallback.visible, "reduced motion did not preserve the Company Command static backdrop")
+	_dispose(staging)
+	game.set("content", null)
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 	var campaign: Node = load("res://scenes/stage_select.tscn").instantiate()
 	root.add_child(campaign)
@@ -24,10 +38,15 @@ func _run() -> void:
 	var campaign_shell := campaign.find_child("CampaignShell", true, false)
 	var progress := campaign.find_child("CampaignProgress", true, false) as Label
 	var dossier := campaign.find_child("MissionDossier", true, false) as PanelContainer
+	var dossier_scroll := campaign.find_child("MissionDossierScroll", true, false) as ScrollContainer
+	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
+	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
 	var next_stage := campaign.find_child("Stage_s1", true, false) as Button
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
+	_check(dossier_scroll != null and dossier_objective != null and dossier_objective.text.contains("OBJECTIVE"), "Campaign dossier objective or local scroll is missing")
+	_check(dossier_reward != null and dossier_reward.text.contains("SWORD SAINT"), "Campaign dossier does not expose the typed first-clear reward")
 	_dispose(campaign)
 	game.set("content", null)
 
@@ -50,9 +69,11 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var training_shell := training.find_child("ReliquaryAtelierShell", true, false)
+	var training_dock := training.find_child("TrainingActionDock", true, false) as VBoxContainer
 	var not_now := training.find_child("TrainingBack", true, false) as Button
 	_check(training_shell != null and bool(training_shell.get("full_safe_area")), "Training did not use the full-safe-area workspace")
 	_check(not_now != null, "Training safe exit action is missing")
+	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
 	_dispose(training)
 	game.set("content", null)
 

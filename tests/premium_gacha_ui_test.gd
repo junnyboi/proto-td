@@ -38,6 +38,9 @@ func _run() -> void:
 	_check(pity_segments != null and pity_segments.get_child_count() == 10, "pity meter is not ten segments")
 	if grid != null:
 		_check(grid.get_child_count() == 3, "premium pool did not render three cards")
+		var featured := grid.get_node_or_null("Premium_lunaris_vessel") as PanelContainer
+		var side_card := grid.get_node_or_null("Premium_archive_caster") as PanelContainer
+		_check(featured != null and side_card != null and featured.custom_minimum_size.x > side_card.custom_minimum_size.x, "premium featured identity is not visually dominant")
 		for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
 			var card := grid.get_node_or_null("Premium_%s" % premium_id)
 			_check(card != null, "missing premium card %s" % premium_id)
@@ -46,19 +49,29 @@ func _run() -> void:
 				_check(portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
 
 	var before_cancel: Dictionary = game.get("campaign").runtime_projection()
+	root.size = Vector2i(540, 960)
+	await process_frame
 	pull.pressed.emit()
 	await process_frame
 	var confirmation := screen.find_child("PullConfirmationLayer", true, false) as Control
 	var confirm_pull := screen.find_child("ConfirmPremiumPull", true, false) as Button
 	var cancel_pull := screen.find_child("CancelPremiumPull", true, false) as Button
+	var confirmation_sheet := screen.find_child("Sheet", true, false) as PanelContainer
+	var confirmation_placement := screen.find_child("Placement", true, false) as VBoxContainer
+	var confirmation_actions := screen.find_child("Actions", true, false) as GridContainer
 	_check(confirmation != null and confirmation.visible, "pull confirmation did not open")
 	_check(confirm_pull != null and cancel_pull != null, "pull confirmation actions are missing")
+	_check(confirmation_sheet != null and confirmation_sheet.get_global_rect().end.x <= 540.0, "narrow pull sheet overflows horizontally")
+	_check(confirmation_placement != null and confirmation_placement.alignment == BoxContainer.ALIGNMENT_END, "portrait pull confirmation is not bottom attached")
+	_check(confirmation_actions != null and confirmation_actions.columns == 1, "narrow pull actions do not stack")
 	_check(game.get("campaign").runtime_projection() == before_cancel, "opening confirmation mutated campaign state")
 	if cancel_pull != null:
 		cancel_pull.pressed.emit()
 	await process_frame
 	_check(confirmation != null and not confirmation.visible, "cancel did not close pull confirmation")
 	_check(game.get("campaign").runtime_projection() == before_cancel, "cancel mutated campaign state")
+	root.size = Vector2i(1280, 720)
+	await process_frame
 
 	pull.pressed.emit()
 	await process_frame
