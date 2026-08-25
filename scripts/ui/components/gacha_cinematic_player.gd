@@ -414,7 +414,7 @@ func _cleanup_failed_download(path: String) -> void:
 
 func _fail_download(reason: String, failed_key: String = "") -> void:
 	var stream_key := failed_key if not failed_key.is_empty() else _download_key
-	push_warning("Cinematic stream '%s' failed: %s" % [stream_key, reason])
+	printerr("Cinematic stream '%s' failed: %s" % [stream_key, reason])
 	_download_key = ""
 	_download_temp_path = ""
 	_download_total = 0
@@ -426,7 +426,7 @@ func _fail_download(reason: String, failed_key: String = "") -> void:
 
 
 func _fail_active(reason: String) -> void:
-	push_warning("Cinematic stream '%s' unavailable: %s" % [_active_stream_key, reason])
+	printerr("Cinematic stream '%s' unavailable: %s" % [_active_stream_key, reason])
 	_set_failure_status(reason)
 	stream_state_changed.emit(StringName(_active_stream_key), &"failed", 0, 0)
 	cinematic_failed.emit(StringName(_active_stream_key), reason)
