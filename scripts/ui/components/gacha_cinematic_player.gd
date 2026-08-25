@@ -240,7 +240,12 @@ func _start_download(stream_key: String) -> void:
 	_request.accept_gzip = false
 	_request.body_size_limit = _download_total + COPY_CHUNK_BYTES
 	_request.download_chunk_size = 256 * 1024
-	_request.download_file = _download_temp_path
+	# Emscripten's direct-to-file HTTP path can report success while leaving no
+	# durable user:// record. Keep the Web body in memory, then write it through
+	# FileAccess in _on_request_completed so verification and cache promotion use
+	# the same filesystem API. Native builds retain streaming-to-disk behavior.
+	if not OS.has_feature("web"):
+		_request.download_file = _download_temp_path
 	_request.timeout = DOWNLOAD_TIMEOUT_SECONDS
 	_request.request_completed.connect(_on_request_completed)
 	add_child(_request)
