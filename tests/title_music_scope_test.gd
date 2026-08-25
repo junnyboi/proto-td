@@ -1,6 +1,22 @@
 extends SceneTree
 
-const PREFERENCES_PATH := "user://title_music_continuity_test.cfg"
+const PREFERENCES_PATH := "user://title_music_scope_test.cfg"
+const REMOVED_CUES := [
+	&"act_1_bgm",
+	&"act_1_boss",
+	&"act_2_bgm",
+	&"act_2_boss",
+	&"act_3_bgm",
+	&"act_3_boss",
+]
+const REMOVED_STREAMS := [
+	"res://assets/music/act_1_guild_threshold_bgm.ogg",
+	"res://assets/music/act_1_guild_threshold_boss.ogg",
+	"res://assets/music/act_2_twilight_grotto_bgm.ogg",
+	"res://assets/music/act_2_twilight_grotto_boss.ogg",
+	"res://assets/music/act_3_abyssal_vault_bgm.ogg",
+	"res://assets/music/act_3_abyssal_vault_boss.ogg",
+]
 
 var _failures: Array[String] = []
 
@@ -16,25 +32,27 @@ func _run() -> void:
 	_check(music != null, "Music autoload is available")
 	_check(game != null, "Game autoload is available")
 	if music != null and game != null:
-		await _exercise_transition(music, game)
+		await _exercise_scope(music, game)
 		await _clean_up(music, game)
 	_remove_preferences()
 	call_deferred("_finish")
 
 
-func _exercise_transition(music: Node, game: Node) -> void:
+func _exercise_scope(music: Node, game: Node) -> void:
 	var title: Node = load("res://scenes/title.tscn").instantiate()
 	title.call("set_preferences_path", PREFERENCES_PATH)
 	root.add_child(title)
 	await process_frame
 	await process_frame
 
-	_check(music.call("current_id") == &"title_lunaris", "title cue starts on player entry")
+	_check(music.call("current_id") == &"title_lunaris", "approved title cue starts on player entry")
 	var player := music.get_node_or_null("Player") as AudioStreamPlayer
-	_check(player != null and player.playing, "title cue is actively playing")
-	var stream_before: AudioStream = player.stream if player != null else null
-	var starts_before := int(music.call("start_count"))
+	_check(player != null and player.playing, "approved title cue is actively playing")
 	var stops_before := int(music.call("stop_count"))
+	for cue_id: StringName in REMOVED_CUES:
+		_check(not bool(music.call("play_cue", cue_id)), "removed cue remains playable: %s" % cue_id)
+	for stream_path: String in REMOVED_STREAMS:
+		_check(not ResourceLoader.exists(stream_path), "removed stream still exists: %s" % stream_path)
 
 	title.call("_on_start_pressed")
 	for _frame: int in range(8):
@@ -46,14 +64,10 @@ func _exercise_transition(music: Node, game: Node) -> void:
 		content != null and content.get_script().resource_path == "res://scripts/ui/staging.gd",
 		"Start transitions to staging",
 	)
-	_check(music.call("current_id") == &"title_lunaris", "title cue continues in staging")
-	_check(player != null and player.playing, "title cue remains actively playing in staging")
-	_check(player != null and player.stream == stream_before, "continuity keeps the same stream")
-	_check(int(music.call("start_count")) == starts_before, "continuity does not restart the cue")
-	_check(int(music.call("stop_count")) == stops_before, "continuity does not stop the cue")
-	# Coroutine locals remain alive until the test tree exits. Release the explicit
-	# stream reference before cleanup so the resource-leak scan reflects runtime ownership.
-	stream_before = null
+	_check(StringName(music.call("current_id")).is_empty(), "staging is silent during redesign")
+	_check(player != null and not player.playing, "title playback stops before staging")
+	_check(player != null and player.stream == null, "staging retains no title stream")
+	_check(int(music.call("stop_count")) == stops_before + 1, "title cue stops exactly once")
 
 
 func _clean_up(music: Node, game: Node) -> void:
@@ -73,7 +87,7 @@ func _remove_preferences() -> void:
 
 func _finish() -> void:
 	if _failures.is_empty():
-		print("TITLE_MUSIC_CONTINUITY_TEST_OK")
+		print("TITLE_MUSIC_SCOPE_TEST_OK")
 		quit(0)
 		return
 	for failure: String in _failures:

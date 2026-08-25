@@ -8,10 +8,6 @@ extends Resource
 ## squad_size activate in later phases.
 ## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
 ## non-empty must be strictly ascending and start at 0 (stage_lint).
-## Music routing is presentation metadata: act selects the catalog pair;
-## boss_wave_index -1 means BGM for the whole battle, otherwise the view
-## hard-switches to the paired boss cue at that wave window.
-
 enum Tile { VOID, GROUND, ELEVATED, SPAWN, BASE, BLOCKED }
 
 const TILE_CHARS := {
@@ -29,8 +25,6 @@ const TILE_CHARS := {
 @export var paths: Array[PackedVector2Array] = []
 @export var waves: Array[Dictionary] = []
 @export var wave_starts: PackedInt32Array = []
-@export_range(1, 3) var music_act: int = 1
-@export var music_boss_wave_index: int = -1
 @export var leak_limit: int = 0
 @export var squad_size: int = 0
 @export var recovery_roster: Array[StringName] = []
@@ -52,7 +46,7 @@ func grid_size() -> Vector2i:
 
 ## Portrait battles snapshot one clockwise-rotated stage copy at startup. The
 ## source resource remains the landscape authoring contract; all non-spatial
-## metadata (waves, unlocks, music, roster, rewards) is preserved by duplicate.
+## metadata (waves, unlocks, roster, rewards) is preserved by duplicate.
 func copy_for_viewport(viewport_size: Vector2) -> StageDef:
 	return clockwise_rotated_copy() if viewport_size.y > viewport_size.x else self
 

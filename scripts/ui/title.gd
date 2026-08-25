@@ -11,7 +11,6 @@ const LunarisBackdropType := preload(
 	"res://scripts/ui/components/lunaris_animated_backdrop.gd"
 )
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
-const MusicPackStatusType := preload("res://scripts/ui/components/music_pack_status.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
@@ -33,7 +32,6 @@ var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
 var _start_button: Button = null
 var _settings_button: Button = null
-var _music_pack_status: MusicPackStatusType = null
 var _settings_overlay: Control = null
 var _settings_panel: PanelContainer = null
 var _settings_title: Label = null
@@ -59,8 +57,6 @@ func _ready() -> void:
 	_apply_responsive_layout()
 	_start_button.grab_focus.call_deferred()
 	Game.content = self
-	if _music_pack_status.act() > 0:
-		Music.prefetch_content_pack.call_deferred(_music_pack_status.act())
 	if _title_music_enabled:
 		Music.play_cue(&"title_lunaris")
 
@@ -144,14 +140,6 @@ func _build_screen() -> void:
 	_settings_button = _entry_button("SettingsButton", false)
 	_settings_button.pressed.connect(_open_settings)
 	_entry_stack.add_child(_settings_button)
-
-	_music_pack_status = MusicPackStatusType.new()
-	_music_pack_status.set_ui_scale(TITLE_UI_SCALE)
-	_music_pack_status.set_act(Music.active_content_pack_act(1))
-	_music_pack_status.retry_requested.connect(_on_music_pack_retry_requested)
-	_music_pack_status.retry_availability_changed.connect(_on_music_pack_retry_availability_changed)
-	_music_pack_status.visibility_changed.connect(_on_music_pack_visibility_changed)
-	_entry_stack.add_child(_music_pack_status)
 	_wire_entry_focus()
 
 	_build_settings_overlay()
@@ -290,9 +278,6 @@ func _wire_entry_focus() -> void:
 	if _start_button == null or _settings_button == null:
 		return
 	var actions: Array[Control] = [_start_button, _settings_button]
-	var retry := _music_pack_status.retry_button() if _music_pack_status != null else null
-	if _music_pack_status != null and _music_pack_status.visible and retry != null and retry.visible:
-		actions.append(retry)
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -301,28 +286,6 @@ func _wire_entry_focus() -> void:
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_next = current.get_path_to(following)
-
-
-func _on_music_pack_visibility_changed() -> void:
-	if not is_node_ready():
-		return
-	var retry := _music_pack_status.retry_button()
-	if not _music_pack_status.visible and get_viewport().gui_get_focus_owner() == retry:
-		_start_button.grab_focus.call_deferred()
-	_wire_entry_focus()
-	_apply_responsive_layout()
-
-
-func _on_music_pack_retry_requested(_act: int) -> void:
-	Sfx.play("ui_click")
-
-
-func _on_music_pack_retry_availability_changed(_available: bool) -> void:
-	if not is_node_ready():
-		return
-	_wire_entry_focus()
-
-
 func _rule(color: Color) -> ColorRect:
 	var rule := ColorRect.new()
 	rule.custom_minimum_size = Vector2(116.0, 2.0)
@@ -419,8 +382,7 @@ func _apply_responsive_layout() -> void:
 		viewport_size.x - 48.0,
 		_title_size(660.0 if not portrait else 520.0),
 	)
-	var status_extra := _title_size(60.0) if _music_pack_status.visible else 0.0
-	var entry_height := _title_size(300.0 if not portrait else 276.0) + status_extra
+	var entry_height := _title_size(300.0 if not portrait else 276.0)
 	var entry_top := minf(viewport_size.y - entry_height - 28.0, viewport_size.y * (0.58 if not portrait else 0.66))
 	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(24.0, entry_top))
 	_entry_host.size = Vector2(entry_width, entry_height)
@@ -433,7 +395,6 @@ func _apply_responsive_layout() -> void:
 		minf(entry_width * 0.82, _title_size(430.0)),
 		_title_size(58.0 if not portrait else 54.0),
 	)
-	_music_pack_status.set_compact(portrait or viewport_size.x < 720.0)
 
 	var panel_width := minf(viewport_size.x - 40.0, 640.0)
 	var panel_height := minf(viewport_size.y - 56.0, 560.0)

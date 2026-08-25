@@ -12,4 +12,14 @@
 - [x] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
 - [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save definitive checkpoint `f74dd226`, and prepare the verified Publish-control handoff because no direct publish tool is exposed.
-- [x] Increase title-screen wordmark, action buttons, settings typography, and title-only transfer status by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
+- [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
+
+# Faction-Led Soundtrack Redesign
+
+- [x] Phase 0: remove rejected staging/battle music and obsolete pack infrastructure; retain `Astra Memoriam` for loading/title only; publish the canonical proposal.
+- [ ] Phase 1: implement data-driven `AudioCue`/`MusicProfile` resources, bar-quantized horizontal-state transitions, hysteresis, silence fallback, and regression seams.
+- [ ] Phase 2: generate, review, master, and integrate the Lunaris Company Command staging loop with Lyria 3 Pro.
+- [ ] Phase 3: generate and integrate Lunaris early-campaign and Air Raid adaptive battle suites for S1–S4.
+- [ ] Phase 4: generate and integrate Lunaris late-campaign, Gatecrasher boss, results, and tactical transition cues for S5–S8.
+- [ ] Phase 5: complete loudness, SFX-masking, mono/mobile, accessibility, Web packaging, playthrough, and release validation.
+- [ ] Phase 6: produce Solcrest, Crimson, and Vesper suites only as their playable faction content enters production.

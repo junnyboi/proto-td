@@ -77,6 +77,6 @@ The browser console remains empty after multiple 1080p cycles. Pressing **Enter*
 
 ## Fifteen-percent readability follow-up
 
-The title now applies one title-local `1.15` scale factor to the PROTOS DEFENSE wordmark, Start and Settings actions, settings heading and action typography, locale label/list, and optional music-transfer status. The responsive title container and action bounds scale with the same factor, preserving the intended hierarchy rather than enlarging glyphs inside undersized controls. Shared Company Command components retain their existing default scale.
+The title now applies one title-local `1.15` scale factor to the PROTOS DEFENSE wordmark, Start and Settings actions, settings heading and action typography, and locale label/list. The responsive title container and action bounds scale with the same factor, preserving the intended hierarchy rather than enlarging glyphs inside undersized controls. Shared components retain their existing default scale.
 
 The exact size contract is enforced by `tests/title_ui_scale_test.gd` at `1280×720` and `720×1280`. Final Xvfb captures confirm that the larger title and settings surfaces remain fully contained in both orientations, English and Chinese locale text remains legible, Settings opens and closes through keyboard input, and Start still advances to Company Command. Direct import, bounded boot, the complete standalone regression suite, and native error scans remain clean.

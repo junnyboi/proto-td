@@ -5,11 +5,5 @@
 [resource]
 script = ExtResource("1_music")
 entries = {
-&"title_lunaris": {"path": "res://assets/music/lunaris_astra_memoriam_title.ogg"},
-&"act_1_bgm": {"path": "res://assets/music/act_1_guild_threshold_bgm.ogg"},
-&"act_1_boss": {"path": "res://assets/music/act_1_guild_threshold_boss.ogg"},
-&"act_2_bgm": {"path": "res://assets/music/act_2_twilight_grotto_bgm.ogg"},
-&"act_2_boss": {"path": "res://assets/music/act_2_twilight_grotto_boss.ogg"},
-&"act_3_bgm": {"path": "res://assets/music/act_3_abyssal_vault_bgm.ogg"},
-&"act_3_boss": {"path": "res://assets/music/act_3_abyssal_vault_boss.ogg"}
+&"title_lunaris": {"path": "res://assets/music/lunaris_astra_memoriam_title.ogg"}
 }

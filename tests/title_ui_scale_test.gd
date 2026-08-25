@@ -34,7 +34,6 @@ func _verify_landscape() -> void:
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
 	var entry := _title.find_child("EntryControls", true, false) as Control
-	var pack_status := _title.find_child("MusicPackStatus", true, false) as Control
 	_check(wordmark != null and wordmark.get_theme_font_size(&"font_size") == 76, "landscape wordmark is not scaled by 15%")
 	_check(start != null and start.get_theme_font_size(&"font_size") == 28, "Start font is not scaled by 15%")
 	_check(settings != null and settings.get_theme_font_size(&"font_size") == 23, "Settings font is not scaled by 15%")
@@ -42,8 +41,6 @@ func _verify_landscape() -> void:
 	_check(start != null and _near(start.custom_minimum_size.y, 78.2), "Start height is not scaled by 15%")
 	_check(settings != null and _near(settings.custom_minimum_size.x, 494.5), "Settings width is not scaled by 15%")
 	_check(settings != null and _near(settings.custom_minimum_size.y, 66.7), "Settings height is not scaled by 15%")
-	_check(pack_status != null and _near(pack_status.custom_minimum_size.x, 414.0), "title music status is not scaled by 15%")
-	_check(pack_status != null and _near(pack_status.custom_minimum_size.y, 59.8), "title music status height is not scaled by 15%")
 	_check(_inside_viewport(entry, LANDSCAPE), "scaled landscape title controls leave the viewport")
 
 

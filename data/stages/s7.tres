@@ -98,8 +98,6 @@ waves = Array[Dictionary]([{
 "tick": 1230
 }])
 wave_starts = PackedInt32Array(0, 500, 850)
-music_act = 2
-music_boss_wave_index = -1
 leak_limit = 3
 squad_size = 6
 recovery_roster = Array[StringName]([&"vanguard_1", &"guard_1", &"guard_2", &"sniper_1", &"caster_2", &"defender_1"])
