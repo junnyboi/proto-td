@@ -11,7 +11,7 @@
 - [x] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.
 - [x] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
-- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `b938e9f9`, and verify deployment at `https://protohost-sqtjrsla.manus.space/`.
+- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save final checkpoint `36847d3a`, verify managed preview, and prepare WebDev Publish-control promotion because the public domain still serves the prior PCK.
 
 # Faction-Led Soundtrack Redesign
 
