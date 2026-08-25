@@ -190,17 +190,21 @@ Reuse the approved Vessel `NE idle` keyframe, carrier, master, and `NE`/`NW` run
 
 **Implemented result:** The repository now contains eight non-placeholder lossless WebP strips for Vessel idle and attack across `NE`, `NW`, `SE`, and `SW`, registered through a unique `lunaris_vessel` presentation resource and portrait-based view-only resolver. The generated `SE idle` was rejected once for an attack-coded beam and regenerated as a quiet loop. Attack derivatives preserve the complete `[0, 24)` source window in 13 endpoint-inclusive runtime frames, and neutral-anchor fitting prevents effect-union scale shrink. Focused validation, 22-target repository regression, direct import, bounded boot, exact mirror checks, and real BattleView Xvfb idle-to-attack checks passed in landscape and portrait. The first integrated implementation commit is `b1bc45f4b997248a9008b1ceff0311a7fc83b7c5`.
 
-### Phase 3 — Produce and integrate Reliquary Duelist
+### Phase 3 — Produce and integrate Reliquary Duelist — complete
 
 Generate the Duelist `NE` and `SE` keyframes and four carriers with explicit sword-handedness and Jade Meridian bounds. Tune attack timing around the melee strike while leaving authoritative hit timing unchanged, derive `NW` and `SW` by mirroring, and record the approved handedness inversion in the asset manifest. Add the Duelist visual resource and manifest rows.
 
 **Regression and delivery gate:** Verify all four facings, sword clearance, attack synchronization, existing Vessel visuals, premium lifecycle tests, import, bounded boot, Xvfb battle screenshots, error scans, then fetch, commit, and push to `master`.
 
-### Phase 4 — Produce and integrate Archive Caster
+**Implemented result:** GPT Image 2 produced distinct NE/SE keyframes, Veo 3.1 produced the quiet idles, and Gemini Omni Flash produced the Jade Meridian attacks. The first NE attack was rejected for a nonuniform coral stage and regenerated once. Hardened chroma recovery, 48-frame masters, neutral-anchor runtime conversion, 24/13-frame fixed-cell strips, exact west mirrors, focused Godot tests, landscape/portrait BattleView checks, and two post-reconciliation 33-target regression runs passed. The Duelist phase pushed to `master` at `ca3e8a51c805aeeda85cda425b79d58dbb43acb3`.
+
+### Phase 4 — Produce and integrate Archive Caster — complete
 
 Generate the Caster `NE` and `SE` keyframes and four carriers with stable Astrolabe geometry, controlled ring motion, readable translucent panels, and no chroma erosion. Derive `NW` and `SW` by mirroring and add the Caster visual resource and manifest rows.
 
 **Regression and delivery gate:** Verify all four facings, Astrolabe clearance, alpha quality around translucent panels, existing Vessel/Duelist visuals, premium tests, import, bounded boot, Xvfb battle screenshots, error scans, then fetch, commit, and push to `master`.
+
+**Implemented result:** GPT Image 2 produced distinct NE/SE keyframes, Veo 3.1 produced quiet Astrolabe idles, and Gemini Omni Flash produced the directional moon-cyan casts. Hardened keying preserved the translucent panels and fine gold ring geometry. The complete NE recovery required endpoint-preserving attack sampling over `[0, 32)` while retaining the established 13-frame, 12 FPS runtime contract. All eight strips, exact mirrors, focused Godot checks, and real BattleView landscape/portrait idle-to-attack checks passed.
 
 ### Phase 5 — Full release validation and Web deployment
 
