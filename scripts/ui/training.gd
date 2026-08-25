@@ -9,6 +9,7 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
@@ -53,8 +54,10 @@ const ERROR_KEYS := {
 	&"promotion_retry_pending": &"ui.training.error.save_pending",
 	&"no_promotion_retry": &"ui.training.error.invalid_request",
 	&"invalid_callsign": &"ui.rename.error.invalid",
+	&"invalid_title": &"ui.rename.error.invalid_title",
 	&"duplicate_callsign": &"ui.rename.error.duplicate",
 	&"callsign_unchanged": &"ui.rename.error.unchanged",
+	&"identity_unchanged": &"ui.rename.error.identity_unchanged",
 	&"premium_name_locked": &"ui.rename.error.premium_locked",
 	&"invalid_campaign_state": &"ui.training.error.integrity",
 }
@@ -86,8 +89,10 @@ const ERROR_FALLBACKS := {
 	&"invalid_runtime_mutation": "Training authority is unavailable.",
 	&"promotion_retry_pending": "The previous save must be retried before leaving.",
 	&"invalid_callsign": "Enter a name from 1 to 20 characters without control characters.",
+	&"invalid_title": "Enter a title up to 24 characters without control characters.",
 	&"duplicate_callsign": "Another unit already uses that name.",
 	&"callsign_unchanged": "Enter a different name.",
+	&"identity_unchanged": "Change the name or title before continuing.",
 	&"premium_name_locked": "Premium hero names are fixed.",
 	&"invalid_campaign_state": "The roster could not be authenticated.",
 }
@@ -116,6 +121,13 @@ var _roster_buttons: Array[TrainingRosterRowType] = []
 var _filter_bar: RosterFilterBarType = null
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
+var _roster_list: VBoxContainer
+var _filter_toolbar: BoxContainer
+var _filter_input: LineEdit
+var _sort_select: OptionButton
+var _filter_summary: AetheriaLabelType
+var _name_filter := ""
+var _name_sort: StringName = &"recruitment"
 var _path_cards: Array[PromotionPathCardType] = []
 var _selected_hero_id := ""
 var _selected_choice_id := ""
@@ -128,8 +140,11 @@ var _review_error: AetheriaLabelType
 var _return_mission: AetheriaButtonType
 var _rename_row: BoxContainer
 var _rename_input: LineEdit
+var _rename_title_input: LineEdit
 var _rename_action: AetheriaButtonType
 var _rename_error: AetheriaLabelType
+var _rename_confirmation: ConfirmationDialog
+var _pending_identity: Dictionary = {}
 var _rename_dispatching := false
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
@@ -142,6 +157,7 @@ func _ready() -> void:
 		return
 	Game.content = self
 	_build_shell()
+	_build_rename_confirmation()
 	_refresh_roster()
 	_show_roster(_roster_projection_error())
 
@@ -207,6 +223,31 @@ func _build_shell() -> void:
 	_shell.preferred_size = _shell_size_for(_layout_mode)
 
 
+func _build_rename_confirmation() -> void:
+	_rename_confirmation = ConfirmationDialog.new()
+	_rename_confirmation.name = "RenameConfirmationDialog"
+	_rename_confirmation.title = _t(&"ui.rename.confirm_title", "Confirm identity")
+	_rename_confirmation.ok_button_text = _t(&"ui.rename.confirm_action", "Confirm")
+	_rename_confirmation.get_cancel_button().text = _t(&"ui.action.cancel", "Cancel")
+	_rename_confirmation.exclusive = true
+	_rename_confirmation.transient = true
+	_rename_confirmation.add_theme_stylebox_override(
+		&"panel", LunarisOpsType.panel_style(&"screen"),
+	)
+	var confirmation_label := _rename_confirmation.get_label()
+	confirmation_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	LunarisOpsType.apply_label(confirmation_label, &"body")
+	var confirm_button := _rename_confirmation.get_ok_button()
+	confirm_button.custom_minimum_size = Vector2(150.0, 52.0)
+	LunarisOpsType.apply_button(confirm_button, &"primary")
+	var cancel_button := _rename_confirmation.get_cancel_button()
+	cancel_button.custom_minimum_size = Vector2(150.0, 52.0)
+	LunarisOpsType.apply_button(cancel_button, &"secondary")
+	_rename_confirmation.confirmed.connect(_confirm_rename)
+	_rename_confirmation.canceled.connect(_cancel_rename)
+	add_child(_rename_confirmation)
+
+
 func _refresh_roster() -> void:
 	_campaign = Game.campaign
 	_roster_rows = RosterFilterType.annotate_all(TrainingSupportType.roster(_campaign))
@@ -248,6 +289,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_filter_bar.configure(_roster_rows, true, _filter_status, _filter_faction)
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	_page.add_child(_filter_bar)
+	_page.add_child(_build_identity_filter_toolbar())
 	var body := BoxContainer.new()
 	body.name = "TrainingRosterBody"
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -284,6 +326,71 @@ func _show_roster(error_code: StringName = &"") -> void:
 		_focus_selected_row_or(back)
 
 
+func _build_identity_filter_toolbar() -> BoxContainer:
+	_filter_toolbar = BoxContainer.new()
+	_filter_toolbar.name = "TrainingIdentityToolbar"
+	_filter_toolbar.vertical = _layout_mode == &"portrait"
+	_filter_toolbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_filter_toolbar.add_theme_constant_override(&"separation", 10)
+	_filter_input = LineEdit.new()
+	_filter_input.name = "TrainingNameFilter"
+	_filter_input.text = _name_filter
+	_filter_input.placeholder_text = _t(
+		&"ui.identity_filter.placeholder", "Filter by name or title",
+	)
+	_filter_input.clear_button_enabled = true
+	_filter_input.custom_minimum_size = Vector2(320.0, 54.0)
+	_filter_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_line_edit(_filter_input)
+	_filter_input.text_changed.connect(_on_name_filter_changed)
+	_filter_toolbar.add_child(_filter_input)
+	_sort_select = OptionButton.new()
+	_sort_select.name = "TrainingNameSort"
+	_sort_select.custom_minimum_size = Vector2(230.0, 54.0)
+	_sort_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for option: Dictionary in [
+		{"id": &"recruitment", "label": _t(&"ui.identity_sort.recruitment", "Recruitment order")},
+		{"id": &"name_asc", "label": _t(&"ui.identity_sort.name_asc", "Name A–Z")},
+		{"id": &"name_desc", "label": _t(&"ui.identity_sort.name_desc", "Name Z–A")},
+	]:
+		_sort_select.add_item(String(option["label"]))
+		var option_index := _sort_select.item_count - 1
+		_sort_select.set_item_metadata(option_index, option["id"])
+		if option["id"] == _name_sort:
+			_sort_select.select(option_index)
+	LunarisOpsType.apply_button(_sort_select, &"secondary")
+	_sort_select.item_selected.connect(_on_name_sort_selected)
+	_filter_toolbar.add_child(_sort_select)
+	_filter_summary = _label("TrainingFilterSummary", "", &"dense_detail")
+	_filter_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_filter_toolbar.add_child(_filter_summary)
+	return _filter_toolbar
+
+
+func _visible_roster_rows() -> Array[Dictionary]:
+	var status_rows := RosterFilterType.filter_rows(
+		_roster_rows, _filter_status, _filter_faction,
+	)
+	return TrainingSupportType.filtered_sorted(status_rows, _name_filter, _name_sort)
+
+
+func _on_name_filter_changed(value: String) -> void:
+	_name_filter = value
+	_show_roster()
+	if _filter_input != null:
+		_filter_input.caret_column = _filter_input.text.length()
+		_filter_input.grab_focus.call_deferred()
+
+
+func _on_name_sort_selected(index: int) -> void:
+	if _sort_select == null:
+		return
+	_name_sort = StringName(_sort_select.get_item_metadata(index))
+	_show_roster()
+	if _sort_select != null:
+		_sort_select.grab_focus.call_deferred()
+
+
 func _build_roster_list() -> ScrollContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = "TrainingRosterScroll"
@@ -292,13 +399,27 @@ func _build_roster_list() -> ScrollContainer:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.custom_minimum_size = Vector2(500.0, 250.0)
-	var list := VBoxContainer.new()
-	list.name = "TrainingRosterList"
-	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override(&"separation", 8)
-	scroll.add_child(list)
+	_roster_list = VBoxContainer.new()
+	_roster_list.name = "TrainingRosterList"
+	_roster_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_roster_list.add_theme_constant_override(&"separation", 8)
+	scroll.add_child(_roster_list)
 	_roster_buttons.clear()
 	var visible_rows := _visible_roster_rows()
+	var selected_visible := false
+	for summary: Dictionary in visible_rows:
+		if String(summary["hero_id"]) == _selected_hero_id:
+			selected_visible = true
+			break
+	if not selected_visible:
+		_selected_hero_id = (
+			String(visible_rows[0]["hero_id"]) if not visible_rows.is_empty() else ""
+		)
+	if _filter_summary != null:
+		_filter_summary.text = _fmt(
+			&"ui.identity_filter.summary", "{shown} / {total} shown",
+			{&"shown": visible_rows.size(), &"total": _roster_rows.size()},
+		)
 	if visible_rows.is_empty():
 		var empty := _label(
 			"TrainingRosterEmpty",
@@ -306,7 +427,8 @@ func _build_roster_list() -> ScrollContainer:
 			&"dense_detail",
 		)
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		list.add_child(empty)
+		_roster_list.add_child(empty)
+		return scroll
 	for summary: Dictionary in visible_rows:
 		var row := TrainingRosterRowType.new()
 		row.name = "Recruit_%s" % summary["hero_id"]
@@ -315,12 +437,12 @@ func _build_roster_list() -> ScrollContainer:
 			class_label(String(summary["current_class_id"])),
 			_status_text(summary),
 			_progress_text(summary),
-				_eligibility_text(summary),
-			)
+			_eligibility_text(summary),
+		)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
 		_bind_focus_scroll(row, scroll)
-		list.add_child(row)
+		_roster_list.add_child(row)
 		_roster_buttons.append(row)
 	return scroll
 
@@ -365,6 +487,15 @@ func _build_inspector() -> AetheriaPanelType:
 		identity.add_child(_label(
 			"SelectedCallsign", String(selected["callsign"]).to_upper(), &"title",
 		))
+		var selected_title := String(
+			selected.get("custom_title", "")
+			if selected.get("custom_title") != null
+			else "",
+		)
+		if not selected_title.is_empty():
+			identity.add_child(_label(
+				"SelectedTitleTag", selected_title.to_upper(), &"eyebrow",
+			))
 		identity.add_child(_label(
 			"SelectedClass", class_label(String(selected["current_class_id"])).to_upper(),
 			&"heading",
@@ -428,7 +559,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 8)
 	column.add_child(_label(
-		"RenameUnitHeading", _t(&"ui.rename.heading", "FIELD CALLSIGN"), &"heading",
+		"RenameUnitHeading", _t(&"ui.rename.heading", "FIELD IDENTITY"), &"heading",
 	))
 	if not bool(summary.get("can_rename", false)):
 		var locked_key := (
@@ -448,14 +579,23 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 		return panel
 	column.add_child(_label(
 		"RenameUnitGuidance",
-		_t(&"ui.rename.guidance", "Choose a unique name of 1–20 characters."),
+		_t(
+			&"ui.rename.guidance",
+			"Choose a unique 1–20 character name and an optional 24 character title.",
+		),
 		&"dense_detail",
 	))
 	_rename_row = BoxContainer.new()
 	_rename_row.name = "RenameUnitControls"
-	_rename_row.vertical = _layout_mode == &"portrait"
+	_rename_row.vertical = true
 	_rename_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rename_row.add_theme_constant_override(&"separation", 10)
+	var callsign_field := VBoxContainer.new()
+	callsign_field.name = "CallsignField"
+	callsign_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	callsign_field.add_child(_label(
+		"CallsignFieldLabel", _t(&"ui.rename.callsign_label", "CALLSIGN"), &"eyebrow",
+	))
 	_rename_input = LineEdit.new()
 	_rename_input.name = "RenameUnitInput"
 	_rename_input.text = String(summary["callsign"])
@@ -463,18 +603,42 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_input.max_length = 20
 	_rename_input.clear_button_enabled = true
 	_rename_input.select_all_on_focus = true
-	_rename_input.custom_minimum_size = Vector2(280.0, 58.0)
+	_rename_input.custom_minimum_size = Vector2(220.0, 58.0)
 	_rename_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_rename_input.text_changed.connect(_on_rename_text_changed)
-	_rename_input.text_submitted.connect(_on_rename_submitted)
+	_rename_input.text_changed.connect(_on_identity_text_changed)
+	_rename_input.text_submitted.connect(_on_identity_submitted)
 	LunarisOpsType.apply_line_edit(_rename_input)
 	_bind_focus_scroll(_rename_input, _dialog_scroll)
-	_rename_row.add_child(_rename_input)
-	_rename_action = _button(
-		"RenameUnitAction", _t(&"ui.rename.action", "Rename"), false, &"disabled",
+	callsign_field.add_child(_rename_input)
+	_rename_row.add_child(callsign_field)
+	var title_field := VBoxContainer.new()
+	title_field.name = "TitleField"
+	title_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_field.add_child(_label(
+		"TitleFieldLabel", _t(&"ui.rename.title_label", "TITLE TAG • OPTIONAL"), &"eyebrow",
+	))
+	_rename_title_input = LineEdit.new()
+	_rename_title_input.name = "RenameTitleInput"
+	_rename_title_input.text = String(
+		summary.get("custom_title", "") if summary.get("custom_title") != null else "",
 	)
-	_rename_action.custom_minimum_size = Vector2(180.0, 58.0)
-	_rename_action.pressed.connect(_submit_rename)
+	_rename_title_input.placeholder_text = _t(&"ui.rename.title_placeholder", "No title")
+	_rename_title_input.max_length = 24
+	_rename_title_input.clear_button_enabled = true
+	_rename_title_input.custom_minimum_size = Vector2(220.0, 58.0)
+	_rename_title_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_title_input.text_changed.connect(_on_identity_text_changed)
+	_rename_title_input.text_submitted.connect(_on_identity_submitted)
+	LunarisOpsType.apply_line_edit(_rename_title_input)
+	_bind_focus_scroll(_rename_title_input, _dialog_scroll)
+	title_field.add_child(_rename_title_input)
+	_rename_row.add_child(title_field)
+	_rename_action = _button(
+		"RenameUnitAction", _t(&"ui.rename.review_action", "Review"), false, &"disabled",
+	)
+	_rename_action.custom_minimum_size = Vector2(160.0, 58.0)
+	_rename_action.size_flags_vertical = Control.SIZE_SHRINK_END
+	_rename_action.pressed.connect(_request_rename_confirmation)
 	_rename_row.add_child(_rename_action)
 	column.add_child(_rename_row)
 	_rename_error = _label("RenameUnitError", "", &"dense_detail")
@@ -484,20 +648,24 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	return panel
 
 
-func _on_rename_text_changed(value: String) -> void:
+func _on_identity_text_changed(_value: String) -> void:
 	if _rename_error != null:
 		_rename_error.text = ""
 	if _rename_input != null:
 		LunarisOpsType.apply_line_edit(_rename_input)
+	if _rename_title_input != null:
+		LunarisOpsType.apply_line_edit(_rename_title_input)
 	var summary := _summary_by_id(_selected_hero_id)
-	var candidate := value.strip_edges()
-	var enabled := (
+	var candidate := _rename_input.text.strip_edges() if _rename_input != null else ""
+	var title: Variant = _title_candidate()
+	var current_title: Variant = summary.get("custom_title") if not summary.is_empty() else null
+	var enabled: bool = (
 		not _rename_dispatching
 		and not summary.is_empty()
 		and bool(summary.get("can_rename", false))
-		and not candidate.is_empty()
-		and candidate.length() <= 20
-		and candidate != String(summary["callsign"])
+		and HeroCodecScript.valid_callsign(candidate)
+		and HeroCodecScript.valid_title(title)
+		and (candidate != String(summary["callsign"]) or title != current_title)
 	)
 	if _rename_action != null:
 		_rename_action.disabled = not enabled
@@ -507,31 +675,85 @@ func _on_rename_text_changed(value: String) -> void:
 		)
 
 
-func _on_rename_submitted(_value: String) -> void:
-	_submit_rename()
+func _on_identity_submitted(_value: String) -> void:
+	_request_rename_confirmation()
 
 
-func _submit_rename() -> void:
-	if _rename_dispatching or _rename_input == null or _rename_action == null:
+func _title_candidate() -> Variant:
+	if _rename_title_input == null:
+		return null
+	var title := _rename_title_input.text.strip_edges()
+	return null if title.is_empty() else title
+
+
+func _request_rename_confirmation() -> void:
+	if (
+		_rename_dispatching
+		or _rename_input == null
+		or _rename_action == null
+		or _rename_action.disabled
+	):
 		return
-	if _rename_action.disabled:
+	var summary := _summary_by_id(_selected_hero_id)
+	if summary.is_empty():
+		return
+	var current_title: Variant = summary.get("custom_title")
+	var next_title: Variant = _title_candidate()
+	_pending_identity = {
+		"hero_id": _selected_hero_id,
+		"callsign": _rename_input.text.strip_edges(),
+		"title": next_title,
+	}
+	_rename_confirmation.title = _t(&"ui.rename.confirm_title", "Confirm identity")
+	_rename_confirmation.ok_button_text = _t(&"ui.rename.confirm_action", "Confirm")
+	_rename_confirmation.get_cancel_button().text = _t(&"ui.action.cancel", "Cancel")
+	_rename_confirmation.dialog_text = _fmt(
+		&"ui.rename.confirm_body",
+		"Current: {current}\nNew: {next}\n\nThis cosmetic identity can be changed again outside active operations.",
+		{
+			&"current": _identity_preview(String(summary["callsign"]), current_title),
+			&"next": _identity_preview(String(_pending_identity["callsign"]), next_title),
+		},
+	)
+	_rename_confirmation.popup_centered(Vector2i(560, 330))
+	_rename_confirmation.get_ok_button().grab_focus.call_deferred()
+
+
+func _identity_preview(callsign: String, title: Variant) -> String:
+	return (
+		callsign
+		if title == null
+		else "%s — %s" % [callsign, String(title)]
+	)
+
+
+func _confirm_rename() -> void:
+	if _rename_dispatching or _pending_identity.is_empty():
 		return
 	_rename_dispatching = true
-	_rename_action.disabled = true
-	_rename_action.focus_mode = Control.FOCUS_NONE
-	LunarisOpsType.apply_button(_rename_action, &"disabled")
-	var committed: Dictionary = Game.rename_hero(_selected_hero_id, _rename_input.text)
+	var committed: Dictionary = Game.rename_hero(
+		String(_pending_identity["hero_id"]),
+		String(_pending_identity["callsign"]),
+		_pending_identity["title"],
+	)
 	_rename_dispatching = false
+	_pending_identity.clear()
 	if not committed["accepted"]:
 		var error_code := StringName(committed.get("error_code", &"invalid_callsign"))
 		_rename_error.text = _error_text(error_code)
 		LunarisOpsType.apply_line_edit(_rename_input, true)
-		_on_rename_text_changed(_rename_input.text)
+		_on_identity_text_changed(_rename_input.text)
 		_rename_error.text = _error_text(error_code)
 		_rename_input.grab_focus.call_deferred()
 		return
 	_refresh_roster()
 	_show_roster()
+
+
+func _cancel_rename() -> void:
+	_pending_identity.clear()
+	if _rename_input != null:
+		_rename_input.grab_focus.call_deferred()
 
 
 func _show_paths() -> void:
@@ -890,8 +1112,16 @@ func _apply_roster_layout() -> void:
 		_filter_bar.set_compact(_layout_mode != &"regular_landscape")
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
+	if _filter_toolbar != null:
+		_filter_toolbar.vertical = _layout_mode == &"portrait"
+	if _filter_summary != null:
+		_filter_summary.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_LEFT
+			if _layout_mode == &"portrait"
+			else HORIZONTAL_ALIGNMENT_RIGHT
+		)
 	if _rename_row != null:
-		_rename_row.vertical = _layout_mode == &"portrait"
+		_rename_row.vertical = true
 
 
 func _apply_paths_layout() -> void:
@@ -1007,8 +1237,14 @@ func _clear_page() -> void:
 	_review_error = null
 	_return_mission = null
 	_filter_bar = null
+	_roster_list = null
+	_filter_toolbar = null
+	_filter_input = null
+	_sort_select = null
+	_filter_summary = null
 	_rename_row = null
 	_rename_input = null
+	_rename_title_input = null
 	_rename_action = null
 	_rename_error = null
 	_rename_dispatching = false
@@ -1019,10 +1255,6 @@ func _summary_by_id(hero_id: String) -> Dictionary:
 		if summary["hero_id"] == hero_id:
 			return summary
 	return {}
-
-
-func _visible_roster_rows() -> Array[Dictionary]:
-	return RosterFilterType.filter_rows(_roster_rows, _filter_status, _filter_faction)
 
 
 func _select_first_visible() -> void:

@@ -307,18 +307,18 @@ func pull_premium_hero() -> Dictionary:
 	return committed
 
 
-func rename_hero(hero_id: String, callsign: String) -> Dictionary:
+func rename_hero(hero_id: String, callsign: String, title: Variant = null) -> Dictionary:
 	if not campaign_active or campaign == null or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
 	var revision: int = campaign.save_revision()
 	var digest := CANONICAL_JSON_SCRIPT.sha256_hex(
-		{"hero_id": hero_id, "callsign": callsign},
+		{"hero_id": hero_id, "callsign": callsign, "title": title},
 	).substr(0, 16)
 	var command_id := "runtime:rename:%s:%d:%s:%s" % [
 		campaign.campaign_uid(), revision, hero_id, digest,
 	]
 	var command: Dictionary = campaign.rename_hero(
-		command_id, revision, hero_id, callsign,
+		command_id, revision, hero_id, callsign, title,
 	)
 	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
 		command, campaign_store,

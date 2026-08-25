@@ -5,6 +5,7 @@ const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
@@ -26,6 +27,13 @@ var _narrative: StageNarrativeDefType = null
 var _narrative_missing := false
 var _buttons: Dictionary = {}
 var _hero_order: Array[StringName] = []
+var _ready_heroes: Array[Dictionary] = []
+var _filter_toolbar: BoxContainer
+var _filter_input: LineEdit
+var _sort_select: OptionButton
+var _filter_summary: AetheriaLabelType
+var _name_filter := ""
+var _name_sort: StringName = &"recruitment"
 var _counter: Label = null
 var _selected_line: Label = null
 var _start: AetheriaButtonType = null
@@ -50,6 +58,7 @@ func _ready() -> void:
 	_stage = load("res://data/stages/%s.tres" % Game.selected_stage_id) as StageDef
 	_narrative = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(Game.selected_stage_id)
 	_narrative_missing = _narrative == null
+	_ready_heroes = _identity_rows(Game.campaign_projection()["ready_heroes"])
 	LunarisOpsType.add_backdrop(self, BACKDROP)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "MissionCommandShell"
@@ -144,6 +153,7 @@ func _build_body() -> GridContainer:
 	)
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	roster_column.add_child(_filter_bar)
+	roster_column.add_child(_build_identity_filter_toolbar())
 	_roster_empty = _label(
 		"RosterEmptyState",
 		UiCopyType.text(&"ui.roster.empty", "No soldiers match the selected roster filters."),
@@ -206,20 +216,111 @@ func _campaign_roster_rows() -> Array[Dictionary]:
 	var rows: Array = []
 	rows.append_array(projection.get("ready_heroes", []))
 	rows.append_array(projection.get("fallen_heroes", []))
-	return RosterFilterType.annotate_all(rows)
+	return RosterFilterType.annotate_all(_identity_rows(rows))
+
+
+func _identity_rows(raw_rows: Array) -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for raw: Variant in raw_rows:
+		var hero := (raw as Dictionary).duplicate(true)
+		hero["callsign"] = _hero_callsign(hero)
+		if not hero.has("custom_title"):
+			hero["custom_title"] = null
+		rows.append(hero)
+	return rows
+
+
+func _build_identity_filter_toolbar() -> BoxContainer:
+	_filter_toolbar = BoxContainer.new()
+	_filter_toolbar.name = "DeploymentIdentityToolbar"
+	_filter_toolbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_filter_toolbar.add_theme_constant_override(&"separation", 8)
+	_filter_input = LineEdit.new()
+	_filter_input.name = "DeploymentNameFilter"
+	_filter_input.text = _name_filter
+	_filter_input.placeholder_text = UiCopyType.text(
+		&"ui.identity_filter.placeholder", "Filter by name or title",
+	)
+	_filter_input.clear_button_enabled = true
+	_filter_input.custom_minimum_size = Vector2(240.0, 50.0)
+	_filter_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_line_edit(_filter_input)
+	_filter_input.text_changed.connect(_on_name_filter_changed)
+	_filter_toolbar.add_child(_filter_input)
+	_sort_select = OptionButton.new()
+	_sort_select.name = "DeploymentNameSort"
+	_sort_select.custom_minimum_size = Vector2(200.0, 50.0)
+	_sort_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for option: Dictionary in [
+		{"id": &"recruitment", "label": UiCopyType.text(&"ui.identity_sort.recruitment", "Recruitment order")},
+		{"id": &"name_asc", "label": UiCopyType.text(&"ui.identity_sort.name_asc", "Name A–Z")},
+		{"id": &"name_desc", "label": UiCopyType.text(&"ui.identity_sort.name_desc", "Name Z–A")},
+	]:
+		_sort_select.add_item(String(option["label"]))
+		var option_index := _sort_select.item_count - 1
+		_sort_select.set_item_metadata(option_index, option["id"])
+		if option["id"] == _name_sort:
+			_sort_select.select(option_index)
+	LunarisOpsType.apply_button(_sort_select, &"secondary")
+	_sort_select.item_selected.connect(_on_name_sort_selected)
+	_filter_toolbar.add_child(_sort_select)
+	_filter_summary = _label("DeploymentFilterSummary", "", &"dense_detail")
+	_filter_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_filter_toolbar.add_child(_filter_summary)
+	return _filter_toolbar
+
+
+func _on_name_filter_changed(value: String) -> void:
+	_name_filter = value
+	_rebuild_operator_cards()
+	_refresh()
+	if _filter_input != null:
+		_filter_input.caret_column = _filter_input.text.length()
+		_filter_input.grab_focus.call_deferred()
+
+
+func _on_name_sort_selected(index: int) -> void:
+	if _sort_select == null:
+		return
+	_name_sort = StringName(_sort_select.get_item_metadata(index))
+	_rebuild_operator_cards()
+	_refresh()
+	if _sort_select != null:
+		_sort_select.grab_focus.call_deferred()
+
+
+func _build_operator_cards() -> void:
+	_rebuild_operator_cards()
 
 
 func _rebuild_operator_cards() -> void:
+	if _grid == null:
+		return
 	for child: Node in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
 	_buttons.clear()
 	_hero_order.clear()
-	var visible := RosterFilterType.filter_rows(
+	var status_rows := RosterFilterType.filter_rows(
 		_all_roster_rows, _filter_status, _filter_faction,
 	)
-	_roster_empty.visible = visible.is_empty()
-	for hero: Dictionary in visible:
+	var visible_rows := TrainingSupportType.filtered_sorted(
+		status_rows, _name_filter, _name_sort,
+	)
+	if _filter_summary != null:
+		_filter_summary.text = UiCopyType.format_text(
+			&"ui.identity_filter.summary", "{shown} / {total} shown",
+			{&"shown": visible_rows.size(), &"total": status_rows.size()},
+		)
+	if _roster_empty != null:
+		_roster_empty.visible = visible_rows.is_empty()
+	if visible_rows.is_empty():
+		_grid.columns = 1
+		return
+	_grid.columns = 1 if _shell.layout_mode() == &"portrait" else (
+		2 if _shell.layout_mode() == &"compact_landscape" else 3
+	)
+	for hero: Dictionary in visible_rows:
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
@@ -353,15 +454,15 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 
 func _refresh() -> void:
 	_counter.text = "%d / %d SELECTED" % [_picked.size(), _stage.squad_size]
-	var selected_names: Array[String] = []
 	for raw_id: Variant in _buttons:
 		var hero_id := StringName(raw_id)
 		var button := _buttons[hero_id] as AetheriaButtonType
 		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
+	var selected_names: Array[String] = []
 	for hero_id: StringName in _picked:
 		var hero := _hero_by_id(hero_id)
 		if not hero.is_empty():
-			selected_names.append(_hero_label(hero).get_slice("\n", 0))
+			selected_names.append(_hero_callsign(hero))
 	_selected_line.text = "FIELD TEAM // %s" % (
 		"AWAITING SELECTION" if selected_names.is_empty() else " • ".join(selected_names)
 	)
@@ -386,7 +487,11 @@ func _hero_by_id(hero_id: StringName) -> Dictionary:
 
 
 func _wire_focus() -> void:
-	var focusable: Array[Button] = []
+	var focusable: Array[Control] = []
+	if _filter_input != null:
+		focusable.append(_filter_input)
+	if _sort_select != null:
+		focusable.append(_sort_select)
 	for hero_id: StringName in _hero_order:
 		focusable.append(_buttons[hero_id] as Button)
 	focusable.append(_back)
@@ -394,24 +499,20 @@ func _wire_focus() -> void:
 	if not _start.disabled:
 		focusable.append(_start)
 	for index: int in focusable.size():
-		var current: Button = focusable[index]
-		var previous: Button = focusable[(index - 1 + focusable.size()) % focusable.size()]
-		var next: Button = focusable[(index + 1) % focusable.size()]
+		var current: Control = focusable[index]
+		var previous: Control = focusable[(index - 1 + focusable.size()) % focusable.size()]
+		var next: Control = focusable[(index + 1) % focusable.size()]
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_next = current.get_path_to(next)
 	if not focusable.is_empty() and get_viewport().gui_get_focus_owner() == null:
 		focusable[0].grab_focus.call_deferred()
 
 
-func _hero_label(hero: Dictionary) -> String:
-	var class_id := String(hero["current_class_id"])
-	var class_label := UiCopyType.text(
-		StringName("ui.training.class.%s" % class_id), class_id.replace("_", " ").capitalize(),
-	)
-	var callsign := ""
-	if hero["custom_callsign"] != null:
+func _hero_callsign(hero: Dictionary) -> String:
+	var callsign := String(hero.get("callsign", ""))
+	if callsign.is_empty() and hero.get("custom_callsign") != null:
 		callsign = String(hero["custom_callsign"])
-	else:
+	if callsign.is_empty():
 		var parsed := HeroIdentityScript.parse_u64_hex(String(hero["hero_id"]))
 		if parsed["accepted"]:
 			callsign = String(HeroNamesScript.default_name(
@@ -421,10 +522,23 @@ func _hero_label(hero: Dictionary) -> String:
 		callsign = UiCopyType.operator_name(
 			load("res://data/operators/%s.tres" % hero["operator_def_id"]) as OperatorDef,
 		)
-	return "%s #%d\n%s" % [
-		callsign.get_slice(" ", 0).to_upper(), int(hero["recruitment_index"]) + 1,
-		class_label.to_upper(),
+	return callsign
+
+
+func _hero_label(hero: Dictionary) -> String:
+	var class_id := String(hero["current_class_id"])
+	var class_label := UiCopyType.text(
+		StringName("ui.training.class.%s" % class_id), class_id.replace("_", " ").capitalize(),
+	)
+	var identity := "%s #%d" % [
+		_hero_callsign(hero).to_upper(), int(hero["recruitment_index"]) + 1,
 	]
+	var title := String(
+		hero.get("custom_title", "") if hero.get("custom_title") != null else "",
+	)
+	if not title.is_empty():
+		identity += "\n%s" % title.to_upper()
+	return "%s\n%s" % [identity, class_label.to_upper()]
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
@@ -438,10 +552,18 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			_shell.preferred_size = target_size
 	if _header != null:
 		_header.vertical = mode == &"portrait"
+	if _filter_toolbar != null:
+		_filter_toolbar.vertical = mode == &"portrait"
+	if _filter_summary != null:
+		_filter_summary.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_LEFT
+			if mode == &"portrait"
+			else HORIZONTAL_ALIGNMENT_RIGHT
+		)
 	if _body != null:
 		_body.columns = 1 if mode == &"portrait" else 2
 	if _roster_scroll != null:
-		_roster_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
+		_roster_scroll.custom_minimum_size.y = 270.0
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
 	if _grid != null:

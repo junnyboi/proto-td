@@ -12,6 +12,7 @@ static func execute(
 	expected_revision: Variant,
 	hero_id_value: Variant,
 	callsign_value: Variant,
+	title_value: Variant = null,
 ) -> Dictionary:
 	var prepared := (
 		CommandsScript
@@ -20,7 +21,7 @@ static func execute(
 			command_id,
 			expected_revision,
 			"rename_hero",
-			{"hero_id": hero_id_value, "callsign": callsign_value},
+			{"hero_id": hero_id_value, "callsign": callsign_value, "title": title_value},
 		)
 	)
 	if not prepared["accepted"]:
@@ -64,6 +65,8 @@ static func execute(
 						"hero_id": receipt["hero_id"],
 						"old_callsign": receipt["old_callsign"],
 						"new_callsign": receipt["new_callsign"],
+						"old_title": receipt.get("old_title"),
+						"new_title": receipt.get("new_title"),
 						"save_revision": receipt["save_revision"],
 					},
 				},
@@ -73,11 +76,26 @@ static func execute(
 	)
 
 
+static func title_for(data: Dictionary, hero_id: String) -> Variant:
+	var title: Variant = null
+	for record: Dictionary in data.get("command_receipts", []):
+		if record.get("verb") != "rename_hero":
+			continue
+		var payload: Dictionary = record.get("payload", {})
+		if String(payload.get("hero_id", "")) != hero_id or not payload.has("title"):
+			continue
+		var receipt: Dictionary = record.get("receipt", {}).get("rename", {})
+		if receipt.has("new_title"):
+			title = receipt["new_title"]
+	return title
+
+
 static func _derive(data: Dictionary, payload: Dictionary) -> Dictionary:
 	if int(data["next_attempt_id"]) != int(data["next_resolution_index"]):
 		return _reject(&"attempt_pending")
 	var hero_id := String(payload["hero_id"])
 	var callsign := String(payload["callsign"])
+	var title: Variant = payload.get("title", null)
 	var target_index := -1
 	for index: int in (data["heroes"] as Array).size():
 		if data["heroes"][index]["hero_id"] == hero_id:
@@ -92,11 +110,14 @@ static func _derive(data: Dictionary, payload: Dictionary) -> Dictionary:
 		return _reject(&"hero_not_ready")
 	if not HeroCodecScript.valid_callsign(callsign):
 		return _reject(&"invalid_callsign")
+	if not HeroCodecScript.valid_title(title):
+		return _reject(&"invalid_title")
 	var previous := HeroCodecScript.display_callsign(target)
 	if not previous["accepted"]:
 		return _reject(&"invalid_campaign_state")
-	if String(previous["value"]) == callsign:
-		return _reject(&"callsign_unchanged")
+	var previous_title: Variant = title_for(data, hero_id)
+	if String(previous["value"]) == callsign and previous_title == title:
+		return _reject(&"identity_unchanged" if payload.has("title") else &"callsign_unchanged")
 	var folded := callsign.to_lower()
 	for hero: Dictionary in data["heroes"]:
 		if hero["hero_id"] == hero_id:
@@ -111,17 +132,26 @@ static func _derive(data: Dictionary, payload: Dictionary) -> Dictionary:
 	var changed: Dictionary = working["heroes"][target_index].duplicate(true)
 	changed["custom_callsign"] = callsign
 	working["heroes"][target_index] = changed
+	var receipt := {
+		"hero_id": hero_id,
+		"old_callsign": String(previous["value"]),
+		"new_callsign": callsign,
+		"save_revision": 0,
+	}
+	if payload.has("title"):
+		receipt = {
+			"hero_id": hero_id,
+			"old_callsign": String(previous["value"]),
+			"new_callsign": callsign,
+			"old_title": previous_title,
+			"new_title": title,
+			"save_revision": 0,
+		}
 	return {
 		"accepted": true,
 		"error_code": &"",
 		"data": working,
-		"receipt":
-		{
-			"hero_id": hero_id,
-			"old_callsign": String(previous["value"]),
-			"new_callsign": callsign,
-			"save_revision": 0,
-		},
+		"receipt": receipt,
 	}
 
 

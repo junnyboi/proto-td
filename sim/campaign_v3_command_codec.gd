@@ -152,7 +152,8 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 				return _reject(&"invalid_command_payload")
 			return _accept({"source": source, "source_id": source_id})
 		"rename_hero":
-			if value.keys() != ["hero_id", "callsign"]:
+			var extended: bool = value.keys() == ["hero_id", "callsign", "title"]
+			if not extended and value.keys() != ["hero_id", "callsign"]:
 				return _reject(&"invalid_command_payload")
 			if (
 				typeof(value["hero_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
@@ -163,7 +164,18 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			var callsign := _trim_callsign(String(value["callsign"]))
 			if not _is_hex(hero_id, 16) or not HeroCodecScript.valid_callsign(callsign):
 				return _reject(&"invalid_callsign")
-			return _accept({"hero_id": hero_id, "callsign": callsign})
+			if not extended:
+				return _accept({"hero_id": hero_id, "callsign": callsign})
+			var title: Variant = value["title"]
+			if title != null:
+				if typeof(title) != TYPE_STRING:
+					return _reject(&"invalid_command_payload")
+				title = _trim_callsign(String(title))
+				if String(title).is_empty():
+					title = null
+			if not HeroCodecScript.valid_title(title):
+				return _reject(&"invalid_title")
+			return _accept({"hero_id": hero_id, "callsign": callsign, "title": title})
 	return _reject(&"invalid_command_payload")
 
 
@@ -399,10 +411,20 @@ static func _normalize_receipt(
 			if value.keys() != ["rename"]:
 				return _reject(&"invalid_command_receipt")
 			var rename: Variant = value["rename"]
+			if typeof(rename) != TYPE_DICTIONARY:
+				return _reject(&"invalid_command_receipt")
+			var extended: bool = rename.keys() == [
+				"hero_id", "old_callsign", "new_callsign", "old_title", "new_title",
+				"save_revision",
+			]
 			if (
-				typeof(rename) != TYPE_DICTIONARY
-				or rename.keys()
+				not extended
+				and rename.keys()
 				!= ["hero_id", "old_callsign", "new_callsign", "save_revision"]
+			):
+				return _reject(&"invalid_command_receipt")
+			if (
+				payload.has("title") != extended
 				or typeof(rename["old_callsign"]) != TYPE_STRING
 				or typeof(rename["new_callsign"]) != TYPE_STRING
 				or rename["hero_id"] != payload["hero_id"]
@@ -410,6 +432,12 @@ static func _normalize_receipt(
 				or rename["save_revision"] != save_revision
 				or not HeroCodecScript.valid_callsign(rename["old_callsign"])
 				or not HeroCodecScript.valid_callsign(rename["new_callsign"])
+			):
+				return _reject(&"invalid_command_receipt")
+			if extended and (
+				rename["new_title"] != payload["title"]
+				or not HeroCodecScript.valid_title(rename["old_title"])
+				or not HeroCodecScript.valid_title(rename["new_title"])
 			):
 				return _reject(&"invalid_command_receipt")
 			return _accept({"rename": rename.duplicate(true)})

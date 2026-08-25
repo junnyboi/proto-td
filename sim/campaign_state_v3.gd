@@ -86,6 +86,9 @@ func runtime_projection() -> Dictionary:
 		var projected := hero.duplicate(true)
 		var display := HeroCodecScript.display_callsign(hero)
 		projected["callsign"] = String(display.get("value", hero["hero_id"]))
+		projected["custom_title"] = RenamingScript.title_for(
+			_data, String(hero["hero_id"]),
+		)
 		if hero["life_status"] == "ready":
 			heroes.append(projected)
 		else:
@@ -254,9 +257,10 @@ func rename_hero(
 	expected_save_revision: Variant,
 	hero_id: Variant,
 	callsign: Variant,
+	title: Variant = null,
 ) -> Dictionary:
 	return RenamingScript.execute(
-		self, command_id, expected_save_revision, hero_id, callsign,
+		self, command_id, expected_save_revision, hero_id, callsign, title,
 	)
 
 

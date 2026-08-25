@@ -9,6 +9,7 @@ var hero_id := ""
 var can_promote := false
 var _portrait: TextureRect
 var _callsign: TrainingLabelType
+var _title_tag: TrainingLabelType
 var _class_name: TrainingLabelType
 var _status: TrainingLabelType
 var _xp: TrainingLabelType
@@ -34,6 +35,10 @@ func configure(
 	hero_id = String(summary["hero_id"])
 	can_promote = bool(summary["can_promote"])
 	_callsign.text = String(summary["callsign"])
+	_title_tag.text = String(
+		summary.get("custom_title", "") if summary.get("custom_title") != null else "",
+	)
+	_title_tag.visible = not _title_tag.text.is_empty()
 	_class_name.text = class_label
 	_status.text = status_text
 	_xp.text = xp_text
@@ -41,8 +46,11 @@ func configure(
 	_progress.max_value = int(summary["xp_required"])
 	_progress.value = mini(int(summary["xp"]), int(summary["xp_required"]))
 	_portrait.texture = ArtType.texture(StringName(summary["portrait_asset_id"]))
+	var identity := _callsign.text
+	if not _title_tag.text.is_empty():
+		identity += " — %s" % _title_tag.text
 	text = "%s — %s — %s — %s — %s" % [
-		_callsign.text, _class_name.text, _status.text, _xp.text, _reason.text,
+		identity, _class_name.text, _status.text, _xp.text, _reason.text,
 	]
 	tooltip_text = text
 
@@ -59,11 +67,12 @@ func set_compact(value: bool) -> void:
 
 func fit_to_content() -> void:
 	var callsign_height := _fit_label(_callsign)
+	var title_height := _fit_label(_title_tag) if _title_tag.visible else 0.0
 	var class_height := _fit_label(_class_name)
 	var status_height := maxf(_fit_label(_status), _fit_label(_xp))
 	var reason_height := _fit_label(_reason)
 	var details_height := (
-		callsign_height + class_height + status_height
+		callsign_height + title_height + class_height + status_height
 		+ _progress.custom_minimum_size.y + reason_height
 	)
 	custom_minimum_size.y = ceilf(maxf(details_height, _portrait.custom_minimum_size.y) + 24.0)
@@ -99,6 +108,8 @@ func _build_content() -> void:
 	details.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(details)
 	_callsign = _label("Callsign", &"dense_body")
+	_title_tag = _label("CustomTitle", &"eyebrow")
+	_title_tag.visible = false
 	_class_name = _label("CurrentClass", &"dense_detail")
 	var status_line := HBoxContainer.new()
 	status_line.name = "StatusLine"
@@ -119,7 +130,9 @@ func _build_content() -> void:
 	_progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	LunarisOpsType.apply_progress(_progress)
 	_reason = _label("EligibilityReason", &"dense_detail")
-	for control: Control in [_callsign, _class_name, status_line, _progress, _reason]:
+	for control: Control in [
+		_callsign, _title_tag, _class_name, status_line, _progress, _reason,
+	]:
 		details.add_child(control)
 
 

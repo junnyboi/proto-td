@@ -255,6 +255,8 @@ const PLACEHOLDER_TYPES := {
 	&"ui.results.tally": {&"kills": &"int", &"leaks": &"int"},
 	&"ui.results.reward": {&"name": &"String"},
 	&"ui.results.training_available": {&"count": &"int"},
+	&"ui.identity_filter.summary": {&"shown": &"int", &"total": &"int"},
+	&"ui.rename.confirm_body": {&"current": &"String", &"next": &"String"},
 	&"ui.training.confirm_title": {&"class_name": &"String"},
 	&"ui.training.format.dp": {&"value": &"int"},
 	&"ui.training.combat_facts": {

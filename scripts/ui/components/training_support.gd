@@ -7,6 +7,7 @@ extends RefCounted
 
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
+const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const OperatorDefType := preload("res://data/operator_def.gd")
 
@@ -49,6 +50,7 @@ static func roster(value: Variant) -> Array[Dictionary]:
 			{
 				"hero_id": hero_id,
 				"callsign": callsign(hero),
+				"custom_title": RenamingScript.title_for(data, hero_id),
 				"recruitment_index": int(hero.get("recruitment_index", -1)),
 				"current_class_id": current_class_id,
 				"operator_def_id": String(hero.get("operator_def_id", "")),
@@ -60,16 +62,16 @@ static func roster(value: Variant) -> Array[Dictionary]:
 				"premium_id": hero.get("premium_id"),
 				"premium_lives": int(hero.get("premium_lives", 0)),
 				"premium_pull_count": int(hero.get("premium_pull_count", 0)),
-					"is_premium": is_premium,
-					"can_rename": not is_premium and String(hero.get("life_status", "")) == "ready",
-					"rename_error": (
-						&"premium_name_locked"
-						if is_premium
-						else &"hero_not_ready"
-						if String(hero.get("life_status", "")) != "ready"
-						else &""
-					),
-					"xp": int(hero.get("xp", 0)),
+				"is_premium": is_premium,
+				"can_rename": not is_premium and String(hero.get("life_status", "")) == "ready",
+				"rename_error": (
+					&"premium_name_locked"
+					if is_premium
+					else &"hero_not_ready"
+					if String(hero.get("life_status", "")) != "ready"
+					else &""
+				),
+				"xp": int(hero.get("xp", 0)),
 				"xp_required": required,
 				"model_can_promote": model_accepted,
 				"can_promote": model_accepted and projection_accepted,
@@ -92,6 +94,42 @@ static func roster(value: Variant) -> Array[Dictionary]:
 			)
 	)
 	return rows
+
+
+static func filtered_sorted(
+	rows: Array[Dictionary],
+	query: String,
+	sort_mode: StringName,
+) -> Array[Dictionary]:
+	var visible: Array[Dictionary] = []
+	var needle := query.strip_edges().to_lower()
+	for source: Dictionary in rows:
+		var callsign := String(source.get("callsign", ""))
+		var title := String(source.get("custom_title", "") if source.get("custom_title") != null else "")
+		if not needle.is_empty() and not ("%s\n%s" % [callsign, title]).to_lower().contains(needle):
+			continue
+		visible.append(source)
+	visible.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			var a_name := String(a.get("callsign", "")).to_lower()
+			var b_name := String(b.get("callsign", "")).to_lower()
+			var a_title := String(a.get("custom_title", "") if a.get("custom_title") != null else "").to_lower()
+			var b_title := String(b.get("custom_title", "") if b.get("custom_title") != null else "").to_lower()
+			if sort_mode == &"name_asc" and a_name != b_name:
+				return a_name < b_name
+			if sort_mode == &"name_desc" and a_name != b_name:
+				return a_name > b_name
+			if sort_mode in [&"name_asc", &"name_desc"] and a_title != b_title:
+				return a_title < b_title if sort_mode == &"name_asc" else a_title > b_title
+			return (
+				int(a.get("recruitment_index", -1)) < int(b.get("recruitment_index", -1))
+				or (
+					int(a.get("recruitment_index", -1)) == int(b.get("recruitment_index", -1))
+					and String(a.get("hero_id", "")) < String(b.get("hero_id", ""))
+				)
+			)
+	)
+	return visible
 
 
 static func eligible_count(value: Variant) -> int:

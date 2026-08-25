@@ -83,6 +83,23 @@ static func valid_callsign(value: Variant) -> bool:
 	return count <= 20
 
 
+static func valid_title(value: Variant) -> bool:
+	if value == null:
+		return true
+	if typeof(value) != TYPE_STRING:
+		return false
+	var text := String(value)
+	if text.is_empty() or text != _trim_callsign(text):
+		return false
+	var count := 0
+	for character: String in text:
+		var codepoint := character.unicode_at(0)
+		if codepoint < 32 or (codepoint >= 127 and codepoint <= 159):
+			return false
+		count += 1
+	return count <= 24
+
+
 static func display_callsign(hero: Dictionary) -> Dictionary:
 	if hero["custom_callsign"] != null:
 		return _accept(String(hero["custom_callsign"]))
