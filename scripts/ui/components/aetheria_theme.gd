@@ -3,38 +3,56 @@ extends Theme
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC-Subset.otf"
+const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
+const COMMAND_DECK_FRAME := preload("res://assets/ui/staging/frames/command_deck.png")
+const MISSION_CARD_FRAME := preload("res://assets/ui/staging/frames/mission_card.png")
+const OPERATION_TILE_FRAME := preload("res://assets/ui/staging/frames/operation_tile.png")
+const PRIMARY_BUTTON_FRAME := preload("res://assets/ui/staging/frames/primary_button.png")
+const NAVBAR_FRAME := preload("res://assets/ui/staging/frames/navbar.png")
+
 const COLORS := {
-	&"backdrop": Color("111827"),
-	&"panel": Color("1c2433"),
-	&"secondary": Color("263147"),
-	&"secondary_hover": Color("34425c"),
-	&"body": Color("f7f3e8"),
-	&"muted": Color("c7d6e8"),
-	&"primary": Color("e3b341"),
-	&"primary_hover": Color("f0cf65"),
-	&"primary_pressed": Color("c58b24"),
-	&"selected": Color("5dc8d3"),
-	&"selected_hover": Color("79dbe3"),
-	&"selected_pressed": Color("3ea9b8"),
-	&"destructive": Color("7f2d2d"),
-	&"destructive_hover": Color("973a34"),
-	&"destructive_pressed": Color("642222"),
-	&"disabled_background": Color("303846"),
-	&"disabled_text": Color("aeb8c6"),
-	&"focus": Color("f0cf65"),
-	&"boundary": Color("8998ac"),
-	&"dark_ink": Color("111827"),
+	&"backdrop": Color("040a12"),
+	&"panel": Color("07111cf2"),
+	&"secondary": Color("0b1827ed"),
+	&"secondary_hover": Color("173849f2"),
+	&"body": Color("f5efe1"),
+	&"muted": Color("aebfd0"),
+	&"primary": Color("d9b96e"),
+	&"primary_hover": Color("f0d89a"),
+	&"primary_pressed": Color("b58e46"),
+	&"selected": Color("91eaf1"),
+	&"selected_hover": Color("b9f8fb"),
+	&"selected_pressed": Color("4f9ca8"),
+	&"destructive": Color("6c2632"),
+	&"destructive_hover": Color("913844"),
+	&"destructive_pressed": Color("4b1822"),
+	&"disabled_background": Color("111923e6"),
+	&"disabled_text": Color("758494"),
+	&"focus": Color("91eaf1"),
+	&"boundary": Color("d9b96e99"),
+	&"dark_ink": Color("040a12"),
 	&"transparent": Color("00000000"),
 }
 
+var _body_font: FontVariation
+var _display_font: FontVariation
+
 
 func _init() -> void:
-	var composite_font := FontVariation.new()
-	composite_font.base_font = ThemeDB.fallback_font
+	_body_font = FontVariation.new()
+	_body_font.base_font = ThemeDB.fallback_font
 	var cjk_font := _load_cjk_font()
 	if cjk_font != null:
-		composite_font.fallbacks = [cjk_font]
-	default_font = composite_font
+		_body_font.fallbacks = [cjk_font]
+	_body_font.resource_name = "Protos body with CJK fallback"
+
+	_display_font = FontVariation.new()
+	_display_font.base_font = CINZEL
+	_display_font.fallbacks = [_body_font]
+	_display_font.variation_opentype = {&"wght": 560}
+	_display_font.resource_name = "Cinzel with Protos CJK fallback"
+
+	default_font = _body_font
 	default_font_size = GameTypographyType.BODY
 	_build_buttons()
 	_build_locale_list()
@@ -60,41 +78,54 @@ func _load_cjk_font() -> FontFile:
 
 
 func _build_buttons() -> void:
-	_button(
-		&"AuiPrimaryButton", &"primary", &"primary_hover", &"primary_pressed",
-		&"dark_ink",
-	)
-	_button(
-		&"AuiSecondaryButton", &"secondary", &"secondary_hover", &"panel", &"body",
-	)
-	_button(
-		&"AuiSelectedButton", &"selected", &"selected_hover", &"selected_pressed",
-		&"dark_ink",
-	)
-	_button(
-		&"AuiDestructiveButton", &"destructive", &"destructive_hover",
-		&"destructive_pressed", &"body",
-	)
-	_button(
-		&"AuiDisabledButton", &"disabled_background", &"disabled_background",
-		&"disabled_background", &"disabled_text",
-	)
+	_button(&"AuiPrimaryButton", &"primary", &"dark_ink", &"primary")
+	_button(&"AuiSecondaryButton", &"secondary", &"body", &"secondary")
+	_button(&"AuiSelectedButton", &"selected", &"dark_ink", &"selected")
+	_button(&"AuiDestructiveButton", &"destructive", &"body", &"destructive")
+	_button(&"AuiDisabledButton", &"disabled_background", &"disabled_text", &"disabled")
+
+
 func _button(
-		variation: StringName, normal: StringName, hover: StringName,
-		pressed: StringName, ink: StringName, base: StringName = &"Button",
-		) -> void:
+		variation: StringName,
+		background: StringName,
+		ink: StringName,
+		role: StringName,
+		base: StringName = &"Button",
+	) -> void:
 	set_type_variation(variation, base)
+	set_font(&"font", variation, _display_font)
 	set_font_size(&"font_size", variation, GameTypographyType.ACTION)
 	for item_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
 	]:
 		set_color(item_name, variation, COLORS[ink])
 	set_color(&"font_disabled_color", variation, COLORS[&"disabled_text"])
-	set_stylebox(&"normal", variation, _button_box(normal))
-	set_stylebox(&"hover", variation, _button_box(hover))
-	set_stylebox(&"pressed", variation, _button_box(pressed))
+	if role == &"primary":
+		set_stylebox(&"normal", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color.WHITE))
+		set_stylebox(&"hover", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color("fff2c6")))
+		set_stylebox(&"pressed", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color("d9b96e")))
+	elif role == &"secondary" or role == &"selected" or role == &"disabled":
+		var normal_tint := Color.WHITE
+		var hover_tint := Color("b9f8fb")
+		var pressed_tint := Color("91eaf1")
+		if role == &"selected":
+			normal_tint = Color("b9f8fb")
+		elif role == &"disabled":
+			normal_tint = Color(0.42, 0.48, 0.55, 0.56)
+			hover_tint = normal_tint
+			pressed_tint = normal_tint
+		set_stylebox(&"normal", variation, _texture_box(OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), normal_tint))
+		set_stylebox(&"hover", variation, _texture_box(OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), hover_tint))
+		set_stylebox(&"pressed", variation, _texture_box(OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), pressed_tint))
+	else:
+		set_stylebox(&"normal", variation, _flat_box(COLORS[background], COLORS[&"destructive"], 1, 3, [18, 10, 18, 10]))
+		set_stylebox(&"hover", variation, _flat_box(COLORS[&"destructive_hover"], COLORS[&"primary"], 2, 3, [18, 10, 18, 10]))
+		set_stylebox(&"pressed", variation, _flat_box(COLORS[&"destructive_pressed"], COLORS[&"primary"], 2, 3, [18, 10, 18, 10]))
 	set_stylebox(&"focus", variation, _focus_box())
-	set_stylebox(&"disabled", variation, _button_box(&"disabled_background"))
+	if role == &"disabled":
+		set_stylebox(&"disabled", variation, _texture_box(OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), Color(0.42, 0.48, 0.55, 0.56)))
+	else:
+		set_stylebox(&"disabled", variation, _flat_box(COLORS[&"disabled_background"], Color(COLORS[&"boundary"], 0.28), 1, 3, [18, 10, 18, 10]))
 	set_constant(&"outline_size", variation, 0)
 	set_constant(&"h_separation", variation, 12)
 	set_constant(&"icon_max_width", variation, 96)
@@ -103,120 +134,110 @@ func _button(
 func _build_locale_list() -> void:
 	var variation := &"AuiLocaleList"
 	set_type_variation(variation, &"ItemList")
+	set_font(&"font", variation, _body_font)
 	set_font_size(&"font_size", variation, GameTypographyType.BODY)
 	set_color(&"font_color", variation, COLORS[&"body"])
 	set_color(&"font_hovered_color", variation, COLORS[&"body"])
 	set_color(&"font_selected_color", variation, COLORS[&"dark_ink"])
 	set_color(&"font_hovered_selected_color", variation, COLORS[&"dark_ink"])
-	set_stylebox(&"panel", variation, _button_box(&"secondary"))
+	set_stylebox(&"panel", variation, _flat_box(COLORS[&"secondary"], COLORS[&"boundary"], 1, 3, [12, 8, 12, 8]))
 	set_stylebox(&"focus", variation, _focus_box())
-	set_stylebox(
-		&"hovered", variation,
-		_box(&"secondary_hover", &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
-	set_stylebox(
-		&"selected", variation,
-		_box(&"selected", &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
-	set_stylebox(
-		&"selected_focus", variation,
-		_box(&"selected", &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
-	set_stylebox(
-		&"hovered_selected", variation,
-		_box(&"selected_hover", &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
-	set_stylebox(
-		&"hovered_selected_focus", variation,
-		_box(&"selected_hover", &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
-	set_stylebox(
-		&"cursor", variation,
-		_box(&"transparent", &"focus", 3, 8, [0, 0, 0, 0]),
-	)
-	set_stylebox(
-		&"cursor_unfocused", variation,
-		_box(&"transparent", &"boundary", 2, 8, [0, 0, 0, 0]),
-	)
+	set_stylebox(&"hovered", variation, _flat_box(COLORS[&"secondary_hover"], COLORS[&"selected"], 1, 3, [8, 4, 8, 4]))
+	set_stylebox(&"selected", variation, _flat_box(Color(COLORS[&"selected"], 0.84), COLORS[&"selected"], 2, 3, [8, 4, 8, 4]))
+	set_stylebox(&"selected_focus", variation, _flat_box(Color(COLORS[&"selected"], 0.84), COLORS[&"focus"], 2, 3, [8, 4, 8, 4]))
+	set_stylebox(&"hovered_selected", variation, _flat_box(COLORS[&"selected_hover"], COLORS[&"focus"], 2, 3, [8, 4, 8, 4]))
+	set_stylebox(&"hovered_selected_focus", variation, _flat_box(COLORS[&"selected_hover"], COLORS[&"focus"], 2, 3, [8, 4, 8, 4]))
+	set_stylebox(&"cursor", variation, _focus_box(3))
+	set_stylebox(&"cursor_unfocused", variation, _flat_box(Color.TRANSPARENT, COLORS[&"boundary"], 1, 3, [0, 0, 0, 0]))
 	set_constant(&"outline_size", variation, 0)
 
 
 func _build_panels() -> void:
-	_panel(&"AuiReadingPanel", &"reading_panel", &"panel", &"boundary", 2, 12, 40)
-	_panel(&"AuiHudPanel", &"hud_panel", &"panel", &"boundary", 2, 8, 16)
-	_panel(&"AuiCardPanel", &"card_panel", &"secondary", &"boundary", 2, 10, 20)
-	_panel(&"AuiModalPanel", &"modal_panel", &"panel", &"focus", 3, 12, 40)
-	_panel(
-		&"AuiInspectorPanel", &"inspector_panel", &"secondary", &"boundary", 2, 8, 20,
-	)
-	_panel(&"AuiRewardPanel", &"reward_panel", &"panel", &"primary", 3, 12, 40)
+	_panel_texture(&"AuiReadingPanel", COMMAND_DECK_FRAME, Vector4(68, 52, 68, 52), 28)
+	_panel_texture(&"AuiHudPanel", NAVBAR_FRAME, Vector4(68, 34, 68, 34), 14)
+	_panel_texture(&"AuiCardPanel", OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), 16)
+	_panel_texture(&"AuiModalPanel", COMMAND_DECK_FRAME, Vector4(68, 52, 68, 52), 28)
+	_panel_texture(&"AuiInspectorPanel", MISSION_CARD_FRAME, Vector4(62, 42, 62, 42), 18)
+	_panel_texture(&"AuiRewardPanel", MISSION_CARD_FRAME, Vector4(62, 42, 62, 42), 24)
 	set_type_variation(&"AuiFocusRing", &"PanelContainer")
-	set_stylebox(&"panel", &"AuiFocusRing", _focus_box(12))
+	set_stylebox(&"panel", &"AuiFocusRing", _focus_box(3))
 
 
-func _panel(
-		variation: StringName, _style_id: StringName, background: StringName,
-		border: StringName, border_width: int, corner_radius: int, margin: int,
+func _panel_texture(
+		variation: StringName,
+		texture: Texture2D,
+		texture_margins: Vector4,
+		content_margin: int,
 	) -> void:
 	set_type_variation(variation, &"PanelContainer")
-	set_stylebox(
-		&"panel", variation,
-		_box(background, border, border_width, corner_radius, [margin, margin, margin, margin]),
-	)
+	set_stylebox(&"panel", variation, _texture_box(texture, texture_margins, Color.WHITE, content_margin))
 
 
 func _build_labels() -> void:
-	_label(&"AuiTitleLabel", GameTypographyType.SCREEN_TITLE, &"primary")
-	_label(&"AuiHeadingLabel", GameTypographyType.SECTION_HEADING, &"primary")
+	_label(&"AuiTitleLabel", GameTypographyType.SCREEN_TITLE, &"body", true)
+	_label(&"AuiHeadingLabel", GameTypographyType.SECTION_HEADING, &"primary", true)
 	_label(&"AuiBodyLabel", GameTypographyType.BODY, &"body")
 	_label(&"AuiDetailLabel", GameTypographyType.DETAIL, &"muted")
-	_label(&"AuiDenseHeadingLabel", GameTypographyType.DENSE_HEADING, &"primary")
+	_label(&"AuiDenseHeadingLabel", GameTypographyType.DENSE_HEADING, &"primary", true)
 	_label(&"AuiDenseBodyLabel", GameTypographyType.DETAIL, &"body")
 	_label(&"AuiDenseDetailLabel", GameTypographyType.BADGE, &"muted")
 	_label(&"AuiLocaleLabel", GameTypographyType.BODY, &"body")
-	_badge(&"AuiClassBadge", &"class_badge", &"selected", &"dark_ink")
-	_badge(&"AuiCostBadge", &"cost_badge", &"primary", &"dark_ink")
-	_badge(&"AuiCooldownBadge", &"cooldown_badge", &"secondary", &"body")
-	_badge(
-		&"AuiLockedBadge", &"locked_badge", &"disabled_background", &"disabled_text",
-	)
-	_badge(&"AuiCompletedBadge", &"completed_badge", &"selected", &"dark_ink")
+	_badge(&"AuiClassBadge", &"selected", &"dark_ink")
+	_badge(&"AuiCostBadge", &"primary", &"dark_ink")
+	_badge(&"AuiCooldownBadge", &"secondary", &"body")
+	_badge(&"AuiLockedBadge", &"disabled_background", &"disabled_text")
+	_badge(&"AuiCompletedBadge", &"selected", &"dark_ink")
 
 
-func _label(variation: StringName, font_size: int, color: StringName) -> void:
+func _label(variation: StringName, font_size: int, color: StringName, display := false) -> void:
 	set_type_variation(variation, &"Label")
+	set_font(&"font", variation, _display_font if display else _body_font)
 	set_font_size(&"font_size", variation, font_size)
 	set_color(&"font_color", variation, COLORS[color])
 
 
-func _badge(
-		variation: StringName, _style_id: StringName, background: StringName,
-		ink: StringName,
-		) -> void:
-	_label(variation, GameTypographyType.BADGE, ink)
-	set_stylebox(
-		&"normal", variation,
-		_box(background, &"boundary", 2, 8, [8, 4, 8, 4]),
-	)
+func _badge(variation: StringName, background: StringName, ink: StringName) -> void:
+	_label(variation, GameTypographyType.BADGE, ink, true)
+	set_stylebox(&"normal", variation, _flat_box(COLORS[background], COLORS[&"boundary"], 1, 2, [9, 5, 9, 5]))
 
 
-func _button_box(background: StringName) -> StyleBoxFlat:
-	return _box(background, &"boundary", 2, 8, [18, 10, 18, 10])
-
-
-func _focus_box(corner_radius: int = 10) -> StyleBoxFlat:
-	var style := _box(&"transparent", &"focus", 4, corner_radius, [0, 0, 0, 0])
-	style.set_expand_margin_all(4.0)
+func _texture_box(
+		texture: Texture2D,
+		margins: Vector4,
+		modulate: Color,
+		content_margin := 12,
+	) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = margins.x
+	style.texture_margin_top = margins.y
+	style.texture_margin_right = margins.z
+	style.texture_margin_bottom = margins.w
+	style.content_margin_left = content_margin
+	style.content_margin_top = content_margin
+	style.content_margin_right = content_margin
+	style.content_margin_bottom = content_margin
+	style.modulate_color = modulate
+	style.draw_center = true
 	return style
 
 
-func _box(
-		background: StringName, border: StringName, border_width: int,
-		corner_radius: int, margins: Array,
+func _focus_box(corner_radius := 3) -> StyleBoxFlat:
+	var style := _flat_box(Color(COLORS[&"selected"], 0.10), COLORS[&"focus"], 2, corner_radius, [0, 0, 0, 0])
+	style.set_expand_margin_all(3.0)
+	return style
+
+
+func _flat_box(
+		background: Color,
+		border: Color,
+		border_width: int,
+		corner_radius: int,
+		margins: Array,
 	) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = COLORS[background]
-	style.border_color = COLORS[border]
+	style.bg_color = background
+	style.border_color = border
 	style.set_border_width_all(border_width)
 	style.set_corner_radius_all(corner_radius)
 	style.content_margin_left = float(margins[0])

@@ -46,6 +46,9 @@ func _exercise_transition(music: Node, game: Node) -> void:
 	_check(player != null and player.stream == stream_before, "continuity keeps the same stream")
 	_check(int(music.call("start_count")) == starts_before, "continuity does not restart the cue")
 	_check(int(music.call("stop_count")) == stops_before, "continuity does not stop the cue")
+	# Coroutine locals remain alive until the test tree exits. Release the explicit
+	# stream reference before cleanup so the resource-leak scan reflects runtime ownership.
+	stream_before = null
 
 
 func _clean_up(music: Node, game: Node) -> void:
@@ -54,8 +57,8 @@ func _clean_up(music: Node, game: Node) -> void:
 	if content != null and is_instance_valid(content):
 		content.queue_free()
 	music.call("stop")
-	await process_frame
-	await process_frame
+	for _frame: int in range(8):
+		await process_frame
 
 
 func _finish() -> void:

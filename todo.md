@@ -4,8 +4,8 @@
 - [x] Audit all 79 non-title UI and dialog states across staging, campaign, roster/training, gacha, Vahalla, battle, and results.
 - [x] Generate eight desktop/portrait concept designs with GPT Image 2 using canonical adult Lunaris references.
 - [x] Document the unified visual system, preserved-feature ledger, responsive contract, and phased implementation plan.
-- [ ] Phase 0: commit and push the audit, concepts, contract freeze, and accepted pre-change regression baseline.
-- [ ] Phase 1: implement shared Lunaris materials, typography, full-safe-area shell behavior, modal focus/veil helpers, and tests.
+- [x] Phase 0: commit and push the audit, concepts, contract freeze, and accepted pre-change regression baseline.
+- [x] Phase 1: implement shared Lunaris materials, typography, full-safe-area shell behavior, modal focus/veil helpers, and tests.
 - [ ] Phase 2: revamp Stage Select, Training/roster surfaces, Premium Resonance, Vahalla, and Results while preserving all authority boundaries.
 - [ ] Phase 3: revamp battle HUD, pause/resign, deployment/spell/tutorial/navigation presentation, and result ceremony without changing battle semantics.
 - [ ] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.

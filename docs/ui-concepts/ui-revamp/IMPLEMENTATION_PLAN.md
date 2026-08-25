@@ -101,4 +101,10 @@ Update the existing `proto-td-web` project only. Preserve the dynamic-viewport, 
 
 ## Completion record
 
-This section is updated after implementation. Each phase records its final revision, changed scope, regression evidence, visual evidence, known quirks, and deployment state.
+| Phase | Status | Revision / evidence |
+|---|---|---|
+| **0 — Audit and contract freeze** | Complete | Pushed in `4b6a728`; 79-state audit, eight GPT Image 2 concepts, preserved-feature ledger, and accepted pre-change suite. |
+| **1 — Shared Lunaris foundations** | Complete | Unified textured Aetheria theme, upgraded programmatic Lunaris style, full-safe-area shell mode, reusable modal helper, and `lunaris_ui_foundation_test.gd`. Full focused suite passes except the three documented success-sentinel/process-code quirks; import and Xvfb logs are clean. Landscape Stage Select confirms the material migration. Portrait Stage Select is deliberately queued for Phase 2 full-safe-area adoption. |
+| **2 — Screen-family migration** | In progress | Stage Select, Premium Resonance, Vahalla, Training/roster surfaces, and Results. |
+| **3 — Battle field-command layer** | Pending | Not started. |
+| **4 — Export and deployment** | Pending | Not started. |
