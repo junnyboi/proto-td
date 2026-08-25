@@ -3,7 +3,7 @@
 ## Musical identity
 
 **Working title:** *Astra Memoriam*
-**Purpose:** Premium anime-gacha title music for the Lunaris Reliquary player-entry screen and its handoff into campaign home.
+**Purpose:** Premium anime-gacha loading/title music for the Lunaris Reliquary player-entry screen only.
 **Generation target:** Original 60-second stereo instrumental at 96 BPM in D minor, designed as 24 complete 4/4 bars.
 **Emotional promise:** Majestic, seductive, celestial, resolute, and expensive rather than frantic or boss-battle aggressive.
 
@@ -37,8 +37,8 @@ Instrumental title music with wordless choir textures and no lyrics or vocal sol
 
 The generator returned a 58.096-second stereo MP3 source. The production loop rotates past the opening five-second pickup and uses a five-second forward equal-power crossfade back into that pickup, yielding a 52.500-second cycle with no reversed audio, no fade-out, and no terminal cadence. The Godot Ogg Vorbis derivative measures −16.3 LUFS integrated, 9.6 LU loudness range, and −2.1 dBFS true peak at 48 kHz stereo.
 
-The Music autoload remains the sole runtime owner. The title requests cue `title_lunaris`; the same playback instance continues into campaign-home staging without stopping, seeking, or restarting. Battle music replaces it when combat begins. Source, lossless production master, checksums, and construction details are archived under `docs/audio/lunaris-title-theme/`.
+The Music autoload remains the sole runtime owner. The title requests cue `title_lunaris`, and navigation away from the title stops and releases that stream. Staging, campaign, and battle remain silent until the faction-led soundtrack approved in `docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md` is produced. Source, lossless production master, checksums, and construction details are archived under `docs/audio/lunaris-title-theme/`.
 
 ## Web validation
 
-The merged managed PCK loaded successfully through the fullscreen WebDev host and reached the animated Lunaris title without parser, resource, or startup failure. Browser audio remains subject to the standard user-gesture unlock. A neutral click on the title background unlocks the browser audio context. Activating Start must reach Company Command without stopping or restarting `title_lunaris`; the cue remains active until battle music supersedes it or the player disables title music. The title Settings toggle persists its on/off state in `user://view_preferences.cfg`, so the selected state is restored on the next native or browser session.
+The merged managed PCK loaded successfully through the fullscreen WebDev host and reached the animated Lunaris title without parser, resource, or startup failure. Browser audio remains subject to the standard user-gesture unlock. A neutral click on the title background unlocks the browser audio context. Activating Start must reach Company Command and stop `title_lunaris`; no title audio may leak into staging or battle. The title Settings toggle persists its on/off state in `user://view_preferences.cfg`, so the selected state is restored on the next native or browser session.

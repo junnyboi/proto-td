@@ -18,7 +18,6 @@ const StagingResourceChipType := preload(
 	"res://scripts/ui/components/staging_resource_chip.gd"
 )
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
-const MusicPackStatusType := preload("res://scripts/ui/components/music_pack_status.gd")
 const StagingMockWalletType := preload("res://scripts/ui/staging_mock_wallet.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const LunarisBackdropType := preload(
@@ -75,7 +74,6 @@ var _resource_chips: Array[StagingResourceChipType] = []
 var _utility_row: HBoxContainer = null
 var _exit_label: Label = null
 var _backdrop: LunarisBackdropType = null
-var _music_pack_status: MusicPackStatusType = null
 var _command_tiles: Array[StagingCommandTileType] = []
 var _portrait := false
 var _reduced_motion := false
@@ -91,12 +89,9 @@ func _ready() -> void:
 	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
 	_build_screen()
-	_build_music_pack_status()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
 	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
-	if _music_pack_status.act() > 0:
-		Music.prefetch_content_pack.call_deferred(_music_pack_status.act())
 	if not _training_acknowledgement.is_empty():
 		Game.training_call(&"consume_acknowledgement")
 
@@ -138,19 +133,6 @@ func _build_screen() -> void:
 	_command_content = _build_command_content()
 	_build_landscape_layout()
 	_build_portrait_layout()
-
-
-func _build_music_pack_status() -> void:
-	_music_pack_status = MusicPackStatusType.new()
-	_music_pack_status.z_index = 30
-	var preferred_act := _next_stage.music_act if _next_stage != null else 1
-	_music_pack_status.set_act(Music.active_content_pack_act(preferred_act))
-	_music_pack_status.retry_requested.connect(_on_music_pack_retry_requested)
-	_music_pack_status.retry_availability_changed.connect(_on_music_pack_retry_availability_changed)
-	_music_pack_status.visibility_changed.connect(_on_music_pack_visibility_changed)
-	add_child(_music_pack_status)
-
-
 func _build_backdrop() -> void:
 	_backdrop = LunarisBackdropType.new()
 	_backdrop.name = "LunarisBackdrop"
@@ -737,9 +719,6 @@ func _connect_focus_cycle() -> void:
 		actions.append(_vahalla)
 	if _training != null and not _training.disabled:
 		actions.append(_training)
-	var retry := _music_pack_status.retry_button() if _music_pack_status != null else null
-	if _music_pack_status != null and _music_pack_status.visible and retry != null and retry.visible:
-		actions.append(retry)
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -750,28 +729,6 @@ func _connect_focus_cycle() -> void:
 		current.focus_neighbor_left = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_neighbor_right = current.get_path_to(following)
-
-
-func _on_music_pack_visibility_changed() -> void:
-	if not is_node_ready():
-		return
-	var retry := _music_pack_status.retry_button()
-	if not _music_pack_status.visible and get_viewport().gui_get_focus_owner() == retry:
-		(_back if _mission.disabled else _mission).grab_focus.call_deferred()
-	_connect_focus_cycle()
-	_apply_responsive_layout()
-
-
-func _on_music_pack_retry_requested(_act: int) -> void:
-	Sfx.play("ui_click")
-
-
-func _on_music_pack_retry_availability_changed(_available: bool) -> void:
-	if not is_node_ready():
-		return
-	_connect_focus_cycle()
-
-
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
@@ -816,13 +773,6 @@ func _apply_responsive_layout() -> void:
 	_exit_label.visible = not narrow_top
 	_back.custom_minimum_size.x = 54.0 if narrow_top else (88.0 if compact_top else 92.0)
 	StagingSkinType.apply_display_type(_exit_label, 13 if compact_top else 14, MUTED, 560)
-	_music_pack_status.set_compact(_portrait or viewport_size.x < 720.0)
-	var pack_width := minf(viewport_size.x - 24.0, 270.0 if _portrait else 360.0)
-	_music_pack_status.size = Vector2(pack_width, 48.0 if _portrait else 52.0)
-	_music_pack_status.position = Vector2(
-		(viewport_size.x - pack_width) * 0.5 if _portrait else 24.0,
-		viewport_size.y - _music_pack_status.size.y - (14.0 if _portrait else 20.0),
-	)
 
 	var narrow_command := _portrait and viewport_size.x < 560.0
 	_mission_grid.columns = 1 if narrow_command else 2

@@ -23,16 +23,15 @@ godot --headless --fixed-fps 60 --path . --quit-after 120
 
 Documentation-only changes do not require an engine check. Run focused tests or manual previews when they are useful for the code being changed. Web export and browser checks are release-only.
 
-## Web export and optional music packs
+## Web export and soundtrack scope
 
-The Web preset keeps the title theme in the initial PCK and excludes the six battle tracks. After importing the project, export the base bundle and build the three minimal act packs:
+The current runtime intentionally ships only the approved Lunaris loading/title theme, **Astra Memoriam**. Staging, campaign, and battle surfaces remain silent while their faction-led soundtrack is redesigned. Export the complete title-only bundle with:
 
 ```bash
 godot --headless --path . --export-release Web build/web/index.html
-godot --headless --path . --script tools/build_music_packs.gd
 ```
 
-The pack builder writes `build/web/packs/music-act-{1,2,3}.pck` and prints each exact byte count and SHA-256. The Web host must pass one `--music-pack=ACT|URL|SHA256|BYTES` argument per pack. `Music` downloads the requested act on first use, verifies and caches it, mounts it with `ProjectSettings.load_resource_pack()`, and remains silent rather than blocking gameplay if the transfer fails.
+Do not add temporary replacement tracks. The approved redesign contract and phased implementation plan live in [`docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md`](docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md).
 
 ## Architecture
 

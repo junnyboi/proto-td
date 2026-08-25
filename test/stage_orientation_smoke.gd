@@ -82,9 +82,8 @@ func _validate_metadata(
 	failures: PackedStringArray,
 ) -> void:
 	var fields := [
-		"id", "title", "waves", "wave_starts", "music_act", "music_boss_wave_index",
-		"leak_limit", "squad_size", "recovery_roster", "rewards", "campaign_index",
-		"requires", "intro_hint",
+		"id", "title", "waves", "wave_starts", "leak_limit", "squad_size",
+		"recovery_roster", "rewards", "campaign_index", "requires", "intro_hint",
 	]
 	for field: String in fields:
 		if source.get(field) != portrait.get(field):

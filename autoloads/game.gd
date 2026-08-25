@@ -547,8 +547,7 @@ func _swap_content(
 	previous_battle: BattleModel = null,
 ) -> void:
 	var music := get_node_or_null("/root/Music")
-	if _should_stop_music_for_scene(scene_path, music):
-		_stop_music_node(music)
+	_stop_music_node(music)
 	# Incumbent UI scenes assign Game.content from _ready(). Capture the real
 	# predecessor before add_child() runs that synchronous callback, then retire
 	# exactly that node at the commit point.
@@ -597,29 +596,6 @@ func _accept_content_candidate(
 	content = candidate
 	if is_battle:
 		current_battle = candidate_battle
-	return true
-
-
-## Music is presentation-only and must never block navigation. Resolve the
-## optional autoload at call time because failed/partial project startup can
-## leave the global singleton identifier as Nil on some runtime paths.
-func _stop_music_if_available() -> bool:
-	return _stop_music_node(get_node_or_null("/root/Music"))
-
-
-## Astra Memoriam bridges the player-entry title into campaign home without a
-## restart or audible gap. Other non-battle navigation still retires the active
-## cue so stale stage or menu music cannot leak across presentation contexts.
-func _should_stop_music_for_scene(scene_path: String, music: Node) -> bool:
-	if scene_path == BATTLE_SCENE_PATH:
-		return false
-	if (
-		scene_path == STAGING_SCENE_PATH
-		and music != null
-		and music.has_method("current_id")
-		and StringName(music.call("current_id")) == &"title_lunaris"
-	):
-		return false
 	return true
 
 
