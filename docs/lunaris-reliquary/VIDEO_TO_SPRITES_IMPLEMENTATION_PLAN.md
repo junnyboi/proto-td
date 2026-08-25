@@ -2,7 +2,7 @@
 
 **Author:** Manus AI
 **Repository:** `https://github.com/junnyboi/proto-td`
-**Assessed revision:** `653f51b65ecb311f147d0ca22dec0f1301e7a2ba`
+**Integrated base revision:** `e2d204d97afe3682ba673e99f18011ac9a14717c`
 
 ## Executive summary
 
@@ -176,17 +176,19 @@ Generate the Lunaris Vessel `NE idle` keyframe and carrier outside the repositor
 
 **Gate result:** Passed technical extraction, alpha, frame, mirror, and runtime-cell checks. The pilot preserves the approved character and Crescent Reliquary, remains planted and readable at tower scale, and contains no clipped alpha bounds. The user approved the pilot preview and NE→NW mirror on 2026-08-25 for repository integration.
 
-### Phase 1 — Harden the reusable processor
+### Phase 1 — Harden the reusable processor — complete
 
 Using the `skill-creator` update workflow, add temporal-window resampling and a fixed-cell Godot operator output profile to the global `/video-to-sprites` skill. Add synthetic regression fixtures for 48→24 idle conversion, attack-window→13 conversion, 192×192 placement, bottom-center pivot stability, lossless WebP alpha, multi-page atlas behavior, and JSON schema validity.
 
-**Gate:** Official skill validation and end-to-end synthetic video tests pass. This phase changes the Manus-level skill, not the game repository.
+**Gate result:** Complete. Official skill validation and end-to-end synthetic-video tests pass for 48→24 idle conversion, endpoint-preserving attack-window→13 conversion, fixed 192×192 placement, neutral-anchor scale stability, lossless WebP alpha, exact mirrors, atlas packing, and JSON manifests. This phase changed the Manus-level skill, not the game repository.
 
-### Phase 2 — Produce and integrate Lunaris Vessel
+### Phase 2 — Produce and integrate Lunaris Vessel — complete
 
 Reuse the approved Vessel `NE idle` keyframe, carrier, master, and `NE`/`NW` runtime strips. Generate one clearly front-biased `SE` keyframe, then generate only the three missing carriers: `SE idle`, `NE attack`, and `SE attack`. Derive `NW attack`, `SW idle`, and `SW attack` by deterministic horizontal mirroring. The completed Vessel set contains exactly four idle strips and four attack strips—no locomotion or auxiliary state. Add the Vessel visual resource, catalog entry, manifest rows, presentation-only premium resolver, generation record, and focused tests before changing any other character.
 
 **Regression and delivery gate:** Run the premium animation tests, art-manifest validation, direct Godot import, bounded headless boot, relevant premium hero/UI tests, and Xvfb battle verification in landscape and portrait. Re-fetch `origin/master`, rerun affected gates if the revision moved, commit, and push to `master` without rewriting history.
+
+**Implemented result:** The repository now contains eight non-placeholder lossless WebP strips for Vessel idle and attack across `NE`, `NW`, `SE`, and `SW`, registered through a unique `lunaris_vessel` presentation resource and portrait-based view-only resolver. The generated `SE idle` was rejected once for an attack-coded beam and regenerated as a quiet loop. Attack derivatives preserve the complete `[0, 24)` source window in 13 endpoint-inclusive runtime frames, and neutral-anchor fitting prevents effect-union scale shrink. Focused validation, 22-target repository regression, direct import, bounded boot, exact mirror checks, and real BattleView Xvfb idle-to-attack checks passed in landscape and portrait. The first integrated implementation commit is `b1bc45f4b997248a9008b1ceff0311a7fc83b7c5`.
 
 ### Phase 3 — Produce and integrate Reliquary Duelist
 
