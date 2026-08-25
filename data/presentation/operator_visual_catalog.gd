@@ -6,6 +6,7 @@ extends RefCounted
 
 const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
 const DEFINITIONS: Dictionary = {
+	&"archive_caster": preload("res://data/presentation/operator_visuals/archive_caster.tres"),
 	&"caster_1": preload("res://data/presentation/operator_visuals/caster_1.tres"),
 	&"caster_2": preload("res://data/presentation/operator_visuals/caster_2.tres"),
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
@@ -25,6 +26,7 @@ const VISUAL_ALIASES: Dictionary = {
 	&"witch_doctor_1": &"caster_1",
 }
 const PREMIUM_VISUAL_BY_PORTRAIT: Dictionary = {
+	&"portrait_archive_caster": &"archive_caster",
 	&"portrait_lunaris_vessel": &"lunaris_vessel",
 	&"portrait_reliquary_duelist": &"reliquary_duelist",
 }
