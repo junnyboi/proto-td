@@ -255,6 +255,22 @@ func pack_download_progress(act: int) -> float:
 	return clampf(float(request.get_downloaded_bytes()) / float(total), 0.0, 1.0)
 
 
+func active_content_pack_act(preferred_act: int = 1) -> int:
+	for state: StringName in [PACK_STATE_LOADING, PACK_STATE_FAILED]:
+		for act: int in range(1, 4):
+			if pack_state(act) == state:
+				return act
+	if _pack_specs.has(preferred_act) and not pack_is_ready(preferred_act):
+		return preferred_act
+	return 0
+
+
+func prefetch_content_pack(act: int) -> bool:
+	if not _pack_specs.has(act) or pack_state(act) == PACK_STATE_FAILED:
+		return false
+	return _ensure_content_pack(act)
+
+
 func retry_content_pack(act: int) -> bool:
 	if not _pack_specs.has(act) or pack_state(act) == PACK_STATE_LOADING:
 		return false
