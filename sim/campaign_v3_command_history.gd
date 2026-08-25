@@ -10,6 +10,7 @@ const ATTEMPT_RULES_PATH := "res://sim/campaign_v3_attempts.gd"
 const HASH_PATH := "res://sim/campaign_v3_hash.gd"
 const RECRUITMENT_RULES_PATH := "res://sim/campaign_v3_recruitment.gd"
 const GACHA_RULES_PATH := "res://sim/campaign_v3_gacha.gd"
+const RENAMING_RULES_PATH := "res://sim/campaign_v3_renaming.gd"
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
 const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
@@ -30,6 +31,11 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	if not fresh["accepted"]:
 		return _reject(&"invalid_command_history")
 	var replay: Dictionary = fresh["value"]
+	replay["premium_pity_started_at_pull"] = int(data["premium_pity_started_at_pull"])
+	replay["premium_pity_streak"] = 0
+	replay["premium_marks_started_at_resolution"] = int(
+		data["premium_marks_started_at_resolution"]
+	)
 	for record: Dictionary in records:
 		if record["expected_save_revision"] != replay["save_revision"]:
 			return _reject(&"command_history_revision_mismatch")
@@ -69,6 +75,8 @@ static func _replay_record(
 			return _replay_premium_pull(data, context, record)
 		"recruit_person":
 			return _replay_recruitment(data, context, record)
+		"rename_hero":
+			return _replay_rename(data, record)
 	return _reject(&"invalid_command_history")
 
 
@@ -275,6 +283,22 @@ static func _replay_recruitment(
 	return _accept(working)
 
 
+static func _replay_rename(data: Dictionary, record: Dictionary) -> Dictionary:
+	var derived: Dictionary = load(RENAMING_RULES_PATH).call(
+		"_derive", data, record["payload"],
+	)
+	if not derived["accepted"]:
+		return _reject(&"command_history_transition_mismatch")
+	var working: Dictionary = derived["data"]
+	working["save_revision"] = int(data["save_revision"]) + 1
+	var receipt: Dictionary = derived["receipt"]
+	receipt["save_revision"] = working["save_revision"]
+	if record["receipt"] != {"rename": receipt}:
+		return _reject(&"command_history_receipt_mismatch")
+	_append_record(working, record)
+	return _accept(working)
+
+
 static func _append_record(data: Dictionary, record: Dictionary) -> void:
 	data["command_receipts"] = (data["command_receipts"] as Array).duplicate(true)
 	data["command_receipts"].append(record.duplicate(true))
@@ -329,6 +353,9 @@ static func _fresh_data(seed_value: int, generation: int, context: Dictionary) -
 			"next_attempt_id": 1,
 			"next_resolution_index": 1,
 			"next_premium_pull_index": 0,
+			"premium_pity_started_at_pull": 0,
+			"premium_pity_streak": 0,
+			"premium_marks_started_at_resolution": 1,
 			"marks": int(campaign["initial_marks"]),
 			"stage_stars": [],
 			"unlocked_traps": [],

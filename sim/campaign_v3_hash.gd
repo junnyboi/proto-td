@@ -34,8 +34,7 @@ static func _of_normalized_core(value: Dictionary) -> Dictionary:
 
 
 static func _core_hash_payload(value: Dictionary) -> Dictionary:
-	if int(value.get("next_premium_pull_index", 0)) != 0:
-		return value
+	var has_premium_state := int(value.get("next_premium_pull_index", 0)) != 0
 	for hero: Dictionary in value.get("heroes", []):
 		if (
 			hero.get("hero_kind", "recruit") != "recruit"
@@ -43,8 +42,20 @@ static func _core_hash_payload(value: Dictionary) -> Dictionary:
 			or int(hero.get("premium_lives", 0)) != 0
 			or int(hero.get("premium_pull_count", 0)) != 0
 		):
-			return value
+			has_premium_state = true
+			break
 	var codec: GDScript = load(CODEC_PATH) as GDScript
+	if has_premium_state:
+		if (
+			int(value.get("premium_pity_streak", 0)) == 0
+			and int(value.get("premium_pity_started_at_pull", 0))
+				>= int(value.get("next_premium_pull_index", 0))
+		):
+			var prepity := {}
+			for key: String in codec.PREPITY_CORE_KEYS:
+				prepity[key] = value[key]
+			return prepity
+		return value
 	var legacy := {}
 	for key: String in codec.LEGACY_CORE_KEYS:
 		if key == "heroes":
