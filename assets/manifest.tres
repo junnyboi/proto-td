@@ -512,6 +512,21 @@ entries = {
 "placeholder": false,
 "size": Vector2i(24, 24)
 },
+&"icon_slow_field": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/sprites/icon_slow_field.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(24, 24)
+},
 &"mini_boss": {
 "animations": {
 &"walk": {
@@ -2668,6 +2683,21 @@ entries = {
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(48, 48)
+},
+&"vfx_slow_field": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/vfx/vfx_slow_field.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(96, 48)
 },
 &"vfx_wave_banner": {
 "animations": {

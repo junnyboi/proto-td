@@ -5,7 +5,7 @@ extends RefCounted
 ## database; consumers receive deep copies and can never retain model objects.
 
 const SCHEMA_ID := "prototype_td_battle_observation"
-const VERSION := 1
+const VERSION := 2
 const UPCOMING_SECONDS := 10
 
 var _value: Dictionary = {}
@@ -46,6 +46,7 @@ func _project(model: BattleModel) -> Dictionary:
 		"deployability": _project_deployability(model),
 		"operators": _project_operators(model),
 		"spells": _project_spells(model),
+		"slow_fields": _project_slow_fields(model),
 		"trap_readiness": _project_trap_readiness(model),
 		"traps": _project_traps(model),
 		"traps_placed_total": model._next_trap_id,
@@ -136,6 +137,23 @@ func _project_spells(model: BattleModel) -> Array:
 			"ready_at_tick": model.spell_book.ready_at(spell_id),
 			"used_in_wave": model.spell_book.used_in_wave(spell_id),
 			"casts": model.spell_book.casts(spell_id),
+		})
+	return rows
+
+
+func _project_slow_fields(model: BattleModel) -> Array:
+	var source: Array = model.slow_fields.duplicate()
+	source.sort_custom(func(a: SlowFieldState, b: SlowFieldState) -> bool: return a.id < b.id)
+	var rows: Array = []
+	for field: SlowFieldState in source:
+		rows.append({
+			"id": field.id,
+			"spell_id": String(field.spell_id),
+			"center": _cell(field.center),
+			"radius": field.radius,
+			"slow_permille": field.slow_permille,
+			"expires_tick": field.expires_tick,
+			"remaining_ticks": maxi(0, field.expires_tick - model.tick),
 		})
 	return rows
 

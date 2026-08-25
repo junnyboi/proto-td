@@ -65,6 +65,21 @@ static func of(m: BattleModel) -> int:
 		_append_int(bytes, m.spell_book.ready_at(spell_id))
 		_append_int(bytes, m.spell_book.used_in_wave(spell_id))
 		_append_int(bytes, m.spell_book.casts(spell_id))
+	# SLOW_FIELD sparse append-only extension. Battles that never cast a field
+	# retain their exact legacy digest; the monotonic id preserves cast history
+	# after every active field has expired.
+	if m._next_slow_field_id != 0 or not m.slow_fields.is_empty():
+		_append_int(bytes, 6)
+		_append_int(bytes, m._next_slow_field_id)
+		_append_int(bytes, m.slow_fields.size())
+		for field: SlowFieldState in m.slow_fields:
+			_append_int(bytes, field.id)
+			_append_int(bytes, field.spell_id.hash())
+			_append_int(bytes, field.center.x)
+			_append_int(bytes, field.center.y)
+			_append_int(bytes, field.radius)
+			_append_int(bytes, field.slow_permille)
+			_append_int(bytes, field.expires_tick)
 	_append_int(bytes, m.squad.size())
 	for op_id: StringName in m.squad:
 		_append_int(bytes, op_id.hash())

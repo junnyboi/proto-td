@@ -11,9 +11,9 @@ The orientation is intentionally fixed for the lifetime of a battle. Resizing th
 | S3 — The Choke | Finite trap charges at true convergence | Two entries merge into one shared exit and premium trap cell | Three alternating runners consume Spike Plate charges, then synchronized mixed pairs |
 | S4 — Air Raid | Anti-air position and facing | Straight aerial lane crosses coverage with a bent ground convoy route | Ground preview, isolated drone, then mixed air-ground pairs |
 | S5 — High Ground | Exposed power versus safe coverage | Inner elevated site inside ranged pressure and safer late elevated site | Two spellcaster clusters separated by Bolt’s full cooldown with active bridge pressure |
-| S6 — Turncoat | Charm reversal timing | Two escort routes converge into one corridor | One heavy leader and same-path escort column per Charm window |
-| S7 — Full Kit | Tool sequencing across three fronts | Two ground entries and one aerial entry converge on a contested corridor | Opening mobility, ranged-and-air pressure, then Charm-ready heavy columns |
-| S8 — The Gatecrasher | Boss escort disruption and defense in depth | Three fortress approaches merge into a gate corridor with two fallback regions | Rehearsal, combined mastery, then boss, eligible escort, support casters, and aerial cover |
+| S6 — Turncoat | Charm reversal timing; unlocks Slow Field on first clear | Two escort routes converge into one corridor | One heavy leader and same-path escort column per Charm window |
+| S7 — Full Kit | First Slow Field lesson and tool sequencing across three fronts | Two ground entries and one aerial entry converge on a contested corridor | Opening mobility, ranged-and-air pressure, then ground columns compressed into the shared field lane |
+| S8 — The Gatecrasher | Boss escort disruption, Slow Field control, and defense in depth | Three fortress approaches merge into a gate corridor with two fallback regions | Rehearsal, combined mastery, then boss, eligible escort, support casters, and aerial cover |
 
 ## Orientation contract
 
@@ -21,4 +21,4 @@ The orientation is intentionally fixed for the lifetime of a battle. Resizing th
 
 ## Validation
 
-`test/stage_redesign_smoke.gd` verifies exact layouts, unique topologies, rectangular rows, adjacent walkable paths, valid endpoints, chronological waves, valid enemy resources, early-stage themes, S3 convergence, S5 cooldown spacing, S6 escort columns, S7 breadth, and the S8 boss column. `test/stage_orientation_smoke.gd` verifies all eight clockwise transforms, metadata preservation, path adjacency, endpoint domains, early-stage landmark rotation, and four-rotation round trips.
+`test/stage_redesign_smoke.gd` verifies exact layouts, unique topologies, rectangular rows, adjacent walkable paths, valid endpoints, chronological waves, valid enemy resources, early-stage themes, S3 convergence, S5 cooldown spacing, S6 escort columns and Slow Field reward, S7 first-use convergence, and the S8 boss column. `test/stage_orientation_smoke.gd` verifies all eight clockwise transforms, metadata preservation, path adjacency, endpoint domains, early-stage landmark rotation, and four-rotation round trips.

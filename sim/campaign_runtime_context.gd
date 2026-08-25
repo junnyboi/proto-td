@@ -7,6 +7,7 @@ extends RefCounted
 
 const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
 const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
+const CombatContentBindingScript := preload("res://sim/combat_content_binding.gd")
 const CampaignDefType := preload("res://data/campaign_def.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const StageDefType := preload("res://data/stage_def.gd")
@@ -23,14 +24,27 @@ static func build() -> Dictionary:
 	for index: int in range(1, 9):
 		stages.append(load("res://data/stages/s%d.tres" % index) as StageDefType)
 	var text_entries := _class_text_entries(classes)
+	var legacy_operator_ids := _ids("res://data/operators").filter(func(value: Variant) -> bool:
+		return String(value) != "recruit")
+	var legacy_combat := CombatContentBindingScript.build({
+		"operators": legacy_operator_ids,
+		"traps": traps,
+		"spells": spells,
+	}, stages)
+	if not legacy_combat["accepted"]:
+		return {}
 	var legacy_context := (
 		CampaignCodecScript
 		. build_context(
-			_ids("res://data/operators"),
+			legacy_operator_ids,
 			traps,
 			spells,
 			stages,
 			(LEGACY_CAMPAIGN as CampaignDefType).paid_offers,
+			[],
+			[],
+			{},
+			String(legacy_combat["sha256"]),
 		)
 	)
 	return (

@@ -5,9 +5,9 @@ extends Resource
 ## economy, or paid-offer tuning values.
 
 const P16_ENVIRONMENT_SHA256 := \
-	"693c3f42b492bde75c14940c1068d8a6e7ae551aa694d8551d5a49e26bdd9156"
+	"3f90e0a63147c5ca092dad8e83feffffe2204bd57dbe601d768b4a6d6f0d9eff"
 const P16_V3_ENVIRONMENT_SHA256 := \
-		"f935fa8d0f7d81b9537d45c41e7e4fd319bed62b8b4e62b661f8de2f8a2d4bd5"
+		"4ee7ce25ec20bc7c7d6570d7ee22b7e3ca0bba8b377a10804bf2cd43c08591e4"
 
 @export var schema_version: int = 2
 @export var name_version: int = 1

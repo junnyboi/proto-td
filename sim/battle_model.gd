@@ -52,6 +52,7 @@ var charmed: int = 0
 var charmed_dead: int = 0
 var charmed_exited: int = 0
 var spell_book: SpellBook = null
+var slow_fields: Array[SlowFieldState] = []
 
 var _defs: Dictionary = {}
 var _op_defs: Dictionary = {}
@@ -61,6 +62,7 @@ var _path_lengths: Array[int] = []
 var _next_enemy_id: int = 0
 var _next_unit_id: int = 0
 var _next_trap_id: int = 0
+var _next_slow_field_id: int = 0
 var _ticket: Dictionary = {}
 var _ticket_rows: Dictionary = {}
 var _battle_records: Array[Dictionary] = []
@@ -369,6 +371,10 @@ func cast_target_valid(spell_id: StringName, target: Variant) -> bool:
 	if not stage.spell_target_in_domain(def, target):
 		return false
 	if def.target_kind == SpellDef.TargetKind.CELL:
+		if def.effect == SpellDef.Effect.SLOW_FIELD:
+			return def.radius >= 0 and def.duration_ticks > 0 and (
+				def.slow_permille > 0 and def.slow_permille < 1000
+			)
 		return true
 	return _enemy_target_valid(def, target)
 
@@ -396,6 +402,8 @@ func _apply_cast(spell_id: StringName, target: Variant) -> bool:
 	match def.effect:
 		SpellDef.Effect.BURST_DAMAGE:
 			_resolve_burst(target, def)
+		SpellDef.Effect.SLOW_FIELD:
+			_resolve_slow_field(target, def)
 		SpellDef.Effect.CHARM:
 			_resolve_charm(enemies[int(target)])
 		_:
@@ -418,6 +426,21 @@ func _resolve_burst(center: Vector2i, def: SpellDef) -> void:
 			victims.append(e)
 	for v: EnemyState in victims:
 		_damage_enemy(v, def.damage, spell_book.damage_kind(def.id))
+
+
+## Persistent cell area (M7): cast at tick T affects ground movement in step T
+## through T + duration - 1 and expires before movement at T + duration.
+## Overlapping fields and Tar Pit use strongest-only slow, never additive slow.
+func _resolve_slow_field(center: Vector2i, def: SpellDef) -> void:
+	var field := SlowFieldState.new()
+	field.id = _next_slow_field_id
+	_next_slow_field_id += 1
+	field.spell_id = def.id
+	field.center = center
+	field.radius = def.radius
+	field.slow_permille = def.slow_permille
+	field.expires_tick = tick + def.duration_ticks
+	slow_fields.append(field)
 
 
 ## One authoritative EnemyState damage seam. Positive damage stamps the
@@ -534,6 +557,7 @@ func _step_one() -> void:
 		_spawn(entry)
 	_check_terminal()
 	tick += 1
+	_expire_slow_fields()
 	if _is_ticketed() and result != Result.RUNNING:
 		_outcome = BattleOutcomeBuilderScript.seal(self)
 
@@ -602,7 +626,16 @@ func _slow_permille_at(cell: Vector2i) -> int:
 	for t: TrapState in traps:
 		if t.cell == cell and t.trigger == TrapDef.Trigger.CELL_AURA:
 			strongest = maxi(strongest, t.slow_permille)
+	for field: SlowFieldState in slow_fields:
+		if field.covers(cell):
+			strongest = maxi(strongest, field.slow_permille)
 	return strongest
+
+
+func _expire_slow_fields() -> void:
+	for index: int in range(slow_fields.size() - 1, -1, -1):
+		if slow_fields[index].expires_tick <= tick:
+			slow_fields.remove_at(index)
 
 
 ## ON_ENTER resolution (M2): after the advance pass, before combat — a

@@ -13,4 +13,4 @@ paid_offers = Array[Dictionary]([{
 "offer_id": "p16_caster_contract",
 "operator_def_id": "caster_1"
 }])
-environment_sha256 = "693c3f42b492bde75c14940c1068d8a6e7ae551aa694d8551d5a49e26bdd9156"
+environment_sha256 = "3f90e0a63147c5ca092dad8e83feffffe2204bd57dbe601d768b4a6d6f0d9eff"
