@@ -151,6 +151,7 @@ func _build_music_pack_status() -> void:
 	var preferred_act := _next_stage.music_act if _next_stage != null else 1
 	_music_pack_status.set_act(Music.active_content_pack_act(preferred_act))
 	_music_pack_status.retry_requested.connect(_on_music_pack_retry_requested)
+	_music_pack_status.retry_availability_changed.connect(_on_music_pack_retry_availability_changed)
 	_music_pack_status.visibility_changed.connect(_on_music_pack_visibility_changed)
 	add_child(_music_pack_status)
 
@@ -810,6 +811,12 @@ func _on_music_pack_visibility_changed() -> void:
 
 func _on_music_pack_retry_requested(_act: int) -> void:
 	Sfx.play("ui_click")
+
+
+func _on_music_pack_retry_availability_changed(_available: bool) -> void:
+	if not is_node_ready():
+		return
+	_connect_focus_cycle()
 
 
 func _apply_responsive_layout() -> void:

@@ -4,6 +4,7 @@ extends PanelContainer
 ## where this control exists; battle and deeper campaign screens never instantiate it.
 
 signal retry_requested(act: int)
+signal retry_availability_changed(available: bool)
 
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 
@@ -19,6 +20,7 @@ const PACK_STATE_FAILED := &"failed"
 
 var _act := 0
 var _state: StringName = &"unconfigured"
+var _initialized := false
 var _music: Node = null
 var _status_label: Label = null
 var _progress: ProgressBar = null
@@ -38,6 +40,7 @@ func _ready() -> void:
 	if not _music.is_connected("pack_state_changed", callback):
 		_music.connect("pack_state_changed", callback)
 	_refresh(true)
+	_initialized = true
 
 
 func _exit_tree() -> void:
@@ -155,15 +158,21 @@ func _refresh(force: bool = false) -> void:
 		return
 	_state = next_state
 	var should_show := _state in [PACK_STATE_LOADING, PACK_STATE_FAILED]
+	var retry_available := _state == PACK_STATE_FAILED
+	var retry_changed := _retry != null and _retry.visible != retry_available
+	if _retry != null:
+		_retry.visible = retry_available
+	if _progress != null:
+		_progress.visible = _state == PACK_STATE_LOADING
 	if visible != should_show:
 		visible = should_show
 	set_process(should_show and _state == PACK_STATE_LOADING)
 	if _status_label == null or _progress == null or _retry == null:
 		return
+	if retry_changed and _initialized:
+		retry_availability_changed.emit(retry_available)
 	if not should_show:
 		return
-	_retry.visible = _state == PACK_STATE_FAILED
-	_progress.visible = _state == PACK_STATE_LOADING
 	if _state == PACK_STATE_FAILED:
 		_status_label.text = "ACT %s MUSIC  //  DOWNLOAD INTERRUPTED" % _roman_act()
 		_status_label.add_theme_color_override(&"font_color", MUTED)
