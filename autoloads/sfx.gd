@@ -217,8 +217,10 @@ func hover_target_eligible(control: Control) -> bool:
 		return item_index >= 0 and not item_list.is_item_disabled(item_index)
 	if control is MenuBar:
 		var menu_bar := control as MenuBar
-		var menu_index: int = menu_bar.get_menu_idx_at_point(menu_bar.get_local_mouse_position())
-		return menu_index >= 0 and not menu_bar.is_menu_disabled(menu_index)
+		for menu_index: int in menu_bar.get_menu_count():
+			if not menu_bar.is_menu_hidden(menu_index) and not menu_bar.is_menu_disabled(menu_index):
+				return true
+		return false
 	return control.focus_mode != Control.FOCUS_NONE
 
 
