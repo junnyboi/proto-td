@@ -1,17 +1,41 @@
-class_name PremiumGachaScreen
 extends Control
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const ClassDefType := preload("res://data/class_def.gd")
+const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
+
+const HARD_PITY_WINDOW := 10
+const FIVE_STAR_RARITY := 5
+
+@export var reduced_motion := false
 
 var _game: Node
 var _marks_label: Label
 var _pull_button: Button
+var _back_button: Button
 var _status_label: Label
 var _hero_grid: GridContainer
 var _header_grid: GridContainer
 var _action_grid: GridContainer
 var _screen_margin: MarginContainer
+var _pity_label: Label
+var _pity_segments: HBoxContainer
+
+var _reveal_layer: Control
+var _reveal_shade: ColorRect
+var _reveal_burst: Control
+var _reveal_panel: PanelContainer
+var _reveal_eyebrow: Label
+var _reveal_title: Label
+var _reveal_portrait: TextureRect
+var _reveal_stars: HBoxContainer
+var _reveal_result: Label
+var _reveal_lives: Label
+var _reveal_pity: Label
+var _skip_button: Button
+var _reveal_tween: Tween
+var _is_revealing := false
+var _pending_pull: Dictionary = {}
 
 
 func _ready() -> void:
@@ -20,9 +44,22 @@ func _ready() -> void:
 		_game.set("content", self)
 	Style.add_backdrop(self)
 	_build_screen()
+	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
 	_refresh()
+
+
+func _exit_tree() -> void:
+	_kill_reveal_tween()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _is_revealing or not event.is_pressed() or event.is_echo():
+		return
+	if event.is_action(&"ui_accept") or event.is_action(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_finish_reveal()
 
 
 func _build_screen() -> void:
@@ -47,12 +84,12 @@ func _build_screen() -> void:
 	_header_grid.add_theme_constant_override(&"h_separation", 16)
 	_header_grid.add_theme_constant_override(&"v_separation", 10)
 	content.add_child(_header_grid)
-	var back := Button.new()
-	back.name = "BackButton"
-	back.text = "← COMMAND DECK"
-	back.pressed.connect(_on_back_pressed)
-	Style.apply_button(back, &"quiet")
-	_header_grid.add_child(back)
+	_back_button = Button.new()
+	_back_button.name = "BackButton"
+	_back_button.text = "← COMMAND DECK"
+	_back_button.pressed.connect(_on_back_pressed)
+	Style.apply_button(_back_button, &"quiet")
+	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(title_box)
@@ -66,14 +103,35 @@ func _build_screen() -> void:
 	var intro := PanelContainer.new()
 	Style.apply_panel(intro, &"quiet")
 	content.add_child(intro)
+	var intro_box := VBoxContainer.new()
+	intro_box.add_theme_constant_override(&"separation", 10)
+	intro.add_child(intro_box)
 	var intro_text := _label(
-		"Every successful resonance pull grants one life to the selected premium hero. "
-		+ "Premium heroes keep fixed elite kits and cannot be trained. When their last life "
-		+ "is spent, they remain unavailable until another copy is pulled.",
+		"Every resonance grants one life. Premium heroes keep fixed elite kits and "
+		+ "cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls.",
 		&"body",
 	)
 	intro_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	intro.add_child(intro_text)
+	intro_box.add_child(intro_text)
+	var pity_row := HBoxContainer.new()
+	pity_row.add_theme_constant_override(&"separation", 12)
+	intro_box.add_child(pity_row)
+	_pity_label = _label("5-STAR GUARANTEE", &"detail")
+	_pity_label.name = "PityLabel"
+	_pity_label.custom_minimum_size.x = 210
+	pity_row.add_child(_pity_label)
+	_pity_segments = HBoxContainer.new()
+	_pity_segments.name = "PitySegments"
+	_pity_segments.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_pity_segments.add_theme_constant_override(&"separation", 5)
+	pity_row.add_child(_pity_segments)
+	for index: int in HARD_PITY_WINDOW:
+		var segment := ColorRect.new()
+		segment.name = "Pity_%02d" % (index + 1)
+		segment.custom_minimum_size = Vector2(24, 8)
+		segment.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_pity_segments.add_child(segment)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -105,22 +163,128 @@ func _build_screen() -> void:
 	_action_grid.add_child(_pull_button)
 
 
+func _build_reveal_layer() -> void:
+	_reveal_layer = Control.new()
+	_reveal_layer.name = "PullRevealLayer"
+	_reveal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_reveal_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	_reveal_layer.visible = false
+	_reveal_layer.modulate.a = 0.0
+	add_child(_reveal_layer)
+
+	_reveal_shade = ColorRect.new()
+	_reveal_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_reveal_shade.color = Color(0.01, 0.025, 0.05, 0.94)
+	_reveal_shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	_reveal_layer.add_child(_reveal_shade)
+
+	_reveal_burst = Control.new()
+	_reveal_burst.name = "SignalFilaments"
+	_reveal_burst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_reveal_burst.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reveal_layer.add_child(_reveal_burst)
+	for index: int in 12:
+		var ray := ColorRect.new()
+		ray.set_anchors_preset(Control.PRESET_CENTER)
+		ray.offset_left = -360.0
+		ray.offset_right = 360.0
+		ray.offset_top = -1.0
+		ray.offset_bottom = 1.0
+		ray.pivot_offset = Vector2(360, 1)
+		ray.rotation = deg_to_rad(float(index) * 15.0)
+		ray.color = Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
+		ray.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_reveal_burst.add_child(ray)
+
+	var safe_margin := MarginContainer.new()
+	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	safe_margin.add_theme_constant_override(&"margin_left", 18)
+	safe_margin.add_theme_constant_override(&"margin_top", 18)
+	safe_margin.add_theme_constant_override(&"margin_right", 18)
+	safe_margin.add_theme_constant_override(&"margin_bottom", 18)
+	_reveal_layer.add_child(safe_margin)
+	var center := CenterContainer.new()
+	safe_margin.add_child(center)
+	_reveal_panel = PanelContainer.new()
+	_reveal_panel.name = "RevealCard"
+	_reveal_panel.custom_minimum_size = Vector2(520, 650)
+	Style.apply_panel(_reveal_panel, &"screen")
+	center.add_child(_reveal_panel)
+	var reveal_box := VBoxContainer.new()
+	reveal_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	reveal_box.add_theme_constant_override(&"separation", 10)
+	_reveal_panel.add_child(reveal_box)
+	_reveal_eyebrow = _label("SIGNAL LOCK", &"eyebrow")
+	_reveal_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reveal_box.add_child(_reveal_eyebrow)
+	_reveal_title = _label("RESONANCE", &"title")
+	_reveal_title.name = "RevealTitle"
+	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reveal_box.add_child(_reveal_title)
+	_reveal_stars = HBoxContainer.new()
+	_reveal_stars.name = "RarityStars"
+	_reveal_stars.alignment = BoxContainer.ALIGNMENT_CENTER
+	_reveal_stars.add_theme_constant_override(&"separation", 8)
+	reveal_box.add_child(_reveal_stars)
+	for index: int in FIVE_STAR_RARITY:
+		var star := ResonanceStarType.new()
+		star.name = "Star_%d" % (index + 1)
+		star.set_state(Style.GOLD, false)
+		_reveal_stars.add_child(star)
+	_reveal_portrait = TextureRect.new()
+	_reveal_portrait.name = "RevealPortrait"
+	_reveal_portrait.custom_minimum_size = Vector2(330, 310)
+	_reveal_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_reveal_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_reveal_portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reveal_box.add_child(_reveal_portrait)
+	_reveal_result = _label("SIGNAL ACQUIRED", &"heading")
+	_reveal_result.name = "RevealResult"
+	_reveal_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_reveal_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	reveal_box.add_child(_reveal_result)
+	_reveal_lives = _label("1 LIFE READY", &"metric")
+	_reveal_lives.name = "RevealLives"
+	_reveal_lives.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reveal_box.add_child(_reveal_lives)
+	_reveal_pity = _label("5-star guaranteed within 10 pulls", &"detail")
+	_reveal_pity.name = "RevealPity"
+	_reveal_pity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reveal_box.add_child(_reveal_pity)
+	_skip_button = Button.new()
+	_skip_button.name = "SkipRevealButton"
+	_skip_button.text = "SKIP REVEAL"
+	_skip_button.pressed.connect(_finish_reveal)
+	Style.apply_button(_skip_button, &"quiet")
+	reveal_box.add_child(_skip_button)
+
+
 func _refresh() -> void:
 	if _game == null or not bool(_game.get("campaign_active")) or _game.get("campaign") == null:
 		_marks_label.text = "CAMPAIGN OFFLINE"
 		_pull_button.text = "PULL UNAVAILABLE"
 		_pull_button.disabled = true
+		_back_button.disabled = _is_revealing
 		Style.apply_button(_pull_button, &"disabled")
 		_status_label.text = "Start or continue a campaign to access premium resonance."
 		return
 	var projection: Dictionary = _game.get("campaign").runtime_projection()
 	var marks := int(projection["marks"])
 	var cost := int(projection["premium_pull_cost"])
+	var pity_streak := int(projection.get("premium_pity_streak", 0))
+	var guarantee_in := int(projection.get("premium_guarantee_in", HARD_PITY_WINDOW))
 	_marks_label.text = "%d MARKS" % marks
 	_pull_button.text = "RESONATE • %d MARKS" % cost
 	var attempt_pending := bool(projection.get("attempt_pending", false))
-	_pull_button.disabled = marks < cost or attempt_pending
+	_pull_button.disabled = marks < cost or attempt_pending or _is_revealing
+	_back_button.disabled = _is_revealing
 	Style.apply_button(_pull_button, &"disabled" if _pull_button.disabled else &"gold")
+	_pity_label.text = "5-STAR GUARANTEED IN %d %s" % [
+		guarantee_in, "PULL" if guarantee_in == 1 else "PULLS",
+	]
+	for index: int in _pity_segments.get_child_count():
+		var segment := _pity_segments.get_child(index) as ColorRect
+		segment.color = Style.GOLD if index < pity_streak else Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
 	if attempt_pending:
 		_status_label.text = "Resolve the active operation before using premium resonance."
 	elif marks < cost:
@@ -142,12 +306,18 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.custom_minimum_size = Vector2(280, 360)
+	panel.custom_minimum_size = Vector2(280, 380)
 	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else &"quiet")
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 9)
 	panel.add_child(box)
+	var rarity := int(catalog.get("rarity", 4))
+	var rarity_label := _label("%d-STAR PREMIUM" % rarity, &"eyebrow")
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rarity_label.add_theme_color_override(&"font_color", Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN)
+	box.add_child(rarity_label)
 	var portrait := TextureRect.new()
+	portrait.name = "Portrait"
 	portrait.texture = Art.texture(StringName(catalog["portrait_asset_id"]))
 	portrait.custom_minimum_size = Vector2(220, 210)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -189,16 +359,22 @@ func _apply_responsive_layout() -> void:
 	_hero_grid.columns = 1 if portrait else 3
 	_header_grid.columns = 1 if portrait else 3
 	_action_grid.columns = 1 if portrait else 2
-	_marks_label.horizontal_alignment = (
-		HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
-	)
+	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
 	var side_margin := 18 if portrait else 42
 	_screen_margin.add_theme_constant_override(&"margin_left", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
+	if _reveal_panel != null:
+		_reveal_panel.custom_minimum_size.x = 340 if portrait else 520
+		_reveal_panel.custom_minimum_size.y = 620 if portrait else 650
+	if _reveal_portrait != null:
+		_reveal_portrait.custom_minimum_size.y = 280 if portrait else 310
 
 
 func _on_pull_pressed() -> void:
+	if _is_revealing:
+		_finish_reveal()
+		return
 	_pull_button.disabled = true
 	_status_label.text = "Aligning the reliquary signal…"
 	var committed: Dictionary = _game.call("pull_premium_hero")
@@ -208,25 +384,134 @@ func _on_pull_pressed() -> void:
 		return
 	var result: Dictionary = committed.get("result", {})
 	var pull: Dictionary = result.get("premium_pull", {})
-	var callsign := _callsign_for(String(pull.get("premium_id", "")))
-	if bool(pull.get("new_hero", false)):
-		_status_label.text = "SIGNAL ACQUIRED — %s joins with 1 life." % callsign
-	elif bool(pull.get("revived", false)):
-		_status_label.text = "RESONANCE RESTORED — %s returns with 1 life." % callsign
-	else:
-		_status_label.text = "DUPLICATE RESONANCE — %s gains +1 life (%d total)." % [
-			callsign, int(pull.get("lives_after", 0)),
-		]
 	_refresh()
+	_begin_reveal(pull)
+
+
+func _begin_reveal(pull: Dictionary) -> void:
+	_pending_pull = pull.duplicate(true)
+	_is_revealing = true
+	_pull_button.disabled = true
+	_back_button.disabled = true
+	var row := _pool_row(String(pull.get("premium_id", "")))
+	var callsign := String(row.get("callsign", pull.get("premium_id", "Unknown Signal")))
+	var rarity := int(pull.get("rarity", row.get("rarity", 4)))
+	var accent := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
+	_reveal_layer.visible = true
+	_reveal_layer.modulate.a = 0.0
+	_reveal_shade.color = Color(0.035, 0.025, 0.01, 0.96) if rarity == FIVE_STAR_RARITY else Color(0.01, 0.025, 0.05, 0.94)
+	_reveal_panel.scale = Vector2(0.96, 0.96)
+	_reveal_panel.modulate = Color(1, 1, 1, 0)
+	_reveal_portrait.texture = Art.texture(StringName(row.get("portrait_asset_id", "")))
+	_reveal_portrait.modulate = Color(1, 1, 1, 0)
+	_reveal_eyebrow.text = "GUARANTEE FULFILLED" if bool(pull.get("pity_forced", false)) else "SIGNAL ACQUIRED"
+	_reveal_eyebrow.add_theme_color_override(&"font_color", accent)
+	_reveal_title.text = "%d-STAR RESONANCE" % rarity
+	_reveal_title.add_theme_color_override(&"font_color", accent)
+	_reveal_result.text = "%s — %s" % [callsign, _result_kind(pull)]
+	_reveal_result.add_theme_color_override(&"font_color", accent)
+	_reveal_lives.text = "%d %s READY" % [
+		int(pull.get("lives_after", 1)),
+		"LIFE" if int(pull.get("lives_after", 1)) == 1 else "LIVES",
+	]
+	_reveal_pity.text = "Next 5-star guaranteed in %d %s" % [
+		int(pull.get("guarantee_in_after", HARD_PITY_WINDOW)),
+		"pull" if int(pull.get("guarantee_in_after", HARD_PITY_WINDOW)) == 1 else "pulls",
+	]
+	for index: int in _reveal_stars.get_child_count():
+		var star := _reveal_stars.get_child(index) as ResonanceStar
+		star.set_state(accent, false)
+	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
+	_reveal_burst.rotation = -0.08
+	call_deferred("_center_reveal_pivot")
+	_kill_reveal_tween()
+	if reduced_motion or bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)):
+		_reveal_layer.modulate.a = 1.0
+		_reveal_panel.modulate.a = 1.0
+		_reveal_panel.scale = Vector2.ONE
+		_reveal_portrait.modulate.a = 1.0
+		_ignite_stars(rarity)
+		_skip_button.grab_focus()
+		return
+	_reveal_tween = create_tween()
+	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
+	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
+	_reveal_tween.tween_callback(_ignite_stars.bind(rarity))
+	_reveal_tween.tween_interval(0.24)
+	_reveal_tween.tween_property(_reveal_panel, "modulate:a", 1.0, 0.16)
+	_reveal_tween.parallel().tween_property(_reveal_panel, "scale", Vector2.ONE, 0.32).set_trans(Tween.TRANS_BACK)
+	_reveal_tween.parallel().tween_property(_reveal_portrait, "modulate:a", 1.0, 0.32)
+	_reveal_tween.tween_interval(0.24)
+	_reveal_tween.tween_callback(_skip_button.grab_focus)
+
+
+func _ignite_stars(rarity: int) -> void:
+	for index: int in _reveal_stars.get_child_count():
+		var star := _reveal_stars.get_child(index) as ResonanceStar
+		var lit := index < rarity
+		var color := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
+		star.set_state(color, lit)
+
+
+func _finish_reveal() -> void:
+	if not _is_revealing:
+		return
+	_kill_reveal_tween()
+	var final_copy := _result_copy(_pending_pull)
+	_is_revealing = false
+	_reveal_layer.visible = false
+	_reveal_layer.modulate.a = 0.0
+	_pending_pull = {}
+	_refresh()
+	_status_label.text = final_copy
+	_pull_button.grab_focus()
+
+
+func _kill_reveal_tween() -> void:
+	if _reveal_tween != null and _reveal_tween.is_valid():
+		_reveal_tween.kill()
+	_reveal_tween = null
+
+
+func _center_reveal_pivot() -> void:
+	if _reveal_panel != null:
+		_reveal_panel.pivot_offset = _reveal_panel.size * 0.5
+
+
+func _result_kind(pull: Dictionary) -> String:
+	if bool(pull.get("new_hero", false)):
+		return "NEW HERO"
+	if bool(pull.get("revived", false)):
+		return "REVIVED"
+	return "LIFE +1"
+
+
+func _result_copy(pull: Dictionary) -> String:
+	var callsign := _callsign_for(String(pull.get("premium_id", "")))
+	var rarity := int(pull.get("rarity", 4))
+	var guarantee := int(pull.get("guarantee_in_after", HARD_PITY_WINDOW))
+	var prefix := "%d-STAR" % rarity
+	if bool(pull.get("new_hero", false)):
+		return "%s SIGNAL — %s joins with 1 life. Next 5-star in %d pulls." % [prefix, callsign, guarantee]
+	if bool(pull.get("revived", false)):
+		return "%s RESTORED — %s returns with 1 life. Next 5-star in %d pulls." % [prefix, callsign, guarantee]
+	return "%s DUPLICATE — %s gains +1 life (%d total). Next 5-star in %d pulls." % [
+		prefix, callsign, int(pull.get("lives_after", 0)), guarantee,
+	]
+
+
+func _pool_row(premium_id: String) -> Dictionary:
+	if _game == null or _game.get("campaign") == null:
+		return {}
+	for row: Dictionary in _game.get("campaign").runtime_projection()["premium_pool"]:
+		if row["premium_id"] == premium_id:
+			return row
+	return {}
 
 
 func _callsign_for(premium_id: String) -> String:
-	if _game == null or _game.get("campaign") == null:
-		return premium_id
-	for row: Dictionary in _game.get("campaign").runtime_projection()["premium_pool"]:
-		if row["premium_id"] == premium_id:
-			return String(row["callsign"])
-	return premium_id
+	return String(_pool_row(premium_id).get("callsign", premium_id))
 
 
 func _class_name(class_id: String) -> String:
@@ -245,6 +530,9 @@ func _error_copy(code: StringName) -> String:
 
 
 func _on_back_pressed() -> void:
+	if _is_revealing:
+		_finish_reveal()
+		return
 	if _game != null and _game.has_method("open_staging"):
 		_game.call("open_staging")
 

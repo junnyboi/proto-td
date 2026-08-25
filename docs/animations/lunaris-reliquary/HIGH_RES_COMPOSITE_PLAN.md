@@ -22,9 +22,9 @@ Every character remains visibly adult. Facial landmarks, eye color, costume cons
 
 ## Runtime architecture
 
-Godot renders the pristine 2560×1440 texture as the base. The generated video is composited above it with a custom CanvasItem shader that applies only controlled low-frequency motion and color deltas while restoring high-frequency luminance detail from the base texture. High-detail regions therefore inherit the loading image’s edge quality rather than the video codec’s softened reconstruction.
+The pristine 2560×1440 loading texture is now a startup fallback only. It remains visible while the Ogg Theora stream decodes its first frame, then the title controller hides it as soon as playback position advances beyond zero.
 
-The same 16:9 cover rectangle is applied to both layers in landscape and portrait. The existing title UI, Astra Memoriam music lifecycle, Start behavior, locale controls, and loading-screen artwork remain unchanged.
+The animated background renders at **100% opacity** through a video-only unsharp-mask shader. The shader samples only the current video frame and never samples or blends the static artwork, so moving characters cannot reveal a doubled or ghosted pose behind them. The same 16:9 cover rectangle is applied in landscape and portrait. The existing title UI, Astra Memoriam music lifecycle, Start behavior, locale controls, and loading-screen artwork remain unchanged.
 
 ## Acceptance targets
 
@@ -47,3 +47,15 @@ The refreshed managed Web pack loads successfully under the standard `?from_webd
 Later browser observations show distinct forward cycle states without a freeze or ping-pong reversal. The commander’s loose hair, hand-side strands, eyes, and mouth softness change; the swordsman’s ponytail silhouette shifts; the astrologer’s curls and eyelids move independently. The high-resolution base continues to preserve clean linework and architecture detail through those states.
 
 The browser console remains empty after multiple cycles: no shader, Theora decoder, resource, script, null-child, or animation errors are emitted. Activating Start stops the composite title and Astra Memoriam cleanly and enters the synchronized Company Command screen with the latest faction heraldry and premium staging work intact.
+
+## Full-opacity handoff validation
+
+A deterministic rendered-scene probe confirms the fallback is hidden after the first decoded frame, the video remains playing with opacity exactly `1.0`, and the active shader contains no static-base sampler. Two native 1920×1080 frames sampled at different cycle positions show a single clean silhouette for every character: the earlier astral-haze state and later clear state both contain no doubled faces, hair, hands, costumes, or architecture. The motion stream remains independently animated while the fallback stays hidden.
+
+The 720×1280 portrait capture also shows a single full-opacity animated character image with no static pose visible behind the moving hair, face, hand, or costume. The 16:9 cover crop, title hierarchy, Start control, seed, and locale selector remain complete. The automated Enter transition completed without parser, shader, video, music, or navigation errors; the saved post-transition frame is a valid 720×1280 PNG, although one subsequent sandbox image-view request encountered a transient DNS-resolution failure.
+
+The refreshed managed Web pack downloads and reaches the in-engine Lunaris loading sequence successfully. One browser-view request briefly reset to `about:blank`; reopening the same preview route recovered normally, and the 100% loading frame renders with the expected static artwork before the title video handoff.
+
+Two later Web title observations confirm the fallback has been removed: the commander moves from open eyes to a closed-eye expression, hair and aura positions change, and every character remains a single fully opaque silhouette. No static face, hair, hand, garment, or architecture pose is visible behind the animated frame in either cycle state.
+
+The browser console remains empty after the fallback handoff and multiple animated cycles. Activating Start stops the video and Astra Memoriam cleanly and enters the synchronized Company Command screen without leaving any title or fallback layer behind.

@@ -153,6 +153,24 @@ static func apply_label(label: Label, role: StringName) -> void:
 	label.add_theme_constant_override(&"outline_size", 0)
 
 
+static func apply_line_edit(field: LineEdit, invalid: bool = false) -> void:
+	var border := DANGER if invalid else Color(CYAN.r, CYAN.g, CYAN.b, 0.52)
+	field.add_theme_stylebox_override(&"normal", _button_box(GLASS_SOFT, border, 1))
+	field.add_theme_stylebox_override(
+		&"focus", _button_box(Color(CYAN.r, CYAN.g, CYAN.b, 0.08), GOLD, 2),
+	)
+	field.add_theme_stylebox_override(
+		&"read_only", _button_box(Color(0.12, 0.16, 0.2, 0.78), GOLD_DIM, 1),
+	)
+	field.add_theme_color_override(&"font_color", IVORY)
+	field.add_theme_color_override(&"font_selected_color", INK_DEEP)
+	field.add_theme_color_override(&"font_uneditable_color", MUTED)
+	field.add_theme_color_override(&"caret_color", GOLD)
+	field.add_theme_color_override(&"selection_color", CYAN_DIM)
+	field.add_theme_color_override(&"placeholder_color", MUTED)
+	field.add_theme_font_size_override(&"font_size", 18)
+
+
 static func apply_progress(progress: ProgressBar) -> void:
 	progress.add_theme_stylebox_override(
 		&"background", _progress_box(Color(0.22, 0.3, 0.36, 0.64)),
