@@ -50,6 +50,11 @@ const ERROR_KEYS := {
 	&"invalid_runtime_mutation": &"ui.training.error.integrity",
 	&"promotion_retry_pending": &"ui.training.error.save_pending",
 	&"no_promotion_retry": &"ui.training.error.invalid_request",
+	&"invalid_callsign": &"ui.rename.error.invalid",
+	&"duplicate_callsign": &"ui.rename.error.duplicate",
+	&"callsign_unchanged": &"ui.rename.error.unchanged",
+	&"premium_name_locked": &"ui.rename.error.premium_locked",
+	&"invalid_campaign_state": &"ui.training.error.integrity",
 }
 const ERROR_FALLBACKS := {
 	&"invalid_argument_type": "Training request was invalid.",
@@ -78,6 +83,11 @@ const ERROR_FALLBACKS := {
 	&"duplicate_authority_mismatch": "The saved training receipt could not be authenticated.",
 	&"invalid_runtime_mutation": "Training authority is unavailable.",
 	&"promotion_retry_pending": "The previous save must be retried before leaving.",
+	&"invalid_callsign": "Enter a name from 1 to 20 characters without control characters.",
+	&"duplicate_callsign": "Another unit already uses that name.",
+	&"callsign_unchanged": "Enter a different name.",
+	&"premium_name_locked": "Premium hero names are fixed.",
+	&"invalid_campaign_state": "The roster could not be authenticated.",
 }
 const CLASS_LABELS := {
 	"shock_trooper": "Shock Trooper",
@@ -111,6 +121,11 @@ var _choose_path: AetheriaButtonType
 var _review_confirm: AetheriaButtonType
 var _review_error: AetheriaLabelType
 var _return_mission: AetheriaButtonType
+var _rename_row: BoxContainer
+var _rename_input: LineEdit
+var _rename_action: AetheriaButtonType
+var _rename_error: AetheriaLabelType
+var _rename_dispatching := false
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
 
@@ -206,7 +221,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_clear_page()
 	_page.add_child(_header(
 		"TrainingTitle", _t(&"ui.training.title", "TRAINING"),
-			_t(&"ui.training.choose_recruit", "Choose a recruit to train."),
+			_t(&"ui.training.manage_personnel", "Manage callsigns and training paths."),
 		))
 	var roster_error: AetheriaLabelType = null
 	if not String(error_code).is_empty():
@@ -321,6 +336,7 @@ func _build_inspector() -> AetheriaPanelType:
 	column.add_child(_label("AtelierEyebrow", "SELECTED OPERATOR", &"eyebrow"))
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
+		column.add_child(_build_rename_panel(selected))
 		var dossier := BoxContainer.new()
 		dossier.name = "SelectedOperatorDossier"
 		dossier.add_theme_constant_override(&"separation", 16)
@@ -388,6 +404,122 @@ func _build_inspector() -> AetheriaPanelType:
 		&"eyebrow",
 	))
 	return panel
+
+
+func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
+	var panel := AetheriaPanelType.new()
+	panel.name = "RenameUnitPanel"
+	panel.apply_role(&"hud")
+	LunarisOpsType.apply_panel(panel, &"quiet")
+	var column := VBoxContainer.new()
+	column.name = "RenameUnitColumn"
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override(&"separation", 8)
+	column.add_child(_label(
+		"RenameUnitHeading", _t(&"ui.rename.heading", "FIELD CALLSIGN"), &"heading",
+	))
+	if not bool(summary.get("can_rename", false)):
+		var locked_key := (
+			&"ui.rename.premium_locked"
+			if bool(summary.get("is_premium", false))
+			else &"ui.rename.not_ready"
+		)
+		var locked_fallback := (
+			"Premium hero names are fixed."
+			if bool(summary.get("is_premium", false))
+			else "Only ready non-premium units can be renamed."
+		)
+		column.add_child(_label(
+			"RenameUnitLocked", _t(locked_key, locked_fallback), &"dense_detail",
+		))
+		panel.add_child(column)
+		return panel
+	column.add_child(_label(
+		"RenameUnitGuidance",
+		_t(&"ui.rename.guidance", "Choose a unique name of 1–20 characters."),
+		&"dense_detail",
+	))
+	_rename_row = BoxContainer.new()
+	_rename_row.name = "RenameUnitControls"
+	_rename_row.vertical = _layout_mode == &"portrait"
+	_rename_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_row.add_theme_constant_override(&"separation", 10)
+	_rename_input = LineEdit.new()
+	_rename_input.name = "RenameUnitInput"
+	_rename_input.text = String(summary["callsign"])
+	_rename_input.placeholder_text = _t(&"ui.rename.placeholder", "Enter callsign")
+	_rename_input.max_length = 20
+	_rename_input.clear_button_enabled = true
+	_rename_input.select_all_on_focus = true
+	_rename_input.custom_minimum_size = Vector2(280.0, 58.0)
+	_rename_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_input.text_changed.connect(_on_rename_text_changed)
+	_rename_input.text_submitted.connect(_on_rename_submitted)
+	LunarisOpsType.apply_line_edit(_rename_input)
+	_bind_focus_scroll(_rename_input, _dialog_scroll)
+	_rename_row.add_child(_rename_input)
+	_rename_action = _button(
+		"RenameUnitAction", _t(&"ui.rename.action", "Rename"), false, &"disabled",
+	)
+	_rename_action.custom_minimum_size = Vector2(180.0, 58.0)
+	_rename_action.pressed.connect(_submit_rename)
+	_rename_row.add_child(_rename_action)
+	column.add_child(_rename_row)
+	_rename_error = _label("RenameUnitError", "", &"dense_detail")
+	_rename_error.custom_minimum_size.y = 24.0
+	column.add_child(_rename_error)
+	panel.add_child(column)
+	return panel
+
+
+func _on_rename_text_changed(value: String) -> void:
+	if _rename_error != null:
+		_rename_error.text = ""
+	if _rename_input != null:
+		LunarisOpsType.apply_line_edit(_rename_input)
+	var summary := _summary_by_id(_selected_hero_id)
+	var candidate := value.strip_edges()
+	var enabled := (
+		not _rename_dispatching
+		and not summary.is_empty()
+		and bool(summary.get("can_rename", false))
+		and not candidate.is_empty()
+		and candidate.length() <= 20
+		and candidate != String(summary["callsign"])
+	)
+	if _rename_action != null:
+		_rename_action.disabled = not enabled
+		_rename_action.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+		LunarisOpsType.apply_button(
+			_rename_action, &"primary" if enabled else &"disabled",
+		)
+
+
+func _on_rename_submitted(_value: String) -> void:
+	_submit_rename()
+
+
+func _submit_rename() -> void:
+	if _rename_dispatching or _rename_input == null or _rename_action == null:
+		return
+	if _rename_action.disabled:
+		return
+	_rename_dispatching = true
+	_rename_action.disabled = true
+	_rename_action.focus_mode = Control.FOCUS_NONE
+	LunarisOpsType.apply_button(_rename_action, &"disabled")
+	var committed: Dictionary = Game.rename_hero(_selected_hero_id, _rename_input.text)
+	_rename_dispatching = false
+	if not committed["accepted"]:
+		var error_code := StringName(committed.get("error_code", &"invalid_callsign"))
+		_rename_error.text = _error_text(error_code)
+		LunarisOpsType.apply_line_edit(_rename_input, true)
+		_on_rename_text_changed(_rename_input.text)
+		_rename_error.text = _error_text(error_code)
+		_rename_input.grab_focus.call_deferred()
+		return
+	_refresh_roster()
+	_show_roster()
 
 
 func _show_paths() -> void:
@@ -730,6 +862,8 @@ func _apply_roster_layout() -> void:
 		scroll.custom_minimum_size.y = 300.0 if _layout_mode == &"portrait" else 250.0
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
+	if _rename_row != null:
+		_rename_row.vertical = _layout_mode == &"portrait"
 
 
 func _apply_paths_layout() -> void:
@@ -844,6 +978,11 @@ func _clear_page() -> void:
 	_review_confirm = null
 	_review_error = null
 	_return_mission = null
+	_rename_row = null
+	_rename_input = null
+	_rename_action = null
+	_rename_error = null
+	_rename_dispatching = false
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -1018,6 +1157,10 @@ func _focusable_controls() -> Array[Control]:
 			var button := node as BaseButton
 			if button.visible and not button.disabled and button.focus_mode != Control.FOCUS_NONE:
 				controls.append(button)
+		elif node is LineEdit:
+			var field := node as LineEdit
+			if field.visible and field.editable and field.focus_mode != Control.FOCUS_NONE:
+				controls.append(field)
 	return controls
 
 

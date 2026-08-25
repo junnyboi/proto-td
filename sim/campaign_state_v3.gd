@@ -10,6 +10,7 @@ const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
 const PromotionScript := preload("res://sim/campaign_v3_promotion.gd")
 const AttemptsScript := preload("res://sim/campaign_v3_attempts.gd")
 const RecruitmentScript := preload("res://sim/campaign_v3_recruitment.gd")
+const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
@@ -227,6 +228,17 @@ func pull_premium_hero(
 	expected_save_revision: Variant,
 ) -> Dictionary:
 	return GachaScript.execute(self, command_id, expected_save_revision)
+
+
+func rename_hero(
+	command_id: Variant,
+	expected_save_revision: Variant,
+	hero_id: Variant,
+	callsign: Variant,
+) -> Dictionary:
+	return RenamingScript.execute(
+		self, command_id, expected_save_revision, hero_id, callsign,
+	)
 
 
 func restore_factory() -> Callable:
