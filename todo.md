@@ -11,5 +11,5 @@
 - [x] Surface pity progress, odds, costs, reward outcome, and next guarantee in the gacha UI.
 - [x] Add deterministic migration, pity, economy, animation-state, and UI regressions.
 - [x] Run focused tests, full headless import/boot, Xvfb desktop and portrait validation, and error scans.
-- [ ] Fetch and integrate concurrent `master` changes, rerun both feature sets, and push directly to `origin/master`.
-- [ ] Export a matching Godot 4.7.2 Web bundle, refresh the existing preview, verify network/runtime integrity, and checkpoint the live version.
+- [x] Fetch and integrate concurrent `master` changes, rerun both feature sets, and push directly to `origin/master`.
+- [x] Export a matching Godot 4.7.2 Web bundle, refresh the existing preview, verify network/runtime integrity, and checkpoint the live version.

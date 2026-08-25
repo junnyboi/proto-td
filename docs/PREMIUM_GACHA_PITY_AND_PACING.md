@@ -86,6 +86,10 @@ The delivered simulation extends the canonical campaign core, save migration, st
 | Bounded 120-frame boot | Pass |
 | Desktop native QA | Pass at 1280×720 |
 | Portrait native QA | Pass at 720×1280 |
+| Godot Web export | Pass from final master commit `0eeece4` |
+| Live Web pull | Pass: 40 Marks consumed, hero/life granted, pity advanced |
+| Web console/network | Pass: final PCK and WASM HTTP 200; no post-load console errors |
+| Published preview | Checkpoint `ab19a0a3` |
 
 The automated pity suite verifies the authored 2/40 five-star weight, a forced five-star on the tenth eligible pull after nine misses, natural five-star reset, pre-pity migration activation, 320 total first-clear Marks, 440 lifetime Marks including starting funds, exactly 11 funded pulls, and zero repeat-clear currency rewards. The reveal suite verifies the ten-segment meter, rarity cards, input lock, visible skip action, final result copy, and reduced-motion final state.
 
