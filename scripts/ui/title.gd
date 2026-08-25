@@ -24,6 +24,7 @@ const VOID := Color("071019")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.30
+const TITLE_UI_SCALE := 1.15
 
 var _backdrop: LunarisBackdropType = null
 var _entry_host: MarginContainer = null
@@ -113,7 +114,7 @@ func _build_screen() -> void:
 	_wordmark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_wordmark.add_theme_constant_override(&"outline_size", 12)
 	_wordmark.add_theme_color_override(&"font_outline_color", Color(VOID, 0.94))
-	StagingSkinType.apply_display_type(_wordmark, 66, IVORY, 650)
+	StagingSkinType.apply_display_type(_wordmark, _title_font_size(66), IVORY, 650)
 	_entry_stack.add_child(_wordmark)
 
 	var orbit_rule := HBoxContainer.new()
@@ -177,7 +178,7 @@ func _build_settings_overlay() -> void:
 	_settings_title = Label.new()
 	_settings_title.name = "SettingsTitle"
 	_settings_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	StagingSkinType.apply_display_type(_settings_title, 36, IVORY, 620)
+	StagingSkinType.apply_display_type(_settings_title, _title_font_size(36), IVORY, 620)
 	stack.add_child(_settings_title)
 	stack.add_child(_rule(Color(MOON_CYAN, 0.68)))
 
@@ -187,10 +188,10 @@ func _build_settings_overlay() -> void:
 	_locale_selector.set_vertical_layout(false)
 	stack.add_child(_locale_selector)
 	var locale_label := _locale_selector.get_node("LocaleLabel") as Label
-	StagingSkinType.apply_display_type(locale_label, 17, GOLD, 560)
+	StagingSkinType.apply_display_type(locale_label, _title_font_size(17), GOLD, 560)
 	var locale_list := _locale_selector.get_node("LocaleList") as ItemList
-	locale_list.custom_minimum_size = Vector2(0.0, 60.0)
-	StagingSkinType.apply_display_type(locale_list, 20, IVORY, 560)
+	locale_list.custom_minimum_size = Vector2(0.0, _title_size(60.0))
+	StagingSkinType.apply_display_type(locale_list, _title_font_size(20), IVORY, 560)
 
 	_music_button = _settings_action("MusicButton")
 	_music_button.pressed.connect(_toggle_music)
@@ -208,11 +209,14 @@ func _build_settings_overlay() -> void:
 func _entry_button(node_name: String, primary: bool) -> Button:
 	var button := Button.new()
 	button.name = node_name
-	button.custom_minimum_size = Vector2(520.0 if primary else 430.0, 68.0 if primary else 58.0)
+	button.custom_minimum_size = Vector2(
+		_title_size(520.0 if primary else 430.0),
+		_title_size(68.0 if primary else 58.0),
+	)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	StagingSkinType.apply_display_type(button, 24 if primary else 20, IVORY, 600)
+	StagingSkinType.apply_display_type(button, _title_font_size(24 if primary else 20), IVORY, 600)
 	button.add_theme_color_override(&"font_focus_color", BRIGHT_GOLD if primary else MOON_CYAN)
 	button.add_theme_stylebox_override(
 		&"normal",
@@ -242,10 +246,10 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 func _settings_action(node_name: String) -> Button:
 	var button := Button.new()
 	button.name = node_name
-	button.custom_minimum_size = Vector2(0.0, 54.0)
+	button.custom_minimum_size = Vector2(0.0, _title_size(54.0))
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	StagingSkinType.apply_display_type(button, 17, IVORY, 560)
+	StagingSkinType.apply_display_type(button, _title_font_size(17), IVORY, 560)
 	button.add_theme_color_override(&"font_focus_color", MOON_CYAN)
 	button.add_theme_stylebox_override(
 		&"normal",
@@ -290,6 +294,14 @@ func _rule(color: Color) -> ColorRect:
 	rule.color = color
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return rule
+
+
+func _title_size(value: float) -> float:
+	return value * TITLE_UI_SCALE
+
+
+func _title_font_size(value: int) -> int:
+	return roundi(float(value) * TITLE_UI_SCALE)
 
 
 func _on_start_pressed() -> void:
@@ -366,17 +378,26 @@ func _apply_responsive_layout() -> void:
 		return
 	_backdrop.fit_top_cover(viewport_size)
 	var portrait := viewport_size.y > viewport_size.x
-	var entry_width := minf(viewport_size.x - 48.0, 660.0 if not portrait else 520.0)
-	var entry_height := 300.0 if not portrait else 276.0
+	var entry_width := minf(
+		viewport_size.x - 48.0,
+		_title_size(660.0 if not portrait else 520.0),
+	)
+	var entry_height := _title_size(300.0 if not portrait else 276.0)
 	var entry_top := minf(viewport_size.y - entry_height - 28.0, viewport_size.y * (0.58 if not portrait else 0.66))
 	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(24.0, entry_top))
 	_entry_host.size = Vector2(entry_width, entry_height)
-	_wordmark.add_theme_font_size_override(&"font_size", 66 if not portrait else 46)
-	_start_button.custom_minimum_size = Vector2(minf(entry_width, 520.0), 68.0 if not portrait else 60.0)
-	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.82, 430.0), 58.0 if not portrait else 54.0)
+	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(66 if not portrait else 46))
+	_start_button.custom_minimum_size = Vector2(
+		minf(entry_width, _title_size(520.0)),
+		_title_size(68.0 if not portrait else 60.0),
+	)
+	_settings_button.custom_minimum_size = Vector2(
+		minf(entry_width * 0.82, _title_size(430.0)),
+		_title_size(58.0 if not portrait else 54.0),
+	)
 
 	var panel_width := minf(viewport_size.x - 40.0, 640.0)
 	var panel_height := minf(viewport_size.y - 56.0, 560.0)
 	_settings_panel.position = Vector2((viewport_size.x - panel_width) * 0.5, (viewport_size.y - panel_height) * 0.5)
 	_settings_panel.size = Vector2(panel_width, panel_height)
-	_settings_title.add_theme_font_size_override(&"font_size", 36 if not portrait else 30)
+	_settings_title.add_theme_font_size_override(&"font_size", _title_font_size(36 if not portrait else 30))
