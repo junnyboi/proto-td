@@ -83,7 +83,10 @@ func _release_title(title: Node, game: Node) -> void:
 func _clean_up(music: Node, game: Node) -> void:
 	game.set("content", null)
 	music.call("stop")
-	for _frame: int in range(4):
+	# The test starts and stops the same Ogg stream across multiple title sessions.
+	# Leave enough idle frames for the audio server to release its playback object
+	# before the standalone SceneTree exits and runs the resource-leak scan.
+	for _frame: int in range(12):
 		await process_frame
 
 
