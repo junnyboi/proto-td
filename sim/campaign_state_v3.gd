@@ -79,10 +79,23 @@ func runtime_projection() -> Dictionary:
 	for row: Dictionary in _data["stage_stars"]:
 		stars[StringName(row["stage_id"])] = int(row["stars"])
 	var heroes: Array[Dictionary] = []
+	var fallen_heroes: Array[Dictionary] = []
 	for hero: Dictionary in _data["heroes"]:
 		if hero["life_status"] == "ready":
 			heroes.append(hero.duplicate(true))
+		else:
+			fallen_heroes.append(hero.duplicate(true))
 	heroes.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return (
+				int(a["recruitment_index"]) < int(b["recruitment_index"])
+				or (
+					int(a["recruitment_index"]) == int(b["recruitment_index"])
+					and String(a["hero_id"]) < String(b["hero_id"])
+				)
+			)
+	)
+	fallen_heroes.sort_custom(
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return (
 				int(a["recruitment_index"]) < int(b["recruitment_index"])
@@ -122,6 +135,8 @@ func runtime_projection() -> Dictionary:
 		"premium_heroes": premium_heroes,
 		"stage_ids": stage_ids,
 		"ready_heroes": heroes,
+		"fallen_heroes": fallen_heroes,
+		"memorial": (_data["memorial"] as Array).duplicate(true),
 		"unlocked_operators": operators,
 		"unlocked_traps": traps,
 		"unlocked_spells": spells,

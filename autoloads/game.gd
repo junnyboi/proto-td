@@ -7,6 +7,7 @@ const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const TRAINING_SCENE_PATH := "res://scenes/training.tscn"
 const GACHA_SCENE_PATH := "res://scenes/gacha.tscn"
+const VAHALLA_SCENE_PATH := "res://scenes/vahalla.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -438,6 +439,10 @@ func _leave_training() -> void:
 
 func open_gacha() -> void:
 	_swap_content.call_deferred(GACHA_SCENE_PATH)
+
+
+func open_vahalla() -> void:
+	_swap_content.call_deferred(VAHALLA_SCENE_PATH)
 
 
 func open_stage_select() -> void:

@@ -149,6 +149,11 @@
     "ui.results.train_recruits": "训练新兵",
     "ui.results.train_short": "训练",
     "ui.results.training_available": "{count} 名新兵可接受训练。",
+    "ui.roster.empty": "没有符合当前筛选条件的士兵。",
+    "ui.roster.filter.all": "全部",
+    "ui.roster.filter.all_factions": "全部阵营",
+    "ui.roster.tab.active": "现役",
+    "ui.roster.tab.fallen": "阵亡",
     "ui.save.write_failed": "战役无法保存。",
     "ui.squad.briefing.clue": "战地线索",
     "ui.squad.briefing.human_reason": "为何重要",
@@ -191,6 +196,8 @@
     "ui.staging.training": "训练",
     "ui.staging.training_short": "训练",
     "ui.staging.training_unavailable": "训练 — 不可用",
+    "ui.staging.vahalla": "瓦哈拉",
+    "ui.staging.vahalla_short": "瓦哈拉",
     "ui.title.seed": "种子 {seed}",
     "ui.title.start": "开始游戏",
     "ui.training.ack_entry": "{callsign} 转为 {class_name}",
@@ -299,6 +306,16 @@
     "ui.tutorial.route.body": "敌人从红色入口进入，沿发光路径前往蓝色基地。第一战允许 3 名敌人漏过；第 4 名会导致任务失败。",
     "ui.tutorial.route.step": "1 / 4  路线",
     "ui.tutorial.route.title": "观察路线",
-    "ui.tutorial.skip": "跳过教程"
+    "ui.tutorial.skip": "跳过教程",
+    "ui.vahalla.back": "← 返回第33连队指挥部",
+    "ui.vahalla.empty": "此阵营没有已记录的阵亡士兵。",
+    "ui.vahalla.eyebrow": "月辉圣物院 • 英灵殿",
+    "ui.vahalla.fallen_count": "阵亡",
+    "ui.vahalla.honor": "致敬",
+    "ui.vahalla.honored": "已致敬",
+    "ui.vahalla.intro": "记录于此的士兵已无法部署，但他们的功绩永远属于第33连队。",
+    "ui.vahalla.record": "阵亡于 {stage} • {reason} • 第 {tick} 刻",
+    "ui.vahalla.record_unknown": "服役记录已封存",
+    "ui.vahalla.title": "瓦哈拉"
   }
 }

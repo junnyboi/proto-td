@@ -12,6 +12,8 @@ const TrainingSupportType := preload("res://scripts/ui/components/training_suppo
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
+const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
+const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const SHELL_SIZE := Vector2(1210.0, 660.0)
@@ -101,6 +103,9 @@ var _mode: StringName = &"roster"
 var _layout_mode: StringName = &"regular_landscape"
 var _roster_rows: Array[Dictionary] = []
 var _roster_buttons: Array[TrainingRosterRowType] = []
+var _filter_bar: RosterFilterBarType = null
+var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
+var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _path_cards: Array[PromotionPathCardType] = []
 var _selected_hero_id := ""
 var _selected_choice_id := ""
@@ -189,15 +194,9 @@ func _build_shell() -> void:
 
 func _refresh_roster() -> void:
 	_campaign = Game.campaign
-	_roster_rows = TrainingSupportType.roster(_campaign)
+	_roster_rows = RosterFilterType.annotate_all(TrainingSupportType.roster(_campaign))
 	if _selected_hero_id.is_empty() or _summary_by_id(_selected_hero_id).is_empty():
-		_selected_hero_id = ""
-		for summary: Dictionary in _roster_rows:
-			if bool(summary["can_promote"]):
-				_selected_hero_id = String(summary["hero_id"])
-				break
-		if _selected_hero_id.is_empty() and not _roster_rows.is_empty():
-			_selected_hero_id = String(_roster_rows[0]["hero_id"])
+		_select_first_visible()
 
 
 func _show_roster(error_code: StringName = &"") -> void:
@@ -230,6 +229,10 @@ func _show_roster(error_code: StringName = &"") -> void:
 	)
 	ready.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_page.add_child(ready)
+	_filter_bar = RosterFilterBarType.new()
+	_filter_bar.configure(_roster_rows, true, _filter_status, _filter_faction)
+	_filter_bar.filters_changed.connect(_on_filters_changed)
+	_page.add_child(_filter_bar)
 	var body := BoxContainer.new()
 	body.name = "TrainingRosterBody"
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -280,7 +283,16 @@ func _build_roster_list() -> ScrollContainer:
 	list.add_theme_constant_override(&"separation", 8)
 	scroll.add_child(list)
 	_roster_buttons.clear()
-	for summary: Dictionary in _roster_rows:
+	var visible_rows := _visible_roster_rows()
+	if visible_rows.is_empty():
+		var empty := _label(
+			"TrainingRosterEmpty",
+			_t(&"ui.roster.empty", "No soldiers match the selected roster filters."),
+			&"dense_detail",
+		)
+		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		list.add_child(empty)
+	for summary: Dictionary in visible_rows:
 		var row := TrainingRosterRowType.new()
 		row.name = "Recruit_%s" % summary["hero_id"]
 		row.configure(
@@ -494,6 +506,20 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 
 func _on_roster_selected(hero_id: String) -> void:
 	_selected_hero_id = hero_id
+	_show_roster()
+
+
+func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
+	_filter_status = status
+	_filter_faction = faction_id
+	var visible := _visible_roster_rows()
+	var selected_visible := false
+	for summary: Dictionary in visible:
+		if String(summary["hero_id"]) == _selected_hero_id:
+			selected_visible = true
+			break
+	if not selected_visible:
+		_selected_hero_id = String(visible[0]["hero_id"]) if not visible.is_empty() else ""
 	_show_roster()
 
 
@@ -728,6 +754,8 @@ func _apply_roster_layout() -> void:
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
 	if scroll != null:
 		scroll.custom_minimum_size.y = 300.0 if _layout_mode == &"portrait" else 250.0
+	if _filter_bar != null:
+		_filter_bar.set_compact(_layout_mode != &"regular_landscape")
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(_layout_mode != &"regular_landscape")
 
@@ -844,6 +872,7 @@ func _clear_page() -> void:
 	_review_confirm = null
 	_review_error = null
 	_return_mission = null
+	_filter_bar = null
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -851,6 +880,21 @@ func _summary_by_id(hero_id: String) -> Dictionary:
 		if summary["hero_id"] == hero_id:
 			return summary
 	return {}
+
+
+func _visible_roster_rows() -> Array[Dictionary]:
+	return RosterFilterType.filter_rows(_roster_rows, _filter_status, _filter_faction)
+
+
+func _select_first_visible() -> void:
+	_selected_hero_id = ""
+	var visible := _visible_roster_rows()
+	for summary: Dictionary in visible:
+		if bool(summary["can_promote"]):
+			_selected_hero_id = String(summary["hero_id"])
+			return
+	if not visible.is_empty():
+		_selected_hero_id = String(visible[0]["hero_id"])
 
 
 func _selected_can_promote() -> bool:
