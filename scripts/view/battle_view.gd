@@ -11,6 +11,7 @@ const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
 )
 const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutorial.gd")
+const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_overlay.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
@@ -70,6 +71,7 @@ var _deploy_bar: DeployBar = null
 var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
 var _tutorial: FirstStandTutorial = null
+var _map_navigation_overlay: MapNavigationOverlay = null
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
@@ -185,8 +187,14 @@ func _ready() -> void:
 	_controls.z_index = UI_OVERLAY_Z
 	add_child(_controls)
 	_controls.setup(candidate_model, self)
+	_map_navigation_overlay = MAP_NAVIGATION_OVERLAY_SCRIPT.new()
+	_map_navigation_overlay.name = "MapNavigationOverlay"
+	add_child(_map_navigation_overlay)
+	_map_navigation_overlay.recenter_requested.connect(_on_recenter_map_requested)
+	_map_navigation_overlay.setup()
 	model = candidate_model
 	_start_first_stand_tutorial()
+	_refresh_map_navigation_overlay()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
@@ -219,10 +227,12 @@ func _on_tutorial_hold_changed(held: bool) -> void:
 		juice_time_pop(&"first_stand_tutorial")
 	if _controls != null:
 		_controls.set_interaction_enabled(not held)
+	_refresh_map_navigation_overlay()
 
 
 func _on_tutorial_finished(_skipped: bool) -> void:
 	_tutorial = null
+	_refresh_map_navigation_overlay()
 
 
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
@@ -283,8 +293,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _grid_root == null or _map_navigation_blocked():
 		return
 	if _map_nav.handle_input(event):
+		if _map_navigation_overlay != null and _map_nav.is_dragging():
+			_map_navigation_overlay.notify_pan_used()
 		_apply_map_transform()
 		get_viewport().set_input_as_handled()
+
+
+func _on_recenter_map_requested() -> void:
+	if _map_navigation_blocked():
+		return
+	if _map_nav.recenter():
+		Sfx.play("ui_click")
+		_apply_map_transform()
+	_refresh_map_navigation_overlay()
 
 
 func _map_navigation_blocked() -> bool:
@@ -324,6 +345,7 @@ func _process(delta: float) -> void:
 			_map_nav.cancel_inertia()
 		elif _map_nav.advance_inertia(delta):
 			_apply_map_transform()
+	_refresh_map_navigation_overlay()
 	if model == null or _juice == null:
 		return
 	_enemy_anim_seconds += delta
@@ -622,6 +644,21 @@ func _apply_map_transform() -> void:
 	_grid_root.position = _map_nav.root_position()
 	if _juice != null:
 		_juice.refresh_base()
+	_refresh_map_navigation_overlay()
+
+
+func _refresh_map_navigation_overlay() -> void:
+	if _map_navigation_overlay == null or not is_instance_valid(_map_navigation_overlay):
+		return
+	var viewport := get_viewport_rect().size
+	var tutorial_holding := _tutorial != null and _tutorial.is_holding_battle()
+	_map_navigation_overlay.set_context(
+		viewport.y > viewport.x,
+		_map_nav.has_pan_range(),
+		not tutorial_holding,
+		_map_nav.is_centered(),
+		not _map_navigation_blocked(),
+	)
 
 
 ## Refit to the live viewport, clamp pan, then relayout screen-owned UI.
@@ -647,6 +684,9 @@ func _relayout() -> void:
 		_spell_bar.relayout()
 	if _controls != null:
 		_controls.relayout()
+	if _map_navigation_overlay != null:
+		_map_navigation_overlay.relayout()
+		_refresh_map_navigation_overlay()
 	if _tutorial != null and is_instance_valid(_tutorial):
 		_tutorial.relayout()
 	if _juice != null:
