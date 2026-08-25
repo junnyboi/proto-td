@@ -267,6 +267,8 @@ func record_result(result: int, stars: int) -> bool:
 		"leaks": int(accepted_outcome["leaks"]),
 		"kills": int(accepted_outcome["kills"]),
 		"rewards_granted": resolution["rewards_granted"].duplicate(true),
+		"marks_before": int(resolution["marks_before"]),
+		"marks_after": int(resolution["marks_after"]),
 		"class_entitlements_granted": (
 			resolution["class_entitlements_granted"].duplicate()
 		),

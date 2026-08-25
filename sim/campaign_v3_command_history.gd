@@ -30,6 +30,11 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	if not fresh["accepted"]:
 		return _reject(&"invalid_command_history")
 	var replay: Dictionary = fresh["value"]
+	replay["premium_pity_started_at_pull"] = int(data["premium_pity_started_at_pull"])
+	replay["premium_pity_streak"] = 0
+	replay["premium_marks_started_at_resolution"] = int(
+		data["premium_marks_started_at_resolution"]
+	)
 	for record: Dictionary in records:
 		if record["expected_save_revision"] != replay["save_revision"]:
 			return _reject(&"command_history_revision_mismatch")
@@ -329,6 +334,9 @@ static func _fresh_data(seed_value: int, generation: int, context: Dictionary) -
 			"next_attempt_id": 1,
 			"next_resolution_index": 1,
 			"next_premium_pull_index": 0,
+			"premium_pity_started_at_pull": 0,
+			"premium_pity_streak": 0,
+			"premium_marks_started_at_resolution": 1,
 			"marks": int(campaign["initial_marks"]),
 			"stage_stars": [],
 			"unlocked_traps": [],

@@ -21,7 +21,9 @@ const VERBS := [
 ]
 const PREMIUM_PULL_KEYS := [
 	"premium_id", "hero_id", "pull_index", "new_hero", "revived", "lives_before",
-	"lives_after", "pull_count_after", "marks_before", "marks_after", "save_revision",
+	"lives_after", "pull_count_after", "marks_before", "marks_after", "rarity",
+	"five_star", "pity_eligible", "pity_before", "pity_after", "pity_forced",
+	"guarantee_in_after", "save_revision",
 ]
 const HISTORY_PATH := "res://sim/campaign_v3_history.gd"
 const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
@@ -292,7 +294,8 @@ static func _normalize_receipt(
 				return _reject(&"invalid_command_receipt")
 			for key: String in [
 				"pull_index", "lives_before", "lives_after", "pull_count_after",
-				"marks_before", "marks_after", "save_revision",
+				"marks_before", "marks_after", "rarity", "pity_before", "pity_after",
+				"guarantee_in_after", "save_revision",
 			]:
 				if typeof(pull[key]) != TYPE_INT:
 					return _reject(&"invalid_command_receipt")
@@ -301,6 +304,9 @@ static func _normalize_receipt(
 				or not _is_hex(String(pull["hero_id"]), 16)
 				or typeof(pull["new_hero"]) != TYPE_BOOL
 				or typeof(pull["revived"]) != TYPE_BOOL
+				or typeof(pull["five_star"]) != TYPE_BOOL
+				or typeof(pull["pity_eligible"]) != TYPE_BOOL
+				or typeof(pull["pity_forced"]) != TYPE_BOOL
 				or not _in_range(pull["pull_index"], 0, U63_MAX - 1)
 				or not _in_range(pull["lives_before"], 0, 999)
 				or not _in_range(pull["lives_after"], 1, 999)
@@ -311,6 +317,28 @@ static func _normalize_receipt(
 				or not _in_range(pull["marks_after"], 0, 1_000_000_000)
 				or int(pull["marks_before"]) - int(pull["marks_after"])
 					!= int(context["campaign"]["premium_pull_cost"])
+				or int(pull["rarity"]) not in [4, 5]
+				or bool(pull["five_star"]) != (int(pull["rarity"]) == 5)
+				or not _in_range(pull["pity_before"], 0, 9)
+				or not _in_range(pull["pity_after"], 0, 9)
+				or not _in_range(pull["guarantee_in_after"], 1, 10)
+				or int(pull["guarantee_in_after"]) != 10 - int(pull["pity_after"])
+				or bool(pull["pity_eligible"]) != (
+					int(pull["pull_index"]) >= int(data["premium_pity_started_at_pull"])
+				)
+				or not bool(pull["pity_eligible"]) and (
+					int(pull["pity_before"]) != 0
+					or int(pull["pity_after"]) != 0
+					or bool(pull["pity_forced"])
+				)
+				or bool(pull["pity_eligible"]) and bool(pull["five_star"])
+					and int(pull["pity_after"]) != 0
+				or bool(pull["pity_eligible"]) and not bool(pull["five_star"])
+					and int(pull["pity_after"]) != int(pull["pity_before"]) + 1
+				or bool(pull["pity_forced"]) != (
+					bool(pull["pity_eligible"]) and int(pull["pity_before"]) == 9
+				)
+				or bool(pull["pity_forced"]) and not bool(pull["five_star"])
 				or pull["save_revision"] != save_revision
 				or bool(pull["new_hero"]) != (int(pull["pull_count_after"]) == 1)
 				or bool(pull["revived"])
@@ -321,6 +349,7 @@ static func _normalize_receipt(
 			var persisted := _hero_by_id(data["heroes"], String(pull["hero_id"]))
 			if (
 				premium_row.is_empty()
+				or int(premium_row.get("rarity", 0)) != int(pull["rarity"])
 				or persisted.is_empty()
 				or persisted.get("hero_kind") != "premium"
 				or persisted.get("premium_id") != pull["premium_id"]
