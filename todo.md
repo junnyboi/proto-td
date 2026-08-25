@@ -11,4 +11,4 @@
 - [x] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.
 - [x] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
-- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save definitive checkpoint `f74dd226`, and prepare the verified Publish-control handoff because no direct publish tool is exposed.
+- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `b938e9f9`, and verify deployment at `https://protohost-sqtjrsla.manus.space/`.
