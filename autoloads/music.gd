@@ -342,7 +342,8 @@ func _begin_pack_download(act: int) -> bool:
 	request.accept_gzip = false
 	request.body_size_limit = int(spec["bytes"]) + 1024
 	request.download_chunk_size = PACK_DOWNLOAD_CHUNK_BYTES
-	request.download_file = temp_path
+	if not OS.has_feature("web"):
+		request.download_file = temp_path
 	request.timeout = PACK_DOWNLOAD_TIMEOUT_SECONDS
 	request.request_completed.connect(_on_pack_request_completed.bind(act))
 	add_child(request)
@@ -361,7 +362,7 @@ func _on_pack_request_completed(
 	result: int,
 	response_code: int,
 	_headers: PackedStringArray,
-	_body: PackedByteArray,
+	body: PackedByteArray,
 	act: int,
 ) -> void:
 	var request := _pack_requests.get(act) as HTTPRequest
@@ -373,6 +374,10 @@ func _on_pack_request_completed(
 		_remove_file(temp_path)
 		_set_pack_state(act, PACK_STATE_FAILED)
 		print("MUSIC_CONTENT_PACK_DOWNLOAD_FAILED act=%d result=%d status=%d" % [act, result, response_code])
+		return
+	if not FileAccess.file_exists(temp_path) and not _write_pack_response(temp_path, body):
+		_set_pack_state(act, PACK_STATE_FAILED)
+		print("MUSIC_CONTENT_PACK_WRITE_FAILED act=%d bytes=%d" % [act, body.size()])
 		return
 	var spec: Dictionary = _pack_specs.get(act, {})
 	if spec.is_empty() or not _validate_pack_file(
@@ -424,6 +429,18 @@ func _validate_pack_file(path: String, expected_sha256: String, expected_bytes: 
 	if not expected_sha256.is_empty() and FileAccess.get_sha256(path).to_lower() != expected_sha256.to_lower():
 		return false
 	return true
+
+
+func _write_pack_response(path: String, body: PackedByteArray) -> bool:
+	if path.is_empty() or body.is_empty():
+		return false
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_buffer(body)
+	file.flush()
+	file.close()
+	return FileAccess.file_exists(path) and FileAccess.get_size(path) == body.size()
 
 
 func _remove_file(path: String) -> void:

@@ -17,6 +17,19 @@ func _run() -> void:
 	if music == null:
 		_finish()
 		return
+	var response_fixture := PackedByteArray([0, 1, 2, 127, 255])
+	var response_path := "user://music-pack-response-fixture.bin"
+	if FileAccess.file_exists(response_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(response_path))
+	_check(
+		bool(music.call("_write_pack_response", response_path, response_fixture)),
+		"HTTP response body did not persist for validation",
+	)
+	_check(
+		FileAccess.get_file_as_bytes(response_path) == response_fixture,
+		"persisted HTTP response body changed bytes",
+	)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(response_path))
 	if pack_path.is_empty():
 		_check(
 			bool(music.call("play_cue", &"act_1_bgm")),
