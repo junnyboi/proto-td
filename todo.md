@@ -8,7 +8,7 @@
 - [x] Phase 1: implement shared Lunaris materials, typography, full-safe-area shell behavior, modal focus/veil helpers, and tests.
 - [x] Phase 2: revamp Stage Select, Training/roster surfaces, Premium Resonance, Vahalla, and Results while preserving all authority boundaries.
 - [x] Phase 3: revamp battle HUD, pause/resign, deployment/spell/tutorial/navigation presentation, and result ceremony without changing battle semantics.
-- [ ] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.
-- [ ] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
-- [ ] Serve and test the bundle over HTTP; verify browser console, network, canvas, input, and responsive behavior.
-- [ ] Update the existing `proto-td-web` fullscreen host, run type/build checks, checkpoint, publish, and record completion in the implementation plan.
+- [x] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.
+- [x] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
+- [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
+- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save checkpoint `9a3b488b`, and prepare the verified Publish-control handoff because no direct publish tool is exposed.
