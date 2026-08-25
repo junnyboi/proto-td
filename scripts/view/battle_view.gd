@@ -926,15 +926,9 @@ func _project_units() -> void:
 
 
 func _operator_visual_template_id(u: UnitState) -> StringName:
-	if u.op_id != &"recruit":
-		return u.op_id
-	var identity := String(u.hero_id)
-	if identity.is_empty():
-		identity = String(u.portrait_asset_id)
-	var parity := posmod(u.id, 2) if identity.is_empty() else 0
-	for index: int in identity.length():
-		parity = posmod(parity + identity.unicode_at(index), 2)
-	return &"recruit_female" if parity == 0 else &"recruit_male"
+	return OPERATOR_VISUAL_CATALOG_SCRIPT.template_for_unit(
+		u.op_id, u.portrait_asset_id, u.hero_id, u.id,
+	)
 
 
 func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:

@@ -12,6 +12,7 @@ const DEFINITIONS: Dictionary = {
 	&"defender_2": preload("res://data/presentation/operator_visuals/defender_2.tres"),
 	&"guard_1": preload("res://data/presentation/operator_visuals/guard_1.tres"),
 	&"guard_2": preload("res://data/presentation/operator_visuals/guard_2.tres"),
+	&"lunaris_vessel": preload("res://data/presentation/operator_visuals/lunaris_vessel.tres"),
 	&"recruit_female": preload("res://data/presentation/operator_visuals/recruit_female.tres"),
 	&"recruit_male": preload("res://data/presentation/operator_visuals/recruit_male.tres"),
 	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
@@ -22,6 +23,29 @@ const DEFINITIONS: Dictionary = {
 const VISUAL_ALIASES: Dictionary = {
 	&"witch_doctor_1": &"caster_1",
 }
+const PREMIUM_VISUAL_BY_PORTRAIT: Dictionary = {
+	&"portrait_lunaris_vessel": &"lunaris_vessel",
+}
+
+
+static func template_for_unit(
+	op_id: StringName,
+	portrait_asset_id: StringName,
+	hero_id: StringName,
+	unit_id: int,
+) -> StringName:
+	var premium_template: Variant = PREMIUM_VISUAL_BY_PORTRAIT.get(portrait_asset_id)
+	if typeof(premium_template) == TYPE_STRING_NAME:
+		return premium_template
+	if op_id != &"recruit":
+		return op_id
+	var identity := String(hero_id)
+	if identity.is_empty():
+		identity = String(portrait_asset_id)
+	var parity := posmod(unit_id, 2) if identity.is_empty() else 0
+	for index: int in identity.length():
+		parity = posmod(parity + identity.unicode_at(index), 2)
+	return &"recruit_female" if parity == 0 else &"recruit_male"
 
 
 static func get_animation(template_id: StringName) -> OperatorAnimationDefType:

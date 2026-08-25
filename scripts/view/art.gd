@@ -181,7 +181,7 @@ static func _load_texture(path: String) -> Texture2D:
 		var imported := ResourceLoader.load(path) as Texture2D
 		if imported != null:
 			return imported
-	return _load_source_png(path)
+	return _load_source_image(path)
 
 
 static func _import_cache_missing(path: String) -> bool:
@@ -195,8 +195,8 @@ static func _import_cache_missing(path: String) -> bool:
 	return not cache_path.is_empty() and not FileAccess.file_exists(cache_path)
 
 
-static func _load_source_png(path: String) -> Texture2D:
-	if path.get_extension().to_lower() != "png" or not FileAccess.file_exists(path):
+static func _load_source_image(path: String) -> Texture2D:
+	if path.get_extension().to_lower() not in ["png", "webp"] or not FileAccess.file_exists(path):
 		return null
 	var image := Image.load_from_file(ProjectSettings.globalize_path(path))
 	if image == null or image.is_empty():
