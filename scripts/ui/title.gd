@@ -60,8 +60,6 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _backdrop != null:
 		_backdrop.stop()
-	if Music.current_id() == &"title_lunaris":
-		Music.stop()
 
 
 func _process(delta: float) -> void:
@@ -289,7 +287,6 @@ func _rule(color: Color) -> ColorRect:
 
 func _on_start_pressed() -> void:
 	Sfx.play("ui_click")
-	Music.stop()
 	Game.start_campaign()
 
 
