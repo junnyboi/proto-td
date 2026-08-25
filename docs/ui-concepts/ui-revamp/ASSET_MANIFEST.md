@@ -14,3 +14,14 @@ All concept images were generated with **GPT Image 2** on 2026-08-25. They are v
 | `concepts/08-portrait-battle-results.webp` | Battle and results | 9:16 | Horizontal operator strip, fixed spells, responsive result sheet |
 
 The images deliberately contain illustrative names, values, and environments. Runtime implementation must replace every placeholder with the existing Godot model/presenter output. No generated concept is shipped as a static full-screen UI. Full-resolution optimized WebP files and their SHA-256 checksums are stored in this directory.
+
+## Company Command runtime frame assets
+
+The Company Command sizing reimplementation added two **GPT Image 2** runtime frame assets on 2026-08-25. Both were generated from the approved Lunaris command-deck and resource-frame references, with explicit empty content fields and no rasterized labels, icons, or authoritative state. The generated masters were chroma-cleaned, cropped to their visible alpha bounds, and downscaled with aspect-preserving Lanczos resampling for runtime use.
+
+| Runtime asset | Size | Role | Native-authority constraint |
+|---|---:|---|---|
+| `assets/ui/staging/frames/company_hud_plate.png` | 1344×305 | Divider-free segmented top-HUD plate | Identity, currencies, campaign status, utility controls, and Exit remain native Godot controls. |
+| `assets/ui/staging/frames/company_navigation_rail.png` | 476×1152 | Dedicated landscape destination rail | Operation labels, disabled states, focus, localization, and navigation remain native Godot controls. |
+
+Both assets confine ornament to their outer border and corners. `staging_skin.gd` defines independent texture stretch margins and content-safe insets; content margins must never be reset to zero or inferred from one shared constant.
