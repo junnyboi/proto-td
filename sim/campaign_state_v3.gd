@@ -7,6 +7,7 @@ extends RefCounted
 
 const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
 const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 const PromotionScript := preload("res://sim/campaign_v3_promotion.gd")
 const AttemptsScript := preload("res://sim/campaign_v3_attempts.gd")
 const RecruitmentScript := preload("res://sim/campaign_v3_recruitment.gd")
@@ -82,10 +83,13 @@ func runtime_projection() -> Dictionary:
 	var heroes: Array[Dictionary] = []
 	var fallen_heroes: Array[Dictionary] = []
 	for hero: Dictionary in _data["heroes"]:
+		var projected := hero.duplicate(true)
+		var display := HeroCodecScript.display_callsign(hero)
+		projected["callsign"] = String(display.get("value", hero["hero_id"]))
 		if hero["life_status"] == "ready":
-			heroes.append(hero.duplicate(true))
+			heroes.append(projected)
 		else:
-			fallen_heroes.append(hero.duplicate(true))
+			fallen_heroes.append(projected)
 	heroes.sort_custom(
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return (
