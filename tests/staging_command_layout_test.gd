@@ -66,6 +66,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var top_bar := staging.find_child("TopCommandBar", true, false) as PanelContainer
 	var identity_plate := staging.find_child("IdentityPlate", true, false) as PanelContainer
 	var utility_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
+	var exit_label := staging.find_child("ExitLabel", true, false) as Label
 	var navigation := staging.find_child("NavigationRail", true, false) as PanelContainer
 	var command_deck := staging.find_child("CommandDeck", true, false) as PanelContainer
 	var command_sheet := staging.find_child("CommandSheet", true, false) as PanelContainer
@@ -82,6 +83,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 	_check(top_bar != null and top_bar.size.y >= 96.0, "%s: segmented top HUD is shorter than 96px" % context)
 	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
+	_check(exit_label != null and _contains(utility_plate, exit_label), "%s: Exit label escaped or touched its compact frame" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
 	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below 22px" % context)
 	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below 18px" % context)
