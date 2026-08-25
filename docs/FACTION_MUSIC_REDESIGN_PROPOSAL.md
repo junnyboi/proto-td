@@ -2,7 +2,7 @@
 
 **Author:** Manus AI
 
-**Status:** Proposed production contract
+**Status:** Implemented Lunaris launch contract; future factions remain gated
 
 **Scope:** Staging, campaign, battle, boss, and gameplay transition music
 
@@ -10,7 +10,7 @@
 
 ## Executive decision
 
-The previous six act-based battle tracks have been removed from the repository because their sound did not support the game's current canon, premium presentation, or faction separation. The runtime now contains only *Astra Memoriam*. It plays on the loading/title experience, stops when the player leaves the title, and cannot leak into staging or battle.
+The previous six act-based battle tracks were removed because their sound did not support the game's current canon, premium presentation, or faction separation. The replacement Lunaris launch score is now implemented across staging, S1–S8, the Gatecrasher boss, and results. *Astra Memoriam* remains unchanged and exclusive to loading/title; Company Command begins the separate Memory Orbit vocabulary after title playback stops.
 
 The replacement score should not be another set of generic act tracks. **Music becomes a faction-authored tactical system.** Each faction receives a protected motif, instrumental palette, rhythmic grammar, harmonic behavior, and spatial identity derived from the canonical faction documents and references.[1] [2] [3] Current launch content is Lunaris-led, so implementation should first complete the entire playable Lunaris campaign score. Solcrest, Crimson, and Vesper suites should be produced when their corresponding playable content is scheduled; the design system below prevents those later releases from collapsing into palette-swapped versions of Lunaris.
 
@@ -24,10 +24,10 @@ The following audio remains approved:
 |---|---|
 | Loading | Existing visual loading experience; no new music is introduced |
 | Title | *Astra Memoriam* and its persistent ON/OFF setting remain unchanged |
-| Staging / Company Command | Silent until the new Lunaris staging cue is approved |
-| Mission, squad, roster, training, gacha, Vahalla | Silent unless a later phase explicitly routes an approved staging variant |
-| Battle | Silent until the replacement battle system is approved |
-| Boss phases | Silent until the replacement boss suites are approved |
+| Staging / Company Command | `lunaris_staging_archive_command` approved and integrated |
+| Mission, squad, roster, training, gacha, Vahalla | Company Command loop continues without restart across command surfaces |
+| Battle | Stage-authored Lunaris low/medium/high profiles approved for S1–S7 |
+| Boss phases | Dedicated Gatecrasher suite approved for S8; result stingers route after terminal state |
 
 Deleted material includes all `act_1_*`, `act_2_*`, and `act_3_*` Ogg streams, their import metadata, their catalog entries, the act-pack builder, download harnesses, runtime downloader/cache/mounter, transfer-status UI, and obsolete `music_act`/`music_boss_wave_index` stage metadata. This avoids carrying aesthetically rejected material or architecture that encodes the rejected three-act score model.
 
@@ -98,7 +98,7 @@ All generation uses **Lyria 3 Pro or its latest successor**. Every prompt must r
 
 > Instrumental only, no lyrics or vocal solo. Create a 180-second boss master at 80 BPM half-time with precise 160 BPM subdivisions in D minor. Original Lunaris Sacred Archive boss music: monumental mass, gravitational inevitability, adult premium restraint, tactical clarity. Invert and interval-compress the Memory Orbit motif into contrabass clarinet, basses, cellos, restrained bass trombone and horns; add gran cassa, tuned low toms, bowed metal, smooth sub drops, high glass warning points, and sparse wordless adult choir clusters. No Astra Memoriam quotation or imitation, no generic apocalypse, no horror liturgy, no trailer braam wall, no EDM, no final fade. [0:00–0:12] non-looping reveal with descending gravity and exposed inverted motif, intensity 6/10. [0:12–1:04] phase A recoverable loop state, intensity 6/10. [1:04–1:56] phase B shortens orbit cycles and adds escort-pressure counterpoint, intensity 7/10. [1:56–2:48] phase C strengthens semitone descent, percussion, and restrained choir architecture while preserving the downbeat, intensity 9/10. [2:48–3:00] break-state release that can transition to victory or return to phase A, intensity 5/10.
 
-## Runtime architecture proposal
+## Implemented runtime architecture
 
 The replacement runtime should be data-driven and should not recreate the deleted hard-coded `music_act` pair. A `MusicProfile` resource should define the staging cue, battle state set, boss set, transitions, loop metadata, and faction identity. `StageDef` should reference a profile ID and optional encounter override only after the audio for that profile exists.
 

@@ -584,6 +584,7 @@ func _stop_cinematic() -> void:
 		_cinematic_player.stop()
 	if String(Music.current_id()).begins_with("gacha_"):
 		Music.stop()
+		Music.play_staging(&"lunaris")
 
 
 func _center_reveal_pivot() -> void:

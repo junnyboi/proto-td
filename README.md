@@ -25,13 +25,21 @@ Documentation-only changes do not require an engine check. Run focused tests or 
 
 ## Web export and soundtrack scope
 
-The current runtime intentionally ships only the approved Lunaris loading/title theme, **Astra Memoriam**. Staging, campaign, and battle surfaces remain silent while their faction-led soundtrack is redesigned. Export the complete title-only bundle with:
+The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris launch score across Company Command, S1–S8 battle states, the Gatecrasher boss, and results. `AudioCue` and `MusicProfile` resources drive presentation-only routing; `MusicDirector` requests bar-quantized low/medium/high transitions without entering deterministic battle state. The persisted music toggle governs every music surface.
+
+The UI interaction suite uses generated moon-glass click, back, confirm, menu-open, and menu-close cues. Production masters, carrier media, runtime checksums, routing, and reproduction instructions live in [`docs/audio/LUNARIS_GAMEPLAY_SCORE.md`](docs/audio/LUNARIS_GAMEPLAY_SCORE.md). Rebuild the runtime derivatives with:
+
+```bash
+tools/audio/process_lunaris_score.sh
+```
+
+Export the complete bundle with:
 
 ```bash
 godot --headless --path . --export-release Web build/web/index.html
 ```
 
-Do not add temporary replacement tracks. The approved redesign contract and phased implementation plan live in [`docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md`](docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md).
+The implemented redesign contract and future-faction boundary live in [`docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md`](docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md).
 
 ## Architecture
 

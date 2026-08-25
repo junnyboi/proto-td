@@ -36,6 +36,10 @@ const TILE_CHARS := {
 @export var campaign_index: int = -1
 @export var requires: Array[StringName] = []
 @export var intro_hint: String = ""
+# Presentation-only soundtrack routing. These ids never enter battle hashes,
+# snapshots, saves, tickets, or deterministic simulation decisions.
+@export var music_profile_id: StringName = &""
+@export var music_variant_id: StringName = &""
 
 
 func grid_size() -> Vector2i:

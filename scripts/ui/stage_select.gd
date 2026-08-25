@@ -316,5 +316,5 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 
 
 func _on_back_to_staging() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_back")
 	Game.open_staging()

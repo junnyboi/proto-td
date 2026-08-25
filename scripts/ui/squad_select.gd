@@ -597,12 +597,12 @@ func _on_training() -> void:
 
 
 func _on_back() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_back")
 	Game.open_stage_select()
 
 
 func _on_start() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_confirm")
 	Game.start_stage(_stage.id, _picked)
 
 

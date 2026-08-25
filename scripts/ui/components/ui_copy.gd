@@ -11,7 +11,7 @@ const STATIC_FALLBACKS := {
 	&"ui.title.master_volume": "Master Volume  //  {value}%",
 	&"ui.title.music_volume": "Music Volume  //  {value}%",
 	&"ui.title.sfx_volume": "SFX Volume  //  {value}%",
-	&"ui.title.music_state": "Title Music  //  {state}",
+	&"ui.title.music_state": "Music  //  {state}",
 	&"ui.title.frame_limit": "Frame Limit",
 	&"ui.title.frame_unlimited": "Unlimited",
 	&"ui.title.frame_value": "{value} FPS",

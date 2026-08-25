@@ -169,10 +169,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_pause_pressed() -> void:
 	if not _interaction_enabled or model.result != BattleModel.Result.RUNNING:
 		return
-	Sfx.play("ui_click")
 	if _current_scale() == 0.0:
+		Sfx.play("menu_close")
 		_set_scale(_resume_scale)
 	else:
+		Sfx.play("menu_open")
 		_set_scale(0.0)
 
 
@@ -191,20 +192,20 @@ func _on_speed_pressed() -> void:
 func _on_resign_pressed() -> void:
 	if not _interaction_enabled:
 		return
-	Sfx.play("ui_click")
+	Sfx.play("menu_open")
 	_pre_confirm_scale = _current_scale()
 	_set_scale(0.0)
 	DialogType.show_dialog(_confirm_dialog, _resign_button)
 
 
 func _on_cancel_resign() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("menu_close")
 	DialogType.hide_dialog(_confirm_dialog)
 	_set_scale(_pre_confirm_scale)
 
 
 func _on_confirm_resign() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_confirm")
 	DialogType.set_pending(_confirm_dialog, true, "WITHDRAWING…")
 	model.apply_action([&"resign"])
 	DialogType.set_pending(_confirm_dialog, false)

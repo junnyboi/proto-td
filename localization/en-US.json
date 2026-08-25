@@ -237,7 +237,7 @@
     "ui.title.graphics": "Graphics",
     "ui.title.master_volume": "Master Volume  //  {value}%",
     "ui.title.motion_state": "Animated Background  //  {state}",
-    "ui.title.music_state": "Title Music  //  {state}",
+    "ui.title.music_state": "Music  //  {state}",
     "ui.title.music_volume": "Music Volume  //  {value}%",
     "ui.title.seed": "seed {seed}",
     "ui.title.settings": "Settings",

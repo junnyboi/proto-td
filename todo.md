@@ -18,9 +18,10 @@
 # Faction-Led Soundtrack Redesign
 
 - [x] Phase 0: remove rejected staging/battle music and obsolete pack infrastructure; retain `Astra Memoriam` for loading/title only; publish the canonical proposal.
-- [ ] Phase 1: implement data-driven `AudioCue`/`MusicProfile` resources, bar-quantized horizontal-state transitions, hysteresis, silence fallback, and regression seams.
-- [ ] Phase 2: generate, review, master, and integrate the Lunaris Company Command staging loop with Lyria 3 Pro.
-- [ ] Phase 3: generate and integrate Lunaris early-campaign and Air Raid adaptive battle suites for S1–S4.
-- [ ] Phase 4: generate and integrate Lunaris late-campaign, Gatecrasher boss, results, and tactical transition cues for S5–S8.
+- [x] Phase 1: implement data-driven `AudioCue`/`MusicProfile` resources, bar-quantized horizontal-state transitions, hysteresis, silence fallback, and regression seams.
+- [x] Phase 2: generate, review, master, and integrate the Lunaris Company Command staging loop with Lyria 3 Pro.
+- [x] Phase 3: generate and integrate Lunaris early-campaign and Air Raid adaptive battle suites for S1–S4.
+- [x] Phase 4: generate and integrate Lunaris late-campaign, Gatecrasher boss, results, and tactical transition cues for S5–S8.
+- [x] Produce and route the moon-glass UI click, back, confirm, menu-open, and menu-close suite through GPT Image 2 carrier anchors and audio-capable video extraction.
 - [ ] Phase 5: complete loudness, SFX-masking, mono/mobile, accessibility, Web packaging, playthrough, and release validation.
 - [ ] Phase 6: produce Solcrest, Crimson, and Vesper suites only as their playable faction content enters production.

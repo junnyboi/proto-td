@@ -6,6 +6,8 @@
 script = ExtResource("1")
 id = &"s8"
 title = "The Gatecrasher"
+music_profile_id = &"lunaris"
+music_variant_id = &"boss"
 grid_rows = PackedStringArray(".............", "SGGGG...E....", "....GEXX.X...", "SGGGGGGGGGGGB", "......GXX.E..", "SGGGGGG......", ".............")
 paths = Array[PackedVector2Array]([PackedVector2Array(0, 3, 1, 3, 2, 3, 3, 3, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3, 12, 3), PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 4, 2, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3, 12, 3), PackedVector2Array(0, 5, 1, 5, 2, 5, 3, 5, 4, 5, 5, 5, 6, 5, 6, 4, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3, 12, 3)])
 waves = Array[Dictionary]([{

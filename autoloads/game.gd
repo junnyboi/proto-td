@@ -547,7 +547,6 @@ func _swap_content(
 	previous_battle: BattleModel = null,
 ) -> void:
 	var music := get_node_or_null("/root/Music")
-	_stop_music_node(music)
 	# Incumbent UI scenes assign Game.content from _ready(). Capture the real
 	# predecessor before add_child() runs that synchronous callback, then retire
 	# exactly that node at the commit point.
@@ -555,13 +554,16 @@ func _swap_content(
 	var packed: PackedScene = load(scene_path)
 	var candidate: Node = packed.instantiate()
 	get_tree().root.add_child(candidate)
-	_accept_content_candidate(
+	var accepted := _accept_content_candidate(
 		candidate,
 		scene_path == BATTLE_SCENE_PATH,
 		previous,
 		previous_pending,
 		previous_battle,
 	)
+	if accepted:
+		_route_music_before_scene(music, scene_path)
+		_route_music_after_scene(music, scene_path)
 
 
 ## Commit point shared by the runtime swap and executable activation tests.
@@ -604,3 +606,41 @@ func _stop_music_node(music: Node) -> bool:
 		return false
 	music.call("stop")
 	return true
+
+
+func _route_music_before_scene(music: Node, scene_path: String) -> void:
+	if music == null:
+		return
+	if scene_path == BATTLE_SCENE_PATH:
+		_stop_music_node(music)
+		return
+	if _is_staging_music_scene(scene_path) and music.has_method("current_id"):
+		if music.call("current_id") == &"title_lunaris":
+			_stop_music_node(music)
+
+
+func _route_music_after_scene(music: Node, scene_path: String) -> void:
+	if music == null:
+		return
+	if _is_staging_music_scene(scene_path) and music.has_method("play_staging"):
+		music.call("play_staging", &"lunaris")
+		Sfx.play("menu_open")
+	elif scene_path == BATTLE_SCENE_PATH and pending_stage != null and music.has_method("play_battle"):
+		var initial_state := &"boss" if pending_stage.music_variant_id == &"boss" else &"low"
+		music.call(
+			"play_battle",
+			pending_stage.music_profile_id,
+			pending_stage.music_variant_id,
+			initial_state,
+		)
+
+
+func _is_staging_music_scene(scene_path: String) -> bool:
+	return scene_path in [
+		STAGING_SCENE_PATH,
+		TRAINING_SCENE_PATH,
+		GACHA_SCENE_PATH,
+		VAHALLA_SCENE_PATH,
+		STAGE_SELECT_SCENE_PATH,
+		SQUAD_SELECT_SCENE_PATH,
+	]

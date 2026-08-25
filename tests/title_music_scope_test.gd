@@ -64,9 +64,17 @@ func _exercise_scope(music: Node, game: Node) -> void:
 		content != null and content.get_script().resource_path == "res://scripts/ui/staging.gd",
 		"Start transitions to staging",
 	)
-	_check(StringName(music.call("current_id")).is_empty(), "staging is silent during redesign")
+	_check(
+		music.call("current_id") == &"lunaris_staging_archive_command",
+		"approved Company Command cue starts after title",
+	)
 	_check(player != null and not player.playing, "title playback stops before staging")
 	_check(player != null and player.stream == null, "staging retains no title stream")
+	_check(
+		music.call("current_stream_path")
+		== "res://assets/music/lunaris/lunaris_staging_archive_command.ogg",
+		"staging resolves the faction-authored command loop",
+	)
 	_check(int(music.call("stop_count")) == stops_before + 1, "title cue stops exactly once")
 
 
@@ -76,7 +84,10 @@ func _clean_up(music: Node, game: Node) -> void:
 	if content != null and is_instance_valid(content):
 		content.queue_free()
 	music.call("stop")
-	for _frame: int in range(8):
+	var sfx := root.get_node_or_null("Sfx")
+	if sfx != null:
+		sfx.call("stop_all")
+	for _frame: int in range(16):
 		await process_frame
 
 

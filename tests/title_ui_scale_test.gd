@@ -137,6 +137,9 @@ func _cleanup() -> void:
 	var music := root.get_node_or_null("Music")
 	if music != null:
 		music.call("stop")
+	var sfx := root.get_node_or_null("Sfx")
+	if sfx != null:
+		sfx.call("stop_all")
 	if _title != null:
 		_title.queue_free()
 	_title = null

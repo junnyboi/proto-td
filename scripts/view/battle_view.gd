@@ -15,6 +15,7 @@ const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
 const SPRITE_SCALE := 2  # 32px art on the 64px grid (pinned 2x integer)
@@ -101,6 +102,10 @@ var _enemy_anim_seconds := 0.0
 var _enemy_damage_feedback: RefCounted = ENEMY_DAMAGE_FEEDBACK_SCRIPT.new()
 var _attack_pose_left: Dictionary = {}
 var _unit_attack_seen: Dictionary = {}
+var _music_director: MusicDirector = MUSIC_DIRECTOR_SCRIPT.new()
+var _music_elapsed_seconds := 0.0
+var _music_last_leaked_count := 0
+var _music_recent_danger_until_seconds := 0.0
 
 
 func _init() -> void:
@@ -195,6 +200,10 @@ func _ready() -> void:
 	_map_navigation_overlay.recenter_requested.connect(_on_recenter_map_requested)
 	_map_navigation_overlay.setup()
 	model = candidate_model
+	var initial_music_state := &"boss" if _stage.music_variant_id == &"boss" else &"low"
+	_music_director.configure(Music.minimum_state_hold_seconds(_stage.music_profile_id))
+	_music_director.reset(initial_music_state, 0.0)
+	_music_last_leaked_count = model.leaked
 	_start_first_stand_tutorial()
 	_refresh_map_navigation_overlay()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
@@ -350,6 +359,25 @@ func _process(delta: float) -> void:
 	_refresh_map_navigation_overlay()
 	if model == null or _juice == null:
 		return
+	if model.leaked > _music_last_leaked_count:
+		_music_recent_danger_until_seconds = _music_elapsed_seconds + 6.0
+	_music_last_leaked_count = model.leaked
+	if ticks_per_frame_scale > 0.0 and _hit_stop_frames <= 0:
+		_music_elapsed_seconds += delta
+		var requested_music_state := _music_director.update(
+			model,
+			_stage.music_variant_id,
+			_music_elapsed_seconds,
+			_music_elapsed_seconds < _music_recent_danger_until_seconds,
+		)
+		if (
+			not requested_music_state.is_empty()
+			and Music.request_battle_state(
+				requested_music_state,
+				requested_music_state in [&"high", &"boss"],
+			)
+		):
+			_music_director.accept_state(requested_music_state, _music_elapsed_seconds)
 	_enemy_anim_seconds += delta
 	_enemy_damage_feedback.process(delta, model, _enemy_rects, cfg)
 	_detect_deploys()
@@ -517,9 +545,11 @@ func _detect_result_stamp() -> void:
 	if model.result == BattleModel.Result.CLEAR:
 		_juice.stamp("CLEAR", model.stars)
 		Sfx.play("victory")
+		Music.play_result(true)
 	else:
 		_juice.stamp("DEFEAT", 0)
 		Sfx.play("defeat")
+		Music.play_result(false)
 	# a real Button (the juice layer is MOUSE_FILTER_IGNORE territory) under
 	# the stamp band; no auto-swap — scenarios and bots must be able to
 	var next := Button.new()
@@ -540,7 +570,7 @@ func _detect_result_stamp() -> void:
 
 
 func _on_continue_pressed() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_confirm")
 	Game.open_results()
 
 

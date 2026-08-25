@@ -237,7 +237,7 @@
     "ui.title.graphics": "图像",
     "ui.title.master_volume": "主音量  //  {value}%",
     "ui.title.motion_state": "动态背景  //  {state}",
-    "ui.title.music_state": "标题音乐  //  {state}",
+    "ui.title.music_state": "音乐  //  {state}",
     "ui.title.music_volume": "音乐音量  //  {value}%",
     "ui.title.seed": "种子 {seed}",
     "ui.title.settings": "设置",

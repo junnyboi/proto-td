@@ -81,6 +81,7 @@ func _ready() -> void:
 	_apply_responsive_layout()
 	_start_button.grab_focus.call_deferred()
 	Game.content = self
+	Music.set_enabled(_title_music_enabled)
 	if _title_music_enabled:
 		Music.play_cue(&"title_lunaris")
 
@@ -412,19 +413,19 @@ func _title_font_size(value: int) -> int:
 
 
 func _on_start_pressed() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_confirm")
 	Game.start_campaign()
 
 
 func _open_settings() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("menu_open")
 	_entry_host.visible = false
 	_settings_overlay.visible = true
 	_master_volume_slider.grab_focus.call_deferred()
 
 
 func _close_settings() -> void:
-	Sfx.play("ui_back")
+	Sfx.play("menu_close")
 	_settings_overlay.visible = false
 	_entry_host.visible = true
 	_settings_button.grab_focus.call_deferred()
@@ -433,10 +434,10 @@ func _close_settings() -> void:
 func _toggle_music() -> void:
 	_title_music_enabled = not _title_music_enabled
 	ViewPreferencesType.set_title_music_enabled(_title_music_enabled, _preferences_path)
+	Music.set_enabled(_title_music_enabled)
 	if _title_music_enabled:
 		Music.play_cue(&"title_lunaris")
-	else:
-		Music.stop()
+	Sfx.play("ui_click")
 	_refresh_copy()
 
 
@@ -568,7 +569,7 @@ func _refresh_copy() -> void:
 		{&"value": roundi(_sfx_volume * 100.0)},
 	).to_upper()
 	_music_button.text = UiCopyType.format_text(
-		&"ui.title.music_state", "TITLE MUSIC  //  {state}",
+		&"ui.title.music_state", "MUSIC  //  {state}",
 		{&"state": UiCopyType.text(&"ui.common.on" if _title_music_enabled else &"ui.common.off", "On" if _title_music_enabled else "Off")},
 	).to_upper()
 	_frame_limit_label.text = UiCopyType.text(&"ui.title.frame_limit", "Frame Limit").to_upper()

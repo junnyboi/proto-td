@@ -874,7 +874,7 @@ func _on_training() -> void:
 
 
 func _on_exit() -> void:
-	Sfx.play("ui_click")
+	Sfx.play("ui_back")
 	Game.open_title()
 
 

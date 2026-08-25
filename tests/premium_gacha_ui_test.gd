@@ -101,7 +101,10 @@ func _run() -> void:
 	_check(not reveal_layer.visible, "skipped reveal layer remained visible")
 	_check(not pull.disabled and not back.disabled, "skip did not restore navigation input")
 	_check(cinematic_video != null and cinematic_video.stream == null, "skip did not release the video stream")
-	_check(StringName(music.call("current_id")).is_empty(), "skip did not stop cinematic audio")
+	_check(
+		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
+		"skip did not resume Company Command audio",
+	)
 	var status := screen.find_child("PullStatusLabel", true, false) as Label
 	_check(status != null and status.text.contains("5-STAR SIGNAL"), "skip did not apply final result copy")
 
@@ -114,7 +117,10 @@ func _run() -> void:
 	_check(portrait != null and is_equal_approx(portrait.modulate.a, 1.0), "reduced motion did not settle instantly")
 	_check(final_plate != null and final_plate.visible and final_plate.texture != null, "reduced motion did not show the final identity plate")
 	_check(cinematic_video != null and cinematic_video.stream == null, "reduced motion loaded a video stream")
-	_check(StringName(music.call("current_id")).is_empty(), "reduced motion started cinematic audio")
+	_check(
+		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
+		"reduced motion replaced Company Command audio",
+	)
 	screen.call("_finish_reveal")
 	await process_frame
 	_check(not reveal_layer.visible, "reduced-motion reveal did not finalize")
