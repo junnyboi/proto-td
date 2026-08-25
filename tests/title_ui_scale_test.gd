@@ -106,7 +106,10 @@ func _cleanup() -> void:
 	_title = null
 	for _frame: int in range(12):
 		await process_frame
-	await create_timer(0.25).timeout
+	# Opening Settings plays a short confirmation sample. Let the audio server
+	# retire that one-shot playback before the standalone SceneTree runs its
+	# ObjectDB and resource-lifetime checks.
+	await create_timer(0.5).timeout
 
 
 func _remove_preferences() -> void:
