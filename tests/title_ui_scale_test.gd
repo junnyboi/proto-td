@@ -2,6 +2,8 @@ extends SceneTree
 
 const LANDSCAPE := Vector2i(1280, 720)
 const PORTRAIT := Vector2i(720, 1280)
+const ULTRAWIDE := Vector2i(2560, 1080)
+const SHORT_LANDSCAPE := Vector2i(1024, 576)
 const EPSILON := 0.05
 const PREFERENCES_PATH := "user://title_ui_scale_test.cfg"
 
@@ -28,6 +30,18 @@ func _run() -> void:
 	await process_frame
 	_verify_portrait()
 	await _verify_settings_typography()
+	_title.call("_close_settings")
+	await process_frame
+
+	root.size = ULTRAWIDE
+	await process_frame
+	await process_frame
+	await _verify_responsive_settings(ULTRAWIDE, "ultrawide", false)
+
+	root.size = SHORT_LANDSCAPE
+	await process_frame
+	await process_frame
+	await _verify_responsive_settings(SHORT_LANDSCAPE, "short landscape", true)
 	await _cleanup()
 	_remove_preferences()
 	call_deferred("_finish")
@@ -76,6 +90,28 @@ func _verify_settings_typography() -> void:
 	for button: Button in [music, motion, back]:
 		_check(button != null and button.get_theme_font_size(&"font_size") == 20, "settings action font is not scaled by 15%")
 		_check(button != null and _near(button.custom_minimum_size.y, 62.1), "settings action height is not scaled by 15%")
+	var audio_heading := _title.find_child("AudioHeading", true, false) as Label
+	var graphics_heading := _title.find_child("GraphicsHeading", true, false) as Label
+	var frame_option := _title.find_child("FrameLimitOption", true, false) as OptionButton
+	_check(audio_heading != null and audio_heading.get_theme_font_size(&"font_size") == 21, "Audio heading is not scaled by 15%")
+	_check(graphics_heading != null and graphics_heading.get_theme_font_size(&"font_size") == 21, "Graphics heading is not scaled by 15%")
+	_check(frame_option != null and frame_option.item_count == 4, "frame-limit choices are missing")
+
+
+func _verify_responsive_settings(viewport_size: Vector2i, label: String, expect_scroll: bool) -> void:
+	var entry := _title.find_child("EntryControls", true, false) as Control
+	_check(_inside_viewport(entry, viewport_size), "%s title controls leave the viewport" % label)
+	_title.call("_open_settings")
+	await process_frame
+	var panel := _title.find_child("SettingsPanel", true, false) as Control
+	var scroll := _title.find_child("SettingsScroll", true, false) as ScrollContainer
+	var stack := _title.find_child("SettingsStack", true, false) as VBoxContainer
+	_check(_inside_viewport(panel, viewport_size), "%s settings panel leaves the viewport" % label)
+	_check(scroll != null and scroll.size.x > 0.0 and scroll.size.y > 0.0, "%s settings scroll host is invalid" % label)
+	if expect_scroll and scroll != null and stack != null:
+		_check(stack.size.y > scroll.size.y, "%s modal does not expose scroll overflow" % label)
+	_title.call("_close_settings")
+	await process_frame
 
 
 func _inside_viewport(control: Control, viewport_size: Vector2i) -> bool:

@@ -7,6 +7,7 @@ const CATALOG_PATH := "res://assets/sfx/catalog.tres"
 const SFX_CATALOG_SCRIPT: GDScript = preload("res://assets/sfx/sfx_catalog.gd")
 const VOICE_COUNT := 8
 const PLAYER_PREFIX := "Voice"
+const BUS_NAME := &"SFX"
 
 var _catalog: Resource = null
 var _players: Array[AudioStreamPlayer] = []
@@ -178,6 +179,7 @@ func last_stream_path() -> String:
 
 
 func _ensure_players() -> Array[AudioStreamPlayer]:
+	_ensure_bus()
 	if _players.size() == VOICE_COUNT:
 		var all_valid := true
 		for player: AudioStreamPlayer in _players:
@@ -185,6 +187,8 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 				all_valid = false
 				break
 		if all_valid:
+			for player: AudioStreamPlayer in _players:
+				player.bus = BUS_NAME
 			return _players
 	_players.clear()
 	for index: int in VOICE_COUNT:
@@ -193,5 +197,13 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 			player = AudioStreamPlayer.new()
 			player.name = "%s%d" % [PLAYER_PREFIX, index]
 			add_child(player)
+		player.bus = BUS_NAME
 		_players.append(player)
 	return _players
+
+
+func _ensure_bus() -> void:
+	if AudioServer.get_bus_index(BUS_NAME) >= 0:
+		return
+	AudioServer.add_bus()
+	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS_NAME)

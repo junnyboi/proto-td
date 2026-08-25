@@ -7,6 +7,7 @@ extends Node
 const CATALOG_PATH := "res://assets/music/catalog.tres"
 const MUSIC_CATALOG_SCRIPT: GDScript = preload("res://assets/music/music_catalog.gd")
 const PLAYER_NAME := "Player"
+const BUS_NAME := &"Music"
 
 var _catalog: Resource = null
 var _player: AudioStreamPlayer = null
@@ -101,14 +102,24 @@ func current_stream_path() -> String:
 
 
 func _ensure_player() -> AudioStreamPlayer:
+	_ensure_bus()
 	if _player != null and is_instance_valid(_player):
+		_player.bus = BUS_NAME
 		return _player
 	_player = get_node_or_null(PLAYER_NAME) as AudioStreamPlayer
 	if _player == null:
 		_player = AudioStreamPlayer.new()
 		_player.name = PLAYER_NAME
 		add_child(_player)
+	_player.bus = BUS_NAME
 	return _player
+
+
+func _ensure_bus() -> void:
+	if AudioServer.get_bus_index(BUS_NAME) >= 0:
+		return
+	AudioServer.add_bus()
+	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS_NAME)
 
 
 func _stop_active() -> void:
