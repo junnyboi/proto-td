@@ -56,5 +56,10 @@ for id in ui_click ui_back menu_open menu_close ui_confirm; do
     -c:a pcm_s16le "$sfx_out/${id}.wav"
 done
 
+ffmpeg -hide_banner -loglevel error -y -ss 1.0 -i "$prod/sfx/carriers/ui_hover_carrier.mp4" \
+  -t 1.75 -vn \
+  -af "aresample=48000,loudnorm=I=-28:LRA=4:TP=-9,afade=t=in:st=0:d=0.01,afade=t=out:st=1.55:d=0.20" \
+  -ar 48000 -ac 2 -c:a pcm_s16le "$sfx_out/ui_hover.wav"
+
 printf '%s\n' 'Runtime audio derivatives created:'
 find "$music_out" "$sfx_out" -maxdepth 1 -type f \( -name '*.ogg' -o -name '*.wav' \) -printf '%p %s bytes\n' | sort

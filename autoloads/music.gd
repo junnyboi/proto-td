@@ -12,6 +12,8 @@ const PROFILE_PATHS := {
 }
 const PLAYER_NAMES := [&"Player", &"TransitionPlayer"]
 const BUS_NAME := &"Music"
+const CRITICAL_STATES := [&"critical", &"boss_critical"]
+const CRITICAL_TEMPO_SCALE := 1.08
 
 var _catalog: Resource = null
 var _players: Array[AudioStreamPlayer] = []
@@ -57,7 +59,7 @@ func _process(_delta: float) -> void:
 	var state_id := _pending_state_id
 	var fade_seconds := _pending_fade_seconds
 	_clear_pending()
-	if _transition_to(cue_id, fade_seconds):
+	if _transition_to(cue_id, fade_seconds, _tempo_scale_for_state(state_id)):
 		_current_state_id = state_id
 
 
@@ -151,6 +153,7 @@ func request_battle_state(state_id: StringName, danger: bool = false) -> bool:
 		if not _transition_to(
 			cue_id,
 			profile.danger_crossfade_seconds if danger else profile.routine_crossfade_seconds,
+			_tempo_scale_for_state(state_id),
 		):
 			return false
 		_current_state_id = state_id
@@ -196,6 +199,7 @@ func stop() -> bool:
 	for player: AudioStreamPlayer in _ensure_players():
 		player.stop()
 		player.stream = null
+		player.pitch_scale = 1.0
 		player.volume_db = 0.0
 	_current_id = &""
 	_current_profile_id = &""
@@ -260,7 +264,15 @@ func current_stream_path() -> String:
 	return player.stream.resource_path if player.stream != null else ""
 
 
-func _transition_to(cue_id: StringName, fade_seconds: float) -> bool:
+func current_tempo_scale() -> float:
+	return _active_player().pitch_scale
+
+
+func _transition_to(
+	cue_id: StringName,
+	fade_seconds: float,
+	tempo_scale: float = 1.0,
+) -> bool:
 	var cue := _cue_for(cue_id)
 	if cue == null or not cue.is_valid():
 		return false
@@ -278,6 +290,7 @@ func _transition_to(cue_id: StringName, fade_seconds: float) -> bool:
 	_fade_tween = null
 	new_player.stop()
 	new_player.stream = stream
+	new_player.pitch_scale = maxf(tempo_scale, 0.01)
 	new_player.volume_db = cue.volume_db if fade_seconds <= 0.0 else -60.0
 	new_player.play()
 	_active_index = new_index
@@ -286,6 +299,7 @@ func _transition_to(cue_id: StringName, fade_seconds: float) -> bool:
 	if not old_player.playing or fade_seconds <= 0.0:
 		old_player.stop()
 		old_player.stream = null
+		old_player.pitch_scale = 1.0
 		old_player.volume_db = 0.0
 		return true
 	_fade_tween = create_tween().set_parallel(true)
@@ -300,6 +314,7 @@ func _finish_crossfade(old_index: int) -> void:
 	if old_index >= 0 and old_index < players.size() and old_index != _active_index:
 		players[old_index].stop()
 		players[old_index].stream = null
+		players[old_index].pitch_scale = 1.0
 		players[old_index].volume_db = 0.0
 	_fade_tween = null
 
@@ -379,6 +394,10 @@ func _any_player_active() -> bool:
 		if player.playing or player.stream != null:
 			return true
 	return false
+
+
+func _tempo_scale_for_state(state_id: StringName) -> float:
+	return CRITICAL_TEMPO_SCALE if state_id in CRITICAL_STATES else 1.0
 
 
 func _clear_pending() -> void:

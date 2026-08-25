@@ -403,7 +403,7 @@ func _process(delta: float) -> void:
 			not requested_music_state.is_empty()
 			and Music.request_battle_state(
 				requested_music_state,
-				requested_music_state in [&"high", &"boss"],
+				requested_music_state in [&"high", &"critical", &"boss", &"boss_critical"],
 			)
 		):
 			_music_director.accept_state(requested_music_state, _music_elapsed_seconds)

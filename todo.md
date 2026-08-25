@@ -40,5 +40,7 @@
 - [x] Phase 3: generate and integrate Lunaris early-campaign and Air Raid adaptive battle suites for S1–S4.
 - [x] Phase 4: generate and integrate Lunaris late-campaign, Gatecrasher boss, results, and tactical transition cues for S5–S8.
 - [x] Produce and route the moon-glass UI click, back, confirm, menu-open, and menu-close suite through GPT Image 2 carrier anchors and audio-capable video extraction.
+- [x] Produce a dedicated quiet moon-glass hover cue and bind it globally to eligible interactive controls with readiness, debounce, disabled/hidden suppression, semantic opt-out, and lifecycle coverage.
+- [x] Escalate battle music below 30% base health through urgent next-bar critical/boss-critical states and an 8% tempo lift with hysteretic recovery.
 - [ ] Phase 5: complete loudness, SFX-masking, mono/mobile, accessibility, Web packaging, playthrough, and release validation.
 - [ ] Phase 6: produce Solcrest, Crimson, and Vesper suites only as their playable faction content enters production.

@@ -8,6 +8,7 @@ entries = {
 &"operator_select": {"path": "res://assets/sfx/ui/operator_select.wav"},
 &"ability_ready": {"path": "res://assets/sfx/ui/ability_ready.wav"},
 &"action_reject": {"path": "res://assets/sfx/ui/action_reject.wav"},
+&"ui_hover": {"path": "res://assets/sfx/ui/ui_hover.wav"},
 &"ui_click": {"path": "res://assets/sfx/ui/ui_click.wav"},
 &"ui_back": {"path": "res://assets/sfx/ui/ui_back.wav"},
 &"ui_confirm": {"path": "res://assets/sfx/ui/ui_confirm.wav"},
@@ -29,7 +30,6 @@ aliases = {
 &"slow_field": &"ability_ready",
 &"trap_snap": &"trap_trigger",
 &"ui_select": &"ui_click",
-&"ui_hover": &"ui_click",
 &"ui_accept": &"ui_confirm",
 &"menu_transition": &"menu_open"
 }

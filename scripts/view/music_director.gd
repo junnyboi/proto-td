@@ -7,7 +7,10 @@ extends RefCounted
 const STATE_LOW := &"low"
 const STATE_MEDIUM := &"medium"
 const STATE_HIGH := &"high"
+const STATE_CRITICAL := &"critical"
 const STATE_BOSS := &"boss"
+const STATE_BOSS_CRITICAL := &"boss_critical"
+const CRITICAL_HEALTH_RATIO := 0.30
 
 var _current_state: StringName = &""
 var _candidate_state: StringName = &""
@@ -51,11 +54,15 @@ func update(
 		_candidate_state = desired
 		_candidate_since_seconds = now_seconds
 		return &""
-	if now_seconds < _hold_until_seconds:
+	var critical_escalation := (
+		desired in [STATE_CRITICAL, STATE_BOSS_CRITICAL]
+		and _current_state != desired
+	)
+	if not critical_escalation and now_seconds < _hold_until_seconds:
 		return &""
 	var escalating := _rank(desired) > _rank(_current_state)
 	var stable_seconds := now_seconds - _candidate_since_seconds
-	var required_seconds := 0.75 if escalating else 3.0
+	var required_seconds := 0.15 if critical_escalation else (0.75 if escalating else 3.0)
 	if stable_seconds < required_seconds:
 		return &""
 	return desired
@@ -75,12 +82,14 @@ func desired_state(
 	variant_id: StringName,
 	recent_danger: bool = false,
 ) -> StringName:
-	if variant_id == &"boss":
-		return STATE_BOSS
-	var alive := model.alive_enemy_count()
-	var wave_index := model.spell_book.wave_index_of(model.tick)
 	var starting_hp := maxi(model.config.base_hp_start, 1)
 	var hp_ratio := float(model.base_hp) / float(starting_hp)
+	if variant_id == &"boss":
+		return STATE_BOSS_CRITICAL if hp_ratio < CRITICAL_HEALTH_RATIO else STATE_BOSS
+	if hp_ratio < CRITICAL_HEALTH_RATIO:
+		return STATE_CRITICAL
+	var alive := model.alive_enemy_count()
+	var wave_index := model.spell_book.wave_index_of(model.tick)
 	if recent_danger or hp_ratio <= 0.45 or alive >= 8:
 		return STATE_HIGH
 	if alive >= 4 or wave_index >= 1:
@@ -94,5 +103,7 @@ func _rank(state_id: StringName) -> int:
 			return 1
 		STATE_HIGH, STATE_BOSS:
 			return 2
+		STATE_CRITICAL, STATE_BOSS_CRITICAL:
+			return 3
 		_:
 			return 0
