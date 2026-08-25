@@ -1,5 +1,7 @@
 extends SceneTree
 
+const PREFERENCES_PATH := "user://title_music_continuity_test.cfg"
+
 var _failures: Array[String] = []
 
 
@@ -8,6 +10,7 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_remove_preferences()
 	var music := root.get_node_or_null("Music")
 	var game := root.get_node_or_null("Game")
 	_check(music != null, "Music autoload is available")
@@ -15,11 +18,13 @@ func _run() -> void:
 	if music != null and game != null:
 		await _exercise_transition(music, game)
 		await _clean_up(music, game)
+	_remove_preferences()
 	call_deferred("_finish")
 
 
 func _exercise_transition(music: Node, game: Node) -> void:
 	var title: Node = load("res://scenes/title.tscn").instantiate()
+	title.call("set_preferences_path", PREFERENCES_PATH)
 	root.add_child(title)
 	await process_frame
 	await process_frame
@@ -59,6 +64,11 @@ func _clean_up(music: Node, game: Node) -> void:
 	music.call("stop")
 	for _frame: int in range(8):
 		await process_frame
+
+
+func _remove_preferences() -> void:
+	if FileAccess.file_exists(PREFERENCES_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PREFERENCES_PATH))
 
 
 func _finish() -> void:
