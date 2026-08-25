@@ -49,7 +49,9 @@ func _run() -> void:
 		"downloaded cue resolved the wrong stream",
 	)
 	music.call("stop")
-	await process_frame
+	for _frame: int in range(8):
+		await process_frame
+	await create_timer(0.25).timeout
 	_finish()
 
 
