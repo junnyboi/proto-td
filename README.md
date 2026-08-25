@@ -23,6 +23,17 @@ godot --headless --fixed-fps 60 --path . --quit-after 120
 
 Documentation-only changes do not require an engine check. Run focused tests or manual previews when they are useful for the code being changed. Web export and browser checks are release-only.
 
+## Web export and optional music packs
+
+The Web preset keeps the title theme in the initial PCK and excludes the six battle tracks. After importing the project, export the base bundle and build the three minimal act packs:
+
+```bash
+godot --headless --path . --export-release Web build/web/index.html
+godot --headless --path . --script tools/build_music_packs.gd
+```
+
+The pack builder writes `build/web/packs/music-act-{1,2,3}.pck` and prints each exact byte count and SHA-256. The Web host must pass one `--music-pack=ACT|URL|SHA256|BYTES` argument per pack. `Music` downloads the requested act on first use, verifies and caches it, mounts it with `ProjectSettings.load_resource_pack()`, and remains silent rather than blocking gameplay if the transfer fails.
+
 ## Architecture
 
 Authoritative battle state lives under `sim/` and advances deterministically in ticks. Runtime nodes and scenes project that state for the player. Views should not become an independent source of battle truth.
