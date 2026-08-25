@@ -21,6 +21,8 @@ const PACK_STATE_FAILED := &"failed"
 var _act := 0
 var _state: StringName = &"unconfigured"
 var _initialized := false
+var _compact := false
+var _ui_scale := 1.0
 var _music: Node = null
 var _status_label: Label = null
 var _progress: ProgressBar = null
@@ -67,18 +69,42 @@ func retry_button() -> Button:
 	return _retry
 
 
+func set_ui_scale(scale: float) -> void:
+	_ui_scale = maxf(scale, 1.0)
+	if is_node_ready():
+		set_compact(_compact)
+
+
 func set_compact(compact: bool) -> void:
-	custom_minimum_size = Vector2(270.0 if compact else 360.0, 48.0 if compact else 52.0)
+	_compact = compact
+	custom_minimum_size = Vector2(
+		_scaled(270.0 if compact else 360.0),
+		_scaled(48.0 if compact else 52.0),
+	)
 	if _status_label != null:
-		StagingSkinType.apply_display_type(_status_label, 11 if compact else 13, IVORY, 560)
+		StagingSkinType.apply_display_type(
+			_status_label,
+			roundi(_scaled(11.0 if compact else 13.0)),
+			IVORY,
+			560,
+		)
 	if _progress != null:
-		_progress.custom_minimum_size.x = 150.0 if compact else 220.0
+		_progress.custom_minimum_size.x = _scaled(150.0 if compact else 220.0)
 	if _retry != null:
-		_retry.custom_minimum_size = Vector2(72.0 if compact else 82.0, 32.0 if compact else 34.0)
+		_retry.custom_minimum_size = Vector2(
+			_scaled(72.0 if compact else 82.0),
+			_scaled(32.0 if compact else 34.0),
+		)
+		StagingSkinType.apply_display_type(
+			_retry,
+			roundi(_scaled(12.0)),
+			BRIGHT_GOLD,
+			620,
+		)
 
 
 func _build_ui() -> void:
-	custom_minimum_size = Vector2(360.0, 52.0)
+	custom_minimum_size = Vector2(_scaled(360.0), _scaled(52.0))
 	add_theme_stylebox_override(&"panel", _panel_style())
 
 	var margin := MarginContainer.new()
@@ -105,12 +131,12 @@ func _build_ui() -> void:
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	StagingSkinType.apply_display_type(_status_label, 13, IVORY, 560)
+	StagingSkinType.apply_display_type(_status_label, roundi(_scaled(13.0)), IVORY, 560)
 	transfer.add_child(_status_label)
 
 	_progress = ProgressBar.new()
 	_progress.name = "DownloadProgress"
-	_progress.custom_minimum_size = Vector2(220.0, 5.0)
+	_progress.custom_minimum_size = Vector2(_scaled(220.0), _scaled(5.0))
 	_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_progress.show_percentage = false
 	_progress.min_value = 0.0
@@ -124,11 +150,11 @@ func _build_ui() -> void:
 	_retry.name = "RetryButton"
 	_retry.text = "RETRY"
 	_retry.tooltip_text = "Retry music download. Gameplay remains available without it."
-	_retry.custom_minimum_size = Vector2(82.0, 34.0)
+	_retry.custom_minimum_size = Vector2(_scaled(82.0), _scaled(34.0))
 	_retry.focus_mode = Control.FOCUS_ALL
 	_retry.mouse_filter = Control.MOUSE_FILTER_STOP
 	_retry.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	StagingSkinType.apply_display_type(_retry, 12, BRIGHT_GOLD, 620)
+	StagingSkinType.apply_display_type(_retry, roundi(_scaled(12.0)), BRIGHT_GOLD, 620)
 	_retry.add_theme_stylebox_override(
 		&"normal", StagingSkinType.clean_button_style(Color(VOID, 0.76), Color(GOLD, 0.46)),
 	)
@@ -195,6 +221,10 @@ func _on_retry_pressed() -> void:
 
 func _roman_act() -> String:
 	return ["I", "II", "III"][_act - 1] if _act >= 1 and _act <= 3 else "—"
+
+
+func _scaled(value: float) -> float:
+	return value * _ui_scale
 
 
 func _panel_style() -> StyleBoxFlat:
