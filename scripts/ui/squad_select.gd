@@ -67,18 +67,27 @@ func _ready() -> void:
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
 	LunarisOpsType.apply_panel(_shell.reading_plate() as PanelContainer, &"screen")
 
+	var surface := VBoxContainer.new()
+	surface.name = "MissionCommandSurface"
+	surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	surface.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	surface.add_theme_constant_override(&"separation", 12)
+	_shell.content_host().add_child(surface)
 	var scroll := ScrollContainer.new()
 	scroll.name = "MissionCommandScroll"
-	var scroll_content := _shell.add_dialog_scroll(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	surface.add_child(scroll)
 	var column := VBoxContainer.new()
 	column.name = "MissionCommandColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 16)
-	scroll_content.add_child(column)
+	scroll.add_child(column)
 	column.add_child(_build_header())
 	column.add_child(_build_body())
-	column.add_child(_build_footer())
+	surface.add_child(_build_footer())
 
 	_prefill()
 	_refresh()
@@ -378,6 +387,7 @@ func _build_footer() -> BoxContainer:
 	_actions = GridContainer.new()
 	_actions.name = "MissionActions"
 	_actions.columns = 3
+	_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_actions.add_theme_constant_override(&"h_separation", 10)
 	_actions.add_theme_constant_override(&"v_separation", 10)
 	_footer.add_child(_actions)
@@ -398,6 +408,7 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	button.name = node_name
 	button.text = text_value
 	button.custom_minimum_size = Vector2(170.0, 62.0)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.set_presentation_text(text_value, text_value)
 	LunarisOpsType.apply_button(button, role)
 	var presentation := button.get_node("PresentationLabel") as Label

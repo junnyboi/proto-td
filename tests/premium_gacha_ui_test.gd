@@ -1,8 +1,5 @@
 extends SceneTree
 
-const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
-const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
-
 var _failures: Array[String] = []
 
 
@@ -11,19 +8,16 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var context := RuntimeContext.build()
-	var created: Dictionary = CampaignStateV3.create(99, 1, context)
-	_check(created.get("accepted", false), "campaign fixture failed")
-	if not created.get("accepted", false):
-		_finish()
-		return
 	var game: Node = root.get_node_or_null("Game")
 	_check(game != null, "Game autoload missing")
 	if game == null:
 		_finish()
 		return
-	game.set("campaign", created["value"])
-	game.set("campaign_active", true)
+	game.call("set_run_seed", 99)
+	_check(bool(game.call("start_campaign", false, true)), "durable campaign fixture failed")
+	if not bool(game.get("campaign_active")):
+		_finish()
+		return
 	var screen: Node = load("res://scenes/gacha.tscn").instantiate()
 	root.add_child(screen)
 	await process_frame
@@ -48,6 +42,37 @@ func _run() -> void:
 			if card != null:
 				var portrait := card.find_child("Portrait", true, false) as TextureRect
 				_check(portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
+
+	var before_cancel: Dictionary = game.get("campaign").runtime_projection()
+	pull.pressed.emit()
+	await process_frame
+	var confirmation := screen.find_child("PullConfirmationLayer", true, false) as Control
+	var confirm_pull := screen.find_child("ConfirmPremiumPull", true, false) as Button
+	var cancel_pull := screen.find_child("CancelPremiumPull", true, false) as Button
+	_check(confirmation != null and confirmation.visible, "pull confirmation did not open")
+	_check(confirm_pull != null and cancel_pull != null, "pull confirmation actions are missing")
+	_check(game.get("campaign").runtime_projection() == before_cancel, "opening confirmation mutated campaign state")
+	if cancel_pull != null:
+		cancel_pull.pressed.emit()
+	await process_frame
+	_check(confirmation != null and not confirmation.visible, "cancel did not close pull confirmation")
+	_check(game.get("campaign").runtime_projection() == before_cancel, "cancel mutated campaign state")
+
+	pull.pressed.emit()
+	await process_frame
+	_check(confirmation != null and confirmation.visible, "pull confirmation did not reopen after cancel")
+	if confirm_pull != null:
+		confirm_pull.pressed.emit()
+	await process_frame
+	var after_confirm: Dictionary = game.get("campaign").runtime_projection()
+	_check(
+		int(after_confirm["marks"]) == int(before_cancel["marks"]) - 40,
+		"Confirm did not charge the authoritative pull cost; status=%s" % (screen.find_child("PullStatusLabel", true, false) as Label).text,
+	)
+	var committed_reveal := screen.find_child("PullRevealLayer", true, false) as Control
+	_check(committed_reveal != null and committed_reveal.visible, "accepted Confirm did not begin receipt reveal")
+	screen.call("_finish_reveal")
+	await process_frame
 
 	var five_star := _sample_pull(5, true)
 	screen.call("_begin_reveal", five_star)
@@ -81,7 +106,18 @@ func _run() -> void:
 
 	game.set("campaign_active", false)
 	game.set("campaign", null)
-	screen.queue_free()
+	game.set("campaign_store", null)
+	var parent := screen.get_parent()
+	if parent != null:
+		parent.remove_child(screen)
+	screen.free()
+	var music := root.get_node_or_null("Music")
+	if music != null and music.has_method("stop"):
+		music.call("stop")
+	var sfx := root.get_node_or_null("Sfx")
+	if sfx != null and sfx.has_method("stop_all"):
+		sfx.call("stop_all")
+	await create_timer(0.25).timeout
 	_finish()
 
 

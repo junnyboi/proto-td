@@ -1,8 +1,10 @@
 extends Control
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
+const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const HARD_PITY_WINDOW := 10
 const FIVE_STAR_RARITY := 5
@@ -20,6 +22,7 @@ var _action_grid: GridContainer
 var _screen_margin: MarginContainer
 var _pity_label: Label
 var _pity_segments: HBoxContainer
+var _pull_confirmation: Dictionary = {}
 
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
@@ -42,8 +45,9 @@ func _ready() -> void:
 	_game = get_node_or_null("/root/Game")
 	if _game != null:
 		_game.set("content", self)
-	Style.add_backdrop(self)
+	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	_build_screen()
+	_build_pull_confirmation()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
@@ -55,11 +59,20 @@ func _exit_tree() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _is_revealing or not event.is_pressed() or event.is_echo():
+	if not event.is_pressed() or event.is_echo():
 		return
-	if event.is_action(&"ui_accept") or event.is_action(&"ui_cancel"):
+	if _is_revealing and (event.is_action(&"ui_accept") or event.is_action(&"ui_cancel")):
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
+		return
+	var confirmation_overlay := _pull_confirmation.get(&"overlay") as Control
+	if confirmation_overlay != null and confirmation_overlay.visible and event.is_action(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_pull_cancelled()
+		return
+	if event.is_action(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_back_pressed()
 
 
 func _build_screen() -> void:
@@ -161,6 +174,23 @@ func _build_screen() -> void:
 	_pull_button.pressed.connect(_on_pull_pressed)
 	_pull_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_action_grid.add_child(_pull_button)
+
+
+func _build_pull_confirmation() -> void:
+	_pull_confirmation = DialogType.create(
+		self,
+		"PullConfirmationLayer",
+		"CONFIRM RESONANCE",
+		"Align one signal through the random premium pool.",
+		"RESONATE",
+		"CANCEL",
+	)
+	var confirm := _pull_confirmation.get(&"confirm") as Button
+	var cancel := _pull_confirmation.get(&"cancel") as Button
+	confirm.name = "ConfirmPremiumPull"
+	cancel.name = "CancelPremiumPull"
+	confirm.pressed.connect(_on_confirm_pull)
+	cancel.pressed.connect(_on_pull_cancelled)
 
 
 func _build_reveal_layer() -> void:
@@ -285,6 +315,12 @@ func _refresh() -> void:
 	for index: int in _pity_segments.get_child_count():
 		var segment := _pity_segments.get_child(index) as ColorRect
 		segment.color = Style.GOLD if index < pity_streak else Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
+	var confirm_body := _pull_confirmation.get(&"body") as Label
+	if confirm_body != null:
+		confirm_body.text = (
+			"One random signal • %d Marks\nBalance  %d → %d Marks\n"
+			+ "5-star guarantee in %d %s. Every accepted resonance grants exactly one life."
+		) % [cost, marks, maxi(0, marks - cost), guarantee_in, "pull" if guarantee_in == 1 else "pulls"]
 	if attempt_pending:
 		_status_label.text = "Resolve the active operation before using premium resonance."
 	elif marks < cost:
@@ -298,7 +334,11 @@ func _rebuild_cards(projection: Dictionary) -> void:
 	var owned := {}
 	for hero: Dictionary in projection["premium_heroes"]:
 		owned[String(hero["premium_id"])] = hero
-	for row: Dictionary in projection["premium_pool"]:
+	var pool: Array = projection["premium_pool"].duplicate(true)
+	pool.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("rarity", 4)) > int(b.get("rarity", 4))
+	)
+	for row: Dictionary in pool:
 		_hero_grid.add_child(_hero_card(row, owned.get(String(row["premium_id"]), {})))
 
 
@@ -306,12 +346,12 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.custom_minimum_size = Vector2(280, 380)
-	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else &"quiet")
+	var rarity := int(catalog.get("rarity", 4))
+	panel.custom_minimum_size = Vector2(360 if rarity == FIVE_STAR_RARITY else 260, 410 if rarity == FIVE_STAR_RARITY else 350)
+	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else (&"result" if rarity == FIVE_STAR_RARITY else &"quiet"))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 9)
 	panel.add_child(box)
-	var rarity := int(catalog.get("rarity", 4))
 	var rarity_label := _label("%d-STAR PREMIUM" % rarity, &"eyebrow")
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rarity_label.add_theme_color_override(&"font_color", Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN)
@@ -319,7 +359,7 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var portrait := TextureRect.new()
 	portrait.name = "Portrait"
 	portrait.texture = Art.texture(StringName(catalog["portrait_asset_id"]))
-	portrait.custom_minimum_size = Vector2(220, 210)
+	portrait.custom_minimum_size = Vector2(260 if rarity == FIVE_STAR_RARITY else 200, 250 if rarity == FIVE_STAR_RARITY else 190)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(portrait)
@@ -375,13 +415,33 @@ func _on_pull_pressed() -> void:
 	if _is_revealing:
 		_finish_reveal()
 		return
+	if _pull_button.disabled:
+		return
+	Sfx.play("ui_click")
+	DialogType.show_dialog(_pull_confirmation, _pull_button)
+
+
+func _on_pull_cancelled() -> void:
+	Sfx.play("ui_back")
+	DialogType.hide_dialog(_pull_confirmation)
+
+
+func _on_confirm_pull() -> void:
+	var overlay := _pull_confirmation.get(&"overlay") as Control
+	if overlay == null or not overlay.visible:
+		return
+	DialogType.set_pending(_pull_confirmation, true, "ALIGNING…")
 	_pull_button.disabled = true
 	_status_label.text = "Aligning the reliquary signal…"
 	var committed: Dictionary = _game.call("pull_premium_hero")
 	if not committed.get("accepted", false):
+		DialogType.set_pending(_pull_confirmation, false)
+		DialogType.hide_dialog(_pull_confirmation)
 		_status_label.text = _error_copy(StringName(committed.get("error_code", &"unknown_error")))
 		_refresh()
 		return
+	DialogType.set_pending(_pull_confirmation, false)
+	DialogType.hide_dialog(_pull_confirmation)
 	var result: Dictionary = committed.get("result", {})
 	var pull: Dictionary = result.get("premium_pull", {})
 	_refresh()

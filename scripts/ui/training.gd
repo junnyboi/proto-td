@@ -206,6 +206,7 @@ func _build_shell() -> void:
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "ReliquaryAtelierShell"
 	_shell.preferred_size = SHELL_SIZE
+	_shell.full_safe_area = true
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
 	(_shell.reading_plate() as PanelContainer).name = "TrainingShell"
