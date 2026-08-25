@@ -11,40 +11,22 @@ const AetheriaLocaleSelectorType := preload(
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const TITLE_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const TITLE_LOOP := preload("res://assets/title/lunaris-title-loop.ogv")
-const TITLE_COMPOSITE_SHADER := """
+const TITLE_VIDEO_SHADER := """
 shader_type canvas_item;
 render_mode unshaded;
 
-uniform sampler2D base_art : source_color, filter_linear_mipmap;
-uniform float motion_strength : hint_range(0.0, 1.0) = 0.72;
-uniform float video_detail_mix : hint_range(0.0, 1.0) = 0.58;
+uniform float sharpen_strength : hint_range(0.0, 1.0) = 0.22;
 
 void fragment() {
 	vec2 uv = UV;
-	vec2 video_step = TEXTURE_PIXEL_SIZE;
-	vec2 base_step = vec2(1.0 / 2560.0, 1.0 / 1440.0);
-
-	vec3 video_center = texture(TEXTURE, uv).rgb;
-	vec3 video_low = video_center * 0.40;
-	video_low += texture(TEXTURE, uv + vec2(video_step.x, 0.0)).rgb * 0.15;
-	video_low += texture(TEXTURE, uv - vec2(video_step.x, 0.0)).rgb * 0.15;
-	video_low += texture(TEXTURE, uv + vec2(0.0, video_step.y)).rgb * 0.15;
-	video_low += texture(TEXTURE, uv - vec2(0.0, video_step.y)).rgb * 0.15;
-
-	vec3 base_center = texture(base_art, uv).rgb;
-	vec3 base_low = base_center * 0.40;
-	base_low += texture(base_art, uv + vec2(base_step.x, 0.0)).rgb * 0.15;
-	base_low += texture(base_art, uv - vec2(base_step.x, 0.0)).rgb * 0.15;
-	base_low += texture(base_art, uv + vec2(0.0, base_step.y)).rgb * 0.15;
-	base_low += texture(base_art, uv - vec2(0.0, base_step.y)).rgb * 0.15;
-
-	vec3 low_frequency_delta = clamp(video_low - base_low, vec3(-0.20), vec3(0.20));
-	float motion_mask = smoothstep(0.012, 0.16, length(low_frequency_delta));
-	vec3 base_detail = base_center - base_low;
-	vec3 quiet_composite = base_center + low_frequency_delta * motion_strength;
-	vec3 moving_composite = video_center + base_detail * video_detail_mix;
-	vec3 composite = mix(quiet_composite, moving_composite, motion_mask * 0.68);
-	COLOR = vec4(clamp(composite, vec3(0.0), vec3(1.0)), 1.0);
+	vec2 step_size = TEXTURE_PIXEL_SIZE;
+	vec3 center = texture(TEXTURE, uv).rgb;
+	vec3 neighbors = texture(TEXTURE, uv + vec2(step_size.x, 0.0)).rgb;
+	neighbors += texture(TEXTURE, uv - vec2(step_size.x, 0.0)).rgb;
+	neighbors += texture(TEXTURE, uv + vec2(0.0, step_size.y)).rgb;
+	neighbors += texture(TEXTURE, uv - vec2(0.0, step_size.y)).rgb;
+	vec3 detail = center - neighbors * 0.25;
+	COLOR = vec4(clamp(center + detail * sharpen_strength, vec3(0.0), vec3(1.0)), 1.0);
 }
 """
 
@@ -65,7 +47,9 @@ var _archive_label: Label = null
 var _footer: MarginContainer = null
 var _lower_shade: ColorRect = null
 var _action_row: GridContainer = null
+var _fallback: TextureRect = null
 var _video: VideoStreamPlayer = null
+var _video_ready := false
 
 
 func _ready() -> void:
@@ -83,15 +67,24 @@ func _exit_tree() -> void:
 		Music.stop()
 
 
+func _process(_delta: float) -> void:
+	if _video_ready or _video == null or _fallback == null:
+		return
+	if _video.is_playing() and _video.get_stream_position() > 0.0:
+		_video_ready = true
+		_fallback.visible = false
+		set_process(false)
+
+
 func _build_screen() -> void:
-	var fallback := TextureRect.new()
-	fallback.name = "TitleFallback"
-	fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	fallback.texture = TITLE_ART
-	fallback.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	fallback.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(fallback)
+	_fallback = TextureRect.new()
+	_fallback.name = "TitleFallback"
+	_fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_fallback.texture = TITLE_ART
+	_fallback.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_fallback.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_fallback)
 
 	_video = VideoStreamPlayer.new()
 	_video.name = "LunarisTitleLoop"
@@ -103,12 +96,12 @@ func _build_screen() -> void:
 	_video.volume_db = -80.0
 	_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_video.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	var composite_shader := Shader.new()
-	composite_shader.code = TITLE_COMPOSITE_SHADER
-	var composite_material := ShaderMaterial.new()
-	composite_material.shader = composite_shader
-	composite_material.set_shader_parameter(&"base_art", TITLE_ART)
-	_video.material = composite_material
+	_video.modulate.a = 1.0
+	var video_shader := Shader.new()
+	video_shader.code = TITLE_VIDEO_SHADER
+	var video_material := ShaderMaterial.new()
+	video_material.shader = video_shader
+	_video.material = video_material
 	add_child(_video)
 	_video.play()
 

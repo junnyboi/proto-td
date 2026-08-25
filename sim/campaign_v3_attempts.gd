@@ -7,6 +7,7 @@ const CODEC_PATH := "res://sim/campaign_v3_codec.gd"
 const CampaignProgressionScript := preload("res://sim/campaign_progression.gd")
 const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
+const StateCodecScript := preload("res://sim/campaign_v3_state_codec.gd")
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
@@ -281,6 +282,10 @@ static func _derive_resolution(
 	var rewards: Array[Dictionary] = []
 	if first_clear:
 		rewards = _stage_rewards(stage_id, context)
+		if int(before["next_resolution_index"]) < int(before["premium_marks_started_at_resolution"]):
+			rewards = rewards.filter(func(reward: Dictionary) -> bool:
+				return reward["kind"] != "currency"
+			)
 	after["unlocked_traps"] = (after["unlocked_traps"] as Array).duplicate()
 	after["unlocked_spells"] = (after["unlocked_spells"] as Array).duplicate()
 	for reward: Dictionary in rewards:
@@ -288,6 +293,11 @@ static func _derive_resolution(
 			after["unlocked_traps"].append(reward["id"])
 		elif reward["kind"] == "spell":
 			after["unlocked_spells"].append(reward["id"])
+		elif reward["kind"] == "currency" and reward["id"] == "marks":
+			var marks_after_reward := int(after["marks"]) + int(reward["amount"])
+			if marks_after_reward > StateCodecScript.MARKS_MAX:
+				return _reject(&"marks_overflow")
+			after["marks"] = marks_after_reward
 	after["unlocked_traps"].sort()
 	after["unlocked_spells"].sort()
 	after["class_entitlements"] = _entitlements_for_stars(after["stage_stars"], context)

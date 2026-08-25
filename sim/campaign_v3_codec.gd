@@ -52,7 +52,7 @@ const LEGACY_HERO_KEYS := [
 	"recruitment_index", "recruited_after_resolution_index", "recruit_source",
 	"source_id", "name_version", "custom_callsign", "life_status", "death",
 ]
-const DATA_KEYS := [
+const PREPITY_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
@@ -60,7 +60,7 @@ const DATA_KEYS := [
 	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
 	"resolution_anchor", "last_resolution", "command_receipts",
 ]
-const PRECOMMAND_DATA_KEYS := [
+const PREPITY_PRECOMMAND_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
@@ -68,12 +68,37 @@ const PRECOMMAND_DATA_KEYS := [
 	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
 	"resolution_anchor", "last_resolution",
 ]
-const CORE_KEYS := [
+const PREPITY_CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
 	"unlocked_spells", "class_entitlements", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
+]
+const DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
+	"command_receipts",
+]
+const PRECOMMAND_DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
+]
+const CORE_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial",
 ]
 const HERO_KEYS := [
 	"hero_id", "acquisition_operator_def_id", "operator_def_id", "current_class_id",
@@ -257,6 +282,9 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 		"next_attempt_id": 1,
 		"next_resolution_index": 1,
 		"next_premium_pull_index": 0,
+		"premium_pity_started_at_pull": 0,
+		"premium_pity_streak": 0,
+		"premium_marks_started_at_resolution": 1,
 		"marks": int(campaign["initial_marks"]),
 		"stage_stars": [],
 		"unlocked_traps": [],
@@ -281,11 +309,11 @@ static func normalize_data(value: Variant, context: Dictionary) -> Dictionary:
 	if typeof(value) != TYPE_DICTIONARY:
 		return _reject(&"invalid_data_schema")
 	var source := value as Dictionary
-	var data: Dictionary = (
-		_upgrade_premium_data(source)
-		if source.keys() == LEGACY_DATA_KEYS
-		else source
-	)
+	var data: Dictionary = source
+	if source.keys() == LEGACY_DATA_KEYS:
+		data = _upgrade_premium_data(source)
+	elif source.keys() == PREPITY_DATA_KEYS:
+		data = _upgrade_pity_data(source)
 	if not _exact_keys(data, DATA_KEYS):
 		return _reject(&"invalid_data_schema")
 	if typeof(data["heroes"]) != TYPE_ARRAY or (data["heroes"] as Array).is_empty():
@@ -353,20 +381,23 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 		return _reject(&"invalid_checksum")
 	var source_data: Variant = parsed["data"]
 	if typeof(source_data) == TYPE_DICTIONARY and (source_data as Dictionary).keys() in [
-		PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS, LEGACY_DATA_KEYS,
+		PRECOMMAND_DATA_KEYS, PREPITY_DATA_KEYS, PREPITY_PRECOMMAND_DATA_KEYS,
+		LEGACY_PRECOMMAND_DATA_KEYS, LEGACY_DATA_KEYS,
 	]:
 		if checksum != CanonicalJsonScript.sha256_hex(source_data):
 			return _reject(&"checksum_mismatch")
 		if CanonicalJsonScript.text(parsed) != source:
 			return _reject(&"noncanonical_save")
 		var upgrade_source: Dictionary = (source_data as Dictionary).duplicate(true)
-		if upgrade_source.keys() in [PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS]:
+		if upgrade_source.keys() in [
+			PRECOMMAND_DATA_KEYS, PREPITY_PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS,
+		]:
 			upgrade_source["command_receipts"] = []
-		var upgraded: Dictionary = (
-			_upgrade_premium_data(upgrade_source)
-			if upgrade_source.keys() == LEGACY_DATA_KEYS
-			else upgrade_source
-		)
+		var upgraded: Dictionary = upgrade_source
+		if upgrade_source.keys() == LEGACY_DATA_KEYS:
+			upgraded = _upgrade_premium_data(upgrade_source)
+		elif upgrade_source.keys() == PREPITY_DATA_KEYS:
+			upgraded = _upgrade_pity_data(upgrade_source)
 		var upgraded_save := encode_save(upgraded, context)
 		if not upgraded_save["accepted"]:
 			return upgraded_save
@@ -494,6 +525,10 @@ static func _upgrade_premium_data(value: Dictionary) -> Dictionary:
 		match key:
 			"next_premium_pull_index":
 				result[key] = 0
+			"premium_pity_started_at_pull", "premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"heroes":
 				result[key] = _upgrade_premium_heroes(value[key])
 			"resolution_anchor":
@@ -508,14 +543,64 @@ static func _upgrade_premium_data(value: Dictionary) -> Dictionary:
 	return result
 
 
+static func _upgrade_pity_data(value: Dictionary) -> Dictionary:
+	var activation_pull := int(value["next_premium_pull_index"])
+	var activation_resolution := int(value["next_resolution_index"])
+	var result := {}
+	for key: String in DATA_KEYS:
+		match key:
+			"premium_pity_started_at_pull":
+				result[key] = activation_pull
+			"premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = activation_resolution
+			"resolution_anchor":
+				result[key] = _upgrade_pity_anchor(
+					value[key], activation_pull, activation_resolution,
+				)
+			"last_resolution":
+				result[key] = _upgrade_pity_resolution(value[key], activation_pull)
+			"command_receipts":
+				result[key] = _upgrade_pity_command_records(value[key])
+			_:
+				result[key] = value[key].duplicate(true) \
+					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
 static func _upgrade_premium_core(value: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in CORE_KEYS:
 		match key:
 			"next_premium_pull_index":
 				result[key] = 0
+			"premium_pity_started_at_pull", "premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"heroes":
 				result[key] = _upgrade_premium_heroes(value[key])
+			_:
+				result[key] = value[key].duplicate(true) \
+					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
+static func _upgrade_pity_core(
+	value: Dictionary,
+	activation_pull: int,
+	activation_resolution: int,
+) -> Dictionary:
+	var result := {}
+	for key: String in CORE_KEYS:
+		match key:
+			"premium_pity_started_at_pull":
+				result[key] = activation_pull
+			"premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = activation_resolution
 			_:
 				result[key] = value[key].duplicate(true) \
 					if value[key] is Array or value[key] is Dictionary else value[key]
@@ -546,6 +631,23 @@ static func _upgrade_premium_anchor(value: Variant) -> Variant:
 	return result
 
 
+static func _upgrade_pity_anchor(
+	value: Variant,
+	activation_pull: int,
+	activation_resolution: int,
+) -> Variant:
+	if value == null:
+		return null
+	var result: Dictionary = value.duplicate(true)
+	result["before_core"] = _upgrade_pity_core(
+		value["before_core"], activation_pull, activation_resolution,
+	)
+	result["after_core"] = _upgrade_pity_core(
+		value["after_core"], activation_pull, activation_resolution,
+	)
+	return result
+
+
 static func _upgrade_premium_resolution(value: Variant) -> Variant:
 	if value == null:
 		return null
@@ -560,6 +662,12 @@ static func _upgrade_premium_resolution(value: Variant) -> Variant:
 	]:
 		result[key] = [] if key == "premium_life_losses" else value[key]
 	return result
+
+
+static func _upgrade_pity_resolution(value: Variant, activation_pull: int) -> Variant:
+	if value == null:
+		return null
+	return value.duplicate(true)
 
 
 static func _upgrade_premium_command_records(values: Array) -> Array[Dictionary]:
@@ -578,6 +686,37 @@ static func _upgrade_premium_command_records(values: Array) -> Array[Dictionary]
 	return result
 
 
+static func _upgrade_pity_command_records(values: Array) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for source: Dictionary in values:
+		var row: Dictionary = source.duplicate(true)
+		if row["verb"] == "pull_premium_hero":
+			var source_pull: Dictionary = row["receipt"]["premium_pull"]
+			var rarity := 5 if source_pull["premium_id"] == "lunaris_vessel" else 4
+			row["receipt"]["premium_pull"] = {
+				"premium_id": source_pull["premium_id"],
+				"hero_id": source_pull["hero_id"],
+				"pull_index": source_pull["pull_index"],
+				"new_hero": source_pull["new_hero"],
+				"revived": source_pull["revived"],
+				"lives_before": source_pull["lives_before"],
+				"lives_after": source_pull["lives_after"],
+				"pull_count_after": source_pull["pull_count_after"],
+				"marks_before": source_pull["marks_before"],
+				"marks_after": source_pull["marks_after"],
+				"rarity": rarity,
+				"five_star": rarity == 5,
+				"pity_eligible": false,
+				"pity_before": 0,
+				"pity_after": 0,
+				"pity_forced": false,
+				"guarantee_in_after": 10,
+				"save_revision": source_pull["save_revision"],
+			}
+		result.append(row)
+	return result
+
+
 static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in DATA_KEYS:
@@ -586,6 +725,10 @@ static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
 				result[key] = []
 			"next_premium_pull_index":
 				result[key] = 0
+			"premium_pity_started_at_pull", "premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"last_resolution":
 				result[key] = _upgrade_premium_resolution(value[key])
 			"class_entitlements":
@@ -610,6 +753,10 @@ static func _migrate_core(value: Dictionary, context: Dictionary) -> Dictionary:
 		match key:
 			"next_premium_pull_index":
 				result[key] = 0
+			"premium_pity_started_at_pull", "premium_pity_streak":
+				result[key] = 0
+			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"class_entitlements":
 				result[key] = _entitlements_for_stars(value["stage_stars"], context)
 			"tickets", "memorial":
@@ -845,12 +992,29 @@ static func _normalize_campaign(
 		if row["stage_id"] != "s%d" % (index + 1) or typeof(row["rewards"]) != TYPE_ARRAY:
 			return _reject(&"invalid_v3_stage_rewards")
 		var rewards: Array[Dictionary] = []
+		var marks_reward_count := 0
 		for reward: Variant in row["rewards"]:
-			if typeof(reward) != TYPE_DICTIONARY or not _exact_keys(reward, ["id", "kind"]):
+			if typeof(reward) != TYPE_DICTIONARY:
 				return _reject(&"invalid_v3_stage_rewards")
-			if String(reward["kind"]) not in ["trap", "spell"]:
+			var kind := String(reward.get("kind", ""))
+			if kind == "currency":
+				if (
+					not _exact_keys(reward, ["amount", "id", "kind"])
+					or String(reward["id"]) != "marks"
+					or typeof(reward["amount"]) != TYPE_INT
+					or int(reward["amount"]) != 40
+				):
+					return _reject(&"invalid_v3_stage_rewards")
+				marks_reward_count += 1
+				rewards.append({"amount": 40, "id": "marks", "kind": "currency"})
+			elif kind in ["trap", "spell"]:
+				if not _exact_keys(reward, ["id", "kind"]):
+					return _reject(&"invalid_v3_stage_rewards")
+				rewards.append({"id": String(reward["id"]), "kind": kind})
+			else:
 				return _reject(&"specialist_reward_forbidden")
-			rewards.append({"id": String(reward["id"]), "kind": String(reward["kind"])})
+		if marks_reward_count != 1:
+			return _reject(&"invalid_v3_stage_rewards")
 		stage_rewards.append({"rewards": rewards, "stage_id": String(row["stage_id"])})
 	var class_by_id := {}
 	for class_row: Dictionary in class_rows:
@@ -865,7 +1029,7 @@ static func _normalize_campaign(
 		var row := raw as Dictionary
 		if not _exact_keys(row, [
 			"callsign", "class_id", "operator_def_id", "portrait_asset_id",
-			"premium_id", "weight",
+			"premium_id", "rarity", "weight",
 		]):
 			return _reject(&"invalid_premium_pool")
 		var premium_id := String(row["premium_id"])
@@ -883,6 +1047,8 @@ static func _normalize_campaign(
 			or not class_by_id.has(class_id)
 			or String(class_by_id[class_id]["operator_def_id"]) != operator_id
 			or not portrait_ids.has(portrait_id)
+			or typeof(row["rarity"]) != TYPE_INT
+			or int(row["rarity"]) not in [4, 5]
 			or typeof(row["weight"]) != TYPE_INT
 			or int(row["weight"]) < 1
 			or int(row["weight"]) > 1000
@@ -897,8 +1063,19 @@ static func _normalize_campaign(
 			"operator_def_id": operator_id,
 			"portrait_asset_id": portrait_id,
 			"premium_id": premium_id,
+			"rarity": int(row["rarity"]),
 			"weight": int(row["weight"]),
 		})
+	var five_star_count := 0
+	var total_weight := 0
+	var five_star_weight := 0
+	for row: Dictionary in premium_rows:
+		total_weight += int(row["weight"])
+		if int(row["rarity"]) == 5:
+			five_star_count += 1
+			five_star_weight += int(row["weight"])
+	if five_star_count != 1 or total_weight != 40 or five_star_weight != 2:
+		return _reject(&"invalid_premium_pool")
 	return _accept({
 		"schema_version": SAVE_VERSION,
 		"name_version": definition.name_version,
@@ -1081,7 +1258,11 @@ static func _validate_v3_reward_projection(
 		entitlement_by_stage[row["stage_id"]].append(String(row["class_id"]))
 	var authored_by_stage := {}
 	for row: Dictionary in campaign["v3_stage_rewards"]:
-		authored_by_stage[String(row["stage_id"])] = row["rewards"]
+		var content_rewards: Array[Dictionary] = []
+		for reward: Dictionary in row["rewards"]:
+			if reward["kind"] != "currency":
+				content_rewards.append(reward)
+		authored_by_stage[String(row["stage_id"])] = content_rewards
 	for raw: Variant in stages:
 		if not raw is StageDef or raw.campaign_index < 1:
 			continue

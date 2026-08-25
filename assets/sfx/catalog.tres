@@ -13,10 +13,12 @@ entries = {
 &"base_breach": {"path": "res://assets/sfx/combat/base_breach.wav"},
 &"victory": {"path": "res://assets/sfx/combat/victory.wav"},
 &"defeat": {"path": "res://assets/sfx/combat/defeat.wav"},
-&"deploy": {"path": "res://assets/sfx/combat/deploy.wav"},
+&"deploy_ground": {"path": "res://assets/sfx/combat/deploy_ground.wav"},
+&"deploy_elevated": {"path": "res://assets/sfx/combat/deploy_elevated.wav"},
 &"trap_trigger": {"path": "res://assets/sfx/combat/trap_trigger.wav"}
 }
 aliases = {
+&"deploy": &"deploy_ground",
 &"leak": &"base_breach",
 &"trap_snap": &"trap_trigger"
 }

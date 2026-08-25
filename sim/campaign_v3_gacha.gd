@@ -9,6 +9,9 @@ const ClassDefScript := preload("res://data/class_def.gd")
 const StateCodecScript := preload("res://sim/campaign_v3_state_codec.gd")
 
 const D_PREMIUM_PULL := 605702925438635313
+const FIVE_STAR_RARITY := 5
+const HARD_PITY_STREAK := 9
+const HARD_PITY_WINDOW := 10
 
 
 static func execute(
@@ -60,6 +63,10 @@ static func execute(
 					"new_hero": receipt["new_hero"],
 					"revived": receipt["revived"],
 					"lives_after": receipt["lives_after"],
+					"rarity": receipt["rarity"],
+					"five_star": receipt["five_star"],
+					"pity_forced": receipt["pity_forced"],
+					"guarantee_in_after": receipt["guarantee_in_after"],
 					"save_revision": working["save_revision"],
 				},
 			},
@@ -77,11 +84,16 @@ static func _derive(data: Dictionary, context: Dictionary) -> Dictionary:
 	var pull_index := int(data["next_premium_pull_index"])
 	if pull_index >= StateCodecScript.U63_MAX:
 		return _reject(&"premium_pull_counter_exhausted")
+	var pity_eligible := pull_index >= int(data["premium_pity_started_at_pull"])
+	var pity_before := int(data["premium_pity_streak"]) if pity_eligible else 0
+	var pity_forced := pity_eligible and pity_before >= HARD_PITY_STREAK
 	var selected := _select_row(
 		context["campaign"]["premium_hero_rows"],
 		int(data["campaign_seed"]),
 		int(data["campaign_generation"]),
 		pull_index,
+		FIVE_STAR_RARITY if pity_forced else 0,
+		not pity_eligible,
 	)
 	if selected.is_empty():
 		return _reject(&"missing_premium_pool")
@@ -89,6 +101,8 @@ static func _derive(data: Dictionary, context: Dictionary) -> Dictionary:
 	working["heroes"] = (working["heroes"] as Array).duplicate(true)
 	working["memorial"] = (working["memorial"] as Array).duplicate(true)
 	var premium_id := String(selected["premium_id"])
+	var rarity := int(selected["rarity"])
+	var five_star := rarity == FIVE_STAR_RARITY
 	var hero := _premium_hero_by_id(working["heroes"], premium_id)
 	var new_hero := hero.is_empty()
 	var revived := false
@@ -131,6 +145,10 @@ static func _derive(data: Dictionary, context: Dictionary) -> Dictionary:
 			_remove_memorial(working["memorial"], String(hero["hero_id"]))
 	working["marks"] = int(data["marks"]) - cost
 	working["next_premium_pull_index"] = pull_index + 1
+	var pity_after := 0
+	if pity_eligible and not five_star:
+		pity_after = pity_before + 1
+	working["premium_pity_streak"] = pity_after
 	return {
 		"accepted": true,
 		"error_code": &"",
@@ -146,15 +164,31 @@ static func _derive(data: Dictionary, context: Dictionary) -> Dictionary:
 			"pull_count_after": int(hero["premium_pull_count"]),
 			"marks_before": int(data["marks"]),
 			"marks_after": int(working["marks"]),
+			"rarity": rarity,
+			"five_star": five_star,
+			"pity_eligible": pity_eligible,
+			"pity_before": pity_before,
+			"pity_after": pity_after,
+			"pity_forced": pity_forced,
+			"guarantee_in_after": HARD_PITY_WINDOW - pity_after,
 			"save_revision": 0,
 		},
 	}
 
 
-static func _select_row(rows: Array, seed_value: int, generation: int, pull_index: int) -> Dictionary:
+static func _select_row(
+	rows: Array,
+	seed_value: int,
+	generation: int,
+	pull_index: int,
+	required_rarity: int = 0,
+	legacy_uniform: bool = false,
+) -> Dictionary:
 	var total_weight := 0
 	for row: Dictionary in rows:
-		total_weight += int(row["weight"])
+		if required_rarity > 0 and int(row["rarity"]) != required_rarity:
+			continue
+		total_weight += 1 if legacy_uniform else int(row["weight"])
 	if total_weight <= 0:
 		return {}
 	var bits := HeroIdentityScript.splitmix64_bits(seed_value ^ D_PREMIUM_PULL)
@@ -165,7 +199,9 @@ static func _select_row(rows: Array, seed_value: int, generation: int, pull_inde
 	for character: String in hex:
 		slot = (slot * 16 + HeroIdentityScript.HEX.find(character)) % total_weight
 	for row: Dictionary in rows:
-		var weight := int(row["weight"])
+		if required_rarity > 0 and int(row["rarity"]) != required_rarity:
+			continue
+		var weight := 1 if legacy_uniform else int(row["weight"])
 		if slot < weight:
 			return row.duplicate(true)
 		slot -= weight

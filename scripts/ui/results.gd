@@ -78,6 +78,13 @@ func _ready() -> void:
 	var granted: Array = result.get("rewards_granted", [])
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
+		if reward.get("kind") == "currency" and reward.get("id") == "marks":
+			column.add_child(_label(
+				"Reward%d" % i,
+				"PREMIUM RESONANCE FUND  +%d MARKS" % int(reward.get("amount", 0)),
+				&"dense_heading",
+			))
+			continue
 		var reward_name := _reward_name(reward)
 		column.add_child(_label(
 			"Reward%d" % i,

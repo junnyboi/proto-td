@@ -434,12 +434,17 @@ func _detect_deploys() -> void:
 		var node: Node2D = _unit_nodes.get(u.id)
 		if node == null:
 			continue
-		var local_center := IsoProjection.face_center(u.cell, _is_lifted_cell(u.cell))
+		var elevated_placement := _is_lifted_cell(u.cell)
+		var local_center := IsoProjection.face_center(u.cell, elevated_placement)
 		if crouch_left < 0:
 			crouch_left = cfg.deploy_crouch_frames
-			_juice.dust(local_center)
+			if elevated_placement:
+				_juice.placement_elevated(local_center)
+				Sfx.play("deploy_elevated")
+			else:
+				_juice.placement_ground(local_center)
+				Sfx.play("deploy_ground")
 			_juice.crouch(node)
-			Sfx.play("deploy")
 		var next_left := maxi(crouch_left - 1, 0)
 		_deploy_seen[u.id] = next_left
 		var t := 1.0 - float(next_left) / float(cfg.deploy_crouch_frames)

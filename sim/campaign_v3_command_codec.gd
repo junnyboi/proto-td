@@ -17,17 +17,20 @@ const RECORD_KEYS := [
 const CHOICE_KEYS := ["hero_id", "to_class_id"]
 const VERBS := [
 	"begin_attempt", "resolve_attempt", "confirm_promotions", "pull_premium_hero",
-	"recruit_person",
+	"recruit_person", "rename_hero",
 ]
 const PREMIUM_PULL_KEYS := [
 	"premium_id", "hero_id", "pull_index", "new_hero", "revived", "lives_before",
-	"lives_after", "pull_count_after", "marks_before", "marks_after", "save_revision",
+	"lives_after", "pull_count_after", "marks_before", "marks_after", "rarity",
+	"five_star", "pity_eligible", "pity_before", "pity_after", "pity_forced",
+	"guarantee_in_after", "save_revision",
 ]
 const HISTORY_PATH := "res://sim/campaign_v3_history.gd"
 const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
 const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 
 
 static func normalize_records(
@@ -148,6 +151,19 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			):
 				return _reject(&"invalid_command_payload")
 			return _accept({"source": source, "source_id": source_id})
+		"rename_hero":
+			if value.keys() != ["hero_id", "callsign"]:
+				return _reject(&"invalid_command_payload")
+			if (
+				typeof(value["hero_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+				or typeof(value["callsign"]) != TYPE_STRING
+			):
+				return _reject(&"invalid_command_payload")
+			var hero_id := String(value["hero_id"])
+			var callsign := _trim_callsign(String(value["callsign"]))
+			if not _is_hex(hero_id, 16) or not HeroCodecScript.valid_callsign(callsign):
+				return _reject(&"invalid_callsign")
+			return _accept({"hero_id": hero_id, "callsign": callsign})
 	return _reject(&"invalid_command_payload")
 
 
@@ -292,7 +308,8 @@ static func _normalize_receipt(
 				return _reject(&"invalid_command_receipt")
 			for key: String in [
 				"pull_index", "lives_before", "lives_after", "pull_count_after",
-				"marks_before", "marks_after", "save_revision",
+				"marks_before", "marks_after", "rarity", "pity_before", "pity_after",
+				"guarantee_in_after", "save_revision",
 			]:
 				if typeof(pull[key]) != TYPE_INT:
 					return _reject(&"invalid_command_receipt")
@@ -301,6 +318,9 @@ static func _normalize_receipt(
 				or not _is_hex(String(pull["hero_id"]), 16)
 				or typeof(pull["new_hero"]) != TYPE_BOOL
 				or typeof(pull["revived"]) != TYPE_BOOL
+				or typeof(pull["five_star"]) != TYPE_BOOL
+				or typeof(pull["pity_eligible"]) != TYPE_BOOL
+				or typeof(pull["pity_forced"]) != TYPE_BOOL
 				or not _in_range(pull["pull_index"], 0, U63_MAX - 1)
 				or not _in_range(pull["lives_before"], 0, 999)
 				or not _in_range(pull["lives_after"], 1, 999)
@@ -311,6 +331,28 @@ static func _normalize_receipt(
 				or not _in_range(pull["marks_after"], 0, 1_000_000_000)
 				or int(pull["marks_before"]) - int(pull["marks_after"])
 					!= int(context["campaign"]["premium_pull_cost"])
+				or int(pull["rarity"]) not in [4, 5]
+				or bool(pull["five_star"]) != (int(pull["rarity"]) == 5)
+				or not _in_range(pull["pity_before"], 0, 9)
+				or not _in_range(pull["pity_after"], 0, 9)
+				or not _in_range(pull["guarantee_in_after"], 1, 10)
+				or int(pull["guarantee_in_after"]) != 10 - int(pull["pity_after"])
+				or bool(pull["pity_eligible"]) != (
+					int(pull["pull_index"]) >= int(data["premium_pity_started_at_pull"])
+				)
+				or not bool(pull["pity_eligible"]) and (
+					int(pull["pity_before"]) != 0
+					or int(pull["pity_after"]) != 0
+					or bool(pull["pity_forced"])
+				)
+				or bool(pull["pity_eligible"]) and bool(pull["five_star"])
+					and int(pull["pity_after"]) != 0
+				or bool(pull["pity_eligible"]) and not bool(pull["five_star"])
+					and int(pull["pity_after"]) != int(pull["pity_before"]) + 1
+				or bool(pull["pity_forced"]) != (
+					bool(pull["pity_eligible"]) and int(pull["pity_before"]) == 9
+				)
+				or bool(pull["pity_forced"]) and not bool(pull["five_star"])
 				or pull["save_revision"] != save_revision
 				or bool(pull["new_hero"]) != (int(pull["pull_count_after"]) == 1)
 				or bool(pull["revived"])
@@ -321,6 +363,7 @@ static func _normalize_receipt(
 			var persisted := _hero_by_id(data["heroes"], String(pull["hero_id"]))
 			if (
 				premium_row.is_empty()
+				or int(premium_row.get("rarity", 0)) != int(pull["rarity"])
 				or persisted.is_empty()
 				or persisted.get("hero_kind") != "premium"
 				or persisted.get("premium_id") != pull["premium_id"]
@@ -352,6 +395,24 @@ static func _normalize_receipt(
 			):
 				return _reject(&"command_receipt_mismatch")
 			return _accept({"recruitment": recruitment.duplicate(true)})
+		"rename_hero":
+			if value.keys() != ["rename"]:
+				return _reject(&"invalid_command_receipt")
+			var rename: Variant = value["rename"]
+			if (
+				typeof(rename) != TYPE_DICTIONARY
+				or rename.keys()
+				!= ["hero_id", "old_callsign", "new_callsign", "save_revision"]
+				or typeof(rename["old_callsign"]) != TYPE_STRING
+				or typeof(rename["new_callsign"]) != TYPE_STRING
+				or rename["hero_id"] != payload["hero_id"]
+				or rename["new_callsign"] != payload["callsign"]
+				or rename["save_revision"] != save_revision
+				or not HeroCodecScript.valid_callsign(rename["old_callsign"])
+				or not HeroCodecScript.valid_callsign(rename["new_callsign"])
+			):
+				return _reject(&"invalid_command_receipt")
+			return _accept({"rename": rename.duplicate(true)})
 	return _reject(&"invalid_command_receipt")
 
 
@@ -421,6 +482,16 @@ static func _signed_63(value: Variant) -> bool:
 
 static func _in_range(value: Variant, minimum: int, maximum: int) -> bool:
 	return typeof(value) == TYPE_INT and int(value) >= minimum and int(value) <= maximum
+
+
+static func _trim_callsign(value: String) -> String:
+	var first := 0
+	var last := value.length()
+	while first < last and value.substr(first, 1) in [" ", "\t"]:
+		first += 1
+	while last > first and value.substr(last - 1, 1) in [" ", "\t"]:
+		last -= 1
+	return value.substr(first, last - first)
 
 
 static func _ascii(value: String) -> bool:

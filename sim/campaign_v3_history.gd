@@ -21,7 +21,8 @@ const RECEIPT_KEYS := [
 	"memorial_ids", "marks_before",
 	"marks_after", "strategic_body_hash_before", "strategic_body_hash_after",
 ]
-const REWARD_KEYS := ["id", "kind"]
+const CONTENT_REWARD_KEYS := ["id", "kind"]
+const CURRENCY_REWARD_KEYS := ["amount", "id", "kind"]
 const XP_KEYS := ["hero_id", "delta"]
 const PREMIUM_LOSS_KEYS := [
 	"hero_id", "premium_id", "lives_before", "lives_after", "locked_out",
@@ -240,8 +241,9 @@ static func _validate_transition(
 ) -> Dictionary:
 	for key: String in [
 		"campaign_uid", "campaign_seed", "campaign_generation", "next_recruitment_index",
-		"next_attempt_id", "next_premium_pull_index", "offers", "promotion_receipts",
-		"promotion_proofs", "tickets",
+		"next_attempt_id", "next_premium_pull_index", "premium_pity_started_at_pull",
+		"premium_pity_streak", "premium_marks_started_at_resolution", "offers",
+		"promotion_receipts", "promotion_proofs", "tickets",
 	]:
 		if before[key] != after[key]:
 			return _reject(&"resolution_anchor_transition_mismatch")
@@ -249,16 +251,24 @@ static func _validate_transition(
 		return _reject(&"resolution_marks_mismatch")
 	if after["marks"] != receipt["marks_after"]:
 		return _reject(&"resolution_marks_mismatch")
-	if receipt["marks_before"] != receipt["marks_after"]:
-		return _reject(&"resolution_marks_mismatch")
 	var star_transition := _validate_stars(before, after, receipt)
 	if not star_transition["accepted"]:
 		return star_transition
 	var first_clear: bool = receipt["result"] == "clear" and receipt["stars_before"] == 0
 	var expected_rewards: Array = _stage_rewards(receipt["stage_id"], context) \
 		if first_clear else []
+	if int(before["next_resolution_index"]) < int(before["premium_marks_started_at_resolution"]):
+		expected_rewards = expected_rewards.filter(func(reward: Dictionary) -> bool:
+			return reward["kind"] != "currency"
+		)
 	if receipt["rewards_granted"] != expected_rewards:
 		return _reject(&"receipt_rewards_mismatch")
+	var expected_marks_after := int(receipt["marks_before"])
+	for reward: Dictionary in expected_rewards:
+		if reward["kind"] == "currency" and reward["id"] == "marks":
+			expected_marks_after += int(reward["amount"])
+	if int(receipt["marks_after"]) != expected_marks_after:
+		return _reject(&"resolution_marks_mismatch")
 	var expected_entitlements := _array_difference(
 		after["class_entitlements"], before["class_entitlements"],
 	)
@@ -623,15 +633,29 @@ static func _normalize_rewards(value: Variant) -> Dictionary:
 	var out: Array[Dictionary] = []
 	var seen := {}
 	for raw: Variant in value:
-		if typeof(raw) != TYPE_DICTIONARY or raw.keys() != REWARD_KEYS:
+		if typeof(raw) != TYPE_DICTIONARY:
 			return _reject(&"invalid_resolution_rows")
-		if String(raw["kind"]) not in ["trap", "spell"] or not _ascii(String(raw["id"])):
+		var kind := String(raw.get("kind", ""))
+		if kind == "currency":
+			if (
+				raw.keys() != CURRENCY_REWARD_KEYS
+				or String(raw["id"]) != "marks"
+				or typeof(raw["amount"]) != TYPE_INT
+				or int(raw["amount"]) != 40
+			):
+				return _reject(&"invalid_resolution_rows")
+		elif raw.keys() != CONTENT_REWARD_KEYS or kind not in ["trap", "spell"]:
+			return _reject(&"invalid_resolution_rows")
+		if not _ascii(String(raw["id"])):
 			return _reject(&"invalid_resolution_rows")
 		var key := "%s:%s" % [raw["kind"], raw["id"]]
 		if seen.has(key):
 			return _reject(&"invalid_resolution_rows")
 		seen[key] = true
-		out.append({"id": String(raw["id"]), "kind": String(raw["kind"])})
+		if kind == "currency":
+			out.append({"amount": int(raw["amount"]), "id": "marks", "kind": "currency"})
+		else:
+			out.append({"id": String(raw["id"]), "kind": kind})
 	return _accept(out)
 
 

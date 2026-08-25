@@ -13,7 +13,7 @@ paid_offers = Array[Dictionary]([{
 "offer_id": "p16_caster_contract",
 "operator_def_id": "recruit"
 }])
-environment_sha256 = "c8707ad886034a045eec9fdf85264a20898359e6b5802de874f93a9832a81480"
+environment_sha256 = "f935fa8d0f7d81b9537d45c41e7e4fd319bed62b8b4e62b661f8de2f8a2d4bd5"
 starter_rows = Array[Dictionary]([{
 "class_id": "recruit",
 "operator_def_id": "recruit",
@@ -56,28 +56,28 @@ stage_class_entitlements = Array[Dictionary]([{
 "stage_id": "s7"
 }])
 v3_stage_rewards = Array[Dictionary]([{
-"rewards": [],
+"rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s1"
 }, {
-"rewards": [{"id": "spike_plate", "kind": "trap"}],
+"rewards": [{"id": "spike_plate", "kind": "trap"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s2"
 }, {
-"rewards": [{"id": "tar_pit", "kind": "trap"}],
+"rewards": [{"id": "tar_pit", "kind": "trap"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s3"
 }, {
-"rewards": [{"id": "bolt", "kind": "spell"}],
+"rewards": [{"id": "bolt", "kind": "spell"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s4"
 }, {
-"rewards": [{"id": "charm", "kind": "spell"}],
+"rewards": [{"id": "charm", "kind": "spell"}, {"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s5"
 }, {
-"rewards": [],
+"rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s6"
 }, {
-"rewards": [],
+"rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s7"
 }, {
-"rewards": [],
+"rewards": [{"amount": 40, "id": "marks", "kind": "currency"}],
 "stage_id": "s8"
 }])
 portrait_asset_ids = Array[StringName]([&"portrait_archive_caster", &"portrait_lunaris_vessel", &"portrait_recruit_00", &"portrait_recruit_01", &"portrait_recruit_02", &"portrait_recruit_03", &"portrait_recruit_04", &"portrait_recruit_05", &"portrait_recruit_06", &"portrait_recruit_07", &"portrait_reliquary_duelist"])
@@ -88,19 +88,22 @@ premium_hero_rows = Array[Dictionary]([{
 "operator_def_id": "caster_1",
 "portrait_asset_id": "portrait_archive_caster",
 "premium_id": "archive_caster",
-"weight": 1
+"rarity": 4,
+"weight": 19
 }, {
 "callsign": "Lunaris Vessel",
 "class_id": "sorcerer",
 "operator_def_id": "caster_2",
 "portrait_asset_id": "portrait_lunaris_vessel",
 "premium_id": "lunaris_vessel",
-"weight": 1
+"rarity": 5,
+"weight": 2
 }, {
 "callsign": "Reliquary Duelist",
 "class_id": "sword_saint",
 "operator_def_id": "guard_2",
 "portrait_asset_id": "portrait_reliquary_duelist",
 "premium_id": "reliquary_duelist",
-"weight": 1
+"rarity": 4,
+"weight": 19
 }])

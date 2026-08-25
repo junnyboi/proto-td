@@ -7,9 +7,11 @@ extends RefCounted
 
 const CampaignV3CodecScript := preload("res://sim/campaign_v3_codec.gd")
 const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
+const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 const PromotionScript := preload("res://sim/campaign_v3_promotion.gd")
 const AttemptsScript := preload("res://sim/campaign_v3_attempts.gd")
 const RecruitmentScript := preload("res://sim/campaign_v3_recruitment.gd")
+const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
@@ -79,10 +81,26 @@ func runtime_projection() -> Dictionary:
 	for row: Dictionary in _data["stage_stars"]:
 		stars[StringName(row["stage_id"])] = int(row["stars"])
 	var heroes: Array[Dictionary] = []
+	var fallen_heroes: Array[Dictionary] = []
 	for hero: Dictionary in _data["heroes"]:
+		var projected := hero.duplicate(true)
+		var display := HeroCodecScript.display_callsign(hero)
+		projected["callsign"] = String(display.get("value", hero["hero_id"]))
 		if hero["life_status"] == "ready":
-			heroes.append(hero.duplicate(true))
+			heroes.append(projected)
+		else:
+			fallen_heroes.append(projected)
 	heroes.sort_custom(
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return (
+				int(a["recruitment_index"]) < int(b["recruitment_index"])
+				or (
+					int(a["recruitment_index"]) == int(b["recruitment_index"])
+					and String(a["hero_id"]) < String(b["hero_id"])
+				)
+			)
+	)
+	fallen_heroes.sort_custom(
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return (
 				int(a["recruitment_index"]) < int(b["recruitment_index"])
@@ -116,12 +134,17 @@ func runtime_projection() -> Dictionary:
 		"next_attempt_id": int(_data["next_attempt_id"]),
 		"attempt_pending": int(_data["next_attempt_id"]) != int(_data["next_resolution_index"]),
 		"next_premium_pull_index": int(_data["next_premium_pull_index"]),
+		"premium_pity_started_at_pull": int(_data["premium_pity_started_at_pull"]),
+		"premium_pity_streak": int(_data["premium_pity_streak"]),
+		"premium_guarantee_in": 10 - int(_data["premium_pity_streak"]),
 		"marks": int(_data["marks"]),
 		"premium_pull_cost": int(_context["campaign"]["premium_pull_cost"]),
 		"premium_pool": (_context["campaign"]["premium_hero_rows"] as Array).duplicate(true),
 		"premium_heroes": premium_heroes,
 		"stage_ids": stage_ids,
 		"ready_heroes": heroes,
+		"fallen_heroes": fallen_heroes,
+		"memorial": (_data["memorial"] as Array).duplicate(true),
 		"unlocked_operators": operators,
 		"unlocked_traps": traps,
 		"unlocked_spells": spells,
@@ -224,6 +247,17 @@ func pull_premium_hero(
 	expected_save_revision: Variant,
 ) -> Dictionary:
 	return GachaScript.execute(self, command_id, expected_save_revision)
+
+
+func rename_hero(
+	command_id: Variant,
+	expected_save_revision: Variant,
+	hero_id: Variant,
+	callsign: Variant,
+) -> Dictionary:
+	return RenamingScript.execute(
+		self, command_id, expected_save_revision, hero_id, callsign,
+	)
 
 
 func restore_factory() -> Callable:

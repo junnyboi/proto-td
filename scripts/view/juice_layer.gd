@@ -40,6 +40,7 @@ var _stamp_stagger_left := 0
 var _shake_frames_left := 0
 var _shake_total := 0
 var _shake_amplitude := 0.0
+var _last_placement_profile: StringName = &""
 
 
 func setup(juice_config: JuiceConfig, grid_root: Node2D) -> void:
@@ -86,18 +87,103 @@ func _process(_delta: float) -> void:
 	_age_shake()
 
 
-## item 1: manifest-backed dust ring at the grid-local landing cell
-func dust(local_center: Vector2) -> void:
-	for i: int in 6:
-		var sprite := _make_map_texture(VFX_DEPLOY_DUST, Vector2(12, 12), "MapTransientDust")
-		var dir := Vector2.RIGHT.rotated(TAU * float(i) / 6.0)
+## Normal-ground placement: warm granular dust and grit burst radially across
+## the diamond face. The generated deployment SFX provides the matching earthy
+## thunk and amber lock-in accent.
+func placement_ground(local_center: Vector2) -> void:
+	_last_placement_profile = &"ground"
+	for i: int in cfg.deploy_ground_particles:
+		var sprite := _make_map_texture(
+			VFX_DEPLOY_DUST,
+			Vector2(12, 12),
+			"PlacementGroundDust",
+		)
+		sprite.modulate = cfg.deploy_ground_color
+		var angle := TAU * (float(i) + 0.5) / float(cfg.deploy_ground_particles)
+		var dir := Vector2.RIGHT.rotated(angle)
 		_transients.append({
-			"node": sprite, "left": cfg.deploy_dust_frames,
-			"total": cfg.deploy_dust_frames, "velocity_screen": dir * 4.0,
-			"map_anchor": local_center, "offset_screen": Vector2(-6, -6),
-			"travel_screen": Vector2.ZERO, "kind": "dust",
+			"node": sprite,
+			"left": cfg.deploy_dust_frames,
+			"total": cfg.deploy_dust_frames,
+			"velocity_screen": dir * cfg.deploy_ground_speed_px,
+			"map_anchor": local_center,
+			"offset_screen": Vector2(-6, -6),
+			"travel_screen": Vector2.ZERO,
+			"kind": "placement_ground",
 		})
 		_position_map_transient(_transients.back())
+
+
+## Elevated placement: crystalline shards launch upward/outward while a cyan
+## ring expands across the top face and a brief energy column contracts upward.
+func placement_elevated(local_center: Vector2) -> void:
+	_last_placement_profile = &"elevated"
+	for i: int in cfg.deploy_elevated_shards:
+		var shard := _make_map_texture(
+			VFX_KILL_SPARK,
+			Vector2(10, 10),
+			"PlacementElevatedShard",
+		)
+		shard.modulate = cfg.deploy_elevated_shard_color
+		var spread := lerpf(-0.75, 0.75, float(i) / float(maxi(cfg.deploy_elevated_shards - 1, 1)))
+		var dir := Vector2(spread, -1.0).normalized()
+		_transients.append({
+			"node": shard,
+			"left": cfg.deploy_elevated_frames,
+			"total": cfg.deploy_elevated_frames,
+			"velocity_screen": dir * cfg.deploy_elevated_shard_speed_px,
+			"map_anchor": local_center,
+			"offset_screen": Vector2(-5, -5),
+			"travel_screen": Vector2.ZERO,
+			"spin": (-0.12 if i % 2 == 0 else 0.12),
+			"kind": "placement_elevated_shard",
+		})
+		_position_map_transient(_transients.back())
+	var ring := _make_placement_ring(cfg.deploy_elevated_ring_color)
+	_transients.append({
+		"node": ring,
+		"left": cfg.deploy_elevated_frames,
+		"total": cfg.deploy_elevated_frames,
+		"map_anchor": local_center,
+		"offset_screen": Vector2.ZERO,
+		"travel_screen": Vector2.ZERO,
+		"kind": "placement_elevated_ring",
+	})
+	_position_map_transient(_transients.back())
+	var beam := _make_map_rect(
+		cfg.deploy_elevated_beam_color,
+		Vector2(8, 54),
+		"PlacementElevatedBeam",
+	)
+	beam.pivot_offset = Vector2(4, 54)
+	_transients.append({
+		"node": beam,
+		"left": cfg.deploy_elevated_frames,
+		"total": cfg.deploy_elevated_frames,
+		"map_anchor": local_center,
+		"offset_screen": Vector2(-4, -54),
+		"travel_screen": Vector2.ZERO,
+		"kind": "placement_elevated_beam",
+	})
+	_position_map_transient(_transients.back())
+
+
+## Backward-compatible generic dust entry for presentation callers that do not
+## know the placement tile type.
+func dust(local_center: Vector2) -> void:
+	placement_ground(local_center)
+
+
+func last_placement_profile() -> StringName:
+	return _last_placement_profile
+
+
+func placement_emitter_count() -> int:
+	var count := 0
+	for transient: Dictionary in _transients:
+		if String(transient.get("kind", "")).begins_with("placement_"):
+			count += 1
+	return count
 
 
 ## item 1: landing crouch — Y-squash on the unit node, restored linearly
@@ -351,6 +437,21 @@ func _make_map_rect(color: Color, rect_size: Vector2, node_name: String) -> Colo
 	return rect
 
 
+func _make_placement_ring(color: Color) -> Line2D:
+	var ring := Line2D.new()
+	ring.name = "PlacementElevatedRing"
+	ring.width = 2.0
+	ring.default_color = color
+	ring.antialiased = false
+	var face := IsoProjection.face_polygon()
+	var points := PackedVector2Array(face)
+	points.append(face[0])
+	ring.points = points
+	ring.scale = Vector2.ONE / _grid_root.scale.x
+	_map_transient_root.add_child(ring)
+	return ring
+
+
 func _sync_map_transient_transform() -> void:
 	if _map_transient_root == null or _grid_root == null:
 		return
@@ -362,12 +463,19 @@ func _sync_map_transient_transform() -> void:
 
 
 func _position_map_transient(tr: Dictionary) -> void:
-	var node := tr["node"] as Control
-	node.scale = Vector2.ONE / _grid_root.scale.x
 	var screen_offset: Vector2 = tr["offset_screen"]
 	var screen_travel: Vector2 = tr["travel_screen"]
-	node.position = tr["map_anchor"] as Vector2 \
+	var target_position := tr["map_anchor"] as Vector2 \
 		+ (screen_offset + screen_travel) / _grid_root.scale.x
+	var control := tr["node"] as Control
+	if control != null:
+		control.scale = Vector2.ONE / _grid_root.scale.x
+		control.position = target_position
+		return
+	var node_2d := tr["node"] as Node2D
+	if node_2d != null:
+		node_2d.scale = Vector2.ONE / _grid_root.scale.x
+		node_2d.position = target_position
 
 
 func _age_transients() -> void:
@@ -389,10 +497,28 @@ func _age_transients() -> void:
 			_position_map_transient(tr)
 		if tr.has("spin"):
 			(tr["node"] as Control).rotation += float(tr["spin"])
+		var progress := 1.0 - float(tr["left"]) / float(tr["total"])
+		if kind == "placement_ground" or kind == "placement_elevated_shard":
+			var particle := tr["node"] as CanvasItem
+			var particle_modulate := particle.modulate
+			particle_modulate.a = clampf((1.0 - progress) * 1.75, 0.0, 1.0)
+			particle.modulate = particle_modulate
+		elif kind == "placement_elevated_ring":
+			var ring := tr["node"] as Line2D
+			var ring_scale := lerpf(0.55, 1.55, progress) / _grid_root.scale.x
+			ring.scale = Vector2.ONE * ring_scale
+			ring.modulate.a = 1.0 - progress
+		elif kind == "placement_elevated_beam":
+			var beam := tr["node"] as ColorRect
+			var inverse_grid_scale := 1.0 / _grid_root.scale.x
+			beam.scale = Vector2(
+				lerpf(1.0, 0.35, progress),
+				lerpf(1.0, 0.08, progress),
+			) * inverse_grid_scale
+			beam.modulate.a = 1.0 - progress
 		if kind == "crouch":
 			var node := tr["node"] as Node2D
-			var t := 1.0 - float(tr["left"]) / float(tr["total"])
-			node.scale = Vector2(1.15, 0.7).lerp(Vector2.ONE, t)
+			node.scale = Vector2(1.15, 0.7).lerp(Vector2.ONE, progress)
 		kept.append(tr)
 	_transients = kept
 
