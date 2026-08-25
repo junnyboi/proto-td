@@ -6,6 +6,7 @@ extends RefCounted
 ## writes the model.
 
 const WHEEL_STEP_PX := 96.0
+const PORTRAIT_MAX_SCALE := 2.0
 const PRIMARY_DRAG_THRESHOLD_PX := 10.0
 const INERTIA_MAX_SPEED_PX_PER_SECOND := 1800.0
 const INERTIA_START_SPEED_PX_PER_SECOND := 90.0
@@ -15,10 +16,6 @@ const INERTIA_VELOCITY_BLEND := 0.45
 const INERTIA_SAMPLE_MIN_SECONDS := 1.0 / 240.0
 const INERTIA_SAMPLE_MAX_SECONDS := 0.08
 const INERTIA_RELEASE_MAX_IDLE_USEC := 120_000
-const SHARED_ACT1_FIT_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
-const SHARED_ACT1_PANORAMA_SIZE := Vector2(512.0, 256.0)
-const SAFE_MARGIN_X := 16.0
-const SAFE_TOP := 104.0
 
 var scale := 1.0
 var origin := Vector2.ZERO
@@ -44,41 +41,30 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 	cancel_inertia()
 	_stage = stage
 	_viewport = viewport
+	_safe_rect = Rect2(Vector2.ZERO, viewport)
 	if _is_portrait():
 		var content := _content_box(stage)
-		# Portrait deliberately fills from the rendered terrain height. The same
-		# scalar is applied on both axes. Each content axis unlocks only when its
-		# rendered envelope exceeds the viewport on that axis.
+		# Portrait stages are rotated clockwise by BattleView. Fill from rendered
+		# terrain height with one uniform scalar, then unlock each content axis only
+		# when its sprite-aware envelope exceeds the viewport on that axis.
 		scale = IsoProjection.height_fill_scale(stage, viewport)
 		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
-		_safe_rect = Rect2(Vector2.ZERO, viewport)
 		bounds = _pan_bounds_for(content, _safe_rect)
 		if not _initialized:
-			pan = Vector2(bounds.position.x, clampf(0.0, bounds.position.y, bounds.end.y))
+			# Clockwise rotation moves the authored right-side base to the left side
+			# of the isometric diamond, so boot at the maximum horizontal pan.
+			pan = Vector2(bounds.end.x, clampf(0.0, bounds.position.y, bounds.end.y))
 			_initialized = true
 		else:
 			pan = IsoProjection.clamp_pan(pan, bounds)
 		return
-	_safe_rect = (
-		_shared_act1_safe_rect(viewport) if stage.id in SHARED_ACT1_FIT_STAGE_IDS else Rect2()
-	)
-	if not _safe_rect.has_area():
-		scale = (
-			IsoProjection.fit_scale(stage.grid_size(), viewport)
-			if viewport.x < viewport.y
-			else IsoProjection.height_fill_scale(stage, viewport)
-		)
-		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
-		bounds = IsoProjection.pan_bounds(stage, viewport, scale)
-	else:
-		var content := shared_act1_content_box(stage)
-		scale = shared_act1_fit_scale(stage, _safe_rect.size)
-		origin = _safe_rect.get_center() - content.get_center() * scale
-		bounds = _safe_pan_bounds(content)
+	scale = IsoProjection.height_fill_scale(stage, viewport)
+	origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
+	bounds = IsoProjection.pan_bounds(stage, viewport, scale)
 	if not _initialized:
-		# TD stages terminate at the base on the right: boot with that critical
-		# edge visible, while Y stays centered until the player scrolls.
+		# Landscape-authored stages terminate at the base on the right.
 		pan = Vector2(bounds.position.x, 0.0)
+		pan = IsoProjection.clamp_pan(pan, bounds)
 		_initialized = true
 	else:
 		pan = IsoProjection.clamp_pan(pan, bounds)
@@ -189,31 +175,6 @@ func ensure_local_rect_visible(local_rect: Rect2) -> bool:
 	return changed
 
 
-static func shared_act1_content_box(stage: StageDef) -> Rect2:
-	var content := IsoProjection.terrain_box(stage)
-	var center := IsoProjection.project(Vector2(stage.grid_size()) * 0.5)
-	var panorama := Rect2(center - SHARED_ACT1_PANORAMA_SIZE * 0.5, SHARED_ACT1_PANORAMA_SIZE)
-	return content.merge(panorama)
-
-
-static func shared_act1_fit_scale(stage: StageDef, available: Vector2) -> float:
-	var content := shared_act1_content_box(stage)
-	var candidate := minf(available.x / content.size.x, available.y / content.size.y)
-	return clampf(floorf(candidate * 4.0) * 0.25, 1.0, 3.0)
-
-
-func _shared_act1_safe_rect(viewport: Vector2) -> Rect2:
-	var bottom := 374.0 if viewport.x < viewport.y else (218.0 if viewport.x < 1200.0 else 154.0)
-	return Rect2(
-		Vector2(SAFE_MARGIN_X, SAFE_TOP),
-		Vector2(viewport.x - SAFE_MARGIN_X * 2.0, viewport.y - SAFE_TOP - bottom),
-	)
-
-
-func _safe_pan_bounds(content: Rect2) -> Rect2:
-	return _pan_bounds_for(content, _safe_rect)
-
-
 func _pan_bounds_for(content: Rect2, visible_rect: Rect2) -> Rect2:
 	var screen := Rect2(origin + content.position * scale, content.size * scale)
 	var min_pan := Vector2.ZERO
@@ -228,11 +189,7 @@ func _pan_bounds_for(content: Rect2, visible_rect: Rect2) -> Rect2:
 
 
 func _content_box(stage: StageDef) -> Rect2:
-	return (
-		shared_act1_content_box(stage)
-		if stage.id in SHARED_ACT1_FIT_STAGE_IDS
-		else IsoProjection.content_box(stage.grid_size())
-	)
+	return IsoProjection.content_box(stage.grid_size())
 
 
 func _is_portrait() -> bool:

@@ -1,6 +1,6 @@
 # Protos Faction Concepts
 
-The four factions are designed as distinct character pools, gameplay promises, and heraldic identities for future recruitment banners. All faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). **Lunaris Reliquary is locked** through the approved launch ensemble and production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md); the other three factions use the redesign directions documented in [`FACTION_REDESIGN_PROPOSAL.md`](FACTION_REDESIGN_PROPOSAL.md).
+The four factions are designed as distinct character pools, gameplay promises, and heraldic identities for future recruitment banners. All faction and character work follows the canonical premium adult gacha visual contract in [`ART_DIRECTION.md`](ART_DIRECTION.md). **Lunaris Reliquary is locked** through the approved launch ensemble and production sheets in [`LUNARIS_CHARACTER_DESIGNS.md`](LUNARIS_CHARACTER_DESIGNS.md); the other three factions use the redesign directions documented in [`FACTION_REDESIGN_PROPOSAL.md`](FACTION_REDESIGN_PROPOSAL.md). Runtime presentation rules for these canonical symbols and banners are defined in [`factions/UI_INTEGRATION.md`](factions/UI_INTEGRATION.md).
 
 ## Canonical faction directions
 
@@ -32,9 +32,9 @@ The obsolete documentation-only refinement has been removed. This deletion does 
 
 | Design ID | Role | Full-figure production sheet | In-game chibi sheet |
 |---|---|---|---|
-| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | [`lunaris_vessel_design_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_design_sheet.png) | [`lunaris_vessel_chibi_sheet.png`](characters/lunaris-reliquary/lunaris_vessel_chibi_sheet.png) |
-| `reliquary_duelist` | Jade-cyan spellblade duelist | [`reliquary_duelist_design_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_design_sheet.png) | [`reliquary_duelist_chibi_sheet.png`](characters/lunaris-reliquary/reliquary_duelist_chibi_sheet.png) |
-| `archive_caster` | Orbital-astrolabe ritual caster | [`archive_caster_design_sheet.png`](characters/lunaris-reliquary/archive_caster_design_sheet.png) | [`archive_caster_chibi_sheet.png`](characters/lunaris-reliquary/archive_caster_chibi_sheet.png) |
+| `lunaris_vessel` | Central flagship heroine and lunar-focus wielder | [`lunaris_vessel_design_sheet.png`](lunaris-reliquary/lunaris_vessel_design_sheet.png) | [`lunaris_vessel_chibi_sheet.png`](lunaris-reliquary/lunaris_vessel_chibi_sheet.png) |
+| `reliquary_duelist` | Jade-cyan spellblade duelist | [`reliquary_duelist_design_sheet.png`](lunaris-reliquary/reliquary_duelist_design_sheet.png) | [`reliquary_duelist_chibi_sheet.png`](lunaris-reliquary/reliquary_duelist_chibi_sheet.png) |
+| `archive_caster` | Orbital-astrolabe ritual caster | [`archive_caster_design_sheet.png`](lunaris-reliquary/archive_caster_design_sheet.png) | [`archive_caster_chibi_sheet.png`](lunaris-reliquary/archive_caster_chibi_sheet.png) |
 
 The sheets preserve the approved loading and title identities while expanding hidden costume and weapon construction for future portraits, animated sprite references, UI art, and gameplay readability. Personal names remain intentionally unassigned until narrative naming is approved.
 

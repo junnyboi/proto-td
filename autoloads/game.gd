@@ -6,6 +6,7 @@ const TITLE_SCENE_PATH := "res://scenes/title.tscn"
 const BATTLE_SCENE_PATH := "res://scenes/battle.tscn"
 const STAGING_SCENE_PATH := "res://scenes/staging.tscn"
 const TRAINING_SCENE_PATH := "res://scenes/training.tscn"
+const GACHA_SCENE_PATH := "res://scenes/gacha.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
@@ -271,6 +272,7 @@ func record_result(result: int, stars: int) -> bool:
 		),
 		"xp_awards": resolution["xp_awards"].duplicate(true),
 		"dead_hero_ids": resolution["dead_hero_ids"].duplicate(),
+		"premium_life_losses": resolution["premium_life_losses"].duplicate(true),
 	}
 	_pending_battle_ticket = {}
 	_campaign_battle_active = false
@@ -283,6 +285,20 @@ func commit_campaign_command(command: Dictionary) -> Dictionary:
 	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
 		command, campaign_store,
 	)
+	if committed["accepted"]:
+		campaign = committed["state"]
+	return committed
+
+
+func pull_premium_hero() -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	var projection: Dictionary = campaign.runtime_projection()
+	var command_id := "runtime:gacha:%s:%d" % [
+		campaign.campaign_uid(), int(projection["next_premium_pull_index"]),
+	]
+	var command: Dictionary = campaign.pull_premium_hero(command_id, campaign.save_revision())
+	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(command, campaign_store)
 	if committed["accepted"]:
 		campaign = committed["state"]
 	return committed
@@ -418,6 +434,10 @@ func _leave_training() -> void:
 		open_squad_select()
 	else:
 		open_staging()
+
+
+func open_gacha() -> void:
+	_swap_content.call_deferred(GACHA_SCENE_PATH)
 
 
 func open_stage_select() -> void:

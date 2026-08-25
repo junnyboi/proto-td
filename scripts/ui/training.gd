@@ -11,6 +11,7 @@ const TrainingRosterRowType := preload("res://scripts/ui/components/training_ros
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const SHELL_SIZE := Vector2(1210.0, 660.0)
@@ -29,6 +30,7 @@ const ERROR_KEYS := {
 	&"xp_overflow": &"ui.training.error.progression_failed",
 	&"save_failed": &"ui.save.write_failed",
 	&"dead_hero": &"ui.training.error.dead_hero",
+	&"premium_hero_untrainable": &"ui.training.error.premium_hero_untrainable",
 	&"locked_class": &"ui.training.error.locked_class",
 	&"already_promoted_class": &"ui.training.error.already_promoted_class",
 	&"illegal_class_edge": &"ui.training.error.illegal_class_edge",
@@ -62,6 +64,7 @@ const ERROR_FALLBACKS := {
 	&"xp_overflow": "Training progression could not be applied.",
 	&"save_failed": "The campaign could not be saved.",
 	&"dead_hero": "Dead recruits cannot train.",
+	&"premium_hero_untrainable": "Premium heroes use fixed elite kits and cannot train.",
 	&"locked_class": "This training path is not unlocked yet.",
 	&"already_promoted_class": "No further training path is available.",
 	&"illegal_class_edge": "That class is not a legal next duty.",
@@ -283,14 +286,8 @@ func _build_roster_list() -> ScrollContainer:
 		row.configure(
 			summary,
 			class_label(String(summary["current_class_id"])),
-			_status_text(String(summary["life_status"])),
-			_fmt(
-				&"ui.training.xp_progress", "XP {current} / {required}",
-				{
-					&"current": int(summary["xp"]),
-					&"required": int(summary["xp_required"]),
-				},
-			),
+			_status_text(summary),
+			_progress_text(summary),
 				_eligibility_text(summary),
 			)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
@@ -347,18 +344,28 @@ func _build_inspector() -> AetheriaPanelType:
 		identity.add_child(_label(
 			"SelectedContinuity", "SAME PERSON. NEW DUTY.", &"eyebrow",
 		))
-		var xp_bar := ProgressBar.new()
-		xp_bar.name = "SelectedXpBar"
-		xp_bar.max_value = int(selected["xp_required"])
-		xp_bar.value = mini(int(selected["xp"]), int(selected["xp_required"]))
-		xp_bar.show_percentage = false
-		xp_bar.custom_minimum_size.y = 10.0
-		LunarisOpsType.apply_progress(xp_bar)
-		identity.add_child(xp_bar)
-		identity.add_child(_label(
-			"SelectedXp", "XP %d / %d" % [selected["xp"], selected["xp_required"]],
-			&"metric",
-		))
+		if bool(selected.get("is_premium", false)):
+			identity.add_child(_label(
+				"SelectedPremiumStatus",
+				"PREMIUM • FIXED ELITE KIT • %d %s" % [
+					int(selected["premium_lives"]),
+					"LIFE" if int(selected["premium_lives"]) == 1 else "LIVES",
+				],
+				&"metric",
+			))
+		else:
+			var xp_bar := ProgressBar.new()
+			xp_bar.name = "SelectedXpBar"
+			xp_bar.max_value = int(selected["xp_required"])
+			xp_bar.value = mini(int(selected["xp"]), int(selected["xp_required"]))
+			xp_bar.show_percentage = false
+			xp_bar.custom_minimum_size.y = 10.0
+			LunarisOpsType.apply_progress(xp_bar)
+			identity.add_child(xp_bar)
+			identity.add_child(_label(
+				"SelectedXp", "XP %d / %d" % [selected["xp"], selected["xp_required"]],
+				&"metric",
+			))
 		dossier.add_child(identity)
 		column.add_child(dossier)
 	column.add_child(_label(
@@ -753,12 +760,20 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	var top := BoxContainer.new()
 	top.name = "%sTop" % node_name
 	top.add_theme_constant_override(&"separation", 16)
+	var identity := HBoxContainer.new()
+	identity.name = "%sFactionIdentity" % node_name
+	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_theme_constant_override(&"separation", 12)
+	var symbol := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0)
+	symbol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	identity.add_child(symbol)
 	var title_block := VBoxContainer.new()
 	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_block.add_theme_constant_override(&"separation", 0)
 	title_block.add_child(_label("%sEyebrow" % node_name, "RELIQUARY ATELIER", &"eyebrow"))
 	title_block.add_child(_label("%sHeading" % node_name, title.to_upper(), &"title"))
-	top.add_child(title_block)
+	identity.add_child(title_block)
+	top.add_child(identity)
 	if Game.training_return_path == &"mission":
 		_return_mission = _button(
 			"ReturnToMission", "<- RETURN TO MISSION", true, &"gold",
@@ -887,6 +902,11 @@ func _eligibility_text(summary: Dictionary) -> String:
 			)
 		&"dead_hero":
 			result = _t(&"ui.training.reason.dead", "Dead. Training unavailable.")
+		&"premium_hero_untrainable":
+			result = _t(
+				&"ui.training.reason.premium",
+				"Premium hero. Fixed elite kit; training unavailable.",
+			)
 		&"locked_class":
 			result = _t(
 				&"ui.training.error.locked_class", "This training path is not unlocked yet.",
@@ -901,10 +921,23 @@ func _eligibility_text(summary: Dictionary) -> String:
 	return result
 
 
-func _status_text(life_status: String) -> String:
+func _status_text(summary: Dictionary) -> String:
+	var life_status := String(summary["life_status"])
+	if bool(summary.get("is_premium", false)):
+		return "PREMIUM READY" if life_status == "ready" else "PREMIUM LOCKED"
 	if life_status == "ready":
 		return _t(&"ui.training.status.ready", "READY")
 	return _t(&"ui.training.status.dead", "DEAD")
+
+
+func _progress_text(summary: Dictionary) -> String:
+	if bool(summary.get("is_premium", false)):
+		var lives := int(summary["premium_lives"])
+		return "FIXED KIT • %d %s" % [lives, "LIFE" if lives == 1 else "LIVES"]
+	return _fmt(
+		&"ui.training.xp_progress", "XP {current} / {required}",
+		{&"current": int(summary["xp"]), &"required": int(summary["xp_required"])},
+	)
 
 
 func _combat_text(choice: Dictionary) -> String:

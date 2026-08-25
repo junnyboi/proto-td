@@ -16,7 +16,12 @@ const RECORD_KEYS := [
 ]
 const CHOICE_KEYS := ["hero_id", "to_class_id"]
 const VERBS := [
-	"begin_attempt", "resolve_attempt", "confirm_promotions", "recruit_person",
+	"begin_attempt", "resolve_attempt", "confirm_promotions", "pull_premium_hero",
+	"recruit_person",
+]
+const PREMIUM_PULL_KEYS := [
+	"premium_id", "hero_id", "pull_index", "new_hero", "revived", "lives_before",
+	"lives_after", "pull_count_after", "marks_before", "marks_after", "save_revision",
 ]
 const HISTORY_PATH := "res://sim/campaign_v3_history.gd"
 const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
@@ -126,6 +131,10 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 				return _reject(&"invalid_command_payload")
 			var choices := normalize_choices(value["choices"])
 			return _accept({"choices": choices["value"]}) if choices["accepted"] else choices
+		"pull_premium_hero":
+			if not value.is_empty():
+				return _reject(&"invalid_command_payload")
+			return _accept({})
 		"recruit_person":
 			if value.keys() != ["source", "source_id"]:
 				return _reject(&"invalid_command_payload")
@@ -275,6 +284,51 @@ static func _normalize_receipt(
 			):
 				return _reject(&"command_receipt_mismatch")
 			return _accept({"promotion": normalized})
+		"pull_premium_hero":
+			if value.keys() != ["premium_pull"]:
+				return _reject(&"invalid_command_receipt")
+			var pull: Variant = value["premium_pull"]
+			if typeof(pull) != TYPE_DICTIONARY or pull.keys() != PREMIUM_PULL_KEYS:
+				return _reject(&"invalid_command_receipt")
+			for key: String in [
+				"pull_index", "lives_before", "lives_after", "pull_count_after",
+				"marks_before", "marks_after", "save_revision",
+			]:
+				if typeof(pull[key]) != TYPE_INT:
+					return _reject(&"invalid_command_receipt")
+			if (
+				not _ascii_id(String(pull["premium_id"]))
+				or not _is_hex(String(pull["hero_id"]), 16)
+				or typeof(pull["new_hero"]) != TYPE_BOOL
+				or typeof(pull["revived"]) != TYPE_BOOL
+				or not _in_range(pull["pull_index"], 0, U63_MAX - 1)
+				or not _in_range(pull["lives_before"], 0, 999)
+				or not _in_range(pull["lives_after"], 1, 999)
+				or int(pull["lives_after"]) != int(pull["lives_before"]) + 1
+				or not _in_range(pull["pull_count_after"], 1, 999)
+				or int(pull["pull_count_after"]) < int(pull["lives_after"])
+				or not _in_range(pull["marks_before"], 0, 1_000_000_000)
+				or not _in_range(pull["marks_after"], 0, 1_000_000_000)
+				or int(pull["marks_before"]) - int(pull["marks_after"])
+					!= int(context["campaign"]["premium_pull_cost"])
+				or pull["save_revision"] != save_revision
+				or bool(pull["new_hero"]) != (int(pull["pull_count_after"]) == 1)
+				or bool(pull["revived"])
+					and (bool(pull["new_hero"]) or int(pull["lives_before"]) != 0)
+			):
+				return _reject(&"invalid_command_receipt")
+			var premium_row := _premium_row(context, String(pull["premium_id"]))
+			var persisted := _hero_by_id(data["heroes"], String(pull["hero_id"]))
+			if (
+				premium_row.is_empty()
+				or persisted.is_empty()
+				or persisted.get("hero_kind") != "premium"
+				or persisted.get("premium_id") != pull["premium_id"]
+				or int(persisted.get("premium_pull_count", 0)) < int(pull["pull_count_after"])
+				or int(data["next_premium_pull_index"]) <= int(pull["pull_index"])
+			):
+				return _reject(&"command_receipt_mismatch")
+			return _accept({"premium_pull": pull.duplicate(true)})
 		"recruit_person":
 			if value.keys() != ["recruitment"]:
 				return _reject(&"invalid_command_receipt")
@@ -319,6 +373,13 @@ static func _ticket_by_attempt(tickets: Array, attempt_id: int) -> Dictionary:
 	for ticket: Dictionary in tickets:
 		if ticket["attempt_id"] == attempt_id:
 			return ticket
+	return {}
+
+
+static func _premium_row(context: Dictionary, premium_id: String) -> Dictionary:
+	for row: Dictionary in context["campaign"]["premium_hero_rows"]:
+		if row["premium_id"] == premium_id:
+			return row
 	return {}
 
 

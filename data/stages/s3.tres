@@ -6,54 +6,46 @@
 script = ExtResource("1")
 id = &"s3"
 title = "The Choke"
-grid_rows = PackedStringArray("XGGGGGGGGX", "GGGGGGGGGG", "SGGGGXGGGG", "GGEGGXGGGG", "GGGGGGGGGB", "GGGGGGGGGG")
-paths = Array[PackedVector2Array]([PackedVector2Array(0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 4, 3, 4, 4, 5, 4, 6, 4, 7, 4, 8, 4, 9, 4)])
+grid_rows = PackedStringArray("..........", "SGGG......", "..XGXE....", "...GGGGGGB", "..XGX.....", "SGGG......")
+paths = Array[PackedVector2Array]([PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 3, 2, 3, 3, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3), PackedVector2Array(0, 5, 1, 5, 2, 5, 3, 5, 3, 4, 3, 3, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3)])
 waves = Array[Dictionary]([{
-"enemy_id": &"runner",
-"path_idx": 0,
-"tick": 60
-}, {
 "enemy_id": &"runner",
 "path_idx": 0,
 "tick": 90
 }, {
-"enemy_id": &"grunt",
-"path_idx": 0,
-"tick": 240
-}, {
-"enemy_id": &"grunt",
-"path_idx": 0,
-"tick": 330
-}, {
-"enemy_id": &"grunt",
-"path_idx": 0,
-"tick": 420
-}, {
-"enemy_id": &"grunt",
-"path_idx": 0,
-"tick": 510
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 150
 }, {
 "enemy_id": &"runner",
 "path_idx": 0,
-"tick": 520
+"tick": 210
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 600
+"tick": 450
+}, {
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 450
 }, {
 "enemy_id": &"runner",
 "path_idx": 0,
-"tick": 610
+"tick": 570
+}, {
+"enemy_id": &"grunt",
+"path_idx": 1,
+"tick": 570
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
 "tick": 690
 }, {
-"enemy_id": &"grunt",
-"path_idx": 0,
-"tick": 780
+"enemy_id": &"runner",
+"path_idx": 1,
+"tick": 690
 }])
-wave_starts = PackedInt32Array(0, 500)
+wave_starts = PackedInt32Array(0, 390)
 music_act = 1
 music_boss_wave_index = -1
 leak_limit = 3
@@ -68,4 +60,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 3
 requires = Array[StringName]([&"spike_plate"])
-intro_hint = "A one-tile choke: a Spike Plate there pays for itself three times."
+intro_hint = "Both entries merge at one cell. Spend all three Spike Plate charges there, then reinforce the shared exit."

@@ -2,9 +2,9 @@
 
 ## Musical identity
 
-**Working title:** *Astra Memoriam*  
-**Purpose:** Premium anime-gacha title music for the Lunaris Reliquary player-entry screen.  
-**Generation target:** Original 60-second stereo instrumental at 96 BPM in D minor, designed as 24 complete 4/4 bars.  
+**Working title:** *Astra Memoriam*
+**Purpose:** Premium anime-gacha title music for the Lunaris Reliquary player-entry screen.
+**Generation target:** Original 60-second stereo instrumental at 96 BPM in D minor, designed as 24 complete 4/4 bars.
 **Emotional promise:** Majestic, seductive, celestial, resolute, and expensive rather than frantic or boss-battle aggressive.
 
 The theme combines European symphonic drama with East Asian tonal color: soaring string orchestra, intimate piano, glass celesta, low brass, controlled taiko and hybrid tactical percussion, subtle guzheng-like plucks, restrained sub-bass, luminous analog synth pulses, and distant wordless choir pads. It must support the title rather than overwhelm it, with a memorable ascending three-note lunar motif and generous space around the midrange so UI confirmation sounds remain readable.

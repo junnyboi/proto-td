@@ -8,9 +8,9 @@ All three heroes are clearly adult, age 21 or older, and follow [`ART_DIRECTION.
 
 | Design ID | Ensemble role | Full-figure sheet | Chibi sheet |
 |---|---|---|---|
-| `lunaris_vessel` | Central flagship heroine | `characters/lunaris-reliquary/lunaris_vessel_design_sheet.png` | `characters/lunaris-reliquary/lunaris_vessel_chibi_sheet.png` |
-| `reliquary_duelist` | Left spellblade hero | `characters/lunaris-reliquary/reliquary_duelist_design_sheet.png` | `characters/lunaris-reliquary/reliquary_duelist_chibi_sheet.png` |
-| `archive_caster` | Right ritual caster heroine | `characters/lunaris-reliquary/archive_caster_design_sheet.png` | `characters/lunaris-reliquary/archive_caster_chibi_sheet.png` |
+| `lunaris_vessel` | Central flagship heroine | `lunaris-reliquary/lunaris_vessel_design_sheet.png` | `lunaris-reliquary/lunaris_vessel_chibi_sheet.png` |
+| `reliquary_duelist` | Left spellblade hero | `lunaris-reliquary/reliquary_duelist_design_sheet.png` | `lunaris-reliquary/reliquary_duelist_chibi_sheet.png` |
+| `archive_caster` | Right ritual caster heroine | `lunaris-reliquary/archive_caster_design_sheet.png` | `lunaris-reliquary/archive_caster_chibi_sheet.png` |
 
 ## `lunaris_vessel`
 

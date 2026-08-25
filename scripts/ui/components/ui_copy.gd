@@ -52,6 +52,7 @@ const STATIC_FALLBACKS := {
 	&"ui.locale.zh_cn": "中文",
 	&"ui.staging.heading": "STAGING",
 	&"ui.staging.command_heading": "COMPANY 33 COMMAND",
+	&"ui.staging.faction_standards": "FACTION STANDARDS",
 	&"ui.staging.command_body": (
 		"Commander, the Great Flare was a massive solar flare that corrupted connected "
 		+ "systems two centuries ago and caused the Fall. Custodians are still forcing "
@@ -69,8 +70,9 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.mission_control_short": "Mission",
 	&"ui.staging.barracks_unavailable": "Barracks — Unavailable",
 	&"ui.staging.barracks_short": "Barracks",
-	&"ui.staging.recruit_unavailable": "Recruit — Unavailable",
-	&"ui.staging.recruit_short": "Recruit",
+	&"ui.staging.recruit": "Premium Resonance",
+	&"ui.staging.recruit_unavailable": "Premium Resonance — Unavailable",
+	&"ui.staging.recruit_short": "Resonance",
 	&"ui.staging.resource_aether": "Aether",
 	&"ui.staging.resource_sigils": "Astral Sigils",
 	&"ui.staging.resource_stamina": "Stamina",
@@ -153,6 +155,7 @@ const STATIC_FALLBACKS := {
 	&"ui.training.error.stale_state": "The roster changed. Review the recruit again.",
 	&"ui.training.error.unknown_hero": "That recruit is no longer in the roster.",
 	&"ui.training.error.dead_hero": "Dead recruits cannot train.",
+	&"ui.training.error.premium_hero_untrainable": "Premium heroes use fixed elite kits and cannot train.",
 	&"ui.training.error.locked_class": "This training path is not unlocked yet.",
 	&"ui.training.error.already_promoted_class": "No further training path is available.",
 	&"ui.training.error.illegal_class_edge": "That class is not a legal next duty.",
@@ -181,6 +184,7 @@ const STATIC_FALLBACKS := {
 	&"ui.training.promotion_ready_count": "{count} PROMOTION READY",
 	&"ui.training.reason.already_promoted": "Advanced training complete.",
 	&"ui.training.reason.dead": "Dead. Training unavailable.",
+	&"ui.training.reason.premium": "Premium hero. Fixed elite kit; training unavailable.",
 	&"ui.training.reason.no_path": "No advanced class path.",
 	&"ui.training.role.damage_control": "Damage / Control",
 	&"ui.training.role.healer_support": "Healer / Support",

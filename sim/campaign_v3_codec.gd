@@ -24,26 +24,56 @@ const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const CampaignProgressionScript := preload("res://sim/campaign_progression.gd")
 const CampaignInvariantsScript := preload("res://sim/campaign_invariants.gd")
-const DATA_KEYS := [
+const LEGACY_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
 	"offers", "heroes", "promotion_receipts", "promotion_proofs",
 	"tickets", "memorial", "resolution_anchor", "last_resolution", "command_receipts",
 ]
-const PRECOMMAND_DATA_KEYS := [
+const LEGACY_PRECOMMAND_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
 	"offers", "heroes", "promotion_receipts", "promotion_proofs",
 	"tickets", "memorial", "resolution_anchor", "last_resolution",
 ]
-const CORE_KEYS := [
+const LEGACY_CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index", "marks",
 	"stage_stars", "unlocked_traps", "unlocked_spells", "class_entitlements",
 	"offers", "heroes", "promotion_receipts", "promotion_proofs",
 	"tickets", "memorial",
+]
+const LEGACY_HERO_KEYS := [
+	"hero_id", "acquisition_operator_def_id", "operator_def_id", "current_class_id",
+	"first_class_id", "advanced_class_id", "progression_rules_version", "xp",
+	"identity_portrait_id", "portrait_instance_id", "portrait_asset_id",
+	"recruitment_index", "recruited_after_resolution_index", "recruit_source",
+	"source_id", "name_version", "custom_callsign", "life_status", "death",
+]
+const DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
+	"resolution_anchor", "last_resolution", "command_receipts",
+]
+const PRECOMMAND_DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
+	"resolution_anchor", "last_resolution",
+]
+const CORE_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes",
+	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
 ]
 const HERO_KEYS := [
 	"hero_id", "acquisition_operator_def_id", "operator_def_id", "current_class_id",
@@ -51,6 +81,7 @@ const HERO_KEYS := [
 	"identity_portrait_id", "portrait_instance_id", "portrait_asset_id",
 	"recruitment_index", "recruited_after_resolution_index", "recruit_source",
 	"source_id", "name_version", "custom_callsign", "life_status", "death",
+	"hero_kind", "premium_id", "premium_lives", "premium_pull_count",
 ]
 const CONTEXT_KEYS := [
 	"legacy_context", "operator_ids", "operator_ticket_by_id", "class_rows", "class_by_id", "campaign",
@@ -225,6 +256,7 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 		"next_recruitment_index": heroes.size(),
 		"next_attempt_id": 1,
 		"next_resolution_index": 1,
+		"next_premium_pull_index": 0,
 		"marks": int(campaign["initial_marks"]),
 		"stage_stars": [],
 		"unlocked_traps": [],
@@ -246,9 +278,16 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 static func normalize_data(value: Variant, context: Dictionary) -> Dictionary:
 	if not _valid_context(context):
 		return _reject(&"missing_validation_context")
-	if typeof(value) != TYPE_DICTIONARY or not _exact_keys(value, DATA_KEYS):
+	if typeof(value) != TYPE_DICTIONARY:
 		return _reject(&"invalid_data_schema")
-	var data := value as Dictionary
+	var source := value as Dictionary
+	var data: Dictionary = (
+		_upgrade_premium_data(source)
+		if source.keys() == LEGACY_DATA_KEYS
+		else source
+	)
+	if not _exact_keys(data, DATA_KEYS):
+		return _reject(&"invalid_data_schema")
 	if typeof(data["heroes"]) != TYPE_ARRAY or (data["heroes"] as Array).is_empty():
 		return _reject(&"empty_roster")
 	var rules_versions := {}
@@ -312,16 +351,22 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 	var checksum := String(parsed["checksum"])
 	if not _is_hex(checksum, 64):
 		return _reject(&"invalid_checksum")
-	if (
-		typeof(parsed["data"]) == TYPE_DICTIONARY
-		and (parsed["data"] as Dictionary).keys() == PRECOMMAND_DATA_KEYS
-	):
-		if checksum != CanonicalJsonScript.sha256_hex(parsed["data"]):
+	var source_data: Variant = parsed["data"]
+	if typeof(source_data) == TYPE_DICTIONARY and (source_data as Dictionary).keys() in [
+		PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS, LEGACY_DATA_KEYS,
+	]:
+		if checksum != CanonicalJsonScript.sha256_hex(source_data):
 			return _reject(&"checksum_mismatch")
 		if CanonicalJsonScript.text(parsed) != source:
 			return _reject(&"noncanonical_save")
-		var upgraded: Dictionary = (parsed["data"] as Dictionary).duplicate(true)
-		upgraded["command_receipts"] = []
+		var upgrade_source: Dictionary = (source_data as Dictionary).duplicate(true)
+		if upgrade_source.keys() in [PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS]:
+			upgrade_source["command_receipts"] = []
+		var upgraded: Dictionary = (
+			_upgrade_premium_data(upgrade_source)
+			if upgrade_source.keys() == LEGACY_DATA_KEYS
+			else upgrade_source
+		)
 		var upgraded_save := encode_save(upgraded, context)
 		if not upgraded_save["accepted"]:
 			return upgraded_save
@@ -436,7 +481,101 @@ static func _fresh_hero(hero_id: String, index: int, starter: Dictionary) -> Dic
 		"custom_callsign": null,
 		"life_status": "ready",
 		"death": null,
+		"hero_kind": "recruit",
+		"premium_id": null,
+		"premium_lives": 0,
+		"premium_pull_count": 0,
 	}
+
+
+static func _upgrade_premium_data(value: Dictionary) -> Dictionary:
+	var result := {}
+	for key: String in DATA_KEYS:
+		match key:
+			"next_premium_pull_index":
+				result[key] = 0
+			"heroes":
+				result[key] = _upgrade_premium_heroes(value[key])
+			"resolution_anchor":
+				result[key] = _upgrade_premium_anchor(value[key])
+			"last_resolution":
+				result[key] = _upgrade_premium_resolution(value[key])
+			"command_receipts":
+				result[key] = _upgrade_premium_command_records(value[key])
+			_:
+				result[key] = value[key].duplicate(true) \
+					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
+static func _upgrade_premium_core(value: Dictionary) -> Dictionary:
+	var result := {}
+	for key: String in CORE_KEYS:
+		match key:
+			"next_premium_pull_index":
+				result[key] = 0
+			"heroes":
+				result[key] = _upgrade_premium_heroes(value[key])
+			_:
+				result[key] = value[key].duplicate(true) \
+					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
+static func _upgrade_premium_heroes(values: Array) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for source: Dictionary in values:
+		var row := {}
+		for key: String in HERO_KEYS:
+			match key:
+				"hero_kind": row[key] = "recruit"
+				"premium_id": row[key] = null
+				"premium_lives", "premium_pull_count": row[key] = 0
+				_: row[key] = source[key].duplicate(true) \
+					if source[key] is Array or source[key] is Dictionary else source[key]
+		result.append(row)
+	return result
+
+
+static func _upgrade_premium_anchor(value: Variant) -> Variant:
+	if value == null:
+		return null
+	var result: Dictionary = value.duplicate(true)
+	result["before_core"] = _upgrade_premium_core(value["before_core"])
+	result["after_core"] = _upgrade_premium_core(value["after_core"])
+	return result
+
+
+static func _upgrade_premium_resolution(value: Variant) -> Variant:
+	if value == null:
+		return null
+	var result := {}
+	for key: String in [
+		"schema_version", "resolution_index", "campaign_uid", "attempt_id", "stage_id",
+		"ticket_hash", "outcome_hash", "result", "terminal_reason", "terminal_tick",
+		"stars_before", "stars_after", "rewards_granted", "class_entitlements_granted",
+		"created_hero_ids", "dead_hero_ids", "premium_life_losses", "xp_awards",
+		"memorial_ids", "marks_before", "marks_after", "strategic_body_hash_before",
+		"strategic_body_hash_after",
+	]:
+		result[key] = [] if key == "premium_life_losses" else value[key]
+	return result
+
+
+static func _upgrade_premium_command_records(values: Array) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for source: Dictionary in values:
+		var row: Dictionary = source.duplicate(true)
+		if row["verb"] == "recruit_person":
+			row["receipt"]["recruitment"]["hero"] = _upgrade_premium_heroes(
+				[row["receipt"]["recruitment"]["hero"]]
+			)[0]
+		elif row["verb"] == "resolve_attempt":
+			row["receipt"]["resolution"] = _upgrade_premium_resolution(
+				row["receipt"]["resolution"]
+			)
+		result.append(row)
+	return result
 
 
 static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
@@ -445,6 +584,10 @@ static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
 		match key:
 			"command_receipts":
 				result[key] = []
+			"next_premium_pull_index":
+				result[key] = 0
+			"last_resolution":
+				result[key] = _upgrade_premium_resolution(value[key])
 			"class_entitlements":
 				result[key] = _entitlements_for_stars(value["stage_stars"], context)
 			"tickets", "memorial":
@@ -465,6 +608,8 @@ static func _migrate_core(value: Dictionary, context: Dictionary) -> Dictionary:
 	var result := {}
 	for key: String in CORE_KEYS:
 		match key:
+			"next_premium_pull_index":
+				result[key] = 0
 			"class_entitlements":
 				result[key] = _entitlements_for_stars(value["stage_stars"], context)
 			"tickets", "memorial":
@@ -511,6 +656,12 @@ static func _migrate_heroes(values: Array) -> Array[Dictionary]:
 					row[key] = "portrait:%s" % source["hero_id"]
 				"portrait_asset_id":
 					row[key] = source["identity_portrait_id"]
+				"hero_kind":
+					row[key] = "recruit"
+				"premium_id":
+					row[key] = null
+				"premium_lives", "premium_pull_count":
+					row[key] = 0
 				_:
 					row[key] = source[key].duplicate(true) \
 						if source[key] is Array or source[key] is Dictionary else source[key]
@@ -596,6 +747,10 @@ static func _reverse_heroes(values: Array) -> Dictionary:
 			source["current_class_id"] != expected_current
 			or source["portrait_instance_id"] != "portrait:%s" % source["hero_id"]
 			or source["portrait_asset_id"] != source["identity_portrait_id"]
+			or source["hero_kind"] != "recruit"
+			or source["premium_id"] != null
+			or source["premium_lives"] != 0
+			or source["premium_pull_count"] != 0
 		):
 			return _reject(&"invalid_legacy_projection")
 		var row := {}
@@ -629,15 +784,17 @@ static func _normalize_campaign(
 		or definition.name_version != HeroNamesScript.VERSION
 		or definition.initial_marks != CampaignInvariantsScript.INITIAL_MARKS
 		or definition.starter_rows.size() != 5
-		or definition.portrait_asset_ids.size() != 8
+		or definition.portrait_asset_ids.size() != 11
 		or definition.paid_offers.size() != 1
 		or definition.v3_stage_rewards.size() != 8
+		or definition.premium_pull_cost != 40
+		or definition.premium_hero_rows.size() != 3
 	):
 		return _reject(&"invalid_campaign_definition")
 	if check_environment and definition.environment_sha256.is_empty():
 		return _reject(&"invalid_campaign_definition")
 	var portrait_ids := _sorted_unique_strings(definition.portrait_asset_ids)
-	if portrait_ids.size() != 8:
+	if portrait_ids.size() != 11:
 		return _reject(&"invalid_campaign_definition")
 	var starter_rows: Array[Dictionary] = []
 	var starter_portraits := {}
@@ -695,6 +852,53 @@ static func _normalize_campaign(
 				return _reject(&"specialist_reward_forbidden")
 			rewards.append({"id": String(reward["id"]), "kind": String(reward["kind"])})
 		stage_rewards.append({"rewards": rewards, "stage_id": String(row["stage_id"])})
+	var class_by_id := {}
+	for class_row: Dictionary in class_rows:
+		class_by_id[String(class_row["class_id"])] = class_row
+	var premium_rows: Array[Dictionary] = []
+	var premium_ids := {}
+	var premium_portraits := {}
+	var previous_premium_id := ""
+	for raw: Variant in definition.premium_hero_rows:
+		if typeof(raw) != TYPE_DICTIONARY:
+			return _reject(&"invalid_premium_pool")
+		var row := raw as Dictionary
+		if not _exact_keys(row, [
+			"callsign", "class_id", "operator_def_id", "portrait_asset_id",
+			"premium_id", "weight",
+		]):
+			return _reject(&"invalid_premium_pool")
+		var premium_id := String(row["premium_id"])
+		var class_id := String(row["class_id"])
+		var operator_id := String(row["operator_def_id"])
+		var portrait_id := String(row["portrait_asset_id"])
+		var callsign := String(row["callsign"]).strip_edges()
+		if (
+			not _ascii_id(premium_id)
+			or not previous_premium_id.is_empty() and premium_id <= previous_premium_id
+			or premium_ids.has(premium_id)
+			or premium_portraits.has(portrait_id)
+			or callsign.is_empty()
+			or callsign.length() > 48
+			or not class_by_id.has(class_id)
+			or String(class_by_id[class_id]["operator_def_id"]) != operator_id
+			or not portrait_ids.has(portrait_id)
+			or typeof(row["weight"]) != TYPE_INT
+			or int(row["weight"]) < 1
+			or int(row["weight"]) > 1000
+		):
+			return _reject(&"invalid_premium_pool")
+		previous_premium_id = premium_id
+		premium_ids[premium_id] = true
+		premium_portraits[portrait_id] = true
+		premium_rows.append({
+			"callsign": callsign,
+			"class_id": class_id,
+			"operator_def_id": operator_id,
+			"portrait_asset_id": portrait_id,
+			"premium_id": premium_id,
+			"weight": int(row["weight"]),
+		})
 	return _accept({
 		"schema_version": SAVE_VERSION,
 		"name_version": definition.name_version,
@@ -705,6 +909,8 @@ static func _normalize_campaign(
 		"v3_stage_rewards": stage_rewards,
 		"portrait_asset_ids": portrait_ids,
 		"paid_offers": offers,
+		"premium_pull_cost": int(definition.premium_pull_cost),
+		"premium_hero_rows": premium_rows,
 	})
 
 

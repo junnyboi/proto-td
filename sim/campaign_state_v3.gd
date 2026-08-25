@@ -10,6 +10,7 @@ const CampaignCodecScript := preload("res://sim/campaign_codec.gd")
 const PromotionScript := preload("res://sim/campaign_v3_promotion.gd")
 const AttemptsScript := preload("res://sim/campaign_v3_attempts.gd")
 const RecruitmentScript := preload("res://sim/campaign_v3_recruitment.gd")
+const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
@@ -91,6 +92,10 @@ func runtime_projection() -> Dictionary:
 				)
 			)
 	)
+	var premium_heroes: Array[Dictionary] = []
+	for hero: Dictionary in _data["heroes"]:
+		if hero["hero_kind"] == "premium":
+			premium_heroes.append(hero.duplicate(true))
 	var operators: Array[StringName] = []
 	for hero: Dictionary in heroes:
 		var operator_id := StringName(hero["operator_def_id"])
@@ -109,7 +114,12 @@ func runtime_projection() -> Dictionary:
 		"campaign_uid": String(_data["campaign_uid"]),
 		"save_revision": int(_data["save_revision"]),
 		"next_attempt_id": int(_data["next_attempt_id"]),
+		"attempt_pending": int(_data["next_attempt_id"]) != int(_data["next_resolution_index"]),
+		"next_premium_pull_index": int(_data["next_premium_pull_index"]),
 		"marks": int(_data["marks"]),
+		"premium_pull_cost": int(_context["campaign"]["premium_pull_cost"]),
+		"premium_pool": (_context["campaign"]["premium_hero_rows"] as Array).duplicate(true),
+		"premium_heroes": premium_heroes,
 		"stage_ids": stage_ids,
 		"ready_heroes": heroes,
 		"unlocked_operators": operators,
@@ -207,6 +217,13 @@ func recruit_person(
 	return RecruitmentScript.execute(
 		self, command_id, expected_save_revision, source, source_id,
 	)
+
+
+func pull_premium_hero(
+	command_id: Variant,
+	expected_save_revision: Variant,
+) -> Dictionary:
+	return GachaScript.execute(self, command_id, expected_save_revision)
 
 
 func restore_factory() -> Callable:

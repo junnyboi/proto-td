@@ -6,14 +6,6 @@
 script = ExtResource("1")
 schema_version = 2
 entries = {
-&"world.act1.blocked": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/blocked.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 32)
-},
 &"world.act1.core": {
 "animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
 "frames": 1,
@@ -21,70 +13,6 @@ entries = {
 "pivot": Vector2(0.5, 0.5),
 "placeholder": true,
 "size": Vector2i(128, 128)
-},
-&"world.act1.env.barrel": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/env-barrel.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 64)
-},
-&"world.act1.env.boulder": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/env-boulder.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 64)
-},
-&"world.act1.env.crate": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/env-crate.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 64)
-},
-&"world.act1.env.wall": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/env-wall.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 64)
-},
-&"world.act1.ground": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/ground.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 32)
-},
-&"world.act1.panorama": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/panorama.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(512, 256)
-},
-&"world.act1.raised": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/raised.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 80)
-},
-&"world.act1.route": {
-"animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},
-"frames": 1,
-"pattern": "res://assets/world/act1/route.png",
-"pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(64, 32)
 },
 &"world.act1.spawn": {
 "animations": {&"default": {&"fps": 1.0, &"length": 1, &"loop": true, &"start": 0}},

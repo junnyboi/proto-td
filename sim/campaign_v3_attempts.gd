@@ -198,6 +198,18 @@ static func resolve(
 			}
 		)
 	]
+	for loss: Dictionary in derived["resolution"]["premium_life_losses"]:
+		events.append(_event(
+			&"premium_life_consumed",
+			{
+				"hero_id": loss["hero_id"],
+				"premium_id": loss["premium_id"],
+				"lives_before": loss["lives_before"],
+				"lives_after": loss["lives_after"],
+				"locked_out": loss["locked_out"],
+				"resolution_index": derived["resolution"]["resolution_index"],
+			},
+		))
 	for hero_id: String in derived["resolution"]["dead_hero_ids"]:
 		(
 			events
@@ -285,11 +297,16 @@ static func _derive_resolution(
 	)
 	after["heroes"] = (after["heroes"] as Array).duplicate(true)
 	var xp_awards := CampaignProgressionScript.derive_xp_awards(outcome["rows"], before["heroes"])
+	xp_awards = xp_awards.filter(func(award: Dictionary) -> bool:
+		var hero := _hero_by_id(before["heroes"], award["hero_id"])
+		return not hero.is_empty() and hero["hero_kind"] != "premium"
+	)
 	if not CampaignProgressionScript.apply_xp(after["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
 	after["memorial"] = (after["memorial"] as Array).duplicate(true)
 	var dead_ids: Array[String] = []
 	var memorial_ids: Array[String] = []
+	var premium_life_losses: Array[Dictionary] = []
 	for outcome_row: Dictionary in outcome["rows"]:
 		if not outcome_row["fell"]:
 			continue
@@ -303,6 +320,22 @@ static func _derive_resolution(
 			"terminal_reason": outcome["terminal_reason"],
 			"terminal_tick": outcome["terminal_tick"],
 		}
+		var locked_out := true
+		if hero["hero_kind"] == "premium":
+			var lives_before := int(hero["premium_lives"])
+			if lives_before <= 0:
+				return _reject(&"invalid_premium_life_transition")
+			hero["premium_lives"] = lives_before - 1
+			locked_out = int(hero["premium_lives"]) == 0
+			premium_life_losses.append({
+				"hero_id": String(hero["hero_id"]),
+				"premium_id": String(hero["premium_id"]),
+				"lives_before": lives_before,
+				"lives_after": int(hero["premium_lives"]),
+				"locked_out": locked_out,
+			})
+		if not locked_out:
+			continue
 		hero["life_status"] = "dead"
 		hero["death"] = death
 		dead_ids.append(String(hero["hero_id"]))
@@ -323,6 +356,9 @@ static func _derive_resolution(
 		)
 	dead_ids.sort()
 	memorial_ids.sort()
+	premium_life_losses.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a["hero_id"]) < String(b["hero_id"])
+	)
 	after["memorial"].sort_custom(
 		func(a: Dictionary, b: Dictionary) -> bool:
 			return String(a["hero_id"]) < String(b["hero_id"])
@@ -348,6 +384,7 @@ static func _derive_resolution(
 		"class_entitlements_granted": entitlements_granted,
 		"created_hero_ids": [],
 		"dead_hero_ids": dead_ids,
+		"premium_life_losses": premium_life_losses,
 		"xp_awards": xp_awards,
 		"memorial_ids": memorial_ids,
 		"marks_before": before["marks"],
@@ -384,6 +421,9 @@ static func _squad(
 			return _reject(&"unknown_hero")
 		if hero["life_status"] != "ready":
 			return _reject(&"dead_hero")
+		if hero["hero_kind"] == "premium" and int(hero["premium_lives"]) <= 0:
+			return _reject(&"premium_hero_out_of_lives")
+
 		var projection: Dictionary = (
 			context["operator_ticket_by_id"]
 			. get(

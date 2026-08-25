@@ -37,7 +37,10 @@ static func roster(value: Variant) -> Array[Dictionary]:
 		var hero_id := String(hero.get("hero_id", ""))
 		var current_class_id := String(hero.get("current_class_id", ""))
 		var definition := class_definition(current_class_id)
-		var required := int(definition.promotion_xp_required) if definition != null else 0
+		var is_premium := String(hero.get("hero_kind", "recruit")) == "premium"
+		var required := (
+			0 if is_premium else int(definition.promotion_xp_required) if definition != null else 0
+		)
 		var options: Dictionary = value.call("promotion_options", hero_id)
 		var projection := enrich_choices(options.get("choices", []))
 		var model_accepted := bool(options.get("accepted", false))
@@ -53,6 +56,11 @@ static func roster(value: Variant) -> Array[Dictionary]:
 					hero.get("portrait_asset_id", hero.get("identity_portrait_id", ""))
 				),
 				"life_status": String(hero.get("life_status", "")),
+				"hero_kind": String(hero.get("hero_kind", "recruit")),
+				"premium_id": hero.get("premium_id"),
+				"premium_lives": int(hero.get("premium_lives", 0)),
+				"premium_pull_count": int(hero.get("premium_pull_count", 0)),
+				"is_premium": is_premium,
 				"xp": int(hero.get("xp", 0)),
 				"xp_required": required,
 				"model_can_promote": model_accepted,
