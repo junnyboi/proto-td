@@ -14,9 +14,6 @@ const StagingCommandTileType := preload(
 )
 const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
-const FactionStandardCardType := preload(
-	"res://scripts/ui/components/faction_standard_card.gd"
-)
 const StagingResourceChipType := preload(
 	"res://scripts/ui/components/staging_resource_chip.gd"
 )
@@ -65,7 +62,6 @@ var _portrait_spacer: Control = null
 var _command_content: VBoxContainer = null
 var _mission_grid: GridContainer = null
 var _operation_grid: GridContainer = null
-var _faction_grid: GridContainer = null
 var _hero_identity: VBoxContainer = null
 var _campaign_chip: Label = null
 var _top_identity: Label = null
@@ -81,7 +77,6 @@ var _exit_label: Label = null
 var _backdrop: LunarisBackdropType = null
 var _music_pack_status: MusicPackStatusType = null
 var _command_tiles: Array[StagingCommandTileType] = []
-var _faction_cards: Array[FactionStandardCardType] = []
 var _portrait := false
 var _reduced_motion := false
 var _focus_pulse_elapsed := 0.0
@@ -383,7 +378,7 @@ func _build_portrait_layout() -> void:
 
 	_portrait_sheet = PanelContainer.new()
 	_portrait_sheet.name = "CommandSheet"
-	_portrait_sheet.custom_minimum_size.y = 650.0
+	_portrait_sheet.custom_minimum_size.y = 560.0
 	_portrait_sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_portrait_sheet.size_flags_vertical = Control.SIZE_SHRINK_END
 	_portrait_sheet.add_theme_stylebox_override(&"panel", StagingSkinType.command_deck_style())
@@ -460,8 +455,6 @@ func _build_command_content() -> VBoxContainer:
 	progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
 	content.add_child(progress)
 	content.add_child(_build_progress_milestones())
-
-	_build_faction_standards(content)
 
 	var next_label := _label(
 		"NextOperationLabel", UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION"),
@@ -555,46 +548,6 @@ func _build_command_content() -> VBoxContainer:
 	_command_tiles.append(_training)
 	content.add_child(_training)
 	return content
-
-
-func _build_faction_standards(content: VBoxContainer) -> void:
-	var heading := HBoxContainer.new()
-	heading.name = "FactionStandardsHeading"
-	heading.add_theme_constant_override(&"separation", 10)
-	content.add_child(heading)
-
-	var title := _label(
-		"FactionStandardsLabel",
-		UiCopyType.text(&"ui.staging.faction_standards", "FACTION STANDARDS"),
-		GameTypographyType.BADGE,
-		GOLD,
-	)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(title)
-
-	var rule := ColorRect.new()
-	rule.name = "FactionStandardsRule"
-	rule.custom_minimum_size = Vector2(80.0, 1.0)
-	rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	rule.color = Color(MOON_CYAN, 0.32)
-	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	heading.add_child(rule)
-
-	_faction_grid = GridContainer.new()
-	_faction_grid.name = "FactionStandardsGrid"
-	_faction_grid.columns = 2
-	_faction_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_faction_grid.add_theme_constant_override(&"h_separation", 8)
-	_faction_grid.add_theme_constant_override(&"v_separation", 8)
-	content.add_child(_faction_grid)
-
-	for faction_id: StringName in FactionHeraldryType.ORDER:
-		var card := FactionStandardCardType.new()
-		card.name = "%sStandard" % String(faction_id).to_pascal_case()
-		card.configure(faction_id)
-		_faction_cards.append(card)
-		_faction_grid.add_child(card)
 
 
 func _build_progress_milestones() -> HBoxContainer:
@@ -843,7 +796,7 @@ func _apply_responsive_layout() -> void:
 	_portrait_layout.offset_left = 12.0 if viewport_size.x < 620.0 else 18.0
 	_portrait_layout.offset_right = -_portrait_layout.offset_left
 	_portrait_layout.offset_top = 82.0
-	_portrait_sheet.custom_minimum_size.y = clampf(viewport_size.y * 0.55, 540.0, 710.0)
+	_portrait_sheet.custom_minimum_size.y = clampf(viewport_size.y * 0.45, 520.0, 600.0)
 
 	var narrow_top := viewport_size.x < 620.0
 	var compact_top := _portrait or viewport_size.x < 1180.0
@@ -879,8 +832,6 @@ func _apply_responsive_layout() -> void:
 	)
 	for tile: StagingCommandTileType in _command_tiles:
 		tile.set_compact(compact)
-	for card: FactionStandardCardType in _faction_cards:
-		card.set_compact(compact)
 	_connect_focus_cycle()
 
 
