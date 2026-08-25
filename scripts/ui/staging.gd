@@ -23,10 +23,12 @@ const StagingResourceChipType := preload(
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const StagingMockWalletType := preload("res://scripts/ui/staging_mock_wallet.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
+const LunarisBackdropType := preload(
+	"res://scripts/ui/components/lunaris_animated_backdrop.gd"
+)
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
-const HERO_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const MISSION_ART := preload("res://assets/world/act1/panorama.png")
 
 const GOLD := Color("d8b978")
@@ -71,7 +73,7 @@ var _resource_row: HBoxContainer = null
 var _resource_chips: Array[StagingResourceChipType] = []
 var _utility_row: HBoxContainer = null
 var _exit_label: Label = null
-var _hero_art: TextureRect = null
+var _backdrop: LunarisBackdropType = null
 var _command_tiles: Array[StagingCommandTileType] = []
 var _faction_cards: Array[FactionStandardCardType] = []
 var _portrait := false
@@ -117,14 +119,9 @@ func _build_screen() -> void:
 
 
 func _build_backdrop() -> void:
-	_hero_art = TextureRect.new()
-	_hero_art.name = "LunarisHeroArt"
-	_hero_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_hero_art.texture = HERO_ART
-	_hero_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_hero_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_hero_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_hero_art)
+	_backdrop = LunarisBackdropType.new()
+	_backdrop.name = "LunarisBackdrop"
+	add_child(_backdrop)
 
 	var atmosphere := ColorRect.new()
 	atmosphere.name = "Atmosphere"
@@ -742,6 +739,7 @@ func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
+	_backdrop.fit_top_cover(viewport_size)
 	_portrait = viewport_size.y > viewport_size.x
 	_landscape_layout.visible = not _portrait
 	_portrait_layout.visible = _portrait

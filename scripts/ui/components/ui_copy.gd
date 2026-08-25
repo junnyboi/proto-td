@@ -3,8 +3,14 @@ extends RefCounted
 
 const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
+	&"ui.title.full_title": "Protos Defense",
 	&"ui.title.start": "Start",
+	&"ui.title.settings": "Settings",
+	&"ui.title.music_state": "Title Music  //  {state}",
+	&"ui.title.motion_state": "Animated Background  //  {state}",
 	&"ui.title.seed": "seed {seed}",
+	&"ui.common.on": "On",
+	&"ui.common.off": "Off",
 	&"ui.tutorial.block.action": "Start battle",
 	&"ui.tutorial.block.body": (
 		"A Recruit blocks 1 ground enemy and loses HP while fighting. "
@@ -212,6 +218,8 @@ const STATIC_FALLBACKS := {
 
 const PLACEHOLDER_TYPES := {
 	&"ui.title.seed": {&"seed": &"int"},
+	&"ui.title.music_state": {&"state": &"String"},
+	&"ui.title.motion_state": {&"state": &"String"},
 	&"ui.staging.campaign_summary": {&"cleared": &"int", &"total": &"int"},
 	&"ui.staging.next_detail": {&"index": &"int", &"title": &"String"},
 	&"ui.staging.next_operation_title": {&"index": &"int", &"title": &"String"},

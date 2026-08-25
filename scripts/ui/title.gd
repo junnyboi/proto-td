@@ -1,238 +1,238 @@
 extends Control
 
-## Cinematic player entry. The animated Lunaris background continues the visual
-## language established by the engine boot splash and loading scene.
+## Premium Lunaris player entry. The screen intentionally exposes only the
+## PROTOS DEFENSE wordmark, Start, and Settings over the animated background.
 
 const LOCALE_SCENE := preload("res://scenes/ui/components/aetheria_locale_selector.tscn")
-const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLocaleSelectorType := preload(
 	"res://scripts/ui/components/aetheria_locale_selector.gd"
 )
+const LunarisBackdropType := preload(
+	"res://scripts/ui/components/lunaris_animated_backdrop.gd"
+)
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
-const TITLE_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
-const TITLE_LOOP := preload("res://assets/title/lunaris-title-loop.ogv")
-const TITLE_VIDEO_SHADER := """
-shader_type canvas_item;
-render_mode unshaded;
-
-uniform float sharpen_strength : hint_range(0.0, 1.0) = 0.22;
-
-void fragment() {
-	vec2 uv = UV;
-	vec2 step_size = TEXTURE_PIXEL_SIZE;
-	vec3 center = texture(TEXTURE, uv).rgb;
-	vec3 neighbors = texture(TEXTURE, uv + vec2(step_size.x, 0.0)).rgb;
-	neighbors += texture(TEXTURE, uv - vec2(step_size.x, 0.0)).rgb;
-	neighbors += texture(TEXTURE, uv + vec2(0.0, step_size.y)).rgb;
-	neighbors += texture(TEXTURE, uv - vec2(0.0, step_size.y)).rgb;
-	vec3 detail = center - neighbors * 0.25;
-	COLOR = vec4(clamp(center + detail * sharpen_strength, vec3(0.0), vec3(1.0)), 1.0);
-}
-"""
+const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 
 const GOLD := Color("d8b978")
-const MOON_CYAN := Color("86cbd4")
-const IVORY := Color("eee8dc")
-const MUTED := Color("aebdc3")
+const BRIGHT_GOLD := Color("f0d89a")
+const MOON_CYAN := Color("91eaf1")
+const IVORY := Color("f5efe1")
+const MUTED := Color("aebfd0")
 const VOID := Color("071019")
-const PANEL := Color(0.012, 0.03, 0.048, 0.9)
 
-var _locale_selector: AetheriaLocaleSelectorType = null
-var _start_button: AetheriaButtonType = null
+var _backdrop: LunarisBackdropType = null
+var _entry_host: MarginContainer = null
+var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
-var _eyebrow: Label = null
-var _tagline: Label = null
-var _seed_label: Label = null
-var _archive_label: Label = null
-var _footer: MarginContainer = null
-var _lower_shade: ColorRect = null
-var _action_row: GridContainer = null
-var _fallback: TextureRect = null
-var _video: VideoStreamPlayer = null
-var _video_ready := false
+var _start_button: Button = null
+var _settings_button: Button = null
+var _settings_overlay: Control = null
+var _settings_panel: PanelContainer = null
+var _settings_title: Label = null
+var _locale_selector: AetheriaLocaleSelectorType = null
+var _music_button: Button = null
+var _motion_button: Button = null
+var _settings_back: Button = null
+var _title_music_enabled := true
+var _reduced_motion := false
 
 
 func _ready() -> void:
+	theme = STAGING_THEME
+	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 	_build_screen()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_refresh_copy()
 	_apply_responsive_layout()
 	_start_button.grab_focus.call_deferred()
 	Game.content = self
-	Music.play_cue(&"title_lunaris")
+	if _title_music_enabled:
+		Music.play_cue(&"title_lunaris")
 
 
 func _exit_tree() -> void:
+	if _backdrop != null:
+		_backdrop.stop()
 	if Music.current_id() == &"title_lunaris":
 		Music.stop()
 
 
-func _process(_delta: float) -> void:
-	if _video_ready or _video == null or _fallback == null:
-		return
-	if _video.is_playing() and _video.get_stream_position() > 0.0:
-		_video_ready = true
-		_fallback.visible = false
-		set_process(false)
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and _settings_overlay.visible:
+		get_viewport().set_input_as_handled()
+		_close_settings()
 
 
 func _build_screen() -> void:
-	_fallback = TextureRect.new()
-	_fallback.name = "TitleFallback"
-	_fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_fallback.texture = TITLE_ART
-	_fallback.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_fallback.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_fallback)
-
-	_video = VideoStreamPlayer.new()
-	_video.name = "LunarisTitleLoop"
-	_video.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_video.stream = TITLE_LOOP
-	_video.autoplay = true
-	_video.loop = true
-	_video.expand = true
-	_video.volume_db = -80.0
-	_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_video.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	_video.modulate.a = 1.0
-	var video_shader := Shader.new()
-	video_shader.code = TITLE_VIDEO_SHADER
-	var video_material := ShaderMaterial.new()
-	video_material.shader = video_shader
-	_video.material = video_material
-	add_child(_video)
-	_video.play()
+	_backdrop = LunarisBackdropType.new()
+	_backdrop.name = "LunarisBackdrop"
+	add_child(_backdrop)
+	_backdrop.set_reduced_motion(_reduced_motion)
 
 	var atmosphere := ColorRect.new()
 	atmosphere.name = "Atmosphere"
 	atmosphere.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	atmosphere.color = Color(0.005, 0.015, 0.03, 0.14)
+	atmosphere.color = Color(0.003, 0.012, 0.025, 0.08)
 	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(atmosphere)
 
-	var top_rule := ColorRect.new()
-	top_rule.name = "TopRule"
-	top_rule.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	top_rule.offset_bottom = 3.0
-	top_rule.color = GOLD
-	top_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(top_rule)
+	_entry_host = MarginContainer.new()
+	_entry_host.name = "EntryControls"
+	add_child(_entry_host)
 
-	var header := MarginContainer.new()
-	header.name = "Header"
-	header.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	header.offset_left = 42.0
-	header.offset_top = 27.0
-	header.offset_right = -42.0
-	header.offset_bottom = 86.0
-	add_child(header)
+	_entry_stack = VBoxContainer.new()
+	_entry_stack.name = "EntryStack"
+	_entry_stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	_entry_stack.add_theme_constant_override(&"separation", 12)
+	_entry_host.add_child(_entry_stack)
 
-	var header_row := HBoxContainer.new()
-	header_row.add_theme_constant_override(&"separation", 18)
-	header.add_child(header_row)
+	_wordmark = Label.new()
+	_wordmark.name = "Wordmark"
+	_wordmark.text = "PROTOS DEFENSE"
+	_wordmark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_wordmark.add_theme_constant_override(&"outline_size", 12)
+	_wordmark.add_theme_color_override(&"font_outline_color", Color(VOID, 0.94))
+	StagingSkinType.apply_display_type(_wordmark, 66, IVORY, 650)
+	_entry_stack.add_child(_wordmark)
 
-	var faction := _label("LUNARIS RELIQUARY", 17, GOLD)
-	faction.name = "FactionLabel"
-	faction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header_row.add_child(faction)
+	var orbit_rule := HBoxContainer.new()
+	orbit_rule.name = "OrbitRule"
+	orbit_rule.alignment = BoxContainer.ALIGNMENT_CENTER
+	orbit_rule.add_theme_constant_override(&"separation", 8)
+	_entry_stack.add_child(orbit_rule)
+	orbit_rule.add_child(_rule(Color(GOLD, 0.72)))
+	var seal := TextureRect.new()
+	seal.name = "LunarisSeal"
+	seal.custom_minimum_size = Vector2(26.0, 26.0)
+	seal.texture = StagingSkinType.LUNARIS_SEAL
+	seal.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	seal.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orbit_rule.add_child(seal)
+	orbit_rule.add_child(_rule(Color(MOON_CYAN, 0.72)))
 
-	_archive_label = _label("MOON ARCHIVE // ONLINE", 14, IVORY)
-	_archive_label.name = "ArchiveLabel"
-	_archive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	header_row.add_child(_archive_label)
+	_start_button = _entry_button("StartButton", true)
+	_start_button.pressed.connect(_on_start_pressed)
+	_entry_stack.add_child(_start_button)
 
-	_lower_shade = ColorRect.new()
-	_lower_shade.name = "LowerShade"
-	_lower_shade.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_lower_shade.color = PANEL
-	_lower_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_lower_shade)
+	_settings_button = _entry_button("SettingsButton", false)
+	_settings_button.pressed.connect(_open_settings)
+	_entry_stack.add_child(_settings_button)
 
-	_footer = MarginContainer.new()
-	_footer.name = "TitlePanel"
-	_footer.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	add_child(_footer)
+	_start_button.focus_neighbor_top = _start_button.get_path_to(_settings_button)
+	_start_button.focus_previous = _start_button.get_path_to(_settings_button)
+	_start_button.focus_neighbor_bottom = _start_button.get_path_to(_settings_button)
+	_start_button.focus_next = _start_button.get_path_to(_settings_button)
+	_settings_button.focus_neighbor_top = _settings_button.get_path_to(_start_button)
+	_settings_button.focus_previous = _settings_button.get_path_to(_start_button)
+	_settings_button.focus_neighbor_bottom = _settings_button.get_path_to(_start_button)
+	_settings_button.focus_next = _settings_button.get_path_to(_start_button)
+
+	_build_settings_overlay()
+
+
+func _build_settings_overlay() -> void:
+	_settings_overlay = Control.new()
+	_settings_overlay.name = "SettingsOverlay"
+	_settings_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_settings_overlay)
+
+	var veil := ColorRect.new()
+	veil.name = "SettingsVeil"
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.color = Color(VOID, 0.72)
+	veil.mouse_filter = Control.MOUSE_FILTER_STOP
+	_settings_overlay.add_child(veil)
+
+	_settings_panel = PanelContainer.new()
+	_settings_panel.name = "SettingsPanel"
+	_settings_panel.add_theme_stylebox_override(&"panel", StagingSkinType.command_deck_style())
+	_settings_overlay.add_child(_settings_panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override(&"margin_left", 46)
+	margin.add_theme_constant_override(&"margin_top", 34)
+	margin.add_theme_constant_override(&"margin_right", 46)
+	margin.add_theme_constant_override(&"margin_bottom", 38)
+	_settings_panel.add_child(margin)
 
 	var stack := VBoxContainer.new()
-	stack.name = "TitleStack"
-	stack.add_theme_constant_override(&"separation", 5)
-	_footer.add_child(stack)
+	stack.add_theme_constant_override(&"separation", 14)
+	margin.add_child(stack)
 
-	_eyebrow = _label("RELIQUARY COMMAND // OPERATOR ACCESS", 13, GOLD)
-	_eyebrow.name = "Eyebrow"
-	stack.add_child(_eyebrow)
-
-	_wordmark = _label("PROTOS", 58, IVORY)
-	_wordmark.name = "Wordmark"
-	_wordmark.add_theme_constant_override(&"outline_size", 10)
-	_wordmark.add_theme_color_override(&"font_outline_color", Color(0.0, 0.01, 0.02, 0.78))
-	stack.add_child(_wordmark)
-
-	_tagline = _label("CUSTODIANS OF MEMORY, GRAVITY, AND RITUAL GEOMETRY", 12, MUTED)
-	_tagline.name = "Tagline"
-	_tagline.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	stack.add_child(_tagline)
-
-	var divider := ColorRect.new()
-	divider.name = "MoonDivider"
-	divider.custom_minimum_size = Vector2(0.0, 2.0)
-	divider.color = Color(MOON_CYAN, 0.72)
-	stack.add_child(divider)
-
-	_action_row = GridContainer.new()
-	_action_row.name = "ActionRow"
-	_action_row.columns = 2
-	_action_row.add_theme_constant_override(&"separation", 14)
-	stack.add_child(_action_row)
-
-	_start_button = AetheriaButtonType.new()
-	_start_button.name = "StartButton"
-	_start_button.apply_role(&"primary")
-	_start_button.custom_minimum_size = Vector2(330.0, 52.0)
-	_start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_start_button.add_theme_font_size_override(&"font_size", 20)
-	_start_button.add_theme_color_override(&"font_color", VOID)
-	_start_button.add_theme_color_override(&"font_hover_color", VOID)
-	_start_button.add_theme_color_override(&"font_pressed_color", IVORY)
-	_start_button.add_theme_stylebox_override(&"normal", _button_style(MOON_CYAN, Color(MOON_CYAN, 0.95), 1))
-	_start_button.add_theme_stylebox_override(&"hover", _button_style(Color("a5dce2"), IVORY, 2))
-	_start_button.add_theme_stylebox_override(&"pressed", _button_style(Color("2f6f79"), MOON_CYAN, 2))
-	_start_button.add_theme_stylebox_override(&"focus", _button_style(Color(MOON_CYAN, 0.2), GOLD, 2))
-	_start_button.pressed.connect(_on_start_pressed)
-	_action_row.add_child(_start_button)
-
-	var utility := VBoxContainer.new()
-	utility.name = "UtilityStack"
-	utility.custom_minimum_size = Vector2(420.0, 0.0)
-	utility.add_theme_constant_override(&"separation", 5)
-	_action_row.add_child(utility)
-
-	_seed_label = _label("RUN SEED // 42", 12, GOLD)
-	_seed_label.name = "SeedLabel"
-	_seed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	utility.add_child(_seed_label)
+	_settings_title = Label.new()
+	_settings_title.name = "SettingsTitle"
+	_settings_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	StagingSkinType.apply_display_type(_settings_title, 36, IVORY, 620)
+	stack.add_child(_settings_title)
+	stack.add_child(_rule(Color(MOON_CYAN, 0.68)))
 
 	_locale_selector = LOCALE_SCENE.instantiate() as AetheriaLocaleSelectorType
 	_locale_selector.name = "LocaleSelector"
-	_locale_selector.alignment = BoxContainer.ALIGNMENT_END
 	_locale_selector.locale_selected.connect(_on_locale_selected)
-	utility.add_child(_locale_selector)
-
+	_locale_selector.set_vertical_layout(false)
+	stack.add_child(_locale_selector)
 	var locale_label := _locale_selector.get_node("LocaleLabel") as Label
-	locale_label.add_theme_font_size_override(&"font_size", 18)
+	StagingSkinType.apply_display_type(locale_label, 17, GOLD, 560)
 	var locale_list := _locale_selector.get_node("LocaleList") as ItemList
-	locale_list.custom_minimum_size = Vector2(330.0, 58.0)
-	locale_list.add_theme_font_size_override(&"font_size", 22)
-	_start_button.focus_neighbor_top = _start_button.get_path_to(locale_list)
-	_start_button.focus_previous = _start_button.get_path_to(locale_list)
-	_start_button.focus_neighbor_bottom = _start_button.get_path_to(locale_list)
-	_start_button.focus_next = _start_button.get_path_to(locale_list)
-	locale_list.focus_neighbor_top = locale_list.get_path_to(_start_button)
-	locale_list.focus_previous = locale_list.get_path_to(_start_button)
-	locale_list.focus_neighbor_bottom = locale_list.get_path_to(_start_button)
-	locale_list.focus_next = locale_list.get_path_to(_start_button)
+	locale_list.custom_minimum_size = Vector2(0.0, 60.0)
+	StagingSkinType.apply_display_type(locale_list, 20, IVORY, 560)
+
+	_music_button = _settings_action("MusicButton")
+	_music_button.pressed.connect(_toggle_music)
+	stack.add_child(_music_button)
+	_motion_button = _settings_action("MotionButton")
+	_motion_button.pressed.connect(_toggle_reduced_motion)
+	stack.add_child(_motion_button)
+	_settings_back = _settings_action("SettingsBackButton")
+	_settings_back.pressed.connect(_close_settings)
+	stack.add_child(_settings_back)
+
+	_settings_overlay.visible = false
+
+
+func _entry_button(node_name: String, primary: bool) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.custom_minimum_size = Vector2(520.0 if primary else 430.0, 68.0 if primary else 58.0)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	button.focus_mode = Control.FOCUS_ALL
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	StagingSkinType.apply_display_type(button, 24 if primary else 20, IVORY, 600)
+	button.add_theme_stylebox_override(
+		&"normal",
+		StagingSkinType.primary_button_style(Color(0.72, 0.9, 0.94, 1.0) if primary else Color(0.34, 0.48, 0.56, 0.92)),
+	)
+	button.add_theme_stylebox_override(&"hover", StagingSkinType.primary_button_style(Color(0.92, 1.05, 1.08, 1.0)))
+	button.add_theme_stylebox_override(&"pressed", StagingSkinType.primary_button_style(Color(0.42, 0.66, 0.72, 1.0)))
+	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(BRIGHT_GOLD))
+	return button
+
+
+func _settings_action(node_name: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.custom_minimum_size = Vector2(0.0, 54.0)
+	button.focus_mode = Control.FOCUS_ALL
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	StagingSkinType.apply_display_type(button, 17, IVORY, 560)
+	button.add_theme_stylebox_override(&"normal", StagingSkinType.operation_tile_style(Color(0.52, 0.62, 0.68, 0.96)))
+	button.add_theme_stylebox_override(&"hover", StagingSkinType.operation_tile_style(Color(0.82, 0.94, 0.98, 1.0)))
+	button.add_theme_stylebox_override(&"pressed", StagingSkinType.operation_tile_style(Color(0.42, 0.58, 0.66, 1.0)))
+	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(MOON_CYAN))
+	return button
+
+
+func _rule(color: Color) -> ColorRect:
+	var rule := ColorRect.new()
+	rule.custom_minimum_size = Vector2(116.0, 2.0)
+	rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	rule.color = color
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return rule
 
 
 func _on_start_pressed() -> void:
@@ -241,78 +241,75 @@ func _on_start_pressed() -> void:
 	Game.start_campaign()
 
 
+func _open_settings() -> void:
+	Sfx.play("ui_click")
+	_entry_host.visible = false
+	_settings_overlay.visible = true
+	_settings_back.grab_focus.call_deferred()
+
+
+func _close_settings() -> void:
+	Sfx.play("ui_back")
+	_settings_overlay.visible = false
+	_entry_host.visible = true
+	_settings_button.grab_focus.call_deferred()
+
+
+func _toggle_music() -> void:
+	_title_music_enabled = not _title_music_enabled
+	if _title_music_enabled:
+		Music.play_cue(&"title_lunaris")
+	else:
+		Music.stop()
+	_refresh_copy()
+
+
+func _toggle_reduced_motion() -> void:
+	_reduced_motion = not _reduced_motion
+	ProjectSettings.set_setting("accessibility/reduced_motion", _reduced_motion)
+	_backdrop.set_reduced_motion(_reduced_motion)
+	_refresh_copy()
+
+
 func _on_locale_selected(_locale_id: StringName) -> void:
 	_refresh_copy()
 
 
 func _refresh_copy() -> void:
-	_wordmark.text = UiCopyType.text(&"ui.game_title", "Protos").to_upper()
+	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
 	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
-	_seed_label.text = UiCopyType.format_text(
-		&"ui.title.seed", "RUN SEED // {seed}", {&"seed": Game.run_seed},
+	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
+	_settings_title.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
+	_music_button.text = UiCopyType.format_text(
+		&"ui.title.music_state", "TITLE MUSIC  //  {state}",
+		{&"state": UiCopyType.text(&"ui.common.on" if _title_music_enabled else &"ui.common.off", "On" if _title_music_enabled else "Off")},
 	).to_upper()
+	_motion_button.text = UiCopyType.format_text(
+		&"ui.title.motion_state", "ANIMATED BACKGROUND  //  {state}",
+		{&"state": UiCopyType.text(&"ui.common.off" if _reduced_motion else &"ui.common.on", "Off" if _reduced_motion else "On")},
+	).to_upper()
+	_settings_back.text = UiCopyType.text(&"ui.common.back", "Back").to_upper()
 
 
 func _apply_responsive_layout() -> void:
-	if _footer == null:
+	if _entry_host == null or _settings_panel == null:
 		return
 	var viewport_size := get_viewport_rect().size
-	_fit_video_cover(viewport_size)
-	var portrait := viewport_size.y > viewport_size.x
-	if portrait:
-		_lower_shade.offset_top = -370.0
-		_footer.offset_left = 24.0
-		_footer.offset_top = -350.0
-		_footer.offset_right = -24.0
-		_footer.offset_bottom = -18.0
-		_wordmark.add_theme_font_size_override(&"font_size", 44)
-		_tagline.add_theme_font_size_override(&"font_size", 10)
-		_action_row.columns = 1
-		_start_button.custom_minimum_size = Vector2(0.0, 52.0)
-		_locale_selector.set_vertical_layout(false)
-		_archive_label.visible = false
-	else:
-		_lower_shade.offset_top = -280.0
-		_footer.offset_left = 42.0
-		_footer.offset_top = -264.0
-		_footer.offset_right = -42.0
-		_footer.offset_bottom = -16.0
-		_wordmark.add_theme_font_size_override(&"font_size", 50)
-		_tagline.add_theme_font_size_override(&"font_size", 12)
-		_action_row.columns = 2
-		_start_button.custom_minimum_size = Vector2(330.0, 52.0)
-		_locale_selector.set_vertical_layout(false)
-		_archive_label.visible = true
-
-
-func _fit_video_cover(viewport_size: Vector2) -> void:
-	if _video == null or viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
-	const SOURCE_ASPECT := 16.0 / 9.0
-	var viewport_aspect := viewport_size.x / viewport_size.y
-	var fitted_size: Vector2
-	if viewport_aspect > SOURCE_ASPECT:
-		fitted_size = Vector2(viewport_size.x, viewport_size.x / SOURCE_ASPECT)
-	else:
-		fitted_size = Vector2(viewport_size.y * SOURCE_ASPECT, viewport_size.y)
-	_video.position = (viewport_size - fitted_size) * 0.5
-	_video.size = fitted_size
+	_backdrop.fit_top_cover(viewport_size)
+	var portrait := viewport_size.y > viewport_size.x
+	var entry_width := minf(viewport_size.x - 48.0, 660.0 if not portrait else 520.0)
+	var entry_height := 300.0 if not portrait else 276.0
+	var entry_top := minf(viewport_size.y - entry_height - 28.0, viewport_size.y * (0.58 if not portrait else 0.66))
+	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(24.0, entry_top))
+	_entry_host.size = Vector2(entry_width, entry_height)
+	_wordmark.add_theme_font_size_override(&"font_size", 66 if not portrait else 46)
+	_start_button.custom_minimum_size = Vector2(minf(entry_width, 520.0), 68.0 if not portrait else 60.0)
+	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.82, 430.0), 58.0 if not portrait else 54.0)
 
-
-func _label(text_value: String, size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text_value
-	label.add_theme_font_size_override(&"font_size", size)
-	label.add_theme_color_override(&"font_color", color)
-	return label
-
-
-func _button_style(fill: Color, border: Color, width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(width)
-	style.set_corner_radius_all(3)
-	style.content_margin_left = 22.0
-	style.content_margin_right = 22.0
-	return style
+	var panel_width := minf(viewport_size.x - 40.0, 640.0)
+	var panel_height := minf(viewport_size.y - 56.0, 560.0)
+	_settings_panel.position = Vector2((viewport_size.x - panel_width) * 0.5, (viewport_size.y - panel_height) * 0.5)
+	_settings_panel.size = Vector2(panel_width, panel_height)
+	_settings_title.add_theme_font_size_override(&"font_size", 36 if not portrait else 30)
