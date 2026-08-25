@@ -35,10 +35,10 @@ tools/stage_cinematic_streams.sh build/web/cinematics
 Upload the six staged OGV files to the same WebDev project as the base PCK. Add one engine argument per object:
 
 ```text
---cinematic-stream=<stream-key>|/manus-storage/<uploaded-object>.ogv
+--cinematic-stream=<stream-key>|https://<deployment-origin>/manus-storage/<uploaded-object>.ogv
 ```
 
-The URL may be absolute HTTP(S) or a same-origin path resolved by the browser. The byte length and SHA-256 remain authoritative in source; a deployment mapping cannot silently substitute different media.
+The runtime accepts absolute HTTP(S) URLs. A browser shell should construct these from `window.location.origin` plus the uploaded same-origin managed path so preview and published domains share one mapping. The byte length and SHA-256 remain authoritative in source; a deployment mapping cannot silently substitute different media.
 
 ## Verification
 
