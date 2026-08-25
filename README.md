@@ -23,6 +23,18 @@ godot --headless --fixed-fps 60 --path . --quit-after 120
 
 Documentation-only changes do not require an engine check. Run focused tests or manual previews when they are useful for the code being changed. Web export and browser checks are release-only.
 
+## Slow Field balance telemetry
+
+Run deterministic paired telemetry against the authored S7 and S8 waves with:
+
+```bash
+SLOW_FIELD_TELEMETRY_JSON=/tmp/slow-field-telemetry.json \
+SLOW_FIELD_TELEMETRY_CSV=/tmp/slow-field-telemetry.csv \
+godot --headless --path . --script tests/slow_field_balance_telemetry_test.gd
+```
+
+The baseline and Slow Field scenarios use identical authored waves with no combatants. Leak limits and base HP are raised only so every wave resolves. The Slow Field policy casts at the median shared-path cell when the spell is ready and at least two live ground enemies occupy its 3×3 footprint. This isolates route-control impact; it is not a player win-rate simulation.
+
 ## Web export and soundtrack scope
 
 The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris launch score across Company Command, S1–S8 battle states, the Gatecrasher boss, and results. `AudioCue` and `MusicProfile` resources drive presentation-only routing; `MusicDirector` requests bar-quantized low/medium/high transitions without entering deterministic battle state. The persisted music toggle governs every music surface.

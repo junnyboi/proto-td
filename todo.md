@@ -14,6 +14,7 @@
 - [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `4f4e6ce6`, and verify exact-PCK deployment at `https://protohost-sqtjrsla.manus.space/`.
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
+- [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 
 # Faction-Led Soundtrack Redesign
 

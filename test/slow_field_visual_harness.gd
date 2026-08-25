@@ -31,6 +31,9 @@ func _ready() -> void:
 	add_child(_spell_bar)
 	_spell_bar.setup(model, self, [&"slow_field"])
 	ticks_per_frame_scale = 0.0
+	# This harness projects deterministic state directly. Do not run the parent
+	# BattleView process loop, which now owns production battle-music playback.
+	set_process(false)
 
 	var shared := _shared_cells(_stage)
 	if shared.is_empty():
@@ -53,10 +56,24 @@ func _ready() -> void:
 		var cell_index := path.find(center)
 		if cell_index >= 0:
 			enemy.progress_units = cell_index * Pathing.PROGRESS_SCALE + path_idx * 170_000
-	if not model.apply_action([&"cast", &"slow_field", center]):
-		push_error("slow_field_visual_harness: cast rejected")
-		get_tree().quit(1)
-		return
+
+	var mode := OS.get_environment("SLOW_FIELD_VISUAL_MODE")
+	if mode == "tutorial":
+		_tutorial = SlowFieldTutorial.new()
+		_tutorial.name = "SlowFieldTutorial"
+		add_child(_tutorial)
+		_tutorial.call("setup", model, self, _spell_bar)
+		await get_tree().process_frame
+		var primary := _tutorial.find_child("SlowFieldTutorialPrimary", true, false) as Button
+		if primary != null:
+			primary.pressed.emit()
+	else:
+		if not model.apply_action([&"cast", &"slow_field", center]):
+			push_error("slow_field_visual_harness: cast rejected")
+			get_tree().quit(1)
+			return
+		model.tick = 60
+		_spell_bar.call("_refresh_buttons")
 	_project()
 	_relayout()
 	await get_tree().process_frame
@@ -69,7 +86,9 @@ func _ready() -> void:
 		push_error("slow_field_visual_harness: screenshot failed %s" % error)
 		get_tree().quit(1)
 		return
-	print("SLOW_FIELD_VISUAL_HARNESS_OK ", capture_path)
+	Sfx.stop_all()
+	await get_tree().create_timer(0.5).timeout
+	print("SLOW_FIELD_VISUAL_HARNESS_OK ", mode, " ", capture_path)
 	get_tree().quit(0)
 
 

@@ -1,8 +1,13 @@
 class_name SpellBar
 extends Control
 
+signal targeting_started(spell_id: StringName)
+signal targeting_stopped(spell_id: StringName)
+signal cast_resolved(spell_id: StringName, target: Variant, accepted: bool)
+
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const UI_COPY := preload("res://scripts/ui/components/ui_copy.gd")
 
 ## Raw-input adapter for the cast verb (architecture rule 3: a thin adapter
 ## over apply_action, validated once per spell kind by charm_runback.gd).
@@ -11,13 +16,17 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 ## cell (CELL spells) or at the lowest-id alive enemy on that cell (ENEMY
 ## spells); right-click / ui_cancel exits. Button enabled state reads
 ## model.is_castable, the cursor validity reads model.cast_target_valid
-## (the verb's own validation, never a copy). The cooldown sweep is a fill
-## rect proportional to max(0, ready_at - tick) / cooldown; ONCE_PER_WAVE
-## spells show a "1/wave" label and dim while used.
+## (the verb's own validation, never a copy). Cooldown and persistent-area
+## duration indicators are read-only projections of model ticks.
 
 const FONT_SIZE := GameTypographyType.BODY
-const SWEEP_HEIGHT := 8.0
-const SWEEP_COLOR := Color(0.96, 0.71, 0.2, 0.85)
+const SLOT_SIZE := Vector2(168.0, 70.0)
+const SWEEP_HEIGHT := 6.0
+const COOLDOWN_COLOR := Color(0.96, 0.71, 0.2, 0.9)
+const DURATION_COLOR := Color(0.34, 0.87, 0.91, 0.95)
+const STATUS_READY_COLOR := Color("dceef2")
+const STATUS_COOLDOWN_COLOR := Color("f2c75c")
+const STATUS_DURATION_COLOR := Color("72e3e8")
 const CURSOR_VALID := Color(0.55, 0.75, 1.0, 0.4)
 const CURSOR_INVALID := Color(0.9, 0.2, 0.2, 0.4)
 
@@ -26,9 +35,13 @@ var view: Node2D = null
 
 var _allowed: Array[StringName] = []
 var _buttons: Dictionary = {}
-var _sweeps: Dictionary = {}
+var _cooldown_sweeps: Dictionary = {}
+var _duration_sweeps: Dictionary = {}
+var _cooldown_labels: Dictionary = {}
+var _duration_labels: Dictionary = {}
 var _deck: PanelContainer = null
 var _targeting: StringName = &""
+var _tutorial_spell: StringName = &""
 var _pointer := Vector2.ZERO
 var _cursor_rect: Polygon2D = null
 
@@ -73,24 +86,58 @@ func _build_buttons() -> void:
 		var def := model.spell_book.def_of(spell_id)
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id
-		slot.text = _label_for(def)
-		slot.custom_minimum_size = Vector2(150.0, 58.0)
+		slot.text = def.display_name.to_upper()
+		slot.tooltip_text = _tooltip_for(def)
+		slot.custom_minimum_size = SLOT_SIZE
 		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
 		slot.expand_icon = true
 		slot.add_theme_constant_override(&"icon_max_width", 42)
+		slot.add_theme_font_size_override("font_size", FONT_SIZE)
 		Style.apply_button(slot, &"gold")
 		slot.button_down.connect(_start_targeting.bind(spell_id))
 		box.add_child(slot)
 		_buttons[spell_id] = slot
-		var sweep := ColorRect.new()
-		sweep.name = "CooldownSweep"
-		sweep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		sweep.color = SWEEP_COLOR
-		sweep.size = Vector2(0, SWEEP_HEIGHT)
-		slot.add_child(sweep)
-		_sweeps[spell_id] = sweep
+
+		var duration_label := _make_status_label("DurationLabel_%s" % spell_id)
+		duration_label.add_theme_color_override("font_color", STATUS_DURATION_COLOR)
+		duration_label.visible = false
+		slot.add_child(duration_label)
+		_duration_labels[spell_id] = duration_label
+
+		var cooldown_label := _make_status_label("CooldownLabel_%s" % spell_id)
+		cooldown_label.add_theme_color_override("font_color", STATUS_READY_COLOR)
+		slot.add_child(cooldown_label)
+		_cooldown_labels[spell_id] = cooldown_label
+
+		var duration_sweep := ColorRect.new()
+		duration_sweep.name = "DurationSweep_%s" % spell_id
+		duration_sweep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		duration_sweep.color = DURATION_COLOR
+		duration_sweep.size = Vector2.ZERO
+		slot.add_child(duration_sweep)
+		_duration_sweeps[spell_id] = duration_sweep
+
+		var cooldown_sweep := ColorRect.new()
+		cooldown_sweep.name = "CooldownSweep_%s" % spell_id
+		cooldown_sweep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cooldown_sweep.color = COOLDOWN_COLOR
+		cooldown_sweep.size = Vector2.ZERO
+		slot.add_child(cooldown_sweep)
+		_cooldown_sweeps[spell_id] = cooldown_sweep
 	_deck.visible = box.get_child_count() > 0
 	relayout()
+
+
+func _make_status_label(label_name: String) -> Label:
+	var label := Label.new()
+	label.name = label_name
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.08, 0.95))
+	label.add_theme_constant_override("outline_size", 3)
+	return label
 
 
 ## battle_view._relayout() after the grid recompute (P14 ordering).
@@ -101,31 +148,130 @@ func relayout() -> void:
 		box.reset_size()
 	if _deck != null:
 		_deck.reset_size()
-		_deck.position = Vector2(size.x - _deck.get_combined_minimum_size().x - 16.0, 8.0)
+		var deck_y := 64.0 if size.x >= size.y else 18.0
+		_deck.position = Vector2(
+			size.x - _deck.get_combined_minimum_size().x - 16.0,
+			deck_y,
+		)
 
 
-func _label_for(def: SpellDef) -> String:
-	if def.availability == SpellDef.Availability.ONCE_PER_WAVE:
-		return "%s\n1 / WAVE" % def.display_name.to_upper()
-	return "%s\nREADY" % def.display_name.to_upper()
+func set_tutorial_spell(spell_id: StringName) -> void:
+	_tutorial_spell = spell_id
+	_refresh_buttons()
+
+
+func targeting_spell() -> StringName:
+	return _targeting
+
+
+func request_targeting(spell_id: StringName) -> bool:
+	if not _buttons.has(spell_id):
+		return false
+	var slot: Button = _buttons[spell_id]
+	if slot.disabled:
+		return false
+	_start_targeting(spell_id)
+	return true
+
+
+func stop_targeting() -> void:
+	_stop_targeting()
+
+
+func slot_screen_rect(spell_id: StringName) -> Rect2:
+	if not _buttons.has(spell_id):
+		return Rect2()
+	return (_buttons[spell_id] as Button).get_global_rect()
+
+
+func remaining_duration_ticks(spell_id: StringName) -> int:
+	if model == null:
+		return 0
+	var remaining := 0
+	for field: SlowFieldState in model.slow_fields:
+		if field.spell_id == spell_id:
+			remaining = maxi(remaining, field.expires_tick - model.tick)
+	return remaining
+
+
+func remaining_cooldown_ticks(spell_id: StringName) -> int:
+	if model == null or not model.spell_book.has_spell(spell_id):
+		return 0
+	return maxi(0, model.spell_book.ready_at(spell_id) - model.tick)
 
 
 func _process(_delta: float) -> void:
 	if model == null:
 		return
+	_refresh_buttons()
+
+
+func _refresh_buttons() -> void:
 	for spell_id: StringName in _buttons:
 		var slot: Button = _buttons[spell_id]
-		slot.disabled = not model.is_castable(spell_id)
+		var tutorial_blocked := not _tutorial_spell.is_empty() and spell_id != _tutorial_spell
+		slot.disabled = tutorial_blocked or not model.is_castable(spell_id)
 		var def := model.spell_book.def_of(spell_id)
-		var sweep: ColorRect = _sweeps[spell_id]
-		if def.cooldown_ticks > 0:
-			var remaining := maxi(0, model.spell_book.ready_at(spell_id) - model.tick)
-			sweep.size = Vector2(
-				slot.size.x * float(remaining) / float(def.cooldown_ticks), SWEEP_HEIGHT
+		var cooldown_remaining := remaining_cooldown_ticks(spell_id)
+		var duration_remaining := remaining_duration_ticks(spell_id)
+		var cooldown_sweep: ColorRect = _cooldown_sweeps[spell_id]
+		var duration_sweep: ColorRect = _duration_sweeps[spell_id]
+		var cooldown_label: Label = _cooldown_labels[spell_id]
+		var duration_label: Label = _duration_labels[spell_id]
+
+		if def.cooldown_ticks > 0 and cooldown_remaining > 0:
+			cooldown_sweep.size = Vector2(
+				slot.size.x * float(cooldown_remaining) / float(def.cooldown_ticks),
+				SWEEP_HEIGHT,
 			)
-			sweep.position = Vector2(0, slot.size.y - SWEEP_HEIGHT)
+			cooldown_label.text = UI_COPY.format_text(
+				&"ui.spell.cooldown",
+				"CD {seconds}s",
+				{&"seconds": _seconds_text(cooldown_remaining)},
+			)
+			cooldown_label.add_theme_color_override("font_color", STATUS_COOLDOWN_COLOR)
 		else:
-			sweep.size = Vector2.ZERO
+			cooldown_sweep.size = Vector2.ZERO
+			cooldown_label.text = (
+				_copy(&"ui.spell.wave", "1 / WAVE")
+				if def.availability == SpellDef.Availability.ONCE_PER_WAVE
+				else _copy(&"ui.spell.ready", "READY")
+			)
+			cooldown_label.add_theme_color_override("font_color", STATUS_READY_COLOR)
+
+		if def.duration_ticks > 0 and duration_remaining > 0:
+			duration_sweep.size = Vector2(
+				slot.size.x * float(duration_remaining) / float(def.duration_ticks),
+				SWEEP_HEIGHT,
+			)
+			duration_label.text = UI_COPY.format_text(
+				&"ui.spell.field_duration",
+				"FIELD {seconds}s",
+				{&"seconds": _seconds_text(duration_remaining)},
+			)
+			duration_label.visible = true
+		else:
+			duration_sweep.size = Vector2.ZERO
+			duration_label.visible = false
+
+		duration_sweep.position = Vector2(0.0, slot.size.y - SWEEP_HEIGHT * 2.0)
+		cooldown_sweep.position = Vector2(0.0, slot.size.y - SWEEP_HEIGHT)
+		duration_label.position = Vector2(52.0, 4.0)
+		duration_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
+		cooldown_label.position = Vector2(52.0, slot.size.y - 32.0)
+		cooldown_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
+
+
+func _tooltip_for(def: SpellDef) -> String:
+	if def.effect == SpellDef.Effect.SLOW_FIELD:
+		return "3×3 ground field • 50% slow • 8s duration • 20s cooldown"
+	return def.display_name
+
+
+func _seconds_text(ticks: int) -> String:
+	var ticks_per_second := maxi(1, model.config.ticks_per_second)
+	var tenths := ceili(float(ticks) * 10.0 / float(ticks_per_second))
+	return "%.1f" % (float(tenths) / 10.0)
 
 
 func _input(event: InputEvent) -> void:
@@ -147,19 +293,30 @@ func _input(event: InputEvent) -> void:
 
 
 func _start_targeting(spell_id: StringName) -> void:
+	if _targeting == spell_id:
+		return
+	if not _targeting.is_empty():
+		_stop_targeting()
 	_targeting = spell_id
 	_update_cursor()
+	targeting_started.emit(spell_id)
 
 
 func _stop_targeting() -> void:
+	if _targeting.is_empty():
+		return
+	var prior := _targeting
 	_targeting = &""
 	_cursor_rect.visible = false
+	targeting_stopped.emit(prior)
 
 
 func _cast_at_pointer() -> void:
+	var spell_id := _targeting
 	var cell: Vector2i = view.call("cell_at", _pointer)
-	var target: Variant = _target_for(_targeting, cell)
-	model.apply_action([&"cast", _targeting, target])
+	var target: Variant = _target_for(spell_id, cell)
+	var accepted := model.apply_action([&"cast", spell_id, target])
+	cast_resolved.emit(spell_id, target, accepted)
 	_stop_targeting()
 
 
@@ -178,6 +335,8 @@ func _target_for(spell_id: StringName, cell: Vector2i) -> Variant:
 
 
 func _update_cursor() -> void:
+	if _targeting.is_empty() or view == null:
+		return
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	var def := model.spell_book.def_of(_targeting)
 	var span := 1
@@ -191,3 +350,7 @@ func _update_cursor() -> void:
 	_cursor_rect.polygon = IsoProjection.face_polygon(s * span)
 	_cursor_rect.position = Vector2(view.call("cell_center", cell))
 	_cursor_rect.visible = true
+
+
+func _copy(key: StringName, fallback: String) -> String:
+	return UI_COPY.text(key, fallback)

@@ -11,6 +11,7 @@ const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 	"res://data/presentation/operator_visual_catalog.gd"
 )
 const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutorial.gd")
+const SLOW_FIELD_TUTORIAL_SCRIPT := preload("res://scripts/ui/slow_field_tutorial.gd")
 const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_overlay.gd")
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
@@ -72,7 +73,7 @@ var _continue_btn: Button = null
 var _deploy_bar: DeployBar = null
 var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
-var _tutorial: FirstStandTutorial = null
+var _tutorial: Node = null
 var _map_navigation_overlay: MapNavigationOverlay = null
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
@@ -204,7 +205,7 @@ func _ready() -> void:
 	_music_director.configure(Music.minimum_state_hold_seconds(_stage.music_profile_id))
 	_music_director.reset(initial_music_state, 0.0)
 	_music_last_leaked_count = model.leaked
-	_start_first_stand_tutorial()
+	_start_stage_tutorial()
 	_refresh_map_navigation_overlay()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
@@ -212,15 +213,23 @@ func _ready() -> void:
 	startup_succeeded = true
 
 
-func _start_first_stand_tutorial() -> void:
-	if not _should_show_first_stand_tutorial():
-		return
-	_tutorial = FIRST_STAND_TUTORIAL_SCRIPT.new()
-	_tutorial.name = "FirstStandTutorial"
-	_tutorial.hold_changed.connect(_on_tutorial_hold_changed)
-	_tutorial.tutorial_finished.connect(_on_tutorial_finished)
+func _start_stage_tutorial() -> void:
+	if _should_show_first_stand_tutorial():
+		_tutorial = FIRST_STAND_TUTORIAL_SCRIPT.new()
+		_tutorial.name = "FirstStandTutorial"
+		_connect_tutorial()
+		_tutorial.call("setup", model, self, _deploy_bar)
+	elif _should_show_slow_field_tutorial():
+		_tutorial = SLOW_FIELD_TUTORIAL_SCRIPT.new()
+		_tutorial.name = "SlowFieldTutorial"
+		_connect_tutorial()
+		_tutorial.call("setup", model, self, _spell_bar)
+
+
+func _connect_tutorial() -> void:
+	_tutorial.connect("hold_changed", _on_tutorial_hold_changed)
+	_tutorial.connect("tutorial_finished", _on_tutorial_finished)
 	add_child(_tutorial)
-	_tutorial.setup(model, self, _deploy_bar)
 
 
 func _should_show_first_stand_tutorial() -> bool:
@@ -231,13 +240,29 @@ func _should_show_first_stand_tutorial() -> bool:
 	return not stars.has(&"s1") and not stars.has("s1")
 
 
+func _should_show_slow_field_tutorial() -> bool:
+	if (
+		_stage == null
+		or _stage.id != &"s7"
+		or not Game.campaign_active
+		or model == null
+		or not model.spell_book.has_spell(&"slow_field")
+	):
+		return false
+	var projection: Dictionary = Game.campaign_projection()
+	var stars := projection.get("stage_stars", {}) as Dictionary
+	return not stars.has(&"s7") and not stars.has("s7")
+
+
 func _on_tutorial_hold_changed(held: bool) -> void:
 	if held:
-		juice_time_push(&"first_stand_tutorial", 0.0)
+		juice_time_push(&"guided_tutorial", 0.0)
 	else:
-		juice_time_pop(&"first_stand_tutorial")
+		juice_time_pop(&"guided_tutorial")
 	if _controls != null:
 		_controls.set_interaction_enabled(not held)
+	if _deploy_bar != null:
+		_deploy_bar.set_operator_interaction_enabled(not held)
 	_refresh_map_navigation_overlay()
 
 
@@ -324,7 +349,8 @@ func _map_navigation_blocked() -> bool:
 	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
 	var deploy_bar := find_child("DeployBar", true, false) as DeployBar
 	return (
-		(deploy_cursor != null and deploy_cursor.visible)
+		(_tutorial != null and bool(_tutorial.call("is_holding_battle")))
+		or (deploy_cursor != null and deploy_cursor.visible)
 		or (spell_cursor != null and spell_cursor.visible)
 		or (deploy_bar != null and deploy_bar.is_mend_targeting())
 	)
@@ -688,7 +714,9 @@ func _refresh_map_navigation_overlay() -> void:
 	if _map_navigation_overlay == null or not is_instance_valid(_map_navigation_overlay):
 		return
 	var viewport := get_viewport_rect().size
-	var tutorial_holding := _tutorial != null and _tutorial.is_holding_battle()
+	var tutorial_holding := (
+		_tutorial != null and bool(_tutorial.call("is_holding_battle"))
+	)
 	var battle_running := model == null or model.result == BattleModel.Result.RUNNING
 	_map_navigation_overlay.set_context(
 		viewport.y > viewport.x,
@@ -726,7 +754,7 @@ func _relayout() -> void:
 		_map_navigation_overlay.relayout()
 		_refresh_map_navigation_overlay()
 	if _tutorial != null and is_instance_valid(_tutorial):
-		_tutorial.relayout()
+		_tutorial.call("relayout")
 	if _juice != null:
 		_juice.relayout(viewport)
 

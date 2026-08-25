@@ -19,6 +19,10 @@ const STATIC_FALLBACKS := {
 	&"ui.title.seed": "seed {seed}",
 	&"ui.common.on": "On",
 	&"ui.common.off": "Off",
+	&"ui.spell.cooldown": "CD {seconds}s",
+	&"ui.spell.field_duration": "FIELD {seconds}s",
+	&"ui.spell.ready": "READY",
+	&"ui.spell.wave": "1 / WAVE",
 	&"ui.tutorial.block.action": "Start battle",
 	&"ui.tutorial.block.body": (
 		"A Recruit blocks 1 ground enemy and loses HP while fighting. "
@@ -61,6 +65,30 @@ const STATIC_FALLBACKS := {
 	&"ui.tutorial.route.step": "1 / 4  ROUTE",
 	&"ui.tutorial.route.title": "Read the route",
 	&"ui.tutorial.skip": "Skip tutorial",
+	&"ui.tutorial.slow_field.brief.action": "Select Slow Field",
+	&"ui.tutorial.slow_field.brief.body": (
+		"Slow Field covers a 3×3 ground area, halves ground movement for 8 seconds, "
+		+ "and recharges in 20 seconds. Air units ignore it."
+	),
+	&"ui.tutorial.slow_field.brief.step": "1 / 2  SLOW FIELD",
+	&"ui.tutorial.slow_field.brief.title": "Control the convergence",
+	&"ui.tutorial.slow_field.cancelled": (
+		"Targeting cancelled. Select Slow Field and cast on the shared lane."
+	),
+	&"ui.tutorial.slow_field.invalid": "That cast was rejected. Aim inside the battlefield.",
+	&"ui.tutorial.slow_field.live.body": (
+		"Cyan tracks remaining field duration. Gold tracks the 20-second cooldown. "
+		+ "The spell can be cast again when READY returns."
+	),
+	&"ui.tutorial.slow_field.live.step": "FIELD ACTIVE",
+	&"ui.tutorial.slow_field.live.title": "Watch both timers",
+	&"ui.tutorial.slow_field.target.body": (
+		"Cast on the cyan marker where all three routes converge. Duration and cooldown "
+		+ "timers will remain on the spell card."
+	),
+	&"ui.tutorial.slow_field.target.step": "2 / 2  CAST",
+	&"ui.tutorial.slow_field.target.title": "Cast on the shared lane",
+	&"ui.tutorial.slow_field.unavailable": "Slow Field is not ready yet.",
 	&"ui.map_navigation.hint_title": "DRAG TO PAN",
 	&"ui.map_navigation.hint_body": "Explore the full battlefield on every open axis.",
 	&"ui.map_navigation.recenter": "CENTER",
@@ -245,7 +273,8 @@ const STATIC_FALLBACKS := {
 }
 
 const PLACEHOLDER_TYPES := {
-	&"ui.title.seed": {&"seed": &"int"},
+	&"ui.spell.cooldown": {&"seconds": &"String"},
+	&"ui.spell.field_duration": {&"seconds": &"String"},
 	&"ui.title.music_state": {&"state": &"String"},
 	&"ui.title.motion_state": {&"state": &"String"},
 	&"ui.title.master_volume": {&"value": &"int"},
