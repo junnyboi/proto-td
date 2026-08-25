@@ -65,3 +65,9 @@ Escape closes Settings and returns focus to the SETTINGS control; Arrow Up resto
 Enter on START transitions directly into Company Command. Two later command frames show different facial, hair, and aura states behind the unchanged command deck, confirming Company Command uses the shared animated stream instead of a static placeholder. The top celestial edge remains aligned while the deck preserves character-safe readability.
 
 The current Web session console is empty after title, Settings, reduced-motion, music, and Company Command operations. The redesigned 134,023,952-byte PCK returns HTTP 200 with the expected byte count. Historical August 24 compile messages remain in the cumulative log but are absent from the scoped August 25 session; the scoped script, shader, video, audio, null-child, and resource-error audit passes.
+
+## Merged-candidate acceptance
+
+After merging the latest custom naming, faction roster filters, Vahalla, premium gacha, and terrain placement feedback work, Godot import, bounded boot, and all five focused SceneTree regressions pass. The repeated 2560×1080 captures preserve the top-aligned PROTOS DEFENSE title and show Company Command’s animated backdrop coexisting with the new Vahalla operation tile and incoming staging content without overlap or lost controls.
+
+The final merged 134,086,324-byte PCK loads in the reconciled shared preview and reaches the redesigned animated PROTOS DEFENSE title. The top celestial edge, centered controls, full-opacity animation, title music, and latest synchronized gameplay assets coexist in the same final bundle.
