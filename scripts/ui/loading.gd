@@ -6,6 +6,7 @@ extends Control
 const LOADING_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const TITLE_SCENE := preload("res://scenes/title.tscn")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const TopAlignedCoverType := preload("res://scripts/ui/components/top_aligned_cover.gd")
 const GOLD := Color("d8b978")
 const MOON_CYAN := Color("86cbd4")
 const IVORY := Color("eee8dc")
@@ -45,13 +46,10 @@ func _process(delta: float) -> void:
 
 
 func _build_screen() -> void:
-	var art := TextureRect.new()
+	var art := TopAlignedCoverType.new()
 	art.name = "LunarisArtwork"
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	art.texture = LOADING_ART
-	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(art)
 
 	var atmosphere := ColorRect.new()
