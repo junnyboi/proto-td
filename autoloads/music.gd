@@ -18,6 +18,7 @@ const PACK_PRELOAD_ARGUMENT_PREFIX := "--music-pack-preload="
 const PACK_CACHE_DIR := "user://music-packs"
 const PACK_DOWNLOAD_TIMEOUT_SECONDS := 45.0
 const PACK_DOWNLOAD_CHUNK_BYTES := 262_144
+const PACK_COPY_CHUNK_BYTES := 1_048_576
 
 const PACK_STATE_UNCONFIGURED := &"unconfigured"
 const PACK_STATE_CONFIGURED := &"configured"
@@ -389,19 +390,24 @@ func _on_pack_request_completed(
 		return
 	var cached_path := _cache_path(act, String(spec["sha256"]))
 	_remove_file(cached_path)
-	var rename_error := DirAccess.rename_absolute(
-		ProjectSettings.globalize_path(temp_path),
-		ProjectSettings.globalize_path(cached_path),
+	var mount_path := _promote_downloaded_pack(
+		temp_path,
+		cached_path,
+		String(spec["sha256"]),
+		int(spec["bytes"]),
 	)
-	if rename_error != OK or not mount_pack_file(
-		act, cached_path, String(spec["sha256"]), int(spec["bytes"]),
+	if not mount_pack_file(
+		act, mount_path, String(spec["sha256"]), int(spec["bytes"]),
 	):
 		_remove_file(temp_path)
 		_remove_file(cached_path)
 		_set_pack_state(act, PACK_STATE_FAILED)
 		print("MUSIC_CONTENT_PACK_MOUNT_FAILED act=%d" % act)
 		return
-	print("MUSIC_CONTENT_PACK_READY act=%d bytes=%d" % [act, int(spec["bytes"])])
+	print(
+		"MUSIC_CONTENT_PACK_READY act=%d bytes=%d cached=%s"
+		% [act, int(spec["bytes"]), str(mount_path == cached_path)],
+	)
 	_resume_pending_cue(act)
 
 
@@ -419,6 +425,44 @@ func _cache_path(act: int, sha256: String) -> String:
 
 func _temp_path(act: int) -> String:
 	return "%s/act-%d.download" % [PACK_CACHE_DIR, act]
+
+
+func _promote_downloaded_pack(
+	temp_path: String,
+	cached_path: String,
+	expected_sha256: String,
+	expected_bytes: int,
+) -> String:
+	var rename_error := DirAccess.rename_absolute(
+		ProjectSettings.globalize_path(temp_path),
+		ProjectSettings.globalize_path(cached_path),
+	)
+	if rename_error == OK:
+		return cached_path
+	if _copy_verified_pack(temp_path, cached_path, expected_sha256, expected_bytes):
+		_remove_file(temp_path)
+		return cached_path
+	_remove_file(cached_path)
+	return temp_path
+
+
+func _copy_verified_pack(
+	source_path: String,
+	target_path: String,
+	expected_sha256: String,
+	expected_bytes: int,
+) -> bool:
+	var source := FileAccess.open(source_path, FileAccess.READ)
+	var target := FileAccess.open(target_path, FileAccess.WRITE)
+	if source == null or target == null:
+		return false
+	while source.get_position() < source.get_length():
+		var remaining := source.get_length() - source.get_position()
+		target.store_buffer(source.get_buffer(mini(PACK_COPY_CHUNK_BYTES, remaining)))
+	target.flush()
+	source = null
+	target = null
+	return _validate_pack_file(target_path, expected_sha256, expected_bytes)
 
 
 func _validate_pack_file(path: String, expected_sha256: String, expected_bytes: int) -> bool:

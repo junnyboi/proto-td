@@ -67,9 +67,22 @@ func _run() -> void:
 		not bool(music.call("mount_pack_file", 1, pack_path, wrong_hash, expected_bytes)),
 		"pack mounted with an invalid hash",
 	)
+	var copied_pack_path := "user://music-content-pack-copy-test.pck"
+	if FileAccess.file_exists(copied_pack_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(copied_pack_path))
 	_check(
-		bool(music.call("mount_pack_file", 1, pack_path, expected_sha256, expected_bytes)),
-		"verified act 1 pack failed to mount",
+		bool(music.call(
+			"_copy_verified_pack",
+			pack_path,
+			copied_pack_path,
+			expected_sha256,
+			expected_bytes,
+		)),
+		"verified pack copy fallback failed",
+	)
+	_check(
+		bool(music.call("mount_pack_file", 1, copied_pack_path, expected_sha256, expected_bytes)),
+		"copied act 1 pack failed to mount",
 	)
 	_check(ResourceLoader.exists(act_1_bgm_path), "mounted pack did not expose act 1 BGM")
 	_check(ResourceLoader.exists(act_1_boss_path), "mounted pack did not expose act 1 boss music")
@@ -81,6 +94,8 @@ func _run() -> void:
 		"mounted cue resolved the wrong stream",
 	)
 	music.call("stop")
+	if FileAccess.file_exists(copied_pack_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(copied_pack_path))
 	for _frame: int in range(8):
 		await process_frame
 	await create_timer(0.25).timeout
