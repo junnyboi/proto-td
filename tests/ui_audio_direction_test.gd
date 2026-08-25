@@ -113,6 +113,20 @@ func _run() -> void:
 			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
 			"hidden controls remain silent on hover",
 		)
+		var hidden_parent := Control.new()
+		var hidden_descendant := Button.new()
+		hidden_parent.add_child(hidden_descendant)
+		root.add_child(hidden_parent)
+		hidden_parent.hide()
+		await process_frame
+		await create_timer(0.15).timeout
+		hidden_descendant.mouse_entered.emit()
+		await process_frame
+		_check(
+			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
+			"controls hidden by an ancestor remain silent on hover",
+		)
+		hidden_parent.queue_free()
 		var slider := hover_controls[1] as HSlider
 		slider.editable = false
 		await create_timer(0.08).timeout
