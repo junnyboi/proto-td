@@ -12,13 +12,20 @@ func _init() -> void:
 func _run() -> void:
 	var expected_ids := ["lunaris_vessel", "reliquary_duelist", "archive_caster"]
 	_check(PlayerType.PROFILES.size() == expected_ids.size(), "cinematic profile count is incorrect")
+	_check(PlayerType.STREAMS.size() == expected_ids.size() * 2, "stream manifest count is incorrect")
 	for premium_id: String in expected_ids:
 		var profile: Dictionary = PlayerType.PROFILES.get(premium_id, {})
 		_check(not profile.is_empty(), "missing cinematic profile %s" % premium_id)
 		for orientation: String in ["landscape", "portrait"]:
-			var video_path := String(profile.get("%s_video" % orientation, ""))
+			var stream_key := String(profile.get("%s_stream" % orientation, ""))
 			var final_path := String(profile.get("%s_final" % orientation, ""))
-			_check(ResourceLoader.exists(video_path), "missing cinematic stream %s" % video_path)
+			var stream_spec: Dictionary = PlayerType.STREAMS.get(stream_key, {})
+			var bundled_path := String(stream_spec.get("bundled_path", ""))
+			_check(not stream_key.is_empty(), "missing %s stream key for %s" % [orientation, premium_id])
+			_check(not stream_spec.is_empty(), "missing stream spec %s" % stream_key)
+			_check(int(stream_spec.get("bytes", 0)) > 0, "missing byte size %s" % stream_key)
+			_check(String(stream_spec.get("sha256", "")).length() == 64, "invalid SHA-256 %s" % stream_key)
+			_check(ResourceLoader.exists(bundled_path), "missing native cinematic fallback %s" % bundled_path)
 			_check(ResourceLoader.exists(final_path), "missing final identity plate %s" % final_path)
 		var music_id := StringName(profile.get("music_id", &""))
 		_check(not music_id.is_empty(), "missing cinematic music id %s" % premium_id)

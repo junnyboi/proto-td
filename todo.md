@@ -15,6 +15,15 @@
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
+- [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
+
+# Company Command Sizing Reimplementation
+
+- [x] Audit the supplied screenshot, measured runtime geometry, decorative safe areas, and mature gacha lobby sizing patterns.
+- [x] Generate divider-free Company Command HUD and navigation-rail frames with GPT Image 2; retain all copy, state, focus, and interaction as native Godot controls.
+- [x] Recompose standard landscape into segmented HUD, navigation rail, protected hero stage, and 620–700px command deck with explicit per-frame content-safe margins.
+- [x] Implement compact-landscape and portrait command-sheet reflow with display-safe-area insets, local scrolling, 72px actions, and typography floors.
+- [x] Add English/Chinese exact-resolution layout regressions and accept 1280×720, 1280×1100, 1024×768, and 720×1280 native renders with clean runtime logs.
 
 # Approved Unified Interface Continuation
 

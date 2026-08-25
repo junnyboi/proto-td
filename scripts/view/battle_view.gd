@@ -47,6 +47,8 @@ const TRAP_SPIKE_COLOR := Color("f4b41b")
 const TRAP_SPIKE_CORE := Color("1a1c2c")
 const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
+const SLOW_FIELD_AURA_ALPHA := 0.46
+const SLOW_FIELD_ROTATION_SECONDS := 18.0
 
 var model: BattleModel = null
 var startup_succeeded: bool = false
@@ -910,7 +912,8 @@ func _make_slow_field_rect(field: SlowFieldState) -> ColorRect:
 		native_size = Vector2i(96, 48)
 	rect.size = Vector2(native_size) * SPRITE_SCALE * span_scale
 	rect.position = IsoProjection.face_center(field.center) - rect.size * 0.5
-	rect.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	rect.pivot_offset = rect.size * 0.5
+	rect.modulate = Color(1.0, 1.0, 1.0, SLOW_FIELD_AURA_ALPHA)
 	var tex := Art.texture(&"vfx_slow_field")
 	if tex != null:
 		var sprite := TextureRect.new()
@@ -922,7 +925,7 @@ func _make_slow_field_rect(field: SlowFieldState) -> ColorRect:
 		rect.add_child(sprite)
 	else:
 		var fallback := Polygon2D.new()
-		fallback.color = Color(0.36, 0.91, 0.95, 0.45)
+		fallback.color = Color(0.36, 0.91, 0.95, 0.8)
 		fallback.polygon = PackedVector2Array([
 			Vector2(rect.size.x * 0.5, 0.0),
 			Vector2(rect.size.x, rect.size.y * 0.5),
@@ -932,6 +935,13 @@ func _make_slow_field_rect(field: SlowFieldState) -> ColorRect:
 		rect.add_child(fallback)
 	rect.z_index = IsoProjection.tile_z(field.center) + 1
 	_grid_root.add_child(rect)
+	var rotation_tween := rect.create_tween().set_loops()
+	rotation_tween.tween_property(
+		rect,
+		"rotation",
+		TAU,
+		SLOW_FIELD_ROTATION_SECONDS,
+	).from(0.0)
 	return rect
 
 

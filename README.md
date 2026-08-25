@@ -49,7 +49,15 @@ Export the complete bundle with:
 
 ```bash
 godot --headless --path . --export-release Web build/web/index.html
+tools/stage_cinematic_streams.sh build/web/cinematics
 ```
+
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos. The
+selected hero/orientation stream is downloaded on demand, verified by exact
+size and SHA-256, cached under `user://`, and played through
+`VideoStreamTheora`; the final identity plate remains a safe fallback. See
+[`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
+arguments, the stream manifest, and release checks.
 
 The implemented redesign contract and future-faction boundary live in [`docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md`](docs/FACTION_MUSIC_REDESIGN_PROPOSAL.md).
 

@@ -28,6 +28,11 @@ func _run() -> void:
 		title.call("_open_settings")
 		for _frame: int in range(3):
 			await get_tree().process_frame
+		var scroll := title.find_child("SettingsScroll", true, false) as ScrollContainer
+		if scroll != null:
+			scroll.follow_focus = false
+			scroll.scroll_vertical = 0
+			await get_tree().process_frame
 	var image := get_viewport().get_texture().get_image()
 	var save_error := image.save_png(output_path)
 	if save_error != OK:
@@ -40,9 +45,16 @@ func _run() -> void:
 	)
 	if get_tree().root.get_node_or_null("Game") != null:
 		get_tree().root.get_node("Game").set("content", null)
+	var music := get_tree().root.get_node_or_null("Music")
+	if music != null:
+		music.call("stop")
+	var sfx := get_tree().root.get_node_or_null("Sfx")
+	if sfx != null:
+		sfx.call("stop_all")
 	title.queue_free()
-	for _frame: int in range(4):
+	for _frame: int in range(16):
 		await get_tree().process_frame
+	await get_tree().create_timer(0.5).timeout
 	_remove_preferences()
 	get_tree().quit(0)
 

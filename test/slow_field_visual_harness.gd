@@ -77,6 +77,22 @@ func _ready() -> void:
 	_project()
 	_relayout()
 	await get_tree().process_frame
+	if mode != "tutorial":
+		if _slow_field_rects.size() != 1:
+			push_error("slow_field_visual_harness: active aura projection is missing")
+			get_tree().quit(1)
+			return
+		var aura := _slow_field_rects.values()[0] as Control
+		if aura == null or aura.modulate.a > 0.5:
+			push_error("slow_field_visual_harness: active aura is not sufficiently transparent")
+			get_tree().quit(1)
+			return
+		var rotation_before := aura.rotation
+		await get_tree().create_timer(0.35).timeout
+		if absf(aura.rotation - rotation_before) < 0.01:
+			push_error("slow_field_visual_harness: active aura is not rotating")
+			get_tree().quit(1)
+			return
 	await RenderingServer.frame_post_draw
 	var capture_path := OS.get_environment("SLOW_FIELD_CAPTURE")
 	if capture_path.is_empty():

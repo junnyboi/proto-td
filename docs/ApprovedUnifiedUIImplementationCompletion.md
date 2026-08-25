@@ -28,7 +28,7 @@ The approved unified-interface concept is now implemented across the synchronize
 |---|---|
 | Direct import | Passed on Godot 4.7.2 stable |
 | Bounded headless boot | Passed |
-| Repository tests | 29/29 passed |
+| Repository tests | 32/32 passed |
 | Localization parity | Passed for `en-US` and `zh-CN` |
 | Consolidated error scan | Clean |
 | Non-battle visual matrix | 12/12 captures passed at 1280×720 and 720×1280 |
