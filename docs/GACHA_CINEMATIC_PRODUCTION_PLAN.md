@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Execution in progress; Phase 1 identity anchors complete |
+| **Status** | Execution in progress; Phases 1–2 identity anchors and keyframes complete |
 | **Author** | Manus AI, Agent 7 |
 | **Source candidate** | `8cecde1bb4fcee44bd25cd47997f64c0cbcb9f37` |
 | **Target runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
