@@ -295,7 +295,7 @@ func _try_bind_hover(control: Control) -> void:
 
 func _on_control_hovered(control: Control) -> void:
 	var hover_owner := _hover_owner_for(control)
-	if hover_owner == null or not hover_owner.is_visible_in_tree():
+	if hover_owner == null or not hover_owner.visible:
 		return
 	var now_msec := Time.get_ticks_msec()
 	if now_msec < int(hover_owner.get_meta(HOVER_READY_META, 0)):
