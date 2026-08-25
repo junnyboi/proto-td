@@ -11,7 +11,7 @@
 - [x] Phase 4: run full import/boot/focused regressions, English/Chinese parity checks, landscape/portrait visual verification, and error scans.
 - [x] Export the Godot 4.7.2 Web bundle and require HTML, JavaScript, WASM, and PCK artifacts with checksums.
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
-- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save integrated checkpoint `8a91b831`, verify managed preview, and prepare WebDev Publish-control promotion.
+- [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save final checkpoint `5dc6d41c`, verify managed preview, and prepare WebDev Publish-control promotion because the public domain still serves the prior PCK.
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 

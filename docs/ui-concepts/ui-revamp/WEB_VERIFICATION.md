@@ -3,7 +3,7 @@
 **Final runtime source:** `a6f358e286fd62eadb729ecce93c86fb530ec5e9`
 **Engine:** Godot `4.7.2.stable.official.ed1daf0bf`
 **WebDev project:** `proto-td-web` (`SQTJrsLaB53KudBffRrZrS`)
-**Final checkpoint:** `8a91b831`
+**Final checkpoint:** `5dc6d41c`
 
 The synchronized release combines the complete unified 21+ anime-gacha UI, exact 15% title/readability follow-up, capped Company Command deck, soundtrack-redesign Phase 0, and the deterministic S6 Slow Field spell. Rejected staging/battle tracks, content-pack status, pack tests, pack tooling, and Web pack arguments are intentionally removed. Astra Memoriam remains scoped to loading/title with its persisted ON/OFF preference; staging and battle use silence fallback until approved faction-led adaptive suites are generated.
 
@@ -13,4 +13,4 @@ The final export contains non-empty `index.html`, `index.js`, `index.wasm`, and 
 
 Managed-preview verification reached `readyState=complete`, loaded only the final PCK among inspected soundtrack resources, issued no obsolete `music-act-*` request, matched iframe and canvas at `1280×1100` with zero border, rendered the enlarged title without clipping, and showed the Company Command deck capped and vertically centered on a tall viewport. Pointer plus Enter navigated from title to Company Command; neither screen displayed pack status. The post-navigation console remained clean.
 
-Checkpoint `8a91b831` is fully verified and ready for WebDev Publish-control promotion. The client session exposes checkpoint creation but no direct publish command.
+Checkpoint `5dc6d41c` is fully verified and ready for WebDev Publish-control promotion. The public domain currently still loads prior `index_f499572a.pck`, not final `index_d545a204.pck`; this client session exposes checkpoint creation but no direct publish command.
