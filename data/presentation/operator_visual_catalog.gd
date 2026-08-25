@@ -13,6 +13,7 @@ const DEFINITIONS: Dictionary = {
 	&"guard_1": preload("res://data/presentation/operator_visuals/guard_1.tres"),
 	&"guard_2": preload("res://data/presentation/operator_visuals/guard_2.tres"),
 	&"lunaris_vessel": preload("res://data/presentation/operator_visuals/lunaris_vessel.tres"),
+	&"reliquary_duelist": preload("res://data/presentation/operator_visuals/reliquary_duelist.tres"),
 	&"recruit_female": preload("res://data/presentation/operator_visuals/recruit_female.tres"),
 	&"recruit_male": preload("res://data/presentation/operator_visuals/recruit_male.tres"),
 	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
@@ -25,6 +26,7 @@ const VISUAL_ALIASES: Dictionary = {
 }
 const PREMIUM_VISUAL_BY_PORTRAIT: Dictionary = {
 	&"portrait_lunaris_vessel": &"lunaris_vessel",
+	&"portrait_reliquary_duelist": &"reliquary_duelist",
 }
 
 
