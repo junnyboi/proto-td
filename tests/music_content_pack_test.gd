@@ -27,7 +27,9 @@ func _run() -> void:
 			"source-tree battle music did not report bundled state",
 		)
 		music.call("stop")
-		await process_frame
+		for _frame: int in range(8):
+			await process_frame
+		await create_timer(0.25).timeout
 		_finish()
 		return
 	_check(expected_sha256.length() == 64, "act 1 pack SHA-256 missing")
@@ -66,7 +68,9 @@ func _run() -> void:
 		"mounted cue resolved the wrong stream",
 	)
 	music.call("stop")
-	await process_frame
+	for _frame: int in range(8):
+		await process_frame
+	await create_timer(0.25).timeout
 	_finish()
 
 
