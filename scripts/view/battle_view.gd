@@ -211,7 +211,6 @@ func _ready() -> void:
 	_map_navigation_overlay = MAP_NAVIGATION_OVERLAY_SCRIPT.new()
 	_map_navigation_overlay.name = "MapNavigationOverlay"
 	add_child(_map_navigation_overlay)
-	_map_navigation_overlay.recenter_requested.connect(_on_recenter_map_requested)
 	_map_navigation_overlay.setup()
 	model = candidate_model
 	_build_battle_dialogue(stage.id)
@@ -408,15 +407,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_map_navigation_overlay.notify_pan_used()
 		_apply_map_transform()
 		get_viewport().set_input_as_handled()
-
-
-func _on_recenter_map_requested() -> void:
-	if _map_navigation_blocked():
-		return
-	if _map_nav.recenter():
-		Sfx.play("ui_click")
-		_apply_map_transform()
-	_refresh_map_navigation_overlay()
 
 
 func _map_navigation_blocked() -> bool:
@@ -834,8 +824,6 @@ func _refresh_map_navigation_overlay() -> void:
 		viewport.y > viewport.x,
 		_map_nav.has_pan_range() and battle_running and not _battle_confirmation_active,
 		not tutorial_holding and not _battle_confirmation_active and battle_running,
-		_map_nav.is_centered(),
-		not _map_navigation_blocked() and battle_running,
 	)
 
 

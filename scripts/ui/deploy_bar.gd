@@ -25,14 +25,14 @@ const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
-const FONT_SIZE := GameTypographyType.BODY * 2
-const BAR_HEIGHT := 152.0
+const FONT_SIZE := GameTypographyType.DETAIL
+const BAR_HEIGHT := 124.0
 const SAFE_MARGIN := 16.0
-const DECK_PADDING := 24.0
-const SLOT_GAP := 16.0
-const SLOT_TARGET_WIDTH := 280.0
-const SLOT_TARGET_HEIGHT := 116.0
-const FIRST_SLOT_CONTENT_INSET := 18.0
+const DECK_PADDING := 16.0
+const SLOT_GAP := 12.0
+const SLOT_TARGET_WIDTH := 220.0
+const SLOT_TARGET_HEIGHT := 76.0
+const FIRST_SLOT_CONTENT_INSET := 12.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
@@ -365,8 +365,8 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(sprite_id, 0)
 		slot.expand_icon = true
-		slot.add_theme_constant_override(&"icon_max_width", 72)
-		Style.apply_button(slot, &"secondary")
+		slot.add_theme_constant_override(&"icon_max_width", 52)
+		Style.apply_compact_rounded_button(slot, &"secondary", 12.0, 12)
 		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
 		if _slots.is_empty():
 			_add_first_slot_content_inset(slot)
@@ -393,8 +393,8 @@ func _build_slots(op_defs: Dictionary) -> void:
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
 		)
 		slot.expand_icon = true
-		slot.add_theme_constant_override(&"icon_max_width", 72)
-		Style.apply_button(slot, &"gold")
+		slot.add_theme_constant_override(&"icon_max_width", 52)
+		Style.apply_compact_rounded_button(slot, &"gold", 12.0, 12)
 		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
 		slot.focus_mode = Control.FOCUS_ALL
@@ -420,7 +420,7 @@ func _layout_slot_box() -> void:
 		if short_landscape
 		else size.x - SAFE_MARGIN * 2.0
 		if size.y > size.x
-		else minf(size.x * 0.75, 960.0)
+		else minf(size.x * 0.53, 680.0)
 	)
 	deck_width = maxf(deck_width, 328.0)
 	var inner_width := maxf(SLOT_TARGET_WIDTH, deck_width - DECK_PADDING * 2.0)
