@@ -336,7 +336,7 @@ const STATIC_FALLBACKS := {
 	&"ui.results.train_short": "Train",
 	&"ui.training.assignment": "COMPANY 33\nTRAINING ASSIGNMENT\nNEW FIELD KIT",
 	&"ui.training.cancel": "Cancel",
-	&"ui.training.choose_advanced": "CHOOSE ADVANCED TRAINING",
+	&"ui.training.choose_advanced": "CHOOSE A NEW SPECIALIZATION FOR {callsign}",
 	&"ui.training.choose_path": "Choose Path",
 	&"ui.training.add_to_plan": "Add to Plan",
 	&"ui.training.add_another": "Add Another",
@@ -503,6 +503,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.identity_filter.summary": {&"shown": &"int", &"total": &"int"},
 	&"ui.rename.confirm_body": {&"current": &"String", &"next": &"String"},
 	&"ui.training.confirm_title": {&"class_name": &"String"},
+	&"ui.training.choose_advanced": {&"callsign": &"String"},
 	&"ui.training.format.dp": {&"value": &"int"},
 	&"ui.training.combat_facts": {
 		&"cost": &"int", &"placement": &"String", &"block": &"int", &"range": &"int",

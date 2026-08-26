@@ -590,7 +590,7 @@
     "ui.training.assignment": "第33连队\n训练指派\n新战地装备",
     "ui.training.atelier": "圣物工坊",
     "ui.training.cancel": "取消",
-    "ui.training.choose_advanced": "选择进阶训练",
+    "ui.training.choose_advanced": "为{callsign}选择新的专精",
     "ui.training.choose_path": "选择路线",
     "ui.training.choose_recruit": "选择一名队员接受训练。",
     "ui.training.class.banner_guard": "旗卫",
