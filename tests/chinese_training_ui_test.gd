@@ -41,6 +41,8 @@ func _run() -> void:
 	var edit_identity := screen.find_child("EditIdentity", true, false) as Button
 	var initial_callsign := screen.find_child("RenameUnitInput", true, false) as LineEdit
 	_check(promotion_tab != null and promotion_tab.text.contains("可晋升"), "Promotion Ready filter is not Chinese")
+	_check(String(screen.call("_t", &"ui.training.choose_promotion", "Choose Promotion")) == "选择晋升", "Choose Promotion copy is not Chinese")
+	_check(screen.find_child("ViewPaths", true, false) == null, "obsolete View Paths action remains in Chinese Training")
 	_check(edit_identity != null and edit_identity.text == "编辑", "Edit Identity action is not Chinese")
 	_check(initial_callsign != null and not initial_callsign.is_visible_in_tree(), "Chinese identity editor is visible before Edit Identity")
 	if edit_identity != null:

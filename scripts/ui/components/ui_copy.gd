@@ -359,6 +359,10 @@ const STATIC_FALLBACKS := {
 	&"ui.training.assignment": "COMPANY 33\nTRAINING ASSIGNMENT\nNEW FIELD KIT",
 	&"ui.training.cancel": "Cancel",
 	&"ui.training.choose_advanced": "CHOOSE A NEW SPECIALIZATION FOR {callsign}",
+	&"ui.training.choose_promotion": "Choose Promotion",
+	&"ui.training.choose_promotion_description": (
+		"Choose an advanced specialization for the selected operator."
+	),
 	&"ui.training.choose_path": "Choose Path",
 	&"ui.training.add_to_plan": "Add to Plan",
 	&"ui.training.add_another": "Add Another",
@@ -445,7 +449,6 @@ const STATIC_FALLBACKS := {
 		"Advanced training changes equipment, duties, and field role. "
 		+ "It does not replace the person."
 	),
-	&"ui.training.view_paths": "View Paths",
 	&"ui.training.xp_needed": "Needs {remaining} XP.",
 	&"ui.training.xp_progress": "XP {current} / {required}",
 	&"ui.save.write_failed": "The campaign could not be saved.",

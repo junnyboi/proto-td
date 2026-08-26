@@ -187,7 +187,6 @@ var _selected_hero_id := ""
 var _selected_choice_id := ""
 var _last_edited_hero_id := ""
 var _draft: Dictionary = {}
-var _view_paths: AetheriaButtonType
 var _choose_path: AetheriaButtonType
 var _review_confirm: AetheriaButtonType
 var _review_error: AetheriaLabelType
@@ -412,18 +411,12 @@ func _show_roster(error_code: StringName = &"") -> void:
 		"TrainingBack", _t(&"ui.training.not_now", "Not Now"), true, &"secondary",
 	)
 	back.pressed.connect(_on_not_now)
-	_view_paths = _button(
-		"ViewPaths", _t(&"ui.training.view_paths", "View Paths"),
-		_selected_can_promote(), &"primary" if _selected_can_promote() else &"disabled",
-	)
-	_view_paths.pressed.connect(_on_view_paths)
 	var review := _button(
 		"ReviewPlan", _t(&"ui.training.review_plan", "Review Plan"),
 		not _draft.is_empty(), &"primary" if not _draft.is_empty() else &"disabled",
 	)
 	review.pressed.connect(_show_review)
 	footer.add_child(back)
-	footer.add_child(_view_paths)
 	footer.add_child(review)
 	_set_action_footer(footer)
 	_apply_roster_layout()
@@ -754,12 +747,40 @@ func _build_inspector() -> AetheriaPanelType:
 		column.add_child(_label(
 			"SelectedRecruitStatus", _eligibility_text(selected).to_upper(), &"metric",
 		))
+		if bool(selected.get("can_promote", false)):
+			var choose_promotion := _button(
+				"ChoosePromotion",
+				_t(&"ui.training.choose_promotion", "Choose Promotion"),
+				true,
+				&"gold",
+			)
+			choose_promotion.custom_minimum_size = Vector2(360.0, 96.0)
+			choose_promotion.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			var promotion_label := choose_promotion.get_node(
+				"PresentationLabel",
+			) as Label
+			promotion_label.name = "ChoosePromotionLabel"
+			promotion_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			promotion_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			promotion_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			choose_promotion.accessibility_description = _t(
+				&"ui.training.choose_promotion_description",
+				"Choose an advanced specialization for the selected operator.",
+			)
+			_apply_button_insets(choose_promotion, 24.0, 12.0)
+			choose_promotion.pressed.connect(_on_choose_promotion)
+			column.add_child(choose_promotion)
 	column.add_child(_label(
 		"PermanenceNote",
 		_t(&"ui.training.permanent_warning", "THIS CHOICE IS PERMANENT."),
 		&"eyebrow",
 	))
 	_apply_inspector_typography(panel)
+	var promotion_presentation := panel.find_child(
+		"ChoosePromotionLabel", true, false,
+	) as Label
+	if promotion_presentation != null:
+		promotion_presentation.add_theme_font_size_override(&"font_size", 30)
 	return panel
 
 
@@ -1746,7 +1767,7 @@ func _on_not_now() -> void:
 	Game.training_call(&"leave")
 
 
-func _on_view_paths() -> void:
+func _on_choose_promotion() -> void:
 	if _selected_can_promote():
 		_show_paths()
 
@@ -1904,6 +1925,9 @@ func _apply_roster_layout() -> void:
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
 		identity_heading.vertical = false
+	var choose_promotion := _page.find_child("ChoosePromotion", true, false) as Button
+	if choose_promotion != null:
+		choose_promotion.custom_minimum_size.x = 260.0 if _layout_mode == &"portrait" else 360.0
 
 
 func _apply_paths_layout() -> void:
@@ -2145,7 +2169,6 @@ func _clear_page(kill_transition: bool = true) -> void:
 	_roster_buttons.clear()
 	_path_cards.clear()
 	_path_cards_scroll = null
-	_view_paths = null
 	_choose_path = null
 	_review_confirm = null
 	_review_error = null

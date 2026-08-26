@@ -215,6 +215,18 @@ func _run() -> void:
 	_check(selected_portrait != null and _near(selected_portrait.custom_minimum_size.x, 378.0, 1.0) and _near(selected_portrait.custom_minimum_size.y, 480.0, 1.0), "selected operator portrait was not tripled")
 	var selected_xp := screen.find_child("SelectedXp", true, false) as Label
 	_check(selected_xp != null and _color_near(selected_xp.get_theme_color("font_color"), Color("d9b96e"), 0.02), "selected operator metric still uses cyan instead of gold")
+	var choose_promotion := screen.find_child("ChoosePromotion", true, false) as Button
+	var selected_status := screen.find_child("SelectedRecruitStatus", true, false) as Label
+	_check(screen.find_child("ViewPaths", true, false) == null, "obsolete View Paths footer action is still present")
+	_check(choose_promotion != null and choose_promotion.is_visible_in_tree(), "promotion-ready operator lacks contextual Choose Promotion action")
+	if choose_promotion != null:
+		_check(choose_promotion.text == "Choose Promotion", "contextual promotion action has incorrect copy")
+		_check(_near(choose_promotion.custom_minimum_size.x, 360.0, 1.0) and _near(choose_promotion.custom_minimum_size.y, 96.0, 1.0), "Choose Promotion action lacks text-safe fixed geometry")
+		var promotion_label := choose_promotion.find_child("ChoosePromotionLabel", true, false) as Label
+		_check(promotion_label != null and promotion_label.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART and promotion_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Choose Promotion copy is not centered and safely wrapped")
+		_check(promotion_label != null and promotion_label.get_visible_line_count() == promotion_label.get_line_count(), "Choose Promotion clips part of its label")
+		_check(_button_padding_at_least(choose_promotion, 24.0, 12.0), "Choose Promotion action lacks 24x12 padding")
+		_check(selected_status != null and choose_promotion.get_parent() == selected_status.get_parent() and choose_promotion.get_index() == selected_status.get_index() + 1, "Choose Promotion is not directly below Promotion Ready")
 	var roster_detail := screen.find_child("EligibilityReason", true, false) as Label
 	_check(roster_detail != null and roster_detail.text_overrun_behavior == TextServer.OVERRUN_NO_TRIMMING, "Training roster metadata can be clipped with ellipsis")
 	var roster_row := screen.find_child("Recruit_*", true, false) as Control
@@ -242,6 +254,8 @@ func _run() -> void:
 	_check(roster_controls != null and not roster_controls.vertical and filter_lower_rail != null and filter_lower_rail.vertical, "portrait Training control groups did not stack")
 	_check(filter_summary != null and filter_summary.visible, "portrait Training shown-count is missing")
 	_check(dock != null and roster_actions != null and roster_actions.vertical, "portrait Training actions did not stack in the fixed dock")
+	choose_promotion = screen.find_child("ChoosePromotion", true, false) as Button
+	_check(choose_promotion != null and _near(choose_promotion.custom_minimum_size.x, 260.0, 1.0), "portrait Choose Promotion does not use its compact wrapped width")
 	if roster_actions != null:
 		for child: Node in roster_actions.get_children():
 			if child is Button:
@@ -305,10 +319,10 @@ func _run() -> void:
 		screen.set("_selected_hero_id", ready_hero_id)
 		screen.call("_show_roster")
 		await _frames(4)
-	var view_paths := screen.find_child("ViewPaths", true, false) as Button
-	_check(view_paths != null and not view_paths.disabled, "advanced Training paths are unavailable in the fixture")
-	if view_paths != null and not view_paths.disabled:
-		view_paths.emit_signal("pressed")
+	choose_promotion = screen.find_child("ChoosePromotion", true, false) as Button
+	_check(choose_promotion != null and not choose_promotion.disabled, "advanced Training paths are unavailable in the eligible operator dossier")
+	if choose_promotion != null and not choose_promotion.disabled:
+		choose_promotion.emit_signal("pressed")
 	await _frames(4)
 	var path_grid := screen.find_child("PathCards", true, false) as GridContainer
 	var nested_path_scroll := screen.find_child("PathCardsScroll", true, false) as ScrollContainer
