@@ -83,7 +83,9 @@ The Chinese stress pass exposed and fixed several geometry defects that ordinary
 |---|---|
 | Title | Keeps `PROTOS 防线` on one centered line at landscape and portrait breakpoints with locale-aware display fitting |
 | Settings portrait | Keeps `返回`, `设置`, and `语言` on readable single lines; the EN/中文 selector remains fully visible when initial focus enters the compact scroll area |
+| Mission Control recruitment | Localizes the reinforcement contract, metrics, status, and five-Mark action; portrait removes only the redundant body paragraph |
 | Premium Resonance portrait | Increases hero-card height so Chinese name, class, and acquisition state clear lower ornaments |
+| Moon Archive | Localizes the history title, count, badges, rows, close action, and empty state in both drawer and full-screen layouts |
 | Confirm Resonance | Removes redundant card eyebrow labels, increases readable card height/padding, preserves wrapped Chinese copy, and keeps compact padded actions right aligned |
 | Shared dialogs | Preserves doubled typography while using safe responsive margins, scrolling, and non-trimming wrapping |
 
@@ -101,12 +103,12 @@ The Chinese stress pass exposed and fixed several geometry defects that ordinary
 | Missing bundled-font code points | 0 |
 | Replacement-glyph markers in catalog | 0 |
 | Focused Chinese localization/layout tests | 23 passed, 0 failed |
-| Complete Godot repository tests | 49 passed, 0 failed |
-| Visual stress captures | 20 accepted frames across 10 states |
+| Complete Godot repository tests | 51 passed, 0 failed |
+| Visual stress captures | 22 accepted frames across 11 states |
 
 ## Visual stress matrix
 
-The accepted landscape and portrait matrix covers Title, Settings, Campaign, Squad, Training, Premium Resonance, Confirm Resonance, Company Command, Results, and Valhalla. The pass checked missing glyphs, mixed font fallback, clipping, ellipsis, ornament collisions, action padding, scroll ownership, and safe-area containment.
+The accepted landscape and portrait matrix covers Title, Settings, Company Command, Campaign with basic recruitment, Squad, Training, Premium Resonance, Moon Archive, Confirm Resonance, Results, and Valhalla. The pass checked missing glyphs, mixed font fallback, clipping, ellipsis, ornament collisions, action padding, scroll ownership, and safe-area containment.
 
 The final matrix confirms that Chinese copy remains readable in the major command loop. Results uses independent scroll regions for long reward and consequence payloads; a partially visible next reward card is an intentional scroll affordance rather than text escaping its card.
 
@@ -135,7 +137,7 @@ godot --headless --fixed-fps 60 --path . \
 
 ## Conclusion
 
-The strange-symbol report was valid: the build did not ship enough glyphs and was relying on environment-dependent fallback. That root cause is removed. The Chinese catalog, runtime consumption, accessibility surface, and responsive layouts have also been audited and repaired as one release unit rather than hiding rendering defects with alternate wording. Direct import, bounded boot, all 49 repository tests, and strict error-log scanning pass; the candidate is ready for Web export and WebDev deployment.
+The strange-symbol report was valid: the build did not ship enough glyphs and was relying on environment-dependent fallback. That root cause is removed. The Chinese catalog, runtime consumption, accessibility surface, and responsive layouts have also been audited and repaired as one release unit rather than hiding rendering defects with alternate wording. Direct import, bounded boot, all 51 repository tests, and strict error-log scanning pass; the candidate is ready for Web export and WebDev deployment.
 
 [1]: ../localization/en-US.json
 [2]: ../localization/zh-CN.json
