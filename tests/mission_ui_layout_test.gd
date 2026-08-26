@@ -101,7 +101,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(hire_presentation != null and _inside(hire_button, hire_presentation), "%s recruit action label overflows" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
-		_check(actions.columns == (1 if viewport.y > viewport.x else 3), "%s mission actions use the wrong column count" % label)
+		var expected_action_columns := 1 if viewport.y > viewport.x or viewport.x <= 1280 else 3
+		_check(actions.columns == expected_action_columns, "%s mission actions use the wrong column count" % label)
 	for button_name: String in ["BackButton", "TrainingButton", "StartBattle"]:
 		var button := _mission.find_child(button_name, true, false) as Button
 		var presentation := button.get_node_or_null("PresentationLabel") as Label if button != null else null
@@ -111,8 +112,11 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(button.size.x + EPSILON >= button.custom_minimum_size.x and button.size.y + EPSILON >= button.custom_minimum_size.y, "%s %s actual hitbox collapsed below its minimum" % [label, button_name])
 			_check(_inside(button, presentation), "%s %s label overflows its button" % [label, button_name])
 			_check(not presentation.clip_text, "%s %s clips its presentation label" % [label, button_name])
-			if button_name != "BackButton":
+			if button_name == "TrainingButton":
 				_check(presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s %s does not use its explicit two-line layout" % [label, button_name])
+			elif button_name == "StartBattle":
+				_check(presentation.text == "DEPLOY SQUAD", "%s Deploy Squad is not rendered on one line" % label)
+				_check(not presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s Deploy Squad can wrap" % label)
 	for label_name: String in [
 		"MissionTitle", "FieldTeamHeading", "PickCounter", "MissionIntelHeading",
 		"OBJECTIVEValue", "THREATValue", "WHYITMATTERSValue", "FIELDNOTEValue",
@@ -125,6 +129,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(text_label.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s %s cannot wrap safely" % [label, label_name])
 	var training := _mission.find_child("TrainingButton", true, false) as Button
 	var back := _mission.find_child("BackButton", true, false) as Button
+	var deploy := _mission.find_child("StartBattle", true, false) as Button
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
@@ -174,9 +179,11 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
-	if training != null and back != null:
+	if training != null and back != null and deploy != null:
 		_check(is_equal_approx(training.custom_minimum_size.x, 336.0) or (viewport.y > viewport.x and training.custom_minimum_size.x <= viewport.x - 96.0), "%s Train Operators did not double its usable width" % label)
 		_check(is_equal_approx(back.custom_minimum_size.x, 238.0), "%s Back did not double its usable width" % label)
+		var expected_deploy_width := minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0
+		_check(is_equal_approx(deploy.custom_minimum_size.x, expected_deploy_width), "%s Deploy Squad is not exactly twice its prior width" % label)
 		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
 		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
 	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect

@@ -26,6 +26,9 @@ const OPERATOR_CARD_HEIGHT := 220.0
 const OPERATOR_CARD_TALL_HEIGHT := 280.0
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
+const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
+const COMPACT_ACTION_STACK_THRESHOLD := 1280.0
+const FOOTER_STACK_THRESHOLD := 1800.0
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -625,7 +628,7 @@ func _action_presentation_text(node_name: String, text_value: String) -> String:
 	if node_name == "TrainingButton":
 		return "TRAIN\nOPERATORS"
 	if node_name == "StartBattle":
-		return "DEPLOY\nSQUAD"
+		return "DEPLOY SQUAD"
 	return text_value
 
 
@@ -634,7 +637,7 @@ func _wide_action_width(node_name: String) -> float:
 		"TrainingButton":
 			return 336.0
 		"StartBattle":
-			return 294.0
+			return DEPLOY_SQUAD_ACTION_WIDTH
 		_:
 			return 238.0
 
@@ -1276,7 +1279,10 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			portrait.anchor_left = _operator_info_split(mode)
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	if _footer != null:
-		_footer.vertical = mode != &"regular_landscape"
+		_footer.vertical = (
+			mode != &"regular_landscape"
+			or get_viewport_rect().size.x < FOOTER_STACK_THRESHOLD
+		)
 	var readiness_copy := find_child("ReadinessCopy", true, false) as Label
 	if readiness_copy != null:
 		readiness_copy.add_theme_font_size_override(
@@ -1284,7 +1290,11 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			18 if mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0 else 24,
 		)
 	if _actions != null:
-		_actions.columns = 1 if mode == &"portrait" else 3
+		_actions.columns = (
+			1
+			if mode == &"portrait" or get_viewport_rect().size.x <= COMPACT_ACTION_STACK_THRESHOLD
+			else 3
+		)
 		_actions.size_flags_horizontal = (
 			Control.SIZE_EXPAND_FILL if mode != &"regular_landscape" else Control.SIZE_SHRINK_END
 		)
