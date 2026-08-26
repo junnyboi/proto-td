@@ -26,6 +26,7 @@
 - [x] Refit Premium Resonance with a GPT Image 2 Lunaris Return glyph, vertically aligned header, 64px wide-layout gutters, compact one-line guarantee telemetry, 50%-larger padded cards with top-anchored 25% bust zoom, and a 2.5× wider two-line hoverable action.
 - [x] Refit the annotated Training roster with text-safe padded filters, right-of-icon faction counts, a Promotion Ready status filter, fixed 560px operator cards with 48×24 padding, a 64px inspector gutter, dossier-first identity layout, Edit-gated fields, and fixed 260×84 bottom actions across desktop, compact, Chinese portrait, and 390px editor states.
 - [x] Refit Field Team selection with a 60/40 roster/intelligence split, intelligence-owned Company Reinforcements, concise Marks/Hire copy, compact padded Recruit Order, 1.5× faction filters with tighter heraldry/count spacing, one doubled-width operator card per row with enlarged portraits, no Field Note, and promoted Loadout hierarchy.
+- [x] Extend Field Team with rarity/level sorting, a draggable and keyboard-reorderable deployment-order rail, visible rarity/level card facts, and reduced-motion-safe hover/focus/selection animation.
 
 # Premium Resonance Cinematic Completion
 

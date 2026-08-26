@@ -108,7 +108,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(hire_presentation != null and is_equal_approx(hire_presentation.offset_top, 12.0) and is_equal_approx(hire_presentation.offset_bottom, -12.0), "%s recruit action lacks exact 12px top/bottom padding" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
-		var expected_action_columns := 1 if viewport.y > viewport.x or viewport.x <= 1280 else 3
+		var expected_action_columns := 1 if viewport.y > viewport.x or viewport.x < 1280 else 3
 		_check(actions.columns == expected_action_columns, "%s mission actions use the wrong column count" % label)
 	for button_name: String in ["BackButton", "TrainingButton", "StartBattle"]:
 		var button := _mission.find_child(button_name, true, false) as Button
@@ -147,12 +147,19 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var deploy := _mission.find_child("StartBattle", true, false) as Button
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
+	var order_panel := _mission.find_child("SelectedSquadOrderPanel", true, false) as PanelContainer
+	var order_rail := _mission.find_child("SelectedSquadOrder", true, false) as HBoxContainer
+	var roster_scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
 	_check(sort_select != null and sort_select.size_flags_horizontal == Control.SIZE_SHRINK_END and sort_select.custom_minimum_size.x >= 300.0 and sort_select.custom_minimum_size.y >= 54.0, "%s Recruit Order does not tightly wrap its padded label" % label)
 	if sort_select != null:
 		var sort_style := sort_select.get_theme_stylebox(&"normal")
 		_check(sort_style.content_margin_left >= 24.0 and sort_style.content_margin_right >= 24.0 and sort_style.content_margin_top >= 12.0 and sort_style.content_margin_bottom >= 12.0, "%s Recruit Order lacks 24px horizontal and 12px vertical padding" % label)
+	_check(sort_select != null and sort_select.item_count >= 7, "%s sort control lacks rarity and level modes" % label)
+	_check(order_panel != null and field_panel != null and _inside(field_panel, order_panel), "%s selected-squad order rail exceeds Field Team" % label)
+	_check(order_rail != null, "%s selected-squad drag rail is missing" % label)
+	_check(roster_scroll != null and roster_scroll.custom_minimum_size.y >= 240.0, "%s operator list lacks a usable local scroll viewport" % label)
 	var active_tab := _mission.find_child("ActiveRosterTab", true, false) as Button
 	var fallen_tab := _mission.find_child("FallenRosterTab", true, false) as Button
 	for tab: Button in [active_tab, fallen_tab]:
@@ -186,6 +193,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
 				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
 				_check(portrait != null, "%s operator-card portrait pane is missing" % label)
+				_check(bool((child as Button).get_meta(&"operator_feedback_enabled", false)), "%s operator-card feedback metadata is missing" % label)
 				if card_label != null:
 					_check(_inside(child as Control, card_label), "%s %s operator-card information pane overflows" % [label, child.name])
 					_check(card_label.offset_left >= 24.0, "%s operator-card horizontal padding is below 24px" % label)
@@ -199,10 +207,14 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
+		var footer := _mission.find_child("MissionActionDock", true, false) as BoxContainer
+		_check(footer != null and not footer.vertical, "regular mission footer collapses the Field Team into a narrow strip")
 	if training != null and back != null and deploy != null:
-		_check(is_equal_approx(training.custom_minimum_size.x, 336.0) or (viewport.y > viewport.x and training.custom_minimum_size.x <= viewport.x - 96.0), "%s Train Operators did not double its usable width" % label)
-		_check(is_equal_approx(back.custom_minimum_size.x, 238.0), "%s Back did not double its usable width" % label)
-		var expected_deploy_width := minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0
+		var expected_training_width := 220.0 if label == "regular" else (minf(336.0, viewport.x - 96.0) if viewport.y > viewport.x else 336.0)
+		var expected_back_width := 180.0 if label == "regular" else 238.0
+		var expected_deploy_width := 400.0 if label == "regular" else (minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0)
+		_check(is_equal_approx(training.custom_minimum_size.x, expected_training_width), "%s Train Operators does not match its contained responsive width" % label)
+		_check(is_equal_approx(back.custom_minimum_size.x, expected_back_width), "%s Back does not match its contained responsive width" % label)
 		_check(is_equal_approx(deploy.custom_minimum_size.x, expected_deploy_width), "%s Deploy Squad is not exactly twice its prior width" % label)
 		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
 		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)

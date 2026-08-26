@@ -9,6 +9,7 @@ const TrainingSupportType := preload("res://scripts/ui/components/training_suppo
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
+const SelectedSquadChipType := preload("res://scripts/ui/components/selected_squad_chip.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
@@ -33,7 +34,15 @@ const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
 const COMPACT_ACTION_STACK_THRESHOLD := 1280.0
-const FOOTER_STACK_THRESHOLD := 1800.0
+const REGULAR_BACK_ACTION_WIDTH := 180.0
+const REGULAR_TRAINING_ACTION_WIDTH := 220.0
+const REGULAR_DEPLOY_ACTION_WIDTH := 400.0
+const OPERATOR_HOVER_SCALE := Vector2(1.025, 1.025)
+const OPERATOR_SELECTED_SCALE := Vector2(1.018, 1.018)
+const OPERATOR_SELECTION_PEAK_SCALE := Vector2(1.055, 1.055)
+const OPERATOR_HOVER_SECONDS := 0.14
+const OPERATOR_SELECTION_OUT_SECONDS := 0.10
+const OPERATOR_SELECTION_SETTLE_SECONDS := 0.17
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -49,6 +58,10 @@ var _sort_select: OptionButton
 var _filter_summary: AetheriaLabelType
 var _name_filter := ""
 var _name_sort: StringName = &"recruitment"
+var _selected_squad_panel: PanelContainer = null
+var _selected_squad_scroll: ScrollContainer = null
+var _selected_squad_order: HBoxContainer = null
+var _selected_squad_empty: AetheriaLabelType = null
 var _counter: Label = null
 var _selected_line: Label = null
 var _start: AetheriaButtonType = null
@@ -80,6 +93,7 @@ var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
 var _hire_marks: AetheriaLabelType = null
 var _hire_status: AetheriaLabelType = null
+var _operator_feedback_tweens: Dictionary = {}
 
 
 func _ready() -> void:
@@ -225,6 +239,7 @@ func _build_body() -> GridContainer:
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	roster_column.add_child(_filter_bar)
 	roster_column.add_child(_build_identity_filter_toolbar())
+	roster_column.add_child(_build_selected_squad_order())
 	_roster_empty = _label(
 		"RosterEmptyState",
 		UiCopyType.text(&"ui.roster.empty", "No soldiers match the selected roster filters."),
@@ -298,6 +313,47 @@ func _build_body() -> GridContainer:
 	return _body
 
 
+func _build_selected_squad_order() -> PanelContainer:
+	_selected_squad_panel = PanelContainer.new()
+	_selected_squad_panel.name = "SelectedSquadOrderPanel"
+	_selected_squad_panel.custom_minimum_size.y = 82.0
+	_selected_squad_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_panel(_selected_squad_panel, &"selected")
+	var stack := VBoxContainer.new()
+	stack.name = "SelectedSquadOrderStack"
+	stack.add_theme_constant_override(&"separation", 6)
+	_selected_squad_panel.add_child(stack)
+	var heading := _label(
+		"SelectedSquadOrderHeading",
+		UiCopyType.text(&"ui.squad.order_heading", "Deployment Order"),
+		&"eyebrow",
+	)
+	heading.add_theme_font_size_override(&"font_size", 20)
+	stack.add_child(heading)
+	_selected_squad_scroll = ScrollContainer.new()
+	_selected_squad_scroll.name = "SelectedSquadOrderScroll"
+	_selected_squad_scroll.custom_minimum_size.y = 62.0
+	_selected_squad_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_selected_squad_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_selected_squad_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	stack.add_child(_selected_squad_scroll)
+	_selected_squad_order = HBoxContainer.new()
+	_selected_squad_order.name = "SelectedSquadOrder"
+	_selected_squad_order.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_selected_squad_order.add_theme_constant_override(&"h_separation", 10)
+	_selected_squad_scroll.add_child(_selected_squad_order)
+	_selected_squad_empty = _label(
+		"SelectedSquadOrderEmpty",
+		UiCopyType.text(
+			&"ui.squad.order_empty",
+			"Select operators, then drag them here to set deployment order.",
+		),
+		&"dense_detail",
+	)
+	_selected_squad_order.add_child(_selected_squad_empty)
+	return _selected_squad_panel
+
+
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
 	panel.name = "BasicRecruitDesk"
@@ -357,7 +413,27 @@ func _campaign_roster_rows() -> Array[Dictionary]:
 	var rows: Array = []
 	rows.append_array(projection.get("ready_heroes", []))
 	rows.append_array(projection.get("fallen_heroes", []))
-	return RosterFilterType.annotate_all(_identity_rows(rows))
+	var premium_rarities := {}
+	for raw: Variant in projection.get("premium_pool", []):
+		var premium := raw as Dictionary
+		premium_rarities[String(premium.get("premium_id", ""))] = int(
+			premium.get("rarity", 0)
+		)
+	var annotated := _identity_rows(rows)
+	for hero: Dictionary in annotated:
+		var class_definition := TrainingSupportType.class_definition(
+			String(hero.get("current_class_id", "")),
+		)
+		var operator_definition := TrainingSupportType.operator_definition(
+			String(hero.get("operator_def_id", "")),
+		)
+		hero["level"] = int(class_definition.stage) + 1 if class_definition != null else 1
+		hero["rarity"] = int(operator_definition.rarity) if operator_definition != null else 1
+		if String(hero.get("hero_kind", "recruit")) == "premium":
+			hero["rarity"] = int(premium_rarities.get(
+				String(hero.get("premium_id", "")), hero["rarity"],
+			))
+	return RosterFilterType.annotate_all(annotated)
 
 
 func _identity_rows(raw_rows: Array) -> Array[Dictionary]:
@@ -397,6 +473,10 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_sort_select.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	for option: Dictionary in [
 		{"id": &"recruitment", "label": UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")},
+		{"id": &"rarity_desc", "label": UiCopyType.text(&"ui.identity_sort.rarity_desc", "Rarity high–low")},
+		{"id": &"rarity_asc", "label": UiCopyType.text(&"ui.identity_sort.rarity_asc", "Rarity low–high")},
+		{"id": &"level_desc", "label": UiCopyType.text(&"ui.identity_sort.level_desc", "Level high–low")},
+		{"id": &"level_asc", "label": UiCopyType.text(&"ui.identity_sort.level_asc", "Level low–high")},
 		{"id": &"name_asc", "label": UiCopyType.text(&"ui.identity_sort.name_asc", "Name A–Z")},
 		{"id": &"name_desc", "label": UiCopyType.text(&"ui.identity_sort.name_desc", "Name Z–A")},
 	]:
@@ -405,12 +485,11 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		_sort_select.set_item_metadata(option_index, option["id"])
 		if option["id"] == _name_sort:
 			_sort_select.select(option_index)
-	LunarisOpsType.apply_button(_sort_select, &"secondary")
+	_apply_clean_sort_style(_sort_select)
 	_apply_control_padding(
 		_sort_select, SORT_HORIZONTAL_PADDING, SORT_VERTICAL_PADDING,
 		[&"normal", &"hover", &"pressed", &"disabled"],
 	)
-	_sort_select.add_theme_font_size_override(&"font_size", 24)
 	_sort_select.tooltip_text = UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")
 	_sort_select.item_selected.connect(_on_name_sort_selected)
 	_filter_toolbar.add_child(_sort_select)
@@ -419,6 +498,27 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_filter_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_filter_toolbar.add_child(_filter_summary)
 	return _filter_toolbar
+
+
+func _apply_clean_sort_style(button: OptionButton) -> void:
+	var normal := StagingSkinType.clean_button_style(
+		Color("10202fed"), Color(LunarisOpsType.GOLD, 0.72), 3,
+	)
+	var hover := StagingSkinType.clean_button_style(
+		Color("183448f5"), LunarisOpsType.CYAN, 3,
+	)
+	var pressed := StagingSkinType.clean_button_style(
+		Color("09131df5"), LunarisOpsType.GOLD, 3,
+	)
+	button.add_theme_stylebox_override(&"normal", normal)
+	button.add_theme_stylebox_override(&"hover", hover)
+	button.add_theme_stylebox_override(&"pressed", pressed)
+	button.add_theme_stylebox_override(
+		&"focus", StagingSkinType.transparent_focus_style(LunarisOpsType.CYAN),
+	)
+	StagingSkinType.apply_display_type(button, 24, LunarisOpsType.IVORY, 560)
+	button.add_theme_color_override(&"font_hover_color", Color.WHITE)
+	button.add_theme_color_override(&"font_pressed_color", LunarisOpsType.GOLD)
 
 
 func _on_name_filter_changed(value: String) -> void:
@@ -434,6 +534,7 @@ func _on_name_sort_selected(index: int) -> void:
 	if _sort_select == null:
 		return
 	_name_sort = StringName(_sort_select.get_item_metadata(index))
+	_sort_select.tooltip_text = _sort_select.get_item_text(index)
 	_rebuild_operator_cards()
 	_refresh()
 	if _sort_select != null:
@@ -447,6 +548,10 @@ func _build_operator_cards() -> void:
 func _rebuild_operator_cards() -> void:
 	if _grid == null:
 		return
+	for tween: Tween in _operator_feedback_tweens.values():
+		if tween != null and tween.is_valid():
+			tween.kill()
+	_operator_feedback_tweens.clear()
 	for child: Node in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
@@ -482,6 +587,9 @@ func _rebuild_operator_cards() -> void:
 		var card_text := _operator_card_text(hero, definition)
 		pick.set_meta(&"hero", hero)
 		pick.set_meta(&"operator_def", definition)
+		pick.set_meta(&"operator_feedback_enabled", true)
+		pick.set_meta(&"operator_hover_seconds", OPERATOR_HOVER_SECONDS)
+		pick.set_meta(&"operator_selection_seconds", OPERATOR_SELECTION_SETTLE_SECONDS)
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
 		pick.custom_minimum_size = Vector2(
@@ -509,7 +617,13 @@ func _rebuild_operator_cards() -> void:
 		if not fallen:
 			pick.set_pressed_no_signal(_picked.has(hero_id))
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
+			pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
+			pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
+			pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
+			pick.focus_exited.connect(_on_operator_feedback_changed.bind(pick))
+			pick.resized.connect(_center_operator_card_pivot.bind(pick))
 		_grid.add_child(pick)
+		_center_operator_card_pivot(pick)
 		if not fallen:
 			pick.focus_entered.connect(_roster_scroll.ensure_control_visible.bind(pick))
 		if not fallen:
@@ -535,6 +649,81 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	card_label.add_theme_font_size_override(&"font_size", 24)
 	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+
+func _center_operator_card_pivot(button: Control) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	button.pivot_offset = button.size * 0.5
+
+
+func _on_operator_feedback_changed(button: AetheriaButtonType) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	var target := OPERATOR_SELECTED_SCALE if button.button_pressed else Vector2.ONE
+	if button.is_hovered() or button.has_focus():
+		target = OPERATOR_HOVER_SCALE
+	_animate_operator_card_scale(button, target, OPERATOR_HOVER_SECONDS)
+
+
+func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> void:
+	if button == null or not is_instance_valid(button):
+		return
+	_kill_operator_feedback_tween(button)
+	if _reduced_motion():
+		button.scale = (
+			OPERATOR_HOVER_SCALE
+			if button.is_hovered() or button.has_focus()
+			else OPERATOR_SELECTED_SCALE
+			if selected
+			else Vector2.ONE
+		)
+		return
+	var peak := OPERATOR_SELECTION_PEAK_SCALE if selected else Vector2(0.985, 0.985)
+	var resting := (
+		OPERATOR_HOVER_SCALE
+		if button.is_hovered() or button.has_focus()
+		else OPERATOR_SELECTED_SCALE
+		if selected
+		else Vector2.ONE
+	)
+	var tween := create_tween()
+	_operator_feedback_tweens[button.get_instance_id()] = tween
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", peak, OPERATOR_SELECTION_OUT_SECONDS)
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", resting, OPERATOR_SELECTION_SETTLE_SECONDS)
+	tween.finished.connect(_clear_operator_feedback_tween.bind(button.get_instance_id()))
+
+
+func _animate_operator_card_scale(
+		button: AetheriaButtonType, target: Vector2, duration: float,
+	) -> void:
+	_kill_operator_feedback_tween(button)
+	if _reduced_motion():
+		button.scale = target
+		return
+	var tween := create_tween()
+	_operator_feedback_tweens[button.get_instance_id()] = tween
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", target, duration)
+	tween.finished.connect(_clear_operator_feedback_tween.bind(button.get_instance_id()))
+
+
+func _kill_operator_feedback_tween(button: Control) -> void:
+	var instance_id := button.get_instance_id()
+	var tween := _operator_feedback_tweens.get(instance_id) as Tween
+	if tween != null and tween.is_valid():
+		tween.kill()
+	_operator_feedback_tweens.erase(instance_id)
+
+
+func _clear_operator_feedback_tween(instance_id: int) -> void:
+	_operator_feedback_tweens.erase(instance_id)
+
+
+func _reduced_motion() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 
 
 func _build_footer() -> BoxContainer:
@@ -712,6 +901,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_back()
+
+
+func _exit_tree() -> void:
+	for tween: Tween in _operator_feedback_tweens.values():
+		if tween != null and tween.is_valid():
+			tween.kill()
+	_operator_feedback_tweens.clear()
 
 
 func _prefill() -> void:
@@ -896,6 +1092,85 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 	else:
 		_picked.erase(hero_id)
 	_refresh()
+	_animate_operator_selection(_buttons.get(hero_id) as AetheriaButtonType, pressed)
+
+
+func selected_squad_order() -> Array[StringName]:
+	return _picked.duplicate()
+
+
+func reorder_selected_squad(source_hero_id: StringName, target_hero_id: StringName) -> bool:
+	var source_index := _picked.find(source_hero_id)
+	var target_index := _picked.find(target_hero_id)
+	if source_index < 0 or target_index < 0 or source_index == target_index:
+		return false
+	_picked.remove_at(source_index)
+	_picked.insert(target_index, source_hero_id)
+	_refresh()
+	Sfx.play("ui_click")
+	_focus_selected_chip.call_deferred(source_hero_id)
+	return true
+
+
+func move_selected_squad_operator(hero_id: StringName, direction: int) -> bool:
+	var source_index := _picked.find(hero_id)
+	var target_index := source_index + clampi(direction, -1, 1)
+	if source_index < 0 or target_index < 0 or target_index >= _picked.size():
+		return false
+	var target_hero_id := _picked[target_index]
+	return reorder_selected_squad(hero_id, target_hero_id)
+
+
+func _focus_selected_chip(hero_id: StringName) -> void:
+	if _selected_squad_order == null:
+		return
+	var chip := _selected_squad_order.get_node_or_null(
+		"SelectedSquad_%s" % hero_id,
+	) as Control
+	if chip != null:
+		chip.grab_focus()
+
+
+func _refresh_selected_squad_order() -> void:
+	if _selected_squad_order == null:
+		return
+	for child: Node in _selected_squad_order.get_children():
+		_selected_squad_order.remove_child(child)
+		child.queue_free()
+	if _picked.is_empty():
+		_selected_squad_empty = _label(
+			"SelectedSquadOrderEmpty",
+			UiCopyType.text(
+				&"ui.squad.order_empty",
+				"Select operators, then drag them here to set deployment order.",
+			),
+			&"dense_detail",
+		)
+		_selected_squad_order.add_child(_selected_squad_empty)
+		return
+	_selected_squad_empty = null
+	var drag_hint := UiCopyType.text(
+		&"ui.squad.order_drag_hint",
+		"Drag to reorder. Keyboard: Alt plus arrow keys.",
+	)
+	for index: int in _picked.size():
+		var hero_id := _picked[index]
+		var hero := _hero_by_id(hero_id)
+		var chip := SelectedSquadChipType.new()
+		chip.configure(hero_id, _hero_callsign(hero), index, drag_hint)
+		chip.reorder_requested.connect(reorder_selected_squad)
+		chip.move_requested.connect(move_selected_squad_operator)
+		chip.pressed.connect(_focus_operator_card.bind(hero_id))
+		_selected_squad_order.add_child(chip)
+
+
+func _focus_operator_card(hero_id: StringName) -> void:
+	var button := _buttons.get(hero_id) as Control
+	if button == null:
+		return
+	button.grab_focus()
+	if _roster_scroll != null:
+		_roster_scroll.ensure_control_visible(button)
 
 
 func _refresh() -> void:
@@ -910,6 +1185,7 @@ func _refresh() -> void:
 		button.focus_mode = Control.FOCUS_NONE if button.disabled else Control.FOCUS_ALL
 		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
 		_apply_operator_card_text_style(button)
+	_refresh_selected_squad_order()
 	var selected_names: Array[String] = []
 	for hero_id: StringName in _picked:
 		var hero := _hero_by_id(hero_id)
@@ -1023,17 +1299,19 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 		&"name": _hero_label(hero),
 		&"cost": definition.dp_cost,
 		&"lives": int(hero.get("premium_lives", 0)),
+		&"rarity": int(hero.get("rarity", definition.rarity)),
+		&"level": int(hero.get("level", 1)),
 	}
 	if bool(hero.get("fallen", false)):
 		return _format_copy(
-			&"ui.squad.card_fallen", "{name}\nFallen · Vahalla", args,
+			&"ui.squad.card_fallen", "{name}\n{rarity}★ · LV {level}\nFallen · Vahalla", args,
 		)
 	if hero.get("hero_kind", "recruit") == "premium":
 		return _format_copy(
-			&"ui.squad.card_premium", "{name}\n{cost} DP · Premium hero · {lives} lives", args,
+			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} lives", args,
 		)
 	return _format_copy(
-		&"ui.squad.card_ready", "{name}\n{cost} DP · Ready", args,
+		&"ui.squad.card_ready", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Ready", args,
 	)
 
 
@@ -1077,10 +1355,30 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	if _filter_input != null:
 		_filter_input.placeholder_text = UiCopyType.text(&"ui.identity_filter.placeholder", "Filter operators")
 	if _sort_select != null:
-		var sort_keys := [&"ui.identity_sort.recruitment", &"ui.identity_sort.name_asc", &"ui.identity_sort.name_desc"]
-		var sort_fallbacks := ["Recruit order", "Name ascending", "Name descending"]
+		var sort_keys := [
+			&"ui.identity_sort.recruitment",
+			&"ui.identity_sort.rarity_desc",
+			&"ui.identity_sort.rarity_asc",
+			&"ui.identity_sort.level_desc",
+			&"ui.identity_sort.level_asc",
+			&"ui.identity_sort.name_asc",
+			&"ui.identity_sort.name_desc",
+		]
+		var sort_fallbacks := [
+			"Recruit order",
+			"Rarity high–low",
+			"Rarity low–high",
+			"Level high–low",
+			"Level low–high",
+			"Name A–Z",
+			"Name Z–A",
+		]
 		for index: int in mini(_sort_select.item_count, sort_keys.size()):
 			_sort_select.set_item_text(index, UiCopyType.text(sort_keys[index], sort_fallbacks[index]))
+		_sort_select.tooltip_text = _sort_select.get_item_text(_sort_select.selected)
+	var order_heading := find_child("SelectedSquadOrderHeading", true, false) as Label
+	if order_heading != null:
+		order_heading.text = UiCopyType.text(&"ui.squad.order_heading", "Deployment Order")
 	for button: AetheriaButtonType in _buttons.values():
 		var hero: Dictionary = button.get_meta(&"hero", {})
 		var definition := button.get_meta(&"operator_def") as OperatorDef
@@ -1131,6 +1429,10 @@ func _wire_focus() -> void:
 		focusable.append(_filter_input)
 	if _sort_select != null:
 		focusable.append(_sort_select)
+	if _selected_squad_order != null:
+		for child: Node in _selected_squad_order.get_children():
+			if child is SelectedSquadChipType:
+				focusable.append(child as Control)
 	for hero_id: StringName in _hero_order:
 		focusable.append(_buttons[hero_id] as Button)
 	focusable.append(_back)
@@ -1228,7 +1530,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _command_scroll != null:
 		_command_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if _roster_scroll != null:
-		_roster_scroll.custom_minimum_size.y = 220.0 if mode == &"portrait" else 0.0
+		_roster_scroll.custom_minimum_size.y = 240.0 if mode == &"portrait" else 260.0
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
 	if _grid != null:
@@ -1256,10 +1558,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			portrait.anchor_left = _operator_info_split(mode)
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	if _footer != null:
-		_footer.vertical = (
-			mode != &"regular_landscape"
-			or get_viewport_rect().size.x < FOOTER_STACK_THRESHOLD
-		)
+		_footer.vertical = mode != &"regular_landscape"
 	var readiness_copy := find_child("ReadinessCopy", true, false) as Label
 	if readiness_copy != null:
 		readiness_copy.add_theme_font_size_override(
@@ -1269,7 +1568,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _actions != null:
 		_actions.columns = (
 			1
-			if mode == &"portrait" or get_viewport_rect().size.x <= COMPACT_ACTION_STACK_THRESHOLD
+			if mode == &"portrait" or get_viewport_rect().size.x < COMPACT_ACTION_STACK_THRESHOLD
 			else 3
 		)
 		_actions.size_flags_horizontal = (
@@ -1278,6 +1577,14 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		for action: Node in _actions.get_children():
 			if action is Button:
 				var target_width := _wide_action_width(action.name)
+				if mode == &"regular_landscape" and get_viewport_rect().size.x <= COMPACT_ACTION_STACK_THRESHOLD:
+					match action.name:
+						"BackButton":
+							target_width = REGULAR_BACK_ACTION_WIDTH
+						"TrainingButton":
+							target_width = REGULAR_TRAINING_ACTION_WIDTH
+						"StartBattle":
+							target_width = REGULAR_DEPLOY_ACTION_WIDTH
 				if mode == &"portrait":
 					target_width = minf(target_width, maxf(220.0, get_viewport_rect().size.x - 96.0))
 				(action as Button).custom_minimum_size.x = target_width
