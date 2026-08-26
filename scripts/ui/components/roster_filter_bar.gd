@@ -83,6 +83,8 @@ func set_compact(value: bool) -> void:
 
 func set_generous_spacing(value: bool) -> void:
 	_generous_spacing = value
+	if _faction_row != null:
+		_faction_row.custom_minimum_size.x = 586.0 if value and not _narrow else 0.0
 	if _status_row != null and _inline:
 		_status_row.custom_minimum_size.x = _inline_status_width()
 	_refresh_controls()
@@ -90,6 +92,10 @@ func set_generous_spacing(value: bool) -> void:
 
 func set_narrow(value: bool) -> void:
 	_narrow = value
+	if _faction_row != null:
+		_faction_row.custom_minimum_size.x = (
+			586.0 if _generous_spacing and not value else 0.0
+		)
 	_refresh_controls()
 
 
@@ -222,19 +228,20 @@ func _refresh_controls() -> void:
 			)
 		)
 		button.text = "%s  %d" % [label.to_upper(), count]
+		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.autowrap_mode = (
 			TextServer.AUTOWRAP_WORD_SMART if _narrow else TextServer.AUTOWRAP_OFF
 		)
 		button.clip_text = false
 		if _generous_spacing:
 			button.custom_minimum_size = (
-			Vector2(
-				(280.0 if _narrow else 310.0)
-				if value == FilterType.STATUS_PROMOTION_READY
-				else 170.0,
-				72.0,
-			)
-			)
+				Vector2(
+					(280.0 if _narrow else 310.0)
+					if value == FilterType.STATUS_PROMOTION_READY
+					else 190.0,
+					96.0 if _narrow else 84.0,
+				)
+				)
 		else:
 			var status_width := 176.0 if _dense_inline else (176.0 if _compact else 200.0)
 			button.custom_minimum_size = Vector2(
@@ -243,7 +250,7 @@ func _refresh_controls() -> void:
 			)
 		Style.apply_button(button, &"selected" if value == status else &"quiet")
 		if _generous_spacing:
-			_apply_button_insets(button, 22.0, 12.0)
+			_apply_button_insets(button, 24.0, 12.0)
 
 	for raw: Variant in _faction_buttons:
 		var value := StringName(raw)
@@ -268,7 +275,7 @@ func _refresh_controls() -> void:
 		)
 		if _generous_spacing:
 			button.custom_minimum_size = Vector2(
-				120.0 if value == FilterType.FACTION_ALL else 98.0, 72.0,
+				130.0 if value == FilterType.FACTION_ALL else 106.0, 84.0,
 			)
 			button.add_theme_constant_override(&"icon_max_width", 44)
 			button.add_theme_constant_override(&"icon_separation", 12)
@@ -289,11 +296,13 @@ func _refresh_controls() -> void:
 			button.add_theme_constant_override(&"icon_separation", _faction_icon_count_gap)
 		Style.apply_button(button, &"selected" if value == faction_id else &"quiet")
 		if _generous_spacing:
-			_apply_button_insets(button, 18.0, 12.0)
+			_apply_button_insets(button, 24.0, 12.0)
 
 
 func _apply_button_insets(button: Button, horizontal: float, vertical: float) -> void:
-	for style_name: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+	for style_name: StringName in [
+		&"normal", &"hover", &"pressed", &"hover_pressed", &"focus", &"disabled",
+	]:
 		var source := button.get_theme_stylebox(style_name)
 		if source == null:
 			continue
@@ -307,7 +316,7 @@ func _apply_button_insets(button: Button, horizontal: float, vertical: float) ->
 
 func _inline_status_width() -> float:
 	if _generous_spacing:
-		return 666.0 if _show_promotion_ready_tab else 348.0
+		return 744.0 if _show_promotion_ready_tab else 388.0
 	if _dense_inline:
 		return 360.0
 	return 360.0 if _compact else 408.0
