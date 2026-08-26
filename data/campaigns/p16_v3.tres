@@ -13,7 +13,7 @@ paid_offers = Array[Dictionary]([{
 "offer_id": "p16_caster_contract",
 "operator_def_id": "recruit"
 }])
-environment_sha256 = "4ee7ce25ec20bc7c7d6570d7ee22b7e3ca0bba8b377a10804bf2cd43c08591e4"
+environment_sha256 = "5ff12b87e418e36b3aa60065831ec70b0cb66ed9b08e69df1949aac37854c689"
 starter_rows = Array[Dictionary]([{
 "class_id": "recruit",
 "operator_def_id": "recruit",
@@ -81,6 +81,7 @@ v3_stage_rewards = Array[Dictionary]([{
 "stage_id": "s8"
 }])
 portrait_asset_ids = Array[StringName]([&"portrait_archive_caster", &"portrait_lunaris_vessel", &"portrait_recruit_00", &"portrait_recruit_01", &"portrait_recruit_02", &"portrait_recruit_03", &"portrait_recruit_04", &"portrait_recruit_05", &"portrait_recruit_06", &"portrait_recruit_07", &"portrait_reliquary_duelist"])
+basic_recruit_cost = 5
 premium_pull_cost = 40
 premium_hero_rows = Array[Dictionary]([{
 "callsign": "Archive Caster",

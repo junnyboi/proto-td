@@ -23,6 +23,9 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 const MISSION_ART := preload("res://assets/world/act1/panorama.png")
+const MISSION_CONTROL_PLATE := preload(
+	"res://assets/ui/staging/frames/mission_control_plate.png"
+)
 
 const GOLD := Color("d8b978")
 const BRIGHT_GOLD := Color("efcf8e")
@@ -36,10 +39,10 @@ const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.28
-const TOP_HUD_HEIGHT := 128.0
+const TOP_HUD_HEIGHT := 156.0
 const LANDSCAPE_GUTTER := 24.0
 const LANDSCAPE_BOTTOM_GUTTER := 16.0
-const LANDSCAPE_NAV_WIDTH := 440.0
+const LANDSCAPE_NAV_WIDTH := 660.0
 const LANDSCAPE_DECK_MIN_WIDTH := 620.0
 const LANDSCAPE_DECK_MAX_WIDTH := 700.0
 const LANDSCAPE_DECK_MAX_HEIGHT := 760.0
@@ -94,12 +97,14 @@ var _next_operation_label: Label = null
 var _mission_title: Label = null
 var _mission_objective: Label = null
 var _mission_action_label: Label = null
+var _mission_plate: TextureRect = null
 var _operations_label: Label = null
 var _backdrop: LunarisBackdropType = null
 var _command_tiles: Array[StagingCommandTileType] = []
 var _portrait := false
 var _compact_landscape := false
 var _reduced_motion := false
+var _mission_hovered := false
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
 var _focus_pulse_colors: Dictionary = {}
@@ -198,11 +203,9 @@ func _build_top_bar() -> void:
 
 	_top_identity_plate = PanelContainer.new()
 	_top_identity_plate.name = "IdentityPlate"
-	_top_identity_plate.custom_minimum_size = Vector2(360.0, 104.0)
+	_top_identity_plate.custom_minimum_size = Vector2(420.0, 112.0)
 	_top_identity_plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_top_identity_plate.add_theme_stylebox_override(
-		&"panel", StagingSkinType.company_hud_plate_style(),
-	)
+	_top_identity_plate.add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
 	_top_row.add_child(_top_identity_plate)
 	var identity_row := HBoxContainer.new()
 	identity_row.name = "IdentityPlateContent"
@@ -214,39 +217,39 @@ func _build_top_bar() -> void:
 	_top_crest.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	identity_row.add_child(_top_crest)
 
-	_top_identity = _label("FactionIdentity", "LUNARIS RELIQUARY\nCOMPANY 33", GameTypographyType.STATUS, IVORY)
+	_top_identity = _label("FactionIdentity", "PROTOS DEFENSE", GameTypographyType.STATUS, IVORY)
 	_top_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_top_identity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_top_identity.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_top_identity, 24, IVORY, 560)
+	StagingSkinType.apply_display_type(_top_identity, 28, IVORY, 620)
 	identity_row.add_child(_top_identity)
 
 	_top_status_chip = PanelContainer.new()
 	_top_status_chip.name = "CampaignStatusChip"
-	_top_status_chip.custom_minimum_size = Vector2(236.0, 84.0)
+	_top_status_chip.custom_minimum_size = Vector2(354.0, 112.0)
 	_top_status_chip.add_theme_stylebox_override(&"panel", StagingSkinType.resource_chip_style(Color(0.88, 0.88, 0.82, 0.9)))
 	_top_status_chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_top_row.add_child(_top_status_chip)
 	var status_margin := MarginContainer.new()
-	status_margin.add_theme_constant_override(&"margin_left", 20)
-	status_margin.add_theme_constant_override(&"margin_top", 12)
-	status_margin.add_theme_constant_override(&"margin_right", 20)
-	status_margin.add_theme_constant_override(&"margin_bottom", 12)
+	status_margin.add_theme_constant_override(&"margin_left", 28)
+	status_margin.add_theme_constant_override(&"margin_top", 18)
+	status_margin.add_theme_constant_override(&"margin_right", 28)
+	status_margin.add_theme_constant_override(&"margin_bottom", 18)
 	_top_status_chip.add_child(status_margin)
 	var status_row := HBoxContainer.new()
 	status_row.add_theme_constant_override(&"separation", 12)
 	status_margin.add_child(status_row)
-	status_row.add_child(_texture_icon("CampaignSeal", StagingSkinType.MISSION_ICON, Vector2(40.0, 40.0)))
+	status_row.add_child(_texture_icon("CampaignSeal", StagingSkinType.MISSION_ICON, Vector2(48.0, 48.0)))
 	_top_summary = _label("TopCampaignSummary", _campaign_summary_text(), GameTypographyType.STATUS, IVORY)
 	_top_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_top_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_top_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_top_summary.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_top_summary, 22, IVORY, 520)
+	StagingSkinType.apply_display_type(_top_summary, 24, IVORY, 560)
 	status_row.add_child(_top_summary)
 	_exit_plate = PanelContainer.new()
 	_exit_plate.name = "UtilityPlate"
-	_exit_plate.custom_minimum_size = Vector2(152.0, 84.0)
+	_exit_plate.custom_minimum_size = Vector2(228.0, 112.0)
 	_exit_plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_exit_plate.add_theme_stylebox_override(&"panel", StagingSkinType.company_hud_plate_style())
 	_top_row.add_child(_exit_plate)
@@ -254,7 +257,7 @@ func _build_top_bar() -> void:
 	_back.name = "ExitButton"
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_back.tooltip_text = _back.text
-	_back.custom_minimum_size = Vector2(132.0, 64.0)
+	_back.custom_minimum_size = Vector2(196.0, 88.0)
 	_back.focus_mode = Control.FOCUS_ALL
 	_back.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	for color_name: StringName in [
@@ -268,8 +271,8 @@ func _build_top_bar() -> void:
 	_register_focus_pulse(_back, GOLD)
 	var exit_margin := MarginContainer.new()
 	exit_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	exit_margin.add_theme_constant_override(&"margin_left", 14)
-	exit_margin.add_theme_constant_override(&"margin_right", 14)
+	exit_margin.add_theme_constant_override(&"margin_left", 22)
+	exit_margin.add_theme_constant_override(&"margin_right", 22)
 	exit_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_back.add_child(exit_margin)
 	var exit_row := HBoxContainer.new()
@@ -277,11 +280,11 @@ func _build_top_bar() -> void:
 	exit_row.add_theme_constant_override(&"separation", 8)
 	exit_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	exit_margin.add_child(exit_row)
-	exit_row.add_child(_texture_icon("ExitGlyph", StagingSkinType.EXIT_ICON, Vector2(36.0, 36.0)))
+	exit_row.add_child(_texture_icon("ExitGlyph", StagingSkinType.EXIT_ICON, Vector2(44.0, 44.0)))
 	_exit_label = _label("ExitLabel", _back.text.to_upper(), GameTypographyType.DETAIL, MUTED)
 	_exit_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_exit_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_exit_label, 20, MUTED, 560)
+	StagingSkinType.apply_display_type(_exit_label, 22, MUTED, 600)
 	exit_row.add_child(_exit_label)
 	_back.pressed.connect(_on_exit)
 	_exit_plate.add_child(_back)
@@ -304,7 +307,7 @@ func _build_landscape_layout() -> void:
 	_landscape_layout.name = "LandscapeLayout"
 	_landscape_layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_landscape_layout.offset_left = LANDSCAPE_GUTTER
-	_landscape_layout.offset_top = TOP_HUD_HEIGHT + 16.0
+	_landscape_layout.offset_top = TOP_HUD_HEIGHT + 8.0
 	_landscape_layout.offset_right = -LANDSCAPE_GUTTER
 	_landscape_layout.offset_bottom = -LANDSCAPE_BOTTOM_GUTTER
 	_landscape_layout.add_theme_constant_override(&"separation", 16)
@@ -442,12 +445,16 @@ func _build_command_content() -> VBoxContainer:
 	content.add_child(_next_operation_label)
 	content.add_child(_build_mission_card())
 
+	if not _training_acknowledgement.is_empty():
+		content.add_child(_build_acknowledgement())
+
+	var action_spacer := Control.new()
+	action_spacer.name = "MissionActionSpacer"
+	action_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(action_spacer)
 	_mission = _build_mission_button()
 	_mission.pressed.connect(_on_mission_control)
 	content.add_child(_mission)
-
-	if not _training_acknowledgement.is_empty():
-		content.add_child(_build_acknowledgement())
 	return content
 
 
@@ -644,46 +651,61 @@ func _build_mission_button() -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = "MissionControlButton"
 	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
-	button.set_presentation_text(full_text, full_text.to_upper())
+	var display_text := UiCopyType.text(&"ui.staging.mission_control_display", "MISSION\nCONTROL")
+	button.set_presentation_text(full_text, display_text.to_upper())
 	button.tooltip_text = full_text
 	button.disabled = _narrative_missing
 	button.focus_mode = Control.FOCUS_NONE if button.disabled else Control.FOCUS_ALL
-	button.custom_minimum_size = Vector2(0.0, 72.0)
+	button.custom_minimum_size = Vector2(0.0, 200.0)
 	_mission_action_label = button.get_node("PresentationLabel") as Label
+	_mission_action_label.offset_left = 132.0
+	_mission_action_label.offset_top = 34.0
+	_mission_action_label.offset_right = -132.0
+	_mission_action_label.offset_bottom = -34.0
+	_mission_action_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_mission_action_label.max_lines_visible = 2
 	StagingSkinType.apply_display_type(
-		_mission_action_label, 26,
+		_mission_action_label, 42,
 		IVORY if not button.disabled else MUTED, 560,
 	)
-	_mission_action_label.add_theme_constant_override(&"outline_size", 4)
+	_mission_action_label.add_theme_constant_override(&"outline_size", 6)
 	_mission_action_label.add_theme_color_override(&"font_outline_color", Color(VOID, 0.92))
-	button.add_theme_stylebox_override(
-		&"normal",
-		StagingSkinType.clean_button_style(
-			Color(0.025, 0.08, 0.11, 0.96) if not button.disabled else Color(0.025, 0.035, 0.045, 0.78),
-			Color(MOON_CYAN, 0.62) if not button.disabled else Color(MUTED, 0.26),
-		),
-	)
-	button.add_theme_stylebox_override(
-		&"hover",
-		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.22), Color(MOON_CYAN, 0.90)),
-	)
-	button.add_theme_stylebox_override(
-		&"pressed",
-		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.32), MOON_CYAN),
-	)
-	button.add_theme_stylebox_override(
-		&"disabled",
-		StagingSkinType.clean_button_style(Color(0.025, 0.035, 0.045, 0.78), Color(MUTED, 0.26)),
-	)
-	_register_focus_pulse(button, MOON_CYAN)
-	var mission_icon := _texture_icon("MissionActionGlyph", StagingSkinType.MISSION_ICON, Vector2(44.0, 44.0))
-	mission_icon.set_anchors_preset(Control.PRESET_CENTER_LEFT)
-	mission_icon.offset_left = 20.0
-	mission_icon.offset_top = -22.0
-	mission_icon.offset_right = 64.0
-	mission_icon.offset_bottom = 22.0
-	button.add_child(mission_icon)
+	for style_name: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		button.add_theme_stylebox_override(style_name, StyleBoxEmpty.new())
+	_mission_plate = TextureRect.new()
+	_mission_plate.name = "MissionControlPlate"
+	_mission_plate.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_mission_plate.texture = MISSION_CONTROL_PLATE
+	_mission_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_mission_plate.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_mission_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mission_plate.modulate = Color(0.48, 0.52, 0.56, 0.78) if button.disabled else Color.WHITE
+	button.add_child(_mission_plate)
+	button.move_child(_mission_plate, 0)
+	button.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	button.mouse_entered.connect(_on_mission_hover_changed.bind(true))
+	button.mouse_exited.connect(_on_mission_hover_changed.bind(false))
+	button.focus_entered.connect(_update_mission_plate_state)
+	button.focus_exited.connect(_update_mission_plate_state)
 	return button
+
+
+func _on_mission_hover_changed(hovered: bool) -> void:
+	_mission_hovered = hovered
+	_update_mission_plate_state()
+
+
+func _update_mission_plate_state() -> void:
+	if _mission_plate == null or _mission == null:
+		return
+	if _mission.disabled:
+		_mission_plate.modulate = Color(0.48, 0.52, 0.56, 0.78)
+		return
+	_mission_plate.modulate = (
+		Color(1.08, 1.12, 1.18, 1.0)
+		if _mission_hovered or _mission.has_focus()
+		else Color.WHITE
+	)
 
 
 func _register_focus_pulse(button: Button, accent: Color) -> void:
@@ -757,14 +779,25 @@ func _connect_focus_cycle() -> void:
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
-	var viewport_size := get_viewport_rect().size
+	var canvas_size := get_viewport_rect().size
+	var viewport_size := canvas_size
+	var physical_size := Vector2(DisplayServer.window_get_size())
+	if physical_size.x > 0.0 and physical_size.y > 0.0:
+		viewport_size = Vector2(
+			minf(canvas_size.x, physical_size.x),
+			minf(canvas_size.y, physical_size.y),
+		)
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
+	var hidden_extent := Vector2(
+		maxf(0.0, canvas_size.x - viewport_size.x),
+		maxf(0.0, canvas_size.y - viewport_size.y),
+	)
 	_backdrop.fit_top_cover(viewport_size)
 	var safe_insets := _display_safe_insets(viewport_size)
 	var aspect := viewport_size.x / viewport_size.y
 	_portrait = viewport_size.y > viewport_size.x
-	_compact_landscape = not _portrait and (aspect < 1.45 or viewport_size.x < 1200.0)
+	_compact_landscape = not _portrait and (aspect < 1.45 or viewport_size.x < 1700.0)
 	_landscape_layout.visible = not _portrait
 	_portrait_layout.visible = _portrait
 	_place_responsive_content()
@@ -772,9 +805,11 @@ func _apply_responsive_layout() -> void:
 	var landscape_left := maxf(LANDSCAPE_GUTTER, safe_insets.x)
 	var landscape_right := maxf(LANDSCAPE_GUTTER, safe_insets.z)
 	_landscape_layout.offset_left = landscape_left
-	_landscape_layout.offset_right = -landscape_right
-	_landscape_layout.offset_top = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y) + 16.0
-	_landscape_layout.offset_bottom = -maxf(LANDSCAPE_BOTTOM_GUTTER, safe_insets.w)
+	_landscape_layout.offset_right = -(landscape_right + hidden_extent.x)
+	_landscape_layout.offset_top = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y) + 8.0
+	_landscape_layout.offset_bottom = -(
+		maxf(LANDSCAPE_BOTTOM_GUTTER, safe_insets.w) + hidden_extent.y
+	)
 	_landscape_navigation.visible = not _compact_landscape
 	_landscape_navigation.custom_minimum_size.x = LANDSCAPE_NAV_WIDTH
 	_landscape_navigation.custom_minimum_size.y = 0.0
@@ -786,13 +821,18 @@ func _apply_responsive_layout() -> void:
 	)
 	_landscape_deck.custom_minimum_size.y = 0.0
 	_landscape_deck.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var deck_style := StagingSkinType.command_deck_style()
+	if _compact_landscape:
+		deck_style.content_margin_top = 24.0
+		deck_style.content_margin_bottom = 24.0
+	_landscape_deck.add_theme_stylebox_override(&"panel", deck_style)
 
 	var portrait_left := maxf(24.0, safe_insets.x)
 	var portrait_right := maxf(24.0, safe_insets.z)
 	_portrait_layout.offset_left = portrait_left
-	_portrait_layout.offset_right = -portrait_right
+	_portrait_layout.offset_right = -(portrait_right + hidden_extent.x)
 	_portrait_layout.offset_top = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y - 8.0)
-	_portrait_layout.offset_bottom = -maxf(16.0, safe_insets.w)
+	_portrait_layout.offset_bottom = -(maxf(16.0, safe_insets.w) + hidden_extent.y)
 	var portrait_available := maxf(
 		420.0,
 		viewport_size.y - _portrait_layout.offset_top + _portrait_layout.offset_bottom,
@@ -855,28 +895,32 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 	var compact := _portrait or _compact_landscape or viewport_size.x < 1180.0
 	_top_status_chip.visible = not compact and viewport_size.x >= 1120.0
 	_top_identity_plate.custom_minimum_size = (
-		Vector2(220.0, 88.0) if narrow
-		else (Vector2(276.0, 96.0) if compact else Vector2(360.0, 104.0))
+		Vector2(190.0, 92.0) if narrow
+		else (Vector2(300.0, 104.0) if compact else Vector2(420.0, 112.0))
 	)
-	_top_identity.text = "LUNARIS\nCOMPANY 33" if narrow else "LUNARIS RELIQUARY\nCOMPANY 33"
+	_top_identity.text = "PROTOS DEFENSE"
 	_top_crest.custom_minimum_size = (
 		Vector2(42.0, 42.0) if narrow else (Vector2(48.0, 48.0) if compact else Vector2(58.0, 58.0))
 	)
-	StagingSkinType.apply_display_type(_top_identity, 18 if narrow else (20 if compact else 24), IVORY, 560)
-	StagingSkinType.apply_display_type(_top_summary, 18 if compact else 22, IVORY, 520)
+	StagingSkinType.apply_display_type(_top_identity, 16 if narrow else (22 if compact else 28), IVORY, 620)
+	StagingSkinType.apply_display_type(_top_summary, 20 if compact else 24, IVORY, 560)
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
 	_exit_label.visible = not narrow
-	_back.custom_minimum_size = Vector2(68.0, 56.0) if narrow else Vector2(132.0, 64.0)
-	_exit_plate.custom_minimum_size = Vector2(80.0, 72.0) if narrow else Vector2(152.0, 84.0)
-	_top_status_chip.custom_minimum_size = Vector2(236.0, 84.0)
-	StagingSkinType.apply_display_type(_exit_label, 18 if compact else 20, MUTED, 560)
+	_back.custom_minimum_size = Vector2(92.0, 68.0) if narrow else (Vector2(164.0, 80.0) if compact else Vector2(196.0, 88.0))
+	_exit_plate.custom_minimum_size = Vector2(108.0, 88.0) if narrow else (Vector2(190.0, 104.0) if compact else Vector2(228.0, 112.0))
+	_top_status_chip.custom_minimum_size = Vector2(300.0, 104.0) if compact else Vector2(354.0, 112.0)
+	StagingSkinType.apply_display_type(_exit_label, 18 if compact else 22, MUTED, 600)
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
-	var single_column := (_portrait and viewport_size.x < 680.0)
-	_mission_body_grid.columns = 1 if single_column else 2
-	_mission_card.custom_minimum_size.y = 320.0 if single_column else 260.0
+	var single_column := (_portrait and viewport_size.x <= 720.0)
+	var hide_preview := _compact_landscape
+	_mission_preview.visible = not hide_preview
+	_mission_body_grid.columns = 1 if single_column or hide_preview else 2
+	_mission_card.custom_minimum_size.y = (
+		320.0 if single_column else (0.0 if hide_preview else 260.0)
+	)
 	_mission_preview.custom_minimum_size = (
 		Vector2(0.0, 112.0) if single_column else Vector2(160.0, 128.0)
 	)
@@ -884,6 +928,11 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_operation_grid.add_theme_constant_override(
 		&"v_separation", 8 if not _portrait and not _compact_landscape else 10,
 	)
+	_mission.custom_minimum_size.y = 150.0 if _compact_landscape else (164.0 if single_column or _portrait else 180.0)
+	_mission_action_label.offset_left = 56.0 if single_column else (96.0 if _portrait or _compact_landscape else 132.0)
+	_mission_action_label.offset_right = -_mission_action_label.offset_left
+	_mission_action_label.offset_top = 12.0 if _compact_landscape else (20.0 if single_column else 22.0)
+	_mission_action_label.offset_bottom = -_mission_action_label.offset_top
 	for tile: StagingCommandTileType in _command_tiles:
 		tile.set_rail_mode(not _portrait and not _compact_landscape)
 
@@ -895,9 +944,9 @@ func _apply_company_typography() -> void:
 	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
 	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait else 26, IVORY, 560)
-	_mission_objective.add_theme_font_size_override(&"font_size", 27 if compact else 30)
-	StagingSkinType.apply_display_type(_mission_action_label, 24 if compact or _portrait else 26, IVORY, 560)
-	StagingSkinType.apply_display_type(_operations_label, 36 if rail_mode else 18, GOLD, 560)
+	_mission_objective.add_theme_font_size_override(&"font_size", 22 if compact else 24)
+	StagingSkinType.apply_display_type(_mission_action_label, 36 if compact or _portrait else 42, IVORY, 620)
+	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
 
 
 func _display_safe_insets(viewport_size: Vector2) -> Vector4:

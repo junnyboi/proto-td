@@ -37,7 +37,6 @@ var _entry_host: MarginContainer = null
 var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
 var _orbit_rule: HBoxContainer = null
-var _synopsis: Label = null
 var _start_button: Button = null
 var _settings_button: Button = null
 var _title_music_enabled := true
@@ -181,20 +180,6 @@ func _build_screen() -> void:
 	_orbit_rule.add_child(_rule(Color(MOON_CYAN, 0.72)))
 	_orbit_rule.visible = false
 
-	_synopsis = Label.new()
-	_synopsis.name = "CanonSynopsis"
-	_synopsis.custom_minimum_size.y = _title_size(48.0)
-	_synopsis.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_synopsis.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_synopsis.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_synopsis.max_lines_visible = 4
-	_synopsis.add_theme_font_size_override(&"font_size", _title_font_size(15))
-	_synopsis.add_theme_color_override(&"font_color", Color(IVORY, 0.92))
-	_synopsis.add_theme_constant_override(&"outline_size", 6)
-	_synopsis.add_theme_color_override(&"font_outline_color", Color(VOID, 0.96))
-	_synopsis.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_entry_stack.add_child(_synopsis)
-
 	_start_button = _entry_button("StartButton", true)
 	_start_button.pressed.connect(_on_start_pressed)
 	_entry_stack.add_child(_start_button)
@@ -270,7 +255,7 @@ func _on_title_action_focused(action: Control) -> void:
 
 func _begin_title_reveal() -> void:
 	var reveal_nodes: Array[CanvasItem] = [
-		_wordmark, _orbit_rule, _synopsis, _start_button, _settings_button,
+		_wordmark, _orbit_rule, _start_button, _settings_button,
 	]
 	_interaction_feedback_ready = false
 	_title_focus_scroll_ready = false
@@ -289,7 +274,7 @@ func _begin_title_reveal() -> void:
 
 
 func _finish_title_reveal() -> void:
-	for item: CanvasItem in [_wordmark, _orbit_rule, _synopsis, _start_button, _settings_button]:
+	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _settings_button]:
 		if item != null:
 			item.modulate.a = 1.0
 	_reset_title_scroll.call_deferred()
@@ -559,10 +544,6 @@ func _refresh_copy() -> void:
 	if _wordmark == null:
 		return
 	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
-	_synopsis.text = UiCopyType.text(
-		&"ui.title.synopsis",
-		"PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
-	)
 	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
 
@@ -576,7 +557,7 @@ func _apply_responsive_layout() -> void:
 	_backdrop.fit_top_cover(viewport_size)
 	var portrait := viewport_size.y > viewport_size.x
 	var narrow := viewport_size.x <= 520.0
-	var short := viewport_size.y <= 560.0
+	var short := viewport_size.y <= 600.0
 	var horizontal_margin := 16 if narrow else (24 if portrait or short else 36)
 	var vertical_margin := 12 if short else 16
 	_entry_host.add_theme_constant_override(&"margin_left", horizontal_margin)
@@ -586,10 +567,8 @@ func _apply_responsive_layout() -> void:
 	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
 	_entry_stack.add_theme_constant_override(&"separation", 8)
-	var wordmark_size := 26 if narrow else (46 if portrait or short else 60)
+	var wordmark_size := 26 if narrow else (18 if short else (46 if portrait else 60))
 	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(wordmark_size))
-	_synopsis.custom_minimum_size.y = _title_size(86.0 if narrow or short else (96.0 if portrait else 72.0))
-	_synopsis.add_theme_font_size_override(&"font_size", _title_font_size(10 if portrait or narrow else 12))
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
 	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
 

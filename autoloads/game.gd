@@ -39,6 +39,7 @@ var _campaign_context: Dictionary = {}
 var _pending_battle_ticket: Dictionary = {}
 var _pending_campaign_mutation: Variant = null
 var _pending_promotion_mutation: Variant = null
+var _pending_recruitment_mutation: Variant = null
 var _campaign_battle_active := false
 
 
@@ -73,6 +74,7 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
+	_pending_recruitment_mutation = null
 	_campaign_battle_active = false
 	_restore_pending_attempt()
 	if open_campaign_ui:
@@ -113,6 +115,8 @@ func start_stage(
 		selected_squad = squad.duplicate()
 		start_battle(stage_id, open_battle)
 		return {"accepted": true, "error_code": &"", "ticket": {}}
+	if strategic_mutation_pending():
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var command_id := "runtime:begin:%s:%d" % [
 		campaign.campaign_uid(), campaign.next_attempt_id(),
 	]
@@ -227,6 +231,12 @@ func record_result(result: int, stars: int) -> bool:
 			"rewards_granted": [],
 		}
 		return true
+	if (
+		_pending_campaign_mutation == null
+		and (_pending_promotion_mutation != null or _pending_recruitment_mutation != null)
+	):
+		last_campaign_error = &"strategic_mutation_pending"
+		return false
 	var artifacts := current_battle.snapshot()
 	var outcome: Dictionary = artifacts.get("outcome", {})
 	if outcome.is_empty():
@@ -286,6 +296,8 @@ func record_result(result: int, stars: int) -> bool:
 func commit_campaign_command(command: Dictionary) -> Dictionary:
 	if not campaign_active or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if strategic_mutation_pending():
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
 		command, campaign_store,
 	)
@@ -297,6 +309,8 @@ func commit_campaign_command(command: Dictionary) -> Dictionary:
 func pull_premium_hero() -> Dictionary:
 	if not campaign_active or campaign == null or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if strategic_mutation_pending():
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var projection: Dictionary = campaign.runtime_projection()
 	var command_id := "runtime:gacha:%s:%d" % [
 		campaign.campaign_uid(), int(projection["next_premium_pull_index"]),
@@ -308,9 +322,44 @@ func pull_premium_hero() -> Dictionary:
 	return committed
 
 
+## Mission Control acquires one persistent basic Recruit through the same
+## authenticated command/save/restore authority as every strategic action.
+## Retryable store failure retains the exact mutation rather than charging twice.
+func hire_basic_recruit() -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if _pending_campaign_mutation != null or _pending_promotion_mutation != null:
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
+	var committed: Dictionary
+	if _pending_recruitment_mutation != null:
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+			_pending_recruitment_mutation, campaign_store,
+		)
+	else:
+		var revision: int = campaign.save_revision()
+		var command_id := "runtime:basic-hire:%s:%d" % [campaign.campaign_uid(), revision]
+		var command: Dictionary = campaign.recruit_person(
+			command_id,
+			revision,
+			&"basic_hire",
+			&"mission_control",
+		)
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(command, campaign_store)
+	if not committed["accepted"]:
+		_pending_recruitment_mutation = (
+			committed.get("mutation") if committed.get("retryable", false) else null
+		)
+		return committed
+	_pending_recruitment_mutation = null
+	campaign = committed["state"]
+	return committed
+
+
 func rename_hero(hero_id: String, callsign: String, title: Variant = null) -> Dictionary:
 	if not campaign_active or campaign == null or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if strategic_mutation_pending():
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var revision: int = campaign.save_revision()
 	var digest := CANONICAL_JSON_SCRIPT.sha256_hex(
 		{"hero_id": hero_id, "callsign": callsign, "title": title},
@@ -361,6 +410,8 @@ func _commit_promotions(choices: Array) -> Dictionary:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
 	if _pending_promotion_mutation != null:
 		return {"accepted": false, "error_code": &"promotion_retry_pending"}
+	if _pending_campaign_mutation != null or _pending_recruitment_mutation != null:
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var canonical: Array[Dictionary] = []
 	for raw: Variant in choices:
 		if typeof(raw) != TYPE_DICTIONARY:
@@ -398,6 +449,8 @@ func _commit_promotions(choices: Array) -> Dictionary:
 func _retry_promotions() -> Dictionary:
 	if _pending_promotion_mutation == null:
 		return {"accepted": false, "error_code": &"no_promotion_retry"}
+	if _pending_campaign_mutation != null or _pending_recruitment_mutation != null:
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
 		_pending_promotion_mutation, campaign_store,
 	)
@@ -419,6 +472,14 @@ func _publish_promotion_commit(committed: Dictionary) -> void:
 		training_acknowledgement.append(row.duplicate(true))
 
 
+func strategic_mutation_pending() -> bool:
+	return (
+		_pending_campaign_mutation != null
+		or _pending_promotion_mutation != null
+		or _pending_recruitment_mutation != null
+	)
+
+
 ## next Start always creates a fresh campaign with no stale selection.
 func open_title() -> void:
 	pending_stage = null
@@ -435,6 +496,7 @@ func open_title() -> void:
 	_pending_battle_ticket = {}
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
+	_pending_recruitment_mutation = null
 	_campaign_battle_active = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 

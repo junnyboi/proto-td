@@ -143,6 +143,7 @@ func runtime_projection() -> Dictionary:
 		"premium_pity_streak": int(_data["premium_pity_streak"]),
 		"premium_guarantee_in": 10 - int(_data["premium_pity_streak"]),
 		"marks": int(_data["marks"]),
+		"basic_recruit_cost": int(_context["campaign"]["basic_recruit_cost"]),
 		"premium_pull_cost": int(_context["campaign"]["premium_pull_cost"]),
 		"premium_pool": (_context["campaign"]["premium_hero_rows"] as Array).duplicate(true),
 		"premium_heroes": premium_heroes,
