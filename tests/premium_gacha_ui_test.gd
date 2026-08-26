@@ -25,7 +25,7 @@ func _run() -> void:
 	if not bool(game.get("campaign_active")):
 		_finish()
 		return
-	root.size = Vector2i(1280, 720)
+	root.size = Vector2i(1920, 880)
 	var screen: Node = load("res://scenes/gacha.tscn").instantiate()
 	root.add_child(screen)
 	await _frames(2)
@@ -40,10 +40,13 @@ func _run() -> void:
 	var browse_content := screen.find_child("PremiumBrowseContent", true, false) as VBoxContainer
 	var browse_header := screen.find_child("PremiumBrowseHeader", true, false) as GridContainer
 	var browse_title := screen.find_child("PremiumBrowseTitle", true, false) as Label
+	var title_center := screen.find_child("PremiumTitleCenter", true, false) as VBoxContainer
 	var marks_safe := screen.find_child("MarksSafeMargin", true, false) as MarginContainer
 	var guarantee := screen.find_child("GuaranteeTelemetry", true, false) as BoxContainer
 	var browse_actions := screen.find_child("PremiumBrowseActions", true, false) as GridContainer
 	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
+	var pull_action_label := screen.find_child("PremiumPullActionLabel", true, false) as Label
+	var pull_cost_label := screen.find_child("PremiumPullCostLabel", true, false) as Label
 	var browse_backdrop := screen.find_child("AstralBackdropArt", true, false) as TextureRect
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
@@ -61,27 +64,44 @@ func _run() -> void:
 	_check(browse_safe != null and browse_content != null and browse_content.get_parent() == browse_safe, "browse content retained an outer panel shell")
 	_check(screen.find_child("PremiumGachaShell", true, false) == null and screen.find_child("PremiumIntroPanel", true, false) == null, "obsolete browse containers remain")
 	_check(browse_header.columns == 3 and not guarantee.vertical and browse_actions.columns == 1, "wide browse hierarchy changed")
-	_check(back.custom_minimum_size.x >= 360.0 and back.custom_minimum_size.y >= 76.0, "Command Deck action is not comfortably extended")
-	_check(back.get_theme_font_size(&"font_size") >= 39 and back.autowrap_mode != TextServer.AUTOWRAP_OFF and not back.clip_text, "Command Deck typography or wrapping regressed")
+	_check(back.text == "RETURN" and back.icon != null, "Return action copy or generated glyph is missing")
+	_check(back.custom_minimum_size.x >= 300.0 and back.custom_minimum_size.y >= 76.0, "Return action is not comfortably sized")
+	_check(back.get_theme_font_size(&"font_size") >= 36 and back.autowrap_mode == TextServer.AUTOWRAP_OFF and not back.clip_text, "Return typography or single-line contract regressed")
+	_check(back.get_theme_constant(&"icon_max_width") == 54, "Return glyph is not sized for the header")
+	_check(title_center != null and title_center.alignment == BoxContainer.ALIGNMENT_CENTER, "Premium title is not vertically centered")
+	_check(absf(browse_title.get_global_rect().get_center().y - back.get_global_rect().get_center().y) <= 3.0, "Premium title is not aligned with the header controls")
 	_check(browse_title.get_theme_font_size(&"font_size") == marks.get_theme_font_size(&"font_size"), "Marks does not match title size")
 	_check(marks.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Marks is not gold")
-	_check(marks.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT and marks_safe.get_theme_constant(&"margin_right") >= 30, "Marks lacks its right safe inset")
-	_check(pity_label.get_theme_font_size(&"font_size") >= 45 and pity_label.custom_minimum_size.x >= 560.0, "guarantee telemetry is not 1.5× or landscape-contained")
+	_check(marks.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT and browse_safe.get_theme_constant(&"margin_right") >= 64, "Premium content lacks its 64px right safe inset")
+	_check(browse_safe.get_theme_constant(&"margin_left") >= 64, "Premium content lacks its 64px left safe inset")
+	_check(pity_label.get_theme_font_size(&"font_size") == 30 and pity_label.autowrap_mode == TextServer.AUTOWRAP_OFF, "guarantee telemetry is not reduced to one line")
+	for segment: ColorRect in pity_segments.get_children():
+		_check(segment.custom_minimum_size.x <= 58.0 and segment.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "guarantee bar remained excessively wide")
 	_check(not browse_status.visible and browse_status.text.is_empty(), "unnecessary ready copy remains visible")
-	_check(is_equal_approx(pull.custom_minimum_size.x, 320.0) and pull.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Resonate action is not fixed-width and centered")
-	_check(pull.get_theme_stylebox(&"normal") is StyleBoxFlat and pull.get_theme_font_size(&"font_size") >= 36, "Resonate action retained the struck texture or undersized type")
+	_check(is_equal_approx(pull.custom_minimum_size.x, 800.0) and pull.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Resonate action is not 2.5× wide and centered")
+	_check(pull.get_theme_stylebox(&"normal") is StyleBoxFlat, "Resonate action retained a textured or struck surface")
+	_check(pull_action_label != null and pull_action_label.text == "RESONATE" and pull_action_label.get_theme_font_size(&"font_size") == 48, "Resonate primary label hierarchy changed")
+	_check(pull_cost_label != null and pull_cost_label.text == "40 MARKS" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate cost is not a smaller second line")
+	_check(pull.text.contains("\n") and not pull.text.contains("•"), "Resonate logical copy retained the separator or lost the line break")
+	var pull_normal := pull.get_theme_stylebox(&"normal") as StyleBoxFlat
+	var pull_hover := pull.get_theme_stylebox(&"hover") as StyleBoxFlat
+	_check(pull_normal != null and pull_hover != null and not pull_normal.bg_color.is_equal_approx(pull_hover.bg_color), "Resonate action lacks a distinct hover surface")
 	_check(not _tree_text(browse_content).contains("LUNARIS RELIQUARY"), "browse eyebrow copy remains")
 	_check(not _tree_text(browse_content).contains("FIXED ELITE KIT") and not _tree_text(browse_content).contains("PULL TO RECRUIT"), "obsolete recruitment detail copy remains")
 	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
 		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
+		var portrait_frame := card.find_child("PortraitFrame", true, false) as Control if card != null else null
 		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
 		var card_style := card.get_theme_stylebox(&"panel") if card != null else null
 		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
-		_check(card.custom_minimum_size == Vector2(320, 430), "unequal card size for %s" % premium_id)
-		_check(portrait.custom_minimum_size == Vector2(300, 280), "unequal portrait size for %s" % premium_id)
+		_check(card.custom_minimum_size == Vector2(480, 645), "card did not increase by 50%% for %s" % premium_id)
+		_check(portrait_frame != null and portrait_frame.custom_minimum_size == Vector2(432, 420), "portrait frame did not scale with %s" % premium_id)
+		_check(portrait.scale.is_equal_approx(Vector2(1.25, 1.25)) and is_zero_approx(portrait.pivot_offset.y), "portrait is not top-anchored at 25%% zoom for %s" % premium_id)
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
-		_check(card_style != null and card_style.content_margin_left >= 16.0 and card_style.content_margin_top >= 16.0, "premium card padding is below 16px for %s" % premium_id)
+		_check(card_style != null and card_style.content_margin_left >= 24.0 and card_style.content_margin_top >= 24.0 and card_style.content_margin_right >= 24.0 and card_style.content_margin_bottom >= 24.0, "premium card padding is below 24px for %s" % premium_id)
+		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
+	_check(Art.size(&"ui_gacha_return") == Vector2i(512, 512), "generated Return glyph is absent from the art manifest")
 	root.size = Vector2i(2048, 825)
 	await _frames(2)
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.position.y), "browse background is not top aligned")

@@ -18,6 +18,7 @@ const REVEAL_MUSIC_CROSSFADE_SECONDS := 0.75
 const REVEAL_SKIP_CROSSFADE_SECONDS := 0.35
 const IDENTITY_REVEAL_SFX := "gacha_identity_reveal"
 const STAR_BLOOM_SFX := "gacha_star_bloom"
+const RETURN_ICON_ID := &"ui_gacha_return"
 const GACHA_FULLSIZE_PORTRAITS := {
 	"archive_caster": &"portrait_archive_caster_fullsize",
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
@@ -30,8 +31,12 @@ const CONFIRM_READABLE_MAX_WIDTH := 1480.0
 const CONFIRM_ACTION_SIZE := Vector2(280.0, 92.0)
 const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
 const CONFIRM_ACTION_VERTICAL_PADDING := 18.0
-const BROWSE_PULL_WIDTH := 320.0
-const BROWSE_PULL_HEIGHT := 68.0
+const BROWSE_PULL_WIDTH := 800.0
+const BROWSE_PULL_HEIGHT := 112.0
+const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
+const BROWSE_PORTRAIT_HEIGHT := 420.0
+const BROWSE_PORTRAIT_ZOOM := 1.25
+const BROWSE_CARD_PADDING := 24.0
 const REVEAL_PULL_AGAIN_SIZE := Vector2(600.0, 88.0)
 
 enum FlowState {
@@ -55,6 +60,11 @@ var _flow_state := FlowState.BROWSE
 var _browse_backdrop_art: TextureRect
 var _marks_label: Label
 var _pull_button: Button
+var _pull_action_label: Label
+var _pull_cost_label: Label
+var _pull_hover_tween: Tween
+var _pull_pointer_hovered := false
+var _pull_focus_hovered := false
 var _back_button: Button
 var _browse_title: Label
 var _status_label: Label
@@ -135,6 +145,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	_invalidate_confirmation_transition()
 	_confirmation_transition = ConfirmationTransition.NONE
+	if _pull_hover_tween != null and _pull_hover_tween.is_valid():
+		_pull_hover_tween.kill()
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
@@ -245,17 +257,26 @@ func _build_screen() -> void:
 	content.add_child(_header_grid)
 	_back_button = Button.new()
 	_back_button.name = "BackButton"
-	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
-	_back_button.custom_minimum_size = Vector2(360, 76)
+	_back_button.text = _copy(&"ui.gacha.back", "RETURN")
+	_back_button.icon = Art.texture(RETURN_ICON_ID)
+	_back_button.expand_icon = true
+	_back_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_back_button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	_back_button.add_theme_constant_override(&"icon_max_width", 54)
+	_back_button.custom_minimum_size = Vector2(300, 76)
 	_back_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_back_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_back_button.clip_text = false
 	_back_button.pressed.connect(_on_back_pressed)
 	Style.apply_button(_back_button, &"quiet")
-	_back_button.add_theme_font_size_override(&"font_size", 39)
+	_back_button.add_theme_font_size_override(&"font_size", 36)
 	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
+	title_box.name = "PremiumTitleCenter"
+	title_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	title_box.custom_minimum_size.y = 76.0
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_header_grid.add_child(title_box)
 	_browse_title = _label(_copy(&"ui.gacha.title", "Premium Resonance"), &"title")
 	_browse_title.name = "PremiumBrowseTitle"
@@ -281,22 +302,22 @@ func _build_screen() -> void:
 	content.add_child(_pity_layout)
 	_pity_label = _label(_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"detail")
 	_pity_label.name = "PityLabel"
-	_pity_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pity_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_pity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_pity_label.add_theme_color_override(&"font_color", Style.GOLD)
-	_pity_label.add_theme_font_size_override(&"font_size", 45)
+	_pity_label.add_theme_font_size_override(&"font_size", 30)
 	_pity_layout.add_child(_pity_label)
 	_pity_segments = HBoxContainer.new()
 	_pity_segments.name = "PitySegments"
-	_pity_segments.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_pity_segments.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_pity_segments.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_pity_segments.add_theme_constant_override(&"separation", 5)
 	_pity_layout.add_child(_pity_segments)
 	for index: int in HARD_PITY_WINDOW:
 		var segment := ColorRect.new()
 		segment.name = "Pity_%02d" % (index + 1)
-		segment.custom_minimum_size = Vector2(24, 16)
-		segment.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		segment.custom_minimum_size = Vector2(58, 12)
+		segment.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		segment.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_pity_segments.add_child(segment)
@@ -341,10 +362,39 @@ func _build_screen() -> void:
 	_pull_button.name = "PremiumPullButton"
 	_pull_button.custom_minimum_size = Vector2(BROWSE_PULL_WIDTH, BROWSE_PULL_HEIGHT)
 	_pull_button.pressed.connect(_on_pull_pressed)
+	_pull_button.mouse_entered.connect(_on_pull_hover_changed.bind(true, false))
+	_pull_button.mouse_exited.connect(_on_pull_hover_changed.bind(false, false))
+	_pull_button.focus_entered.connect(_on_pull_hover_changed.bind(true, true))
+	_pull_button.focus_exited.connect(_on_pull_hover_changed.bind(false, true))
+	_pull_button.resized.connect(_refresh_pull_pivot)
 	_pull_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_pull_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_pull_button.clip_text = false
-	_pull_button.add_theme_font_size_override(&"font_size", 54)
+	_pull_button.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_pull_button.clip_text = true
+	var transparent := Color(0.0, 0.0, 0.0, 0.0)
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_focus_color", &"font_disabled_color",
+	]:
+		_pull_button.add_theme_color_override(color_name, transparent)
+	var pull_presentation := VBoxContainer.new()
+	pull_presentation.name = "PremiumPullPresentation"
+	pull_presentation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pull_presentation.alignment = BoxContainer.ALIGNMENT_CENTER
+	pull_presentation.add_theme_constant_override(&"separation", 0)
+	pull_presentation.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pull_button.add_child(pull_presentation)
+	_pull_action_label = _label(_copy(&"ui.gacha.resonate", "RESONATE"), &"heading")
+	_pull_action_label.name = "PremiumPullActionLabel"
+	_pull_action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pull_action_label.add_theme_font_size_override(&"font_size", 48)
+	_pull_action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pull_presentation.add_child(_pull_action_label)
+	_pull_cost_label = _label("40 MARKS", &"detail")
+	_pull_cost_label.name = "PremiumPullCostLabel"
+	_pull_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pull_cost_label.add_theme_font_size_override(&"font_size", 27)
+	_pull_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pull_presentation.add_child(_pull_cost_label)
 	var pull_center := CenterContainer.new()
 	pull_center.name = "PremiumPullActionCenter"
 	pull_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -717,7 +767,11 @@ func _build_reveal_layer() -> void:
 func _refresh() -> void:
 	if _game == null or not bool(_game.get("campaign_active")) or _game.get("campaign") == null:
 		_marks_label.text = _copy(&"ui.gacha.campaign_offline", "CAMPAIGN OFFLINE")
-		_pull_button.text = _copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE")
+		_set_pull_presentation(
+			_copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE"),
+			_copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE"),
+			"",
+		)
 		_pull_button.disabled = true
 		_back_button.disabled = _flow_state != FlowState.BROWSE
 		_apply_pull_button_style(true)
@@ -732,7 +786,11 @@ func _refresh() -> void:
 	var pity_streak := int(projection.get("premium_pity_streak", 0))
 	var guarantee_in := int(projection.get("premium_guarantee_in", HARD_PITY_WINDOW))
 	_marks_label.text = _format(&"ui.gacha.marks", "{count} MARKS", {&"count": marks})
-	_pull_button.text = _format(&"ui.gacha.pull_action", "RESONATE • {cost} MARKS", {&"cost": cost})
+	_set_pull_presentation(
+		_format(&"ui.gacha.pull_action", "RESONATE\n{cost} MARKS", {&"cost": cost}),
+		_copy(&"ui.gacha.resonate", "RESONATE"),
+		_format(&"ui.gacha.marks", "{count} MARKS", {&"count": cost}),
+	)
 	var attempt_pending := bool(projection.get("attempt_pending", false))
 	var browse_locked := _flow_state != FlowState.BROWSE
 	_pull_button.disabled = marks < cost or attempt_pending or browse_locked
@@ -779,28 +837,52 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	panel.custom_minimum_size = Vector2(320, 430)
+	panel.custom_minimum_size = BROWSE_CARD_SIZE
 	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else &"result")
+	var card_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	card_style.content_margin_left = BROWSE_CARD_PADDING
+	card_style.content_margin_top = BROWSE_CARD_PADDING
+	card_style.content_margin_right = BROWSE_CARD_PADDING
+	card_style.content_margin_bottom = BROWSE_CARD_PADDING
+	panel.add_theme_stylebox_override(&"panel", card_style)
 	var box := VBoxContainer.new()
 	box.name = "PremiumCardContent"
-	box.add_theme_constant_override(&"separation", 10)
+	box.add_theme_constant_override(&"separation", 12)
 	panel.add_child(box)
+	var portrait_frame := Control.new()
+	portrait_frame.name = "PortraitFrame"
+	portrait_frame.custom_minimum_size = Vector2(BROWSE_CARD_SIZE.x - BROWSE_CARD_PADDING * 2.0, BROWSE_PORTRAIT_HEIGHT)
+	portrait_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	portrait_frame.clip_contents = true
+	portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(portrait_frame)
 	var portrait := TextureRect.new()
 	portrait.name = "Portrait"
 	portrait.texture = Art.texture(_gacha_portrait_asset_id(String(catalog["premium_id"])))
-	portrait.custom_minimum_size = Vector2(300, 280)
+	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	box.add_child(portrait)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_frame.add_child(portrait)
+	portrait_frame.resized.connect(_fit_hero_portrait_zoom.bind(portrait_frame, portrait))
+	_fit_hero_portrait_zoom(portrait_frame, portrait)
 	var name := _label(String(catalog["callsign"]), &"heading")
 	name.name = "HeroName"
+	name.custom_minimum_size.x = 0.0
+	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name.add_theme_font_size_override(&"font_size", 48)
 	box.add_child(name)
 	var display_class := _class_name(String(catalog["class_id"]))
 	var role := _label(display_class.to_upper(), &"detail")
 	role.name = "HeroClass"
+	role.custom_minimum_size.x = 0.0
+	role.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	role.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	role.add_theme_font_size_override(&"font_size", 30)
 	box.add_child(role)
 	var status := _copy(&"ui.gacha.unacquired", "UNACQUIRED")
 	if not hero.is_empty():
@@ -810,12 +892,24 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
 	var status_label := _label(status, &"metric")
 	status_label.name = "OwnershipMetric"
+	status_label.custom_minimum_size.x = 0.0
+	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status_label.add_theme_font_size_override(&"font_size", 36)
 	status_label.add_theme_color_override(
 		&"font_color", Style.DANGER if status.begins_with("LOCKED") else Style.CYAN,
 	)
 	box.add_child(status_label)
 	return panel
+
+
+func _fit_hero_portrait_zoom(frame: Control, portrait: TextureRect) -> void:
+	if frame == null or portrait == null:
+		return
+	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	portrait.pivot_offset = Vector2(frame.size.x * 0.5, 0.0)
+	portrait.scale = Vector2.ONE * BROWSE_PORTRAIT_ZOOM
 
 
 func _apply_responsive_layout() -> void:
@@ -824,26 +918,31 @@ func _apply_responsive_layout() -> void:
 		return
 	var viewport_size := get_viewport_rect().size
 	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
-	var compact_landscape := not portrait and viewport_size.x < 1180.0
+	var compact_landscape := not portrait and viewport_size.x < 1600.0
 	_hero_grid.columns = 1 if portrait else (2 if compact_landscape else 3)
 	_header_grid.columns = 1 if portrait else 3
 	_action_grid.columns = 1
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_marks_safe.add_theme_constant_override(&"margin_left", 0)
-	_marks_safe.add_theme_constant_override(&"margin_right", 16 if portrait else 30)
-	var side_margin := 12 if portrait else 30
+	_marks_safe.add_theme_constant_override(&"margin_right", 0)
+	var side_margin := 24 if portrait else (40 if compact_landscape else 64)
 	var vertical_margin := 14 if portrait else 22
 	_screen_margin.add_theme_constant_override(&"margin_left", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_top", vertical_margin)
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_bottom", vertical_margin)
-	_back_button.custom_minimum_size.x = minf(360.0, viewport_size.x - float(side_margin * 2))
+	_back_button.custom_minimum_size.x = minf(300.0, viewport_size.x - float(side_margin * 2))
 	_pull_button.custom_minimum_size.x = minf(BROWSE_PULL_WIDTH, viewport_size.x - float(side_margin * 2))
 	_pity_layout.vertical = portrait
-	_pity_label.custom_minimum_size.x = 0.0 if portrait else 560.0
+	_pity_label.custom_minimum_size.x = 0.0 if portrait else 460.0
+	_pity_label.add_theme_font_size_override(&"font_size", 18 if portrait else 30)
 	for child: Node in _pity_segments.get_children():
-		(child as Control).custom_minimum_size.x = 12.0 if portrait else 24.0
+		(child as Control).custom_minimum_size = Vector2(
+			26.0 if portrait else (42.0 if compact_landscape else 58.0),
+			12.0,
+		)
 	_apply_hero_card_layout(_hero_grid.columns)
+	_refresh_pull_pivot()
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
 		_reveal_title_stack.custom_minimum_size.x = (
@@ -892,6 +991,17 @@ func _fit_browse_backdrop() -> void:
 func _apply_hero_card_layout(columns: int) -> void:
 	if _hero_grid == null:
 		return
+	var viewport_width := get_viewport_rect().size.x
+	var side_margin := 24.0 if columns == 1 else (40.0 if columns == 2 else 64.0)
+	var available_width := maxf(0.0, viewport_width - side_margin * 2.0 - 20.0)
+	var card_width := BROWSE_CARD_SIZE.x
+	if columns > 1:
+		card_width = minf(
+			BROWSE_CARD_SIZE.x,
+			(available_width - float(_hero_grid.get_theme_constant(&"h_separation") * (columns - 1))) / float(columns),
+		)
+	else:
+		card_width = minf(BROWSE_CARD_SIZE.x, available_width)
 	_hero_grid.size_flags_horizontal = (
 		Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
 	)
@@ -900,10 +1010,14 @@ func _apply_hero_card_layout(columns: int) -> void:
 		panel.size_flags_horizontal = (
 			Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
 		)
-		panel.custom_minimum_size = Vector2(320.0 if columns == 3 else 0.0, 430.0)
+		panel.custom_minimum_size = Vector2(card_width if columns == 3 else 0.0, BROWSE_CARD_SIZE.y)
+		var portrait_frame := panel.find_child("PortraitFrame", true, false) as Control
 		var portrait := panel.find_child("Portrait", true, false) as TextureRect
-		if portrait != null:
-			portrait.custom_minimum_size = Vector2(300.0 if columns == 3 else 0.0, 280.0)
+		if portrait_frame != null:
+			portrait_frame.custom_minimum_size = Vector2(
+				maxf(0.0, card_width - BROWSE_CARD_PADDING * 2.0), BROWSE_PORTRAIT_HEIGHT,
+			)
+			_fit_hero_portrait_zoom(portrait_frame, portrait)
 
 
 func _on_pull_pressed() -> void:
@@ -1883,7 +1997,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 
 
 func _refresh_static_copy() -> void:
-	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
+	_back_button.text = _copy(&"ui.gacha.back", "RETURN")
 	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
@@ -1937,27 +2051,87 @@ func _set_browse_status(text: String, live_mode: int) -> void:
 	_status_label.visible = not text.is_empty()
 
 
+func _set_pull_presentation(logical_text: String, action_text: String, cost_text: String) -> void:
+	_pull_button.text = logical_text
+	_pull_button.accessibility_name = logical_text.replace("\n", ", ")
+	_pull_action_label.text = action_text
+	_pull_cost_label.text = cost_text
+	_pull_cost_label.visible = not cost_text.is_empty()
+
+
 func _apply_pull_button_style(disabled: bool) -> void:
-	Style.apply_button(_pull_button, &"disabled" if disabled else &"gold")
-	_pull_button.add_theme_font_size_override(&"font_size", 54)
-	_pull_button.add_theme_color_override(
-		&"font_color", Color(Style.MUTED, 0.64) if disabled else Style.IVORY,
+	Style.apply_button(_pull_button, &"disabled" if disabled else &"quiet")
+	var transparent := Color(0.0, 0.0, 0.0, 0.0)
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_focus_color", &"font_disabled_color",
+	]:
+		_pull_button.add_theme_color_override(color_name, transparent)
+	_pull_action_label.add_theme_color_override(
+		&"font_color", Color(Style.MUTED, 0.64) if disabled else Style.GOLD,
 	)
-	_pull_button.add_theme_color_override(
-		&"font_disabled_color", Color(Style.MUTED, 0.64),
-	)
-	_pull_button.add_theme_stylebox_override(
-		&"normal", _pull_button_box(Color("241f15f2"), Color(Style.GOLD, 0.78)),
-	)
-	_pull_button.add_theme_stylebox_override(
-		&"hover", _pull_button_box(Color("3b3119f7"), Style.GOLD, 2),
-	)
-	_pull_button.add_theme_stylebox_override(
-		&"pressed", _pull_button_box(Color("17130cfb"), Style.GOLD, 2),
+	_pull_cost_label.add_theme_color_override(
+		&"font_color", Color(Style.MUTED, 0.54) if disabled else Style.CYAN,
 	)
 	_pull_button.add_theme_stylebox_override(
-		&"disabled", _pull_button_box(Color("12181edb"), Color(Style.MUTED, 0.24)),
+		&"normal", _pull_button_box(Color("091827f2"), Color(Style.GOLD, 0.72), 2),
 	)
+	_pull_button.add_theme_stylebox_override(
+		&"hover", _pull_button_box(Color("173447fa"), Style.CYAN, 3),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"pressed", _pull_button_box(Color("06111cff"), Style.GOLD, 3),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"focus", _pull_button_box(Color("102a3afa"), Style.CYAN, 3),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"disabled", _pull_button_box(Color("0b1219db"), Color(Style.MUTED, 0.24)),
+	)
+	_refresh_pull_hover()
+
+
+func _on_pull_hover_changed(active: bool, focus_event: bool) -> void:
+	if focus_event:
+		_pull_focus_hovered = active
+	else:
+		_pull_pointer_hovered = active
+	_refresh_pull_hover()
+
+
+func _refresh_pull_pivot() -> void:
+	if _pull_button != null:
+		_pull_button.pivot_offset = _pull_button.size * 0.5
+
+
+func _refresh_pull_hover() -> void:
+	if _pull_button == null:
+		return
+	if _pull_hover_tween != null and _pull_hover_tween.is_valid():
+		_pull_hover_tween.kill()
+	_pull_hover_tween = null
+	var highlighted := not _pull_button.disabled and (_pull_pointer_hovered or _pull_focus_hovered)
+	_pull_action_label.add_theme_color_override(
+		&"font_color",
+		Color(Style.MUTED, 0.64) if _pull_button.disabled else (Style.IVORY if highlighted else Style.GOLD),
+	)
+	_pull_cost_label.add_theme_color_override(
+		&"font_color",
+		Color(Style.MUTED, 0.54) if _pull_button.disabled else (Color("c9fbff") if highlighted else Style.CYAN),
+	)
+	var target_scale := Vector2(1.025, 1.025) if highlighted and not _motion_reduced() else Vector2.ONE
+	var target_modulate := Color(1.08, 1.05, 0.95, 1.0) if highlighted else Color.WHITE
+	if _motion_reduced():
+		_pull_button.scale = target_scale
+		_pull_button.modulate = target_modulate
+	else:
+		_pull_hover_tween = create_tween().set_parallel(true)
+		_pull_hover_tween.tween_property(
+			_pull_button, "scale", target_scale, 0.16,
+		).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+		_pull_hover_tween.tween_property(
+			_pull_button, "modulate", target_modulate, 0.16,
+		).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 
 
 func _pull_button_box(fill: Color, edge: Color, width: int = 1) -> StyleBoxFlat:
