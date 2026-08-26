@@ -18,7 +18,14 @@ const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const ACTION_SAFE_INSET := 12.0
-const OPERATOR_INFO_SPLIT := 0.55
+const OPERATOR_INFO_SPLIT := 0.62
+const FIELD_TEAM_WIDTH_RATIO := 0.60
+const INTEL_WIDTH_RATIO := 0.40
+const OPERATOR_CARD_WIDTH := 320.0
+const OPERATOR_CARD_HEIGHT := 220.0
+const OPERATOR_CARD_TALL_HEIGHT := 280.0
+const ACTION_HORIZONTAL_GAP := 28
+const ACTION_VERTICAL_GAP := 24
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -225,9 +232,9 @@ func _build_body() -> GridContainer:
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
 	_grid.columns = 2
-	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_grid.add_theme_constant_override(&"h_separation", 10)
+	_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_grid.add_theme_constant_override(&"h_separation", 12)
 	_grid.add_theme_constant_override(&"v_separation", 10)
 	_roster_scroll.add_child(_grid)
 	_rebuild_operator_cards()
@@ -237,7 +244,7 @@ func _build_body() -> GridContainer:
 	_intel_panel = briefing_panel
 	briefing_panel.name = "MissionIntelligencePanel"
 	briefing_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	briefing_panel.size_flags_stretch_ratio = 1.0
+	briefing_panel.size_flags_stretch_ratio = 2.0
 	briefing_panel.custom_minimum_size.x = 0.0
 	briefing_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_panel(briefing_panel, &"workspace")
@@ -470,15 +477,15 @@ func _rebuild_operator_cards() -> void:
 	if visible_rows.is_empty():
 		_grid.columns = 1
 		return
-	_grid.columns = 1 if _shell.layout_mode() == &"portrait" else 2
+	_grid.columns = _operator_grid_columns(_shell.layout_mode())
 	for hero: Dictionary in visible_rows:
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
 		var pick := AetheriaButtonType.new()
 		pick.name = "Pick_%s" % hero_id
-		pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		pick.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		pick.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var fallen := bool(hero.get("fallen", false))
 		pick.toggle_mode = not fallen
 		var card_text := _operator_card_text(hero, definition)
@@ -486,12 +493,14 @@ func _rebuild_operator_cards() -> void:
 		pick.set_meta(&"operator_def", definition)
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
-		pick.custom_minimum_size = Vector2(300.0, 180.0)
+		pick.custom_minimum_size = Vector2(
+			_operator_card_width(_shell.layout_mode()), _operator_card_height(hero, _shell.layout_mode()),
+		)
 		pick.set_presentation_text(card_text, card_text)
 		var portrait := TextureRect.new()
 		portrait.name = "OperatorPortrait"
 		portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
-		portrait.anchor_left = OPERATOR_INFO_SPLIT
+		portrait.anchor_left = _operator_info_split(_shell.layout_mode())
 		portrait.anchor_top = 0.0
 		portrait.anchor_right = 1.0
 		portrait.anchor_bottom = 1.0
@@ -524,7 +533,7 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	var card_label := button.get_node("PresentationLabel") as Label
 	card_label.anchor_left = 0.0
 	card_label.anchor_top = 0.0
-	card_label.anchor_right = OPERATOR_INFO_SPLIT
+	card_label.anchor_right = _operator_info_split(_shell.layout_mode())
 	card_label.anchor_bottom = 1.0
 	card_label.offset_left = 22.0
 	card_label.offset_top = 16.0
@@ -562,8 +571,8 @@ func _build_footer() -> BoxContainer:
 	_actions.name = "MissionActions"
 	_actions.columns = 3
 	_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
-	_actions.add_theme_constant_override(&"h_separation", 10)
-	_actions.add_theme_constant_override(&"v_separation", 10)
+	_actions.add_theme_constant_override(&"h_separation", ACTION_HORIZONTAL_GAP)
+	_actions.add_theme_constant_override(&"v_separation", ACTION_VERTICAL_GAP)
 	_footer.add_child(_actions)
 	_back = _action("BackButton", UiCopyType.text(&"ui.common.back", "Back"), &"secondary")
 	_back.pressed.connect(_on_back)
@@ -587,10 +596,7 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	button.name = node_name
 	button.text = text_value
 	var rendered_text := _action_presentation_text(node_name, text_value)
-	button.custom_minimum_size = Vector2(
-		168.0 if node_name == "TrainingButton" else (147.0 if node_name == "StartBattle" else 119.0),
-		99.0,
-	)
+	button.custom_minimum_size = Vector2(_wide_action_width(node_name), 99.0)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.set_presentation_text(text_value, rendered_text)
 	LunarisOpsType.apply_button(button, role)
@@ -613,6 +619,39 @@ func _action_presentation_text(node_name: String, text_value: String) -> String:
 	if node_name == "StartBattle":
 		return "DEPLOY\nSQUAD"
 	return text_value
+
+
+func _wide_action_width(node_name: String) -> float:
+	match node_name:
+		"TrainingButton":
+			return 336.0
+		"StartBattle":
+			return 294.0
+		_:
+			return 238.0
+
+
+func _operator_grid_columns(mode: StringName) -> int:
+	return 2 if mode == &"regular_landscape" else 1
+
+
+func _operator_card_width(mode: StringName) -> float:
+	if mode != &"portrait":
+		return OPERATOR_CARD_WIDTH
+	return minf(OPERATOR_CARD_WIDTH, maxf(240.0, get_viewport_rect().size.x - 96.0))
+
+
+func _operator_info_split(mode: StringName) -> float:
+	return 0.58 if mode == &"portrait" else OPERATOR_INFO_SPLIT
+
+
+func _operator_card_height(hero: Dictionary, mode: StringName) -> float:
+	var custom_title := String(hero.get("custom_title", "") if hero.get("custom_title") != null else "")
+	return (
+		OPERATOR_CARD_TALL_HEIGHT
+		if mode == &"portrait" or hero.get("hero_kind", "recruit") == "premium" or not custom_title.is_empty()
+		else OPERATOR_CARD_HEIGHT
+	)
 
 
 func _apply_clean_training_style(button: AetheriaButtonType) -> void:
@@ -1091,9 +1130,10 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			_intel_panel.custom_minimum_size.x = 0.0
 		else:
 			var body_width := maxf(760.0, get_viewport_rect().size.x - 112.0)
-			var intel_width := clampf(body_width * 0.25, 220.0, 320.0)
+			var usable_width := body_width - 16.0
+			var intel_width := usable_width * INTEL_WIDTH_RATIO
 			_intel_panel.custom_minimum_size.x = intel_width
-			_roster_panel.custom_minimum_size.x = body_width - intel_width - 16.0
+			_roster_panel.custom_minimum_size.x = usable_width * FIELD_TEAM_WIDTH_RATIO
 	if _command_scroll != null:
 		_command_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if _roster_scroll != null:
@@ -1101,12 +1141,18 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
 	if _grid != null:
-		_grid.columns = 1 if mode == &"portrait" else 2
+		_grid.columns = _operator_grid_columns(mode)
 	if _filter_bar != null:
 		_filter_bar.set_compact(true)
-		_filter_bar.set_inline(mode == &"regular_landscape")
+		_filter_bar.set_roomy(mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0)
+		_filter_bar.set_dense_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)
+		_filter_bar.set_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)
 	if _recruitment_grid != null:
-		_recruitment_grid.columns = 3 if mode == &"regular_landscape" else 1
+		_recruitment_grid.columns = (
+			3
+			if mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0
+			else 1
+		)
 	if _recruitment_metrics != null:
 		_recruitment_metrics.columns = 1 if mode == &"regular_landscape" else 2
 	if _hire_body != null:
@@ -1117,18 +1163,34 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			64.0,
 		)
 	for button: Button in _buttons.values():
-		var portrait_card_width := 270.0 if get_viewport_rect().size.x < 480.0 else 300.0
+		var hero: Dictionary = button.get_meta(&"hero", {})
 		button.custom_minimum_size = Vector2(
-			portrait_card_width if mode == &"portrait" else 280.0,
-			180.0 if mode == &"regular_landscape" else 260.0,
+			_operator_card_width(mode),
+			_operator_card_height(hero, mode),
 		)
+		var portrait := button.get_node_or_null("OperatorPortrait") as TextureRect
+		if portrait != null:
+			portrait.anchor_left = _operator_info_split(mode)
+		_apply_operator_card_text_style(button as AetheriaButtonType)
 	if _footer != null:
-		_footer.vertical = mode == &"portrait"
+		_footer.vertical = mode != &"regular_landscape"
+	var readiness_copy := find_child("ReadinessCopy", true, false) as Label
+	if readiness_copy != null:
+		readiness_copy.add_theme_font_size_override(
+			&"font_size",
+			18 if mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0 else 24,
+		)
 	if _actions != null:
 		_actions.columns = 1 if mode == &"portrait" else 3
 		_actions.size_flags_horizontal = (
-			Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_END
+			Control.SIZE_EXPAND_FILL if mode != &"regular_landscape" else Control.SIZE_SHRINK_END
 		)
+		for action: Node in _actions.get_children():
+			if action is Button:
+				var target_width := _wide_action_width(action.name)
+				if mode == &"portrait":
+					target_width = minf(target_width, maxf(220.0, get_viewport_rect().size.x - 96.0))
+				(action as Button).custom_minimum_size.x = target_width
 
 
 func _on_training() -> void:
