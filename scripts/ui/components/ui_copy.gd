@@ -151,10 +151,10 @@ const STATIC_FALLBACKS := {
 	),
 	&"ui.tutorial.live.step": "FIELD REMINDER",
 	&"ui.tutorial.live.title": "Defend the base",
-	&"ui.tutorial.route.action": "Show deployment",
+	&"ui.tutorial.route.action": "NEXT",
 	&"ui.tutorial.route.body": (
-		"Enemies enter at red and follow the lit path to your blue base. "
-		+ "First Stand allows 3 leaks; the 4th ends the mission."
+		"Enemies start from the portal and follow the lit path to your base crystal. "
+		+ "This mission allows 3 leaks, the 4th leak will end the mission."
 	),
 	&"ui.tutorial.route.step": "1 / 4  ROUTE",
 	&"ui.tutorial.route.title": "Read the route",
@@ -185,8 +185,6 @@ const STATIC_FALLBACKS := {
 	&"ui.tutorial.slow_field.unavailable": "Slow Field is not ready yet.",
 	&"ui.map_navigation.hint_title": "DRAG TO PAN",
 	&"ui.map_navigation.hint_body": "Explore the full battlefield on every open axis.",
-	&"ui.map_navigation.recenter": "CENTER",
-	&"ui.map_navigation.recenter_tooltip": "Reset the battlefield view (R)",
 	&"ui.locale.label": "Language",
 	&"ui.locale.en_us": "EN",
 	&"ui.locale.zh_cn": "中文",

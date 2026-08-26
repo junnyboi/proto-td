@@ -140,6 +140,16 @@ func _run() -> void:
 
 	game.set("training_return_path", &"mission")
 	root.size = Vector2i(1280, 720)
+	var training_source := FileAccess.get_file_as_string("res://scripts/ui/training.gd")
+	var confirm_start := training_source.find("func _confirm_review() -> void:")
+	var confirm_end := training_source.find("\n\nfunc _draft_choices()", confirm_start)
+	var confirm_source := (
+		training_source.substr(confirm_start, confirm_end - confirm_start)
+		if confirm_start >= 0 and confirm_end > confirm_start
+		else ""
+	)
+	_check(confirm_source.contains("Game.open_squad_select()"), "successful Confirm Training does not return to FIELD TEAM")
+	_check(not confirm_source.contains("Game.open_staging()") and not confirm_source.contains("Game.open_title()"), "successful Confirm Training still exits FIELD TEAM flow")
 	var training: Node = load("res://scenes/training.tscn").instantiate()
 	root.add_child(training)
 	await process_frame

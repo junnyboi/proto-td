@@ -12,13 +12,13 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 ## ticks_per_frame_scale or model.apply_action([&"resign"]); presentation never
 ## enters deterministic state.
 
-const FONT_SIZE := GameTypographyType.BODY * 2
+const FONT_SIZE := GameTypographyType.DETAIL
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
-const PAUSED_LABEL_MIN_WIDTH := 192.0
-const COMMAND_TARGET_SIZE := Vector2(152.0, 92.0)
-const DECK_PADDING := 24.0
+const PAUSED_LABEL_MIN_WIDTH := 0.0
+const COMMAND_TARGET_SIZE := Vector2(112.0, 64.0)
+const DECK_PADDING := 16.0
 const FIRST_ACTION_LEFT_INSET := 12.0
-const ACTION_GAP := 16
+const ACTION_GAP := 12
 
 enum ConfirmationState {
 	CLOSED,
@@ -73,12 +73,13 @@ func relayout() -> void:
 	if not _confirm_dialog.is_empty():
 		DialogType.relayout(_confirm_dialog)
 	if _controls_deck != null:
-		var compact := size.y > size.x or size.x < 760.0
+		var portrait := size.y > size.x
+		var compact := portrait or size.x < 760.0
 		_controls_box.columns = 2 if compact else 4
-		var target_width := minf(size.x - 32.0, 520.0 if compact else 780.0)
+		var target_width := minf(size.x - 32.0, 360.0 if compact else 620.0)
 		_controls_deck.custom_minimum_size = Vector2(target_width, 0.0)
 		_controls_deck.reset_size()
-		var y := 98.0 if size.y > size.x else 64.0
+		var y := 180.0 if portrait else 112.0
 		var deck_size := _controls_deck.get_combined_minimum_size()
 		_controls_deck.size = Vector2(maxf(target_width, deck_size.x), deck_size.y)
 		_controls_deck.position = Vector2(size.x - _controls_deck.size.x - 16.0, y)
@@ -173,7 +174,7 @@ func _make_button(button_name: String, text: String, role: StringName) -> Button
 	btn.text = text
 	btn.focus_mode = Control.FOCUS_ALL
 	btn.custom_minimum_size = COMMAND_TARGET_SIZE
-	Style.apply_button(btn, role)
+	Style.apply_compact_rounded_button(btn, role, 12.0, 12)
 	btn.add_theme_font_size_override(&"font_size", FONT_SIZE)
 	return btn
 

@@ -12,6 +12,13 @@ func _init() -> void:
 func _run() -> void:
 	root.size = LANDSCAPE
 	await process_frame
+	var i18n := root.get_node_or_null("I18n")
+	_check(i18n != null, "I18n autoload missing")
+	if i18n == null:
+		_finish()
+		return
+	_check(bool(i18n.call("reload_catalogs")), "localization catalogs failed canonical validation")
+	_check(bool(i18n.call("set_locale", &"en-US")), "English locale activation failed")
 	var game := root.get_node_or_null("Game")
 	_check(game != null, "Game autoload missing")
 	if game == null:
@@ -31,6 +38,7 @@ func _run() -> void:
 	var hud := battle.find_child("BattleHud", true, false) as Label
 	var deploy_bar := battle.find_child("DeployBar", true, false) as Node
 	var deployment_deck := battle.find_child("DeploymentCommandDeck", true, false) as PanelContainer
+	var owned_spell_deck := battle.find_child("SpellCommandDeck", true, false) as PanelContainer
 	var deployment_scroll := battle.find_child("DeploymentRosterScroll", true, false) as ScrollContainer
 	var slot_box := battle.find_child("SlotBox", true, false) as GridContainer
 	var controls := battle.find_child("BattleControls", true, false) as Node
@@ -44,53 +52,74 @@ func _run() -> void:
 	var pause := battle.find_child("PauseButton", true, false) as Button
 	var speed := battle.find_child("SpeedButton", true, false) as Button
 	var resign := battle.find_child("ResignButton", true, false) as Button
-	var recenter := battle.find_child("RecenterMap", true, false) as Button
 	var tutorial := battle.find_child("FirstStandTutorial", true, false) as Node
 	var tutorial_card := battle.find_child("TutorialCard", true, false) as PanelContainer
+	var tutorial_body := battle.find_child("TutorialBody", true, false) as Label
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	var dialogue := battle.find_child("BattleDialogue", true, false) as PanelContainer
 	var dialogue_speaker := battle.find_child("DialogueSpeaker", true, false) as Label
 	var dialogue_line := battle.find_child("DialogueLine", true, false) as Label
 	var tutorial_primary := battle.find_child("TutorialPrimary", true, false) as Button
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
+	if hud != null:
+		var hud_style := hud.get_theme_stylebox(&"normal")
+		_check(hud.size.y >= 100.0, "battle HUD did not receive doubled container height")
+		_check(hud.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and hud.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "battle HUD text is not centered")
+		_check(hud_style.content_margin_left >= 48.0, "battle HUD lacks the requested 48px left padding")
 	_check(deployment_deck != null and deployment_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "deployment deck is not textured")
+	_check(deployment_deck != null and owned_spell_deck != null and not deployment_deck.get_global_rect().intersects(owned_spell_deck.get_global_rect()), "landscape deployment deck overlaps the spell deck")
 	if deployment_deck != null:
 		var deployment_style := deployment_deck.get_theme_stylebox(&"panel")
-		_check(deployment_style.content_margin_left >= 24.0 and deployment_style.content_margin_top >= 24.0, "deployment deck padding is below 24px")
+		_check(deployment_style.content_margin_left >= 16.0 and deployment_style.content_margin_top >= 16.0, "deployment deck padding is below 16px")
 	_check(deployment_scroll != null and deployment_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "deployment roster is not locally scrollable")
 	_check(deployment_scroll != null and deployment_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "deployment roster permits horizontal scrolling")
 	_check(slot_box != null and slot_box.get_child_count() >= 3, "deployment slots are missing")
 	if slot_box != null:
 		for child: Node in slot_box.get_children():
-			_check(child is Button and (child as Button).custom_minimum_size.y >= 116.0, "deployment slot did not receive doubled target height")
-			_check(child is Button and (child as Button).get_theme_font_size(&"font_size") >= 36, "deployment slot copy did not receive doubled typography")
+			var slot := child as Button
+			var slot_style := slot.get_theme_stylebox(&"normal") as StyleBoxFlat
+			_check(slot != null and is_equal_approx(slot.custom_minimum_size.y, 76.0) and slot.size.x >= 120.0 and slot.size.y >= 48.0, "deployment slot did not receive compact usable geometry")
+			_check(slot != null and slot.get_theme_font_size(&"font_size") == 24, "deployment slot copy did not receive 24px compact typography")
+			_check(slot_style != null and slot_style.get_corner_radius(CORNER_TOP_LEFT) >= 8, "deployment slot lacks rounded borders")
 			_check(deployment_deck.get_global_rect().encloses((child as Button).get_global_rect()), "deployment deck does not contain a Recruit control")
 		var first_slot := slot_box.get_child(0) as Button
-		_check(first_slot.get_theme_stylebox(&"normal").content_margin_left >= 28.0, "first Recruit lacks the requested left content inset")
+		_check(first_slot.get_theme_stylebox(&"normal").content_margin_left >= 24.0, "first Recruit lacks the requested left content inset")
 	_check(controls_deck != null and controls_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "battle command deck is not textured")
 	if controls_deck != null:
 		var controls_style := controls_deck.get_theme_stylebox(&"panel")
-		_check(controls_style.content_margin_left >= 24.0 and controls_style.content_margin_top >= 24.0, "battle command deck padding is below 24px")
+		_check(controls_style.content_margin_left >= 16.0 and controls_style.content_margin_top >= 16.0, "battle command deck padding is below 16px")
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
 	for button: Button in [pause, speed, resign]:
-		_check(button.custom_minimum_size.x >= 152.0 and button.custom_minimum_size.y >= 92.0, "%s did not receive doubled target size" % button.name)
-		_check(button.get_theme_font_size(&"font_size") >= 36, "%s did not receive doubled typography" % button.name)
+		var button_style := button.get_theme_stylebox(&"normal") as StyleBoxFlat
+		_check(button.custom_minimum_size.is_equal_approx(Vector2(112.0, 64.0)), "%s did not receive the compact 112×64 target" % button.name)
+		_check(button.get_theme_font_size(&"font_size") == 24, "%s did not receive 24px compact typography" % button.name)
+		_check(button_style != null and button_style.get_corner_radius(CORNER_TOP_LEFT) >= 8, "%s lacks rounded borders" % button.name)
 		_check(controls_deck.get_global_rect().encloses(button.get_global_rect()), "%s overflows the battle command deck" % button.name)
 	var first_action_inset := battle.find_child("FirstActionInset", true, false) as MarginContainer
 	_check(first_action_inset != null and first_action_inset.get_theme_constant(&"margin_left") >= 12, "Pause lacks the requested left inset")
-	_check(recenter != null and recenter.focus_mode == Control.FOCUS_ALL, "map recenter is not controller focusable")
+	_check(battle.find_child("RecenterMap", true, false) == null, "removed CENTER feature is still present")
 	_check(tutorial_card != null and tutorial_card.get_theme_stylebox(&"panel") is StyleBoxTexture, "tutorial card did not inherit the Lunaris modal frame")
 	_check(dialogue != null and not dialogue.visible, "mission-start dialogue competed with the guided tutorial")
 	if tutorial_card != null:
 		var tutorial_rect := tutorial_card.get_global_rect()
 		_check(tutorial_rect.size.x >= 900.0 and tutorial_rect.size.y >= 400.0, "tutorial card did not receive the 3× width / 2× height treatment")
-		_check(absf(tutorial_rect.get_center().x - LANDSCAPE.x * 0.5) <= 2.0, "tutorial card is not horizontally centered")
+		_check(absf(tutorial_rect.position.x - 24.0) <= 2.0, "tutorial card is not left-aligned to the 24px viewport margin")
+	_check(tutorial_body != null and tutorial_body.text == "Enemies start from the portal and follow the lit path to your base crystal. This mission allows 3 leaks, the 4th leak will end the mission.", "tutorial route copy does not match the approved wording")
 	_check(skip != null and tutorial_primary != null, "tutorial actions are missing")
 	if skip != null and tutorial_primary != null:
 		for button: Button in [skip, tutorial_primary]:
-			_check(button.custom_minimum_size.x >= 260.0 and button.custom_minimum_size.y >= 84.0, "%s has insufficient padded action geometry" % button.name)
-			_check(button.get_theme_font_size(&"font_size") >= 30, "%s tutorial copy is too small" % button.name)
+			var normal_style := button.get_theme_stylebox(&"normal")
+			_check(button.custom_minimum_size.is_equal_approx(Vector2(220.0, 64.0)), "%s did not receive the compact 220×64 action target" % button.name)
+			_check(button.get_theme_font_size(&"font_size") == 27, "%s tutorial copy is not 27px" % button.name)
+			_check(normal_style.content_margin_left >= 12.0 and normal_style.content_margin_top >= 12.0 and normal_style.content_margin_right >= 12.0 and normal_style.content_margin_bottom >= 12.0, "%s lacks 12px internal padding" % button.name)
 			_check(tutorial_card.get_global_rect().encloses(button.get_global_rect()), "%s overflows the tutorial card" % button.name)
+		_check(tutorial_primary.text == "NEXT", "tutorial route action was not renamed to NEXT")
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
+	await process_frame
+	_check(tutorial_body.text == "敌人从传送门出发，沿发光路径前往你的基地水晶。本任务允许3次漏怪；第4次漏怪将结束任务。", "Chinese tutorial route copy does not match the approved meaning")
+	_check(tutorial_primary.text == "下一步", "Chinese tutorial route action was not renamed to 下一步")
+	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
+	await process_frame
 	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control
 	spell_probe.name = "Phase0SpellProbe"
 	battle.add_child(spell_probe)
@@ -103,7 +132,6 @@ func _run() -> void:
 		_cleanup(game, battle)
 		_finish()
 		return
-
 	_check(tutorial != null and bool(tutorial.call("is_holding_battle")), "First Stand tutorial is not holding the initial battle")
 	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "tutorial route step did not block operator cards")
 	controls.call("set_interaction_enabled", true)
@@ -176,11 +204,10 @@ func _run() -> void:
 	blocked_wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
 	blocked_wheel.pressed = true
 	battle.call("_unhandled_input", blocked_wheel)
-	battle.call("_on_recenter_map_requested")
 	controls.call("_on_pause_pressed")
 	controls.call("_on_speed_pressed")
 	deploy_bar.call("_start_placement", StringName(deploy_bar.call("first_deployment_id")))
-	_check((battle.call("map_pan") as Vector2).is_equal_approx(blocked_pan), "confirmation allowed map wheel/recenter input")
+	_check((battle.call("map_pan") as Vector2).is_equal_approx(blocked_pan), "confirmation allowed map wheel input")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation allowed pause/speed input")
 	_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation allowed new deployment input")
 	_check(bool(controls.call("cancel_resign_confirmation")), "confirmation did not cancel")
@@ -290,12 +317,21 @@ func _run() -> void:
 	_check(confirmation_trace == [&"entering", &"active", &"committing", &"exiting", &"closed"], "terminal exit did not finalize CLOSED")
 	await process_frame
 	var continue_button := battle.find_child("ContinueButton", true, false) as Button
+	var defeat_stamp := battle.find_child("ResultStampLabel", true, false) as Label
 	var pan_hint := battle.find_child("MapPanHint", true, false) as Control
 	_check(model.result == BattleModel.Result.DEFEAT and not layer.visible, "terminal defeat retained confirmation")
 	_check(pause.disabled and speed.disabled and resign.disabled, "terminal battle controls remain actionable")
 	_check(not bool(deploy_bar.call("interaction_enabled")) and not bool(owned_spell_bar.call("interaction_enabled")), "terminal deploy/spell controls remain actionable")
 	_check(pan_hint == null or not pan_hint.visible, "terminal map hint remains visible")
 	_check(continue_button != null and continue_button.has_focus(), "terminal Continue did not own focus")
+	_check(defeat_stamp != null and defeat_stamp.get_theme_font_size(&"font_size") >= 162, "DEFEAT stamp is not three times the prior 54px result size")
+	if continue_button != null:
+		var continue_style := continue_button.get_theme_stylebox(&"normal")
+		_check(continue_button.custom_minimum_size.x >= 600.0, "Continue to Debrief is not wide enough for its copy")
+		_check(continue_button.get_theme_font_size(&"font_size") >= 42, "Continue to Debrief typography was not enlarged")
+		_check(continue_button.get_theme_color(&"font_color") == Color.WHITE, "Continue to Debrief copy is not white")
+		_check(continue_style.content_margin_top >= 24.0 and continue_style.content_margin_bottom >= 24.0, "Continue to Debrief lacks 24px vertical padding")
+		_check(continue_button.get_combined_minimum_size().x <= continue_button.size.x + 1.0, "Continue to Debrief text overflows its action width")
 	var terminal_pan := battle.call("map_pan") as Vector2
 	var wheel := InputEventMouseButton.new()
 	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
@@ -330,6 +366,7 @@ func _first_valid_deploy_cell(model: BattleModel, deployment_id: StringName) -> 
 			if model.can_deploy_at(deployment_id, cell):
 				return cell
 	return Vector2i(-1, -1)
+
 
 func _rect_matches(actual: Rect2, expected: Rect2, tolerance := 1.5) -> bool:
 	return actual.position.distance_to(expected.position) <= tolerance and actual.size.distance_to(expected.size) <= tolerance

@@ -1613,7 +1613,7 @@ func _confirm_review() -> void:
 		)
 		return
 	_confirmation_consumed = false
-	Game.open_staging()
+	Game.open_squad_select()
 
 
 func _draft_choices() -> Array[Dictionary]:

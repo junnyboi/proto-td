@@ -157,7 +157,7 @@ func _run() -> void:
 		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7}],
 		"class_entitlements_granted": [],
 		"xp_awards": [{"hero_id": hero_id, "xp": 2}],
-		"dead_hero_ids": [hero_id],
+		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
 	var defeat_screen: Node = load("res://scenes/results.tscn").instantiate()
@@ -179,7 +179,10 @@ func _run() -> void:
 	var defeat_consequence_heading := defeat_screen.find_child("ConsequenceHeading", true, false) as Label
 	var defeat_consequence_line := defeat_screen.find_child("ConsequenceLine", true, false) as Label
 	var defeat_actions := defeat_screen.find_child("ActionRow", true, false) as GridContainer
+	var defeat_company_intact := defeat_screen.find_child("NoCasualties", true, false) as PanelContainer
+	var defeat_command := defeat_screen.find_child("ReturnToStaging", true, false) as Button
 	_check(defeat_ceremony != null and defeat_ceremony.custom_minimum_size.y >= 132.0, "defeat ceremony did not inherit the taller hierarchy")
+	_check(defeat_ceremony != null and defeat_ceremony.get_theme_stylebox(&"panel") is StyleBoxEmpty, "defeat header parent retained a background or border")
 	_check(defeat_headline != null and defeat_headline.text == "STAGE 1 DEFEATED", "stage-number defeat headline is incorrect")
 	_check(defeat_headline.get_theme_font_size(&"font_size") >= 40 and defeat_headline.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "defeat headline is not dominant and centered")
 	_check(defeat_summary != null and defeat_meta != null and defeat_headline.get_parent() == defeat_summary and defeat_meta.get_parent() == defeat_summary, "defeat headline and metadata do not match clear hierarchy")
@@ -193,6 +196,13 @@ func _run() -> void:
 	_check(defeat_consequence_line != null and defeat_consequence_line.get_theme_font_size(&"font_size") >= 20, "defeat consequence copy is too small")
 	_check(defeat_rewards != null and defeat_rewards.get_theme_stylebox(&"panel") is StyleBoxTexture, "defeat Mission Yield did not inherit the clear result frame")
 	_check(defeat_consequence != null and defeat_consequence.get_theme_stylebox(&"panel") is StyleBoxFlat, "defeat consequence surface is not danger styled")
+	if defeat_rewards != null:
+		var defeat_rewards_style := defeat_rewards.get_theme_stylebox(&"panel")
+		_check(defeat_rewards_style.content_margin_left >= 48.0 and defeat_rewards_style.content_margin_right >= 48.0 and defeat_rewards_style.content_margin_top >= 24.0 and defeat_rewards_style.content_margin_bottom >= 24.0, "defeat Mission Yield lacks 48px horizontal / 24px vertical padding")
+	_check(defeat_company_intact != null, "defeat Company Intact state is missing")
+	if defeat_company_intact != null:
+		var intact_style := defeat_company_intact.get_theme_stylebox(&"panel")
+		_check(intact_style.content_margin_left >= 48.0 and intact_style.content_margin_right >= 48.0 and intact_style.content_margin_top >= 24.0 and intact_style.content_margin_bottom >= 24.0, "defeat Company Intact lacks 48px horizontal / 24px vertical padding")
 	_check(defeat_reward is MarginContainer and defeat_xp is MarginContainer, "defeat Mission Yield rows regained inner frames")
 	_check(defeat_reward_count.text == "+7 MARKS" and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat Marks immediately")
 	_check(defeat_xp_count.text == "+2 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat XP immediately")
@@ -201,12 +211,18 @@ func _run() -> void:
 		if child is Button:
 			var defeat_action := child as Button
 			var presentation := defeat_action.find_child("PresentationLabel", true, false) as Label
-			_check(defeat_action.custom_minimum_size == Vector2(260, 96), "%s lost fixed defeat sizing" % defeat_action.name)
+			var expected_width := 400.0 if defeat_action.name == "ReturnToStaging" else 260.0
+			_check(defeat_action.custom_minimum_size == Vector2(expected_width, 96), "%s lost fixed defeat sizing" % defeat_action.name)
 			_check(defeat_action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s regained struck defeat styling" % defeat_action.name)
 			_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s defeat text is not doubled" % defeat_action.name)
+	_check(defeat_command != null and defeat_command.get_combined_minimum_size().x <= defeat_command.size.x + 1.0, "defeat Command text overflows its wider action")
 	root.size = Vector2i(390, 844)
 	await _frames(2)
 	_check(defeat_summary.vertical and defeat_meta.vertical and defeat_actions.columns == 1, "defeat hierarchy does not stack in portrait")
+	var defeat_command_presentation := defeat_command.find_child("PresentationLabel", true, false) as Label
+	_check(defeat_command.custom_minimum_size.x == 320.0, "defeat Command did not retain its wider portrait target")
+	_check(defeat_command_presentation != null and defeat_command_presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "defeat Command still permits copy wrapping")
+	_check(defeat_command_presentation != null and defeat_command_presentation.get_theme_font_size(&"font_size") >= 48, "defeat Command portrait typography was not fitted")
 	for child: Node in defeat_actions.get_children():
 		if child is Button:
 			var bounds := (child as Button).get_global_rect()

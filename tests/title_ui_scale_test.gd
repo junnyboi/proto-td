@@ -53,7 +53,8 @@ func _verify_title_scale() -> void:
 	_check(settings.get_theme_font_size(&"font_size") == 69, "Settings typography is not 1.5×")
 	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
 	_check(settings.get_combined_minimum_size().y >= 121.0, "Settings container did not grow with 1.5× typography")
-	_check(entry_host.get_theme_constant(&"margin_top") >= roundi(_title.size.y * 0.20), "title group was not lowered into the bottom half")
+	var expected_top_margin := 16 + roundi(float(VIEWPORTS["regular"].y) * 0.24) + 64
+	_check(entry_host.get_theme_constant(&"margin_top") == expected_top_margin, "title and action stack did not move down by exactly 64px")
 	for action: Button in [start, settings]:
 		for style_name: StringName in [&"normal", &"hover", &"pressed"]:
 			var style := action.get_theme_stylebox(style_name) as StyleBoxFlat
