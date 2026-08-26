@@ -2,37 +2,44 @@
 
 | Field | Value |
 |---|---|
-| **Phase** | Loop refresh — centered character films and matching fallbacks |
-| **Status** | Complete |
-| **Visual output** | Six silent eight-second looping MP4 masters and six exact 24 fps Theora OGV runtime streams |
-| **Fallback output** | Six identity-matched WebP plates with the same centered compositions |
-| **Runtime video size** | 10,477,438 bytes combined |
+| **Phase** | Full-HD action and native-audio regeneration |
+| **Status** | Runtime media integrated; final repository and deployment gates pending |
+| **Visual output** | Six eight-second 1080p MP4 masters and six exact 24 fps Theora OGV runtime streams |
+| **Fallback output** | Six identity-matched WebP plates generated from the approved final keyframes |
+| **Runtime video size** | 155,764,928 bytes across six independently streamed objects |
+| **Runtime audio** | Three synchronized 48 kHz stereo Vorbis mixes, exactly 8.000 seconds each |
 
 ## Generation route
 
-The replacement route uses **GPT Image 2** for six dedicated 16:9 and 9:16 anchors, with each full-size character reference sheet under `docs/lunaris-reliquary/` treated as the sole identity, anatomy, costume, and weapon authority. The approved Lunaris title keyframe supplies only environmental materials, lighting, and monumental architectural finish. Every anchor contains one complete, perfectly centered adult hero and excludes generated text, UI, radial filaments, spoke webs, reticles, and thin lines converging on a central point.
+The replacement route uses **GPT Image 2** for three clean identity anchors and twelve dedicated 16:9 or 9:16 opening/final keyframes. Each full-size character reference sheet under `docs/lunaris-reliquary/` is the sole identity, anatomy, costume, and weapon authority. The approved Lunaris title keyframe contributes only environmental materials, lighting, and monumental architectural finish. All shots contain exactly one clearly adult hero on the centerline and exclude generated text, UI, character duplication, side-standing composition, and unintended filament webs.
 
-The six silent motion masters were generated with **Seedance 2.5** at 1080p and 24 fps. Each generation received the same approved anchor as both first and last frame, a completely locked camera, and one restrained ambient cycle of breathing, hair or fabric movement, particles, reflection, and weapon-core light. The masters remain in motion rather than freezing, while the matching endpoints create a loop suitable for continuous result-screen playback.
+The six masters were generated with **Wan 3.0 Prime** using first-and-last-frame control, reasoning enabled, native synchronized audio, and dedicated landscape or portrait composition. Veo 3.1 and Veo 3.1 Fast were attempted first but rejected the production batch for capacity; the pipeline moved to Wan rather than reducing resolution. Every master is 8.080 seconds at true 1920×1080 or 1080×1920 with a stereo AAC source track.
 
-Every generated master was reviewed directly through eight sampled frames. Character identity, costume topology, full anatomy, complete signature weapon, dedicated orientation, centerline placement, and the absence of the reported circular web artifact remained stable. The surviving circular forms belong only to the canonical solid Crescent Reliquary or Archive Astrolabe and remain offset from the hero.
+The final runtime streams are conformed to exactly 8.000 seconds and 24 fps, encoded as full-resolution `yuv420p` Theora, and contain no embedded audio. Keeping the synchronized mix separate preserves the existing Godot Music volume, Skip, crossfade, scene-exit, reduced-motion, and fallback contracts. The landscape native-audio bed is the orientation-independent runtime authority for each hero.
 
 ## Runtime streams
 
-The generated 193-frame masters are conformed to frames `0..191`, producing exactly 192 frames and 8.000 seconds at 24 fps. Theora runtime output uses `yuv420p`, contains no embedded audio, and remains below the 80 MB combined media budget.
-
 | Stream | Resolution | Duration | Codec | Bytes | SHA-256 |
 |---|---:|---:|---|---:|---|
-| `archive-caster-landscape.ogv` | 1280×720 | 8.000 s | Theora | 778,793 | `bcb3251e11269027b49a332487964db64fb8e6fe83358c2bb1b78317558c55af` |
-| `archive-caster-portrait.ogv` | 720×1280 | 8.000 s | Theora | 2,452,205 | `dd09537610bb5bc0ed7fd2ed6715e4d6b870dce521075b1defe77c6bc6ee0c0f` |
-| `lunaris-vessel-landscape.ogv` | 1280×720 | 8.000 s | Theora | 1,257,821 | `38361f28ba7c40e8e95c5aa59919028b0d181d97bd6b7f58f01fd7a31deb59cd` |
-| `lunaris-vessel-portrait.ogv` | 720×1280 | 8.000 s | Theora | 2,502,584 | `cd806d989623cbce1180df154efe892aaf8c2b047cee07906ec330f55c6fb6bb` |
-| `reliquary-duelist-landscape.ogv` | 1280×720 | 8.000 s | Theora | 1,395,676 | `cfa5bdab1002b428347e4d2d46cd0517acfc876a3460693d7330c8abb0e90151` |
-| `reliquary-duelist-portrait.ogv` | 720×1280 | 8.000 s | Theora | 2,090,359 | `ed78d0f92c19dc253a47454e13bb411fed64514f768c3db2157e5deb15b9026c` |
+| `archive-caster-landscape.ogv` | 1920×1080 | 8.000 s | Theora | 39,223,400 | `94331bef149513a790fcfc2c8fc0440cbb413504d9185311672ef9c53a86653f` |
+| `archive-caster-portrait.ogv` | 1080×1920 | 8.000 s | Theora | 19,959,147 | `2289a2737bb354949fa19cbfae9c0f4cdfdf997ec08eff3024a65007e0b6fbf4` |
+| `lunaris-vessel-landscape.ogv` | 1920×1080 | 8.000 s | Theora | 16,638,104 | `906011683d0abb8446db648b74ec13b79aea3e9c6234e8cae8fd2a4b1ae1db99` |
+| `lunaris-vessel-portrait.ogv` | 1080×1920 | 8.000 s | Theora | 23,555,321 | `32c6cab0847a8f9c1e5dbcde199ee57dbb301fba86135e505b482d7dade189f2` |
+| `reliquary-duelist-landscape.ogv` | 1920×1080 | 8.000 s | Theora | 29,259,884 | `b843467f29774c8679751ab274b2aa0a7d7a75293a0a1f7c4eade6fcc57c97fc` |
+| `reliquary-duelist-portrait.ogv` | 1080×1920 | 8.000 s | Theora | 27,129,072 | `2d2041a1be6c50b7e003ada11fa9da4a1f97114aa12d4f3d389abf54d80384cc` |
+
+The aggregate is larger than the retired 720p pack by design. Web delivery still downloads only the active hero and orientation, verifies its exact byte count and SHA-256, caches it under `user://`, and never places these six objects inside the initial PCK.
+
+## Runtime audio
+
+| Mix | Duration | Format | Bytes | SHA-256 |
+|---|---:|---|---:|---|
+| `archive-caster-cinematic.ogg` | 8.000 s | Vorbis, 48 kHz stereo | 173,404 | `8b3949efce0bf20b227bd94e5e4aa60f2edcc7610f73cee9fa05d43e0691968e` |
+| `lunaris-vessel-cinematic.ogg` | 8.000 s | Vorbis, 48 kHz stereo | 164,291 | `c754b96b801337784d2ea0e4d695770a2fb3168595645189848d19b2ca90f9a2` |
+| `reliquary-duelist-cinematic.ogg` | 8.000 s | Vorbis, 48 kHz stereo | 157,754 | `308ef77956c3be5d6ace8d3f59b304dfeec5ac5f66e6aa3efa45f8751184fb51` |
+
+Each mix is extracted from the corresponding landscape generated master, loudness-normalized to `-16 LUFS` with a `-1.5 dBTP` ceiling, resampled to 48 kHz stereo, and sample-bounded to exactly eight seconds. The generated video audio therefore ships as the audible cinematic experience without creating a second uncontrolled playback path.
 
 ## Runtime behavior
 
-The result controller announces deterministic identity and rarity UI after the first complete eight-second cycle, but a healthy video remains visible and loops beneath the result interface until dismissal. Skip, reduced motion, download failure, decode failure, and watchdog fallback still stop motion and expose the matching static identity plate. Gameplay authority, pull commitment, pity state, and result copy remain independent of presentation media.
-
-## Audio
-
-The existing character music and carrier-derived SFX remain separate and unchanged. Each runtime mix is eight seconds of 48 kHz stereo Vorbis and follows the existing volume, Skip, reduced-motion, and deterministic rarity contracts.
+The result controller announces deterministic identity and rarity UI after the first complete eight-second cycle, while a healthy video continues looping beneath the result interface. Skip, reduced motion, download failure, decode failure, and watchdog fallback stop motion and expose the matching static endpoint plate. Gameplay authority, pull commitment, pity state, and result copy remain independent of presentation media.

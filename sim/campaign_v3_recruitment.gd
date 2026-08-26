@@ -98,7 +98,7 @@ static func _derive(
 	var source_id := String(payload["source_id"])
 	var working: Dictionary = data.duplicate(true)
 	var marks_before := int(data["marks"])
-	var policy := _authorize_source(working, source, source_id)
+	var policy := _authorize_source(working, context, source, source_id)
 	if not policy["accepted"]:
 		return policy
 	var index := int(data["next_recruitment_index"])
@@ -114,7 +114,13 @@ static func _derive(
 	)
 	if not allocated["accepted"]:
 		return _reject(allocated["error_code"])
-	var portrait_ids: Array = context["campaign"]["portrait_asset_ids"]
+	# Existing command ledgers must replay against the exact legacy sorted pool.
+	# Only the newly introduced source adopts the recruit-only pool.
+	var portrait_ids: Array = (
+		context["campaign"]["recruit_portrait_asset_ids"]
+		if source == "basic_hire"
+		else context["campaign"]["portrait_asset_ids"]
+	)
 	if portrait_ids.is_empty():
 		return _reject(&"missing_portrait_catalog")
 	var hero := _fresh_hero(
@@ -142,8 +148,21 @@ static func _derive(
 	}
 
 
-static func _authorize_source(data: Dictionary, source: String, source_id: String) -> Dictionary:
+static func _authorize_source(
+	data: Dictionary,
+	context: Dictionary,
+	source: String,
+	source_id: String,
+) -> Dictionary:
 	match source:
+		"basic_hire":
+			if source_id != "mission_control":
+				return _reject(&"invalid_basic_hire_source")
+			var cost := int(context["campaign"]["basic_recruit_cost"])
+			if int(data["marks"]) < cost:
+				return _reject(&"insufficient_marks")
+			data["marks"] = int(data["marks"]) - cost
+			return _accept(null)
 		"contract":
 			for offer: Dictionary in data["offers"]:
 				if offer["offer_id"] != source_id:

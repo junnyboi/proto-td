@@ -10,7 +10,7 @@
 
 The Simplified Chinese release is now **structurally complete, font-complete, and visually verified**. The audit found that the reported strange symbols were primarily a **font-packaging defect**, not widespread bad translation. The former bundled subset directly omitted hundreds of required glyphs, leaving rendering dependent on the host operating system. A smaller but material set of translation defects, untranslated source paths, inaccessible English metadata, and responsive layout collisions also existed.
 
-The remediation replaces the incomplete subset with a licensed complete Noto Sans CJK Simplified Chinese face, makes that face deterministic in both body and display font chains, expands the bilingual catalogs from 539 to **731 matched entries**, localizes previously bypassed runtime paths, corrects reviewed Chinese copy, and adds responsive repairs for the highest-risk screens.[1][2][3]
+The remediation replaces the incomplete subset with a licensed complete Noto Sans CJK Simplified Chinese face, makes that face deterministic in both body and display font chains, expands the bilingual catalogs from 539 to **761 matched entries**, localizes previously bypassed runtime paths, corrects reviewed Chinese copy, and adds responsive repairs for the highest-risk screens.[1][2][3]
 
 The final candidate has exact key and placeholder parity, **zero missing catalog glyphs**, zero replacement-character markers, and no unresolved player-facing Chinese localization defects in the tested surface matrix.
 
@@ -44,7 +44,7 @@ A reproducible font-refresh tool validates the source font against every printab
 
 ### Catalog and translation remediation
 
-The bilingual catalogs now contain **731 entries each**, up from 539. Added entries cover missing production keys, accessibility metadata, campaign and squad presentation, battle stamps and dialogue, faction identity, loading states, Training details, premium identities, cinematic and narrated-archive statuses, Results reward kinds, and memorial records.[1][2]
+The bilingual catalogs now contain **761 entries each**, up from 539. Added entries cover missing production keys, accessibility metadata, campaign and squad presentation, Mission Control recruitment, battle stamps and dialogue, faction identity, loading states, Training details, premium identities, cinematic and Moon Archive history states, narrated-archive statuses, Results reward kinds, and memorial records.[1][2]
 
 Reviewed Chinese corrections include:
 
@@ -63,13 +63,13 @@ The seventeen remaining English-identical entries are intentional proper names, 
 
 Source paths were updated so Chinese is consumed at presentation time rather than stored as translated state. The remediation covers:
 
-- Campaign route, dossier, state, progress, and briefing text;
+- Campaign route, dossier, state, progress, briefing, and basic-recruitment text;
 - Squad identity, cards, loadout, tactical hints, and accessibility;
 - operator, trap, spell, wave, result-stamp, deployment, and map-overlay presentation;
 - Training identity, statistics, skills, eligibility, progression, rename, errors, tooltips, and accessibility landmarks;
 - faction names, subtitles, specializations, and Company 33 identity;
 - loading phases and cinematic streaming status;
-- premium hero callsigns, classes, receipts, state, confirmation, and screen-reader transaction consequences;
+- premium hero callsigns, classes, receipts, state, confirmation, Moon Archive history, duplicate conversion, and screen-reader transaction consequences;
 - Results rewards, transmissions, actions, and consequences;
 - memorial heading, classes, factions, stage titles, terminal reasons, counts, and records.
 
@@ -91,16 +91,16 @@ The Chinese stress pass exposed and fixed several geometry defects that ordinary
 
 | Metric | Final result |
 |---|---:|
-| English catalog entries | 731 |
-| Chinese catalog entries | 731 |
-| Chinese entries containing Han text | 713 |
+| English catalog entries | 761 |
+| Chinese catalog entries | 761 |
+| Chinese entries containing Han text | 743 |
 | Bilingual key differences | 0 |
 | Placeholder mismatches | 0 |
-| Literal production lookup keys validated | 300 |
+| Literal production lookup keys validated | 330 |
 | Unique printable catalog code points | 991 |
 | Missing bundled-font code points | 0 |
 | Replacement-glyph markers in catalog | 0 |
-| Focused Chinese localization/layout tests | 22 passed, 0 failed |
+| Focused Chinese localization/layout tests | 23 passed, 0 failed |
 | Complete Godot repository tests | 49 passed, 0 failed |
 | Visual stress captures | 20 accepted frames across 10 states |
 

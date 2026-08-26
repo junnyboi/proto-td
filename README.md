@@ -12,6 +12,12 @@ godot --path .
 
 The main scene is `res://scenes/title.tscn`.
 
+## Gameplay and campaign features
+
+The launch campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Mercy Archive. Mission Control displays the authoritative roster and Marks balance and offers a repeatable **basic Recruit contract for 5 Marks**. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
+
+Battlefields use an endpoint-aware isometric projection with bounded portrait panning and a shared 0.92 tactical framing multiplier. Recruit animation definitions share a source ground line so male and female idle/attack sprites remain centered on their tile faces in every direction. Camera, placement, economy, persistence, keyboard focus, bilingual copy, and responsive Mission Control layouts are covered by standalone Godot regressions and Xvfb visual harnesses.
+
 ## Basic development check
 
 For runtime changes, verify the final candidate with a direct import and bounded boot:
@@ -64,6 +70,8 @@ The implemented redesign contract and future-faction boundary live in [`docs/FAC
 ## Architecture
 
 Authoritative battle state lives under `sim/` and advances deterministically in ticks. Runtime nodes and scenes project that state for the player. Views should not become an independent source of battle truth.
+
+Campaign economy mutations follow the same rule: UI code calls the `Game` facade, V3 command handlers validate revision and source policy, canonical receipts authenticate Marks deltas, and `CampaignSaveStore` publishes state only after exact-byte save/restore verification. Retryable mutations are globally serialized so recruitment, premium pulls, renaming, promotion, mission launch, and resolution cannot race one another.
 
 ## Visual direction
 

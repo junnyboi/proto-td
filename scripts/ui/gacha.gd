@@ -4,6 +4,7 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
+const HistoryDrawerType := preload("res://scripts/ui/components/gacha_history_drawer.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
@@ -19,6 +20,8 @@ const REVEAL_SKIP_CROSSFADE_SECONDS := 0.35
 const IDENTITY_REVEAL_SFX := "gacha_identity_reveal"
 const STAR_BLOOM_SFX := "gacha_star_bloom"
 const RETURN_ICON_ID := &"ui_gacha_return"
+const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
+const RESERVE_LIFE_ICON_ID := &"ui_gacha_reserve_life"
 const GACHA_FULLSIZE_PORTRAITS := {
 	"archive_caster": &"portrait_archive_caster_fullsize",
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
@@ -43,7 +46,9 @@ const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
 const BROWSE_PORTRAIT_HEIGHT := 420.0
 const BROWSE_PORTRAIT_ZOOM := 1.25
 const BROWSE_CARD_PADDING := 24.0
-const REVEAL_PULL_AGAIN_SIZE := Vector2(600.0, 88.0)
+const REVEAL_PULL_AGAIN_SIZE := Vector2(780.0, 88.0)
+const CONVERSION_FADE_SECONDS := 0.34
+const CONVERSION_PULSE_SECONDS := 1.10
 
 enum FlowState {
 	BROWSE,
@@ -72,6 +77,8 @@ var _pull_hover_tween: Tween
 var _pull_pointer_hovered := false
 var _pull_focus_hovered := false
 var _back_button: Button
+var _history_button: Button
+var _header_tools: BoxContainer
 var _browse_title: Label
 var _status_label: Label
 var _hero_grid: GridContainer
@@ -112,6 +119,8 @@ var _confirmation_return_focus: Control
 var _confirmation_exit_status := ""
 var _confirmation_exit_live := AccessibilityServer.LIVE_OFF
 var _premium_pull_dispatched := false
+var _history_drawer: GachaHistoryDrawer
+var _history_return_focus: Control
 
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
@@ -120,6 +129,12 @@ var _reveal_title_stack: VBoxContainer
 var _reveal_title: Label
 var _reveal_stars: HBoxContainer
 var _reveal_hint: Label
+var _conversion_panel: PanelContainer
+var _conversion_icon: TextureRect
+var _conversion_title: Label
+var _conversion_outcome: Label
+var _conversion_detail: Label
+var _conversion_pulse_tween: Tween
 var _reveal_pull_again: Button
 var _skip_button: Button
 var _reveal_tween: Tween
@@ -138,6 +153,7 @@ func _ready() -> void:
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	_browse_backdrop_art = get_node_or_null("AstralBackdropArt") as TextureRect
 	_build_screen()
+	_build_history_drawer()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	var i18n := get_node_or_null("/root/I18n")
@@ -156,7 +172,10 @@ func _exit_tree() -> void:
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
+	_stop_conversion_pulse()
 	_stop_cinematic()
+	if _history_drawer != null:
+		_history_drawer.force_hide()
 
 
 func _input(event: InputEvent) -> void:
@@ -193,6 +212,11 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
+		return
+	if _history_drawer != null and _history_drawer.is_open():
+		if event.is_action(&"ui_cancel"):
+			get_viewport().set_input_as_handled()
+			_close_pull_history()
 		return
 	if (
 			_confirmation_transition == ConfirmationTransition.ENTERING
@@ -294,6 +318,26 @@ func _build_screen() -> void:
 	_marks_safe.name = "MarksSafeMargin"
 	_marks_safe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(_marks_safe)
+	_header_tools = BoxContainer.new()
+	_header_tools.name = "PremiumHeaderTools"
+	_header_tools.vertical = false
+	_header_tools.alignment = BoxContainer.ALIGNMENT_END
+	_header_tools.add_theme_constant_override(&"separation", 12)
+	_marks_safe.add_child(_header_tools)
+	_history_button = Button.new()
+	_history_button.name = "PullHistoryButton"
+	_history_button.text = _copy(&"ui.gacha.history_action", "HISTORY")
+	_history_button.icon = Art.texture(HISTORY_ICON_ID)
+	_history_button.expand_icon = true
+	_history_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_history_button.add_theme_constant_override(&"icon_max_width", 42)
+	_history_button.custom_minimum_size = Vector2(210, 68)
+	_history_button.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_history_button.clip_text = false
+	_history_button.pressed.connect(_open_pull_history)
+	Style.apply_button(_history_button, &"quiet")
+	_history_button.add_theme_font_size_override(&"font_size", 27)
+	_header_tools.add_child(_history_button)
 	_marks_label = _label(
 		_format(&"ui.gacha.marks", "{count} MARKS", {&"count": 0}), &"metric",
 	)
@@ -302,7 +346,7 @@ func _build_screen() -> void:
 	_marks_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_marks_label.add_theme_color_override(&"font_color", Style.GOLD)
 	_marks_label.add_theme_font_size_override(&"font_size", 57)
-	_marks_safe.add_child(_marks_label)
+	_header_tools.add_child(_marks_label)
 
 	_pity_layout = BoxContainer.new()
 	_pity_layout.name = "GuaranteeTelemetry"
@@ -408,6 +452,14 @@ func _build_screen() -> void:
 	pull_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pull_center.add_child(_pull_button)
 	_action_grid.add_child(pull_center)
+
+
+func _build_history_drawer() -> void:
+	_history_drawer = HistoryDrawerType.new()
+	_history_drawer.reduced_motion = _motion_reduced()
+	_history_drawer.close_requested.connect(_close_pull_history)
+	_history_drawer.closed.connect(_on_pull_history_closed)
+	add_child(_history_drawer)
 
 
 func _build_pull_confirmation() -> void:
@@ -748,6 +800,61 @@ func _build_reveal_layer() -> void:
 		star.set_state(Style.GOLD, false)
 		star.visible = false
 		_reveal_stars.add_child(star)
+	_conversion_panel = PanelContainer.new()
+	_conversion_panel.name = "DuplicateConversionFeedback"
+	_conversion_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_conversion_panel.custom_minimum_size = Vector2(620, 112)
+	_conversion_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_conversion_panel.visible = false
+	_conversion_panel.modulate.a = 0.0
+	_conversion_panel.scale = Vector2(0.88, 0.88)
+	Style.apply_panel(_conversion_panel, &"selected")
+	var conversion_style := _conversion_panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	conversion_style.content_margin_left = 18.0
+	conversion_style.content_margin_top = 12.0
+	conversion_style.content_margin_right = 22.0
+	conversion_style.content_margin_bottom = 12.0
+	_conversion_panel.add_theme_stylebox_override(&"panel", conversion_style)
+	_reveal_title_stack.add_child(_conversion_panel)
+	var conversion_row := HBoxContainer.new()
+	conversion_row.name = "DuplicateConversionContent"
+	conversion_row.add_theme_constant_override(&"separation", 16)
+	conversion_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_conversion_panel.add_child(conversion_row)
+	_conversion_icon = TextureRect.new()
+	_conversion_icon.name = "ReserveLifeSigil"
+	_conversion_icon.texture = Art.texture(RESERVE_LIFE_ICON_ID)
+	_conversion_icon.custom_minimum_size = Vector2(82, 82)
+	_conversion_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_conversion_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_conversion_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversion_row.add_child(_conversion_icon)
+	var conversion_copy := VBoxContainer.new()
+	conversion_copy.name = "DuplicateConversionCopy"
+	conversion_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	conversion_copy.alignment = BoxContainer.ALIGNMENT_CENTER
+	conversion_copy.add_theme_constant_override(&"separation", 1)
+	conversion_copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversion_row.add_child(conversion_copy)
+	_conversion_title = _label(
+		_copy(&"ui.gacha.conversion_title", "DUPLICATE RESONANCE CONVERTED"), &"eyebrow",
+	)
+	_conversion_title.name = "DuplicateConversionTitle"
+	_conversion_title.add_theme_font_size_override(&"font_size", 24)
+	_conversion_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversion_copy.add_child(_conversion_title)
+	_conversion_outcome = _label(
+		_copy(&"ui.gacha.conversion_duplicate", "RESERVE LIFE +1"), &"heading",
+	)
+	_conversion_outcome.name = "DuplicateConversionOutcome"
+	_conversion_outcome.add_theme_font_size_override(&"font_size", 30)
+	_conversion_outcome.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversion_copy.add_child(_conversion_outcome)
+	_conversion_detail = _label("", &"detail")
+	_conversion_detail.name = "DuplicateConversionDetail"
+	_conversion_detail.add_theme_font_size_override(&"font_size", 21)
+	_conversion_detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversion_copy.add_child(_conversion_detail)
 	_reveal_hint = _label(_copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE"), &"eyebrow")
 	_reveal_hint.name = "RevealContinueHint"
 	_reveal_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -782,6 +889,7 @@ func _refresh() -> void:
 		)
 		_pull_button.disabled = true
 		_back_button.disabled = _flow_state != FlowState.BROWSE
+		_history_button.disabled = true
 		_apply_pull_button_style(true)
 		_set_browse_status(
 			_copy(&"ui.gacha.campaign_required", "Start or continue a campaign to access premium resonance."),
@@ -789,6 +897,8 @@ func _refresh() -> void:
 		)
 		return
 	var projection: Dictionary = _game.get("campaign").runtime_projection()
+	if _history_drawer != null:
+		_history_drawer.refresh(projection)
 	var marks := int(projection["marks"])
 	var cost := int(projection["premium_pull_cost"])
 	var pity_streak := int(projection.get("premium_pity_streak", 0))
@@ -803,6 +913,7 @@ func _refresh() -> void:
 	var browse_locked := _flow_state != FlowState.BROWSE
 	_pull_button.disabled = marks < cost or attempt_pending or browse_locked
 	_back_button.disabled = browse_locked
+	_history_button.disabled = browse_locked or (_history_drawer != null and _history_drawer.is_open())
 	_apply_pull_button_style(_pull_button.disabled)
 	_pity_label.text = _format(&"ui.gacha.guarantee_in", "5-STAR GUARANTEED IN {count} {unit}", {
 		&"count": guarantee_in, &"unit": _pull_unit(guarantee_in).to_upper(),
@@ -933,7 +1044,19 @@ func _apply_responsive_layout() -> void:
 	_hero_grid.columns = 1 if portrait else (2 if compact_landscape else 3)
 	_header_grid.columns = 1 if portrait else 3
 	_action_grid.columns = 1
-	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_header_tools.vertical = portrait
+	_header_tools.alignment = (
+		BoxContainer.ALIGNMENT_CENTER if portrait else BoxContainer.ALIGNMENT_END
+	)
+	_marks_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER if portrait else HORIZONTAL_ALIGNMENT_RIGHT
+	)
+	_marks_label.add_theme_font_size_override(&"font_size", 45 if portrait else 57)
+	_history_button.custom_minimum_size = Vector2(
+		minf(250.0, viewport_size.x - 48.0) if portrait else 210.0,
+		62.0 if portrait else 68.0,
+	)
+	_history_button.add_theme_font_size_override(&"font_size", 24 if portrait else 27)
 	_marks_safe.add_theme_constant_override(&"margin_left", 0)
 	_marks_safe.add_theme_constant_override(&"margin_right", 0)
 	var side_margin := 24 if portrait else (40 if compact_landscape else 64)
@@ -956,11 +1079,12 @@ func _apply_responsive_layout() -> void:
 	_refresh_pull_pivot()
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
-		_reveal_title_stack.custom_minimum_size.x = (
-			maxf(280.0, viewport_size.x - 48.0) if portrait else 1120.0
-		)
+		_reveal_title_stack.custom_minimum_size.x = maxf(280.0, viewport_size.x - 48.0)
 	if _reveal_title != null:
 		var portrait_title_size := clampi(int(viewport_size.x * 0.165), 66, 108)
+		_reveal_title.autowrap_mode = (
+			TextServer.AUTOWRAP_WORD_SMART if portrait else TextServer.AUTOWRAP_OFF
+		)
 		_reveal_title.add_theme_font_size_override(
 			&"font_size", portrait_title_size if portrait else 156,
 		)
@@ -969,6 +1093,14 @@ func _apply_responsive_layout() -> void:
 	if _reveal_pull_again != null:
 		_reveal_pull_again.custom_minimum_size = Vector2(600, 84) if portrait else REVEAL_PULL_AGAIN_SIZE
 		_reveal_pull_again.add_theme_font_size_override(&"font_size", 45 if portrait else 54)
+	if _conversion_panel != null:
+		_conversion_panel.custom_minimum_size = Vector2(
+			minf(620.0, viewport_size.x - 48.0), 102.0 if portrait else 112.0,
+		)
+		_conversion_icon.custom_minimum_size = Vector2(64, 64) if portrait else Vector2(82, 82)
+		_conversion_title.add_theme_font_size_override(&"font_size", 18 if portrait else 24)
+		_conversion_outcome.add_theme_font_size_override(&"font_size", 24 if portrait else 30)
+		_conversion_detail.add_theme_font_size_override(&"font_size", 18 if portrait else 21)
 	if _skip_button != null:
 		_skip_button.custom_minimum_size = Vector2(300 if portrait else 340, 92)
 		_skip_button.add_theme_font_size_override(&"font_size", 54)
@@ -1036,6 +1168,7 @@ func _on_pull_pressed() -> void:
 			_flow_state != FlowState.BROWSE
 			or _premium_pull_dispatched
 			or _pull_button.disabled
+			or (_history_drawer != null and _history_drawer.is_open())
 	):
 		return
 	if _game == null or not bool(_game.get("campaign_active")):
@@ -1151,6 +1284,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_pull_button.disabled = true
 	_back_button.disabled = true
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
+	_skip_button.visible = true
 	var premium_id := String(pull.get("premium_id", ""))
 	var row := _pool_row(premium_id)
 	var callsign := _callsign_for(premium_id)
@@ -1164,8 +1298,10 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_title.add_theme_color_override(&"font_color", accent)
 	_reveal_title.modulate.a = 0.0
 	_reveal_title.scale = Vector2(0.96, 0.96)
+	_reveal_hint.visible = bool(pull.get("new_hero", false))
 	_reveal_hint.modulate.a = 0.0
 	_reset_reveal_pull_again()
+	_reset_conversion_feedback()
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		star.set_state(accent, false)
@@ -1230,6 +1366,7 @@ func _begin_identity_reveal() -> void:
 	if not _is_revealing or _reveal_title_stack.visible:
 		return
 	_reveal_result_ready = true
+	_skip_button.visible = false
 	_kill_cinematic_watchdog()
 	var video := _cinematic_player.video_player()
 	if video == null or not video.is_playing():
@@ -1258,6 +1395,15 @@ func _begin_identity_reveal() -> void:
 		).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		_reveal_tween.tween_callback(_start_star_pulse.bind(star))
 		_reveal_tween.tween_interval(0.08)
+	if not bool(_pending_pull.get("new_hero", false)):
+		_reveal_tween.tween_callback(_prepare_conversion_feedback)
+		_reveal_tween.tween_property(
+			_conversion_panel, "modulate:a", 1.0, CONVERSION_FADE_SECONDS,
+		)
+		_reveal_tween.parallel().tween_property(
+			_conversion_panel, "scale", Vector2.ONE, CONVERSION_FADE_SECONDS,
+		).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_reveal_tween.tween_callback(_start_conversion_pulse)
 	_reveal_tween.tween_property(_reveal_hint, "modulate:a", 0.78, 0.28)
 	_reveal_tween.parallel().tween_property(_reveal_pull_again, "modulate:a", 1.0, 0.28)
 	_reveal_tween.tween_callback(_arm_reveal_pull_again)
@@ -1283,8 +1429,85 @@ func _start_star_pulse(star: ResonanceStar) -> void:
 	_star_pulse_tweens.append(pulse)
 
 
+func _prepare_conversion_feedback() -> void:
+	if bool(_pending_pull.get("new_hero", false)):
+		return
+	_refresh_conversion_copy()
+	_conversion_panel.visible = true
+	_conversion_panel.modulate.a = 0.0
+	_conversion_panel.scale = Vector2(0.88, 0.88)
+	_conversion_panel.pivot_offset = _conversion_panel.size * 0.5
+	_conversion_icon.scale = Vector2.ONE
+	_conversion_icon.modulate = Color.WHITE
+	_conversion_icon.pivot_offset = _conversion_icon.size * 0.5
+
+
+func _refresh_conversion_copy() -> void:
+	if _conversion_panel == null:
+		return
+	var revived := bool(_pending_pull.get("revived", false))
+	_conversion_title.text = _copy(
+		&"ui.gacha.conversion_title", "DUPLICATE RESONANCE CONVERTED",
+	)
+	_conversion_outcome.text = (
+		_copy(&"ui.gacha.conversion_revival", "REVIVAL PROTOCOL • LIFE +1")
+		if revived
+		else _copy(&"ui.gacha.conversion_duplicate", "RESERVE LIFE +1")
+	)
+	_conversion_detail.text = _format(
+		&"ui.gacha.conversion_detail", "LIVES {before} → {after}",
+		{
+			&"before": int(_pending_pull.get("lives_before", 0)),
+			&"after": int(_pending_pull.get("lives_after", 0)),
+		},
+	)
+	_conversion_panel.accessibility_name = _conversion_title.text
+	_conversion_panel.accessibility_description = "%s. %s" % [
+		_conversion_outcome.text, _conversion_detail.text,
+	]
+
+
+func _start_conversion_pulse() -> void:
+	if not _is_revealing or _motion_reduced() or not _conversion_panel.visible:
+		return
+	_stop_conversion_pulse()
+	_conversion_pulse_tween = create_tween().set_loops()
+	_conversion_pulse_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_conversion_pulse_tween.tween_property(
+		_conversion_icon, "scale", Vector2(1.045, 1.045), CONVERSION_PULSE_SECONDS * 0.5,
+	)
+	_conversion_pulse_tween.parallel().tween_property(
+		_conversion_icon, "modulate", Color(1.10, 1.07, 1.0, 1.0), CONVERSION_PULSE_SECONDS * 0.5,
+	)
+	_conversion_pulse_tween.tween_property(
+		_conversion_icon, "scale", Vector2.ONE, CONVERSION_PULSE_SECONDS * 0.5,
+	)
+	_conversion_pulse_tween.parallel().tween_property(
+		_conversion_icon, "modulate", Color.WHITE, CONVERSION_PULSE_SECONDS * 0.5,
+	)
+
+
+func _stop_conversion_pulse() -> void:
+	if _conversion_pulse_tween != null and _conversion_pulse_tween.is_valid():
+		_conversion_pulse_tween.kill()
+	_conversion_pulse_tween = null
+	if _conversion_icon != null:
+		_conversion_icon.scale = Vector2.ONE
+		_conversion_icon.modulate = Color.WHITE
+
+
+func _reset_conversion_feedback() -> void:
+	_stop_conversion_pulse()
+	if _conversion_panel == null:
+		return
+	_conversion_panel.visible = false
+	_conversion_panel.modulate.a = 0.0
+	_conversion_panel.scale = Vector2(0.88, 0.88)
+
+
 func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
 	_begin_identity_audio()
+	_skip_button.visible = false
 	_reveal_title_stack.visible = true
 	_reveal_title.modulate.a = 1.0
 	_reveal_title.scale = Vector2.ONE
@@ -1300,6 +1523,10 @@ func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
 		star.rotation = 0.0
 		star.set_state(accent, lit)
 	Sfx.play(STAR_BLOOM_SFX)
+	if not bool(_pending_pull.get("new_hero", false)):
+		_prepare_conversion_feedback()
+		_conversion_panel.modulate.a = 1.0
+		_conversion_panel.scale = Vector2.ONE
 	_arm_reveal_pull_again()
 
 
@@ -1389,6 +1616,7 @@ func _finish_reveal(restore_focus: bool = true) -> void:
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
+	_reset_conversion_feedback()
 	_stop_cinematic()
 	var final_copy := _result_copy(_pending_pull)
 	_is_revealing = false
@@ -1521,8 +1749,52 @@ func _format(key: StringName, fallback: String, args: Dictionary) -> String:
 	return UiCopyType.format_text(key, fallback, args)
 
 
+func _open_pull_history() -> void:
+	if (
+			_flow_state != FlowState.BROWSE
+			or _history_drawer == null
+			or _history_drawer.is_open()
+			or _game == null
+			or not bool(_game.get("campaign_active"))
+			or _game.get("campaign") == null
+	):
+		return
+	var focused := get_viewport().gui_get_focus_owner()
+	_history_return_focus = focused if _is_focus_candidate(focused) else _history_button
+	_focus_request_token += 1
+	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	_pull_button.disabled = true
+	_back_button.disabled = true
+	_history_button.disabled = true
+	_history_drawer.reduced_motion = _motion_reduced()
+	_history_drawer.present(_game.get("campaign").runtime_projection())
+	Sfx.play("ui_confirm")
+
+
+func _close_pull_history() -> void:
+	if _history_drawer == null or not _history_drawer.is_open():
+		return
+	Sfx.play("ui_back")
+	_history_drawer.dismiss()
+
+
+func _on_pull_history_closed() -> void:
+	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
+	_refresh()
+	var target := _history_return_focus
+	if not _is_focus_candidate(target):
+		target = _fallback_browse_focus()
+	_history_return_focus = null
+	_queue_guarded_focus(
+		target,
+		FlowState.BROWSE,
+		ConfirmationTransition.NONE,
+		_confirmation_transition_token,
+	)
+
+
 func _on_back_pressed() -> void:
-	if _flow_state != FlowState.BROWSE:
+	if _flow_state != FlowState.BROWSE or (_history_drawer != null and _history_drawer.is_open()):
 		return
 	if _game != null and _game.has_method("open_staging"):
 		_game.call("open_staging")
@@ -2023,9 +2295,12 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 
 func _refresh_static_copy() -> void:
 	_back_button.text = _copy(&"ui.gacha.back", "RETURN")
+	_history_button.text = _copy(&"ui.gacha.history_action", "HISTORY")
 	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
+	if _history_drawer != null:
+		_history_drawer.refresh_copy()
 	_refresh_reveal_pull_again()
 	_status_label.accessibility_name = _copy(
 		&"ui.gacha.status_name", "Premium resonance status",
@@ -2034,6 +2309,7 @@ func _refresh_static_copy() -> void:
 		_reveal_title.text = _callsign_for(
 			String(_pending_pull.get("premium_id", "")),
 		).to_upper()
+		_refresh_conversion_copy()
 
 
 func flow_state_name() -> StringName:

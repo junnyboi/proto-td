@@ -6,6 +6,9 @@ extends RefCounted
 ## writes the model.
 
 const WHEEL_STEP_PX := 96.0
+## Leave a narrow tactical margin around the endpoint-aware visual envelope.
+## This is view-only and preserves exact projection, picking, and pan semantics.
+const BATTLE_SCALE_MULTIPLIER := 0.92
 const PRIMARY_DRAG_THRESHOLD_PX := 10.0
 const OVERSCROLL_LIMIT_PX := 72.0
 const OVERSCROLL_DRAG_FACTOR := 0.3
@@ -51,7 +54,7 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 		# Portrait stages are rotated clockwise by BattleView. Fill from the exact
 		# terrain + endpoint envelope, then unlock each content axis only when its
 		# sprite-aware envelope exceeds the viewport on that axis.
-		scale = IsoProjection.visual_height_fill_scale(stage, viewport)
+		scale = IsoProjection.visual_height_fill_scale(stage, viewport) * BATTLE_SCALE_MULTIPLIER
 		origin = IsoProjection.visual_origin_for(stage, viewport, scale)
 		bounds = _pan_bounds_for(content, _safe_rect)
 		_default_pan = Vector2(bounds.end.x, clampf(0.0, bounds.position.y, bounds.end.y))
@@ -63,7 +66,7 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 		else:
 			pan = IsoProjection.clamp_pan(pan, bounds)
 		return
-	scale = IsoProjection.visual_height_fill_scale(stage, viewport)
+	scale = IsoProjection.visual_height_fill_scale(stage, viewport) * BATTLE_SCALE_MULTIPLIER
 	origin = IsoProjection.visual_origin_for(stage, viewport, scale)
 	bounds = _pan_bounds_for(_content_box(stage), _safe_rect)
 	_default_pan = Vector2(bounds.position.x, clampf(0.0, bounds.position.y, bounds.end.y))

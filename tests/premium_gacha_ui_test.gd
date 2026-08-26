@@ -49,6 +49,12 @@ func _run() -> void:
 	var pull_action_label := screen.find_child("PremiumPullActionLabel", true, false) as Label
 	var pull_cost_label := screen.find_child("PremiumPullCostLabel", true, false) as Label
 	var browse_backdrop := screen.find_child("AstralBackdropArt", true, false) as TextureRect
+	var history_button := screen.find_child("PullHistoryButton", true, false) as Button
+	var history_layer := screen.find_child("PremiumPullHistoryLayer", true, false) as Control
+	var history_drawer := screen.find_child("MoonArchiveDrawer", true, false) as PanelContainer
+	var history_close := screen.find_child("ClosePullHistoryButton", true, false) as Button
+	var history_rows := screen.find_child("PullHistoryRows", true, false) as VBoxContainer
+	var history_empty := screen.find_child("PullHistoryEmptyState", true, false) as VBoxContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
@@ -103,6 +109,21 @@ func _run() -> void:
 		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 	_check(Art.size(&"ui_gacha_return") == Vector2i(512, 512), "generated Return glyph is absent from the art manifest")
+	_check(history_button != null and history_button.icon != null and history_button.text == "HISTORY", "Moon Archive action is missing")
+	_check(history_layer != null and history_drawer != null and history_close != null, "Moon Archive drawer did not mount")
+	_check(not history_layer.visible and history_rows != null and history_empty != null, "Moon Archive did not initialize hidden")
+	_check(Art.size(&"ui_gacha_moon_archive") == Vector2i(512, 512), "GPT Image 2 Moon Archive glyph is absent")
+	_check(Art.size(&"ui_gacha_reserve_life") == Vector2i(512, 512), "GPT Image 2 reserve-life sigil is absent")
+	history_button.grab_focus()
+	history_button.pressed.emit()
+	await _seconds(0.32)
+	_check(history_layer.visible and bool(history_layer.call("is_open")), "Moon Archive did not open")
+	_check(history_empty.visible and history_rows.get_child_count() == 1, "empty campaign history did not show its authored empty state")
+	_check(root.gui_get_focus_owner() == history_close, "Moon Archive did not trap focus on its close action")
+	_check(pull.disabled and back.disabled and history_button.disabled, "browse actions remained available behind Moon Archive")
+	await _action(&"ui_cancel")
+	await _seconds(0.24)
+	_check(not history_layer.visible and root.gui_get_focus_owner() == history_button, "Moon Archive cancel did not close and restore its opener")
 	root.size = Vector2i(2048, 825)
 	await _frames(2)
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.position.y), "browse background is not top aligned")
@@ -117,6 +138,7 @@ func _run() -> void:
 	_check(premium_keys.get("lunaris_vessel") == &"data.premium.lunaris_vessel.name", "Lunaris Vessel stable key changed")
 	_check(premium_keys.get("reliquary_duelist") == &"data.premium.reliquary_duelist.name", "Reliquary Duelist stable key changed")
 	var localized_tree_text := _tree_text(grid)
+	_check(localized_tree_text.contains("月辉载体"), "Lunaris Vessel name did not refresh to natural Chinese")
 	for expected_class: String in ["见习法师", "术士", "剑圣"]:
 		_check(localized_tree_text.contains(expected_class), "%s class did not refresh through name_key" % expected_class)
 	for card: PanelContainer in grid.get_children():
@@ -130,6 +152,10 @@ func _run() -> void:
 				"%s translated footer enters its lower ornament" % card.name,
 			)
 	_check(browse_status.accessibility_name == "高级共鸣状态", "gacha status metadata did not refresh")
+	_check(history_button.text == "共鸣记录", "Moon Archive action did not refresh to Chinese")
+	var localized_history_text := _tree_text(history_drawer)
+	_check(localized_history_text.contains("月影档案"), "Moon Archive title did not refresh to Chinese")
+	_check(localized_history_text.contains("暂无共鸣记录"), "Moon Archive empty state did not refresh to Chinese")
 	_check(screen.call("_callsign_for", "missing_signal") == "未知信号", "unknown signal fallback did not localize")
 	var locked_card := screen.call("_hero_card", {
 		"premium_id": "archive_caster", "callsign": "Archive Caster", "class_id": "mage_apprentice",
@@ -153,9 +179,20 @@ func _run() -> void:
 	await _frames(2)
 	_check(grid.columns == 1 and browse_header.columns == 1 and guarantee.vertical, "portrait browse did not stack")
 	_check(back.custom_minimum_size.x <= 366.0 and pull.custom_minimum_size.x <= 366.0, "portrait browse action exceeds its safe width")
+	_check(history_button.custom_minimum_size.x <= 342.0, "portrait History action exceeds its safe width")
 	for card: Control in grid.get_children():
 		var portrait_bounds := card.get_global_rect()
 		_check(portrait_bounds.position.x >= -0.5 and portrait_bounds.end.x <= 390.5, "%s overflows portrait width" % card.name)
+	history_button.grab_focus()
+	history_button.pressed.emit()
+	await _seconds(0.32)
+	var drawer_bounds := history_drawer.get_global_rect()
+	_check(
+		drawer_bounds.position.x >= -0.5 and drawer_bounds.end.x <= 390.5,
+		"portrait Moon Archive drawer overflows the viewport: %s" % drawer_bounds,
+	)
+	await _action(&"ui_cancel")
+	await _seconds(0.24)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
 
@@ -200,6 +237,17 @@ func _run() -> void:
 	screen.call("_finish_reveal")
 	await _frames(2)
 	_check(screen.call("flow_state_name") == &"BROWSE" and root.gui_get_focus_owner() == pull, "receipt reveal did not restore exact opener")
+	history_button.grab_focus()
+	history_button.pressed.emit()
+	await _seconds(0.32)
+	var committed_history_rows := 0
+	for history_child: Node in history_rows.get_children():
+		if String(history_child.name).begins_with("HistoryPull_"):
+			committed_history_rows += 1
+	_check(committed_history_rows == 1 and not history_empty.visible, "committed pull did not enter the Moon Archive")
+	_check(_tree_text(history_drawer).contains("1 COMMITTED PULLS"), "Moon Archive total did not match the canonical receipt count")
+	await _action(&"ui_cancel")
+	await _seconds(0.24)
 
 	# Preserve upstream cinematic, full-size identity, click skip, music, and reduced-motion lifecycle.
 	root.size = Vector2i(1280, 720)
@@ -211,6 +259,11 @@ func _run() -> void:
 	var reveal_stack := screen.find_child("CinematicIdentityReveal", true, false) as VBoxContainer
 	var stars := screen.find_child("RarityStars", true, false) as HBoxContainer
 	var reveal_hint := screen.find_child("RevealContinueHint", true, false) as Label
+	var conversion_panel := screen.find_child("DuplicateConversionFeedback", true, false) as PanelContainer
+	var conversion_icon := screen.find_child("ReserveLifeSigil", true, false) as TextureRect
+	var conversion_title := screen.find_child("DuplicateConversionTitle", true, false) as Label
+	var conversion_outcome := screen.find_child("DuplicateConversionOutcome", true, false) as Label
+	var conversion_detail := screen.find_child("DuplicateConversionDetail", true, false) as Label
 	var pull_again := screen.find_child("PullAgainButton", true, false) as Button
 	var skip := screen.find_child("SkipRevealButton", true, false) as Button
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
@@ -252,6 +305,7 @@ func _run() -> void:
 		var star_accent: Color = star.get("_accent")
 		_check(star_accent.is_equal_approx(Style.GOLD), "Lunaris Vessel star %d is not gold" % (index + 1))
 		_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
+	_check(conversion_panel != null and conversion_icon != null and not conversion_panel.visible, "first acquisition showed duplicate conversion feedback")
 	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
 	_check(pull_again.text == "PULL AGAIN • 40 MARKS", "Pull Again does not expose the authoritative cost")
 	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 54, "Pull Again is not comfortably sized")
@@ -291,7 +345,12 @@ func _run() -> void:
 	await _frames(2)
 	screen.set("reduced_motion", true)
 	var reduced_audio_starts := int(sfx.call("audible_start_count"))
-	screen.call("_begin_reveal", _sample_pull(4, false))
+	var duplicate_pull := _sample_pull(4, false)
+	duplicate_pull["new_hero"] = false
+	duplicate_pull["lives_before"] = 1
+	duplicate_pull["lives_after"] = 2
+	duplicate_pull["pull_count_after"] = 2
+	screen.call("_begin_reveal", duplicate_pull)
 	await _frames(1)
 	root.size = Vector2i(720, 1000)
 	await _frames(2)
@@ -300,6 +359,11 @@ func _run() -> void:
 	_check(reveal_title.get_theme_font_size(&"font_size") <= 108, "portrait identity title did not scale down")
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
+	_check(conversion_panel.visible and conversion_icon.texture != null, "duplicate reveal omitted generated conversion feedback")
+	_check(conversion_title.text == "DUPLICATE RESONANCE CONVERTED", "duplicate conversion title changed")
+	_check(conversion_outcome.text == "RESERVE LIFE +1" and conversion_detail.text == "LIVES 1 → 2", "duplicate life conversion copy is not receipt-accurate")
+	_check(conversion_icon.scale.is_equal_approx(Vector2.ONE), "reduced motion still pulsed the reserve-life sigil")
+	_check(not reveal_hint.visible, "duplicate reveal retained redundant click-anywhere copy below conversion feedback")
 	_check(is_zero_approx(plate.position.y) and plate.size.y > 1000.0, "portrait final plate is not top-aligned cover")
 	_check(is_zero_approx(plate.pivot_offset.y), "portrait final plate hover pivot is not top anchored")
 	for index: int in 5:
@@ -311,6 +375,13 @@ func _run() -> void:
 			_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
 	_check(int(sfx.call("audible_start_count")) == reduced_audio_starts + 2, "reduced reveal did not play its identity and star cues")
 	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "reduced reveal did not preserve staging BGM")
+	var revival_pull := duplicate_pull.duplicate(true)
+	revival_pull["revived"] = true
+	revival_pull["lives_before"] = 0
+	revival_pull["lives_after"] = 1
+	screen.set("_pending_pull", revival_pull)
+	screen.call("_refresh_conversion_copy")
+	_check(conversion_outcome.text == "REVIVAL PROTOCOL • LIFE +1" and conversion_detail.text == "LIVES 0 → 1", "revival conversion feedback is not receipt-accurate")
 	cinematic.call("_on_final_plate_mouse_entered")
 	await _frames(4)
 	_check(plate.scale.is_equal_approx(Vector2.ONE) and plate.offset_transform_position.is_zero_approx(), "reduced motion still transformed the final plate")

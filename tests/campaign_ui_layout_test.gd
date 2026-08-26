@@ -14,7 +14,9 @@ func _init() -> void:
 
 func _run() -> void:
 	var game := root.get_node_or_null("Game")
+	var i18n := root.get_node_or_null("I18n")
 	_check(game != null, "Game autoload missing")
+	_check(i18n != null, "I18n autoload missing")
 	if game == null:
 		_finish()
 		return
@@ -44,16 +46,96 @@ func _run() -> void:
 	await process_frame
 	var campaign_shell := campaign.find_child("CampaignShell", true, false)
 	var progress := campaign.find_child("CampaignProgress", true, false) as Label
+	var campaign_scroll := campaign.find_child("CampaignScroll", true, false) as ScrollContainer
 	var dossier := campaign.find_child("MissionDossier", true, false) as PanelContainer
 	var dossier_scroll := campaign.find_child("MissionDossierScroll", true, false) as ScrollContainer
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
 	var next_stage := campaign.find_child("Stage_s1", true, false) as Button
+	var recruit_desk := campaign.find_child("BasicRecruitDesk", true, false) as PanelContainer
+	var recruit_grid := campaign.find_child("BasicRecruitGrid", true, false) as GridContainer
+	var recruit_title := campaign.find_child("BasicRecruitTitle", true, false) as Label
+	var recruit_body := campaign.find_child("BasicRecruitBody", true, false) as Label
+	var hire_button := campaign.find_child("HireBasicRecruit", true, false) as Button
+	var hire_marks := campaign.find_child("BasicRecruitMarks", true, false) as Label
+	var hire_roster := campaign.find_child("BasicRecruitRoster", true, false) as Label
+	var hire_status := campaign.find_child("BasicRecruitStatus", true, false) as Label
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
 	_check(dossier_reward != null and not dossier_reward.text.is_empty(), "Campaign dossier does not expose the typed first-clear reward")
+	_check(recruit_desk != null and recruit_grid != null, "Mission Control basic recruitment desk is missing")
+	_check(hire_button != null and not hire_button.disabled and hire_button.focus_mode == Control.FOCUS_ALL, "five-Mark hire action is unavailable or not keyboard focusable")
+	_check(hire_button != null and hire_button.text.contains("5") and hire_button.text.contains("MARKS"), "hire action does not expose its exact five-Mark price")
+	_check(hire_marks != null and hire_marks.text.contains("120"), "Mission Control does not show current Marks")
+	_check(hire_roster != null and hire_roster.text.contains("5"), "Mission Control does not show the current ready roster")
+	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "hire status is not a polite live region")
+	if i18n != null:
+		_check(bool(i18n.call("set_locale", &"zh-CN")), "Mission Control could not activate Chinese")
+		await process_frame
+		await process_frame
+		_check(recruit_title != null and recruit_title.text == "连队增援", "recruitment title did not refresh to Chinese")
+		_check(recruit_body != null and recruit_body.text.contains("基础新兵"), "recruitment body did not refresh to Chinese")
+		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5枚印记"), "recruitment action did not refresh to Chinese")
+		_check(hire_marks != null and hire_marks.text.contains("可用印记"), "recruitment Marks metric did not refresh to Chinese")
+		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "recruitment status did not refresh to Chinese")
+		_check(bool(i18n.call("set_locale", &"en-US")), "Mission Control could not restore English")
+		await process_frame
+		await process_frame
+	var projection_before: Dictionary = game.call("campaign_projection")
+	if hire_button != null:
+		hire_button.pressed.emit()
+		await process_frame
+		await process_frame
+	var projection_after: Dictionary = game.call("campaign_projection")
+	_check(int(projection_after.get("marks", 0)) == int(projection_before.get("marks", 0)) - 5, "Mission Control hire charged the wrong amount")
+	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Mission Control hire did not add exactly one Recruit")
+	var newest: Dictionary = (projection_after.get("ready_heroes", []) as Array)[-1]
+	_check(newest.get("recruit_source") == "basic_hire" and newest.get("source_id") == "mission_control", "Mission Control hire bypassed the authoritative source contract")
+	_check(hire_marks != null and hire_marks.text.contains("115"), "Mission Control did not refresh the Marks balance")
+	_check(hire_roster != null and hire_roster.text.contains("6"), "Mission Control did not refresh the ready roster")
+	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Mission Control did not announce the accepted hire")
+	_check(hire_button != null and hire_button.has_focus(), "accepted hire did not restore action focus")
+	var revision_after_hire := int(projection_after.get("save_revision", 0))
+	game.set("_pending_promotion_mutation", RefCounted.new())
+	if hire_button != null:
+		hire_button.pressed.emit()
+		await process_frame
+		await process_frame
+	_check(hire_button != null and not hire_button.disabled and hire_button.has_focus(), "rejected hire did not restore retry focus")
+	_check(hire_status != null and hire_status.text.contains("pending Company command"), "rejected hire did not explain command serialization")
+	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "rejected hire advanced the campaign")
+	game.set("_pending_promotion_mutation", null)
+	game.set("_pending_recruitment_mutation", RefCounted.new())
+	var blocked_pull: Dictionary = game.call("pull_premium_hero")
+	var blocked_rename: Dictionary = game.call(
+		"rename_hero", String(newest.get("hero_id", "")), "Sentinel",
+	)
+	var launch_squad: Array[StringName] = [StringName(newest.get("hero_id", ""))]
+	var blocked_launch: Dictionary = game.call("start_stage", &"s1", launch_squad, false)
+	var blocked_promotion: Dictionary = game.call("training_call", &"commit", [])
+	var blocked_generic: Dictionary = game.call("commit_campaign_command", {})
+	for blocked: Dictionary in [
+		blocked_pull, blocked_rename, blocked_launch, blocked_promotion, blocked_generic,
+	]:
+		_check(blocked.get("error_code") == &"strategic_mutation_pending", "pending hire did not serialize every strategic facade")
+	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "blocked strategic command advanced the campaign")
+	game.set("_pending_recruitment_mutation", null)
+	root.size = Vector2i(720, 1280)
+	await process_frame
+	await process_frame
+	_check(recruit_grid != null and recruit_grid.columns == 1, "portrait Mission Control did not stack the recruitment desk")
+	_check(recruit_body != null and not recruit_body.visible, "portrait Mission Control did not compact redundant hire copy")
+	_check(
+		recruit_desk != null and recruit_desk.get_global_rect().end.x <= 721.0,
+		"portrait recruitment desk exceeds the viewport: %s" % (
+			recruit_desk.get_global_rect() if recruit_desk != null else Rect2()
+		),
+	)
+	_check(campaign_scroll != null and campaign_scroll.size.y >= 96.0, "portrait Mission Control did not reserve a visible stage list")
+	_check(next_stage != null and next_stage.get_global_rect().position.y < 1280.0, "portrait First Stand action is below the viewport")
+	root.size = Vector2i(1280, 720)
 	_dispose(campaign)
 	game.set("content", null)
 
