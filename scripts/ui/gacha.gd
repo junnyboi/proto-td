@@ -10,6 +10,7 @@ const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loadin
 const HARD_PITY_WINDOW := 10
 const FIVE_STAR_RARITY := 5
 const CINEMATIC_WATCHDOG_SECONDS := 8.75
+const CINEMATIC_WATCHDOG_POLL_SECONDS := 0.5
 const REVEAL_NAME_FADE_SECONDS := 0.42
 const REVEAL_STAR_GROW_SECONDS := 0.56
 const REVEAL_STAR_PULSE_SECONDS := 0.82
@@ -80,6 +81,7 @@ var _reveal_tween: Tween
 var _cinematic_watchdog: Tween
 var _star_pulse_tweens: Array[Tween] = []
 var _is_revealing := false
+var _reveal_result_ready := false
 var _pending_pull: Dictionary = {}
 
 
@@ -109,7 +111,17 @@ func _exit_tree() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if _flow_state != FlowState.COMMITTING or not event.is_pressed():
+	if not event.is_pressed():
+		return
+	if (
+		_flow_state == FlowState.REVEAL
+		and _reveal_result_ready
+		and (event is InputEventMouseButton or event is InputEventScreenTouch)
+	):
+		get_viewport().set_input_as_handled()
+		_finish_reveal()
+		return
+	if _flow_state != FlowState.COMMITTING:
 		return
 	if event is InputEventKey and event.echo:
 		get_viewport().set_input_as_handled()
@@ -129,11 +141,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _flow_state == FlowState.COMMITTING:
 		get_viewport().set_input_as_handled()
 		return
-	if _flow_state == FlowState.REVEAL and (
-		event.is_action(&"ui_accept")
-		or event.is_action(&"ui_cancel")
-		or event is InputEventMouseButton
-		or event is InputEventScreenTouch
+	if (
+		_flow_state == FlowState.REVEAL
+		and _reveal_result_ready
+		and (event.is_action(&"ui_accept") or event.is_action(&"ui_cancel"))
 	):
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
@@ -148,7 +159,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_reveal_gui_input(event: InputEvent) -> void:
-	if not _is_revealing:
+	if not _is_revealing or not _reveal_result_ready:
 		return
 	if event is InputEventMouseButton and event.pressed:
 		accept_event()
@@ -724,8 +735,10 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_screen_margin.visible = false
 	_pending_pull = pull.duplicate(true)
 	_is_revealing = true
+	_reveal_result_ready = false
 	_pull_button.disabled = true
 	_back_button.disabled = true
+	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	var premium_id := String(pull.get("premium_id", ""))
 	var row := _pool_row(premium_id)
 	var callsign := String(row.get("callsign", pull.get("premium_id", "Unknown Signal")))
@@ -758,6 +771,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	if motion_reduced:
 		_reveal_layer.modulate.a = 1.0
 		_cinematic_player.show_final_plate()
+		_reveal_result_ready = true
 		_reveal_identity_immediately(rarity, accent)
 		_skip_button.grab_focus()
 		return
@@ -765,7 +779,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
 	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
-	_reveal_tween.tween_callback(_skip_button.grab_focus)
 
 
 func _on_cinematic_started(cue_id: StringName) -> void:
@@ -794,6 +807,12 @@ func _on_cinematic_watchdog_timeout() -> void:
 	_cinematic_watchdog = null
 	if not _is_revealing:
 		return
+	var video := _cinematic_player.video_player()
+	if video != null and video.is_playing():
+		_cinematic_watchdog = create_tween()
+		_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_POLL_SECONDS)
+		_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
+		return
 	_cinematic_player.show_final_plate()
 	_begin_identity_reveal()
 
@@ -801,6 +820,7 @@ func _on_cinematic_watchdog_timeout() -> void:
 func _begin_identity_reveal() -> void:
 	if not _is_revealing or _reveal_title_stack.visible:
 		return
+	_reveal_result_ready = true
 	_kill_cinematic_watchdog()
 	_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
@@ -872,6 +892,7 @@ func _finish_reveal() -> void:
 	_stop_cinematic()
 	var final_copy := _result_copy(_pending_pull)
 	_is_revealing = false
+	_reveal_result_ready = false
 	_flow_state = FlowState.BROWSE
 	_reveal_layer.visible = false
 	_reveal_layer.modulate.a = 0.0
@@ -1215,6 +1236,10 @@ func flow_state_name() -> StringName:
 
 func confirmation_projection_snapshot() -> Dictionary:
 	return _confirmation_projection.duplicate(true)
+
+
+func reveal_result_ready() -> bool:
+	return _reveal_result_ready
 
 
 func _label(text: String, role: StringName) -> Label:

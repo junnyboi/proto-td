@@ -18,6 +18,12 @@
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
 - [x] Convert Mission Control to a full-safe-area workspace, remove its decorative outer frame, and eliminate text/action overflow across 1280×720, 1024×576, 720×1280, and 390×844 layouts.
 
+# Premium Resonance Cinematic Completion
+
+- [x] Replace the fixed 7.44-second result timer with natural `VideoStreamPlayer.finished` completion so every verified eight-second cinematic plays from start to finish.
+- [x] Keep result input locked during download/playback, then allow mouse/touch anywhere or keyboard accept/cancel to dismiss the completed reveal and return to Resonance.
+- [x] Preserve explicit Skip Reveal, reduced-motion fallback, failure fallback, localization, authoritative pull receipts, and Company Command audio restoration.
+
 # Company Command Sizing Reimplementation
 
 - [x] Audit the supplied screenshot, measured runtime geometry, decorative safe areas, and mature gacha lobby sizing patterns.

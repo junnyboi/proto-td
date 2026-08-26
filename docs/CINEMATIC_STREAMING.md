@@ -8,9 +8,9 @@ The six Premium Resonance Ogg Theora videos are optional presentation media. Bun
 
 `GachaCinematicPlayer` selects one stream from the revealed hero and current viewport orientation. Native and editor runs continue to load the repository-owned `res://` OGV file. Web deployments provide same-origin URLs through repeated `--cinematic-stream=<key>|<url>` engine arguments.
 
-On a Web cache miss, the player immediately shows the final identity plate, downloads only the selected orientation, reports restrained transfer progress, verifies the exact byte length and SHA-256 digest, and stores the verified OGV under `user://cinematic-streams`. Playback uses `VideoStreamTheora.file` against that cached path. A later reveal reuses the cache without another request. If the request, persistence, or verification step fails, the reveal safely remains on the final plate; authoritative pull state and navigation are unaffected.
+On a Web cache miss, the player immediately shows the final identity plate, downloads only the selected orientation, reports restrained transfer progress, verifies the exact byte length and SHA-256 digest, and stores the verified OGV under `user://cinematic-streams`. Playback uses `VideoStreamTheora.file` against that cached path. Once playback begins, the full-size identity reveal cannot appear or accept dismissal input until `VideoStreamPlayer.finished` confirms the complete eight-second cinematic has played from start to finish. A later reveal reuses the cache without another request. If the request, persistence, or verification step fails, the reveal safely advances to the final plate; authoritative pull state and navigation are unaffected.
 
-A cinematic that finishes downloading after the reveal reaches its final plate is cached but is not allowed to restart presentation underneath the result card. Reduced-motion mode never requests or plays cinematic video.
+After natural completion, failure fallback, or reduced-motion fallback, the final identity plate, callsign, rarity stars, and completion hint become active. Mouse or touch input anywhere on that completed reveal, as well as keyboard accept/cancel, dismisses it and returns to Premium Resonance. The explicit Skip Reveal action remains available during download or playback. Reduced-motion mode never requests or plays cinematic video.
 
 ## Stream manifest
 
