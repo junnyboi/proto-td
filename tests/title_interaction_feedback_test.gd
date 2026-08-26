@@ -4,6 +4,7 @@ const VIEW_PREFERENCES := preload("res://scripts/view/view_preferences.gd")
 const PREFERENCES_PATH := "user://title_interaction_feedback_test.cfg"
 const REDUCED_PREFERENCES_PATH := "user://title_interaction_feedback_reduced_test.cfg"
 const EPSILON := 0.01
+const WAIT_TIMEOUT := 1.0
 
 var _failures: Array[String] = []
 
@@ -50,14 +51,15 @@ func _verify_animated_reveal_and_hover() -> void:
 		await create_timer(0.24).timeout
 		_check(settings.scale.is_equal_approx(Vector2.ONE), "Settings hover scale did not settle after exit")
 		title.call("_open_settings")
-		await process_frame
+		var settings_state := title.get_node("TitleSettings") as Control
+		await _wait_for_transition(settings_state, &"ACTIVE")
 		var gated_starts := int(sfx.call("audible_start_count"))
 		title.call("_on_title_action_hover_changed", settings, true)
 		await process_frame
 		_check(int(sfx.call("audible_start_count")) == gated_starts, "hidden title hover feedback remained active in Settings")
 		_check(settings.scale.is_equal_approx(Vector2.ONE), "hidden title hover still transformed in Settings")
 		title.call("_close_settings")
-		await process_frame
+		await _wait_for_transition(settings_state, &"CLOSED")
 	await _release_title(title)
 
 
@@ -76,6 +78,16 @@ func _verify_reduced_motion() -> void:
 		_check(settings.scale.is_equal_approx(Vector2.ONE), "reduced motion still scaled the hovered Settings button")
 	await _release_title(title)
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+
+
+func _wait_for_transition(state: Control, expected: StringName) -> bool:
+	var elapsed := 0.0
+	while StringName(state.call("transition_state_name")) != expected and elapsed < WAIT_TIMEOUT:
+		await create_timer(0.01).timeout
+		elapsed += 0.01
+	var matched := StringName(state.call("transition_state_name")) == expected
+	_check(matched, "transition timed out waiting for %s" % expected)
+	return matched
 
 
 func _create_title(path: String) -> Control:
