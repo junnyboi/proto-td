@@ -14,6 +14,8 @@ const FOCUS_PULSE_MIN_ALPHA := 0.10
 const FOCUS_PULSE_MAX_ALPHA := 0.26
 const TILE_TITLE_FONT_SIZE := 18
 const TILE_STATE_FONT_SIZE := 16
+const RAIL_TITLE_FONT_SIZE := 36
+const RAIL_STATE_FONT_SIZE := 32
 
 var _glyph: TextureRect
 var _title_label: Label
@@ -84,16 +86,28 @@ func set_compact(compact: bool) -> void:
 
 
 func set_rail_mode(rail_mode: bool) -> void:
-	custom_minimum_size = Vector2(0.0, 72.0 if rail_mode else 72.0)
-	_margin.add_theme_constant_override(&"margin_left", 16)
-	_margin.add_theme_constant_override(&"margin_top", 12)
-	_margin.add_theme_constant_override(&"margin_right", 16)
-	_margin.add_theme_constant_override(&"margin_bottom", 12)
-	_row.add_theme_constant_override(&"separation", 8 if rail_mode else 12)
-	_glyph.custom_minimum_size = Vector2(36.0, 36.0) if rail_mode else Vector2(40.0, 40.0)
-	_status_indicator.custom_minimum_size = Vector2(14.0, 14.0) if rail_mode else Vector2(18.0, 18.0)
-	StagingSkinType.apply_display_type(_title_label, TILE_TITLE_FONT_SIZE, MUTED if disabled else GOLD, 540)
-	StagingSkinType.apply_display_type(_state_label, TILE_STATE_FONT_SIZE, MUTED, 520)
+	custom_minimum_size = Vector2(0.0, 120.0 if rail_mode else 72.0)
+	_title_label.autowrap_mode = TextServer.AUTOWRAP_OFF if rail_mode else TextServer.AUTOWRAP_WORD_SMART
+	_title_label.max_lines_visible = 1 if rail_mode else 2
+	_margin.add_theme_constant_override(&"margin_left", 24 if rail_mode else 16)
+	_margin.add_theme_constant_override(&"margin_top", 18 if rail_mode else 12)
+	_margin.add_theme_constant_override(&"margin_right", 24 if rail_mode else 16)
+	_margin.add_theme_constant_override(&"margin_bottom", 18 if rail_mode else 12)
+	_row.add_theme_constant_override(&"separation", 14 if rail_mode else 12)
+	_glyph.custom_minimum_size = Vector2(52.0, 52.0) if rail_mode else Vector2(40.0, 40.0)
+	_status_indicator.custom_minimum_size = Vector2(18.0, 18.0)
+	StagingSkinType.apply_display_type(
+		_title_label,
+		RAIL_TITLE_FONT_SIZE if rail_mode else TILE_TITLE_FONT_SIZE,
+		MUTED if disabled else GOLD,
+		540,
+	)
+	StagingSkinType.apply_display_type(
+		_state_label,
+		RAIL_STATE_FONT_SIZE if rail_mode else TILE_STATE_FONT_SIZE,
+		MUTED,
+		520,
+	)
 
 
 func _build_content() -> void:

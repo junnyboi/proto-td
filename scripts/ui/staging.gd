@@ -36,10 +36,10 @@ const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.28
-const TOP_HUD_HEIGHT := 96.0
+const TOP_HUD_HEIGHT := 128.0
 const LANDSCAPE_GUTTER := 24.0
 const LANDSCAPE_BOTTOM_GUTTER := 16.0
-const LANDSCAPE_NAV_WIDTH := 200.0
+const LANDSCAPE_NAV_WIDTH := 440.0
 const LANDSCAPE_DECK_MIN_WIDTH := 620.0
 const LANDSCAPE_DECK_MAX_WIDTH := 700.0
 const LANDSCAPE_DECK_MAX_HEIGHT := 760.0
@@ -78,11 +78,6 @@ var _mission_body_grid: GridContainer = null
 var _mission_preview: TextureRect = null
 var _operation_grid: GridContainer = null
 var _operation_scroll: ScrollContainer = null
-var _hero_identity: VBoxContainer = null
-var _hero_title: Label = null
-var _hero_subtitle: Label = null
-var _hero_campaign_progress: Label = null
-var _campaign_chip: Label = null
 var _top_identity: Label = null
 var _top_identity_plate: PanelContainer = null
 var _top_status_chip: PanelContainer = null
@@ -177,14 +172,6 @@ func _build_backdrop() -> void:
 	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(atmosphere)
 
-	var bottom_shade := ColorRect.new()
-	bottom_shade.name = "BottomShade"
-	bottom_shade.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom_shade.offset_top = -230.0
-	bottom_shade.color = Color(VOID, 0.74)
-	bottom_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(bottom_shade)
-
 
 func _build_top_bar() -> void:
 	_top_bar = PanelContainer.new()
@@ -198,30 +185,31 @@ func _build_top_bar() -> void:
 
 	_top_bar_margin = MarginContainer.new()
 	_top_bar_margin.name = "TopBarMargin"
-	_top_bar_margin.add_theme_constant_override(&"margin_left", 12)
-	_top_bar_margin.add_theme_constant_override(&"margin_top", 8)
-	_top_bar_margin.add_theme_constant_override(&"margin_right", 12)
-	_top_bar_margin.add_theme_constant_override(&"margin_bottom", 8)
+	_top_bar_margin.add_theme_constant_override(&"margin_left", 16)
+	_top_bar_margin.add_theme_constant_override(&"margin_top", 10)
+	_top_bar_margin.add_theme_constant_override(&"margin_right", 16)
+	_top_bar_margin.add_theme_constant_override(&"margin_bottom", 10)
 	_top_bar.add_child(_top_bar_margin)
 
 	_top_row = HBoxContainer.new()
 	_top_row.name = "TopBarContent"
-	_top_row.add_theme_constant_override(&"separation", 10)
+	_top_row.add_theme_constant_override(&"separation", 14)
 	_top_bar_margin.add_child(_top_row)
 
 	_top_identity_plate = PanelContainer.new()
 	_top_identity_plate.name = "IdentityPlate"
-	_top_identity_plate.custom_minimum_size = Vector2(290.0, 80.0)
+	_top_identity_plate.custom_minimum_size = Vector2(360.0, 104.0)
+	_top_identity_plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_top_identity_plate.add_theme_stylebox_override(
 		&"panel", StagingSkinType.company_hud_plate_style(),
 	)
 	_top_row.add_child(_top_identity_plate)
 	var identity_row := HBoxContainer.new()
 	identity_row.name = "IdentityPlateContent"
-	identity_row.add_theme_constant_override(&"separation", 10)
+	identity_row.add_theme_constant_override(&"separation", 14)
 	_top_identity_plate.add_child(identity_row)
 
-	_top_crest = FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0)
+	_top_crest = FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 58.0)
 	_top_crest.name = "FactionCrest"
 	_top_crest.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	identity_row.add_child(_top_crest)
@@ -230,35 +218,35 @@ func _build_top_bar() -> void:
 	_top_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_top_identity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_top_identity.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_top_identity, 20, IVORY, 560)
+	StagingSkinType.apply_display_type(_top_identity, 24, IVORY, 560)
 	identity_row.add_child(_top_identity)
 
 	_top_status_chip = PanelContainer.new()
 	_top_status_chip.name = "CampaignStatusChip"
-	_top_status_chip.custom_minimum_size = Vector2(176.0, 64.0)
+	_top_status_chip.custom_minimum_size = Vector2(236.0, 84.0)
 	_top_status_chip.add_theme_stylebox_override(&"panel", StagingSkinType.resource_chip_style(Color(0.88, 0.88, 0.82, 0.9)))
 	_top_status_chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_top_row.add_child(_top_status_chip)
 	var status_margin := MarginContainer.new()
-	status_margin.add_theme_constant_override(&"margin_left", 14)
-	status_margin.add_theme_constant_override(&"margin_top", 8)
-	status_margin.add_theme_constant_override(&"margin_right", 14)
-	status_margin.add_theme_constant_override(&"margin_bottom", 8)
+	status_margin.add_theme_constant_override(&"margin_left", 20)
+	status_margin.add_theme_constant_override(&"margin_top", 12)
+	status_margin.add_theme_constant_override(&"margin_right", 20)
+	status_margin.add_theme_constant_override(&"margin_bottom", 12)
 	_top_status_chip.add_child(status_margin)
 	var status_row := HBoxContainer.new()
-	status_row.add_theme_constant_override(&"separation", 8)
+	status_row.add_theme_constant_override(&"separation", 12)
 	status_margin.add_child(status_row)
-	status_row.add_child(_texture_icon("CampaignSeal", StagingSkinType.MISSION_ICON, Vector2(32.0, 32.0)))
+	status_row.add_child(_texture_icon("CampaignSeal", StagingSkinType.MISSION_ICON, Vector2(40.0, 40.0)))
 	_top_summary = _label("TopCampaignSummary", _campaign_summary_text(), GameTypographyType.STATUS, IVORY)
 	_top_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_top_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_top_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_top_summary.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_top_summary, 18, IVORY, 520)
+	StagingSkinType.apply_display_type(_top_summary, 22, IVORY, 520)
 	status_row.add_child(_top_summary)
 	_exit_plate = PanelContainer.new()
 	_exit_plate.name = "UtilityPlate"
-	_exit_plate.custom_minimum_size = Vector2(112.0, 64.0)
+	_exit_plate.custom_minimum_size = Vector2(152.0, 84.0)
 	_exit_plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_exit_plate.add_theme_stylebox_override(&"panel", StagingSkinType.company_hud_plate_style())
 	_top_row.add_child(_exit_plate)
@@ -266,7 +254,7 @@ func _build_top_bar() -> void:
 	_back.name = "ExitButton"
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_back.tooltip_text = _back.text
-	_back.custom_minimum_size = Vector2(96.0, 48.0)
+	_back.custom_minimum_size = Vector2(132.0, 64.0)
 	_back.focus_mode = Control.FOCUS_ALL
 	_back.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	for color_name: StringName in [
@@ -280,20 +268,20 @@ func _build_top_bar() -> void:
 	_register_focus_pulse(_back, GOLD)
 	var exit_margin := MarginContainer.new()
 	exit_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	exit_margin.add_theme_constant_override(&"margin_left", 8)
-	exit_margin.add_theme_constant_override(&"margin_right", 8)
+	exit_margin.add_theme_constant_override(&"margin_left", 14)
+	exit_margin.add_theme_constant_override(&"margin_right", 14)
 	exit_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_back.add_child(exit_margin)
 	var exit_row := HBoxContainer.new()
 	exit_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	exit_row.add_theme_constant_override(&"separation", 3)
+	exit_row.add_theme_constant_override(&"separation", 8)
 	exit_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	exit_margin.add_child(exit_row)
-	exit_row.add_child(_texture_icon("ExitGlyph", StagingSkinType.EXIT_ICON, Vector2(28.0, 28.0)))
+	exit_row.add_child(_texture_icon("ExitGlyph", StagingSkinType.EXIT_ICON, Vector2(36.0, 36.0)))
 	_exit_label = _label("ExitLabel", _back.text.to_upper(), GameTypographyType.DETAIL, MUTED)
 	_exit_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_exit_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_exit_label, 16, MUTED, 560)
+	StagingSkinType.apply_display_type(_exit_label, 20, MUTED, 560)
 	exit_row.add_child(_exit_label)
 	_back.pressed.connect(_on_exit)
 	_exit_plate.add_child(_back)
@@ -341,37 +329,7 @@ func _build_landscape_layout() -> void:
 	hero_region.name = "HeroRegion"
 	hero_region.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hero_region.size_flags_stretch_ratio = 1.0
-	hero_region.add_theme_constant_override(&"margin_left", 8)
-	hero_region.add_theme_constant_override(&"margin_bottom", 16)
 	_landscape_layout.add_child(hero_region)
-
-	_hero_identity = VBoxContainer.new()
-	_hero_identity.name = "HeroIdentity"
-	_hero_identity.size_flags_vertical = Control.SIZE_SHRINK_END
-	_hero_identity.add_theme_constant_override(&"separation", 2)
-	hero_region.add_child(_hero_identity)
-	var hero_seal := _texture_icon("HeroFactionSeal", StagingSkinType.LUNARIS_SEAL, Vector2(78.0, 78.0))
-	_hero_identity.add_child(hero_seal)
-
-	var eyebrow := _label(
-		"HeroEyebrow", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"),
-		GameTypographyType.STATUS, GOLD,
-	)
-	_hero_identity.add_child(eyebrow)
-	_hero_title = _label("HeroFactionTitle", "LUNARIS", 38, IVORY)
-	StagingSkinType.apply_display_type(_hero_title, 38, IVORY, 560)
-	_hero_title.add_theme_constant_override(&"outline_size", 8)
-	_hero_title.add_theme_color_override(&"font_outline_color", Color(VOID, 0.82))
-	_hero_identity.add_child(_hero_title)
-	_hero_subtitle = _label("HeroFactionSubtitle", "R E L I Q U A R Y", 16, MUTED)
-	StagingSkinType.apply_display_type(_hero_subtitle, 16, GOLD, 520)
-	_hero_identity.add_child(_hero_subtitle)
-	_hero_campaign_progress = _label("HeroCampaignProgress", _campaign_summary_text(), 18, MOON_CYAN)
-	_campaign_chip = _hero_campaign_progress
-	StagingSkinType.apply_display_type(_hero_campaign_progress, 18, MOON_CYAN, 520)
-	_hero_campaign_progress.add_theme_constant_override(&"outline_size", 6)
-	_hero_campaign_progress.add_theme_color_override(&"font_outline_color", Color(VOID, 0.88))
-	_hero_identity.add_child(_hero_campaign_progress)
 
 	_landscape_deck = PanelContainer.new()
 	_landscape_deck.name = "CommandDeck"
@@ -502,23 +460,16 @@ func _build_navigation_content() -> VBoxContainer:
 
 	var operation_heading := HBoxContainer.new()
 	operation_heading.name = "OperationsHeading"
-	operation_heading.add_theme_constant_override(&"separation", 10)
+	operation_heading.alignment = BoxContainer.ALIGNMENT_CENTER
 	content.add_child(operation_heading)
 	_operations_label = _label(
 		"OperationsLabel", UiCopyType.text(&"ui.staging.operations", "OPERATIONS"),
 		18, GOLD,
 	)
 	_operations_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_operations_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	StagingSkinType.apply_display_type(_operations_label, 18, GOLD, 560)
 	operation_heading.add_child(_operations_label)
-	var operation_rule := ColorRect.new()
-	operation_rule.name = "OperationsRule"
-	operation_rule.custom_minimum_size = Vector2(24.0, 1.0)
-	operation_rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	operation_rule.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	operation_rule.color = Color(MOON_CYAN, 0.32)
-	operation_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	operation_heading.add_child(operation_rule)
 
 	_operation_grid = GridContainer.new()
 	_operation_grid.name = "OperationGrid"
@@ -835,7 +786,6 @@ func _apply_responsive_layout() -> void:
 	)
 	_landscape_deck.custom_minimum_size.y = 0.0
 	_landscape_deck.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_hero_identity.visible = not _compact_landscape and viewport_size.x >= 1180.0
 
 	var portrait_left := maxf(24.0, safe_insets.x)
 	var portrait_right := maxf(24.0, safe_insets.z)
@@ -897,24 +847,30 @@ func _reparent_control(control: Control, target: Control) -> void:
 
 func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void:
 	_top_bar.offset_bottom = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y)
-	_top_bar_margin.add_theme_constant_override(&"margin_left", maxi(12, roundi(safe_insets.x)))
-	_top_bar_margin.add_theme_constant_override(&"margin_top", maxi(8, roundi(safe_insets.y)))
-	_top_bar_margin.add_theme_constant_override(&"margin_right", maxi(12, roundi(safe_insets.z)))
-	_top_bar_margin.add_theme_constant_override(&"margin_bottom", 8)
+	_top_bar_margin.add_theme_constant_override(&"margin_left", maxi(16, roundi(safe_insets.x)))
+	_top_bar_margin.add_theme_constant_override(&"margin_top", maxi(10, roundi(safe_insets.y)))
+	_top_bar_margin.add_theme_constant_override(&"margin_right", maxi(16, roundi(safe_insets.z)))
+	_top_bar_margin.add_theme_constant_override(&"margin_bottom", 10)
 	var narrow := viewport_size.x < 620.0
 	var compact := _portrait or _compact_landscape or viewport_size.x < 1180.0
 	_top_status_chip.visible = not compact and viewport_size.x >= 1120.0
-	_top_identity_plate.custom_minimum_size.x = 190.0 if narrow else (230.0 if compact else 290.0)
+	_top_identity_plate.custom_minimum_size = (
+		Vector2(220.0, 88.0) if narrow
+		else (Vector2(276.0, 96.0) if compact else Vector2(360.0, 104.0))
+	)
 	_top_identity.text = "LUNARIS\nCOMPANY 33" if narrow else "LUNARIS RELIQUARY\nCOMPANY 33"
-	_top_crest.custom_minimum_size = Vector2(38.0, 38.0) if compact else Vector2(48.0, 48.0)
-	StagingSkinType.apply_display_type(_top_identity, 16 if narrow else (18 if compact else 20), IVORY, 560)
-	StagingSkinType.apply_display_type(_top_summary, 16 if compact else 18, IVORY, 520)
+	_top_crest.custom_minimum_size = (
+		Vector2(42.0, 42.0) if narrow else (Vector2(48.0, 48.0) if compact else Vector2(58.0, 58.0))
+	)
+	StagingSkinType.apply_display_type(_top_identity, 18 if narrow else (20 if compact else 24), IVORY, 560)
+	StagingSkinType.apply_display_type(_top_summary, 18 if compact else 22, IVORY, 520)
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
 	_exit_label.visible = not narrow
-	_back.custom_minimum_size.x = 52.0 if narrow else 96.0
-	_exit_plate.custom_minimum_size.x = 64.0 if narrow else 112.0
-	StagingSkinType.apply_display_type(_exit_label, 16, MUTED, 560)
+	_back.custom_minimum_size = Vector2(68.0, 56.0) if narrow else Vector2(132.0, 64.0)
+	_exit_plate.custom_minimum_size = Vector2(80.0, 72.0) if narrow else Vector2(152.0, 84.0)
+	_top_status_chip.custom_minimum_size = Vector2(236.0, 84.0)
+	StagingSkinType.apply_display_type(_exit_label, 18 if compact else 20, MUTED, 560)
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
@@ -934,16 +890,14 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 
 func _apply_company_typography() -> void:
 	var compact := _compact_landscape
+	var rail_mode := not _portrait and not _compact_landscape
 	StagingSkinType.apply_display_type(_command_heading, 22 if compact else 24, GOLD, 560)
 	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
 	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait else 26, IVORY, 560)
 	_mission_objective.add_theme_font_size_override(&"font_size", 18 if compact else 20)
 	StagingSkinType.apply_display_type(_mission_action_label, 24 if compact or _portrait else 26, IVORY, 560)
-	StagingSkinType.apply_display_type(_operations_label, 18, GOLD, 560)
-	StagingSkinType.apply_display_type(_hero_title, 34 if compact else 38, IVORY, 560)
-	StagingSkinType.apply_display_type(_hero_subtitle, 16, GOLD, 520)
-	StagingSkinType.apply_display_type(_hero_campaign_progress, 18, MOON_CYAN, 520)
+	StagingSkinType.apply_display_type(_operations_label, 36 if rail_mode else 18, GOLD, 560)
 
 
 func _display_safe_insets(viewport_size: Vector2) -> Vector4:
