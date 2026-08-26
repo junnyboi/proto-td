@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Approved for implementation; Phase 0 design complete |
-| **Source candidate** | `9cc464eee895f36356a1ca7ee947b6146bc0fe3a` |
+| **Status** | Execution in progress; Phases 0–1 complete |
+| **Source candidate** | `94a85b6ad9ae2fb5c55ee108079e190782887776` |
 | **Runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
 | **Scope** | Compact pull-history drawer and duplicate-character conversion feedback |
 
@@ -81,7 +81,7 @@ This approach preserves replay compatibility, save hashes, migration behavior, c
 | Phase | Work | Gate | Status |
 |---|---|---|---|
 | 0 | Canon inspection and binding concept | Design references command receipts and preserves life authority | Complete |
-| 1 | Generate GPT Image 2 archive and reserve-life glyphs; clean alpha; register in art manifest | Both assets pass one visual QA check and remain readable at runtime sizes | Pending |
+| 1 | Generate GPT Image 2 archive and reserve-life glyphs; clean alpha; register in art manifest | Both assets pass one visual QA check and remain readable at runtime sizes | Complete |
 | 2 | Add receipt-derived history projection and lifecycle regressions | No save-schema change; replay and history rows match committed receipts | Pending |
 | 3 | Implement drawer, focus trap, localization, responsive layout, and conversion choreography | Focus restoration, controller cancel, reduced motion, and duplicate/revival copy pass | Pending |
 | 4 | Reconcile master and run import, boot, focused tests, full regression suite, and Xvfb desktop/portrait captures | No error diagnostics; all success sentinels pass | Pending |
