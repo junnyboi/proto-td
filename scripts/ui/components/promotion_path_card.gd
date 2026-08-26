@@ -26,15 +26,16 @@ func _init() -> void:
 
 
 func configure(
-	choice: Dictionary,
-	class_label: String,
-	role_text: String,
-	description_text: String,
-	skill_text: String,
-	cost_text: String,
-	placeholder_text: String,
-	kit_text: String,
-) -> void:
+		choice: Dictionary,
+		class_label: String,
+		role_text: String,
+		description_text: String,
+		skill_text: String,
+		cost_text: String,
+		placeholder_text: String,
+		kit_text: String,
+		detail_tooltip: String = "",
+	) -> void:
 	class_id = String(choice["to_class_id"])
 	operator_def_id = String(choice["operator_def_id"])
 	_class_name.text = class_label.to_upper()
@@ -49,7 +50,7 @@ func configure(
 		_class_name.text, _role_label.text, _description.text, _skill.text, _cost.text,
 		_placeholder.text, _kit.text,
 	]
-	tooltip_text = text
+	tooltip_text = detail_tooltip if not detail_tooltip.is_empty() else text
 
 
 func set_selected(value: bool) -> void:

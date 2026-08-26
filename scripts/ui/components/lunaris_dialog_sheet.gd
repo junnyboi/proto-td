@@ -8,6 +8,19 @@ enum Presentation {
 	FULL_VIEWPORT,
 }
 
+enum TransitionPhase {
+	CLOSED,
+	ENTERING,
+	OPEN,
+	EXITING,
+}
+
+enum StatusLive {
+	OFF,
+	POLITE,
+	ASSERTIVE,
+}
+
 const SAFE_MARGIN := 18
 const NARROW_SAFE_MARGIN := 12
 const LANDSCAPE_WIDTH := 820.0
@@ -18,7 +31,10 @@ const TITLE_FONT_SIZE := 44
 const BODY_FONT_SIZE := 36
 const ACTION_FONT_SIZE := 36
 const ACTION_MIN_HEIGHT := 88.0
-const ENTRY_SECONDS := 0.16
+const ENTRY_SECONDS := 0.20
+const EXIT_SECONDS := 0.15
+const ENTRY_OFFSET_Y := 14.0
+const EXIT_OFFSET_Y := 10.0
 
 
 static func create(
@@ -41,6 +57,9 @@ static func create(
 	overlay.clip_contents = true
 	overlay.set_meta(&"presentation", presentation)
 	overlay.set_meta(&"pending", false)
+	overlay.set_meta(&"transition_phase", TransitionPhase.CLOSED)
+	overlay.set_meta(&"transition_generation", 0)
+	overlay.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 	owner.add_child(overlay)
 
 	var backdrop := ColorRect.new()
@@ -106,6 +125,10 @@ static func create(
 	body_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	body_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	body_scroll.follow_focus = true
+	body_scroll.draw_focus_border = false
+	body_scroll.focus_mode = Control.FOCUS_NONE
+	body_scroll.accessibility_name = body_text
+	body_scroll.accessibility_description = "Scrollable dialog details"
 	body_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL if full_viewport else Control.SIZE_FILL
 	stack.add_child(body_scroll)
@@ -135,6 +158,20 @@ static func create(
 		body_scroll.add_child(body)
 
 	var action_dock: PanelContainer = null
+	var action_content := VBoxContainer.new()
+	action_content.name = "ActionContent"
+	action_content.add_theme_constant_override(&"separation", 8)
+	action_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var status := Label.new()
+	status.name = "Status"
+	status.text = ""
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	status.accessibility_live = AccessibilityServer.LIVE_OFF
+	Style.apply_label(status, &"status")
+	action_content.add_child(status)
+
 	var actions := GridContainer.new()
 	actions.name = "Actions"
 	actions.columns = 2
@@ -147,9 +184,10 @@ static func create(
 		action_dock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		Style.apply_panel(action_dock, &"quiet")
 		stack.add_child(action_dock)
-		action_dock.add_child(actions)
+		action_dock.add_child(action_content)
 	else:
-		stack.add_child(actions)
+		stack.add_child(action_content)
+	action_content.add_child(actions)
 
 	var cancel := Button.new()
 	cancel.name = "CancelButton"
@@ -157,6 +195,9 @@ static func create(
 	cancel.custom_minimum_size = Vector2(0.0 if full_viewport else 300.0, ACTION_MIN_HEIGHT)
 	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cancel.focus_mode = Control.FOCUS_ALL
+	cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	cancel.accessibility_name = cancel_text
+	cancel.accessibility_description = "Close this dialog without confirming the action."
 	Style.apply_button(cancel, &"quiet")
 	cancel.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
 	cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -169,6 +210,11 @@ static func create(
 	confirm.custom_minimum_size = Vector2(0.0 if full_viewport else 300.0, ACTION_MIN_HEIGHT)
 	confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	confirm.focus_mode = Control.FOCUS_ALL
+	confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm.accessibility_name = confirm_text
+	confirm.accessibility_description = (
+		"Confirm this destructive action." if destructive else "Confirm this action."
+	)
 	Style.apply_button(confirm, &"danger" if destructive else &"primary")
 	confirm.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
 	confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -176,7 +222,6 @@ static func create(
 	actions.add_child(confirm)
 	confirm.set_meta(&"resting_text", confirm_text)
 
-	_bind_focus_scope(cancel, confirm)
 	var dialog := {
 		&"presentation": presentation,
 		&"overlay": overlay,
@@ -191,64 +236,272 @@ static func create(
 		&"body_frame": body_frame,
 		&"body": body,
 		&"action_dock": action_dock,
+		&"action_content": action_content,
+		&"status": status,
 		&"actions": actions,
 		&"confirm": confirm,
 		&"cancel": cancel,
 	}
+	panel.accessibility_labeled_by_nodes = [panel.get_path_to(title)]
+	panel.accessibility_described_by_nodes = [
+		panel.get_path_to(body),
+		panel.get_path_to(status),
+	]
+	_bind_focus_scope(cancel, confirm, body_scroll, actions.columns == 1)
 	overlay.resized.connect(_relayout_dialog.bind(dialog))
+	body_scroll.resized.connect(_refresh_focus_scope.bind(dialog))
 	_relayout_dialog(dialog)
 	return dialog
 
 
-static func show_dialog(dialog: Dictionary, return_focus: Control = null) -> bool:
+static func show_dialog(
+		dialog: Dictionary,
+		return_focus: Control = null,
+		on_opened: Callable = Callable(),
+	) -> bool:
 	var overlay := dialog.get(&"overlay") as Control
 	var panel := dialog.get(&"panel") as PanelContainer
-	var cancel := dialog.get(&"cancel") as Button
-	if overlay == null or panel == null or cancel == null:
+	var placement := dialog.get(&"placement") as VBoxContainer
+	if overlay == null or panel == null or placement == null:
 		return false
-	_stop_transition(overlay)
-	if return_focus == null and overlay.get_viewport() != null:
-		return_focus = overlay.get_viewport().gui_get_focus_owner()
-	overlay.set_meta(&"return_focus", return_focus)
-	_relayout_dialog(dialog)
-	overlay.visible = true
-	cancel.grab_focus.call_deferred()
-	var reduced_motion := bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
-	if reduced_motion:
-		overlay.modulate.a = 1.0
+	var previous_phase := int(overlay.get_meta(&"transition_phase", TransitionPhase.CLOSED))
+	if previous_phase == TransitionPhase.OPEN:
+		if on_opened.is_valid():
+			on_opened.call()
 		return true
-	overlay.modulate.a = 0.0
-	var tween := overlay.create_tween()
+	if previous_phase == TransitionPhase.ENTERING:
+		if on_opened.is_valid():
+			overlay.set_meta(&"transition_opened_callback", on_opened)
+		return true
+	_stop_transition(overlay)
+	if previous_phase == TransitionPhase.CLOSED:
+		if return_focus == null and overlay.get_viewport() != null:
+			return_focus = overlay.get_viewport().gui_get_focus_owner()
+		overlay.set_meta(&"return_focus", return_focus)
+		_relayout_dialog(dialog)
+		overlay.visible = true
+		overlay.modulate.a = 0.0
+		overlay.set_meta(&"frame_rest_position", placement.position)
+		placement.position.y += ENTRY_OFFSET_Y
+	else:
+		overlay.visible = true
+		if not overlay.has_meta(&"frame_rest_position"):
+			overlay.set_meta(&"frame_rest_position", placement.position)
+	_suppress_background_focus(overlay)
+	var generation := _begin_transition(
+		overlay,
+		TransitionPhase.ENTERING,
+		on_opened,
+		&"transition_opened_callback",
+	)
+	var rest_position := overlay.get_meta(&"frame_rest_position", placement.position) as Vector2
+	if _reduced_motion():
+		overlay.modulate.a = 1.0
+		placement.position = rest_position
+		_finish_entry(dialog, generation)
+		return true
+	var tween := overlay.create_tween().set_parallel(true)
+	# Dialog chrome must continue while gameplay juice sets Engine.time_scale to
+	# zero (tutorial holds and battle pause). Ignore the global gameplay scale.
+	tween.set_ignore_time_scale(true)
 	overlay.set_meta(&"transition_tween", tween)
-	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	tween.tween_property(overlay, "modulate:a", 1.0, ENTRY_SECONDS)
+	tween.tween_property(placement, "position", rest_position, ENTRY_SECONDS)
+	tween.finished.connect(_finish_entry.bind(dialog, generation), CONNECT_ONE_SHOT)
 	return true
 
 
-static func hide_dialog(dialog: Dictionary, restore_focus := true) -> bool:
+static func hide_dialog(
+		dialog: Dictionary,
+		restore_focus := true,
+		on_closed: Callable = Callable(),
+	) -> bool:
+	var overlay := dialog.get(&"overlay") as Control
+	var placement := dialog.get(&"placement") as VBoxContainer
+	if overlay == null or placement == null:
+		return false
+	var previous_phase := int(overlay.get_meta(&"transition_phase", TransitionPhase.CLOSED))
+	if previous_phase == TransitionPhase.CLOSED:
+		if on_closed.is_valid():
+			on_closed.call()
+		return true
+	if previous_phase == TransitionPhase.EXITING:
+		overlay.set_meta(&"restore_focus_after_exit", restore_focus)
+		if on_closed.is_valid():
+			overlay.set_meta(&"transition_closed_callback", on_closed)
+		return true
+	_stop_transition(overlay)
+	overlay.set_meta(&"restore_focus_after_exit", restore_focus)
+	var generation := _begin_transition(
+		overlay,
+		TransitionPhase.EXITING,
+		on_closed,
+		&"transition_closed_callback",
+	)
+	var rest_position := overlay.get_meta(&"frame_rest_position", placement.position) as Vector2
+	if _reduced_motion():
+		overlay.modulate.a = 0.0
+		placement.position = rest_position + Vector2(0.0, EXIT_OFFSET_Y)
+		_finish_exit(dialog, generation)
+		return true
+	var tween := overlay.create_tween().set_parallel(true)
+	tween.set_ignore_time_scale(true)
+	overlay.set_meta(&"transition_tween", tween)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(overlay, "modulate:a", 0.0, EXIT_SECONDS)
+	tween.tween_property(
+		placement,
+		"position",
+		rest_position + Vector2(0.0, EXIT_OFFSET_Y),
+		EXIT_SECONDS,
+	)
+	tween.finished.connect(_finish_exit.bind(dialog, generation), CONNECT_ONE_SHOT)
+	return true
+
+
+static func transition_state_name(dialog: Dictionary) -> StringName:
 	var overlay := dialog.get(&"overlay") as Control
 	if overlay == null:
-		return false
-	_stop_transition(overlay)
+		return &"closed"
+	match int(overlay.get_meta(&"transition_phase", TransitionPhase.CLOSED)):
+		TransitionPhase.ENTERING:
+			return &"entering"
+		TransitionPhase.OPEN:
+			return &"open"
+		TransitionPhase.EXITING:
+			return &"exiting"
+		_:
+			return &"closed"
+
+
+static func is_transitioning(dialog: Dictionary) -> bool:
+	var state := transition_state_name(dialog)
+	return state == &"entering" or state == &"exiting"
+
+
+static func _begin_transition(
+		overlay: Control,
+		phase: int,
+		callback: Callable,
+		callback_meta: StringName,
+	) -> int:
+	var generation := int(overlay.get_meta(&"transition_generation", 0)) + 1
+	overlay.set_meta(&"transition_generation", generation)
+	overlay.set_meta(&"transition_phase", phase)
+	if callback.is_valid():
+		overlay.set_meta(callback_meta, callback)
+	elif overlay.has_meta(callback_meta):
+		overlay.remove_meta(callback_meta)
+	return generation
+
+
+static func _finish_entry(dialog: Dictionary, generation: int) -> void:
+	var overlay := dialog.get(&"overlay") as Control
+	var placement := dialog.get(&"placement") as VBoxContainer
+	var cancel := dialog.get(&"cancel") as Button
+	if not _generation_matches(overlay, generation, TransitionPhase.ENTERING):
+		return
+	_clear_tween(overlay)
+	overlay.modulate.a = 1.0
+	if placement != null:
+		placement.position = overlay.get_meta(&"frame_rest_position", placement.position) as Vector2
+	overlay.set_meta(&"transition_phase", TransitionPhase.OPEN)
+	overlay.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
+	_refresh_focus_scope(dialog)
+	if cancel != null and cancel.is_visible_in_tree() and not cancel.disabled:
+		cancel.grab_focus()
+	_call_and_clear(overlay, &"transition_opened_callback")
+
+
+static func _finish_exit(dialog: Dictionary, generation: int) -> void:
+	var overlay := dialog.get(&"overlay") as Control
+	var placement := dialog.get(&"placement") as VBoxContainer
+	if not _generation_matches(overlay, generation, TransitionPhase.EXITING):
+		return
+	_clear_tween(overlay)
+	var restore_focus := bool(overlay.get_meta(&"restore_focus_after_exit", true))
+	var return_candidate: Variant = overlay.get_meta(&"return_focus", null)
+	# Disable the modal subtree before hiding it so focus cannot be reassigned to
+	# another modal action while the owner's background scope is still disabled.
+	overlay.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	overlay.visible = false
 	overlay.modulate.a = 1.0
-	if not restore_focus or not overlay.has_meta(&"return_focus"):
-		return true
-	var return_candidate: Variant = overlay.get_meta(&"return_focus", null)
-	if is_instance_valid(return_candidate) and return_candidate is Control:
+	if placement != null:
+		placement.position = overlay.get_meta(&"frame_rest_position", placement.position) as Vector2
+	overlay.set_meta(&"transition_phase", TransitionPhase.CLOSED)
+	_restore_background_focus(overlay)
+	if restore_focus and is_instance_valid(return_candidate) and return_candidate is Control:
 		var return_focus := return_candidate as Control
 		if return_focus.is_visible_in_tree() and return_focus.focus_mode != Control.FOCUS_NONE:
-			return_focus.grab_focus.call_deferred()
-	return true
+			return_focus.grab_focus()
+	for meta: StringName in [
+		&"return_focus",
+		&"restore_focus_after_exit",
+		&"frame_rest_position",
+		&"transition_opened_callback",
+	]:
+		if overlay.has_meta(meta):
+			overlay.remove_meta(meta)
+	_call_and_clear(overlay, &"transition_closed_callback")
+
+
+static func _generation_matches(overlay: Control, generation: int, phase: int) -> bool:
+	return (
+		overlay != null
+		and int(overlay.get_meta(&"transition_generation", -1)) == generation
+		and int(overlay.get_meta(&"transition_phase", TransitionPhase.CLOSED)) == phase
+	)
 
 
 static func _stop_transition(overlay: Control) -> void:
-	if not overlay.has_meta(&"transition_tween"):
+	_clear_tween(overlay)
+
+
+static func _clear_tween(overlay: Control) -> void:
+	if overlay == null or not overlay.has_meta(&"transition_tween"):
 		return
 	var transition: Variant = overlay.get_meta(&"transition_tween")
 	if transition is Tween and (transition as Tween).is_valid():
 		(transition as Tween).kill()
 	overlay.remove_meta(&"transition_tween")
+
+
+static func _call_and_clear(overlay: Control, meta: StringName) -> void:
+	if overlay == null or not overlay.has_meta(meta):
+		return
+	var callback: Variant = overlay.get_meta(meta)
+	overlay.remove_meta(meta)
+	if callback is Callable and (callback as Callable).is_valid():
+		(callback as Callable).call()
+
+
+static func _suppress_background_focus(overlay: Control) -> void:
+	var owner := overlay.get_parent() as Control
+	if owner == null:
+		return
+	if not owner.has_meta(&"dialog_previous_focus_behavior"):
+		owner.set_meta(&"dialog_previous_focus_behavior", owner.focus_behavior_recursive)
+	owner.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	# Enabling this subtree while disabling its parent makes Godot immediately
+	# transfer background focus to the first modal Button. Keep it disabled while
+	# ENTERING; _finish_entry enables it and deliberately focuses safe Cancel.
+	overlay.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+
+
+static func _restore_background_focus(overlay: Control) -> void:
+	var owner := overlay.get_parent() as Control
+	if owner == null or not owner.has_meta(&"dialog_previous_focus_behavior"):
+		return
+	owner.focus_behavior_recursive = owner.get_meta(
+		&"dialog_previous_focus_behavior",
+		Control.FOCUS_BEHAVIOR_INHERITED,
+	)
+	owner.remove_meta(&"dialog_previous_focus_behavior")
+
+
+static func _reduced_motion() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 
 
 static func set_pending(dialog: Dictionary, pending: bool, pending_text := "PROCESSING…") -> bool:
@@ -271,6 +524,21 @@ static func is_pending(dialog: Dictionary) -> bool:
 	return overlay != null and bool(overlay.get_meta(&"pending", false))
 
 
+static func set_status(dialog: Dictionary, text: String, live: int = StatusLive.OFF) -> bool:
+	var status := dialog.get(&"status") as Label
+	if status == null:
+		return false
+	match live:
+		StatusLive.POLITE:
+			status.accessibility_live = AccessibilityServer.LIVE_POLITE
+		StatusLive.ASSERTIVE:
+			status.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
+		_:
+			status.accessibility_live = AccessibilityServer.LIVE_OFF
+	status.text = text
+	return true
+
+
 static func set_copy(
 		dialog: Dictionary,
 		title_text: String,
@@ -280,6 +548,7 @@ static func set_copy(
 		pending_text := "PROCESSING…",
 	) -> bool:
 	var title := dialog.get(&"title") as Label
+	var body_scroll := dialog.get(&"body_scroll") as ScrollContainer
 	var body := dialog.get(&"body") as Label
 	var confirm := dialog.get(&"confirm") as Button
 	var cancel := dialog.get(&"cancel") as Button
@@ -287,8 +556,12 @@ static func set_copy(
 		return false
 	title.text = title_text
 	body.text = body_text
+	if body_scroll != null:
+		body_scroll.accessibility_name = body_text
 	cancel.text = cancel_text
+	cancel.accessibility_name = cancel_text
 	confirm.set_meta(&"resting_text", confirm_text)
+	confirm.accessibility_name = confirm_text
 	confirm.text = pending_text if is_pending(dialog) else confirm_text
 	_relayout_dialog(dialog)
 	return true
@@ -315,15 +588,65 @@ static func _add_atmosphere(overlay: Control) -> void:
 	overlay.add_child(lower_glow)
 
 
-static func _bind_focus_scope(cancel: Button, confirm: Button) -> void:
+static func _refresh_focus_scope(dialog: Dictionary) -> void:
+	var actions := dialog.get(&"actions") as GridContainer
+	var cancel := dialog.get(&"cancel") as Button
+	var confirm := dialog.get(&"confirm") as Button
+	var body_scroll := dialog.get(&"body_scroll") as ScrollContainer
+	if actions == null or cancel == null or confirm == null or body_scroll == null:
+		return
+	var overflow := body_scroll.get_v_scroll_bar().visible
+	body_scroll.focus_mode = Control.FOCUS_ALL if overflow else Control.FOCUS_NONE
+	body_scroll.draw_focus_border = overflow
+	_bind_focus_scope(cancel, confirm, body_scroll, actions.columns == 1)
+
+
+static func _bind_focus_scope(
+		cancel: Button,
+		confirm: Button,
+		body_scroll: ScrollContainer,
+		stacked: bool,
+	) -> void:
+	if cancel == null or confirm == null or body_scroll == null:
+		return
 	var to_confirm := cancel.get_path_to(confirm)
 	var to_cancel := confirm.get_path_to(cancel)
-	for property: StringName in [
-		&"focus_neighbor_left", &"focus_neighbor_right", &"focus_neighbor_top",
-		&"focus_neighbor_bottom", &"focus_previous", &"focus_next",
-	]:
-		cancel.set(property, to_confirm)
-		confirm.set(property, to_cancel)
+	var cancel_self := cancel.get_path_to(cancel)
+	var confirm_self := confirm.get_path_to(confirm)
+	if stacked:
+		cancel.focus_neighbor_left = cancel_self
+		cancel.focus_neighbor_right = cancel_self
+		cancel.focus_neighbor_top = to_confirm
+		cancel.focus_neighbor_bottom = to_confirm
+		confirm.focus_neighbor_left = confirm_self
+		confirm.focus_neighbor_right = confirm_self
+		confirm.focus_neighbor_top = to_cancel
+		confirm.focus_neighbor_bottom = to_cancel
+	else:
+		cancel.focus_neighbor_left = to_confirm
+		cancel.focus_neighbor_right = to_confirm
+		cancel.focus_neighbor_top = cancel_self
+		cancel.focus_neighbor_bottom = cancel_self
+		confirm.focus_neighbor_left = to_cancel
+		confirm.focus_neighbor_right = to_cancel
+		confirm.focus_neighbor_top = confirm_self
+		confirm.focus_neighbor_bottom = confirm_self
+	if body_scroll.focus_mode == Control.FOCUS_NONE:
+		cancel.focus_previous = to_confirm
+		cancel.focus_next = to_confirm
+		confirm.focus_previous = to_cancel
+		confirm.focus_next = to_cancel
+		return
+	var cancel_to_body := cancel.get_path_to(body_scroll)
+	var confirm_to_body := confirm.get_path_to(body_scroll)
+	var body_to_cancel := body_scroll.get_path_to(cancel)
+	var body_to_confirm := body_scroll.get_path_to(confirm)
+	cancel.focus_previous = cancel_to_body
+	cancel.focus_next = to_confirm
+	confirm.focus_previous = to_cancel
+	confirm.focus_next = confirm_to_body
+	body_scroll.focus_previous = body_to_confirm
+	body_scroll.focus_next = body_to_cancel
 
 
 static func _relayout_dialog(dialog: Dictionary) -> void:
@@ -406,4 +729,4 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 			var action_height := 72.0 if short_height else ACTION_MIN_HEIGHT
 			cancel.custom_minimum_size = Vector2(action_width, action_height)
 			confirm.custom_minimum_size = Vector2(action_width, action_height)
-	_bind_focus_scope(cancel, confirm)
+	_refresh_focus_scope(dialog)

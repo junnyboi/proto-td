@@ -74,12 +74,13 @@ func _run() -> void:
 	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "tutorial route step did not block operator cards")
 	controls.call("set_interaction_enabled", true)
 	_check(bool(controls.call("request_resign_confirmation")), "resign confirmation did not open under composed tutorial fixture")
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"active")
 	_check(bool(battle.call("battle_confirmation_active")), "battle confirmation blocker was not published")
 	_check(not bool(deploy_bar.call("interaction_enabled")) and not bool(owned_spell_bar.call("interaction_enabled")), "confirmation did not gate deploy/spell interaction")
 	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "confirmation overwrote tutorial operator blocker")
 	_check(bool(controls.call("cancel_resign_confirmation")), "composed confirmation did not cancel")
-	await process_frame
+	_check(StringName(controls.call("confirmation_state_name")) == &"exiting" and bool(battle.call("battle_confirmation_active")), "Cancel released the gate before exit")
+	await _wait_for_confirmation_state(controls, &"closed")
 	_check(bool(deploy_bar.call("interaction_enabled")) and not bool(deploy_bar.call("operator_interaction_enabled")), "Cancel did not preserve the composed tutorial gate")
 	controls.call("set_interaction_enabled", false)
 	if skip != null:
@@ -94,9 +95,10 @@ func _run() -> void:
 	battle.set("ticks_per_frame_scale", 0.0)
 	controls.call("_process", 0.0)
 	_check(bool(controls.call("request_resign_confirmation")), "paused resign confirmation did not open")
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"active")
 	_check(bool(controls.call("cancel_resign_confirmation")), "paused resign confirmation did not cancel")
-	await process_frame
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0) and bool(battle.call("battle_confirmation_active")), "paused Cancel restored gates before exit")
+	await _wait_for_confirmation_state(controls, &"closed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Cancel did not restore an exact zero-speed snapshot")
 
 	var exact_scale := 2.375
@@ -104,14 +106,21 @@ func _run() -> void:
 	controls.call("_process", 0.0)
 	_check(StringName(controls.call("confirmation_state_name")) == &"closed", "initial confirmation state is not CLOSED")
 	_check(bool(controls.call("request_resign_confirmation")), "resign confirmation did not open")
-	await process_frame
+	_check(StringName(controls.call("confirmation_state_name")) == &"entering", "confirmation did not publish ENTERING immediately")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0) and bool(battle.call("battle_confirmation_active")), "entry did not immediately pause and gate battle")
+	await _wait_for_confirmation_state(controls, &"active")
 	var layer := battle.find_child("ResignConfirmLayer", true, false) as Control
 	var safe := layer.find_child("SafeFrame", true, false) as MarginContainer
 	var frame := layer.find_child("StateFrame", true, false) as Control
 	var panel := layer.find_child("ResignConfirm", true, false) as PanelContainer
 	var cancel := layer.find_child("CancelResign", true, false) as Button
 	var confirm := layer.find_child("ConfirmResign", true, false) as Button
+	var status := layer.find_child("Status", true, false) as Label
 	_check(layer.visible and StringName(controls.call("confirmation_state_name")) == &"active", "confirmation did not enter ACTIVE")
+	_check(status != null and status.get_parent().get_parent().name == "ActionDock", "withdraw status is not visible in the action dock")
+	_check(panel.accessibility_labeled_by_nodes.has(panel.get_path_to(layer.find_child("Title", true, false))), "withdraw panel is not labeled by Title")
+	_check(panel.accessibility_described_by_nodes.has(panel.get_path_to(status)), "withdraw panel is not described by Status")
+	_check(confirm.accessibility_name != cancel.accessibility_name and not confirm.accessibility_description.is_empty(), "withdraw actions lack distinct accessibility semantics")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation did not pause battle")
 	_check(cancel.has_focus(), "Cancel is not safe default focus")
 	_check(layer.mouse_filter == Control.MOUSE_FILTER_STOP and _rect_matches(layer.get_global_rect(), Rect2(Vector2.ZERO, Vector2(LANDSCAPE))), "confirmation is not a full input-exclusive viewport")
@@ -131,7 +140,10 @@ func _run() -> void:
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation allowed pause/speed input")
 	_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation allowed new deployment input")
 	_check(bool(controls.call("cancel_resign_confirmation")), "confirmation did not cancel")
-	await process_frame
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0) and bool(battle.call("battle_confirmation_active")), "Cancel restored speed or gate before exit finalizer")
+	controls.call("_unhandled_input", _action_event(&"ui_cancel"))
+	_check(root.is_input_handled() and StringName(controls.call("confirmation_state_name")) == &"exiting" and bool(battle.call("battle_confirmation_active")), "ui_cancel was not consumed throughout EXITING")
+	await _wait_for_confirmation_state(controls, &"closed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), exact_scale), "Cancel did not exactly restore speed snapshot")
 	_check(resign.has_focus() and model.result == BattleModel.Result.RUNNING, "Cancel failed focus/result invariance")
 
@@ -139,18 +151,20 @@ func _run() -> void:
 	deploy_bar.call("_start_placement", deployment_id)
 	_check(bool(deploy_bar.call("transient_intent_active")), "deployment intent did not start")
 	bool(controls.call("request_resign_confirmation"))
+	await _wait_for_confirmation_state(controls, &"active")
 	_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel deployment/facing intent")
 	bool(controls.call("cancel_resign_confirmation"))
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"closed")
 	spell_probe.call("_start_targeting", &"slow_field")
 	_check(StringName(spell_probe.call("targeting_spell")) == &"slow_field", "spell targeting did not start")
 	spell_probe.call("set_interaction_enabled", false)
 	_check(StringName(spell_probe.call("targeting_spell")).is_empty(), "SpellBar interaction gate did not cancel targeting")
 	spell_probe.call("set_interaction_enabled", true)
 	bool(controls.call("request_resign_confirmation"))
+	await _wait_for_confirmation_state(controls, &"active")
 	_check(not bool(owned_spell_bar.call("interaction_enabled")), "confirmation did not retain the owned SpellBar gate")
 	bool(controls.call("cancel_resign_confirmation"))
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"closed")
 	model.dp = model.config.dp_cap
 	var deploy_cell := _first_valid_deploy_cell(model, deployment_id)
 	_check(deploy_cell.x >= 0 and model.apply_action([&"deploy", deployment_id, deploy_cell, int(UnitState.Facing.RIGHT)]), "retreat fixture could not deploy")
@@ -158,19 +172,21 @@ func _run() -> void:
 		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
 		_check(bool(deploy_bar.call("transient_intent_active")), "retreat/selection intent did not start")
 		bool(controls.call("request_resign_confirmation"))
+		await _wait_for_confirmation_state(controls, &"active")
 		_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel retreat/selection intent")
 		bool(controls.call("cancel_resign_confirmation"))
-		await process_frame
+		await _wait_for_confirmation_state(controls, &"closed")
 		var deployed_unit := model.alive_unit_at(deploy_cell)
 		deploy_bar.call("_begin_heal_targeting", deployed_unit)
 		_check(bool(deploy_bar.call("is_mend_targeting")), "mend targeting fixture did not start")
 		bool(controls.call("request_resign_confirmation"))
+		await _wait_for_confirmation_state(controls, &"active")
 		_check(not bool(deploy_bar.call("is_mend_targeting")), "confirmation did not cancel mend targeting")
 		bool(controls.call("cancel_resign_confirmation"))
-		await process_frame
+		await _wait_for_confirmation_state(controls, &"closed")
 
 	bool(controls.call("request_resign_confirmation"))
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"active")
 	for viewport_size: Vector2i in [PORTRAIT, NARROW, SHORT]:
 		root.size = viewport_size
 		await process_frame
@@ -184,23 +200,51 @@ func _run() -> void:
 		_check(body_scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + 1.0, "body overlapped fixed dock at %s" % viewport_size)
 	confirm.grab_focus()
 	await process_frame
-	_check(confirm.has_focus() and confirm.focus_next == confirm.get_path_to(cancel), "focus trap failed on responsive sheet")
+	var forward_target := confirm.get_node_or_null(confirm.focus_next) as Control
+	_check(
+		confirm.has_focus() and forward_target != null and layer.is_ancestor_of(forward_target),
+		"focus trap failed on responsive sheet",
+	)
+	_send_action(&"ui_left")
+	await process_frame
+	_check(cancel.has_focus(), "wide ui_left did not swap confirmation actions")
+	_send_action(&"ui_down")
+	await process_frame
+	_check(cancel.has_focus(), "wide ui_down should keep the action focused")
 	root.size = LANDSCAPE
 	await process_frame
 	bool(controls.call("cancel_resign_confirmation"))
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"closed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), exact_scale), "responsive Cancel did not restore exact speed")
 
 	confirmation_trace.clear()
+	var committing_cancel_consumed := [false]
+	var committing_cancel_probe := func(state: StringName) -> void:
+		if state != &"committing":
+			return
+		controls.call("_unhandled_input", _action_event(&"ui_cancel"))
+		committing_cancel_consumed[0] = (
+			root.is_input_handled()
+			and StringName(controls.call("confirmation_state_name")) == &"committing"
+			and bool(battle.call("battle_confirmation_active"))
+		)
+	controls.connect("confirmation_state_changed", committing_cancel_probe)
 	bool(controls.call("request_resign_confirmation"))
-	await process_frame
+	await _wait_for_confirmation_state(controls, &"active")
 	_check(bool(controls.call("commit_resign_confirmation")), "Confirm did not accept resign")
+	controls.disconnect("confirmation_state_changed", committing_cancel_probe)
 	var dispatch_count := int(controls.call("resign_dispatch_count"))
-	_check(confirmation_trace == [&"active", &"committing", &"closed"], "resign state did not expose ACTIVE → COMMITTING → CLOSED")
-	_check(dispatch_count == 1 and StringName(controls.call("confirmation_state_name")) == &"closed", "resign did not dispatch once and return CLOSED")
+	_check(confirmation_trace == [&"entering", &"active", &"committing", &"exiting"], "resign state did not expose ENTERING → ACTIVE → COMMITTING → EXITING")
+	_check(committing_cancel_consumed[0], "ui_cancel was not consumed throughout COMMITTING")
+	_check(dispatch_count == 1 and StringName(controls.call("confirmation_state_name")) == &"exiting", "resign did not dispatch once and retain EXITING")
+	_check(bool(battle.call("battle_confirmation_active")) and layer.visible, "terminal confirmation released its gate before exit")
 	_check(not bool(controls.call("commit_resign_confirmation")) and int(controls.call("resign_dispatch_count")) == dispatch_count, "terminal confirmation dispatched twice")
-	for _frame: int in range(4):
-		await process_frame
+	battle.call("_detect_result_stamp")
+	var continue_during_exit := battle.find_child("ContinueButton", true, false) as Button
+	_check(continue_during_exit != null and not continue_during_exit.has_focus(), "terminal Continue focused before confirmation exit closed")
+	await _wait_for_confirmation_state(controls, &"closed")
+	_check(confirmation_trace == [&"entering", &"active", &"committing", &"exiting", &"closed"], "terminal exit did not finalize CLOSED")
+	await process_frame
 	var continue_button := battle.find_child("ContinueButton", true, false) as Button
 	var pan_hint := battle.find_child("MapPanHint", true, false) as Control
 	_check(model.result == BattleModel.Result.DEFEAT and not layer.visible, "terminal defeat retained confirmation")
@@ -217,6 +261,23 @@ func _run() -> void:
 	_cleanup(game, battle)
 	await create_timer(0.25).timeout
 	_finish()
+
+func _wait_for_confirmation_state(controls: Node, expected: StringName, timeout_seconds := 0.8) -> void:
+	var timeout := create_timer(timeout_seconds, true, false, true)
+	while StringName(controls.call("confirmation_state_name")) != expected and timeout.time_left > 0.0:
+		await process_frame
+
+
+func _send_action(action: StringName) -> void:
+	Input.parse_input_event(_action_event(action))
+
+
+func _action_event(action: StringName) -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	return event
+
 
 func _first_valid_deploy_cell(model: BattleModel, deployment_id: StringName) -> Vector2i:
 	for y: int in model.stage.grid_size().y:
