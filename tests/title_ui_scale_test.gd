@@ -42,14 +42,18 @@ func _run() -> void:
 
 func _verify_title_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
+	var synopsis := _title.find_child("CanonSynopsis", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
-	_check(wordmark.get_theme_font_size(&"font_size") == 152, "landscape wordmark is not doubled")
+	_check(wordmark.get_theme_font_size(&"font_size") == 138, "landscape wordmark did not retain near-doubled readability")
+	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 27, "canon synopsis typography is unreadable")
+	_check(synopsis != null and synopsis.get_visible_line_count() == synopsis.get_line_count(), "canon synopsis is clipped")
 	_check(start.get_theme_font_size(&"font_size") == 55, "Start typography is not doubled")
 	_check(settings.get_theme_font_size(&"font_size") == 46, "Settings typography is not doubled")
 	_check(start.custom_minimum_size.y >= 90.0, "Start container did not grow with typography")
 	_check(settings.custom_minimum_size.y >= 80.0, "Settings container did not grow with typography")
 	_check(_inside(_title, wordmark), "doubled wordmark overflows the title viewport")
+	_check(_inside(_title, synopsis), "canon synopsis overflows the title viewport")
 	_check(_inside(_title, start), "doubled Start action is outside the title viewport")
 	_check(_inside(_title, settings), "doubled Settings action is outside the title viewport")
 
