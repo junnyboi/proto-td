@@ -26,12 +26,13 @@ func _init() -> void:
 
 
 func configure(
-	summary: Dictionary,
-	class_label: String,
-	status_text: String,
-	xp_text: String,
-	reason_text: String,
-) -> void:
+		summary: Dictionary,
+		class_label: String,
+		status_text: String,
+		xp_text: String,
+		reason_text: String,
+		detail_tooltip: String = "",
+	) -> void:
 	hero_id = String(summary["hero_id"])
 	can_promote = bool(summary["can_promote"])
 	_callsign.text = String(summary["callsign"])
@@ -52,7 +53,7 @@ func configure(
 	text = "%s — %s — %s — %s — %s" % [
 		identity, _class_name.text, _status.text, _xp.text, _reason.text,
 	]
-	tooltip_text = text
+	tooltip_text = detail_tooltip if not detail_tooltip.is_empty() else text
 
 
 func set_selected(value: bool) -> void:

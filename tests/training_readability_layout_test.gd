@@ -79,6 +79,12 @@ func _run() -> void:
 		_check(style.content_margin_top >= 22.0 and style.content_margin_bottom >= 22.0, "Training inspector vertical padding is under 22px")
 	var roster_detail := screen.find_child("EligibilityReason", true, false) as Label
 	_check(roster_detail != null and roster_detail.text_overrun_behavior == TextServer.OVERRUN_NO_TRIMMING, "Training roster metadata can be clipped with ellipsis")
+	var roster_row := screen.find_child("Recruit_*", true, false) as Control
+	_check(roster_row != null, "Training roster did not render a hoverable operator row")
+	if roster_row != null:
+		_check(_has_detailed_stats(roster_row.tooltip_text), "Training roster tooltip omits detailed combat statistics")
+	if inspector != null:
+		_check(_has_detailed_stats(inspector.tooltip_text), "Training inspector tooltip omits detailed combat statistics")
 
 	root.size = Vector2i(720, 1280)
 	await process_frame
@@ -124,6 +130,17 @@ func _contained(inner: Rect2, outer: Rect2, tolerance: float) -> bool:
 		and inner.position.y >= outer.position.y - tolerance
 		and inner.end.x <= outer.end.x + tolerance
 		and inner.end.y <= outer.end.y + tolerance
+	)
+
+
+func _has_detailed_stats(value: String) -> bool:
+	return (
+		value.contains("HP ")
+		and value.contains("ATK ")
+		and value.contains("DEF ")
+		and value.contains(" DP ")
+		and value.contains("Block ")
+		and value.contains("Skill:")
 	)
 
 
