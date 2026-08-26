@@ -157,6 +157,7 @@ func _run() -> void:
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
 	var video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
 	var plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
+	_check(screen.find_child("SignalFilaments", true, false) == null, "circular signal-filament web returned")
 	_check(reveal.visible and pull.disabled and back.disabled, "five-star reveal did not lock browse")
 	_check(reveal_title.text == "LUNARIS VESSEL" and not reveal_stack.visible, "identity appeared before cinematic completion")
 	_check(stars.get_child_count() == 5 and video.stream != null and video.is_playing(), "five-star cinematic resources did not start")

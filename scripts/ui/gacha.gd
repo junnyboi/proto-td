@@ -98,7 +98,6 @@ var _premium_pull_dispatched := false
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
 var _cinematic_player: GachaCinematicPlayer
-var _reveal_burst: Control
 var _reveal_title_stack: VBoxContainer
 var _reveal_title: Label
 var _reveal_stars: HBoxContainer
@@ -608,24 +607,6 @@ func _build_reveal_layer() -> void:
 	_cinematic_player.cinematic_failed.connect(_on_cinematic_failed)
 	_reveal_layer.add_child(_cinematic_player)
 
-	_reveal_burst = Control.new()
-	_reveal_burst.name = "SignalFilaments"
-	_reveal_burst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_reveal_burst.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_reveal_layer.add_child(_reveal_burst)
-	for index: int in 12:
-		var ray := ColorRect.new()
-		ray.set_anchors_preset(Control.PRESET_CENTER)
-		ray.offset_left = -360.0
-		ray.offset_right = 360.0
-		ray.offset_top = -1.0
-		ray.offset_bottom = 1.0
-		ray.pivot_offset = Vector2(360, 1)
-		ray.rotation = deg_to_rad(float(index) * 15.0)
-		ray.color = Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
-		ray.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_reveal_burst.add_child(ray)
-
 	var safe_margin := MarginContainer.new()
 	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	safe_margin.add_theme_constant_override(&"margin_left", 24)
@@ -1012,8 +993,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 		star.modulate.a = 0.0
 		star.scale = Vector2(0.18, 0.18)
 		star.rotation = -TAU * 1.25
-	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
-	_reveal_burst.rotation = -0.08
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
@@ -1030,7 +1009,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_tween = create_tween()
 	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
-	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
 
 
 func _on_cinematic_started(cue_id: StringName) -> void:
