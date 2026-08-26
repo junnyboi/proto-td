@@ -23,6 +23,9 @@ const PORTRAIT_CARD_HEIGHT := 620.0
 const VIEWPORT_MARGIN := 24.0
 const TUTORIAL_TOP_SAFE := 88.0
 const DEPLOYMENT_CLEARANCE := 20.0
+const ACTION_TARGET_SIZE := Vector2(220.0, 64.0)
+const ACTION_FONT_SIZE := 27
+const ACTION_CONTENT_PADDING := 12.0
 const LIVE_SECONDS := 6.0
 
 const ROUTE_COLOR := Color(0.36, 0.78, 0.83, 0.26)
@@ -123,10 +126,14 @@ func relayout() -> void:
 	_card.reset_size()
 	_card.size = Vector2(card_width, maxf(card_height, _card.get_combined_minimum_size().y))
 	_card.position = Vector2(
-		(size.x - _card.size.x) * 0.5,
+		VIEWPORT_MARGIN,
 		TUTORIAL_TOP_SAFE + maxf(0.0, (available_height - _card.size.y) * 0.5),
 	)
-	_icon.custom_minimum_size = Vector2.ONE * (160.0 if portrait else 192.0)
+	_step_label.add_theme_font_size_override("font_size", 27 if portrait else 39)
+	_title.add_theme_font_size_override("font_size", 39 if portrait else 60)
+	_body.add_theme_font_size_override("font_size", 30 if portrait else 42)
+	_feedback_label.add_theme_font_size_override("font_size", 24 if portrait else 36)
+	_icon.custom_minimum_size = Vector2.ONE * (112.0 if portrait else 192.0)
 	_relayout_guides()
 
 
@@ -234,17 +241,19 @@ func _build_card() -> void:
 	_skip_button = _make_button("SkipTutorial", &"AuiSecondaryButton")
 	_skip_button.pressed.connect(_on_skip_pressed)
 	actions.add_child(_skip_button)
+	_apply_action_padding(_skip_button)
 	_primary_button = _make_button("TutorialPrimary", &"AuiPrimaryButton")
 	_primary_button.pressed.connect(_on_primary_pressed)
 	actions.add_child(_primary_button)
+	_apply_action_padding(_primary_button)
 
 
 func _make_button(button_name: String, variation: StringName) -> Button:
 	var button := Button.new()
 	button.name = button_name
 	button.theme_type_variation = variation
-	button.custom_minimum_size = Vector2(260.0, 84.0)
-	button.add_theme_font_size_override("font_size", 45)
+	button.custom_minimum_size = ACTION_TARGET_SIZE
+	button.add_theme_font_size_override("font_size", ACTION_FONT_SIZE)
 	var action_ink := Color("f5efe1")
 	for state: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
@@ -253,6 +262,19 @@ func _make_button(button_name: String, variation: StringName) -> Button:
 	button.add_theme_color_override(&"font_outline_color", Color(0.02, 0.04, 0.08, 0.96))
 	button.add_theme_constant_override(&"outline_size", 3)
 	return button
+
+
+func _apply_action_padding(button: Button) -> void:
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var source := button.get_theme_stylebox(state)
+		if source == null:
+			continue
+		var padded := source.duplicate() as StyleBox
+		padded.content_margin_left = ACTION_CONTENT_PADDING
+		padded.content_margin_top = ACTION_CONTENT_PADDING
+		padded.content_margin_right = ACTION_CONTENT_PADDING
+		padded.content_margin_bottom = ACTION_CONTENT_PADDING
+		button.add_theme_stylebox_override(state, padded)
 
 
 func _set_step(next: Step) -> void:
@@ -287,10 +309,10 @@ func _refresh_copy() -> void:
 			_title.text = _copy(&"ui.tutorial.route.title", "Read the route")
 			_body.text = _copy(
 				&"ui.tutorial.route.body",
-				"Enemies enter at red and follow the lit path to your blue base. First Stand allows 3 leaks; the 4th ends the mission.",
+				"Enemies start from the portal and follow the lit path to your base crystal. This mission allows 3 leaks, the 4th leak will end the mission.",
 			)
 			_icon.texture = ROUTE_TEXTURE
-			_primary_button.text = _copy(&"ui.tutorial.route.action", "Show deployment")
+			_primary_button.text = _copy(&"ui.tutorial.route.action", "NEXT")
 			_primary_button.visible = true
 			_skip_button.text = _copy(&"ui.tutorial.skip", "Skip tutorial")
 		Step.DEPLOY:

@@ -13,6 +13,8 @@ var faction_id: StringName = FilterType.FACTION_ALL
 var _rows: Array[Dictionary] = []
 var _show_status_tabs := true
 var _compact := false
+var _roomy := false
+var _dense_inline := false
 var _inline := false
 var _controls: BoxContainer
 var _status_row: HFlowContainer
@@ -58,7 +60,21 @@ func set_rows(rows: Array) -> void:
 func set_compact(value: bool) -> void:
 	_compact = value
 	if _status_row != null and _inline:
-		_status_row.custom_minimum_size.x = 360.0 if _compact else 408.0
+		_status_row.custom_minimum_size.x = _inline_status_width()
+	_refresh_controls()
+
+
+func set_roomy(value: bool) -> void:
+	_roomy = value
+	_refresh_controls()
+
+
+func set_dense_inline(value: bool) -> void:
+	_dense_inline = value
+	if _status_row != null and _inline:
+		_status_row.custom_minimum_size.x = _inline_status_width()
+	if _faction_row != null:
+		_faction_row.add_theme_constant_override(&"h_separation", 4 if _dense_inline else 8)
 	_refresh_controls()
 
 
@@ -69,7 +85,7 @@ func set_inline(value: bool) -> void:
 		_controls.add_theme_constant_override(&"separation", 12)
 		_status_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if value else Control.SIZE_EXPAND_FILL
 		_status_row.custom_minimum_size.x = (
-			(360.0 if _compact else 408.0) if value else 0.0
+			_inline_status_width() if value else 0.0
 		)
 		_faction_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_controls.queue_sort()
@@ -117,8 +133,9 @@ func _add_faction_button(value: StringName) -> void:
 	button.name = "%sFactionFilter" % String(value).to_pascal_case()
 	button.focus_mode = Control.FOCUS_ALL
 	button.expand_icon = true
-	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	button.add_theme_constant_override(&"icon_separation", 14)
 	if value != FilterType.FACTION_ALL:
 		button.icon = FactionHeraldryType.symbol(value)
 		button.tooltip_text = FactionHeraldryType.display_name(value)
@@ -140,7 +157,8 @@ func _refresh_controls() -> void:
 			else UiCopyType.text(&"ui.roster.tab.active", "Active")
 		)
 		button.text = "%s  %d" % [label.to_upper(), count]
-		button.custom_minimum_size = Vector2(176.0 if _compact else 200.0, 54.0)
+		var status_width := 176.0 if _dense_inline else (176.0 if _compact else 200.0)
+		button.custom_minimum_size = Vector2(status_width * (2.0 if _roomy else 1.0), 78.0 if _roomy else 54.0)
 		Style.apply_button(button, &"selected" if value == status else &"quiet")
 
 	for raw: Variant in _faction_buttons:
@@ -152,12 +170,29 @@ func _refresh_controls() -> void:
 			if value == FilterType.FACTION_ALL
 			else str(count)
 		)
-		button.custom_minimum_size = Vector2(
-			108.0 if value == FilterType.FACTION_ALL else (72.0 if _compact else 84.0),
-			54.0 if _compact else 66.0,
+		button.alignment = (
+			HORIZONTAL_ALIGNMENT_CENTER
+			if value == FilterType.FACTION_ALL
+			else HORIZONTAL_ALIGNMENT_RIGHT
 		)
-		button.add_theme_constant_override(&"icon_max_width", 45 if _compact else 54)
+		var faction_width := (
+			(84.0 if value == FilterType.FACTION_ALL else 48.0)
+			if _dense_inline
+			else (108.0 if value == FilterType.FACTION_ALL else (72.0 if _compact else 84.0))
+		)
+		var faction_height := 54.0 if _compact else 66.0
+		button.custom_minimum_size = Vector2(
+			faction_width * (2.0 if _roomy else 1.0),
+			78.0 if _roomy else faction_height,
+		)
+		button.add_theme_constant_override(&"icon_max_width", 28 if _dense_inline else (45 if _compact else 54))
 		Style.apply_button(button, &"selected" if value == faction_id else &"quiet")
+
+
+func _inline_status_width() -> float:
+	if _dense_inline:
+		return 360.0
+	return 360.0 if _compact else 408.0
 
 
 func _on_status_pressed(value: StringName) -> void:

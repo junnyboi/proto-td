@@ -15,13 +15,16 @@ static func create(font_size: int, z_index: int, viewport: Vector2) -> Label:
 	hud.position = Vector2(16, 8)
 	hud.autowrap_mode = TextServer.AUTOWRAP_OFF
 	hud.clip_text = true
+	hud.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hud.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	Style.apply_label(hud, &"body")
 	hud.add_theme_font_size_override(&"font_size", font_size)
 	hud.add_theme_font_size_override(&"outline_size", 2)
 	hud.add_theme_color_override(&"font_color", Style.IVORY)
 	hud.add_theme_color_override(&"font_outline_color", Color(Style.INK_DEEP, 0.94))
-	hud.add_theme_stylebox_override(&"normal", Style.panel_style(&"hud"))
+	var hud_style := Style.panel_style(&"hud").duplicate() as StyleBox
+	hud_style.content_margin_left = 48.0
+	hud.add_theme_stylebox_override(&"normal", hud_style)
 	hud.z_index = z_index
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	relayout(hud, viewport)
@@ -34,9 +37,9 @@ static func relayout(hud: Label, viewport: Vector2) -> void:
 	var compact := _uses_compact_layout(viewport)
 	hud.position = Vector2(12, 8) if compact else Vector2(16, 8)
 	hud.size = (
-		Vector2(viewport.x * 0.50, 82.0)
+		Vector2(viewport.x * 0.50, 164.0)
 		if compact
-		else Vector2(viewport.x - 32.0, 50.0)
+		else Vector2(viewport.x - 32.0, 100.0)
 	)
 
 
