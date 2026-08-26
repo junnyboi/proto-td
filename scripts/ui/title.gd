@@ -27,6 +27,7 @@ const TITLE_BUTTON_CORNER_RADIUS := 22
 const LANDSCAPE_ENTRY_DROP_RATIO := 0.24
 const PORTRAIT_ENTRY_DROP_RATIO := 0.16
 const SHORT_ENTRY_DROP_RATIO := 0.10
+const ENTRY_STACK_EXTRA_DROP := 64
 const MASTER_BUS := &"Master"
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
@@ -577,7 +578,9 @@ func _apply_responsive_layout() -> void:
 	var entry_drop := roundi(viewport_size.y * entry_drop_ratio)
 	_entry_host.add_theme_constant_override(&"margin_left", horizontal_margin)
 	_entry_host.add_theme_constant_override(&"margin_right", horizontal_margin)
-	_entry_host.add_theme_constant_override(&"margin_top", vertical_margin + entry_drop)
+	_entry_host.add_theme_constant_override(
+		&"margin_top", vertical_margin + entry_drop + ENTRY_STACK_EXTRA_DROP,
+	)
 	_entry_host.add_theme_constant_override(&"margin_bottom", vertical_margin)
 	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
