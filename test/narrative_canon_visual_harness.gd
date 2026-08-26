@@ -50,12 +50,16 @@ func _run() -> void:
 			"leaks": 0,
 			"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 40}],
 			"class_entitlements_granted": [&"mage_apprentice"],
-			"xp_awards": [{"hero_id": hero_id, "xp": 6}],
+			"xp_awards": [{"hero_id": hero_id, "delta": 100}],
 			"dead_hero_ids": [],
 			"premium_life_losses": [],
 		})
 		_mount(load("res://scenes/results.tscn").instantiate())
-		for _frame: int in range(6):
+		await get_tree().create_timer(0.9).timeout
+		var rewards_scroll := get_tree().root.find_child("RewardsScroll", true, false) as ScrollContainer
+		if rewards_scroll != null:
+			rewards_scroll.scroll_vertical = 100000
+		for _frame: int in range(3):
 			await get_tree().process_frame
 	else:
 		push_error("Unknown narrative visual mode: %s" % _mode)

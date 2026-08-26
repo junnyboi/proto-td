@@ -230,7 +230,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	var xp_awards: Array = result.get("xp_awards", [])
 	for i: int in xp_awards.size():
 		var award: Dictionary = xp_awards[i]
-		var amount := int(award.get("xp", award.get("amount", 0)))
+		var amount := int(award.get("delta", 0))
 		var xp_row := _result_card(
 			"XpAward%d" % i,
 			_hero_name(String(award.get("hero_id", ""))).to_upper(),
