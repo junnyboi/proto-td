@@ -96,9 +96,11 @@ func _run() -> void:
 	var filters := screen.find_child("RosterFilterControls", true, false) as BoxContainer
 	var filter_summary := screen.find_child("TrainingFilterSummary", true, false) as Label
 	var promotion_tab := screen.find_child("PromotionReadyRosterTab", true, false) as Button
+	var faction_filter := screen.find_child("SolcrestAccordFactionFilter", true, false) as Button
 	_check(outer != null and page != null and body != null, "Training workspace is incomplete")
 	_check(roster_scroll != null and inspector != null and inspector_scroll != null, "Training local panels are incomplete")
 	_check(roster_controls != null and filters != null and promotion_tab != null, "Training header/filter composition is incomplete")
+	_check(faction_filter != null and String(faction_filter.accessibility_name).contains("SOLCREST") and String(faction_filter.accessibility_name).contains(": "), "faction filter accessibility does not distinguish its heraldry and count")
 	_check(screen.find_child("PromotionReadyCount", true, false) == null, "redundant promotion-ready metric was not removed")
 	if outer != null:
 		_check(outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "desktop Training still uses document scrolling")
