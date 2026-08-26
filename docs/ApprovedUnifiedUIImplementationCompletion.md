@@ -28,7 +28,7 @@ The approved unified-interface concept is now implemented across the synchronize
 |---|---|
 | Direct import | Passed on Godot 4.7.2 stable |
 | Bounded headless boot | Passed |
-| Repository tests | 37/37 passed (31 standalone regressions plus six smoke scripts) |
+| Repository tests | 39/39 passed (33 standalone regressions plus six smoke scripts) |
 | Localization parity | Passed for `en-US` and `zh-CN` |
 | Consolidated error scan | Clean |
 | Non-battle visual matrix | 12/12 captures passed at 1280×720 and 720×1280 |
@@ -39,4 +39,4 @@ The complete audit is recorded in [`UI_IMPLEMENTATION_GAP_AUDIT.md`](UI_IMPLEMEN
 
 ## Release status
 
-Canonical source `0547f8e9298cf08bf0a55de1013fc58304429ead` is pushed and accepted. The exact 135,735,904-byte Web PCK, streamed-cinematic mappings, direct/managed browser flow, fullscreen geometry, representative input, and clean console are verified. WebDev checkpoint `7f533c6d` is ready; the public domain still serves predecessor `index_e5122afa.pck` and requires promotion through the WebDev **Publish** control.
+Canonical source `b15be587eb5b7d7ebba400d719c3e141f1f3faf5` is pushed and accepted. Its runtime is byte-identical to verified source `71c395e` and exact 135,976,112-byte PCK `index-71c395e_a7c079ae.pck`. Stream mappings, direct/managed browser flow, fullscreen geometry, representative input, and clean console are verified. WebDev checkpoint `04dc9aae` is ready; the public domain still serves predecessor `index_e5122afa.pck` and requires promotion through the WebDev **Publish** control.
