@@ -71,6 +71,8 @@ func _run() -> void:
 	var confirm_body := screen.find_child("ConfirmationBodyGrid", true, false) as GridContainer
 	var confirm_dock := screen.find_child("ConfirmationActionDock", true, false) as PanelContainer
 	var confirm_actions := screen.find_child("ConfirmationActions", true, false) as GridContainer
+	var confirm_context := screen.find_child("ConfirmationContextCopy", true, false) as Label
+	var confirm_review := screen.find_child("ConfirmationTransactionCopy", true, false) as Label
 	var confirm_pull := screen.find_child("ConfirmPremiumPull", true, false) as Button
 	var header_cancel := screen.find_child("CancelPremiumPull", true, false) as Button
 	var dock_cancel := screen.find_child("CancelPremiumPullDock", true, false) as Button
@@ -96,13 +98,18 @@ func _run() -> void:
 	_check(confirm_body_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "confirmation body permits horizontal scrolling")
 	_check(confirm_body_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "confirmation body is not the flexible region")
 	_check(confirm_title.autowrap_mode != TextServer.AUTOWRAP_OFF, "confirmation title does not wrap")
+	_check(confirm_title.get_theme_font_size(&"font_size") == 44, "narrow confirmation title did not retain its responsive enlarged scale")
+	_check(confirm_context.get_theme_font_size(&"font_size") == 36 and confirm_review.get_theme_font_size(&"font_size") == 36, "confirmation body typography is not doubled")
+	_check(confirm_pull.get_theme_font_size(&"font_size") == 36 and dock_cancel.get_theme_font_size(&"font_size") == 36, "confirmation action typography is not doubled")
+	_check(not confirm_pull.clip_text and not dock_cancel.clip_text and not header_cancel.clip_text, "confirmation actions clip doubled copy")
+	_check(confirm_pull.autowrap_mode != TextServer.AUTOWRAP_OFF and dock_cancel.autowrap_mode != TextServer.AUTOWRAP_OFF, "confirmation dock actions do not wrap")
 	_check(game.get("campaign").runtime_projection() == before_cancel, "opening confirmation mutated campaign state")
 	_check(screen.call("confirmation_projection_snapshot") == before_cancel, "confirmation did not snapshot runtime projection")
-	_check(root.gui_get_focus_owner() == header_cancel, "safe entry focus is not header Cancel")
+	_check(not header_cancel.visible and header_cancel.focus_mode == Control.FOCUS_NONE, "narrow confirmation duplicates the Cancel action")
+	_check(root.gui_get_focus_owner() == dock_cancel, "safe narrow entry focus is not dock Cancel")
 	if header_cancel != null and dock_cancel != null and confirm_pull != null:
-		_check(header_cancel.focus_next == header_cancel.get_path_to(dock_cancel), "header Cancel focus escapes scope")
 		_check(dock_cancel.focus_next == dock_cancel.get_path_to(confirm_pull), "dock Cancel focus order is incorrect")
-		_check(confirm_pull.focus_next == confirm_pull.get_path_to(header_cancel), "Confirm does not wrap focus to header Cancel")
+		_check(confirm_pull.focus_next == confirm_pull.get_path_to(dock_cancel), "Confirm does not wrap focus to dock Cancel")
 
 	var i18n := root.get_node_or_null("I18n")
 	if i18n != null:

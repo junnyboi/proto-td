@@ -18,6 +18,7 @@ const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.30
 const TITLE_UI_SCALE := 1.15
+const TITLE_FONT_SCALE := 2.0
 const ENTRY_FADE_SECONDS := 0.56
 const ENTRY_STAGGER_SECONDS := 0.09
 const HOVER_SCALE := Vector2(1.025, 1.025)
@@ -141,6 +142,9 @@ func _build_screen() -> void:
 	_wordmark.name = "Wordmark"
 	_wordmark.text = "PROTOS DEFENSE"
 	_wordmark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_wordmark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_wordmark.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_wordmark.max_lines_visible = 2
 	_wordmark.add_theme_constant_override(&"outline_size", 12)
 	_wordmark.add_theme_color_override(&"font_outline_color", Color(VOID, 0.94))
 	StagingSkinType.apply_display_type(_wordmark, _title_font_size(66), IVORY, 650)
@@ -161,6 +165,7 @@ func _build_screen() -> void:
 	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_orbit_rule.add_child(seal)
 	_orbit_rule.add_child(_rule(Color(MOON_CYAN, 0.72)))
+	_orbit_rule.visible = false
 
 	_start_button = _entry_button("StartButton", true)
 	_start_button.pressed.connect(_on_start_pressed)
@@ -178,7 +183,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 	button.name = node_name
 	button.custom_minimum_size = Vector2(
 		_title_size(520.0 if primary else 430.0),
-		_title_size(68.0 if primary else 58.0),
+		_title_size(82.0 if primary else 72.0),
 	)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.focus_mode = Control.FOCUS_ALL
@@ -513,14 +518,20 @@ func _apply_responsive_layout() -> void:
 		return
 	_backdrop.fit_top_cover(viewport_size)
 	var portrait := viewport_size.y > viewport_size.x
-	var entry_width := minf(viewport_size.x - 48.0, _title_size(660.0 if not portrait else 520.0))
-	var entry_height := _title_size(300.0 if not portrait else 276.0)
-	var entry_top := minf(viewport_size.y - entry_height - 28.0, viewport_size.y * (0.58 if not portrait else 0.66))
-	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(24.0, entry_top))
+	var narrow := viewport_size.x <= 520.0
+	var short := viewport_size.y <= 560.0
+	var entry_width := minf(viewport_size.x - 48.0, _title_size(900.0 if not portrait else 520.0))
+	var entry_height := minf(
+		viewport_size.y - 32.0,
+		_title_size(650.0),
+	)
+	var entry_top := minf(viewport_size.y - entry_height - 16.0, viewport_size.y * (0.58 if not portrait else 0.66))
+	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(16.0, entry_top))
 	_entry_host.size = Vector2(entry_width, entry_height)
-	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(66 if not portrait else 46))
-	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(68.0 if not portrait else 60.0))
-	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.82, _title_size(430.0)), _title_size(58.0 if not portrait else 54.0))
+	var wordmark_size := 26 if narrow else (46 if portrait or short else 66)
+	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(wordmark_size))
+	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
+	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
 
 
 func _title_size(value: float) -> float:
@@ -528,4 +539,4 @@ func _title_size(value: float) -> float:
 
 
 func _title_font_size(value: int) -> int:
-	return roundi(float(value) * TITLE_UI_SCALE)
+	return roundi(float(value) * TITLE_UI_SCALE * TITLE_FONT_SCALE)

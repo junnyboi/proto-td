@@ -43,9 +43,14 @@ func _verify_title_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
-	_check(wordmark.get_theme_font_size(&"font_size") == 76, "landscape wordmark scale changed")
-	_check(start.get_theme_font_size(&"font_size") == 28, "Start typography scale changed")
-	_check(settings.get_theme_font_size(&"font_size") == 23, "Settings typography scale changed")
+	_check(wordmark.get_theme_font_size(&"font_size") == 152, "landscape wordmark is not doubled")
+	_check(start.get_theme_font_size(&"font_size") == 55, "Start typography is not doubled")
+	_check(settings.get_theme_font_size(&"font_size") == 46, "Settings typography is not doubled")
+	_check(start.custom_minimum_size.y >= 90.0, "Start container did not grow with typography")
+	_check(settings.custom_minimum_size.y >= 80.0, "Settings container did not grow with typography")
+	_check(_inside(_title, wordmark), "doubled wordmark overflows the title viewport")
+	_check(_inside(_title, start), "doubled Start action is outside the title viewport")
+	_check(_inside(_title, settings), "doubled Settings action is outside the title viewport")
 
 
 func _verify_settings(label: String, viewport: Vector2i) -> void:
@@ -73,6 +78,8 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(header.get_global_rect().end.y <= scroll.get_global_rect().position.y + EPSILON, "%s header entered body scroll" % label)
 	_check(scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + EPSILON, "%s dock entered body scroll" % label)
 	_check(apply.custom_minimum_size.y >= 44.0 and back.custom_minimum_size.y >= 44.0, "%s actions are not touch safe" % label)
+	_check(not apply.clip_text and not back.clip_text, "%s title actions clip doubled copy" % label)
+	_check(apply.autowrap_mode != TextServer.AUTOWRAP_OFF and back.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s title actions do not wrap doubled copy" % label)
 	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
 	var compact := viewport.x <= 720 or float(viewport.x) / float(viewport.y) <= 1.2
 	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
