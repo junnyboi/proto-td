@@ -27,6 +27,10 @@ func _ready() -> void:
 
 func set_vertical_layout(enabled: bool) -> void:
 	vertical = enabled
+	if _label != null:
+		_label.size_flags_horizontal = (
+			Control.SIZE_EXPAND_FILL if enabled else Control.SIZE_SHRINK_BEGIN
+		)
 
 
 func set_draft_mode(enabled: bool) -> void:

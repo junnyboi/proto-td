@@ -583,7 +583,7 @@ func _build_layers() -> void:
 	_status_label.text = "RECEIVING CINEMATIC"
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_color_override(&"font_color", Color(0.92, 0.83, 0.55))
-	_status_label.add_theme_font_size_override(&"font_size", 13)
+	_status_label.add_theme_font_size_override(&"font_size", 20)
 	status_box.add_child(_status_label)
 	_status_progress = ProgressBar.new()
 	_status_progress.name = "CinematicStreamProgress"

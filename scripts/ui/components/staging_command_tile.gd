@@ -12,10 +12,10 @@ const MUTED := Color("8d9aa3")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.10
 const FOCUS_PULSE_MAX_ALPHA := 0.26
-const TILE_TITLE_FONT_SIZE := 18
-const TILE_STATE_FONT_SIZE := 16
-const RAIL_TITLE_FONT_SIZE := 36
-const RAIL_STATE_FONT_SIZE := 32
+const TILE_TITLE_FONT_SIZE := 27
+const TILE_STATE_FONT_SIZE := 24
+const RAIL_TITLE_FONT_SIZE := 54
+const RAIL_STATE_FONT_SIZE := 48
 
 var _glyph: TextureRect
 var _title_label: Label

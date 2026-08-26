@@ -98,7 +98,7 @@ static func apply_button(button: Button, role: StringName) -> void:
 	button.add_theme_stylebox_override(&"pressed", pressed)
 	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(CYAN))
 	button.add_theme_stylebox_override(&"disabled", disabled)
-	StagingSkinType.apply_display_type(button, 18, ink, 560)
+	StagingSkinType.apply_display_type(button, 27, ink, 560)
 	var presentation := button.get_node_or_null("PresentationLabel") as Label
 	if presentation != null:
 		var transparent := Color(0, 0, 0, 0)
@@ -107,7 +107,7 @@ static func apply_button(button: Button, role: StringName) -> void:
 			&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
 		]:
 			button.add_theme_color_override(item, transparent)
-		StagingSkinType.apply_display_type(presentation, 18, ink, 560)
+		StagingSkinType.apply_display_type(presentation, 27, ink, 560)
 	else:
 		for item: StringName in [
 			&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
@@ -118,7 +118,7 @@ static func apply_button(button: Button, role: StringName) -> void:
 
 static func apply_label(label: Label, role: StringName) -> void:
 	var color := IVORY
-	var size := 18
+	var size := 27
 	var display := false
 	var weight := 520
 	match role:
@@ -128,23 +128,23 @@ static func apply_label(label: Label, role: StringName) -> void:
 			display = true
 		&"title":
 			color = IVORY
-			size = 38
+			size = 57
 			display = true
 			weight = 620
 		&"heading":
 			color = GOLD
-			size = 22
+			size = 33
 			display = true
 			weight = 580
 		&"body":
 			color = IVORY
-			size = 18
+			size = 27
 		&"detail", &"dense_detail":
 			color = MUTED
 			size = GameTypographyType.DETAIL
 		&"metric":
 			color = CYAN
-			size = 21
+			size = 32
 			display = true
 	if display:
 		StagingSkinType.apply_display_type(label, size, color, weight)
@@ -165,7 +165,7 @@ static func apply_line_edit(field: LineEdit, invalid: bool = false) -> void:
 	field.add_theme_color_override(&"caret_color", GOLD)
 	field.add_theme_color_override(&"selection_color", CYAN_DIM)
 	field.add_theme_color_override(&"placeholder_color", MUTED)
-	field.add_theme_font_size_override(&"font_size", 18)
+	field.add_theme_font_size_override(&"font_size", 27)
 
 
 static func apply_progress(progress: ProgressBar) -> void:

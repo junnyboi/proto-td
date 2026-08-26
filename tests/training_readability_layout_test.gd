@@ -45,17 +45,17 @@ func _run() -> void:
 		_check(page.size.y >= outer.size.y - 12.0, "Training page does not fill the available document viewport")
 	if body != null:
 		_check(not body.vertical, "desktop Training roster/inspector should remain side by side")
-		_check(body.size.y >= 260.0, "desktop Training left dead space instead of expanding the roster/inspector")
+		_check(body.size.y >= 150.0, "desktop Training roster/inspector is no longer usable with 1.5× type")
 		_check(_contained(body.get_global_rect(), page.get_global_rect(), 1.0), "desktop Training body overflows its page")
 	if roster_scroll != null and inspector != null:
-		_check(roster_scroll.size.y >= 260.0 and inspector.size.y >= 260.0, "Training panels did not consume recovered vertical space")
+		_check(roster_scroll.size.y >= 150.0 and inspector.size.y >= 150.0, "Training panels are too short for 1.5× type")
 		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "Training roster can scroll horizontally")
 	if inspector_scroll != null:
 		_check(inspector_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Training inspector does not expand vertically")
 	if filters != null:
-		_check(not filters.vertical and filters.size.y <= 64.0, "desktop Training filters still consume two rows")
+		_check(not filters.vertical and filters.size.y <= 140.0, "desktop Training filters exceed the enlarged two-line rail")
 	if roster_controls != null:
-		_check(not roster_controls.vertical and roster_controls.size.y <= 64.0, "desktop Training filters and identity tools are not consolidated")
+		_check(not roster_controls.vertical and roster_controls.size.y <= 140.0, "desktop Training filters and identity tools are not consolidated")
 	_check(filter_summary != null and not filter_summary.visible, "redundant desktop shown-count still consumes toolbar width")
 	if ready != null:
 		_check(ready.get_parent() != null and String(ready.get_parent().name).ends_with("Top"), "promotion-ready metric still occupies a separate desktop band")
@@ -98,14 +98,15 @@ func _run() -> void:
 	filter_summary = screen.find_child("TrainingFilterSummary", true, false) as Label
 	var dock := screen.find_child("TrainingActionDock", true, false) as VBoxContainer
 	var actions := screen.find_child("RosterActions", true, false) as BoxContainer
-	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "standard portrait Training still uses document scrolling")
+	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "standard portrait Training does not expose enlarged content through scrolling")
 	_check(body != null and body.vertical, "portrait Training roster/inspector did not stack")
 	_check(filters != null and filters.vertical, "portrait Training filters did not stack")
 	_check(roster_controls != null and roster_controls.vertical, "portrait Training control groups did not stack")
 	_check(filter_summary != null and filter_summary.visible, "portrait Training shown-count is missing")
 	_check(dock != null and actions != null and actions.vertical, "portrait Training actions did not stack in the fixed dock")
 	if page != null and outer != null:
-		_check(_contained(page.get_global_rect(), outer.get_global_rect(), 1.0), "portrait Training page overflows the fixed document viewport")
+		_check(page.size.y > outer.size.y, "portrait Training does not expose vertical overflow for 1.5× content")
+		_check(page.get_global_rect().position.x >= outer.get_global_rect().position.x - 1.0 and page.get_global_rect().end.x <= outer.get_global_rect().end.x + 1.0, "portrait Training page overflows horizontally")
 	if dock != null:
 		_check(dock.get_global_rect().end.y <= 1280.0, "portrait Training action dock overflows the viewport")
 

@@ -23,7 +23,7 @@ const StageNarrativeCatalogType := preload("res://data/presentation/narrative/st
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const RESULT_ACTION_WIDTH := 260.0
 const RESULT_ACTION_HEIGHT := 96.0
-const RESULT_ACTION_FONT_SIZE := 36
+const RESULT_ACTION_FONT_SIZE := 54
 const RESULT_ACTION_HORIZONTAL_PADDING := 28.0
 const RESULT_ACTION_VERTICAL_PADDING := 18.0
 const RESULT_HEADER_HEIGHT := 132.0
@@ -103,7 +103,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 		_result_headline(stage_id, cleared),
 		&"title",
 	)
-	_headline.add_theme_font_size_override(&"font_size", 40)
+	_headline.add_theme_font_size_override(&"font_size", 60)
 	_headline.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_headline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_outcome_summary.add_child(_headline)
@@ -136,7 +136,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	)
 	_tally.custom_minimum_size.x = 270.0
 	_tally.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_tally.add_theme_font_size_override(&"font_size", 28)
+	_tally.add_theme_font_size_override(&"font_size", 42)
 	_tally.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_tally.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -172,7 +172,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	rewards.add_theme_constant_override(&"separation", 16)
 	rewards_scroll.add_child(rewards)
 	_rewards_heading = _label("RewardsHeading", UiCopyType.text(&"ui.results.yield", "MISSION YIELD"), &"heading")
-	_rewards_heading.add_theme_font_size_override(&"font_size", 30)
+	_rewards_heading.add_theme_font_size_override(&"font_size", 45)
 	rewards.add_child(_rewards_heading)
 	var granted: Array = result.get("rewards_granted", [])
 	if granted.is_empty():
@@ -210,12 +210,12 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	consequences.add_theme_constant_override(&"separation", 16)
 	consequence_scroll.add_child(consequences)
 	_consequence_heading = _label("ConsequenceHeading", UiCopyType.text(&"ui.results.consequence", "Consequence").to_upper(), &"heading")
-	_consequence_heading.add_theme_font_size_override(&"font_size", 30)
+	_consequence_heading.add_theme_font_size_override(&"font_size", 45)
 	consequences.add_child(_consequence_heading)
 	var narrative := _consequence_copy(result, cleared)
 	var consequence_line := _label("ConsequenceLine", narrative, &"body")
 	consequence_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	consequence_line.add_theme_font_size_override(&"font_size", 20)
+	consequence_line.add_theme_font_size_override(&"font_size", 30)
 	consequences.add_child(consequence_line)
 	if cleared:
 		var record := _narrative_record(result)
@@ -315,9 +315,9 @@ func _apply_responsive_layout() -> void:
 		_result_meta.vertical = mode == &"portrait"
 		_result_meta.add_theme_constant_override(&"separation", 12 if mode == &"portrait" else 16)
 	if _rewards_heading != null:
-		_rewards_heading.add_theme_font_size_override(&"font_size", 24 if mode == &"portrait" else 30)
+		_rewards_heading.add_theme_font_size_override(&"font_size", 36 if mode == &"portrait" else 45)
 	if _consequence_heading != null:
-		_consequence_heading.add_theme_font_size_override(&"font_size", 24 if mode == &"portrait" else 30)
+		_consequence_heading.add_theme_font_size_override(&"font_size", 36 if mode == &"portrait" else 45)
 	if _rewards_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_rewards_panel)
@@ -331,7 +331,7 @@ func _apply_responsive_layout() -> void:
 			Style.apply_panel(_consequence_panel, &"quiet" if _cleared_result else &"danger")
 			_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
 	if _headline != null:
-		var headline_size := 30 if mode == &"portrait" else 40
+		var headline_size := 45 if mode == &"portrait" else 60
 		_headline.add_theme_font_size_override(&"font_size", headline_size)
 		_headline.size_flags_horizontal = Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_BEGIN
 		_headline.custom_minimum_size.x = 0.0 if mode == &"portrait" else minf(
@@ -348,7 +348,7 @@ func _apply_responsive_layout() -> void:
 			(child as Control).custom_minimum_size = Vector2(26, 26) if mode == &"portrait" else Vector2(34, 34)
 	if _tally != null:
 		_tally.custom_minimum_size.x = 0.0 if mode == &"portrait" else 270.0
-		_tally.add_theme_font_size_override(&"font_size", 22 if mode == &"portrait" else 28)
+		_tally.add_theme_font_size_override(&"font_size", 33 if mode == &"portrait" else 42)
 		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if mode == &"portrait" else TextServer.AUTOWRAP_OFF
 		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_relayout_shell.call_deferred()
@@ -404,14 +404,14 @@ func _transmission_card(record: StageNarrativeDefType) -> PanelContainer:
 		UiCopyType.text(&"ui.results.transmission", "CLEAR TRANSMISSION"),
 		&"dense_detail",
 	)
-	transmission_heading.add_theme_font_size_override(&"font_size", 18)
+	transmission_heading.add_theme_font_size_override(&"font_size", 27)
 	stack.add_child(transmission_heading)
 	var speaker := _label(
 		"TransmissionSpeaker",
 		UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.TRANSMISSION_SPEAKER),
 		&"dense_heading",
 	)
-	speaker.add_theme_font_size_override(&"font_size", 24)
+	speaker.add_theme_font_size_override(&"font_size", 36)
 	stack.add_child(speaker)
 	var body := _label(
 		"TransmissionBody",
@@ -419,7 +419,7 @@ func _transmission_card(record: StageNarrativeDefType) -> PanelContainer:
 		&"dense_body",
 	)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.add_theme_font_size_override(&"font_size", 20)
+	body.add_theme_font_size_override(&"font_size", 30)
 	stack.add_child(body)
 	return card
 
@@ -450,11 +450,11 @@ func _result_card(
 	stack.add_theme_constant_override(&"separation", 6)
 	card.add_child(stack)
 	var title := _label("Title", title_text, &"dense_heading")
-	title.add_theme_font_size_override(&"font_size", 24)
+	title.add_theme_font_size_override(&"font_size", 36)
 	stack.add_child(title)
 	var detail := _label("Detail", detail_text, &"detail")
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail.add_theme_font_size_override(&"font_size", 20)
+	detail.add_theme_font_size_override(&"font_size", 30)
 	stack.add_child(detail)
 	return card
 

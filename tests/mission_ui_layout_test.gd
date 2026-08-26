@@ -64,6 +64,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	if body != null:
 		var portrait := viewport.y > viewport.x
 		_check(body.columns == (1 if portrait else 2), "%s mission body uses the wrong column count" % label)
+		if not portrait and field_panel != null and intel_panel != null:
+			_check(field_panel.size.x >= intel_panel.size.x * 2.5, "%s mission intelligence did not shrink to the quarter-width rail" % label)
+			_check(intel_panel.size.x <= viewport.x * 0.32, "%s mission intelligence remains oversized" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
 		_check(actions.columns == (1 if viewport.y > viewport.x else 3), "%s mission actions use the wrong column count" % label)
@@ -73,7 +76,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(button != null and presentation != null, "%s %s presentation is missing" % [label, button_name])
 		if button != null and presentation != null:
 			_check(_inside(button, presentation), "%s %s label overflows its button" % [label, button_name])
-			_check(presentation.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART and not presentation.clip_text, "%s %s does not use safe wrapping" % [label, button_name])
+			_check(not presentation.clip_text, "%s %s clips its presentation label" % [label, button_name])
+			if button_name != "BackButton":
+				_check(presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s %s does not use its explicit two-line layout" % [label, button_name])
 	for label_name: String in [
 		"MissionTitle", "FieldTeamHeading", "PickCounter", "MissionIntelHeading",
 		"OBJECTIVEValue", "THREATValue", "WHYITMATTERSValue", "FIELDNOTEValue",
@@ -88,23 +93,44 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var back := _mission.find_child("BackButton", true, false) as Button
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
-	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 16, "%s name filter is below the readable density floor" % label)
+	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
+	var active_tab := _mission.find_child("ActiveRosterTab", true, false) as Button
+	var fallen_tab := _mission.find_child("FallenRosterTab", true, false) as Button
+	for tab: Button in [active_tab, fallen_tab]:
+		_check(tab != null, "%s roster status tab is missing" % label)
+		if tab != null:
+			_check(tab.custom_minimum_size.x >= 176.0 and tab.custom_minimum_size.y >= 54.0, "%s roster tab lacks full text padding" % label)
+			_check(tab.get_theme_font_size(&"font_size") >= 27, "%s roster tab text is below the global 1.5x scale" % label)
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
+		_check(operator_grid.columns == (1 if viewport.y > viewport.x else 2), "%s operator grid does not use the split-card column contract" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
-				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 16, "%s operator-card copy is below 16px" % label)
+				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
+				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
+				_check(portrait != null, "%s operator-card portrait pane is missing" % label)
 				if card_label != null:
-					_check(card_label.offset_left >= 16.0 and -card_label.offset_right >= 16.0, "%s operator-card horizontal padding is below 16px" % label)
+					_check(_inside(child as Control, card_label), "%s operator-card information pane overflows" % label)
+					_check(card_label.offset_left >= 22.0, "%s operator-card information padding is below 22px" % label)
 					_check(-card_label.offset_bottom >= 16.0, "%s operator-card bottom padding is below 16px" % label)
+					_check(card_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and card_label.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "%s operator information is not centered in its pane" % label)
+				if portrait != null:
+					_check(_inside(child as Control, portrait), "%s operator portrait pane overflows" % label)
+					_check(portrait.size.x >= 90.0 and portrait.size.y >= (child as Control).size.y - 24.0, "%s operator portrait is not enlarged" % label)
+					_check(card_label == null or card_label.get_global_rect().end.x <= portrait.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "regular mission still uses document scrolling")
-	if viewport.x >= 1000 and training != null and back != null:
-		_check(training.custom_minimum_size.x >= 240.0, "%s Train Operators lacks a safe minimum width" % label)
-		_check(back.custom_minimum_size.x >= 170.0, "%s Back lacks a safe minimum width" % label)
+	if training != null and back != null:
+		_check(is_equal_approx(training.custom_minimum_size.x, 168.0), "%s Train Operators is not 30 percent shorter" % label)
+		_check(is_equal_approx(back.custom_minimum_size.x, 119.0), "%s Back is not 30 percent shorter" % label)
+		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
+	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect
+	_check(faction_symbol != null, "%s First Stand faction symbol is missing" % label)
+	if faction_symbol != null and faction_symbol.texture != null:
+		_check(faction_symbol.texture.resource_path.ends_with(".png"), "%s First Stand symbol does not use the transparent PNG" % label)
 
 
 func _has_scroll_ancestor(node: Node) -> bool:

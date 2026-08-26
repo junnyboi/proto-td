@@ -46,13 +46,15 @@ func _verify_sheet(context: String, viewport: Vector2i) -> void:
 	var confirm := dialog[&"confirm"] as Button
 	var cancel := dialog[&"cancel"] as Button
 	var actions := dialog[&"actions"] as GridContainer
-	_check(title.get_theme_font_size(&"font_size") == 44, "%s dialog title is not doubled" % context)
-	_check(body.get_theme_font_size(&"font_size") == 36, "%s dialog body is not doubled" % context)
-	_check(confirm.get_theme_font_size(&"font_size") == 36 and cancel.get_theme_font_size(&"font_size") == 36, "%s dialog actions are not doubled" % context)
+	var sheet_scroll := dialog[&"sheet_scroll"] as ScrollContainer
+	_check(title.get_theme_font_size(&"font_size") == 66, "%s dialog title is not 1.5×" % context)
+	_check(body.get_theme_font_size(&"font_size") == 54, "%s dialog body is not 1.5×" % context)
+	_check(confirm.get_theme_font_size(&"font_size") == 54 and cancel.get_theme_font_size(&"font_size") == 54, "%s dialog actions are not 1.5×" % context)
 	_check(title.autowrap_mode != TextServer.AUTOWRAP_OFF and body.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s dialog copy does not wrap" % context)
 	_check(confirm.autowrap_mode != TextServer.AUTOWRAP_OFF and cancel.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s dialog actions do not wrap" % context)
 	_check(not confirm.clip_text and not cancel.clip_text, "%s dialog actions clip copy" % context)
 	_check(_inside(overlay, panel), "%s dialog panel overflows viewport" % context)
+	_check(sheet_scroll != null and sheet_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s dialog does not expose its enlarged content through scrolling" % context)
 	_check(confirm.custom_minimum_size.y >= 72.0 and cancel.custom_minimum_size.y >= 72.0, "%s dialog action containers are undersized" % context)
 	_check(actions.columns == (1 if viewport.x <= 620 else 2), "%s dialog action composition is wrong" % context)
 	owner.queue_free()

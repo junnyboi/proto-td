@@ -20,6 +20,7 @@
 - [x] Convert Mission Control to a full-safe-area workspace, remove its decorative outer frame, and eliminate text/action overflow across 1280×720, 1024×576, 720×1280, and 390×844 layouts.
 - [x] Add dedicated cold-blizzard Slow Field cast and expiration cues through GPT Image 2 carrier anchors, audio-bearing video extraction, deterministic mastering, and one-shot presentation lifecycle tests.
 - [x] Refit the annotated Stage Clear screen with stage-number outcome copy, adjacent stars, enlarged tally and information typography, unframed Mission Yield rows, generous desktop margins, compact portrait scroll surfaces, and centered fixed 260×96 flat actions.
+- [x] Increase runtime typography by exactly 50% across the game and refit Mission Preparation with a transparent First Stand icon, padded status tabs, 3:1 roster/intelligence split, split information/portrait cards, and 30%-shorter clean actions.
 
 # Premium Resonance Cinematic Completion
 

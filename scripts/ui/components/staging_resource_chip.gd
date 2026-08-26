@@ -33,7 +33,7 @@ func configure(row: Dictionary) -> void:
 func set_compact(compact: bool) -> void:
 	custom_minimum_size = Vector2(108.0 if compact else 148.0, 40.0 if compact else 42.0)
 	_icon.custom_minimum_size = Vector2(23.0, 23.0) if compact else Vector2(26.0, 26.0)
-	StagingSkinType.apply_display_type(_value, 14 if compact else 15, StagingSkinType.IVORY, 520)
+	StagingSkinType.apply_display_type(_value, 21 if compact else 23, StagingSkinType.IVORY, 520)
 	_plus.visible = not compact
 	_plus.custom_minimum_size.x = 0.0 if compact else 20.0
 
@@ -68,7 +68,7 @@ func _build_content() -> void:
 	_value.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_value.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	StagingSkinType.apply_display_type(_value, 17, StagingSkinType.IVORY, 520)
+	StagingSkinType.apply_display_type(_value, 26, StagingSkinType.IVORY, 520)
 	row.add_child(_value)
 
 	_plus = Label.new()
@@ -78,7 +78,7 @@ func _build_content() -> void:
 	_plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_plus.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	StagingSkinType.apply_display_type(_plus, 16, StagingSkinType.MUTED, 520)
+	StagingSkinType.apply_display_type(_plus, 24, StagingSkinType.MUTED, 520)
 	row.add_child(_plus)
 
 

@@ -189,7 +189,7 @@ func _build_card() -> void:
 	_step_label = Label.new()
 	_step_label.name = "StepLabel"
 	_step_label.theme_type_variation = &"AuiDenseDetailLabel"
-	_step_label.add_theme_font_size_override("font_size", 26)
+	_step_label.add_theme_font_size_override("font_size", 39)
 	column.add_child(_step_label)
 	var content := HBoxContainer.new()
 	content.name = "TutorialContent"
@@ -210,19 +210,19 @@ func _build_card() -> void:
 	_title = Label.new()
 	_title.name = "TutorialTitle"
 	_title.theme_type_variation = &"AuiDenseHeadingLabel"
-	_title.add_theme_font_size_override("font_size", 40)
+	_title.add_theme_font_size_override("font_size", 60)
 	copy_column.add_child(_title)
 	_body = Label.new()
 	_body.name = "TutorialBody"
 	_body.theme_type_variation = &"AuiDenseBodyLabel"
-	_body.add_theme_font_size_override("font_size", 28)
+	_body.add_theme_font_size_override("font_size", 42)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	copy_column.add_child(_body)
 	_feedback_label = Label.new()
 	_feedback_label.name = "TutorialFeedback"
 	_feedback_label.theme_type_variation = &"AuiDenseDetailLabel"
-	_feedback_label.add_theme_font_size_override("font_size", 24)
+	_feedback_label.add_theme_font_size_override("font_size", 36)
 	_feedback_label.add_theme_color_override("font_color", Color("f0cf65"))
 	_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	copy_column.add_child(_feedback_label)
@@ -244,7 +244,7 @@ func _make_button(button_name: String, variation: StringName) -> Button:
 	button.name = button_name
 	button.theme_type_variation = variation
 	button.custom_minimum_size = Vector2(260.0, 84.0)
-	button.add_theme_font_size_override("font_size", 30)
+	button.add_theme_font_size_override("font_size", 45)
 	var action_ink := Color("f5efe1")
 	for state: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",

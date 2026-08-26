@@ -213,7 +213,7 @@ func _memorial_row(hero: Dictionary) -> Button:
 	margin.add_child(copy)
 	var callsign := _label(TrainingSupportType.callsign(hero).to_upper(), &"body")
 	callsign.name = "MemorialRowCallsign"
-	callsign.add_theme_font_size_override(&"font_size", 19)
+	callsign.add_theme_font_size_override(&"font_size", 29)
 	copy.add_child(callsign)
 	var class_copy := _label(_class_name(String(hero["current_class_id"])).to_upper(), &"detail")
 	class_copy.name = "MemorialRowClass"

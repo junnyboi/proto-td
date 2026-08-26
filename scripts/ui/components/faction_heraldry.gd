@@ -12,7 +12,7 @@ const ACTIVE_FACTION: StringName = &"lunaris_reliquary"
 const SYMBOLS := {
 	&"solcrest_accord": preload("res://assets/ui/factions/solcrest_accord_symbol.webp"),
 	&"vesper_circuit": preload("res://assets/ui/factions/vesper_circuit_symbol.webp"),
-	&"lunaris_reliquary": preload("res://assets/ui/factions/lunaris_reliquary_symbol.webp"),
+	&"lunaris_reliquary": preload("res://assets/ui/factions/lunaris_reliquary_symbol.png"),
 	&"crimson_aegis": preload("res://assets/ui/factions/crimson_aegis_symbol.webp"),
 }
 const BANNERS := {
