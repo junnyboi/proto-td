@@ -44,6 +44,9 @@ var _name_sort: StringName = &"recruitment"
 var _counter: Label = null
 var _selected_line: Label = null
 var _start: AetheriaButtonType = null
+var _launch_status: AetheriaLabelType = null
+var _launch_locked := false
+var _launch_error_code: StringName = &""
 var _training: AetheriaButtonType = null
 var _back: AetheriaButtonType = null
 var _grid: GridContainer = null
@@ -559,13 +562,18 @@ func _build_footer() -> BoxContainer:
 		UiCopyType.text(&"ui.squad.predeployment_heading", "Pre-deployment"),
 		&"eyebrow",
 	))
-	readiness.add_child(_label(
+	_launch_status = _label(
 		"ReadinessCopy",
 		UiCopyType.text(
 			&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
 		),
 		&"detail",
-	))
+	)
+	_launch_status.accessibility_name = UiCopyType.text(
+		&"ui.squad.predeployment_heading", "Pre-deployment",
+	)
+	_launch_status.accessibility_live = AccessibilityServer.LIVE_POLITE
+	readiness.add_child(_launch_status)
 	_footer.add_child(readiness)
 	_actions = GridContainer.new()
 	_actions.name = "MissionActions"
@@ -883,6 +891,9 @@ func _hire_error_text(code: StringName) -> String:
 
 
 func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
+	if _launch_locked or Game.mission_launch_retry_pending():
+		(_buttons[hero_id] as Button).set_pressed_no_signal(_picked.has(hero_id))
+		return
 	if pressed:
 		if _picked.size() >= _stage.squad_size:
 			(_buttons[hero_id] as Button).set_pressed_no_signal(false)
@@ -901,6 +912,8 @@ func _refresh() -> void:
 	for raw_id: Variant in _buttons:
 		var hero_id := StringName(raw_id)
 		var button := _buttons[hero_id] as AetheriaButtonType
+		button.disabled = _launch_locked or Game.mission_launch_retry_pending()
+		button.focus_mode = Control.FOCUS_NONE if button.disabled else Control.FOCUS_ALL
 		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
 		_apply_operator_card_text_style(button)
 	var selected_names: Array[String] = []
@@ -915,10 +928,100 @@ func _refresh() -> void:
 			UiCopyType.text(&"ui.squad.field_team", "Field Team"), " • ".join(selected_names),
 		]
 	)
-	_start.disabled = _picked.is_empty() or _narrative_missing
+	var retry_pending := Game.mission_launch_retry_pending()
+	_start.disabled = _launch_locked or (not retry_pending and (_picked.is_empty() or _narrative_missing))
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
 	LunarisOpsType.apply_button(_start, &"disabled" if _start.disabled else &"primary")
+	_training.disabled = _launch_locked or retry_pending
+	_training.focus_mode = Control.FOCUS_NONE if _training.disabled else Control.FOCUS_ALL
+	LunarisOpsType.apply_button(_training, &"disabled" if _training.disabled else &"gold")
+	if not _training.disabled:
+		_apply_clean_training_style(_training)
+	_refresh_launch_status()
 	_wire_focus()
+
+
+func _refresh_launch_status() -> void:
+	if _launch_status == null or _start == null:
+		return
+	var status_text := UiCopyType.text(
+		&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+	)
+	var action_text := UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
+	var is_error := false
+	if _launch_locked:
+		status_text = UiCopyType.text(
+			&"ui.squad.launch_committing", "Authenticating deployment record…",
+		)
+		action_text = UiCopyType.text(&"ui.squad.launch_committing_action", "Deploying…")
+	elif Game.mission_launch_retry_pending():
+		status_text = UiCopyType.text(
+			&"ui.squad.launch_retryable_error",
+			"Deployment was not saved. Retry the exact field-team order.",
+		)
+		action_text = UiCopyType.text(&"ui.squad.launch_retry_action", "Retry Deployment")
+		is_error = true
+	elif not _launch_error_code.is_empty():
+		status_text = _launch_error_text(_launch_error_code)
+		is_error = true
+	_launch_status.text = status_text
+	_launch_status.accessibility_description = status_text
+	_launch_status.accessibility_live = (
+		AccessibilityServer.LIVE_ASSERTIVE if is_error else AccessibilityServer.LIVE_POLITE
+	)
+	_launch_status.add_theme_color_override(
+		&"font_color", LunarisOpsType.DANGER if is_error else LunarisOpsType.MUTED,
+	)
+	_start.text = action_text
+	_start.set_presentation_text(action_text, _start_action_presentation(action_text))
+	_start.tooltip_text = action_text
+	_start.accessibility_name = action_text
+
+
+func _start_action_presentation(action_text: String) -> String:
+	if I18n.locale() == &"zh-CN" or _launch_locked:
+		return action_text
+	if Game.mission_launch_retry_pending():
+		return "RETRY\nDEPLOYMENT"
+	return _action_presentation_text("StartBattle", action_text)
+
+
+func _launch_error_text(code: StringName) -> String:
+	match code:
+		&"attempt_pending", &"strategic_mutation_pending":
+			return UiCopyType.text(
+				&"ui.squad.launch_pending_error",
+				"Another Company command is still pending. Return to Mission Control and resume it.",
+			)
+		&"unknown_hero", &"dead_hero", &"premium_hero_out_of_lives", &"missing_catalog", &"squad_too_large":
+			return UiCopyType.text(
+				&"ui.squad.launch_roster_error",
+				"The field team changed before deployment. Review the selected operators and try again.",
+			)
+		&"stage_locked", &"unknown_campaign_stage":
+			return UiCopyType.text(
+				&"ui.squad.launch_stage_error",
+				"This operation is not currently authorized. Return to Mission Control.",
+			)
+		&"campaign_inactive":
+			return UiCopyType.text(
+				&"ui.squad.launch_campaign_error",
+				"The active campaign record is unavailable. Return to the Title screen and resume the campaign.",
+			)
+		&"store_write_failed", &"store_restore_failed":
+			return UiCopyType.text(
+				&"ui.squad.launch_retryable_error",
+				"Deployment was not saved. Retry the exact field-team order.",
+			)
+		&"store_integrity_failure", &"invalid_campaign_state":
+			return UiCopyType.text(
+				&"ui.squad.launch_integrity_error",
+				"Campaign records could not be authenticated. Return to Mission Control before retrying.",
+			)
+	return UiCopyType.text(
+		&"ui.squad.launch_unknown_error",
+		"Deployment was rejected safely. Review Mission Control and try again.",
+	)
 
 
 func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
@@ -1194,18 +1297,33 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 
 
 func _on_training() -> void:
+	if _launch_locked or Game.mission_launch_retry_pending():
+		return
 	Sfx.play("ui_click")
 	Game.training_call(&"open", &"mission")
 
 
 func _on_back() -> void:
+	Game.cancel_mission_launch_retry()
 	Sfx.play("ui_back")
 	Game.open_stage_select()
 
 
 func _on_start() -> void:
+	if _launch_locked or _start == null or _start.disabled:
+		return
 	Sfx.play("ui_confirm")
-	Game.start_stage(_stage.id, _picked)
+	_launch_locked = true
+	_launch_error_code = &""
+	_refresh()
+	var committed: Dictionary = Game.start_stage(_stage.id, _picked)
+	if committed.get("accepted", false):
+		return
+	_launch_locked = false
+	_launch_error_code = StringName(committed.get("error_code", &"unknown"))
+	_refresh()
+	if not _start.disabled:
+		_start.grab_focus.call_deferred()
 
 
 func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabelType:
