@@ -30,7 +30,8 @@
 - [x] Preserve the user-approved concept and implementation plan verbatim under repository-root `docs/`.
 - [x] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
 - [x] Close material visual/interaction gaps while preserving every authoritative behavior contract.
-- [ ] Run final Web export, browser, WebDev checkpoint, public deployment, and push gates on the accepted implementation.
+- [x] Run final Web export, direct/managed browser, WebDev checkpoint, and source push gates on the accepted implementation.
+- [ ] Promote WebDev checkpoint `1580d598` through **Publish**, then verify public exact PCK `index_d1210454.pck`, input, cinematic transport, geometry, and console.
 
 # Faction-Led Soundtrack Redesign
 

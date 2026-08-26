@@ -146,7 +146,7 @@ The approved pass completed the release-blocking Phase 0 and the material hierar
 | Authority and mutation boundaries | Expanded campaign, gacha, Vahalla, Results, battle, and modal regressions pass; Confirm-only mutations and Cancel invariance remain asserted. |
 | Responsive/accessibility | Narrow 540×960 sheet bounds/action stacking, 720×1280 bottom sheets, persistent Training actions, battle deck separation, focusable commands, and safe focus restoration are covered and visually verified. |
 | Localization | English and Simplified Chinese catalogs contain 470 parity-checked keys with typed placeholders for the added surfaces. |
-| Native validation | Godot 4.7.2 import, bounded boot, and all 32 current repository tests pass. |
+| Native validation | Godot 4.7.2 import, bounded boot, and all 35 current repository tests pass. |
 | Visual evidence | Twelve non-battle and eight battle captures pass at 1280×720 and 720×1280; logs scan clean. |
 
 The implementation is accepted for Web export and deployment. Detailed evidence is recorded in [`ApprovedUnifiedUIImplementationCompletion.md`](ApprovedUnifiedUIImplementationCompletion.md) and [`verification/approved-phase0/inspection-notes.md`](ui-concepts/ui-revamp/verification/approved-phase0/inspection-notes.md).
