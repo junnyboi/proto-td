@@ -15,6 +15,10 @@ const STREAM_ARG_PREFIX := "--cinematic-stream="
 const CACHE_DIR := "user://cinematic-streams"
 const COPY_CHUNK_BYTES := 1024 * 1024
 const DOWNLOAD_TIMEOUT_SECONDS := 75.0
+const PLATE_HOVER_SCALE := 1.025
+const PLATE_HOVER_RESPONSE := 12.0
+const PLATE_HOVER_PARALLAX := Vector2(12.0, 8.0)
+const PLATE_HOVER_TINT := Color(1.055, 1.035, 1.0, 1.0)
 
 const STREAMS := {
 	"lunaris-vessel-landscape": {
@@ -83,6 +87,11 @@ var _active_profile: Dictionary = {}
 var _active_stream_key := ""
 var _allow_video_start := false
 var _playback_active := false
+var _reduced_motion := false
+var _plate_hovered := false
+var _plate_hover_target_scale := Vector2.ONE
+var _plate_hover_target_offset := Vector2.ZERO
+var _plate_hover_target_tint := Color.WHITE
 
 var _stream_urls: Dictionary = {}
 var _request: HTTPRequest
@@ -95,7 +104,7 @@ var _last_progress_bytes := -1
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	clip_contents = true
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_layers()
 	configure_streams(OS.get_cmdline_user_args())
 	get_viewport().size_changed.connect(_fit_current_viewport)
@@ -120,6 +129,8 @@ func configure_streams(arguments: PackedStringArray) -> void:
 
 func play_cinematic(premium_id: String, reduced_motion: bool) -> bool:
 	_stop_playback()
+	_reduced_motion = reduced_motion
+	_reset_final_plate_hover(true)
 	var profile: Dictionary = PROFILES.get(premium_id, {})
 	_active_profile = profile.duplicate()
 	if _active_profile.is_empty():
@@ -170,6 +181,8 @@ func stop() -> void:
 	_allow_video_start = false
 	_active_stream_key = ""
 	_active_profile.clear()
+	_reduced_motion = false
+	_reset_final_plate_hover(true)
 	_stop_playback()
 	if _final_plate != null:
 		_final_plate.visible = false
@@ -187,6 +200,10 @@ func video_player() -> VideoStreamPlayer:
 
 func final_plate() -> TextureRect:
 	return _final_plate
+
+
+func final_plate_hovered() -> bool:
+	return _plate_hovered
 
 
 func is_portrait_orientation() -> bool:
@@ -209,17 +226,16 @@ func download_key() -> String:
 	return _download_key
 
 
-func _process(_delta: float) -> void:
-	if _request == null or _download_key.is_empty():
-		return
-	var downloaded := _request.get_downloaded_bytes()
-	var total := _request.get_body_size()
-	if total <= 0:
-		total = _download_total
-	if downloaded == _last_progress_bytes:
-		return
-	_last_progress_bytes = downloaded
-	_update_download_status(downloaded, total)
+func _process(delta: float) -> void:
+	if _request != null and not _download_key.is_empty():
+		var downloaded := _request.get_downloaded_bytes()
+		var total := _request.get_body_size()
+		if total <= 0:
+			total = _download_total
+		if downloaded != _last_progress_bytes:
+			_last_progress_bytes = downloaded
+			_update_download_status(downloaded, total)
+	_update_final_plate_hover(delta)
 
 
 func _start_download(stream_key: String) -> void:
@@ -490,9 +506,13 @@ func _build_layers() -> void:
 	_final_plate.name = "CinematicFinalPlate"
 	_final_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_final_plate.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_final_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_final_plate.mouse_filter = Control.MOUSE_FILTER_PASS
+	_final_plate.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_final_plate.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_final_plate.visible = false
+	_final_plate.mouse_entered.connect(_on_final_plate_mouse_entered)
+	_final_plate.mouse_exited.connect(_on_final_plate_mouse_exited)
+	_final_plate.gui_input.connect(_on_final_plate_gui_input)
 	add_child(_final_plate)
 
 	_status_panel = PanelContainer.new()
@@ -550,7 +570,62 @@ func _fit_current_viewport() -> void:
 	_video.size = fitted_size
 	_final_plate.position = fitted_position
 	_final_plate.size = fitted_size
+	_final_plate.pivot_offset = fitted_size * 0.5
 	if _status_panel != null:
 		var panel_width := minf(460.0, maxf(280.0, viewport_size.x - 40.0))
 		_status_panel.position = Vector2((viewport_size.x - panel_width) * 0.5, 74.0)
 		_status_panel.size = Vector2(panel_width, 58.0)
+
+
+func _on_final_plate_mouse_entered() -> void:
+	if _reduced_motion or _final_plate == null or not _final_plate.visible:
+		return
+	_plate_hovered = true
+	_plate_hover_target_scale = Vector2.ONE * PLATE_HOVER_SCALE
+	_plate_hover_target_tint = PLATE_HOVER_TINT
+
+
+func _on_final_plate_mouse_exited() -> void:
+	_reset_final_plate_hover(false)
+
+
+func _on_final_plate_gui_input(event: InputEvent) -> void:
+	if (
+			not _plate_hovered
+			or _reduced_motion
+			or not (event is InputEventMouseMotion)
+			or _final_plate.size.x <= 0.0
+			or _final_plate.size.y <= 0.0
+	):
+		return
+	var motion := event as InputEventMouseMotion
+	var local_ratio: Vector2 = (motion.position / _final_plate.size - Vector2(0.5, 0.5)) * 2.0
+	_plate_hover_target_offset = Vector2(
+		clampf(local_ratio.x, -1.0, 1.0) * -PLATE_HOVER_PARALLAX.x,
+		clampf(local_ratio.y, -1.0, 1.0) * -PLATE_HOVER_PARALLAX.y,
+	)
+
+
+func _update_final_plate_hover(delta: float) -> void:
+	if _final_plate == null:
+		return
+	if _reduced_motion or not _final_plate.visible:
+		_reset_final_plate_hover(true)
+		return
+	var weight := 1.0 - exp(-PLATE_HOVER_RESPONSE * maxf(delta, 0.0))
+	_final_plate.scale = _final_plate.scale.lerp(_plate_hover_target_scale, weight)
+	_final_plate.offset_transform_position = _final_plate.offset_transform_position.lerp(
+		_plate_hover_target_offset, weight,
+	)
+	_final_plate.modulate = _final_plate.modulate.lerp(_plate_hover_target_tint, weight)
+
+
+func _reset_final_plate_hover(immediate: bool) -> void:
+	_plate_hovered = false
+	_plate_hover_target_scale = Vector2.ONE
+	_plate_hover_target_offset = Vector2.ZERO
+	_plate_hover_target_tint = Color.WHITE
+	if immediate and _final_plate != null:
+		_final_plate.scale = Vector2.ONE
+		_final_plate.offset_transform_position = Vector2.ZERO
+		_final_plate.modulate = Color.WHITE

@@ -43,6 +43,7 @@ const STATIC_FALLBACKS := {
 	&"ui.gacha.campaign_required": "Start or continue a campaign to access premium resonance.",
 	&"ui.gacha.marks": "{count} MARKS",
 	&"ui.gacha.pull_action": "RESONATE • {cost} MARKS",
+	&"ui.gacha.pull_again": "PULL AGAIN • {cost} MARKS",
 	&"ui.gacha.guarantee_in": "5-STAR GUARANTEED IN {count} {unit}",
 	&"ui.gacha.confirm_body": "One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
 	&"ui.gacha.attempt_pending": "Resolve the active operation before using premium resonance.",
@@ -384,6 +385,7 @@ const STATIC_FALLBACKS := {
 const PLACEHOLDER_TYPES := {
 	&"ui.gacha.marks": {&"count": &"int"},
 	&"ui.gacha.pull_action": {&"cost": &"int"},
+	&"ui.gacha.pull_again": {&"cost": &"int"},
 	&"ui.gacha.guarantee_in": {&"count": &"int", &"unit": &"String"},
 	&"ui.gacha.confirm_body": {
 		&"cost": &"int", &"before": &"int", &"after": &"int",

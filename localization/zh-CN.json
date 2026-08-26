@@ -234,6 +234,7 @@
     "ui.gacha.next_guarantee": "距离下次五星保底还有 {count} {unit}",
     "ui.gacha.one_life_ready": "1 条生命就绪",
     "ui.gacha.pull_action": "共鸣 • {cost} 印记",
+    "ui.gacha.pull_again": "再次抽取 • {cost} 印记",
     "ui.gacha.pull_plural": "次",
     "ui.gacha.pull_singular": "次",
     "ui.gacha.pull_to_recruit": "抽取以招募 • 固定精英套装",

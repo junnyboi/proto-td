@@ -234,6 +234,7 @@
     "ui.gacha.next_guarantee": "Next 5-star guaranteed in {count} {unit}",
     "ui.gacha.one_life_ready": "1 LIFE READY",
     "ui.gacha.pull_action": "RESONATE • {cost} MARKS",
+    "ui.gacha.pull_again": "PULL AGAIN • {cost} MARKS",
     "ui.gacha.pull_plural": "pulls",
     "ui.gacha.pull_singular": "pull",
     "ui.gacha.pull_to_recruit": "Pull to recruit • Fixed elite kit",

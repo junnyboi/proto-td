@@ -4,6 +4,8 @@ var _premium_id := "lunaris_vessel"
 var _capture_seconds := 1.0
 var _output_path := "/tmp/gacha-cinematic.png"
 var _reduced_motion := false
+var _force_final := false
+var _hover_final := false
 
 
 func _init() -> void:
@@ -16,6 +18,10 @@ func _init() -> void:
 			_output_path = argument.trim_prefix("--output=")
 		elif argument == "--reduced-motion":
 			_reduced_motion = true
+		elif argument == "--force-final":
+			_force_final = true
+		elif argument == "--hover-final":
+			_hover_final = true
 	call_deferred("_run")
 
 
@@ -57,6 +63,18 @@ func _run() -> void:
 		"save_revision": 2,
 	}
 	screen.call("_begin_reveal", pull)
+	await process_frame
+	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
+	if _force_final and not _reduced_motion and cinematic != null:
+		cinematic.call("_on_video_finished")
+		await create_timer(4.0).timeout
+	if _hover_final and cinematic != null:
+		var final_plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
+		cinematic.call("_on_final_plate_mouse_entered")
+		var motion := InputEventMouseMotion.new()
+		motion.position = final_plate.size * Vector2(0.72, 0.38)
+		cinematic.call("_on_final_plate_gui_input", motion)
+		await create_timer(0.4).timeout
 	await create_timer(_capture_seconds).timeout
 	await process_frame
 	await RenderingServer.frame_post_draw
