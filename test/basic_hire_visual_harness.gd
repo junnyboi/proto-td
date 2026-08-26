@@ -71,16 +71,21 @@ func _build_mission() -> bool:
 	root.add_child(screen)
 	for _frame: int in 6:
 		await process_frame
-	var hire := screen.find_child("HireBasicRecruit", true, false) as Button
-	if hire == null or hire.disabled:
-		push_error("Mission Control hire action is unavailable")
+	var route_panel := screen.find_child("CampaignRoutePanel", true, false) as PanelContainer
+	var route_inset := screen.find_child("RouteContentInset", true, false) as MarginContainer
+	var expected_route_width := 0.0 if root.size.y > root.size.x else 480.0
+	if route_panel == null or not is_equal_approx(route_panel.custom_minimum_size.x, expected_route_width):
+		push_error("Campaign route rail does not match its responsive width contract")
 		return false
-	hire.pressed.emit()
-	for _frame: int in 8:
-		await process_frame
-	var projection: Dictionary = game.call("campaign_projection")
-	if int(projection.get("marks", -1)) != 115:
-		push_error("Mission Control visual fixture did not complete the five-Mark hire")
+	if route_inset == null:
+		push_error("Campaign route content inset is unavailable")
+		return false
+	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
+		if route_inset.get_theme_constant(side) != 24:
+			push_error("Campaign route content is missing its 24px inset")
+			return false
+	if screen.find_child("MissionControlRecruitDesk", true, false) != null:
+		push_error("Campaign still contains Company Reinforcements")
 		return false
 	return true
 
