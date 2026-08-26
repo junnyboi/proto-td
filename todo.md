@@ -39,7 +39,7 @@
 - [x] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
 - [x] Close material visual/interaction gaps while preserving every authoritative behavior contract.
 - [x] Run final Web export, direct/managed browser, WebDev checkpoint, and source push gates on the accepted implementation.
-- [ ] Promote WebDev checkpoint `7f533c6d` through **Publish**, then verify public exact PCK `index_31bda4f0.pck`, input, cinematic transport, geometry, and console.
+- [ ] Promote WebDev checkpoint `04dc9aae` through **Publish**, then verify public exact PCK `index-71c395e_a7c079ae.pck`, input, cinematic transport, geometry, and console.
 
 # Faction-Led Soundtrack Redesign
 
