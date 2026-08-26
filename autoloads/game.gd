@@ -40,6 +40,8 @@ var _pending_battle_ticket: Dictionary = {}
 var _pending_campaign_mutation: Variant = null
 var _pending_promotion_mutation: Variant = null
 var _pending_recruitment_mutation: Variant = null
+var _pending_launch_mutation: Variant = null
+var _pending_launch_open_battle := true
 var _campaign_battle_active := false
 
 
@@ -75,6 +77,8 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
 	_pending_recruitment_mutation = null
+	_pending_launch_mutation = null
+	_pending_launch_open_battle = true
 	_campaign_battle_active = false
 	_restore_pending_attempt()
 	if open_campaign_ui:
@@ -115,28 +119,57 @@ func start_stage(
 		selected_squad = squad.duplicate()
 		start_battle(stage_id, open_battle)
 		return {"accepted": true, "error_code": &"", "ticket": {}}
-	if strategic_mutation_pending():
+	if (
+		_pending_campaign_mutation != null
+		or _pending_promotion_mutation != null
+		or _pending_recruitment_mutation != null
+	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
-	var command_id := "runtime:begin:%s:%d" % [
-		campaign.campaign_uid(), campaign.next_attempt_id(),
-	]
-	var command: Dictionary = campaign.begin_attempt(
-		command_id, stage_id, squad, run_seed, campaign.save_revision(),
-	)
-	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
-		command, campaign_store,
-	)
+	var committed: Dictionary
+	if _pending_launch_mutation != null:
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+			_pending_launch_mutation, campaign_store,
+		)
+	else:
+		_pending_launch_open_battle = open_battle
+		var command_id := "runtime:begin:%s:%d" % [
+			campaign.campaign_uid(), campaign.next_attempt_id(),
+		]
+		var command: Dictionary = campaign.begin_attempt(
+			command_id, stage_id, squad, run_seed, campaign.save_revision(),
+		)
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
+			command, campaign_store,
+		)
 	if not committed["accepted"]:
+		_pending_launch_mutation = (
+			committed.get("mutation") if committed.get("retryable", false) else null
+		)
 		return committed
+	_pending_launch_mutation = null
 	campaign = committed["state"]
 	var ticket: Dictionary = committed["result"]["ticket"].duplicate(true)
-	selected_stage_id = stage_id
-	selected_squad = squad.duplicate()
+	selected_stage_id = StringName(ticket["stage_id"])
+	selected_squad = []
+	for row: Dictionary in ticket["squad"]:
+		selected_squad.append(StringName(row["hero_id"]))
 	_pending_battle_ticket = ticket
 	_campaign_battle_active = true
-	if open_battle:
-		_queue_battle(stage_id)
+	if _pending_launch_open_battle:
+		_queue_battle(selected_stage_id)
+	_pending_launch_open_battle = true
 	return {"accepted": true, "error_code": &"", "ticket": ticket.duplicate(true)}
+
+
+func mission_launch_retry_pending() -> bool:
+	return _pending_launch_mutation != null
+
+
+func cancel_mission_launch_retry() -> bool:
+	var discarded := _pending_launch_mutation != null
+	_pending_launch_mutation = null
+	_pending_launch_open_battle = true
+	return discarded
 
 
 ## The squad the next battle boots with: an explicit start_stage selection
@@ -328,7 +361,11 @@ func pull_premium_hero() -> Dictionary:
 func hire_basic_recruit() -> Dictionary:
 	if not campaign_active or campaign == null or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
-	if _pending_campaign_mutation != null or _pending_promotion_mutation != null:
+	if (
+		_pending_campaign_mutation != null
+		or _pending_promotion_mutation != null
+		or _pending_launch_mutation != null
+	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary
 	if _pending_recruitment_mutation != null:
@@ -410,7 +447,11 @@ func _commit_promotions(choices: Array) -> Dictionary:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
 	if _pending_promotion_mutation != null:
 		return {"accepted": false, "error_code": &"promotion_retry_pending"}
-	if _pending_campaign_mutation != null or _pending_recruitment_mutation != null:
+	if (
+		_pending_campaign_mutation != null
+		or _pending_recruitment_mutation != null
+		or _pending_launch_mutation != null
+	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var canonical: Array[Dictionary] = []
 	for raw: Variant in choices:
@@ -449,7 +490,11 @@ func _commit_promotions(choices: Array) -> Dictionary:
 func _retry_promotions() -> Dictionary:
 	if _pending_promotion_mutation == null:
 		return {"accepted": false, "error_code": &"no_promotion_retry"}
-	if _pending_campaign_mutation != null or _pending_recruitment_mutation != null:
+	if (
+		_pending_campaign_mutation != null
+		or _pending_recruitment_mutation != null
+		or _pending_launch_mutation != null
+	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
 		_pending_promotion_mutation, campaign_store,
@@ -477,6 +522,7 @@ func strategic_mutation_pending() -> bool:
 		_pending_campaign_mutation != null
 		or _pending_promotion_mutation != null
 		or _pending_recruitment_mutation != null
+		or _pending_launch_mutation != null
 	)
 
 
@@ -497,6 +543,8 @@ func open_title() -> void:
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
 	_pending_recruitment_mutation = null
+	_pending_launch_mutation = null
+	_pending_launch_open_battle = true
 	_campaign_battle_active = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
