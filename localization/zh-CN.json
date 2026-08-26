@@ -404,6 +404,7 @@
     "ui.staging.memorial_short": "纪念馆",
     "ui.staging.memorial_unavailable": "纪念馆 — 不可用",
     "ui.staging.mission_control": "作战指挥部",
+    "ui.staging.mission_control_display": "作战\n指挥部",
     "ui.staging.mission_control_short": "任务",
     "ui.staging.next_complete": "下一任务：战役已完成",
     "ui.staging.next_detail": "下一任务：{index}. {title}",

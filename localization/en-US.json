@@ -404,6 +404,7 @@
     "ui.staging.memorial_short": "Memorial",
     "ui.staging.memorial_unavailable": "Memorial — Unavailable",
     "ui.staging.mission_control": "Mission Control",
+    "ui.staging.mission_control_display": "MISSION\nCONTROL",
     "ui.staging.mission_control_short": "Mission",
     "ui.staging.next_complete": "NEXT: Campaign complete",
     "ui.staging.next_detail": "NEXT: {index}. {title}",

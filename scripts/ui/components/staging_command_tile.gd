@@ -12,10 +12,10 @@ const MUTED := Color("8d9aa3")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.10
 const FOCUS_PULSE_MAX_ALPHA := 0.26
-const TILE_TITLE_FONT_SIZE := 27
+const TILE_TITLE_FONT_SIZE := 24
 const TILE_STATE_FONT_SIZE := 24
-const RAIL_TITLE_FONT_SIZE := 54
-const RAIL_STATE_FONT_SIZE := 48
+const RAIL_TITLE_FONT_SIZE := 49
+const RAIL_STATE_FONT_SIZE := 43
 
 var _glyph: TextureRect
 var _title_label: Label
@@ -55,7 +55,8 @@ func configure(
 	accessible_text: String,
 	enabled: bool,
 ) -> void:
-	text = accessible_text
+	text = ""
+	accessibility_name = accessible_text
 	tooltip_text = accessible_text
 	disabled = not enabled
 	focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
@@ -66,8 +67,8 @@ func configure(
 	_glyph.modulate = Color.WHITE if enabled else Color(0.58, 0.60, 0.62, 0.74)
 	_title_label.text = title_text.to_upper()
 	_title_label.add_theme_color_override(&"font_color", GOLD if enabled else MUTED)
-	_state_label.text = _unavailable_state(accessible_text).to_upper()
-	_state_label.visible = not enabled and not _state_label.text.is_empty()
+	_state_label.text = ""
+	_state_label.visible = false
 	_status_indicator.modulate = Color.WHITE if enabled else Color(0.46, 0.54, 0.58, 0.44)
 	_apply_styles()
 
@@ -86,15 +87,15 @@ func set_compact(compact: bool) -> void:
 
 
 func set_rail_mode(rail_mode: bool) -> void:
-	custom_minimum_size = Vector2(0.0, 120.0 if rail_mode else 72.0)
+	custom_minimum_size = Vector2(0.0, 86.0 if rail_mode else 72.0)
 	_title_label.autowrap_mode = TextServer.AUTOWRAP_OFF if rail_mode else TextServer.AUTOWRAP_WORD_SMART
 	_title_label.max_lines_visible = 1 if rail_mode else 2
 	_margin.add_theme_constant_override(&"margin_left", 24 if rail_mode else 16)
-	_margin.add_theme_constant_override(&"margin_top", 18 if rail_mode else 12)
+	_margin.add_theme_constant_override(&"margin_top", 8 if rail_mode else 12)
 	_margin.add_theme_constant_override(&"margin_right", 24 if rail_mode else 16)
-	_margin.add_theme_constant_override(&"margin_bottom", 18 if rail_mode else 12)
+	_margin.add_theme_constant_override(&"margin_bottom", 8 if rail_mode else 12)
 	_row.add_theme_constant_override(&"separation", 14 if rail_mode else 12)
-	_glyph.custom_minimum_size = Vector2(52.0, 52.0) if rail_mode else Vector2(40.0, 40.0)
+	_glyph.custom_minimum_size = Vector2(44.0, 44.0) if rail_mode else Vector2(40.0, 40.0)
 	_status_indicator.custom_minimum_size = Vector2(18.0, 18.0)
 	StagingSkinType.apply_display_type(
 		_title_label,
