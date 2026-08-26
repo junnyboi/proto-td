@@ -50,6 +50,7 @@ const PORTRAIT_SHEET_MIN_HEIGHT := 760.0
 const PORTRAIT_SHEET_MAX_HEIGHT := 860.0
 const INTRA_GROUP_GAP := 12
 const MAJOR_SECTION_GAP := 24
+const OPERATION_LIST_SIDE_MARGIN := 20
 
 var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
@@ -81,6 +82,7 @@ var _mission_body_grid: GridContainer = null
 var _mission_preview: TextureRect = null
 var _operation_grid: GridContainer = null
 var _operation_scroll: ScrollContainer = null
+var _operation_list_margin: MarginContainer = null
 var _top_identity: Label = null
 var _top_identity_plate: PanelContainer = null
 var _top_status_chip: PanelContainer = null
@@ -93,6 +95,7 @@ var _exit_plate: PanelContainer = null
 var _exit_label: Label = null
 var _command_heading: Label = null
 var _campaign_progress_text: Label = null
+var _campaign_milestones: HBoxContainer = null
 var _next_operation_label: Label = null
 var _mission_title: Label = null
 var _mission_objective: Label = null
@@ -406,7 +409,7 @@ func _build_command_content() -> VBoxContainer:
 	progress_glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	progress_row.add_child(progress_glyph)
 	_command_heading = _label(
-		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND"),
+		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER"),
 		24, GOLD,
 	)
 	_command_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -436,7 +439,8 @@ func _build_command_content() -> VBoxContainer:
 	progress.add_theme_stylebox_override(&"background", _bar_style(Color(GOLD, 0.20)))
 	progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
 	content.add_child(progress)
-	content.add_child(_build_progress_milestones())
+	_campaign_milestones = _build_progress_milestones()
+	content.add_child(_campaign_milestones)
 
 	_next_operation_label = _label(
 		"NextOperationLabel", UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION"),
@@ -493,7 +497,13 @@ func _build_navigation_content() -> VBoxContainer:
 	_operation_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_operation_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	content.add_child(_operation_scroll)
-	_operation_scroll.add_child(_operation_grid)
+	_operation_list_margin = MarginContainer.new()
+	_operation_list_margin.name = "OperationListMargin"
+	_operation_list_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_operation_list_margin.add_theme_constant_override(&"margin_left", OPERATION_LIST_SIDE_MARGIN)
+	_operation_list_margin.add_theme_constant_override(&"margin_right", OPERATION_LIST_SIDE_MARGIN)
+	_operation_scroll.add_child(_operation_list_margin)
+	_operation_list_margin.add_child(_operation_grid)
 
 	_add_locked_operation(
 		"BarracksButton", StagingGlyphType.Kind.BARRACKS,
@@ -651,8 +661,10 @@ func _build_mission_card() -> PanelContainer:
 func _build_mission_button() -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = "MissionControlButton"
-	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
-	var display_text := UiCopyType.text(&"ui.staging.mission_control_display", "MISSION\nCONTROL")
+	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
+	var display_text := UiCopyType.text(
+		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
+	)
 	button.set_presentation_text(full_text, display_text.to_upper())
 	button.tooltip_text = full_text
 	button.disabled = _narrative_missing
@@ -826,6 +838,9 @@ func _apply_responsive_layout() -> void:
 	if _compact_landscape:
 		deck_style.content_margin_top = 24.0
 		deck_style.content_margin_bottom = 24.0
+	elif viewport_size.y < 850.0:
+		deck_style.content_margin_top = 24.0
+		deck_style.content_margin_bottom = 24.0
 	_landscape_deck.add_theme_stylebox_override(&"panel", deck_style)
 
 	var portrait_left := maxf(24.0, safe_insets.x)
@@ -917,35 +932,47 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 func _apply_command_geometry(viewport_size: Vector2) -> void:
 	var single_column := (_portrait and viewport_size.x <= 720.0)
 	var hide_preview := _compact_landscape
+	var short_wide := not _portrait and not _compact_landscape and viewport_size.y < 850.0
+	_command_content.add_theme_constant_override(&"separation", 8 if short_wide else INTRA_GROUP_GAP)
+	_campaign_milestones.visible = not short_wide
 	_mission_preview.visible = not hide_preview
 	_mission_body_grid.columns = 1 if single_column or hide_preview else 2
+	_mission_grid.add_theme_constant_override(&"v_separation", 8 if short_wide else 12)
+	_mission_body_grid.add_theme_constant_override(&"h_separation", 20 if short_wide else 24)
 	_mission_card.custom_minimum_size.y = (
 		320.0 if single_column else (0.0 if hide_preview else 260.0)
 	)
 	_mission_preview.custom_minimum_size = (
-		Vector2(0.0, 112.0) if single_column else Vector2(160.0, 128.0)
+		Vector2(0.0, 112.0) if single_column
+		else (Vector2(144.0, 84.0) if short_wide else Vector2(160.0, 128.0))
 	)
-	_operation_grid.columns = 1 if (not _portrait and not _compact_landscape) or viewport_size.x < 620.0 else 2
+	_operation_grid.columns = 1 if (not _portrait and not _compact_landscape) or viewport_size.x < 760.0 else 2
 	_operation_grid.add_theme_constant_override(
-		&"v_separation", 8 if not _portrait and not _compact_landscape else 10,
+		&"v_separation", 6 if not _portrait and not _compact_landscape else 10,
 	)
-	_mission.custom_minimum_size.y = 150.0 if _compact_landscape else (164.0 if single_column or _portrait else 180.0)
+	_mission.custom_minimum_size.y = (
+		150.0 if _compact_landscape
+		else (164.0 if single_column or _portrait else (168.0 if short_wide else 180.0))
+	)
 	_mission_action_label.offset_left = 56.0 if single_column else (96.0 if _portrait or _compact_landscape else 132.0)
 	_mission_action_label.offset_right = -_mission_action_label.offset_left
-	_mission_action_label.offset_top = 12.0 if _compact_landscape else (20.0 if single_column else 22.0)
+	_mission_action_label.offset_top = 12.0 if _compact_landscape or short_wide else (20.0 if single_column else 22.0)
 	_mission_action_label.offset_bottom = -_mission_action_label.offset_top
 	for tile: StagingCommandTileType in _command_tiles:
 		tile.set_rail_mode(not _portrait and not _compact_landscape)
+		if short_wide:
+			tile.set_short_rail_mode()
 
 
 func _apply_company_typography() -> void:
 	var compact := _compact_landscape
 	var rail_mode := not _portrait and not _compact_landscape
+	var short_wide := rail_mode and get_viewport_rect().size.y < 850.0
 	StagingSkinType.apply_display_type(_command_heading, 22 if compact else 24, GOLD, 560)
 	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
-	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait else 26, IVORY, 560)
-	_mission_objective.add_theme_font_size_override(&"font_size", 22 if compact else 24)
+	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait or short_wide else 26, IVORY, 560)
+	_mission_objective.add_theme_font_size_override(&"font_size", 22 if compact or short_wide else 24)
 	StagingSkinType.apply_display_type(_mission_action_label, 36 if compact or _portrait else 42, IVORY, 620)
 	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
 
@@ -978,13 +1005,16 @@ func _refresh_locale_copy() -> void:
 	_campaign_progress_text.text = _campaign_summary_text()
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
-	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND")
+	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER")
 	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
 	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
-	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
-	_mission.set_presentation_text(mission_copy, mission_copy.to_upper())
+	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
+	var mission_display := UiCopyType.text(
+		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
+	)
+	_mission.set_presentation_text(mission_copy, mission_display.to_upper())
 	_mission.tooltip_text = mission_copy
 	_recruit.configure(StagingGlyphType.Kind.RECRUIT, UiCopyType.text(&"ui.staging.recruit_short", "Resonance"), UiCopyType.text(&"ui.staging.recruit", "Premium Resonance"), true)
 	_vahalla.configure(StagingGlyphType.Kind.MEMORIAL, UiCopyType.text(&"ui.staging.valhalla_short", "Valhalla"), UiCopyType.text(&"ui.staging.valhalla", "Valhalla"), true)
