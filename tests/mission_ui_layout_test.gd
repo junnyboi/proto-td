@@ -1,6 +1,7 @@
 extends SceneTree
 
 const VIEWPORTS := {
+	"wide": Vector2i(1920, 900),
 	"regular": Vector2i(1280, 720),
 	"compact": Vector2i(1024, 576),
 	"portrait": Vector2i(720, 1280),
@@ -78,11 +79,14 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		var portrait := viewport.y > viewport.x
 		_check(body.columns == (1 if portrait else 2), "%s mission body uses the wrong column count" % label)
 		if not portrait and field_panel != null and intel_panel != null:
-			_check(field_panel.size.x >= intel_panel.size.x * 2.5, "%s mission intelligence did not shrink to the quarter-width rail" % label)
-			_check(intel_panel.size.x <= viewport.x * 0.32, "%s mission intelligence remains oversized" % label)
+			var panel_width := field_panel.size.x + intel_panel.size.x
+			var field_ratio := field_panel.size.x / maxf(1.0, panel_width)
+			var intel_ratio := intel_panel.size.x / maxf(1.0, panel_width)
+			_check(absf(field_ratio - 0.60) <= 0.035, "%s Field Team panel is not approximately 60 percent wide" % label)
+			_check(absf(intel_ratio - 0.40) <= 0.035, "%s Mission Intelligence panel is not approximately 40 percent wide" % label)
 	_check(recruit_desk != null and field_panel != null and field_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements is not inside Field Team Selection" % label)
 	_check(recruit_desk != null and intel_panel != null and not intel_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements leaked into Mission Intelligence" % label)
-	_check(recruit_grid != null and recruit_grid.columns == (3 if label == "regular" else 1), "%s Company Reinforcements uses the wrong responsive column count" % label)
+	_check(recruit_grid != null and recruit_grid.columns == (3 if label == "wide" else 1), "%s Company Reinforcements uses the wrong responsive column count" % label)
 	_check(recruit_title != null and recruit_title.get_theme_font_size(&"font_size") >= 24, "%s Company Reinforcements title is below the readability floor" % label)
 	_check(recruit_body != null and not recruit_body.visible, "%s redundant Company Reinforcements body copy consumes roster space" % label)
 	_check(hire_button != null and hire_button.focus_mode == Control.FOCUS_ALL, "%s recruit action is not keyboard focusable" % label)
@@ -125,19 +129,36 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	for tab: Button in [active_tab, fallen_tab]:
 		_check(tab != null, "%s roster status tab is missing" % label)
 		if tab != null:
-			_check(tab.custom_minimum_size.x >= 176.0 and tab.custom_minimum_size.y >= 54.0, "%s roster tab lacks full text padding" % label)
+			var expected_tab_width := 352.0 if label == "wide" else 176.0
+			var expected_tab_height := 78.0 if label == "wide" else 54.0
+			_check(tab.custom_minimum_size.x >= expected_tab_width and tab.custom_minimum_size.y >= expected_tab_height, "%s roster tab geometry does not match its responsive contract" % label)
 			_check(tab.get_theme_font_size(&"font_size") >= 27, "%s roster tab text is below the global 1.5x scale" % label)
+	var all_factions := _mission.find_child("AllFactionFilter", true, false) as Button
+	var expected_all_width := 216.0 if label == "wide" else (84.0 if label == "regular" else 108.0)
+	var expected_filter_height := 78.0 if label == "wide" else 54.0
+	_check(all_factions != null and all_factions.custom_minimum_size.x >= expected_all_width and all_factions.custom_minimum_size.y >= expected_filter_height, "%s all-factions filter lacks responsive geometry" % label)
+	for faction_name: String in ["SolcrestAccordFactionFilter", "VesperCircuitFactionFilter", "LunarisReliquaryFactionFilter", "CrimsonAegisFactionFilter"]:
+		var faction := _mission.find_child(faction_name, true, false) as Button
+		_check(faction != null, "%s %s is missing" % [label, faction_name])
+		if faction != null:
+			var expected_faction_width := 144.0 if label == "wide" else (48.0 if label == "regular" else 72.0)
+			_check(faction.custom_minimum_size.x >= expected_faction_width and faction.custom_minimum_size.y >= expected_filter_height, "%s %s lacks responsive width and padding" % [label, faction_name])
+			_check(faction.icon != null and faction.icon_alignment == HORIZONTAL_ALIGNMENT_LEFT, "%s %s heraldry is not left of its count" % [label, faction_name])
+			_check(faction.alignment == HORIZONTAL_ALIGNMENT_RIGHT, "%s %s count is not positioned to the right" % [label, faction_name])
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
-		_check(operator_grid.columns == (1 if viewport.y > viewport.x else 2), "%s operator grid does not use the split-card column contract" % label)
+		var expected_columns := 2 if label in ["wide", "regular"] else 1
+		_check(operator_grid.columns == expected_columns, "%s operator grid does not use the fixed-card column contract" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
+				var expected_width := minf(320.0, maxf(240.0, viewport.x - 96.0)) if viewport.y > viewport.x else 320.0
+				_check(absf((child as Button).size.x - expected_width) <= EPSILON, "%s operator card is not fixed to the compact target width" % label)
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
 				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
 				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
 				_check(portrait != null, "%s operator-card portrait pane is missing" % label)
 				if card_label != null:
-					_check(_inside(child as Control, card_label), "%s operator-card information pane overflows" % label)
+					_check(_inside(child as Control, card_label), "%s %s operator-card information pane overflows" % [label, child.name])
 					_check(card_label.offset_left >= 22.0, "%s operator-card information padding is below 22px" % label)
 					_check(-card_label.offset_bottom >= 16.0, "%s operator-card bottom padding is below 16px" % label)
 					_check(card_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and card_label.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "%s operator information is not centered in its pane" % label)
@@ -149,9 +170,10 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
 	if training != null and back != null:
-		_check(is_equal_approx(training.custom_minimum_size.x, 168.0), "%s Train Operators is not 30 percent shorter" % label)
-		_check(is_equal_approx(back.custom_minimum_size.x, 119.0), "%s Back is not 30 percent shorter" % label)
+		_check(is_equal_approx(training.custom_minimum_size.x, 336.0) or (viewport.y > viewport.x and training.custom_minimum_size.x <= viewport.x - 96.0), "%s Train Operators did not double its usable width" % label)
+		_check(is_equal_approx(back.custom_minimum_size.x, 238.0), "%s Back did not double its usable width" % label)
 		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
+		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
 	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect
 	_check(faction_symbol != null, "%s First Stand faction symbol is missing" % label)
 	if faction_symbol != null and faction_symbol.texture != null:
