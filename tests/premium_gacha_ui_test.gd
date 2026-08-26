@@ -1,5 +1,6 @@
 extends SceneTree
 
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const ENTRY_WAIT := 0.24
 const EXIT_WAIT := 0.19
 const TIMEOUT := 35.0
@@ -224,12 +225,21 @@ func _run() -> void:
 	var reveal_title := screen.find_child("RevealTitle", true, false) as Label
 	var reveal_stack := screen.find_child("CinematicIdentityReveal", true, false) as VBoxContainer
 	var stars := screen.find_child("RarityStars", true, false) as HBoxContainer
+	var reveal_hint := screen.find_child("RevealContinueHint", true, false) as Label
+	var skip := screen.find_child("SkipRevealButton", true, false) as Button
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
 	var video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
 	var plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
 	_check(reveal.visible and pull.disabled and back.disabled, "five-star reveal did not lock browse")
 	_check(reveal_title.text == "LUNARIS VESSEL" and not reveal_stack.visible, "identity appeared before cinematic completion")
 	_check(stars.get_child_count() == 5 and video.stream != null and video.is_playing(), "five-star cinematic resources did not start")
+	_check(reveal_title.get_theme_font_size(&"font_size") == 104, "landscape reveal title typography is not doubled")
+	_check(reveal_hint != null and reveal_hint.get_theme_font_size(&"font_size") == 28, "reveal continuation typography is not doubled")
+	_check(skip != null and skip.get_theme_font_size(&"font_size") == 36, "Skip Reveal typography is not doubled")
+	_check(skip.custom_minimum_size.x >= 340.0 and skip.custom_minimum_size.y >= 92.0, "Skip Reveal container is not wide or tall enough")
+	var skip_style := skip.get_theme_stylebox(&"normal")
+	_check(skip_style.content_margin_left >= 42.0 and skip_style.content_margin_right >= 42.0, "Skip Reveal container lacks horizontal padding")
+	_check(not skip.clip_text and skip.autowrap_mode != TextServer.AUTOWRAP_OFF, "Skip Reveal can still overflow or clip")
 	_check(plate.texture != null and StringName(music.call("current_id")) == &"gacha_lunaris_vessel", "final plate/music changed")
 	cinematic.call("_on_video_finished")
 	await _frames(1)
@@ -238,6 +248,7 @@ func _run() -> void:
 	for index: int in 5:
 		var star := stars.get_child(index) as ResonanceStar
 		_check(star.visible and star.modulate.a > 0.99 and absf(star.rotation) < 0.01, "five-star item %d did not settle" % (index + 1))
+		_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
@@ -250,9 +261,15 @@ func _run() -> void:
 	screen.call("_begin_reveal", _sample_pull(4, false))
 	await _frames(1)
 	_check(reveal.visible and reveal_stack.visible and reveal_title.text == "ARCHIVE CASTER", "reduced reveal did not settle identity")
+	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
 	for index: int in 5:
-		_check((stars.get_child(index) as ResonanceStar).visible == (index < 4), "reduced reveal star count changed")
+		var star := stars.get_child(index) as ResonanceStar
+		_check(star.visible == (index < 4), "reduced reveal star count changed")
+		if index < 4:
+			var star_accent: Color = star.get("_accent")
+			_check(star_accent.is_equal_approx(Style.GOLD), "Archive Caster star %d is not gold" % (index + 1))
+			_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
 	await _action(&"ui_cancel")
 	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal cancel did not finalize")
 
