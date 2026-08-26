@@ -3133,5 +3133,20 @@ entries = {
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(96, 64)
+},
+&"ui_gacha_return": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/ui/gacha/return_lunaris.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
 }
 }
