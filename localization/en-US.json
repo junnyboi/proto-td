@@ -525,7 +525,7 @@
     "ui.squad.mission_intelligence": "Mission Intelligence",
     "ui.squad.operator_card": "{name}\n{cost} DP",
     "ui.squad.order_drag_hint": "Drag to reorder. Keyboard: Alt plus arrow keys.",
-    "ui.squad.order_empty": "Select operators, then drag them here to set deployment order.",
+    "ui.squad.order_empty": "Select operators, then drag to reorder.",
     "ui.squad.order_heading": "Deployment Order",
     "ui.squad.predeployment_body": "Train, review, and confirm the field team.",
     "ui.squad.predeployment_heading": "Pre-deployment",

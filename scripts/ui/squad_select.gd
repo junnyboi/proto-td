@@ -361,7 +361,7 @@ func _selected_squad_empty_label() -> Label:
 		"SelectedSquadOrderEmpty",
 		UiCopyType.text(
 			&"ui.squad.order_empty",
-			"Select operators, then drag them here to set deployment order.",
+			"Select operators, then drag to reorder.",
 		),
 		&"dense_detail",
 	)
