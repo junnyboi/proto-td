@@ -15,6 +15,7 @@ const STREAM_ARG_PREFIX := "--cinematic-stream="
 const CACHE_DIR := "user://cinematic-streams"
 const COPY_CHUNK_BYTES := 1024 * 1024
 const DOWNLOAD_TIMEOUT_SECONDS := 75.0
+const FIRST_CYCLE_SECONDS := 8.0
 const PLATE_HOVER_SCALE := 1.025
 const PLATE_HOVER_RESPONSE := 12.0
 const PLATE_HOVER_PARALLAX := Vector2(12.0, 8.0)
@@ -23,33 +24,33 @@ const PLATE_HOVER_TINT := Color(1.055, 1.035, 1.0, 1.0)
 const STREAMS := {
 	"lunaris-vessel-landscape": {
 		"bundled_path": "res://assets/cinematics/gacha/video/lunaris-vessel-landscape.ogv",
-		"bytes": 8846078,
-		"sha256": "fb09e9d067bd1458bbc3d6a0b575281d248df8ea75b6c33e0bf2111209a8fb97",
+		"bytes": 1257821,
+		"sha256": "38361f28ba7c40e8e95c5aa59919028b0d181d97bd6b7f58f01fd7a31deb59cd",
 	},
 	"lunaris-vessel-portrait": {
 		"bundled_path": "res://assets/cinematics/gacha/video/lunaris-vessel-portrait.ogv",
-		"bytes": 8498953,
-		"sha256": "87221b5164f157267963acf1bb7504b6220f66bd1fdb6e6c588d94a845c39c32",
+		"bytes": 2502584,
+		"sha256": "cd806d989623cbce1180df154efe892aaf8c2b047cee07906ec330f55c6fb6bb",
 	},
 	"reliquary-duelist-landscape": {
 		"bundled_path": "res://assets/cinematics/gacha/video/reliquary-duelist-landscape.ogv",
-		"bytes": 7485451,
-		"sha256": "186a0f063b900877513261e0ab2b7aefb0609de9d422f69ea65cd5e8d76a1e55",
+		"bytes": 1395676,
+		"sha256": "cfa5bdab1002b428347e4d2d46cd0517acfc876a3460693d7330c8abb0e90151",
 	},
 	"reliquary-duelist-portrait": {
 		"bundled_path": "res://assets/cinematics/gacha/video/reliquary-duelist-portrait.ogv",
-		"bytes": 8496742,
-		"sha256": "09430cb2de8bdeb7c1d6c8db60a838a572f1c518aa2e474c04dbc4ffaea1a2f5",
+		"bytes": 2090359,
+		"sha256": "ed78d0f92c19dc253a47454e13bb411fed64514f768c3db2157e5deb15b9026c",
 	},
 	"archive-caster-landscape": {
 		"bundled_path": "res://assets/cinematics/gacha/video/archive-caster-landscape.ogv",
-		"bytes": 18894020,
-		"sha256": "5eeeba0bd6a7fce74c80e07d5c23cb0e54007a9287a2878c8a6bf2042efa8cd0",
+		"bytes": 778793,
+		"sha256": "bcb3251e11269027b49a332487964db64fb8e6fe83358c2bb1b78317558c55af",
 	},
 	"archive-caster-portrait": {
 		"bundled_path": "res://assets/cinematics/gacha/video/archive-caster-portrait.ogv",
-		"bytes": 9298910,
-		"sha256": "5ac6f14efa7fc96782ad2978ac2f2d2103f5957416006333faabc0af27e0a5ec",
+		"bytes": 2452205,
+		"sha256": "dd09537610bb5bc0ed7fd2ed6715e4d6b870dce521075b1defe77c6bc6ee0c0f",
 	},
 }
 
@@ -92,6 +93,8 @@ var _plate_hovered := false
 var _plate_hover_target_scale := Vector2.ONE
 var _plate_hover_target_offset := Vector2.ZERO
 var _plate_hover_target_tint := Color.WHITE
+var _first_cycle_complete := false
+var _first_cycle_timer: Timer
 
 var _stream_urls: Dictionary = {}
 var _request: HTTPRequest
@@ -170,6 +173,9 @@ func play_cinematic(premium_id: String, reduced_motion: bool) -> bool:
 func show_final_plate() -> void:
 	_allow_video_start = false
 	_playback_active = false
+	_first_cycle_complete = false
+	if _first_cycle_timer != null:
+		_first_cycle_timer.stop()
 	if _video != null:
 		_video.stop()
 		_video.visible = false
@@ -204,6 +210,10 @@ func final_plate() -> TextureRect:
 
 func final_plate_hovered() -> bool:
 	return _plate_hovered
+
+
+func hover_surface() -> Control:
+	return _active_hover_surface()
 
 
 func is_portrait_orientation() -> bool:
@@ -328,10 +338,13 @@ func _start_stream(stream: VideoStream) -> bool:
 	if stream == null or not _allow_video_start:
 		return false
 	_video.stream = stream
+	_video.loop = true
 	_video.visible = true
 	_final_plate.visible = false
 	_playback_active = true
+	_first_cycle_complete = false
 	_video.play()
+	_first_cycle_timer.start(FIRST_CYCLE_SECONDS)
 	var cue_id := music_id()
 	cinematic_started.emit(cue_id)
 	return true
@@ -339,6 +352,9 @@ func _start_stream(stream: VideoStream) -> bool:
 
 func _stop_playback() -> void:
 	_playback_active = false
+	_first_cycle_complete = false
+	if _first_cycle_timer != null:
+		_first_cycle_timer.stop()
 	if _video == null:
 		return
 	_video.stop()
@@ -349,8 +365,23 @@ func _stop_playback() -> void:
 func _on_video_finished() -> void:
 	if not _playback_active:
 		return
-	_playback_active = false
-	show_final_plate()
+	# VideoStreamPlayer.loop should keep the stream alive. Some Theora backends
+	# still report `finished` at the loop boundary, so restart defensively and
+	# announce only the first completed cycle to the reveal controller.
+	if _video != null and not _video.is_playing():
+		_video.play()
+	_complete_first_cycle()
+
+
+func _on_first_cycle_elapsed() -> void:
+	if _playback_active:
+		_complete_first_cycle()
+
+
+func _complete_first_cycle() -> void:
+	if _first_cycle_complete:
+		return
+	_first_cycle_complete = true
 	cinematic_finished.emit()
 
 
@@ -493,14 +524,25 @@ func _build_layers() -> void:
 	_video = VideoStreamPlayer.new()
 	_video.name = "CinematicVideo"
 	_video.autoplay = false
-	_video.loop = false
+	_video.loop = true
 	_video.expand = true
 	_video.volume_db = -80.0
-	_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_video.mouse_filter = Control.MOUSE_FILTER_PASS
+	_video.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_video.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_video.visible = false
 	_video.finished.connect(_on_video_finished)
+	_video.mouse_entered.connect(_on_final_plate_mouse_entered)
+	_video.mouse_exited.connect(_on_final_plate_mouse_exited)
+	_video.gui_input.connect(_on_final_plate_gui_input)
 	add_child(_video)
+
+	_first_cycle_timer = Timer.new()
+	_first_cycle_timer.name = "CinematicFirstCycleTimer"
+	_first_cycle_timer.one_shot = true
+	_first_cycle_timer.wait_time = FIRST_CYCLE_SECONDS
+	_first_cycle_timer.timeout.connect(_on_first_cycle_elapsed)
+	add_child(_first_cycle_timer)
 
 	_final_plate = TextureRect.new()
 	_final_plate.name = "CinematicFinalPlate"
@@ -568,6 +610,7 @@ func _fit_current_viewport() -> void:
 	var fitted_position := (viewport_size - fitted_size) * 0.5
 	_video.position = fitted_position
 	_video.size = fitted_size
+	_video.pivot_offset = fitted_size * 0.5
 	_final_plate.position = fitted_position
 	_final_plate.size = fitted_size
 	_final_plate.pivot_offset = fitted_size * 0.5
@@ -578,7 +621,7 @@ func _fit_current_viewport() -> void:
 
 
 func _on_final_plate_mouse_entered() -> void:
-	if _reduced_motion or _final_plate == null or not _final_plate.visible:
+	if _reduced_motion or _active_hover_surface() == null:
 		return
 	_plate_hovered = true
 	_plate_hover_target_scale = Vector2.ONE * PLATE_HOVER_SCALE
@@ -590,16 +633,18 @@ func _on_final_plate_mouse_exited() -> void:
 
 
 func _on_final_plate_gui_input(event: InputEvent) -> void:
+	var surface := _active_hover_surface()
 	if (
 			not _plate_hovered
 			or _reduced_motion
 			or not (event is InputEventMouseMotion)
-			or _final_plate.size.x <= 0.0
-			or _final_plate.size.y <= 0.0
+			or surface == null
+			or surface.size.x <= 0.0
+			or surface.size.y <= 0.0
 	):
 		return
 	var motion := event as InputEventMouseMotion
-	var local_ratio: Vector2 = (motion.position / _final_plate.size - Vector2(0.5, 0.5)) * 2.0
+	var local_ratio: Vector2 = (motion.position / surface.size - Vector2(0.5, 0.5)) * 2.0
 	_plate_hover_target_offset = Vector2(
 		clampf(local_ratio.x, -1.0, 1.0) * -PLATE_HOVER_PARALLAX.x,
 		clampf(local_ratio.y, -1.0, 1.0) * -PLATE_HOVER_PARALLAX.y,
@@ -607,17 +652,20 @@ func _on_final_plate_gui_input(event: InputEvent) -> void:
 
 
 func _update_final_plate_hover(delta: float) -> void:
-	if _final_plate == null:
+	var surface := _active_hover_surface()
+	if surface == null:
+		_reset_final_plate_hover(true)
 		return
-	if _reduced_motion or not _final_plate.visible:
+	if _reduced_motion:
 		_reset_final_plate_hover(true)
 		return
 	var weight := 1.0 - exp(-PLATE_HOVER_RESPONSE * maxf(delta, 0.0))
-	_final_plate.scale = _final_plate.scale.lerp(_plate_hover_target_scale, weight)
-	_final_plate.offset_transform_position = _final_plate.offset_transform_position.lerp(
+	_reset_inactive_hover_surface(surface)
+	surface.scale = surface.scale.lerp(_plate_hover_target_scale, weight)
+	surface.offset_transform_position = surface.offset_transform_position.lerp(
 		_plate_hover_target_offset, weight,
 	)
-	_final_plate.modulate = _final_plate.modulate.lerp(_plate_hover_target_tint, weight)
+	surface.modulate = surface.modulate.lerp(_plate_hover_target_tint, weight)
 
 
 func _reset_final_plate_hover(immediate: bool) -> void:
@@ -625,7 +673,29 @@ func _reset_final_plate_hover(immediate: bool) -> void:
 	_plate_hover_target_scale = Vector2.ONE
 	_plate_hover_target_offset = Vector2.ZERO
 	_plate_hover_target_tint = Color.WHITE
-	if immediate and _final_plate != null:
-		_final_plate.scale = Vector2.ONE
-		_final_plate.offset_transform_position = Vector2.ZERO
-		_final_plate.modulate = Color.WHITE
+	if immediate:
+		_reset_surface_transform(_video)
+		_reset_surface_transform(_final_plate)
+
+
+func _active_hover_surface() -> Control:
+	if _video != null and _video.visible and _playback_active:
+		return _video
+	if _final_plate != null and _final_plate.visible:
+		return _final_plate
+	return null
+
+
+func _reset_inactive_hover_surface(active: Control) -> void:
+	if active != _video:
+		_reset_surface_transform(_video)
+	if active != _final_plate:
+		_reset_surface_transform(_final_plate)
+
+
+func _reset_surface_transform(surface: Control) -> void:
+	if surface == null:
+		return
+	surface.scale = Vector2.ONE
+	surface.offset_transform_position = Vector2.ZERO
+	surface.modulate = Color.WHITE

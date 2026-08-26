@@ -99,7 +99,6 @@ var _premium_pull_dispatched := false
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
 var _cinematic_player: GachaCinematicPlayer
-var _reveal_burst: Control
 var _reveal_title_stack: VBoxContainer
 var _reveal_title: Label
 var _reveal_stars: HBoxContainer
@@ -619,24 +618,6 @@ func _build_reveal_layer() -> void:
 	_cinematic_player.cinematic_failed.connect(_on_cinematic_failed)
 	_reveal_layer.add_child(_cinematic_player)
 
-	_reveal_burst = Control.new()
-	_reveal_burst.name = "SignalFilaments"
-	_reveal_burst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_reveal_burst.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_reveal_layer.add_child(_reveal_burst)
-	for index: int in 12:
-		var ray := ColorRect.new()
-		ray.set_anchors_preset(Control.PRESET_CENTER)
-		ray.offset_left = -360.0
-		ray.offset_right = 360.0
-		ray.offset_top = -1.0
-		ray.offset_bottom = 1.0
-		ray.pivot_offset = Vector2(360, 1)
-		ray.rotation = deg_to_rad(float(index) * 15.0)
-		ray.color = Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
-		ray.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_reveal_burst.add_child(ray)
-
 	var safe_margin := MarginContainer.new()
 	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	safe_margin.add_theme_constant_override(&"margin_left", 24)
@@ -861,9 +842,14 @@ func _apply_responsive_layout() -> void:
 	_apply_hero_card_layout(_hero_grid.columns)
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
-		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 1120
+		_reveal_title_stack.custom_minimum_size.x = (
+			maxf(280.0, viewport_size.x - 48.0) if portrait else 1120.0
+		)
 	if _reveal_title != null:
-		_reveal_title.add_theme_font_size_override(&"font_size", 80 if portrait else 104)
+		var portrait_title_size := clampi(int(viewport_size.x * 0.11), 44, 72)
+		_reveal_title.add_theme_font_size_override(
+			&"font_size", portrait_title_size if portrait else 104,
+		)
 	if _reveal_hint != null:
 		_reveal_hint.add_theme_font_size_override(&"font_size", 28)
 	if _reveal_pull_again != null:
@@ -1037,8 +1023,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 		star.modulate.a = 0.0
 		star.scale = Vector2(0.18, 0.18)
 		star.rotation = -TAU * 1.25
-	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
-	_reveal_burst.rotation = -0.08
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
@@ -1054,7 +1038,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_tween = create_tween()
 	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
-	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
 
 
 func _on_cinematic_started(cue_id: StringName) -> void:
@@ -1085,9 +1068,9 @@ func _on_cinematic_watchdog_timeout() -> void:
 		return
 	var video := _cinematic_player.video_player()
 	if video != null and video.is_playing():
-		_cinematic_watchdog = create_tween()
-		_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_POLL_SECONDS)
-		_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
+		# Looping films stay active behind the deterministic result UI. If the
+		# first-cycle timer ever misses, the watchdog still reveals at 8.75 s.
+		_begin_identity_reveal()
 		return
 	_cinematic_player.show_final_plate()
 	_begin_identity_reveal()
@@ -1098,7 +1081,9 @@ func _begin_identity_reveal() -> void:
 		return
 	_reveal_result_ready = true
 	_kill_cinematic_watchdog()
-	_cinematic_player.show_final_plate()
+	var video := _cinematic_player.video_player()
+	if video == null or not video.is_playing():
+		_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
 	var accent := _reveal_accent(_pending_pull)
 	_begin_identity_audio()

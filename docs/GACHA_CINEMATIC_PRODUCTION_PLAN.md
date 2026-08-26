@@ -2,15 +2,17 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Execution in progress; Phases 1–4 media production and Godot runtime integration complete |
-| **Author** | Manus AI, Agent 7 |
-| **Source candidate** | `8cecde1bb4fcee44bd25cd47997f64c0cbcb9f37` |
+| **Status** | Centered looping media refresh implemented; final regression and deployment gate in progress |
+| **Author** | Manus AI, Agents 7 and 10 |
+| **Source candidate** | Synchronized from `7403c547069589e8c8b70eff26cfb0dad708d85a` |
 | **Target runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
 | **Scope** | Lunaris Vessel, Reliquary Duelist, and Archive Caster |
 
 ## Executive decision
 
 Premium Resonance should replace its current approximately **1.12-second portrait-card transition** with **one bespoke eight-second cinematic per hero and per orientation**. The production target is therefore six masters: three 16:9 landscape films and three independently composed 9:16 portrait films. Each film uses the matching **full-size canonical character sheet**, never the chibi sheet, and resolves into an exact identity-locked final plate before Godot renders rarity, acquisition state, lives, pity, and guarantee copy.
+
+The centered loop refresh supersedes the earlier frozen-settle treatment. Every replacement film now holds one complete hero on the visual centerline, removes the unintended radial filament/web overlay, and returns to its opening state after eight seconds. Godot reveals deterministic identity and rarity UI after the first complete cycle while the healthy cinematic continues looping beneath it; static plates remain only for reduced motion, Skip, failure, and watchdog fallback.
 
 The recommended production stack is **GPT Image 2** for character identity anchors and first/last keyframes, followed by **Veo 3.1 at 1080p for eight seconds** using first-and-last-keyframe control. Visual clips are generated without embedded audio. Character sound effects follow the required video-carrier workflow, while short musical stings use **Lyria 3 Pro**. Final runtime video is transcoded to 24 fps Theora OGV, the format already proven by the current eight-second Lunaris title loop.
 
@@ -343,7 +345,7 @@ Large generation masters and carrier videos should remain in project files or ex
 | Gate | Pass condition |
 |---|---|
 | Duration | Exactly 8.000 seconds or frame-equivalent at 24 fps |
-| Endpoint | Final video visually matches the approved final plate and is stable by 7.440 s |
+| Loop seam | Final motion returns to the approved opening state at 8.000 s without a frozen hold or visible camera jump |
 | Orientation | Dedicated 16:9 and 9:16 compositions pass without unsafe crop |
 | Encoding | Valid Theora OGV; audio is separate; correct dimensions and 24 fps |
 | Playback | Native and Web decode without stalls, blank frames, or fatal logs |

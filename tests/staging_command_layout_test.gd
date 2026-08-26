@@ -65,6 +65,9 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var context := "%s/%s" % [locale_id, viewport_case["name"]]
 	var top_bar := staging.find_child("TopCommandBar", true, false) as PanelContainer
 	var identity_plate := staging.find_child("IdentityPlate", true, false) as PanelContainer
+	var identity_label := staging.find_child("FactionIdentity", true, false) as Label
+	var status_chip := staging.find_child("CampaignStatusChip", true, false) as PanelContainer
+	var status_label := staging.find_child("TopCampaignSummary", true, false) as Label
 	var utility_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
 	var exit_label := staging.find_child("ExitLabel", true, false) as Label
 	var navigation := staging.find_child("NavigationRail", true, false) as PanelContainer
@@ -84,9 +87,12 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var command_scroll_name := "PortraitCommandScroll" if bool(viewport_case["portrait"]) else "LandscapeCommandScroll"
 	var command_scroll := staging.find_child(command_scroll_name, true, false) as ScrollContainer
 
-	_check(top_bar != null and top_bar.size.y >= 96.0, "%s: segmented top HUD is shorter than 96px" % context)
+	_check(top_bar != null and top_bar.size.y >= 128.0, "%s: segmented top HUD is shorter than 128px" % context)
 	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
+	_check(identity_label != null and _contains(identity_plate, identity_label), "%s: faction identity text escaped its enlarged plate" % context)
 	_check(exit_label != null and _contains(utility_plate, exit_label), "%s: Exit label escaped or touched its compact frame" % context)
+	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)
+	_check(staging.find_child("HeroIdentity", true, false) == null, "%s: duplicate lower identity copy remains" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
 	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below 22px" % context)
 	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below 18px" % context)
@@ -111,15 +117,27 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(navigation != null and navigation.is_visible_in_tree() == expects_rail, "%s: navigation rail breakpoint mismatch" % context)
 	if expects_rail:
 		var rail_style := navigation.get_theme_stylebox(&"panel") as StyleBoxTexture
+		_check(navigation.size.x >= 436.0, "%s: navigation rail did not exceed twice its original width" % context)
+		_check(operation_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s: Operations heading is not centered" % context)
+		_check(_font_size(operation_label) >= 36, "%s: Operations heading below doubled 36px size" % context)
+		_check(identity_plate.custom_minimum_size.x >= 360.0 and identity_plate.custom_minimum_size.y >= 104.0, "%s: identity plate did not expand" % context)
+		_check(status_chip != null and status_chip.visible and status_chip.custom_minimum_size.x >= 236.0 and status_chip.custom_minimum_size.y >= 84.0, "%s: campaign status plate did not expand" % context)
+		_check(status_label != null and _font_size(status_label) >= 22 and _contains(status_chip, status_label), "%s: campaign status text is clipped" % context)
+		_check(utility_plate.custom_minimum_size.x >= 152.0 and utility_plate.custom_minimum_size.y >= 84.0, "%s: Exit plate did not expand" % context)
+		_check(_font_size(identity_label) >= 24, "%s: faction identity type below 24px" % context)
+		_check(_font_size(exit_label) >= 20, "%s: Exit type below 20px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
 		_check(rail_style != null and rail_style.content_margin_top >= 64.0, "%s: rail copy can enter corner ornament" % context)
 		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "MercyArchiveButton", "TrainingButton"]:
 			var tile := staging.find_child(tile_name, true, false) as Button
+			var title := tile.find_child("Title", true, false) as Label
 			var state := tile.find_child("State", true, false) as Label
-			_check(tile != null and tile.custom_minimum_size.y >= 72.0, "%s: %s below 72px" % [context, tile_name])
-			_check(_contains(navigation, tile), "%s: %s escaped navigation rail" % [context, tile_name])
+			_check(tile != null and tile.custom_minimum_size.y >= 120.0, "%s: %s below enlarged 120px rail height" % [context, tile_name])
+			_check(_has_ancestor(tile, navigation), "%s: %s escaped navigation rail ownership" % [context, tile_name])
+			_check(_horizontally_contains(navigation, tile), "%s: %s overflows navigation rail horizontally" % [context, tile_name])
+			_check(title != null and _font_size(title) >= 36, "%s: %s title below doubled 36px size" % [context, tile_name])
 			if state.visible:
-					_check(_font_size(state) >= 16, "%s: %s state below 16px" % [context, tile_name])
+					_check(_font_size(state) >= 32, "%s: %s state below doubled 32px size" % [context, tile_name])
 	else:
 		_check(operation_grid != null and not _has_ancestor(operation_grid, navigation), "%s: operations did not reflow into command surface" % context)
 
@@ -146,6 +164,14 @@ func _contains(outer: Control, inner: Control) -> bool:
 	var outer_rect := outer.get_global_rect().grow(1.0)
 	var inner_rect := inner.get_global_rect()
 	return outer_rect.has_point(inner_rect.position) and outer_rect.has_point(inner_rect.end - Vector2.ONE)
+
+
+func _horizontally_contains(outer: Control, inner: Control) -> bool:
+	if outer == null or inner == null:
+		return false
+	var outer_rect := outer.get_global_rect().grow(1.0)
+	var inner_rect := inner.get_global_rect()
+	return inner_rect.position.x >= outer_rect.position.x and inner_rect.end.x <= outer_rect.end.x
 
 
 func _has_ancestor(node: Node, ancestor: Node) -> bool:
