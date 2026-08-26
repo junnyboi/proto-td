@@ -28,7 +28,7 @@ The approved unified-interface concept is now implemented across the synchronize
 |---|---|
 | Direct import | Passed on Godot 4.7.2 stable |
 | Bounded headless boot | Passed |
-| Repository tests | 32/32 passed |
+| Repository tests | 35/35 passed (29 standalone regressions plus six smoke scripts) |
 | Localization parity | Passed for `en-US` and `zh-CN` |
 | Consolidated error scan | Clean |
 | Non-battle visual matrix | 12/12 captures passed at 1280×720 and 720×1280 |
@@ -39,4 +39,4 @@ The complete audit is recorded in [`UI_IMPLEMENTATION_GAP_AUDIT.md`](UI_IMPLEMEN
 
 ## Release status
 
-The native candidate is accepted. The remaining release operations are repository phase commit/push, Godot Web export, HTTP/browser verification, update of the existing `proto-td-web` fullscreen iframe host, final WebDev checkpoint, and public publish verification.
+Canonical source `4b1d6db2535599daa83dcb17454630df29c7b194` is pushed and accepted. The exact 135,146,656-byte Web PCK, streamed-cinematic mappings, direct/managed browser flow, responsive loader, fullscreen geometry, selected-stream transfer, and clean console are verified. WebDev checkpoint `1580d598` is ready; the public domain still serves predecessor `index_e5122afa.pck` and requires promotion through the WebDev **Publish** control.

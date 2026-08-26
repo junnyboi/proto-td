@@ -42,7 +42,7 @@ Stage Select now projects the localized authoritative objective and threat plus 
 
 ## Final acceptance
 
-The accepted candidate passes direct Godot 4.7.2 import, bounded boot, all 32 current repository tests, localization parity, and a clean consolidated error scan. The 12-screen non-battle matrix and eight-state battle matrix pass at `1280×720` and `720×1280`. Existing authoritative inputs and mutation boundaries remain intact; visual changes are projection, layout, typography, localized copy, and focus behavior only. The last Stage Select ordering adjustment places first-clear identity above the two-line constraint block, leaving the original stage hint inside the dossier’s independent local scroller.
+The accepted candidate passes direct Godot 4.7.2 import, bounded boot, all 35 current repository tests, localization parity, and a clean consolidated error scan. The 12-screen non-battle matrix and eight-state battle matrix pass at `1280×720` and `720×1280`. Existing authoritative inputs and mutation boundaries remain intact; visual changes are projection, layout, typography, localized copy, and focus behavior only. The last Stage Select ordering adjustment places first-clear identity above the two-line constraint block, leaving the original stage hint inside the dossier’s independent local scroller.
 
 ## Integrated Company Command recheck
 
