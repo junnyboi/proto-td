@@ -108,6 +108,7 @@ var _portrait := false
 var _compact_landscape := false
 var _reduced_motion := false
 var _mission_hovered := false
+var _mission_hover_tween: Tween = null
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
 var _focus_pulse_colors: Dictionary = {}
@@ -661,14 +662,15 @@ func _build_mission_card() -> PanelContainer:
 func _build_mission_button() -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = "MissionControlButton"
-	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
+	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
 	var display_text := UiCopyType.text(
-		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
+		&"ui.staging.mission_control_display", "MISSION\nCONTROL",
 	)
 	button.set_presentation_text(full_text, display_text.to_upper())
 	button.tooltip_text = full_text
 	button.disabled = _narrative_missing
 	button.focus_mode = Control.FOCUS_NONE if button.disabled else Control.FOCUS_ALL
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.custom_minimum_size = Vector2(0.0, 200.0)
 	_mission_action_label = button.get_node("PresentationLabel") as Label
 	_mission_action_label.offset_left = 132.0
@@ -683,6 +685,8 @@ func _build_mission_button() -> AetheriaButtonType:
 	)
 	_mission_action_label.add_theme_constant_override(&"outline_size", 6)
 	_mission_action_label.add_theme_color_override(&"font_outline_color", Color(VOID, 0.92))
+	_mission_action_label.add_theme_color_override(&"font_shadow_color", Color.TRANSPARENT)
+	_mission_action_label.add_theme_constant_override(&"shadow_outline_size", 8)
 	for style_name: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
 		button.add_theme_stylebox_override(style_name, StyleBoxEmpty.new())
 	_mission_plate = TextureRect.new()
@@ -711,14 +715,37 @@ func _on_mission_hover_changed(hovered: bool) -> void:
 func _update_mission_plate_state() -> void:
 	if _mission_plate == null or _mission == null:
 		return
+	if _mission_hover_tween != null and _mission_hover_tween.is_valid():
+		_mission_hover_tween.kill()
+	_mission_plate.pivot_offset = _mission_plate.size * 0.5
+	_mission_action_label.pivot_offset = _mission_action_label.size * 0.5
 	if _mission.disabled:
 		_mission_plate.modulate = Color(0.48, 0.52, 0.56, 0.78)
+		_mission_plate.scale = Vector2.ONE
+		_mission_action_label.modulate = Color.WHITE
+		_mission_action_label.scale = Vector2.ONE
+		_mission_action_label.add_theme_color_override(&"font_shadow_color", Color.TRANSPARENT)
 		return
-	_mission_plate.modulate = (
-		Color(1.08, 1.12, 1.18, 1.0)
-		if _mission_hovered or _mission.has_focus()
-		else Color.WHITE
+	var active := _mission_hovered or _mission.has_focus()
+	var plate_color := Color(1.10, 1.16, 1.24, 1.0) if active else Color.WHITE
+	var plate_scale := Vector2(1.012, 1.025) if active else Vector2.ONE
+	var label_color := Color(1.04, 1.10, 1.16, 1.0) if active else Color.WHITE
+	var label_scale := Vector2(1.02, 1.02) if active else Vector2.ONE
+	_mission_action_label.add_theme_color_override(
+		&"font_shadow_color", Color(MOON_CYAN, 0.72) if active else Color.TRANSPARENT,
 	)
+	if _reduced_motion:
+		_mission_plate.modulate = plate_color
+		_mission_plate.scale = plate_scale
+		_mission_action_label.modulate = label_color
+		_mission_action_label.scale = label_scale
+		return
+	_mission_hover_tween = create_tween().set_parallel(true)
+	_mission_hover_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_mission_hover_tween.tween_property(_mission_plate, ^"modulate", plate_color, 0.18)
+	_mission_hover_tween.tween_property(_mission_plate, ^"scale", plate_scale, 0.18)
+	_mission_hover_tween.tween_property(_mission_action_label, ^"modulate", label_color, 0.16)
+	_mission_hover_tween.tween_property(_mission_action_label, ^"scale", label_scale, 0.16)
 
 
 func _register_focus_pulse(button: Button, accent: Color) -> void:
@@ -1010,9 +1037,9 @@ func _refresh_locale_copy() -> void:
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
 	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
-	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
+	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
 	var mission_display := UiCopyType.text(
-		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
+		&"ui.staging.mission_control_display", "MISSION\nCONTROL",
 	)
 	_mission.set_presentation_text(mission_copy, mission_display.to_upper())
 	_mission.tooltip_text = mission_copy
