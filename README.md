@@ -14,7 +14,7 @@ The main scene is `res://scenes/title.tscn`.
 
 ## Gameplay and campaign features
 
-The launch campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Mercy Archive. Mission Control displays the authoritative roster and Marks balance and offers a repeatable **basic Recruit contract for 5 Marks**. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
+The launch campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Mercy Archive. Mission Control displays the authoritative roster and Marks balance and offers a compact repeatable **basic Recruit contract for 5 Marks**; the Field Team workspace repeats the same authoritative contract beside the live roster. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
 
 Battlefields use an endpoint-aware isometric projection with bounded portrait panning and a shared 0.92 tactical framing multiplier. Recruit animation definitions share a source ground line so male and female idle/attack sprites remain centered on their tile faces in every direction. Camera, placement, economy, persistence, keyboard focus, bilingual copy, and responsive Mission Control layouts are covered by standalone Godot regressions and Xvfb visual harnesses.
 
