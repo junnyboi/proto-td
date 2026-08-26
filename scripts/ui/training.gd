@@ -50,10 +50,14 @@ const TRAINING_FONT_SIZES := {
 const RENAME_ENTRY_SECONDS := 0.20
 const RENAME_EXIT_SECONDS := 0.16
 const RENAME_VERTICAL_OFFSET := 10.0
-const PATH_CARD_SIZE := Vector2(340.0, 225.0)
-const PATH_CARD_PORTRAIT_SIZE := Vector2(300.0, 225.0)
-const PATH_CARD_GAP := 16.0
-const PATH_ACTION_SIZE := Vector2(180.0, 64.0)
+const PATH_CARD_SIZE := Vector2(680.0, 450.0)
+const PATH_CARD_PORTRAIT_SIZE := Vector2(600.0, 450.0)
+const PATH_CARD_GAP := 24.0
+const PATH_SCREEN_GUTTER := 60
+const PATH_SCREEN_GUTTER_PORTRAIT := 24
+const PATH_ACTION_SIZE := Vector2(260.0, 84.0)
+const PATH_ACTION_PADDING_HORIZONTAL := 24.0
+const PATH_ACTION_PADDING_VERTICAL := 12.0
 const ERROR_KEYS := {
 	&"invalid_argument_type": &"ui.training.error.invalid_request",
 	&"unknown_hero": &"ui.training.error.unknown_hero",
@@ -170,6 +174,7 @@ var _filter_summary: AetheriaLabelType
 var _name_filter := ""
 var _name_sort: StringName = &"recruitment"
 var _path_cards: Array[PromotionPathCardType] = []
+var _path_cards_scroll: ScrollContainer = null
 var _selected_hero_id := ""
 var _selected_choice_id := ""
 var _last_edited_hero_id := ""
@@ -1335,10 +1340,15 @@ func _show_paths() -> void:
 		return
 	_mode = &"paths"
 	_clear_page()
+	_apply_path_screen_gutters(true)
 	var summary := _summary_by_id(_selected_hero_id)
 	_page.add_child(_header(
 		"ChooseTrainingTitle",
-			_t(&"ui.training.choose_advanced", "CHOOSE TRAINING PATH"),
+			_fmt(
+				&"ui.training.choose_advanced",
+				"CHOOSE A NEW SPECIALIZATION FOR {callsign}",
+				{&"callsign": String(summary["callsign"]).to_upper()},
+			),
 		_fmt(
 			&"ui.training.hero_progress", "{callsign} — {class_name} — XP {current} / {required}",
 			{
@@ -1350,9 +1360,16 @@ func _show_paths() -> void:
 		),
 	))
 	_page.add_child(_identity_strip(summary))
+	_path_cards_scroll = ScrollContainer.new()
+	_path_cards_scroll.name = "PathCardsScroll"
+	_path_cards_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_path_cards_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_path_cards_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_path_cards_scroll.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_path_cards_scroll.custom_minimum_size.y = PATH_CARD_SIZE.y + 28.0
 	var cards := GridContainer.new()
 	cards.name = "PathCards"
-	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cards.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	cards.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	cards.add_theme_constant_override(&"h_separation", int(PATH_CARD_GAP))
 	cards.add_theme_constant_override(&"v_separation", int(PATH_CARD_GAP))
@@ -1384,7 +1401,8 @@ func _show_paths() -> void:
 		card.focus_entered.connect(_ensure_path_card_visible.bind(card))
 		cards.add_child(card)
 		_path_cards.append(card)
-	_page.add_child(cards)
+	_path_cards_scroll.add_child(cards)
+	_page.add_child(_path_cards_scroll)
 	var action_bar := BoxContainer.new()
 	action_bar.name = "PathActionBar"
 	action_bar.vertical = _layout_mode == &"portrait"
@@ -1415,7 +1433,11 @@ func _show_paths() -> void:
 	_apply_path_action_style(back)
 	_apply_path_action_style(_choose_path)
 	action_bar.add_child(footer)
-	_set_action_footer(action_bar)
+	var action_safe := MarginContainer.new()
+	action_safe.name = "PathActionSafe"
+	action_safe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	action_safe.add_child(action_bar)
+	_set_action_footer(action_safe)
 	_apply_paths_layout()
 	_apply_footer_layouts()
 	_reset_outer_scroll()
@@ -1668,6 +1690,7 @@ func _on_layout_mode_changed(value: StringName) -> void:
 	if _shell.preferred_size != target_size:
 		_shell.preferred_size = target_size
 	if _mode == &"paths":
+		_apply_path_screen_gutters(true)
 		_apply_paths_layout()
 	elif _mode == &"roster":
 		_apply_roster_layout()
@@ -1724,29 +1747,51 @@ func _apply_roster_layout() -> void:
 
 
 func _apply_paths_layout() -> void:
-	var cards := _page.get_node_or_null("PathCards") as GridContainer
+	var cards := _page.find_child("PathCards", true, false) as GridContainer
 	if cards == null:
 		return
 	var card_size := (
 		PATH_CARD_PORTRAIT_SIZE if _layout_mode == &"portrait" else PATH_CARD_SIZE
 	)
-	var available_width := maxf(card_size.x, _path_grid_available_width())
-	var max_columns := maxi(
-		1, floori((available_width + PATH_CARD_GAP) / (card_size.x + PATH_CARD_GAP)),
-	)
-	cards.columns = 1 if _layout_mode == &"portrait" else mini(_path_cards.size(), max_columns)
-	var action_bar := _action_dock.get_node_or_null("PathActionBar") as BoxContainer
+	# Doubled landscape cards remain on one deliberate horizontal rail. Portrait
+	# uses one vertical column and the outer Training document owns overflow.
+	cards.columns = 1 if _layout_mode == &"portrait" else maxi(1, _path_cards.size())
+	if _path_cards_scroll != null:
+		_path_cards_scroll.horizontal_scroll_mode = (
+			ScrollContainer.SCROLL_MODE_DISABLED
+			if _layout_mode == &"portrait"
+			else ScrollContainer.SCROLL_MODE_AUTO
+		)
+		_path_cards_scroll.custom_minimum_size.y = (
+			card_size.y * float(_path_cards.size())
+			+ PATH_CARD_GAP * float(maxi(0, _path_cards.size() - 1))
+			if _layout_mode == &"portrait"
+			else card_size.y + 28.0
+		)
+	var action_safe := _action_dock.get_node_or_null("PathActionSafe") as MarginContainer
+	if action_safe != null:
+		var gutter := PATH_SCREEN_GUTTER_PORTRAIT if _layout_mode == &"portrait" else PATH_SCREEN_GUTTER
+		action_safe.add_theme_constant_override(&"margin_left", gutter)
+		action_safe.add_theme_constant_override(&"margin_right", gutter)
+		action_safe.add_theme_constant_override(&"margin_top", PATH_ACTION_PADDING_VERTICAL)
+		action_safe.add_theme_constant_override(&"margin_bottom", PATH_ACTION_PADDING_VERTICAL)
+	var action_bar := _action_dock.find_child("PathActionBar", true, false) as BoxContainer
 	if action_bar != null:
 		action_bar.vertical = _layout_mode == &"portrait"
 	for card: PromotionPathCardType in _path_cards:
 		card.set_compact(_layout_mode == &"portrait")
 
 
-func _path_grid_available_width() -> float:
-	var viewport_width := get_viewport_rect().size.x
-	var shell_inset := 36.0 if _layout_mode != &"regular_landscape" else 56.0
-	var content_padding := 36.0 if _layout_mode == &"portrait" else 56.0
-	return maxf(1.0, viewport_width - shell_inset - content_padding)
+func _apply_path_screen_gutters(active: bool) -> void:
+	if _content_gutter == null:
+		return
+	var gutter := (
+		(PATH_SCREEN_GUTTER_PORTRAIT if _layout_mode == &"portrait" else PATH_SCREEN_GUTTER)
+		if active
+		else 6
+	)
+	_content_gutter.add_theme_constant_override(&"margin_left", gutter)
+	_content_gutter.add_theme_constant_override(&"margin_right", gutter if active else 0)
 
 
 func _ensure_path_card_visible(card: PromotionPathCardType) -> void:
@@ -1769,8 +1814,24 @@ func _apply_path_action_style(action: AetheriaButtonType) -> void:
 		action.add_theme_stylebox_override(&"disabled", normal_style.duplicate())
 	var presentation := action.get_node_or_null("PresentationLabel") as AetheriaLabelType
 	if presentation != null:
-		presentation.add_theme_font_size_override(&"font_size", 24)
+		presentation.add_theme_font_size_override(&"font_size", 28)
+		presentation.autowrap_mode = TextServer.AUTOWRAP_OFF
+		presentation.clip_text = false
 	action.fit_presentation(PATH_ACTION_SIZE.x, PATH_ACTION_SIZE.x, PATH_ACTION_SIZE.y)
+	if presentation != null:
+		presentation.offset_left = PATH_ACTION_PADDING_HORIZONTAL
+		presentation.offset_top = PATH_ACTION_PADDING_VERTICAL
+		presentation.offset_right = -PATH_ACTION_PADDING_HORIZONTAL
+		presentation.offset_bottom = -PATH_ACTION_PADDING_VERTICAL
+	for style_name: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"focus", &"disabled"]:
+		var style := action.get_theme_stylebox(style_name).duplicate() as StyleBox
+		if style == null:
+			continue
+		style.content_margin_left = PATH_ACTION_PADDING_HORIZONTAL
+		style.content_margin_right = PATH_ACTION_PADDING_HORIZONTAL
+		style.content_margin_top = PATH_ACTION_PADDING_VERTICAL
+		style.content_margin_bottom = PATH_ACTION_PADDING_VERTICAL
+		action.add_theme_stylebox_override(style_name, style)
 	action.custom_minimum_size = PATH_ACTION_SIZE
 
 
@@ -1903,6 +1964,7 @@ func _label(
 
 
 func _clear_page(kill_transition: bool = true) -> void:
+	_apply_path_screen_gutters(false)
 	if kill_transition and _rename_presentation_state != RenamePresentationState.IDLE:
 		_kill_rename_presentation_transition()
 	for child: Node in _page.get_children():
@@ -1914,6 +1976,7 @@ func _clear_page(kill_transition: bool = true) -> void:
 			child.queue_free()
 	_roster_buttons.clear()
 	_path_cards.clear()
+	_path_cards_scroll = null
 	_view_paths = null
 	_choose_path = null
 	_review_confirm = null
@@ -2398,7 +2461,7 @@ func _ensure_focus_visible_pass(control: Control, remaining_passes: int) -> void
 		_ensure_focus_visible_pass.call_deferred(control, remaining_passes - 1)
 
 
-func _set_action_footer(footer: BoxContainer) -> void:
+func _set_action_footer(footer: Control) -> void:
 	if _action_dock == null or footer == null:
 		return
 	for child: Node in _action_dock.get_children():

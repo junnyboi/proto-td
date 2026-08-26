@@ -77,6 +77,12 @@ func _ready() -> void:
 	if OS.get_environment("TRAINING_SELECT_FIRST") == "1":
 		training.call("_on_path_selected", "defender")
 		await _frames(3)
+	var scroll_y_text := OS.get_environment("TRAINING_SCROLL_Y")
+	if not scroll_y_text.is_empty():
+		var outer_scroll := training.find_child("TrainingDialogScroll", true, false) as ScrollContainer
+		if outer_scroll != null:
+			outer_scroll.scroll_vertical = maxi(0, int(scroll_y_text))
+			await _frames(3)
 	var output := OS.get_environment("TRAINING_SCREENSHOT")
 	if not output.is_empty():
 		await RenderingServer.frame_post_draw
