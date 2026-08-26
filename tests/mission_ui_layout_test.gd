@@ -40,6 +40,7 @@ func _run() -> void:
 			await _verify_launch_retry_feedback(game)
 		_dispose_mission(game)
 		await process_frame
+	await _verify_managed_order_rail(game)
 	game.set("campaign_active", false)
 	game.set("campaign", null)
 	game.set("campaign_store", null)
@@ -51,6 +52,23 @@ func _run() -> void:
 		sfx.call("stop_all")
 	await create_timer(0.25).timeout
 	_finish()
+
+
+func _verify_managed_order_rail(game: Node) -> void:
+	root.size = Vector2i(1280, 1100)
+	_mission = load("res://scenes/squad_select.tscn").instantiate() as Control
+	root.add_child(_mission)
+	await process_frame
+	await process_frame
+	await process_frame
+	var order_scroll := _mission.find_child("SelectedSquadOrderScroll", true, false) as ScrollContainer
+	var order_empty := _mission.find_child("SelectedSquadOrderEmpty", true, false) as Label
+	_check(order_scroll != null and order_empty != null, "managed selected-squad guidance is missing")
+	_check(order_empty != null and order_empty.autowrap_mode == TextServer.AUTOWRAP_OFF, "managed selected-squad guidance can collapse into vertical character wrapping")
+	_check(order_empty != null and order_empty.custom_minimum_size.x >= 560.0 and order_empty.custom_minimum_size.y >= 44.0, "managed selected-squad guidance lacks stable horizontal rail geometry")
+	_check(order_empty != null and order_scroll != null and order_empty.size.y <= order_scroll.size.y + EPSILON, "managed selected-squad guidance exceeds its scroll viewport vertically")
+	_dispose_mission(game)
+	await process_frame
 
 
 func _verify_layout(label: String, viewport: Vector2i) -> void:
@@ -149,7 +167,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
 	var order_panel := _mission.find_child("SelectedSquadOrderPanel", true, false) as PanelContainer
+	var order_scroll := _mission.find_child("SelectedSquadOrderScroll", true, false) as ScrollContainer
 	var order_rail := _mission.find_child("SelectedSquadOrder", true, false) as HBoxContainer
+	var order_empty := _mission.find_child("SelectedSquadOrderEmpty", true, false) as Label
 	var roster_scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
@@ -160,6 +180,10 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(sort_select != null and sort_select.item_count >= 7, "%s sort control lacks rarity and level modes" % label)
 	_check(order_panel != null and field_panel != null and _inside(field_panel, order_panel), "%s selected-squad order rail exceeds Field Team" % label)
 	_check(order_rail != null, "%s selected-squad drag rail is missing" % label)
+	_check(order_scroll != null and order_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO and order_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s selected-squad guidance does not use horizontal-only scrolling" % label)
+	_check(order_empty != null and order_empty.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s selected-squad guidance can collapse into vertical character wrapping" % label)
+	_check(order_empty != null and order_empty.custom_minimum_size.x >= 560.0 and order_empty.custom_minimum_size.y >= 44.0, "%s selected-squad guidance lacks stable horizontal rail geometry" % label)
+	_check(order_empty != null and order_scroll != null and order_empty.size.y <= order_scroll.size.y + EPSILON, "%s selected-squad guidance exceeds its scroll viewport vertically" % label)
 	_check(roster_scroll != null and roster_scroll.custom_minimum_size.y >= 240.0, "%s operator list lacks a usable local scroll viewport" % label)
 	var active_tab := _mission.find_child("ActiveRosterTab", true, false) as Button
 	var fallen_tab := _mission.find_child("FallenRosterTab", true, false) as Button

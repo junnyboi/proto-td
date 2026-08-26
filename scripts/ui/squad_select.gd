@@ -349,7 +349,13 @@ func _build_selected_squad_order() -> PanelContainer:
 	_selected_squad_order.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_selected_squad_order.add_theme_constant_override(&"h_separation", 10)
 	_selected_squad_scroll.add_child(_selected_squad_order)
-	_selected_squad_empty = _label(
+	_selected_squad_empty = _selected_squad_empty_label()
+	_selected_squad_order.add_child(_selected_squad_empty)
+	return _selected_squad_panel
+
+
+func _selected_squad_empty_label() -> Label:
+	var empty := _label(
 		"SelectedSquadOrderEmpty",
 		UiCopyType.text(
 			&"ui.squad.order_empty",
@@ -357,8 +363,11 @@ func _build_selected_squad_order() -> PanelContainer:
 		),
 		&"dense_detail",
 	)
-	_selected_squad_order.add_child(_selected_squad_empty)
-	return _selected_squad_panel
+	empty.custom_minimum_size = Vector2(560.0, 44.0)
+	empty.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	empty.autowrap_mode = TextServer.AUTOWRAP_OFF
+	empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return empty
 
 
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
@@ -1165,14 +1174,7 @@ func _refresh_selected_squad_order() -> void:
 		_selected_squad_order.remove_child(child)
 		child.queue_free()
 	if _picked.is_empty():
-		_selected_squad_empty = _label(
-			"SelectedSquadOrderEmpty",
-			UiCopyType.text(
-				&"ui.squad.order_empty",
-				"Select operators, then drag them here to set deployment order.",
-			),
-			&"dense_detail",
-		)
+		_selected_squad_empty = _selected_squad_empty_label()
 		_selected_squad_order.add_child(_selected_squad_empty)
 		return
 	_selected_squad_empty = null
