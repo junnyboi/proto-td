@@ -35,6 +35,7 @@ func _run() -> void:
 		await process_frame
 		_verify_layout(label, VIEWPORTS[label])
 		if label == "regular":
+			await _verify_deploy_ready_pulse()
 			await _verify_recruitment_transaction(game)
 			await _verify_launch_retry_feedback(game)
 		_dispose_mission(game)
@@ -199,13 +200,20 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
-	if training != null and back != null and deploy != null:
-		_check(is_equal_approx(training.custom_minimum_size.x, 336.0) or (viewport.y > viewport.x and training.custom_minimum_size.x <= viewport.x - 96.0), "%s Train Operators did not double its usable width" % label)
-		_check(is_equal_approx(back.custom_minimum_size.x, 238.0), "%s Back did not double its usable width" % label)
-		var expected_deploy_width := minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0
-		_check(is_equal_approx(deploy.custom_minimum_size.x, expected_deploy_width), "%s Deploy Squad is not exactly twice its prior width" % label)
-		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
-		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
+		if training != null and back != null and deploy != null:
+			_check(is_equal_approx(training.custom_minimum_size.x, 336.0) or (viewport.y > viewport.x and training.custom_minimum_size.x <= viewport.x - 96.0), "%s Train Operators did not double its usable width" % label)
+			_check(is_equal_approx(back.custom_minimum_size.x, 238.0), "%s Back did not double its usable width" % label)
+			var expected_deploy_width := minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0
+			_check(is_equal_approx(deploy.custom_minimum_size.x, expected_deploy_width), "%s Deploy Squad is not exactly twice its prior width" % label)
+			for action: Button in [back, training, deploy]:
+				_check(is_equal_approx(action.custom_minimum_size.y, 112.0), "%s %s does not share the 112px deployment action height" % [label, action.name])
+				_check(absf(action.size.y - deploy.size.y) <= EPSILON, "%s %s does not match Deploy Squad's rendered height" % [label, action.name])
+			var deploy_copy := deploy.get_node_or_null("PresentationLabel") as Label
+			_check(deploy_copy != null and deploy_copy.get_theme_color(&"font_color").is_equal_approx(Color("fff8e7")), "%s Deploy Squad does not use the high-contrast ivory label" % label)
+			_check(deploy_copy != null and deploy_copy.get_theme_constant(&"outline_size") >= 5, "%s Deploy Squad lacks its dark readability outline" % label)
+			_check(deploy_copy != null and deploy_copy.get_theme_color(&"font_outline_color").get_luminance() < 0.05, "%s Deploy Squad outline is not dark enough against gold" % label)
+			_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
+			_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
 	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect
 	_check(faction_symbol != null, "%s First Stand faction symbol is missing" % label)
 	if faction_symbol != null and faction_symbol.texture != null:
@@ -275,6 +283,48 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(blocked.get("error_code") == &"strategic_mutation_pending", "pending Field Team hire did not serialize every strategic facade")
 	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "blocked strategic command advanced the campaign")
 	game.set("_pending_recruitment_mutation", null)
+
+
+func _verify_deploy_ready_pulse() -> void:
+	var start := _mission.find_child("StartBattle", true, false) as Button
+	var picks: Array[Button] = []
+	for candidate: Node in _mission.find_children("Pick_*", "Button", true, false):
+		var pick := candidate as Button
+		if pick != null and not pick.disabled:
+			picks.append(pick)
+		if picks.size() == 3:
+			break
+	_check(start != null and picks.size() == 3, "ready-pulse fixture could not find a complete squad")
+	if start == null or picks.size() != 3:
+		return
+	for pick: Button in picks:
+		var hero: Dictionary = pick.get_meta(&"hero", {})
+		var hero_id := StringName(hero.get("hero_id", &""))
+		pick.set_pressed_no_signal(true)
+		_mission.call("_on_pick_toggled", true, hero_id)
+	await process_frame
+	_check(not start.disabled, "full squad did not enable Deploy Squad")
+	_check(bool(_mission.call("deploy_ready_pulse_active")), "full ready squad did not start the Deploy Squad pulse")
+	_check(bool(start.get_meta(&"ready_pulse_active", false)), "Deploy Squad does not expose active pulse telemetry")
+	await create_timer(0.42).timeout
+	_check(start.scale.x > 1.001 and start.scale.x <= 1.019, "Deploy Squad ready pulse is absent or no longer subtle")
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	_mission.call("_refresh")
+	await process_frame
+	_check(not bool(_mission.call("deploy_ready_pulse_active")), "reduced motion did not suppress the Deploy Squad pulse")
+	_check(start.scale.is_equal_approx(Vector2.ONE), "reduced motion did not restore Deploy Squad scale")
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+	_mission.call("_refresh")
+	await process_frame
+	_check(bool(_mission.call("deploy_ready_pulse_active")), "Deploy Squad pulse did not recover after reduced motion was disabled")
+	for pick: Button in picks:
+		var hero: Dictionary = pick.get_meta(&"hero", {})
+		var hero_id := StringName(hero.get("hero_id", &""))
+		pick.set_pressed_no_signal(false)
+		_mission.call("_on_pick_toggled", false, hero_id)
+	await process_frame
+	_check(not bool(_mission.call("deploy_ready_pulse_active")), "Deploy Squad pulse continued after the squad stopped being full")
+	_check(start.scale.is_equal_approx(Vector2.ONE), "Deploy Squad did not reset after the ready pulse stopped")
 
 
 func _verify_launch_retry_feedback(game: Node) -> void:

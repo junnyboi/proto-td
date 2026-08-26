@@ -32,8 +32,14 @@ const FIELD_TEAM_FACTION_ICON_COUNT_GAP := 6
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
+const DEPLOY_SQUAD_ACTION_HEIGHT := 112.0
 const COMPACT_ACTION_STACK_THRESHOLD := 1280.0
 const FOOTER_STACK_THRESHOLD := 1800.0
+const DEPLOY_READY_PULSE_SCALE := Vector2(1.018, 1.018)
+const DEPLOY_READY_PULSE_RISE_SECONDS := 0.82
+const DEPLOY_READY_PULSE_FALL_SECONDS := 1.08
+const DEPLOY_TEXT_COLOR := Color("fff8e7")
+const DEPLOY_TEXT_OUTLINE := Color("09070d")
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -80,6 +86,8 @@ var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
 var _hire_marks: AetheriaLabelType = null
 var _hire_status: AetheriaLabelType = null
+var _deploy_pulse_tween: Tween = null
+var _deploy_ready_pulsing := false
 
 
 func _ready() -> void:
@@ -127,6 +135,10 @@ func _ready() -> void:
 	_on_layout_mode_changed(_shell.layout_mode())
 	if not I18n.locale_changed.is_connected(_on_locale_changed):
 		I18n.locale_changed.connect(_on_locale_changed)
+
+
+func _exit_tree() -> void:
+	_stop_deploy_ready_pulse()
 
 
 func _build_header() -> BoxContainer:
@@ -592,7 +604,9 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	button.name = node_name
 	button.text = text_value
 	var rendered_text := _action_presentation_text(node_name, text_value)
-	button.custom_minimum_size = Vector2(_wide_action_width(node_name), 99.0)
+	button.custom_minimum_size = Vector2(
+		_wide_action_width(node_name), DEPLOY_SQUAD_ACTION_HEIGHT,
+	)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.set_presentation_text(text_value, rendered_text)
 	LunarisOpsType.apply_button(button, role)
@@ -604,7 +618,24 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	presentation.autowrap_mode = TextServer.AUTOWRAP_OFF
 	presentation.clip_text = false
 	presentation.add_theme_font_size_override(&"font_size", 26)
+	if node_name == "StartBattle":
+		_apply_deploy_text_contrast(button)
 	return button
+
+
+func _apply_deploy_text_contrast(button: AetheriaButtonType = _start) -> void:
+	if button == null:
+		return
+	var presentation := button.get_node_or_null("PresentationLabel") as Label
+	if presentation == null:
+		return
+	StagingSkinType.apply_display_type(presentation, 28, DEPLOY_TEXT_COLOR, 650)
+	presentation.add_theme_color_override(&"font_color", DEPLOY_TEXT_COLOR)
+	presentation.add_theme_color_override(&"font_outline_color", DEPLOY_TEXT_OUTLINE)
+	presentation.add_theme_constant_override(&"outline_size", 5)
+	presentation.add_theme_constant_override(&"shadow_offset_x", 0)
+	presentation.add_theme_constant_override(&"shadow_offset_y", 2)
+	presentation.add_theme_color_override(&"font_shadow_color", Color(0.0, 0.0, 0.0, 0.72))
 
 
 func _action_presentation_text(node_name: String, text_value: String) -> String:
@@ -932,7 +963,72 @@ func _refresh() -> void:
 	if not _training.disabled:
 		_apply_clean_training_style(_training)
 	_refresh_launch_status()
+	_apply_deploy_text_contrast()
+	_sync_deploy_ready_pulse()
 	_wire_focus()
+
+
+func _deploy_is_fully_ready() -> bool:
+	return (
+		_start != null
+		and not _start.disabled
+		and not _launch_locked
+		and not Game.mission_launch_retry_pending()
+		and _launch_error_code.is_empty()
+		and not _narrative_missing
+		and _picked.size() == _stage.squad_size
+		and not _motion_reduced()
+	)
+
+
+func _sync_deploy_ready_pulse() -> void:
+	if not _deploy_is_fully_ready():
+		_stop_deploy_ready_pulse()
+		return
+	if _deploy_ready_pulsing or _start == null:
+		return
+	_deploy_ready_pulsing = true
+	_start.set_meta(&"ready_pulse_active", true)
+	_update_deploy_pivot()
+	_deploy_pulse_tween = create_tween().set_loops()
+	_deploy_pulse_tween.set_process_mode(Tween.TWEEN_PROCESS_IDLE)
+	_deploy_pulse_tween.tween_property(
+		_start, "scale", DEPLOY_READY_PULSE_SCALE, DEPLOY_READY_PULSE_RISE_SECONDS,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_deploy_pulse_tween.parallel().tween_property(
+		_start, "self_modulate", Color("fff6d8"), DEPLOY_READY_PULSE_RISE_SECONDS,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_deploy_pulse_tween.tween_property(
+		_start, "scale", Vector2.ONE, DEPLOY_READY_PULSE_FALL_SECONDS,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_deploy_pulse_tween.parallel().tween_property(
+		_start, "self_modulate", Color.WHITE, DEPLOY_READY_PULSE_FALL_SECONDS,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_deploy_ready_pulse() -> void:
+	if _deploy_pulse_tween != null and _deploy_pulse_tween.is_valid():
+		_deploy_pulse_tween.kill()
+	_deploy_pulse_tween = null
+	_deploy_ready_pulsing = false
+	if _start != null:
+		_start.set_meta(&"ready_pulse_active", false)
+		_start.scale = Vector2.ONE
+		_start.self_modulate = Color.WHITE
+		_update_deploy_pivot()
+
+
+func _update_deploy_pivot() -> void:
+	if _start != null:
+		_start.pivot_offset = _start.size * 0.5
+
+
+func deploy_ready_pulse_active() -> bool:
+	return _deploy_ready_pulsing
+
+
+func _motion_reduced() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 
 
 func _refresh_launch_status() -> void:
@@ -1281,6 +1377,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 				if mode == &"portrait":
 					target_width = minf(target_width, maxf(220.0, get_viewport_rect().size.x - 96.0))
 				(action as Button).custom_minimum_size.x = target_width
+	_update_deploy_pivot.call_deferred()
 
 
 func _on_training() -> void:
