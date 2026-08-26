@@ -16,6 +16,7 @@
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
+- [x] Convert Mission Control to a full-safe-area workspace, remove its decorative outer frame, and eliminate text/action overflow across 1280×720, 1024×576, 720×1280, and 390×844 layouts.
 
 # Company Command Sizing Reimplementation
 

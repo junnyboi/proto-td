@@ -7,6 +7,7 @@ class_name GachaCinematicPlayer
 ## through VideoStreamTheora. Native/editor builds retain the bundled fallback.
 
 signal cinematic_started(music_id: StringName)
+signal cinematic_finished
 signal cinematic_failed(stream_key: StringName, reason: String)
 signal stream_state_changed(stream_key: StringName, state: StringName, current: int, total: int)
 
@@ -81,6 +82,7 @@ var _portrait_orientation := false
 var _active_profile: Dictionary = {}
 var _active_stream_key := ""
 var _allow_video_start := false
+var _playback_active := false
 
 var _stream_urls: Dictionary = {}
 var _request: HTTPRequest
@@ -156,6 +158,7 @@ func play_cinematic(premium_id: String, reduced_motion: bool) -> bool:
 
 func show_final_plate() -> void:
 	_allow_video_start = false
+	_playback_active = false
 	if _video != null:
 		_video.stop()
 		_video.visible = false
@@ -311,6 +314,7 @@ func _start_stream(stream: VideoStream) -> bool:
 	_video.stream = stream
 	_video.visible = true
 	_final_plate.visible = false
+	_playback_active = true
 	_video.play()
 	var cue_id := music_id()
 	cinematic_started.emit(cue_id)
@@ -318,11 +322,20 @@ func _start_stream(stream: VideoStream) -> bool:
 
 
 func _stop_playback() -> void:
+	_playback_active = false
 	if _video == null:
 		return
 	_video.stop()
 	_video.stream = null
 	_video.visible = false
+
+
+func _on_video_finished() -> void:
+	if not _playback_active:
+		return
+	_playback_active = false
+	show_final_plate()
+	cinematic_finished.emit()
 
 
 func _validated_cache_path(stream_key: String) -> String:
@@ -470,6 +483,7 @@ func _build_layers() -> void:
 	_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_video.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_video.visible = false
+	_video.finished.connect(_on_video_finished)
 	add_child(_video)
 
 	_final_plate = TextureRect.new()
