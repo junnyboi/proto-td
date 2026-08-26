@@ -51,62 +51,32 @@ func _run() -> void:
 	var dossier_scroll := campaign.find_child("MissionDossierScroll", true, false) as ScrollContainer
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
+	var dossier_shard := campaign.find_child("DossierResonanceShard", true, false) as TextureRect
 	var next_stage := campaign.find_child("Stage_s1", true, false) as Button
 	var route_panel := campaign.find_child("CampaignRoutePanel", true, false) as PanelContainer
-	var route_header_inset := campaign.find_child("RouteHeaderInset", true, false) as MarginContainer
+	var route_content_inset := campaign.find_child("RouteContentInset", true, false) as MarginContainer
 	var route_heading := campaign.find_child("RouteHeading", true, false) as Label
 	var route_note := campaign.find_child("RouteNote", true, false) as Label
 	var stage_label := next_stage.get_node_or_null("PresentationLabel") as Label if next_stage != null else null
-	var recruit_desk := campaign.find_child("MissionControlRecruitDesk", true, false) as PanelContainer
-	var recruit_grid := campaign.find_child("MissionControlRecruitGrid", true, false) as GridContainer
-	var recruit_title := campaign.find_child("MissionControlRecruitTitle", true, false) as Label
-	var hire_button := campaign.find_child("HireBasicRecruit", true, false) as Button
-	var hire_marks := campaign.find_child("MissionControlRecruitMarks", true, false) as Label
-	var hire_currency := campaign.find_child("MissionControlRecruitCurrency", true, false) as HBoxContainer
-	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
-	var hire_roster := campaign.find_child("MissionControlRecruitRoster", true, false) as Label
-	var hire_status := campaign.find_child("MissionControlRecruitStatus", true, false) as Label
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
-	_check(dossier_reward != null and not dossier_reward.text.is_empty(), "Campaign dossier does not expose the typed first-clear reward")
-	_check(route_panel != null and is_equal_approx(route_panel.size.x, 480.0), "Campaign route rail is not fixed at the annotated half-width")
+	_check(dossier_reward != null and not dossier_reward.text.is_empty() and not dossier_reward.text.contains("MARKS"), "Campaign dossier does not expose the symbol-first first-clear reward")
+	_check(dossier_shard != null and dossier_shard.visible and dossier_shard.texture != null, "Campaign dossier is missing the Resonance Shard reward symbol")
+	_check(route_panel != null and is_equal_approx(route_panel.size.x, 480.0), "Campaign route rail is not fixed at the doubled 480px width")
 	_check(route_panel != null and route_panel.size_flags_horizontal == Control.SIZE_SHRINK_BEGIN, "Campaign route rail can still absorb surplus landscape width")
-	_check(route_header_inset != null and route_header_inset.get_theme_constant(&"margin_left") == 12 and route_header_inset.get_theme_constant(&"margin_top") == 12, "Campaign route heading inset is not the requested 12px top/left")
-	_check(route_panel != null and route_heading != null and route_heading.global_position.x - route_panel.global_position.x >= 28.0, "Campaign route title does not clear the panel border")
-	_check(route_panel != null and route_note != null and route_note.global_position.x - route_panel.global_position.x >= 28.0, "Campaign route subtitle does not clear the panel border")
+	_check(route_content_inset != null, "Campaign route content inset is missing")
+	if route_content_inset != null:
+		for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
+			_check(route_content_inset.get_theme_constant(side) == 24, "Campaign route %s is not exactly 24px" % side)
+	_check(route_panel != null and route_heading != null and route_heading.global_position.x - route_panel.global_position.x >= 40.0, "Campaign route title does not clear the 24px inner inset and frame")
+	_check(route_panel != null and route_note != null and route_note.global_position.x - route_panel.global_position.x >= 40.0, "Campaign route subtitle does not clear the 24px inner inset and frame")
 	_check(stage_label != null and is_equal_approx(stage_label.offset_top, 12.0) and is_equal_approx(stage_label.offset_bottom, -12.0), "Campaign list item does not retain exact 12px top/bottom padding")
 	_check(next_stage != null and next_stage.custom_minimum_size.y >= 76.0, "Campaign list item height does not contain its vertical padding")
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
-	_check(recruit_desk != null and route_panel != null and route_panel.is_ancestor_of(recruit_desk), "Mission Control lost its compact reinforcement contract")
-	_check(recruit_grid != null and recruit_grid.columns == 1, "Mission Control reinforcement contract is not safely stacked")
-	_check(recruit_title != null and recruit_title.text == "COMPANY REINFORCEMENTS", "Mission Control reinforcement title is missing")
-	_check(hire_button != null and not hire_button.disabled and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Mission Control does not expose the exact icon-backed hire action")
-	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Mission Control does not show the current shard balance")
-	_check(hire_roster != null and hire_roster.text.contains("5"), "Mission Control does not show current personnel")
-	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "Mission Control hire status is not a polite live region")
-	if i18n != null:
-		_check(bool(i18n.call("set_locale", &"zh-CN")), "Mission Control could not activate Chinese")
-		await process_frame
-		await process_frame
-		_check(recruit_title != null and recruit_title.text == "连队增援", "Mission Control reinforcement title did not localize")
-		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Mission Control icon-backed hire action did not localize")
-		_check(bool(i18n.call("set_locale", &"en-US")), "Mission Control could not restore English")
-		await process_frame
-		await process_frame
-	var projection_before: Dictionary = game.call("campaign_projection")
-	if hire_button != null:
-		hire_button.pressed.emit()
-		await process_frame
-		await process_frame
-	var projection_after: Dictionary = game.call("campaign_projection")
-	_check(int(projection_after.get("marks", 0)) == int(projection_before.get("marks", 0)) - 5, "Mission Control hire charged the wrong amount")
-	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Mission Control hire did not add exactly one Recruit")
-	_check(hire_marks != null and hire_marks.text == "115", "Mission Control did not refresh the shard balance")
-	_check(hire_roster != null and hire_roster.text.contains("6"), "Mission Control did not refresh personnel")
-	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Mission Control did not announce the accepted hire")
-	_check(hire_button != null and hire_button.has_focus(), "Mission Control did not restore hire focus")
+	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Company Reinforcements")
+	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
 	root.size = Vector2i(720, 1280)
 	await process_frame
 	await process_frame
@@ -114,8 +84,6 @@ func _run() -> void:
 		route_panel != null and route_panel.size_flags_horizontal == Control.SIZE_EXPAND_FILL,
 		"portrait Mission Selection did not restore a fluid full-width route panel",
 	)
-	_check(recruit_grid != null and recruit_grid.columns == 1, "portrait Mission Control reinforcement contract did not stack")
-	_check(recruit_desk != null and route_panel != null and _inside(route_panel, recruit_desk), "portrait Mission Control reinforcement contract overflows the route panel")
 	_check(campaign_scroll != null and campaign_scroll.size.y >= 96.0, "portrait Mission Control did not reserve a visible stage list")
 	_check(next_stage != null and next_stage.get_global_rect().position.y < 1280.0, "portrait First Stand action is below the viewport")
 	root.size = Vector2i(1280, 720)
@@ -131,7 +99,7 @@ func _run() -> void:
 	if mission_actions != null:
 		_check(mission_actions.get_child_count() == 3, "Mission action contract changed")
 		_check(mission_actions.get_theme_constant(&"h_separation") >= 28, "Mission actions did not gain the requested spacing")
-		var mission_widths := {"BackButton": 238.0, "TrainingButton": 336.0, "StartBattle": 588.0}
+		var mission_widths := {"BackButton": 180.0, "TrainingButton": 220.0, "StartBattle": 400.0}
 		for child: Node in mission_actions.get_children():
 			var action := child as Button
 			_check(action != null and action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Mission action does not retain its compact alignment")

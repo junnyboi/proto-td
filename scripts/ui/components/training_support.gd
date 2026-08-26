@@ -151,6 +151,22 @@ static func filtered_sorted(
 			var b_name := String(b.get("callsign", "")).to_lower()
 			var a_title := String(a.get("custom_title", "") if a.get("custom_title") != null else "").to_lower()
 			var b_title := String(b.get("custom_title", "") if b.get("custom_title") != null else "").to_lower()
+			var a_rarity := int(a.get("rarity", 0))
+			var b_rarity := int(b.get("rarity", 0))
+			var a_level := int(a.get("level", 1))
+			var b_level := int(b.get("level", 1))
+			var a_xp := int(a.get("xp", 0))
+			var b_xp := int(b.get("xp", 0))
+			if sort_mode == &"rarity_desc" and a_rarity != b_rarity:
+				return a_rarity > b_rarity
+			if sort_mode == &"rarity_asc" and a_rarity != b_rarity:
+				return a_rarity < b_rarity
+			if sort_mode == &"level_desc" and a_level != b_level:
+				return a_level > b_level
+			if sort_mode == &"level_asc" and a_level != b_level:
+				return a_level < b_level
+			if sort_mode in [&"level_desc", &"level_asc"] and a_xp != b_xp:
+				return a_xp > b_xp if sort_mode == &"level_desc" else a_xp < b_xp
 			if sort_mode == &"name_asc" and a_name != b_name:
 				return a_name < b_name
 			if sort_mode == &"name_desc" and a_name != b_name:

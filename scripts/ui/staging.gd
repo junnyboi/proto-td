@@ -51,6 +51,8 @@ const PORTRAIT_SHEET_MAX_HEIGHT := 860.0
 const INTRA_GROUP_GAP := 12
 const MAJOR_SECTION_GAP := 24
 const OPERATION_LIST_SIDE_MARGIN := 20
+const NEXT_MISSION_CARD_MIN_HEIGHT := 260.0
+const MISSION_ACTION_VERTICAL_PADDING := 12
 
 var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
@@ -252,6 +254,11 @@ func _build_top_bar() -> void:
 	_top_summary.autowrap_mode = TextServer.AUTOWRAP_OFF
 	StagingSkinType.apply_display_type(_top_summary, 24, IVORY, 560)
 	status_row.add_child(_top_summary)
+	var exit_alignment_spacer := Control.new()
+	exit_alignment_spacer.name = "ExitAlignmentSpacer"
+	exit_alignment_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exit_alignment_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_top_row.add_child(exit_alignment_spacer)
 	_exit_plate = PanelContainer.new()
 	_exit_plate.name = "UtilityPlate"
 	_exit_plate.custom_minimum_size = Vector2(228.0, 112.0)
@@ -596,7 +603,7 @@ func _build_progress_milestones() -> HBoxContainer:
 func _build_mission_card() -> PanelContainer:
 	_mission_card = PanelContainer.new()
 	_mission_card.name = "NextOperationCard"
-	_mission_card.custom_minimum_size.y = 260.0
+	_mission_card.custom_minimum_size.y = NEXT_MISSION_CARD_MIN_HEIGHT
 	_mission_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mission_card.add_theme_stylebox_override(&"panel", StagingSkinType.mission_card_style())
 
@@ -674,9 +681,9 @@ func _build_mission_button() -> AetheriaButtonType:
 	button.custom_minimum_size = Vector2(0.0, 200.0)
 	_mission_action_label = button.get_node("PresentationLabel") as Label
 	_mission_action_label.offset_left = 132.0
-	_mission_action_label.offset_top = 34.0
+	_mission_action_label.offset_top = MISSION_ACTION_VERTICAL_PADDING
 	_mission_action_label.offset_right = -132.0
-	_mission_action_label.offset_bottom = -34.0
+	_mission_action_label.offset_bottom = -MISSION_ACTION_VERTICAL_PADDING
 	_mission_action_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_mission_action_label.max_lines_visible = 2
 	StagingSkinType.apply_display_type(
@@ -967,7 +974,7 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_mission_grid.add_theme_constant_override(&"v_separation", 8 if short_wide else 12)
 	_mission_body_grid.add_theme_constant_override(&"h_separation", 20 if short_wide else 24)
 	_mission_card.custom_minimum_size.y = (
-		320.0 if single_column else (0.0 if hide_preview else 260.0)
+		320.0 if single_column else (0.0 if hide_preview else NEXT_MISSION_CARD_MIN_HEIGHT)
 	)
 	_mission_preview.custom_minimum_size = (
 		Vector2(0.0, 112.0) if single_column
@@ -983,7 +990,7 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	)
 	_mission_action_label.offset_left = 56.0 if single_column else (96.0 if _portrait or _compact_landscape else 132.0)
 	_mission_action_label.offset_right = -_mission_action_label.offset_left
-	_mission_action_label.offset_top = 12.0 if _compact_landscape or short_wide else (20.0 if single_column else 22.0)
+	_mission_action_label.offset_top = MISSION_ACTION_VERTICAL_PADDING
 	_mission_action_label.offset_bottom = -_mission_action_label.offset_top
 	for tile: StagingCommandTileType in _command_tiles:
 		tile.set_rail_mode(not _portrait and not _compact_landscape)

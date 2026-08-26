@@ -26,7 +26,7 @@ func _capture() -> void:
 	Game.start_battle(&"s1", true)
 	for _frame: int in range(18):
 		await get_tree().process_frame
-	if mode == "live":
+	if mode in ["live", "paused"]:
 		var tutorial_probe := get_tree().root.find_child("FirstStandTutorial", true, false) as Control
 		var controls_probe := get_tree().root.find_child("BattleControls", true, false) as BattleControls
 		var deployment_probe := get_tree().root.find_child("DeployBar", true, false) as DeployBar
@@ -37,6 +37,17 @@ func _capture() -> void:
 		tutorial_probe.visible = false
 		controls_probe.set_interaction_enabled(true)
 		deployment_probe.set_operator_interaction_enabled(true)
+		if mode == "paused":
+			controls_probe._on_speed_pressed()
+			controls_probe._on_speed_pressed()
+			controls_probe._on_speed_pressed()
+			controls_probe._process(0.0)
+			var speed := controls_probe.find_child("SpeedButton", true, false) as Button
+			var pause := controls_probe.find_child("PauseButton", true, false) as Button
+			if speed == null or pause == null or speed.text != "0×" or pause.text != "RESUME":
+				push_error("battle annotation visual harness did not reach paused speed cycle")
+				get_tree().quit(1)
+				return
 		for _frame: int in range(8):
 			await get_tree().process_frame
 	var tutorial := get_tree().root.find_child("FirstStandTutorial", true, false)
