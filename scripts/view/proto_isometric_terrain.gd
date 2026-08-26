@@ -54,24 +54,6 @@ const TEXTURES: Dictionary = {
 	&"ruin": preload(TEXTURE_ROOT + "ancient_ruin.png"),
 }
 
-const OBSTACLE_TEXTURES: Dictionary = {
-	&"wetland_mangrove": preload(TEXTURE_ROOT + "obstacles/wetland_mangrove.png"),
-	&"wetland_stump": preload(TEXTURE_ROOT + "obstacles/wetland_stump.png"),
-	&"frozen_snow_rock": preload(TEXTURE_ROOT + "obstacles/frozen_snow_rock.png"),
-	&"frozen_pine": preload(TEXTURE_ROOT + "obstacles/frozen_pine.png"),
-	&"lava_basalt_chimney": preload(TEXTURE_ROOT + "obstacles/lava_basalt_chimney.png"),
-	&"lava_obsidian_cluster": preload(TEXTURE_ROOT + "obstacles/lava_obsidian_cluster.png"),
-}
-
-const OBSTACLE_DISPLAY_SIZES := {
-	&"wetland_mangrove": Vector2(88.0, 118.0),
-	&"wetland_stump": Vector2(76.0, 66.0),
-	&"frozen_snow_rock": Vector2(78.0, 60.0),
-	&"frozen_pine": Vector2(92.0, 138.0),
-	&"lava_basalt_chimney": Vector2(82.0, 104.0),
-	&"lava_obsidian_cluster": Vector2(82.0, 64.0),
-}
-
 const BIOME_PROFILES := {
 	&"desert": {
 		&"ground": &"sand",
@@ -83,7 +65,6 @@ const BIOME_PROFILES := {
 		&"wall_top": Color("934d35"),
 		&"wall_right": Color("63341f"),
 		&"wall_left": Color("482519"),
-		&"obstacles": [],
 	},
 	&"wetland": {
 		&"ground": &"wetland",
@@ -95,7 +76,6 @@ const BIOME_PROFILES := {
 		&"wall_top": Color("716a3a"),
 		&"wall_right": Color("4f4930"),
 		&"wall_left": Color("373326"),
-		&"obstacles": [&"wetland_mangrove", &"wetland_stump"],
 	},
 	&"frozen": {
 		&"ground": &"snow",
@@ -107,7 +87,6 @@ const BIOME_PROFILES := {
 		&"wall_top": Color("afbfca"),
 		&"wall_right": Color("788d9a"),
 		&"wall_left": Color("5c707c"),
-		&"obstacles": [&"frozen_snow_rock", &"frozen_pine"],
 	},
 	&"lava": {
 		&"ground": &"lava_basalt",
@@ -119,7 +98,6 @@ const BIOME_PROFILES := {
 		&"wall_top": Color("34363a"),
 		&"wall_right": Color("242529"),
 		&"wall_left": Color("18191d"),
-		&"obstacles": [&"lava_basalt_chimney", &"lava_obsidian_cluster"],
 	},
 }
 
@@ -156,9 +134,6 @@ func _draw() -> void:
 		_draw_tile_transitions(cell)
 	for cell: Vector2i in cells:
 		_draw_tile_details(cell)
-	for cell: Vector2i in cells:
-		if _is_blocked_obstacle_cell(cell):
-			_draw_elevated_obstacle(cell)
 
 
 func terrain_id_at(cell: Vector2i) -> StringName:
@@ -183,14 +158,6 @@ func terrain_id_at(cell: Vector2i) -> StringName:
 	return _profile[&"ground"] as StringName
 
 
-func obstacle_kind_at(cell: Vector2i) -> StringName:
-	var variants: Array = _profile.get(&"obstacles", []) as Array
-	if variants.is_empty():
-		return &"desert_rock"
-	var index := posmod(cell.x * 37 + cell.y * 61 + cell.x * cell.y * 11, variants.size())
-	return variants[index] as StringName
-
-
 func biome() -> StringName:
 	return _biome
 
@@ -198,8 +165,6 @@ func biome() -> StringName:
 static func required_texture_paths() -> PackedStringArray:
 	var paths := PackedStringArray()
 	for texture: Texture2D in TEXTURES.values():
-		paths.append(texture.resource_path)
-	for texture: Texture2D in OBSTACLE_TEXTURES.values():
 		paths.append(texture.resource_path)
 	paths.sort()
 	return paths
@@ -312,40 +277,6 @@ func _draw_tile_details(cell: Vector2i) -> void:
 		)
 	elif terrain_id == &"lava":
 		draw_polyline(closed, Color(1.0, 0.76, 0.18, 0.58), 2.0, true)
-
-
-func _draw_elevated_obstacle(cell: Vector2i) -> void:
-	var center := IsoProjection.face_center(cell, true)
-	var kind := obstacle_kind_at(cell)
-	var texture := OBSTACLE_TEXTURES.get(kind) as Texture2D
-	var size := OBSTACLE_DISPLAY_SIZES.get(kind, Vector2.ZERO) as Vector2
-	if texture != null and size != Vector2.ZERO:
-		var display_size := size * 0.64
-		var bottom_center := center + Vector2(0.0, 7.0)
-		var rect := Rect2(bottom_center - Vector2(display_size.x * 0.5, display_size.y), display_size)
-		draw_texture_rect(texture, rect, false)
-		return
-	_draw_desert_rock(center, 1.0)
-
-
-func _draw_desert_rock(center: Vector2, scale: float) -> void:
-	var ink := Color("1f1a18")
-	var rock := Color("934d35")
-	draw_circle(center + Vector2(-12.0, -5.0) * scale, 15.0 * scale, rock.darkened(0.08))
-	draw_circle(center + Vector2(7.0, -9.0) * scale, 19.0 * scale, rock.lightened(0.06))
-	draw_circle(center + Vector2(18.0, 2.0) * scale, 12.0 * scale, rock.darkened(0.18))
-	draw_line(
-		center + Vector2(0.0, -24.0) * scale,
-		center + Vector2(-5.0, 4.0) * scale,
-		ink,
-		3.0 * scale,
-	)
-	draw_line(
-		center + Vector2(-5.0, 4.0) * scale,
-		center + Vector2(9.0, 12.0) * scale,
-		ink,
-		3.0 * scale,
-	)
 
 
 func _transition_descriptors_for(cell: Vector2i) -> Array[Dictionary]:
@@ -472,10 +403,6 @@ func _cell_in_stage(cell: Vector2i) -> bool:
 func _is_obstacle_cell(cell: Vector2i) -> bool:
 	var tile := _stage.tile_at(cell)
 	return tile == StageDef.Tile.ELEVATED or tile == StageDef.Tile.BLOCKED
-
-
-func _is_blocked_obstacle_cell(cell: Vector2i) -> bool:
-	return _stage.tile_at(cell) == StageDef.Tile.BLOCKED
 
 
 static func _biome_for_stage(stage_id: StringName) -> StringName:

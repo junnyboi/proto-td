@@ -14,6 +14,8 @@ const TILE_H := 32.0
 const ELEV_LIFT_PX := 16.0
 ## Sprite bottom-center sits this far below its cell's face center.
 const FEET_OFFSET := 6.0
+const SPAWN_LANDMARK_SIZE := Vector2(64.0, 64.0)
+const CORE_LANDMARK_SIZE := Vector2(64.0, 80.0)
 
 
 ## Continuous cell space -> grid-local screen point.
@@ -139,6 +141,38 @@ static func height_fill_scale(stage: StageDef, viewport: Vector2) -> float:
 ## Grid-root origin that centers the scaled terrain rectangle in the viewport.
 static func terrain_origin_for(stage: StageDef, viewport: Vector2, scale: float) -> Vector2:
 	return viewport * 0.5 - terrain_box(stage).get_center() * scale
+
+
+## Union of terrain and the generated bottom-centered endpoint frames. This is
+## intentionally narrower than content_box(): it reserves only real landmark
+## pixels instead of generic entity headroom, preserving useful battle scale.
+static func visual_box(stage: StageDef) -> Rect2:
+	var result := terrain_box(stage)
+	var grid_size := stage.grid_size()
+	for y: int in grid_size.y:
+		for x: int in grid_size.x:
+			var cell := Vector2i(x, y)
+			var tile := stage.tile_at(cell)
+			if tile != StageDef.Tile.SPAWN and tile != StageDef.Tile.BASE:
+				continue
+			var landmark_size := (
+				SPAWN_LANDMARK_SIZE if tile == StageDef.Tile.SPAWN else CORE_LANDMARK_SIZE
+			)
+			var center := face_center(cell)
+			var landmark_box := Rect2(
+				center - Vector2(landmark_size.x * 0.5, landmark_size.y),
+				landmark_size,
+			)
+			result = result.merge(landmark_box)
+	return result
+
+
+static func visual_height_fill_scale(stage: StageDef, viewport: Vector2) -> float:
+	return viewport.y / visual_box(stage).size.y
+
+
+static func visual_origin_for(stage: StageDef, viewport: Vector2, scale: float) -> Vector2:
+	return viewport * 0.5 - visual_box(stage).get_center() * scale
 
 
 ## Screen-space visual-content rectangle after applying a pan offset to the

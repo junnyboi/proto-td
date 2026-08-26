@@ -53,18 +53,29 @@ func _run() -> void:
 				failures.append("terrain node missing: %s" % stage_id)
 			elif terrain.call("biome") != EXPECTED_BIOMES[stage_id]:
 				failures.append("wrong biome for %s" % stage_id)
+			elif terrain.has_method("_draw_elevated_obstacle"):
+				failures.append("platform-top obstacle renderer still exists: %s" % stage_id)
 			for y: int in stage.grid_size().y:
 				for x: int in stage.grid_size().x:
 					var cell := Vector2i(x, y)
 					var terrain_id: StringName = terrain.call("terrain_id_at", cell)
 					if terrain_id == &"":
 						failures.append("empty terrain id at %s %s" % [stage_id, cell])
-					var has_obstacle_sprite: bool = terrain.call("_is_blocked_obstacle_cell", cell)
-					var tile := stage.tile_at(cell)
-					if tile == StageDef.Tile.ELEVATED and has_obstacle_sprite:
-						failures.append("deployable elevated cell has obstacle: %s %s" % [stage_id, cell])
-					if tile == StageDef.Tile.BLOCKED and not has_obstacle_sprite:
-						failures.append("blocked cell lacks obstacle: %s %s" % [stage_id, cell])
+			var endpoint_count := 0
+			for child: Node in root_node.get_children():
+				if child is BattleEndpointLandmark:
+					endpoint_count += 1
+					if (child as BattleEndpointLandmark).frame_count() <= 1:
+						failures.append("endpoint is not animated: %s %s" % [stage_id, child.name])
+				elif child.name.begins_with("EnvProp_") or child.name.begins_with("ProceduralFallback_"):
+					failures.append("platform-top prop remains: %s %s" % [stage_id, child.name])
+			var expected_endpoints := _tile_count(stage, StageDef.Tile.SPAWN)
+			expected_endpoints += _tile_count(stage, StageDef.Tile.BASE)
+			if endpoint_count != expected_endpoints:
+				failures.append(
+					"endpoint count mismatch %s: %d != %d"
+					% [stage_id, endpoint_count, expected_endpoints]
+				)
 		root.remove_child(root_node)
 		root_node.free()
 	if failures.is_empty():
@@ -74,3 +85,13 @@ func _run() -> void:
 	for failure: String in failures:
 		push_error(failure)
 	quit(1)
+
+
+func _tile_count(stage: StageDef, tile: StageDef.Tile) -> int:
+	var count := 0
+	var size := stage.grid_size()
+	for y: int in size.y:
+		for x: int in size.x:
+			if stage.tile_at(Vector2i(x, y)) == tile:
+				count += 1
+	return count

@@ -48,11 +48,11 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 	_safe_rect = Rect2(Vector2.ZERO, viewport)
 	if _is_portrait():
 		var content := _content_box(stage)
-		# Portrait stages are rotated clockwise by BattleView. Fill from rendered
-		# terrain height with one uniform scalar, then unlock each content axis only
-		# when its sprite-aware envelope exceeds the viewport on that axis.
-		scale = IsoProjection.height_fill_scale(stage, viewport)
-		origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
+		# Portrait stages are rotated clockwise by BattleView. Fill from the exact
+		# terrain + endpoint envelope, then unlock each content axis only when its
+		# sprite-aware envelope exceeds the viewport on that axis.
+		scale = IsoProjection.visual_height_fill_scale(stage, viewport)
+		origin = IsoProjection.visual_origin_for(stage, viewport, scale)
 		bounds = _pan_bounds_for(content, _safe_rect)
 		_default_pan = Vector2(bounds.end.x, clampf(0.0, bounds.position.y, bounds.end.y))
 		if not _initialized:
@@ -63,9 +63,9 @@ func relayout(stage: StageDef, viewport: Vector2) -> void:
 		else:
 			pan = IsoProjection.clamp_pan(pan, bounds)
 		return
-	scale = IsoProjection.height_fill_scale(stage, viewport)
-	origin = IsoProjection.terrain_origin_for(stage, viewport, scale)
-	bounds = IsoProjection.pan_bounds(stage, viewport, scale)
+	scale = IsoProjection.visual_height_fill_scale(stage, viewport)
+	origin = IsoProjection.visual_origin_for(stage, viewport, scale)
+	bounds = _pan_bounds_for(_content_box(stage), _safe_rect)
 	_default_pan = Vector2(bounds.position.x, clampf(0.0, bounds.position.y, bounds.end.y))
 	if not _initialized:
 		# Landscape-authored stages terminate at the base on the right.

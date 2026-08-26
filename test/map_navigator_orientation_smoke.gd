@@ -29,9 +29,9 @@ func _validate_portrait(source: StageDef, failures: PackedStringArray) -> void:
 	var stage := source.copy_for_viewport(viewport)
 	var navigator: RefCounted = MAP_NAVIGATOR_SCRIPT.new()
 	navigator.relayout(stage, viewport)
-	var expected_scale := IsoProjection.height_fill_scale(stage, viewport)
+	var expected_scale := IsoProjection.visual_height_fill_scale(stage, viewport)
 	if not is_equal_approx(navigator.scale, expected_scale):
-		failures.append("portrait must use exact height-fill scale")
+		failures.append("portrait must use exact endpoint-aware height-fill scale")
 	if not is_equal_approx(navigator.pan.x, navigator.bounds.end.x):
 		failures.append("portrait must start on the clockwise-rotated base side")
 	if navigator.bounds.size.x <= 0.0:

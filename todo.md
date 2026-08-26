@@ -57,3 +57,9 @@
 - [x] Escalate battle music below 30% base health through urgent next-bar critical/boss-critical states and an 8% tempo lift with hysteretic recovery.
 - [ ] Phase 5: complete loudness, SFX-masking, mono/mobile, accessibility, Web packaging, playthrough, and release validation.
 - [ ] Phase 6: produce Solcrest, Crimson, and Vesper suites only as their playable faction content enters production.
+
+# Annotated Battle Map Overhaul
+
+- [x] Phase 1: integrated GPT Image 2 + video-to-sprites photon portal and holy-crystal pedestal loops on every SPAWN/BASE tile; removed all blocked/elevated platform props across S1-S8; added endpoint, reduced-motion, clean-platform, and endpoint-aware map-fit regressions; visually accepted S2/S4; committed and pushed.
+- [ ] Phase 2: center and enlarge the First Stand tutorial; double Recruit and Pause/Speed/Resign typography and target sizes; refit padded parent decks across landscape/portrait; extend layout regressions; commit and push.
+- [ ] Phase 3: run direct import, bounded boot, complete regressions, clean Xvfb landscape/portrait input checks, Web export/HTTP/browser gates, update the existing `proto-td-web` fullscreen host, checkpoint, publish when available, and verify the public runtime.
