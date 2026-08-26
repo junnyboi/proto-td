@@ -80,10 +80,23 @@ func _run() -> void:
 	var honor := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
 	var portrait := memorial.find_child("SelectedMemorialPortrait", true, false) as TextureRect
 	var ledger := memorial.find_child("ServiceLedger", true, false) as PanelContainer
+	var roster_panel := memorial.find_child("MemorialRosterPanel", true, false) as PanelContainer
+	var dossier_panel := memorial.find_child("MemorialDossier", true, false) as PanelContainer
+	var memorial_row := memorial.find_child("Memorial_%s" % fallen_id, true, false) as Button
+	var row_margin := memorial_row.find_child("MemorialRowMargin", true, false) as MarginContainer if memorial_row != null else null
+	var row_class := memorial_row.find_child("MemorialRowClass", true, false) as Label if memorial_row != null else null
 	_check(memorial_grid != null and memorial_grid.get_child_count() == 1, "Vahalla memorial card missing")
 	_check(honor != null and not honor.disabled, "Vahalla honor action unavailable")
 	_check(portrait != null and portrait.custom_minimum_size.y >= 380.0, "selected memorial identity is not visually dominant")
 	_check(ledger != null and ledger.custom_minimum_size.y >= 132.0, "terminal service ledger hierarchy is missing")
+	_check(memorial_row != null and memorial_row.custom_minimum_size.y >= 104.0, "memorial row has insufficient internal height")
+	_check(row_margin != null and row_margin.get_theme_constant(&"margin_left") >= 16, "memorial row padding is below 16px")
+	_check(row_class != null and row_class.get_theme_font_size(&"font_size") >= 16, "memorial metadata is below 16px")
+	if roster_panel != null and dossier_panel != null:
+		var roster_style := roster_panel.get_theme_stylebox(&"panel")
+		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
+		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
+		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
 	if honor != null:
 		honor.pressed.emit()
 		await process_frame

@@ -39,6 +39,7 @@ var _training: AetheriaButtonType = null
 var _back: AetheriaButtonType = null
 var _grid: GridContainer = null
 var _body: GridContainer = null
+var _command_scroll: ScrollContainer = null
 var _roster_scroll: ScrollContainer = null
 var _intel_scroll: ScrollContainer = null
 var _footer: BoxContainer = null
@@ -80,6 +81,7 @@ func _ready() -> void:
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_command_scroll = scroll
 	surface.add_child(scroll)
 	var column := VBoxContainer.new()
 	column.name = "MissionCommandColumn"
@@ -136,7 +138,7 @@ func _build_body() -> GridContainer:
 	_body.columns = 2
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_body.custom_minimum_size.y = 300.0
+	_body.custom_minimum_size.y = 0.0
 	_body.add_theme_constant_override(&"h_separation", 16)
 	_body.add_theme_constant_override(&"v_separation", 16)
 
@@ -176,7 +178,7 @@ func _build_body() -> GridContainer:
 	roster_column.add_child(_roster_empty)
 	_roster_scroll = ScrollContainer.new()
 	_roster_scroll.name = "OperatorRosterScroll"
-	_roster_scroll.custom_minimum_size.y = 270.0
+	_roster_scroll.custom_minimum_size.y = 0.0
 	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -200,7 +202,7 @@ func _build_body() -> GridContainer:
 	LunarisOpsType.apply_panel(briefing_panel, &"workspace")
 	_intel_scroll = ScrollContainer.new()
 	_intel_scroll.name = "MissionIntelScroll"
-	_intel_scroll.custom_minimum_size.y = 270.0
+	_intel_scroll.custom_minimum_size.y = 0.0
 	_intel_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_intel_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_intel_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -375,6 +377,8 @@ func _rebuild_operator_cards() -> void:
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 		_grid.add_child(pick)
 		if not fallen:
+			pick.focus_entered.connect(_roster_scroll.ensure_control_visible.bind(pick))
+		if not fallen:
 			_buttons[hero_id] = pick
 			_hero_order.append(hero_id)
 		else:
@@ -384,13 +388,13 @@ func _rebuild_operator_cards() -> void:
 
 func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	var card_label := button.get_node("PresentationLabel") as Label
-	card_label.offset_left = 14.0
+	card_label.offset_left = 16.0
 	card_label.offset_top = 106.0
-	card_label.offset_right = -14.0
-	card_label.offset_bottom = -14.0
+	card_label.offset_right = -16.0
+	card_label.offset_bottom = -16.0
 	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card_label.clip_text = false
-	card_label.add_theme_font_size_override(&"font_size", 15)
+	card_label.add_theme_font_size_override(&"font_size", 16)
 	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 
@@ -439,9 +443,9 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	LunarisOpsType.apply_button(button, role)
 	var presentation := button.get_node("PresentationLabel") as Label
 	presentation.offset_left = ACTION_SAFE_INSET
-	presentation.offset_top = 8.0
+	presentation.offset_top = 10.0
 	presentation.offset_right = -ACTION_SAFE_INSET
-	presentation.offset_bottom = -8.0
+	presentation.offset_bottom = -10.0
 	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	presentation.clip_text = false
 	presentation.add_theme_font_size_override(&"font_size", 17)
@@ -607,8 +611,9 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			else HORIZONTAL_ALIGNMENT_RIGHT
 		)
 	if _filter_toolbar != null:
-		_filter_toolbar.vertical = mode != &"regular_landscape"
+		_filter_toolbar.vertical = mode == &"portrait"
 	if _filter_summary != null:
+		_filter_summary.visible = mode == &"portrait"
 		_filter_summary.horizontal_alignment = (
 			HORIZONTAL_ALIGNMENT_LEFT
 			if mode == &"portrait"
@@ -616,20 +621,28 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		)
 	if _body != null:
 		_body.columns = 1 if mode == &"portrait" else 2
+		_body.custom_minimum_size.y = 0.0
+	if _command_scroll != null:
+		_command_scroll.vertical_scroll_mode = (
+			ScrollContainer.SCROLL_MODE_DISABLED
+			if mode == &"regular_landscape"
+			else ScrollContainer.SCROLL_MODE_AUTO
+		)
 	if _roster_scroll != null:
-		_roster_scroll.custom_minimum_size.y = 270.0
+		_roster_scroll.custom_minimum_size.y = 220.0 if mode == &"portrait" else 0.0
 	if _intel_scroll != null:
-		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 270.0
+		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
 	if _grid != null:
 		_grid.columns = 1 if mode == &"portrait" else (2 if mode == &"compact_landscape" else 3)
 	if _filter_bar != null:
-		_filter_bar.set_compact(mode != &"regular_landscape")
+		_filter_bar.set_compact(mode != &"portrait")
+		_filter_bar.set_inline(mode != &"portrait")
 	for button: Button in _buttons.values():
 		button.custom_minimum_size = Vector2(
 			180.0, 190.0 if mode == &"portrait" else 220.0,
 		)
 	if _footer != null:
-		_footer.vertical = mode != &"regular_landscape"
+		_footer.vertical = mode == &"portrait"
 	if _actions != null:
 		_actions.columns = 1 if mode == &"portrait" else 3
 

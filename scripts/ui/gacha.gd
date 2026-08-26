@@ -57,10 +57,13 @@ var _browse_title: Label
 var _browse_intro: Label
 var _status_label: Label
 var _hero_grid: GridContainer
+var _hero_scroll: ScrollContainer
+var _hero_stage: CenterContainer
 var _header_grid: GridContainer
 var _action_grid: GridContainer
 var _screen_margin: MarginContainer
 var _pity_label: Label
+var _pity_layout: BoxContainer
 var _pity_segments: HBoxContainer
 var _confirmation_projection: Dictionary = {}
 var _confirmation_layer: Control
@@ -114,7 +117,6 @@ func _ready() -> void:
 		_game.set("content", self)
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	_build_screen()
-	_build_pull_confirmation()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	var i18n := get_node_or_null("/root/I18n")
@@ -212,6 +214,7 @@ func _on_reveal_gui_input(event: InputEvent) -> void:
 
 func _build_screen() -> void:
 	_screen_margin = MarginContainer.new()
+	_screen_margin.name = "PremiumScreenMargin"
 	_screen_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_screen_margin.add_theme_constant_override(&"margin_left", 42)
 	_screen_margin.add_theme_constant_override(&"margin_top", 30)
@@ -220,10 +223,12 @@ func _build_screen() -> void:
 	add_child(_screen_margin)
 
 	var shell := PanelContainer.new()
+	shell.name = "PremiumGachaShell"
 	Style.apply_panel(shell, &"screen")
 	_screen_margin.add_child(shell)
 
 	var content := VBoxContainer.new()
+	content.name = "PremiumGachaPage"
 	content.add_theme_constant_override(&"separation", 18)
 	shell.add_child(content)
 
@@ -251,6 +256,7 @@ func _build_screen() -> void:
 	_header_grid.add_child(_marks_label)
 
 	var intro := PanelContainer.new()
+	intro.name = "PremiumIntroPanel"
 	Style.apply_panel(intro, &"quiet")
 	content.add_child(intro)
 	var intro_box := VBoxContainer.new()
@@ -262,18 +268,19 @@ func _build_screen() -> void:
 	)
 	_browse_intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro_box.add_child(_browse_intro)
-	var pity_row := HBoxContainer.new()
-	pity_row.add_theme_constant_override(&"separation", 12)
-	intro_box.add_child(pity_row)
+	_pity_layout = BoxContainer.new()
+	_pity_layout.name = "PremiumPityLayout"
+	_pity_layout.add_theme_constant_override(&"separation", 12)
+	intro_box.add_child(_pity_layout)
 	_pity_label = _label(_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"detail")
 	_pity_label.name = "PityLabel"
 	_pity_label.custom_minimum_size.x = 210
-	pity_row.add_child(_pity_label)
+	_pity_layout.add_child(_pity_label)
 	_pity_segments = HBoxContainer.new()
 	_pity_segments.name = "PitySegments"
 	_pity_segments.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_pity_segments.add_theme_constant_override(&"separation", 5)
-	pity_row.add_child(_pity_segments)
+	_pity_layout.add_child(_pity_segments)
 	for index: int in HARD_PITY_WINDOW:
 		var segment := ColorRect.new()
 		segment.name = "Pity_%02d" % (index + 1)
@@ -283,13 +290,17 @@ func _build_screen() -> void:
 		_pity_segments.add_child(segment)
 
 	var scroll := ScrollContainer.new()
+	scroll.name = "PremiumHeroScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_hero_scroll = scroll
 	content.add_child(scroll)
 	var hero_stage := CenterContainer.new()
 	hero_stage.name = "PremiumHeroStage"
 	hero_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hero_stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_hero_stage = hero_stage
 	scroll.add_child(hero_stage)
 	_hero_grid = GridContainer.new()
 	_hero_grid.name = "PremiumHeroGrid"
@@ -300,6 +311,7 @@ func _build_screen() -> void:
 	hero_stage.add_child(_hero_grid)
 
 	_action_grid = GridContainer.new()
+	_action_grid.name = "PremiumActionDock"
 	_action_grid.columns = 2
 	_action_grid.add_theme_constant_override(&"h_separation", 18)
 	_action_grid.add_theme_constant_override(&"v_separation", 10)
@@ -732,6 +744,7 @@ func _rebuild_cards(projection: Dictionary) -> void:
 	)
 	for row: Dictionary in pool:
 		_hero_grid.add_child(_hero_card(row, owned.get(String(row["premium_id"]), {})))
+	_apply_hero_card_layout(_hero_grid.columns)
 
 
 func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
@@ -739,12 +752,15 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var rarity := int(catalog.get("rarity", 4))
-	panel.custom_minimum_size = Vector2(460 if rarity == FIVE_STAR_RARITY else 250, 430 if rarity == FIVE_STAR_RARITY else 350)
+	panel.set_meta(&"rarity", rarity)
+	panel.custom_minimum_size = Vector2(360 if rarity == FIVE_STAR_RARITY else 230, 0)
 	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else (&"result" if rarity == FIVE_STAR_RARITY else &"quiet"))
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override(&"separation", 9)
+	box.name = "PremiumCardContent"
+	box.add_theme_constant_override(&"separation", 6)
 	panel.add_child(box)
 	var rarity_label := _label(_format(&"ui.gacha.rarity", "{rarity}-STAR PREMIUM", {&"rarity": rarity}), &"eyebrow")
+	rarity_label.name = "RarityLabel"
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rarity_label.add_theme_color_override(&"font_color", Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN)
 	box.add_child(rarity_label)
@@ -760,10 +776,12 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	box.add_child(portrait)
 	var name := _label(String(catalog["callsign"]), &"heading")
+	name.name = "HeroName"
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(name)
 	var display_class := _class_name(String(catalog["class_id"]))
 	var role := _label(display_class.to_upper(), &"detail")
+	role.name = "HeroClass"
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(role)
 	var status := _copy(&"ui.gacha.unacquired", "UNACQUIRED")
@@ -776,12 +794,14 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
 			detail = _copy(&"ui.gacha.restore_hint", "Pull this hero again to restore deployment")
 	var status_label := _label(status, &"metric")
+	status_label.name = "OwnershipMetric"
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.add_theme_color_override(
 		&"font_color", Style.DANGER if status.begins_with("LOCKED") else Style.CYAN,
 	)
 	box.add_child(status_label)
 	var detail_label := _label(detail, &"detail")
+	detail_label.name = "HeroDetail"
 	detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(detail_label)
@@ -793,14 +813,20 @@ func _apply_responsive_layout() -> void:
 		return
 	var viewport_size := get_viewport_rect().size
 	var portrait := viewport_size.x < 900.0
-	_hero_grid.columns = 1 if portrait else 3
+	var side_margin := 18 if portrait else 42
+	var usable_width := viewport_size.x - float(side_margin * 2) - 44.0
+	_hero_grid.columns = 3 if usable_width >= 1000.0 else (2 if usable_width >= 740.0 else 1)
 	_header_grid.columns = 1 if portrait else 3
 	_action_grid.columns = 1 if portrait else 2
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
-	var side_margin := 18 if portrait else 42
 	_screen_margin.add_theme_constant_override(&"margin_left", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
+	_pity_layout.vertical = usable_width < 600.0
+	_pity_label.custom_minimum_size.x = 0.0 if _pity_layout.vertical else 210.0
+	for child: Node in _pity_segments.get_children():
+		(child as Control).custom_minimum_size.x = 12.0 if _pity_layout.vertical else 24.0
+	_apply_hero_card_layout(_hero_grid.columns)
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
 		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 1120
@@ -817,10 +843,35 @@ func _apply_responsive_layout() -> void:
 			star.custom_minimum_size = Vector2(46, 46) if portrait else Vector2(58, 58)
 
 
+func _apply_hero_card_layout(columns: int) -> void:
+	if _hero_grid == null:
+		return
+	_hero_grid.size_flags_horizontal = (
+		Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
+	)
+	for child: Node in _hero_grid.get_children():
+		var panel := child as PanelContainer
+		var rarity := int(panel.get_meta(&"rarity", 4))
+		var featured := rarity == FIVE_STAR_RARITY
+		panel.size_flags_horizontal = (
+			Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
+		)
+		panel.custom_minimum_size = Vector2(
+			360.0 if columns == 3 and featured else 230.0 if columns == 3 else 300.0 if columns == 2 and featured else 0.0,
+			420.0 if featured else 380.0,
+		)
+		var portrait := panel.find_child("Portrait", true, false) as TextureRect
+		if portrait != null:
+			portrait.custom_minimum_size = Vector2(
+				300.0 if columns == 3 and featured else 180.0 if columns == 3 else 0.0,
+				150.0 if featured else 130.0 if columns == 3 else 210.0,
+			)
+
+
 func _on_pull_pressed() -> void:
 	if (
 			_flow_state != FlowState.BROWSE
-			or _confirmation_transition != ConfirmationTransition.NONE
+			or _premium_pull_dispatched
 			or _pull_button.disabled
 	):
 		return
@@ -839,22 +890,38 @@ func _on_pull_pressed() -> void:
 		return
 	var focused := get_viewport().gui_get_focus_owner()
 	_confirmation_return_focus = focused if _is_focus_candidate(focused) else _pull_button
-	_confirmation_projection = projection.duplicate(true)
-	_confirmation_exit_status = ""
-	_confirmation_exit_live = AccessibilityServer.LIVE_OFF
-	_premium_pull_dispatched = false
-	_flow_state = FlowState.CONFIRM
+	_premium_pull_dispatched = true
+	_flow_state = FlowState.COMMITTING
 	_suppress_browse_focus()
-	_confirmation_layer.modulate.a = 0.0
-	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
-	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
-	_confirmation_layer.visible = true
-	_set_confirmation_status("", AccessibilityServer.LIVE_POLITE)
-	_set_confirmation_pending(false)
-	_refresh_confirmation_copy()
-	_apply_responsive_layout()
-	Sfx.play("ui_click")
-	_play_confirmation_entry()
+	_pull_button.disabled = true
+	_back_button.disabled = true
+	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	_status_label.text = pending_copy
+	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	Sfx.play("ui_confirm")
+	_commit_direct_premium_pull.call_deferred()
+
+
+func _commit_direct_premium_pull() -> void:
+	if _flow_state != FlowState.COMMITTING or not _premium_pull_dispatched:
+		return
+	var committed: Dictionary = _game.call("pull_premium_hero")
+	if not committed.get("accepted", false):
+		var error_code := StringName(committed.get("error_code", &"unknown_error"))
+		var error_text := _error_copy(error_code)
+		_premium_pull_dispatched = false
+		_flow_state = FlowState.BROWSE
+		_screen_margin.visible = true
+		_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
+		_refresh()
+		_status_label.text = error_text
+		_status_label.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
+		_restore_confirmation_return_focus(_confirmation_transition_token)
+		return
+	var result: Dictionary = committed.get("result", {})
+	var pull: Dictionary = result.get("premium_pull", {})
+	_premium_pull_dispatched = false
+	_begin_reveal(pull)
 
 
 func _on_pull_cancelled() -> void:

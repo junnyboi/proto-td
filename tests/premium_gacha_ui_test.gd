@@ -1,8 +1,6 @@
 extends SceneTree
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
-const ENTRY_WAIT := 0.24
-const EXIT_WAIT := 0.19
 const TIMEOUT := 35.0
 
 var _failures: Array[String] = []
@@ -24,6 +22,10 @@ func _run() -> void:
 		return
 	game.call("set_run_seed", 99)
 	_check(bool(game.call("start_campaign", false, true)), "campaign fixture failed")
+	if not bool(game.get("campaign_active")):
+		_finish()
+		return
+	root.size = Vector2i(1280, 720)
 	var screen: Node = load("res://scenes/gacha.tscn").instantiate()
 	root.add_child(screen)
 	await _frames(2)
@@ -31,9 +33,11 @@ func _run() -> void:
 	var pull := screen.find_child("PremiumPullButton", true, false) as Button
 	var back := screen.find_child("BackButton", true, false) as Button
 	var marks := screen.find_child("MarksLabel", true, false) as Label
-	var pity := screen.find_child("PityLabel", true, false) as Label
+	var pity_label := screen.find_child("PityLabel", true, false) as Label
+	var pity_segments := screen.find_child("PitySegments", true, false) as HBoxContainer
+	var hero_scroll := screen.find_child("PremiumHeroScroll", true, false) as ScrollContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
-	_check(marks.text == "120 MARKS" and pity.text.contains("10 PULLS"), "initial economy projection changed")
+	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
 	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
 		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
@@ -41,178 +45,58 @@ func _run() -> void:
 			hero_accent.is_equal_approx(Style.GOLD),
 			"%s does not use the shared gold reveal treatment" % premium_id,
 		)
+	_check(pity_segments != null and pity_segments.get_child_count() == 10, "pity meter is not ten segments")
+	_check(hero_scroll != null and hero_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "premium roster does not own a bounded flexible scroll")
+	_check(hero_scroll != null and hero_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "premium roster permits horizontal scrolling")
+	_check(grid.columns == 3, "desktop premium roster does not use all three columns")
+	var featured := grid.get_node_or_null("Premium_lunaris_vessel") as PanelContainer
+	var side_card := grid.get_node_or_null("Premium_archive_caster") as PanelContainer
+	_check(featured != null and side_card != null and featured.custom_minimum_size.x > side_card.custom_minimum_size.x, "premium featured identity is not visually dominant")
 	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
-		var card := grid.get_node_or_null("Premium_%s" % premium_id)
-		_check(card != null and card.find_child("Portrait", true, false).texture != null, "missing portrait %s" % premium_id)
+		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
+		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
+		var detail := card.find_child("HeroDetail", true, false) as Label if card != null else null
+		var card_style := card.get_theme_stylebox(&"panel") if card != null else null
+		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
+		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 16, "premium detail copy is below 16px for %s" % premium_id)
+		_check(card_style != null and card_style.content_margin_left >= 16.0 and card_style.content_margin_top >= 16.0, "premium card padding is below 16px for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 
+	var confirmation_layer := screen.find_child("PremiumPullConfirmationLayer", true, false)
+	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
+	var reveal := screen.find_child("PullRevealLayer", true, false) as Control
+	_check(confirmation_layer == null, "obsolete pull confirmation screen is still mounted")
+
+	# Missing durable authority is rejected at preflight without opening any second-step UI.
 	var before: Dictionary = game.get("campaign").runtime_projection()
-	root.size = Vector2i(360, 800)
-	await _frames(1)
+	var durable_store: Variant = game.get("campaign_store")
+	game.set("campaign_store", null)
 	pull.grab_focus()
 	pull.pressed.emit()
 	await _frames(1)
-	var layer := screen.find_child("PremiumPullConfirmationLayer", true, false) as Control
-	var frame := screen.find_child("ConfirmationCommandFrame", true, false) as PanelContainer
-	var header := screen.find_child("ConfirmationHeader", true, false) as GridContainer
-	var title := screen.find_child("ConfirmationTitle", true, false) as Label
-	var body_scroll := screen.find_child("ConfirmationBodyScroll", true, false) as ScrollContainer
-	var body := screen.find_child("ConfirmationBodyGrid", true, false) as GridContainer
-	var context := screen.find_child("ConfirmationContextCopy", true, false) as Label
-	var review := screen.find_child("ConfirmationTransactionCopy", true, false) as Label
-	var dock := screen.find_child("ConfirmationActionDock", true, false) as PanelContainer
-	var actions := screen.find_child("ConfirmationActions", true, false) as GridContainer
-	var header_cancel := screen.find_child("CancelPremiumPull", true, false) as Button
-	var dock_cancel := screen.find_child("CancelPremiumPullDock", true, false) as Button
-	var confirm := screen.find_child("ConfirmPremiumPull", true, false) as Button
-	var modal_status := screen.find_child("ConfirmationStatusLabel", true, false) as Label
-	_check(layer.visible and screen.call("flow_state_name") == &"CONFIRM", "confirmation did not open")
-	_check(screen.call("transition_state_name") == &"ENTERING" and screen.call("transition_active"), "normal entry state missing")
-	_check(root.gui_get_focus_owner() == null and not pull.has_focus(), "entry assigned or retained focus early")
-	_check(layer.modulate.a < 1.0 and frame.offset_transform_position.y > 0.0, "entry animation did not begin from offset/opacity")
-	_check(game.get("campaign").runtime_projection() == before, "opening eagerly mutated domain")
-	_check(screen.call("confirmation_projection_snapshot") == before, "confirmation snapshot changed")
-	await _seconds(ENTRY_WAIT)
-	_check(screen.call("transition_state_name") == &"OPEN" and not screen.call("transition_active"), "normal entry did not settle OPEN")
-	_check(root.gui_get_focus_owner() == dock_cancel, "entry finalizer did not focus visible Cancel")
-	_check(is_equal_approx(layer.modulate.a, 1.0) and frame.offset_transform_position.is_zero_approx(), "entry visuals did not settle")
-	_check(layer.get_global_rect().size.is_equal_approx(Vector2(360, 800)), "confirmation is not full-screen")
-	_check(layer.mouse_filter == Control.MOUSE_FILTER_STOP and not grid.is_visible_in_tree(), "modal did not suppress browse")
-	_check(body.columns == 1 and actions.columns == 1, "narrow confirmation did not stack")
-	_check(body_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and body_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "body scroll contract changed")
-	_check(title.autowrap_mode != TextServer.AUTOWRAP_OFF, "title does not wrap")
-	_check(title.get_theme_font_size(&"font_size") == 44, "narrow confirmation title lost readable scale")
-	_check(context.get_theme_font_size(&"font_size") == 36 and review.get_theme_font_size(&"font_size") == 36, "confirmation body typography is not doubled")
-	_check(confirm.get_theme_font_size(&"font_size") == 36 and dock_cancel.get_theme_font_size(&"font_size") == 36, "confirmation action typography is not doubled")
-	_check(dock_cancel.custom_minimum_size.is_equal_approx(Vector2(280, 92)), "Cancel action is not a standard compact size")
-	_check(confirm.custom_minimum_size.is_equal_approx(Vector2(280, 92)), "Resonate action is not a standard compact size")
-	_check(actions.size_flags_horizontal == Control.SIZE_SHRINK_END, "confirmation actions are not right aligned")
-	_check(dock.get_global_rect().end.x - actions.get_global_rect().end.x <= 20.0, "narrow actions do not align to the dock's right edge")
-	var cancel_style := dock_cancel.get_theme_stylebox(&"normal")
-	var confirm_style := confirm.get_theme_stylebox(&"normal")
-	_check(cancel_style is StyleBoxFlat and confirm_style is StyleBoxFlat, "confirmation actions still use ornate strike-through textures")
-	_check(cancel_style.content_margin_left >= 32.0 and cancel_style.content_margin_top >= 18.0, "Cancel action padding is claustrophobic")
-	_check(confirm_style.content_margin_left >= 32.0 and confirm_style.content_margin_top >= 18.0, "Resonate action padding is claustrophobic")
-	_check(not header_cancel.visible and header_cancel.focus_mode == Control.FOCUS_NONE, "hidden header Cancel remained interactive")
-	for button: Button in [header_cancel, dock_cancel, confirm]:
-		_check(button.custom_minimum_size.y >= 44.0, "%s target is below 44 px" % button.name)
-		_check(button.autowrap_mode != TextServer.AUTOWRAP_OFF and not button.clip_text, "%s clips instead of wrapping" % button.name)
-	_check(dock_cancel.focus_next == dock_cancel.get_path_to(confirm), "dock Tab order changed")
-	_check(confirm.focus_next == confirm.get_path_to(dock_cancel), "Confirm Tab wrap changed")
-	_check(dock_cancel.focus_neighbor_bottom == dock_cancel.get_path_to(confirm), "stacked dock Down changed")
-	_check(confirm.focus_neighbor_bottom == confirm.get_path_to(dock_cancel), "stacked boundary wrap changed")
-	_check(dock_cancel.focus_neighbor_right == dock_cancel.get_path_to(dock_cancel), "stacked Right escaped")
-
-	_check(layer.accessibility_description.contains("40") and layer.accessibility_description.contains("120") and layer.accessibility_description.contains("10"), "root metadata lacks cost/balance/guarantee")
-	_check(not layer.accessibility_name.is_empty() and not layer.accessibility_labeled_by_nodes.is_empty() and not layer.accessibility_described_by_nodes.is_empty(), "root metadata relationships missing")
-	_check(not frame.accessibility_name.is_empty() and not frame.accessibility_described_by_nodes.is_empty(), "frame relationships missing")
-	_check(not title.accessibility_description.is_empty() and not title.accessibility_controls_nodes.is_empty(), "title relationships missing")
-	_check(not body.accessibility_name.is_empty() and not dock.accessibility_name.is_empty(), "body/action accessible names missing")
-	_check(header_cancel.accessibility_name != dock_cancel.accessibility_name, "Cancel accessible names are not distinct")
-	_check(confirm.accessibility_description.contains("40") and confirm.accessibility_description.contains("120"), "Confirm description lacks transaction facts")
-	_check(modal_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "pending live region is not polite")
-
-	var i18n := root.get_node_or_null("I18n")
-	if i18n != null:
-		dock_cancel.grab_focus()
-		_check(bool(i18n.call("set_locale", &"zh-CN")), "locale switch failed")
-		await _frames(2)
-		_check(root.gui_get_focus_owner() == dock_cancel and screen.call("transition_state_name") == &"OPEN", "locale refresh lost logical focus/state")
-		_check(title.text != "CONFIRM RESONANCE" and screen.call("confirmation_projection_snapshot") == before, "locale refresh lost copy/snapshot")
-		_check(bool(i18n.call("set_locale", &"en-US")), "locale restore failed")
-		await _frames(2)
-
-	await _action(&"ui_cancel")
-	_check(screen.call("flow_state_name") == &"CONFIRM" and screen.call("transition_state_name") == &"EXITING", "actual ui_cancel did not begin EXITING")
-	_check(layer.visible and root.gui_get_focus_owner() == dock_cancel, "EXITING hid modal or lost dialog focus")
-	_check(screen.call("confirmation_projection_snapshot") == before, "EXITING cleared snapshot early")
-	await _seconds(EXIT_WAIT)
-	_check(not layer.visible and screen.call("flow_state_name") == &"BROWSE" and screen.call("transition_state_name") == &"NONE", "normal exit did not settle BROWSE/NONE")
-	_check(game.get("campaign").runtime_projection() == before and root.gui_get_focus_owner() == pull, "normal cancel changed domain/focus")
-
-	# Cancel during entry reverses current opacity/offset instead of flashing.
-	pull.pressed.emit()
-	await _frames(1)
-	var alpha_before_reverse := layer.modulate.a
-	await _action(&"ui_cancel")
-	_check(screen.call("transition_state_name") == &"EXITING", "entry cancel did not reverse to EXITING")
-	_check(layer.modulate.a <= alpha_before_reverse + 0.08, "entry reversal flashed to fully opaque")
-	await _seconds(EXIT_WAIT)
-	_check(screen.call("flow_state_name") == &"BROWSE" and root.gui_get_focus_owner() == pull, "entry reversal did not finalize")
-
-	root.size = Vector2i(720, 1280)
-	screen.set("reduced_motion", true)
-	await _frames(1)
-	pull.pressed.emit()
-	_check(screen.call("transition_state_name") == &"OPEN" and not screen.call("transition_active"), "reduced entry finalizer was not immediate")
-	await _frames(1)
-	_check(root.gui_get_focus_owner() == dock_cancel and frame.offset_transform_position.is_zero_approx(), "reduced entry focus/visuals did not settle")
-	await _action(&"ui_cancel")
-	_check(screen.call("flow_state_name") == &"BROWSE" and screen.call("transition_state_name") == &"NONE" and not layer.visible, "reduced exit finalizer was not immediate")
-	await _frames(1)
-	_check(root.gui_get_focus_owner() == pull, "reduced exit did not restore opener")
-	screen.set("reduced_motion", false)
-
-	root.size = Vector2i(1280, 720)
-	await _frames(1)
-	pull.pressed.emit()
-	await _wait_for_transition_open(screen)
-	_check(body.columns == 2 and actions.columns == 2, "wide confirmation did not use two columns")
-	_check(actions.size.x <= 576.0, "wide confirmation actions stretched beyond standard size")
-	_check(dock.get_global_rect().end.x - actions.get_global_rect().end.x <= 20.0, "wide confirmation actions are not right aligned")
-	_check(dock_cancel.focus_neighbor_left == dock_cancel.get_path_to(confirm) and dock_cancel.focus_neighbor_right == dock_cancel.get_path_to(confirm), "wide dock Cancel does not swap")
-	_check(confirm.focus_neighbor_left == confirm.get_path_to(dock_cancel) and confirm.focus_neighbor_right == confirm.get_path_to(dock_cancel), "wide Confirm does not swap")
-	_check(dock_cancel.focus_neighbor_top == dock_cancel.get_path_to(dock_cancel) and confirm.focus_neighbor_top == confirm.get_path_to(confirm), "wide Up should retain the action")
-	_check(dock_cancel.focus_neighbor_bottom == dock_cancel.get_path_to(dock_cancel) and confirm.focus_neighbor_bottom == confirm.get_path_to(confirm), "wide Down should retain the action")
-	confirm.grab_focus()
-	root.size = Vector2i(960, 420)
-	await _frames(2)
-	_check(actions.columns == 2 and root.gui_get_focus_owner() == confirm, "resize changed layout/logical focus")
-	root.size = Vector2i(1280, 720)
-	await _frames(2)
-
-	# Authoritative rejection: deferred dispatch, one lock, assertive exact error, animated close.
-	var durable_store: Variant = game.get("campaign_store")
-	game.set("campaign_store", null)
-	await _action(&"ui_accept")
-	_check(screen.call("flow_state_name") == &"COMMITTING", "actual ui_accept did not enter COMMITTING")
-	_check(header_cancel.disabled and dock_cancel.disabled and confirm.disabled, "COMMITTING did not lock actions")
-	_check(confirm.text == "ALIGNING…" and modal_status.visible and modal_status.text == "Aligning the reliquary signal…", "pending copy/status changed")
-	_check(modal_status.accessibility_live == AccessibilityServer.LIVE_POLITE and game.get("campaign").runtime_projection() == before, "pending was not polite or mutated eagerly")
-	await _action(&"ui_accept")
-	await _action(&"ui_cancel")
-	await _frames(1)
-	_check(screen.call("flow_state_name") == &"COMMITTING" and screen.call("transition_state_name") == &"EXITING", "rejection did not animate closed")
-	_check(layer.visible and modal_status.text == "No active campaign is available.", "exact rejection was not visible during EXITING")
-	_check(modal_status.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "rejection live status is not assertive")
-	_check(game.get("campaign").runtime_projection() == before, "rejection changed economy/pity")
-	await _seconds(EXIT_WAIT)
-	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
-	var reveal := screen.find_child("PullRevealLayer", true, false) as Control
-	_check(screen.call("flow_state_name") == &"BROWSE" and not layer.visible and not reveal.visible, "rejection did not settle without reveal")
-	_check(browse_status.text == "No active campaign is available." and browse_status.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "browse rejection status changed")
-	_check(root.gui_get_focus_owner() == pull, "rejection did not restore opener")
+	_check(screen.call("flow_state_name") == &"BROWSE" and not reveal.visible, "preflight rejection left browse or opened reveal")
+	_check(game.get("campaign").runtime_projection() == before, "preflight rejection changed economy or pity")
 	game.set("campaign_store", durable_store)
 
-	# Accepted path: observable lock, exactly one authoritative dispatch, immediate reveal handoff.
-	pull.pressed.emit()
-	await _wait_for_transition_open(screen)
-	confirm.grab_focus()
+	# Accepted path: one primary press, observable lock, exactly one dispatch, immediate reveal handoff.
+	root.size = Vector2i(1280, 720)
+	await _frames(1)
 	var data_before: Dictionary = game.get("campaign").data_copy()
 	var receipt_count := int((data_before["command_receipts"] as Array).size())
 	var projection_before: Dictionary = game.get("campaign").runtime_projection()
-	await _action(&"ui_accept")
-	_check(screen.call("flow_state_name") == &"COMMITTING" and game.get("campaign").runtime_projection() == projection_before, "accept lock was not observable before dispatch")
+	pull.pressed.emit()
+	_check(screen.call("flow_state_name") == &"COMMITTING" and game.get("campaign").runtime_projection() == projection_before, "direct lock was not observable before dispatch")
+	pull.pressed.emit()
 	await _action(&"ui_accept")
 	await _action(&"ui_cancel")
-	await _frames(1)
+	await _frames(2)
 	var data_after: Dictionary = game.get("campaign").data_copy()
 	var projection_after: Dictionary = game.get("campaign").runtime_projection()
-	_check(data_after["command_receipts"].size() == receipt_count + 1, "confirmation did not dispatch exactly once")
+	_check(data_after["command_receipts"].size() == receipt_count + 1, "direct pull did not dispatch exactly once")
 	_check(int(projection_after["marks"]) == int(projection_before["marks"]) - 40, "accepted pull charged wrong amount")
 	_check(int(projection_after["next_premium_pull_index"]) == int(projection_before["next_premium_pull_index"]) + 1, "accepted pull index changed more than once")
-	_check(screen.call("flow_state_name") == &"REVEAL" and screen.call("transition_state_name") == &"NONE" and not screen.call("transition_active"), "accepted receipt did not hand off coherently")
-	_check(reveal.visible and not layer.visible, "accepted handoff delayed or retained confirmation")
+	_check(screen.call("flow_state_name") == &"REVEAL" and screen.call("transition_state_name") == &"NONE", "accepted receipt did not hand off coherently")
+	_check(reveal.visible, "accepted direct pull did not begin reveal")
 	var receipt: Dictionary = {}
 	if data_after["command_receipts"].size() > receipt_count:
 		var command_receipt: Dictionary = data_after["command_receipts"][-1]
@@ -226,6 +110,8 @@ func _run() -> void:
 	_check(screen.call("flow_state_name") == &"BROWSE" and root.gui_get_focus_owner() == pull, "receipt reveal did not restore exact opener")
 
 	# Preserve upstream cinematic, full-size identity, click skip, music, and reduced-motion lifecycle.
+	root.size = Vector2i(1280, 720)
+	await _frames(1)
 	var five_star := _sample_pull(5, true)
 	screen.call("_begin_reveal", five_star)
 	await _frames(1)

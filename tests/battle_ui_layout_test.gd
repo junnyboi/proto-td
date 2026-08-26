@@ -31,6 +31,7 @@ func _run() -> void:
 	var hud := battle.find_child("BattleHud", true, false) as Label
 	var deploy_bar := battle.find_child("DeployBar", true, false) as Node
 	var deployment_deck := battle.find_child("DeploymentCommandDeck", true, false) as PanelContainer
+	var deployment_scroll := battle.find_child("DeploymentRosterScroll", true, false) as ScrollContainer
 	var slot_box := battle.find_child("SlotBox", true, false) as GridContainer
 	var controls := battle.find_child("BattleControls", true, false) as Node
 	var confirmation_trace: Array[StringName] = []
@@ -49,10 +50,16 @@ func _run() -> void:
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
 	_check(deployment_deck != null and deployment_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "deployment deck is not textured")
+	if deployment_deck != null:
+		var deployment_style := deployment_deck.get_theme_stylebox(&"panel")
+		_check(deployment_style.content_margin_left >= 16.0 and deployment_style.content_margin_top >= 16.0, "deployment deck padding is below 16px")
+	_check(deployment_scroll != null and deployment_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "deployment roster is not locally scrollable")
+	_check(deployment_scroll != null and deployment_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "deployment roster permits horizontal scrolling")
 	_check(slot_box != null and slot_box.get_child_count() >= 3, "deployment slots are missing")
 	if slot_box != null:
 		for child: Node in slot_box.get_children():
 			_check(child is Button and (child as Button).custom_minimum_size.y >= 44.0, "deployment slot is not touch safe")
+			_check(child is Button and (child as Button).get_theme_font_size(&"font_size") >= 18, "deployment slot copy is below the operational type floor")
 	_check(controls_deck != null and controls_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "battle command deck is not textured")
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
 	_check(recenter != null and recenter.focus_mode == Control.FOCUS_ALL, "map recenter is not controller focusable")
