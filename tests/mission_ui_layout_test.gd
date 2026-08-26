@@ -218,20 +218,22 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
 	var hire_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
+	var hire_currency := _mission.find_child("BasicRecruitCurrency", true, false) as HBoxContainer
+	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
-	_check(hire_button != null and not hire_button.disabled, "Field Team five-Mark recruit action is unavailable")
-	_check(hire_button != null and hire_button.text.contains("5") and hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its exact price")
-	_check(hire_marks != null and hire_marks.text.contains("120"), "Field Team does not show current Marks")
+	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
+	_check(hire_button != null and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its icon-backed exact price")
+	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Field Team does not show the current shard balance")
 	_check(recruit_body == null, "Field Team still creates redundant recruitment body copy")
 	_check(_mission.find_child("BasicRecruitRoster", true, false) == null, "Field Team still creates personnel-ready copy")
-	_check(not FileAccess.get_file_as_string("res://localization/en-US.json").contains("Earn {count} more Marks to hire another Recruit."), "Field Team still ships the removed Marks-deficit sentence")
+	_check(not FileAccess.get_file_as_string("res://localization/en-US.json").contains("MARKS"), "Field Team still ships retired currency wording")
 	if i18n != null:
 		_check(bool(i18n.call("set_locale", &"zh-CN")), "Field Team could not activate Chinese")
 		await process_frame
 		await process_frame
 		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
-		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5枚印记"), "Field Team recruitment action did not refresh to Chinese")
-		_check(hire_marks != null and hire_marks.text.contains("可用印记"), "Field Team recruitment Marks did not refresh to Chinese")
+		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
+		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
 		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
 		_check(bool(i18n.call("set_locale", &"en-US")), "Field Team could not restore English")
 		await process_frame
@@ -246,7 +248,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Field Team hire did not add exactly one Recruit")
 	var newest: Dictionary = (projection_after.get("ready_heroes", []) as Array)[-1]
 	_check(newest.get("recruit_source") == "basic_hire" and newest.get("source_id") == "mission_control", "Field Team hire bypassed the authoritative source contract")
-	_check(hire_marks != null and hire_marks.text.contains("115"), "Field Team did not refresh the Marks balance")
+	_check(hire_marks != null and hire_marks.text == "115", "Field Team did not refresh the shard balance")
 	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Field Team did not announce the accepted hire")
 	_check(hire_button != null and hire_button.has_focus(), "accepted Field Team hire did not restore action focus")
 	_check(_mission.find_child("Pick_%s" % newest.get("hero_id", ""), true, false) != null, "new Recruit did not appear in the Field Team roster")

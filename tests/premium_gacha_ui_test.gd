@@ -34,6 +34,7 @@ func _run() -> void:
 	var pull := screen.find_child("PremiumPullButton", true, false) as Button
 	var back := screen.find_child("BackButton", true, false) as Button
 	var marks := screen.find_child("MarksLabel", true, false) as Label
+	var balance_icon := screen.find_child("ResonanceShardIcon", true, false) as TextureRect
 	var pity_label := screen.find_child("PityLabel", true, false) as Label
 	var pity_segments := screen.find_child("PitySegments", true, false) as HBoxContainer
 	var hero_scroll := screen.find_child("PremiumHeroScroll", true, false) as ScrollContainer
@@ -56,7 +57,7 @@ func _run() -> void:
 	var history_rows := screen.find_child("PullHistoryRows", true, false) as VBoxContainer
 	var history_empty := screen.find_child("PullHistoryEmptyState", true, false) as VBoxContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
-	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
+	_check(marks.text == "120" and balance_icon != null and balance_icon.texture != null and pity_label.text.contains("10 PULLS"), "initial shard economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
 	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
 		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
@@ -70,15 +71,18 @@ func _run() -> void:
 	_check(grid.columns == 3, "desktop premium roster does not use all three columns")
 	_check(browse_safe != null and browse_content != null and browse_content.get_parent() == browse_safe, "browse content retained an outer panel shell")
 	_check(screen.find_child("PremiumGachaShell", true, false) == null and screen.find_child("PremiumIntroPanel", true, false) == null, "obsolete browse containers remain")
-	_check(browse_header.columns == 3 and not guarantee.vertical and browse_actions.columns == 1, "wide browse hierarchy changed")
-	_check(back.text == "RETURN" and back.icon != null, "Return action copy or generated glyph is missing")
+	_check(browse_header.columns == 2 and not guarantee.vertical and browse_actions.columns == 3, "wide browse hierarchy changed")
+	_check(back.text == "RETURN" and back.icon == null and back.get_parent() == browse_actions, "Return action did not move to the footer")
 	_check(back.custom_minimum_size.x >= 300.0 and back.custom_minimum_size.y >= 76.0, "Return action is not comfortably sized")
-	_check(back.get_theme_font_size(&"font_size") >= 36 and back.autowrap_mode == TextServer.AUTOWRAP_OFF and not back.clip_text, "Return typography or single-line contract regressed")
-	_check(back.get_theme_constant(&"icon_max_width") == 54, "Return glyph is not sized for the header")
+	_check(back.autowrap_mode == TextServer.AUTOWRAP_OFF and not back.clip_text, "Return single-line contract regressed")
+	var back_presentation := back.get_node_or_null("PresentationLabel") as Label
+	var back_style := back.get_theme_stylebox(&"normal")
+	_check(back_presentation != null and back_presentation.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Return copy is not independently centered")
+	_check(back_style != null and is_zero_approx(back_style.content_margin_left) and back_style.content_margin_top == 12.0 and is_zero_approx(back_style.content_margin_right) and back_style.content_margin_bottom == 12.0, "Return does not use zero horizontal and 12px vertical padding")
 	_check(title_center != null and title_center.alignment == BoxContainer.ALIGNMENT_CENTER, "Premium title is not vertically centered")
-	_check(absf(browse_title.get_global_rect().get_center().y - back.get_global_rect().get_center().y) <= 3.0, "Premium title is not aligned with the header controls")
-	_check(browse_title.get_theme_font_size(&"font_size") == marks.get_theme_font_size(&"font_size"), "Marks does not match title size")
-	_check(marks.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Marks is not gold")
+	_check(browse_title.get_global_rect().position.y < back.get_global_rect().position.y, "Premium title did not remain in the header above Return")
+	_check(browse_title.get_theme_font_size(&"font_size") == marks.get_theme_font_size(&"font_size"), "Shard balance does not match title size")
+	_check(marks.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Shard balance is not gold")
 	_check(marks.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT and browse_safe.get_theme_constant(&"margin_right") >= 64, "Premium content lacks its 64px right safe inset")
 	_check(browse_safe.get_theme_constant(&"margin_left") >= 64, "Premium content lacks its 64px left safe inset")
 	_check(pity_label.get_theme_font_size(&"font_size") == 30 and pity_label.autowrap_mode == TextServer.AUTOWRAP_OFF, "guarantee telemetry is not reduced to one line")
@@ -88,8 +92,8 @@ func _run() -> void:
 	_check(is_equal_approx(pull.custom_minimum_size.x, 800.0) and pull.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Resonate action is not 2.5× wide and centered")
 	_check(pull.get_theme_stylebox(&"normal") is StyleBoxFlat, "Resonate action retained a textured or struck surface")
 	_check(pull_action_label != null and pull_action_label.text == "RESONATE" and pull_action_label.get_theme_font_size(&"font_size") == 48, "Resonate primary label hierarchy changed")
-	_check(pull_cost_label != null and pull_cost_label.text == "40 MARKS" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate cost is not a smaller second line")
-	_check(pull.text.contains("\n") and not pull.text.contains("•"), "Resonate logical copy retained the separator or lost the line break")
+	_check(pull_cost_label != null and pull_cost_label.text == "40" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate shard cost is not a smaller second line")
+	_check(pull.accessibility_name.contains("40 Resonance Shards") and not pull.text.contains("MARKS"), "Resonate accessibility or symbol-first copy regressed")
 	var pull_normal := pull.get_theme_stylebox(&"normal") as StyleBoxFlat
 	var pull_hover := pull.get_theme_stylebox(&"hover") as StyleBoxFlat
 	_check(pull_normal != null and pull_hover != null and not pull_normal.bg_color.is_equal_approx(pull_hover.bg_color), "Resonate action lacks a distinct hover surface")
@@ -103,13 +107,20 @@ func _run() -> void:
 		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
 		_check(card.custom_minimum_size == Vector2(480, 645), "card did not increase by 50%% for %s" % premium_id)
 		_check(portrait_frame != null and portrait_frame.custom_minimum_size == Vector2(432, 420), "portrait frame did not scale with %s" % premium_id)
-		_check(portrait.scale.is_equal_approx(Vector2(1.25, 1.25)) and is_zero_approx(portrait.pivot_offset.y), "portrait is not top-anchored at 25%% zoom for %s" % premium_id)
+		_check(portrait.scale.is_equal_approx(Vector2(2.80, 2.80)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "portrait is not top-anchored at 180%% bust zoom without pre-cropping for %s" % premium_id)
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 24.0 and card_style.content_margin_top >= 24.0 and card_style.content_margin_right >= 24.0 and card_style.content_margin_bottom >= 24.0, "premium card padding is below 24px for %s" % premium_id)
 		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 	_check(Art.size(&"ui_gacha_return") == Vector2i(512, 512), "generated Return glyph is absent from the art manifest")
-	_check(history_button != null and history_button.icon != null and history_button.text == "HISTORY", "Moon Archive action is missing")
+	_check(Art.size(&"ui_resonance_shard") == Vector2i(512, 512), "GPT Image 2 Resonance Shard is absent from the art manifest")
+	_check(history_button != null and history_button.icon == null and history_button.text == "HISTORY" and history_button.get_parent() == browse_actions, "Moon Archive action did not move to the footer")
+	var history_presentation := history_button.get_node_or_null("PresentationLabel") as Label
+	var history_style := history_button.get_theme_stylebox(&"normal")
+	_check(history_button.custom_minimum_size.x == 230.0 and history_presentation != null and history_presentation.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "History width or centered copy regressed")
+	_check(history_style != null and is_zero_approx(history_style.content_margin_left) and history_style.content_margin_top == 12.0 and is_zero_approx(history_style.content_margin_right) and history_style.content_margin_bottom == 12.0, "History does not use zero horizontal and 12px vertical padding")
+	_check(back.get_global_rect().position.x < pull.get_global_rect().position.x and pull.get_global_rect().position.x < history_button.get_global_rect().position.x, "footer controls are not ordered left, center, right")
+	_check(not _tree_text(browse_content).contains("MARKS"), "retired Marks copy remains in Premium Resonance")
 	_check(history_layer != null and history_drawer != null and history_close != null, "Moon Archive drawer did not mount")
 	_check(not history_layer.visible and history_rows != null and history_empty != null, "Moon Archive did not initialize hidden")
 	_check(Art.size(&"ui_gacha_moon_archive") == Vector2i(512, 512), "GPT Image 2 Moon Archive glyph is absent")
@@ -129,6 +140,8 @@ func _run() -> void:
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.position.y), "browse background is not top aligned")
 	_check(browse_backdrop != null and browse_backdrop.size.y > 825.0, "browse background did not retain cover crop")
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.pivot_offset.y), "browse background pivot is not top anchored")
+	var short_wide_portrait := grid.get_child(0).find_child("Portrait", true, false) as TextureRect
+	_check(short_wide_portrait != null and short_wide_portrait.scale.is_equal_approx(Vector2(4.20, 4.20)), "short-wide card did not retain its bust crop")
 
 	# Source localization must refresh existing cards and accessibility metadata in place.
 	_check(i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate")
@@ -171,7 +184,7 @@ func _run() -> void:
 	_check(confirmation_layer == null, "obsolete pull confirmation screen is still mounted")
 	root.size = Vector2i(1024, 576)
 	await _frames(2)
-	_check(grid.columns == 2 and browse_header.columns == 3 and not guarantee.vertical, "compact landscape browse did not use two card columns")
+	_check(grid.columns == 2 and browse_header.columns == 2 and browse_actions.columns == 1 and not guarantee.vertical, "compact landscape browse did not stack the fixed footer actions")
 	for card: Control in grid.get_children():
 		var compact_bounds := card.get_global_rect()
 		_check(compact_bounds.position.x >= -0.5 and compact_bounds.end.x <= 1024.5, "%s overflows compact landscape width" % card.name)
@@ -307,7 +320,7 @@ func _run() -> void:
 		_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
 	_check(conversion_panel != null and conversion_icon != null and not conversion_panel.visible, "first acquisition showed duplicate conversion feedback")
 	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
-	_check(pull_again.text == "PULL AGAIN • 40 MARKS", "Pull Again does not expose the authoritative cost")
+	_check(pull_again.text == "PULL AGAIN • 40" and pull_again.icon != null and pull_again.accessibility_name.contains("40 Resonance Shards"), "Pull Again does not expose the icon-backed authoritative cost")
 	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 54, "Pull Again is not comfortably sized")
 	_check(root.gui_get_focus_owner() == pull_again, "settled reveal did not focus Pull Again")
 	var hover_surface := cinematic.call("hover_surface") as Control

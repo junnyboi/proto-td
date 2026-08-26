@@ -10,6 +10,7 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
+const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
@@ -32,6 +33,7 @@ var _dossier_facts: AetheriaLabelType = null
 var _dossier_objective: AetheriaLabelType = null
 var _dossier_threat: AetheriaLabelType = null
 var _dossier_reward: AetheriaLabelType = null
+var _dossier_reward_icon: TextureRect = null
 var _dossier_hint: AetheriaLabelType = null
 var _dossier_stars: HBoxContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -48,7 +50,8 @@ var _enabled_rows: Array[Button] = []
 var _recruitment_grid: GridContainer = null
 var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
-var _hire_marks: AetheriaLabelType = null
+var _hire_currency_display: ResonanceCurrencyDisplay = null
+var _hire_marks: Label = null
 var _hire_roster: AetheriaLabelType = null
 var _hire_status: AetheriaLabelType = null
 
@@ -238,12 +241,25 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_facts.apply_role(&"body")
 	_dossier_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dossier_stack.add_child(_dossier_facts)
+	var reward_row := HBoxContainer.new()
+	reward_row.name = "DossierRewardRow"
+	reward_row.add_theme_constant_override(&"separation", 8)
+	_dossier_reward_icon = TextureRect.new()
+	_dossier_reward_icon.name = "DossierResonanceShard"
+	_dossier_reward_icon.texture = ResonanceCurrencyDisplayType.ICON_TEXTURE
+	_dossier_reward_icon.custom_minimum_size = Vector2(30, 30)
+	_dossier_reward_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_dossier_reward_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_dossier_reward_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	reward_row.add_child(_dossier_reward_icon)
 	_dossier_reward = AetheriaLabelType.new()
 	_dossier_reward.name = "DossierReward"
 	_dossier_reward.apply_role(&"dense_heading")
 	_dossier_reward.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dossier_stack.add_child(_dossier_reward)
-	dossier_stack.move_child(_dossier_reward, _dossier_facts.get_index())
+	_dossier_reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reward_row.add_child(_dossier_reward)
+	dossier_stack.add_child(reward_row)
+	dossier_stack.move_child(reward_row, _dossier_facts.get_index())
 	_dossier_hint = AetheriaLabelType.new()
 	_dossier_hint.name = "DossierHint"
 	_dossier_hint.apply_role(&"detail")
@@ -282,13 +298,14 @@ func _build_recruitment_strip(parent: VBoxContainer) -> void:
 	metrics.name = "MissionControlRecruitMetrics"
 	metrics.add_theme_constant_override(&"separation", 8)
 	summary.add_child(metrics)
-	_hire_marks = AetheriaLabelType.new()
+	_hire_currency_display = ResonanceCurrencyDisplayType.new()
+	_hire_currency_display.name = "MissionControlRecruitCurrency"
+	_hire_currency_display.configure("0", 15, 24.0)
+	_hire_currency_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_hire_marks = _hire_currency_display.amount_label
 	_hire_marks.name = "MissionControlRecruitMarks"
-	_hire_marks.apply_role(&"cost_badge")
-	_hire_marks.add_theme_font_size_override(&"font_size", 15)
-	_hire_marks.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_marks.autowrap_mode = TextServer.AUTOWRAP_OFF
-	metrics.add_child(_hire_marks)
+	metrics.add_child(_hire_currency_display)
 	_hire_roster = AetheriaLabelType.new()
 	_hire_roster.name = "MissionControlRecruitRoster"
 	_hire_roster.apply_role(&"dense_detail")
@@ -402,8 +419,13 @@ func _show_dossier(stage_id: StringName) -> void:
 		},
 	)
 	var reward_names: Array[String] = []
+	var has_shard_reward := false
 	for reward: Dictionary in stage.rewards:
+		has_shard_reward = has_shard_reward or (
+			reward.get("kind") == "currency" and reward.get("id") == "marks"
+		)
 		reward_names.append(_reward_name(reward))
+	_dossier_reward_icon.visible = has_shard_reward
 	_dossier_reward.text = UiCopyType.format_text(
 		&"ui.campaign.first_clear_reward", "FIRST CLEAR — {rewards}",
 		{&"rewards": _localized_list(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
@@ -493,10 +515,10 @@ func _on_hire_basic_recruit() -> void:
 		if hero.get("hero_id") == recruited.get("hero_id"):
 			callsign = String(hero.get("callsign", callsign))
 			break
-	_refresh_recruitment_desk(
-		UiCopyType.format_text(
-			&"ui.campaign.basic_hire_success",
-			"{callsign} • JOINED COMPANY 33 • {remaining} MARKS REMAIN",
+		_refresh_recruitment_desk(
+			UiCopyType.format_text(
+				&"ui.campaign.basic_hire_success",
+				"{callsign} • JOINED COMPANY 33 • BALANCE {remaining}",
 			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
 		),
 		false,
@@ -526,18 +548,21 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	_hire_title.text = UiCopyType.text(
 		&"ui.campaign.basic_hire_title", "Company Reinforcements",
 	).to_upper()
-	_hire_marks.text = UiCopyType.format_text(
-		&"ui.campaign.basic_hire_marks", "{count} MARKS AVAILABLE", {&"count": marks},
-	)
+	_hire_currency_display.set_amount(str(marks))
 	_hire_roster.text = UiCopyType.format_text(
 		&"ui.campaign.basic_hire_roster", "{count} PERSONNEL READY",
 		{&"count": (projection.get("ready_heroes", []) as Array).size()},
 	)
 	var action_text := UiCopyType.format_text(
-		&"ui.campaign.basic_hire_action", "HIRE • {cost} MARKS", {&"cost": cost},
+		&"ui.campaign.basic_hire_action", "HIRE • {cost}", {&"cost": cost},
 	)
-	_hire_recruit.set_presentation_text(action_text, action_text)
-	_hire_recruit.tooltip_text = action_text
+	var action_accessible := "%s, %d Resonance Shards" % [action_text, cost]
+	_hire_recruit.set_presentation_text(action_accessible, action_text)
+	ResonanceCurrencyDisplayType.apply_to_button(
+		_hire_recruit, action_accessible, action_accessible, 26,
+	)
+	(_hire_recruit.get_node("PresentationLabel") as Label).text = action_text
+	_hire_recruit.tooltip_text = action_accessible
 	_hire_recruit.accessibility_name = _hire_title.text
 	_hire_recruit.accessibility_description = action_text
 	var unavailable := (
@@ -566,7 +591,7 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		elif marks < cost:
 			message = UiCopyType.format_text(
 				&"ui.campaign.basic_hire_insufficient",
-				"Earn {count} more Marks to hire another Recruit.",
+				"Additional balance required: {count}.",
 				{&"count": cost - marks},
 			)
 		else:
@@ -593,7 +618,7 @@ func _hire_error_text(code: StringName) -> String:
 			)
 			return UiCopyType.format_text(
 				&"ui.campaign.basic_hire_insufficient",
-				"Earn {count} more Marks to hire another Recruit.",
+				"Additional balance required: {count}.",
 				{&"count": deficit},
 			)
 		&"attempt_pending":
@@ -715,6 +740,8 @@ func _on_back_to_staging() -> void:
 func _reward_name(reward: Dictionary) -> String:
 	var kind := StringName(reward.get("kind", &""))
 	var identifier := StringName(reward.get("id", &""))
+	if kind == &"currency" and identifier == &"marks":
+		return "+%d" % int(reward.get("amount", 0))
 	if not REWARD_DIRS.has(kind):
 		return String(identifier).replace("_", " ").capitalize()
 	var definition: Resource = load("%s/%s.tres" % [REWARD_DIRS[kind], identifier])

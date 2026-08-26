@@ -62,6 +62,8 @@ func _run() -> void:
 	var recruit_title := campaign.find_child("MissionControlRecruitTitle", true, false) as Label
 	var hire_button := campaign.find_child("HireBasicRecruit", true, false) as Button
 	var hire_marks := campaign.find_child("MissionControlRecruitMarks", true, false) as Label
+	var hire_currency := campaign.find_child("MissionControlRecruitCurrency", true, false) as HBoxContainer
+	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
 	var hire_roster := campaign.find_child("MissionControlRecruitRoster", true, false) as Label
 	var hire_status := campaign.find_child("MissionControlRecruitStatus", true, false) as Label
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
@@ -80,8 +82,8 @@ func _run() -> void:
 	_check(recruit_desk != null and route_panel != null and route_panel.is_ancestor_of(recruit_desk), "Mission Control lost its compact reinforcement contract")
 	_check(recruit_grid != null and recruit_grid.columns == 1, "Mission Control reinforcement contract is not safely stacked")
 	_check(recruit_title != null and recruit_title.text == "COMPANY REINFORCEMENTS", "Mission Control reinforcement title is missing")
-	_check(hire_button != null and not hire_button.disabled and hire_button.text.contains("5") and hire_button.text.contains("MARKS"), "Mission Control does not expose the exact five-Mark hire action")
-	_check(hire_marks != null and hire_marks.text.contains("120"), "Mission Control does not show the current Marks balance")
+	_check(hire_button != null and not hire_button.disabled and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Mission Control does not expose the exact icon-backed hire action")
+	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Mission Control does not show the current shard balance")
 	_check(hire_roster != null and hire_roster.text.contains("5"), "Mission Control does not show current personnel")
 	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "Mission Control hire status is not a polite live region")
 	if i18n != null:
@@ -89,7 +91,7 @@ func _run() -> void:
 		await process_frame
 		await process_frame
 		_check(recruit_title != null and recruit_title.text == "连队增援", "Mission Control reinforcement title did not localize")
-		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5枚印记"), "Mission Control hire action did not localize")
+		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Mission Control icon-backed hire action did not localize")
 		_check(bool(i18n.call("set_locale", &"en-US")), "Mission Control could not restore English")
 		await process_frame
 		await process_frame
@@ -101,7 +103,7 @@ func _run() -> void:
 	var projection_after: Dictionary = game.call("campaign_projection")
 	_check(int(projection_after.get("marks", 0)) == int(projection_before.get("marks", 0)) - 5, "Mission Control hire charged the wrong amount")
 	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Mission Control hire did not add exactly one Recruit")
-	_check(hire_marks != null and hire_marks.text.contains("115"), "Mission Control did not refresh the Marks balance")
+	_check(hire_marks != null and hire_marks.text == "115", "Mission Control did not refresh the shard balance")
 	_check(hire_roster != null and hire_roster.text.contains("6"), "Mission Control did not refresh personnel")
 	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Mission Control did not announce the accepted hire")
 	_check(hire_button != null and hire_button.has_focus(), "Mission Control did not restore hire focus")
