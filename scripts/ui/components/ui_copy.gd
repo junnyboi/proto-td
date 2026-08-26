@@ -4,7 +4,7 @@ extends RefCounted
 const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
 	&"ui.title.full_title": "Protos Defense",
-	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the resurrected champions of Company 33 and prove an imperfect species still deserves a future.",
+	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
 	&"ui.title.start": "Start",
 	&"ui.title.settings": "Settings",
 	&"ui.title.settings_save_failed": "Settings could not be saved. Review the draft and try again.",
