@@ -28,8 +28,8 @@ const TOPOLOGY := {
 	&"s1":
 	{
 		"size": Vector2i(8, 5),
-		"elevated": [],
-		"blocked": [Vector2i(2, 2), Vector2i(4, 2)],
+		"elevated": [Vector2i(2, 2), Vector2i(4, 2)],
+		"blocked": [],
 		"spawn": Vector2i(0, 1),
 		"core": Vector2i(7, 3)
 	},

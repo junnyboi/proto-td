@@ -6,7 +6,7 @@ The orientation is intentionally fixed for the lifetime of a battle. Resizing th
 
 | Stage | Tactical identity | Landscape structure | Wave structure |
 |---|---|---|---|
-| S1 — First Stand | Blocking and reinforcement | One turned route with an early line and fallback line; no elevated cells | Singles teach setup, then paired pushes test block capacity |
+| S1 — First Stand | Blocking, ranged placement, and reinforcement | One turned route with an early line, fallback line, and two deployable elevated platforms | Singles teach setup, then paired pushes test block capacity and ranged support |
 | S2 — Tempo | Rapid opening and asymmetric coverage | Two-turn route with distinct approach and exit high ground | Runner opener, short recovery, then alternating grunt-runner pairs |
 | S3 — The Choke | Finite trap charges at true convergence | Two entries merge into one shared exit and premium trap cell | Three alternating runners consume Spike Plate charges, then synchronized mixed pairs |
 | S4 — Air Raid | Anti-air position and facing | Straight aerial lane crosses coverage with a bent ground convoy route | Ground preview, isolated drone, then mixed air-ground pairs |
