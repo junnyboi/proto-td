@@ -569,11 +569,11 @@ func _apply_responsive_layout() -> void:
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
 	_entry_stack.add_theme_constant_override(&"separation", 8)
 	var wordmark_size := 26 if narrow else (18 if short else (46 if portrait else 60))
-	var chinese_portrait := portrait and I18n.locale() == &"zh-CN"
-	if chinese_portrait:
-		wordmark_size = 16 if narrow else 22
-	_wordmark.autowrap_mode = TextServer.AUTOWRAP_OFF if chinese_portrait else TextServer.AUTOWRAP_WORD_SMART
-	_wordmark.max_lines_visible = 1 if chinese_portrait else 2
+	var chinese := I18n.locale() == &"zh-CN"
+	if chinese:
+		wordmark_size = 16 if narrow else (18 if short else (22 if portrait else 26))
+	_wordmark.autowrap_mode = TextServer.AUTOWRAP_OFF if chinese else TextServer.AUTOWRAP_WORD_SMART
+	_wordmark.max_lines_visible = 1 if chinese else 2
 	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(wordmark_size))
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
 	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))

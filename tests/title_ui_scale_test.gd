@@ -71,9 +71,13 @@ func _verify_chinese_title_portrait() -> void:
 	_check(wordmark.get_line_count() == 1, "Chinese portrait wordmark isolates its final character")
 	_check(wordmark.max_lines_visible == 1 and wordmark.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese portrait wordmark can still wrap")
 	_check(_inside(_title, wordmark), "Chinese portrait wordmark overflows the title viewport")
-	root.get_node("I18n").call("set_locale", &"en-US")
 	root.size = VIEWPORTS["regular"]
 	await process_frame
+	await process_frame
+	_check(wordmark.get_line_count() == 1, "Chinese landscape wordmark isolates its final character")
+	_check(wordmark.max_lines_visible == 1 and wordmark.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese landscape wordmark can still wrap")
+	_check(_inside(_title, wordmark), "Chinese landscape wordmark overflows the title viewport")
+	root.get_node("I18n").call("set_locale", &"en-US")
 	await process_frame
 
 
@@ -111,7 +115,13 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + EPSILON, "%s dock entered body scroll" % label)
 	_check(apply.custom_minimum_size.y >= 44.0 and back.custom_minimum_size.y >= 44.0, "%s actions are not touch safe" % label)
 	_check(not apply.clip_text and not back.clip_text, "%s title actions clip doubled copy" % label)
-	_check(apply.autowrap_mode != TextServer.AUTOWRAP_OFF and back.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s title actions do not wrap doubled copy" % label)
+	_check(apply.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s Apply action does not wrap doubled copy" % label)
+	_check(
+		back.autowrap_mode == TextServer.AUTOWRAP_OFF
+		if viewport.x <= 720
+		else back.autowrap_mode != TextServer.AUTOWRAP_OFF,
+		"%s Back action has the wrong responsive wrapping contract" % label,
+	)
 	_check(master.custom_minimum_size.y >= 48.0 and music.custom_minimum_size.y >= 48.0 and sfx.custom_minimum_size.y >= 48.0, "%s sliders are below the 48 px hit target" % label)
 	_check(not back.clip_text and not music_button.clip_text and not motion.clip_text and not apply.clip_text, "%s translated actions still clip text" % label)
 	_check(not state.accessibility_name.is_empty() and not state.accessibility_description.is_empty(), "%s Settings root lacks accessibility semantics" % label)
@@ -127,6 +137,7 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 			_inside(scroll, locale_selector) and _inside(scroll, locale_label) and _inside(scroll, locale_list),
 			"%s initial locale selector is clipped by the Settings header" % label,
 		)
+		_check(locale_label.size.y >= 44.0, "%s locale heading collapsed below readable height" % label)
 		_check(locale_label.get_line_count() == 1, "%s locale heading wraps character by character" % label)
 	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
 	_check(frame_row.vertical, "%s frame-limit row is not stacked for 1.5× type" % label)

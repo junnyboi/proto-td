@@ -999,18 +999,8 @@ func _refresh_locale_copy() -> void:
 		armory.configure(StagingGlyphType.Kind.ARMORY, UiCopyType.text(&"ui.staging.armory_short", "Armory"), UiCopyType.text(&"ui.staging.armory_unavailable", "Armory — Unavailable"), false)
 
 
-func _company_identity(compact: bool) -> String:
-	var copy := UiCopyType.text(
-		&"ui.company.identity_compact" if compact else &"ui.company.identity",
-		"{faction}\n{company}",
-	)
-	copy = copy.replace(
-		"{faction}",
-		FactionHeraldryType.short_name(FactionHeraldryType.ACTIVE_FACTION)
-		if compact
-		else FactionHeraldryType.display_name(FactionHeraldryType.ACTIVE_FACTION),
-	)
-	return copy.replace("{company}", FactionHeraldryType.company_name())
+func _company_identity(_compact: bool) -> String:
+	return UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
 
 
 func _campaign_summary_text() -> String:

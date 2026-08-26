@@ -530,7 +530,7 @@ func _apply_responsive_layout() -> void:
 	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
 	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider]:
 		slider.custom_minimum_size.y = 48.0
-	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(16 if narrow else (30 if portrait else 36)))
+	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(12 if narrow else (30 if portrait else 36)))
 	var locale_heading := UiCopyType.text(&"ui.locale.label", "Language").to_upper()
 	if narrow and locale_heading.length() > 6:
 		locale_heading = locale_heading.substr(0, 4)
@@ -542,7 +542,7 @@ func _apply_responsive_layout() -> void:
 		heading.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
-	_back_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
+	_back_button.add_theme_font_size_override(&"font_size", _title_font_size(9 if narrow else 17))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 17))
 	_apply_button.add_theme_font_size_override(&"font_size", _title_font_size(15 if narrow else 17))
@@ -551,6 +551,7 @@ func _apply_responsive_layout() -> void:
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
 		action.clip_text = false
+	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF if narrow else TextServer.AUTOWRAP_WORD_SMART
 	_rebuild_focus_graph()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):
 		_last_valid_focus = focus_owner

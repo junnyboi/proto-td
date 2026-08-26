@@ -10,7 +10,7 @@
 
 The Simplified Chinese release is now **structurally complete, font-complete, and visually verified**. The audit found that the reported strange symbols were primarily a **font-packaging defect**, not widespread bad translation. The former bundled subset directly omitted hundreds of required glyphs, leaving rendering dependent on the host operating system. A smaller but material set of translation defects, untranslated source paths, inaccessible English metadata, and responsive layout collisions also existed.
 
-The remediation replaces the incomplete subset with a licensed complete Noto Sans CJK Simplified Chinese face, makes that face deterministic in both body and display font chains, expands the bilingual catalogs from 539 to **681 matched entries**, localizes previously bypassed runtime paths, corrects reviewed Chinese copy, and adds responsive repairs for the highest-risk screens.[1][2][3]
+The remediation replaces the incomplete subset with a licensed complete Noto Sans CJK Simplified Chinese face, makes that face deterministic in both body and display font chains, expands the bilingual catalogs from 539 to **731 matched entries**, localizes previously bypassed runtime paths, corrects reviewed Chinese copy, and adds responsive repairs for the highest-risk screens.[1][2][3]
 
 The final candidate has exact key and placeholder parity, **zero missing catalog glyphs**, zero replacement-character markers, and no unresolved player-facing Chinese localization defects in the tested surface matrix.
 
@@ -44,7 +44,7 @@ A reproducible font-refresh tool validates the source font against every printab
 
 ### Catalog and translation remediation
 
-The bilingual catalogs now contain **681 entries each**, up from 539. Added entries cover missing production keys, accessibility metadata, campaign and squad presentation, battle stamps, faction identity, loading states, Training details, premium identities, cinematic statuses, Results reward kinds, and memorial records.[1][2]
+The bilingual catalogs now contain **731 entries each**, up from 539. Added entries cover missing production keys, accessibility metadata, campaign and squad presentation, battle stamps and dialogue, faction identity, loading states, Training details, premium identities, cinematic and narrated-archive statuses, Results reward kinds, and memorial records.[1][2]
 
 Reviewed Chinese corrections include:
 
@@ -52,12 +52,12 @@ Reviewed Chinese corrections include:
 - corrected Stage 6 consent narrative and Stage 7 tactical hint;
 - accurate Recruit blocking/deployment tutorial instructions;
 - Chinese Training combat facts without misleading `ATK`/`T` abbreviations;
-- consistent `迟缓领域`, `部署点`, `高级共鸣`, `露娜莉丝圣物库`, `第33连队`, and `英灵殿` terminology;
+- consistent `迟缓领域`, `部署点`, `高级共鸣`, `露娜莉丝圣物库`, `月辉载体`, `第33连队`, and `英灵殿` terminology;
 - natural classifier and spacing rules for lives, pulls, Marks, stars, rewards, and numeric placeholders;
 - corrected Settings, Results, memorial, archive, and gacha phrasing;
 - exact placeholder compatibility for every bilingual entry.
 
-The twelve remaining English-identical entries are intentional proper names, language labels, or language-neutral formatting templates such as `PROTOS`, `EN`, `{index}. {title}{status}`, and `{name}\n{cost} DP`.
+The seventeen remaining English-identical entries are intentional proper names, speaker names, language labels, time formats, or language-neutral formatting templates such as `PROTOS`, `EN`, `{index}. {title}{status}`, and `{name}\n{cost} DP`.
 
 ### Runtime localization coverage
 
@@ -81,8 +81,8 @@ The Chinese stress pass exposed and fixed several geometry defects that ordinary
 
 | Screen | Repair |
 |---|---|
-| Title portrait | Keeps `PROTOS 防线` on one centered line with locale-aware display fitting while retaining the doubled landscape scale |
-| Settings portrait | Keeps `语言` and the EN/中文 selector fully visible when initial focus enters the compact scroll area |
+| Title | Keeps `PROTOS 防线` on one centered line at landscape and portrait breakpoints with locale-aware display fitting |
+| Settings portrait | Keeps `返回`, `设置`, and `语言` on readable single lines; the EN/中文 selector remains fully visible when initial focus enters the compact scroll area |
 | Premium Resonance portrait | Increases hero-card height so Chinese name, class, and acquisition state clear lower ornaments |
 | Confirm Resonance | Removes redundant card eyebrow labels, increases readable card height/padding, preserves wrapped Chinese copy, and keeps compact padded actions right aligned |
 | Shared dialogs | Preserves doubled typography while using safe responsive margins, scrolling, and non-trimming wrapping |
@@ -91,16 +91,17 @@ The Chinese stress pass exposed and fixed several geometry defects that ordinary
 
 | Metric | Final result |
 |---|---:|
-| English catalog entries | 681 |
-| Chinese catalog entries | 681 |
-| Chinese entries containing Han text | 668 |
+| English catalog entries | 731 |
+| Chinese catalog entries | 731 |
+| Chinese entries containing Han text | 713 |
 | Bilingual key differences | 0 |
 | Placeholder mismatches | 0 |
-| Literal production lookup keys validated | 289 |
-| Unique printable catalog code points | 964 |
+| Literal production lookup keys validated | 300 |
+| Unique printable catalog code points | 991 |
 | Missing bundled-font code points | 0 |
 | Replacement-glyph markers in catalog | 0 |
 | Focused Chinese localization/layout tests | 22 passed, 0 failed |
+| Complete Godot repository tests | 49 passed, 0 failed |
 | Visual stress captures | 20 accepted frames across 10 states |
 
 ## Visual stress matrix
@@ -134,7 +135,7 @@ godot --headless --fixed-fps 60 --path . \
 
 ## Conclusion
 
-The strange-symbol report was valid: the build did not ship enough glyphs and was relying on environment-dependent fallback. That root cause is removed. The Chinese catalog, runtime consumption, accessibility surface, and responsive layouts have also been audited and repaired as one release unit rather than hiding rendering defects with alternate wording. The final candidate is ready for the standard Godot import, full regression, Web export, browser, and WebDev deployment gates.
+The strange-symbol report was valid: the build did not ship enough glyphs and was relying on environment-dependent fallback. That root cause is removed. The Chinese catalog, runtime consumption, accessibility surface, and responsive layouts have also been audited and repaired as one release unit rather than hiding rendering defects with alternate wording. Direct import, bounded boot, all 49 repository tests, and strict error-log scanning pass; the candidate is ready for Web export and WebDev deployment.
 
 [1]: ../localization/en-US.json
 [2]: ../localization/zh-CN.json

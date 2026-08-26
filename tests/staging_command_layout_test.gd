@@ -88,11 +88,12 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var operation_scroll := staging.find_child("OperationsScroll", true, false) as ScrollContainer
 	var command_scroll_name := "PortraitCommandScroll" if bool(viewport_case["portrait"]) else "LandscapeCommandScroll"
 	var command_scroll := staging.find_child(command_scroll_name, true, false) as ScrollContainer
+	var expected_identity := "PROTOS 防线" if locale_id == "zh-CN" else "PROTOS DEFENSE"
 
 	_check(top_bar != null and top_bar.size.y >= 156.0, "%s: segmented top HUD is shorter than 156px" % context)
 	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
 	_check(identity_plate.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s: PROTOS DEFENSE identity retained a container frame" % context)
-	_check(identity_label != null and identity_label.text == "PROTOS DEFENSE", "%s: top-left identity is not PROTOS DEFENSE" % context)
+	_check(identity_label != null and identity_label.text == expected_identity, "%s: top-left identity is not localized game identity" % context)
 	_check(identity_label != null and _contains(identity_plate, identity_label), "%s: faction identity text escaped its enlarged plate" % context)
 	_check(exit_label != null and _contains(utility_plate, exit_label), "%s: Exit label escaped or touched its compact frame" % context)
 	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)

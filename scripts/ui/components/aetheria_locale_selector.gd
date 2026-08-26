@@ -4,6 +4,7 @@ extends BoxContainer
 signal locale_selected(locale_id: StringName)
 
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const COMPACT_LABEL_MIN_HEIGHT := 72.0
 
 var _draft_mode := false
 var _selected_locale: StringName = &""
@@ -15,6 +16,8 @@ var _compact_mode := false
 
 func _ready() -> void:
 	add_theme_constant_override(&"separation", 8 if _compact_mode else 16)
+	_label.clip_text = false
+	_label.custom_minimum_size = Vector2(0.0, COMPACT_LABEL_MIN_HEIGHT if _compact_mode else 0.0)
 	_list.custom_minimum_size = Vector2(0.0, 60.0 if _compact_mode else 90.0)
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.focus_mode = Control.FOCUS_ALL
@@ -44,7 +47,8 @@ func set_draft_mode(enabled: bool) -> void:
 func set_compact_mode(enabled: bool) -> void:
 	_compact_mode = enabled
 	if _label != null:
-		_label.clip_text = enabled
+		_label.clip_text = false
+		_label.custom_minimum_size = Vector2(0.0, COMPACT_LABEL_MIN_HEIGHT if enabled else 0.0)
 	if is_node_ready():
 		_list.custom_minimum_size = Vector2(0.0, 60.0 if enabled else 90.0)
 		add_theme_constant_override(&"separation", 8 if enabled else 16)
