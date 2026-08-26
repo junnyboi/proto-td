@@ -31,19 +31,20 @@ func _mount_fixture() -> void:
 			Game.campaign = fallen
 			Game.campaign_active = true
 			_mount("res://scenes/vahalla.tscn")
-		"results":
+		"results", "results-defeat":
 			var projection: Dictionary = Game.campaign_projection()
 			var hero_id := String(projection.get("ready_heroes", [])[0].get("hero_id", ""))
+			var defeated := screen_id == "results-defeat"
 			Game.last_result = {
 				"stage_id": &"s1",
-				"result": BattleModel.Result.CLEAR,
-				"stars": 3,
-				"kills": 14,
-				"leaks": 0,
-				"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 40}],
-				"class_entitlements_granted": [&"mage_apprentice"],
-				"xp_awards": [{"hero_id": hero_id, "xp": 6}],
-				"dead_hero_ids": [],
+				"result": BattleModel.Result.DEFEAT if defeated else BattleModel.Result.CLEAR,
+				"stars": 0 if defeated else 3,
+				"kills": 4 if defeated else 14,
+				"leaks": 12 if defeated else 0,
+				"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7 if defeated else 40}],
+				"class_entitlements_granted": [] if defeated else [&"mage_apprentice"],
+				"xp_awards": [{"hero_id": hero_id, "xp": 2 if defeated else 6}],
+				"dead_hero_ids": [hero_id] if defeated else [],
 				"premium_life_losses": [],
 			}
 			_mount("res://scenes/results.tscn")

@@ -27,6 +27,10 @@ const RESULT_ACTION_FONT_SIZE := 54
 const RESULT_ACTION_HORIZONTAL_PADDING := 28.0
 const RESULT_ACTION_VERTICAL_PADDING := 18.0
 const RESULT_HEADER_HEIGHT := 132.0
+const REWARD_REVEAL_STAGGER_SECONDS := 0.14
+const REWARD_REVEAL_DURATION_SECONDS := 0.56
+const REWARD_REVEAL_FADE_SECONDS := 0.28
+const REWARD_REVEAL_START_SCALE := Vector2(0.9, 0.9)
 
 var _actions: GridContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -44,6 +48,8 @@ var _rewards_panel: PanelContainer = null
 var _consequence_panel: PanelContainer = null
 var _cleared_result := false
 var _landscape_action_columns := 3
+var _reward_reveal_entries: Array[Dictionary] = []
+var _reward_reveal_tween: Tween = null
 
 
 func _ready() -> void:
@@ -72,6 +78,11 @@ func _ready() -> void:
 	_build_body(layout, result, cleared)
 	_build_actions(layout)
 	_on_layout_mode_changed(_shell.layout_mode())
+	_play_reward_reveals.call_deferred()
+
+
+func _exit_tree() -> void:
+	_kill_reward_reveal_tween()
 
 
 func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> void:
@@ -157,7 +168,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	_rewards_panel.name = "RewardsPanel"
 	_rewards_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rewards_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	Style.apply_panel(_rewards_panel, &"result" if cleared else &"quiet")
+	Style.apply_panel(_rewards_panel, &"result")
 	_ensure_panel_padding(_rewards_panel, 30.0, 26.0, 28.0, 20.0)
 	_body_grid.add_child(_rewards_panel)
 	var rewards_scroll := ScrollContainer.new()
@@ -180,7 +191,22 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
 		if reward.get("kind") == "currency" and reward.get("id") == "marks":
-			rewards.add_child(_result_card("Reward%d" % i, UiCopyType.format_text(&"ui.results.marks_reward", "+{count} MARKS", {&"count": int(reward.get("amount", 0))}), UiCopyType.text(&"ui.results.premium_fund", "Premium Resonance fund"), false, true))
+			var amount := int(reward.get("amount", 0))
+			var reward_row := _result_card(
+				"Reward%d" % i,
+				UiCopyType.format_text(&"ui.results.marks_reward", "+{count} MARKS", {&"count": amount}),
+				UiCopyType.text(&"ui.results.premium_fund", "Premium Resonance fund"),
+				false,
+				true,
+			)
+			rewards.add_child(reward_row)
+			_register_reward_reveal(
+				reward_row,
+				&"Title",
+				amount,
+				&"ui.results.marks_reward",
+				"+{count} MARKS",
+			)
 		else:
 			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), UiCopyType.format_text(&"ui.results.unlocked_kind", "UNLOCKED · {kind}", {&"kind": String(reward.get("kind", "record")).to_upper()}), false, true))
 	var entitlements: Array = result.get("class_entitlements_granted", [])
@@ -189,7 +215,22 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	var xp_awards: Array = result.get("xp_awards", [])
 	for i: int in xp_awards.size():
 		var award: Dictionary = xp_awards[i]
-		rewards.add_child(_result_card("XpAward%d" % i, _hero_name(String(award.get("hero_id", ""))).to_upper(), UiCopyType.format_text(&"ui.results.xp_reward", "+{count} XP", {&"count": int(award.get("xp", award.get("amount", 0)))}), false, true))
+		var amount := int(award.get("xp", award.get("amount", 0)))
+		var xp_row := _result_card(
+			"XpAward%d" % i,
+			_hero_name(String(award.get("hero_id", ""))).to_upper(),
+			UiCopyType.format_text(&"ui.results.xp_reward", "+{count} XP", {&"count": amount}),
+			false,
+			true,
+		)
+		rewards.add_child(xp_row)
+		_register_reward_reveal(
+			xp_row,
+			&"Detail",
+			amount,
+			&"ui.results.xp_reward",
+			"+{count} XP",
+		)
 
 	_consequence_panel = PanelContainer.new()
 	_consequence_panel.name = "ConsequencePanel"
@@ -322,7 +363,7 @@ func _apply_responsive_layout() -> void:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_rewards_panel)
 		else:
-			Style.apply_panel(_rewards_panel, &"result" if _cleared_result else &"quiet")
+			Style.apply_panel(_rewards_panel, &"result")
 			_set_panel_padding(_rewards_panel, 30.0, 26.0, 28.0, 20.0)
 	if _consequence_panel != null:
 		if mode == &"portrait":
@@ -457,6 +498,125 @@ func _result_card(
 	detail.add_theme_font_size_override(&"font_size", 30)
 	stack.add_child(detail)
 	return card
+
+
+func _register_reward_reveal(
+		row: Control,
+		label_name: StringName,
+		final_count: int,
+		template_key: StringName,
+		fallback_template: String,
+	) -> void:
+	var label := row.find_child(String(label_name), true, false) as Label
+	if label == null:
+		return
+	var order := _reward_reveal_entries.size()
+	label.custom_minimum_size.x = maxf(
+		label.custom_minimum_size.x,
+		label.get_combined_minimum_size().x,
+	)
+	label.set_meta(&"reward_reveal_count", final_count)
+	label.set_meta(&"reward_reveal_order", order)
+	label.set_meta(&"reward_reveal_stagger_seconds", order * REWARD_REVEAL_STAGGER_SECONDS)
+	label.set_meta(&"reward_reveal_complete", false)
+	_reward_reveal_entries.append({
+		&"label": label,
+		&"final_count": final_count,
+		&"template_key": template_key,
+		&"fallback_template": fallback_template,
+	})
+
+
+func _play_reward_reveals() -> void:
+	if _reward_reveal_entries.is_empty():
+		return
+	if _motion_reduced():
+		for entry: Dictionary in _reward_reveal_entries:
+			_complete_reward_reveal(entry)
+		return
+	_kill_reward_reveal_tween()
+	_reward_reveal_tween = create_tween().set_parallel(true)
+	for index: int in _reward_reveal_entries.size():
+		var entry: Dictionary = _reward_reveal_entries[index]
+		var label := entry[&"label"] as Label
+		if label == null or not is_instance_valid(label):
+			continue
+		var final_count := int(entry[&"final_count"])
+		var template_key := StringName(entry[&"template_key"])
+		var fallback_template := String(entry[&"fallback_template"])
+		var delay := index * REWARD_REVEAL_STAGGER_SECONDS
+		label.text = _reward_count_text(template_key, fallback_template, 0)
+		label.modulate.a = 0.0
+		label.scale = REWARD_REVEAL_START_SCALE
+		label.pivot_offset = label.size * 0.5
+		_reward_reveal_tween.tween_method(
+			_set_reward_reveal_count.bind(
+				label,
+				template_key,
+				fallback_template,
+				final_count,
+			),
+			0.0,
+			float(final_count),
+			REWARD_REVEAL_DURATION_SECONDS,
+		).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_reward_reveal_tween.tween_property(
+			label, "modulate:a", 1.0, REWARD_REVEAL_FADE_SECONDS,
+		).set_delay(delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_reward_reveal_tween.tween_property(
+			label, "scale", Vector2.ONE, REWARD_REVEAL_FADE_SECONDS,
+		).set_delay(delay).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_reward_reveal_tween.tween_callback(
+			_complete_reward_reveal.bind(entry),
+		).set_delay(delay + REWARD_REVEAL_DURATION_SECONDS)
+
+
+func _set_reward_reveal_count(
+		value: float,
+		label: Label,
+		template_key: StringName,
+		fallback_template: String,
+		final_count: int,
+	) -> void:
+	if label == null or not is_instance_valid(label):
+		return
+	label.text = _reward_count_text(
+		template_key,
+		fallback_template,
+		clampi(roundi(value), 0, maxi(final_count, 0)),
+	)
+
+
+func _complete_reward_reveal(entry: Dictionary) -> void:
+	var label := entry.get(&"label") as Label
+	if label == null or not is_instance_valid(label):
+		return
+	label.text = _reward_count_text(
+		StringName(entry[&"template_key"]),
+		String(entry[&"fallback_template"]),
+		int(entry[&"final_count"]),
+	)
+	label.modulate.a = 1.0
+	label.scale = Vector2.ONE
+	label.set_meta(&"reward_reveal_complete", true)
+
+
+func _reward_count_text(template_key: StringName, fallback_template: String, count: int) -> String:
+	return UiCopyType.format_text(
+		template_key,
+		fallback_template,
+		{&"count": count},
+	)
+
+
+func _motion_reduced() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+
+
+func _kill_reward_reveal_tween() -> void:
+	if _reward_reveal_tween != null and _reward_reveal_tween.is_valid():
+		_reward_reveal_tween.kill()
+	_reward_reveal_tween = null
 
 
 func _reward_name(reward: Dictionary) -> String:
