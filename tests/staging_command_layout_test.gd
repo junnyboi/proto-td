@@ -119,7 +119,10 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		staging.call("_on_mission_hover_changed", true)
 		await create_timer(0.22).timeout
 		_check(mission_action_plate.scale.x > 1.005 and mission_action_plate.modulate.b > 1.15, "%s: mission hover plate lift/brightening missing" % context)
-		_check(mission_action_label.scale.x > 1.01 and mission_action_label.get_theme_color(&"font_shadow_color").a >= 0.70, "%s: mission hover text glow missing" % context)
+		_check(mission_action_label.scale.x > 1.01, "%s: mission hover label lift missing" % context)
+		_check(mission_action_label.get_theme_color(&"font_shadow_color").a <= 0.01, "%s: mission action reintroduced a text drop shadow" % context)
+		_check(mission_action_label.get_theme_constant(&"shadow_outline_size") == 0, "%s: mission action shadow outline is not disabled" % context)
+		_check(mission_action_label.get_theme_constant(&"shadow_offset_x") == 0 and mission_action_label.get_theme_constant(&"shadow_offset_y") == 0, "%s: mission action shadow offset is not zero" % context)
 		staging.call("_on_mission_hover_changed", false)
 		mission_action.release_focus()
 		await create_timer(0.22).timeout

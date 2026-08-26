@@ -686,7 +686,9 @@ func _build_mission_button() -> AetheriaButtonType:
 	_mission_action_label.add_theme_constant_override(&"outline_size", 6)
 	_mission_action_label.add_theme_color_override(&"font_outline_color", Color(VOID, 0.92))
 	_mission_action_label.add_theme_color_override(&"font_shadow_color", Color.TRANSPARENT)
-	_mission_action_label.add_theme_constant_override(&"shadow_outline_size", 8)
+	_mission_action_label.add_theme_constant_override(&"shadow_outline_size", 0)
+	_mission_action_label.add_theme_constant_override(&"shadow_offset_x", 0)
+	_mission_action_label.add_theme_constant_override(&"shadow_offset_y", 0)
 	for style_name: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
 		button.add_theme_stylebox_override(style_name, StyleBoxEmpty.new())
 	_mission_plate = TextureRect.new()
@@ -731,9 +733,7 @@ func _update_mission_plate_state() -> void:
 	var plate_scale := Vector2(1.012, 1.025) if active else Vector2.ONE
 	var label_color := Color(1.04, 1.10, 1.16, 1.0) if active else Color.WHITE
 	var label_scale := Vector2(1.02, 1.02) if active else Vector2.ONE
-	_mission_action_label.add_theme_color_override(
-		&"font_shadow_color", Color(MOON_CYAN, 0.72) if active else Color.TRANSPARENT,
-	)
+	_mission_action_label.add_theme_color_override(&"font_shadow_color", Color.TRANSPARENT)
 	if _reduced_motion:
 		_mission_plate.modulate = plate_color
 		_mission_plate.scale = plate_scale
