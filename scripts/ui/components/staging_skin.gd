@@ -86,6 +86,8 @@ static func icon_for_glyph(kind: StagingGlyphType.Kind) -> Texture2D:
 			return MEMORIAL_ICON
 		StagingGlyphType.Kind.TRAINING:
 			return TRAINING_ICON
+		StagingGlyphType.Kind.ARCHIVE:
+			return MISSION_ICON
 	return LUNARIS_SEAL
 
 

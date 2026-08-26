@@ -71,6 +71,10 @@ All character concepts, portraits, UI illustrations, chibi units, and animated s
 
 The deterministic premium gacha lifecycle, save migration, fixed-kit rule, stored-life economy, death behavior, and validation contract are documented in [`docs/PREMIUM_HERO_SYSTEM.md`](docs/PREMIUM_HERO_SYSTEM.md).
 
+## Narrative canon
+
+The binding world history, Mercy Equation, PROTOS doctrine, Custodian Choir, Lunaris character truths, launch-campaign revelations, future destination, and change-control rules live in [`docs/NARRATIVE_CANON.md`](docs/NARRATIVE_CANON.md). New story copy and generated narrative visuals must remain compatible with that document unless an approved revision explicitly supersedes it.
+
 ## Contributions
 
 Use ordinary Git branches and commit messages. Validate once on the final candidate tree. Revalidate after conflict resolution only when the resolved code changes behavior. Never rewrite `master`; `--force-with-lease` is acceptable on a contributor-owned feature branch.

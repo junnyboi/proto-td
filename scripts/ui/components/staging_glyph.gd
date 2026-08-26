@@ -10,6 +10,7 @@ enum Kind {
 	ARMORY,
 	MEMORIAL,
 	TRAINING,
+	ARCHIVE,
 }
 
 @export var kind: Kind = Kind.CREST:
@@ -47,6 +48,8 @@ func _draw() -> void:
 			_draw_memorial(center, radius, width)
 		Kind.TRAINING:
 			_draw_training(center, radius, width)
+		Kind.ARCHIVE:
+			_draw_archive(center, radius, width)
 
 
 func _draw_crest(center: Vector2, radius: float, width: float) -> void:
@@ -123,3 +126,20 @@ func _draw_training(center: Vector2, radius: float, width: float) -> void:
 	points.append(points[0])
 	draw_polyline(points, line_color, width, true)
 	draw_circle(center, radius * 0.12, line_color, false, width)
+
+
+func _draw_archive(center: Vector2, radius: float, width: float) -> void:
+	var cover := Rect2(
+		center + Vector2(-radius * 0.72, -radius * 0.82),
+		Vector2(radius * 1.44, radius * 1.64),
+	)
+	draw_rect(cover, line_color, false, width)
+	draw_line(
+		center + Vector2(-radius * 0.42, -radius * 0.46),
+		center + Vector2(radius * 0.42, -radius * 0.46), line_color, width,
+	)
+	draw_line(
+		center + Vector2(-radius * 0.42, -radius * 0.10),
+		center + Vector2(radius * 0.28, -radius * 0.10), line_color, width,
+	)
+	draw_circle(center + Vector2(0.0, radius * 0.42), radius * 0.16, line_color, false, width)

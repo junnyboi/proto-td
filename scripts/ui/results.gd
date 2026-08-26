@@ -179,6 +179,10 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	var consequence_line := _label("ConsequenceLine", narrative, &"body")
 	consequence_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	consequences.add_child(consequence_line)
+	if cleared:
+		var record := _narrative_record(result)
+		if record != null:
+			consequences.add_child(_transmission_card(record))
 	var dead_ids: Array = result.get("dead_hero_ids", [])
 	for i: int in dead_ids.size():
 		consequences.add_child(_result_card("FallenHero%d" % i, _hero_name(String(dead_ids[i])).to_upper(), UiCopyType.text(&"ui.results.fallen_record", "FALLEN · MEMORIAL RECORD SEALED"), true))
@@ -248,16 +252,51 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 
 
 func _consequence_copy(result: Dictionary, cleared: bool) -> String:
-	var stage_id := StringName(result.get("stage_id", &""))
-	var record: StageNarrativeDefType = (
-		(NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
-		if not String(stage_id).is_empty()
-		else null
-	)
+	var record := _narrative_record(result)
 	if record == null:
 		return UiCopyType.text(&"ui.error.missing_stage_narrative", "Mission record unavailable. Return to Mission Control.")
 	var field: int = StageNarrativeDefType.Field.CLEAR_DEBRIEF if cleared else StageNarrativeDefType.Field.DEFEAT_DEBRIEF
 	return UiCopyType.stage_narrative_text(record, field)
+
+
+func _narrative_record(result: Dictionary) -> StageNarrativeDefType:
+	var stage_id := StringName(result.get("stage_id", &""))
+	return (
+		(NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
+		if not String(stage_id).is_empty()
+		else null
+	)
+
+
+func _transmission_card(record: StageNarrativeDefType) -> PanelContainer:
+	var card := PanelContainer.new()
+	card.name = "ClearTransmission"
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Style.apply_panel(card, &"selected")
+	var stack := VBoxContainer.new()
+	stack.name = "TransmissionContent"
+	stack.add_theme_constant_override(&"separation", 5)
+	card.add_child(stack)
+	stack.add_child(_label(
+		"TransmissionHeading",
+		UiCopyType.text(&"ui.results.transmission", "CLEAR TRANSMISSION"),
+		&"dense_detail",
+	))
+	var speaker := _label(
+		"TransmissionSpeaker",
+		UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.TRANSMISSION_SPEAKER),
+		&"dense_heading",
+	)
+	stack.add_child(speaker)
+	var body := _label(
+		"TransmissionBody",
+		UiCopyType.stage_narrative_text(record, StageNarrativeDefType.Field.TRANSMISSION),
+		&"dense_body",
+	)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override(&"font_size", 14)
+	stack.add_child(body)
+	return card
 
 
 func _result_card(node_name: String, title_text: String, detail_text: String, danger := false) -> PanelContainer:

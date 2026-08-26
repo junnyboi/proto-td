@@ -11,6 +11,7 @@ const VAHALLA_SCENE_PATH := "res://scenes/vahalla.tscn"
 const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
+const NARRATIVE_ARCHIVE_SCENE_PATH := "res://scenes/narrative_archive.tscn"
 const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
 const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_context.gd")
 const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
@@ -466,6 +467,10 @@ func open_gacha() -> void:
 
 func open_vahalla() -> void:
 	_swap_content.call_deferred(VAHALLA_SCENE_PATH)
+
+
+func open_narrative_archive() -> void:
+	_swap_content.call_deferred(NARRATIVE_ARCHIVE_SCENE_PATH)
 
 
 func open_stage_select() -> void:

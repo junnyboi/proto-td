@@ -108,7 +108,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		var rail_style := navigation.get_theme_stylebox(&"panel") as StyleBoxTexture
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
 		_check(rail_style != null and rail_style.content_margin_top >= 64.0, "%s: rail copy can enter corner ornament" % context)
-		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "TrainingButton"]:
+		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "MercyArchiveButton", "TrainingButton"]:
 			var tile := staging.find_child(tile_name, true, false) as Button
 			var state := tile.find_child("State", true, false) as Label
 			_check(tile != null and tile.custom_minimum_size.y >= 72.0, "%s: %s below 72px" % [context, tile_name])

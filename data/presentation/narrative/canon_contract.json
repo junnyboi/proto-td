@@ -1,38 +1,47 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "bible": {
-    "version": "3.3",
-    "sha256": "da442ced518da9d4690e2dcb381120bb17aaf9d822ffc71b016ff74762e3e2aa"
+    "path": "docs/NARRATIVE_CANON.md",
+    "version": "1.0",
+    "sha256": "d8862ebdf543632592cde0fcf50013e7428ed9c389d8e804e469c361fa0f7195"
   },
   "active_surface_sources": [
     "UiCopy.STATIC_FALLBACKS",
     "StageNarrativeCatalog.records",
     "localization/en-US.json",
+    "localization/zh-CN.json",
+    "scripts/ui/title.gd",
     "scripts/ui/staging.gd",
     "scripts/ui/squad_select.gd",
-    "scripts/ui/results.gd"
+    "scripts/ui/results.gd",
+    "scripts/ui/narrative_archive.gd"
   ],
   "required_terms": [
+    "PROTOS",
     "Company 33",
-    "Great Flare",
-    "the Fall",
+    "Mercy Equation",
     "Custodian",
     "Hearthcross",
-    "Goa Wey",
-    "Deep Gate"
+    "Continuance",
+    "Quieting",
+    "First Garden",
+    "Lunaris Reliquary",
+    "Moon Gate"
   ],
-  "word_bounded_terms": [
-    "the Fall"
-  ],
+  "word_bounded_terms": [],
   "s6_required_terms": [
-    "forced override",
-    "resisting",
-    "consent"
+    "authorization",
+    "consent",
+    "Lunaris Vessel"
   ],
   "retired_terms": [
     "Company Nine",
     "Wayhouse Nine",
     "Great Unanswering",
+    "Great Flare",
+    "Blue Noon",
+    "Goa Wey",
+    "Deep Gate",
     "Tavra Ohn",
     "Sere Vey",
     "Mera Vhal",

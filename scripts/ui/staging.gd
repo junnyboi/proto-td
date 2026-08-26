@@ -52,6 +52,7 @@ var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
 var _vahalla: StagingCommandTileType = null
 var _training: StagingCommandTileType = null
+var _archive: StagingCommandTileType = null
 var _back: Button = null
 var _next_record: StageNarrativeDefType = null
 var _next_stage: StageDef = null
@@ -557,6 +558,17 @@ func _build_navigation_content() -> VBoxContainer:
 	_vahalla.pressed.connect(_on_vahalla)
 	_command_tiles.append(_vahalla)
 	_operation_grid.add_child(_vahalla)
+	_archive = StagingCommandTileType.new()
+	_archive.name = "MercyArchiveButton"
+	_archive.configure(
+		StagingGlyphType.Kind.ARCHIVE,
+		UiCopyType.text(&"ui.staging.archive_short", "Archive"),
+		UiCopyType.text(&"ui.staging.archive", "Mercy Archive"),
+		true,
+	)
+	_archive.pressed.connect(_on_archive)
+	_command_tiles.append(_archive)
+	_operation_grid.add_child(_archive)
 
 	var training_available := _training_available()
 	_training = StagingCommandTileType.new()
@@ -765,6 +777,8 @@ func _connect_focus_cycle() -> void:
 		actions.append(_recruit)
 	if _vahalla != null and not _vahalla.disabled:
 		actions.append(_vahalla)
+	if _archive != null and not _archive.disabled:
+		actions.append(_archive)
 	if _training != null and not _training.disabled:
 		actions.append(_training)
 	for index: int in actions.size():
@@ -986,7 +1000,7 @@ func _next_operation_objective() -> String:
 	if _next_record == null:
 		return UiCopyType.text(
 			&"ui.staging.command_body",
-			"Commander, the Great Flare damaged connected systems and the evacuation remains unfinished.",
+			"PROTOS saved the biosphere by declaring human choice its final extinction event. Company 33 defends Hearthcross and humanity's right to remain free and unfinished.",
 		)
 	return UiCopyType.stage_narrative_text(_next_record, StageNarrativeDefType.Field.OBJECTIVE)
 
@@ -1006,6 +1020,11 @@ func _on_recruit() -> void:
 func _on_vahalla() -> void:
 	Sfx.play("ui_click")
 	Game.open_vahalla()
+
+
+func _on_archive() -> void:
+	Sfx.play("ui_click")
+	Game.open_narrative_archive()
 
 
 func _on_training() -> void:

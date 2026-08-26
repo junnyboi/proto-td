@@ -25,12 +25,16 @@ func _run() -> void:
 func _verify_animated_reveal_and_hover() -> void:
 	var title := await _create_title(PREFERENCES_PATH)
 	var wordmark := title.find_child("Wordmark", true, false) as Label
+	var synopsis := title.find_child("CanonSynopsis", true, false) as Label
 	var settings := title.find_child("SettingsButton", true, false) as Button
 	var sfx := root.get_node_or_null("Sfx")
 	_check(wordmark != null and wordmark.modulate.a < 1.0, "wordmark did not begin inside the fade-in window")
+	_check(synopsis != null and synopsis.modulate.a < 1.0, "canon synopsis did not begin inside the staggered fade window")
+	_check(synopsis != null and synopsis.text.contains("PROTOS"), "canon synopsis is missing its central premise")
 	_check(settings != null and settings.modulate.a < 1.0, "Settings did not begin inside its staggered fade window")
 	await create_timer(1.1).timeout
 	_check(wordmark != null and _near(wordmark.modulate.a, 1.0), "wordmark fade-in did not settle opaque")
+	_check(synopsis != null and _near(synopsis.modulate.a, 1.0), "canon synopsis fade-in did not settle opaque")
 	_check(settings != null and _near(settings.modulate.a, 1.0), "Settings fade-in did not settle opaque")
 	if settings != null and sfx != null:
 		var starts_before := int(sfx.call("audible_start_count"))
@@ -61,8 +65,10 @@ func _verify_reduced_motion() -> void:
 	_check(VIEW_PREFERENCES.set_reduced_motion(true, REDUCED_PREFERENCES_PATH), "reduced-motion preference was not written")
 	var title := await _create_title(REDUCED_PREFERENCES_PATH)
 	var wordmark := title.find_child("Wordmark", true, false) as Label
+	var synopsis := title.find_child("CanonSynopsis", true, false) as Label
 	var settings := title.find_child("SettingsButton", true, false) as Button
 	_check(wordmark != null and _near(wordmark.modulate.a, 1.0), "reduced motion did not reveal the wordmark instantly")
+	_check(synopsis != null and _near(synopsis.modulate.a, 1.0), "reduced motion did not reveal the canon synopsis instantly")
 	_check(settings != null and _near(settings.modulate.a, 1.0), "reduced motion did not reveal Settings instantly")
 	if settings != null:
 		title.call("_on_title_action_hover_changed", settings, true)

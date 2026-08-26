@@ -41,9 +41,12 @@ func _run() -> void:
 
 func _verify_title_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
+	var synopsis := _title.find_child("CanonSynopsis", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 76, "landscape wordmark scale changed")
+	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 17, "canon synopsis typography is unreadable")
+	_check(synopsis != null and synopsis.get_visible_line_count() == synopsis.get_line_count(), "canon synopsis is clipped")
 	_check(start.get_theme_font_size(&"font_size") == 28, "Start typography scale changed")
 	_check(settings.get_theme_font_size(&"font_size") == 23, "Settings typography scale changed")
 
