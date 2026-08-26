@@ -309,7 +309,7 @@ const STATIC_FALLBACKS := {
 	&"ui.squad.loadout_none": "Loadout: nothing unlocked yet",
 	&"ui.squad.loadout_available": "Loadout (always available): {items}",
 	&"ui.squad.order_drag_hint": "Drag to reorder. Keyboard: Alt plus arrow keys.",
-	&"ui.squad.order_empty": "Select operators, then drag them here to set deployment order.",
+	&"ui.squad.order_empty": "Select operators, then drag to reorder.",
 	&"ui.squad.order_heading": "Deployment Order",
 	&"ui.squad.start_battle": "Start Battle",
 	&"ui.squad.start_battle_short": "Start",
