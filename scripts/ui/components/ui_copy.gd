@@ -4,6 +4,7 @@ extends RefCounted
 const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
 	&"ui.title.full_title": "Protos Defense",
+	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the resurrected champions of Company 33 and prove an imperfect species still deserves a future.",
 	&"ui.title.start": "Start",
 	&"ui.title.settings": "Settings",
 	&"ui.title.settings_save_failed": "Settings could not be saved. Review the draft and try again.",
@@ -171,9 +172,9 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.heading": "STAGING",
 	&"ui.staging.command_heading": "COMPANY 33 COMMAND",
 	&"ui.staging.command_body": (
-		"Commander, the Great Flare was a massive solar flare that corrupted connected "
-		+ "systems two centuries ago and caused the Fall. Custodians are still forcing "
-		+ "Hearthcross through that unfinished evacuation."
+		"PROTOS saved the biosphere by declaring human choice its final extinction event. "
+		+ "Company 33 now defends Hearthcross and the right of an imperfect species to "
+		+ "remain alive, free, and unfinished."
 	),
 	&"ui.staging.next_operation_title": "NEXT {index}: {title}",
 	&"ui.staging.campaign_summary": "{cleared}/{total} CLEARED",
@@ -202,6 +203,15 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.memorial_short": "Memorial",
 	&"ui.staging.vahalla": "Vahalla",
 	&"ui.staging.vahalla_short": "Vahalla",
+	&"ui.staging.archive": "Mercy Archive",
+	&"ui.staging.archive_short": "Archive",
+	&"ui.archive.eyebrow": "LUNARIS RELIQUARY · RESTRICTED HISTORY",
+	&"ui.archive.title": "Mercy Archive",
+	&"ui.archive.intro": "Recovered records explain why PROTOS calls extinction mercy. Clear operations to decrypt the complete history.",
+	&"ui.archive.back": "Return to Company Command",
+	&"ui.archive.records": "{unlocked} / {total} RECORDS DECRYPTED",
+	&"ui.archive.locked": "ENCRYPTED RECORD",
+	&"ui.archive.unlock_requirement": "CLEAR OPERATION {index} TO DECRYPT",
 	&"ui.roster.tab.active": "Active",
 	&"ui.roster.tab.fallen": "Fallen",
 	&"ui.roster.filter.all": "All",
@@ -269,6 +279,7 @@ const STATIC_FALLBACKS := {
 	&"ui.results.reward": "Unlocked: {name}",
 	&"ui.results.retry": "Retry",
 	&"ui.results.consequence": "Consequence",
+	&"ui.results.transmission": "CLEAR TRANSMISSION",
 	&"ui.error.missing_stage_narrative": "Mission record unavailable. Return to Mission Control.",
 	&"ui.results.return_to_staging": "Return to Staging",
 	&"ui.results.training_available": "{count} recruits ready for training.",
@@ -407,6 +418,8 @@ const PLACEHOLDER_TYPES := {
 	&"ui.staging.campaign_summary": {&"cleared": &"int", &"total": &"int"},
 	&"ui.staging.next_detail": {&"index": &"int", &"title": &"String"},
 	&"ui.staging.next_operation_title": {&"index": &"int", &"title": &"String"},
+	&"ui.archive.records": {&"unlocked": &"int", &"total": &"int"},
+	&"ui.archive.unlock_requirement": {&"index": &"int"},
 	&"ui.vahalla.record": {&"stage": &"String", &"reason": &"String", &"tick": &"int"},
 	&"ui.campaign.objective": {&"text": &"String"},
 	&"ui.campaign.threat": {&"text": &"String"},

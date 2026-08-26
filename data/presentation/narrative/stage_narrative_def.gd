@@ -9,6 +9,8 @@ enum Field {
 	CORE_SERVICE,
 	CLEAR_DEBRIEF,
 	DEFEAT_DEBRIEF,
+	TRANSMISSION_SPEAKER,
+	TRANSMISSION,
 }
 
 @export var id: StringName = &""
@@ -19,6 +21,8 @@ enum Field {
 @export_multiline var core_service: String = ""
 @export_multiline var clear_debrief: String = ""
 @export_multiline var defeat_debrief: String = ""
+@export var transmission_speaker: String = ""
+@export_multiline var transmission: String = ""
 
 
 func validate_contract() -> PackedStringArray:
@@ -28,6 +32,7 @@ func validate_contract() -> PackedStringArray:
 	for field: Field in [
 		Field.OBJECTIVE, Field.THREAT, Field.HUMAN_REASON, Field.CLUE,
 		Field.CORE_SERVICE, Field.CLEAR_DEBRIEF, Field.DEFEAT_DEBRIEF,
+		Field.TRANSMISSION_SPEAKER, Field.TRANSMISSION,
 	]:
 		if fallback_for(field).strip_edges().is_empty():
 			errors.append("%s: blank" % field_slug(field))
@@ -50,6 +55,10 @@ func fallback_for(field: Field) -> String:
 			return clear_debrief
 		Field.DEFEAT_DEBRIEF:
 			return defeat_debrief
+		Field.TRANSMISSION_SPEAKER:
+			return transmission_speaker
+		Field.TRANSMISSION:
+			return transmission
 	push_error("StageNarrativeDef.fallback_for: invalid field %s" % field)
 	return ""
 
@@ -70,5 +79,9 @@ func field_slug(field: Field) -> StringName:
 			return &"clear_debrief"
 		Field.DEFEAT_DEBRIEF:
 			return &"defeat_debrief"
+		Field.TRANSMISSION_SPEAKER:
+			return &"transmission_speaker"
+		Field.TRANSMISSION:
+			return &"transmission"
 	push_error("StageNarrativeDef.field_slug: invalid field %s" % field)
 	return &""

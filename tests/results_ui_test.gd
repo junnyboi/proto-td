@@ -41,6 +41,9 @@ func _run() -> void:
 	var entitlement := screen.find_child("Entitlement0", true, false) as PanelContainer
 	var xp := screen.find_child("XpAward0", true, false) as PanelContainer
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
+	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
+	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
+	var transmission_body := screen.find_child("TransmissionBody", true, false) as Label
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
 	var title := screen.find_child("BackToTitle", true, false) as Button
@@ -49,6 +52,9 @@ func _run() -> void:
 	_check(stars != null and stars.get_child_count() == 3, "native result stars are missing")
 	_check(reward != null and entitlement != null and xp != null, "typed result payload cards are incomplete")
 	_check(no_casualties != null, "no-casualty state is missing")
+	_check(transmission != null, "clear result omitted its canon transmission")
+	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
+	_check(transmission_body != null and transmission_body.text.contains("PROTOS"), "clear transmission body is not canonical")
 	_check(actions != null and staging != null and title != null, "persistent Results actions are incomplete")
 	_check(actions != null and not _has_scroll_ancestor(actions), "Results actions remain buried inside scroll content")
 	if actions != null:
