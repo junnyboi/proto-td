@@ -25,7 +25,7 @@
 - [x] Repair Mission Yield survivor XP projection to consume the canonical `{hero_id, delta: 100}` receipt schema, regression-lock multiple survivor rows, and visually verify settled `+100 XP` values in landscape and portrait.
 - [x] Refit Premium Resonance with a GPT Image 2 Lunaris Return glyph, vertically aligned header, 64px wide-layout gutters, compact one-line guarantee telemetry, 50%-larger padded cards with top-anchored 25% bust zoom, and a 2.5× wider two-line hoverable action.
 - [x] Refit the annotated Training roster with text-safe padded filters, right-of-icon faction counts, a Promotion Ready status filter, fixed 560px operator cards with 48×24 padding, a 64px inspector gutter, dossier-first identity layout, Edit-gated fields, and fixed 260×84 bottom actions across desktop, compact, Chinese portrait, and 390px editor states.
-- [x] Refit Field Team selection with a 60/40 roster/intelligence split, fixed compact operator cards, roomy wide-screen status and faction filters, unobstructed heraldry counts, and doubled actions with expanded spacing.
+- [x] Refit Field Team selection with a 60/40 roster/intelligence split, intelligence-owned Company Reinforcements, concise Marks/Hire copy, compact padded Recruit Order, 1.5× faction filters with tighter heraldry/count spacing, one doubled-width operator card per row with enlarged portraits, no Field Note, and promoted Loadout hierarchy.
 
 # Premium Resonance Cinematic Completion
 

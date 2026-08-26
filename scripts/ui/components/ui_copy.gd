@@ -284,7 +284,7 @@ const STATIC_FALLBACKS := {
 	&"ui.campaign.basic_hire_action": "HIRE • {cost} MARKS",
 	&"ui.campaign.basic_hire_ready": "BASIC RECRUIT CONTRACT AVAILABLE",
 	&"ui.campaign.basic_hire_success": "{callsign} • JOINED COMPANY 33 • {remaining} MARKS REMAIN",
-	&"ui.campaign.basic_hire_insufficient": "Earn {count} more Marks to hire another Recruit.",
+	&"ui.campaign.basic_hire_insufficient": "INSUFFICIENT MARKS",
 	&"ui.campaign.basic_hire_attempt_pending": "Resolve the active operation before hiring personnel.",
 	&"ui.campaign.basic_hire_roster_limit": "The personnel registry has reached capacity.",
 	&"ui.campaign.basic_hire_campaign_inactive": "No active campaign is available.",
