@@ -934,6 +934,7 @@ static func _normalize_campaign(
 		or definition.portrait_asset_ids.size() != 11
 		or definition.paid_offers.size() != 1
 		or definition.v3_stage_rewards.size() != 8
+		or definition.basic_recruit_cost != 5
 		or definition.premium_pull_cost != 40
 		or definition.premium_hero_rows.size() != 3
 	):
@@ -942,6 +943,12 @@ static func _normalize_campaign(
 		return _reject(&"invalid_campaign_definition")
 	var portrait_ids := _sorted_unique_strings(definition.portrait_asset_ids)
 	if portrait_ids.size() != 11:
+		return _reject(&"invalid_campaign_definition")
+	var recruit_portrait_ids: Array[String] = []
+	for portrait_id: String in portrait_ids:
+		if portrait_id.begins_with("portrait_recruit_"):
+			recruit_portrait_ids.append(portrait_id)
+	if recruit_portrait_ids.size() != 8:
 		return _reject(&"invalid_campaign_definition")
 	var starter_rows: Array[Dictionary] = []
 	var starter_portraits := {}
@@ -1085,7 +1092,9 @@ static func _normalize_campaign(
 		"stage_class_entitlements": entitlements,
 		"v3_stage_rewards": stage_rewards,
 		"portrait_asset_ids": portrait_ids,
+		"recruit_portrait_asset_ids": recruit_portrait_ids,
 		"paid_offers": offers,
+		"basic_recruit_cost": int(definition.basic_recruit_cost),
 		"premium_pull_cost": int(definition.premium_pull_cost),
 		"premium_hero_rows": premium_rows,
 	})

@@ -146,7 +146,9 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			if (
 				typeof(value["source"]) not in [TYPE_STRING, TYPE_STRING_NAME]
 				or typeof(value["source_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
-				or source not in ["contract", "recovery", "replacement", "reward"]
+				or source not in [
+					"basic_hire", "contract", "recovery", "replacement", "reward",
+				]
 				or not _ascii(source_id)
 			):
 				return _reject(&"invalid_command_payload")
@@ -398,13 +400,19 @@ static func _normalize_receipt(
 				return _reject(&"invalid_command_receipt")
 			var hero: Dictionary = recruitment["hero"]
 			var persisted := _hero_by_id(data["heroes"], String(hero.get("hero_id", "")))
+			var expected_cost := _recruitment_cost(payload, data, context)
 			if (
 				persisted.is_empty()
 				or not _same_acquisition_identity(persisted, hero)
 				or hero.get("recruit_source") != payload["source"]
 				or hero.get("source_id") != payload["source_id"]
 				or not _is_fresh_recruit(hero)
-			):
+				or typeof(recruitment["marks_before"]) != TYPE_INT
+				or typeof(recruitment["marks_after"]) != TYPE_INT
+				or expected_cost < 0
+				or int(recruitment["marks_before"]) - int(recruitment["marks_after"])
+					!= expected_cost
+				):
 				return _reject(&"command_receipt_mismatch")
 			return _accept({"recruitment": recruitment.duplicate(true)})
 		"rename_hero":
@@ -470,6 +478,23 @@ static func _premium_row(context: Dictionary, premium_id: String) -> Dictionary:
 		if row["premium_id"] == premium_id:
 			return row
 	return {}
+
+
+static func _recruitment_cost(
+	payload: Dictionary,
+	data: Dictionary,
+	context: Dictionary,
+) -> int:
+	match String(payload["source"]):
+		"basic_hire":
+			return int(context["campaign"]["basic_recruit_cost"])
+		"contract":
+			for offer: Dictionary in data["offers"]:
+				if offer["offer_id"] == payload["source_id"]:
+					return int(offer["cost"])
+		"recovery", "replacement":
+			return 0
+	return -1
 
 
 static func _hero_by_id(heroes: Array, hero_id: String) -> Dictionary:

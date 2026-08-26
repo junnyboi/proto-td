@@ -9,7 +9,9 @@ const U63_MAX := 9_223_372_036_854_775_807
 const MARKS_MAX := 1_000_000_000
 const MAX_ROSTER := 1024
 const PREMIUM_LIVES_MAX := 999
-const SOURCE_VALUES := ["starter", "contract", "reward", "recovery", "replacement", "gacha"]
+const SOURCE_VALUES := [
+	"starter", "basic_hire", "contract", "reward", "recovery", "replacement", "gacha",
+]
 const LIFE_VALUES := ["ready", "dead"]
 const TERMINAL_VALUES := ["clear", "leak_defeat", "base_defeat", "resign"]
 const RECEIPT_KEYS := ["command_id", "save_revision", "choices"]
