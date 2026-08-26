@@ -21,6 +21,9 @@ const GACHA_FULLSIZE_PORTRAITS := {
 }
 const CONFIRM_ENTRY_SECONDS := 0.16
 const CONFIRM_READABLE_MAX_WIDTH := 1480.0
+const CONFIRM_ACTION_SIZE := Vector2(280.0, 92.0)
+const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
+const CONFIRM_ACTION_VERTICAL_PADDING := 18.0
 
 enum FlowState {
 	BROWSE,
@@ -432,31 +435,76 @@ func _build_pull_confirmation() -> void:
 	_confirmation_actions = GridContainer.new()
 	_confirmation_actions.name = "ConfirmationActions"
 	_confirmation_actions.columns = 2
-	_confirmation_actions.add_theme_constant_override(&"h_separation", 14)
-	_confirmation_actions.add_theme_constant_override(&"v_separation", 10)
+	_confirmation_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_confirmation_actions.add_theme_constant_override(&"h_separation", 16)
+	_confirmation_actions.add_theme_constant_override(&"v_separation", 12)
 	_confirmation_action_dock.add_child(_confirmation_actions)
 	_confirmation_cancel = Button.new()
 	_confirmation_cancel.name = "CancelPremiumPullDock"
-	_confirmation_cancel.custom_minimum_size = Vector2(0, 88)
-	_confirmation_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_cancel.custom_minimum_size = CONFIRM_ACTION_SIZE
+	_confirmation_cancel.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_confirmation_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_cancel, &"quiet")
+	_apply_confirmation_action_style(_confirmation_cancel, false)
 	_confirmation_cancel.add_theme_font_size_override(&"font_size", 36)
 	_confirmation_cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_cancel.clip_text = false
 	_confirmation_actions.add_child(_confirmation_cancel)
 	_confirmation_confirm = Button.new()
 	_confirmation_confirm.name = "ConfirmPremiumPull"
-	_confirmation_confirm.custom_minimum_size = Vector2(0, 88)
-	_confirmation_confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_confirm.custom_minimum_size = CONFIRM_ACTION_SIZE
+	_confirmation_confirm.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_confirmation_confirm.pressed.connect(_on_confirm_pull)
 	Style.apply_button(_confirmation_confirm, &"gold")
+	_apply_confirmation_action_style(_confirmation_confirm, true)
 	_confirmation_confirm.add_theme_font_size_override(&"font_size", 36)
 	_confirmation_confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_confirm.clip_text = false
 	_confirmation_actions.add_child(_confirmation_confirm)
 	_bind_confirmation_focus_scope()
 	_refresh_confirmation_copy()
+
+
+func _apply_confirmation_action_style(button: Button, primary: bool) -> void:
+	var normal_background := Color(Style.GOLD, 0.96) if primary else Color(0.035, 0.085, 0.125, 0.98)
+	var hover_background := Color("f2dc9b") if primary else Color(0.075, 0.17, 0.22, 0.99)
+	var pressed_background := Color("c7a95f") if primary else Color(0.025, 0.055, 0.085, 1.0)
+	var normal_border := Style.GOLD if primary else Color(Style.CYAN, 0.72)
+	var text_color := Style.INK_DEEP if primary else Style.IVORY
+	button.add_theme_stylebox_override(
+		&"normal", _confirmation_action_box(normal_background, normal_border, 2),
+	)
+	button.add_theme_stylebox_override(
+		&"hover", _confirmation_action_box(hover_background, Style.CYAN, 2),
+	)
+	button.add_theme_stylebox_override(
+		&"pressed", _confirmation_action_box(pressed_background, Style.GOLD, 2),
+	)
+	button.add_theme_stylebox_override(
+		&"focus", _confirmation_action_box(normal_background, Style.CYAN, 3),
+	)
+	button.add_theme_stylebox_override(
+		&"disabled",
+		_confirmation_action_box(Color(0.08, 0.11, 0.14, 0.92), Color(Style.MUTED, 0.30), 1),
+	)
+	for state: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
+	]:
+		button.add_theme_color_override(state, text_color)
+	button.add_theme_color_override(&"font_disabled_color", Color(Style.MUTED, 0.76))
+
+
+func _confirmation_action_box(background: Color, border: Color, border_width: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = border
+	style.set_border_width_all(border_width)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = CONFIRM_ACTION_HORIZONTAL_PADDING
+	style.content_margin_top = CONFIRM_ACTION_VERTICAL_PADDING
+	style.content_margin_right = CONFIRM_ACTION_HORIZONTAL_PADDING
+	style.content_margin_bottom = CONFIRM_ACTION_VERTICAL_PADDING
+	return style
 
 
 func _build_reveal_layer() -> void:
@@ -1175,10 +1223,10 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	_confirmation_context_eyebrow.visible = not narrow
 	_confirmation_review_eyebrow.visible = not narrow
 	_confirmation_actions.columns = 1 if narrow or portrait else 2
-	var action_height := 72.0 if short else 88.0
-	_confirmation_cancel.custom_minimum_size = Vector2(0, action_height)
-	_confirmation_confirm.custom_minimum_size = Vector2(0, action_height)
-	_confirmation_header_cancel.custom_minimum_size.y = action_height
+	_confirmation_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_confirmation_cancel.custom_minimum_size = CONFIRM_ACTION_SIZE
+	_confirmation_confirm.custom_minimum_size = CONFIRM_ACTION_SIZE
+	_confirmation_header_cancel.custom_minimum_size.y = CONFIRM_ACTION_SIZE.y
 	var content_width := minf(
 		CONFIRM_READABLE_MAX_WIDTH,
 		maxf(0.0, viewport_size.x - float(horizontal_gutter * 2 + 44)),
