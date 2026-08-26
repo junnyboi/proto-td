@@ -1,6 +1,9 @@
 class_name TrainingScreen
 extends Control
 
+signal rename_confirmation_presentation_changed(state: StringName)
+signal rename_confirmation_transition_completed(state: StringName)
+
 const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
@@ -23,6 +26,13 @@ enum RenameConfirmationState {
 	COMMITTING,
 }
 
+enum RenamePresentationState {
+	IDLE,
+	ENTERING,
+	ACTIVE,
+	EXITING,
+}
+
 const SHELL_SIZE := Vector2(1210.0, 660.0)
 const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
 const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
@@ -37,6 +47,9 @@ const TRAINING_FONT_SIZES := {
 	&"dense_body": 18,
 	&"dense_detail": 16,
 }
+const RENAME_ENTRY_SECONDS := 0.20
+const RENAME_EXIT_SECONDS := 0.16
+const RENAME_VERTICAL_OFFSET := 10.0
 const ERROR_KEYS := {
 	&"invalid_argument_type": &"ui.training.error.invalid_request",
 	&"unknown_hero": &"ui.training.error.unknown_hero",
@@ -170,9 +183,16 @@ var _rename_error: AetheriaLabelType
 var _rename_comparison: BoxContainer
 var _rename_cancel: AetheriaButtonType
 var _rename_confirm: AetheriaButtonType
+var _rename_status: AetheriaLabelType
 var _identity_edit_draft: Dictionary = {}
 var _pending_identity: Dictionary = {}
 var _rename_state := RenameConfirmationState.INACTIVE
+var _rename_presentation_state := RenamePresentationState.IDLE
+var _rename_presentation_tween: Tween = null
+var _rename_presentation_generation := 0
+var _rename_presentation_origin := Vector2.ZERO
+var _rename_exit_reason: StringName = &""
+var _rename_exit_error: StringName = &""
 var _rename_editor_error: StringName = &""
 var _rename_dispatch_count := 0
 var _confirmation_consumed := false
@@ -191,14 +211,28 @@ func _ready() -> void:
 	_show_roster(_roster_projection_error())
 
 
+func _exit_tree() -> void:
+	_kill_rename_presentation_transition(false)
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if _mode == &"rename_confirmation":
+		var accept_pressed := event.is_action_pressed("ui_accept")
+		var cancel_pressed := event.is_action_pressed("ui_cancel")
+		if not accept_pressed and not cancel_pressed:
+			return
+		if rename_transition_locked() or _rename_state == RenameConfirmationState.COMMITTING:
+			# Cancel during entry is deliberately consumed until the modal is ACTIVE.
+			# This avoids reversing a tree that is still settling or dispatching a rename.
+			get_viewport().set_input_as_handled()
+			return
+		if cancel_pressed:
+			get_viewport().set_input_as_handled()
+			_cancel_rename()
+		return
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
-	if _mode == &"rename_confirmation":
-		if _rename_state == RenameConfirmationState.ACTIVE:
-			_cancel_rename()
-		return
 	if _mode == &"review":
 		_on_review_back()
 	elif _mode == &"paths":
@@ -259,21 +293,44 @@ func _build_shell() -> void:
 	_content_gutter.add_child(_page)
 	var content_host := _shell.content_host()
 	content_host.remove_child(_dialog_scroll)
+	accessibility_name = _t(&"ui.training.accessibility.name", "Training workspace")
+	accessibility_description = _t(
+		&"ui.training.accessibility.description",
+		"Manage operator identities and advanced training paths.",
+	)
 	_workspace = VBoxContainer.new()
 	_workspace.name = "TrainingWorkspace"
 	_workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_workspace.add_theme_constant_override(&"separation", 12)
+	_workspace.accessibility_name = _t(
+		&"ui.training.accessibility.workspace", "Training content",
+	)
+	_workspace.accessibility_description = accessibility_description
 	content_host.add_child(_workspace)
 	_persistent_header = VBoxContainer.new()
 	_persistent_header.name = "TrainingPersistentHeader"
 	_persistent_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_persistent_header.visible = false
+	_persistent_header.accessibility_name = _t(
+		&"ui.training.accessibility.header", "Training heading",
+	)
+	_persistent_header.accessibility_description = _t(
+		&"ui.training.accessibility.header_description",
+		"Persistent context for the current Training task.",
+	)
 	_workspace.add_child(_persistent_header)
 	_workspace.add_child(_dialog_scroll)
 	_action_dock = VBoxContainer.new()
 	_action_dock.name = "TrainingActionDock"
 	_action_dock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_action_dock.accessibility_name = _t(
+		&"ui.training.accessibility.actions", "Training actions",
+	)
+	_action_dock.accessibility_description = _t(
+		&"ui.training.accessibility.actions_description",
+		"Persistent actions for the current Training task.",
+	)
 	_workspace.add_child(_action_dock)
 	_layout_mode = _shell.layout_mode()
 	_shell.preferred_size = _shell_size_for(_layout_mode)
@@ -371,10 +428,11 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), false)
+	var focus_generation := _rename_presentation_generation
 	if roster_error != null:
-		roster_error.grab_focus.call_deferred()
+		_focus_roster_control_guarded.call_deferred(roster_error, focus_generation)
 	else:
-		_focus_selected_row_or(back)
+		_focus_selected_row_or.call_deferred(back, focus_generation)
 
 
 func _build_identity_filter_toolbar() -> BoxContainer:
@@ -664,6 +722,10 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_input.clear_button_enabled = true
 	_rename_input.select_all_on_focus = true
 	_rename_input.custom_minimum_size = Vector2(220.0, 58.0)
+	_rename_input.accessibility_name = _t(&"ui.rename.callsign_label", "CALLSIGN")
+	_rename_input.accessibility_description = _t(
+		&"ui.rename.callsign_description", "Unique name, 1 to 20 characters.",
+	)
 	_rename_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rename_input.text_changed.connect(_on_identity_text_changed)
 	_rename_input.text_submitted.connect(_on_identity_submitted)
@@ -685,6 +747,12 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_title_input.max_length = 24
 	_rename_title_input.clear_button_enabled = true
 	_rename_title_input.custom_minimum_size = Vector2(220.0, 58.0)
+	_rename_title_input.accessibility_name = _t(
+		&"ui.rename.title_label", "TITLE TAG • OPTIONAL",
+	)
+	_rename_title_input.accessibility_description = _t(
+		&"ui.rename.title_description", "Optional title, up to 24 characters.",
+	)
 	_rename_title_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rename_title_input.text_changed.connect(_on_identity_text_changed)
 	_rename_title_input.text_submitted.connect(_on_identity_submitted)
@@ -703,8 +771,13 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	column.add_child(_rename_row)
 	_rename_error = _label("RenameUnitError", "", &"dense_detail")
 	_rename_error.custom_minimum_size.y = 24.0
+	_rename_error.accessibility_name = _t(&"ui.common.error", "Error")
+	_rename_error.accessibility_live = AccessibilityServer.LIVE_OFF
 	if not String(_rename_editor_error).is_empty():
-		_rename_error.text = _error_text(_rename_editor_error)
+		var error_text := _error_text(_rename_editor_error)
+		_rename_error.text = _t(&"ui.common.error", "Error") + ": " + error_text
+		_rename_error.accessibility_description = error_text
+		_rename_error.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
 		_apply_identity_error_style(_rename_editor_error)
 	column.add_child(_rename_error)
 	panel.add_child(column)
@@ -716,9 +789,17 @@ func _on_identity_text_changed(_value: String) -> void:
 	_rename_editor_error = &""
 	if _rename_error != null:
 		_rename_error.text = ""
+		_rename_error.accessibility_description = ""
+		_rename_error.accessibility_live = AccessibilityServer.LIVE_OFF
 	if _rename_input != null:
+		_rename_input.accessibility_description = _t(
+			&"ui.rename.callsign_description", "Unique name, 1 to 20 characters.",
+		)
 		LunarisOpsType.apply_line_edit(_rename_input)
 	if _rename_title_input != null:
+		_rename_title_input.accessibility_description = _t(
+			&"ui.rename.title_description", "Optional title, up to 24 characters.",
+		)
 		LunarisOpsType.apply_line_edit(_rename_title_input)
 	_persist_identity_edit_draft()
 	_sync_identity_action()
@@ -783,6 +864,7 @@ func _title_candidate() -> Variant:
 func _request_rename_confirmation() -> void:
 	if (
 		_rename_state != RenameConfirmationState.INACTIVE
+		or _rename_presentation_state != RenamePresentationState.IDLE
 		or _rename_input == null
 		or _rename_action == null
 		or _rename_action.disabled
@@ -801,15 +883,18 @@ func _request_rename_confirmation() -> void:
 		"class_id": String(summary["current_class_id"]),
 	}
 	_rename_state = RenameConfirmationState.ACTIVE
+	_set_rename_presentation_state(RenamePresentationState.ENTERING)
+	_release_owned_focus()
 	Sfx.play("menu_open")
 	_render_rename_confirmation(&"RenameConfirm")
+	_start_rename_entry()
 
 
 func _render_rename_confirmation(focus_name: StringName = &"RenameConfirm") -> void:
 	if _pending_identity.is_empty() or _rename_state == RenameConfirmationState.INACTIVE:
 		return
 	_mode = &"rename_confirmation"
-	_clear_page()
+	_clear_page(false)
 	_set_persistent_header(_header(
 		"RenameConfirmationTitle",
 		_t(&"ui.rename.confirm_title", "Confirm identity"),
@@ -824,18 +909,13 @@ func _render_rename_confirmation(focus_name: StringName = &"RenameConfirm") -> v
 	_rename_comparison.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rename_comparison.add_theme_constant_override(&"separation", 16)
 	_rename_comparison.add_child(_build_identity_comparison_panel(
-		"CurrentIdentityPanel",
-		_t(&"ui.rename.current_identity", "CURRENT IDENTITY"),
-		String(_pending_identity["current_callsign"]),
-		_pending_identity["current_title"],
+		"CurrentIdentityPanel", _t(&"ui.rename.current_identity", "CURRENT IDENTITY"),
+		String(_pending_identity["current_callsign"]), _pending_identity["current_title"],
 		&"quiet",
 	))
 	_rename_comparison.add_child(_build_identity_comparison_panel(
-		"NewIdentityPanel",
-		_t(&"ui.rename.new_identity", "NEW IDENTITY"),
-		String(_pending_identity["callsign"]),
-		_pending_identity["title"],
-		&"selected",
+		"NewIdentityPanel", _t(&"ui.rename.new_identity", "NEW IDENTITY"),
+		String(_pending_identity["callsign"]), _pending_identity["title"], &"selected",
 	))
 	_page.add_child(_rename_comparison)
 	var note := _label(
@@ -848,20 +928,34 @@ func _render_rename_confirmation(focus_name: StringName = &"RenameConfirm") -> v
 	)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_page.add_child(note)
+	_rename_status = _label("RenameConfirmationStatus", "", &"dense_detail")
+	_rename_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rename_status.custom_minimum_size.y = 24.0
+	_rename_status.accessibility_name = _t(&"ui.rename.status_label", "Rename status")
+	_rename_status.accessibility_description = _t(
+		&"ui.rename.status_description", "Status of the pending identity change.",
+	)
+	_page.add_child(_rename_status)
 	var footer := _footer("RenameConfirmationActions")
-	var active := _rename_state == RenameConfirmationState.ACTIVE
 	_rename_cancel = _button(
-		"RenameCancel", _t(&"ui.action.cancel", "Cancel"), active,
-		&"secondary" if active else &"disabled",
+		"RenameCancel", _t(&"ui.action.cancel", "Cancel"), false, &"disabled",
+	)
+	_rename_cancel.accessibility_name = _t(&"ui.action.cancel", "Cancel")
+	_rename_cancel.accessibility_description = _t(
+		&"ui.rename.cancel_description",
+		"Close confirmation without applying the identity change. The draft is kept.",
 	)
 	_rename_cancel.pressed.connect(_cancel_rename)
 	_rename_confirm = _button(
 		"RenameConfirm",
-		_t(&"ui.rename.confirm_action", "Confirm") if active else _t(
-			&"ui.rename.committing", "RENAMING…",
-		),
-		active,
-		&"primary" if active else &"disabled",
+		_t(&"ui.rename.committing", "RENAMING…")
+		if _rename_state == RenameConfirmationState.COMMITTING
+		else _t(&"ui.rename.confirm_action", "Confirm"),
+		false, &"disabled",
+	)
+	_rename_confirm.accessibility_name = _t(&"ui.rename.confirm_action", "Confirm")
+	_rename_confirm.accessibility_description = _t(
+		&"ui.rename.confirm_description", "Apply the pending callsign and optional title.",
 	)
 	_rename_confirm.pressed.connect(_confirm_rename)
 	footer.add_child(_rename_cancel)
@@ -870,9 +964,188 @@ func _render_rename_confirmation(focus_name: StringName = &"RenameConfirm") -> v
 	_apply_rename_confirmation_layout()
 	_apply_footer_layouts()
 	_reset_outer_scroll()
-	if active:
-		_wire_focus([_rename_cancel, _rename_confirm], not _rename_confirmation_stacks())
-		_focus_confirmation_control.call_deferred(focus_name)
+	_set_confirmation_status()
+	if _rename_presentation_state == RenamePresentationState.ACTIVE:
+		_set_rename_actions_active()
+		_focus_confirmation_control_guarded.call_deferred(
+			focus_name, _rename_presentation_generation,
+		)
+	else:
+		_set_rename_actions_locked()
+
+
+func _start_rename_entry() -> void:
+	_kill_rename_presentation_transition()
+	_set_rename_presentation_state(RenamePresentationState.ENTERING)
+	_set_confirmation_status()
+	_set_rename_actions_locked()
+	_rename_presentation_origin = _workspace.position
+	_workspace.modulate.a = 0.0
+	_workspace.position = _rename_presentation_origin + Vector2(0.0, RENAME_VERTICAL_OFFSET)
+	var generation := _rename_presentation_generation
+	if _motion_reduced():
+		_workspace.modulate.a = 1.0
+		_workspace.position = _rename_presentation_origin
+		_finish_rename_entry(generation)
+		return
+	_rename_presentation_tween = create_tween()
+	_rename_presentation_tween.set_parallel(true)
+	_rename_presentation_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_rename_presentation_tween.tween_property(
+		_workspace, "modulate:a", 1.0, RENAME_ENTRY_SECONDS,
+	)
+	_rename_presentation_tween.tween_property(
+		_workspace, "position", _rename_presentation_origin, RENAME_ENTRY_SECONDS,
+	)
+	_rename_presentation_tween.finished.connect(_finish_rename_entry.bind(generation))
+
+
+func _finish_rename_entry(generation: int) -> void:
+	if not _rename_transition_callback_valid(generation, RenamePresentationState.ENTERING):
+		return
+	_rename_presentation_tween = null
+	_workspace.modulate.a = 1.0
+	_workspace.position = _rename_presentation_origin
+	_set_rename_presentation_state(RenamePresentationState.ACTIVE)
+	_set_confirmation_status()
+	_set_rename_actions_active()
+	_focus_confirmation_control(&"RenameConfirm")
+	rename_confirmation_transition_completed.emit(&"active")
+
+
+func _begin_rename_exit(reason: StringName, error_code: StringName = &"") -> void:
+	if _rename_presentation_state != RenamePresentationState.ACTIVE:
+		return
+	_kill_rename_presentation_transition()
+	_rename_exit_reason = reason
+	_rename_exit_error = error_code
+	_set_rename_presentation_state(RenamePresentationState.EXITING)
+	_set_confirmation_status()
+	_release_owned_focus()
+	_set_rename_actions_locked()
+	_rename_presentation_origin = _workspace.position
+	var generation := _rename_presentation_generation
+	if _motion_reduced():
+		_workspace.modulate.a = 0.0
+		_workspace.position = _rename_presentation_origin + Vector2(0.0, -RENAME_VERTICAL_OFFSET)
+		_finish_rename_exit(generation)
+		return
+	_rename_presentation_tween = create_tween()
+	_rename_presentation_tween.set_parallel(true)
+	_rename_presentation_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_rename_presentation_tween.tween_property(
+		_workspace, "modulate:a", 0.0, RENAME_EXIT_SECONDS,
+	)
+	_rename_presentation_tween.tween_property(
+		_workspace, "position",
+		_rename_presentation_origin + Vector2(0.0, -RENAME_VERTICAL_OFFSET),
+		RENAME_EXIT_SECONDS,
+	)
+	_rename_presentation_tween.finished.connect(_finish_rename_exit.bind(generation))
+
+
+func _finish_rename_exit(generation: int) -> void:
+	if not _rename_transition_callback_valid(generation, RenamePresentationState.EXITING):
+		return
+	_rename_presentation_tween = null
+	var reason := _rename_exit_reason
+	var error_code := _rename_exit_error
+	_rename_exit_reason = &""
+	_rename_exit_error = &""
+	_pending_identity.clear()
+	_rename_state = RenameConfirmationState.INACTIVE
+	_set_rename_presentation_state(RenamePresentationState.IDLE)
+	_workspace.modulate.a = 1.0
+	_workspace.position = _rename_presentation_origin
+	if reason == &"committed":
+		_identity_edit_draft.clear()
+		_rename_editor_error = &""
+		_refresh_roster()
+	elif reason == &"error":
+		_rename_editor_error = error_code
+	_show_roster()
+	if reason == &"cancelled":
+		_focus_identity_field.call_deferred(&"callsign", generation)
+	elif reason == &"error":
+		_focus_identity_field.call_deferred(_identity_error_target(error_code), generation)
+	rename_confirmation_transition_completed.emit(&"idle")
+
+
+func _kill_rename_presentation_transition(invalidate: bool = true) -> void:
+	if invalidate:
+		_rename_presentation_generation += 1
+	if _rename_presentation_tween != null and _rename_presentation_tween.is_valid():
+		_rename_presentation_tween.kill()
+	_rename_presentation_tween = null
+
+
+func _rename_transition_callback_valid(generation: int, state: int) -> bool:
+	return (
+		generation == _rename_presentation_generation
+		and is_inside_tree()
+		and _rename_presentation_state == state
+		and _workspace != null
+		and is_instance_valid(_workspace)
+	)
+
+
+func _set_rename_presentation_state(state: int) -> void:
+	if _rename_presentation_state == state:
+		return
+	_rename_presentation_state = state
+	rename_confirmation_presentation_changed.emit(rename_presentation_state())
+
+
+func _motion_reduced() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+
+
+func _set_confirmation_status() -> void:
+	if _rename_status == null or not is_instance_valid(_rename_status):
+		return
+	match _rename_presentation_state:
+		RenamePresentationState.ENTERING:
+			_rename_status.text = _t(&"ui.rename.entering", "Opening identity confirmation…")
+		RenamePresentationState.EXITING:
+			_rename_status.text = _t(&"ui.rename.closing", "Closing identity confirmation…")
+		RenamePresentationState.ACTIVE:
+			if _rename_state == RenameConfirmationState.COMMITTING:
+				_rename_status.text = _t(&"ui.rename.committing", "RENAMING…")
+			else:
+				_rename_status.text = _t(&"ui.rename.ready", "Ready to confirm identity.")
+		_:
+			_rename_status.text = ""
+	_rename_status.accessibility_description = _rename_status.text
+	_rename_status.accessibility_live = (
+		AccessibilityServer.LIVE_POLITE
+		if not _rename_status.text.is_empty()
+		else AccessibilityServer.LIVE_OFF
+	)
+
+
+func _set_rename_actions_active() -> void:
+	for action: AetheriaButtonType in [_rename_cancel, _rename_confirm]:
+		if action == null or not is_instance_valid(action):
+			continue
+		action.disabled = false
+		action.focus_mode = Control.FOCUS_ALL
+		action.mouse_filter = Control.MOUSE_FILTER_STOP
+	LunarisOpsType.apply_button(_rename_cancel, &"secondary")
+	LunarisOpsType.apply_button(_rename_confirm, &"primary")
+	_wire_confirmation_focus()
+
+
+func _wire_confirmation_focus() -> void:
+	if _rename_cancel == null or _rename_confirm == null:
+		return
+	_wire_focus([_rename_cancel, _rename_confirm], not _rename_confirmation_stacks())
+
+
+func _release_owned_focus() -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused == null or not is_ancestor_of(focused):
+		return
+	focused.release_focus()
 
 
 func _build_selected_identity_panel() -> AetheriaPanelType:
@@ -936,10 +1209,15 @@ func _identity_preview(callsign: String, title: Variant) -> String:
 
 
 func _confirm_rename() -> void:
-	if _rename_state != RenameConfirmationState.ACTIVE or _pending_identity.is_empty():
+	if (
+		_rename_state != RenameConfirmationState.ACTIVE
+		or _rename_presentation_state != RenamePresentationState.ACTIVE
+		or _pending_identity.is_empty()
+	):
 		return
 	_rename_state = RenameConfirmationState.COMMITTING
 	_set_rename_actions_locked()
+	_set_confirmation_status()
 	Sfx.play("ui_confirm")
 	_rename_dispatch_count += 1
 	var committed: Dictionary = Game.rename_hero(
@@ -949,56 +1227,70 @@ func _confirm_rename() -> void:
 	)
 	if not bool(committed.get("accepted", false)):
 		var error_code := StringName(committed.get("error_code", &"invalid_callsign"))
-		_pending_identity.clear()
-		_rename_state = RenameConfirmationState.INACTIVE
-		_rename_editor_error = error_code
-		_show_roster()
-		_focus_rename_editor.call_deferred()
+		_begin_rename_exit(&"error", error_code)
 		return
-	_pending_identity.clear()
-	_identity_edit_draft.clear()
-	_rename_editor_error = &""
-	_rename_state = RenameConfirmationState.INACTIVE
-	_refresh_roster()
-	_show_roster()
+	_begin_rename_exit(&"committed")
 
 
 func _set_rename_actions_locked() -> void:
 	for action: AetheriaButtonType in [_rename_cancel, _rename_confirm]:
-		if action == null:
+		if action == null or not is_instance_valid(action):
 			continue
 		action.disabled = true
 		action.focus_mode = Control.FOCUS_NONE
+		action.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_clear_focus_paths(action)
 		LunarisOpsType.apply_button(action, &"disabled")
-	if _rename_confirm != null:
+	if _rename_confirm != null and _rename_state == RenameConfirmationState.COMMITTING:
 		var pending_text := _t(&"ui.rename.committing", "RENAMING…")
 		_rename_confirm.set_presentation_text(pending_text, pending_text)
 
 
 func _cancel_rename() -> void:
-	if _rename_state != RenameConfirmationState.ACTIVE:
+	if (
+		_rename_state != RenameConfirmationState.ACTIVE
+		or _rename_presentation_state != RenamePresentationState.ACTIVE
+	):
 		return
-	_pending_identity.clear()
-	_rename_state = RenameConfirmationState.INACTIVE
 	Sfx.play("menu_close")
-	_show_roster()
-	_focus_rename_editor.call_deferred()
+	_begin_rename_exit(&"cancelled")
+
+
+func _identity_error_target(error_code: StringName) -> StringName:
+	return &"title" if error_code == &"invalid_title" else &"callsign"
+
+
+func _focus_identity_field(target: StringName, generation: int) -> void:
+	if generation != _rename_presentation_generation or not is_inside_tree():
+		return
+	var control: Control = _rename_title_input if target == &"title" else _rename_input
+	if control == null or not is_instance_valid(control) or not control.is_visible_in_tree():
+		control = _rename_action
+	if control != null and is_instance_valid(control):
+		control.grab_focus()
+		_ensure_focus_visible(control)
 
 
 func _focus_rename_editor() -> void:
-	if _rename_input != null and is_instance_valid(_rename_input) and _rename_input.is_visible_in_tree():
-		_rename_input.grab_focus()
-		_dialog_scroll.ensure_control_visible(_rename_input)
-		return
-	if _rename_action != null and is_instance_valid(_rename_action):
-		_rename_action.grab_focus()
+	_focus_identity_field(&"callsign", _rename_presentation_generation)
 
 
 func _focus_confirmation_control(control_name: StringName) -> void:
+	_focus_confirmation_control_guarded(control_name, _rename_presentation_generation)
+
+
+func _focus_confirmation_control_guarded(control_name: StringName, generation: int) -> void:
+	if (
+		not is_inside_tree()
+		or generation != _rename_presentation_generation
+		or _rename_presentation_state != RenamePresentationState.ACTIVE
+		or _rename_state != RenameConfirmationState.ACTIVE
+	):
+		return
 	var control := find_child(String(control_name), true, false) as Control
 	if control == null or not control.is_visible_in_tree() or control.focus_mode == Control.FOCUS_NONE:
 		control = _rename_confirm
-	if control != null:
+	if control != null and is_instance_valid(control):
 		control.grab_focus()
 
 
@@ -1409,10 +1701,15 @@ func _apply_rename_confirmation_layout() -> void:
 	if focused != null and is_ancestor_of(focused):
 		focused_name = focused.name
 	_rename_comparison.vertical = _rename_confirmation_stacks()
-	if _rename_state == RenameConfirmationState.ACTIVE:
-		_wire_focus([_rename_cancel, _rename_confirm], not _rename_confirmation_stacks())
+	if (
+		_rename_state == RenameConfirmationState.ACTIVE
+		and _rename_presentation_state == RenamePresentationState.ACTIVE
+	):
+		_wire_confirmation_focus()
 	if not String(focused_name).is_empty():
-		_focus_confirmation_control.call_deferred(focused_name)
+		_focus_confirmation_control_guarded.call_deferred(
+			focused_name, _rename_presentation_generation,
+		)
 
 
 func _rename_confirmation_stacks() -> bool:
@@ -1451,7 +1748,7 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	title_block.add_child(_label("%sHeading" % node_name, title.to_upper(), &"title"))
 	identity.add_child(title_block)
 	top.add_child(identity)
-	if Game.training_return_path == &"mission":
+	if Game.training_return_path == &"mission" and _mode != &"rename_confirmation":
 		_return_mission = _button(
 			"ReturnToMission", "<- RETURN TO MISSION", true, &"gold",
 		)
@@ -1517,7 +1814,9 @@ func _label(
 	return label
 
 
-func _clear_page() -> void:
+func _clear_page(kill_transition: bool = true) -> void:
+	if kill_transition and _rename_presentation_state != RenamePresentationState.IDLE:
+		_kill_rename_presentation_transition()
 	for child: Node in _page.get_children():
 		_page.remove_child(child)
 		child.queue_free()
@@ -1549,6 +1848,7 @@ func _clear_page() -> void:
 	_rename_comparison = null
 	_rename_cancel = null
 	_rename_confirm = null
+	_rename_status = null
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -1742,12 +2042,27 @@ func _error_text(error_code: StringName) -> String:
 	return _t(error_key(error_code), fallback)
 
 
-func _focus_selected_row_or(fallback: Control) -> void:
+func _focus_roster_control_guarded(control: Control, generation: int) -> void:
+	if (
+			not is_inside_tree()
+			or generation != _rename_presentation_generation
+			or _mode != &"roster"
+			or control == null
+			or not is_instance_valid(control)
+			or not control.is_visible_in_tree()
+	):
+		return
+	control.grab_focus()
+
+
+func _focus_selected_row_or(fallback: Control, generation: int) -> void:
+	if generation != _rename_presentation_generation or _mode != &"roster":
+		return
 	for row: TrainingRosterRowType in _roster_buttons:
 		if row.hero_id == _selected_hero_id:
-			row.grab_focus.call_deferred()
+			_focus_roster_control_guarded(row, generation)
 			return
-	fallback.grab_focus.call_deferred()
+	_focus_roster_control_guarded(fallback, generation)
 
 
 func _focusable_controls() -> Array[Control]:
@@ -1767,18 +2082,36 @@ func _focusable_controls() -> Array[Control]:
 func _wire_focus(controls: Array[Control], horizontal: bool) -> void:
 	if controls.is_empty():
 		return
+	for control: Control in controls:
+		_clear_focus_paths(control)
 	for index: int in controls.size():
 		var current := controls[index]
 		var previous := controls[(index - 1 + controls.size()) % controls.size()]
 		var following := controls[(index + 1) % controls.size()]
+		var self_path := current.get_path_to(current)
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_next = current.get_path_to(following)
 		if horizontal:
 			current.focus_neighbor_left = current.get_path_to(previous)
 			current.focus_neighbor_right = current.get_path_to(following)
+			current.focus_neighbor_top = self_path
+			current.focus_neighbor_bottom = self_path
 		else:
+			current.focus_neighbor_left = self_path
+			current.focus_neighbor_right = self_path
 			current.focus_neighbor_top = current.get_path_to(previous)
 			current.focus_neighbor_bottom = current.get_path_to(following)
+
+
+func _clear_focus_paths(control: Control) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	control.focus_previous = NodePath()
+	control.focus_next = NodePath()
+	control.focus_neighbor_left = NodePath()
+	control.focus_neighbor_top = NodePath()
+	control.focus_neighbor_right = NodePath()
+	control.focus_neighbor_bottom = NodePath()
 
 
 func _bind_focus_scroll(
@@ -1787,21 +2120,27 @@ func _bind_focus_scroll(
 	if control == null or scroll == null:
 		return
 	var target := visibility_target if visibility_target != null else control
-	control.focus_entered.connect(
-		_ensure_focus_visible.bind(scroll, _dialog_scroll, target),
-	)
+	control.focus_entered.connect(_ensure_focus_visible.bind(target))
 
 
-func _ensure_focus_visible(
-	scroll: ScrollContainer, outer_scroll: ScrollContainer, control: Control,
-) -> void:
-	if not is_instance_valid(scroll) or not is_instance_valid(control):
+func _ensure_focus_visible(control: Control) -> void:
+	_ensure_focus_visible_pass(control, 2)
+
+
+func _ensure_focus_visible_pass(control: Control, remaining_passes: int) -> void:
+	if control == null or not is_instance_valid(control) or not control.is_inside_tree():
 		return
-	if not scroll.is_ancestor_of(control):
-		return
-	scroll.ensure_control_visible(control)
-	if scroll != outer_scroll and is_instance_valid(outer_scroll):
-		outer_scroll.call_deferred("ensure_control_visible", control)
+	var scroll_ancestors: Array[ScrollContainer] = []
+	var ancestor := control.get_parent()
+	while ancestor != null:
+		if ancestor is ScrollContainer:
+			scroll_ancestors.append(ancestor as ScrollContainer)
+		ancestor = ancestor.get_parent()
+	for scroll: ScrollContainer in scroll_ancestors:
+		if is_instance_valid(scroll) and scroll.is_ancestor_of(control):
+			scroll.ensure_control_visible(control)
+	if remaining_passes > 0:
+		_ensure_focus_visible_pass.call_deferred(control, remaining_passes - 1)
 
 
 func _set_action_footer(footer: BoxContainer) -> void:
@@ -1825,6 +2164,7 @@ func _set_persistent_header(header: VBoxContainer) -> void:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_accessibility_metadata()
 	var focused_name := &""
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and is_ancestor_of(focused):
@@ -1839,11 +2179,86 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_show_roster()
 
 
+func _refresh_accessibility_metadata() -> void:
+	accessibility_name = _t(&"ui.training.accessibility.name", "Training workspace")
+	accessibility_description = _t(
+		&"ui.training.accessibility.description",
+		"Manage operator identities and advanced training paths.",
+	)
+	if _workspace != null:
+		_workspace.accessibility_name = _t(
+			&"ui.training.accessibility.workspace", "Training content",
+		)
+		_workspace.accessibility_description = accessibility_description
+	if _persistent_header != null:
+		_persistent_header.accessibility_name = _t(
+			&"ui.training.accessibility.header", "Training heading",
+		)
+		_persistent_header.accessibility_description = _t(
+			&"ui.training.accessibility.header_description",
+			"Persistent context for the current Training task.",
+		)
+	if _action_dock != null:
+		_action_dock.accessibility_name = _t(
+			&"ui.training.accessibility.actions", "Training actions",
+		)
+		_action_dock.accessibility_description = _t(
+			&"ui.training.accessibility.actions_description",
+			"Persistent actions for the current Training task.",
+		)
+
+
 func _apply_identity_error_style(error_code: StringName) -> void:
+	var error_text := _error_text(error_code)
 	if _rename_input != null:
 		LunarisOpsType.apply_line_edit(_rename_input, error_code != &"invalid_title")
+		if error_code != &"invalid_title":
+			_rename_input.accessibility_description = error_text
 	if _rename_title_input != null:
 		LunarisOpsType.apply_line_edit(_rename_title_input, error_code == &"invalid_title")
+		if error_code == &"invalid_title":
+			_rename_title_input.accessibility_description = error_text
+
+
+func rename_presentation_state() -> StringName:
+	match _rename_presentation_state:
+		RenamePresentationState.ENTERING:
+			return &"entering"
+		RenamePresentationState.ACTIVE:
+			return &"active"
+		RenamePresentationState.EXITING:
+			return &"exiting"
+		_:
+			return &"idle"
+
+
+func rename_domain_state() -> StringName:
+	match _rename_state:
+		RenameConfirmationState.ACTIVE:
+			return &"active"
+		RenameConfirmationState.COMMITTING:
+			return &"committing"
+		_:
+			return &"inactive"
+
+
+func rename_transition_locked() -> bool:
+	return _rename_presentation_state in [
+		RenamePresentationState.ENTERING, RenamePresentationState.EXITING,
+	]
+
+
+func rename_transition_generation() -> int:
+	return _rename_presentation_generation
+
+
+func rename_transition_timing() -> Dictionary:
+	return {
+		"entry_seconds": RENAME_ENTRY_SECONDS,
+		"exit_seconds": RENAME_EXIT_SECONDS,
+		"vertical_offset": RENAME_VERTICAL_OFFSET,
+		"reduced_motion": _motion_reduced(),
+	}
 
 
 func rename_dispatch_count() -> int:
