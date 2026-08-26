@@ -1,8 +1,6 @@
 class_name MapNavigationOverlay
 extends Control
 
-signal recenter_requested
-
 const AETHERIA_THEME := preload("res://scripts/ui/components/aetheria_theme.gd")
 const AETHERIA_PANEL := preload("res://scripts/ui/components/aetheria_panel.gd")
 const LUNARIS_STYLE := preload("res://scripts/ui/components/lunaris_ops_style.gd")
@@ -21,14 +19,11 @@ var _hint_elapsed := 0.0
 var _portrait := false
 var _can_pan := false
 var _hint_allowed := false
-var _centered := true
-var _interaction_enabled := true
 
 var _hint_panel: PanelContainer = null
 var _hint_direction: Control = null
 var _hint_title: Label = null
 var _hint_detail: Label = null
-var _recenter_button: Button = null
 
 
 class PanDirectionGlyph:
@@ -65,7 +60,6 @@ func setup(preferences_path: String = VIEW_PREFERENCES.DEFAULT_PATH) -> void:
 	z_index = OVERLAY_Z
 	theme = AETHERIA_THEME.new()
 	_build_hint()
-	_build_recenter_button()
 	var i18n := get_node_or_null("/root/I18n")
 	var locale_callback := Callable(self, "_on_locale_changed")
 	if (
@@ -82,22 +76,15 @@ func set_context(
 	portrait: bool,
 	can_pan: bool,
 	hint_allowed: bool,
-	centered: bool,
-	interaction_enabled: bool,
 ) -> void:
 	_portrait = portrait
 	_can_pan = can_pan
 	_hint_allowed = hint_allowed
-	_centered = centered
-	_interaction_enabled = interaction_enabled
 	_refresh_visibility()
 
 
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
-	if _recenter_button != null:
-		_recenter_button.reset_size()
-		_recenter_button.position = Vector2(PORTRAIT_MARGIN, CONTROL_TOP)
 	if _hint_panel != null:
 		var width := minf(size.x - PORTRAIT_MARGIN * 2.0, 340.0)
 		var height := 126.0
@@ -123,10 +110,6 @@ func notify_pan_used() -> void:
 
 func hint_visible() -> bool:
 	return _hint_panel != null and _hint_panel.visible
-
-
-func recenter_enabled() -> bool:
-	return _recenter_button != null and _recenter_button.visible and not _recenter_button.disabled
 
 
 func _process(delta: float) -> void:
@@ -194,22 +177,6 @@ func _build_hint() -> void:
 	_hint_detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	copy_column.add_child(_hint_detail)
 
-
-func _build_recenter_button() -> void:
-	_recenter_button = Button.new()
-	_recenter_button.name = "RecenterMap"
-	_recenter_button.text = _copy(&"ui.map_navigation.recenter", "CENTER")
-	_recenter_button.tooltip_text = _copy(
-		&"ui.map_navigation.recenter_tooltip",
-		"Reset the battlefield view (R)",
-	)
-	_recenter_button.theme_type_variation = &"AuiSecondaryButton"
-	_recenter_button.focus_mode = Control.FOCUS_ALL
-	_recenter_button.custom_minimum_size = Vector2(112.0, 46.0)
-	_recenter_button.pressed.connect(_on_recenter_pressed)
-	add_child(_recenter_button)
-
-
 func _on_locale_changed(_locale_id: StringName) -> void:
 	if _hint_title != null:
 		_hint_title.text = _copy(&"ui.map_navigation.hint_title", "DRAG TO PAN")
@@ -222,11 +189,6 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_hint_direction.accessibility_name = _copy(
 			&"ui.map_navigation.hint_title", "Drag to pan",
 		)
-	if _recenter_button != null:
-		_recenter_button.text = _copy(&"ui.map_navigation.recenter", "CENTER")
-		_recenter_button.tooltip_text = _copy(
-			&"ui.map_navigation.recenter_tooltip", "Reset the battlefield view (R)",
-		)
 
 
 func _refresh_visibility() -> void:
@@ -238,25 +200,6 @@ func _refresh_visibility() -> void:
 			and not _hint_complete
 			and not _hint_expired
 		)
-	if _recenter_button != null:
-		_recenter_button.visible = _can_pan
-		_recenter_button.disabled = not _interaction_enabled or _centered
-
-
-func _on_recenter_pressed() -> void:
-	if not recenter_enabled():
-		return
-	recenter_requested.emit()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	var key := event as InputEventKey
-	if key == null or not key.pressed or key.is_echo():
-		return
-	if key.physical_keycode != KEY_R or not recenter_enabled():
-		return
-	_on_recenter_pressed()
-	get_viewport().set_input_as_handled()
 
 
 func _copy(key: StringName, fallback: String) -> String:

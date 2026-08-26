@@ -142,6 +142,8 @@ func play_battle(
 	variant_id: StringName,
 	state_id: StringName = &"low",
 ) -> bool:
+	if not _enabled:
+		return false
 	var profile := _profile_for(profile_id)
 	if profile == null:
 		return false
