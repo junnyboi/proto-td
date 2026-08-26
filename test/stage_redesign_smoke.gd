@@ -1,7 +1,7 @@
 extends SceneTree
 
 var EXPECTED_ROWS := {
-	&"s1": PackedStringArray(["........", "SGGG....", "..XGX...", "...GGGGB", "........"]),
+	&"s1": PackedStringArray(["........", "SGGG....", "..EGE...", "...GGGGB", "........"]),
 	&"s2": PackedStringArray(["..E.......", "SGGGG.....", "...XGXE...", "....GGGGGB", ".........."]),
 	&"s3": PackedStringArray(["..........", "SGGG......", "..XGXE....", "...GGGGGGB", "..XGX.....", "SGGG......"]),
 	&"s4": PackedStringArray(["...........", "SGGGGGGGGGB", "..E.XEX.E..", ".....GGGGGB", "SGGGGG.....", "..........."]),
@@ -109,8 +109,31 @@ func _validate_design_contracts(stages: Dictionary, failures: PackedStringArray)
 	var s6 := stages.get(&"s6") as StageDef
 	var s7 := stages.get(&"s7") as StageDef
 	var s8 := stages.get(&"s8") as StageDef
-	if s1 != null and _tile_count(s1, StageDef.Tile.ELEVATED) != 0:
-		failures.append("S1 must not advertise unavailable elevated deployment")
+	if s1 != null:
+		var ranged := load("res://data/operators/sniper_1.tres") as OperatorDef
+		var elevated_cells: Array[Vector2i] = [Vector2i(2, 2), Vector2i(4, 2)]
+		if _tile_count(s1, StageDef.Tile.ELEVATED) != elevated_cells.size():
+			failures.append("S1 must expose both raised platforms for elevated deployment")
+		if ranged == null or ranged.placement != OperatorDef.Placement.ELEVATED:
+			failures.append("S1 ranged deployment fixture is not elevated")
+		else:
+			var ranged_model := BattleModel.create(
+				s1,
+				[&"sniper_1"],
+				3302,
+				load("res://data/config/game.tres") as GameConfig,
+				{},
+				{&"sniper_1": ranged},
+			)
+			if ranged_model == null:
+				failures.append("S1 ranged BattleModel fixture failed to initialize")
+			else:
+				ranged_model.dp = ranged_model.config.dp_cap
+			for cell: Vector2i in elevated_cells:
+				if not s1.operator_cell_in_domain(ranged, cell):
+					failures.append("S1 raised platform rejects ranged deployment: %s" % cell)
+				if ranged_model != null and not ranged_model.can_deploy_at(&"sniper_1", cell):
+					failures.append("S1 BattleModel rejects ranged deployment: %s" % cell)
 	if s3 != null and _shared_path_cells(s3).size() < 2:
 		failures.append("S3 must contain a true multi-path choke")
 	if s5 != null:

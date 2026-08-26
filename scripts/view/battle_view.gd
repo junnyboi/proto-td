@@ -47,6 +47,12 @@ const HP_BAR_BG := Color("3a2026")
 const HP_BAR_FILL := Color("a7f070")
 const SP_BAR_BG := Color("20263a")
 const SP_BAR_FILL := Color("f4b41b")
+const TERMINAL_CONTINUE_WIDTH := 640.0
+const TERMINAL_CONTINUE_WIDE_HEIGHT := 112.0
+const TERMINAL_CONTINUE_NARROW_HEIGHT := 160.0
+const TERMINAL_CONTINUE_FONT_SIZE := 42
+const TERMINAL_CONTINUE_HORIZONTAL_PADDING := 36.0
+const TERMINAL_CONTINUE_VERTICAL_PADDING := 24.0
 const SP_FULL_FLASH := Color("f4f4f4")
 const PORTRAIT_FLASH_PX := 96.0
 const CHEVRON_COLOR := Color("f4f4f4")
@@ -211,7 +217,6 @@ func _ready() -> void:
 	_map_navigation_overlay = MAP_NAVIGATION_OVERLAY_SCRIPT.new()
 	_map_navigation_overlay.name = "MapNavigationOverlay"
 	add_child(_map_navigation_overlay)
-	_map_navigation_overlay.recenter_requested.connect(_on_recenter_map_requested)
 	_map_navigation_overlay.setup()
 	model = candidate_model
 	_build_battle_dialogue(stage.id)
@@ -408,15 +413,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_map_navigation_overlay.notify_pan_used()
 		_apply_map_transform()
 		get_viewport().set_input_as_handled()
-
-
-func _on_recenter_map_requested() -> void:
-	if _map_navigation_blocked():
-		return
-	if _map_nav.recenter():
-		Sfx.play("ui_click")
-		_apply_map_transform()
-	_refresh_map_navigation_overlay()
 
 
 func _map_navigation_blocked() -> bool:
@@ -659,7 +655,11 @@ func _detect_result_stamp() -> void:
 		Sfx.play("victory")
 		Music.play_result(true)
 	else:
-		_juice.stamp(UiCopyType.text(&"ui.battle.stamp_defeat", "Defeat"), 0)
+		_juice.stamp(
+			UiCopyType.text(&"ui.battle.stamp_defeat", "Defeat"),
+			0,
+			3.0,
+		)
 		Sfx.play("defeat")
 		Music.play_result(false)
 	# a real Button (the juice layer is MOUSE_FILTER_IGNORE territory) under
@@ -669,11 +669,12 @@ func _detect_result_stamp() -> void:
 	_continue_btn = next
 	next.text = UiCopyType.text(&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF")
 	# (and Space, once terminal) also proceeds — the "what do I click now"
-	next.custom_minimum_size = Vector2(360.0, 64.0)
+	var viewport := get_viewport_rect().size
+	next.custom_minimum_size = _terminal_continue_size(viewport)
 	LunarisOpsType.apply_button(next, &"primary")
+	_apply_terminal_continue_style(next)
 	next.z_index = HUD_Z
 	add_child(next)
-	var viewport := get_viewport_rect().size
 	next.position = Vector2(
 		(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
 	)
@@ -700,6 +701,47 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 			&"ui.battle.stamp_clear" if model.result == BattleModel.Result.CLEAR else &"ui.battle.stamp_defeat",
 			"Victory" if model.result == BattleModel.Result.CLEAR else "Defeat",
 		)
+
+
+func _terminal_continue_size(viewport: Vector2) -> Vector2:
+	var width := minf(TERMINAL_CONTINUE_WIDTH, maxf(280.0, viewport.x - 48.0))
+	return Vector2(
+		width,
+		TERMINAL_CONTINUE_NARROW_HEIGHT if width < 520.0 else TERMINAL_CONTINUE_WIDE_HEIGHT,
+	)
+
+
+func _apply_terminal_continue_style(button: Button) -> void:
+	button.add_theme_font_size_override(&"font_size", TERMINAL_CONTINUE_FONT_SIZE)
+	button.add_theme_color_override(&"font_color", Color.WHITE)
+	button.add_theme_color_override(&"font_hover_color", Color.WHITE)
+	button.add_theme_color_override(&"font_pressed_color", Color.WHITE)
+	button.add_theme_color_override(&"font_focus_color", Color.WHITE)
+	button.add_theme_color_override(&"font_disabled_color", Color.WHITE)
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.clip_text = false
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var source := button.get_theme_stylebox(state)
+		if source == null:
+			continue
+		var style := source.duplicate() as StyleBox
+		style.content_margin_left = maxf(
+			style.content_margin_left,
+			TERMINAL_CONTINUE_HORIZONTAL_PADDING,
+		)
+		style.content_margin_top = maxf(
+			style.content_margin_top,
+			TERMINAL_CONTINUE_VERTICAL_PADDING,
+		)
+		style.content_margin_right = maxf(
+			style.content_margin_right,
+			TERMINAL_CONTINUE_HORIZONTAL_PADDING,
+		)
+		style.content_margin_bottom = maxf(
+			style.content_margin_bottom,
+			TERMINAL_CONTINUE_VERTICAL_PADDING,
+		)
+		button.add_theme_stylebox_override(state, style)
 
 
 func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String:
@@ -834,8 +876,6 @@ func _refresh_map_navigation_overlay() -> void:
 		viewport.y > viewport.x,
 		_map_nav.has_pan_range() and battle_running and not _battle_confirmation_active,
 		not tutorial_holding and not _battle_confirmation_active and battle_running,
-		_map_nav.is_centered(),
-		not _map_navigation_blocked() and battle_running,
 	)
 
 
@@ -852,6 +892,8 @@ func _relayout() -> void:
 	if _portrait_flash != null:
 		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
 	if _continue_btn != null and is_instance_valid(_continue_btn):
+		_continue_btn.custom_minimum_size = _terminal_continue_size(viewport)
+		_continue_btn.reset_size()
 		_continue_btn.position = Vector2(
 			(viewport.x - _continue_btn.get_combined_minimum_size().x) * 0.5,
 			viewport.y * 0.5 + 120.0

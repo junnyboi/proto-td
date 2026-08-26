@@ -116,6 +116,62 @@ static func apply_button(button: Button, role: StringName) -> void:
 		button.add_theme_color_override(&"font_disabled_color", ink)
 
 
+static func apply_compact_rounded_button(
+		button: Button,
+		role: StringName,
+		content_padding: float = 12.0,
+		corner_radius: int = 12,
+	) -> void:
+	var ink := IVORY
+	var normal_background := GLASS_SOFT
+	var normal_border := Color(CYAN.r, CYAN.g, CYAN.b, 0.56)
+	var hover_background := Color(0.08, 0.22, 0.29, 0.98)
+	var hover_border := CYAN
+	var pressed_background := Color(0.035, 0.11, 0.16, 1.0)
+	var pressed_border := GOLD
+	if role == &"gold" or role == &"primary":
+		normal_background = Color(0.17, 0.12, 0.04, 0.96)
+		normal_border = GOLD
+		hover_background = Color(0.24, 0.17, 0.05, 0.98)
+		hover_border = Color("fff2c6")
+		pressed_background = Color(0.10, 0.07, 0.02, 1.0)
+	elif role == &"danger":
+		normal_background = Color(0.18, 0.06, 0.09, 0.96)
+		normal_border = DANGER
+		hover_background = Color(0.28, 0.08, 0.12, 0.98)
+		hover_border = GOLD
+		pressed_background = Color(0.12, 0.03, 0.06, 1.0)
+	elif role == &"selected":
+		normal_background = GLASS_SELECTED
+		normal_border = CYAN
+	var normal := _rounded_button_box(
+		normal_background, normal_border, 1, corner_radius, content_padding,
+	)
+	var hover := _rounded_button_box(
+		hover_background, hover_border, 2, corner_radius, content_padding,
+	)
+	var pressed := _rounded_button_box(
+		pressed_background, pressed_border, 2, corner_radius, content_padding,
+	)
+	var disabled := _rounded_button_box(
+		Color(0.10, 0.14, 0.18, 0.86),
+		Color(0.4, 0.46, 0.52, 0.28),
+		1,
+		corner_radius,
+		content_padding,
+	)
+	button.add_theme_stylebox_override(&"normal", normal)
+	button.add_theme_stylebox_override(&"hover", hover)
+	button.add_theme_stylebox_override(&"pressed", pressed)
+	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(CYAN))
+	button.add_theme_stylebox_override(&"disabled", disabled)
+	for item: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
+	]:
+		button.add_theme_color_override(item, ink)
+	button.add_theme_color_override(&"font_disabled_color", Color(MUTED.r, MUTED.g, MUTED.b, 0.68))
+
+
 static func apply_label(label: Label, role: StringName) -> void:
 	var color := IVORY
 	var size := 27
@@ -204,6 +260,25 @@ static func _button_box(background: Color, border: Color, width: int) -> StyleBo
 	style.content_margin_top = 10.0
 	style.content_margin_right = 18.0
 	style.content_margin_bottom = 10.0
+	return style
+
+
+static func _rounded_button_box(
+		background: Color,
+		border: Color,
+		width: int,
+		corner_radius: int,
+		content_padding: float,
+	) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = border
+	style.set_border_width_all(width)
+	style.set_corner_radius_all(corner_radius)
+	style.content_margin_left = content_padding
+	style.content_margin_top = content_padding
+	style.content_margin_right = content_padding
+	style.content_margin_bottom = content_padding
 	return style
 
 
