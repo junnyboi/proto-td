@@ -36,6 +36,7 @@ func _run() -> void:
 		_verify_layout(label, VIEWPORTS[label])
 		if label == "regular":
 			await _verify_recruitment_transaction(game)
+			await _verify_launch_retry_feedback(game)
 		_dispose_mission(game)
 		await process_frame
 	game.set("campaign_active", false)
@@ -65,6 +66,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
+	var launch_status := _mission.find_child("ReadinessCopy", true, false) as Label
 	_check(shell != null and bool(shell.get("full_safe_area")), "%s mission shell is not full-safe-area" % label)
 	_check(workspace != null and workspace.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s retained the decorative outer mission frame" % label)
 	_check(
@@ -91,6 +93,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(recruit_body != null and not recruit_body.visible, "%s redundant Company Reinforcements body copy consumes roster space" % label)
 	_check(hire_button != null and hire_button.focus_mode == Control.FOCUS_ALL, "%s recruit action is not keyboard focusable" % label)
 	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s recruit status is not a polite live region" % label)
+	_check(launch_status != null and launch_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s launch status is not a polite live region" % label)
 	if recruit_desk != null and field_panel != null:
 		_check(_inside(field_panel, recruit_desk), "%s Company Reinforcements exceeds the Field Team panel" % label)
 	if hire_button != null:
@@ -104,6 +107,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		var presentation := button.get_node_or_null("PresentationLabel") as Label if button != null else null
 		_check(button != null and presentation != null, "%s %s presentation is missing" % [label, button_name])
 		if button != null and presentation != null:
+			_check(_inside(_mission, button), "%s %s actual hitbox exceeds the viewport" % [label, button_name])
+			_check(button.size.x + EPSILON >= button.custom_minimum_size.x and button.size.y + EPSILON >= button.custom_minimum_size.y, "%s %s actual hitbox collapsed below its minimum" % [label, button_name])
 			_check(_inside(button, presentation), "%s %s label overflows its button" % [label, button_name])
 			_check(not presentation.clip_text, "%s %s clips its presentation label" % [label, button_name])
 			if button_name != "BackButton":
@@ -244,6 +249,28 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(blocked.get("error_code") == &"strategic_mutation_pending", "pending Field Team hire did not serialize every strategic facade")
 	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "blocked strategic command advanced the campaign")
 	game.set("_pending_recruitment_mutation", null)
+
+
+func _verify_launch_retry_feedback(game: Node) -> void:
+	var start := _mission.find_child("StartBattle", true, false) as Button
+	var training := _mission.find_child("TrainingButton", true, false) as Button
+	var status := _mission.find_child("ReadinessCopy", true, false) as Label
+	var first_pick := _mission.find_child("Pick_*", true, false) as Button
+	game.set("_pending_launch_mutation", RefCounted.new())
+	_mission.call("_refresh")
+	await process_frame
+	_check(start != null and not start.disabled, "retryable Mission launch did not expose an enabled retry action")
+	_check(start != null and start.text == "Retry Deployment", "retryable Mission launch action is not explicit")
+	_check(status != null and status.text.contains("not saved"), "retryable Mission launch failure is silent")
+	_check(status != null and status.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "retryable Mission launch failure is not an assertive live region")
+	_check(training != null and training.disabled, "Training remained interactive behind a pending Mission launch")
+	_check(first_pick != null and first_pick.disabled, "operator selection remained interactive behind a pending Mission launch")
+	_check(bool(game.call("cancel_mission_launch_retry")), "Mission launch retry could not be safely cancelled")
+	_mission.call("_refresh")
+	await process_frame
+	_check(start != null and start.disabled, "empty Mission selection did not restore the disabled Start gate")
+	_check(training != null and not training.disabled, "Training did not recover after cancelling Mission launch retry")
+	_check(status != null and status.accessibility_live == AccessibilityServer.LIVE_POLITE, "Mission launch status did not return to polite mode")
 
 
 func _has_scroll_ancestor(node: Node) -> bool:
