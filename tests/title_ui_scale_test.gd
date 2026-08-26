@@ -53,6 +53,11 @@ func _verify_title_scale() -> void:
 	_check(settings.get_theme_font_size(&"font_size") == 69, "Settings typography is not 1.5×")
 	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
 	_check(settings.get_combined_minimum_size().y >= 121.0, "Settings container did not grow with 1.5× typography")
+	_check(entry_host.get_theme_constant(&"margin_top") >= roundi(_title.size.y * 0.20), "title group was not lowered into the bottom half")
+	for action: Button in [start, settings]:
+		for style_name: StringName in [&"normal", &"hover", &"pressed"]:
+			var style := action.get_theme_stylebox(style_name) as StyleBoxFlat
+			_check(style != null and style.get_corner_radius(CORNER_TOP_LEFT) >= 20, "%s lacks rounded %s borders" % [action.name, style_name])
 	_check(entry_scroll != null and entry_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "title entry is not scroll-safe")
 	_check(_inside(entry_host, wordmark), "1.5× wordmark overflows title content")
 	_check(_inside(entry_host, start), "1.5× Start action overflows title content")
@@ -91,14 +96,17 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	var header := state.find_child("Header", true, false) as Control
 	var scroll := state.find_child("SettingsScroll", true, false) as ScrollContainer
 	var columns := state.find_child("SettingsColumns", true, false) as GridContainer
+	var body_margin := state.find_child("BodyMargin", true, false) as MarginContainer
 	var dock := state.find_child("ActionDock", true, false) as Control
 	var apply := state.find_child("SettingsApplyButton", true, false) as Button
 	var back := state.find_child("SettingsBackButton", true, false) as Button
 	var locale_selector := state.find_child("LocaleSelector", true, false) as BoxContainer
 	var locale_list := state.find_child("LocaleList", true, false) as ItemList
 	var locale_label := state.find_child("LocaleLabel", true, false) as Label
+	var language_section_margin := state.get_node("SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin") as MarginContainer
 	var frame_row := state.find_child("FrameLimitRow", true, false) as BoxContainer
 	var focus_owner := root.gui_get_focus_owner()
+	var master_label := state.find_child("MasterVolumeLabel", true, false) as Label
 	var master := state.find_child("MasterVolumeSlider", true, false) as HSlider
 	var music := state.find_child("MusicVolumeSlider", true, false) as HSlider
 	var sfx := state.find_child("SfxVolumeSlider", true, false) as HSlider
@@ -110,10 +118,16 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(_inside(state, safe) and _inside(state, frame), "%s safe command frame overflows" % label)
 	_check(_inside(state, header) and _inside(state, dock), "%s persistent header/dock overflows" % label)
 	_check(_inside(frame, header) and _inside(frame, scroll) and _inside(frame, dock), "%s command-frame content overflows" % label)
+	_check(body_margin.get_theme_constant(&"margin_left") >= 10 and body_margin.get_theme_constant(&"margin_top") >= 10, "%s settings body lacks left/top inset" % label)
+	_check(language_section_margin.get_theme_constant(&"margin_left") >= 14 and language_section_margin.get_theme_constant(&"margin_top") >= 12, "%s language/audio content lacks protected inset" % label)
 	_check(scroll.size.y > 0.0 and scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s body scroll is invalid" % label)
 	_check(header.get_global_rect().end.y <= scroll.get_global_rect().position.y + EPSILON, "%s header entered body scroll" % label)
 	_check(scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + EPSILON, "%s dock entered body scroll" % label)
 	_check(apply.custom_minimum_size.y >= 44.0 and back.custom_minimum_size.y >= 44.0, "%s actions are not touch safe" % label)
+	_check(apply.custom_minimum_size.x >= 180.0 and apply.custom_minimum_size.x <= 483.0 + EPSILON, "%s Apply action does not use a centered fixed-width contract" % label)
+	_check(dock.size_flags_horizontal == Control.SIZE_SHRINK_CENTER and absf(dock.custom_minimum_size.x - apply.custom_minimum_size.x) <= EPSILON, "%s Apply dock is not centered at its fixed width" % label)
+	for color_name: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color"]:
+		_check(apply.get_theme_color(color_name).is_equal_approx(Color.WHITE), "%s Apply %s is not white" % [label, color_name])
 	_check(not apply.clip_text and not back.clip_text, "%s title actions clip doubled copy" % label)
 	_check(apply.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s Apply action does not wrap doubled copy" % label)
 	_check(
@@ -130,6 +144,11 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(not music_button.accessibility_description.is_empty() and not motion.accessibility_description.is_empty() and not frame_option.accessibility_description.is_empty(), "%s settings controls lack accessibility descriptions" % label)
 	_check(error.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "%s Settings error is not assertive live content" % label)
 	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
+	_check(not locale_list.auto_height and locale_list.custom_minimum_size.y <= 96.0, "%s locale selector is not bounded to a compact row" % label)
+	_check(locale_list.fixed_column_width > 0, "%s locale selector columns have no stable spacing" % label)
+	_check(not locale_list.get_v_scroll_bar().visible and not locale_list.get_h_scroll_bar().visible, "%s locale selector still exposes scrollbars" % label)
+	_check(locale_selector.alignment == BoxContainer.ALIGNMENT_CENTER, "%s locale selector content is not centered" % label)
+	_check(locale_list.get_theme_font_size(&"font_size") < master_label.get_theme_font_size(&"font_size"), "%s locale text was not reduced below settings body type" % label)
 	var compact := viewport.x <= 720 or viewport.y <= 560 or float(viewport.x) / float(viewport.y) <= 1.2
 	var compact_locale_visibility := viewport.x <= 720 or float(viewport.x) / float(viewport.y) <= 1.2
 	if compact_locale_visibility:
@@ -139,6 +158,7 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 		)
 		_check(locale_label.size.y >= 44.0, "%s locale heading collapsed below readable height" % label)
 		_check(locale_label.get_line_count() == 1, "%s locale heading wraps character by character" % label)
+		_check(locale_label.text.length() >= 6, "%s locale heading was truncated instead of resized" % label)
 	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
 	_check(frame_row.vertical, "%s frame-limit row is not stacked for 1.5× type" % label)
 	_check(locale_selector.vertical, "%s locale selector is not stacked for 1.5× type" % label)

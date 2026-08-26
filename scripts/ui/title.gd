@@ -23,6 +23,10 @@ const ENTRY_FADE_SECONDS := 0.56
 const ENTRY_STAGGER_SECONDS := 0.09
 const HOVER_SCALE := Vector2(1.025, 1.025)
 const HOVER_TWEEN_SECONDS := 0.16
+const TITLE_BUTTON_CORNER_RADIUS := 22
+const LANDSCAPE_ENTRY_DROP_RATIO := 0.24
+const PORTRAIT_ENTRY_DROP_RATIO := 0.16
+const SHORT_ENTRY_DROP_RATIO := 0.10
 const MASTER_BUS := &"Master"
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
@@ -208,6 +212,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 		StagingSkinType.clean_button_style(
 			Color(0.025, 0.08, 0.11, 0.96) if primary else Color(0.014, 0.035, 0.055, 0.94),
 			Color(MOON_CYAN, 0.62) if primary else Color(GOLD, 0.40),
+			TITLE_BUTTON_CORNER_RADIUS,
 		),
 	)
 	button.add_theme_stylebox_override(
@@ -215,6 +220,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 		StagingSkinType.clean_button_style(
 			Color(MOON_CYAN, 0.24) if primary else Color(GOLD, 0.16),
 			Color(MOON_CYAN, 0.90) if primary else Color(BRIGHT_GOLD, 0.74),
+			TITLE_BUTTON_CORNER_RADIUS,
 		),
 	)
 	button.add_theme_stylebox_override(
@@ -222,6 +228,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 		StagingSkinType.clean_button_style(
 			Color(MOON_CYAN, 0.34) if primary else Color(GOLD, 0.24),
 			MOON_CYAN if primary else BRIGHT_GOLD,
+			TITLE_BUTTON_CORNER_RADIUS,
 		),
 	)
 	_register_focus_pulse(button, BRIGHT_GOLD if primary else MOON_CYAN)
@@ -230,6 +237,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 
 func _register_focus_pulse(button: Button, accent: Color) -> void:
 	var style := StagingSkinType.transparent_focus_style(accent)
+	style.set_corner_radius_all(TITLE_BUTTON_CORNER_RADIUS)
 	button.add_theme_stylebox_override(&"focus", style)
 	_focus_pulse_styles[button] = style
 	_focus_pulse_colors[button] = accent
@@ -561,9 +569,15 @@ func _apply_responsive_layout() -> void:
 	var short := viewport_size.y <= 600.0
 	var horizontal_margin := 16 if narrow else (24 if portrait or short else 36)
 	var vertical_margin := 12 if short else 16
+	var entry_drop_ratio := (
+		SHORT_ENTRY_DROP_RATIO
+		if short
+		else (PORTRAIT_ENTRY_DROP_RATIO if portrait else LANDSCAPE_ENTRY_DROP_RATIO)
+	)
+	var entry_drop := roundi(viewport_size.y * entry_drop_ratio)
 	_entry_host.add_theme_constant_override(&"margin_left", horizontal_margin)
 	_entry_host.add_theme_constant_override(&"margin_right", horizontal_margin)
-	_entry_host.add_theme_constant_override(&"margin_top", vertical_margin)
+	_entry_host.add_theme_constant_override(&"margin_top", vertical_margin + entry_drop)
 	_entry_host.add_theme_constant_override(&"margin_bottom", vertical_margin)
 	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)

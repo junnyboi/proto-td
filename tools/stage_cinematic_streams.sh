@@ -21,11 +21,11 @@ stage() {
   printf '%s\t%s\t%s\t%s\n' "$key" "$(basename "$target")" "$bytes" "$sha" >> "$manifest"
 }
 
-stage archive-caster-landscape 778793 bcb3251e11269027b49a332487964db64fb8e6fe83358c2bb1b78317558c55af
-stage archive-caster-portrait 2452205 dd09537610bb5bc0ed7fd2ed6715e4d6b870dce521075b1defe77c6bc6ee0c0f
-stage lunaris-vessel-landscape 1257821 38361f28ba7c40e8e95c5aa59919028b0d181d97bd6b7f58f01fd7a31deb59cd
-stage lunaris-vessel-portrait 2502584 cd806d989623cbce1180df154efe892aaf8c2b047cee07906ec330f55c6fb6bb
-stage reliquary-duelist-landscape 1395676 cfa5bdab1002b428347e4d2d46cd0517acfc876a3460693d7330c8abb0e90151
-stage reliquary-duelist-portrait 2090359 ed78d0f92c19dc253a47454e13bb411fed64514f768c3db2157e5deb15b9026c
+stage archive-caster-landscape 39223400 94331bef149513a790fcfc2c8fc0440cbb413504d9185311672ef9c53a86653f
+stage archive-caster-portrait 19959147 2289a2737bb354949fa19cbfae9c0f4cdfdf997ec08eff3024a65007e0b6fbf4
+stage lunaris-vessel-landscape 16638104 906011683d0abb8446db648b74ec13b79aea3e9c6234e8cae8fd2a4b1ae1db99
+stage lunaris-vessel-portrait 23555321 32c6cab0847a8f9c1e5dbcde199ee57dbb301fba86135e505b482d7dade189f2
+stage reliquary-duelist-landscape 29259884 b843467f29774c8679751ab274b2aa0a7d7a75293a0a1f7c4eade6fcc57c97fc
+stage reliquary-duelist-portrait 27129072 2d2041a1be6c50b7e003ada11fa9da4a1f97114aa12d4f3d389abf54d80384cc
 
 printf 'Staged 6 verified cinematic streams in %s\n' "$OUT"
