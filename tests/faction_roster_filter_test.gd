@@ -8,6 +8,7 @@ var _failures: Array[String] = []
 func _init() -> void:
 	_test_default_active_filter()
 	_test_fallen_and_faction_filters()
+	_test_promotion_ready_filter()
 	_test_faction_derivation()
 	if _failures.is_empty():
 		print("FACTION_ROSTER_FILTER_TEST_OK")
@@ -45,6 +46,26 @@ func _test_fallen_and_faction_filters() -> void:
 	_check(crimson.size() == 1, "Crimson active symbol filter count mismatch")
 
 
+func _test_promotion_ready_filter() -> void:
+	var rows := _fixture_rows()
+	var promotion_ready := FilterType.filter_rows(
+		rows, FilterType.STATUS_PROMOTION_READY,
+	)
+	_check(promotion_ready.size() == 1, "promotion-ready filter count mismatch")
+	_check(
+		String(promotion_ready[0]["hero_id"]) == "lunaris_ready",
+		"promotion-ready filter returned the wrong soldier",
+	)
+	_check(
+		FilterType.count(rows, FilterType.STATUS_PROMOTION_READY) == 1,
+		"promotion-ready status count mismatch",
+	)
+	var lunaris := FilterType.filter_rows(
+		rows, FilterType.STATUS_PROMOTION_READY, &"lunaris_reliquary",
+	)
+	_check(lunaris.size() == 1, "promotion-ready faction composition mismatch")
+
+
 func _test_faction_derivation() -> void:
 	_check(
 		FilterType.faction_id({"premium_id": "lunaris_vessel"}) == &"lunaris_reliquary",
@@ -71,18 +92,21 @@ func _fixture_rows() -> Array[Dictionary]:
 			"life_status": "ready",
 			"death": null,
 			"premium_id": "lunaris_vessel",
+			"can_promote": true,
 		},
 		{
 			"hero_id": "crimson_ready",
 			"life_status": "ready",
 			"death": null,
 			"faction_id": &"crimson_aegis",
+			"can_promote": false,
 		},
 		{
 			"hero_id": "vesper_dead",
 			"life_status": "dead",
 			"death": {"stage_id": "s3"},
 			"faction_id": &"vesper_circuit",
+			"can_promote": true,
 		},
 		{
 			"hero_id": "solcrest_dead",

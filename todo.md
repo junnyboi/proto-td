@@ -23,6 +23,7 @@
 - [x] Increase runtime typography by exactly 50% across the game and refit Mission Preparation with a transparent First Stand icon, padded status tabs, 3:1 roster/intelligence split, split information/portrait cards, and 30%-shorter clean actions.
 - [x] Add eased staggered Mission Yield reward counters with reduced-motion completion, and apply the same stage-number, metadata, information, responsive, and fixed-action hierarchy to Stage Defeat.
 - [x] Refit Premium Resonance with a GPT Image 2 Lunaris Return glyph, vertically aligned header, 64px wide-layout gutters, compact one-line guarantee telemetry, 50%-larger padded cards with top-anchored 25% bust zoom, and a 2.5× wider two-line hoverable action.
+- [x] Refit the annotated Training roster with text-safe padded filters, right-of-icon faction counts, a Promotion Ready status filter, fixed 560px operator cards with 48×24 padding, a 64px inspector gutter, dossier-first identity layout, Edit-gated fields, and fixed 260×84 bottom actions across desktop, compact, Chinese portrait, and 390px editor states.
 
 # Premium Resonance Cinematic Completion
 
