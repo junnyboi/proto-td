@@ -15,7 +15,12 @@ const HOVER_DISABLED_META := &"sfx_hover_disabled"
 const HOVER_BIND_DELAY_MSEC := 120
 const HOVER_DEBOUNCE_MSEC := 65
 const MUTED_ROUTINE_CUE_IDS := {
+	&"ui_hover": true,
 	&"ui_click": true,
+	&"ui_back": true,
+	&"ui_confirm": true,
+	&"menu_open": true,
+	&"menu_close": true,
 }
 
 var _catalog: Resource = null
