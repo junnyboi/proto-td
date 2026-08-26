@@ -13,6 +13,7 @@
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
 - [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `4f4e6ce6`, and verify exact-PCK deployment at `https://protohost-sqtjrsla.manus.space/`.
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
+- [x] Remove “resurrected” from the English title synopsis and its Chinese equivalent; align fallback/canon copy and verify landscape/portrait containment.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
