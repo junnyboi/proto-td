@@ -45,8 +45,10 @@ The complementary UI suite uses a **moon-glass and brushed-gold mechanism** voca
 | `ui_confirm` | Mission launch and decisive acceptance | Gold-cyan convergence, three aligned orbit points, compact gravity seal |
 | `menu_open` | Modal or scene deck opening | Layered glass planes unfolding with clockwork alignment |
 | `menu_close` | Modal or scene deck dismissal | Descending retraction and one clean archive latch |
+| `slow_field_cast` | Accepted Slow Field cast | Cold polar howl blooms outward with ice-grain hiss and a restrained frost activation accent |
+| `slow_field_expire` | Active field reaches its exclusive end tick | Blizzard pressure pulls inward, snow hiss recedes, and a faint brittle frost crack dissolves |
 
-The catalog retains aliases for `ui_select`, `ui_accept`, and `menu_transition`. Existing combat SFX remain intact. The `Sfx` autoload automatically binds hover audio to eligible buttons, sliders, selectors, text inputs, tabs, lists, and custom focusable controls as they enter the scene tree. A short readiness delay prevents newly opened menus from sounding under a stationary pointer, and a global debounce prevents dense control grids from producing chatter.
+The catalog retains aliases for `ui_select`, `ui_accept`, and `menu_transition`; the semantic `slow_field` cast ID resolves to `slow_field_cast`. `BattleView` reads accepted casts from the existing SpellBook ledger and detects expiration from disappearance of a previously observed authoritative field ID, so audio remains presentation-only and cannot mutate simulation state or hashing. The `Sfx` autoload automatically binds hover audio to eligible buttons, sliders, selectors, text inputs, tabs, lists, and custom focusable controls as they enter the scene tree. A short readiness delay prevents newly opened menus from sounding under a stationary pointer, and a global debounce prevents dense control grids from producing chatter.
 
 ## Reproduction
 
@@ -58,6 +60,15 @@ PRODUCTION_ROOT=/home/ubuntu/projects/proto-td-1515240c/audio-production-2026-08
 ```
 
 The script regenerates all runtime Ogg and WAV derivatives from the durable project archive. It requires `ffmpeg`, `ffprobe`, and `bc`. Godot 4.7.2 then generates the corresponding import metadata during direct import.
+
+Slow Field blizzard cues use their own GPT Image 2 carrier anchors and audio-capable videos. Rebuild their 48 kHz stereo WAV derivatives with:
+
+```bash
+PRODUCTION_ROOT=/home/ubuntu/projects/proto-td-9a1e4085/audio-production-slow-field-blizzard \
+  tools/audio/process_slow_field_sfx.sh
+```
+
+The cast derivative is 2.900 seconds at −18.0 LUFS; expiration is 2.950 seconds at −21.0 LUFS. Their production anchors, carriers, raw audio, hashes, and complete brief are preserved in the project archive `audio-production-slow-field-blizzard`.
 
 ## Acceptance contract
 

@@ -48,11 +48,26 @@ func _run() -> void:
 				"silent routine cues do not replace the last audible semantic cue",
 			)
 			_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_hover", "dedicated hover cue resolves")
-		for spell_id: StringName in [&"bolt", &"charm", &"slow_field"]:
+		for spell_id: StringName in [&"bolt", &"charm"]:
 			_check(
 				sfx.call("resolved_id_for", spell_id) == &"ability_ready",
 				"%s spell SFX resolves" % spell_id,
 			)
+		_check(
+			sfx.call("resolved_id_for", &"slow_field") == &"slow_field_cast",
+			"Slow Field semantic cast ID resolves to the dedicated blizzard cue",
+		)
+		_check(
+			sfx.call("resolved_id_for", &"slow_field_expire") == &"slow_field_expire",
+			"Slow Field expiration cue resolves directly",
+		)
+		for cue_id: StringName in [&"slow_field_cast", &"slow_field_expire"]:
+			var stream := load("res://assets/sfx/combat/%s.wav" % cue_id) as AudioStream
+			_check(stream != null, "%s stream loads" % cue_id)
+			if stream != null:
+				_check(stream.get_length() >= 2.8, "%s keeps its blizzard body" % cue_id)
+				_check(stream.get_length() <= 3.05, "%s stays within the SFX budget" % cue_id)
+			stream = null
 		var button := Button.new()
 		button.name = "HoverAudioTestButton"
 		button.text = "Hover"
