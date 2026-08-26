@@ -85,6 +85,7 @@ var _spell_defs: Dictionary = {}
 var _trap_rects: Dictionary = {}
 var _trap_kinds: Dictionary = {}
 var _slow_field_rects: Dictionary = {}
+var _slow_field_audio_ids: Dictionary = {}
 var _spell_casts_last: Dictionary = {}
 var _hud: Label = null
 var _tick_accum: float = 0.0
@@ -940,15 +941,31 @@ func _make_trap_rect(t: TrapState) -> ColorRect:
 ## generated 96×48 art is authored for radius 1 (3×3 cells) at the pinned 2×
 ## sprite scale; other radii scale proportionally without changing rules.
 func _project_slow_fields() -> void:
-	var live: Dictionary = {}
+	var live := _sync_slow_field_audio_ids()
 	for field: SlowFieldState in model.slow_fields:
-		live[field.id] = true
 		if not _slow_field_rects.has(field.id):
 			_slow_field_rects[field.id] = _make_slow_field_rect(field)
 	for field_id: int in _slow_field_rects.keys():
 		if not live.has(field_id):
 			(_slow_field_rects[field_id] as ColorRect).queue_free()
 			_slow_field_rects.erase(field_id)
+
+
+## Presentation-only lifecycle edge. Cast audio follows the SpellBook ledger in
+## _push_spell_sfx(); expiry follows disappearance of a previously observed
+## authoritative field ID. Neither path mutates battle state or hashing.
+func _sync_slow_field_audio_ids() -> Dictionary:
+	var live: Dictionary = {}
+	if model == null:
+		_slow_field_audio_ids.clear()
+		return live
+	for field: SlowFieldState in model.slow_fields:
+		live[field.id] = true
+	for field_id: int in _slow_field_audio_ids.keys():
+		if not live.has(field_id):
+			Sfx.play("slow_field_expire")
+	_slow_field_audio_ids = live
+	return live
 
 
 func _make_slow_field_rect(field: SlowFieldState) -> ColorRect:
