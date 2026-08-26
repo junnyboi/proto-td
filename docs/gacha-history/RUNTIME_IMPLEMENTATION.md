@@ -45,3 +45,5 @@ Focused validation covers:
 - existing Pull Again, click dismissal, cinematic looping, SFX/BGM, and pity behavior.
 
 Xvfb captures were produced at `1280×720` and `720×1280` for both the archive and conversion states with dummy audio. All four visual harness runs exited without parser, runtime, resource, or leak diagnostics.
+
+The implementation was constructively reconciled with shared `master` at `9e19a57fa9944a1f98aa12ca62780c7c8ba196f7`. The post-merge gate completed direct import, bounded headless boot, and all **42** repository tests. Every test returned its success sentinel, and the consolidated logs contained no script, parser, invalid-call, assertion, or failure diagnostics.
