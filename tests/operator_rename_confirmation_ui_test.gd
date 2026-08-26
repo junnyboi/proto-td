@@ -34,12 +34,20 @@ func _run() -> void:
 	await process_frame
 
 	var hero_id := String(screen.call("selected_hero_id"))
+	var initial_callsign := screen.find_child("RenameUnitInput", true, false) as LineEdit
+	var edit_identity := screen.find_child("EditIdentity", true, false) as Button
+	_check(initial_callsign != null and not initial_callsign.is_visible_in_tree(), "identity editor is visible before Edit Identity")
+	_check(edit_identity != null, "Edit Identity control is missing")
+	if edit_identity != null:
+		edit_identity.pressed.emit()
+		await process_frame
+		await process_frame
 	var callsign := screen.find_child("RenameUnitInput", true, false) as LineEdit
 	var title := screen.find_child("RenameTitleInput", true, false) as LineEdit
 	var review := screen.find_child("RenameUnitAction", true, false) as Button
 	var workspace := screen.find_child("TrainingWorkspace", true, false) as Control
 	_check(not hero_id.is_empty(), "Training did not select a renameable operator")
-	_check(callsign != null and title != null and review != null and workspace != null, "rename editor controls are missing")
+	_check(callsign != null and title != null and review != null and workspace != null and callsign.is_visible_in_tree(), "rename editor controls did not open")
 	_check(not String(screen.get("accessibility_name")).is_empty(), "Training screen lacks an accessibility name")
 	_check(not String(screen.get("accessibility_description")).is_empty(), "Training screen lacks an accessibility description")
 	_check(screen.find_child("ReturnToMission", true, false) != null, "mission return action fixture is unavailable")

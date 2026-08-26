@@ -37,8 +37,19 @@ func _run() -> void:
 	_check(header != null and String(header.accessibility_name) == "训练标题", "Training header landmark is not Chinese")
 	_check(dock != null and String(dock.accessibility_name) == "训练操作", "Training action landmark is not Chinese")
 
+	var promotion_tab := screen.find_child("PromotionReadyRosterTab", true, false) as Button
+	var edit_identity := screen.find_child("EditIdentity", true, false) as Button
+	var initial_callsign := screen.find_child("RenameUnitInput", true, false) as LineEdit
+	_check(promotion_tab != null and promotion_tab.text.contains("可晋升"), "Promotion Ready filter is not Chinese")
+	_check(edit_identity != null and edit_identity.text == "编辑", "Edit Identity action is not Chinese")
+	_check(initial_callsign != null and not initial_callsign.is_visible_in_tree(), "Chinese identity editor is visible before Edit Identity")
+	if edit_identity != null:
+		edit_identity.pressed.emit()
+		await process_frame
+		await process_frame
 	var callsign := screen.find_child("RenameUnitInput", true, false) as LineEdit
 	var title := screen.find_child("RenameTitleInput", true, false) as LineEdit
+	_check(callsign != null and callsign.is_visible_in_tree(), "Chinese Edit Identity did not reveal the inputs")
 	_check(callsign != null and callsign.max_length == 20, "callsign input constraint changed")
 	_check(title != null and title.max_length == 24, "title input constraint changed")
 	_check(callsign != null and String(callsign.accessibility_description) == "输入1至20个字符的唯一代号。", "callsign guidance is not Chinese")

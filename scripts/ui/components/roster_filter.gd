@@ -8,6 +8,7 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 
 const STATUS_ACTIVE: StringName = &"active"
 const STATUS_FALLEN: StringName = &"fallen"
+const STATUS_PROMOTION_READY: StringName = &"promotion_ready"
 const FACTION_ALL: StringName = &"all"
 
 
@@ -15,6 +16,7 @@ static func annotate(row: Dictionary) -> Dictionary:
 	var projected := row.duplicate(true)
 	projected["faction_id"] = faction_id(row)
 	projected["fallen"] = is_fallen(row)
+	projected["promotion_ready"] = bool(row.get("can_promote", false))
 	return projected
 
 
@@ -52,9 +54,12 @@ static func filter_rows(
 	var filtered: Array[Dictionary] = []
 	for raw: Dictionary in rows:
 		var row := annotate(raw)
-		if status == STATUS_FALLEN and not bool(row["fallen"]):
+		if status == STATUS_FALLEN:
+			if not bool(row["fallen"]):
+				continue
+		elif bool(row["fallen"]):
 			continue
-		if status != STATUS_FALLEN and bool(row["fallen"]):
+		elif status == STATUS_PROMOTION_READY and not bool(row["promotion_ready"]):
 			continue
 		if faction != FACTION_ALL and StringName(row["faction_id"]) != faction:
 			continue

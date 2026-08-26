@@ -4,6 +4,9 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const ROW_HORIZONTAL_PADDING := 48
+const ROW_VERTICAL_PADDING := 24
+const ROW_DEFAULT_WIDTH := 560.0
 
 var hero_id := ""
 var can_promote := false
@@ -15,12 +18,14 @@ var _status: TrainingLabelType
 var _xp: TrainingLabelType
 var _reason: TrainingLabelType
 var _progress: ProgressBar
+var _body: BoxContainer
+var _status_line: BoxContainer
 
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size.x = 0.0
-	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	custom_minimum_size.x = ROW_DEFAULT_WIDTH
+	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	set_presentation_text("Training recruit", " ")
 	_build_content()
 
@@ -61,8 +66,15 @@ func set_selected(value: bool) -> void:
 	LunarisOpsType.apply_button(self, &"selected" if value else &"secondary")
 
 
-func set_compact(value: bool) -> void:
+func set_compact(value: bool, fixed_width: float = ROW_DEFAULT_WIDTH) -> void:
 	_portrait.custom_minimum_size = Vector2(82.0, 108.0) if value else Vector2(96.0, 116.0)
+	custom_minimum_size.x = fixed_width
+	var narrow := fixed_width < 500.0
+	if _body != null:
+		_body.vertical = narrow
+		_body.alignment = BoxContainer.ALIGNMENT_CENTER if narrow else BoxContainer.ALIGNMENT_BEGIN
+	if _status_line != null:
+		_status_line.vertical = narrow
 	fit_to_content()
 
 
@@ -70,13 +82,22 @@ func fit_to_content() -> void:
 	var callsign_height := _fit_label(_callsign)
 	var title_height := _fit_label(_title_tag) if _title_tag.visible else 0.0
 	var class_height := _fit_label(_class_name)
-	var status_height := maxf(_fit_label(_status), _fit_label(_xp))
+	var status_height := (
+		_fit_label(_status) + _fit_label(_xp)
+		if _status_line != null and _status_line.vertical
+		else maxf(_fit_label(_status), _fit_label(_xp))
+	)
 	var reason_height := _fit_label(_reason)
 	var details_height := (
 		callsign_height + title_height + class_height + status_height
 		+ _progress.custom_minimum_size.y + reason_height
 	)
-	custom_minimum_size.y = ceilf(maxf(details_height, _portrait.custom_minimum_size.y) + 32.0)
+	var content_height := (
+		_portrait.custom_minimum_size.y + 14.0 + details_height
+		if _body != null and _body.vertical
+		else maxf(details_height, _portrait.custom_minimum_size.y)
+	)
+	custom_minimum_size.y = ceilf(content_height + ROW_VERTICAL_PADDING * 2.0)
 	update_minimum_size()
 
 
@@ -87,34 +108,36 @@ func _build_content() -> void:
 	margin.name = "RosterRowMargin"
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
-		margin.add_theme_constant_override(side, 16)
+	margin.add_theme_constant_override(&"margin_left", ROW_HORIZONTAL_PADDING)
+	margin.add_theme_constant_override(&"margin_top", ROW_VERTICAL_PADDING)
+	margin.add_theme_constant_override(&"margin_right", ROW_HORIZONTAL_PADDING)
+	margin.add_theme_constant_override(&"margin_bottom", ROW_VERTICAL_PADDING)
 	add_child(margin)
-	var row := HBoxContainer.new()
-	row.name = "RosterRowContent"
-	row.add_theme_constant_override(&"separation", 14)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_child(row)
+	_body = BoxContainer.new()
+	_body.name = "RosterRowContent"
+	_body.add_theme_constant_override(&"separation", 14)
+	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(_body)
 	_portrait = TextureRect.new()
 	_portrait.name = "IdentityPortrait"
 	_portrait.custom_minimum_size = Vector2(96.0, 104.0)
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(_portrait)
+	_body.add_child(_portrait)
 	var details := VBoxContainer.new()
 	details.name = "RosterDetails"
 	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	details.add_theme_constant_override(&"separation", 2)
 	details.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(details)
+	_body.add_child(details)
 	_callsign = _label("Callsign", &"dense_body")
 	_title_tag = _label("CustomTitle", &"eyebrow")
 	_title_tag.visible = false
 	_class_name = _label("CurrentClass", &"dense_detail")
-	var status_line := HBoxContainer.new()
-	status_line.name = "StatusLine"
-	status_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_status_line = BoxContainer.new()
+	_status_line.name = "StatusLine"
+	_status_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_status = _label("LifeStatus", &"dense_detail")
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status.size_flags_stretch_ratio = 0.7
@@ -122,8 +145,8 @@ func _build_content() -> void:
 	_xp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_xp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_xp.size_flags_stretch_ratio = 1.3
-	status_line.add_child(_status)
-	status_line.add_child(_xp)
+	_status_line.add_child(_status)
+	_status_line.add_child(_xp)
 	_progress = ProgressBar.new()
 	_progress.name = "XpBar"
 	_progress.show_percentage = false
@@ -132,7 +155,7 @@ func _build_content() -> void:
 	LunarisOpsType.apply_progress(_progress)
 	_reason = _label("EligibilityReason", &"dense_detail")
 	for control: Control in [
-		_callsign, _title_tag, _class_name, status_line, _progress, _reason,
+		_callsign, _title_tag, _class_name, _status_line, _progress, _reason,
 	]:
 		details.add_child(control)
 

@@ -163,6 +163,7 @@ var _roster_buttons: Array[TrainingRosterRowType] = []
 var _filter_bar: RosterFilterBarType = null
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
+var _identity_editor_open := false
 var _roster_list: VBoxContainer
 var _roster_scroll: ScrollContainer
 var _inspector_scroll: ScrollContainer
@@ -359,7 +360,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_set_persistent_header(null)
 	var roster_header := _header(
 		"TrainingTitle", _t(&"ui.training.title", "TRAINING"),
-			_t(&"ui.training.manage_personnel", "Manage callsigns and training paths."),
+		"",
 		)
 	_page.add_child(roster_header)
 	var roster_error: AetheriaLabelType = null
@@ -370,47 +371,30 @@ func _show_roster(error_code: StringName = &"") -> void:
 		roster_error.focus_mode = Control.FOCUS_ALL
 		_bind_focus_scroll(roster_error, _dialog_scroll)
 		_page.add_child(roster_error)
-	var ready_count := 0
-	for summary: Dictionary in _roster_rows:
-		if bool(summary["can_promote"]):
-			ready_count += 1
-	var ready := _label(
-		"PromotionReadyCount",
-		_fmt(
-			&"ui.training.promotion_ready_count", "{count} PROMOTION READY",
-			{&"count": ready_count},
-		),
-		&"dense_heading",
-	)
-	ready.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	ready.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	ready.autowrap_mode = TextServer.AUTOWRAP_OFF
-	ready.custom_minimum_size.x = 190.0
-	if _layout_mode == &"portrait":
-		_page.add_child(ready)
-	else:
-		var header_top := roster_header.get_node("TrainingTitleTop") as BoxContainer
-		header_top.add_child(ready)
 	_roster_controls = BoxContainer.new()
 	_roster_controls.name = "TrainingRosterControls"
 	_roster_controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_controls.add_theme_constant_override(&"separation", 12)
 	_page.add_child(_roster_controls)
 	_filter_bar = RosterFilterBarType.new()
-	_filter_bar.configure(_roster_rows, true, _filter_status, _filter_faction)
+	_filter_bar.configure(
+		_roster_rows, true, _filter_status, _filter_faction, true,
+	)
+	_filter_bar.set_generous_spacing(true)
 	_filter_bar.set_compact(_layout_mode != &"portrait")
-	_filter_bar.set_inline(_layout_mode != &"portrait")
+	_filter_bar.set_inline(false)
 	_filter_bar.size_flags_stretch_ratio = 1.22
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	_roster_controls.add_child(_filter_bar)
 	var identity_toolbar := _build_identity_filter_toolbar()
-	identity_toolbar.size_flags_stretch_ratio = 1.0
-	_roster_controls.add_child(identity_toolbar)
+	_filter_bar.attach_auxiliary_control(identity_toolbar)
 	var body := BoxContainer.new()
 	body.name = "TrainingRosterBody"
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override(&"separation", 16)
+	body.add_theme_constant_override(
+		&"separation", 16 if _layout_mode == &"portrait" else 64,
+	)
 	_page.add_child(body)
 	body.add_child(_build_roster_list())
 	body.add_child(_build_inspector())
@@ -457,14 +441,14 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		&"ui.identity_filter.placeholder", "Filter by name or title",
 	)
 	_filter_input.clear_button_enabled = true
-	_filter_input.custom_minimum_size = Vector2(200.0, 54.0)
+	_filter_input.custom_minimum_size = Vector2(260.0, 72.0)
 	_filter_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_line_edit(_filter_input)
 	_filter_input.text_changed.connect(_on_name_filter_changed)
 	_filter_toolbar.add_child(_filter_input)
 	_sort_select = OptionButton.new()
 	_sort_select.name = "TrainingNameSort"
-	_sort_select.custom_minimum_size = Vector2(190.0, 54.0)
+	_sort_select.custom_minimum_size = Vector2(280.0, 72.0)
 	_sort_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_sort_select.fit_to_longest_item = false
 	for option: Dictionary in [
@@ -478,6 +462,7 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		if option["id"] == _name_sort:
 			_sort_select.select(option_index)
 	LunarisOpsType.apply_button(_sort_select, &"secondary")
+	_apply_button_insets(_sort_select, 20.0, 12.0)
 	_sort_select.item_selected.connect(_on_name_sort_selected)
 	_filter_toolbar.add_child(_sort_select)
 	_filter_summary = _label("TrainingFilterSummary", "", &"dense_detail")
@@ -516,16 +501,16 @@ func _on_name_sort_selected(index: int) -> void:
 func _build_roster_list() -> ScrollContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = "TrainingRosterScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_stretch_ratio = 1.25
+	scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(440.0, 0.0)
+	scroll.custom_minimum_size = Vector2(584.0, 0.0)
 	_roster_scroll = scroll
 	_roster_list = VBoxContainer.new()
 	_roster_list.name = "TrainingRosterList"
 	_roster_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_roster_list.add_theme_constant_override(&"separation", 8)
+	_roster_list.alignment = BoxContainer.ALIGNMENT_CENTER
+	_roster_list.add_theme_constant_override(&"separation", 12)
 	scroll.add_child(_roster_list)
 	_roster_buttons.clear()
 	var visible_rows := _visible_roster_rows()
@@ -612,32 +597,72 @@ func _build_inspector() -> AetheriaPanelType:
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
 		panel.tooltip_text = _operator_stats_tooltip(selected)
-		column.add_child(_build_rename_panel(selected))
 		var dossier := BoxContainer.new()
 		dossier.name = "SelectedOperatorDossier"
 		dossier.add_theme_constant_override(&"separation", 16)
-		var portrait := TextureRect.new()
-		portrait.name = "SelectedOperatorPortrait"
-		portrait.texture = Art.texture(StringName(selected["portrait_asset_id"]))
-		portrait.custom_minimum_size = Vector2(126.0, 160.0)
-		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		dossier.add_child(portrait)
 		var identity := VBoxContainer.new()
 		identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		identity.add_theme_constant_override(&"separation", 6)
-		identity.add_child(_label(
-			"SelectedCallsign", String(selected["callsign"]).to_upper(), &"title",
+		var identity_heading := BoxContainer.new()
+		identity_heading.name = "SelectedOperatorIdentity"
+		identity_heading.add_theme_constant_override(&"separation", 12)
+		identity_heading.alignment = BoxContainer.ALIGNMENT_CENTER
+		var identity_copy := VBoxContainer.new()
+		identity_copy.name = "SelectedOperatorIdentityCopy"
+		identity_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		identity_copy.add_theme_constant_override(&"separation", 4)
+		identity_copy.add_child(_label(
+			"SelectedCallsign", String(selected["callsign"]).to_upper(), &"heading",
 		))
 		var selected_title := String(
 			selected.get("custom_title", "")
 			if selected.get("custom_title") != null
 			else "",
 		)
-		if not selected_title.is_empty():
-			identity.add_child(_label(
-				"SelectedTitleTag", selected_title.to_upper(), &"eyebrow",
-			))
+		identity_copy.add_child(_label(
+			"SelectedTitleTag",
+			selected_title.to_upper()
+			if not selected_title.is_empty()
+			else _t(&"ui.rename.no_title", "NO TITLE ASSIGNED"),
+			&"eyebrow",
+		))
+		identity_heading.add_child(identity_copy)
+		var edit_identity := Button.new()
+		edit_identity.name = "EditIdentity"
+		edit_identity.text = _t(
+			&"ui.rename.close_short" if _identity_editor_open else &"ui.rename.edit_short",
+			"Close" if _identity_editor_open else "Edit",
+		)
+		edit_identity.custom_minimum_size = Vector2(110.0, 72.0)
+		edit_identity.size_flags_horizontal = Control.SIZE_SHRINK_END
+		edit_identity.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		edit_identity.focus_mode = Control.FOCUS_ALL
+		edit_identity.accessibility_name = edit_identity.text
+		edit_identity.accessibility_description = _t(
+			&"ui.rename.edit_identity_description",
+			"Show or hide the selected operator identity editor.",
+		)
+		LunarisOpsType.apply_button(edit_identity, &"secondary")
+		_apply_button_insets(edit_identity, 20.0, 12.0)
+		var edit_label := Label.new()
+		edit_label.name = "EditIdentityLabel"
+		edit_label.text = edit_identity.text.to_upper()
+		edit_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		edit_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		edit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		edit_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		LunarisOpsType.apply_label(edit_label, &"eyebrow")
+		edit_identity.add_child(edit_label)
+		var transparent := Color(0.0, 0.0, 0.0, 0.0)
+		for color_name: StringName in [
+			&"font_color", &"font_hover_color", &"font_pressed_color",
+			&"font_focus_color", &"font_disabled_color",
+		]:
+			edit_identity.add_theme_color_override(color_name, transparent)
+		_bind_focus_scroll(edit_identity, _inspector_scroll)
+		edit_identity.pressed.connect(_on_edit_identity_requested)
+		identity_heading.add_child(edit_identity)
+		identity.add_child(identity_heading)
 		identity.add_child(_label(
 			"SelectedClass", class_label(String(selected["current_class_id"])).to_upper(),
 			&"heading",
@@ -675,10 +700,18 @@ func _build_inspector() -> AetheriaPanelType:
 						&"required": int(selected["xp_required"]),
 					},
 				),
-				&"metric",
-			))
+					&"metric",
+				))
 		dossier.add_child(identity)
+		var portrait := TextureRect.new()
+		portrait.name = "SelectedOperatorPortrait"
+		portrait.texture = Art.texture(StringName(selected["portrait_asset_id"]))
+		portrait.custom_minimum_size = Vector2(126.0, 160.0)
+		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		dossier.add_child(portrait)
 		column.add_child(dossier)
+		column.add_child(_build_rename_panel(selected))
 	column.add_child(_label(
 		"FieldRecordHeading", _t(&"ui.training.field_record", "FIELD RECORD"), &"heading",
 	))
@@ -705,6 +738,7 @@ func _build_inspector() -> AetheriaPanelType:
 func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	var panel := AetheriaPanelType.new()
 	panel.name = "RenameUnitPanel"
+	panel.visible = _identity_editor_open
 	panel.apply_role(&"hud")
 	LunarisOpsType.apply_panel(panel, &"quiet")
 	_ensure_panel_padding(panel, 18.0)
@@ -1464,8 +1498,20 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 
 
 func _on_roster_selected(hero_id: String) -> void:
+	if hero_id != _selected_hero_id:
+		_persist_identity_edit_draft()
+		_identity_editor_open = false
 	_selected_hero_id = hero_id
 	_show_roster()
+
+
+func _on_edit_identity_requested() -> void:
+	if _identity_editor_open:
+		_persist_identity_edit_draft()
+	_identity_editor_open = not _identity_editor_open
+	_show_roster()
+	if _identity_editor_open:
+		_focus_identity_field.call_deferred(&"callsign", _rename_presentation_generation)
 
 
 func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
@@ -1478,6 +1524,8 @@ func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
 			selected_visible = true
 			break
 	if not selected_visible:
+		_persist_identity_edit_draft()
+		_identity_editor_open = false
 		_selected_hero_id = String(visible[0]["hero_id"]) if not visible.is_empty() else ""
 	_show_roster()
 
@@ -1703,7 +1751,11 @@ func _on_layout_mode_changed(value: StringName) -> void:
 
 func _shell_size_for(mode_value: StringName) -> Vector2:
 	if mode_value == &"portrait":
-		return PORTRAIT_SHELL_SIZE
+		var viewport_size := get_viewport_rect().size
+		return Vector2(
+			minf(PORTRAIT_SHELL_SIZE.x, maxf(300.0, viewport_size.x - 24.0)),
+			minf(PORTRAIT_SHELL_SIZE.y, maxf(540.0, viewport_size.y - 24.0)),
+		)
 	if mode_value == &"compact_landscape":
 		return COMPACT_SHELL_SIZE
 	return SHELL_SIZE
@@ -1716,11 +1768,29 @@ func _apply_roster_layout() -> void:
 	body.vertical = _layout_mode == &"portrait"
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 0.0
+	body.add_theme_constant_override(
+		&"separation", 16 if _layout_mode == &"portrait" else 64,
+	)
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
+	var roster_width := 560.0
+	if _layout_mode == &"compact_landscape":
+		roster_width = 500.0
+	elif _layout_mode == &"portrait":
+		roster_width = clampf(
+			get_viewport_rect().size.x
+			- (96.0 if get_viewport_rect().size.x < 500.0 else 48.0),
+			280.0,
+			560.0,
+		)
 	if scroll != null:
 		scroll.custom_minimum_size = Vector2(
-			0.0 if _layout_mode == &"portrait" else 440.0,
+			0.0 if _layout_mode == &"portrait" else roster_width + 24.0,
 			220.0 if _layout_mode == &"portrait" else 0.0,
+		)
+		scroll.size_flags_horizontal = (
+			Control.SIZE_EXPAND_FILL
+			if _layout_mode == &"portrait"
+			else Control.SIZE_SHRINK_BEGIN
 		)
 	if _inspector_scroll != null:
 		_inspector_scroll.custom_minimum_size.y = (
@@ -1728,13 +1798,15 @@ func _apply_roster_layout() -> void:
 		)
 	if _filter_bar != null:
 		_filter_bar.set_compact(_layout_mode != &"portrait")
-		_filter_bar.set_inline(_layout_mode != &"portrait")
+		_filter_bar.set_inline(false)
+		_filter_bar.set_auxiliary_stacked(_layout_mode != &"regular_landscape")
 	if _roster_controls != null:
-		_roster_controls.vertical = _layout_mode == &"portrait"
+		_roster_controls.vertical = false
 	for row: TrainingRosterRowType in _roster_buttons:
-		row.set_compact(_layout_mode != &"regular_landscape")
+		row.set_compact(_layout_mode != &"regular_landscape", roster_width)
 	if _filter_toolbar != null:
 		_filter_toolbar.vertical = _layout_mode == &"portrait"
+		_filter_toolbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if _filter_summary != null:
 		_filter_summary.visible = _layout_mode == &"portrait"
 		_filter_summary.horizontal_alignment = (
@@ -1744,6 +1816,27 @@ func _apply_roster_layout() -> void:
 		)
 	if _rename_row != null:
 		_rename_row.vertical = true
+	var narrow_portrait := _layout_mode == &"portrait" and get_viewport_rect().size.x < 500.0
+	if _filter_bar != null:
+		_filter_bar.set_narrow(narrow_portrait)
+	if _content_gutter != null:
+		_content_gutter.add_theme_constant_override(
+			&"margin_right",
+			6 if narrow_portrait else AetheriaScreenShellType.DIALOG_TEXT_GUTTER,
+		)
+	var header_symbol := _page.find_child(
+		"LunarisReliquarySymbol", true, false,
+	) as TextureRect
+	if header_symbol != null:
+		header_symbol.visible = not narrow_portrait
+	var dossier := _page.get_node_or_null(
+		"TrainingRosterBody/TrainingInspector/TrainingInspectorScroll/InspectorColumn/SelectedOperatorDossier",
+	) as BoxContainer
+	if dossier != null:
+		dossier.vertical = _layout_mode == &"portrait"
+	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
+	if identity_heading != null:
+		identity_heading.vertical = narrow_portrait
 
 
 func _apply_paths_layout() -> void:
@@ -1902,10 +1995,12 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 			&"gold",
 		)
 		_return_mission.custom_minimum_size = Vector2(230.0, 58.0)
+		_apply_button_insets(_return_mission, 20.0, 12.0)
 		_return_mission.pressed.connect(_on_not_now)
 		top.add_child(_return_mission)
 	header.add_child(top)
-	header.add_child(_label("%sSubtitle" % node_name, subtitle, &"detail"))
+	if not subtitle.strip_edges().is_empty():
+		header.add_child(_label("%sSubtitle" % node_name, subtitle, &"detail"))
 	return header
 
 
@@ -1927,11 +2022,13 @@ func _button(
 	var button := AetheriaButtonType.new()
 	button.name = node_name
 	button.text = button_text
-	button.custom_minimum_size = Vector2(240.0, 64.0)
+	button.custom_minimum_size = Vector2(260.0, 84.0)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	button.disabled = not enabled
 	button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	button.set_presentation_text(button_text, button_text)
 	LunarisOpsType.apply_button(button, role)
+	_apply_button_insets(button, 20.0, 12.0)
 	_bind_focus_scroll(button, _dialog_scroll)
 	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
 	LunarisOpsType.apply_label(presentation, &"body")
@@ -2319,22 +2416,13 @@ func _apply_footer_layouts() -> void:
 					action.size_flags_horizontal = Control.SIZE_SHRINK_END
 					_apply_path_action_style(action as AetheriaButtonType)
 				continue
-			var available := maxf(
-				44.0, maxf(_page.size.x, _shell.preferred_size.x - 64.0),
+			var available := minf(
+				260.0, maxf(180.0, get_viewport_rect().size.x - 64.0),
 			)
-			var visible_width := get_viewport_rect().size.x - _page.global_position.x - 8.0
-			if visible_width >= 44.0:
-				available = minf(available, visible_width)
-			if not footer.vertical and not actions.is_empty():
-				available = maxf(
-					44.0,
-					(available - footer.get_theme_constant(&"separation")
-					* (actions.size() - 1)) / actions.size(),
-				)
 			for action: Control in actions:
-				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				action.size_flags_horizontal = Control.SIZE_SHRINK_END
 				(action as AetheriaButtonType).fit_presentation(
-					available, 240.0, 64.0,
+					available, minf(260.0, available), 84.0,
 				)
 
 
@@ -2351,6 +2439,21 @@ func _ensure_panel_padding(panel: PanelContainer, padding: float) -> void:
 	style.content_margin_right = maxf(style.content_margin_right, padding)
 	style.content_margin_bottom = maxf(style.content_margin_bottom, padding)
 	panel.add_theme_stylebox_override(&"panel", style)
+
+
+func _apply_button_insets(button: Button, horizontal: float, vertical: float) -> void:
+	if button == null:
+		return
+	for style_name: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var source := button.get_theme_stylebox(style_name)
+		if source == null:
+			continue
+		var style := source.duplicate() as StyleBox
+		style.content_margin_left = maxf(style.content_margin_left, horizontal)
+		style.content_margin_right = maxf(style.content_margin_right, horizontal)
+		style.content_margin_top = maxf(style.content_margin_top, vertical)
+		style.content_margin_bottom = maxf(style.content_margin_bottom, vertical)
+		button.add_theme_stylebox_override(style_name, style)
 
 
 func _error_text(error_code: StringName) -> String:

@@ -163,10 +163,18 @@ func _run() -> void:
 	_check(return_to_mission != null, "Training mission-return fixture is unavailable")
 	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
 	_check(not String(training.get("accessibility_name")).is_empty() and not String(training.get("accessibility_description")).is_empty(), "Training root lacks accessibility metadata")
+	var initial_rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit
+	var edit_identity := training.find_child("EditIdentity", true, false) as Button
+	_check(initial_rename_input != null and not initial_rename_input.is_visible_in_tree(), "Training identity inputs are visible before Edit Identity")
+	_check(edit_identity != null, "Training Edit Identity control is missing")
+	if edit_identity != null:
+		edit_identity.pressed.emit()
+		await process_frame
+		await process_frame
 	var rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit
 	var rename_title := training.find_child("RenameTitleInput", true, false) as LineEdit
 	var rename_review := training.find_child("RenameUnitAction", true, false) as Button
-	_check(rename_input != null and rename_title != null and rename_review != null, "Training rename editor is incomplete")
+	_check(rename_input != null and rename_title != null and rename_review != null and rename_input.is_visible_in_tree(), "Training rename editor did not open")
 	if rename_input != null and rename_title != null and rename_review != null:
 		await _check_nested_scroll_visibility(training, rename_input)
 		rename_input.text = "Layout Sentinel"

@@ -95,35 +95,46 @@ func _run() -> void:
 	var roster_controls := screen.find_child("TrainingRosterControls", true, false) as BoxContainer
 	var filters := screen.find_child("RosterFilterControls", true, false) as BoxContainer
 	var filter_summary := screen.find_child("TrainingFilterSummary", true, false) as Label
-	var ready := screen.find_child("PromotionReadyCount", true, false) as Label
+	var promotion_tab := screen.find_child("PromotionReadyRosterTab", true, false) as Button
+	var faction_filter := screen.find_child("SolcrestAccordFactionFilter", true, false) as Button
 	_check(outer != null and page != null and body != null, "Training workspace is incomplete")
 	_check(roster_scroll != null and inspector != null and inspector_scroll != null, "Training local panels are incomplete")
-	_check(roster_controls != null and filters != null and ready != null, "Training header/filter composition is incomplete")
+	_check(roster_controls != null and filters != null and promotion_tab != null, "Training header/filter composition is incomplete")
+	_check(faction_filter != null and String(faction_filter.accessibility_name).contains("SOLCREST") and String(faction_filter.accessibility_name).contains(": "), "faction filter accessibility does not distinguish its heraldry and count")
+	_check(screen.find_child("PromotionReadyCount", true, false) == null, "redundant promotion-ready metric was not removed")
 	if outer != null:
 		_check(outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "desktop Training still uses document scrolling")
 	if page != null and outer != null:
 		_check(page.size.y >= outer.size.y - 12.0, "Training page does not fill the available document viewport")
 	if body != null:
 		_check(not body.vertical, "desktop Training roster/inspector should remain side by side")
+		_check(body.get_theme_constant("separation") == 64, "desktop Training right gutter is not 64px")
 		_check(body.size.y >= 150.0, "desktop Training roster/inspector is no longer usable with 1.5× type")
 		_check(_contained(body.get_global_rect(), page.get_global_rect(), 1.0), "desktop Training body overflows its page")
 	if roster_scroll != null and inspector != null:
 		_check(roster_scroll.size.y >= 150.0 and inspector.size.y >= 150.0, "Training panels are too short for 1.5× type")
 		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "Training roster can scroll horizontally")
+		_check(_near(roster_scroll.custom_minimum_size.x, 584.0, 1.0), "desktop roster rail is not fixed around the 560px cards")
 	if inspector_scroll != null:
 		_check(inspector_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Training inspector does not expand vertically")
 	if filters != null:
-		_check(not filters.vertical and filters.size.y <= 140.0, "desktop Training filters exceed the enlarged two-line rail")
+		_check(filters.vertical and filters.size.y <= 260.0, "desktop Training filters exceed the padded responsive rail")
 	if roster_controls != null:
-		_check(not roster_controls.vertical and roster_controls.size.y <= 140.0, "desktop Training filters and identity tools are not consolidated")
+		_check(not roster_controls.vertical and roster_controls.size.y <= 180.0, "desktop Training filters and identity tools are not consolidated")
 	_check(filter_summary != null and not filter_summary.visible, "redundant desktop shown-count still consumes toolbar width")
-	if ready != null:
-		_check(ready.get_parent() != null and String(ready.get_parent().name).ends_with("Top"), "promotion-ready metric still occupies a separate desktop band")
-		_check(ready.autowrap_mode == TextServer.AUTOWRAP_OFF, "promotion-ready metric can wrap vertically")
+	if promotion_tab != null:
+		_check(promotion_tab.visible and promotion_tab.custom_minimum_size.x >= 280.0, "Promotion Ready tab lacks a padded text-safe width")
+		_check(_button_padding_at_least(promotion_tab, 12.0), "Promotion Ready tab lacks 12px vertical padding")
+		promotion_tab.pressed.emit()
+		await _frames(3)
+		_check(StringName(screen.get("_filter_status")) == &"promotion_ready", "Promotion Ready tab did not activate the filter")
+		var filtered_rows := screen.call("_visible_roster_rows") as Array
+		_check(not filtered_rows.is_empty(), "Promotion Ready filter hid the eligible fixture")
+		for filtered: Dictionary in filtered_rows:
+			_check(bool(filtered.get("can_promote", false)), "Promotion Ready filter exposed an ineligible operator")
 
 	_check(_font(screen, "TrainingTitleHeading") >= 40, "Training title is below 40px")
-	_check(_font(screen, "TrainingTitleSubtitle") >= 17, "Training subtitle is below 17px")
-	_check(_font(screen, "PromotionReadyCount") >= 22, "Training ready metric is below 22px")
+	_check(screen.find_child("TrainingTitleSubtitle", true, false) == null, "annotated Training subtitle was not removed")
 	_check(_font(screen, "Callsign") >= 19, "Training roster callsign is below 19px")
 	_check(_font(screen, "CurrentClass") >= 16, "Training roster class is below 16px")
 	_check(_font(screen, "RenameUnitHeading") >= 24, "Training inspector heading is below 24px")
@@ -131,8 +142,23 @@ func _run() -> void:
 	_check(_font(screen, "CallsignFieldLabel") >= 16, "Training field label is below 16px")
 	var rename := screen.find_child("RenameUnitInput", true, false) as LineEdit
 	_check(rename != null and rename.get_theme_font_size("font_size") >= 20, "Training identity input is below 20px")
+	var rename_panel := screen.find_child("RenameUnitPanel", true, false) as PanelContainer
+	var dossier := screen.find_child("SelectedOperatorDossier", true, false) as Control
+	var edit_identity := screen.find_child("EditIdentity", true, false) as Button
+	_check(rename_panel != null and not rename_panel.visible, "Field Identity editor is visible before Edit Identity is requested")
+	_check(rename != null and not rename.is_visible_in_tree(), "identity input is exposed before Edit Identity is requested")
+	_check(dossier != null and rename_panel != null and dossier.get_index() < rename_panel.get_index(), "operator information does not precede Field Identity")
+	_check(edit_identity != null and edit_identity.is_visible_in_tree(), "selected operator identity lacks an Edit control")
+	if edit_identity != null:
+		edit_identity.pressed.emit()
+		await _frames(3)
+		rename_panel = screen.find_child("RenameUnitPanel", true, false) as PanelContainer
+		rename = screen.find_child("RenameUnitInput", true, false) as LineEdit
+		_check(rename_panel != null and rename_panel.visible, "Edit Identity did not reveal Field Identity")
+		_check(rename != null and rename.is_visible_in_tree(), "Edit Identity did not reveal the inputs")
 	var row_margin := screen.find_child("RosterRowMargin", true, false) as MarginContainer
-	_check(row_margin != null and row_margin.get_theme_constant("margin_left") >= 16, "Training roster row padding is under 16px")
+	_check(row_margin != null and row_margin.get_theme_constant("margin_left") == 48, "Training roster row horizontal padding is not 48px")
+	_check(row_margin != null and row_margin.get_theme_constant("margin_top") == 24, "Training roster row vertical padding is not 24px")
 	if inspector != null:
 		var style: StyleBox = inspector.get_theme_stylebox("panel")
 		_check(style.content_margin_left >= 22.0 and style.content_margin_right >= 22.0, "Training inspector horizontal padding is under 22px")
@@ -142,6 +168,7 @@ func _run() -> void:
 	var roster_row := screen.find_child("Recruit_*", true, false) as Control
 	_check(roster_row != null, "Training roster did not render a hoverable operator row")
 	if roster_row != null:
+		_check(_near(roster_row.custom_minimum_size.x, 560.0, 1.0), "desktop operator card is not fixed at 560px")
 		_check(_has_detailed_stats(roster_row.tooltip_text), "Training roster tooltip omits detailed combat statistics")
 	if inspector != null:
 		_check(_has_detailed_stats(inspector.tooltip_text), "Training inspector tooltip omits detailed combat statistics")
@@ -153,15 +180,23 @@ func _run() -> void:
 	body = screen.find_child("TrainingRosterBody", true, false) as BoxContainer
 	filters = screen.find_child("RosterFilterControls", true, false) as BoxContainer
 	roster_controls = screen.find_child("TrainingRosterControls", true, false) as BoxContainer
+	var filter_lower_rail := screen.find_child("RosterFilterLowerRail", true, false) as BoxContainer
 	filter_summary = screen.find_child("TrainingFilterSummary", true, false) as Label
 	var dock := screen.find_child("TrainingActionDock", true, false) as VBoxContainer
 	var roster_actions := screen.find_child("RosterActions", true, false) as BoxContainer
 	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "standard portrait Training does not expose enlarged content through scrolling")
 	_check(body != null and body.vertical, "portrait Training roster/inspector did not stack")
 	_check(filters != null and filters.vertical, "portrait Training filters did not stack")
-	_check(roster_controls != null and roster_controls.vertical, "portrait Training control groups did not stack")
+	_check(roster_controls != null and not roster_controls.vertical and filter_lower_rail != null and filter_lower_rail.vertical, "portrait Training control groups did not stack")
 	_check(filter_summary != null and filter_summary.visible, "portrait Training shown-count is missing")
 	_check(dock != null and roster_actions != null and roster_actions.vertical, "portrait Training actions did not stack in the fixed dock")
+	if roster_actions != null:
+		for child: Node in roster_actions.get_children():
+			if child is Button:
+				var action := child as Button
+				_check(action.custom_minimum_size.x <= 260.0, "roster action exceeds the fixed compact width")
+				_check(action.custom_minimum_size.y >= 84.0, "roster action lacks 12px top/bottom padding height")
+				_check(_button_padding_at_least(action, 12.0), "roster action style lacks 12px vertical padding")
 	if page != null and outer != null:
 		_check(page.size.y > outer.size.y, "portrait Training does not expose vertical overflow for 1.5× content")
 		_check(page.get_global_rect().position.x >= outer.get_global_rect().position.x - 1.0 and page.get_global_rect().end.x <= outer.get_global_rect().end.x + 1.0, "portrait Training page overflows horizontally")
@@ -325,6 +360,11 @@ func _has_detailed_stats(value: String) -> bool:
 		if line.contains("0") or line.contains("1") or line.contains("2") or line.contains("3"):
 			numeric_lines += 1
 	return lines.size() >= 7 and numeric_lines >= 3 and value.contains(" • ")
+
+
+func _button_padding_at_least(button: Button, minimum: float) -> bool:
+	var style := button.get_theme_stylebox("normal")
+	return style.content_margin_top >= minimum and style.content_margin_bottom >= minimum
 
 
 func _dispose(node: Node) -> void:
