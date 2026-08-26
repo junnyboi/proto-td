@@ -4,6 +4,15 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 
+const REGULAR_CARD_SIZE := Vector2(340.0, 225.0)
+const PORTRAIT_CARD_SIZE := Vector2(300.0, 225.0)
+const REGULAR_PORTRAIT_SIZE := Vector2(62.0, 64.0)
+const PORTRAIT_PORTRAIT_SIZE := Vector2(60.0, 62.0)
+const CLASS_FONT_SIZE := 20
+const ROLE_FONT_SIZE := 14
+const DETAIL_FONT_SIZE := 13
+const COST_FONT_SIZE := 12
+
 var class_id := ""
 var operator_def_id := ""
 var _portrait: TextureRect
@@ -19,8 +28,9 @@ var _content: VBoxContainer
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size = Vector2(492.0, 420.0)
-	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	custom_minimum_size = REGULAR_CARD_SIZE
+	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	set_presentation_text("Advanced training path", " ")
 	_build_content()
 
@@ -63,27 +73,16 @@ func focus_visibility_target() -> Control:
 
 
 func _get_minimum_size() -> Vector2:
-	var minimum := custom_minimum_size
-	if _content != null:
-		var content_minimum := _content.get_combined_minimum_size() + Vector2(28.0, 28.0)
-		minimum.x = maxf(minimum.x, content_minimum.x)
-		minimum.y = maxf(minimum.y, content_minimum.y)
-	return minimum
+	return custom_minimum_size
 
 
 func set_compact(value: bool) -> void:
-	custom_minimum_size = Vector2(540.0, 780.0) if value else Vector2(492.0, 420.0)
-	_portrait.custom_minimum_size = (
-		Vector2(200.0, 220.0) if value else Vector2(190.0, 184.0)
-	)
+	custom_minimum_size = PORTRAIT_CARD_SIZE if value else REGULAR_CARD_SIZE
+	_portrait.custom_minimum_size = PORTRAIT_PORTRAIT_SIZE if value else REGULAR_PORTRAIT_SIZE
+	update_minimum_size()
 
 
 func fit_to_content() -> void:
-	if _content == null:
-		return
-	var content_minimum := _content.get_combined_minimum_size() + Vector2(28.0, 28.0)
-	custom_minimum_size.x = maxf(custom_minimum_size.x, content_minimum.x)
-	custom_minimum_size.y = maxf(custom_minimum_size.y, content_minimum.y)
 	update_minimum_size()
 
 
@@ -95,48 +94,53 @@ func _build_content() -> void:
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
-		margin.add_theme_constant_override(side, 14)
+		margin.add_theme_constant_override(side, 8)
 	add_child(margin)
 	_content = VBoxContainer.new()
 	_content.name = "PathCardContent"
-	_content.add_theme_constant_override(&"separation", 8)
+	_content.add_theme_constant_override(&"separation", 3)
 	_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(_content)
 	var header := HBoxContainer.new()
 	header.name = "PathIdentityHeader"
-	header.add_theme_constant_override(&"separation", 12)
+	header.add_theme_constant_override(&"separation", 8)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content.add_child(header)
 	var portrait_column := VBoxContainer.new()
 	portrait_column.name = "ClassKitColumn"
-	portrait_column.custom_minimum_size.x = 210.0
+	portrait_column.custom_minimum_size.x = 68.0
 	portrait_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_child(portrait_column)
 	_portrait = TextureRect.new()
 	_portrait.name = "ClassKitPortrait"
-	_portrait.custom_minimum_size = Vector2(190.0, 184.0)
+	_portrait.custom_minimum_size = REGULAR_PORTRAIT_SIZE
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_column.add_child(_portrait)
 	_placeholder = _label("ClassKitPlaceholder", &"dense_detail")
-	_placeholder.add_theme_font_size_override(&"font_size", GameTypographyType.DETAIL)
+	_placeholder.visible = false
 	_placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	portrait_column.add_child(_placeholder)
 	var identity := VBoxContainer.new()
 	identity.name = "PathIdentity"
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity.add_theme_constant_override(&"separation", 8)
+	identity.add_theme_constant_override(&"separation", 3)
 	identity.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_child(identity)
 	_class_name = _label("AdvancedClassName", &"dense_heading")
 	_role_label = _label("AdvancedRole", &"dense_detail")
+	_class_name.add_theme_font_size_override(&"font_size", CLASS_FONT_SIZE)
+	_role_label.add_theme_font_size_override(&"font_size", ROLE_FONT_SIZE)
 	identity.add_child(_class_name)
 	identity.add_child(_role_label)
 	_description = _label("ClassDescription", &"dense_detail")
 	_skill = _label("SkillFacts", &"dense_detail")
 	_cost = _label("DeployCost", &"cost_badge")
 	_kit = _label("FieldKit", &"dense_detail")
+	for detail_label: TrainingLabelType in [_description, _skill, _cost, _kit]:
+		detail_label.add_theme_font_size_override(&"font_size", DETAIL_FONT_SIZE)
+	_cost.add_theme_font_size_override(&"font_size", COST_FONT_SIZE)
 	_content.add_child(_description)
 	_content.add_child(_skill)
 	_content.add_child(_cost)
