@@ -5,6 +5,7 @@
 
 [node name="LocaleSelector" type="BoxContainer"]
 layout_mode = 3
+size_flags_horizontal = 3
 theme = ExtResource("2_theme")
 theme_override_constants/separation = 16
 vertical = false
@@ -12,12 +13,14 @@ script = ExtResource("1_locale")
 
 [node name="LocaleLabel" type="Label" parent="."]
 layout_mode = 2
+size_flags_horizontal = 0
 theme_type_variation = &"AuiLocaleLabel"
 text = "Language"
 vertical_alignment = 1
+autowrap_mode = 2
 
 [node name="LocaleList" type="ItemList" parent="."]
-custom_minimum_size = Vector2(360, 90)
+custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 2

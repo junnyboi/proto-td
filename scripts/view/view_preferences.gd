@@ -7,6 +7,8 @@ extends RefCounted
 const DEFAULT_PATH := "user://view_preferences.cfg"
 const NAVIGATION_SECTION := "navigation"
 const PAN_HINT_KEY := "pan_hint_completed"
+const LOCALIZATION_SECTION := "localization"
+const LOCALE_KEY := "locale"
 const AUDIO_SECTION := "audio"
 const TITLE_MUSIC_ENABLED_KEY := "title_music_enabled"
 const MASTER_VOLUME_KEY := "master_volume"
@@ -16,6 +18,11 @@ const GRAPHICS_SECTION := "graphics"
 const REDUCED_MOTION_KEY := "reduced_motion"
 const FRAME_LIMIT_KEY := "frame_limit"
 const VALID_FRAME_LIMITS := [0, 30, 60, 120]
+const VALID_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
+const BATCH_KEYS: Array[StringName] = [
+	&"locale", &"title_music_enabled", &"master_volume", &"music_volume",
+	&"sfx_volume", &"frame_limit", &"reduced_motion",
+]
 
 
 static func has_seen_pan_hint(path: String = DEFAULT_PATH) -> bool:
@@ -34,6 +41,20 @@ static func mark_pan_hint_seen(path: String = DEFAULT_PATH) -> bool:
 	return config.save(path) == OK
 
 
+static func locale(path: String = DEFAULT_PATH) -> StringName:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return &"en-US"
+	var value := StringName(config.get_value(LOCALIZATION_SECTION, LOCALE_KEY, &"en-US"))
+	return value if value in VALID_LOCALES else &"en-US"
+
+
+static func set_locale(locale_id: StringName, path: String = DEFAULT_PATH) -> bool:
+	if locale_id not in VALID_LOCALES:
+		return false
+	return _set_value(LOCALIZATION_SECTION, LOCALE_KEY, locale_id, path)
+
+
 static func title_music_enabled(path: String = DEFAULT_PATH) -> bool:
 	var config := ConfigFile.new()
 	if config.load(path) != OK:
@@ -42,12 +63,7 @@ static func title_music_enabled(path: String = DEFAULT_PATH) -> bool:
 
 
 static func set_title_music_enabled(enabled: bool, path: String = DEFAULT_PATH) -> bool:
-	var config := ConfigFile.new()
-	var load_error := config.load(path)
-	if load_error != OK and load_error != ERR_FILE_NOT_FOUND:
-		config = ConfigFile.new()
-	config.set_value(AUDIO_SECTION, TITLE_MUSIC_ENABLED_KEY, enabled)
-	return config.save(path) == OK
+	return _set_value(AUDIO_SECTION, TITLE_MUSIC_ENABLED_KEY, enabled, path)
 
 
 static func master_volume(path: String = DEFAULT_PATH) -> float:
@@ -96,6 +112,61 @@ static func frame_limit(path: String = DEFAULT_PATH) -> int:
 static func set_frame_limit(value: int, path: String = DEFAULT_PATH) -> bool:
 	var sanitized := value if value in VALID_FRAME_LIMITS else 0
 	return _set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, sanitized, path)
+
+
+## Validates and durably replaces the complete Title Settings preference batch.
+## Existing unrelated sections and keys are retained semantically.
+static func save_batch(values: Dictionary, path: String = DEFAULT_PATH) -> bool:
+	if path.is_empty() or not _valid_batch(values):
+		return false
+	var config := ConfigFile.new()
+	var load_error := config.load(path)
+	if load_error != OK and load_error != ERR_FILE_NOT_FOUND:
+		return false
+	config.set_value(LOCALIZATION_SECTION, LOCALE_KEY, StringName(values[&"locale"]))
+	config.set_value(AUDIO_SECTION, TITLE_MUSIC_ENABLED_KEY, bool(values[&"title_music_enabled"]))
+	config.set_value(AUDIO_SECTION, MASTER_VOLUME_KEY, float(values[&"master_volume"]))
+	config.set_value(AUDIO_SECTION, MUSIC_VOLUME_KEY, float(values[&"music_volume"]))
+	config.set_value(AUDIO_SECTION, SFX_VOLUME_KEY, float(values[&"sfx_volume"]))
+	config.set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, int(values[&"frame_limit"]))
+	config.set_value(GRAPHICS_SECTION, REDUCED_MOTION_KEY, bool(values[&"reduced_motion"]))
+	var temporary_path := "%s.tmp" % path
+	var global_temporary_path := ProjectSettings.globalize_path(temporary_path)
+	if FileAccess.file_exists(temporary_path):
+		if DirAccess.remove_absolute(global_temporary_path) != OK:
+			return false
+	if config.save(temporary_path) != OK:
+		return false
+	var replace_error := DirAccess.rename_absolute(
+		global_temporary_path, ProjectSettings.globalize_path(path),
+	)
+	if replace_error != OK:
+		DirAccess.remove_absolute(global_temporary_path)
+		return false
+	return true
+
+
+static func _valid_batch(values: Dictionary) -> bool:
+	if values.size() != BATCH_KEYS.size():
+		return false
+	for key: StringName in BATCH_KEYS:
+		if not values.has(key):
+			return false
+	var locale_value: Variant = values[&"locale"]
+	if typeof(locale_value) != TYPE_STRING_NAME or locale_value not in VALID_LOCALES:
+		return false
+	if typeof(values[&"title_music_enabled"]) != TYPE_BOOL:
+		return false
+	if typeof(values[&"reduced_motion"]) != TYPE_BOOL:
+		return false
+	for key: StringName in [&"master_volume", &"music_volume", &"sfx_volume"]:
+		var value: Variant = values[key]
+		if typeof(value) != TYPE_FLOAT or not is_finite(float(value)):
+			return false
+		if float(value) < 0.0 or float(value) > 1.0:
+			return false
+	var frame_value: Variant = values[&"frame_limit"]
+	return typeof(frame_value) == TYPE_INT and int(frame_value) in VALID_FRAME_LIMITS
 
 
 static func _volume_value(key: String, path: String) -> float:

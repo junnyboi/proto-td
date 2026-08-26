@@ -37,6 +37,20 @@ func _run() -> void:
 	_check(plate.custom_minimum_size.x >= 680.0, "full-safe-area portrait width is too small")
 	_check(plate.custom_minimum_size.y >= 1230.0, "full-safe-area portrait height is too small")
 
+	var locale_selector_scene := load("res://scenes/ui/components/aetheria_locale_selector.tscn") as PackedScene
+	var locale_selector := locale_selector_scene.instantiate() as BoxContainer
+	locale_selector.call("set_compact_mode", true)
+	root.add_child(locale_selector)
+	await process_frame
+	var locale_list := locale_selector.call("locale_list") as ItemList
+	_check(locale_list.custom_minimum_size.x == 0.0, "compact locale selector retained a fixed width")
+	_check(locale_list.custom_minimum_size.y == 60.0, "pre-ready compact locale sizing was not retained")
+	_check(bool(locale_selector.call("select_locale", &"zh-CN")), "default locale selector could not activate Chinese")
+	_check(root.get_node("I18n").call("locale") == &"zh-CN", "default locale selector stopped committing its selection")
+	_check(bool(locale_selector.call("select_locale", &"en-US")), "default locale selector could not restore English")
+	locale_selector.queue_free()
+	await process_frame
+
 	var owner := Control.new()
 	owner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(owner)

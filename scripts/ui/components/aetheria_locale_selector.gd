@@ -5,13 +5,17 @@ signal locale_selected(locale_id: StringName)
 
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
+var _draft_mode := false
+var _selected_locale: StringName = &""
+var _compact_mode := false
+
 @onready var _label: Label = $LocaleLabel
 @onready var _list: ItemList = $LocaleList
 
 
 func _ready() -> void:
-	add_theme_constant_override(&"separation", 16)
-	_list.custom_minimum_size = Vector2(360.0, 90.0)
+	add_theme_constant_override(&"separation", 8 if _compact_mode else 16)
+	_list.custom_minimum_size = Vector2(0.0, 60.0 if _compact_mode else 90.0)
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.focus_mode = Control.FOCUS_ALL
 	_list.select_mode = ItemList.SELECT_SINGLE
@@ -25,11 +29,43 @@ func set_vertical_layout(enabled: bool) -> void:
 	vertical = enabled
 
 
+func set_draft_mode(enabled: bool) -> void:
+	_draft_mode = enabled
+	if _selected_locale.is_empty():
+		_selected_locale = I18n.locale()
+	refresh()
+
+
+func set_compact_mode(enabled: bool) -> void:
+	_compact_mode = enabled
+	if is_node_ready():
+		_list.custom_minimum_size = Vector2(0.0, 60.0 if enabled else 90.0)
+		add_theme_constant_override(&"separation", 8 if enabled else 16)
+
+
+func set_selected_locale(locale_id: StringName) -> bool:
+	if not I18n.supported_locales().has(String(locale_id)):
+		return false
+	_selected_locale = locale_id
+	return refresh()
+
+
+func selected_locale() -> StringName:
+	return _selected_locale if not _selected_locale.is_empty() else I18n.locale()
+
+
+func locale_list() -> ItemList:
+	return _list
+
+
 func refresh() -> bool:
+	if not is_node_ready():
+		return false
 	var locales := I18n.supported_locales()
-	var active := I18n.locale()
+	var active := selected_locale() if _draft_mode else I18n.locale()
 	if locales.is_empty() or not locales.has(String(active)):
 		return false
+	_selected_locale = active
 	_label.text = UiCopyType.text(&"ui.locale.label", "Language")
 	_list.clear()
 	for locale_text: String in locales:
@@ -47,10 +83,17 @@ func refresh() -> bool:
 
 
 func select_locale(locale_id: StringName) -> bool:
-	var previous := I18n.locale()
-	if not I18n.set_locale(locale_id):
-		return false
-	refresh()
+	var previous := selected_locale()
+	if _draft_mode:
+		if not I18n.supported_locales().has(String(locale_id)):
+			return false
+		_selected_locale = locale_id
+		refresh()
+	else:
+		if not I18n.set_locale(locale_id):
+			return false
+		_selected_locale = I18n.locale()
+		refresh()
 	if locale_id != previous:
 		locale_selected.emit(locale_id)
 	return true

@@ -1,15 +1,9 @@
 extends Control
 
-## Premium Lunaris player entry. The screen intentionally exposes only the
-## PROTOS DEFENSE wordmark, Start, and Settings over the animated background.
+## Premium Lunaris player entry. Title remains the presentation and music owner;
+## Settings is an explicit exclusive full-viewport child state.
 
-const LOCALE_SCENE := preload("res://scenes/ui/components/aetheria_locale_selector.tscn")
-const AetheriaLocaleSelectorType := preload(
-	"res://scripts/ui/components/aetheria_locale_selector.gd"
-)
-const LunarisBackdropType := preload(
-	"res://scripts/ui/components/lunaris_animated_backdrop.gd"
-)
+const LunarisBackdropType := preload("res://scripts/ui/components/lunaris_animated_backdrop.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
@@ -19,7 +13,6 @@ const GOLD := Color("d8b978")
 const BRIGHT_GOLD := Color("f0d89a")
 const MOON_CYAN := Color("91eaf1")
 const IVORY := Color("f5efe1")
-const MUTED := Color("aebfd0")
 const VOID := Color("071019")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
@@ -29,11 +22,14 @@ const ENTRY_FADE_SECONDS := 0.56
 const ENTRY_STAGGER_SECONDS := 0.09
 const HOVER_SCALE := Vector2(1.025, 1.025)
 const HOVER_TWEEN_SECONDS := 0.16
-const FRAME_LIMITS := [0, 30, 60, 120]
 const MASTER_BUS := &"Master"
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
 
+enum ScreenState { TITLE, SETTINGS, COMMITTING }
+
+var _screen_state := ScreenState.TITLE
+var _settings_snapshot: Dictionary = {}
 var _backdrop: LunarisBackdropType = null
 var _entry_host: MarginContainer = null
 var _entry_stack: VBoxContainer = null
@@ -41,23 +37,6 @@ var _wordmark: Label = null
 var _orbit_rule: HBoxContainer = null
 var _start_button: Button = null
 var _settings_button: Button = null
-var _settings_overlay: Control = null
-var _settings_panel: PanelContainer = null
-var _settings_title: Label = null
-var _locale_selector: AetheriaLocaleSelectorType = null
-var _audio_heading: Label = null
-var _graphics_heading: Label = null
-var _master_volume_label: Label = null
-var _master_volume_slider: HSlider = null
-var _music_volume_label: Label = null
-var _music_volume_slider: HSlider = null
-var _sfx_volume_label: Label = null
-var _sfx_volume_slider: HSlider = null
-var _music_button: Button = null
-var _frame_limit_label: Label = null
-var _frame_limit_option: OptionButton = null
-var _motion_button: Button = null
-var _settings_back: Button = null
 var _title_music_enabled := true
 var _reduced_motion := false
 var _master_volume := 1.0
@@ -73,9 +52,13 @@ var _hover_tweens: Dictionary = {}
 var _highlighted_actions: Dictionary = {}
 var _interaction_feedback_ready := false
 
+@onready var _settings_state: TitleSettings = $TitleSettings
+
 
 func _ready() -> void:
 	theme = STAGING_THEME
+	var stored_locale := ViewPreferencesType.locale(_preferences_path)
+	I18n.set_locale(stored_locale)
 	_title_music_enabled = ViewPreferencesType.title_music_enabled(_preferences_path)
 	_reduced_motion = ViewPreferencesType.reduced_motion(_preferences_path)
 	_master_volume = ViewPreferencesType.master_volume(_preferences_path)
@@ -85,7 +68,12 @@ func _ready() -> void:
 	_apply_audio_settings()
 	_apply_graphics_settings()
 	_build_screen()
+	move_child(_settings_state, get_child_count() - 1)
+	_settings_state.cancel_requested.connect(_cancel_settings)
+	_settings_state.apply_requested.connect(_apply_settings)
+	_settings_state.preview_requested.connect(_preview_settings)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
+	I18n.locale_changed.connect(_on_locale_changed)
 	_refresh_copy()
 	_apply_responsive_layout()
 	_begin_title_reveal.call_deferred()
@@ -120,9 +108,10 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and _settings_overlay.visible:
+	if _screen_state in [ScreenState.SETTINGS, ScreenState.COMMITTING] and event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		_close_settings()
+		if _screen_state == ScreenState.SETTINGS:
+			_cancel_settings()
 
 
 func _build_screen() -> void:
@@ -176,159 +165,12 @@ func _build_screen() -> void:
 	_start_button = _entry_button("StartButton", true)
 	_start_button.pressed.connect(_on_start_pressed)
 	_entry_stack.add_child(_start_button)
-
 	_settings_button = _entry_button("SettingsButton", false)
 	_settings_button.pressed.connect(_open_settings)
 	_entry_stack.add_child(_settings_button)
 	_wire_title_action_feedback(_start_button)
 	_wire_title_action_feedback(_settings_button)
 	_wire_entry_focus()
-
-	_build_settings_overlay()
-
-
-func _build_settings_overlay() -> void:
-	_settings_overlay = Control.new()
-	_settings_overlay.name = "SettingsOverlay"
-	_settings_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_settings_overlay)
-
-	var veil := ColorRect.new()
-	veil.name = "SettingsVeil"
-	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	veil.color = Color(VOID, 0.72)
-	veil.mouse_filter = Control.MOUSE_FILTER_STOP
-	_settings_overlay.add_child(veil)
-
-	_settings_panel = PanelContainer.new()
-	_settings_panel.name = "SettingsPanel"
-	_settings_panel.add_theme_stylebox_override(&"panel", StagingSkinType.command_deck_style())
-	_settings_overlay.add_child(_settings_panel)
-
-	var scroll := ScrollContainer.new()
-	scroll.name = "SettingsScroll"
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_settings_panel.add_child(scroll)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override(&"margin_left", 46)
-	margin.add_theme_constant_override(&"margin_top", 34)
-	margin.add_theme_constant_override(&"margin_right", 46)
-	margin.add_theme_constant_override(&"margin_bottom", 38)
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(margin)
-
-	var stack := VBoxContainer.new()
-	stack.name = "SettingsStack"
-	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	stack.add_theme_constant_override(&"separation", 14)
-	margin.add_child(stack)
-
-	_settings_title = Label.new()
-	_settings_title.name = "SettingsTitle"
-	_settings_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	StagingSkinType.apply_display_type(_settings_title, _title_font_size(36), IVORY, 620)
-	stack.add_child(_settings_title)
-	stack.add_child(_rule(Color(MOON_CYAN, 0.68)))
-
-	_locale_selector = LOCALE_SCENE.instantiate() as AetheriaLocaleSelectorType
-	_locale_selector.name = "LocaleSelector"
-	_locale_selector.locale_selected.connect(_on_locale_selected)
-	_locale_selector.set_vertical_layout(false)
-	stack.add_child(_locale_selector)
-	var locale_label := _locale_selector.get_node("LocaleLabel") as Label
-	StagingSkinType.apply_display_type(locale_label, _title_font_size(17), GOLD, 560)
-	var locale_list := _locale_selector.get_node("LocaleList") as ItemList
-	locale_list.custom_minimum_size = Vector2(0.0, _title_size(60.0))
-	StagingSkinType.apply_display_type(locale_list, _title_font_size(20), IVORY, 560)
-
-	_audio_heading = _settings_section_heading("AudioHeading")
-	stack.add_child(_audio_heading)
-	var master_controls := _add_volume_row(stack, "MasterVolume", _master_volume, _on_master_volume_changed)
-	_master_volume_label = master_controls[0] as Label
-	_master_volume_slider = master_controls[1] as HSlider
-	var music_controls := _add_volume_row(stack, "MusicVolume", _music_volume, _on_music_volume_changed)
-	_music_volume_label = music_controls[0] as Label
-	_music_volume_slider = music_controls[1] as HSlider
-	var sfx_controls := _add_volume_row(stack, "SfxVolume", _sfx_volume, _on_sfx_volume_changed)
-	_sfx_volume_label = sfx_controls[0] as Label
-	_sfx_volume_slider = sfx_controls[1] as HSlider
-	_music_button = _settings_action("MusicButton")
-	_music_button.pressed.connect(_toggle_music)
-	stack.add_child(_music_button)
-
-	_graphics_heading = _settings_section_heading("GraphicsHeading")
-	stack.add_child(_graphics_heading)
-	var frame_row := HBoxContainer.new()
-	frame_row.name = "FrameLimitRow"
-	frame_row.add_theme_constant_override(&"separation", 18)
-	stack.add_child(frame_row)
-	_frame_limit_label = _settings_row_label("FrameLimitLabel")
-	_frame_limit_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	frame_row.add_child(_frame_limit_label)
-	_frame_limit_option = OptionButton.new()
-	_frame_limit_option.name = "FrameLimitOption"
-	_frame_limit_option.custom_minimum_size = Vector2(_title_size(230.0), _title_size(50.0))
-	_frame_limit_option.focus_mode = Control.FOCUS_ALL
-	_frame_limit_option.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	StagingSkinType.apply_display_type(_frame_limit_option, _title_font_size(16), IVORY, 560)
-	_frame_limit_option.item_selected.connect(_on_frame_limit_selected)
-	frame_row.add_child(_frame_limit_option)
-	_motion_button = _settings_action("MotionButton")
-	_motion_button.pressed.connect(_toggle_reduced_motion)
-	stack.add_child(_motion_button)
-	_settings_back = _settings_action("SettingsBackButton")
-	_settings_back.pressed.connect(_close_settings)
-	stack.add_child(_settings_back)
-	_refresh_frame_limit_items()
-
-	_settings_overlay.visible = false
-
-
-func _settings_section_heading(node_name: String) -> Label:
-	var label := Label.new()
-	label.name = node_name
-	label.add_theme_constant_override(&"outline_size", 5)
-	label.add_theme_color_override(&"font_outline_color", Color(VOID, 0.88))
-	StagingSkinType.apply_display_type(label, _title_font_size(18), GOLD, 620)
-	return label
-
-
-func _settings_row_label(node_name: String) -> Label:
-	var label := Label.new()
-	label.name = node_name
-	StagingSkinType.apply_display_type(label, _title_font_size(15), MUTED, 560)
-	return label
-
-
-func _add_volume_row(
-	parent: VBoxContainer,
-	node_name: String,
-	value: float,
-	callback: Callable,
-) -> Array[Control]:
-	var row := VBoxContainer.new()
-	row.name = "%sRow" % node_name
-	row.add_theme_constant_override(&"separation", 5)
-	parent.add_child(row)
-	var label := _settings_row_label("%sLabel" % node_name)
-	row.add_child(label)
-	var slider := HSlider.new()
-	slider.name = "%sSlider" % node_name
-	slider.min_value = 0.0
-	slider.max_value = 100.0
-	slider.step = 5.0
-	slider.value = value * 100.0
-	slider.custom_minimum_size = Vector2(0.0, _title_size(32.0))
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.focus_mode = Control.FOCUS_ALL
-	slider.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	slider.value_changed.connect(callback)
-	row.add_child(slider)
-	return [label, slider]
 
 
 func _entry_button(node_name: String, primary: bool) -> Button:
@@ -368,30 +210,6 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 	return button
 
 
-func _settings_action(node_name: String) -> Button:
-	var button := Button.new()
-	button.name = node_name
-	button.custom_minimum_size = Vector2(0.0, _title_size(54.0))
-	button.focus_mode = Control.FOCUS_ALL
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	StagingSkinType.apply_display_type(button, _title_font_size(17), IVORY, 560)
-	button.add_theme_color_override(&"font_focus_color", MOON_CYAN)
-	button.add_theme_stylebox_override(
-		&"normal",
-		StagingSkinType.clean_button_style(Color(0.014, 0.035, 0.055, 0.96), Color(MOON_CYAN, 0.34)),
-	)
-	button.add_theme_stylebox_override(
-		&"hover",
-		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.16), Color(MOON_CYAN, 0.72)),
-	)
-	button.add_theme_stylebox_override(
-		&"pressed",
-		StagingSkinType.clean_button_style(Color(MOON_CYAN, 0.26), MOON_CYAN),
-	)
-	_register_focus_pulse(button, MOON_CYAN)
-	return button
-
-
 func _register_focus_pulse(button: Button, accent: Color) -> void:
 	var style := StagingSkinType.transparent_focus_style(accent)
 	button.add_theme_stylebox_override(&"focus", style)
@@ -400,8 +218,6 @@ func _register_focus_pulse(button: Button, accent: Color) -> void:
 
 
 func _wire_entry_focus() -> void:
-	if _start_button == null or _settings_button == null:
-		return
 	var actions: Array[Control] = [_start_button, _settings_button]
 	for index: int in actions.size():
 		var current := actions[index]
@@ -426,12 +242,7 @@ func _begin_title_reveal() -> void:
 	_entry_tween = create_tween().set_parallel(true)
 	_entry_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	for index: int in reveal_nodes.size():
-		_entry_tween.tween_property(
-			reveal_nodes[index],
-			"modulate:a",
-			1.0,
-			ENTRY_FADE_SECONDS,
-		).set_delay(float(index) * ENTRY_STAGGER_SECONDS)
+		_entry_tween.tween_property(reveal_nodes[index], "modulate:a", 1.0, ENTRY_FADE_SECONDS).set_delay(float(index) * ENTRY_STAGGER_SECONDS)
 	_entry_tween.chain().tween_callback(_finish_title_reveal)
 
 
@@ -452,13 +263,12 @@ func _wire_title_action_feedback(button: Button) -> void:
 
 
 func _center_action_pivot(button: Button) -> void:
-	if button == null or not is_instance_valid(button):
-		return
-	button.pivot_offset = button.size * 0.5
+	if button != null and is_instance_valid(button):
+		button.pivot_offset = button.size * 0.5
 
 
 func _on_title_action_hover_changed(button: Button, highlighted: bool) -> void:
-	if button == null or not is_instance_valid(button):
+	if _screen_state != ScreenState.TITLE or button == null or not is_instance_valid(button):
 		return
 	if bool(_highlighted_actions.get(button, false)) == highlighted:
 		return
@@ -504,78 +314,136 @@ func _rule(color: Color) -> ColorRect:
 	return rule
 
 
-func _title_size(value: float) -> float:
-	return value * TITLE_UI_SCALE
-
-
-func _title_font_size(value: int) -> int:
-	return roundi(float(value) * TITLE_UI_SCALE)
-
-
 func _on_start_pressed() -> void:
+	if _screen_state != ScreenState.TITLE:
+		return
 	Sfx.play("ui_confirm")
 	Game.start_campaign()
 
 
 func _open_settings() -> void:
+	if _screen_state != ScreenState.TITLE:
+		return
+	var return_focus := get_viewport().gui_get_focus_owner()
+	if return_focus == null or not _entry_host.is_ancestor_of(return_focus):
+		return_focus = _settings_button
+	_settings_snapshot = _current_preferences()
+	_settings_snapshot[&"return_focus"] = return_focus
+	_screen_state = ScreenState.SETTINGS
 	Sfx.play("menu_open")
 	_reset_title_action_feedback()
+	_set_title_interaction_enabled(false)
 	_entry_host.visible = false
-	_settings_overlay.visible = true
-	_master_volume_slider.grab_focus.call_deferred()
+	_settings_state.open(_settings_snapshot)
 
 
 func _close_settings() -> void:
-	Sfx.play("menu_close")
-	_settings_overlay.visible = false
-	_entry_host.visible = true
-	_settings_button.grab_focus.call_deferred()
+	_cancel_settings()
 
 
-func _toggle_music() -> void:
-	_title_music_enabled = not _title_music_enabled
-	ViewPreferencesType.set_title_music_enabled(_title_music_enabled, _preferences_path)
-	Music.set_enabled(_title_music_enabled)
-	if _title_music_enabled:
-		Music.play_cue(&"title_lunaris")
-	Sfx.play("ui_click")
-	_refresh_copy()
-
-
-func _on_master_volume_changed(value: float) -> void:
-	_master_volume = value / 100.0
-	ViewPreferencesType.set_master_volume(_master_volume, _preferences_path)
-	_set_bus_volume(MASTER_BUS, _master_volume)
-	_refresh_copy()
-
-
-func _on_music_volume_changed(value: float) -> void:
-	_music_volume = value / 100.0
-	ViewPreferencesType.set_music_volume(_music_volume, _preferences_path)
-	_set_bus_volume(MUSIC_BUS, _music_volume)
-	_refresh_copy()
-
-
-func _on_sfx_volume_changed(value: float) -> void:
-	_sfx_volume = value / 100.0
-	ViewPreferencesType.set_sfx_volume(_sfx_volume, _preferences_path)
-	_set_bus_volume(SFX_BUS, _sfx_volume)
-	_refresh_copy()
-
-
-func _on_frame_limit_selected(index: int) -> void:
-	if index < 0 or index >= FRAME_LIMITS.size():
+func _cancel_settings() -> void:
+	if _screen_state != ScreenState.SETTINGS:
 		return
-	_frame_limit = FRAME_LIMITS[index]
-	ViewPreferencesType.set_frame_limit(_frame_limit, _preferences_path)
+	var snapshot := _settings_snapshot.duplicate(true)
+	_settings_state.close()
+	_restore_snapshot(snapshot)
+	Sfx.play("menu_close")
+	_leave_settings(snapshot.get(&"return_focus") as Control)
+
+
+func _apply_settings(draft: Dictionary) -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	_screen_state = ScreenState.COMMITTING
+	_settings_state.set_committing(true)
+	if not ViewPreferencesType.save_batch(draft, _preferences_path):
+		_screen_state = ScreenState.SETTINGS
+		_settings_state.show_save_failure()
+		return
+	_apply_preference_values(draft)
+	Sfx.play("ui_confirm")
+	_settings_state.close()
+	var return_focus := _settings_snapshot.get(&"return_focus") as Control
+	_settings_snapshot = {}
+	_leave_settings(return_focus)
+
+
+func _preview_settings(draft: Dictionary) -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	_apply_preference_values(draft)
+
+
+func _restore_snapshot(snapshot: Dictionary) -> void:
+	_apply_preference_values(snapshot)
+
+
+func _apply_preference_values(values: Dictionary) -> void:
+	var locale_id := StringName(values.get(&"locale", I18n.locale()))
+	if I18n.locale() != locale_id:
+		I18n.set_locale(locale_id)
+	_reduced_motion = bool(values.get(&"reduced_motion", _reduced_motion))
+	_frame_limit = int(values.get(&"frame_limit", _frame_limit))
+	_master_volume = float(values.get(&"master_volume", _master_volume))
+	_music_volume = float(values.get(&"music_volume", _music_volume))
+	_sfx_volume = float(values.get(&"sfx_volume", _sfx_volume))
+	var previous_music_enabled := _title_music_enabled
+	_title_music_enabled = bool(values.get(&"title_music_enabled", _title_music_enabled))
 	_apply_graphics_settings()
-	Sfx.play("ui_click")
+	_apply_audio_settings()
+	_backdrop.set_reduced_motion(_reduced_motion)
+	Music.set_enabled(_title_music_enabled)
+	if _title_music_enabled and (not previous_music_enabled or Music.current_id() != &"title_lunaris"):
+		Music.play_cue(&"title_lunaris")
+	if _reduced_motion:
+		_reset_title_action_feedback()
+	_refresh_copy()
+
+
+func _leave_settings(return_focus: Control) -> void:
+	_screen_state = ScreenState.TITLE
+	_entry_host.visible = true
+	_set_title_interaction_enabled(true)
+	var target := return_focus
+	if target == null or not is_instance_valid(target) or not target.is_visible_in_tree() or target.focus_mode == Control.FOCUS_NONE:
+		target = _settings_button
+	target.grab_focus.call_deferred()
+
+
+func _set_title_interaction_enabled(enabled: bool) -> void:
+	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
+	_start_button.disabled = not enabled
+	_settings_button.disabled = not enabled
+	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+
+
+func _current_preferences() -> Dictionary:
+	return {
+		&"locale": I18n.locale(),
+		&"title_music_enabled": _title_music_enabled,
+		&"master_volume": _master_volume,
+		&"music_volume": _music_volume,
+		&"sfx_volume": _sfx_volume,
+		&"frame_limit": _frame_limit,
+		&"reduced_motion": _reduced_motion,
+	}
 
 
 func set_preferences_path(path: String) -> void:
 	if is_node_ready() or path.is_empty():
 		return
 	_preferences_path = path
+
+
+func screen_state() -> StringName:
+	match _screen_state:
+		ScreenState.SETTINGS:
+			return &"SETTINGS"
+		ScreenState.COMMITTING:
+			return &"COMMITTING"
+		_:
+			return &"TITLE"
 
 
 func title_music_enabled() -> bool:
@@ -598,14 +466,12 @@ func frame_limit() -> int:
 	return _frame_limit
 
 
-func _toggle_reduced_motion() -> void:
-	_reduced_motion = not _reduced_motion
-	ViewPreferencesType.set_reduced_motion(_reduced_motion, _preferences_path)
-	_apply_graphics_settings()
-	_backdrop.set_reduced_motion(_reduced_motion)
-	if _reduced_motion:
-		_reset_title_action_feedback()
-	_refresh_copy()
+func reduced_motion() -> bool:
+	return _reduced_motion
+
+
+func settings_draft() -> Dictionary:
+	return _settings_state.draft()
 
 
 func _apply_audio_settings() -> void:
@@ -618,8 +484,7 @@ func _set_bus_volume(bus_name: StringName, value: float) -> void:
 	var bus_index := AudioServer.get_bus_index(bus_name)
 	if bus_index < 0:
 		return
-	var muted := value <= 0.001
-	AudioServer.set_bus_mute(bus_index, muted)
+	AudioServer.set_bus_mute(bus_index, value <= 0.001)
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(value, 0.001)))
 
 
@@ -628,91 +493,39 @@ func _apply_graphics_settings() -> void:
 	ProjectSettings.set_setting("accessibility/reduced_motion", _reduced_motion)
 
 
-func _on_locale_selected(_locale_id: StringName) -> void:
+func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh_copy()
 
 
-func _refresh_frame_limit_items() -> void:
-	if _frame_limit_option == null:
-		return
-	var labels := [
-		UiCopyType.text(&"ui.title.frame_unlimited", "Unlimited"),
-		UiCopyType.format_text(&"ui.title.frame_value", "{value} FPS", {&"value": 30}),
-		UiCopyType.format_text(&"ui.title.frame_value", "{value} FPS", {&"value": 60}),
-		UiCopyType.format_text(&"ui.title.frame_value", "{value} FPS", {&"value": 120}),
-	]
-	if _frame_limit_option.item_count != labels.size():
-		_frame_limit_option.clear()
-		for label: String in labels:
-			_frame_limit_option.add_item(label.to_upper())
-	else:
-		for index: int in labels.size():
-			_frame_limit_option.set_item_text(index, String(labels[index]).to_upper())
-	var selected_index := FRAME_LIMITS.find(_frame_limit)
-	_frame_limit_option.select(maxi(selected_index, 0))
-
-
 func _refresh_copy() -> void:
+	if _wordmark == null:
+		return
 	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
 	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
-	_settings_title.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
-	_audio_heading.text = UiCopyType.text(&"ui.title.audio", "Audio").to_upper()
-	_graphics_heading.text = UiCopyType.text(&"ui.title.graphics", "Graphics").to_upper()
-	_master_volume_label.text = UiCopyType.format_text(
-		&"ui.title.master_volume", "MASTER VOLUME  //  {value}%",
-		{&"value": roundi(_master_volume * 100.0)},
-	).to_upper()
-	_music_volume_label.text = UiCopyType.format_text(
-		&"ui.title.music_volume", "MUSIC VOLUME  //  {value}%",
-		{&"value": roundi(_music_volume * 100.0)},
-	).to_upper()
-	_sfx_volume_label.text = UiCopyType.format_text(
-		&"ui.title.sfx_volume", "SFX VOLUME  //  {value}%",
-		{&"value": roundi(_sfx_volume * 100.0)},
-	).to_upper()
-	_music_button.text = UiCopyType.format_text(
-		&"ui.title.music_state", "MUSIC  //  {state}",
-		{&"state": UiCopyType.text(&"ui.common.on" if _title_music_enabled else &"ui.common.off", "On" if _title_music_enabled else "Off")},
-	).to_upper()
-	_frame_limit_label.text = UiCopyType.text(&"ui.title.frame_limit", "Frame Limit").to_upper()
-	_refresh_frame_limit_items()
-	_motion_button.text = UiCopyType.format_text(
-		&"ui.title.motion_state", "ANIMATED BACKGROUND  //  {state}",
-		{&"state": UiCopyType.text(&"ui.common.off" if _reduced_motion else &"ui.common.on", "Off" if _reduced_motion else "On")},
-	).to_upper()
-	_settings_back.text = UiCopyType.text(&"ui.common.back", "Back").to_upper()
 
 
 func _apply_responsive_layout() -> void:
-	if _entry_host == null or _settings_panel == null:
+	if _entry_host == null:
 		return
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
 	_backdrop.fit_top_cover(viewport_size)
 	var portrait := viewport_size.y > viewport_size.x
-	var entry_width := minf(
-		viewport_size.x - 48.0,
-		_title_size(660.0 if not portrait else 520.0),
-	)
+	var entry_width := minf(viewport_size.x - 48.0, _title_size(660.0 if not portrait else 520.0))
 	var entry_height := _title_size(300.0 if not portrait else 276.0)
 	var entry_top := minf(viewport_size.y - entry_height - 28.0, viewport_size.y * (0.58 if not portrait else 0.66))
 	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, maxf(24.0, entry_top))
 	_entry_host.size = Vector2(entry_width, entry_height)
 	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(66 if not portrait else 46))
-	_start_button.custom_minimum_size = Vector2(
-		minf(entry_width, _title_size(520.0)),
-		_title_size(68.0 if not portrait else 60.0),
-	)
-	_settings_button.custom_minimum_size = Vector2(
-		minf(entry_width * 0.82, _title_size(430.0)),
-		_title_size(58.0 if not portrait else 54.0),
-	)
+	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(68.0 if not portrait else 60.0))
+	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.82, _title_size(430.0)), _title_size(58.0 if not portrait else 54.0))
 
-	var panel_width := minf(viewport_size.x - 40.0, 700.0)
-	var panel_height := minf(viewport_size.y - 48.0, 900.0)
-	_settings_panel.position = Vector2((viewport_size.x - panel_width) * 0.5, (viewport_size.y - panel_height) * 0.5)
-	_settings_panel.size = Vector2(panel_width, panel_height)
-	_settings_title.add_theme_font_size_override(&"font_size", _title_font_size(36 if not portrait else 30))
-	_frame_limit_option.custom_minimum_size.x = minf(_title_size(230.0), panel_width * 0.42)
+
+func _title_size(value: float) -> float:
+	return value * TITLE_UI_SCALE
+
+
+func _title_font_size(value: int) -> int:
+	return roundi(float(value) * TITLE_UI_SCALE)
