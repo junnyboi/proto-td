@@ -107,7 +107,6 @@ func _ready() -> void:
 		_game.set("content", self)
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	_build_screen()
-	_build_pull_confirmation()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	var i18n := get_node_or_null("/root/I18n")
@@ -768,7 +767,7 @@ func _apply_responsive_layout() -> void:
 func _on_pull_pressed() -> void:
 	if (
 			_flow_state != FlowState.BROWSE
-			or _confirmation_transition != ConfirmationTransition.NONE
+			or _premium_pull_dispatched
 			or _pull_button.disabled
 	):
 		return
@@ -787,22 +786,38 @@ func _on_pull_pressed() -> void:
 		return
 	var focused := get_viewport().gui_get_focus_owner()
 	_confirmation_return_focus = focused if _is_focus_candidate(focused) else _pull_button
-	_confirmation_projection = projection.duplicate(true)
-	_confirmation_exit_status = ""
-	_confirmation_exit_live = AccessibilityServer.LIVE_OFF
-	_premium_pull_dispatched = false
-	_flow_state = FlowState.CONFIRM
+	_premium_pull_dispatched = true
+	_flow_state = FlowState.COMMITTING
 	_suppress_browse_focus()
-	_confirmation_layer.modulate.a = 0.0
-	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
-	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
-	_confirmation_layer.visible = true
-	_set_confirmation_status("", AccessibilityServer.LIVE_POLITE)
-	_set_confirmation_pending(false)
-	_refresh_confirmation_copy()
-	_apply_responsive_layout()
-	Sfx.play("ui_click")
-	_play_confirmation_entry()
+	_pull_button.disabled = true
+	_back_button.disabled = true
+	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	_status_label.text = pending_copy
+	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	Sfx.play("ui_confirm")
+	_commit_direct_premium_pull.call_deferred()
+
+
+func _commit_direct_premium_pull() -> void:
+	if _flow_state != FlowState.COMMITTING or not _premium_pull_dispatched:
+		return
+	var committed: Dictionary = _game.call("pull_premium_hero")
+	if not committed.get("accepted", false):
+		var error_code := StringName(committed.get("error_code", &"unknown_error"))
+		var error_text := _error_copy(error_code)
+		_premium_pull_dispatched = false
+		_flow_state = FlowState.BROWSE
+		_screen_margin.visible = true
+		_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
+		_refresh()
+		_status_label.text = error_text
+		_status_label.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
+		_restore_confirmation_return_focus(_confirmation_transition_token)
+		return
+	var result: Dictionary = committed.get("result", {})
+	var pull: Dictionary = result.get("premium_pull", {})
+	_premium_pull_dispatched = false
+	_begin_reveal(pull)
 
 
 func _on_pull_cancelled() -> void:

@@ -24,6 +24,7 @@
 - [x] Replace the fixed 7.44-second result timer with natural `VideoStreamPlayer.finished` completion so every verified eight-second cinematic plays from start to finish.
 - [x] Keep result input locked during download/playback, then allow mouse/touch anywhere or keyboard accept/cancel to dismiss the completed reveal and return to Resonance.
 - [x] Preserve explicit Skip Reveal, reduced-motion fallback, failure fallback, localization, authoritative pull receipts, and Company Command audio restoration.
+- [x] Remove the redundant Confirm Resonance screen; the primary Resonance action now locks once, dispatches exactly one authoritative pull, and proceeds directly to the reveal.
 
 # Company Command Sizing Reimplementation
 
