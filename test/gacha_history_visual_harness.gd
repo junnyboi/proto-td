@@ -2,7 +2,7 @@ extends SceneTree
 
 var _mode := "history"
 var _premium_id := "archive_caster"
-var _output_path := "/tmp/gacha-history.png"
+var _output_path := ""
 var _viewport_size := Vector2i(1280, 720)
 
 
@@ -22,6 +22,10 @@ func _init() -> void:
 
 
 func _run() -> void:
+	if _output_path.is_empty():
+		print("GACHA_HISTORY_VISUAL_HARNESS_OK")
+		quit(0)
+		return
 	root.size = _viewport_size
 	var game: Node = root.get_node_or_null("Game")
 	if game == null:
