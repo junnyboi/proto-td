@@ -73,6 +73,7 @@ func _ready() -> void:
 	_settings_state.cancel_requested.connect(_cancel_settings)
 	_settings_state.apply_requested.connect(_apply_settings)
 	_settings_state.preview_requested.connect(_preview_settings)
+	_settings_state.close_completed.connect(_on_settings_close_completed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	I18n.locale_changed.connect(_on_locale_changed)
 	_refresh_copy()
@@ -347,13 +348,14 @@ func _close_settings() -> void:
 
 
 func _cancel_settings() -> void:
-	if _screen_state != ScreenState.SETTINGS:
+	if _screen_state != ScreenState.SETTINGS or _settings_state.transition_state_name() != &"ACTIVE":
 		return
 	var snapshot := _settings_snapshot.duplicate(true)
-	_settings_state.close()
+	_settings_snapshot[&"closing_return_focus"] = snapshot.get(&"return_focus") as Control
+	if not _settings_state.close():
+		return
 	_restore_snapshot(snapshot)
 	Sfx.play("menu_close")
-	_leave_settings(snapshot.get(&"return_focus") as Control)
 
 
 func _apply_settings(draft: Dictionary) -> void:
@@ -367,10 +369,9 @@ func _apply_settings(draft: Dictionary) -> void:
 		return
 	_apply_preference_values(draft)
 	Sfx.play("ui_confirm")
+	_settings_snapshot[&"closing_return_focus"] = _settings_snapshot.get(&"return_focus") as Control
+	_screen_state = ScreenState.SETTINGS
 	_settings_state.close()
-	var return_focus := _settings_snapshot.get(&"return_focus") as Control
-	_settings_snapshot = {}
-	_leave_settings(return_focus)
 
 
 func _preview_settings(draft: Dictionary) -> void:
@@ -397,12 +398,21 @@ func _apply_preference_values(values: Dictionary) -> void:
 	_apply_graphics_settings()
 	_apply_audio_settings()
 	_backdrop.set_reduced_motion(_reduced_motion)
+	_settings_state.set_reduced_motion(_reduced_motion)
 	Music.set_enabled(_title_music_enabled)
 	if _title_music_enabled and (not previous_music_enabled or Music.current_id() != &"title_lunaris"):
 		Music.play_cue(&"title_lunaris")
 	if _reduced_motion:
 		_reset_title_action_feedback()
 	_refresh_copy()
+
+
+func _on_settings_close_completed() -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	var return_focus := _settings_snapshot.get(&"closing_return_focus") as Control
+	_settings_snapshot = {}
+	_leave_settings(return_focus)
 
 
 func _leave_settings(return_focus: Control) -> void:
@@ -412,7 +422,7 @@ func _leave_settings(return_focus: Control) -> void:
 	var target := return_focus
 	if target == null or not is_instance_valid(target) or not target.is_visible_in_tree() or target.focus_mode == Control.FOCUS_NONE:
 		target = _settings_button
-	target.grab_focus.call_deferred()
+	target.grab_focus()
 
 
 func _set_title_interaction_enabled(enabled: bool) -> void:

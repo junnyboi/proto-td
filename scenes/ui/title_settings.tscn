@@ -82,6 +82,9 @@ focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiSecondaryButton"
 text = "BACK"
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
 
 [node name="SettingsTitle" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/Header"]
 layout_mode = 2
@@ -166,7 +169,7 @@ text = "MASTER VOLUME"
 autowrap_mode = 2
 
 [node name="MasterVolumeSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow"]
-custom_minimum_size = Vector2(0, 36.8)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
 mouse_default_cursor_shape = 2
@@ -184,7 +187,7 @@ text = "MUSIC VOLUME"
 autowrap_mode = 2
 
 [node name="MusicVolumeSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicVolumeRow"]
-custom_minimum_size = Vector2(0, 36.8)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
 mouse_default_cursor_shape = 2
@@ -202,7 +205,7 @@ text = "SFX VOLUME"
 autowrap_mode = 2
 
 [node name="SfxVolumeSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/SfxVolumeRow"]
-custom_minimum_size = Vector2(0, 36.8)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 focus_mode = 2
 mouse_default_cursor_shape = 2
@@ -217,6 +220,9 @@ focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiSecondaryButton"
 text = "MUSIC // ON"
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
 
 [node name="GraphicsAccessibilitySection" type="PanelContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns"]
 layout_mode = 2
@@ -267,11 +273,18 @@ focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiSecondaryButton"
 text = "ANIMATED BACKGROUND // ON"
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
 
 [node name="SettingsError" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout"]
 visible = false
 layout_mode = 2
 theme_type_variation = &"AuiDetailLabel"
+theme_override_colors/font_color = Color(1, 0.6078, 0.5765, 1)
+theme_override_colors/font_outline_color = Color(0.2314, 0.051, 0.0784, 1)
+theme_override_constants/outline_size = 4
+accessibility_live = 2
 text = "Settings could not be saved."
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -295,3 +308,6 @@ focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiPrimaryButton"
 text = "APPLY"
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
