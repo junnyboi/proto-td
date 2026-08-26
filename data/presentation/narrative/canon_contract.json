@@ -3,7 +3,7 @@
   "bible": {
     "path": "docs/NARRATIVE_CANON.md",
     "version": "1.0",
-    "sha256": "d8862ebdf543632592cde0fcf50013e7428ed9c389d8e804e469c361fa0f7195"
+    "sha256": "f352cfcc4f3f465a7e513e599c518ffa42f96fd978e9386e36519c651069f278"
   },
   "active_surface_sources": [
     "UiCopy.STATIC_FALLBACKS",

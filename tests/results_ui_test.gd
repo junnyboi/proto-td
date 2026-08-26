@@ -44,6 +44,10 @@ func _run() -> void:
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
 	var transmission_body := screen.find_child("TransmissionBody", true, false) as Label
+	var rewards_panel := screen.find_child("RewardsPanel", true, false) as PanelContainer
+	var consequence_panel := screen.find_child("ConsequencePanel", true, false) as PanelContainer
+	var rewards_scroll := screen.find_child("RewardsScroll", true, false) as ScrollContainer
+	var consequence_scroll := screen.find_child("ConsequenceScroll", true, false) as ScrollContainer
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
 	var title := screen.find_child("BackToTitle", true, false) as Button
@@ -55,6 +59,14 @@ func _run() -> void:
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
 	_check(transmission_body != null and transmission_body.text.contains("PROTOS"), "clear transmission body is not canonical")
+	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 16, "clear transmission body is below 16px")
+	for panel: PanelContainer in [rewards_panel, consequence_panel]:
+		if panel != null:
+			var panel_style := panel.get_theme_stylebox(&"panel")
+			_check(panel_style.content_margin_left >= 18.0 and panel_style.content_margin_top >= 18.0, "%s padding is below 18px" % panel.name)
+	_check(rewards_scroll != null and consequence_scroll != null, "Results payload columns lack independent local scrolling")
+	_check(rewards_scroll != null and rewards_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Rewards scroll is not flexible")
+	_check(consequence_scroll != null and consequence_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Consequence scroll is not flexible")
 	_check(actions != null and staging != null and title != null, "persistent Results actions are incomplete")
 	_check(actions != null and not _has_scroll_ancestor(actions), "Results actions remain buried inside scroll content")
 	if actions != null:

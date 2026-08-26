@@ -13,6 +13,7 @@
 - [x] Serve and test the bundle over HTTP/HTTPS; verify browser console, network, canvas, input, and responsive behavior.
 - [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `4f4e6ce6`, and verify exact-PCK deployment at `https://protohost-sqtjrsla.manus.space/`.
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
+- [x] Remove “resurrected” from the English title synopsis and its Chinese equivalent; align fallback/canon copy and verify landscape/portrait containment.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
@@ -24,6 +25,8 @@
 - [x] Replace the fixed 7.44-second result timer with natural `VideoStreamPlayer.finished` completion so every verified eight-second cinematic plays from start to finish.
 - [x] Keep result input locked during download/playback, then allow mouse/touch anywhere or keyboard accept/cancel to dismiss the completed reveal and return to Resonance.
 - [x] Preserve explicit Skip Reveal, reduced-motion fallback, failure fallback, localization, authoritative pull receipts, and Company Command audio restoration.
+- [x] Remove the redundant Confirm Resonance screen; the primary Resonance action now locks once, dispatches exactly one authoritative pull, and proceeds directly to the reveal.
+- [x] Refit the annotated browse screen with no outer/intro containers, enlarged Command Deck and guarantee telemetry, gold title-sized Marks, equal hero cards and portraits, minimal card copy, and a fixed flat Resonate action across desktop, compact landscape, and portrait layouts.
 
 # Company Command Sizing Reimplementation
 

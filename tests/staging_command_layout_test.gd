@@ -80,6 +80,9 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var mission_action_label := mission_action.find_child("PresentationLabel", true, false) as Label
 	var operation_label := staging.find_child("OperationsLabel", true, false) as Label
 	var operation_grid := staging.find_child("OperationGrid", true, false) as GridContainer
+	var operation_scroll := staging.find_child("OperationsScroll", true, false) as ScrollContainer
+	var command_scroll_name := "PortraitCommandScroll" if bool(viewport_case["portrait"]) else "LandscapeCommandScroll"
+	var command_scroll := staging.find_child(command_scroll_name, true, false) as ScrollContainer
 
 	_check(top_bar != null and top_bar.size.y >= 96.0, "%s: segmented top HUD is shorter than 96px" % context)
 	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
@@ -93,6 +96,8 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action != null and mission_action.custom_minimum_size.y >= 72.0, "%s: primary action below 72px" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 24, "%s: primary action type below 24px" % context)
 	_check(operation_label != null and _font_size(operation_label) >= 18, "%s: operations heading below 18px" % context)
+	_check(operation_scroll != null and operation_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: operations do not own local overflow" % context)
+	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s: command deck still uses document scrolling" % context)
 	_check(mission_card != null and _contains(mission_card, mission_title), "%s: mission title escaped its frame" % context)
 	_check(mission_card != null and _contains(mission_card, objective), "%s: mission objective escaped its frame" % context)
 	_check(objective.get_visible_line_count() == objective.get_line_count(), "%s: mission objective lines are clipped" % context)
@@ -114,7 +119,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 			_check(tile != null and tile.custom_minimum_size.y >= 72.0, "%s: %s below 72px" % [context, tile_name])
 			_check(_contains(navigation, tile), "%s: %s escaped navigation rail" % [context, tile_name])
 			if state.visible:
-				_check(_font_size(state) >= 15, "%s: %s state below 15px" % [context, tile_name])
+					_check(_font_size(state) >= 16, "%s: %s state below 16px" % [context, tile_name])
 	else:
 		_check(operation_grid != null and not _has_ancestor(operation_grid, navigation), "%s: operations did not reflow into command surface" % context)
 

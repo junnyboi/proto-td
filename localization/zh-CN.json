@@ -403,7 +403,7 @@
     "ui.title.settings_save_failed": "设置无法保存。请检查草稿后重试。",
     "ui.title.sfx_volume": "音效音量  //  {value}%",
     "ui.title.start": "开始游戏",
-    "ui.title.synopsis": "PROTOS 以“人类是最后的灭绝因素”为结论拯救了星球。指挥第33连队的复生英雄，证明一个并不完美的物种依然配得上未来。",
+    "ui.title.synopsis": "PROTOS 以“人类是最后的灭绝因素”为结论拯救了星球。指挥第33连队的英雄，证明一个并不完美的物种依然配得上未来。",
     "ui.training.ack_entry": "{callsign} 转为 {class_name}",
     "ui.training.acknowledgement": "训练完成：{assignments}",
     "ui.training.add_another": "继续选择",

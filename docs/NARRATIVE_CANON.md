@@ -44,7 +44,7 @@ The canonical full synopsis is:
 
 The canonical compact title treatment is:
 
-> **PROTOS saved the planet by declaring humanity its final extinction event. Command the resurrected champions of Company 33, defend the last free cities, and prove that an imperfect species still deserves a future.**
+> **PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33, defend the last free cities, and prove that an imperfect species still deserves a future.**
 
 ## Core terminology
 

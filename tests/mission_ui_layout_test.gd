@@ -88,14 +88,20 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var back := _mission.find_child("BackButton", true, false) as Button
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
-	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") <= 16, "%s name filter is too large for its field" % label)
+	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 16, "%s name filter is below the readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
 		for child: Node in operator_grid.get_children():
 			if child is Button:
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
-				_check(card_label != null and card_label.get_theme_font_size(&"font_size") <= 15, "%s operator-card copy is not compact" % label)
+				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 16, "%s operator-card copy is below 16px" % label)
+				if card_label != null:
+					_check(card_label.offset_left >= 16.0 and -card_label.offset_right >= 16.0, "%s operator-card horizontal padding is below 16px" % label)
+					_check(-card_label.offset_bottom >= 16.0, "%s operator-card bottom padding is below 16px" % label)
+	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
+	if label == "regular" and command_scroll != null:
+		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "regular mission still uses document scrolling")
 	if viewport.x >= 1000 and training != null and back != null:
 		_check(training.custom_minimum_size.x >= 240.0, "%s Train Operators lacks a safe minimum width" % label)
 		_check(back.custom_minimum_size.x >= 170.0, "%s Back lacks a safe minimum width" % label)

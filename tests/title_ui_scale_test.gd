@@ -47,6 +47,8 @@ func _verify_title_scale() -> void:
 	var settings := _title.find_child("SettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 138, "landscape wordmark did not retain near-doubled readability")
 	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 27, "canon synopsis typography is unreadable")
+	_check(synopsis != null and not synopsis.text.to_lower().contains("resurrected"), "title synopsis restored removed wording")
+	_check(synopsis != null and synopsis.text.contains("Command the champions of Company 33"), "title synopsis copy changed unexpectedly")
 	_check(synopsis != null and synopsis.get_visible_line_count() == synopsis.get_line_count(), "canon synopsis is clipped")
 	_check(start.get_theme_font_size(&"font_size") == 55, "Start typography is not doubled")
 	_check(settings.get_theme_font_size(&"font_size") == 46, "Settings typography is not doubled")

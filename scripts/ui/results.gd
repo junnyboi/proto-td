@@ -24,6 +24,8 @@ const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loadin
 var _actions: GridContainer = null
 var _shell: AetheriaScreenShellType = null
 var _body_grid: GridContainer = null
+var _header_grid: GridContainer = null
+var _tally: AetheriaLabelType = null
 var _landscape_action_columns := 3
 
 
@@ -40,6 +42,7 @@ func _ready() -> void:
 		backdrop.color = Color(Style.INK_DEEP, 0.84)
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	get_viewport().size_changed.connect(_apply_responsive_layout)
 
 	var layout := VBoxContainer.new()
 	layout.name = "ResultsLayout"
@@ -60,15 +63,15 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	outcome_plate.custom_minimum_size.y = 112.0
 	Style.apply_panel(outcome_plate, &"result" if cleared else &"danger")
 	layout.add_child(outcome_plate)
-	var header := GridContainer.new()
-	header.name = "ResultsHeader"
-	header.columns = 3
-	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_theme_constant_override(&"h_separation", 16)
-	outcome_plate.add_child(header)
+	_header_grid = GridContainer.new()
+	_header_grid.name = "ResultsHeader"
+	_header_grid.columns = 3
+	_header_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header_grid.add_theme_constant_override(&"h_separation", 16)
+	outcome_plate.add_child(_header_grid)
 	var identity := VBoxContainer.new()
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var eyebrow := _label("OutcomeEyebrow", UiCopyType.text(&"ui.results.eyebrow", "AFTER-ACTION RELIQUARY"), &"dense_detail")
+	var eyebrow := _label("OutcomeEyebrow", UiCopyType.text(&"ui.results.eyebrow", "AFTER-ACTION RELIQUARY"), &"detail")
 	identity.add_child(eyebrow)
 	var headline := _label(
 		"Headline",
@@ -77,7 +80,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	)
 	headline.add_theme_font_size_override(&"font_size", 40)
 	identity.add_child(headline)
-	header.add_child(identity)
+	_header_grid.add_child(identity)
 	var stage_id := StringName(result.get("stage_id", &""))
 	var stage_title := String(stage_id).to_upper()
 	var stage_path := "res://data/stages/%s.tres" % stage_id
@@ -98,8 +101,8 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 		star.set_state(Style.GOLD, cleared and index < int(result.get("stars", 0)))
 		stars.add_child(star)
 	stage_block.add_child(stars)
-	header.add_child(stage_block)
-	var tally := _label(
+	_header_grid.add_child(stage_block)
+	_tally = _label(
 		"TallyLine",
 		UiCopyType.format_text(&"ui.results.tally", "KILLS {kills}   LEAKS {leaks}", {
 			&"kills": int(result.get("kills", 0)),
@@ -107,11 +110,11 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 		}).to_upper(),
 		&"dense_heading",
 	)
-	tally.custom_minimum_size.x = 230.0
-	tally.autowrap_mode = TextServer.AUTOWRAP_OFF
-	tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	tally.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	header.add_child(tally)
+	_tally.custom_minimum_size.x = 230.0
+	_tally.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_tally.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_header_grid.add_child(_tally)
 
 
 func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> void:
@@ -129,10 +132,12 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	rewards_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rewards_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(rewards_panel, &"result" if cleared else &"quiet")
+	_ensure_panel_padding(rewards_panel, 18.0)
 	_body_grid.add_child(rewards_panel)
 	var rewards_scroll := ScrollContainer.new()
 	rewards_scroll.name = "RewardsScroll"
 	rewards_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rewards_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rewards_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	rewards_panel.add_child(rewards_scroll)
 	var rewards := VBoxContainer.new()
@@ -163,10 +168,12 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	consequence_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	consequence_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(consequence_panel, &"danger" if not cleared else &"quiet")
+	_ensure_panel_padding(consequence_panel, 18.0)
 	_body_grid.add_child(consequence_panel)
 	var consequence_scroll := ScrollContainer.new()
 	consequence_scroll.name = "ConsequenceScroll"
 	consequence_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	consequence_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	consequence_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	consequence_panel.add_child(consequence_scroll)
 	var consequences := VBoxContainer.new()
@@ -242,13 +249,24 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
+	_apply_responsive_layout()
+
+
+func _apply_responsive_layout() -> void:
+	if _shell == null:
+		return
+	var mode := _shell.layout_mode()
+	var narrow := mode == &"portrait" and get_viewport_rect().size.x <= 480.0
 	if _actions != null:
-		_actions.columns = 1 if mode == &"portrait" else _landscape_action_columns
+		_actions.columns = 2 if narrow else (1 if mode == &"portrait" else _landscape_action_columns)
 	if _body_grid != null:
 		_body_grid.columns = 1 if mode == &"portrait" else 2
-	var header := find_child("ResultsHeader", true, false) as GridContainer
-	if header != null:
-		header.columns = 1 if mode == &"portrait" else 3
+	if _header_grid != null:
+		_header_grid.columns = 1 if mode == &"portrait" else 3
+	if _tally != null:
+		_tally.custom_minimum_size.x = 0.0 if mode == &"portrait" else 230.0
+		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if mode == &"portrait" else TextServer.AUTOWRAP_OFF
+		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if mode == &"portrait" else HORIZONTAL_ALIGNMENT_RIGHT
 
 
 func _consequence_copy(result: Dictionary, cleared: bool) -> String:
@@ -294,7 +312,7 @@ func _transmission_card(record: StageNarrativeDefType) -> PanelContainer:
 		&"dense_body",
 	)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.add_theme_font_size_override(&"font_size", 14)
+	body.add_theme_font_size_override(&"font_size", 16)
 	stack.add_child(body)
 	return card
 
@@ -304,11 +322,12 @@ func _result_card(node_name: String, title_text: String, detail_text: String, da
 	card.name = node_name
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(card, &"danger" if danger else &"quiet")
+	_ensure_panel_padding(card, 16.0)
 	var stack := VBoxContainer.new()
 	stack.add_theme_constant_override(&"separation", 4)
 	card.add_child(stack)
 	stack.add_child(_label("Title", title_text, &"dense_heading"))
-	var detail := _label("Detail", detail_text, &"dense_detail")
+	var detail := _label("Detail", detail_text, &"detail")
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stack.add_child(detail)
 	return card
@@ -400,3 +419,12 @@ func _button(button_name: String, button_text: String, presentation_text: String
 	button.tooltip_text = button_text
 	button.apply_compact_action_layout()
 	return button
+
+
+func _ensure_panel_padding(panel: PanelContainer, padding: float) -> void:
+	var style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	style.content_margin_left = maxf(style.content_margin_left, padding)
+	style.content_margin_top = maxf(style.content_margin_top, padding)
+	style.content_margin_right = maxf(style.content_margin_right, padding)
+	style.content_margin_bottom = maxf(style.content_margin_bottom, padding)
+	panel.add_theme_stylebox_override(&"panel", style)

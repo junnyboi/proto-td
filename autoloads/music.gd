@@ -32,6 +32,7 @@ var _fade_tween: Tween = null
 var _enabled := true
 var _start_count := 0
 var _stop_count := 0
+var _last_transition_fade_seconds := 0.0
 
 
 func _ready() -> void:
@@ -96,6 +97,31 @@ func play_cue(cue_id: StringName) -> bool:
 	if not _transition_to(cue_id, 0.0):
 		return false
 	_clear_pending()
+	return true
+
+
+func transition_to_cue(cue_id: StringName, fade_seconds: float = 0.75) -> bool:
+	if not _enabled or cue_id.is_empty():
+		return false
+	if _current_id == cue_id and _active_player().playing:
+		_clear_pending()
+		return true
+	if not _transition_to(cue_id, maxf(fade_seconds, 0.0)):
+		return false
+	_clear_pending()
+	return true
+
+
+func transition_to_staging(
+	profile_id: StringName = &"lunaris",
+	fade_seconds: float = 0.75,
+) -> bool:
+	var profile := _profile_for(profile_id)
+	if profile == null or not transition_to_cue(profile.staging_cue_id, fade_seconds):
+		return false
+	_current_profile_id = profile_id
+	_current_variant_id = &"staging"
+	_current_state_id = &"staging"
 	return true
 
 
@@ -268,6 +294,10 @@ func current_tempo_scale() -> float:
 	return _active_player().pitch_scale
 
 
+func last_transition_fade_seconds() -> float:
+	return _last_transition_fade_seconds
+
+
 func _transition_to(
 	cue_id: StringName,
 	fade_seconds: float,
@@ -295,8 +325,10 @@ func _transition_to(
 	new_player.play()
 	_active_index = new_index
 	_current_id = cue_id
+	_last_transition_fade_seconds = maxf(fade_seconds, 0.0)
 	_start_count += 1
 	if not old_player.playing or fade_seconds <= 0.0:
+		new_player.volume_db = cue.volume_db
 		old_player.stop()
 		old_player.stream = null
 		old_player.pitch_scale = 1.0

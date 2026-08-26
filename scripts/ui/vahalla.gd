@@ -15,6 +15,7 @@ var _body_grid: GridContainer
 var _roster_panel: PanelContainer
 var _dossier_panel: PanelContainer
 var _memorial_grid: GridContainer
+var _memorial_scroll: ScrollContainer
 var _filter_bar: RosterFilterBarType
 var _status_label: Label
 var _fallen_rows: Array[Dictionary] = []
@@ -103,6 +104,7 @@ func _build_screen() -> void:
 
 	_filter_bar = RosterFilterBarType.new()
 	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, RosterFilterType.FACTION_ALL)
+	_filter_bar.set_compact(true)
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	content.add_child(_filter_bar)
 
@@ -121,6 +123,7 @@ func _build_screen() -> void:
 	_roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_roster_panel, &"quiet")
+	_ensure_panel_padding(_roster_panel, 18.0)
 	_body_grid.add_child(_roster_panel)
 	var roster_stack := VBoxContainer.new()
 	roster_stack.add_theme_constant_override(&"separation", 10)
@@ -131,6 +134,7 @@ func _build_screen() -> void:
 	scroll.name = "VahallaMemorialScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_memorial_scroll = scroll
 	roster_stack.add_child(scroll)
 	_memorial_grid = GridContainer.new()
 	_memorial_grid.name = "VahallaMemorialGrid"
@@ -145,6 +149,7 @@ func _build_screen() -> void:
 	_dossier_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_dossier_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_dossier_panel, &"memorial")
+	_ensure_panel_padding(_dossier_panel, 22.0)
 	_body_grid.add_child(_dossier_panel)
 	_rebuild_memorial()
 
@@ -179,7 +184,7 @@ func _memorial_row(hero: Dictionary) -> Button:
 	var hero_id := String(hero["hero_id"])
 	var row := Button.new()
 	row.name = "Memorial_%s" % hero_id
-	row.custom_minimum_size = Vector2(0, 82)
+	row.custom_minimum_size = Vector2(0, 104)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.text = "%s\n%s · %s" % [
 		TrainingSupportType.callsign(hero).to_upper(),
@@ -190,6 +195,32 @@ func _memorial_row(hero: Dictionary) -> Button:
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.pressed.connect(_on_memorial_selected.bind(hero_id))
 	Style.apply_button(row, &"selected" if hero_id == _selected_hero_id else &"quiet")
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
+	]:
+		row.add_theme_color_override(color_name, Color.TRANSPARENT)
+	var margin := MarginContainer.new()
+	margin.name = "MemorialRowMargin"
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
+		margin.add_theme_constant_override(side, 16)
+	row.add_child(margin)
+	var copy := VBoxContainer.new()
+	copy.add_theme_constant_override(&"separation", 4)
+	copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(copy)
+	var callsign := _label(TrainingSupportType.callsign(hero).to_upper(), &"body")
+	callsign.name = "MemorialRowCallsign"
+	callsign.add_theme_font_size_override(&"font_size", 19)
+	copy.add_child(callsign)
+	var class_copy := _label(_class_name(String(hero["current_class_id"])).to_upper(), &"detail")
+	class_copy.name = "MemorialRowClass"
+	copy.add_child(class_copy)
+	var faction_copy := _label(FactionHeraldryType.display_name(StringName(hero["faction_id"])).to_upper(), &"detail")
+	faction_copy.name = "MemorialRowFaction"
+	copy.add_child(faction_copy)
 	return row
 
 
@@ -246,8 +277,9 @@ func _rebuild_dossier() -> void:
 	var service_ledger := PanelContainer.new()
 	service_ledger.name = "ServiceLedger"
 	service_ledger.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	service_ledger.custom_minimum_size.y = 132.0
+	service_ledger.custom_minimum_size.y = 160.0
 	Style.apply_panel(service_ledger, &"quiet")
+	_ensure_panel_padding(service_ledger, 18.0)
 	details.add_child(service_ledger)
 	var ledger_stack := VBoxContainer.new()
 	ledger_stack.add_theme_constant_override(&"separation", 8)
@@ -274,8 +306,9 @@ func _rebuild_dossier() -> void:
 	Style.apply_button(honor, &"selected" if honor.disabled else &"gold")
 	details.add_child(honor)
 	if get_viewport_rect().size.y > get_viewport_rect().size.x:
-		layout.columns = 1
-		portrait.custom_minimum_size = Vector2(0, 380)
+		var narrow := get_viewport_rect().size.x < 600.0
+		layout.columns = 1 if narrow else 2
+		portrait.custom_minimum_size = Vector2(0 if narrow else 220, 220 if narrow else 280)
 
 
 func _hero_for_id(hero_id: String) -> Dictionary:
@@ -332,13 +365,14 @@ func _apply_responsive_layout() -> void:
 	var portrait := get_viewport_rect().size.y > get_viewport_rect().size.x
 	_header_grid.columns = 1 if portrait else 3
 	_body_grid.columns = 1 if portrait else 2
-	_filter_bar.set_compact(portrait)
+	_filter_bar.set_compact(true)
+	_filter_bar.set_inline(not portrait)
 	var margin := 16 if portrait else 28
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 		_screen_margin.add_theme_constant_override(side, margin)
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
-	_roster_panel.custom_minimum_size = Vector2(0 if portrait else 320, 230 if portrait else 0)
-	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 620 if portrait else 0)
+	_roster_panel.custom_minimum_size = Vector2(0 if portrait else 320, 220 if portrait else 0)
+	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 360 if portrait else 0)
 	_body_grid.move_child(_dossier_panel, 0 if portrait else 1)
 	_rebuild_dossier()
 
@@ -347,5 +381,16 @@ func _label(text: String, role: StringName) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	Style.apply_label(label, role)
 	return label
+
+
+func _ensure_panel_padding(panel: PanelContainer, padding: float) -> void:
+	var style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	style.content_margin_left = maxf(style.content_margin_left, padding)
+	style.content_margin_top = maxf(style.content_margin_top, padding)
+	style.content_margin_right = maxf(style.content_margin_right, padding)
+	style.content_margin_bottom = maxf(style.content_margin_bottom, padding)
+	panel.add_theme_stylebox_override(&"panel", style)
