@@ -103,7 +103,6 @@ func _run() -> void:
 		_cleanup(game, battle)
 		_finish()
 		return
-
 	_check(tutorial != null and bool(tutorial.call("is_holding_battle")), "First Stand tutorial is not holding the initial battle")
 	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "tutorial route step did not block operator cards")
 	controls.call("set_interaction_enabled", true)
@@ -290,12 +289,21 @@ func _run() -> void:
 	_check(confirmation_trace == [&"entering", &"active", &"committing", &"exiting", &"closed"], "terminal exit did not finalize CLOSED")
 	await process_frame
 	var continue_button := battle.find_child("ContinueButton", true, false) as Button
+	var defeat_stamp := battle.find_child("ResultStampLabel", true, false) as Label
 	var pan_hint := battle.find_child("MapPanHint", true, false) as Control
 	_check(model.result == BattleModel.Result.DEFEAT and not layer.visible, "terminal defeat retained confirmation")
 	_check(pause.disabled and speed.disabled and resign.disabled, "terminal battle controls remain actionable")
 	_check(not bool(deploy_bar.call("interaction_enabled")) and not bool(owned_spell_bar.call("interaction_enabled")), "terminal deploy/spell controls remain actionable")
 	_check(pan_hint == null or not pan_hint.visible, "terminal map hint remains visible")
 	_check(continue_button != null and continue_button.has_focus(), "terminal Continue did not own focus")
+	_check(defeat_stamp != null and defeat_stamp.get_theme_font_size(&"font_size") >= 162, "DEFEAT stamp is not three times the prior 54px result size")
+	if continue_button != null:
+		var continue_style := continue_button.get_theme_stylebox(&"normal")
+		_check(continue_button.custom_minimum_size.x >= 600.0, "Continue to Debrief is not wide enough for its copy")
+		_check(continue_button.get_theme_font_size(&"font_size") >= 42, "Continue to Debrief typography was not enlarged")
+		_check(continue_button.get_theme_color(&"font_color") == Color.WHITE, "Continue to Debrief copy is not white")
+		_check(continue_style.content_margin_top >= 24.0 and continue_style.content_margin_bottom >= 24.0, "Continue to Debrief lacks 24px vertical padding")
+		_check(continue_button.get_combined_minimum_size().x <= continue_button.size.x + 1.0, "Continue to Debrief text overflows its action width")
 	var terminal_pan := battle.call("map_pan") as Vector2
 	var wheel := InputEventMouseButton.new()
 	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
@@ -330,6 +338,7 @@ func _first_valid_deploy_cell(model: BattleModel, deployment_id: StringName) -> 
 			if model.can_deploy_at(deployment_id, cell):
 				return cell
 	return Vector2i(-1, -1)
+
 
 func _rect_matches(actual: Rect2, expected: Rect2, tolerance := 1.5) -> bool:
 	return actual.position.distance_to(expected.position) <= tolerance and actual.size.distance_to(expected.size) <= tolerance

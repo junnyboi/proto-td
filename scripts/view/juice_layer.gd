@@ -18,6 +18,10 @@ const VFX_RESULT_STAMP := &"vfx_result_stamp"
 const KNOCK_COLOR := Color(1.0, 0.3, 0.3)
 const BANNER_TEXT_SIZE := GameTypographyType.DISPLAY
 const STAMP_TEXT_SIZE := GameTypographyType.RESULT_DISPLAY
+const DEFEAT_STAMP_TEXT_SCALE := 3.0
+const STAMP_HEIGHT := 200.0
+const STAMP_CLEAR_LABEL_HEIGHT := 90.0
+const STAMP_DEFEAT_LABEL_HEIGHT := 200.0
 const STAR_COLOR := Color("f4b41b")
 const SPRUNG_COLOR := Color("f4f4f4")
 
@@ -72,10 +76,13 @@ func relayout(view_size: Vector2) -> void:
 		_vignette.position = Vector2.ZERO
 		_vignette.size = view_size
 	if _stamp != null:
-		_stamp.size = Vector2(view_size.x, 200.0)
-		_stamp.position = Vector2(0, (view_size.y - 200.0) * 0.5)
+		_stamp.size = Vector2(view_size.x, STAMP_HEIGHT)
+		_stamp.position = Vector2(0, (view_size.y - STAMP_HEIGHT) * 0.5)
 		var label := _stamp.get_node("ResultStampLabel") as Label
-		label.size = Vector2(view_size.x, 90.0)
+		label.size = Vector2(
+			view_size.x,
+			float(label.get_meta(&"stamp_label_height", STAMP_CLEAR_LABEL_HEIGHT)),
+		)
 		_stamp_stars.position = Vector2(view_size.x * 0.5, 150.0)
 
 
@@ -310,26 +317,36 @@ func banner_visible() -> bool:
 
 ## item 5: terminal stamp — CLEAR/DEFEAT + one star per model star,
 ## revealed in sequence (star_burst_stagger_frames apart)
-func stamp(result_text: String, stars: int) -> void:
+func stamp(result_text: String, stars: int, text_scale := 1.0) -> void:
 	if _stamp != null:
 		return
 	var view_size := get_viewport_rect().size
+	var label_height := (
+		STAMP_DEFEAT_LABEL_HEIGHT
+		if text_scale >= DEFEAT_STAMP_TEXT_SCALE
+		else STAMP_CLEAR_LABEL_HEIGHT
+	)
 	_stamp = _make_nine_patch(
 		VFX_RESULT_STAMP,
-		Vector2(view_size.x, 200),
+		Vector2(view_size.x, STAMP_HEIGHT),
 		Vector4i(24, 16, 24, 16),
 	)
 	_stamp.name = "ResultStamp"
-	_stamp.position = Vector2(0, (view_size.y - 200.0) * 0.5)
+	_stamp.position = Vector2(0, (view_size.y - STAMP_HEIGHT) * 0.5)
 	var label := Label.new()
 	label.name = "ResultStampLabel"
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text = result_text
 	Style.apply_label(label, &"title")
-	label.add_theme_font_size_override("font_size", STAMP_TEXT_SIZE)
+	label.add_theme_font_size_override(
+		"font_size",
+		maxi(1, roundi(float(STAMP_TEXT_SIZE) * maxf(text_scale, 1.0))),
+	)
 	label.add_theme_color_override(&"font_color", Style.IVORY)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.size = Vector2(view_size.x, 90)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.size = Vector2(view_size.x, label_height)
+	label.set_meta(&"stamp_label_height", label_height)
 	_stamp.add_child(label)
 	_stamp_stars = Node2D.new()
 	_stamp_stars.name = "StampStars"
