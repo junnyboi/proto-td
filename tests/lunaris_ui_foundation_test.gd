@@ -94,6 +94,59 @@ func _run() -> void:
 	_check(DialogType.hide_dialog(dialog), "dialog failed to close after return focus was invalidated")
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
+	root.size = Vector2i(1280, 720)
+	await process_frame
+	var full_dialog := DialogType.create(
+		owner,
+		"FullViewportDialog",
+		"Withdraw",
+		"This consequence copy remains wrapped inside the body-only scroll region.",
+		"Confirm defeat",
+		"Return to battle",
+		true,
+		DialogType.Presentation.FULL_VIEWPORT,
+	)
+	await process_frame
+	var full_overlay := full_dialog[&"overlay"] as Control
+	var full_safe := full_dialog[&"safe"] as MarginContainer
+	var full_panel := full_dialog[&"panel"] as PanelContainer
+	var full_header := full_dialog[&"header"] as Control
+	var full_body_scroll := full_dialog[&"body_scroll"] as ScrollContainer
+	var full_dock := full_dialog[&"action_dock"] as PanelContainer
+	var full_actions := full_dialog[&"actions"] as GridContainer
+	var full_cancel := full_dialog[&"cancel"] as Button
+	var full_confirm := full_dialog[&"confirm"] as Button
+	_check(full_overlay.mouse_filter == Control.MOUSE_FILTER_STOP, "full dialog root does not stop pointer input")
+	_check((full_dialog[&"backdrop"] as ColorRect).color.a >= 0.99, "full dialog background is not opaque")
+	_check(full_panel.size_flags_horizontal == Control.SIZE_EXPAND_FILL, "full dialog frame does not fill safe width")
+	_check(full_panel.size_flags_vertical == Control.SIZE_EXPAND_FILL, "full dialog frame does not fill safe height")
+	_check(full_header.get_parent() == full_body_scroll.get_parent(), "full dialog header is not persistent outside scroll")
+	_check(full_dock.get_parent() == full_body_scroll.get_parent(), "full dialog action dock is not persistent outside scroll")
+	_check(full_body_scroll.follow_focus, "full dialog body scroll does not follow focus")
+	_check(full_actions.columns == 2, "regular full dialog actions are not horizontal")
+	_check(full_cancel.custom_minimum_size.y >= 44.0 and full_confirm.custom_minimum_size.y >= 44.0, "full dialog actions are not touch safe")
+	_check(full_safe.get_theme_constant(&"margin_left") >= 12, "full dialog safe gutter is missing")
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	_check(DialogType.show_dialog(full_dialog), "full dialog did not open")
+	await process_frame
+	_check(full_overlay.get_global_rect().size.is_equal_approx(Vector2(root.size)), "full dialog root does not match viewport")
+	_check(DialogType.set_pending(full_dialog, true, "PENDING"), "full dialog pending lock failed")
+	_check(DialogType.is_pending(full_dialog) and full_cancel.disabled and full_confirm.disabled, "full dialog pending query/lock drifted")
+	DialogType.set_pending(full_dialog, false)
+	root.size = Vector2i(540, 960)
+	await process_frame
+	_check(full_actions.columns == 1, "portrait full dialog actions do not stack")
+	_check(full_cancel.size.x >= full_actions.size.x - 1.0, "portrait safe-first action does not fill the action grid")
+	full_confirm.grab_focus()
+	root.size = Vector2i(960, 420)
+	await process_frame
+	_check(full_actions.columns == 2, "short regular-width full dialog actions should remain horizontal")
+	_check(full_confirm.has_focus(), "full dialog lost logical focus across live resize")
+	_check(full_header.get_global_rect().end.y <= full_body_scroll.get_global_rect().position.y + 1.0, "short dialog header overlaps scrolling body")
+	_check(full_body_scroll.get_global_rect().end.y <= full_dock.get_global_rect().position.y + 1.0, "short dialog body overlaps persistent dock")
+	DialogType.hide_dialog(full_dialog, false)
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+
 	owner.queue_free()
 	shell.queue_free()
 	_finish()

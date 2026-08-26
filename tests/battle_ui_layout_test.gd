@@ -1,14 +1,16 @@
 extends SceneTree
 
+const LANDSCAPE := Vector2i(1280, 720)
+const PORTRAIT := Vector2i(720, 1280)
+const NARROW := Vector2i(540, 960)
+const SHORT := Vector2i(960, 420)
 var _failures: Array[String] = []
-
 
 func _init() -> void:
 	call_deferred("_run")
 
-
 func _run() -> void:
-	root.size = Vector2i(1280, 720)
+	root.size = LANDSCAPE
 	await process_frame
 	var game := root.get_node_or_null("Game")
 	_check(game != null, "Game autoload missing")
@@ -25,14 +27,24 @@ func _run() -> void:
 	if battle == null:
 		_finish()
 		return
+	var model := game.get("current_battle") as BattleModel
 	var hud := battle.find_child("BattleHud", true, false) as Label
+	var deploy_bar := battle.find_child("DeployBar", true, false) as Node
 	var deployment_deck := battle.find_child("DeploymentCommandDeck", true, false) as PanelContainer
 	var slot_box := battle.find_child("SlotBox", true, false) as GridContainer
+	var controls := battle.find_child("BattleControls", true, false) as Node
+	var confirmation_trace: Array[StringName] = []
+	controls.connect(
+		"confirmation_state_changed",
+		func(state: StringName) -> void: confirmation_trace.append(state),
+	)
+	var owned_spell_bar := battle.find_child("SpellBar", true, false) as Node
 	var controls_deck := battle.find_child("BattleCommandDeck", true, false) as PanelContainer
 	var pause := battle.find_child("PauseButton", true, false) as Button
 	var speed := battle.find_child("SpeedButton", true, false) as Button
 	var resign := battle.find_child("ResignButton", true, false) as Button
 	var recenter := battle.find_child("RecenterMap", true, false) as Button
+	var tutorial := battle.find_child("FirstStandTutorial", true, false) as Node
 	var tutorial_card := battle.find_child("TutorialCard", true, false) as PanelContainer
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
@@ -48,54 +60,176 @@ func _run() -> void:
 	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control
 	spell_probe.name = "Phase0SpellProbe"
 	battle.add_child(spell_probe)
-	spell_probe.call("setup", game.get("current_battle"), battle, [&"slow_field"] as Array[StringName])
+	spell_probe.call("setup", model, battle, [&"slow_field"] as Array[StringName])
 	await process_frame
 	var spell_deck := spell_probe.find_child("SpellCommandDeck", true, false) as PanelContainer
-	_check(
-		spell_deck != null and not spell_deck.get_global_rect().intersects(controls_deck.get_global_rect()),
-		"landscape spell and battle command hit regions overlap; controls=%s spell=%s" % [
-			controls_deck.get_global_rect(), spell_deck.get_global_rect() if spell_deck != null else Rect2(),
-		],
-	)
+	_check(spell_deck != null and controls_deck != null and not spell_deck.get_global_rect().intersects(controls_deck.get_global_rect()), "landscape spell and battle command hit regions overlap")
+	if controls == null or deploy_bar == null or model == null:
+		_check(false, "battle controls, deployment bar, or model missing")
+		_cleanup(game, battle)
+		_finish()
+		return
 
+	_check(tutorial != null and bool(tutorial.call("is_holding_battle")), "First Stand tutorial is not holding the initial battle")
+	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "tutorial route step did not block operator cards")
+	controls.call("set_interaction_enabled", true)
+	_check(bool(controls.call("request_resign_confirmation")), "resign confirmation did not open under composed tutorial fixture")
+	await process_frame
+	_check(bool(battle.call("battle_confirmation_active")), "battle confirmation blocker was not published")
+	_check(not bool(deploy_bar.call("interaction_enabled")) and not bool(owned_spell_bar.call("interaction_enabled")), "confirmation did not gate deploy/spell interaction")
+	_check(not bool(deploy_bar.call("operator_interaction_enabled")), "confirmation overwrote tutorial operator blocker")
+	_check(bool(controls.call("cancel_resign_confirmation")), "composed confirmation did not cancel")
+	await process_frame
+	_check(bool(deploy_bar.call("interaction_enabled")) and not bool(deploy_bar.call("operator_interaction_enabled")), "Cancel did not preserve the composed tutorial gate")
+	controls.call("set_interaction_enabled", false)
 	if skip != null:
 		skip.pressed.emit()
 	for _frame: int in range(3):
 		await process_frame
-	var controls := battle.find_child("BattleControls", true, false)
-	_check(controls != null, "battle controls missing")
-	if controls != null:
-		controls.call("_on_pause_pressed")
-		_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Pause did not stop battle tick consumption")
-		controls.call("_on_pause_pressed")
-		_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Resume did not restore the prior battle speed")
-		battle.set("ticks_per_frame_scale", 2.0)
-		controls.call("_on_resign_pressed")
-		await process_frame
-		var resign_layer := battle.find_child("ResignConfirmLayer", true, false) as Control
-		var cancel := battle.find_child("CancelResign", true, false) as Button
-		var confirm := battle.find_child("ConfirmResign", true, false) as Button
-		_check(resign_layer != null and resign_layer.visible, "resign confirmation did not open")
-		_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "resign confirmation did not pause battle")
-		_check(cancel != null and cancel.has_focus(), "resign Cancel is not the safe default focus")
-		if cancel != null:
-			cancel.pressed.emit()
-		await process_frame
-		_check(not resign_layer.visible, "Cancel did not close resign confirmation")
-		_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "Cancel did not restore prior speed")
-		_check(resign.has_focus(), "Cancel did not restore focus to Resign")
-		_check(int(game.get("current_battle").result) == BattleModel.Result.RUNNING, "Cancel mutated battle result")
-		controls.call("_on_resign_pressed")
-		await process_frame
-		if confirm != null:
-			confirm.pressed.emit()
-		for _frame: int in range(3):
-			await process_frame
-		_check(int(game.get("current_battle").result) == BattleModel.Result.DEFEAT, "Confirm did not apply the resign verb exactly once")
-		var pan_hint := battle.find_child("MapPanHint", true, false) as Control
-		_check(pause.disabled and resign.disabled, "terminal battle controls remain actionable")
-		_check(pan_hint == null or not pan_hint.visible, "terminal map-navigation hint remains visible")
+	_check(bool(controls.call("interaction_enabled")) and bool(deploy_bar.call("operator_interaction_enabled")), "tutorial completion did not restore controls")
+	controls.call("_on_pause_pressed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Pause did not stop battle tick consumption")
+	controls.call("_on_pause_pressed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Resume did not restore prior battle speed")
+	battle.set("ticks_per_frame_scale", 0.0)
+	controls.call("_process", 0.0)
+	_check(bool(controls.call("request_resign_confirmation")), "paused resign confirmation did not open")
+	await process_frame
+	_check(bool(controls.call("cancel_resign_confirmation")), "paused resign confirmation did not cancel")
+	await process_frame
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Cancel did not restore an exact zero-speed snapshot")
 
+	var exact_scale := 2.375
+	battle.set("ticks_per_frame_scale", exact_scale)
+	controls.call("_process", 0.0)
+	_check(StringName(controls.call("confirmation_state_name")) == &"closed", "initial confirmation state is not CLOSED")
+	_check(bool(controls.call("request_resign_confirmation")), "resign confirmation did not open")
+	await process_frame
+	var layer := battle.find_child("ResignConfirmLayer", true, false) as Control
+	var safe := layer.find_child("SafeFrame", true, false) as MarginContainer
+	var frame := layer.find_child("StateFrame", true, false) as Control
+	var panel := layer.find_child("ResignConfirm", true, false) as PanelContainer
+	var cancel := layer.find_child("CancelResign", true, false) as Button
+	var confirm := layer.find_child("ConfirmResign", true, false) as Button
+	_check(layer.visible and StringName(controls.call("confirmation_state_name")) == &"active", "confirmation did not enter ACTIVE")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation did not pause battle")
+	_check(cancel.has_focus(), "Cancel is not safe default focus")
+	_check(layer.mouse_filter == Control.MOUSE_FILTER_STOP and _rect_matches(layer.get_global_rect(), Rect2(Vector2.ZERO, Vector2(LANDSCAPE))), "confirmation is not a full input-exclusive viewport")
+	_check(_rect_matches(panel.get_global_rect(), frame.get_global_rect()), "confirmation panel does not fill the safe content frame")
+	_check(not bool(battle.call("map_dragging")) and not bool(battle.call("map_inertia_active")), "confirmation did not cancel map motion")
+	_check(pause.disabled and speed.disabled and resign.disabled, "confirmation did not disable underlying battle commands")
+	var blocked_pan := battle.call("map_pan") as Vector2
+	var blocked_wheel := InputEventMouseButton.new()
+	blocked_wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	blocked_wheel.pressed = true
+	battle.call("_unhandled_input", blocked_wheel)
+	battle.call("_on_recenter_map_requested")
+	controls.call("_on_pause_pressed")
+	controls.call("_on_speed_pressed")
+	deploy_bar.call("_start_placement", StringName(deploy_bar.call("first_deployment_id")))
+	_check((battle.call("map_pan") as Vector2).is_equal_approx(blocked_pan), "confirmation allowed map wheel/recenter input")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation allowed pause/speed input")
+	_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation allowed new deployment input")
+	_check(bool(controls.call("cancel_resign_confirmation")), "confirmation did not cancel")
+	await process_frame
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), exact_scale), "Cancel did not exactly restore speed snapshot")
+	_check(resign.has_focus() and model.result == BattleModel.Result.RUNNING, "Cancel failed focus/result invariance")
+
+	var deployment_id := StringName(deploy_bar.call("first_deployment_id"))
+	deploy_bar.call("_start_placement", deployment_id)
+	_check(bool(deploy_bar.call("transient_intent_active")), "deployment intent did not start")
+	bool(controls.call("request_resign_confirmation"))
+	_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel deployment/facing intent")
+	bool(controls.call("cancel_resign_confirmation"))
+	await process_frame
+	spell_probe.call("_start_targeting", &"slow_field")
+	_check(StringName(spell_probe.call("targeting_spell")) == &"slow_field", "spell targeting did not start")
+	spell_probe.call("set_interaction_enabled", false)
+	_check(StringName(spell_probe.call("targeting_spell")).is_empty(), "SpellBar interaction gate did not cancel targeting")
+	spell_probe.call("set_interaction_enabled", true)
+	bool(controls.call("request_resign_confirmation"))
+	_check(not bool(owned_spell_bar.call("interaction_enabled")), "confirmation did not retain the owned SpellBar gate")
+	bool(controls.call("cancel_resign_confirmation"))
+	await process_frame
+	model.dp = model.config.dp_cap
+	var deploy_cell := _first_valid_deploy_cell(model, deployment_id)
+	_check(deploy_cell.x >= 0 and model.apply_action([&"deploy", deployment_id, deploy_cell, int(UnitState.Facing.RIGHT)]), "retreat fixture could not deploy")
+	if deploy_cell.x >= 0:
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
+		_check(bool(deploy_bar.call("transient_intent_active")), "retreat/selection intent did not start")
+		bool(controls.call("request_resign_confirmation"))
+		_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel retreat/selection intent")
+		bool(controls.call("cancel_resign_confirmation"))
+		await process_frame
+		var deployed_unit := model.alive_unit_at(deploy_cell)
+		deploy_bar.call("_begin_heal_targeting", deployed_unit)
+		_check(bool(deploy_bar.call("is_mend_targeting")), "mend targeting fixture did not start")
+		bool(controls.call("request_resign_confirmation"))
+		_check(not bool(deploy_bar.call("is_mend_targeting")), "confirmation did not cancel mend targeting")
+		bool(controls.call("cancel_resign_confirmation"))
+		await process_frame
+
+	bool(controls.call("request_resign_confirmation"))
+	await process_frame
+	for viewport_size: Vector2i in [PORTRAIT, NARROW, SHORT]:
+		root.size = viewport_size
+		await process_frame
+		_check(_rect_matches(layer.get_global_rect(), Rect2(Vector2.ZERO, Vector2(viewport_size))), "confirmation root missed viewport %s" % viewport_size)
+		_check(_rect_matches(panel.get_global_rect(), frame.get_global_rect()), "confirmation panel missed safe content frame at %s" % viewport_size)
+		var actions := layer.find_child("Actions", true, false) as GridContainer
+		var body_scroll := layer.find_child("BodyScroll", true, false) as ScrollContainer
+		var dock := layer.find_child("ActionDock", true, false) as PanelContainer
+		_check(actions.columns == (2 if viewport_size == SHORT else 1), "actions did not reflow at %s" % viewport_size)
+		_check(cancel.size.y >= 44.0 and confirm.size.y >= 44.0, "actions lost touch size at %s" % viewport_size)
+		_check(body_scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + 1.0, "body overlapped fixed dock at %s" % viewport_size)
+	confirm.grab_focus()
+	await process_frame
+	_check(confirm.has_focus() and confirm.focus_next == confirm.get_path_to(cancel), "focus trap failed on responsive sheet")
+	root.size = LANDSCAPE
+	await process_frame
+	bool(controls.call("cancel_resign_confirmation"))
+	await process_frame
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), exact_scale), "responsive Cancel did not restore exact speed")
+
+	confirmation_trace.clear()
+	bool(controls.call("request_resign_confirmation"))
+	await process_frame
+	_check(bool(controls.call("commit_resign_confirmation")), "Confirm did not accept resign")
+	var dispatch_count := int(controls.call("resign_dispatch_count"))
+	_check(confirmation_trace == [&"active", &"committing", &"closed"], "resign state did not expose ACTIVE → COMMITTING → CLOSED")
+	_check(dispatch_count == 1 and StringName(controls.call("confirmation_state_name")) == &"closed", "resign did not dispatch once and return CLOSED")
+	_check(not bool(controls.call("commit_resign_confirmation")) and int(controls.call("resign_dispatch_count")) == dispatch_count, "terminal confirmation dispatched twice")
+	for _frame: int in range(4):
+		await process_frame
+	var continue_button := battle.find_child("ContinueButton", true, false) as Button
+	var pan_hint := battle.find_child("MapPanHint", true, false) as Control
+	_check(model.result == BattleModel.Result.DEFEAT and not layer.visible, "terminal defeat retained confirmation")
+	_check(pause.disabled and speed.disabled and resign.disabled, "terminal battle controls remain actionable")
+	_check(not bool(deploy_bar.call("interaction_enabled")) and not bool(owned_spell_bar.call("interaction_enabled")), "terminal deploy/spell controls remain actionable")
+	_check(pan_hint == null or not pan_hint.visible, "terminal map hint remains visible")
+	_check(continue_button != null and continue_button.has_focus(), "terminal Continue did not own focus")
+	var terminal_pan := battle.call("map_pan") as Vector2
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	wheel.pressed = true
+	battle.call("_unhandled_input", wheel)
+	_check((battle.call("map_pan") as Vector2).is_equal_approx(terminal_pan), "terminal map accepted wheel input")
+	_cleanup(game, battle)
+	await create_timer(0.25).timeout
+	_finish()
+
+func _first_valid_deploy_cell(model: BattleModel, deployment_id: StringName) -> Vector2i:
+	for y: int in model.stage.grid_size().y:
+		for x: int in model.stage.grid_size().x:
+			var cell := Vector2i(x, y)
+			if model.can_deploy_at(deployment_id, cell):
+				return cell
+	return Vector2i(-1, -1)
+
+func _rect_matches(actual: Rect2, expected: Rect2, tolerance := 1.5) -> bool:
+	return actual.position.distance_to(expected.position) <= tolerance and actual.size.distance_to(expected.size) <= tolerance
+
+func _cleanup(game: Node, battle: Node) -> void:
 	game.set("content", null)
 	game.set("current_battle", null)
 	game.set("pending_stage", null)
@@ -113,14 +247,10 @@ func _run() -> void:
 	var sfx := root.get_node_or_null("Sfx")
 	if sfx != null and sfx.has_method("stop_all"):
 		sfx.call("stop_all")
-	await create_timer(0.25).timeout
-	_finish()
-
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
-
 
 func _finish() -> void:
 	if _failures.is_empty():

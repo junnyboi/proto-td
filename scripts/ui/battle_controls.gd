@@ -1,6 +1,8 @@
 class_name BattleControls
 extends Control
 
+signal confirmation_state_changed(state: StringName)
+
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
@@ -14,6 +16,12 @@ const FONT_SIZE := GameTypographyType.BODY
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
 const PAUSED_LABEL_MIN_WIDTH := 96.0
 
+enum ConfirmationState {
+	CLOSED,
+	ACTIVE,
+	COMMITTING,
+}
+
 var model: BattleModel = null
 var view: Node2D = null
 
@@ -25,7 +33,9 @@ var _controls_deck: PanelContainer = null
 var _confirm: Control = null
 var _confirm_dialog: Dictionary = {}
 var _resume_scale: float = 1.0
-var _pre_confirm_scale: float = 1.0
+var _confirmation_scale_snapshot: float = 1.0
+var _confirmation_state := ConfirmationState.CLOSED
+var _resign_dispatch_count := 0
 var _interaction_enabled := true
 var _last_paused := false
 
@@ -38,20 +48,23 @@ func setup(battle_model: BattleModel, battle_view: Node2D) -> void:
 	size = get_viewport().get_visible_rect().size
 	_build_row()
 	_build_confirm()
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 
 
 func set_interaction_enabled(enabled: bool) -> void:
 	_interaction_enabled = enabled
-	if _pause_button != null:
-		_pause_button.disabled = not enabled
-	if _speed_button != null:
-		_speed_button.disabled = not enabled
-	if _resign_button != null:
-		_resign_button.disabled = not enabled or model.result != BattleModel.Result.RUNNING
+	_refresh_action_enabled()
+
+
+func interaction_enabled() -> bool:
+	return _interaction_enabled
 
 
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
+	if not _confirm_dialog.is_empty():
+		DialogType.relayout(_confirm_dialog)
 	if _controls_deck != null:
 		_controls_deck.reset_size()
 		var y := 98.0 if size.y > size.x else 64.0
@@ -96,6 +109,8 @@ func _build_confirm() -> void:
 		_copy(&"ui.battle.withdraw_body", "Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved."),
 		_copy(&"ui.battle.confirm_defeat", "CONFIRM DEFEAT"),
 		_copy(&"ui.battle.return", "RETURN TO BATTLE"),
+		true,
+		DialogType.Presentation.FULL_VIEWPORT,
 	)
 	_confirm = _confirm_dialog.get(&"overlay") as Control
 	var panel := _confirm_dialog.get(&"panel") as PanelContainer
@@ -131,17 +146,17 @@ func _set_scale(value: float) -> void:
 func _process(_delta: float) -> void:
 	if view == null or model == null:
 		return
+	if _confirmation_state != ConfirmationState.CLOSED and model.result != BattleModel.Result.RUNNING:
+		notify_battle_terminal()
 	var current := _current_scale()
-	if current > 0.0:
+	if current > 0.0 and _confirmation_state == ConfirmationState.CLOSED:
 		_resume_scale = current
 	var paused := current == 0.0
 	var running := model.result == BattleModel.Result.RUNNING
 	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if paused else _copy(&"ui.battle.pause", "PAUSE")
-	_paused_label.text = _copy(&"ui.battle.paused", "PAUSED") if paused and not _confirm.visible else ""
+	_paused_label.text = _copy(&"ui.battle.paused", "PAUSED") if paused and _confirmation_state == ConfirmationState.CLOSED else ""
 	_speed_button.text = "%d×" % int(round(_resume_scale))
-	_pause_button.disabled = not _interaction_enabled or not running
-	_speed_button.disabled = not _interaction_enabled or not running
-	_resign_button.disabled = not _interaction_enabled or not running
+	_refresh_action_enabled()
 	if paused != _last_paused:
 		Style.apply_button(_pause_button, &"selected" if paused else &"secondary")
 		_last_paused = paused
@@ -149,16 +164,19 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _interaction_enabled:
-		return
-	if _confirm.visible and event.is_action_pressed("ui_cancel"):
-		_on_cancel_resign()
+	if _confirmation_state != ConfirmationState.CLOSED:
+		if event.is_action_pressed("ui_cancel") and _confirmation_state == ConfirmationState.ACTIVE:
+			cancel_resign_confirmation()
+		# A visible confirmation owns every event that escaped GUI dispatch. This
+		# prevents map, tutorial, deployment, spell, pause, and shortcut fallthrough.
 		get_viewport().set_input_as_handled()
+		return
+	if not _interaction_enabled:
 		return
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.is_echo():
 		return
-	if key.physical_keycode != KEY_SPACE or _confirm.visible:
+	if key.physical_keycode != KEY_SPACE:
 		return
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused is BaseButton:
@@ -168,7 +186,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_pause_pressed() -> void:
-	if not _interaction_enabled or model.result != BattleModel.Result.RUNNING:
+	if not _interaction_enabled or _confirmation_state != ConfirmationState.CLOSED or model.result != BattleModel.Result.RUNNING:
 		return
 	if _current_scale() == 0.0:
 		Sfx.play("menu_close")
@@ -179,7 +197,7 @@ func _on_pause_pressed() -> void:
 
 
 func _on_speed_pressed() -> void:
-	if not _interaction_enabled:
+	if not _interaction_enabled or _confirmation_state != ConfirmationState.CLOSED or model.result != BattleModel.Result.RUNNING:
 		return
 	Sfx.play("ui_click")
 	var base := _current_scale()
@@ -191,27 +209,137 @@ func _on_speed_pressed() -> void:
 
 
 func _on_resign_pressed() -> void:
-	if not _interaction_enabled:
-		return
-	Sfx.play("menu_open")
-	_pre_confirm_scale = _current_scale()
+	request_resign_confirmation()
+
+
+func request_resign_confirmation() -> bool:
+	if (
+		_confirmation_state != ConfirmationState.CLOSED
+		or not _interaction_enabled
+		or model == null
+		or view == null
+		or model.result != BattleModel.Result.RUNNING
+	):
+		return false
+	_confirmation_scale_snapshot = _current_scale()
 	_set_scale(0.0)
-	DialogType.show_dialog(_confirm_dialog, _resign_button)
+	_set_confirmation_state(ConfirmationState.ACTIVE)
+	view.call("set_battle_confirmation_active", true)
+	Sfx.play("menu_open")
+	if DialogType.show_dialog(_confirm_dialog, _resign_button):
+		return true
+	view.call("set_battle_confirmation_active", false)
+	_set_scale(_confirmation_scale_snapshot)
+	_set_confirmation_state(ConfirmationState.CLOSED)
+	return false
 
 
 func _on_cancel_resign() -> void:
+	cancel_resign_confirmation()
+
+
+func cancel_resign_confirmation() -> bool:
+	if _confirmation_state != ConfirmationState.ACTIVE:
+		return false
+	_set_confirmation_state(ConfirmationState.CLOSED)
 	Sfx.play("menu_close")
 	DialogType.hide_dialog(_confirm_dialog)
-	_set_scale(_pre_confirm_scale)
+	_set_scale(_confirmation_scale_snapshot)
+	view.call("set_battle_confirmation_active", false)
+	return true
 
 
 func _on_confirm_resign() -> void:
+	commit_resign_confirmation()
+
+
+func commit_resign_confirmation() -> bool:
+	if _confirmation_state != ConfirmationState.ACTIVE or model.result != BattleModel.Result.RUNNING:
+		return false
+	_set_confirmation_state(ConfirmationState.COMMITTING)
 	Sfx.play("ui_confirm")
 	DialogType.set_pending(_confirm_dialog, true, _copy(&"ui.battle.withdrawing", "WITHDRAWING…"))
-	model.apply_action([&"resign"])
+	_resign_dispatch_count += 1
+	var accepted := model.apply_action([&"resign"])
+	if accepted or model.result != BattleModel.Result.RUNNING:
+		notify_battle_terminal()
+		return accepted
+	_set_confirmation_state(ConfirmationState.ACTIVE)
 	DialogType.set_pending(_confirm_dialog, false)
-	DialogType.hide_dialog(_confirm_dialog)
-	_set_scale(_pre_confirm_scale)
+	var cancel := _confirm_dialog.get(&"cancel") as Button
+	if cancel != null:
+		cancel.grab_focus.call_deferred()
+	return false
+
+
+func confirmation_state() -> int:
+	return _confirmation_state
+
+
+func confirmation_state_name() -> StringName:
+	match _confirmation_state:
+		ConfirmationState.ACTIVE:
+			return &"active"
+		ConfirmationState.COMMITTING:
+			return &"committing"
+		_:
+			return &"closed"
+
+
+func confirmation_active() -> bool:
+	return _confirmation_state != ConfirmationState.CLOSED
+
+
+func resign_dispatch_count() -> int:
+	return _resign_dispatch_count
+
+
+func notify_battle_terminal() -> bool:
+	if _confirmation_state == ConfirmationState.CLOSED:
+		return false
+	DialogType.set_pending(_confirm_dialog, false)
+	DialogType.hide_dialog(_confirm_dialog, false)
+	if view != null:
+		view.call("set_battle_confirmation_active", false)
+	_set_confirmation_state(ConfirmationState.CLOSED)
+	return true
+
+
+func _set_confirmation_state(state: int) -> void:
+	if _confirmation_state == state:
+		return
+	_confirmation_state = state
+	confirmation_state_changed.emit(confirmation_state_name())
+	_refresh_action_enabled()
+
+
+func _refresh_action_enabled() -> void:
+	if model == null:
+		return
+	var enabled := (
+		_interaction_enabled
+		and model.result == BattleModel.Result.RUNNING
+		and _confirmation_state == ConfirmationState.CLOSED
+	)
+	if _pause_button != null:
+		_pause_button.disabled = not enabled
+	if _speed_button != null:
+		_speed_button.disabled = not enabled
+	if _resign_button != null:
+		_resign_button.disabled = not enabled
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	DialogType.set_copy(
+		_confirm_dialog,
+		_copy(&"ui.battle.withdraw_title", "WITHDRAW FROM OPERATION?"),
+		_copy(&"ui.battle.withdraw_body", "Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved."),
+		_copy(&"ui.battle.confirm_defeat", "CONFIRM DEFEAT"),
+		_copy(&"ui.battle.return", "RETURN TO BATTLE"),
+		_copy(&"ui.battle.withdrawing", "WITHDRAWING…"),
+	)
+	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if _current_scale() == 0.0 else _copy(&"ui.battle.pause", "PAUSE")
+	_resign_button.text = _copy(&"ui.battle.resign", "RESIGN")
 
 
 func _copy(key: StringName, fallback: String) -> String:

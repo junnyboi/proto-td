@@ -44,6 +44,7 @@ var _targeting: StringName = &""
 var _tutorial_spell: StringName = &""
 var _pointer := Vector2.ZERO
 var _cursor_rect: Polygon2D = null
+var _interaction_enabled := true
 
 
 ## Call after add_child: sized from the viewport (a Control under a Node2D
@@ -165,8 +166,19 @@ func targeting_spell() -> StringName:
 	return _targeting
 
 
+func set_interaction_enabled(enabled: bool) -> void:
+	_interaction_enabled = enabled
+	if not enabled:
+		stop_targeting()
+	_refresh_buttons()
+
+
+func interaction_enabled() -> bool:
+	return _interaction_enabled
+
+
 func request_targeting(spell_id: StringName) -> bool:
-	if not _buttons.has(spell_id):
+	if not _interaction_enabled or not _buttons.has(spell_id):
 		return false
 	var slot: Button = _buttons[spell_id]
 	if slot.disabled:
@@ -211,7 +223,7 @@ func _refresh_buttons() -> void:
 	for spell_id: StringName in _buttons:
 		var slot: Button = _buttons[spell_id]
 		var tutorial_blocked := not _tutorial_spell.is_empty() and spell_id != _tutorial_spell
-		slot.disabled = tutorial_blocked or not model.is_castable(spell_id)
+		slot.disabled = not _interaction_enabled or tutorial_blocked or not model.is_castable(spell_id)
 		var def := model.spell_book.def_of(spell_id)
 		var cooldown_remaining := remaining_cooldown_ticks(spell_id)
 		var duration_remaining := remaining_duration_ticks(spell_id)
@@ -276,7 +288,7 @@ func _seconds_text(ticks: int) -> String:
 
 
 func _input(event: InputEvent) -> void:
-	if _targeting == &"":
+	if not _interaction_enabled or _targeting == &"":
 		return
 	if event is InputEventMouseMotion:
 		_pointer = (event as InputEventMouseMotion).position
@@ -294,7 +306,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _start_targeting(spell_id: StringName) -> void:
-	if _targeting == spell_id:
+	if not _interaction_enabled or _targeting == spell_id:
 		return
 	if not _targeting.is_empty():
 		_stop_targeting()
@@ -313,6 +325,8 @@ func _stop_targeting() -> void:
 
 
 func _cast_at_pointer() -> void:
+	if not _interaction_enabled or _targeting.is_empty():
+		return
 	var spell_id := _targeting
 	var cell: Vector2i = view.call("cell_at", _pointer)
 	var target: Variant = _target_for(spell_id, cell)

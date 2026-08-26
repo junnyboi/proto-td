@@ -78,6 +78,7 @@ var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
 var _tutorial: Node = null
 var _map_navigation_overlay: MapNavigationOverlay = null
+var _battle_confirmation_active := false
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
@@ -262,16 +263,56 @@ func _on_tutorial_hold_changed(held: bool) -> void:
 		juice_time_push(&"guided_tutorial", 0.0)
 	else:
 		juice_time_pop(&"guided_tutorial")
-	if _controls != null:
-		_controls.set_interaction_enabled(not held)
-	if _deploy_bar != null:
-		_deploy_bar.set_operator_interaction_enabled(not held)
-	_refresh_map_navigation_overlay()
+	_refresh_battle_interaction_gates()
 
 
 func _on_tutorial_finished(_skipped: bool) -> void:
 	_tutorial = null
+	_refresh_battle_interaction_gates()
+
+
+func set_battle_confirmation_active(active: bool) -> void:
+	if _battle_confirmation_active == active:
+		return
+	_battle_confirmation_active = active
+	if active:
+		if _map_nav.cancel_interaction():
+			_apply_map_transform()
+		if _deploy_bar != null:
+			_deploy_bar.cancel_transient_intent()
+		if _spell_bar != null:
+			_spell_bar.stop_targeting()
+	_refresh_battle_interaction_gates()
+	if not active and model != null and model.result != BattleModel.Result.RUNNING:
+		_focus_terminal_continue()
+
+
+func battle_confirmation_active() -> bool:
+	return _battle_confirmation_active
+
+
+func _tutorial_holding_battle() -> bool:
+	return _tutorial != null and bool(_tutorial.call("is_holding_battle"))
+
+
+func _refresh_battle_interaction_gates() -> void:
+	var running := model == null or model.result == BattleModel.Result.RUNNING
+	var tutorial_holding := _tutorial_holding_battle()
+	if _controls != null:
+		_controls.set_interaction_enabled(not tutorial_holding and running)
+	if _deploy_bar != null:
+		# FirstStandTutorial owns its step-specific operator gate. The battle-level
+		# confirmation gate composes independently so closing it cannot overwrite
+		# ROUTE/BLOCK or DEPLOY/FACING tutorial intent.
+		_deploy_bar.set_interaction_enabled(not _battle_confirmation_active and running)
+	if _spell_bar != null:
+		_spell_bar.set_interaction_enabled(not _battle_confirmation_active and running)
 	_refresh_map_navigation_overlay()
+
+
+func _focus_terminal_continue() -> void:
+	if _continue_btn != null and is_instance_valid(_continue_btn):
+		_continue_btn.grab_focus.call_deferred()
 
 
 func _resolve_stage_theme(stage: Resource) -> Dictionary:
@@ -320,11 +361,17 @@ func map_dragging() -> bool:
 	return _map_nav.is_dragging()
 
 
+func map_inertia_active() -> bool:
+	return _map_nav.is_inertia_active()
+
+
 func consume_map_primary_click_suppression() -> bool:
 	return _map_nav.consume_primary_click_suppression()
 
 
 func _input(event: InputEvent) -> void:
+	if _battle_confirmation_active:
+		return
 	_map_nav.recover_missed_release(event)
 
 
@@ -352,7 +399,9 @@ func _map_navigation_blocked() -> bool:
 	var spell_cursor := find_child("SpellCursor", true, false) as CanvasItem
 	var deploy_bar := find_child("DeployBar", true, false) as DeployBar
 	return (
-		(_tutorial != null and bool(_tutorial.call("is_holding_battle")))
+		_battle_confirmation_active
+		or (model != null and model.result != BattleModel.Result.RUNNING)
+		or _tutorial_holding_battle()
 		or (deploy_cursor != null and deploy_cursor.visible)
 		or (spell_cursor != null and spell_cursor.visible)
 		or (deploy_bar != null and deploy_bar.is_mend_targeting())
@@ -568,6 +617,9 @@ func _detect_wave() -> void:
 func _detect_result_stamp() -> void:
 	if _stamp_shown or model.result == BattleModel.Result.RUNNING:
 		return
+	if _controls != null:
+		_controls.notify_battle_terminal()
+	_refresh_battle_interaction_gates()
 	if not Game.record_result(model.result, model.stars):
 		return
 	_stamp_shown = true
@@ -717,14 +769,12 @@ func _refresh_map_navigation_overlay() -> void:
 	if _map_navigation_overlay == null or not is_instance_valid(_map_navigation_overlay):
 		return
 	var viewport := get_viewport_rect().size
-	var tutorial_holding := (
-		_tutorial != null and bool(_tutorial.call("is_holding_battle"))
-	)
+	var tutorial_holding := _tutorial_holding_battle()
 	var battle_running := model == null or model.result == BattleModel.Result.RUNNING
 	_map_navigation_overlay.set_context(
 		viewport.y > viewport.x,
-		_map_nav.has_pan_range() and battle_running,
-		not tutorial_holding and battle_running,
+		_map_nav.has_pan_range() and battle_running and not _battle_confirmation_active,
+		not tutorial_holding and not _battle_confirmation_active and battle_running,
 		_map_nav.is_centered(),
 		not _map_navigation_blocked() and battle_running,
 	)
