@@ -2,7 +2,6 @@ extends SceneTree
 
 const UI_IDS := [
 	&"ui_hover",
-	&"ui_click",
 	&"ui_back",
 	&"ui_confirm",
 	&"menu_open",
@@ -33,9 +32,22 @@ func _run() -> void:
 				_check(stream.get_length() <= 3.05, "%s stays within the three-second SFX budget" % id)
 			stream = null
 			await process_frame
-		_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
-		_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
-		_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_hover", "dedicated hover cue resolves")
+			_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
+			_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
+			_check(sfx.call("resolved_id_for", &"ui_click") == &"ui_click", "click cue remains catalogued")
+			var routine_starts_before := int(sfx.call("audible_start_count"))
+			var previous_resolved_id: StringName = sfx.call("last_resolved_id")
+			_check(not bool(sfx.call("play", "ui_click")), "routine button clicks remain silent")
+			_check(not bool(sfx.call("play", "ui_select")), "routine select alias remains silent")
+			_check(
+				int(sfx.call("audible_start_count")) == routine_starts_before,
+				"silent routine cues do not consume audio voices",
+			)
+			_check(
+				sfx.call("last_resolved_id") == previous_resolved_id,
+				"silent routine cues do not replace the last audible semantic cue",
+			)
+			_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_hover", "dedicated hover cue resolves")
 		for spell_id: StringName in [&"bolt", &"charm", &"slow_field"]:
 			_check(
 				sfx.call("resolved_id_for", spell_id) == &"ability_ready",
