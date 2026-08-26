@@ -1,5 +1,7 @@
 extends SceneTree
 
+const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+
 var _failures: Array[String] = []
 
 
@@ -218,6 +220,7 @@ func _run() -> void:
 	var reveal_title := screen.find_child("RevealTitle", true, false) as Label
 	var reveal_stack := screen.find_child("CinematicIdentityReveal", true, false) as VBoxContainer
 	var reveal_stars := screen.find_child("RarityStars", true, false) as HBoxContainer
+	var reveal_hint := screen.find_child("RevealContinueHint", true, false) as Label
 	var skip := screen.find_child("SkipRevealButton", true, false) as Button
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
 	var cinematic_video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
@@ -228,6 +231,13 @@ func _run() -> void:
 	_check(reveal_stack != null and not reveal_stack.visible, "character title appeared before video completion")
 	_check(reveal_stars != null and reveal_stars.get_child_count() == 5, "five-star reveal stage is incomplete")
 	_check(skip != null and skip.visible and not skip.disabled, "skip action is unavailable")
+	_check(reveal_title.get_theme_font_size(&"font_size") == 104, "landscape reveal title typography is not doubled")
+	_check(reveal_hint != null and reveal_hint.get_theme_font_size(&"font_size") == 28, "reveal continuation typography is not doubled")
+	_check(skip.get_theme_font_size(&"font_size") == 36, "Skip Reveal typography is not doubled")
+	_check(skip.custom_minimum_size.x >= 340.0 and skip.custom_minimum_size.y >= 92.0, "Skip Reveal container is not wide or tall enough")
+	var skip_style := skip.get_theme_stylebox(&"normal")
+	_check(skip_style.content_margin_left >= 42.0 and skip_style.content_margin_right >= 42.0, "Skip Reveal container lacks horizontal padding")
+	_check(not skip.clip_text and skip.autowrap_mode != TextServer.AUTOWRAP_OFF, "Skip Reveal can still overflow or clip")
 	_check(cinematic != null, "cinematic player is missing")
 	_check(cinematic_video != null and cinematic_video.stream != null, "five-star cinematic stream did not load")
 	_check(cinematic_video != null and cinematic_video.is_playing(), "five-star cinematic did not start")
@@ -253,6 +263,7 @@ func _run() -> void:
 			_check(star.visible and star.modulate.a > 0.99, "five-star item %d did not fade in" % (index + 1))
 			_check(absf(star.rotation) < 0.01, "five-star item %d did not stop spinning" % (index + 1))
 			_check(star.scale.x >= 0.99 and star.scale.x <= 1.07, "five-star item %d is not pulsing at full size" % (index + 1))
+			_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
@@ -276,12 +287,17 @@ func _run() -> void:
 	_check(screen.call("flow_state_name") == &"REVEAL", "reduced-motion reveal did not enter REVEAL")
 	_check(reveal_stack != null and reveal_stack.visible, "reduced motion did not reveal the identity instantly")
 	_check(reveal_title.text == "ARCHIVE CASTER", "reduced-motion character title is incorrect")
+	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(final_plate != null and final_plate.visible and final_plate.texture != null, "reduced motion did not show the final identity plate")
 	_check(cinematic_video != null and cinematic_video.stream == null, "reduced motion loaded a video stream")
 	if reveal_stars != null:
 		for index: int in 5:
 			var star := reveal_stars.get_child(index) as ResonanceStar
 			_check(star.visible == (index < 4), "reduced motion rendered the wrong four-star count")
+			if index < 4:
+				var star_accent: Color = star.get("_accent")
+				_check(star_accent.is_equal_approx(Style.GOLD), "Archive Caster star %d is not gold" % (index + 1))
+				_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
 	_check(
 		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
 		"reduced motion replaced Company Command audio",

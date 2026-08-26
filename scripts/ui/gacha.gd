@@ -522,8 +522,19 @@ func _build_reveal_layer() -> void:
 	_skip_button = Button.new()
 	_skip_button.name = "SkipRevealButton"
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
+	_skip_button.custom_minimum_size = Vector2(340, 92)
+	_skip_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_skip_button.clip_text = false
 	_skip_button.pressed.connect(_finish_reveal)
 	Style.apply_button(_skip_button, &"quiet")
+	_skip_button.add_theme_font_size_override(&"font_size", 36)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var padded_style := _skip_button.get_theme_stylebox(state).duplicate() as StyleBox
+		padded_style.content_margin_left = 42.0
+		padded_style.content_margin_top = 22.0
+		padded_style.content_margin_right = 42.0
+		padded_style.content_margin_bottom = 22.0
+		_skip_button.add_theme_stylebox_override(state, padded_style)
 	top_row.add_child(_skip_button)
 	var vertical_spacer := Control.new()
 	vertical_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -541,7 +552,8 @@ func _build_reveal_layer() -> void:
 	_reveal_title = _label(_copy(&"ui.gacha.unknown_signal", "UNKNOWN SIGNAL"), &"title")
 	_reveal_title.name = "RevealTitle"
 	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_reveal_title.add_theme_font_size_override(&"font_size", 52)
+	_reveal_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_reveal_title.add_theme_font_size_override(&"font_size", 104)
 	_reveal_title.modulate.a = 0.0
 	_reveal_title_stack.add_child(_reveal_title)
 	_reveal_stars = HBoxContainer.new()
@@ -560,6 +572,8 @@ func _build_reveal_layer() -> void:
 	_reveal_hint = _label(_copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE"), &"eyebrow")
 	_reveal_hint.name = "RevealContinueHint"
 	_reveal_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_reveal_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_reveal_hint.add_theme_font_size_override(&"font_size", 28)
 	_reveal_hint.modulate.a = 0.0
 	_reveal_title_stack.add_child(_reveal_hint)
 
@@ -683,9 +697,14 @@ func _apply_responsive_layout() -> void:
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
-		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 680
+		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 1120
 	if _reveal_title != null:
-		_reveal_title.add_theme_font_size_override(&"font_size", 40 if portrait else 52)
+		_reveal_title.add_theme_font_size_override(&"font_size", 80 if portrait else 104)
+	if _reveal_hint != null:
+		_reveal_hint.add_theme_font_size_override(&"font_size", 28)
+	if _skip_button != null:
+		_skip_button.custom_minimum_size = Vector2(300 if portrait else 340, 92)
+		_skip_button.add_theme_font_size_override(&"font_size", 36)
 	if _reveal_stars != null:
 		for child: Node in _reveal_stars.get_children():
 			var star := child as ResonanceStar
@@ -770,7 +789,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	var row := _pool_row(premium_id)
 	var callsign := String(row.get("callsign", pull.get("premium_id", "Unknown Signal")))
 	var rarity := int(pull.get("rarity", row.get("rarity", 4)))
-	var accent := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
+	var accent := _reveal_accent(pull)
 	_reveal_layer.visible = true
 	_reveal_layer.modulate.a = 0.0
 	_reveal_shade.color = Color(0.035, 0.025, 0.01, 0.96) if rarity == FIVE_STAR_RARITY else Color(0.01, 0.025, 0.05, 0.94)
@@ -851,7 +870,7 @@ func _begin_identity_reveal() -> void:
 	_kill_cinematic_watchdog()
 	_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
-	var accent := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
+	var accent := _reveal_accent(_pending_pull)
 	_reveal_title_stack.visible = true
 	_reveal_title.modulate.a = 0.0
 	_reveal_title.scale = Vector2(0.96, 0.96)
@@ -989,6 +1008,12 @@ func _pool_row(premium_id: String) -> Dictionary:
 
 func _callsign_for(premium_id: String) -> String:
 	return String(_pool_row(premium_id).get("callsign", premium_id))
+
+
+func _reveal_accent(pull: Dictionary) -> Color:
+	if String(pull.get("premium_id", "")) == "archive_caster":
+		return Style.GOLD
+	return Style.GOLD if int(pull.get("rarity", 4)) == FIVE_STAR_RARITY else Style.CYAN
 
 
 func _class_name(class_id: String) -> String:
