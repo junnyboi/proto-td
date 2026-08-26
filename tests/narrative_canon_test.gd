@@ -108,11 +108,13 @@ func _run() -> void:
 		var record_one := archive.find_child("ArchiveRecord_01", true, false) as Button
 		var record_two := archive.find_child("ArchiveRecord_02", true, false) as Button
 		var art := archive.find_child("ArchiveConceptArt", true, false) as TextureRect
+		var detail_scroll := archive.find_child("ArchiveDetailScroll", true, false) as ScrollContainer
 		var audio_log := archive.find_child("ArchiveAudioLog", true, false) as Control
 		var audio_play := archive.find_child("AudioLogPlayPause", true, false) as Button
 		_check(record_one != null and not record_one.disabled, "foundation archive UI is not available")
 		_check(record_two != null and record_two.disabled, "S2 archive UI is not progression gated")
 		_check(art != null and art.texture != null, "archive UI omitted its approved concept art")
+		_check(detail_scroll != null and detail_scroll.follow_focus, "archive detail does not follow keyboard focus to narration")
 		_check(audio_log != null and audio_play != null and not audio_play.disabled, "archive UI omitted interactive narration")
 		_dispose(archive)
 		game.set("content", null)

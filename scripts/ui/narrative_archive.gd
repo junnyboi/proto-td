@@ -174,6 +174,7 @@ func _build_body(column: VBoxContainer) -> void:
 	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_scroll.follow_focus = true
 	_detail_panel.add_child(detail_scroll)
 	var detail := VBoxContainer.new()
 	detail.name = "ArchiveDetailContent"
