@@ -3,7 +3,7 @@
 **Author:** Manus AI  
 **Target:** `proto-td` Advanced Training path-selection screen  
 **Engine:** Godot 4.7.2  
-**Baseline:** synchronized `master` at `f837d99ff9aa91b6d1d292d6e9c5c7dade3a94a3`
+**Baseline:** started from `f837d99ff9aa91b6d1d292d6e9c5c7dade3a94a3`; reconciled through upstream `94a85b6ad9ae2fb5c55ee108079e190782887776`
 
 ## Problem statement
 
@@ -20,7 +20,7 @@ The action dock has a separate cause. Its generic footer routine divides all ava
 | 3. Responsive grid behavior | **Complete.** The grid chooses 1–5 columns from actual usable viewport width. The outer Training document scroll is the only overflow surface when multiple fixed rows are required. | Wide desktop uses available horizontal space; 1280-wide layouts use multiple columns; narrow portrait uses one centered column without horizontal overflow. |
 | 4. Action dock consistency | **Complete.** `PathActions` uses the same 180×64 secondary frame for **Back** and **Add to Plan**, including the disabled state. The permanent warning and controls share one action bar, aligned bottom-right; actions remain horizontal on landscape and stack right-aligned only in portrait. | Buttons are equal, compact, and right-aligned; the generic footer expander no longer stretches them across the screen. |
 | 5. Regression contract | **Complete.** The training layout test now covers initial entry, fixed size, no nested scroll, wide→narrow→wide stability, column count, containment, and action geometry. A deterministic visual harness captures first-entry, selected landscape, and portrait states. | Focused test passes without requiring a resize to establish correct geometry. |
-| 6. Visual and release verification | Capture exact 2048×826 initial-entry, 1280×720, and 720×1280 path-selection states under Xvfb; exercise selection; run import, bounded boot, full regressions, log scans, Web export, browser checks, and the existing WebDev deployment pipeline. | Source is pushed only after post-reconciliation tests pass; final Web checkpoint matches the verified GitHub revision. |
+| 6. Visual and release verification | **Native gates complete; deployment in progress.** Exact 2048×826 initial-entry, 1280×720 selected, and 720×1280 path-selection states passed Xvfb review. Direct import, bounded boot, and all 45 repository regressions passed both before and after upstream reconciliation with clean error scans. Web export, browser checks, and existing WebDev checkpointing follow the source push. | Source is pushed only after post-reconciliation tests pass; final Web checkpoint matches the verified GitHub revision. |
 
 ## Non-goals and preserved behavior
 
