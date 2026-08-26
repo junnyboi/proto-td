@@ -2,26 +2,26 @@
 
 ## Purpose
 
-The six Premium Resonance Ogg Theora videos are optional presentation media. Bundling them in the initial Web PCK added 61,520,154 bytes to every cold start, including sessions that never enter the Reliquary. The Web export now excludes only `assets/cinematics/gacha/video/*.ogv`; posters, cinematic audio, hero data, and all gameplay resources remain in the base PCK.
+The six Premium Resonance Ogg Theora videos are optional presentation media. The current centered loop set totals **10,477,438 bytes**, so Web still excludes `assets/cinematics/gacha/video/*.ogv` from the initial PCK and transfers only the selected identity and orientation when needed. Posters, cinematic audio, hero data, and gameplay resources remain in the base PCK.
 
 ## Runtime behavior
 
-`GachaCinematicPlayer` selects one stream from the revealed hero and current viewport orientation. Native and editor runs continue to load the repository-owned `res://` OGV file. Web deployments provide same-origin URLs through repeated `--cinematic-stream=<key>|<url>` engine arguments.
+`GachaCinematicPlayer` selects one stream from the revealed hero and current viewport orientation. Native and editor runs load the repository-owned `res://` OGV file. Web deployments provide same-origin URLs through repeated `--cinematic-stream=<key>|<url>` engine arguments.
 
-On a Web cache miss, the player immediately shows the final identity plate, downloads only the selected orientation, reports restrained transfer progress, verifies the exact byte length and SHA-256 digest, and stores the verified OGV under `user://cinematic-streams`. Playback uses `VideoStreamTheora.file` against that cached path. Once playback begins, the full-size identity reveal cannot appear or accept dismissal input until `VideoStreamPlayer.finished` confirms the complete eight-second cinematic has played from start to finish. A later reveal reuses the cache without another request. If the request, persistence, or verification step fails, the reveal safely advances to the final plate; authoritative pull state and navigation are unaffected.
+On a Web cache miss, the player immediately shows the matching identity plate, downloads only the selected orientation, reports transfer progress, verifies the exact byte length and SHA-256 digest, and stores the verified OGV under `user://cinematic-streams`. Playback uses `VideoStreamTheora.file` against that cached path. Result identity and rarity UI remain locked until the first complete eight-second cycle finishes. After that first cycle, a healthy video continues looping beneath the deterministic result UI until dismissal; it does not freeze onto the final plate.
 
-After natural completion, failure fallback, or reduced-motion fallback, the final identity plate, callsign, rarity stars, and completion hint become active. Mouse or touch input anywhere on that completed reveal, as well as keyboard accept/cancel, dismisses it and returns to Premium Resonance. The explicit Skip Reveal action remains available during download or playback. Reduced-motion mode never requests or plays cinematic video.
+Skip, reduced motion, transfer failure, integrity failure, decode failure, or watchdog fallback stops the motion layer and exposes the matching static identity plate. Authoritative pull state and navigation are unaffected. Reduced-motion mode never requests or plays cinematic video.
 
 ## Stream manifest
 
 | Stream key | Bytes | SHA-256 |
 |---|---:|---|
-| `archive-caster-landscape` | 18,894,020 | `5eeeba0bd6a7fce74c80e07d5c23cb0e54007a9287a2878c8a6bf2042efa8cd0` |
-| `archive-caster-portrait` | 9,298,910 | `5ac6f14efa7fc96782ad2978ac2f2d2103f5957416006333faabc0af27e0a5ec` |
-| `lunaris-vessel-landscape` | 8,846,078 | `fb09e9d067bd1458bbc3d6a0b575281d248df8ea75b6c33e0bf2111209a8fb97` |
-| `lunaris-vessel-portrait` | 8,498,953 | `87221b5164f157267963acf1bb7504b6220f66bd1fdb6e6c588d94a845c39c32` |
-| `reliquary-duelist-landscape` | 7,485,451 | `186a0f063b900877513261e0ab2b7aefb0609de9d422f69ea65cd5e8d76a1e55` |
-| `reliquary-duelist-portrait` | 8,496,742 | `09430cb2de8bdeb7c1d6c8db60a838a572f1c518aa2e474c04dbc4ffaea1a2f5` |
+| `archive-caster-landscape` | 778,793 | `bcb3251e11269027b49a332487964db64fb8e6fe83358c2bb1b78317558c55af` |
+| `archive-caster-portrait` | 2,452,205 | `dd09537610bb5bc0ed7fd2ed6715e4d6b870dce521075b1defe77c6bc6ee0c0f` |
+| `lunaris-vessel-landscape` | 1,257,821 | `38361f28ba7c40e8e95c5aa59919028b0d181d97bd6b7f58f01fd7a31deb59cd` |
+| `lunaris-vessel-portrait` | 2,502,584 | `cd806d989623cbce1180df154efe892aaf8c2b047cee07906ec330f55c6fb6bb` |
+| `reliquary-duelist-landscape` | 1,395,676 | `cfa5bdab1002b428347e4d2d46cd0517acfc876a3460693d7330c8abb0e90151` |
+| `reliquary-duelist-portrait` | 2,090,359 | `ed78d0f92c19dc253a47454e13bb411fed64514f768c3db2157e5deb15b9026c` |
 
 ## Release procedure
 
@@ -38,8 +38,8 @@ Upload the six staged OGV files to the same WebDev project as the base PCK. Add 
 --cinematic-stream=<stream-key>|https://<deployment-origin>/manus-storage/<uploaded-object>.ogv
 ```
 
-The runtime accepts absolute HTTP(S) URLs. A browser shell should construct these from `window.location.origin` plus the uploaded same-origin managed path so preview and published domains share one mapping. The byte length and SHA-256 remain authoritative in source; a deployment mapping cannot silently substitute different media.
+The runtime accepts absolute HTTP(S) URLs. A browser shell constructs them from `window.location.origin` plus the uploaded same-origin managed path so preview and published domains share one mapping. The source byte length and SHA-256 remain authoritative; a deployment mapping cannot silently substitute different media.
 
 ## Verification
 
-`tests/cinematic_streaming_test.gd` covers argument validation, reduced-motion behavior, native fallback, cold HTTP download, integrity verification, persistent cache, `VideoStreamTheora` playback, and cleanup. Release QA additionally inventories the PCK to prove all six OGV entries are absent, serves the exported base over HTTP, exercises a real managed stream in the browser, and confirms that only the selected orientation is requested.
+`tests/cinematic_streaming_test.gd` covers argument validation, reduced-motion behavior, native fallback, first-cycle completion signalling, continued loop playback, cold HTTP download, integrity verification, persistent cache, `VideoStreamTheora` playback, and cleanup. Release QA additionally inventories the PCK to prove all six OGV entries are absent, serves the exported base over HTTP, exercises a real managed stream in the browser, and confirms that only the selected orientation is requested.

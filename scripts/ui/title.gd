@@ -535,7 +535,7 @@ func _refresh_copy() -> void:
 	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
 	_synopsis.text = UiCopyType.text(
 		&"ui.title.synopsis",
-		"PROTOS saved the planet by declaring humanity its final extinction event. Command the resurrected champions of Company 33 and prove an imperfect species still deserves a future.",
+		"PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
 	)
 	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()

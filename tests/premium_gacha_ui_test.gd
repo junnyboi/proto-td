@@ -44,6 +44,7 @@ func _run() -> void:
 	var guarantee := screen.find_child("GuaranteeTelemetry", true, false) as BoxContainer
 	var browse_actions := screen.find_child("PremiumBrowseActions", true, false) as GridContainer
 	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
+	var browse_backdrop := screen.find_child("AstralBackdropArt", true, false) as TextureRect
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
@@ -81,6 +82,11 @@ func _run() -> void:
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 16.0 and card_style.content_margin_top >= 16.0, "premium card padding is below 16px for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
+	root.size = Vector2i(2048, 825)
+	await _frames(2)
+	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.position.y), "browse background is not top aligned")
+	_check(browse_backdrop != null and browse_backdrop.size.y > 825.0, "browse background did not retain cover crop")
+	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.pivot_offset.y), "browse background pivot is not top anchored")
 
 	var confirmation_layer := screen.find_child("PremiumPullConfirmationLayer", true, false)
 	var reveal := screen.find_child("PullRevealLayer", true, false) as Control
@@ -153,13 +159,20 @@ func _run() -> void:
 	var reveal_stack := screen.find_child("CinematicIdentityReveal", true, false) as VBoxContainer
 	var stars := screen.find_child("RarityStars", true, false) as HBoxContainer
 	var reveal_hint := screen.find_child("RevealContinueHint", true, false) as Label
+	var pull_again := screen.find_child("PullAgainButton", true, false) as Button
 	var skip := screen.find_child("SkipRevealButton", true, false) as Button
 	var cinematic := screen.find_child("GachaCinematicPlayer", true, false) as Control
 	var video := screen.find_child("CinematicVideo", true, false) as VideoStreamPlayer
 	var plate := screen.find_child("CinematicFinalPlate", true, false) as TextureRect
+	root.size = Vector2i(2048, 825)
+	await _frames(2)
+	_check(screen.find_child("SignalFilaments", true, false) == null, "circular signal-filament web returned")
 	_check(reveal.visible and pull.disabled and back.disabled, "five-star reveal did not lock browse")
 	_check(reveal_title.text == "LUNARIS VESSEL" and not reveal_stack.visible, "identity appeared before cinematic completion")
+	_check(pull_again != null and not pull_again.visible, "Pull Again appeared before the final reveal")
 	_check(stars.get_child_count() == 5 and video.stream != null and video.is_playing(), "five-star cinematic resources did not start")
+	_check(is_zero_approx(video.position.y) and video.size.y > 825.0, "landscape cinematic is not top-aligned cover")
+	_check(is_zero_approx(video.pivot_offset.y), "landscape cinematic hover pivot is not top anchored")
 	_check(reveal_title.get_theme_font_size(&"font_size") == 104, "landscape reveal title typography is not doubled")
 	_check(reveal_hint != null and reveal_hint.get_theme_font_size(&"font_size") == 28, "reveal continuation typography is not doubled")
 	_check(skip != null and skip.get_theme_font_size(&"font_size") == 36, "Skip Reveal typography is not doubled")
@@ -172,6 +185,8 @@ func _run() -> void:
 	cinematic.call("_on_video_finished")
 	await _frames(1)
 	_check(reveal_stack.visible, "cinematic completion did not reveal identity")
+	_check(video.is_playing() and video.visible, "identity reveal did not preserve loop playback")
+	_check(not plate.visible, "identity reveal froze onto the final plate instead of looping")
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Lunaris Vessel title is not gold")
 	_check(sfx.call("last_resolved_id") == &"gacha_identity_reveal", "identity reveal sting did not fire")
 	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "identity reveal did not hand BGM back to staging")
@@ -185,21 +200,56 @@ func _run() -> void:
 		var star_accent: Color = star.get("_accent")
 		_check(star_accent.is_equal_approx(Style.GOLD), "Lunaris Vessel star %d is not gold" % (index + 1))
 		_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	screen.call("_on_reveal_gui_input", click)
-	await _frames(1)
-	_check(not reveal.visible and video.stream == null and not pull.disabled and not back.disabled, "click skip did not finalize/release")
-	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "click skip did not restore music")
+	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
+	_check(pull_again.text == "PULL AGAIN • 40 MARKS", "Pull Again does not expose the authoritative cost")
+	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 36, "Pull Again is not comfortably sized")
+	_check(root.gui_get_focus_owner() == pull_again, "settled reveal did not focus Pull Again")
+	var hover_surface := cinematic.call("hover_surface") as Control
+	_check(hover_surface == video, "looping character film is not the active hover surface")
+	_check(video.mouse_filter == Control.MOUSE_FILTER_PASS and plate.mouse_filter == Control.MOUSE_FILTER_PASS, "character reveal surfaces cannot receive hover input")
+	cinematic.call("_on_final_plate_mouse_entered")
+	var portrait_motion := InputEventMouseMotion.new()
+	portrait_motion.position = hover_surface.size * Vector2(0.78, 0.36)
+	cinematic.call("_on_final_plate_gui_input", portrait_motion)
+	await _frames(8)
+	_check(bool(cinematic.call("final_plate_hovered")), "final character plate did not enter hover state")
+	_check(hover_surface.scale.x > 1.0 and hover_surface.scale.y > 1.0, "active character reveal did not gain hover depth")
+	_check(hover_surface.offset_transform_position.length() > 0.1, "active character reveal did not respond to pointer position")
+	_check(is_zero_approx(hover_surface.offset_transform_position.y), "hover motion shifted the top-aligned reveal vertically")
+	_check(hover_surface.modulate.r > 1.0, "active character reveal did not gain hover luminance")
+	cinematic.call("_on_final_plate_mouse_exited")
+	await _frames(12)
+	_check(not bool(cinematic.call("final_plate_hovered")), "final character plate hover state did not clear")
+	_check(hover_surface.scale.distance_to(Vector2.ONE) < 0.02, "active character reveal did not settle after hover")
+	var repeat_receipts := int((game.get("campaign").data_copy()["command_receipts"] as Array).size())
+	var repeat_marks := int(game.get("campaign").runtime_projection()["marks"])
+	await _action(&"ui_accept")
+	await _frames(4)
+	_check(screen.call("flow_state_name") == &"REVEAL" and reveal.visible, "Pull Again did not start the next reveal")
+	_check(int((game.get("campaign").data_copy()["command_receipts"] as Array).size()) == repeat_receipts + 1, "Pull Again did not dispatch exactly once")
+	_check(int(game.get("campaign").runtime_projection()["marks"]) == repeat_marks - 40, "Pull Again charged the wrong amount")
+	_check(not screen.get("_pending_pull").is_empty(), "Pull Again lost the authoritative receipt")
+	_check(not pull_again.visible, "Pull Again remained visible during the next cinematic")
+	screen.call("_finish_reveal")
+	await _frames(2)
+	_check(not reveal.visible and video.stream == null and not pull.disabled and not back.disabled, "Pull Again follow-up reveal did not finalize cleanly")
+	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "Pull Again follow-up did not restore music")
 
+	root.size = Vector2i(720, 1280)
+	await _frames(2)
 	screen.set("reduced_motion", true)
 	var reduced_audio_starts := int(sfx.call("audible_start_count"))
 	screen.call("_begin_reveal", _sample_pull(4, false))
 	await _frames(1)
+	root.size = Vector2i(720, 1000)
+	await _frames(2)
 	_check(reveal.visible and reveal_stack.visible and reveal_title.text == "ARCHIVE CASTER", "reduced reveal did not settle identity")
+	_check(reveal_stack.custom_minimum_size.x >= 672.0, "portrait identity stack collapsed horizontally")
+	_check(reveal_title.get_theme_font_size(&"font_size") <= 72, "portrait identity title did not scale down")
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
+	_check(is_zero_approx(plate.position.y) and plate.size.y > 1000.0, "portrait final plate is not top-aligned cover")
+	_check(is_zero_approx(plate.pivot_offset.y), "portrait final plate hover pivot is not top anchored")
 	for index: int in 5:
 		var star := stars.get_child(index) as ResonanceStar
 		_check(star.visible == (index < 4), "reduced reveal star count changed")
@@ -209,8 +259,17 @@ func _run() -> void:
 			_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
 	_check(int(sfx.call("audible_start_count")) == reduced_audio_starts + 2, "reduced reveal did not play its identity and star cues")
 	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "reduced reveal did not preserve staging BGM")
-	await _action(&"ui_cancel")
-	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal cancel did not finalize")
+	cinematic.call("_on_final_plate_mouse_entered")
+	await _frames(4)
+	_check(plate.scale.is_equal_approx(Vector2.ONE) and plate.offset_transform_position.is_zero_approx(), "reduced motion still transformed the final plate")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	screen.call("_on_reveal_gui_input", click)
+	await _frames(1)
+	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal click did not finalize")
+	root.size = Vector2i(1280, 720)
+	await _frames(2)
 
 	pull.disabled = true
 	back.disabled = false

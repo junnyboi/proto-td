@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "bible": {
-    "path": "docs/NARRATIVE_CANON.md",
-    "version": "1.1",
-    "sha256": "5a4813f683326785fdc011141e97111e34d07a2163612312457bd7a5e7876274"
-  },
+	"bible": {
+		"path": "docs/NARRATIVE_CANON.md",
+		"version": "1.1",
+		"sha256": "44fcf6a37ea23c093a6669e0c055e39531827a9880952464e94f1e7c5d086102"
+	},
   "active_surface_sources": [
     "UiCopy.STATIC_FALLBACKS",
     "StageNarrativeCatalog.records",

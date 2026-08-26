@@ -7,6 +7,9 @@ extends RefCounted
 
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const ProtoIsometricTerrainScript := preload("res://scripts/view/proto_isometric_terrain.gd")
+const EndpointLandmarkScript := preload("res://scripts/view/battle_endpoint_landmark.gd")
+const SPAWN_LANDMARK_ID := &"world.act1.spawn"
+const CORE_LANDMARK_ID := &"world.act1.core"
 
 
 static func build_stage(
@@ -61,61 +64,51 @@ static func build_stage_with_theme(
 		terrain.queue_free()
 		return false
 	grid_root.add_child(terrain)
-	if theme != null:
-		_add_endpoint_landmarks(grid_root, stage, theme)
+	if not _add_endpoint_landmarks(grid_root, stage):
+		if report_error:
+			push_error("iso_grid_builder: generated endpoint landmark setup failed")
+		return false
 	return true
 
 
 static func _add_endpoint_landmarks(
 	grid_root: Node2D,
 	stage: StageDef,
-	theme: StageArtThemeType,
-) -> void:
-	_add_landmark(
-		grid_root,
-		stage,
-		theme.spawn_cell,
-		theme.spawn_landmark_id,
-		theme.spawn_pivot,
-		theme.spawn_offset,
-		"SpawnLandmark",
-	)
-	_add_landmark(
-		grid_root,
-		stage,
-		theme.core_cell,
-		theme.core_landmark_id,
-		theme.core_pivot,
-		theme.core_offset,
-		"CoreLandmark",
-	)
+) -> bool:
+	var count := 0
+	var grid_size := stage.grid_size()
+	for y: int in grid_size.y:
+		for x: int in grid_size.x:
+			var cell := Vector2i(x, y)
+			var tile := stage.tile_at(cell)
+			if tile != StageDef.Tile.SPAWN and tile != StageDef.Tile.BASE:
+				continue
+			var prefix := "SpawnLandmark" if tile == StageDef.Tile.SPAWN else "CoreLandmark"
+			var art_id := SPAWN_LANDMARK_ID if tile == StageDef.Tile.SPAWN else CORE_LANDMARK_ID
+			if not _add_landmark(
+				grid_root,
+				cell,
+				art_id,
+				"%s_%d_%d" % [prefix, x, y],
+			):
+				return false
+			count += 1
+	return count > 0
 
 
 static func _add_landmark(
 	grid_root: Node2D,
-	stage: StageDef,
 	cell: Vector2i,
 	art_id: StringName,
-	pivot: Vector2i,
-	offset: Vector2i,
 	node_name: String,
-) -> void:
-	var texture := Art.texture(art_id)
-	if texture == null:
-		return
-	var art_size := Art.size(art_id)
-	if art_size == Vector2i.ZERO:
-		art_size = Vector2i(texture.get_width(), texture.get_height())
-	var center := IsoProjection.face_center(
-		cell,
-		stage.tile_at(cell) == StageDef.Tile.ELEVATED,
-	)
-	var sprite := TextureRect.new()
+) -> bool:
+	var sprite := EndpointLandmarkScript.new() as BattleEndpointLandmark
 	sprite.name = node_name
-	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sprite.texture = texture
-	sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	sprite.size = Vector2(art_size)
-	sprite.position = center - Vector2(pivot) + Vector2(offset)
+	if not sprite.setup(art_id):
+		sprite.free()
+		return false
+	var pivot := Vector2(sprite.size.x * 0.5, sprite.size.y)
+	sprite.position = IsoProjection.face_center(cell) - pivot
 	sprite.z_index = IsoProjection.tile_z(cell) + 1
 	grid_root.add_child(sprite)
+	return true

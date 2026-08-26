@@ -4,7 +4,7 @@ extends RefCounted
 const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
 	&"ui.title.full_title": "Protos Defense",
-	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the resurrected champions of Company 33 and prove an imperfect species still deserves a future.",
+	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
 	&"ui.title.start": "Start",
 	&"ui.title.settings": "Settings",
 	&"ui.title.settings_save_failed": "Settings could not be saved. Review the draft and try again.",
@@ -43,6 +43,7 @@ const STATIC_FALLBACKS := {
 	&"ui.gacha.campaign_required": "Start or continue a campaign to access premium resonance.",
 	&"ui.gacha.marks": "{count} MARKS",
 	&"ui.gacha.pull_action": "RESONATE • {cost} MARKS",
+	&"ui.gacha.pull_again": "PULL AGAIN • {cost} MARKS",
 	&"ui.gacha.guarantee_in": "5-STAR GUARANTEED IN {count} {unit}",
 	&"ui.gacha.confirm_body": "One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
 	&"ui.gacha.attempt_pending": "Resolve the active operation before using premium resonance.",
@@ -290,6 +291,8 @@ const STATIC_FALLBACKS := {
 	&"ui.results.no_losses": "No terminal losses recorded.",
 	&"ui.results.tally": "kills {kills}   leaks {leaks}",
 	&"ui.results.reward": "Unlocked: {name}",
+	&"ui.results.stage_cleared": "STAGE {stage} CLEARED",
+	&"ui.results.stage_defeated": "STAGE {stage} DEFEATED",
 	&"ui.results.retry": "Retry",
 	&"ui.results.consequence": "Consequence",
 	&"ui.results.transmission": "CLEAR TRANSMISSION",
@@ -397,6 +400,7 @@ const STATIC_FALLBACKS := {
 const PLACEHOLDER_TYPES := {
 	&"ui.gacha.marks": {&"count": &"int"},
 	&"ui.gacha.pull_action": {&"cost": &"int"},
+	&"ui.gacha.pull_again": {&"cost": &"int"},
 	&"ui.gacha.guarantee_in": {&"count": &"int", &"unit": &"String"},
 	&"ui.gacha.confirm_body": {
 		&"cost": &"int", &"before": &"int", &"after": &"int",
@@ -448,6 +452,8 @@ const PLACEHOLDER_TYPES := {
 	&"ui.squad.tactical_hint": {&"hint": &"String"},
 	&"ui.results.tally": {&"kills": &"int", &"leaks": &"int"},
 	&"ui.results.reward": {&"name": &"String"},
+	&"ui.results.stage_cleared": {&"stage": &"String"},
+	&"ui.results.stage_defeated": {&"stage": &"String"},
 	&"ui.results.training_available": {&"count": &"int"},
 	&"ui.identity_filter.summary": {&"shown": &"int", &"total": &"int"},
 	&"ui.rename.confirm_body": {&"current": &"String", &"next": &"String"},

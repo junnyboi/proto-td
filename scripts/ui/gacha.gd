@@ -32,6 +32,7 @@ const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
 const CONFIRM_ACTION_VERTICAL_PADDING := 18.0
 const BROWSE_PULL_WIDTH := 320.0
 const BROWSE_PULL_HEIGHT := 68.0
+const REVEAL_PULL_AGAIN_SIZE := Vector2(600.0, 88.0)
 
 enum FlowState {
 	BROWSE,
@@ -51,6 +52,7 @@ enum ConfirmationTransition {
 
 var _game: Node
 var _flow_state := FlowState.BROWSE
+var _browse_backdrop_art: TextureRect
 var _marks_label: Label
 var _pull_button: Button
 var _back_button: Button
@@ -98,11 +100,11 @@ var _premium_pull_dispatched := false
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
 var _cinematic_player: GachaCinematicPlayer
-var _reveal_burst: Control
 var _reveal_title_stack: VBoxContainer
 var _reveal_title: Label
 var _reveal_stars: HBoxContainer
 var _reveal_hint: Label
+var _reveal_pull_again: Button
 var _skip_button: Button
 var _reveal_tween: Tween
 var _cinematic_watchdog: Tween
@@ -116,7 +118,9 @@ func _ready() -> void:
 	_game = get_node_or_null("/root/Game")
 	if _game != null:
 		_game.set("content", self)
+	clip_contents = true
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
+	_browse_backdrop_art = get_node_or_null("AstralBackdropArt") as TextureRect
 	_build_screen()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
@@ -141,10 +145,12 @@ func _input(event: InputEvent) -> void:
 	if not event.is_pressed():
 		return
 	if (
-		_flow_state == FlowState.REVEAL
-		and _reveal_result_ready
-		and (event is InputEventMouseButton or event is InputEventScreenTouch)
+			_flow_state == FlowState.REVEAL
+			and _reveal_result_ready
+			and (event is InputEventMouseButton or event is InputEventScreenTouch)
 	):
+		if _event_hits_reveal_action(event):
+			return
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
 		return
@@ -191,6 +197,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		and (event.is_action(&"ui_accept") or event.is_action(&"ui_cancel"))
 	):
 		get_viewport().set_input_as_handled()
+		if (
+				event.is_action(&"ui_accept")
+				and get_viewport().gui_get_focus_owner() == _reveal_pull_again
+				and not _reveal_pull_again.disabled
+		):
+			_on_pull_again_pressed()
+			return
 		_finish_reveal()
 		return
 	if _flow_state == FlowState.CONFIRM and event.is_action(&"ui_cancel"):
@@ -608,24 +621,6 @@ func _build_reveal_layer() -> void:
 	_cinematic_player.cinematic_failed.connect(_on_cinematic_failed)
 	_reveal_layer.add_child(_cinematic_player)
 
-	_reveal_burst = Control.new()
-	_reveal_burst.name = "SignalFilaments"
-	_reveal_burst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_reveal_burst.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_reveal_layer.add_child(_reveal_burst)
-	for index: int in 12:
-		var ray := ColorRect.new()
-		ray.set_anchors_preset(Control.PRESET_CENTER)
-		ray.offset_left = -360.0
-		ray.offset_right = 360.0
-		ray.offset_top = -1.0
-		ray.offset_bottom = 1.0
-		ray.pivot_offset = Vector2(360, 1)
-		ray.rotation = deg_to_rad(float(index) * 15.0)
-		ray.color = Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
-		ray.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_reveal_burst.add_child(ray)
-
 	var safe_margin := MarginContainer.new()
 	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	safe_margin.add_theme_constant_override(&"margin_left", 24)
@@ -702,6 +697,21 @@ func _build_reveal_layer() -> void:
 	_reveal_hint.add_theme_font_size_override(&"font_size", 28)
 	_reveal_hint.modulate.a = 0.0
 	_reveal_title_stack.add_child(_reveal_hint)
+	_reveal_pull_again = Button.new()
+	_reveal_pull_again.name = "PullAgainButton"
+	_reveal_pull_again.custom_minimum_size = REVEAL_PULL_AGAIN_SIZE
+	_reveal_pull_again.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_reveal_pull_again.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_reveal_pull_again.clip_text = false
+	_reveal_pull_again.disabled = true
+	_reveal_pull_again.focus_mode = Control.FOCUS_NONE
+	_reveal_pull_again.visible = false
+	_reveal_pull_again.modulate.a = 0.0
+	_reveal_pull_again.pressed.connect(_on_pull_again_pressed)
+	Style.apply_button(_reveal_pull_again, &"gold")
+	_apply_confirmation_action_style(_reveal_pull_again, true)
+	_reveal_pull_again.add_theme_font_size_override(&"font_size", 36)
+	_reveal_title_stack.add_child(_reveal_pull_again)
 
 
 func _refresh() -> void:
@@ -809,6 +819,7 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 
 
 func _apply_responsive_layout() -> void:
+	_fit_browse_backdrop()
 	if _hero_grid == null or _header_grid == null or _action_grid == null:
 		return
 	var viewport_size := get_viewport_rect().size
@@ -835,11 +846,19 @@ func _apply_responsive_layout() -> void:
 	_apply_hero_card_layout(_hero_grid.columns)
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
-		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 1120
+		_reveal_title_stack.custom_minimum_size.x = (
+			maxf(280.0, viewport_size.x - 48.0) if portrait else 1120.0
+		)
 	if _reveal_title != null:
-		_reveal_title.add_theme_font_size_override(&"font_size", 80 if portrait else 104)
+		var portrait_title_size := clampi(int(viewport_size.x * 0.11), 44, 72)
+		_reveal_title.add_theme_font_size_override(
+			&"font_size", portrait_title_size if portrait else 104,
+		)
 	if _reveal_hint != null:
 		_reveal_hint.add_theme_font_size_override(&"font_size", 28)
+	if _reveal_pull_again != null:
+		_reveal_pull_again.custom_minimum_size = Vector2(600, 84) if portrait else REVEAL_PULL_AGAIN_SIZE
+		_reveal_pull_again.add_theme_font_size_override(&"font_size", 30 if portrait else 36)
 	if _skip_button != null:
 		_skip_button.custom_minimum_size = Vector2(300 if portrait else 340, 92)
 		_skip_button.add_theme_font_size_override(&"font_size", 36)
@@ -847,6 +866,27 @@ func _apply_responsive_layout() -> void:
 		for child: Node in _reveal_stars.get_children():
 			var star := child as ResonanceStar
 			star.custom_minimum_size = Vector2(46, 46) if portrait else Vector2(58, 58)
+
+
+func _fit_browse_backdrop() -> void:
+	if _browse_backdrop_art == null or _browse_backdrop_art.texture == null:
+		return
+	var viewport_size := get_viewport_rect().size
+	var texture_size := _browse_backdrop_art.texture.get_size()
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0 or texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var source_aspect := texture_size.x / texture_size.y
+	var viewport_aspect := viewport_size.x / viewport_size.y
+	var fitted_size: Vector2
+	if viewport_aspect > source_aspect:
+		fitted_size = Vector2(viewport_size.x, viewport_size.x / source_aspect)
+	else:
+		fitted_size = Vector2(viewport_size.y * source_aspect, viewport_size.y)
+	_browse_backdrop_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_browse_backdrop_art.position = Vector2((viewport_size.x - fitted_size.x) * 0.5, 0.0)
+	_browse_backdrop_art.size = fitted_size
+	_browse_backdrop_art.pivot_offset = Vector2(fitted_size.x * 0.5, 0.0)
+	_browse_backdrop_art.stretch_mode = TextureRect.STRETCH_SCALE
 
 
 func _apply_hero_card_layout(columns: int) -> void:
@@ -1000,6 +1040,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_title.modulate.a = 0.0
 	_reveal_title.scale = Vector2(0.96, 0.96)
 	_reveal_hint.modulate.a = 0.0
+	_reset_reveal_pull_again()
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		star.set_state(accent, false)
@@ -1007,8 +1048,6 @@ func _begin_reveal(pull: Dictionary) -> void:
 		star.modulate.a = 0.0
 		star.scale = Vector2(0.18, 0.18)
 		star.rotation = -TAU * 1.25
-	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
-	_reveal_burst.rotation = -0.08
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
@@ -1020,12 +1059,10 @@ func _begin_reveal(pull: Dictionary) -> void:
 		_cinematic_player.show_final_plate()
 		_reveal_result_ready = true
 		_reveal_identity_immediately(rarity, accent)
-		_skip_button.grab_focus()
 		return
 	_reveal_tween = create_tween()
 	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
-	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
 
 
 func _on_cinematic_started(cue_id: StringName) -> void:
@@ -1056,9 +1093,9 @@ func _on_cinematic_watchdog_timeout() -> void:
 		return
 	var video := _cinematic_player.video_player()
 	if video != null and video.is_playing():
-		_cinematic_watchdog = create_tween()
-		_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_POLL_SECONDS)
-		_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
+		# Looping films stay active behind the deterministic result UI. If the
+		# first-cycle timer ever misses, the watchdog still reveals at 8.75 s.
+		_begin_identity_reveal()
 		return
 	_cinematic_player.show_final_plate()
 	_begin_identity_reveal()
@@ -1069,7 +1106,9 @@ func _begin_identity_reveal() -> void:
 		return
 	_reveal_result_ready = true
 	_kill_cinematic_watchdog()
-	_cinematic_player.show_final_plate()
+	var video := _cinematic_player.video_player()
+	if video == null or not video.is_playing():
+		_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
 	var accent := _reveal_accent(_pending_pull)
 	_begin_identity_audio()
@@ -1095,6 +1134,8 @@ func _begin_identity_reveal() -> void:
 		_reveal_tween.tween_callback(_start_star_pulse.bind(star))
 		_reveal_tween.tween_interval(0.08)
 	_reveal_tween.tween_property(_reveal_hint, "modulate:a", 0.78, 0.28)
+	_reveal_tween.parallel().tween_property(_reveal_pull_again, "modulate:a", 1.0, 0.28)
+	_reveal_tween.tween_callback(_arm_reveal_pull_again)
 
 
 func _prepare_reveal_star(star: ResonanceStar, accent: Color) -> void:
@@ -1123,6 +1164,8 @@ func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
 	_reveal_title.modulate.a = 1.0
 	_reveal_title.scale = Vector2.ONE
 	_reveal_hint.modulate.a = 0.78
+	_reveal_pull_again.visible = true
+	_reveal_pull_again.modulate.a = 1.0
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		var lit := index < rarity
@@ -1132,6 +1175,7 @@ func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
 		star.rotation = 0.0
 		star.set_state(accent, lit)
 	Sfx.play(STAR_BLOOM_SFX)
+	_arm_reveal_pull_again()
 
 
 func _begin_identity_audio() -> void:
@@ -1139,7 +1183,82 @@ func _begin_identity_audio() -> void:
 	Music.transition_to_staging(&"lunaris", REVEAL_MUSIC_CROSSFADE_SECONDS)
 
 
-func _finish_reveal() -> void:
+func _on_pull_again_pressed() -> void:
+	if not _is_revealing or not _reveal_result_ready or not _can_pull_again():
+		_refresh_reveal_pull_again()
+		return
+	_finish_reveal(false)
+	_confirmation_return_focus = _pull_button
+	_on_pull_pressed.call_deferred()
+
+
+func _can_pull_again() -> bool:
+	if (
+			_game == null
+			or not bool(_game.get("campaign_active"))
+			or _game.get("campaign") == null
+			or _game.get("campaign_store") == null
+	):
+		return false
+	var projection: Dictionary = _game.get("campaign").runtime_projection()
+	var cost := int(projection.get("premium_pull_cost", 0))
+	return (
+		cost > 0
+		and int(projection.get("marks", 0)) >= cost
+		and not bool(projection.get("attempt_pending", false))
+		and not _premium_pull_dispatched
+	)
+
+
+func _refresh_reveal_pull_again() -> void:
+	if _reveal_pull_again == null:
+		return
+	var cost := 0
+	if _game != null and _game.get("campaign") != null:
+		cost = int(_game.get("campaign").runtime_projection().get("premium_pull_cost", 0))
+	_reveal_pull_again.text = _format(
+		&"ui.gacha.pull_again", "PULL AGAIN • {cost} MARKS", {&"cost": cost},
+	)
+	_reveal_pull_again.disabled = not _can_pull_again()
+	_reveal_pull_again.focus_mode = (
+		Control.FOCUS_ALL if not _reveal_pull_again.disabled else Control.FOCUS_NONE
+	)
+	_reveal_pull_again.accessibility_name = _reveal_pull_again.text
+
+
+func _arm_reveal_pull_again() -> void:
+	if not _is_revealing or not _reveal_result_ready:
+		return
+	_reveal_pull_again.visible = true
+	_refresh_reveal_pull_again()
+	var focus_target: Control = _reveal_pull_again if not _reveal_pull_again.disabled else _skip_button
+	if _is_focus_candidate(focus_target):
+		focus_target.grab_focus()
+
+
+func _reset_reveal_pull_again() -> void:
+	if _reveal_pull_again == null:
+		return
+	_reveal_pull_again.visible = false
+	_reveal_pull_again.modulate.a = 0.0
+	_reveal_pull_again.disabled = true
+	_reveal_pull_again.focus_mode = Control.FOCUS_NONE
+
+
+func _event_hits_reveal_action(event: InputEvent) -> bool:
+	if _reveal_pull_again == null or not _reveal_pull_again.is_visible_in_tree():
+		return false
+	var pointer_position := Vector2.ZERO
+	if event is InputEventMouseButton:
+		pointer_position = (event as InputEventMouseButton).position
+	elif event is InputEventScreenTouch:
+		pointer_position = (event as InputEventScreenTouch).position
+	else:
+		return false
+	return _reveal_pull_again.get_global_rect().has_point(pointer_position)
+
+
+func _finish_reveal(restore_focus: bool = true) -> void:
 	if not _is_revealing:
 		return
 	_kill_reveal_tween()
@@ -1153,12 +1272,16 @@ func _finish_reveal() -> void:
 	_reveal_layer.visible = false
 	_reveal_layer.modulate.a = 0.0
 	_reveal_title_stack.visible = false
+	_reset_reveal_pull_again()
 	_pending_pull = {}
 	_screen_margin.visible = true
 	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 	_refresh()
-	_set_browse_status(final_copy, AccessibilityServer.LIVE_POLITE)
-	_restore_confirmation_return_focus(_confirmation_transition_token)
+	if restore_focus:
+		_set_browse_status(final_copy, AccessibilityServer.LIVE_POLITE)
+		_restore_confirmation_return_focus(_confirmation_transition_token)
+	else:
+		_confirmation_return_focus = null
 
 
 func _kill_reveal_tween() -> void:
@@ -1764,6 +1887,7 @@ func _refresh_static_copy() -> void:
 	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
+	_refresh_reveal_pull_again()
 	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
 		_reveal_title.text = _callsign_for(
 			String(_pending_pull.get("premium_id", "")),
