@@ -662,9 +662,9 @@ func _build_mission_card() -> PanelContainer:
 func _build_mission_button() -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = "MissionControlButton"
-	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
+	var full_text := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
 	var display_text := UiCopyType.text(
-		&"ui.staging.mission_control_display", "MISSION\nCONTROL",
+		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
 	)
 	button.set_presentation_text(full_text, display_text.to_upper())
 	button.tooltip_text = full_text
@@ -1037,9 +1037,9 @@ func _refresh_locale_copy() -> void:
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
 	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
-	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
+	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Prepare for Mission")
 	var mission_display := UiCopyType.text(
-		&"ui.staging.mission_control_display", "MISSION\nCONTROL",
+		&"ui.staging.mission_control_display", "PREPARE FOR\nMISSION",
 	)
 	_mission.set_presentation_text(mission_copy, mission_display.to_upper())
 	_mission.tooltip_text = mission_copy
