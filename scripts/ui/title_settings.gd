@@ -20,6 +20,7 @@ const ERROR_RED := Color("ff9b93")
 const ENTRY_SECONDS := 0.22
 const EXIT_SECONDS := 0.16
 const FRAME_TRAVEL := 12.0
+const APPLY_BUTTON_WIDTH := 420.0
 
 enum TransitionState {
 	CLOSED,
@@ -49,6 +50,7 @@ var _redirect_pending := false
 @onready var _title_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/SettingsTitle
 @onready var _header_seal: TextureRect = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/LunarisSeal
 @onready var _body_scroll: ScrollContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll
+@onready var _body_margin: MarginContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin
 @onready var _columns: GridContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns
 @onready var _locale_selector: AetheriaLocaleSelector = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/LocaleSelector
 @onready var _locale_list: ItemList = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/LocaleSelector/LocaleList
@@ -86,6 +88,12 @@ func _ready() -> void:
 	_frame_option.item_selected.connect(_on_frame_selected)
 	_frame_option.fit_to_longest_item = false
 	_motion_button.pressed.connect(_toggle_motion)
+	_locale_selector.alignment = BoxContainer.ALIGNMENT_CENTER
+	_apply_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
+	]:
+		_apply_button.add_theme_color_override(color_name, Color.WHITE)
 	I18n.locale_changed.connect(_on_locale_changed)
 	resized.connect(_apply_responsive_layout)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
@@ -382,9 +390,13 @@ func _apply_type() -> void:
 		StagingSkinType.apply_display_type(label, _title_font_size(15), MUTED, 560)
 	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
 		StagingSkinType.apply_display_type(action, _title_font_size(17), IVORY, 560)
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
+	]:
+		_apply_button.add_theme_color_override(color_name, Color.WHITE)
 	StagingSkinType.apply_display_type(_frame_option, _title_font_size(16), IVORY, 560)
-	StagingSkinType.apply_display_type(_locale_label, _title_font_size(17), GOLD, 560)
-	StagingSkinType.apply_display_type(_locale_list, _title_font_size(20), IVORY, 560)
+	StagingSkinType.apply_display_type(_locale_label, _title_font_size(14), GOLD, 560)
+	StagingSkinType.apply_display_type(_locale_list, _title_font_size(13), IVORY, 560)
 	StagingSkinType.apply_display_type(_error_label, _title_font_size(15), ERROR_RED, 620)
 	_error_label.add_theme_color_override(&"font_outline_color", Color("3b0d14"))
 	_error_label.add_theme_constant_override(&"outline_size", 4)
@@ -495,6 +507,7 @@ func _apply_responsive_layout() -> void:
 	_command_frame.add_theme_stylebox_override(&"panel", frame_style)
 	var padding := 0 if narrow or short else 22
 	_set_margins(_frame_padding, padding, padding)
+	_set_margins(_body_margin, 10 if narrow else 18, 10 if narrow else 14)
 	_state_layout.add_theme_constant_override(&"separation", 6 if short else 12)
 	_header.add_theme_constant_override(&"separation", 6 if narrow else 14)
 	_header_seal.visible = not narrow
@@ -509,12 +522,13 @@ func _apply_responsive_layout() -> void:
 		var section := _columns.get_node_or_null(section_name) as PanelContainer
 		if section != null:
 			var section_style := section.get_theme_stylebox(&"panel").duplicate() as StyleBox
-			section_style.content_margin_left = 0.0 if narrow else 18.0
-			section_style.content_margin_right = 0.0 if narrow else 18.0
+			section_style.content_margin_left = 18.0
+			section_style.content_margin_top = 14.0
+			section_style.content_margin_right = 18.0
 			section.add_theme_stylebox_override(&"panel", section_style)
 			var section_margin := section.get_node_or_null("SectionMargin") as MarginContainer
 			if section_margin != null:
-				_set_margins(section_margin, 0 if narrow else 18, 8 if narrow else 16)
+				_set_margins(section_margin, 14 if narrow else 26, 12 if narrow else 22)
 	_frame_option.custom_minimum_size.x = 0.0 if narrow or portrait else 180.0
 	if narrow:
 		for index: int in _frame_option.item_count:
@@ -522,7 +536,15 @@ func _apply_responsive_layout() -> void:
 	else:
 		_refresh_frame_items()
 	_action_dock.columns = 1
-	_apply_button.custom_minimum_size.y = 76.0 if short else _title_size(76.0)
+	var available_apply_width := maxf(180.0, viewport.x - float(horizontal_gutter * 2 + padding * 2 + 24))
+	var apply_width := minf(_title_size(APPLY_BUTTON_WIDTH), available_apply_width)
+	_action_dock.custom_minimum_size.x = apply_width
+	_action_dock.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_apply_button.custom_minimum_size = Vector2(
+		apply_width,
+		76.0 if short else _title_size(76.0),
+	)
+	_apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_back_button.text = UiCopyType.text(&"ui.common.back", "Back").to_upper()
 	_back_button.custom_minimum_size = Vector2(92.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
 	_frame_option.custom_minimum_size.y = 72.0
@@ -532,13 +554,14 @@ func _apply_responsive_layout() -> void:
 		slider.custom_minimum_size.y = 48.0
 	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(12 if narrow else (30 if portrait else 36)))
 	var locale_heading := UiCopyType.text(&"ui.locale.label", "Language").to_upper()
-	if narrow and locale_heading.length() > 6:
-		locale_heading = locale_heading.substr(0, 4)
 	_locale_label.text = locale_heading
 	_locale_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER if narrow else HORIZONTAL_ALIGNMENT_LEFT
 	)
-	for heading: Label in [_locale_label, _audio_heading, _graphics_heading]:
+	_locale_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_locale_label.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 14))
+	_locale_list.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 10))
+	for heading: Label in [_audio_heading, _graphics_heading]:
 		heading.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
