@@ -17,7 +17,8 @@ func _run() -> void:
 	create_timer(TIMEOUT).timeout.connect(_on_timeout, CONNECT_ONE_SHOT)
 	var game: Node = root.get_node_or_null("Game")
 	var music: Node = root.get_node_or_null("Music")
-	_check(game != null and music != null, "required autoload missing")
+	var sfx: Node = root.get_node_or_null("Sfx")
+	_check(game != null and music != null and sfx != null, "required autoload missing")
 	if game == null:
 		_finish()
 		return
@@ -34,6 +35,12 @@ func _run() -> void:
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120 MARKS" and pity.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
+	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
+		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
+		_check(
+			hero_accent.is_equal_approx(Style.GOLD),
+			"%s does not use the shared gold reveal treatment" % premium_id,
+		)
 	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
 		var card := grid.get_node_or_null("Premium_%s" % premium_id)
 		_check(card != null and card.find_child("Portrait", true, false).texture != null, "missing portrait %s" % premium_id)
@@ -241,13 +248,22 @@ func _run() -> void:
 	_check(skip_style.content_margin_left >= 42.0 and skip_style.content_margin_right >= 42.0, "Skip Reveal container lacks horizontal padding")
 	_check(not skip.clip_text and skip.autowrap_mode != TextServer.AUTOWRAP_OFF, "Skip Reveal can still overflow or clip")
 	_check(plate.texture != null and StringName(music.call("current_id")) == &"gacha_lunaris_vessel", "final plate/music changed")
+	var reveal_audio_starts := int(sfx.call("audible_start_count"))
 	cinematic.call("_on_video_finished")
 	await _frames(1)
 	_check(reveal_stack.visible, "cinematic completion did not reveal identity")
+	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Lunaris Vessel title is not gold")
+	_check(sfx.call("last_resolved_id") == &"gacha_identity_reveal", "identity reveal sting did not fire")
+	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "identity reveal did not hand BGM back to staging")
+	_check(is_equal_approx(float(music.call("last_transition_fade_seconds")), 0.75), "identity reveal used the wrong BGM crossfade")
 	await _seconds(4.0)
+	_check(int(sfx.call("audible_start_count")) == reveal_audio_starts + 6, "five-star reveal did not play one identity sting plus five star blooms")
+	_check(sfx.call("last_resolved_id") == &"gacha_star_bloom", "star pulse sequence did not end on the bloom cue")
 	for index: int in 5:
 		var star := stars.get_child(index) as ResonanceStar
 		_check(star.visible and star.modulate.a > 0.99 and absf(star.rotation) < 0.01, "five-star item %d did not settle" % (index + 1))
+		var star_accent: Color = star.get("_accent")
+		_check(star_accent.is_equal_approx(Style.GOLD), "Lunaris Vessel star %d is not gold" % (index + 1))
 		_check(bool(star.call("uses_generated_art")), "five-star item %d is not using GPT Image 2 art" % (index + 1))
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
@@ -258,6 +274,7 @@ func _run() -> void:
 	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "click skip did not restore music")
 
 	screen.set("reduced_motion", true)
+	var reduced_audio_starts := int(sfx.call("audible_start_count"))
 	screen.call("_begin_reveal", _sample_pull(4, false))
 	await _frames(1)
 	_check(reveal.visible and reveal_stack.visible and reveal_title.text == "ARCHIVE CASTER", "reduced reveal did not settle identity")
@@ -270,6 +287,8 @@ func _run() -> void:
 			var star_accent: Color = star.get("_accent")
 			_check(star_accent.is_equal_approx(Style.GOLD), "Archive Caster star %d is not gold" % (index + 1))
 			_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
+	_check(int(sfx.call("audible_start_count")) == reduced_audio_starts + 2, "reduced reveal did not play its identity and star cues")
+	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "reduced reveal did not preserve staging BGM")
 	await _action(&"ui_cancel")
 	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal cancel did not finalize")
 
@@ -294,7 +313,6 @@ func _run() -> void:
 	game.set("campaign", null)
 	game.set("campaign_store", null)
 	music.call("stop")
-	var sfx := root.get_node_or_null("Sfx")
 	if sfx != null:
 		sfx.call("stop_all")
 	await _seconds(0.25)

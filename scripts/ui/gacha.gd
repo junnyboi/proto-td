@@ -14,6 +14,10 @@ const CINEMATIC_WATCHDOG_POLL_SECONDS := 0.5
 const REVEAL_NAME_FADE_SECONDS := 0.42
 const REVEAL_STAR_GROW_SECONDS := 0.56
 const REVEAL_STAR_PULSE_SECONDS := 0.82
+const REVEAL_MUSIC_CROSSFADE_SECONDS := 0.75
+const REVEAL_SKIP_CROSSFADE_SECONDS := 0.35
+const IDENTITY_REVEAL_SFX := "gacha_identity_reveal"
+const STAR_BLOOM_SFX := "gacha_star_bloom"
 const GACHA_FULLSIZE_PORTRAITS := {
 	"archive_caster": &"portrait_archive_caster_fullsize",
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
@@ -1005,6 +1009,7 @@ func _begin_identity_reveal() -> void:
 	_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
 	var accent := _reveal_accent(_pending_pull)
+	_begin_identity_audio()
 	_reveal_title_stack.visible = true
 	_reveal_title.modulate.a = 0.0
 	_reveal_title.scale = Vector2(0.96, 0.96)
@@ -1041,6 +1046,7 @@ func _prepare_reveal_star(star: ResonanceStar, accent: Color) -> void:
 func _start_star_pulse(star: ResonanceStar) -> void:
 	if not _is_revealing:
 		return
+	Sfx.play(STAR_BLOOM_SFX)
 	var pulse := create_tween().set_loops()
 	pulse.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	pulse.tween_property(star, "scale", Vector2(1.06, 1.06), REVEAL_STAR_PULSE_SECONDS * 0.5)
@@ -1049,6 +1055,7 @@ func _start_star_pulse(star: ResonanceStar) -> void:
 
 
 func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
+	_begin_identity_audio()
 	_reveal_title_stack.visible = true
 	_reveal_title.modulate.a = 1.0
 	_reveal_title.scale = Vector2.ONE
@@ -1061,6 +1068,12 @@ func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
 		star.scale = Vector2.ONE
 		star.rotation = 0.0
 		star.set_state(accent, lit)
+	Sfx.play(STAR_BLOOM_SFX)
+
+
+func _begin_identity_audio() -> void:
+	Sfx.play(IDENTITY_REVEAL_SFX)
+	Music.transition_to_staging(&"lunaris", REVEAL_MUSIC_CROSSFADE_SECONDS)
 
 
 func _finish_reveal() -> void:
@@ -1109,8 +1122,7 @@ func _stop_cinematic() -> void:
 	if _cinematic_player != null:
 		_cinematic_player.stop()
 	if String(Music.current_id()).begins_with("gacha_"):
-		Music.stop()
-		Music.play_staging(&"lunaris")
+		Music.transition_to_staging(&"lunaris", REVEAL_SKIP_CROSSFADE_SECONDS)
 
 
 func _result_kind(pull: Dictionary) -> String:
@@ -1146,10 +1158,8 @@ func _callsign_for(premium_id: String) -> String:
 	return String(_pool_row(premium_id).get("callsign", premium_id))
 
 
-func _reveal_accent(pull: Dictionary) -> Color:
-	if String(pull.get("premium_id", "")) == "archive_caster":
-		return Style.GOLD
-	return Style.GOLD if int(pull.get("rarity", 4)) == FIVE_STAR_RARITY else Style.CYAN
+func _reveal_accent(_pull: Dictionary) -> Color:
+	return Style.GOLD
 
 
 func _class_name(class_id: String) -> String:

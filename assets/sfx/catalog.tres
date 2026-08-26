@@ -22,7 +22,9 @@ entries = {
 &"deploy_elevated": {"path": "res://assets/sfx/combat/deploy_elevated.wav"},
 &"slow_field_cast": {"path": "res://assets/sfx/combat/slow_field_cast.wav"},
 &"slow_field_expire": {"path": "res://assets/sfx/combat/slow_field_expire.wav"},
-&"trap_trigger": {"path": "res://assets/sfx/combat/trap_trigger.wav"}
+&"trap_trigger": {"path": "res://assets/sfx/combat/trap_trigger.wav"},
+&"gacha_identity_reveal": {"path": "res://assets/sfx/gacha/gacha_identity_reveal.wav"},
+&"gacha_star_bloom": {"path": "res://assets/sfx/gacha/gacha_star_bloom.wav"}
 }
 aliases = {
 &"bolt": &"ability_ready",

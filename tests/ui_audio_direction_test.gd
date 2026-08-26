@@ -7,6 +7,10 @@ const UI_IDS := [
 	&"menu_open",
 	&"menu_close",
 ]
+const GACHA_REVEAL_IDS := [
+	&"gacha_identity_reveal",
+	&"gacha_star_bloom",
+]
 
 var _failures: Array[String] = []
 
@@ -48,6 +52,17 @@ func _run() -> void:
 				"silent routine cues do not replace the last audible semantic cue",
 			)
 			_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_hover", "dedicated hover cue resolves")
+		for id: StringName in GACHA_REVEAL_IDS:
+			_check(sfx.call("resolved_id_for", id) == id, "%s resolves directly" % id)
+			_check(bool(sfx.call("play", String(id))), "%s plays" % id)
+			_check(sfx.call("last_resolved_id") == id, "%s owns the last voice" % id)
+			var stream := load(String(sfx.call("last_stream_path"))) as AudioStream
+			_check(stream != null, "%s stream loads" % id)
+			if stream != null:
+				_check(stream.get_length() >= 1.0, "%s retains its authored body" % id)
+				_check(stream.get_length() <= 3.05, "%s stays within the SFX budget" % id)
+			stream = null
+			await process_frame
 		for spell_id: StringName in [&"bolt", &"charm"]:
 			_check(
 				sfx.call("resolved_id_for", spell_id) == &"ability_ready",
