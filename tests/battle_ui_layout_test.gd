@@ -127,6 +127,11 @@ func _run() -> void:
 	_check(dialogue_line != null and not dialogue_line.text.is_empty(), "mission-start dialogue line is missing")
 	if dialogue != null:
 		_check(dialogue.get_global_rect().end.x <= LANDSCAPE.x + 1.0, "mission-start dialogue exceeds landscape width")
+		_check(
+			dialogue.get_global_rect().size.y <= 240.0,
+			"mission-start dialogue expanded beyond its compact tactical height: size=%s minimum=%s"
+			% [dialogue.size, dialogue.get_combined_minimum_size()],
+		)
 	controls.call("_on_pause_pressed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Pause did not stop battle tick consumption")
 	controls.call("_on_pause_pressed")

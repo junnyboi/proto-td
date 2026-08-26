@@ -25,6 +25,7 @@ var _mid_wave_seen := false
 var _show_count := 0
 var _current_kind := &""
 var _i18n: Node = null
+var _enforcing_compact_size := false
 
 
 func setup(record: StageNarrativeDefType, viewport: Vector2) -> void:
@@ -34,6 +35,7 @@ func setup(record: StageNarrativeDefType, viewport: Vector2) -> void:
 	z_index = 75
 	Style.apply_panel(self, &"transmission")
 	_build_content()
+	resized.connect(_enforce_compact_size)
 	relayout(viewport)
 	visible = false
 	modulate.a = 0.0
@@ -150,9 +152,7 @@ func relayout(viewport: Vector2) -> void:
 	var portrait := viewport.y > viewport.x
 	var width := minf(viewport.x - 24.0, 660.0 if portrait else 760.0)
 	custom_minimum_size = Vector2(maxf(width, 280.0), 0.0)
-	size = Vector2(custom_minimum_size.x, 0.0)
-	reset_size()
-	size = Vector2(custom_minimum_size.x, get_combined_minimum_size().y)
+	_enforce_compact_size()
 	position = Vector2(
 		(viewport.x - size.x) * 0.5,
 		148.0 if portrait else 82.0,
@@ -163,8 +163,24 @@ func relayout(viewport: Vector2) -> void:
 func _settle_position() -> void:
 	if not is_inside_tree():
 		return
-	size.y = get_combined_minimum_size().y
+	_enforce_compact_size()
 	position.x = (_viewport.x - size.x) * 0.5
+
+
+func _enforce_compact_size() -> void:
+	if _enforcing_compact_size:
+		return
+	var target := Vector2(custom_minimum_size.x, get_combined_minimum_size().y)
+	if target.y <= 0.0 or size.is_equal_approx(target):
+		return
+	_enforcing_compact_size = true
+	size = target
+	_enforcing_compact_size = false
+
+
+func _process(_delta: float) -> void:
+	if visible:
+		_enforce_compact_size()
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
