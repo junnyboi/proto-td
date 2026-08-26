@@ -313,6 +313,8 @@
     "ui.results.retry": "Retry",
     "ui.results.return_to_staging": "Return to Staging",
     "ui.results.reward": "Unlocked: {name}",
+    "ui.results.stage_cleared": "STAGE {stage} CLEARED",
+    "ui.results.stage_defeated": "STAGE {stage} DEFEATED",
     "ui.results.tally": "kills {kills}   leaks {leaks}",
     "ui.results.train_recruits": "Train Recruits",
     "ui.results.train_short": "Train",

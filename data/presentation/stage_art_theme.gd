@@ -6,7 +6,8 @@ extends Resource
 
 const REQUIRED_THEME_STAGE_IDS: Array[StringName] = [&"s1", &"s2", &"s3"]
 const SHARED_THEME_ID: StringName = &"world.act1.alpine_shared"
-const SHARED_ENDPOINT_PIVOT := Vector2i(32, 16)
+const SHARED_SPAWN_PIVOT := Vector2i(32, 64)
+const SHARED_CORE_PIVOT := Vector2i(32, 80)
 const SHARED_IDS: Array[StringName] = [
 	&"world.act1.ground",
 	&"world.act1.route",
@@ -23,8 +24,6 @@ const ENV_PROP_IDS: Array[StringName] = [
 	&"world.act1.env.wall",
 	&"world.act1.env.crate",
 ]
-## Core landmark is now 128x128; pivot is center-bottom of the 64x32 face.
-const SHARED_CORE_PIVOT := Vector2i(64, 108)
 const TOPOLOGY := {
 	&"s1":
 	{
@@ -185,11 +184,12 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme_id is not the shared Act I alpine family")
 	if surface_modulate != Color.WHITE:
 		errors.append("shared Act I surface modulation must be Color.WHITE")
-	# core landmark is now 128x128 (Orrery); spawn stays at 64x32 overlay pivot
-	if spawn_pivot != SHARED_ENDPOINT_PIVOT:
-		errors.append("spawn pivot does not match 64x32 native overlay")
-	if core_pivot != SHARED_ENDPOINT_PIVOT and core_pivot != SHARED_CORE_PIVOT:
-		errors.append("core pivot does not match 64x32 or 128x128 landmark size")
+	# Generated endpoints share a 64 px one-tile footprint. Each pivot is the
+	# bottom center of its full animation frame so no platform spills sideways.
+	if spawn_pivot != SHARED_SPAWN_PIVOT:
+		errors.append("spawn pivot does not match 64x64 portal frame")
+	if core_pivot != SHARED_CORE_PIVOT:
+		errors.append("core pivot does not match 64x80 crystal frame")
 	var actual_ids: Array[StringName] = [
 		ground_id,
 		route_id,

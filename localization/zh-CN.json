@@ -313,6 +313,8 @@
     "ui.results.retry": "重试",
     "ui.results.return_to_staging": "返回整备区",
     "ui.results.reward": "已解锁：{name}",
+    "ui.results.stage_cleared": "第 {stage} 关 已通关",
+    "ui.results.stage_defeated": "第 {stage} 关 未通过",
     "ui.results.tally": "击杀 {kills}   漏敌 {leaks}",
     "ui.results.train_recruits": "训练新兵",
     "ui.results.train_short": "训练",
