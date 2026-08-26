@@ -648,7 +648,10 @@ func _detect_result_stamp() -> void:
 		(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
 	)
 	next.pressed.connect(_on_continue_pressed)
-	next.grab_focus()
+	# A terminal confirmation retains exclusive focus until its exit callback
+	# clears the gate; set_battle_confirmation_active(false) focuses Continue.
+	if not _battle_confirmation_active:
+		next.grab_focus()
 
 
 func _on_continue_pressed() -> void:

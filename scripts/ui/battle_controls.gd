@@ -18,8 +18,10 @@ const PAUSED_LABEL_MIN_WIDTH := 96.0
 
 enum ConfirmationState {
 	CLOSED,
+	ENTERING,
 	ACTIVE,
 	COMMITTING,
+	EXITING,
 }
 
 var model: BattleModel = null
@@ -119,6 +121,10 @@ func _build_confirm() -> void:
 	var cancel := _confirm_dialog.get(&"cancel") as Button
 	confirm.name = "ConfirmResign"
 	cancel.name = "CancelResign"
+	confirm.accessibility_name = _copy(&"ui.battle.confirm_defeat", "Confirm defeat")
+	confirm.accessibility_description = "Withdraw from the operation and record this attempt as a defeat."
+	cancel.accessibility_name = _copy(&"ui.battle.return", "Return to battle")
+	cancel.accessibility_description = "Close withdrawal confirmation and resume the exact prior battle speed."
 	Style.apply_button(confirm, &"danger")
 	Style.apply_button(cancel, &"secondary")
 	confirm.pressed.connect(_on_confirm_resign)
@@ -223,15 +229,21 @@ func request_resign_confirmation() -> bool:
 		return false
 	_confirmation_scale_snapshot = _current_scale()
 	_set_scale(0.0)
-	_set_confirmation_state(ConfirmationState.ACTIVE)
+	_set_confirmation_state(ConfirmationState.ENTERING)
 	view.call("set_battle_confirmation_active", true)
+	DialogType.set_status(_confirm_dialog, "", DialogType.StatusLive.OFF)
 	Sfx.play("menu_open")
-	if DialogType.show_dialog(_confirm_dialog, _resign_button):
+	if DialogType.show_dialog(_confirm_dialog, _resign_button, _on_confirmation_entered):
 		return true
 	view.call("set_battle_confirmation_active", false)
 	_set_scale(_confirmation_scale_snapshot)
 	_set_confirmation_state(ConfirmationState.CLOSED)
 	return false
+
+
+func _on_confirmation_entered() -> void:
+	if _confirmation_state == ConfirmationState.ENTERING:
+		_set_confirmation_state(ConfirmationState.ACTIVE)
 
 
 func _on_cancel_resign() -> void:
@@ -241,12 +253,18 @@ func _on_cancel_resign() -> void:
 func cancel_resign_confirmation() -> bool:
 	if _confirmation_state != ConfirmationState.ACTIVE:
 		return false
-	_set_confirmation_state(ConfirmationState.CLOSED)
+	_set_confirmation_state(ConfirmationState.EXITING)
 	Sfx.play("menu_close")
-	DialogType.hide_dialog(_confirm_dialog)
+	return DialogType.hide_dialog(_confirm_dialog, true, _finish_cancel_exit)
+
+
+func _finish_cancel_exit() -> void:
+	if _confirmation_state != ConfirmationState.EXITING:
+		return
 	_set_scale(_confirmation_scale_snapshot)
-	view.call("set_battle_confirmation_active", false)
-	return true
+	if view != null:
+		view.call("set_battle_confirmation_active", false)
+	_set_confirmation_state(ConfirmationState.CLOSED)
 
 
 func _on_confirm_resign() -> void:
@@ -258,7 +276,9 @@ func commit_resign_confirmation() -> bool:
 		return false
 	_set_confirmation_state(ConfirmationState.COMMITTING)
 	Sfx.play("ui_confirm")
-	DialogType.set_pending(_confirm_dialog, true, _copy(&"ui.battle.withdrawing", "WITHDRAWING…"))
+	var withdrawing := _copy(&"ui.battle.withdrawing", "WITHDRAWING…")
+	DialogType.set_pending(_confirm_dialog, true, withdrawing)
+	DialogType.set_status(_confirm_dialog, withdrawing, DialogType.StatusLive.POLITE)
 	_resign_dispatch_count += 1
 	var accepted := model.apply_action([&"resign"])
 	if accepted or model.result != BattleModel.Result.RUNNING:
@@ -266,6 +286,11 @@ func commit_resign_confirmation() -> bool:
 		return accepted
 	_set_confirmation_state(ConfirmationState.ACTIVE)
 	DialogType.set_pending(_confirm_dialog, false)
+	DialogType.set_status(
+		_confirm_dialog,
+		_copy(&"ui.battle.withdraw_rejected", "Withdrawal was not accepted. Return to battle or try again."),
+		DialogType.StatusLive.ASSERTIVE,
+	)
 	var cancel := _confirm_dialog.get(&"cancel") as Button
 	if cancel != null:
 		cancel.grab_focus.call_deferred()
@@ -278,10 +303,14 @@ func confirmation_state() -> int:
 
 func confirmation_state_name() -> StringName:
 	match _confirmation_state:
+		ConfirmationState.ENTERING:
+			return &"entering"
 		ConfirmationState.ACTIVE:
 			return &"active"
 		ConfirmationState.COMMITTING:
 			return &"committing"
+		ConfirmationState.EXITING:
+			return &"exiting"
 		_:
 			return &"closed"
 
@@ -297,12 +326,19 @@ func resign_dispatch_count() -> int:
 func notify_battle_terminal() -> bool:
 	if _confirmation_state == ConfirmationState.CLOSED:
 		return false
+	if _confirmation_state == ConfirmationState.EXITING:
+		return true
 	DialogType.set_pending(_confirm_dialog, false)
-	DialogType.hide_dialog(_confirm_dialog, false)
+	_set_confirmation_state(ConfirmationState.EXITING)
+	return DialogType.hide_dialog(_confirm_dialog, false, _finish_terminal_exit)
+
+
+func _finish_terminal_exit() -> void:
+	if _confirmation_state != ConfirmationState.EXITING:
+		return
 	if view != null:
 		view.call("set_battle_confirmation_active", false)
 	_set_confirmation_state(ConfirmationState.CLOSED)
-	return true
 
 
 func _set_confirmation_state(state: int) -> void:
@@ -338,6 +374,12 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_copy(&"ui.battle.return", "RETURN TO BATTLE"),
 		_copy(&"ui.battle.withdrawing", "WITHDRAWING…"),
 	)
+	var confirm := _confirm_dialog.get(&"confirm") as Button
+	var cancel := _confirm_dialog.get(&"cancel") as Button
+	if confirm != null:
+		confirm.accessibility_name = _copy(&"ui.battle.confirm_defeat", "Confirm defeat")
+	if cancel != null:
+		cancel.accessibility_name = _copy(&"ui.battle.return", "Return to battle")
 	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if _current_scale() == 0.0 else _copy(&"ui.battle.pause", "PAUSE")
 	_resign_button.text = _copy(&"ui.battle.resign", "RESIGN")
 
