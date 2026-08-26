@@ -50,6 +50,10 @@ const TRAINING_FONT_SIZES := {
 const RENAME_ENTRY_SECONDS := 0.20
 const RENAME_EXIT_SECONDS := 0.16
 const RENAME_VERTICAL_OFFSET := 10.0
+const PATH_CARD_SIZE := Vector2(340.0, 225.0)
+const PATH_CARD_PORTRAIT_SIZE := Vector2(300.0, 225.0)
+const PATH_CARD_GAP := 16.0
+const PATH_ACTION_SIZE := Vector2(180.0, 64.0)
 const ERROR_KEYS := {
 	&"invalid_argument_type": &"ui.training.error.invalid_request",
 	&"unknown_hero": &"ui.training.error.unknown_hero",
@@ -1318,16 +1322,12 @@ func _show_paths() -> void:
 		),
 	))
 	_page.add_child(_identity_strip(summary))
-	var scroll := ScrollContainer.new()
-	scroll.name = "PathCardsScroll"
-	scroll.custom_minimum_size.y = 540.0
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var cards := BoxContainer.new()
+	var cards := GridContainer.new()
 	cards.name = "PathCards"
-	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cards.add_theme_constant_override(&"separation", 16)
-	scroll.add_child(cards)
+	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cards.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	cards.add_theme_constant_override(&"h_separation", int(PATH_CARD_GAP))
+	cards.add_theme_constant_override(&"v_separation", int(PATH_CARD_GAP))
 	_path_cards.clear()
 	for raw_choice: Variant in options["choices"]:
 		var choice := raw_choice as Dictionary
@@ -1345,24 +1345,34 @@ func _show_paths() -> void:
 			_combat_text(choice),
 			_t(&"ui.training.class_kit_placeholder", "CLASS KIT"),
 				_t(
-					&"ui.training.field_kit",
-					"FIELD KIT • EQUIPMENT ISSUED AFTER CONFIRMATION",
+					&"ui.training.field_kit_compact",
+					"FIELD KIT • AFTER CONFIRMATION",
 				),
 				_path_stats_tooltip(choice),
 			)
 		card.pressed.connect(
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
-		_bind_focus_scroll(card, scroll, card.focus_visibility_target())
+		card.focus_entered.connect(_ensure_path_card_visible.bind(card))
 		cards.add_child(card)
 		_path_cards.append(card)
-	_page.add_child(scroll)
-	_page.add_child(_label(
+	_page.add_child(cards)
+	var action_bar := BoxContainer.new()
+	action_bar.name = "PathActionBar"
+	action_bar.vertical = _layout_mode == &"portrait"
+	action_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	action_bar.alignment = BoxContainer.ALIGNMENT_END
+	action_bar.add_theme_constant_override(&"separation", 16)
+	var warning := _label(
 		"PermanentWarning",
 		_t(&"ui.training.permanent_warning", "THIS CHOICE IS PERMANENT."),
 		&"dense_heading",
-	))
+	)
+	warning.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	warning.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	action_bar.add_child(warning)
 	var footer := _footer("PathActions")
+	footer.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var back := _button(
 		"PathBack", _t(&"ui.common.back", "Back"), true, &"secondary",
 	)
@@ -1374,7 +1384,10 @@ func _show_paths() -> void:
 	_choose_path.pressed.connect(_add_selected_choice)
 	footer.add_child(back)
 	footer.add_child(_choose_path)
-	_set_action_footer(footer)
+	_apply_path_action_style(back)
+	_apply_path_action_style(_choose_path)
+	action_bar.add_child(footer)
+	_set_action_footer(action_bar)
 	_apply_paths_layout()
 	_apply_footer_layouts()
 	_reset_outer_scroll()
@@ -1617,7 +1630,7 @@ func _on_path_selected(choice_id: String) -> void:
 		card.set_selected(card.class_id == choice_id)
 	_choose_path.disabled = false
 	_choose_path.focus_mode = Control.FOCUS_ALL
-	_choose_path.apply_role(&"primary")
+	_apply_path_action_style(_choose_path)
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
 
 
@@ -1683,17 +1696,54 @@ func _apply_roster_layout() -> void:
 
 
 func _apply_paths_layout() -> void:
-	var cards := _page.get_node_or_null("PathCardsScroll/PathCards") as BoxContainer
+	var cards := _page.get_node_or_null("PathCards") as GridContainer
 	if cards == null:
 		return
-	var scroll := cards.get_parent() as ScrollContainer
-	cards.vertical = _layout_mode != &"regular_landscape" or _path_cards.size() > 2
-	scroll.custom_minimum_size.y = (
-		580.0 if _layout_mode == &"portrait" else 540.0
+	var card_size := (
+		PATH_CARD_PORTRAIT_SIZE if _layout_mode == &"portrait" else PATH_CARD_SIZE
 	)
+	var available_width := maxf(card_size.x, _path_grid_available_width())
+	var max_columns := maxi(
+		1, floori((available_width + PATH_CARD_GAP) / (card_size.x + PATH_CARD_GAP)),
+	)
+	cards.columns = 1 if _layout_mode == &"portrait" else mini(_path_cards.size(), max_columns)
+	var action_bar := _action_dock.get_node_or_null("PathActionBar") as BoxContainer
+	if action_bar != null:
+		action_bar.vertical = _layout_mode == &"portrait"
 	for card: PromotionPathCardType in _path_cards:
 		card.set_compact(_layout_mode == &"portrait")
-		card.fit_to_content()
+
+
+func _path_grid_available_width() -> float:
+	var viewport_width := get_viewport_rect().size.x
+	var shell_inset := 36.0 if _layout_mode != &"regular_landscape" else 56.0
+	var content_padding := 36.0 if _layout_mode == &"portrait" else 56.0
+	return maxf(1.0, viewport_width - shell_inset - content_padding)
+
+
+func _ensure_path_card_visible(card: PromotionPathCardType) -> void:
+	if card == null or not is_instance_valid(card):
+		return
+	if not _path_cards.is_empty() and card == _path_cards[0] and _dialog_scroll.scroll_vertical == 0:
+		return
+	_ensure_focus_visible(card)
+
+
+func _apply_path_action_style(action: AetheriaButtonType) -> void:
+	if action == null:
+		return
+	action.custom_minimum_size = PATH_ACTION_SIZE
+	action.size_flags_horizontal = Control.SIZE_SHRINK_END
+	action.size_flags_vertical = Control.SIZE_SHRINK_END
+	LunarisOpsType.apply_button(action, &"secondary")
+	var normal_style := action.get_theme_stylebox(&"normal")
+	if normal_style != null:
+		action.add_theme_stylebox_override(&"disabled", normal_style.duplicate())
+	var presentation := action.get_node_or_null("PresentationLabel") as AetheriaLabelType
+	if presentation != null:
+		presentation.add_theme_font_size_override(&"font_size", 24)
+	action.fit_presentation(PATH_ACTION_SIZE.x, PATH_ACTION_SIZE.x, PATH_ACTION_SIZE.y)
+	action.custom_minimum_size = PATH_ACTION_SIZE
 
 
 func _apply_rename_confirmation_layout() -> void:
@@ -2084,11 +2134,16 @@ func _apply_footer_layouts() -> void:
 			footer.vertical = (
 				_layout_mode == &"portrait"
 				or (footer.name == "RenameConfirmationActions" and _rename_confirmation_stacks())
-		)
+			)
 			var actions: Array[Control] = []
 			for child: Node in footer.get_children():
 				if child is AetheriaButtonType:
 					actions.append(child as Control)
+			if footer.name == "PathActions":
+				for action: Control in actions:
+					action.size_flags_horizontal = Control.SIZE_SHRINK_END
+					_apply_path_action_style(action as AetheriaButtonType)
+				continue
 			var available := maxf(
 				44.0, maxf(_page.size.x, _shell.preferred_size.x - 64.0),
 			)
@@ -2100,12 +2155,12 @@ func _apply_footer_layouts() -> void:
 					44.0,
 					(available - footer.get_theme_constant(&"separation")
 					* (actions.size() - 1)) / actions.size(),
-					)
-				for action: Control in actions:
-					action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-					(action as AetheriaButtonType).fit_presentation(
-						available, 240.0, 64.0,
-					)
+				)
+			for action: Control in actions:
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				(action as AetheriaButtonType).fit_presentation(
+					available, 240.0, 64.0,
+				)
 
 
 func _roster_uses_fixed_workspace() -> bool:

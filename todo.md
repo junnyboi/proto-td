@@ -22,6 +22,7 @@
 - [x] Refit the annotated Stage Clear screen with stage-number outcome copy, adjacent stars, enlarged tally and information typography, unframed Mission Yield rows, generous desktop margins, compact portrait scroll surfaces, and centered fixed 260×96 flat actions.
 - [x] Increase runtime typography by exactly 50% across the game and refit Mission Preparation with a transparent First Stand icon, padded status tabs, 3:1 roster/intelligence split, split information/portrait cards, and 30%-shorter clean actions.
 - [x] Add eased staggered Mission Yield reward counters with reduced-motion completion, and apply the same stage-number, metadata, information, responsive, and fixed-action hierarchy to Stage Defeat.
+- [x] Refit Premium Resonance with a GPT Image 2 Lunaris Return glyph, vertically aligned header, 64px wide-layout gutters, compact one-line guarantee telemetry, 50%-larger padded cards with top-anchored 25% bust zoom, and a 2.5× wider two-line hoverable action.
 
 # Premium Resonance Cinematic Completion
 
@@ -66,3 +67,4 @@
 - [x] Phase 1: integrated GPT Image 2 + video-to-sprites photon portal and holy-crystal pedestal loops on every SPAWN/BASE tile; removed all blocked/elevated platform props across S1-S8; added endpoint, reduced-motion, clean-platform, and endpoint-aware map-fit regressions; visually accepted S2/S4; committed and pushed.
 - [x] Phase 2: centered and enlarged the First Stand tutorial with 40 px heading, 28 px body, 260×84 high-contrast actions, and safe portrait reflow; doubled Recruit and Pause/Speed/Resign typography and targets; centered responsive grids and added first-button left insets; extended layout regressions; visually accepted landscape/portrait; committed and pushed.
 - [x] Phase 3: passed direct import, bounded boot, all 39 standalone regressions plus all 6 repository smokes, clean Xvfb landscape/portrait input checks, Web export/HTTP/browser gates, updated the existing `proto-td-web` fullscreen host, and saved final checkpoint `6c50b142`; public Publish remains the explicit handoff because no direct publish tool is exposed.
+- [ ] Endpoint quality rebuild: preserve 589×600 portal and 401×600 crystal source frames in ≤4096px row-major atlases, display them at one-tile size with mipmapped linear filtering, verify native/Web sharpness, push master, and update the existing WebDev checkpoint.

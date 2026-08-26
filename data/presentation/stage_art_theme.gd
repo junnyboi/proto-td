@@ -184,8 +184,8 @@ func validation_errors(stage: StageDef) -> PackedStringArray:
 		errors.append("theme_id is not the shared Act I alpine family")
 	if surface_modulate != Color.WHITE:
 		errors.append("shared Act I surface modulation must be Color.WHITE")
-	# Generated endpoints share a 64 px one-tile footprint. Each pivot is the
-	# bottom center of its full animation frame so no platform spills sideways.
+	# Generated endpoints retain ~600 px source frames but share a 64 px one-tile
+	# display footprint. Each pivot is the bottom center of that displayed frame.
 	if spawn_pivot != SHARED_SPAWN_PIVOT:
 		errors.append("spawn pivot does not match 64x64 portal frame")
 	if core_pivot != SHARED_CORE_PIVOT:

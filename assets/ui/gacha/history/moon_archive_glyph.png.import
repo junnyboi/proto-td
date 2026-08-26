@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7oico2hjflsl"
-path="res://.godot/imported/holy_crystal_idle.webp-ba8b7e6bcb48c91d9d0db05c02ed6f04.ctex"
+uid="uid://duo3bss0px27p"
+path="res://.godot/imported/moon_archive_glyph.png-13ecb9ffd2f78eda7180afe1bf1cb63c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/world/endpoints/holy_crystal_idle.webp"
-dest_files=["res://.godot/imported/holy_crystal_idle.webp-ba8b7e6bcb48c91d9d0db05c02ed6f04.ctex"]
+source_file="res://assets/ui/gacha/history/moon_archive_glyph.png"
+dest_files=["res://.godot/imported/moon_archive_glyph.png-13ecb9ffd2f78eda7180afe1bf1cb63c.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

@@ -44,21 +44,16 @@ func _verify_title_scale() -> void:
 	var entry_scroll := _title.find_child("EntryScroll", true, false) as ScrollContainer
 	var entry_host := _title.find_child("EntryControls", true, false) as Control
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
-	var synopsis := _title.find_child("CanonSynopsis", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 207, "landscape wordmark is not 1.5×")
-	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 41, "canon synopsis is not 1.5×")
-	_check(synopsis != null and not synopsis.text.to_lower().contains("resurrected"), "title synopsis restored removed wording")
-	_check(synopsis != null and synopsis.text.contains("Command the champions of Company 33"), "title synopsis copy changed unexpectedly")
-	_check(synopsis != null and synopsis.get_visible_line_count() == synopsis.get_line_count(), "canon synopsis is clipped")
+	_check(_title.find_child("CanonSynopsis", true, false) == null, "removed title synopsis returned to the start screen")
 	_check(start.get_theme_font_size(&"font_size") == 83, "Start typography is not 1.5×")
 	_check(settings.get_theme_font_size(&"font_size") == 69, "Settings typography is not 1.5×")
 	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
 	_check(settings.get_combined_minimum_size().y >= 121.0, "Settings container did not grow with 1.5× typography")
 	_check(entry_scroll != null and entry_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "title entry is not scroll-safe")
 	_check(_inside(entry_host, wordmark), "1.5× wordmark overflows title content")
-	_check(_inside(entry_host, synopsis), "canon synopsis overflows title content")
 	_check(_inside(entry_host, start), "1.5× Start action overflows title content")
 	_check(_inside(entry_host, settings), "1.5× Settings action overflows title content")
 	_check(entry_scroll != null and entry_scroll.scroll_vertical == 0, "title does not open at the top of its enlarged content")

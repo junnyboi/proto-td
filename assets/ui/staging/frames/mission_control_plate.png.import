@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7oico2hjflsl"
-path="res://.godot/imported/holy_crystal_idle.webp-ba8b7e6bcb48c91d9d0db05c02ed6f04.ctex"
+uid="uid://dxdjtv6nuw758"
+path="res://.godot/imported/mission_control_plate.png-333a69a4eb534dd8933ce4df0e033e9f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/world/endpoints/holy_crystal_idle.webp"
-dest_files=["res://.godot/imported/holy_crystal_idle.webp-ba8b7e6bcb48c91d9d0db05c02ed6f04.ctex"]
+source_file="res://assets/ui/staging/frames/mission_control_plate.png"
+dest_files=["res://.godot/imported/mission_control_plate.png-333a69a4eb534dd8933ce4df0e033e9f.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

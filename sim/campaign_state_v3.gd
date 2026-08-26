@@ -16,6 +16,7 @@ const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
+const PREMIUM_PULL_HISTORY_LIMIT := 10
 
 var _data: Dictionary = {}
 var _context: Dictionary = {}
@@ -117,6 +118,7 @@ func runtime_projection() -> Dictionary:
 	for hero: Dictionary in _data["heroes"]:
 		if hero["hero_kind"] == "premium":
 			premium_heroes.append(hero.duplicate(true))
+	var premium_history := _premium_pull_history()
 	var operators: Array[StringName] = []
 	for hero: Dictionary in heroes:
 		var operator_id := StringName(hero["operator_def_id"])
@@ -145,6 +147,8 @@ func runtime_projection() -> Dictionary:
 		"premium_pull_cost": int(_context["campaign"]["premium_pull_cost"]),
 		"premium_pool": (_context["campaign"]["premium_hero_rows"] as Array).duplicate(true),
 		"premium_heroes": premium_heroes,
+		"premium_pull_history": premium_history["rows"],
+		"premium_pull_history_total": premium_history["total"],
 		"stage_ids": stage_ids,
 		"ready_heroes": heroes,
 		"fallen_heroes": fallen_heroes,
@@ -155,6 +159,24 @@ func runtime_projection() -> Dictionary:
 		"stage_stars": stars,
 		"offers": (_data["offers"] as Array).duplicate(true),
 	}
+
+
+func _premium_pull_history() -> Dictionary:
+	var rows: Array[Dictionary] = []
+	var total := 0
+	var records: Array = _data["command_receipts"]
+	for index: int in range(records.size() - 1, -1, -1):
+		var record: Dictionary = records[index]
+		if String(record.get("verb", "")) != "pull_premium_hero":
+			continue
+		var receipt: Dictionary = record.get("receipt", {})
+		var pull: Dictionary = receipt.get("premium_pull", {})
+		if pull.is_empty():
+			continue
+		total += 1
+		if rows.size() < PREMIUM_PULL_HISTORY_LIMIT:
+			rows.append(pull.duplicate(true))
+	return {"rows": rows, "total": total}
 
 
 func data_copy() -> Dictionary:
