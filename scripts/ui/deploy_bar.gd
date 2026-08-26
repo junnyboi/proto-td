@@ -27,6 +27,10 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 const FONT_SIZE := GameTypographyType.BODY
 const BAR_HEIGHT := 88.0
+const SAFE_MARGIN := 16.0
+const DECK_PADDING := 16.0
+const SLOT_GAP := 12.0
+const SLOT_TARGET_WIDTH := 230.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
@@ -90,6 +94,7 @@ var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _ticket_rows: Dictionary = {}
 var _slot_deck: PanelContainer = null
+var _slot_scroll: ScrollContainer = null
 var _slot_box: GridContainer = null
 var _placement_op: StringName = &""
 var _placement_trap: StringName = &""
@@ -297,6 +302,7 @@ func _rebuild_slots() -> void:
 	if _slot_deck != null:
 		_slot_deck.queue_free()
 	_slot_deck = null
+	_slot_scroll = null
 	_slot_box = null
 	_slots.clear()
 	_trap_slots.clear()
@@ -307,14 +313,28 @@ func _build_slots(op_defs: Dictionary) -> void:
 	var deck := PanelContainer.new()
 	deck.name = "DeploymentCommandDeck"
 	deck.mouse_filter = Control.MOUSE_FILTER_PASS
-	Style.apply_panel(deck, &"hud")
+	var deck_style := Style.panel_style(&"hud").duplicate() as StyleBox
+	deck_style.content_margin_left = DECK_PADDING
+	deck_style.content_margin_top = DECK_PADDING
+	deck_style.content_margin_right = DECK_PADDING
+	deck_style.content_margin_bottom = DECK_PADDING
+	deck.add_theme_stylebox_override(&"panel", deck_style)
 	add_child(deck)
 	_slot_deck = deck
+	var scroll := ScrollContainer.new()
+	scroll.name = "DeploymentRosterScroll"
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	deck.add_child(scroll)
+	_slot_scroll = scroll
 	var box := GridContainer.new()
 	box.name = "SlotBox"
-	box.add_theme_constant_override("h_separation", 16)
-	box.add_theme_constant_override("v_separation", 8)
-	deck.add_child(box)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("h_separation", SLOT_GAP)
+	box.add_theme_constant_override("v_separation", SLOT_GAP)
+	scroll.add_child(box)
 	_slot_box = box
 	for deployment_id: StringName in _deployment_ids():
 		var row: Dictionary = _ticket_rows.get(deployment_id, {})
@@ -337,6 +357,10 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.expand_icon = true
 		slot.add_theme_constant_override(&"icon_max_width", 44)
 		Style.apply_button(slot, &"secondary")
+		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
+		slot.tooltip_text = slot.text.replace("\n", " — ")
+		slot.focus_mode = Control.FOCUS_ALL
+		slot.focus_entered.connect(_reveal_slot.bind(slot))
 		slot.button_down.connect(_start_placement.bind(deployment_id))
 		box.add_child(slot)
 		_slots[deployment_id] = slot
@@ -359,6 +383,10 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.expand_icon = true
 		slot.add_theme_constant_override(&"icon_max_width", 44)
 		Style.apply_button(slot, &"gold")
+		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
+		slot.tooltip_text = slot.text.replace("\n", " — ")
+		slot.focus_mode = Control.FOCUS_ALL
+		slot.focus_entered.connect(_reveal_slot.bind(slot))
 		slot.button_down.connect(_start_trap_placement.bind(trap_id))
 		box.add_child(slot)
 		_trap_slots[trap_id] = slot
@@ -372,20 +400,34 @@ func _deployment_ids() -> Array[StringName]:
 
 
 func _layout_slot_box() -> void:
-	if _slot_box == null or _slot_deck == null:
+	if _slot_box == null or _slot_deck == null or _slot_scroll == null:
 		return
-	if size.x < size.y:
-		_slot_box.columns = 1
-	elif size.x < 1200.0:
-		_slot_box.columns = 2
-	elif size.x < 1600.0:
-		_slot_box.columns = 3
-	else:
-		_slot_box.columns = 4
+	var short_landscape := size.x > size.y and size.y < 480.0
+	var deck_width := (
+		minf(size.x * 0.38, 360.0)
+		if short_landscape
+		else size.x - SAFE_MARGIN * 2.0
+		if size.y > size.x
+		else minf(size.x * 0.62, 820.0)
+	)
+	deck_width = maxf(deck_width, 250.0)
+	var inner_width := maxf(SLOT_TARGET_WIDTH, deck_width - DECK_PADDING * 2.0)
+	_slot_box.columns = clampi(
+		floori((inner_width + SLOT_GAP) / (SLOT_TARGET_WIDTH + SLOT_GAP)), 1, 4,
+	)
+	for child: Node in _slot_box.get_children():
+		(child as Control).custom_minimum_size.x = 0.0
 	_slot_box.reset_size()
-	_slot_deck.reset_size()
-	var y := size.y - _slot_deck.get_combined_minimum_size().y - 8.0
-	_slot_deck.position = Vector2(16.0, y)
+	var content_height := _slot_box.get_combined_minimum_size().y + DECK_PADDING * 2.0
+	var height_ratio := 0.42 if short_landscape else 0.35
+	var deck_height := minf(content_height, maxf(88.0, size.y * height_ratio))
+	_slot_deck.position = Vector2(SAFE_MARGIN, size.y - deck_height - SAFE_MARGIN)
+	_slot_deck.size = Vector2(deck_width, deck_height)
+
+
+func _reveal_slot(slot: Control) -> void:
+	if _slot_scroll != null and slot != null:
+		_slot_scroll.ensure_control_visible(slot)
 
 
 func _build_overlays() -> void:

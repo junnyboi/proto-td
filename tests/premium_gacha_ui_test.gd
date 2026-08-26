@@ -23,6 +23,10 @@ func _run() -> void:
 		return
 	game.call("set_run_seed", 99)
 	_check(bool(game.call("start_campaign", false, true)), "campaign fixture failed")
+	if not bool(game.get("campaign_active")):
+		_finish()
+		return
+	root.size = Vector2i(1280, 720)
 	var screen: Node = load("res://scenes/gacha.tscn").instantiate()
 	root.add_child(screen)
 	await _frames(2)
@@ -30,13 +34,27 @@ func _run() -> void:
 	var pull := screen.find_child("PremiumPullButton", true, false) as Button
 	var back := screen.find_child("BackButton", true, false) as Button
 	var marks := screen.find_child("MarksLabel", true, false) as Label
-	var pity := screen.find_child("PityLabel", true, false) as Label
+	var pity_label := screen.find_child("PityLabel", true, false) as Label
+	var pity_segments := screen.find_child("PitySegments", true, false) as HBoxContainer
+	var hero_scroll := screen.find_child("PremiumHeroScroll", true, false) as ScrollContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
-	_check(marks.text == "120 MARKS" and pity.text.contains("10 PULLS"), "initial economy projection changed")
+	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
+	_check(pity_segments != null and pity_segments.get_child_count() == 10, "pity meter is not ten segments")
+	_check(hero_scroll != null and hero_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "premium roster does not own a bounded flexible scroll")
+	_check(hero_scroll != null and hero_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "premium roster permits horizontal scrolling")
+	_check(grid.columns == 3, "desktop premium roster does not use all three columns")
+	var featured := grid.get_node_or_null("Premium_lunaris_vessel") as PanelContainer
+	var side_card := grid.get_node_or_null("Premium_archive_caster") as PanelContainer
+	_check(featured != null and side_card != null and featured.custom_minimum_size.x > side_card.custom_minimum_size.x, "premium featured identity is not visually dominant")
 	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
-		var card := grid.get_node_or_null("Premium_%s" % premium_id)
-		_check(card != null and card.find_child("Portrait", true, false).texture != null, "missing portrait %s" % premium_id)
+		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
+		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
+		var detail := card.find_child("HeroDetail", true, false) as Label if card != null else null
+		var card_style := card.get_theme_stylebox(&"panel") if card != null else null
+		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
+		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 16, "premium detail copy is below 16px for %s" % premium_id)
+		_check(card_style != null and card_style.content_margin_left >= 16.0 and card_style.content_margin_top >= 16.0, "premium card padding is below 16px for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 
 	var before: Dictionary = game.get("campaign").runtime_projection()

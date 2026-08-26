@@ -77,6 +77,7 @@ var _mission_grid: GridContainer = null
 var _mission_body_grid: GridContainer = null
 var _mission_preview: TextureRect = null
 var _operation_grid: GridContainer = null
+var _operation_scroll: ScrollContainer = null
 var _hero_identity: VBoxContainer = null
 var _hero_title: Label = null
 var _hero_subtitle: Label = null
@@ -414,6 +415,7 @@ func _build_scroll_host(panel: PanelContainer, node_name: String) -> MarginConta
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
 
 	var margin := MarginContainer.new()
@@ -524,7 +526,15 @@ func _build_navigation_content() -> VBoxContainer:
 	_operation_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_operation_grid.add_theme_constant_override(&"h_separation", 12)
 	_operation_grid.add_theme_constant_override(&"v_separation", 10)
-	content.add_child(_operation_grid)
+	_operation_scroll = ScrollContainer.new()
+	_operation_scroll.name = "OperationsScroll"
+	_operation_scroll.custom_minimum_size.y = 144.0
+	_operation_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_operation_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_operation_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_operation_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	content.add_child(_operation_scroll)
+	_operation_scroll.add_child(_operation_grid)
 
 	_add_locked_operation(
 		"BarracksButton", StagingGlyphType.Kind.BARRACKS,
@@ -791,6 +801,8 @@ func _connect_focus_cycle() -> void:
 		current.focus_neighbor_left = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_neighbor_right = current.get_path_to(following)
+		if _operation_scroll != null and _operation_scroll.is_ancestor_of(current):
+			current.focus_entered.connect(_operation_scroll.ensure_control_visible.bind(current))
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
@@ -814,23 +826,15 @@ func _apply_responsive_layout() -> void:
 	_landscape_layout.offset_bottom = -maxf(LANDSCAPE_BOTTOM_GUTTER, safe_insets.w)
 	_landscape_navigation.visible = not _compact_landscape
 	_landscape_navigation.custom_minimum_size.x = LANDSCAPE_NAV_WIDTH
-	_landscape_navigation.custom_minimum_size.y = clampf(
-		viewport_size.y - TOP_HUD_HEIGHT - 32.0,
-		520.0,
-		LANDSCAPE_DECK_MAX_HEIGHT,
-	)
-	_landscape_navigation.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_landscape_navigation.custom_minimum_size.y = 0.0
+	_landscape_navigation.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_landscape_deck.custom_minimum_size.x = (
-		clampf(viewport_size.x * 0.60, 560.0, 680.0)
+		clampf(viewport_size.x * 0.72, 680.0, 900.0)
 		if _compact_landscape
 		else clampf(viewport_size.x * 0.50, LANDSCAPE_DECK_MIN_WIDTH, LANDSCAPE_DECK_MAX_WIDTH)
 	)
-	_landscape_deck.custom_minimum_size.y = clampf(
-		viewport_size.y - TOP_HUD_HEIGHT - 32.0,
-		520.0,
-		LANDSCAPE_DECK_MAX_HEIGHT,
-	)
-	_landscape_deck.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_landscape_deck.custom_minimum_size.y = 0.0
+	_landscape_deck.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_hero_identity.visible = not _compact_landscape and viewport_size.x >= 1180.0
 
 	var portrait_left := maxf(24.0, safe_insets.x)
@@ -839,10 +843,12 @@ func _apply_responsive_layout() -> void:
 	_portrait_layout.offset_right = -portrait_right
 	_portrait_layout.offset_top = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y - 8.0)
 	_portrait_layout.offset_bottom = -maxf(16.0, safe_insets.w)
-	_portrait_sheet.custom_minimum_size.y = clampf(
-		viewport_size.y * 0.64,
-		PORTRAIT_SHEET_MIN_HEIGHT,
-		PORTRAIT_SHEET_MAX_HEIGHT,
+	var portrait_available := maxf(
+		420.0,
+		viewport_size.y - _portrait_layout.offset_top + _portrait_layout.offset_bottom,
+	)
+	_portrait_sheet.custom_minimum_size.y = minf(
+		portrait_available, clampf(viewport_size.y * 0.68, 520.0, PORTRAIT_SHEET_MAX_HEIGHT),
 	)
 
 	_apply_top_hud_layout(viewport_size, safe_insets)
@@ -852,6 +858,10 @@ func _apply_responsive_layout() -> void:
 
 
 func _place_responsive_content() -> void:
+	_command_content.size_flags_vertical = (
+		Control.SIZE_SHRINK_BEGIN if _portrait or _compact_landscape else Control.SIZE_EXPAND_FILL
+	)
+	_navigation_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	if _portrait:
 		if _portrait_stack == null:
 			_portrait_stack = VBoxContainer.new()
@@ -904,13 +914,13 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 	_exit_label.visible = not narrow
 	_back.custom_minimum_size.x = 52.0 if narrow else 96.0
 	_exit_plate.custom_minimum_size.x = 64.0 if narrow else 112.0
-	StagingSkinType.apply_display_type(_exit_label, 15 if compact else 16, MUTED, 560)
+	StagingSkinType.apply_display_type(_exit_label, 16, MUTED, 560)
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
 	var single_column := (_portrait and viewport_size.x < 680.0)
 	_mission_body_grid.columns = 1 if single_column else 2
-	_mission_card.custom_minimum_size.y = 420.0 if single_column else 260.0
+	_mission_card.custom_minimum_size.y = 320.0 if single_column else 260.0
 	_mission_preview.custom_minimum_size = (
 		Vector2(0.0, 112.0) if single_column else Vector2(160.0, 128.0)
 	)

@@ -2,6 +2,7 @@ class_name LunarisOpsStyle
 extends RefCounted
 
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
 const INK := Color("07111c")
 const INK_DEEP := Color("040a12")
@@ -55,7 +56,7 @@ static func panel_style(role: StringName) -> StyleBox:
 	if role == &"selected":
 		return _flat_panel(GLASS_SELECTED, CYAN, 2, 16.0)
 	if role == &"quiet":
-		return _texture_margin(StagingSkinType.operation_tile_style(Color(0.86, 0.93, 1.0, 0.92)), 14.0)
+		return _texture_margin(StagingSkinType.operation_tile_style(Color(0.86, 0.93, 1.0, 0.92)), 16.0)
 	if role == &"danger":
 		return _flat_panel(Color(0.18, 0.06, 0.09, 0.94), DANGER, 2, 16.0)
 	return _flat_panel(GLASS, Color(GOLD.r, GOLD.g, GOLD.b, 0.46), 1, 18.0)
@@ -123,7 +124,7 @@ static func apply_label(label: Label, role: StringName) -> void:
 	match role:
 		&"eyebrow":
 			color = GOLD
-			size = 14
+			size = GameTypographyType.DETAIL
 			display = true
 		&"title":
 			color = IVORY
@@ -138,9 +139,9 @@ static func apply_label(label: Label, role: StringName) -> void:
 		&"body":
 			color = IVORY
 			size = 18
-		&"detail":
+		&"detail", &"dense_detail":
 			color = MUTED
-			size = 15
+			size = GameTypographyType.DETAIL
 		&"metric":
 			color = CYAN
 			size = 21

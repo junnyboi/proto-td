@@ -12,6 +12,8 @@ const MUTED := Color("8d9aa3")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.10
 const FOCUS_PULSE_MAX_ALPHA := 0.26
+const TILE_TITLE_FONT_SIZE := 18
+const TILE_STATE_FONT_SIZE := 16
 
 var _glyph: TextureRect
 var _title_label: Label
@@ -74,24 +76,24 @@ func set_compact(compact: bool) -> void:
 	_status_indicator.custom_minimum_size = Vector2(15.0, 15.0) if compact else Vector2(18.0, 18.0)
 	StagingSkinType.apply_display_type(
 		_title_label,
-		17 if compact else GameTypographyType.BODY,
+		TILE_TITLE_FONT_SIZE,
 		MUTED if disabled else GOLD,
 		540,
 	)
-	StagingSkinType.apply_display_type(_state_label, 14, MUTED, 520)
+	StagingSkinType.apply_display_type(_state_label, TILE_STATE_FONT_SIZE, MUTED, 520)
 
 
 func set_rail_mode(rail_mode: bool) -> void:
 	custom_minimum_size = Vector2(0.0, 72.0 if rail_mode else 72.0)
-	_margin.add_theme_constant_override(&"margin_left", 12 if rail_mode else 16)
-	_margin.add_theme_constant_override(&"margin_top", 10)
-	_margin.add_theme_constant_override(&"margin_right", 12 if rail_mode else 16)
-	_margin.add_theme_constant_override(&"margin_bottom", 10)
+	_margin.add_theme_constant_override(&"margin_left", 16)
+	_margin.add_theme_constant_override(&"margin_top", 12)
+	_margin.add_theme_constant_override(&"margin_right", 16)
+	_margin.add_theme_constant_override(&"margin_bottom", 12)
 	_row.add_theme_constant_override(&"separation", 8 if rail_mode else 12)
 	_glyph.custom_minimum_size = Vector2(36.0, 36.0) if rail_mode else Vector2(40.0, 40.0)
 	_status_indicator.custom_minimum_size = Vector2(14.0, 14.0) if rail_mode else Vector2(18.0, 18.0)
-	StagingSkinType.apply_display_type(_title_label, 17 if rail_mode else 18, MUTED if disabled else GOLD, 540)
-	StagingSkinType.apply_display_type(_state_label, 15 if rail_mode else 14, MUTED, 520)
+	StagingSkinType.apply_display_type(_title_label, TILE_TITLE_FONT_SIZE, MUTED if disabled else GOLD, 540)
+	StagingSkinType.apply_display_type(_state_label, TILE_STATE_FONT_SIZE, MUTED, 520)
 
 
 func _build_content() -> void:
@@ -107,9 +109,9 @@ func _build_content() -> void:
 	_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_margin.add_theme_constant_override(&"margin_left", 16)
-	_margin.add_theme_constant_override(&"margin_top", 10)
+	_margin.add_theme_constant_override(&"margin_top", 12)
 	_margin.add_theme_constant_override(&"margin_right", 16)
-	_margin.add_theme_constant_override(&"margin_bottom", 10)
+	_margin.add_theme_constant_override(&"margin_bottom", 12)
 	add_child(_margin)
 
 	_row = HBoxContainer.new()
@@ -150,7 +152,7 @@ func _build_content() -> void:
 	_state_label.name = "State"
 	_state_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_state_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	StagingSkinType.apply_display_type(_state_label, 14, MUTED, 520)
+	StagingSkinType.apply_display_type(_state_label, TILE_STATE_FONT_SIZE, MUTED, 520)
 	copy.add_child(_state_label)
 
 	_status_indicator = TextureRect.new()
