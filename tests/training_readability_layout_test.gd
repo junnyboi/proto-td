@@ -188,6 +188,9 @@ func _run() -> void:
 	await _frames(4)
 	var path_grid := screen.find_child("PathCards", true, false) as GridContainer
 	var nested_path_scroll := screen.find_child("PathCardsScroll", true, false) as ScrollContainer
+	var path_title := screen.find_child("ChooseTrainingTitleHeading", true, false) as Label
+	var path_action_safe := screen.find_child("PathActionSafe", true, false) as MarginContainer
+	var path_content_gutter := screen.get("_content_gutter") as MarginContainer
 	var path_actions := screen.find_child("PathActions", true, false) as BoxContainer
 	var path_back := screen.find_child("PathBack", true, false) as Button
 	var choose_path := screen.find_child("ChoosePath", true, false) as Button
@@ -197,20 +200,43 @@ func _run() -> void:
 			if child is Control:
 				path_cards.append(child as Control)
 	_check(path_grid != null and path_cards.size() >= 2, "advanced Training fixed-card grid did not render")
-	_check(nested_path_scroll == null, "advanced Training still nests path cards in a scroll list")
+	_check(path_title != null and path_title.text.begins_with("CHOOSE A NEW SPECIALIZATION FOR "), "advanced Training title does not name the selected operator")
+	_check(nested_path_scroll != null and nested_path_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO and nested_path_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "doubled specialization cards do not use the dedicated horizontal rail")
+	_check(path_content_gutter.get_theme_constant(&"margin_left") == 60 and path_content_gutter.get_theme_constant(&"margin_right") == 60, "advanced Training does not retain 60px side gutters")
 	if path_grid != null and not path_cards.is_empty():
 		_check(path_grid.columns == path_cards.size(), "wide initial entry does not place each training option in the fixed card row")
 		var first_y := path_cards[0].global_position.y
 		for card: Control in path_cards:
-			_check(_near(card.size.x, 340.0, 1.0) and _near(card.size.y, 225.0, 1.0), "wide training option is not a fixed 340x225 card")
+			_check(_near(card.size.x, 680.0, 1.0) and _near(card.size.y, 450.0, 1.0), "wide training option is not a doubled 680x450 card")
 			_check(_near(card.global_position.y, first_y, 1.0), "wide training options have inconsistent initial vertical spacing")
 			_check(_contained(card.get_global_rect(), path_grid.get_global_rect(), 1.0), "wide training card overflows the fixed grid")
+		var first_card := path_cards[0]
+		var portrait := first_card.find_child("ClassKitPortrait", true, false) as TextureRect
+		var class_title := first_card.find_child("AdvancedClassName", true, false) as Label
+		var detail := first_card.find_child("ClassDescription", true, false) as Label
+		_check(portrait != null and portrait.custom_minimum_size.x >= 124.0 and portrait.custom_minimum_size.y >= 128.0, "specialization portrait was not scaled with the doubled card")
+		_check(class_title != null and class_title.get_theme_font_size(&"font_size") >= 40, "specialization title typography was not doubled")
+		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 26, "specialization body typography was not doubled")
+		_check(bool(first_card.call("uses_flat_color_states")), "specialization card still depends on ornamental selected-state graphics")
+		var normal_style := first_card.get_theme_stylebox(&"normal") as StyleBoxFlat
+		first_card.emit_signal("pressed")
+		await _frames(2)
+		var selected_style := first_card.get_theme_stylebox(&"normal") as StyleBoxFlat
+		_check(normal_style != null and selected_style != null and not normal_style.bg_color.is_equal_approx(selected_style.bg_color), "selected specialization does not use a background color change")
+		_check(first_card.get_theme_stylebox(&"hover") is StyleBoxFlat, "specialization hover state is not a scalable flat background")
 	if path_actions != null and path_back != null and choose_path != null:
 		_check(not path_actions.vertical and path_actions.alignment == BoxContainer.ALIGNMENT_END, "wide path actions are not a bottom-right row")
-		_check(_near(path_back.size.x, 180.0, 1.0) and _near(choose_path.size.x, 180.0, 1.0), "path actions do not share the fixed 180px width")
-		_check(_near(path_back.size.y, 64.0, 1.0) and _near(choose_path.size.y, 64.0, 1.0), "path actions do not share the fixed 64px height")
+		_check(_near(path_back.size.x, 260.0, 1.0) and _near(choose_path.size.x, 260.0, 1.0), "path actions do not share the enlarged 260px width")
+		_check(_near(path_back.size.y, 84.0, 1.0) and _near(choose_path.size.y, 84.0, 1.0), "path actions do not share the enlarged 84px height")
 		_check(path_back.theme_type_variation == choose_path.theme_type_variation, "Back and Add to Plan do not share one visual treatment")
 		_check(choose_path.get_global_rect().end.x >= path_actions.get_global_rect().end.x - 2.0, "path actions are not flush to the bottom-right edge")
+		_check(path_action_safe != null and path_action_safe.get_theme_constant(&"margin_left") == 60 and path_action_safe.get_theme_constant(&"margin_right") == 60, "path action bar does not preserve 60px side padding")
+		for action: Button in [path_back, choose_path]:
+			var label := action.find_child("PresentationLabel", true, false) as Label
+			var style := action.get_theme_stylebox(&"normal")
+			_check(label != null and label.get_theme_font_size(&"font_size") >= 28 and not label.clip_text, "%s text is not enlarged and overflow-safe" % action.name)
+			_check(_near(label.offset_left, 24.0, 0.1) and _near(label.offset_top, 12.0, 0.1) and _near(label.offset_right, -24.0, 0.1) and _near(label.offset_bottom, -12.0, 0.1), "%s lacks 24x12 internal padding" % action.name)
+			_check(_near(style.content_margin_left, 24.0, 0.1) and _near(style.content_margin_top, 12.0, 0.1), "%s style does not retain requested internal padding" % action.name)
 	var initial_columns := path_grid.columns if path_grid != null else 0
 
 	root.size = Vector2i(720, 1280)
@@ -220,16 +246,18 @@ func _run() -> void:
 	dock = screen.find_child("TrainingActionDock", true, false) as VBoxContainer
 	path_grid = screen.find_child("PathCards", true, false) as GridContainer
 	path_actions = screen.find_child("PathActions", true, false) as BoxContainer
+	nested_path_scroll = screen.find_child("PathCardsScroll", true, false) as ScrollContainer
 	path_back = screen.find_child("PathBack", true, false) as Button
 	choose_path = screen.find_child("ChoosePath", true, false) as Button
 	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "standard portrait Training does not expose enlarged content through scrolling")
 	_check(dock != null and path_actions != null and path_actions.vertical, "portrait Training actions did not stack in the fixed dock")
 	if path_grid != null:
 		_check(path_grid.columns == 1, "portrait training grid does not reflow to one centered fixed column")
+		_check(nested_path_scroll != null and nested_path_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "portrait specialization rail still scrolls horizontally")
 		for child: Node in path_grid.get_children():
 			if child is Control:
 				var card := child as Control
-				_check(_near(card.size.x, 300.0, 1.0) and _near(card.size.y, 225.0, 1.0), "portrait training option is not a fixed 300x225 card")
+				_check(_near(card.size.x, 600.0, 1.0) and _near(card.size.y, 450.0, 1.0), "portrait training option is not a doubled 600x450 card")
 	if path_actions != null and path_back != null and choose_path != null:
 		_check(path_actions.alignment == BoxContainer.ALIGNMENT_END, "portrait path actions are not right-aligned")
 		_check(_near(path_back.size.x, choose_path.size.x, 1.0) and _near(path_back.size.y, choose_path.size.y, 1.0), "portrait path actions do not share identical geometry")
@@ -249,9 +277,9 @@ func _run() -> void:
 		for child: Node in path_grid.get_children():
 			if child is Control:
 				var card := child as Control
-				_check(_near(card.size.x, 340.0, 1.0) and _near(card.size.y, 225.0, 1.0), "wide card geometry changes after a resize cycle")
+				_check(_near(card.size.x, 680.0, 1.0) and _near(card.size.y, 450.0, 1.0), "wide doubled-card geometry changes after a resize cycle")
 	if path_back != null and choose_path != null:
-		_check(_near(path_back.size.x, 180.0, 1.0) and _near(choose_path.size.x, 180.0, 1.0), "path action width changes after a resize cycle")
+		_check(_near(path_back.size.x, 260.0, 1.0) and _near(choose_path.size.x, 260.0, 1.0), "path action width changes after a resize cycle")
 
 	_dispose(screen)
 	game.set("content", null)

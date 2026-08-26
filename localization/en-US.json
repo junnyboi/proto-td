@@ -590,7 +590,7 @@
     "ui.training.assignment": "COMPANY 33\nTRAINING ASSIGNMENT\nNEW FIELD KIT",
     "ui.training.atelier": "RELIQUARY ATELIER",
     "ui.training.cancel": "Cancel",
-    "ui.training.choose_advanced": "CHOOSE ADVANCED TRAINING",
+    "ui.training.choose_advanced": "CHOOSE A NEW SPECIALIZATION FOR {callsign}",
     "ui.training.choose_path": "Choose Path",
     "ui.training.choose_recruit": "Choose a recruit to train.",
     "ui.training.class.banner_guard": "Banner Guard",
