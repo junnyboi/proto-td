@@ -1,0 +1,32 @@
+class_name GeneratedLocalizationSchema
+extends RefCounted
+
+## Generated from the reviewed localization key manifests. Keep catalog placeholders typed.
+const PLACEHOLDER_TYPES := {
+	&"ui.battle.wave": {&"wave": &"int"},
+	&"ui.campaign.facts": {&"leak_limit": &"int", &"rewards": &"int", &"squad": &"int", &"waves": &"int"},
+	&"ui.campaign.progress": {&"cleared": &"int", &"total": &"int"},
+	&"ui.campaign.route_heading": {&"stage": &"String"},
+	&"ui.company.identity": {&"company": &"String", &"faction": &"String"},
+	&"ui.company.identity_compact": {&"company": &"String", &"faction": &"String"},
+	&"ui.gacha.cinematic_receiving": {&"percent": &"int"},
+	&"ui.squad.card_fallen": {&"name": &"String"},
+	&"ui.squad.card_premium": {&"cost": &"int", &"lives": &"int", &"name": &"String"},
+	&"ui.squad.card_ready": {&"cost": &"int", &"name": &"String"},
+	&"ui.squad.limit": {&"limit": &"int"},
+	&"ui.squad.mission_identity": {&"index": &"int", &"title": &"String"},
+	&"ui.title.a11y.slider_name": {&"label": &"String", &"value": &"int"},
+	&"ui.training.combat_facts": {&"block": &"int", &"cadence": &"int", &"cost": &"int", &"placement": &"String", &"range": &"int"},
+	&"ui.training.error_message": {&"message": &"String"},
+	&"ui.training.fallback_recruit": {&"index": &"int"},
+	&"ui.training.premium_identity": {&"count": &"int"},
+	&"ui.training.premium_progress": {&"count": &"int"},
+	&"ui.training.tooltip.attack": {&"cadence": &"int", &"range": &"int"},
+	&"ui.training.tooltip.core_stats": {&"attack": &"int", &"defense": &"int", &"hp": &"int", &"resistance": &"String"},
+	&"ui.training.tooltip.deployment": {&"block": &"int", &"cost": &"int", &"placement": &"String", &"rarity": &"int"},
+	&"ui.training.tooltip.eligibility": {&"eligibility": &"String"},
+	&"ui.training.tooltip.identity_status": {&"class_name": &"String", &"status": &"String"},
+	&"ui.training.tooltip.progress": {&"progress": &"String"},
+	&"ui.training.tooltip.skill": {&"skill": &"String"},
+	&"ui.vahalla.fallen_count_format": {&"count": &"int"},
+}

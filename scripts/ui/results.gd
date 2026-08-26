@@ -54,6 +54,14 @@ var _reward_reveal_tween: Tween = null
 
 func _ready() -> void:
 	Game.content = self
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
+	if not get_viewport().size_changed.is_connected(_apply_responsive_layout):
+		get_viewport().size_changed.connect(_apply_responsive_layout)
+	_build_presentation()
+
+
+func _build_presentation() -> void:
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	var result: Dictionary = Game.last_result
 	var cleared := int(result.get("result", 0)) == BattleModel.Result.CLEAR
@@ -66,7 +74,6 @@ func _ready() -> void:
 		backdrop.color = Color(Style.INK_DEEP, 0.84)
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
-	get_viewport().size_changed.connect(_apply_responsive_layout)
 
 	var layout := VBoxContainer.new()
 	layout.name = "ResultsLayout"
@@ -208,7 +215,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 				"+{count} MARKS",
 			)
 		else:
-			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), UiCopyType.format_text(&"ui.results.unlocked_kind", "UNLOCKED · {kind}", {&"kind": String(reward.get("kind", "record")).to_upper()}), false, true))
+			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), UiCopyType.format_text(&"ui.results.unlocked_kind", "UNLOCKED · {kind}", {&"kind": _reward_kind(StringName(reward.get("kind", &"record"))).to_upper()}), false, true))
 	var entitlements: Array = result.get("class_entitlements_granted", [])
 	for i: int in entitlements.size():
 		rewards.add_child(_result_card("Entitlement%d" % i, _class_name(String(entitlements[i])).to_upper(), UiCopyType.text(&"ui.results.training_path_unlocked", "ADVANCED TRAINING PATH UNLOCKED"), false, true))
@@ -301,11 +308,11 @@ func _build_actions(layout: VBoxContainer) -> void:
 			_actions.add_child(training)
 			focusable.append(training)
 			_landscape_action_columns = 4
-		var retry := _button("RetryButton", UiCopyType.text(&"ui.results.retry", "Retry Mission"), "Retry", &"secondary")
+		var retry := _button("RetryButton", UiCopyType.text(&"ui.results.retry", "Retry Mission"), UiCopyType.text(&"ui.results.retry_short", "Retry"), &"secondary")
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
 		focusable.append(retry)
-		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Company Command"), "Command", &"primary" if not training_available else &"secondary")
+		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Company Command"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
@@ -632,6 +639,50 @@ func _reward_name(reward: Dictionary) -> String:
 	if definition is SpellDef:
 		return UiCopyType.spell_name(definition)
 	return String(identifier).replace("_", " ").capitalize()
+
+
+func _reward_kind(kind: StringName) -> String:
+	match kind:
+		&"operator": return UiCopyType.text(&"ui.reward_kind.operator", "Operator")
+		&"trap": return UiCopyType.text(&"ui.reward_kind.trap", "Trap")
+		&"spell": return UiCopyType.text(&"ui.reward_kind.spell", "Spell")
+		_: return UiCopyType.text(&"ui.reward_kind.unknown", "Record")
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	var focus_name := ""
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus != null and is_ancestor_of(focus):
+		focus_name = String(focus.name)
+	_kill_reward_reveal_tween()
+	_reward_reveal_entries.clear()
+	for child: Node in get_children():
+		remove_child(child)
+		child.free()
+	_reset_presentation_references()
+	_build_presentation()
+	if not focus_name.is_empty():
+		var replacement := find_child(focus_name, true, false) as Control
+		if replacement != null:
+			replacement.grab_focus.call_deferred()
+
+
+func _reset_presentation_references() -> void:
+	_actions = null
+	_shell = null
+	_body_grid = null
+	_header_grid = null
+	_outcome_plate = null
+	_tally = null
+	_outcome_summary = null
+	_result_meta = null
+	_headline = null
+	_result_stars = null
+	_rewards_heading = null
+	_consequence_heading = null
+	_rewards_panel = null
+	_consequence_panel = null
+	_landscape_action_columns = 3
 
 
 func _hero_name(hero_id: String) -> String:

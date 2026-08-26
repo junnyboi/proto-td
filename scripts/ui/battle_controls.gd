@@ -152,9 +152,15 @@ func _build_confirm() -> void:
 	confirm.name = "ConfirmResign"
 	cancel.name = "CancelResign"
 	confirm.accessibility_name = _copy(&"ui.battle.confirm_defeat", "Confirm defeat")
-	confirm.accessibility_description = "Withdraw from the operation and record this attempt as a defeat."
+	confirm.accessibility_description = _copy(
+		&"ui.battle.confirm_defeat_description",
+		"Withdraw from the operation and record this attempt as a defeat.",
+	)
 	cancel.accessibility_name = _copy(&"ui.battle.return", "Return to battle")
-	cancel.accessibility_description = "Close withdrawal confirmation and resume the exact prior battle speed."
+	cancel.accessibility_description = _copy(
+		&"ui.battle.return_description",
+		"Close withdrawal confirmation and resume the prior battle speed.",
+	)
 	Style.apply_button(confirm, &"danger")
 	Style.apply_button(cancel, &"secondary")
 	confirm.pressed.connect(_on_confirm_resign)
@@ -409,8 +415,16 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	var cancel := _confirm_dialog.get(&"cancel") as Button
 	if confirm != null:
 		confirm.accessibility_name = _copy(&"ui.battle.confirm_defeat", "Confirm defeat")
+		confirm.accessibility_description = _copy(
+			&"ui.battle.confirm_defeat_description",
+			"Withdraw from the operation and record this attempt as a defeat.",
+		)
 	if cancel != null:
 		cancel.accessibility_name = _copy(&"ui.battle.return", "Return to battle")
+		cancel.accessibility_description = _copy(
+			&"ui.battle.return_description",
+			"Close withdrawal confirmation and resume the prior battle speed.",
+		)
 	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if _current_scale() == 0.0 else _copy(&"ui.battle.pause", "PAUSE")
 	_resign_button.text = _copy(&"ui.battle.resign", "RESIGN")
 

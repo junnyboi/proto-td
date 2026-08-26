@@ -10,6 +10,42 @@ const HeroNamesScript := preload("res://sim/hero_names.gd")
 const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const OperatorDefType := preload("res://data/operator_def.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
+const SKILL_NAME_FALLBACKS := {
+	&"bastion_slam": "Bastion Slam",
+	&"conflagration": "Conflagration",
+	&"deadeye": "Deadeye",
+	&"flurry": "Flurry",
+	&"hold_the_line": "Hold the Line",
+	&"mend": "Mend",
+	&"overpower": "Overpower",
+	&"rally": "Rally",
+	&"rapid_volley": "Rapid Volley",
+	&"tempest": "Tempest",
+	&"war_banner": "War Banner",
+}
+const MANIFEST_PLACEHOLDER_TYPES := {
+	&"ui.training.error_message": {&"message": TYPE_STRING},
+	&"ui.training.fallback_recruit": {&"index": TYPE_INT},
+	&"ui.training.premium_identity": {&"count": TYPE_INT},
+	&"ui.training.premium_progress": {&"count": TYPE_INT},
+	&"ui.training.tooltip.attack": {&"range": TYPE_INT, &"cadence": TYPE_INT},
+	&"ui.training.tooltip.core_stats": {
+		&"hp": TYPE_INT, &"attack": TYPE_INT, &"defense": TYPE_INT,
+		&"resistance": TYPE_STRING,
+	},
+	&"ui.training.tooltip.deployment": {
+		&"cost": TYPE_INT, &"placement": TYPE_STRING, &"block": TYPE_INT,
+		&"rarity": TYPE_INT,
+	},
+	&"ui.training.tooltip.eligibility": {&"eligibility": TYPE_STRING},
+	&"ui.training.tooltip.identity_status": {
+		&"class_name": TYPE_STRING, &"status": TYPE_STRING,
+	},
+	&"ui.training.tooltip.progress": {&"progress": TYPE_STRING},
+	&"ui.training.tooltip.skill": {&"skill": TYPE_STRING},
+}
 
 const REQUIRED_CAMPAIGN_METHODS := [
 	&"data_copy",
@@ -188,7 +224,18 @@ static func enrich_choices(raw_choices: Array) -> Dictionary:
 		choice["placement"] = int(operator.placement)
 		choice["range_cells"] = operator.range_offsets.size()
 		choice["attack_interval_ticks"] = operator.atk_interval_ticks
-		choice["skill_name"] = operator.skill.display_name if operator.skill != null else ""
+		var skill_id := String(operator.skill.id) if operator.skill != null else ""
+		choice["skill_id"] = skill_id
+		choice["skill_name_key"] = StringName(
+			"ui.training.skill_name.%s" % skill_id
+			if not skill_id.is_empty()
+			else "ui.training.skill.none"
+		)
+		choice["skill_name_fallback"] = (
+			skill_name_fallback(skill_id)
+			if not skill_id.is_empty()
+			else "None"
+		)
 		result.append(choice)
 	result.sort_custom(
 		func(a: Dictionary, b: Dictionary) -> bool:
@@ -212,7 +259,38 @@ static func callsign(hero: Dictionary) -> String:
 		var value := String(generated.get("value", "")).strip_edges()
 		if not value.is_empty():
 			return value
-	return "Recruit #%d" % (int(hero.get("recruitment_index", -1)) + 1)
+	return fallback_recruit_name(int(hero.get("recruitment_index", -1)) + 1)
+
+
+static func fallback_recruit_name(index: int) -> String:
+	return format_manifest_text(
+		&"ui.training.fallback_recruit", "Recruit #{index}", {&"index": index},
+	)
+
+
+static func skill_name_fallback(skill_id: String) -> String:
+	return String(SKILL_NAME_FALLBACKS.get(
+		StringName(skill_id), skill_id.replace("_", " ").capitalize(),
+	))
+
+
+static func format_manifest_text(
+	key: StringName, fallback: String, args: Dictionary,
+) -> String:
+	var expected: Dictionary = MANIFEST_PLACEHOLDER_TYPES.get(key, {})
+	if expected.size() != args.size():
+		push_error("TrainingSupport.format_manifest_text: argument set mismatch for %s" % key)
+		return fallback
+	for raw_name: Variant in expected:
+		var name := StringName(raw_name)
+		if not args.has(name) or typeof(args[name]) != int(expected[name]):
+			push_error("TrainingSupport.format_manifest_text: argument type mismatch for %s.%s" % [key, name])
+			return fallback
+	var template := UiCopyType.text(key, fallback)
+	for raw_name: Variant in expected:
+		var name := StringName(raw_name)
+		template = template.replace("{%s}" % name, str(args[name]))
+	return template
 
 
 static func class_definition(class_id: String) -> ClassDefType:

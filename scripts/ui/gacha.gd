@@ -24,6 +24,11 @@ const GACHA_FULLSIZE_PORTRAITS := {
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
 	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
 }
+const PREMIUM_IDENTITY_KEYS := {
+	"archive_caster": &"data.premium.archive_caster.name",
+	"lunaris_vessel": &"data.premium.lunaris_vessel.name",
+	"reliquary_duelist": &"data.premium.reliquary_duelist.name",
+}
 const CONFIRM_ENTRY_SECONDS := 0.20
 const CONFIRM_EXIT_SECONDS := 0.15
 const CONFIRM_FRAME_OFFSET := 12.0
@@ -31,6 +36,7 @@ const CONFIRM_READABLE_MAX_WIDTH := 1480.0
 const CONFIRM_ACTION_SIZE := Vector2(280.0, 92.0)
 const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
 const CONFIRM_ACTION_VERTICAL_PADDING := 18.0
+const CONFIRM_CARD_MIN_HEIGHT := 264.0
 const BROWSE_PULL_WIDTH := 800.0
 const BROWSE_PULL_HEIGHT := 112.0
 const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
@@ -288,7 +294,9 @@ func _build_screen() -> void:
 	_marks_safe.name = "MarksSafeMargin"
 	_marks_safe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(_marks_safe)
-	_marks_label = _label("0 MARKS", &"metric")
+	_marks_label = _label(
+		_format(&"ui.gacha.marks", "{count} MARKS", {&"count": 0}), &"metric",
+	)
 	_marks_label.name = "MarksLabel"
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_marks_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -499,14 +507,14 @@ func _build_pull_confirmation() -> void:
 
 	var context_panel := PanelContainer.new()
 	context_panel.name = "ConfirmationContextPanel"
-	context_panel.custom_minimum_size.y = 196.0
+	context_panel.custom_minimum_size.y = CONFIRM_CARD_MIN_HEIGHT
 	context_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(context_panel, &"quiet")
 	var context_style := Style.panel_style(&"quiet")
 	context_style.content_margin_left = 28.0
 	context_style.content_margin_top = 28.0
 	context_style.content_margin_right = 28.0
-	context_style.content_margin_bottom = 28.0
+	context_style.content_margin_bottom = 36.0
 	context_panel.add_theme_stylebox_override(&"panel", context_style)
 	_confirmation_body_grid.add_child(context_panel)
 	var context_stack := VBoxContainer.new()
@@ -528,14 +536,14 @@ func _build_pull_confirmation() -> void:
 
 	var review_panel := PanelContainer.new()
 	review_panel.name = "ConfirmationTransactionPanel"
-	review_panel.custom_minimum_size.y = 196.0
+	review_panel.custom_minimum_size.y = CONFIRM_CARD_MIN_HEIGHT
 	review_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(review_panel, &"result")
 	var review_style := Style.panel_style(&"result")
 	review_style.content_margin_left = 28.0
 	review_style.content_margin_top = 28.0
 	review_style.content_margin_right = 28.0
-	review_style.content_margin_bottom = 28.0
+	review_style.content_margin_bottom = 36.0
 	review_panel.add_theme_stylebox_override(&"panel", review_style)
 	_confirmation_body_grid.add_child(review_panel)
 	var review_stack := VBoxContainer.new()
@@ -867,7 +875,8 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	portrait_frame.add_child(portrait)
 	portrait_frame.resized.connect(_fit_hero_portrait_zoom.bind(portrait_frame, portrait))
 	_fit_hero_portrait_zoom(portrait_frame, portrait)
-	var name := _label(String(catalog["callsign"]), &"heading")
+	var premium_id := String(catalog["premium_id"])
+	var name := _label(_premium_name(premium_id, String(catalog["callsign"])), &"heading")
 	name.name = "HeroName"
 	name.custom_minimum_size.x = 0.0
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -885,10 +894,12 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	role.add_theme_font_size_override(&"font_size", 30)
 	box.add_child(role)
 	var status := _copy(&"ui.gacha.unacquired", "UNACQUIRED")
+	var is_locked := false
 	if not hero.is_empty():
 		var lives := int(hero["premium_lives"])
 		status = _format(&"ui.gacha.lives", "{count} {unit}", {&"count": lives, &"unit": _life_unit(lives)})
-		if lives == 0:
+		is_locked = lives == 0
+		if is_locked:
 			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
 	var status_label := _label(status, &"metric")
 	status_label.name = "OwnershipMetric"
@@ -898,7 +909,7 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.add_theme_font_size_override(&"font_size", 36)
 	status_label.add_theme_color_override(
-		&"font_color", Style.DANGER if status.begins_with("LOCKED") else Style.CYAN,
+		&"font_color", Style.DANGER if is_locked else Style.CYAN,
 	)
 	box.add_child(status_label)
 	return panel
@@ -1142,7 +1153,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	var premium_id := String(pull.get("premium_id", ""))
 	var row := _pool_row(premium_id)
-	var callsign := String(row.get("callsign", pull.get("premium_id", "Unknown Signal")))
+	var callsign := _callsign_for(premium_id)
 	var rarity := int(pull.get("rarity", row.get("rarity", 4)))
 	var accent := _reveal_accent(pull)
 	_reveal_layer.visible = true
@@ -1454,7 +1465,15 @@ func _pool_row(premium_id: String) -> Dictionary:
 
 
 func _callsign_for(premium_id: String) -> String:
-	return String(_pool_row(premium_id).get("callsign", premium_id))
+	var fallback := String(_pool_row(premium_id).get("callsign", ""))
+	if fallback.is_empty():
+		fallback = _copy(&"ui.gacha.unknown_signal", "UNKNOWN SIGNAL")
+	return _premium_name(premium_id, fallback)
+
+
+func _premium_name(premium_id: String, fallback: String) -> String:
+	var key := StringName(PREMIUM_IDENTITY_KEYS.get(premium_id, &""))
+	return fallback if String(key).is_empty() else _copy(key, fallback)
 
 
 func _reveal_accent(_pull: Dictionary) -> Color:
@@ -1464,7 +1483,13 @@ func _reveal_accent(_pull: Dictionary) -> Color:
 func _class_name(class_id: String) -> String:
 	var path := "res://data/classes/%s.tres" % class_id
 	var definition := load(path) as ClassDefType if ResourceLoader.exists(path) else null
-	return definition.name if definition != null else class_id.replace("_", " ").capitalize()
+	if definition == null:
+		return class_id.replace("_", " ").capitalize()
+	return (
+		_copy(definition.name_key, definition.name)
+		if not String(definition.name_key).is_empty()
+		else definition.name
+	)
 
 
 func _gacha_portrait_asset_id(premium_id: String) -> StringName:
@@ -1876,8 +1901,8 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	_confirmation_header_cancel.custom_minimum_size.x = 0.0 if narrow else 280.0
 	_confirmation_title.add_theme_font_size_override(&"font_size", 66 if narrow else (96 if short else 114))
 	_confirmation_body_grid.columns = 2 if wide else 1
-	_confirmation_context_eyebrow.visible = not narrow
-	_confirmation_review_eyebrow.visible = not narrow
+	_confirmation_context_eyebrow.visible = false
+	_confirmation_review_eyebrow.visible = false
 	_confirmation_actions.columns = 1 if narrow or portrait else 2
 	_confirmation_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_confirmation_cancel.custom_minimum_size = CONFIRM_ACTION_SIZE
@@ -2002,6 +2027,9 @@ func _refresh_static_copy() -> void:
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
 	_refresh_reveal_pull_again()
+	_status_label.accessibility_name = _copy(
+		&"ui.gacha.status_name", "Premium resonance status",
+	)
 	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
 		_reveal_title.text = _callsign_for(
 			String(_pending_pull.get("premium_id", "")),

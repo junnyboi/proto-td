@@ -14,9 +14,10 @@ func _init() -> void:
 func _run() -> void:
 	create_timer(TIMEOUT).timeout.connect(_on_timeout, CONNECT_ONE_SHOT)
 	var game: Node = root.get_node_or_null("Game")
+	var i18n: Node = root.get_node_or_null("I18n")
 	var music: Node = root.get_node_or_null("Music")
 	var sfx: Node = root.get_node_or_null("Sfx")
-	_check(game != null and music != null and sfx != null, "required autoload missing")
+	_check(game != null and i18n != null and music != null and sfx != null, "required autoload missing")
 	if game == null:
 		_finish()
 		return
@@ -107,6 +108,37 @@ func _run() -> void:
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.position.y), "browse background is not top aligned")
 	_check(browse_backdrop != null and browse_backdrop.size.y > 825.0, "browse background did not retain cover crop")
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.pivot_offset.y), "browse background pivot is not top anchored")
+
+	# Source localization must refresh existing cards and accessibility metadata in place.
+	_check(i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate")
+	await _frames(2)
+	var premium_keys: Dictionary = screen.get("PREMIUM_IDENTITY_KEYS")
+	_check(premium_keys.get("archive_caster") == &"data.premium.archive_caster.name", "Archive Caster stable key changed")
+	_check(premium_keys.get("lunaris_vessel") == &"data.premium.lunaris_vessel.name", "Lunaris Vessel stable key changed")
+	_check(premium_keys.get("reliquary_duelist") == &"data.premium.reliquary_duelist.name", "Reliquary Duelist stable key changed")
+	var localized_tree_text := _tree_text(grid)
+	for expected_class: String in ["见习法师", "术士", "剑圣"]:
+		_check(localized_tree_text.contains(expected_class), "%s class did not refresh through name_key" % expected_class)
+	for card: PanelContainer in grid.get_children():
+		var role := card.find_child("HeroClass", true, false) as Label
+		var metric := card.find_child("OwnershipMetric", true, false) as Label
+		var card_style := card.get_theme_stylebox(&"panel")
+		_check(role != null and metric != null, "%s translated footer is incomplete" % card.name)
+		if role != null and metric != null:
+			_check(
+				metric.get_global_rect().end.y <= card.get_global_rect().end.y - card_style.content_margin_bottom + 1.0,
+				"%s translated footer enters its lower ornament" % card.name,
+			)
+	_check(browse_status.accessibility_name == "高级共鸣状态", "gacha status metadata did not refresh")
+	_check(screen.call("_callsign_for", "missing_signal") == "未知信号", "unknown signal fallback did not localize")
+	var locked_card := screen.call("_hero_card", {
+		"premium_id": "archive_caster", "callsign": "Archive Caster", "class_id": "mage_apprentice",
+	}, {"premium_lives": 0, "life_status": "dead"}) as PanelContainer
+	var locked_metric := locked_card.find_child("OwnershipMetric", true, false) as Label
+	_check(locked_metric.get_theme_color(&"font_color").is_equal_approx(Style.DANGER), "localized locked state lost danger color")
+	locked_card.free()
+	_check(i18n.call("set_locale", &"en-US"), "en-US locale could not restore")
+	await _frames(2)
 
 	var confirmation_layer := screen.find_child("PremiumPullConfirmationLayer", true, false)
 	var reveal := screen.find_child("PullRevealLayer", true, false) as Control

@@ -2,6 +2,7 @@ class_name LunarisDialogSheet
 extends RefCounted
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 enum Presentation {
 	SHEET,
@@ -142,7 +143,9 @@ static func create(
 	body_scroll.draw_focus_border = false
 	body_scroll.focus_mode = Control.FOCUS_NONE
 	body_scroll.accessibility_name = body_text
-	body_scroll.accessibility_description = "Scrollable dialog details"
+	body_scroll.accessibility_description = UiCopyType.text(
+		&"ui.dialog.scrollable_details", "Scrollable dialog details",
+	)
 	body_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL if full_viewport else Control.SIZE_FILL
 	stack.add_child(body_scroll)
@@ -211,7 +214,9 @@ static func create(
 	cancel.focus_mode = Control.FOCUS_ALL
 	cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	cancel.accessibility_name = cancel_text
-	cancel.accessibility_description = "Close this dialog without confirming the action."
+	cancel.accessibility_description = UiCopyType.text(
+		&"ui.dialog.close_without_confirming", "Close the dialog without confirming.",
+	)
 	Style.apply_button(cancel, &"quiet")
 	cancel.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
 	cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -226,9 +231,7 @@ static func create(
 	confirm.focus_mode = Control.FOCUS_ALL
 	confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	confirm.accessibility_name = confirm_text
-	confirm.accessibility_description = (
-		"Confirm this destructive action." if destructive else "Confirm this action."
-	)
+	confirm.accessibility_description = confirm_text
 	Style.apply_button(confirm, &"danger" if destructive else &"primary")
 	confirm.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
 	confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

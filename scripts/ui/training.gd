@@ -539,9 +539,19 @@ func _build_roster_list() -> ScrollContainer:
 			{&"shown": visible_rows.size(), &"total": _roster_rows.size()},
 		)
 	if visible_rows.is_empty():
+		var empty_key := (
+			&"ui.identity_filter.empty"
+			if not _name_filter.strip_edges().is_empty()
+			else &"ui.roster.empty"
+		)
 		var empty := _label(
 			"TrainingRosterEmpty",
-			_t(&"ui.roster.empty", "No soldiers match the selected roster filters."),
+			_t(
+				empty_key,
+				"No units match the name filter."
+				if empty_key == &"ui.identity_filter.empty"
+				else "No soldiers match the selected roster filters.",
+			),
 			&"dense_detail",
 		)
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -589,7 +599,11 @@ func _build_inspector() -> AetheriaPanelType:
 	_inspector_scroll = inspector_scroll
 	panel.add_child(inspector_scroll)
 	inspector_scroll.add_child(column)
-	column.add_child(_label("AtelierEyebrow", "SELECTED OPERATOR", &"eyebrow"))
+	column.add_child(_label(
+		"AtelierEyebrow",
+		_t(&"ui.rename.selected_operator", "SELECTED OPERATOR"),
+		&"eyebrow",
+	))
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
 		panel.tooltip_text = _operator_stats_tooltip(selected)
@@ -624,15 +638,18 @@ func _build_inspector() -> AetheriaPanelType:
 			&"heading",
 		))
 		identity.add_child(_label(
-			"SelectedContinuity", "SAME PERSON. NEW DUTY.", &"eyebrow",
+			"SelectedContinuity",
+			_t(&"ui.training.same_recruit_new_job", "Same recruit. New job."),
+			&"eyebrow",
 		))
 		if bool(selected.get("is_premium", false)):
 			identity.add_child(_label(
 				"SelectedPremiumStatus",
-				"PREMIUM • FIXED ELITE KIT • %d %s" % [
-					int(selected["premium_lives"]),
-					"LIFE" if int(selected["premium_lives"]) == 1 else "LIVES",
-				],
+				_manifest_fmt(
+					&"ui.training.premium_identity",
+					"PREMIUM • FIXED ELITE KIT • {count} LIVES",
+					{&"count": int(selected["premium_lives"])},
+				),
 				&"metric",
 			))
 		else:
@@ -645,7 +662,14 @@ func _build_inspector() -> AetheriaPanelType:
 			LunarisOpsType.apply_progress(xp_bar)
 			identity.add_child(xp_bar)
 			identity.add_child(_label(
-				"SelectedXp", "XP %d / %d" % [selected["xp"], selected["xp_required"]],
+				"SelectedXp",
+				_fmt(
+					&"ui.training.xp_progress", "XP {current} / {required}",
+					{
+						&"current": int(selected["xp"]),
+						&"required": int(selected["xp_required"]),
+					},
+				),
 				&"metric",
 			))
 		dossier.add_child(identity)
@@ -666,7 +690,8 @@ func _build_inspector() -> AetheriaPanelType:
 			"SelectedRecruitStatus", _eligibility_text(selected).to_upper(), &"metric",
 		))
 	column.add_child(_label(
-		"PermanenceNote", "PROMOTION CHANGES DUTY, EQUIPMENT, AND FIELD ROLE PERMANENTLY.",
+		"PermanenceNote",
+		_t(&"ui.training.permanent_warning", "THIS CHOICE IS PERMANENT."),
 		&"eyebrow",
 	))
 	return panel
@@ -781,7 +806,10 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_error.accessibility_live = AccessibilityServer.LIVE_OFF
 	if not String(_rename_editor_error).is_empty():
 		var error_text := _error_text(_rename_editor_error)
-		_rename_error.text = _t(&"ui.common.error", "Error") + ": " + error_text
+		_rename_error.text = _manifest_fmt(
+			&"ui.training.error_message", "Error: {message}",
+			{&"message": error_text},
+		)
 		_rename_error.accessibility_description = error_text
 		_rename_error.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
 		_apply_identity_error_style(_rename_editor_error)
@@ -1797,13 +1825,20 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	var title_block := VBoxContainer.new()
 	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_block.add_theme_constant_override(&"separation", 0)
-	title_block.add_child(_label("%sEyebrow" % node_name, "RELIQUARY ATELIER", &"eyebrow"))
+	title_block.add_child(_label(
+		"%sEyebrow" % node_name,
+		_t(&"ui.training.atelier", "RELIQUARY ATELIER"),
+		&"eyebrow",
+	))
 	title_block.add_child(_label("%sHeading" % node_name, title.to_upper(), &"title"))
 	identity.add_child(title_block)
 	top.add_child(identity)
 	if Game.training_return_path == &"mission" and _mode != &"rename_confirmation":
 		_return_mission = _button(
-			"ReturnToMission", "<- RETURN TO MISSION", true, &"gold",
+			"ReturnToMission",
+			_t(&"ui.training.return_to_mission", "RETURN TO MISSION"),
+			true,
+			&"gold",
 		)
 		_return_mission.custom_minimum_size = Vector2(230.0, 58.0)
 		_return_mission.pressed.connect(_on_not_now)
@@ -1993,7 +2028,11 @@ func _eligibility_text(summary: Dictionary) -> String:
 func _status_text(summary: Dictionary) -> String:
 	var life_status := String(summary["life_status"])
 	if bool(summary.get("is_premium", false)):
-		return "PREMIUM READY" if life_status == "ready" else "PREMIUM LOCKED"
+		return _t(
+			&"ui.training.status.premium_ready", "PREMIUM READY",
+		) if life_status == "ready" else _t(
+			&"ui.training.status.premium_locked", "PREMIUM LOCKED",
+		)
 	if life_status == "ready":
 		return _t(&"ui.training.status.ready", "READY")
 	return _t(&"ui.training.status.dead", "DEAD")
@@ -2001,8 +2040,10 @@ func _status_text(summary: Dictionary) -> String:
 
 func _progress_text(summary: Dictionary) -> String:
 	if bool(summary.get("is_premium", false)):
-		var lives := int(summary["premium_lives"])
-		return "FIXED KIT • %d %s" % [lives, "LIFE" if lives == 1 else "LIVES"]
+		return _manifest_fmt(
+			&"ui.training.premium_progress", "FIXED KIT • {count} LIVES",
+			{&"count": int(summary["premium_lives"])},
+		)
 	return _fmt(
 		&"ui.training.xp_progress", "XP {current} / {required}",
 		{&"current": int(summary["xp"]), &"required": int(summary["xp_required"])},
@@ -2013,9 +2054,10 @@ func _operator_stats_tooltip(summary: Dictionary) -> String:
 	var definition := TrainingSupportType.operator_definition(
 		String(summary.get("operator_def_id", "")),
 	)
+	var unknown := _t(&"ui.training.tooltip.unknown_operator", "UNKNOWN OPERATOR")
 	if definition == null:
 		return "%s\n%s\n%s" % [
-			String(summary.get("callsign", "UNKNOWN OPERATOR")).to_upper(),
+			String(summary.get("callsign", unknown)).to_upper(),
 			class_label(String(summary.get("current_class_id", ""))),
 			_progress_text(summary),
 		]
@@ -2027,33 +2069,30 @@ func _operator_stats_tooltip(summary: Dictionary) -> String:
 	var title := String(
 		summary.get("custom_title", "") if summary.get("custom_title") != null else "",
 	)
-	var identity := String(summary.get("callsign", "UNKNOWN OPERATOR")).to_upper()
+	var identity := String(summary.get("callsign", unknown)).to_upper()
 	if not title.is_empty():
 		identity += " — %s" % title.to_upper()
-	var skill_name := (
-		String(definition.skill.display_name)
-		if definition.skill != null and not String(definition.skill.display_name).is_empty()
-		else _t(&"ui.training.skill.none", "None")
-	)
 	return "\n".join(PackedStringArray([
 		identity,
-		"%s • %s" % [
+		_tooltip_identity_status(
 			class_label(String(summary.get("current_class_id", ""))),
 			_status_text(summary),
-		],
-		"HP %d • ATK %d • DEF %d • RES %.1f%%" % [
-			int(definition.hp), int(definition.atk), int(definition.defense),
-			float(definition.resistance_permille) / 10.0,
-		],
-		"%d DP • %s • Block %d • Rarity %d" % [
-			int(definition.dp_cost), placement, int(definition.block), int(definition.rarity),
-		],
-		"Coverage %d cells • Attack every %d ticks" % [
-			definition.range_offsets.size(), int(definition.atk_interval_ticks),
-		],
-		"Skill: %s" % skill_name,
-		"Training: %s" % _progress_text(summary),
-		"Eligibility: %s" % _eligibility_text(summary),
+		),
+		_tooltip_core_stats(definition),
+		_tooltip_deployment(definition, placement),
+		_tooltip_attack(definition),
+		_tooltip_value(
+			&"ui.training.tooltip.skill", "Skill: {skill}",
+			&"skill", _operator_skill_name(definition),
+		),
+		_tooltip_value(
+			&"ui.training.tooltip.progress", "Training: {progress}",
+			&"progress", _progress_text(summary),
+		),
+		_tooltip_value(
+			&"ui.training.tooltip.eligibility", "Eligibility: {eligibility}",
+			&"eligibility", _eligibility_text(summary),
+		),
 	]))
 
 
@@ -2061,9 +2100,12 @@ func _path_stats_tooltip(choice: Dictionary) -> String:
 	var definition := TrainingSupportType.operator_definition(
 		String(choice.get("operator_def_id", "")),
 	)
+	var path_fallback := String(choice.get(
+		"class_name_fallback",
+		choice.get("to_class_id", _t(&"ui.training.tooltip.path", "Training Path")),
+	))
 	var path_name := _t(
-		StringName(choice.get("class_name_key", &"")),
-		String(choice.get("class_name_fallback", choice.get("to_class_id", "Training Path"))),
+		StringName(choice.get("class_name_key", &"")), path_fallback,
 	).to_upper()
 	if definition == null:
 		return "%s\n%s\n%s" % [path_name, _skill_text(choice), _combat_text(choice)]
@@ -2072,29 +2114,26 @@ func _path_stats_tooltip(choice: Dictionary) -> String:
 		if int(definition.placement) == OperatorDef.Placement.ELEVATED
 		else _t(&"ui.training.placement.ground", "Ground")
 	)
-	var skill_name := (
-		String(definition.skill.display_name)
-		if definition.skill != null and not String(definition.skill.display_name).is_empty()
-		else _t(&"ui.training.skill.none", "None")
-	)
 	return "\n".join(PackedStringArray([
 		path_name,
 		_t(
 			StringName(choice.get("role_key", &"")),
-			String(choice.get("role_fallback", "Advanced duty")),
+			String(choice.get(
+				"role_fallback",
+				_t(&"ui.training.tooltip.advanced_duty", "Advanced duty"),
+			)),
 		),
-		"HP %d • ATK %d • DEF %d • RES %.1f%%" % [
-			int(definition.hp), int(definition.atk), int(definition.defense),
-			float(definition.resistance_permille) / 10.0,
-		],
-		"%d DP • %s • Block %d • Rarity %d" % [
-			int(definition.dp_cost), placement, int(definition.block), int(definition.rarity),
-		],
-		"Coverage %d cells • Attack every %d ticks" % [
-			definition.range_offsets.size(), int(definition.atk_interval_ticks),
-		],
-		"Skill: %s" % skill_name,
-		"Permanent advanced-class assignment.",
+		_tooltip_core_stats(definition),
+		_tooltip_deployment(definition, placement),
+		_tooltip_attack(definition),
+		_tooltip_value(
+			&"ui.training.tooltip.skill", "Skill: {skill}",
+			&"skill", _operator_skill_name(definition),
+		),
+		_t(
+			&"ui.training.tooltip.permanence",
+			"Permanent advanced-class assignment.",
+		),
 	]))
 
 
@@ -2122,8 +2161,81 @@ func _combat_text(choice: Dictionary) -> String:
 func _skill_text(choice: Dictionary) -> String:
 	return _fmt(
 		&"ui.training.skill_facts", "Skill: {skill}",
-		{&"skill": String(choice.get("skill_name", "None"))},
+		{&"skill": _choice_skill_name(choice)},
 	)
+
+
+func _choice_skill_name(choice: Dictionary) -> String:
+	return _t(
+		StringName(choice.get("skill_name_key", &"ui.training.skill.none")),
+		String(choice.get("skill_name_fallback", "None")),
+	)
+
+
+func _operator_skill_name(definition: OperatorDef) -> String:
+	if definition == null or definition.skill == null:
+		return _t(&"ui.training.skill.none", "None")
+	var skill_id := String(definition.skill.id)
+	if skill_id.is_empty():
+		return _t(&"ui.training.skill.none", "None")
+	return _t(
+		StringName("ui.training.skill_name.%s" % skill_id),
+		TrainingSupportType.skill_name_fallback(skill_id),
+	)
+
+
+func _tooltip_identity_status(class_label_text: String, status: String) -> String:
+	return _manifest_fmt(
+		&"ui.training.tooltip.identity_status", "{class_name} • {status}",
+		{&"class_name": class_label_text, &"status": status},
+	)
+
+
+func _tooltip_core_stats(definition: OperatorDef) -> String:
+	return _manifest_fmt(
+		&"ui.training.tooltip.core_stats",
+		"HP {hp} • ATK {attack} • DEF {defense} • RES {resistance}%",
+		{
+			&"hp": int(definition.hp),
+			&"attack": int(definition.atk),
+			&"defense": int(definition.defense),
+			&"resistance": "%.1f" % (float(definition.resistance_permille) / 10.0),
+		},
+	)
+
+
+func _tooltip_deployment(definition: OperatorDef, placement: String) -> String:
+	return _manifest_fmt(
+		&"ui.training.tooltip.deployment",
+		"{cost} DP • {placement} • Block {block} • Rarity {rarity}",
+		{
+			&"cost": int(definition.dp_cost),
+			&"placement": placement,
+			&"block": int(definition.block),
+			&"rarity": int(definition.rarity),
+		},
+	)
+
+
+func _tooltip_attack(definition: OperatorDef) -> String:
+	return _manifest_fmt(
+		&"ui.training.tooltip.attack",
+		"Coverage {range} cells • Attack every {cadence} ticks",
+		{
+			&"range": definition.range_offsets.size(),
+			&"cadence": int(definition.atk_interval_ticks),
+		},
+	)
+
+
+func _tooltip_value(
+	key: StringName, fallback: String, placeholder: StringName, value: String,
+) -> String:
+	return _manifest_fmt(key, fallback, {placeholder: value})
+
+
+func _manifest_fmt(key: StringName, fallback: String, args: Dictionary) -> String:
+	return TrainingSupportType.format_manifest_text(key, fallback, args)
 
 
 func _apply_footer_layouts() -> void:
@@ -2320,6 +2432,29 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_show_review()
 	else:
 		_show_roster()
+	if _mode != &"rename_confirmation" and not String(focused_name).is_empty():
+		_restore_named_focus.call_deferred(
+			focused_name, _rename_presentation_generation, _mode,
+		)
+
+
+func _restore_named_focus(
+	control_name: StringName, generation: int, expected_mode: StringName,
+) -> void:
+	if (
+		not is_inside_tree()
+		or generation != _rename_presentation_generation
+		or _mode != expected_mode
+	):
+		return
+	var control := find_child(String(control_name), true, false) as Control
+	if (
+		control != null
+		and control.is_visible_in_tree()
+		and control.focus_mode != Control.FOCUS_NONE
+	):
+		control.grab_focus()
+		_ensure_focus_visible(control)
 
 
 func _refresh_accessibility_metadata() -> void:

@@ -74,7 +74,7 @@ var _redirect_pending := false
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	clip_contents = true
-	_body_scroll.follow_focus = true
+	_body_scroll.follow_focus = false
 	_locale_selector.set_draft_mode(true)
 	_locale_selector.locale_selected.connect(_on_locale_selected)
 	_back_button.pressed.connect(_request_cancel)
@@ -459,7 +459,9 @@ func _refresh_accessibility() -> void:
 
 func _set_slider_accessibility(slider: HSlider, label: String) -> void:
 	var percentage := roundi(slider.value)
-	slider.accessibility_name = "%s, %d%%" % [label, percentage]
+	slider.accessibility_name = UiCopyType.text(
+		&"ui.title.a11y.slider_name", "{label}, {value} percent",
+	).replace("{label}", label).replace("{value}", str(percentage))
 	slider.accessibility_description = _copy(
 		&"ui.title.a11y.slider_description",
 		"Current value: {value}%. Use left and right to adjust.",
@@ -521,8 +523,8 @@ func _apply_responsive_layout() -> void:
 		_refresh_frame_items()
 	_action_dock.columns = 1
 	_apply_button.custom_minimum_size.y = 76.0 if short else _title_size(76.0)
-	_back_button.text = "←" if narrow else UiCopyType.text(&"ui.common.back", "Back").to_upper()
-	_back_button.custom_minimum_size = Vector2(48.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
+	_back_button.text = UiCopyType.text(&"ui.common.back", "Back").to_upper()
+	_back_button.custom_minimum_size = Vector2(92.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
 	_frame_option.custom_minimum_size.y = 72.0
 	_music_button.custom_minimum_size.y = 82.0
 	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
@@ -667,7 +669,10 @@ func _ensure_focus_visible() -> void:
 		return
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and _body_scroll.is_ancestor_of(focused):
-		_body_scroll.ensure_control_visible(focused)
+		if focused == _locale_list:
+			_body_scroll.scroll_vertical = 0
+		else:
+			_body_scroll.ensure_control_visible(focused)
 
 
 func _finish_entry(token: int) -> void:

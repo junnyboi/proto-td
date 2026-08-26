@@ -117,6 +117,7 @@ func _ready() -> void:
 	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
 	_build_screen()
+	I18n.locale_changed.connect(_on_locale_changed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
 	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
@@ -217,7 +218,7 @@ func _build_top_bar() -> void:
 	_top_crest.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	identity_row.add_child(_top_crest)
 
-	_top_identity = _label("FactionIdentity", "PROTOS DEFENSE", GameTypographyType.STATUS, IVORY)
+	_top_identity = _label("FactionIdentity", _company_identity(false), GameTypographyType.STATUS, IVORY)
 	_top_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_top_identity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_top_identity.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -519,8 +520,8 @@ func _build_navigation_content() -> VBoxContainer:
 	_vahalla.name = "VahallaButton"
 	_vahalla.configure(
 		StagingGlyphType.Kind.MEMORIAL,
-		UiCopyType.text(&"ui.staging.vahalla_short", "Vahalla"),
-		UiCopyType.text(&"ui.staging.vahalla", "Vahalla"),
+		UiCopyType.text(&"ui.staging.valhalla_short", "Valhalla"),
+		UiCopyType.text(&"ui.staging.valhalla", "Valhalla"),
 		true,
 	)
 	_vahalla.pressed.connect(_on_vahalla)
@@ -898,7 +899,7 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 		Vector2(190.0, 92.0) if narrow
 		else (Vector2(300.0, 104.0) if compact else Vector2(420.0, 112.0))
 	)
-	_top_identity.text = "PROTOS DEFENSE"
+	_top_identity.text = _company_identity(narrow)
 	_top_crest.custom_minimum_size = (
 		Vector2(42.0, 42.0) if narrow else (Vector2(48.0, 48.0) if compact else Vector2(58.0, 58.0))
 	)
@@ -962,6 +963,54 @@ func _display_safe_insets(viewport_size: Vector2) -> Vector4:
 	if left + right > viewport_size.x * 0.25 or top + bottom > viewport_size.y * 0.25:
 		return Vector4.ZERO
 	return Vector4(left, top, right, bottom)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_locale_copy()
+	_apply_responsive_layout()
+
+
+func _refresh_locale_copy() -> void:
+	if _top_identity == null:
+		return
+	_top_identity.text = _company_identity(get_viewport_rect().size.x < 620.0)
+	_top_summary.text = _campaign_summary_text()
+	_campaign_progress_text.text = _campaign_summary_text()
+	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
+	_exit_label.text = _back.text.to_upper()
+	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMPANY 33 COMMAND")
+	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
+	_mission_title.text = _next_operation_title()
+	_mission_objective.text = _next_operation_objective()
+	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
+	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
+	_mission.set_presentation_text(mission_copy, mission_copy.to_upper())
+	_mission.tooltip_text = mission_copy
+	_recruit.configure(StagingGlyphType.Kind.RECRUIT, UiCopyType.text(&"ui.staging.recruit_short", "Resonance"), UiCopyType.text(&"ui.staging.recruit", "Premium Resonance"), true)
+	_vahalla.configure(StagingGlyphType.Kind.MEMORIAL, UiCopyType.text(&"ui.staging.valhalla_short", "Valhalla"), UiCopyType.text(&"ui.staging.valhalla", "Valhalla"), true)
+	_archive.configure(StagingGlyphType.Kind.ARCHIVE, UiCopyType.text(&"ui.staging.archive_short", "Archive"), UiCopyType.text(&"ui.staging.archive", "Mercy Archive"), true)
+	var training_available := _training_available()
+	_training.configure(StagingGlyphType.Kind.TRAINING, UiCopyType.text(&"ui.staging.training_short", "Training"), UiCopyType.text(&"ui.staging.training" if training_available else &"ui.staging.training_unavailable", "Training" if training_available else "Training — Unavailable"), training_available)
+	var barracks := find_child("BarracksButton", true, false) as StagingCommandTileType
+	if barracks != null:
+		barracks.configure(StagingGlyphType.Kind.BARRACKS, UiCopyType.text(&"ui.staging.barracks_short", "Barracks"), UiCopyType.text(&"ui.staging.barracks_unavailable", "Barracks — Unavailable"), false)
+	var armory := find_child("ArmoryButton", true, false) as StagingCommandTileType
+	if armory != null:
+		armory.configure(StagingGlyphType.Kind.ARMORY, UiCopyType.text(&"ui.staging.armory_short", "Armory"), UiCopyType.text(&"ui.staging.armory_unavailable", "Armory — Unavailable"), false)
+
+
+func _company_identity(compact: bool) -> String:
+	var copy := UiCopyType.text(
+		&"ui.company.identity_compact" if compact else &"ui.company.identity",
+		"{faction}\n{company}",
+	)
+	copy = copy.replace(
+		"{faction}",
+		FactionHeraldryType.short_name(FactionHeraldryType.ACTIVE_FACTION)
+		if compact
+		else FactionHeraldryType.display_name(FactionHeraldryType.ACTIVE_FACTION),
+	)
+	return copy.replace("{company}", FactionHeraldryType.company_name())
 
 
 func _campaign_summary_text() -> String:

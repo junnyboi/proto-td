@@ -24,6 +24,10 @@ func _init() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_content()
+	var tree := Engine.get_main_loop() as SceneTree
+	var i18n := tree.root.get_node_or_null("I18n") if tree != null else null
+	if i18n != null:
+		i18n.connect("locale_changed", _on_locale_changed)
 
 
 func configure(value: StringName) -> void:
@@ -38,7 +42,9 @@ func configure(value: StringName) -> void:
 	]
 	var active := faction_id == FactionHeraldryType.ACTIVE_FACTION
 	_active_label.visible = active
-	_active_label.text = "COMPANY 33"
+	_active_label.text = FactionHeraldryType.company_name()
+	accessibility_name = _name_label.text
+	accessibility_description = tooltip_text
 	var accent := FactionHeraldryType.accent(faction_id)
 	_name_label.add_theme_color_override(&"font_color", IVORY if active else Color(IVORY, 0.9))
 	_subtitle_label.add_theme_color_override(&"font_color", accent)
@@ -48,6 +54,11 @@ func configure(value: StringName) -> void:
 		Color(PANEL, 0.99 if active else 0.9), Color(accent, 0.72 if active else 0.38),
 		2 if active else 1,
 	))
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	if not String(faction_id).is_empty():
+		configure(faction_id)
 
 
 func set_compact(compact: bool) -> void:

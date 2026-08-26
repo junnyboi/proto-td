@@ -138,6 +138,8 @@ func setup(
 	size = get_viewport().get_visible_rect().size
 	_build_slots(_op_defs)
 	_build_overlays()
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 
 
 func is_mend_targeting() -> bool:
@@ -359,7 +361,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 			dp_cost = int(row["combat_spec"]["dp_cost"])
 			sprite_id = StringName(row["visual_spec"]["sprite_id"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
-		slot.text = "%s%s\n%d DP" % [def.display_name.to_upper(), identity_suffix, dp_cost]
+		slot.text = "%s%s\n%d DP" % [UI_COPY.operator_name(def), identity_suffix, dp_cost]
 		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(sprite_id, 0)
 		slot.expand_icon = true
@@ -385,7 +387,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var def: TrapDef = _trap_defs[trap_id]
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
-		slot.text = "%s\n%d DP" % [def.display_name.to_upper(), def.dp_cost]
+		slot.text = "%s\n%d DP" % [UI_COPY.trap_name(def), def.dp_cost]
 		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
@@ -502,6 +504,32 @@ func _build_overlays() -> void:
 	_selection_ring.visible = false
 	_selection_ring.z_index = -1
 	add_child(_selection_ring)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	for deployment_id: StringName in _slots:
+		var row: Dictionary = _ticket_rows.get(deployment_id, {})
+		var operator_id := StringName(row.get("operator_def_id", deployment_id))
+		var definition := _op_defs.get(operator_id) as OperatorDef
+		var slot := _slots[deployment_id] as Button
+		if definition == null or slot == null:
+			continue
+		var dp_cost := definition.dp_cost
+		var identity_suffix := ""
+		if not row.is_empty():
+			dp_cost = int(row["combat_spec"]["dp_cost"])
+			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
+		slot.text = "%s%s\n%d DP" % [UI_COPY.operator_name(definition), identity_suffix, dp_cost]
+		slot.tooltip_text = slot.text.replace("\n", " — ")
+	for trap_id: StringName in _trap_slots:
+		var definition := _trap_defs.get(trap_id) as TrapDef
+		var slot := _trap_slots[trap_id] as Button
+		if definition == null or slot == null:
+			continue
+		slot.text = "%s\n%d DP" % [UI_COPY.trap_name(definition), definition.dp_cost]
+		slot.tooltip_text = slot.text.replace("\n", " — ")
+	if _retreat_chip != null:
+		_retreat_chip.text = UI_COPY.text(&"ui.battle.retreat", "Retreat")
 
 
 func _apply_facing_button_styles(button: Button) -> void:

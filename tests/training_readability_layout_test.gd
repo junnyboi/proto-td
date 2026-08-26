@@ -291,14 +291,12 @@ func _contained(inner: Rect2, outer: Rect2, tolerance: float) -> bool:
 
 
 func _has_detailed_stats(value: String) -> bool:
-	return (
-		value.contains("HP ")
-		and value.contains("ATK ")
-		and value.contains("DEF ")
-		and value.contains(" DP ")
-		and value.contains("Block ")
-		and value.contains("Skill:")
-	)
+	var lines := value.split("\n", false)
+	var numeric_lines := 0
+	for line: String in lines:
+		if line.contains("0") or line.contains("1") or line.contains("2") or line.contains("3"):
+			numeric_lines += 1
+	return lines.size() >= 7 and numeric_lines >= 3 and value.contains(" • ")
 
 
 func _dispose(node: Node) -> void:

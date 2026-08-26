@@ -8,6 +8,7 @@ const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd"
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
+const VAHALLA_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 
 var _screen_margin: MarginContainer
 var _header_grid: GridContainer
@@ -18,6 +19,11 @@ var _memorial_grid: GridContainer
 var _memorial_scroll: ScrollContainer
 var _filter_bar: RosterFilterBarType
 var _status_label: Label
+var _back_button: Button
+var _eyebrow_label: Label
+var _title_label: Label
+var _intro_label: Label
+var _roster_heading: Label
 var _fallen_rows: Array[Dictionary] = []
 var _visible_rows: Array[Dictionary] = []
 var _memorial_by_hero := {}
@@ -26,7 +32,9 @@ var _selected_hero_id := ""
 
 
 func _ready() -> void:
+	theme = VAHALLA_THEME
 	Game.content = self
+	I18n.locale_changed.connect(_on_locale_changed)
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
 	_refresh_projection()
 	_build_screen()
@@ -73,21 +81,25 @@ func _build_screen() -> void:
 	_header_grid.add_theme_constant_override(&"h_separation", 16)
 	_header_grid.add_theme_constant_override(&"v_separation", 10)
 	content.add_child(_header_grid)
-	var back := Button.new()
-	back.name = "BackToCommand"
-	back.text = UiCopyType.text(&"ui.vahalla.back", "← COMPANY COMMAND")
-	back.custom_minimum_size = Vector2(210, 56)
-	back.pressed.connect(_on_back_pressed)
-	Style.apply_button(back, &"quiet")
-	_header_grid.add_child(back)
+	_back_button = Button.new()
+	_back_button.name = "BackToCommand"
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "COMPANY COMMAND")
+	_back_button.tooltip_text = _back_button.text
+	_back_button.accessibility_name = _back_button.text
+	_back_button.custom_minimum_size = Vector2(210, 56)
+	_back_button.pressed.connect(_on_back_pressed)
+	Style.apply_button(_back_button, &"quiet")
+	_header_grid.add_child(_back_button)
 	var identity := HBoxContainer.new()
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	identity.add_theme_constant_override(&"separation", 12)
 	identity.add_child(FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 52.0))
 	var titles := VBoxContainer.new()
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	titles.add_child(_label(UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN"), &"eyebrow"))
-	titles.add_child(_label(UiCopyType.text(&"ui.vahalla.title", "Vahalla").to_upper(), &"title"))
+	_eyebrow_label = _label(UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN"), &"eyebrow")
+	titles.add_child(_eyebrow_label)
+	_title_label = _label(UiCopyType.text(&"ui.vahalla.title_display", "Valhalla").to_upper(), &"title")
+	titles.add_child(_title_label)
 	identity.add_child(titles)
 	_header_grid.add_child(identity)
 	_status_label = _label("", &"metric")
@@ -95,15 +107,16 @@ func _build_screen() -> void:
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_header_grid.add_child(_status_label)
 
-	var intro_text := _label(
+	_intro_label = _label(
 		UiCopyType.text(&"ui.vahalla.intro", "Those recorded here are no longer deployable. Their service remains part of Company 33."),
 		&"detail",
 	)
-	intro_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(intro_text)
+	_intro_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(_intro_label)
 
 	_filter_bar = RosterFilterBarType.new()
 	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, RosterFilterType.FACTION_ALL)
+	_refresh_filter_accessibility()
 	_filter_bar.set_compact(true)
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	content.add_child(_filter_bar)
@@ -128,8 +141,8 @@ func _build_screen() -> void:
 	var roster_stack := VBoxContainer.new()
 	roster_stack.add_theme_constant_override(&"separation", 10)
 	_roster_panel.add_child(roster_stack)
-	var roster_heading := _label("FALLEN COMPANY", &"heading")
-	roster_stack.add_child(roster_heading)
+	_roster_heading = _label(UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY"), &"heading")
+	roster_stack.add_child(_roster_heading)
 	var scroll := ScrollContainer.new()
 	scroll.name = "VahallaMemorialScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -159,7 +172,8 @@ func _rebuild_memorial() -> void:
 		_memorial_grid.remove_child(child)
 		child.queue_free()
 	_visible_rows = RosterFilterType.filter_rows(_fallen_rows, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
-	_status_label.text = "%d %s" % [_visible_rows.size(), UiCopyType.text(&"ui.vahalla.fallen_count", "FALLEN")]
+	_status_label.text = UiCopyType.text(&"ui.vahalla.fallen_count_format", "{count} FALLEN").replace("{count}", str(_visible_rows.size()))
+	_status_label.accessibility_name = _status_label.text
 	if _visible_rows.is_empty():
 		_selected_hero_id = ""
 		var empty := _label(UiCopyType.text(&"ui.vahalla.empty", "No fallen soldiers are recorded for this faction."), &"body")
@@ -192,6 +206,8 @@ func _memorial_row(hero: Dictionary) -> Button:
 		FactionHeraldryType.display_name(StringName(hero["faction_id"])).to_upper(),
 	]
 	row.tooltip_text = row.text
+	row.accessibility_name = row.text
+	row.accessibility_description = row.text
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.pressed.connect(_on_memorial_selected.bind(hero_id))
 	Style.apply_button(row, &"selected" if hero_id == _selected_hero_id else &"quiet")
@@ -324,10 +340,10 @@ func _death_record(hero: Dictionary) -> String:
 	var death: Dictionary = memorial.get("death", hero.get("death", {}))
 	if death.is_empty():
 		return UiCopyType.text(&"ui.vahalla.record_unknown", "SERVICE RECORD SEALED")
-	var stage_id := String(death.get("stage_id", "unknown")).to_upper()
-	var reason := String(death.get("terminal_reason", "fallen")).replace("_", " ").to_upper()
+	var stage := _stage_name(StringName(death.get("stage_id", &"")))
+	var reason := _terminal_reason(StringName(death.get("terminal_reason", &"")))
 	return UiCopyType.format_text(&"ui.vahalla.record", "FELL AT {stage} • {reason} • TICK {tick}", {
-		&"stage": stage_id,
+		&"stage": stage,
 		&"reason": reason,
 		&"tick": int(death.get("terminal_tick", 0)),
 	})
@@ -335,7 +351,50 @@ func _death_record(hero: Dictionary) -> String:
 
 func _class_name(class_id: String) -> String:
 	var definition := TrainingSupportType.class_definition(class_id)
-	return definition.name if definition != null else class_id.replace("_", " ").capitalize()
+	return UiCopyType.text(definition.name_key, definition.name) if definition != null else UiCopyType.text(&"ui.vahalla.class_unknown", "Unknown class")
+
+
+func _stage_name(stage_id: StringName) -> String:
+	var path := "res://data/stages/%s.tres" % stage_id
+	return UiCopyType.stage_title(load(path) as StageDef) if ResourceLoader.exists(path) else UiCopyType.text(&"ui.vahalla.stage_unknown", "Unknown operation")
+
+
+func _terminal_reason(reason: StringName) -> String:
+	match reason:
+		&"resign": return UiCopyType.text(&"ui.vahalla.reason.resign", "Voluntary withdrawal")
+		&"base_defeat": return UiCopyType.text(&"ui.vahalla.reason.base_defeat", "Base lost")
+		&"leak_defeat": return UiCopyType.text(&"ui.vahalla.reason.leak_defeat", "Leak limit exceeded")
+		&"clear": return UiCopyType.text(&"ui.vahalla.reason.clear", "Operation cleared")
+		&"fallen": return UiCopyType.text(&"ui.vahalla.reason.fallen", "Fallen in service")
+		_: return UiCopyType.text(&"ui.vahalla.reason.unknown", "Unknown cause")
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	if _back_button == null:
+		return
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "COMPANY COMMAND")
+	_back_button.tooltip_text = _back_button.text
+	_back_button.accessibility_name = _back_button.text
+	_eyebrow_label.text = UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN")
+	_title_label.text = UiCopyType.text(&"ui.vahalla.title_display", "Valhalla").to_upper()
+	_intro_label.text = UiCopyType.text(&"ui.vahalla.intro", "Those recorded here are no longer deployable. Their service remains part of Company 33.")
+	_roster_heading.text = UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY")
+	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
+	_refresh_filter_accessibility()
+	_rebuild_memorial()
+
+
+func _refresh_filter_accessibility() -> void:
+	var all_button := _filter_bar.find_child("AllFactionFilter", true, false) as Button
+	if all_button != null:
+		all_button.tooltip_text = UiCopyType.text(&"ui.roster.filter.all_factions", "All factions")
+		all_button.accessibility_name = all_button.tooltip_text
+	for faction_id: StringName in FactionHeraldryType.ORDER:
+		var button := _filter_bar.find_child("%sFactionFilter" % String(faction_id).to_pascal_case(), true, false) as Button
+		if button != null:
+			button.tooltip_text = FactionHeraldryType.display_name(faction_id)
+			button.accessibility_name = button.tooltip_text
+			button.accessibility_description = FactionHeraldryType.specialization(faction_id)
 
 
 func _on_filters_changed(_status: StringName, _faction_id: StringName) -> void:

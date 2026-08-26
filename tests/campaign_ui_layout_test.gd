@@ -52,8 +52,8 @@ func _run() -> void:
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
-	_check(dossier_scroll != null and dossier_objective != null and dossier_objective.text.contains("OBJECTIVE"), "Campaign dossier objective or local scroll is missing")
-	_check(dossier_reward != null and dossier_reward.text.contains("SWORD SAINT"), "Campaign dossier does not expose the typed first-clear reward")
+	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
+	_check(dossier_reward != null and not dossier_reward.text.is_empty(), "Campaign dossier does not expose the typed first-clear reward")
 	_dispose(campaign)
 	game.set("content", null)
 

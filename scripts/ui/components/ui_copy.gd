@@ -1,6 +1,8 @@
 class_name UiCopy
 extends RefCounted
 
+const GeneratedLocalizationSchemaType := preload("res://scripts/ui/components/generated_localization_schema.gd")
+
 const STATIC_FALLBACKS := {
 	&"ui.game_title": "Protos",
 	&"ui.title.full_title": "Protos Defense",
@@ -556,4 +558,16 @@ static func static_fallbacks() -> Dictionary:
 
 
 static func placeholder_types() -> Dictionary:
-	return PLACEHOLDER_TYPES.duplicate(true)
+	var merged := PLACEHOLDER_TYPES.duplicate(true)
+	for raw_key: Variant in GeneratedLocalizationSchemaType.PLACEHOLDER_TYPES:
+		var key := StringName(raw_key)
+		var generated := (
+			GeneratedLocalizationSchemaType.PLACEHOLDER_TYPES[raw_key] as Dictionary
+		).duplicate(true)
+		if merged.has(key):
+			assert(
+				(merged[key] as Dictionary) == generated,
+				"Generated localization schema conflicts with UiCopy schema for %s" % key,
+			)
+		merged[key] = generated
+	return merged

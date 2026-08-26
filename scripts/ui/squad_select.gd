@@ -101,6 +101,8 @@ func _ready() -> void:
 	_prefill()
 	_refresh()
 	_on_layout_mode_changed(_shell.layout_mode())
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 
 
 func _build_header() -> BoxContainer:
@@ -119,19 +121,32 @@ func _build_header() -> BoxContainer:
 	var title_block := VBoxContainer.new()
 	title_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_block.add_theme_constant_override(&"separation", 0)
-	title_block.add_child(_label("MissionIndex", "MISSION 01 / OLD CUT", &"eyebrow"))
-	title_block.add_child(_label("MissionTitle", UiCopyType.stage_title(_stage).to_upper(), &"title"))
+	title_block.add_child(_label(
+		"MissionIndex",
+		_format_copy(
+			&"ui.squad.mission_identity", "Mission {index} / {title}",
+			{&"index": "%02d" % _stage.campaign_index, &"title": UiCopyType.stage_title(_stage)},
+		),
+		&"eyebrow",
+	))
+	title_block.add_child(_label("MissionTitle", UiCopyType.stage_title(_stage), &"title"))
 	identity.add_child(title_block)
 	_header.add_child(identity)
 	_header_status = VBoxContainer.new()
 	_header_status.name = "MissionStatus"
 	_header_status.custom_minimum_size.x = 280.0
 	_header_status.alignment = BoxContainer.ALIGNMENT_CENTER
-	var threat := _label("ThreatLabel", "RELIQUARY THREAT", &"eyebrow")
+	var threat := _label(
+		"ThreatLabel", UiCopyType.text(&"ui.squad.briefing.threat", "Threat"), &"eyebrow",
+	)
 	threat.autowrap_mode = TextServer.AUTOWRAP_OFF
 	threat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_header_status.add_child(threat)
-	var limit := _label("SquadLimit", "SQUAD LIMIT %d" % _stage.squad_size, &"metric")
+	var limit := _label(
+		"SquadLimit",
+		_format_copy(&"ui.squad.limit", "Squad limit {limit}", {&"limit": _stage.squad_size}),
+		&"metric",
+	)
 	limit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_header_status.add_child(limit)
 	_header.add_child(_header_status)
@@ -165,7 +180,9 @@ func _build_body() -> GridContainer:
 	roster_panel.add_child(roster_column)
 	_roster_heading = BoxContainer.new()
 	_roster_heading.name = "FieldTeamHeader"
-	var roster_title := _label("FieldTeamHeading", "FIELD TEAM", &"heading")
+	var roster_title := _label(
+		"FieldTeamHeading", UiCopyType.text(&"ui.squad.field_team", "Field Team"), &"heading",
+	)
 	roster_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_heading.add_child(roster_title)
 	_counter = _label("PickCounter", "", &"metric")
@@ -225,14 +242,24 @@ func _build_body() -> GridContainer:
 	intel.add_theme_constant_override(&"separation", 9)
 	intel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_intel_scroll.add_child(intel)
-	intel.add_child(_label("MissionIntelHeading", "MISSION INTELLIGENCE", &"heading"))
-	_add_intel_item(intel, "OBJECTIVE", StageNarrativeDefType.Field.OBJECTIVE)
-	_add_intel_item(intel, "THREAT", StageNarrativeDefType.Field.THREAT)
-	_add_intel_item(intel, "WHY IT MATTERS", StageNarrativeDefType.Field.HUMAN_REASON)
-	_add_intel_item(intel, "FIELD NOTE", StageNarrativeDefType.Field.CLUE)
-	intel.add_child(_label("TacticalHeading", "TACTICAL ASSET", &"eyebrow"))
+	intel.add_child(_label(
+		"MissionIntelHeading",
+		UiCopyType.text(&"ui.squad.mission_intelligence", "Mission Intelligence"),
+		&"heading",
+	))
+	_add_intel_item(intel, "OBJECTIVE", &"ui.squad.briefing.objective", "Objective", StageNarrativeDefType.Field.OBJECTIVE)
+	_add_intel_item(intel, "THREAT", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
+	_add_intel_item(intel, "WHYITMATTERS", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
+	_add_intel_item(intel, "FIELDNOTE", &"ui.squad.briefing.clue", "Field note", StageNarrativeDefType.Field.CLUE)
+	intel.add_child(_label(
+		"TacticalHeading",
+		UiCopyType.text(&"ui.squad.tactical_asset_heading", "Tactical Asset"),
+		&"eyebrow",
+	))
 	intel.add_child(_label("TacticalHint", UiCopyType.stage_hint(_stage), &"body"))
-	intel.add_child(_label("LoadoutHeading", "LOADOUT", &"eyebrow"))
+	intel.add_child(_label(
+		"LoadoutHeading", UiCopyType.text(&"ui.squad.loadout_heading", "Loadout"), &"eyebrow",
+	))
 	intel.add_child(_label("LoadoutStrip", _loadout_text(), &"detail"))
 	_selected_line = _label("SelectedSquadLine", "", &"detail")
 	intel.add_child(_selected_line)
@@ -363,15 +390,9 @@ func _rebuild_operator_cards() -> void:
 		pick.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		var fallen := bool(hero.get("fallen", false))
 		pick.toggle_mode = not fallen
-		var card_text := "%s\n%d DP • READY" % [_hero_label(hero), definition.dp_cost]
-		if hero.get("hero_kind", "recruit") == "premium":
-			var lives := int(hero.get("premium_lives", 0))
-			card_text = "%s\n%d DP • PREMIUM • %d %s" % [
-				_hero_label(hero), definition.dp_cost, lives,
-				"LIFE" if lives == 1 else "LIVES",
-			]
-		if fallen:
-			card_text = "%s\nFALLEN • VAHALLA" % _hero_label(hero)
+		var card_text := _operator_card_text(hero, definition)
+		pick.set_meta(&"hero", hero)
+		pick.set_meta(&"operator_def", definition)
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
 		pick.custom_minimum_size = Vector2(300.0, 180.0)
@@ -433,8 +454,18 @@ func _build_footer() -> BoxContainer:
 	var readiness := VBoxContainer.new()
 	readiness.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	readiness.size_flags_stretch_ratio = 1.0
-	readiness.add_child(_label("ReadinessEyebrow", "PRE-DEPLOYMENT", &"eyebrow"))
-	readiness.add_child(_label("ReadinessCopy", "Train, review, then commit the field team.", &"detail"))
+	readiness.add_child(_label(
+		"ReadinessEyebrow",
+		UiCopyType.text(&"ui.squad.predeployment_heading", "Pre-deployment"),
+		&"eyebrow",
+	))
+	readiness.add_child(_label(
+		"ReadinessCopy",
+		UiCopyType.text(
+			&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+		),
+		&"detail",
+	))
 	_footer.add_child(readiness)
 	_actions = GridContainer.new()
 	_actions.name = "MissionActions"
@@ -443,14 +474,18 @@ func _build_footer() -> BoxContainer:
 	_actions.add_theme_constant_override(&"h_separation", 10)
 	_actions.add_theme_constant_override(&"v_separation", 10)
 	_footer.add_child(_actions)
-	_back = _action("BackButton", "BACK", &"secondary")
+	_back = _action("BackButton", UiCopyType.text(&"ui.common.back", "Back"), &"secondary")
 	_back.pressed.connect(_on_back)
 	_actions.add_child(_back)
-	_training = _action("TrainingButton", "TRAIN OPERATORS", &"gold")
+	_training = _action(
+		"TrainingButton", UiCopyType.text(&"ui.staging.training", "Training"), &"gold",
+	)
 	_apply_clean_training_style(_training)
 	_training.pressed.connect(_on_training)
 	_actions.add_child(_training)
-	_start = _action("StartBattle", "DEPLOY SQUAD", &"primary")
+	_start = _action(
+		"StartBattle", UiCopyType.text(&"ui.squad.start_battle", "Start Battle"), &"primary",
+	)
 	_start.pressed.connect(_on_start)
 	_actions.add_child(_start)
 	return _footer
@@ -460,11 +495,7 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	var button := AetheriaButtonType.new()
 	button.name = node_name
 	button.text = text_value
-	var rendered_text := text_value
-	if node_name == "TrainingButton":
-		rendered_text = "TRAIN\nOPERATORS"
-	elif node_name == "StartBattle":
-		rendered_text = "DEPLOY\nSQUAD"
+	var rendered_text := _action_presentation_text(node_name, text_value)
 	button.custom_minimum_size = Vector2(
 		168.0 if node_name == "TrainingButton" else (147.0 if node_name == "StartBattle" else 119.0),
 		99.0,
@@ -481,6 +512,16 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	presentation.clip_text = false
 	presentation.add_theme_font_size_override(&"font_size", 26)
 	return button
+
+
+func _action_presentation_text(node_name: String, text_value: String) -> String:
+	if I18n.locale() == &"zh-CN":
+		return text_value
+	if node_name == "TrainingButton":
+		return "TRAIN\nOPERATORS"
+	if node_name == "StartBattle":
+		return "DEPLOY\nSQUAD"
+	return text_value
 
 
 func _apply_clean_training_style(button: AetheriaButtonType) -> void:
@@ -501,14 +542,25 @@ func _apply_clean_training_style(button: AetheriaButtonType) -> void:
 	)
 
 
-func _add_intel_item(parent: VBoxContainer, heading: String, field: StageNarrativeDefType.Field) -> void:
-	parent.add_child(_label("%sLabel" % heading.replace(" ", ""), heading, &"eyebrow"))
+func _add_intel_item(
+		parent: VBoxContainer,
+		node_stem: String,
+		heading_key: StringName,
+		heading_fallback: String,
+		field: StageNarrativeDefType.Field,
+	) -> void:
+	parent.add_child(_label(
+		"%sLabel" % node_stem, UiCopyType.text(heading_key, heading_fallback), &"eyebrow",
+	))
 	var value := (
-		"Mission record unavailable. Return to Mission Control."
+		UiCopyType.text(
+			&"ui.error.missing_stage_narrative",
+			"Mission record unavailable. Return to Mission Control.",
+		)
 		if _narrative_missing
 		else UiCopyType.stage_narrative_text(_narrative, field)
 	)
-	parent.add_child(_label("%sValue" % heading.replace(" ", ""), value, &"detail"))
+	parent.add_child(_label("%sValue" % node_stem, value, &"detail"))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -534,7 +586,14 @@ func _loadout_text() -> String:
 	for spell_id: StringName in Game.loadout_spell_ids():
 		var spell := load("res://data/spells/%s.tres" % spell_id) as SpellDef
 		gear.append(UiCopyType.spell_name(spell))
-	return "NOTHING UNLOCKED" if gear.is_empty() else " • ".join(gear).to_upper()
+	return (
+		UiCopyType.text(&"ui.squad.loadout_none", "Loadout: nothing unlocked yet")
+		if gear.is_empty()
+		else _format_copy(
+			&"ui.squad.loadout_available", "Loadout (always available): {items}",
+			{&"items": " • ".join(gear)},
+		)
+	)
 
 
 func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
@@ -549,7 +608,10 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 
 
 func _refresh() -> void:
-	_counter.text = "%d / %d SELECTED" % [_picked.size(), _stage.squad_size]
+	_counter.text = _format_copy(
+		&"ui.squad.selected_count", "{selected}/{limit} selected",
+		{&"selected": _picked.size(), &"limit": _stage.squad_size},
+	)
 	for raw_id: Variant in _buttons:
 		var hero_id := StringName(raw_id)
 		var button := _buttons[hero_id] as AetheriaButtonType
@@ -560,13 +622,96 @@ func _refresh() -> void:
 		var hero := _hero_by_id(hero_id)
 		if not hero.is_empty():
 			selected_names.append(_hero_callsign(hero))
-	_selected_line.text = "FIELD TEAM // %s" % (
-		"AWAITING SELECTION" if selected_names.is_empty() else " • ".join(selected_names)
+	_selected_line.text = (
+		UiCopyType.text(&"ui.squad.awaiting_selection", "Field team // Awaiting selection")
+		if selected_names.is_empty()
+		else "%s // %s" % [
+			UiCopyType.text(&"ui.squad.field_team", "Field Team"), " • ".join(selected_names),
+		]
 	)
 	_start.disabled = _picked.is_empty() or _narrative_missing
 	_start.focus_mode = Control.FOCUS_NONE if _start.disabled else Control.FOCUS_ALL
 	LunarisOpsType.apply_button(_start, &"disabled" if _start.disabled else &"primary")
 	_wire_focus()
+
+
+func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
+	var args := {
+		&"name": _hero_label(hero),
+		&"cost": definition.dp_cost,
+		&"lives": int(hero.get("premium_lives", 0)),
+	}
+	if bool(hero.get("fallen", false)):
+		return _format_copy(
+			&"ui.squad.card_fallen", "{name}\nFallen · Vahalla", args,
+		)
+	if hero.get("hero_kind", "recruit") == "premium":
+		return _format_copy(
+			&"ui.squad.card_premium", "{name}\n{cost} DP · Premium hero · {lives} lives", args,
+		)
+	return _format_copy(
+		&"ui.squad.card_ready", "{name}\n{cost} DP · Ready", args,
+	)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	var copy_by_node := {
+		"MissionIndex": _format_copy(
+			&"ui.squad.mission_identity", "Mission {index} / {title}",
+			{&"index": "%02d" % _stage.campaign_index, &"title": UiCopyType.stage_title(_stage)},
+		),
+		"MissionTitle": UiCopyType.stage_title(_stage),
+		"ThreatLabel": UiCopyType.text(&"ui.squad.briefing.threat", "Threat"),
+		"SquadLimit": _format_copy(&"ui.squad.limit", "Squad limit {limit}", {&"limit": _stage.squad_size}),
+		"FieldTeamHeading": UiCopyType.text(&"ui.squad.field_team", "Field Team"),
+		"MissionIntelHeading": UiCopyType.text(&"ui.squad.mission_intelligence", "Mission Intelligence"),
+		"OBJECTIVELabel": UiCopyType.text(&"ui.squad.briefing.objective", "Objective"),
+		"THREATLabel": UiCopyType.text(&"ui.squad.briefing.threat", "Threat"),
+		"WHYITMATTERSLabel": UiCopyType.text(&"ui.squad.briefing.human_reason", "Why it matters"),
+		"FIELDNOTELabel": UiCopyType.text(&"ui.squad.briefing.clue", "Field note"),
+		"TacticalHeading": UiCopyType.text(&"ui.squad.tactical_asset_heading", "Tactical Asset"),
+		"TacticalHint": UiCopyType.stage_hint(_stage),
+		"LoadoutHeading": UiCopyType.text(&"ui.squad.loadout_heading", "Loadout"),
+		"LoadoutStrip": _loadout_text(),
+		"ReadinessEyebrow": UiCopyType.text(&"ui.squad.predeployment_heading", "Pre-deployment"),
+		"ReadinessCopy": UiCopyType.text(&"ui.squad.predeployment_body", "Train, review, and confirm the field team."),
+	}
+	for node_name: String in copy_by_node:
+		var label := find_child(node_name, true, false) as Label
+		if label != null:
+			label.text = copy_by_node[node_name]
+	if _filter_input != null:
+		_filter_input.placeholder_text = UiCopyType.text(&"ui.identity_filter.placeholder", "Filter operators")
+	if _sort_select != null:
+		var sort_keys := [&"ui.identity_sort.recruitment", &"ui.identity_sort.name_asc", &"ui.identity_sort.name_desc"]
+		var sort_fallbacks := ["Recruit order", "Name ascending", "Name descending"]
+		for index: int in mini(_sort_select.item_count, sort_keys.size()):
+			_sort_select.set_item_text(index, UiCopyType.text(sort_keys[index], sort_fallbacks[index]))
+	for button: AetheriaButtonType in _buttons.values():
+		var hero: Dictionary = button.get_meta(&"hero", {})
+		var definition := button.get_meta(&"operator_def") as OperatorDef
+		if definition == null:
+			continue
+		var card_text := _operator_card_text(hero, definition)
+		button.text = card_text
+		button.set_presentation_text(card_text, card_text)
+		button.tooltip_text = card_text.replace("\n", " — ")
+	_back.text = UiCopyType.text(&"ui.common.back", "Back")
+	_back.set_presentation_text(_back.text, _action_presentation_text(_back.name, _back.text))
+	_training.text = UiCopyType.text(&"ui.staging.training", "Training")
+	_training.set_presentation_text(
+		_training.text, _action_presentation_text(_training.name, _training.text),
+	)
+	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
+	_start.set_presentation_text(_start.text, _action_presentation_text(_start.name, _start.text))
+	_refresh()
+
+
+func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String:
+	var value := UiCopyType.text(key, fallback)
+	for name: StringName in args:
+		value = value.replace("{%s}" % name, str(args[name]))
+	return value
 
 
 func _on_filters_changed(status: StringName, faction_id: StringName) -> void:

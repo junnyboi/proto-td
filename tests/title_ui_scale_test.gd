@@ -30,6 +30,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_verify_title_scale()
+	await _verify_chinese_title_portrait()
 	for label: String in VIEWPORTS:
 		root.size = VIEWPORTS[label]
 		await process_frame
@@ -60,6 +61,22 @@ func _verify_title_scale() -> void:
 	_check(entry_scroll != null and entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "title wordmark is not visible in the initial viewport")
 
 
+func _verify_chinese_title_portrait() -> void:
+	root.size = VIEWPORTS["portrait"]
+	root.get_node("I18n").call("set_locale", &"zh-CN")
+	await process_frame
+	await process_frame
+	var wordmark := _title.find_child("Wordmark", true, false) as Label
+	_check(wordmark.text == "PROTOS 防线", "Chinese title wordmark copy changed")
+	_check(wordmark.get_line_count() == 1, "Chinese portrait wordmark isolates its final character")
+	_check(wordmark.max_lines_visible == 1 and wordmark.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese portrait wordmark can still wrap")
+	_check(_inside(_title, wordmark), "Chinese portrait wordmark overflows the title viewport")
+	root.get_node("I18n").call("set_locale", &"en-US")
+	root.size = VIEWPORTS["regular"]
+	await process_frame
+	await process_frame
+
+
 func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_title.call("_open_settings")
 	var state := _title.get_node("TitleSettings") as Control
@@ -75,6 +92,7 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	var back := state.find_child("SettingsBackButton", true, false) as Button
 	var locale_selector := state.find_child("LocaleSelector", true, false) as BoxContainer
 	var locale_list := state.find_child("LocaleList", true, false) as ItemList
+	var locale_label := state.find_child("LocaleLabel", true, false) as Label
 	var frame_row := state.find_child("FrameLimitRow", true, false) as BoxContainer
 	var focus_owner := root.gui_get_focus_owner()
 	var master := state.find_child("MasterVolumeSlider", true, false) as HSlider
@@ -98,11 +116,18 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(not back.clip_text and not music_button.clip_text and not motion.clip_text and not apply.clip_text, "%s translated actions still clip text" % label)
 	_check(not state.accessibility_name.is_empty() and not state.accessibility_description.is_empty(), "%s Settings root lacks accessibility semantics" % label)
 	_check(not back.accessibility_name.is_empty() and not locale_list.accessibility_name.is_empty() and not apply.accessibility_name.is_empty(), "%s key actions lack accessibility names" % label)
-	_check(master.accessibility_name.contains("%") or master.accessibility_name.contains("百分"), "%s master slider name lacks its percentage" % label)
+	_check(master.accessibility_name.contains("%") or master.accessibility_name.contains("percent") or master.accessibility_name.contains("百分"), "%s master slider name lacks its percentage" % label)
 	_check(not music_button.accessibility_description.is_empty() and not motion.accessibility_description.is_empty() and not frame_option.accessibility_description.is_empty(), "%s settings controls lack accessibility descriptions" % label)
 	_check(error.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "%s Settings error is not assertive live content" % label)
 	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
 	var compact := viewport.x <= 720 or viewport.y <= 560 or float(viewport.x) / float(viewport.y) <= 1.2
+	var compact_locale_visibility := viewport.x <= 720 or float(viewport.x) / float(viewport.y) <= 1.2
+	if compact_locale_visibility:
+		_check(
+			_inside(scroll, locale_selector) and _inside(scroll, locale_label) and _inside(scroll, locale_list),
+			"%s initial locale selector is clipped by the Settings header" % label,
+		)
+		_check(locale_label.get_line_count() == 1, "%s locale heading wraps character by character" % label)
 	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
 	_check(frame_row.vertical, "%s frame-limit row is not stacked for 1.5× type" % label)
 	_check(locale_selector.vertical, "%s locale selector is not stacked for 1.5× type" % label)

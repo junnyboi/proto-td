@@ -27,6 +27,18 @@ func _run_source_contract() -> void:
 	root.add_child(player)
 	await process_frame
 	await process_frame
+	var i18n := root.get_node_or_null("I18n")
+	var status_label := player.find_child("CinematicStreamLabel", true, false) as Label
+	player.call("_update_download_status", 25, 100)
+	_check(status_label.text == "RECEIVING CINEMATIC // 25%", "English cinematic progress did not use localized template")
+	_check(i18n != null and i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate for cinematic")
+	await process_frame
+	_check(status_label.text == "正在接收影像 // 25%", "cinematic progress did not refresh on locale change")
+	player.call("_set_failure_status", "fixture")
+	_check(status_label.text == "影像离线 // 已显示最终画面", "cinematic offline status did not localize")
+	_check(i18n.call("set_locale", &"en-US"), "en-US locale could not restore for cinematic")
+	await process_frame
+	_check(status_label.text == "CINEMATIC OFFLINE // FINAL PLATE ACTIVE", "cinematic offline status did not refresh")
 	player.configure_streams(PackedStringArray([
 		"--cinematic-stream=unknown|https://example.invalid/unknown.ogv",
 		"--cinematic-stream=lunaris-vessel-landscape|ftp://example.invalid/video.ogv",

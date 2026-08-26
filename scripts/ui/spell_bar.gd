@@ -65,6 +65,8 @@ func setup(
 	position = Vector2.ZERO
 	size = get_viewport().get_visible_rect().size
 	_build_buttons()
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 	_cursor_rect = Polygon2D.new()
 	_cursor_rect.name = "SpellCursor"
 	_cursor_rect.visible = false
@@ -87,7 +89,7 @@ func _build_buttons() -> void:
 		var def := model.spell_book.def_of(spell_id)
 		var slot := Button.new()
 		slot.name = "Spell_%s" % spell_id
-		slot.text = def.display_name.to_upper()
+		slot.text = UI_COPY.spell_name(def)
 		slot.tooltip_text = _tooltip_for(def)
 		slot.custom_minimum_size = SLOT_SIZE
 		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
@@ -277,8 +279,20 @@ func _refresh_buttons() -> void:
 
 func _tooltip_for(def: SpellDef) -> String:
 	if def.effect == SpellDef.Effect.SLOW_FIELD:
-		return "3×3 ground field • 50% slow • 8s duration • 20s cooldown"
-	return def.display_name
+		return UI_COPY.text(
+			&"ui.spell.slow_field.tooltip",
+			"3×3 ground field • 50% slow • 8s duration • 20s cooldown",
+		)
+	return UI_COPY.spell_name(def)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	for spell_id: StringName in _buttons:
+		var slot := _buttons[spell_id] as Button
+		var definition := model.spell_book.def_of(spell_id)
+		slot.text = UI_COPY.spell_name(definition)
+		slot.tooltip_text = _tooltip_for(definition)
+	_refresh_buttons()
 
 
 func _seconds_text(ticks: int) -> String:

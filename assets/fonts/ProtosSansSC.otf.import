@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://bphbs8j3nnk3n"
-path="res://.godot/imported/ProtosSansSC-Subset.otf-c34327c32551c831328847eccf90c999.fontdata"
+uid="uid://cugwdoysmhf66"
+path="res://.godot/imported/ProtosSansSC.otf-9d45a2305094d5ab610d3307eb2911c9.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/ProtosSansSC-Subset.otf"
-dest_files=["res://.godot/imported/ProtosSansSC-Subset.otf-c34327c32551c831328847eccf90c999.fontdata"]
+source_file="res://assets/fonts/ProtosSansSC.otf"
+dest_files=["res://.godot/imported/ProtosSansSC.otf-9d45a2305094d5ab610d3307eb2911c9.fontdata"]
 
 [params]
 

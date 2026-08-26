@@ -2,7 +2,7 @@ class_name AetheriaTheme
 extends Theme
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
-const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC-Subset.otf"
+const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC.otf"
 const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
 const COMMAND_DECK_FRAME := preload("res://assets/ui/staging/frames/command_deck.png")
 const MISSION_CARD_FRAME := preload("res://assets/ui/staging/frames/mission_card.png")
@@ -40,11 +40,13 @@ var _display_font: FontVariation
 
 func _init() -> void:
 	_body_font = FontVariation.new()
-	_body_font.base_font = ThemeDB.fallback_font
 	var cjk_font := _load_cjk_font()
 	if cjk_font != null:
-		_body_font.fallbacks = [cjk_font]
-	_body_font.resource_name = "Protos body with CJK fallback"
+		_body_font.base_font = cjk_font
+		_body_font.fallbacks = [ThemeDB.fallback_font]
+	else:
+		_body_font.base_font = ThemeDB.fallback_font
+	_body_font.resource_name = "Protos body with bundled Chinese coverage"
 
 	_display_font = FontVariation.new()
 	_display_font.base_font = CINZEL
@@ -65,7 +67,7 @@ func _load_cjk_font() -> FontFile:
 		var source_font := FontFile.new()
 		var source_error := source_font.load_dynamic_font(CJK_FONT_PATH)
 		if source_error == OK:
-			source_font.resource_name = "ProtosSansSC-Subset"
+			source_font.resource_name = "ProtosSansSC"
 			return source_font
 		push_warning(
 			"AetheriaTheme: source font load failed (%d); trying imported resource"

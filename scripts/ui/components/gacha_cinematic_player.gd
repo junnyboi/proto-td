@@ -83,6 +83,7 @@ var _final_plate: TextureRect
 var _status_panel: PanelContainer
 var _status_label: Label
 var _status_progress: ProgressBar
+var _i18n: Node
 var _portrait_orientation := false
 var _active_profile: Dictionary = {}
 var _active_stream_key := ""
@@ -95,6 +96,8 @@ var _plate_hover_target_offset := Vector2.ZERO
 var _plate_hover_target_tint := Color.WHITE
 var _first_cycle_complete := false
 var _first_cycle_timer: Timer
+var _status_state := &"receiving"
+var _status_percent := 0
 
 var _stream_urls: Dictionary = {}
 var _request: HTTPRequest
@@ -109,6 +112,9 @@ func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_layers()
+	_i18n = get_node_or_null("/root/I18n")
+	if _i18n != null and _i18n.has_signal("locale_changed"):
+		_i18n.connect("locale_changed", _on_locale_changed)
 	configure_streams(OS.get_cmdline_user_args())
 	get_viewport().size_changed.connect(_fit_current_viewport)
 	_fit_current_viewport()
@@ -501,7 +507,9 @@ func _fail_active(reason: String) -> void:
 func _update_download_status(current: int, total: int) -> void:
 	_set_status_visible(true)
 	var percent := int(clampf(float(current) / float(total), 0.0, 1.0) * 100.0) if total > 0 else 0
-	_status_label.text = "RECEIVING CINEMATIC  //  %d%%" % percent
+	_status_state = &"receiving"
+	_status_percent = percent
+	_refresh_status_copy()
 	_status_progress.indeterminate = total <= 0
 	if total > 0:
 		_status_progress.value = percent
@@ -510,7 +518,8 @@ func _update_download_status(current: int, total: int) -> void:
 
 func _set_failure_status(_reason: String) -> void:
 	_set_status_visible(true)
-	_status_label.text = "CINEMATIC OFFLINE  //  FINAL PLATE ACTIVE"
+	_status_state = &"offline"
+	_refresh_status_copy()
 	_status_progress.indeterminate = false
 	_status_progress.value = 0.0
 
@@ -518,6 +527,28 @@ func _set_failure_status(_reason: String) -> void:
 func _set_status_visible(visible: bool) -> void:
 	if _status_panel != null:
 		_status_panel.visible = visible
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_status_copy()
+
+
+func _refresh_status_copy() -> void:
+	if _status_label == null:
+		return
+	if _status_state == &"offline":
+		_status_label.text = (
+			_i18n.call("t", &"ui.gacha.cinematic_offline", "CINEMATIC OFFLINE // FINAL PLATE ACTIVE")
+			if _i18n != null
+			else "CINEMATIC OFFLINE // FINAL PLATE ACTIVE"
+		)
+		return
+	var template: String = (
+		_i18n.call("t", &"ui.gacha.cinematic_receiving", "RECEIVING CINEMATIC // {percent}%")
+		if _i18n != null
+		else "RECEIVING CINEMATIC // {percent}%"
+	)
+	_status_label.text = template.replace("{percent}", str(_status_percent))
 
 
 func _build_layers() -> void:
@@ -580,7 +611,7 @@ func _build_layers() -> void:
 	_status_panel.add_child(status_box)
 	_status_label = Label.new()
 	_status_label.name = "CinematicStreamLabel"
-	_status_label.text = "RECEIVING CINEMATIC"
+	_refresh_status_copy()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.add_theme_color_override(&"font_color", Color(0.92, 0.83, 0.55))
 	_status_label.add_theme_font_size_override(&"font_size", 20)

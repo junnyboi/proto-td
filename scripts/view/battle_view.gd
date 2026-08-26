@@ -226,6 +226,8 @@ func _ready() -> void:
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
 	get_viewport().size_changed.connect(_relayout)
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 	startup_succeeded = true
 
 
@@ -632,7 +634,9 @@ func _detect_wave() -> void:
 	if wave <= _banner_seen_wave:
 		return
 	_banner_seen_wave = wave
-	_juice.banner("WAVE %d" % (wave + 1))
+	_juice.banner(_format_copy(
+		&"ui.battle.wave", "Wave {wave}", {&"wave": wave + 1},
+	))
 	Sfx.play("wave")
 	if _battle_dialogue != null:
 		_battle_dialogue.show_mid_wave(wave + 1)
@@ -651,11 +655,11 @@ func _detect_result_stamp() -> void:
 		return
 	_stamp_shown = true
 	if model.result == BattleModel.Result.CLEAR:
-		_juice.stamp("CLEAR", model.stars)
+		_juice.stamp(UiCopyType.text(&"ui.battle.stamp_clear", "Victory"), model.stars)
 		Sfx.play("victory")
 		Music.play_result(true)
 	else:
-		_juice.stamp("DEFEAT", 0)
+		_juice.stamp(UiCopyType.text(&"ui.battle.stamp_defeat", "Defeat"), 0)
 		Sfx.play("defeat")
 		Music.play_result(false)
 	# a real Button (the juice layer is MOUSE_FILTER_IGNORE territory) under
@@ -678,6 +682,31 @@ func _detect_result_stamp() -> void:
 	# clears the gate; set_battle_confirmation_active(false) focuses Continue.
 	if not _battle_confirmation_active:
 		next.grab_focus()
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	if _continue_btn != null:
+		_continue_btn.text = UiCopyType.text(
+			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
+		)
+	var wave_label := find_child("WaveBanner", true, false) as Label
+	if wave_label != null and _banner_seen_wave >= 0:
+		wave_label.text = _format_copy(
+			&"ui.battle.wave", "Wave {wave}", {&"wave": _banner_seen_wave + 1},
+		)
+	var stamp_label := find_child("ResultStampLabel", true, false) as Label
+	if stamp_label != null and model != null:
+		stamp_label.text = UiCopyType.text(
+			&"ui.battle.stamp_clear" if model.result == BattleModel.Result.CLEAR else &"ui.battle.stamp_defeat",
+			"Victory" if model.result == BattleModel.Result.CLEAR else "Defeat",
+		)
+
+
+func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String:
+	var value := UiCopyType.text(key, fallback)
+	for name: StringName in args:
+		value = value.replace("{%s}" % name, str(args[name]))
+	return value
 
 
 func _on_continue_pressed() -> void:

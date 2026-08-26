@@ -6,6 +6,7 @@ extends Control
 const LOADING_ART := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const TITLE_SCENE := preload("res://scenes/title.tscn")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const TopAlignedCoverType := preload("res://scripts/ui/components/top_aligned_cover.gd")
 const GOLD := Color("d8b978")
 const MOON_CYAN := Color("86cbd4")
@@ -20,12 +21,17 @@ var _elapsed := 0.0
 var _finishing := false
 var _progress: ProgressBar
 var _status: Label
+var _faction: Label
+var _chapter: Label
+var _detail: Label
 var _percentage: Label
 var _veil: ColorRect
 
 
 func _ready() -> void:
 	_build_screen()
+	I18n.locale_changed.connect(_on_locale_changed)
+	_refresh_copy()
 	Game.content = self
 	set_process(true)
 	# Resolve the destination up front so the transition never exposes an empty root.
@@ -80,15 +86,15 @@ func _build_screen() -> void:
 	header_row.add_theme_constant_override(&"separation", 16)
 	header.add_child(header_row)
 
-	var faction := _label("LUNARIS RELIQUARY", GameTypographyType.BADGE, GOLD)
-	faction.name = "FactionLabel"
-	faction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header_row.add_child(faction)
+	_faction = _label("", GameTypographyType.BADGE, GOLD)
+	_faction.name = "FactionLabel"
+	_faction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(_faction)
 
-	var chapter := _label("MOON ARCHIVE // 00", GameTypographyType.MICRO_LABEL, IVORY)
-	chapter.name = "ArchiveLabel"
-	chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	header_row.add_child(chapter)
+	_chapter = _label("", GameTypographyType.MICRO_LABEL, IVORY)
+	_chapter.name = "ArchiveLabel"
+	_chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	header_row.add_child(_chapter)
 
 	var lower_shade := ColorRect.new()
 	lower_shade.name = "LowerShade"
@@ -121,7 +127,7 @@ func _build_screen() -> void:
 	status_row.add_theme_constant_override(&"separation", 18)
 	stack.add_child(status_row)
 
-	_status = _label("AWAKENING RELIQUARY", GameTypographyType.STATUS, MUTED)
+	_status = _label("", GameTypographyType.STATUS, MUTED)
 	_status.name = "StatusLabel"
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status_row.add_child(_status)
@@ -140,14 +146,14 @@ func _build_screen() -> void:
 	_progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
 	stack.add_child(_progress)
 
-	var detail := _label(
-		"CUSTODIANS OF MEMORY, GRAVITY, AND RITUAL GEOMETRY",
+	_detail = _label(
+		"",
 		GameTypographyType.CAPTION,
 		Color(0.64, 0.72, 0.74),
 	)
-	detail.name = "DetailLabel"
-	detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	stack.add_child(detail)
+	_detail.name = "DetailLabel"
+	_detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	stack.add_child(_detail)
 
 	_veil = ColorRect.new()
 	_veil.name = "FadeVeil"
@@ -177,17 +183,32 @@ func _bar_style(color: Color) -> StyleBoxFlat:
 
 func _status_for_ratio(ratio: float) -> String:
 	if ratio < 0.36:
-		return "AWAKENING RELIQUARY"
+		return UiCopyType.text(&"ui.loading.phase.awakening", "AWAKENING RELIQUARY")
 	if ratio < 0.72:
-		return "ALIGNING LUNAR GEOMETRY"
+		return UiCopyType.text(&"ui.loading.phase.aligning", "ALIGNING LUNAR GEOMETRY")
 	if ratio < 0.96:
-		return "RESTORING OPERATOR RECORDS"
-	return "ARCHIVE SYNCHRONIZED"
+		return UiCopyType.text(&"ui.loading.phase.restoring", "RESTORING OPERATOR RECORDS")
+	return UiCopyType.text(&"ui.loading.phase.complete", "ARCHIVE SYNCHRONIZED")
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_copy()
+
+
+func _refresh_copy() -> void:
+	if _status == null:
+		return
+	_faction.text = UiCopyType.text(&"ui.loading.faction", "LUNARIS RELIQUARY")
+	_chapter.text = UiCopyType.text(&"ui.loading.archive", "MOON ARCHIVE // 00")
+	_detail.text = UiCopyType.text(&"ui.loading.detail", "CUSTODIANS OF MEMORY, GRAVITY, AND RITUAL GEOMETRY")
+	_status.text = _status_for_ratio(clampf(_elapsed / MINIMUM_DISPLAY_SECONDS, 0.0, 1.0))
+	accessibility_name = _status.text
+	accessibility_description = _detail.text
 
 
 func _finish_loading() -> void:
 	_finishing = true
-	_status.text = "ARCHIVE SYNCHRONIZED"
+	_status.text = UiCopyType.text(&"ui.loading.phase.complete", "ARCHIVE SYNCHRONIZED")
 	_percentage.text = "100%"
 	_progress.value = 100.0
 	var tween := create_tween()

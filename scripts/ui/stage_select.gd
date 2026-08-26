@@ -34,6 +34,13 @@ var _dossier_stars: HBoxContainer = null
 var _shell: AetheriaScreenShellType = null
 var _stage_by_id: Dictionary = {}
 var _next_stage_id: StringName = &""
+var _dossier_stage_id: StringName = &""
+var _eyebrow: AetheriaLabelType = null
+var _progress: AetheriaLabelType = null
+var _route_heading: AetheriaLabelType = null
+var _route_note: AetheriaLabelType = null
+var _dossier_eyebrow: AetheriaLabelType = null
+var _back: AetheriaButtonType = null
 
 
 func _ready() -> void:
@@ -55,6 +62,8 @@ func _ready() -> void:
 	_build_body(column)
 	_populate_route()
 	_on_layout_mode_changed(_shell.layout_mode())
+	if not I18n.locale_changed.is_connected(_on_locale_changed):
+		I18n.locale_changed.connect(_on_locale_changed)
 
 
 func _build_header(column: VBoxContainer) -> void:
@@ -73,11 +82,11 @@ func _build_header(column: VBoxContainer) -> void:
 	identity.add_child(FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0))
 	var headings := VBoxContainer.new()
 	headings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var eyebrow := AetheriaLabelType.new()
-	eyebrow.name = "CampaignEyebrow"
-	eyebrow.apply_role(&"dense_detail")
-	eyebrow.text = "LUNARIS EXPEDITION ARCHIVE"
-	headings.add_child(eyebrow)
+	_eyebrow = AetheriaLabelType.new()
+	_eyebrow.name = "CampaignEyebrow"
+	_eyebrow.apply_role(&"dense_detail")
+	_eyebrow.text = UiCopyType.text(&"ui.campaign.eyebrow", "Lunaris Expedition Archive")
+	headings.add_child(_eyebrow)
 	var heading := AetheriaLabelType.new()
 	heading.name = "CampaignHeading"
 	heading.apply_role(&"title")
@@ -86,27 +95,23 @@ func _build_header(column: VBoxContainer) -> void:
 	identity.add_child(headings)
 	_header.add_child(identity)
 
-	var progress := AetheriaLabelType.new()
-	progress.name = "CampaignProgress"
-	progress.apply_role(&"dense_heading")
-	progress.custom_minimum_size.x = 190.0
-	progress.autowrap_mode = TextServer.AUTOWRAP_OFF
-	progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	progress.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var stars: Dictionary = Game.campaign_projection().get("stage_stars", {})
-	progress.text = "%d / %d CLEARED" % [stars.size(), Game.campaign_stage_ids().size()]
-	_header.add_child(progress)
+	_progress = AetheriaLabelType.new()
+	_progress.name = "CampaignProgress"
+	_progress.apply_role(&"dense_heading")
+	_progress.custom_minimum_size.x = 190.0
+	_progress.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_progress.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_header.add_child(_progress)
 
-	var back := AetheriaButtonType.new()
-	back.name = "BackToStaging"
-	back.custom_minimum_size = Vector2(220.0, 64.0)
-	back.apply_role(&"secondary")
-	back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
-	back.set_presentation_text(back.text, UiCopyType.text(&"ui.common.back", "Back").to_upper())
-	back.apply_compact_action_layout()
-	back.tooltip_text = back.text
-	back.pressed.connect(_on_back_to_staging)
-	_header.add_child(back)
+	_back = AetheriaButtonType.new()
+	_back.name = "BackToStaging"
+	_back.custom_minimum_size = Vector2(220.0, 64.0)
+	_back.apply_role(&"secondary")
+	_back.apply_compact_action_layout()
+	_back.pressed.connect(_on_back_to_staging)
+	_header.add_child(_back)
+	_refresh_header_copy()
 
 
 func _build_body(column: VBoxContainer) -> void:
@@ -136,15 +141,18 @@ func _build_body(column: VBoxContainer) -> void:
 	var route_stack := VBoxContainer.new()
 	route_stack.add_theme_constant_override(&"separation", 10)
 	route_panel.add_child(route_stack)
-	var route_heading := AetheriaLabelType.new()
-	route_heading.name = "RouteHeading"
-	route_heading.apply_role(&"heading")
-	route_heading.text = "FIRST STAND · OPERATION ROUTE"
-	route_stack.add_child(route_heading)
-	var route_note := AetheriaLabelType.new()
-	route_note.apply_role(&"detail")
-	route_note.text = "Select an available operation. Cleared records remain replayable."
-	route_stack.add_child(route_note)
+	_route_heading = AetheriaLabelType.new()
+	_route_heading.name = "RouteHeading"
+	_route_heading.apply_role(&"heading")
+	route_stack.add_child(_route_heading)
+	_route_note = AetheriaLabelType.new()
+	_route_note.name = "RouteNote"
+	_route_note.apply_role(&"detail")
+	_route_note.text = UiCopyType.text(
+		&"ui.campaign.route_note",
+		"Select an available operation. Cleared operations remain replayable.",
+	)
+	route_stack.add_child(_route_note)
 	var scroll := ScrollContainer.new()
 	scroll.name = "CampaignScroll"
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -177,10 +185,11 @@ func _build_body(column: VBoxContainer) -> void:
 	dossier_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dossier_stack.add_theme_constant_override(&"separation", 8)
 	dossier_scroll.add_child(dossier_stack)
-	var dossier_eyebrow := AetheriaLabelType.new()
-	dossier_eyebrow.apply_role(&"dense_detail")
-	dossier_eyebrow.text = "SELECTED OPERATION"
-	dossier_stack.add_child(dossier_eyebrow)
+	_dossier_eyebrow = AetheriaLabelType.new()
+	_dossier_eyebrow.name = "DossierEyebrow"
+	_dossier_eyebrow.apply_role(&"dense_detail")
+	_dossier_eyebrow.text = UiCopyType.text(&"ui.campaign.selected_operation", "Selected Operation")
+	dossier_stack.add_child(_dossier_eyebrow)
 	_dossier_title = AetheriaLabelType.new()
 	_dossier_title.name = "DossierTitle"
 	_dossier_title.apply_role(&"title")
@@ -262,15 +271,26 @@ func _show_dossier(stage_id: StringName) -> void:
 	if not _stage_by_id.has(stage_id):
 		return
 	var stage: StageDef = _stage_by_id[stage_id]
+	_dossier_stage_id = stage_id
 	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage_id, 0))
 	var unlocked := Game.is_stage_unlocked(stage_id)
-	_dossier_title.text = "%02d · %s" % [stage.campaign_index, UiCopyType.stage_title(stage).to_upper()]
+	var localized_title := UiCopyType.stage_title(stage)
+	_dossier_title.text = "%02d · %s" % [stage.campaign_index, localized_title]
+	_route_heading.text = _format_copy(
+		&"ui.campaign.route_heading", "{stage} · Operation Route", {&"stage": localized_title},
+	)
 	if not unlocked:
-		_dossier_status.text = "SEALED · COMPLETE PRIOR OPERATION"
+		_dossier_status.text = UiCopyType.text(
+			&"ui.campaign.status_sealed", "Sealed · Complete the prior operation",
+		)
 	elif stars > 0:
-		_dossier_status.text = "CLEARED · REPLAY AVAILABLE"
+		_dossier_status.text = UiCopyType.text(
+			&"ui.campaign.status_cleared", "Cleared · Replay available",
+		)
 	else:
-		_dossier_status.text = "NEXT OPERATION · READY"
+		_dossier_status.text = UiCopyType.text(
+			&"ui.campaign.status_next", "Next operation · Ready",
+		)
 	var narrative: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
 	_dossier_objective.text = UiCopyType.format_text(&"ui.campaign.objective", "OBJECTIVE — {text}", {
 		&"text": UiCopyType.stage_narrative_text(narrative, StageNarrativeDefType.Field.OBJECTIVE),
@@ -278,18 +298,22 @@ func _show_dossier(stage_id: StringName) -> void:
 	_dossier_threat.text = UiCopyType.format_text(&"ui.campaign.threat", "THREAT — {text}", {
 		&"text": UiCopyType.stage_narrative_text(narrative, StageNarrativeDefType.Field.THREAT),
 	})
-	_dossier_facts.text = "SQUAD  %d  ·  WAVE WINDOWS  %d\nREWARD RECORDS  %d  ·  LEAK LIMIT  %d" % [
-		stage.squad_size,
-		stage.wave_starts.size(),
-		stage.rewards.size(),
-		stage.leak_limit,
-	]
+	_dossier_facts.text = _format_copy(
+		&"ui.campaign.facts",
+		"Squad {squad} · Wave windows {waves}\nReward records {rewards} · Leak limit {leak_limit}",
+		{
+			&"squad": stage.squad_size,
+			&"waves": stage.wave_starts.size(),
+			&"rewards": stage.rewards.size(),
+			&"leak_limit": stage.leak_limit,
+		},
+	)
 	var reward_names: Array[String] = []
 	for reward: Dictionary in stage.rewards:
-		reward_names.append(_reward_name(reward).to_upper())
+		reward_names.append(_reward_name(reward))
 	_dossier_reward.text = UiCopyType.format_text(
 		&"ui.campaign.first_clear_reward", "FIRST CLEAR — {rewards}",
-		{&"rewards": ", ".join(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
+		{&"rewards": _localized_list(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
 	)
 	_dossier_hint.text = UiCopyType.stage_hint(stage)
 	for child: Node in _dossier_stars.get_children():
@@ -308,23 +332,21 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _row_text(stage: StageDef, unlocked: bool) -> String:
-	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage.id, 0))
-	var suffix := ""
-	if not unlocked:
-		suffix = UiCopyType.text(&"ui.campaign.locked_suffix", "  LOCKED")
-	elif stars > 0:
-		suffix = UiCopyType.format_text(&"ui.campaign.cleared_suffix", "  {stars}", {&"stars": "*".repeat(stars)})
-	return UiCopyType.format_text(&"ui.campaign.row", "{index}. {title}{status}", {
-		&"index": stage.campaign_index,
-		&"title": UiCopyType.stage_title(stage),
-		&"status": suffix,
-	})
+	var is_next := unlocked and int(Game.campaign_projection().get("stage_stars", {}).get(stage.id, 0)) == 0 and _next_stage_id == stage.id
+	return _row_presentation_text(stage, unlocked, is_next)
 
 
 func _row_presentation_text(stage: StageDef, unlocked: bool, is_next: bool) -> String:
 	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage.id, 0))
-	var state := "LOCKED" if not unlocked else ("CLEARED" if stars > 0 else ("NEXT" if is_next else "AVAILABLE"))
-	return "%02d  %s  ·  %s" % [stage.campaign_index, UiCopyType.stage_title(stage).to_upper(), state]
+	var state := UiCopyType.text(&"ui.campaign.row_locked", "Locked")
+	if unlocked:
+		state = UiCopyType.text(
+			&"ui.campaign.row_cleared" if stars > 0 else (
+				&"ui.campaign.row_next" if is_next else &"ui.campaign.row_available"
+			),
+			"Cleared" if stars > 0 else ("Next" if is_next else "Available"),
+		)
+	return "%02d  %s  ·  %s" % [stage.campaign_index, UiCopyType.stage_title(stage), state]
 
 
 func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
@@ -361,6 +383,57 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			route_panel.custom_minimum_size = Vector2(0 if mode == &"portrait" else 520, 420 if mode == &"portrait" else 0)
 		if dossier != null:
 			dossier.custom_minimum_size = Vector2(0 if mode == &"portrait" else 420, 300 if mode == &"portrait" else 0)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_header_copy()
+	if _route_note != null:
+		_route_note.text = UiCopyType.text(
+			&"ui.campaign.route_note",
+			"Select an available operation. Cleared operations remain replayable.",
+		)
+	if _dossier_eyebrow != null:
+		_dossier_eyebrow.text = UiCopyType.text(
+			&"ui.campaign.selected_operation", "Selected Operation",
+		)
+	for stage_id: StringName in _stage_by_id:
+		var stage: StageDef = _stage_by_id[stage_id]
+		var row := _rows.get_node_or_null("Stage_%s" % stage_id) as AetheriaButtonType
+		if row == null:
+			continue
+		var unlocked := Game.is_stage_unlocked(stage_id)
+		var is_next := unlocked and _next_stage_id == stage_id
+		row.text = _row_text(stage, unlocked)
+		row.set_presentation_text(row.text, _row_presentation_text(stage, unlocked, is_next))
+		row.tooltip_text = row.text
+	if not _dossier_stage_id.is_empty():
+		_show_dossier(_dossier_stage_id)
+
+
+func _refresh_header_copy() -> void:
+	if _eyebrow != null:
+		_eyebrow.text = UiCopyType.text(&"ui.campaign.eyebrow", "Lunaris Expedition Archive")
+	if _progress != null:
+		var stars: Dictionary = Game.campaign_projection().get("stage_stars", {})
+		_progress.text = _format_copy(
+			&"ui.campaign.progress", "{cleared} / {total} cleared",
+			{&"cleared": stars.size(), &"total": Game.campaign_stage_ids().size()},
+		)
+	if _back != null:
+		_back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
+		_back.set_presentation_text(_back.text, UiCopyType.text(&"ui.common.back", "Back"))
+		_back.tooltip_text = _back.text
+
+
+func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String:
+	var value := UiCopyType.text(key, fallback)
+	for name: StringName in args:
+		value = value.replace("{%s}" % name, str(args[name]))
+	return value
+
+
+func _localized_list(values: Array[String]) -> String:
+	return ("、" if I18n.locale() == &"zh-CN" else ", ").join(values)
 
 
 func _on_back_to_staging() -> void:

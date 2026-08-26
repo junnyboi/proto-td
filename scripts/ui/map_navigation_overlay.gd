@@ -25,8 +25,35 @@ var _centered := true
 var _interaction_enabled := true
 
 var _hint_panel: PanelContainer = null
-var _hint_direction: Label = null
+var _hint_direction: Control = null
+var _hint_title: Label = null
+var _hint_detail: Label = null
 var _recenter_button: Button = null
+
+
+class PanDirectionGlyph:
+	extends Control
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		custom_minimum_size = Vector2(62.0, 48.0)
+		queue_redraw()
+
+	func _draw() -> void:
+		var color := get_theme_color(&"font_color", &"AuiHeadingLabel")
+		_draw_arrow(Vector2(8, 16), Vector2(54, 16), color)
+		_draw_arrow(Vector2(31, 4), Vector2(31, 44), color)
+
+	func _draw_arrow(start: Vector2, finish: Vector2, color: Color) -> void:
+		draw_line(start, finish, color, 3.0, true)
+		var direction := (finish - start).normalized()
+		var normal := Vector2(-direction.y, direction.x)
+		for point: Vector2 in [start, finish]:
+			var inward := direction if point == start else -direction
+			draw_polyline(
+				PackedVector2Array([point + inward * 8.0 + normal * 6.0, point, point + inward * 8.0 - normal * 6.0]),
+				color, 3.0, true,
+			)
 
 
 func setup(preferences_path: String = VIEW_PREFERENCES.DEFAULT_PATH) -> void:
@@ -39,6 +66,14 @@ func setup(preferences_path: String = VIEW_PREFERENCES.DEFAULT_PATH) -> void:
 	theme = AETHERIA_THEME.new()
 	_build_hint()
 	_build_recenter_button()
+	var i18n := get_node_or_null("/root/I18n")
+	var locale_callback := Callable(self, "_on_locale_changed")
+	if (
+		i18n != null
+		and i18n.has_signal(&"locale_changed")
+		and not i18n.is_connected(&"locale_changed", locale_callback)
+	):
+		i18n.connect(&"locale_changed", locale_callback)
 	_refresh_visibility()
 	relayout()
 
@@ -130,11 +165,11 @@ func _build_hint() -> void:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 14)
 	_hint_panel.add_child(row)
-	_hint_direction = Label.new()
+	_hint_direction = PanDirectionGlyph.new()
 	_hint_direction.name = "PanDirections"
-	_hint_direction.text = "↔  ↕"
-	_hint_direction.theme_type_variation = &"AuiHeadingLabel"
-	_hint_direction.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint_direction.accessibility_name = _copy(
+		&"ui.map_navigation.hint_title", "Drag to pan",
+	)
 	row.add_child(_hint_direction)
 	var copy_column := VBoxContainer.new()
 	copy_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -142,22 +177,22 @@ func _build_hint() -> void:
 	copy_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	copy_column.add_theme_constant_override("separation", 2)
 	row.add_child(copy_column)
-	var title := Label.new()
-	title.name = "HintTitle"
-	title.text = _copy(&"ui.map_navigation.hint_title", "DRAG TO PAN")
-	title.theme_type_variation = &"AuiDenseHeadingLabel"
-	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	copy_column.add_child(title)
-	var detail := Label.new()
-	detail.name = "HintDetail"
-	detail.text = _copy(
+	_hint_title = Label.new()
+	_hint_title.name = "HintTitle"
+	_hint_title.text = _copy(&"ui.map_navigation.hint_title", "DRAG TO PAN")
+	_hint_title.theme_type_variation = &"AuiDenseHeadingLabel"
+	_hint_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	copy_column.add_child(_hint_title)
+	_hint_detail = Label.new()
+	_hint_detail.name = "HintDetail"
+	_hint_detail.text = _copy(
 		&"ui.map_navigation.hint_body",
 		"Explore the full battlefield on every open axis.",
 	)
-	detail.theme_type_variation = &"AuiDenseDetailLabel"
-	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	copy_column.add_child(detail)
+	_hint_detail.theme_type_variation = &"AuiDenseDetailLabel"
+	_hint_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hint_detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	copy_column.add_child(_hint_detail)
 
 
 func _build_recenter_button() -> void:
@@ -173,6 +208,25 @@ func _build_recenter_button() -> void:
 	_recenter_button.custom_minimum_size = Vector2(112.0, 46.0)
 	_recenter_button.pressed.connect(_on_recenter_pressed)
 	add_child(_recenter_button)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	if _hint_title != null:
+		_hint_title.text = _copy(&"ui.map_navigation.hint_title", "DRAG TO PAN")
+	if _hint_detail != null:
+		_hint_detail.text = _copy(
+			&"ui.map_navigation.hint_body",
+			"Explore the full battlefield on every open axis.",
+		)
+	if _hint_direction != null:
+		_hint_direction.accessibility_name = _copy(
+			&"ui.map_navigation.hint_title", "Drag to pan",
+		)
+	if _recenter_button != null:
+		_recenter_button.text = _copy(&"ui.map_navigation.recenter", "CENTER")
+		_recenter_button.tooltip_text = _copy(
+			&"ui.map_navigation.recenter_tooltip", "Reset the battlefield view (R)",
+		)
 
 
 func _refresh_visibility() -> void:

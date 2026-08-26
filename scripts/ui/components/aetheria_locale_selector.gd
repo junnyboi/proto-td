@@ -31,6 +31,7 @@ func set_vertical_layout(enabled: bool) -> void:
 		_label.size_flags_horizontal = (
 			Control.SIZE_EXPAND_FILL if enabled else Control.SIZE_SHRINK_BEGIN
 		)
+		_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 
 
 func set_draft_mode(enabled: bool) -> void:
@@ -42,6 +43,8 @@ func set_draft_mode(enabled: bool) -> void:
 
 func set_compact_mode(enabled: bool) -> void:
 	_compact_mode = enabled
+	if _label != null:
+		_label.clip_text = enabled
 	if is_node_ready():
 		_list.custom_minimum_size = Vector2(0.0, 60.0 if enabled else 90.0)
 		add_theme_constant_override(&"separation", 8 if enabled else 16)

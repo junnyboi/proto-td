@@ -6,6 +6,7 @@
 script = ExtResource("1")
 id = &"slow_field"
 display_name = "Slow Field"
+metadata/name_key = &"data.spell.slow_field.name"
 cooldown_ticks = 600
 availability = 0
 target_kind = 0
