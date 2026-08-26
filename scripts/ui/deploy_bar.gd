@@ -25,12 +25,14 @@ const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
-const FONT_SIZE := GameTypographyType.BODY
-const BAR_HEIGHT := 88.0
+const FONT_SIZE := GameTypographyType.BODY * 2
+const BAR_HEIGHT := 152.0
 const SAFE_MARGIN := 16.0
-const DECK_PADDING := 16.0
-const SLOT_GAP := 12.0
-const SLOT_TARGET_WIDTH := 230.0
+const DECK_PADDING := 24.0
+const SLOT_GAP := 16.0
+const SLOT_TARGET_WIDTH := 280.0
+const SLOT_TARGET_HEIGHT := 116.0
+const FIRST_SLOT_CONTENT_INSET := 18.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
 const TRAP_VALID_COLOR := Color(0.95, 0.71, 0.2, 0.45)
@@ -329,12 +331,18 @@ func _build_slots(op_defs: Dictionary) -> void:
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	deck.add_child(scroll)
 	_slot_scroll = scroll
+	var center := CenterContainer.new()
+	center.name = "DeploymentRosterCenter"
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(center)
 	var box := GridContainer.new()
 	box.name = "SlotBox"
-	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	box.add_theme_constant_override("h_separation", SLOT_GAP)
 	box.add_theme_constant_override("v_separation", SLOT_GAP)
-	scroll.add_child(box)
+	center.add_child(box)
 	_slot_box = box
 	for deployment_id: StringName in _deployment_ids():
 		var row: Dictionary = _ticket_rows.get(deployment_id, {})
@@ -352,12 +360,14 @@ func _build_slots(op_defs: Dictionary) -> void:
 			sprite_id = StringName(row["visual_spec"]["sprite_id"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
 		slot.text = "%s%s\n%d DP" % [def.display_name.to_upper(), identity_suffix, dp_cost]
-		slot.custom_minimum_size = Vector2(230.0, 58.0)
+		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(sprite_id, 0)
 		slot.expand_icon = true
-		slot.add_theme_constant_override(&"icon_max_width", 44)
+		slot.add_theme_constant_override(&"icon_max_width", 72)
 		Style.apply_button(slot, &"secondary")
 		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
+		if _slots.is_empty():
+			_add_first_slot_content_inset(slot)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
 		slot.focus_mode = Control.FOCUS_ALL
 		slot.focus_entered.connect(_reveal_slot.bind(slot))
@@ -376,12 +386,12 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
 		slot.text = "%s\n%d DP" % [def.display_name.to_upper(), def.dp_cost]
-		slot.custom_minimum_size = Vector2(190.0, 58.0)
+		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
 		)
 		slot.expand_icon = true
-		slot.add_theme_constant_override(&"icon_max_width", 44)
+		slot.add_theme_constant_override(&"icon_max_width", 72)
 		Style.apply_button(slot, &"gold")
 		slot.add_theme_font_size_override(&"font_size", FONT_SIZE)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
@@ -404,13 +414,13 @@ func _layout_slot_box() -> void:
 		return
 	var short_landscape := size.x > size.y and size.y < 480.0
 	var deck_width := (
-		minf(size.x * 0.38, 360.0)
+		minf(size.x * 0.62, 620.0)
 		if short_landscape
 		else size.x - SAFE_MARGIN * 2.0
 		if size.y > size.x
-		else minf(size.x * 0.62, 820.0)
+		else minf(size.x * 0.75, 960.0)
 	)
-	deck_width = maxf(deck_width, 250.0)
+	deck_width = maxf(deck_width, 328.0)
 	var inner_width := maxf(SLOT_TARGET_WIDTH, deck_width - DECK_PADDING * 2.0)
 	_slot_box.columns = clampi(
 		floori((inner_width + SLOT_GAP) / (SLOT_TARGET_WIDTH + SLOT_GAP)), 1, 4,
@@ -419,10 +429,20 @@ func _layout_slot_box() -> void:
 		(child as Control).custom_minimum_size.x = 0.0
 	_slot_box.reset_size()
 	var content_height := _slot_box.get_combined_minimum_size().y + DECK_PADDING * 2.0
-	var height_ratio := 0.42 if short_landscape else 0.35
-	var deck_height := minf(content_height, maxf(88.0, size.y * height_ratio))
+	var height_ratio := 0.46 if short_landscape else 0.42
+	var deck_height := minf(content_height, maxf(BAR_HEIGHT, size.y * height_ratio))
 	_slot_deck.position = Vector2(SAFE_MARGIN, size.y - deck_height - SAFE_MARGIN)
 	_slot_deck.size = Vector2(deck_width, deck_height)
+
+
+func _add_first_slot_content_inset(slot: Button) -> void:
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var style := slot.get_theme_stylebox(state)
+		if style == null:
+			continue
+		var inset_style := style.duplicate() as StyleBox
+		inset_style.content_margin_left += FIRST_SLOT_CONTENT_INSET
+		slot.add_theme_stylebox_override(state, inset_style)
 
 
 func _reveal_slot(slot: Control) -> void:

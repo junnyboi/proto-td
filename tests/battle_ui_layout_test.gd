@@ -51,23 +51,46 @@ func _run() -> void:
 	var dialogue := battle.find_child("BattleDialogue", true, false) as PanelContainer
 	var dialogue_speaker := battle.find_child("DialogueSpeaker", true, false) as Label
 	var dialogue_line := battle.find_child("DialogueLine", true, false) as Label
+	var tutorial_primary := battle.find_child("TutorialPrimary", true, false) as Button
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
 	_check(deployment_deck != null and deployment_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "deployment deck is not textured")
 	if deployment_deck != null:
 		var deployment_style := deployment_deck.get_theme_stylebox(&"panel")
-		_check(deployment_style.content_margin_left >= 16.0 and deployment_style.content_margin_top >= 16.0, "deployment deck padding is below 16px")
+		_check(deployment_style.content_margin_left >= 24.0 and deployment_style.content_margin_top >= 24.0, "deployment deck padding is below 24px")
 	_check(deployment_scroll != null and deployment_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "deployment roster is not locally scrollable")
 	_check(deployment_scroll != null and deployment_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "deployment roster permits horizontal scrolling")
 	_check(slot_box != null and slot_box.get_child_count() >= 3, "deployment slots are missing")
 	if slot_box != null:
 		for child: Node in slot_box.get_children():
-			_check(child is Button and (child as Button).custom_minimum_size.y >= 44.0, "deployment slot is not touch safe")
-			_check(child is Button and (child as Button).get_theme_font_size(&"font_size") >= 18, "deployment slot copy is below the operational type floor")
+			_check(child is Button and (child as Button).custom_minimum_size.y >= 116.0, "deployment slot did not receive doubled target height")
+			_check(child is Button and (child as Button).get_theme_font_size(&"font_size") >= 36, "deployment slot copy did not receive doubled typography")
+			_check(deployment_deck.get_global_rect().encloses((child as Button).get_global_rect()), "deployment deck does not contain a Recruit control")
+		var first_slot := slot_box.get_child(0) as Button
+		_check(first_slot.get_theme_stylebox(&"normal").content_margin_left >= 28.0, "first Recruit lacks the requested left content inset")
 	_check(controls_deck != null and controls_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "battle command deck is not textured")
+	if controls_deck != null:
+		var controls_style := controls_deck.get_theme_stylebox(&"panel")
+		_check(controls_style.content_margin_left >= 24.0 and controls_style.content_margin_top >= 24.0, "battle command deck padding is below 24px")
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
+	for button: Button in [pause, speed, resign]:
+		_check(button.custom_minimum_size.x >= 152.0 and button.custom_minimum_size.y >= 92.0, "%s did not receive doubled target size" % button.name)
+		_check(button.get_theme_font_size(&"font_size") >= 36, "%s did not receive doubled typography" % button.name)
+		_check(controls_deck.get_global_rect().encloses(button.get_global_rect()), "%s overflows the battle command deck" % button.name)
+	var first_action_inset := battle.find_child("FirstActionInset", true, false) as MarginContainer
+	_check(first_action_inset != null and first_action_inset.get_theme_constant(&"margin_left") >= 12, "Pause lacks the requested left inset")
 	_check(recenter != null and recenter.focus_mode == Control.FOCUS_ALL, "map recenter is not controller focusable")
 	_check(tutorial_card != null and tutorial_card.get_theme_stylebox(&"panel") is StyleBoxTexture, "tutorial card did not inherit the Lunaris modal frame")
 	_check(dialogue != null and not dialogue.visible, "mission-start dialogue competed with the guided tutorial")
+	if tutorial_card != null:
+		var tutorial_rect := tutorial_card.get_global_rect()
+		_check(tutorial_rect.size.x >= 900.0 and tutorial_rect.size.y >= 400.0, "tutorial card did not receive the 3× width / 2× height treatment")
+		_check(absf(tutorial_rect.get_center().x - LANDSCAPE.x * 0.5) <= 2.0, "tutorial card is not horizontally centered")
+	_check(skip != null and tutorial_primary != null, "tutorial actions are missing")
+	if skip != null and tutorial_primary != null:
+		for button: Button in [skip, tutorial_primary]:
+			_check(button.custom_minimum_size.x >= 260.0 and button.custom_minimum_size.y >= 84.0, "%s has insufficient padded action geometry" % button.name)
+			_check(button.get_theme_font_size(&"font_size") >= 30, "%s tutorial copy is too small" % button.name)
+			_check(tutorial_card.get_global_rect().encloses(button.get_global_rect()), "%s overflows the tutorial card" % button.name)
 	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control
 	spell_probe.name = "Phase0SpellProbe"
 	battle.add_child(spell_probe)

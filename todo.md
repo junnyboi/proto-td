@@ -62,5 +62,5 @@
 # Annotated Battle Map Overhaul
 
 - [x] Phase 1: integrated GPT Image 2 + video-to-sprites photon portal and holy-crystal pedestal loops on every SPAWN/BASE tile; removed all blocked/elevated platform props across S1-S8; added endpoint, reduced-motion, clean-platform, and endpoint-aware map-fit regressions; visually accepted S2/S4; committed and pushed.
-- [ ] Phase 2: center and enlarge the First Stand tutorial; double Recruit and Pause/Speed/Resign typography and target sizes; refit padded parent decks across landscape/portrait; extend layout regressions; commit and push.
+- [x] Phase 2: centered and enlarged the First Stand tutorial with 40 px heading, 28 px body, 260×84 high-contrast actions, and safe portrait reflow; doubled Recruit and Pause/Speed/Resign typography and targets; centered responsive grids and added first-button left insets; extended layout regressions; visually accepted landscape/portrait; committed and pushed.
 - [ ] Phase 3: run direct import, bounded boot, complete regressions, clean Xvfb landscape/portrait input checks, Web export/HTTP/browser gates, update the existing `proto-td-web` fullscreen host, checkpoint, publish when available, and verify the public runtime.
