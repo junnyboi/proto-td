@@ -18,7 +18,7 @@ const DOWNLOAD_TIMEOUT_SECONDS := 75.0
 const FIRST_CYCLE_SECONDS := 8.0
 const PLATE_HOVER_SCALE := 1.025
 const PLATE_HOVER_RESPONSE := 12.0
-const PLATE_HOVER_PARALLAX := Vector2(12.0, 8.0)
+const PLATE_HOVER_PARALLAX := Vector2(12.0, 0.0)
 const PLATE_HOVER_TINT := Color(1.055, 1.035, 1.0, 1.0)
 
 const STREAMS := {
@@ -607,13 +607,16 @@ func _fit_current_viewport() -> void:
 		fitted_size = Vector2(viewport_size.x, viewport_size.x / source_aspect)
 	else:
 		fitted_size = Vector2(viewport_size.y * source_aspect, viewport_size.y)
-	var fitted_position := (viewport_size - fitted_size) * 0.5
+	# Full-screen reveal media uses a top-aligned cover crop. This preserves the
+	# authored character framing on short/wide displays instead of discarding the
+	# top of both static result plates and cinematic frames.
+	var fitted_position := Vector2((viewport_size.x - fitted_size.x) * 0.5, 0.0)
 	_video.position = fitted_position
 	_video.size = fitted_size
-	_video.pivot_offset = fitted_size * 0.5
+	_video.pivot_offset = Vector2(fitted_size.x * 0.5, 0.0)
 	_final_plate.position = fitted_position
 	_final_plate.size = fitted_size
-	_final_plate.pivot_offset = fitted_size * 0.5
+	_final_plate.pivot_offset = Vector2(fitted_size.x * 0.5, 0.0)
 	if _status_panel != null:
 		var panel_width := minf(460.0, maxf(280.0, viewport_size.x - 40.0))
 		_status_panel.position = Vector2((viewport_size.x - panel_width) * 0.5, 74.0)

@@ -27,6 +27,7 @@
 - [x] Preserve explicit Skip Reveal, reduced-motion fallback, failure fallback, localization, authoritative pull receipts, and Company Command audio restoration.
 - [x] Remove the redundant Confirm Resonance screen; the primary Resonance action now locks once, dispatches exactly one authoritative pull, and proceeds directly to the reveal.
 - [x] Refit the annotated browse screen with no outer/intro containers, enlarged Command Deck and guarantee telemetry, gold title-sized Marks, equal hero cards and portraits, minimal card copy, and a fixed flat Resonate action across desktop, compact landscape, and portrait layouts.
+- [x] Top-align Premium Resonance browse art, cinematic videos, and static result plates; preserve horizontal centering, cover cropping, top-edge hover pivots, and zero vertical parallax across wide and portrait layouts.
 
 # Company Command Sizing Reimplementation
 

@@ -52,6 +52,7 @@ enum ConfirmationTransition {
 
 var _game: Node
 var _flow_state := FlowState.BROWSE
+var _browse_backdrop_art: TextureRect
 var _marks_label: Label
 var _pull_button: Button
 var _back_button: Button
@@ -117,7 +118,9 @@ func _ready() -> void:
 	_game = get_node_or_null("/root/Game")
 	if _game != null:
 		_game.set("content", self)
+	clip_contents = true
 	Style.add_backdrop(self, LUNARIS_BACKDROP)
+	_browse_backdrop_art = get_node_or_null("AstralBackdropArt") as TextureRect
 	_build_screen()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
@@ -816,6 +819,7 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 
 
 func _apply_responsive_layout() -> void:
+	_fit_browse_backdrop()
 	if _hero_grid == null or _header_grid == null or _action_grid == null:
 		return
 	var viewport_size := get_viewport_rect().size
@@ -862,6 +866,27 @@ func _apply_responsive_layout() -> void:
 		for child: Node in _reveal_stars.get_children():
 			var star := child as ResonanceStar
 			star.custom_minimum_size = Vector2(46, 46) if portrait else Vector2(58, 58)
+
+
+func _fit_browse_backdrop() -> void:
+	if _browse_backdrop_art == null or _browse_backdrop_art.texture == null:
+		return
+	var viewport_size := get_viewport_rect().size
+	var texture_size := _browse_backdrop_art.texture.get_size()
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0 or texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var source_aspect := texture_size.x / texture_size.y
+	var viewport_aspect := viewport_size.x / viewport_size.y
+	var fitted_size: Vector2
+	if viewport_aspect > source_aspect:
+		fitted_size = Vector2(viewport_size.x, viewport_size.x / source_aspect)
+	else:
+		fitted_size = Vector2(viewport_size.y * source_aspect, viewport_size.y)
+	_browse_backdrop_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_browse_backdrop_art.position = Vector2((viewport_size.x - fitted_size.x) * 0.5, 0.0)
+	_browse_backdrop_art.size = fitted_size
+	_browse_backdrop_art.pivot_offset = Vector2(fitted_size.x * 0.5, 0.0)
+	_browse_backdrop_art.stretch_mode = TextureRect.STRETCH_SCALE
 
 
 func _apply_hero_card_layout(columns: int) -> void:
