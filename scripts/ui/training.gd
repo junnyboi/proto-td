@@ -552,6 +552,7 @@ func _build_roster_list() -> ScrollContainer:
 			_status_text(summary),
 			_progress_text(summary),
 			_eligibility_text(summary),
+			_operator_stats_tooltip(summary),
 		)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
@@ -587,6 +588,7 @@ func _build_inspector() -> AetheriaPanelType:
 	column.add_child(_label("AtelierEyebrow", "SELECTED OPERATOR", &"eyebrow"))
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
+		panel.tooltip_text = _operator_stats_tooltip(selected)
 		column.add_child(_build_rename_panel(selected))
 		var dossier := BoxContainer.new()
 		dossier.name = "SelectedOperatorDossier"
@@ -1342,11 +1344,12 @@ func _show_paths() -> void:
 			_skill_text(choice),
 			_combat_text(choice),
 			_t(&"ui.training.class_kit_placeholder", "CLASS KIT"),
-			_t(
-				&"ui.training.field_kit",
-				"FIELD KIT • EQUIPMENT ISSUED AFTER CONFIRMATION",
-			),
-		)
+				_t(
+					&"ui.training.field_kit",
+					"FIELD KIT • EQUIPMENT ISSUED AFTER CONFIRMATION",
+				),
+				_path_stats_tooltip(choice),
+			)
 		card.pressed.connect(
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
@@ -1954,6 +1957,95 @@ func _progress_text(summary: Dictionary) -> String:
 		&"ui.training.xp_progress", "XP {current} / {required}",
 		{&"current": int(summary["xp"]), &"required": int(summary["xp_required"])},
 	)
+
+
+func _operator_stats_tooltip(summary: Dictionary) -> String:
+	var definition := TrainingSupportType.operator_definition(
+		String(summary.get("operator_def_id", "")),
+	)
+	if definition == null:
+		return "%s\n%s\n%s" % [
+			String(summary.get("callsign", "UNKNOWN OPERATOR")).to_upper(),
+			class_label(String(summary.get("current_class_id", ""))),
+			_progress_text(summary),
+		]
+	var placement := (
+		_t(&"ui.training.placement.elevated", "Elevated")
+		if int(definition.placement) == OperatorDef.Placement.ELEVATED
+		else _t(&"ui.training.placement.ground", "Ground")
+	)
+	var title := String(
+		summary.get("custom_title", "") if summary.get("custom_title") != null else "",
+	)
+	var identity := String(summary.get("callsign", "UNKNOWN OPERATOR")).to_upper()
+	if not title.is_empty():
+		identity += " — %s" % title.to_upper()
+	var skill_name := (
+		String(definition.skill.display_name)
+		if definition.skill != null and not String(definition.skill.display_name).is_empty()
+		else _t(&"ui.training.skill.none", "None")
+	)
+	return "\n".join(PackedStringArray([
+		identity,
+		"%s • %s" % [
+			class_label(String(summary.get("current_class_id", ""))),
+			_status_text(summary),
+		],
+		"HP %d • ATK %d • DEF %d • RES %.1f%%" % [
+			int(definition.hp), int(definition.atk), int(definition.defense),
+			float(definition.resistance_permille) / 10.0,
+		],
+		"%d DP • %s • Block %d • Rarity %d" % [
+			int(definition.dp_cost), placement, int(definition.block), int(definition.rarity),
+		],
+		"Coverage %d cells • Attack every %d ticks" % [
+			definition.range_offsets.size(), int(definition.atk_interval_ticks),
+		],
+		"Skill: %s" % skill_name,
+		"Training: %s" % _progress_text(summary),
+		"Eligibility: %s" % _eligibility_text(summary),
+	]))
+
+
+func _path_stats_tooltip(choice: Dictionary) -> String:
+	var definition := TrainingSupportType.operator_definition(
+		String(choice.get("operator_def_id", "")),
+	)
+	var path_name := _t(
+		StringName(choice.get("class_name_key", &"")),
+		String(choice.get("class_name_fallback", choice.get("to_class_id", "Training Path"))),
+	).to_upper()
+	if definition == null:
+		return "%s\n%s\n%s" % [path_name, _skill_text(choice), _combat_text(choice)]
+	var placement := (
+		_t(&"ui.training.placement.elevated", "Elevated")
+		if int(definition.placement) == OperatorDef.Placement.ELEVATED
+		else _t(&"ui.training.placement.ground", "Ground")
+	)
+	var skill_name := (
+		String(definition.skill.display_name)
+		if definition.skill != null and not String(definition.skill.display_name).is_empty()
+		else _t(&"ui.training.skill.none", "None")
+	)
+	return "\n".join(PackedStringArray([
+		path_name,
+		_t(
+			StringName(choice.get("role_key", &"")),
+			String(choice.get("role_fallback", "Advanced duty")),
+		),
+		"HP %d • ATK %d • DEF %d • RES %.1f%%" % [
+			int(definition.hp), int(definition.atk), int(definition.defense),
+			float(definition.resistance_permille) / 10.0,
+		],
+		"%d DP • %s • Block %d • Rarity %d" % [
+			int(definition.dp_cost), placement, int(definition.block), int(definition.rarity),
+		],
+		"Coverage %d cells • Attack every %d ticks" % [
+			definition.range_offsets.size(), int(definition.atk_interval_ticks),
+		],
+		"Skill: %s" % skill_name,
+		"Permanent advanced-class assignment.",
+	]))
 
 
 func _combat_text(choice: Dictionary) -> String:
