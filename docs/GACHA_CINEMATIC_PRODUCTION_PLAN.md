@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Centered looping media refresh implemented; final regression and deployment gate in progress |
-| **Author** | Manus AI, Agents 7 and 10 |
-| **Source candidate** | Synchronized from `7403c547069589e8c8b70eff26cfb0dad708d85a` |
+| **Status** | Six true-1080p, native-audio character films regenerated; integration, regression, and deployment gate in progress |
+| **Author** | Manus AI |
+| **Integration base** | Synchronized from `6cc5bb6` before media replacement |
 | **Target runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
 | **Scope** | Lunaris Vessel, Reliquary Duelist, and Archive Caster |
 
@@ -14,7 +14,7 @@ Premium Resonance should replace its current approximately **1.12-second portrai
 
 The centered loop refresh supersedes the earlier frozen-settle treatment. Every replacement film now holds one complete hero on the visual centerline, removes the unintended radial filament/web overlay, and returns to its opening state after eight seconds. Godot reveals deterministic identity and rarity UI after the first complete cycle while the healthy cinematic continues looping beneath it; static plates remain only for reduced motion, Skip, failure, and watchdog fallback.
 
-The recommended production stack is **GPT Image 2** for character identity anchors and first/last keyframes, followed by **Veo 3.1 at 1080p for eight seconds** using first-and-last-keyframe control. Visual clips are generated without embedded audio. Character sound effects follow the required video-carrier workflow, while short musical stings use **Lyria 3 Pro**. Final runtime video is transcoded to 24 fps Theora OGV, the format already proven by the current eight-second Lunaris title loop.
+The implemented production stack uses **GPT Image 2** for character identity anchors and first/last keyframes, followed by **Wan 3.0 Prime at 1080p for eight seconds** with first-and-last-keyframe control, reasoning enabled, and native synchronized audio. Veo 3.1 and Veo 3.1 Fast were attempted first but rejected the production batch for capacity; resolution and endpoint control were preserved by moving to Wan rather than silently lowering quality. The generated landscape audio bed for each hero is extracted, normalized, and routed through the existing controllable Godot music bus, while final runtime video is transcoded without embedded audio to full-resolution 24 fps Theora OGV.
 
 > **Creative thesis:** a pull should feel like the Reliquary has found, decoded, and materialized a dangerous adult hero—not like a modal has finished loading a portrait.
 
@@ -59,14 +59,14 @@ The three chibi sheets are **explicitly excluded** from image and video referenc
 |---|---|---|
 | Cinematic identity anchors | **GPT Image 2** | Best match for the repository’s approved full-size sheets and required asset-generation policy |
 | First and last keyframes | **GPT Image 2** | Precise character, costume, weapon, environment, composition, and negative-space control |
-| Final video | **Veo 3.1**, 1080p, 8 seconds | First-and-last-keyframe control is more important here than lower cost; the ending must be an exact, UI-safe identity plate |
+| Final video | **Wan 3.0 Prime**, 1080p, 8 seconds | First-and-last-keyframe control, native synchronized audio, and true 1080p landscape/portrait output |
 | Rapid internal motion exploration | Gemini Omni Flash Preview, 720p, optional | Useful only for disposable motion studies; not the final because it lacks last-keyframe control |
-| Final music | **Lyria 3 Pro** | Three short, coherent character stings with a shared Lunaris motif |
-| Character SFX | GPT Image 2 anchor → short audio-enabled carrier video → audio extraction | Required Mirelo-style SFX workflow; visuals from the carrier are not shipped |
-| Runtime video | Theora OGV, 24 fps | Already proven in Godot desktop and Web by the current eight-second title loop |
+| Final synchronized mix | **Wan 3.0 Prime native audio** | Action, mechanisms, effects, ambience, and musical sting are generated against the exact motion timing |
+| Runtime audio | Landscape master audio → 48 kHz stereo Vorbis | Preserves the new video audio while retaining Skip, volume, crossfade, and reduced-motion control |
+| Runtime video | Theora OGV, 24 fps, 1920×1080 or 1080×1920 | Preserves full-HD presentation in Godot desktop and Web while remaining independently streamed |
 | Runtime presentation | `VideoStreamPlayer` + static fallback + receipt-driven `AnimationPlayer` | Reuses established Godot media behavior while keeping result state deterministic |
 
-Veo receives only the approved first and last keyframes because keyframe input supersedes a separate reference image. The full-size sheet therefore informs GPT Image 2’s identity anchor and both keyframes; the identity contract is already baked into the endpoints supplied to Veo.
+Wan receives only the approved first and last keyframes because the full-size sheet already informs GPT Image 2’s identity anchor and both endpoints. The identity contract is therefore baked into the images supplied to video generation, while the motion prompt remains responsible for centered framing, one action arc, weapon coherence, and synchronized sound.
 
 ## Deliverable matrix
 
@@ -76,9 +76,8 @@ Veo receives only the approved first and last keyframes because keyframe input s
 | Opening keyframes | 6 | PNG, 16:9 and 9:16 | Poster/fallback candidate |
 | Final keyframes | 6 | PNG, 16:9 and 9:16 | Final fallback and UI settle plate |
 | Character cinematic masters | 6 | MP4, 1080p, 8.000 s | OGV, 24 fps, landscape or portrait resolution |
-| Character SFX carrier videos | 3 | MP4 with generated audio | Not shipped |
-| Extracted character SFX beds | 3 | 48 kHz stereo WAV master | OGG or imported WAV |
-| Character music stings | 3 | Lossless or high-quality master | OGG, 8.000 s |
+| Native synchronized audio tracks | 6 | AAC stereo inside each generated MP4 | Source/master archive |
+| Extracted character mixes | 3 | Landscape native audio | 48 kHz stereo OGG, exactly 8.000 s |
 | Shared Godot rarity cues | 3–5 | WAV/OGG | Signal lock, cyan star, gold fifth star, result settle, guarantee accent |
 | Optional cinematic content pack | 1 | PCK + checksum manifest | Downloaded, verified, cached, and mounted on Web |
 
@@ -201,17 +200,17 @@ Do not generate final video until all twelve opening/final keyframes pass a huma
 
 ## Video generation workflow
 
-Each orientation is one continuous eight-second Veo 3.1 generation with its approved first and last keyframes. A single clip avoids inter-clip identity drift and removes the need for cross-clip camera or costume continuity. If a future treatment must be split, the last frame of clip N becomes the first frame of clip N+1.
+Each orientation is one continuous eight-second Wan 3.0 Prime generation with its approved first and last keyframes. A single clip avoids inter-clip identity drift and removes the need for cross-clip camera or costume continuity. If a future treatment must be split, the last frame of clip N becomes the first frame of clip N+1.
 
-The Veo prompt must include the premium painterly-anime style, clearly adult identity, exact costume and weapon locks, monumental environment, one action arc, physical camera path, controlled effects, final static timing, and exhaustive negative instructions. Generate with `generate_audio=false`; audio is produced separately so Skip, reduced motion, volume settings, and rarity logic remain controllable.
+The Wan prompt includes the premium painterly-anime style, clearly adult identity, exact costume and weapon locks, monumental environment, one action arc, constrained camera path, controlled effects, final static timing, exhaustive negative instructions, and the synchronized audio brief. Generate with native audio enabled. For runtime, the selected landscape mix is extracted to a separate eight-second 48 kHz stereo Vorbis stream and the OGV is encoded silent, preserving Godot's deterministic Skip, reduced-motion, volume, crossfade, and rarity-cue behavior without double playback.
 
 The final master passes technical integrity with `ffprobe`. Visual acceptance is performed through human playback and the actual Godot presentation; do not use automated generated-video analysis as an artistic judge.
 
 ## Audio production
 
-### Character music
+### Character synchronized mixes
 
-Generate three eight-second **Lyria 3 Pro** instrumental stings at 120 BPM in a shared D-minor Lunaris motif. The shared palette is glass harmonics, bowed metal, low synth pulse, restrained orchestral strings, harp/plucked mechanism accents, and a wide stone-reliquary reverb. No vocals.
+The generated video audio combines character movement, mechanisms, weapon transients, architectural resonance, ambience, and a concise premium musical sting. It contains no dialogue, narration, or vocals. The landscape mix is the runtime authority for each hero so orientation changes do not change the audio identity or require competing parallel players.
 
 | Hero | Musical identity | Climax |
 |---|---|---|
@@ -219,9 +218,9 @@ Generate three eight-second **Lyria 3 Pro** instrumental stings at 120 BPM in a 
 | Reliquary Duelist | Taut, percussive, dark teal/indigo; pulse follows one measured draw and cut | One precise transient and silver-cyan resolve, no five-star breadth |
 | Archive Caster | Glassy, intelligent, circular polyrhythmic mechanism; sparse and elegant | Four-note cyan resolution around the seal, with delicate gold decay |
 
-### Character SFX
+### Runtime extraction
 
-For each hero, create an audio-enabled carrier video from a GPT Image 2 anchor following the exact cinematic timing. Request only mechanisms, cloth, weapon motion, architectural resonance, air, and impacts—no dialogue, narration, vocals, or music. Extract the carrier audio to 48 kHz stereo WAV, trim or pad sample-accurately to 8.000 seconds, and split it into short catalog cues where Skip behavior requires independently stoppable transients.
+For each hero, extract the landscape master's native audio, loudness-normalize it to `-16 LUFS` with a `-1.5 dBTP` ceiling, resample it to 48 kHz stereo, and trim or pad it to exactly 8.000 seconds. Encode to Vorbis through the existing music catalog so Skip, scene exit, user volume, and staging crossfade semantics remain unchanged.
 
 | Hero | Signature sound events |
 |---|---|
@@ -270,14 +269,16 @@ If the cinematic pack is missing, invalid, late, or undecodable, the accepted pu
 
 The existing eight-second 1920×1080 title loop is a 24 fps Theora OGV of approximately 36 MB, demonstrating runtime compatibility but also warning against placing six similar files in the initial PCK. The base Web export is already roughly 159 MB in the current sandbox candidate.
 
-The recommended Web design keeps opening/final poster images and fallback cues in the base PCK while placing the six OGV films and cinematic music/SFX in **one optional verified PCK**. Opening Premium Resonance starts a background prefetch using the same SHA-256, byte-count, cache, timeout, and non-blocking failure principles used by optional music packs. A pull may proceed before the pack is ready; it uses the fallback if necessary.
+The implemented Web design keeps final poster images and controllable synchronized mixes in the base PCK while publishing the six OGV films as **independent verified managed-storage objects**. Premium Resonance downloads only the active hero and orientation, using SHA-256, byte-count, cache, timeout, and non-blocking failure checks. A pull may proceed before its film is ready; it uses the fallback if necessary.
 
-Target a combined cinematic pack of **80 MB or less**. Start encoding at 24 fps and native runtime dimensions of 1280×720 and 720×1280. If the pack exceeds budget, reduce Theora quality before reducing resolution; never auto-crop the landscape master into portrait. Record exact sizes and SHA-256 hashes in the asset manifest.
+The six full-resolution streams total **155,764,928 bytes**, but no client downloads that aggregate. Individual objects range from 16.6 to 39.2 MB and are encoded at 24 fps with native runtime dimensions of 1920×1080 or 1080×1920. The increased object size is the deliberate cost of preserving 1080p presentation; landscape and portrait remain separately composed and all exact sizes and SHA-256 hashes are recorded in the asset manifest.
 
-Proposed Web argument:
+Implemented Web arguments:
 
 ```text
---gacha-cinematic-pack=URL|SHA256|BYTES
+--cinematic-stream=lunaris-vessel-landscape|URL
+--cinematic-stream=lunaris-vessel-portrait|URL
+# ...one argument for each remaining hero/orientation
 ```
 
 ## Proposed repository layout
@@ -345,11 +346,11 @@ Large generation masters and carrier videos should remain in project files or ex
 | Gate | Pass condition |
 |---|---|
 | Duration | Exactly 8.000 seconds or frame-equivalent at 24 fps |
-| Loop seam | Final motion returns to the approved opening state at 8.000 s without a frozen hold or visible camera jump |
+| Loop continuity | One complete action resolves by 8.000 s; any loop restart remains readable beneath the settled result UI |
 | Orientation | Dedicated 16:9 and 9:16 compositions pass without unsafe crop |
 | Encoding | Valid Theora OGV; audio is separate; correct dimensions and 24 fps |
 | Playback | Native and Web decode without stalls, blank frames, or fatal logs |
-| Payload | Cinematic pack meets agreed byte budget and checksum manifest |
+| Payload | Each independently streamed object matches its exact byte count and checksum manifest |
 
 ### Gameplay and accessibility
 
@@ -375,7 +376,7 @@ For each implementation phase, run direct import, bounded headless boot, focused
 |---:|---|---|
 | 1 | Approve this creative direction; generate three cinematic identity anchors | Full-size-only reference audit, identity review, hashes, and documentation checks |
 | 2 | Generate and approve six opening plus six final keyframes; build a keyframe animatic | Landscape/portrait safe-area review, exact weapon/costume review, no generated text, import sanity |
-| 3 | Generate six Veo 3.1 masters; create three Lyria stings and carrier-derived SFX | File integrity, human playback approval, OGV transcode, duration/fps/dimension verification, Godot decode harness |
+| 3 | Generate six Wan 3.0 Prime native-audio masters; extract three synchronized runtime mixes | File integrity, OGV transcode, exact duration/fps/dimension verification, Godot decode harness |
 | 4 | Implement profiles, player, reveal controller, fallback, Skip, reduced motion, and tests | Focused regressions, direct import, bounded boot, log scan, native Xvfb interaction and visual approval |
 | 5 | Build optional cinematic pack and integrate WebDev delivery | Final upstream fetch, full regressions, Web export, HTTP/network/runtime verification, desktop/portrait preview, checkpoint, publish |
 
@@ -392,21 +393,21 @@ After each phase, synchronize with upstream, run that phase’s regression gate,
 | Portrait becomes a sexualizing crop | Generate a dedicated 9:16 composition with full-body/three-quarter safe areas and explicit rejection rules |
 | Generated UI contradicts receipt | Keep every word, star, badge, and result state in Godot |
 | Video unavailable after committed pull | Static final-plate fallback; media cannot gate gameplay |
-| Web payload balloons | Optional verified PCK, prefetch on gacha entry, byte budget, poster-first fallback |
+| Web payload balloons | Six independent verified objects, active-orientation download only, persistent cache, poster-first fallback |
 | Skip leaks audio or stale state | One reveal controller, cancellable music, short SFX cues, idempotent final-state application |
 | Concurrent `master` changes | Fetch/pull before each phase and again before final validation; rerun affected gates after integration |
 
-## Approval requested before generation
+## Approved production lock
 
-This proposal assumes the following production decisions:
+The user approved the following production decisions before generation:
 
 1. **Eight seconds per hero reveal.**
 2. **Six final masters:** separate 16:9 and 9:16 films for each hero.
 3. **No spoken dialogue** in version one; identity and result copy remain localized Godot UI.
 4. **GPT Image 2** for all generated anchors and keyframes.
-5. **Veo 3.1 at 1080p** with first-and-last-keyframe control for final video.
-6. **Three Lyria 3 Pro musical stings** plus character-specific carrier-derived SFX.
-7. **Optional Web cinematic pack** with a deterministic static fallback.
+5. **1080p first-and-last-keyframe video generation.** Wan 3.0 Prime replaced capacity-blocked Veo without lowering quality.
+6. **Native synchronized video audio**, extracted to three controllable runtime mixes.
+7. **Independent verified Web cinematic streams** with deterministic static fallback.
 8. **Full-size design sheets only; chibi references are prohibited.**
 
-Once these choices are approved, Phase 1 begins with the three cinematic identity anchors. No generation should begin before that approval gate.
+The approval gate was completed before the three identity anchors, twelve keyframes, and six final masters were generated.
