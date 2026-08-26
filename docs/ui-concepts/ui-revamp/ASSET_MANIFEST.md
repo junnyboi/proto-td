@@ -28,11 +28,11 @@ Both assets confine ornament to their outer border and corners. `staging_skin.gd
 
 ## Battle endpoint sprite assets
 
-The battle-map endpoint overhaul added two **GPT Image 2 → image-conditioned video → transparent sprite-atlas** assets on 2026-08-26. GPT Image 2 supplied the fixed-isometric anchor and chroma keyframe for each landmark. Locked-camera four-second carriers were generated with internal energy motion only, then processed through `/video-to-sprites` into lossless aligned frames. Runtime derivatives were chroma-cleaned, bottom-centered, and packed horizontally so all frames preserve one-tile width.
+The battle-map endpoint overhaul added two **GPT Image 2 → image-conditioned video → transparent sprite-atlas** assets on 2026-08-26. GPT Image 2 supplied the fixed-isometric anchor and chroma keyframe for each landmark. Locked-camera four-second 720p carriers were generated with internal energy motion only, then processed through `/video-to-sprites` into lossless aligned frames. The runtime atlases preserve an approximately **600px longest edge per frame**; Godot applies mipmapped linear filtering and scales those sources into the one-tile display footprint. Never destructively repack these endpoints at tile resolution.
 
-| Runtime asset | Atlas | Frames / FPS | Role | Spatial contract |
+| Runtime asset | Atlas | Frames / FPS | Role | Source/display contract |
 |---|---:|---:|---|---|
-| `assets/world/endpoints/photon_portal_idle.webp` | 1536×64 | 24 / 12 | Enemy SPAWN photon-energy warp portal | Each 64×64 frame is bottom-centered on one SPAWN diamond. |
-| `assets/world/endpoints/holy_crystal_idle.webp` | 384×80 | 6 / 6 | BASE holy-crystal pedestal | Each 64×80 frame is bottom-centered and never exceeds one tile in width. |
+| `assets/world/endpoints/photon_portal_idle.webp` | 14136×600 | 24 / 12 | Enemy SPAWN photon-energy warp portal | Each 589×600 source frame displays at 64×64, bottom-centered on one SPAWN diamond. |
+| `assets/world/endpoints/holy_crystal_idle.webp` | 2406×600 | 6 / 6 | BASE holy-crystal pedestal | Each 401×600 source frame displays at 64×80, bottom-centered within one tile. |
 
-The source references, chroma keyframes, carrier videos, transparent frame sequences, review sheets, and deterministic generation matrix remain outside the source repository under `/home/ubuntu/webdev-static-assets/proto-td-battle-endpoints/`. Runtime labels and battle state remain native Godot authority; these atlases are presentation-only.
+The source references, chroma keyframes, carrier videos, original 720p transparent frame sequences, 600px derivatives, review sheets, and deterministic generation matrix remain outside the source repository under `/home/ubuntu/webdev-static-assets/proto-td-battle-endpoints/`. Runtime labels and battle state remain native Godot authority; these atlases are presentation-only.

@@ -18,6 +18,12 @@ func setup(art_id: StringName) -> bool:
 	var native_size := Art.size(art_id)
 	if _frame_count <= 0 or _fps <= 0.0 or native_size == Vector2i.ZERO:
 		return false
+	var display_size := native_size
+	var stored_display_size: Variant = Art.metadata(art_id).get("display_size", native_size)
+	if stored_display_size is Vector2i:
+		display_size = stored_display_size
+	if display_size == Vector2i.ZERO:
+		return false
 	var first_frame := Art.animation_texture(art_id, &"idle", 0)
 	if first_frame == null:
 		first_frame = Art.animation_texture(art_id, &"default", 0)
@@ -26,11 +32,11 @@ func setup(art_id: StringName) -> bool:
 	if first_frame == null:
 		return false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	custom_minimum_size = Vector2(native_size)
-	size = Vector2(native_size)
+	custom_minimum_size = Vector2(display_size)
+	size = Vector2(display_size)
 	texture = first_frame
 	set_process(_frame_count > 1)
 	return true
