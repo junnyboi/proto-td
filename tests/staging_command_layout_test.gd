@@ -113,6 +113,18 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action != null and mission_action.tooltip_text == ("准备任务" if locale_id == "zh-CN" else "Prepare for Mission"), "%s: primary action rename missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
+	if locale_id == "en-US" and String(viewport_case["name"]) == "annotated-wide":
+		mission_action.release_focus()
+		await process_frame
+		staging.call("_on_mission_hover_changed", true)
+		await create_timer(0.22).timeout
+		_check(mission_action_plate.scale.x > 1.005 and mission_action_plate.modulate.b > 1.15, "%s: mission hover plate lift/brightening missing" % context)
+		_check(mission_action_label.scale.x > 1.01 and mission_action_label.get_theme_color(&"font_shadow_color").a >= 0.70, "%s: mission hover text glow missing" % context)
+		staging.call("_on_mission_hover_changed", false)
+		mission_action.release_focus()
+		await create_timer(0.22).timeout
+		_check(mission_action_plate.scale.is_equal_approx(Vector2.ONE), "%s: mission hover plate did not reset" % context)
+		_check(mission_action_label.get_theme_color(&"font_shadow_color").a <= 0.01, "%s: mission hover text glow did not reset" % context)
 	_check(operation_label != null and _font_size(operation_label) >= 18, "%s: operations heading below responsive 18px floor" % context)
 	_check(operation_list_margin != null and operation_list_margin.get_theme_constant(&"margin_left") >= 20 and operation_list_margin.get_theme_constant(&"margin_right") >= 20, "%s: operation list lacks 20px side margins" % context)
 	if bool(viewport_case["portrait"]) and viewport_size.x <= 720:
