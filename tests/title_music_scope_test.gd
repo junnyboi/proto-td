@@ -17,6 +17,7 @@ const REMOVED_STREAMS := [
 	"res://assets/music/act_3_abyssal_vault_bgm.ogg",
 	"res://assets/music/act_3_abyssal_vault_boss.ogg",
 ]
+const WAIT_TIMEOUT := 1.0
 
 var _failures: Array[String] = []
 
@@ -51,12 +52,13 @@ func _exercise_scope(music: Node, game: Node) -> void:
 	var starts_before := int(music.call("start_count"))
 	var stops_before := int(music.call("stop_count"))
 	title.call("_open_settings")
-	await process_frame
+	var settings := title.get_node("TitleSettings") as Control
+	await _wait_for_transition(settings, &"ACTIVE")
 	_check(game.get("content") == title, "Settings replaced the Title host content")
 	_check(music.call("current_id") == &"title_lunaris", "Settings entry changed the title cue")
 	_check(int(music.call("start_count")) == starts_before, "Settings entry restarted the title cue")
 	title.call("_close_settings")
-	await process_frame
+	await _wait_for_transition(settings, &"CLOSED")
 	_check(game.get("content") == title, "Settings exit replaced the Title host content")
 	_check(int(music.call("start_count")) == starts_before, "Settings exit restarted the title cue")
 	for cue_id: StringName in REMOVED_CUES:
@@ -86,6 +88,16 @@ func _exercise_scope(music: Node, game: Node) -> void:
 		"staging resolves the faction-authored command loop",
 	)
 	_check(int(music.call("stop_count")) == stops_before + 1, "title cue stops exactly once")
+
+
+func _wait_for_transition(state: Control, expected: StringName) -> bool:
+	var elapsed := 0.0
+	while StringName(state.call("transition_state_name")) != expected and elapsed < WAIT_TIMEOUT:
+		await create_timer(0.01).timeout
+		elapsed += 0.01
+	var matched := StringName(state.call("transition_state_name")) == expected
+	_check(matched, "transition timed out waiting for %s" % expected)
+	return matched
 
 
 func _clean_up(music: Node, game: Node) -> void:

@@ -3,6 +3,8 @@ extends SceneTree
 const PREFS := preload("res://scripts/view/view_preferences.gd")
 const PATH := "user://title_settings_test.cfg"
 const FAIL_PATH := "user://missing/title_settings_test.cfg"
+const REDUCED_PATH := "user://title_settings_reduced_test.cfg"
+const WAIT_TIMEOUT := 1.0
 const EPSILON := 0.02
 
 var _failures: Array[String] = []
@@ -26,12 +28,50 @@ func _run() -> void:
 	var sfx := root.get_node_or_null("Sfx")
 	_check(game != null and music != null and sfx != null, "required autoloads are unavailable")
 	if game != null and music != null:
+		await _verify_transition_contract(game)
 		await _verify_cancel(game, music)
 		await _verify_apply(game, music)
 		await _verify_failure(game)
 	await _cleanup(game, music, sfx)
 	_remove(PATH)
+	_remove(REDUCED_PATH)
 	call_deferred("_finish")
+
+
+func _verify_transition_contract(game: Node) -> void:
+	var title := await _create_title(PATH)
+	var settings_button := title.find_child("SettingsButton", true, false) as Button
+	settings_button.grab_focus()
+	title.call("_open_settings")
+	var state := title.get_node("TitleSettings") as Control
+	var locale := state.find_child("LocaleList", true, false) as ItemList
+	_check(StringName(state.call("transition_state_name")) == &"ENTERING", "normal entry did not expose ENTERING")
+	_check(bool(state.call("transition_active")), "normal entry was not introspectable as active")
+	_check(not locale.has_focus(), "Settings focus moved before normal entry settled")
+	await _wait_for_transition(state, &"ACTIVE")
+	_check(locale.has_focus(), "normal entry completion did not establish initial focus")
+	title.call("_close_settings")
+	_check(StringName(state.call("transition_state_name")) == &"EXITING", "normal close did not expose EXITING")
+	_check(not settings_button.is_visible_in_tree() and not settings_button.has_focus(), "Title returned during Settings exit")
+	await _wait_for_transition(state, &"CLOSED")
+	_check(StringName(title.call("screen_state")) == &"TITLE" and settings_button.has_focus(), "normal close did not restore Title focus after exit")
+	await _release(title, game)
+
+	_remove(REDUCED_PATH)
+	_check(PREFS.set_reduced_motion(true, REDUCED_PATH), "reduced-motion fixture was not written")
+	var reduced_title := await _create_title(REDUCED_PATH)
+	var reduced_button := reduced_title.find_child("SettingsButton", true, false) as Button
+	reduced_button.grab_focus()
+	reduced_title.call("_open_settings")
+	var reduced_state := reduced_title.get_node("TitleSettings") as Control
+	_check(StringName(reduced_state.call("transition_state_name")) == &"ACTIVE", "reduced entry did not complete synchronously")
+	_check((reduced_state.find_child("LocaleList", true, false) as ItemList).has_focus(), "reduced entry did not run focus completion")
+	reduced_title.call("_close_settings")
+	_check(StringName(reduced_state.call("transition_state_name")) == &"CLOSED", "reduced exit did not complete synchronously")
+	_check(StringName(reduced_title.call("screen_state")) == &"TITLE" and reduced_button.has_focus(), "reduced exit did not synchronously restore Title focus")
+	await _release(reduced_title, game)
+	_remove(REDUCED_PATH)
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 
 func _verify_cancel(game: Node, music: Node) -> void:
@@ -39,7 +79,7 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	var settings_button := title.find_child("SettingsButton", true, false) as Button
 	settings_button.grab_focus()
 	title.call("_open_settings")
-	await process_frame
+	await _wait_for_transition(title.get_node("TitleSettings") as Control, &"ACTIVE")
 	var state_root := title.get_node("TitleSettings") as Control
 	_check(StringName(title.call("screen_state")) == &"SETTINGS", "explicit SETTINGS state was not entered")
 	_check(state_root.visible and state_root.mouse_filter == Control.MOUSE_FILTER_STOP, "full-rect STOP state is not active")
@@ -60,7 +100,7 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(_near(PREFS.master_volume(PATH), 1.0), "draft volume persisted before Apply")
 	_check(PREFS.locale(PATH) == &"en-US", "draft locale persisted before Apply")
 	title.call("_close_settings")
-	await process_frame
+	await _wait_for_transition(state_root, &"CLOSED")
 	_check(StringName(title.call("screen_state")) == &"TITLE", "Cancel did not restore TITLE state")
 	_check(root.get_node("I18n").call("locale") == &"en-US" and Engine.max_fps == 0, "Cancel did not restore locale/frame limit")
 	_check(_bus_near(&"Master", 1.0), "Cancel did not restore master volume")
@@ -75,11 +115,11 @@ func _verify_cancel(game: Node, music: Node) -> void:
 func _verify_apply(game: Node, music: Node) -> void:
 	var first := await _create_title(PATH)
 	first.call("_open_settings")
-	await process_frame
+	await _wait_for_transition(first.get_node("TitleSettings") as Control, &"ACTIVE")
 	_edit_draft(first)
 	await process_frame
 	(first.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
-	await process_frame
+	await _wait_for_transition(first.get_node("TitleSettings") as Control, &"CLOSED")
 	_check(StringName(first.call("screen_state")) == &"TITLE", "Apply did not restore TITLE state")
 	_check(_near(PREFS.master_volume(PATH), 0.35), "master volume batch was not saved")
 	_check(_near(PREFS.music_volume(PATH), 0.45), "music volume batch was not saved")
@@ -100,7 +140,7 @@ func _verify_apply(game: Node, music: Node) -> void:
 func _verify_failure(game: Node) -> void:
 	var title := await _create_title(FAIL_PATH)
 	title.call("_open_settings")
-	await process_frame
+	await _wait_for_transition(title.get_node("TitleSettings") as Control, &"ACTIVE")
 	(title.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
 	await process_frame
 	var error := title.find_child("SettingsError", true, false) as Label
@@ -108,7 +148,7 @@ func _verify_failure(game: Node) -> void:
 	_check(error != null and error.visible and not error.text.is_empty(), "failed save did not show localized error")
 	_check(not (title.find_child("SettingsApplyButton", true, false) as Button).disabled, "failed save did not restore editable state")
 	title.call("_close_settings")
-	await process_frame
+	await _wait_for_transition(title.get_node("TitleSettings") as Control, &"CLOSED")
 	await _release(title, game)
 
 
@@ -139,6 +179,16 @@ func _release(title: Control, game: Node) -> void:
 	title.queue_free()
 	for _frame: int in range(6):
 		await process_frame
+
+
+func _wait_for_transition(state: Control, expected: StringName) -> bool:
+	var elapsed := 0.0
+	while StringName(state.call("transition_state_name")) != expected and elapsed < WAIT_TIMEOUT:
+		await create_timer(0.01).timeout
+		elapsed += 0.01
+	var matched := StringName(state.call("transition_state_name")) == expected
+	_check(matched, "transition timed out waiting for %s" % expected)
+	return matched
 
 
 func _capture_buses() -> void:

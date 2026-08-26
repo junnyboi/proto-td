@@ -2,6 +2,7 @@ extends SceneTree
 
 const PREFS := preload("res://scripts/view/view_preferences.gd")
 const PATH := "user://title_music_preference_test.cfg"
+const WAIT_TIMEOUT := 1.0
 
 var _failures: Array[String] = []
 
@@ -29,24 +30,25 @@ func _exercise(music: Node, game: Node) -> void:
 	_check(bool(first.call("title_music_enabled")), "first session starts enabled")
 	_check(music.call("current_id") == &"title_lunaris", "first session starts title cue")
 	first.call("_open_settings")
-	await process_frame
+	var first_settings := first.get_node("TitleSettings") as Control
+	await _wait_for_transition(first_settings, &"ACTIVE")
 	(first.find_child("MusicButton", true, false) as Button).pressed.emit()
 	await process_frame
 	_check(not bool(first.call("title_music_enabled")), "draft toggle did not preview disabled")
 	_check(PREFS.title_music_enabled(PATH), "draft toggle persisted before Apply")
 	_check(StringName(music.call("current_id")).is_empty(), "draft disable did not stop title cue")
 	first.call("_close_settings")
-	await process_frame
+	await _wait_for_transition(first_settings, &"CLOSED")
 	_check(bool(first.call("title_music_enabled")), "Cancel did not restore enabled preference")
 	_check(music.call("current_id") == &"title_lunaris", "Cancel did not restore title cue")
 	_check(PREFS.title_music_enabled(PATH), "Cancel persisted music preference")
 
 	first.call("_open_settings")
-	await process_frame
+	await _wait_for_transition(first_settings, &"ACTIVE")
 	(first.find_child("MusicButton", true, false) as Button).pressed.emit()
 	await process_frame
 	(first.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
-	await process_frame
+	await _wait_for_transition(first_settings, &"CLOSED")
 	_check(not PREFS.title_music_enabled(PATH), "Apply did not persist disabled preference")
 	_check(PREFS.has_seen_pan_hint(PATH), "Apply removed unrelated preferences")
 	await _release(first, game)
@@ -55,11 +57,12 @@ func _exercise(music: Node, game: Node) -> void:
 	_check(not bool(second.call("title_music_enabled")), "second session did not restore disabled preference")
 	_check(StringName(music.call("current_id")).is_empty(), "restored disabled preference did not stay silent")
 	second.call("_open_settings")
-	await process_frame
+	var second_settings := second.get_node("TitleSettings") as Control
+	await _wait_for_transition(second_settings, &"ACTIVE")
 	(second.find_child("MusicButton", true, false) as Button).pressed.emit()
 	await process_frame
 	(second.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
-	await process_frame
+	await _wait_for_transition(second_settings, &"CLOSED")
 	_check(PREFS.title_music_enabled(PATH), "Apply did not persist enabled preference")
 	_check(music.call("current_id") == &"title_lunaris", "preview enable did not restore title cue")
 	await _release(second, game)
@@ -68,6 +71,16 @@ func _exercise(music: Node, game: Node) -> void:
 	_check(bool(third.call("title_music_enabled")), "third session did not restore enabled preference")
 	_check(music.call("current_id") == &"title_lunaris", "restored enabled preference did not start title cue")
 	await _release(third, game)
+
+
+func _wait_for_transition(state: Control, expected: StringName) -> bool:
+	var elapsed := 0.0
+	while StringName(state.call("transition_state_name")) != expected and elapsed < WAIT_TIMEOUT:
+		await create_timer(0.01).timeout
+		elapsed += 0.01
+	var matched := StringName(state.call("transition_state_name")) == expected
+	_check(matched, "transition timed out waiting for %s" % expected)
+	return matched
 
 
 func _create_title() -> Control:
