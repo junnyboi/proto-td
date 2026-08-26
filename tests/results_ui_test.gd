@@ -29,6 +29,7 @@ func _run() -> void:
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
+	root.size = Vector2i(1280, 720)
 	var screen: Node = load("res://scenes/results.tscn").instantiate()
 	root.add_child(screen)
 	await process_frame
@@ -36,10 +37,15 @@ func _run() -> void:
 	var shell := screen.find_child("ResultsShell", true, false)
 	var ceremony := screen.find_child("OutcomeCeremony", true, false) as PanelContainer
 	var headline := screen.find_child("Headline", true, false) as Label
+	var outcome_summary := screen.find_child("OutcomeSummary", true, false) as BoxContainer
+	var outcome_meta := screen.find_child("OutcomeMeta", true, false) as BoxContainer
+	var eyebrow := screen.find_child("OutcomeEyebrow", true, false)
+	var stage_title := screen.find_child("StageTitle", true, false)
 	var stars := screen.find_child("ResultStars", true, false) as HBoxContainer
-	var reward := screen.find_child("Reward0", true, false) as PanelContainer
-	var entitlement := screen.find_child("Entitlement0", true, false) as PanelContainer
-	var xp := screen.find_child("XpAward0", true, false) as PanelContainer
+	var tally := screen.find_child("TallyLine", true, false) as Label
+	var reward := screen.find_child("Reward0", true, false) as Control
+	var entitlement := screen.find_child("Entitlement0", true, false) as Control
+	var xp := screen.find_child("XpAward0", true, false) as Control
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
@@ -48,22 +54,45 @@ func _run() -> void:
 	var consequence_panel := screen.find_child("ConsequencePanel", true, false) as PanelContainer
 	var rewards_scroll := screen.find_child("RewardsScroll", true, false) as ScrollContainer
 	var consequence_scroll := screen.find_child("ConsequenceScroll", true, false) as ScrollContainer
+	var rewards_heading := screen.find_child("RewardsHeading", true, false) as Label
+	var consequence_heading := screen.find_child("ConsequenceHeading", true, false) as Label
+	var consequence_line := screen.find_child("ConsequenceLine", true, false) as Label
+	var header := screen.find_child("ResultsHeader", true, false) as GridContainer
+	var body := screen.find_child("ResultsBody", true, false) as GridContainer
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
 	var title := screen.find_child("BackToTitle", true, false) as Button
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
-	_check(ceremony != null and headline != null and headline.get_theme_font_size(&"font_size") >= 40, "Results outcome ceremony is not dominant")
-	_check(stars != null and stars.get_child_count() == 3, "native result stars are missing")
+	_check(ceremony != null and ceremony.custom_minimum_size.y >= 132.0, "Results outcome ceremony is still claustrophobic")
+	_check(headline != null and headline.text == "STAGE 1 CLEARED", "stage-number clear headline is incorrect")
+	_check(headline != null and headline.get_theme_font_size(&"font_size") >= 40 and headline.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "Results outcome headline is not dominant or vertically centered")
+	_check(eyebrow == null and stage_title == null, "obsolete result eyebrow or stage title remains")
+	_check(outcome_summary != null and outcome_meta != null and headline.get_parent() == outcome_summary and outcome_meta.get_parent() == outcome_summary and stars.get_parent() == outcome_meta, "headline and result metadata are not grouped")
+	_check(stars != null and stars.get_child_count() == 3 and stars.alignment == BoxContainer.ALIGNMENT_BEGIN, "native result stars are missing or not left flushed")
+	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
 	_check(reward != null and entitlement != null and xp != null, "typed result payload cards are incomplete")
+	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer, "Mission Yield rows retained inner panel styling")
+	for row: Control in [reward, entitlement, xp]:
+		if row != null:
+			var row_title := row.find_child("Title", true, false) as Label
+			var row_detail := row.find_child("Detail", true, false) as Label
+			_check(row_title != null and row_title.get_theme_font_size(&"font_size") >= 24, "%s title was not enlarged" % row.name)
+			_check(row_detail != null and row_detail.get_theme_font_size(&"font_size") >= 20, "%s detail was not enlarged" % row.name)
 	_check(no_casualties != null, "no-casualty state is missing")
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
 	_check(transmission_body != null and transmission_body.text.contains("PROTOS"), "clear transmission body is not canonical")
-	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 16, "clear transmission body is below 16px")
-	for panel: PanelContainer in [rewards_panel, consequence_panel]:
-		if panel != null:
-			var panel_style := panel.get_theme_stylebox(&"panel")
-			_check(panel_style.content_margin_left >= 18.0 and panel_style.content_margin_top >= 18.0, "%s padding is below 18px" % panel.name)
+	_check(transmission_speaker != null and transmission_speaker.get_theme_font_size(&"font_size") >= 24, "clear transmission speaker was not enlarged")
+	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 20, "clear transmission body is below 20px")
+	_check(rewards_heading != null and rewards_heading.get_theme_font_size(&"font_size") >= 30, "Mission Yield heading was not enlarged")
+	_check(consequence_heading != null and consequence_heading.get_theme_font_size(&"font_size") >= 30, "Consequence heading was not enlarged")
+	_check(consequence_line != null and consequence_line.get_theme_font_size(&"font_size") >= 20, "Consequence body was not enlarged")
+	if rewards_panel != null:
+		var rewards_style := rewards_panel.get_theme_stylebox(&"panel")
+		_check(rewards_style.content_margin_left >= 30.0 and rewards_style.content_margin_top >= 26.0, "Mission Yield content margins are too small")
+	if consequence_panel != null:
+		var consequence_style := consequence_panel.get_theme_stylebox(&"panel")
+		_check(consequence_style.content_margin_left >= 30.0 and consequence_style.content_margin_top >= 26.0 and consequence_style.content_margin_right >= 30.0, "Consequence content margins are too small")
 	_check(rewards_scroll != null and consequence_scroll != null, "Results payload columns lack independent local scrolling")
 	_check(rewards_scroll != null and rewards_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Rewards scroll is not flexible")
 	_check(consequence_scroll != null and consequence_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Consequence scroll is not flexible")
@@ -72,7 +101,30 @@ func _run() -> void:
 	if actions != null:
 		for child: Node in actions.get_children():
 			if child is Button:
-				_check((child as Button).custom_minimum_size.y >= 44.0, "Results action is not touch safe")
+				var action := child as Button
+				var presentation := action.find_child("PresentationLabel", true, false) as Label
+				_check(action.custom_minimum_size == Vector2(260, 96), "%s is not fixed at 260×96" % action.name)
+				_check(action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "%s still expands horizontally" % action.name)
+				_check(action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s retained a struck texture frame" % action.name)
+				_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s typography was not doubled" % action.name)
+				var action_style := action.get_theme_stylebox(&"normal")
+				_check(action_style.content_margin_top >= 18.0 and action_style.content_margin_bottom >= 18.0, "%s lacks vertical inner padding" % action.name)
+
+	_check(header != null and header.columns == 1 and body != null and body.columns == 2, "regular landscape Results hierarchy changed")
+	root.size = Vector2i(1024, 576)
+	await _frames(2)
+	_check(header.columns == 1 and body.columns == 2 and actions.columns == 2, "compact landscape Results layout did not reflow")
+	root.size = Vector2i(390, 844)
+	await _frames(2)
+	_check(header.columns == 1 and body.columns == 1 and actions.columns == 1, "portrait Results layout did not stack")
+	_check(outcome_summary.vertical, "portrait outcome summary did not stack")
+	_check(outcome_meta.vertical, "portrait stars and tally did not stack beneath the headline")
+	for child: Node in actions.get_children():
+		if child is Button:
+			var bounds := (child as Button).get_global_rect()
+			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
+	root.size = Vector2i(1280, 720)
+	await _frames(2)
 
 	var cancel := InputEventAction.new()
 	cancel.action = &"ui_cancel"
@@ -108,6 +160,11 @@ func _has_scroll_ancestor(node: Node) -> bool:
 			return true
 		current = current.get_parent()
 	return false
+
+
+func _frames(count: int) -> void:
+	for _index: int in count:
+		await process_frame
 
 
 func _check(condition: bool, message: String) -> void:
