@@ -13,6 +13,10 @@ func _run() -> void:
 	if game == null:
 		_finish()
 		return
+	var previous_reduced_motion: Variant = ProjectSettings.get_setting(
+		"accessibility/reduced_motion", false,
+	)
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 	game.call("set_run_seed", 2026)
 	_check(bool(game.call("start_campaign", false, true)), "results campaign fixture failed")
 	var projection: Dictionary = game.call("campaign_projection")
@@ -46,6 +50,8 @@ func _run() -> void:
 	var reward := screen.find_child("Reward0", true, false) as Control
 	var entitlement := screen.find_child("Entitlement0", true, false) as Control
 	var xp := screen.find_child("XpAward0", true, false) as Control
+	var reward_count: Label = reward.find_child("Title", true, false) as Label if reward != null else null
+	var xp_count: Label = xp.find_child("Detail", true, false) as Label if xp != null else null
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
@@ -72,6 +78,20 @@ func _run() -> void:
 	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
 	_check(reward != null and entitlement != null and xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer, "Mission Yield rows retained inner panel styling")
+	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Marks reward was not registered for count reveal")
+	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Marks reward is not first in the reveal sequence")
+	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 6, "XP reward was not registered for count reveal")
+	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after Marks")
+	_check(
+		xp_count != null
+		and float(xp_count.get_meta(&"reward_reveal_stagger_seconds", 0.0)) > float(reward_count.get_meta(&"reward_reveal_stagger_seconds", 0.0)),
+		"Mission Yield counters do not have increasing stagger delays",
+	)
+	await create_timer(0.9).timeout
+	_check(reward_count.text == "+40 MARKS" and bool(reward_count.get_meta(&"reward_reveal_complete", false)), "Marks counter did not finish at its authoritative value")
+	_check(xp_count.text == "+6 XP" and bool(xp_count.get_meta(&"reward_reveal_complete", false)), "XP counter did not finish at its authoritative value")
+	_check(reward_count.modulate.a == 1.0 and reward_count.scale == Vector2.ONE, "Marks reveal did not settle cleanly")
+	_check(xp_count.modulate.a == 1.0 and xp_count.scale == Vector2.ONE, "XP reveal did not settle cleanly")
 	for row: Control in [reward, entitlement, xp]:
 		if row != null:
 			var row_title := row.find_child("Title", true, false) as Label
@@ -125,11 +145,79 @@ func _run() -> void:
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
+	root.remove_child(screen)
+	screen.free()
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	game.set("last_result", {
+		"stage_id": &"s1",
+		"result": BattleModel.Result.DEFEAT,
+		"stars": 0,
+		"kills": 4,
+		"leaks": 12,
+		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7}],
+		"class_entitlements_granted": [],
+		"xp_awards": [{"hero_id": hero_id, "xp": 2}],
+		"dead_hero_ids": [hero_id],
+		"premium_life_losses": [],
+	})
+	var defeat_screen: Node = load("res://scenes/results.tscn").instantiate()
+	root.add_child(defeat_screen)
+	await _frames(2)
+	var defeat_ceremony := defeat_screen.find_child("OutcomeCeremony", true, false) as PanelContainer
+	var defeat_headline := defeat_screen.find_child("Headline", true, false) as Label
+	var defeat_summary := defeat_screen.find_child("OutcomeSummary", true, false) as BoxContainer
+	var defeat_meta := defeat_screen.find_child("OutcomeMeta", true, false) as BoxContainer
+	var defeat_stars := defeat_screen.find_child("ResultStars", true, false) as HBoxContainer
+	var defeat_tally := defeat_screen.find_child("TallyLine", true, false) as Label
+	var defeat_rewards := defeat_screen.find_child("RewardsPanel", true, false) as PanelContainer
+	var defeat_consequence := defeat_screen.find_child("ConsequencePanel", true, false) as PanelContainer
+	var defeat_reward := defeat_screen.find_child("Reward0", true, false) as Control
+	var defeat_xp := defeat_screen.find_child("XpAward0", true, false) as Control
+	var defeat_reward_count: Label = defeat_reward.find_child("Title", true, false) as Label if defeat_reward != null else null
+	var defeat_xp_count: Label = defeat_xp.find_child("Detail", true, false) as Label if defeat_xp != null else null
+	var defeat_rewards_heading := defeat_screen.find_child("RewardsHeading", true, false) as Label
+	var defeat_consequence_heading := defeat_screen.find_child("ConsequenceHeading", true, false) as Label
+	var defeat_consequence_line := defeat_screen.find_child("ConsequenceLine", true, false) as Label
+	var defeat_actions := defeat_screen.find_child("ActionRow", true, false) as GridContainer
+	_check(defeat_ceremony != null and defeat_ceremony.custom_minimum_size.y >= 132.0, "defeat ceremony did not inherit the taller hierarchy")
+	_check(defeat_headline != null and defeat_headline.text == "STAGE 1 DEFEATED", "stage-number defeat headline is incorrect")
+	_check(defeat_headline.get_theme_font_size(&"font_size") >= 40 and defeat_headline.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "defeat headline is not dominant and centered")
+	_check(defeat_summary != null and defeat_meta != null and defeat_headline.get_parent() == defeat_summary and defeat_meta.get_parent() == defeat_summary, "defeat headline and metadata do not match clear hierarchy")
+	_check(defeat_stars != null and defeat_stars.get_parent() == defeat_meta and defeat_stars.alignment == BoxContainer.ALIGNMENT_BEGIN, "defeat stars are not adjacent and left flushed")
+	for star: Node in defeat_stars.get_children():
+		var art := star.find_child("AstralStarArt", true, false) as TextureRect
+		_check(art != null and art.self_modulate.a <= 0.25, "%s is incorrectly lit on defeat" % star.name)
+	_check(defeat_tally != null and defeat_tally.get_theme_font_size(&"font_size") >= 28 and defeat_tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "defeat tally does not match clear hierarchy")
+	_check(defeat_rewards_heading != null and defeat_rewards_heading.get_theme_font_size(&"font_size") >= 30, "defeat Mission Yield heading is too small")
+	_check(defeat_consequence_heading != null and defeat_consequence_heading.get_theme_font_size(&"font_size") >= 30, "defeat Consequence heading is too small")
+	_check(defeat_consequence_line != null and defeat_consequence_line.get_theme_font_size(&"font_size") >= 20, "defeat consequence copy is too small")
+	_check(defeat_rewards != null and defeat_rewards.get_theme_stylebox(&"panel") is StyleBoxTexture, "defeat Mission Yield did not inherit the clear result frame")
+	_check(defeat_consequence != null and defeat_consequence.get_theme_stylebox(&"panel") is StyleBoxFlat, "defeat consequence surface is not danger styled")
+	_check(defeat_reward is MarginContainer and defeat_xp is MarginContainer, "defeat Mission Yield rows regained inner frames")
+	_check(defeat_reward_count.text == "+7 MARKS" and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat Marks immediately")
+	_check(defeat_xp_count.text == "+2 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat XP immediately")
+	_check(defeat_screen.find_child("ClearTransmission", true, false) == null, "defeat incorrectly presents a clear transmission")
+	for child: Node in defeat_actions.get_children():
+		if child is Button:
+			var defeat_action := child as Button
+			var presentation := defeat_action.find_child("PresentationLabel", true, false) as Label
+			_check(defeat_action.custom_minimum_size == Vector2(260, 96), "%s lost fixed defeat sizing" % defeat_action.name)
+			_check(defeat_action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s regained struck defeat styling" % defeat_action.name)
+			_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s defeat text is not doubled" % defeat_action.name)
+	root.size = Vector2i(390, 844)
+	await _frames(2)
+	_check(defeat_summary.vertical and defeat_meta.vertical and defeat_actions.columns == 1, "defeat hierarchy does not stack in portrait")
+	for child: Node in defeat_actions.get_children():
+		if child is Button:
+			var bounds := (child as Button).get_global_rect()
+			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows defeat portrait width" % child.name)
+	root.size = Vector2i(1280, 720)
+	await _frames(2)
 
 	var cancel := InputEventAction.new()
 	cancel.action = &"ui_cancel"
 	cancel.pressed = true
-	screen.call("_unhandled_input", cancel)
+	defeat_screen.call("_unhandled_input", cancel)
 	for _frame: int in range(4):
 		await process_frame
 	var content := game.get("content") as Node
@@ -149,6 +237,7 @@ func _run() -> void:
 	var sfx := root.get_node_or_null("Sfx")
 	if sfx != null and sfx.has_method("stop_all"):
 		sfx.call("stop_all")
+	ProjectSettings.set_setting("accessibility/reduced_motion", previous_reduced_motion)
 	await create_timer(0.25).timeout
 	_finish()
 

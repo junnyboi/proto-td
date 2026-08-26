@@ -21,6 +21,7 @@
 - [x] Add dedicated cold-blizzard Slow Field cast and expiration cues through GPT Image 2 carrier anchors, audio-bearing video extraction, deterministic mastering, and one-shot presentation lifecycle tests.
 - [x] Refit the annotated Stage Clear screen with stage-number outcome copy, adjacent stars, enlarged tally and information typography, unframed Mission Yield rows, generous desktop margins, compact portrait scroll surfaces, and centered fixed 260×96 flat actions.
 - [x] Increase runtime typography by exactly 50% across the game and refit Mission Preparation with a transparent First Stand icon, padded status tabs, 3:1 roster/intelligence split, split information/portrait cards, and 30%-shorter clean actions.
+- [x] Add eased staggered Mission Yield reward counters with reduced-motion completion, and apply the same stage-number, metadata, information, responsive, and fixed-action hierarchy to Stage Defeat.
 
 # Premium Resonance Cinematic Completion
 
