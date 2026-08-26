@@ -12,10 +12,13 @@ func _run() -> void:
 		"res://scripts/ui/stage_select.gd": [
 			"ui.campaign.eyebrow", "ui.campaign.progress", "ui.campaign.route_heading",
 			"ui.campaign.facts", "ui.campaign.row_locked",
+		],
+		"res://scripts/ui/squad_select.gd": [
+			"ui.squad.mission_identity", "ui.squad.card_ready", "ui.squad.card_premium",
+			"ui.squad.card_fallen", "ui.error.missing_stage_narrative",
 			"ui.campaign.basic_hire_title", "ui.campaign.basic_hire_body",
 			"ui.campaign.basic_hire_action", "ui.campaign.basic_hire_success",
 		],
-		"res://scripts/ui/squad_select.gd": ["ui.squad.mission_identity", "ui.squad.card_ready", "ui.squad.card_premium", "ui.squad.card_fallen", "ui.error.missing_stage_narrative"],
 		"res://scripts/ui/spell_bar.gd": ["ui.spell.slow_field.tooltip"],
 		"res://scripts/view/battle_view.gd": ["ui.battle.wave", "ui.battle.stamp_clear", "ui.battle.stamp_defeat"],
 		"res://scripts/ui/battle_controls.gd": ["ui.battle.withdraw_rejected", "ui.battle.confirm_defeat_description", "ui.battle.return_description"],

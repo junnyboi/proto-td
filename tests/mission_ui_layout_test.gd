@@ -33,6 +33,8 @@ func _run() -> void:
 		await process_frame
 		await process_frame
 		_verify_layout(label, VIEWPORTS[label])
+		if label == "regular":
+			await _verify_recruitment_transaction(game)
 		_dispose_mission(game)
 		await process_frame
 	game.set("campaign_active", false)
@@ -56,9 +58,20 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var actions := _mission.find_child("MissionActions", true, false) as GridContainer
 	var field_panel := _mission.find_child("FieldTeamPanel", true, false) as PanelContainer
 	var intel_panel := _mission.find_child("MissionIntelligencePanel", true, false) as PanelContainer
+	var recruit_desk := _mission.find_child("BasicRecruitDesk", true, false) as PanelContainer
+	var recruit_grid := _mission.find_child("BasicRecruitGrid", true, false) as GridContainer
+	var recruit_title := _mission.find_child("BasicRecruitTitle", true, false) as Label
+	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
+	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
+	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
 	_check(shell != null and bool(shell.get("full_safe_area")), "%s mission shell is not full-safe-area" % label)
 	_check(workspace != null and workspace.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s retained the decorative outer mission frame" % label)
-	_check(_inside(_mission, shell) and _inside(shell, workspace), "%s mission workspace exceeds the viewport" % label)
+	_check(
+		_inside(_mission, shell) and _inside(shell, workspace),
+		"%s mission workspace exceeds the viewport: mission=%s shell=%s workspace=%s" % [
+			label, _mission.get_global_rect(), shell.get_global_rect(), workspace.get_global_rect(),
+		],
+	)
 	_check(surface != null and _inside(workspace, surface), "%s mission surface exceeds the fullscreen workspace" % label)
 	_check(body != null and field_panel != null and intel_panel != null, "%s mission body panels are missing" % label)
 	if body != null:
@@ -67,6 +80,18 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		if not portrait and field_panel != null and intel_panel != null:
 			_check(field_panel.size.x >= intel_panel.size.x * 2.5, "%s mission intelligence did not shrink to the quarter-width rail" % label)
 			_check(intel_panel.size.x <= viewport.x * 0.32, "%s mission intelligence remains oversized" % label)
+	_check(recruit_desk != null and field_panel != null and field_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements is not inside Field Team Selection" % label)
+	_check(recruit_desk != null and intel_panel != null and not intel_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements leaked into Mission Intelligence" % label)
+	_check(recruit_grid != null and recruit_grid.columns == (3 if label == "regular" else 1), "%s Company Reinforcements uses the wrong responsive column count" % label)
+	_check(recruit_title != null and recruit_title.get_theme_font_size(&"font_size") >= 24, "%s Company Reinforcements title is below the readability floor" % label)
+	_check(recruit_body != null and not recruit_body.visible, "%s redundant Company Reinforcements body copy consumes roster space" % label)
+	_check(hire_button != null and hire_button.focus_mode == Control.FOCUS_ALL, "%s recruit action is not keyboard focusable" % label)
+	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s recruit status is not a polite live region" % label)
+	if recruit_desk != null and field_panel != null:
+		_check(_inside(field_panel, recruit_desk), "%s Company Reinforcements exceeds the Field Team panel" % label)
+	if hire_button != null:
+		var hire_presentation := hire_button.get_node_or_null("PresentationLabel") as Label
+		_check(hire_presentation != null and _inside(hire_button, hire_presentation), "%s recruit action label overflows" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
 		_check(actions.columns == (1 if viewport.y > viewport.x else 3), "%s mission actions use the wrong column count" % label)
@@ -122,7 +147,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 					_check(card_label == null or card_label.get_global_rect().end.x <= portrait.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if label == "regular" and command_scroll != null:
-		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "regular mission still uses document scrolling")
+		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
 	if training != null and back != null:
 		_check(is_equal_approx(training.custom_minimum_size.x, 168.0), "%s Train Operators is not 30 percent shorter" % label)
 		_check(is_equal_approx(back.custom_minimum_size.x, 119.0), "%s Back is not 30 percent shorter" % label)
@@ -131,6 +156,72 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(faction_symbol != null, "%s First Stand faction symbol is missing" % label)
 	if faction_symbol != null and faction_symbol.texture != null:
 		_check(faction_symbol.texture.resource_path.ends_with(".png"), "%s First Stand symbol does not use the transparent PNG" % label)
+
+
+func _verify_recruitment_transaction(game: Node) -> void:
+	var i18n := root.get_node_or_null("I18n")
+	var recruit_title := _mission.find_child("BasicRecruitTitle", true, false) as Label
+	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
+	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
+	var hire_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
+	var hire_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
+	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
+	_check(hire_button != null and not hire_button.disabled, "Field Team five-Mark recruit action is unavailable")
+	_check(hire_button != null and hire_button.text.contains("5") and hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its exact price")
+	_check(hire_marks != null and hire_marks.text.contains("120"), "Field Team does not show current Marks")
+	_check(hire_roster != null and hire_roster.text.contains("5"), "Field Team does not show the ready roster count")
+	if i18n != null:
+		_check(bool(i18n.call("set_locale", &"zh-CN")), "Field Team could not activate Chinese")
+		await process_frame
+		await process_frame
+		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
+		_check(recruit_body != null and recruit_body.text.contains("基础新兵"), "Field Team recruitment body did not refresh to Chinese")
+		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5枚印记"), "Field Team recruitment action did not refresh to Chinese")
+		_check(hire_marks != null and hire_marks.text.contains("可用印记"), "Field Team recruitment Marks did not refresh to Chinese")
+		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
+		_check(bool(i18n.call("set_locale", &"en-US")), "Field Team could not restore English")
+		await process_frame
+		await process_frame
+	var projection_before: Dictionary = game.call("campaign_projection")
+	if hire_button != null:
+		hire_button.pressed.emit()
+		await process_frame
+		await process_frame
+	var projection_after: Dictionary = game.call("campaign_projection")
+	_check(int(projection_after.get("marks", 0)) == int(projection_before.get("marks", 0)) - 5, "Field Team hire charged the wrong amount")
+	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Field Team hire did not add exactly one Recruit")
+	var newest: Dictionary = (projection_after.get("ready_heroes", []) as Array)[-1]
+	_check(newest.get("recruit_source") == "basic_hire" and newest.get("source_id") == "mission_control", "Field Team hire bypassed the authoritative source contract")
+	_check(hire_marks != null and hire_marks.text.contains("115"), "Field Team did not refresh the Marks balance")
+	_check(hire_roster != null and hire_roster.text.contains("6"), "Field Team did not refresh the ready roster count")
+	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Field Team did not announce the accepted hire")
+	_check(hire_button != null and hire_button.has_focus(), "accepted Field Team hire did not restore action focus")
+	_check(_mission.find_child("Pick_%s" % newest.get("hero_id", ""), true, false) != null, "new Recruit did not appear in the Field Team roster")
+	var revision_after_hire := int(projection_after.get("save_revision", 0))
+	game.set("_pending_promotion_mutation", RefCounted.new())
+	if hire_button != null:
+		hire_button.pressed.emit()
+		await process_frame
+		await process_frame
+	_check(hire_button != null and not hire_button.disabled and hire_button.has_focus(), "rejected Field Team hire did not restore retry focus")
+	_check(hire_status != null and hire_status.text.contains("pending Company command"), "rejected Field Team hire did not explain command serialization")
+	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "rejected Field Team hire advanced the campaign")
+	game.set("_pending_promotion_mutation", null)
+	game.set("_pending_recruitment_mutation", RefCounted.new())
+	var blocked_pull: Dictionary = game.call("pull_premium_hero")
+	var blocked_rename: Dictionary = game.call(
+		"rename_hero", String(newest.get("hero_id", "")), "Sentinel",
+	)
+	var launch_squad: Array[StringName] = [StringName(newest.get("hero_id", ""))]
+	var blocked_launch: Dictionary = game.call("start_stage", &"s1", launch_squad, false)
+	var blocked_promotion: Dictionary = game.call("training_call", &"commit", [])
+	var blocked_generic: Dictionary = game.call("commit_campaign_command", {})
+	for blocked: Dictionary in [
+		blocked_pull, blocked_rename, blocked_launch, blocked_promotion, blocked_generic,
+	]:
+		_check(blocked.get("error_code") == &"strategic_mutation_pending", "pending Field Team hire did not serialize every strategic facade")
+	_check(int(game.call("campaign_projection").get("save_revision", 0)) == revision_after_hire, "blocked strategic command advanced the campaign")
+	game.set("_pending_recruitment_mutation", null)
 
 
 func _has_scroll_ancestor(node: Node) -> bool:

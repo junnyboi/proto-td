@@ -57,6 +57,14 @@ var _roster_empty: Label = null
 var _all_roster_rows: Array[Dictionary] = []
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
+var _recruitment_grid: GridContainer = null
+var _recruitment_metrics: GridContainer = null
+var _hire_title: AetheriaLabelType = null
+var _hire_body: AetheriaLabelType = null
+var _hire_recruit: AetheriaButtonType = null
+var _hire_marks: AetheriaLabelType = null
+var _hire_roster: AetheriaLabelType = null
+var _hire_status: AetheriaLabelType = null
 
 
 func _ready() -> void:
@@ -99,6 +107,7 @@ func _ready() -> void:
 	surface.add_child(_build_footer())
 
 	_prefill()
+	_refresh_recruitment_desk()
 	_refresh()
 	_on_layout_mode_changed(_shell.layout_mode())
 	if not I18n.locale_changed.is_connected(_on_locale_changed):
@@ -190,6 +199,7 @@ func _build_body() -> GridContainer:
 	_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_roster_heading.add_child(_counter)
 	roster_column.add_child(_roster_heading)
+	_build_recruitment_desk(roster_column)
 	_all_roster_rows = _campaign_roster_rows()
 	_filter_bar = RosterFilterBarType.new()
 	_filter_bar.configure(
@@ -265,6 +275,87 @@ func _build_body() -> GridContainer:
 	intel.add_child(_selected_line)
 	_body.add_child(briefing_panel)
 	return _body
+
+
+func _build_recruitment_desk(parent: VBoxContainer) -> void:
+	var panel := PanelContainer.new()
+	panel.name = "BasicRecruitDesk"
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	LunarisOpsType.apply_panel(panel, &"selected")
+	parent.add_child(panel)
+	var stack := VBoxContainer.new()
+	stack.add_theme_constant_override(&"separation", 6)
+	panel.add_child(stack)
+	_recruitment_grid = GridContainer.new()
+	_recruitment_grid.name = "BasicRecruitGrid"
+	_recruitment_grid.columns = 3
+	_recruitment_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recruitment_grid.add_theme_constant_override(&"h_separation", 12)
+	_recruitment_grid.add_theme_constant_override(&"v_separation", 6)
+	stack.add_child(_recruitment_grid)
+	var briefing := VBoxContainer.new()
+	briefing.name = "BasicRecruitBriefing"
+	briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	briefing.add_theme_constant_override(&"separation", 2)
+	_recruitment_grid.add_child(briefing)
+	_hire_title = AetheriaLabelType.new()
+	_hire_title.name = "BasicRecruitTitle"
+	_hire_title.apply_role(&"dense_heading")
+	_hire_title.add_theme_font_size_override(&"font_size", 24)
+	_hire_title.text = UiCopyType.text(
+		&"ui.campaign.basic_hire_title", "Company Reinforcements",
+	).to_upper()
+	_hire_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	briefing.add_child(_hire_title)
+	_hire_body = AetheriaLabelType.new()
+	_hire_body.name = "BasicRecruitBody"
+	_hire_body.apply_role(&"dense_detail")
+	_hire_body.text = UiCopyType.text(
+		&"ui.campaign.basic_hire_body",
+		"Hire one persistent basic Recruit. Training can specialize them later.",
+	)
+	_hire_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	briefing.add_child(_hire_body)
+	_recruitment_metrics = GridContainer.new()
+	_recruitment_metrics.name = "BasicRecruitMetrics"
+	_recruitment_metrics.columns = 1
+	_recruitment_metrics.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recruitment_metrics.add_theme_constant_override(&"h_separation", 12)
+	_recruitment_metrics.add_theme_constant_override(&"v_separation", 2)
+	_recruitment_grid.add_child(_recruitment_metrics)
+	_hire_marks = AetheriaLabelType.new()
+	_hire_marks.name = "BasicRecruitMarks"
+	_hire_marks.apply_role(&"cost_badge")
+	_hire_marks.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_marks.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_recruitment_metrics.add_child(_hire_marks)
+	_hire_roster = AetheriaLabelType.new()
+	_hire_roster.name = "BasicRecruitRoster"
+	_hire_roster.apply_role(&"dense_detail")
+	_hire_roster.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_roster.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_recruitment_metrics.add_child(_hire_roster)
+	_hire_recruit = AetheriaButtonType.new()
+	_hire_recruit.name = "HireBasicRecruit"
+	_hire_recruit.custom_minimum_size = Vector2(220.0, 64.0)
+	_hire_recruit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_recruit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_hire_recruit.apply_role(&"primary")
+	_apply_clean_training_style(_hire_recruit)
+	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
+	_hire_recruit.accessibility_name = UiCopyType.text(
+		&"ui.campaign.basic_hire_title", "Company Reinforcements",
+	)
+	_recruitment_grid.add_child(_hire_recruit)
+	_hire_status = AetheriaLabelType.new()
+	_hire_status.name = "BasicRecruitStatus"
+	_hire_status.apply_role(&"dense_detail")
+	_hire_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hire_status.accessibility_name = UiCopyType.text(
+		&"ui.campaign.basic_hire_title", "Company Reinforcements",
+	)
+	_hire_status.accessibility_live = AccessibilityServer.LIVE_OFF
+	stack.add_child(_hire_status)
 
 
 func _campaign_roster_rows() -> Array[Dictionary]:
@@ -596,6 +687,162 @@ func _loadout_text() -> String:
 	)
 
 
+func _on_hire_basic_recruit() -> void:
+	if _hire_recruit == null or _hire_recruit.disabled:
+		return
+	Sfx.play("ui_click")
+	_hire_recruit.disabled = true
+	var committed: Dictionary = Game.hire_basic_recruit()
+	if not committed.get("accepted", false):
+		_refresh_recruitment_desk(
+			_hire_error_text(StringName(committed.get("error_code", &"unknown"))),
+			true,
+		)
+		if not _hire_recruit.disabled:
+			_hire_recruit.grab_focus.call_deferred()
+		return
+	var projection := Game.campaign_projection()
+	var receipt: Dictionary = committed.get("result", {}).get("recruitment", {})
+	var recruited: Dictionary = receipt.get("hero", {})
+	var callsign := String(recruited.get("hero_id", "Recruit"))
+	for hero: Dictionary in projection.get("ready_heroes", []):
+		if hero.get("hero_id") == recruited.get("hero_id"):
+			callsign = String(hero.get("callsign", callsign))
+			break
+	_ready_heroes = _identity_rows(projection.get("ready_heroes", []))
+	_all_roster_rows = _campaign_roster_rows()
+	if _filter_bar != null:
+		_filter_bar.set_rows(_all_roster_rows)
+	_rebuild_operator_cards()
+	_refresh_recruitment_desk(
+		UiCopyType.format_text(
+			&"ui.campaign.basic_hire_success",
+			"{callsign} • JOINED COMPANY 33 • {remaining} MARKS REMAIN",
+			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
+		),
+		false,
+	)
+	_refresh()
+	_hire_recruit.grab_focus.call_deferred()
+
+
+func _refresh_recruitment_desk(message: String = "", error: bool = false) -> void:
+	if _hire_recruit == null:
+		return
+	var projection := Game.campaign_projection()
+	var marks := int(projection.get("marks", 0))
+	var cost := int(projection.get("basic_recruit_cost", 5))
+	var roster_count := (
+		(projection.get("ready_heroes", []) as Array).size()
+		+ (projection.get("fallen_heroes", []) as Array).size()
+	)
+	_hire_marks.text = UiCopyType.format_text(
+		&"ui.campaign.basic_hire_marks", "{count} MARKS AVAILABLE", {&"count": marks},
+	)
+	_hire_roster.text = UiCopyType.format_text(
+		&"ui.campaign.basic_hire_roster", "{count} PERSONNEL READY",
+		{&"count": (projection.get("ready_heroes", []) as Array).size()},
+	)
+	var action_text := UiCopyType.format_text(
+		&"ui.campaign.basic_hire_action", "HIRE • {cost} MARKS", {&"cost": cost},
+	)
+	_hire_recruit.set_presentation_text(action_text, action_text)
+	var presentation := _hire_recruit.get_node("PresentationLabel") as Label
+	presentation.offset_left = 12.0
+	presentation.offset_top = 8.0
+	presentation.offset_right = -12.0
+	presentation.offset_bottom = -8.0
+	presentation.clip_text = false
+	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hire_recruit.tooltip_text = action_text
+	_hire_recruit.accessibility_description = action_text
+	var unavailable := (
+		projection.is_empty()
+		or marks < cost
+		or bool(projection.get("attempt_pending", false))
+		or roster_count >= 1024
+	)
+	_hire_recruit.disabled = unavailable
+	_hire_recruit.apply_role(&"disabled" if unavailable else &"primary")
+	if message.is_empty():
+		if projection.is_empty():
+			message = UiCopyType.text(
+				&"ui.campaign.basic_hire_campaign_inactive", "No active campaign is available.",
+			)
+		elif bool(projection.get("attempt_pending", false)):
+			message = UiCopyType.text(
+				&"ui.campaign.basic_hire_attempt_pending",
+				"Resolve the active operation before hiring personnel.",
+			)
+		elif roster_count >= 1024:
+			message = UiCopyType.text(
+				&"ui.campaign.basic_hire_roster_limit",
+				"The personnel registry has reached capacity.",
+			)
+		elif marks < cost:
+			message = UiCopyType.format_text(
+				&"ui.campaign.basic_hire_insufficient",
+				"Earn {count} more Marks to hire another Recruit.",
+				{&"count": cost - marks},
+			)
+		else:
+			message = UiCopyType.text(
+				&"ui.campaign.basic_hire_ready", "BASIC RECRUIT CONTRACT AVAILABLE",
+			)
+	_hire_status.text = message
+	_hire_status.accessibility_description = message
+	_hire_status.accessibility_live = (
+		AccessibilityServer.LIVE_ASSERTIVE if error else AccessibilityServer.LIVE_POLITE
+	)
+	_hire_status.add_theme_color_override(
+		&"font_color", LunarisOpsType.DANGER if error else LunarisOpsType.CYAN,
+	)
+
+
+func _hire_error_text(code: StringName) -> String:
+	match code:
+		&"insufficient_marks":
+			var projection := Game.campaign_projection()
+			var deficit := maxi(
+				1,
+				int(projection.get("basic_recruit_cost", 5)) - int(projection.get("marks", 0)),
+			)
+			return UiCopyType.format_text(
+				&"ui.campaign.basic_hire_insufficient",
+				"Earn {count} more Marks to hire another Recruit.",
+				{&"count": deficit},
+			)
+		&"attempt_pending":
+			return UiCopyType.text(
+				&"ui.campaign.basic_hire_attempt_pending",
+				"Resolve the active operation before hiring personnel.",
+			)
+		&"roster_limit":
+			return UiCopyType.text(
+				&"ui.campaign.basic_hire_roster_limit",
+				"The personnel registry has reached capacity.",
+			)
+		&"campaign_inactive":
+			return UiCopyType.text(
+				&"ui.campaign.basic_hire_campaign_inactive", "No active campaign is available.",
+			)
+		&"strategic_mutation_pending":
+			return UiCopyType.text(
+				&"ui.campaign.basic_hire_command_pending",
+				"Resolve the pending Company command before hiring personnel.",
+			)
+		&"store_write_failed", &"store_restore_failed", &"store_integrity_failure":
+			return UiCopyType.text(
+				&"ui.campaign.basic_hire_save_failed",
+				"The hire could not be saved. Activate again to retry the exact contract.",
+			)
+	return UiCopyType.format_text(
+		&"ui.campaign.basic_hire_unknown",
+		"Hiring failed safely ({code}). Review Mission Control and try again.",
+		{&"code": String(code)},
+	)
+
+
 func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 	if pressed:
 		if _picked.size() >= _stage.squad_size:
@@ -655,6 +902,23 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
+	if _hire_title != null:
+		_hire_title.text = UiCopyType.text(
+			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+		).to_upper()
+	if _hire_body != null:
+		_hire_body.text = UiCopyType.text(
+			&"ui.campaign.basic_hire_body",
+			"Hire one persistent basic Recruit. Training can specialize them later.",
+		)
+	if _hire_recruit != null:
+		_hire_recruit.accessibility_name = UiCopyType.text(
+			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+		)
+	if _hire_status != null:
+		_hire_status.accessibility_name = UiCopyType.text(
+			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+		)
 	var copy_by_node := {
 		"MissionIndex": _format_copy(
 			&"ui.squad.mission_identity", "Mission {index} / {title}",
@@ -704,6 +968,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	)
 	_start.text = UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	_start.set_presentation_text(_start.text, _action_presentation_text(_start.name, _start.text))
+	_refresh_recruitment_desk()
 	_refresh()
 
 
@@ -730,6 +995,8 @@ func _hero_by_id(hero_id: StringName) -> Dictionary:
 
 func _wire_focus() -> void:
 	var focusable: Array[Control] = []
+	if _hire_recruit != null and not _hire_recruit.disabled:
+		focusable.append(_hire_recruit)
 	if _filter_input != null:
 		focusable.append(_filter_input)
 	if _sort_select != null:
@@ -828,11 +1095,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			_intel_panel.custom_minimum_size.x = intel_width
 			_roster_panel.custom_minimum_size.x = body_width - intel_width - 16.0
 	if _command_scroll != null:
-		_command_scroll.vertical_scroll_mode = (
-			ScrollContainer.SCROLL_MODE_DISABLED
-			if mode == &"regular_landscape"
-			else ScrollContainer.SCROLL_MODE_AUTO
-		)
+		_command_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if _roster_scroll != null:
 		_roster_scroll.custom_minimum_size.y = 220.0 if mode == &"portrait" else 0.0
 	if _intel_scroll != null:
@@ -842,6 +1105,17 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _filter_bar != null:
 		_filter_bar.set_compact(true)
 		_filter_bar.set_inline(mode == &"regular_landscape")
+	if _recruitment_grid != null:
+		_recruitment_grid.columns = 3 if mode == &"regular_landscape" else 1
+	if _recruitment_metrics != null:
+		_recruitment_metrics.columns = 1 if mode == &"regular_landscape" else 2
+	if _hire_body != null:
+		_hire_body.visible = false
+	if _hire_recruit != null:
+		_hire_recruit.custom_minimum_size = Vector2(
+			220.0 if mode == &"regular_landscape" else 0.0,
+			64.0,
+		)
 	for button: Button in _buttons.values():
 		var portrait_card_width := 270.0 if get_viewport_rect().size.x < 480.0 else 300.0
 		button.custom_minimum_size = Vector2(

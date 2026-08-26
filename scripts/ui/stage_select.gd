@@ -14,6 +14,9 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const ROUTE_PANEL_WIDE_WIDTH := 480.0
+const ROUTE_HEADER_INSET := 12
+const STAGE_ROW_VERTICAL_PADDING := 12.0
 const REWARD_DIRS := {
 	&"operator": "res://data/operators",
 	&"trap": "res://data/traps",
@@ -41,14 +44,6 @@ var _route_heading: AetheriaLabelType = null
 var _route_note: AetheriaLabelType = null
 var _dossier_eyebrow: AetheriaLabelType = null
 var _back: AetheriaButtonType = null
-var _recruitment_grid: GridContainer = null
-var _recruitment_metrics: GridContainer = null
-var _hire_title: AetheriaLabelType = null
-var _hire_body: AetheriaLabelType = null
-var _hire_recruit: AetheriaButtonType = null
-var _hire_marks: AetheriaLabelType = null
-var _hire_roster: AetheriaLabelType = null
-var _hire_status: AetheriaLabelType = null
 
 
 func _ready() -> void:
@@ -141,18 +136,27 @@ func _build_body(column: VBoxContainer) -> void:
 
 	var route_panel := PanelContainer.new()
 	route_panel.name = "CampaignRoutePanel"
-	route_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	route_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	route_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	route_panel.custom_minimum_size.x = 520
+	route_panel.custom_minimum_size.x = ROUTE_PANEL_WIDE_WIDTH
 	Style.apply_panel(route_panel, &"quiet")
 	_body.add_child(route_panel)
 	var route_stack := VBoxContainer.new()
 	route_stack.add_theme_constant_override(&"separation", 10)
 	route_panel.add_child(route_stack)
+	var route_header_inset := MarginContainer.new()
+	route_header_inset.name = "RouteHeaderInset"
+	route_header_inset.add_theme_constant_override(&"margin_left", ROUTE_HEADER_INSET)
+	route_header_inset.add_theme_constant_override(&"margin_top", ROUTE_HEADER_INSET)
+	route_stack.add_child(route_header_inset)
+	var route_header := VBoxContainer.new()
+	route_header.name = "RouteHeader"
+	route_header.add_theme_constant_override(&"separation", 10)
+	route_header_inset.add_child(route_header)
 	_route_heading = AetheriaLabelType.new()
 	_route_heading.name = "RouteHeading"
 	_route_heading.apply_role(&"heading")
-	route_stack.add_child(_route_heading)
+	route_header.add_child(_route_heading)
 	_route_note = AetheriaLabelType.new()
 	_route_note.name = "RouteNote"
 	_route_note.apply_role(&"detail")
@@ -160,8 +164,7 @@ func _build_body(column: VBoxContainer) -> void:
 		&"ui.campaign.route_note",
 		"Select an available operation. Cleared operations remain replayable.",
 	)
-	route_stack.add_child(_route_note)
-	_build_recruitment_desk(route_stack)
+	route_header.add_child(_route_note)
 	var scroll := ScrollContainer.new()
 	scroll.name = "CampaignScroll"
 	scroll.custom_minimum_size.y = 112.0
@@ -240,82 +243,6 @@ func _build_body(column: VBoxContainer) -> void:
 	dossier_stack.add_child(_dossier_hint)
 
 
-func _build_recruitment_desk(parent: VBoxContainer) -> void:
-	var panel := PanelContainer.new()
-	panel.name = "BasicRecruitDesk"
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	Style.apply_panel(panel, &"selected")
-	parent.add_child(panel)
-	var stack := VBoxContainer.new()
-	stack.add_theme_constant_override(&"separation", 8)
-	panel.add_child(stack)
-	_recruitment_grid = GridContainer.new()
-	_recruitment_grid.name = "BasicRecruitGrid"
-	_recruitment_grid.columns = 2
-	_recruitment_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recruitment_grid.add_theme_constant_override(&"h_separation", 16)
-	_recruitment_grid.add_theme_constant_override(&"v_separation", 8)
-	stack.add_child(_recruitment_grid)
-	var briefing := VBoxContainer.new()
-	briefing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	briefing.add_theme_constant_override(&"separation", 4)
-	_recruitment_grid.add_child(briefing)
-	_hire_title = AetheriaLabelType.new()
-	_hire_title.name = "BasicRecruitTitle"
-	_hire_title.apply_role(&"heading")
-	_hire_title.text = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
-	).to_upper()
-	briefing.add_child(_hire_title)
-	_hire_body = AetheriaLabelType.new()
-	_hire_body.name = "BasicRecruitBody"
-	_hire_body.apply_role(&"detail")
-	_hire_body.text = UiCopyType.text(
-		&"ui.campaign.basic_hire_body",
-		"Hire one persistent basic Recruit. Training can specialize them later.",
-	)
-	_hire_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	briefing.add_child(_hire_body)
-	_recruitment_metrics = GridContainer.new()
-	_recruitment_metrics.name = "BasicRecruitMetrics"
-	_recruitment_metrics.columns = 2
-	_recruitment_metrics.add_theme_constant_override(&"h_separation", 14)
-	_recruitment_metrics.add_theme_constant_override(&"v_separation", 4)
-	briefing.add_child(_recruitment_metrics)
-	_hire_marks = AetheriaLabelType.new()
-	_hire_marks.name = "BasicRecruitMarks"
-	_hire_marks.apply_role(&"cost_badge")
-	_hire_marks.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_marks.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_recruitment_metrics.add_child(_hire_marks)
-	_hire_roster = AetheriaLabelType.new()
-	_hire_roster.name = "BasicRecruitRoster"
-	_hire_roster.apply_role(&"dense_detail")
-	_hire_roster.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_roster.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_recruitment_metrics.add_child(_hire_roster)
-	_hire_recruit = AetheriaButtonType.new()
-	_hire_recruit.name = "HireBasicRecruit"
-	_hire_recruit.custom_minimum_size = Vector2(280.0, 72.0)
-	_hire_recruit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_recruit.apply_role(&"primary")
-	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
-	_hire_recruit.accessibility_name = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
-	)
-	_recruitment_grid.add_child(_hire_recruit)
-	_hire_status = AetheriaLabelType.new()
-	_hire_status.name = "BasicRecruitStatus"
-	_hire_status.apply_role(&"dense_detail")
-	_hire_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hire_status.accessibility_name = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
-	)
-	_hire_status.accessibility_live = AccessibilityServer.LIVE_OFF
-	stack.add_child(_hire_status)
-	_refresh_recruitment_desk()
-
-
 func _populate_route() -> void:
 	var stage_stars: Dictionary = Game.campaign_projection().get("stage_stars", {})
 	var enabled_rows: Array[Button] = []
@@ -335,6 +262,14 @@ func _populate_route() -> void:
 		row.apply_role(&"selected" if is_next else (&"secondary" if unlocked else &"disabled"))
 		row.set_presentation_text(row.text, _row_presentation_text(stage, unlocked, is_next))
 		row.apply_compact_action_layout()
+		var presentation := row.get_node("PresentationLabel") as Label
+		presentation.offset_left = 16.0
+		presentation.offset_top = STAGE_ROW_VERTICAL_PADDING
+		presentation.offset_right = -16.0
+		presentation.offset_bottom = -STAGE_ROW_VERTICAL_PADDING
+		presentation.clip_text = false
+		presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.custom_minimum_size.y = maxf(row.custom_minimum_size.y, 76.0)
 		row.tooltip_text = row.text
 		if not unlocked:
 			row.focus_mode = Control.FOCUS_NONE
@@ -437,8 +372,6 @@ func _row_presentation_text(stage: StageDef, unlocked: bool, is_next: bool) -> S
 
 func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
 	var focusable := enabled_rows.duplicate()
-	if _hire_recruit != null and not _hire_recruit.disabled:
-		focusable.append(_hire_recruit)
 	focusable.append(back)
 	for index: int in focusable.size():
 		var current: Button = focusable[index]
@@ -454,159 +387,10 @@ func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
 		back.grab_focus.call_deferred()
 
 
-func _refresh_focus_chain() -> void:
-	if _rows == null or _header == null:
-		return
-	var enabled_rows: Array[Button] = []
-	for child: Node in _rows.get_children():
-		if child is Button and not (child as Button).disabled:
-			enabled_rows.append(child as Button)
-	var back := _header.get_node_or_null("BackToStaging") as Button
-	if back != null:
-		_wire_focus(enabled_rows, back)
-
-
 func _on_stage_pressed(stage_id: StringName) -> void:
 	Sfx.play("ui_click")
 	Game.selected_stage_id = stage_id
 	Game.open_squad_select()
-
-
-func _on_hire_basic_recruit() -> void:
-	if _hire_recruit == null or _hire_recruit.disabled:
-		return
-	Sfx.play("ui_click")
-	_hire_recruit.disabled = true
-	var committed: Dictionary = Game.hire_basic_recruit()
-	if not committed.get("accepted", false):
-		_refresh_recruitment_desk(
-			_hire_error_text(StringName(committed.get("error_code", &"unknown"))),
-			true,
-		)
-		if not _hire_recruit.disabled:
-			_hire_recruit.grab_focus.call_deferred()
-		return
-	var projection := Game.campaign_projection()
-	var receipt: Dictionary = committed.get("result", {}).get("recruitment", {})
-	var recruited: Dictionary = receipt.get("hero", {})
-	var callsign := String(recruited.get("hero_id", "Recruit"))
-	for hero: Dictionary in projection.get("ready_heroes", []):
-		if hero.get("hero_id") == recruited.get("hero_id"):
-			callsign = String(hero.get("callsign", callsign))
-			break
-	_refresh_recruitment_desk(
-		UiCopyType.format_text(
-			&"ui.campaign.basic_hire_success",
-			"{callsign} • JOINED COMPANY 33 • {remaining} MARKS REMAIN",
-			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
-		),
-		false,
-	)
-	_hire_recruit.grab_focus.call_deferred()
-
-
-func _refresh_recruitment_desk(message: String = "", error: bool = false) -> void:
-	if _hire_recruit == null:
-		return
-	var projection := Game.campaign_projection()
-	var marks := int(projection.get("marks", 0))
-	var cost := int(projection.get("basic_recruit_cost", 5))
-	var roster_count := (
-		(projection.get("ready_heroes", []) as Array).size()
-		+ (projection.get("fallen_heroes", []) as Array).size()
-	)
-	_hire_marks.text = UiCopyType.format_text(
-		&"ui.campaign.basic_hire_marks", "{count} MARKS AVAILABLE", {&"count": marks},
-	)
-	_hire_roster.text = UiCopyType.format_text(
-		&"ui.campaign.basic_hire_roster", "{count} PERSONNEL READY",
-		{&"count": (projection.get("ready_heroes", []) as Array).size()},
-	)
-	var action_text := UiCopyType.format_text(
-		&"ui.campaign.basic_hire_action", "HIRE • {cost} MARKS", {&"cost": cost},
-	)
-	_hire_recruit.set_presentation_text(action_text, action_text)
-	_hire_recruit.tooltip_text = action_text
-	_hire_recruit.accessibility_description = action_text
-	var unavailable := projection.is_empty() or marks < cost or bool(projection.get("attempt_pending", false)) or roster_count >= 1024
-	_hire_recruit.disabled = unavailable
-	_hire_recruit.apply_role(&"disabled" if unavailable else &"primary")
-	if message.is_empty():
-		if projection.is_empty():
-			message = UiCopyType.text(
-				&"ui.campaign.basic_hire_campaign_inactive", "No active campaign is available.",
-			)
-		elif bool(projection.get("attempt_pending", false)):
-			message = UiCopyType.text(
-				&"ui.campaign.basic_hire_attempt_pending",
-				"Resolve the active operation before hiring personnel.",
-			)
-		elif roster_count >= 1024:
-			message = UiCopyType.text(
-				&"ui.campaign.basic_hire_roster_limit",
-				"The personnel registry has reached capacity.",
-			)
-		elif marks < cost:
-			message = UiCopyType.format_text(
-				&"ui.campaign.basic_hire_insufficient",
-				"Earn {count} more Marks to hire another Recruit.",
-				{&"count": cost - marks},
-			)
-		else:
-			message = UiCopyType.text(
-				&"ui.campaign.basic_hire_ready", "BASIC RECRUIT CONTRACT AVAILABLE",
-			)
-	_hire_status.text = message
-	_hire_status.accessibility_description = message
-	_hire_status.accessibility_live = (
-		AccessibilityServer.LIVE_ASSERTIVE if error else AccessibilityServer.LIVE_POLITE
-	)
-	_hire_status.add_theme_color_override(&"font_color", Style.DANGER if error else Style.CYAN)
-	_refresh_focus_chain()
-
-
-func _hire_error_text(code: StringName) -> String:
-	match code:
-		&"insufficient_marks":
-			var projection := Game.campaign_projection()
-			var deficit := maxi(
-				1,
-				int(projection.get("basic_recruit_cost", 5)) - int(projection.get("marks", 0)),
-			)
-			return UiCopyType.format_text(
-				&"ui.campaign.basic_hire_insufficient",
-				"Earn {count} more Marks to hire another Recruit.",
-				{&"count": deficit},
-			)
-		&"attempt_pending":
-			return UiCopyType.text(
-				&"ui.campaign.basic_hire_attempt_pending",
-				"Resolve the active operation before hiring personnel.",
-			)
-		&"roster_limit":
-			return UiCopyType.text(
-				&"ui.campaign.basic_hire_roster_limit",
-				"The personnel registry has reached capacity.",
-			)
-		&"campaign_inactive":
-			return UiCopyType.text(
-				&"ui.campaign.basic_hire_campaign_inactive", "No active campaign is available.",
-			)
-		&"strategic_mutation_pending":
-			return UiCopyType.text(
-				&"ui.campaign.basic_hire_command_pending",
-				"Resolve the pending Company command before hiring personnel.",
-			)
-		&"store_write_failed", &"store_restore_failed", &"store_integrity_failure":
-			return UiCopyType.text(
-				&"ui.campaign.basic_hire_save_failed",
-				"The hire could not be saved. Activate again to retry the exact contract.",
-			)
-	return UiCopyType.format_text(
-		&"ui.campaign.basic_hire_unknown",
-		"Hiring failed safely ({code}). Review Mission Control and try again.",
-		{&"code": String(code)},
-	)
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
@@ -617,18 +401,15 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		var route_panel := _body.get_node_or_null("CampaignRoutePanel") as Control
 		var dossier := _body.get_node_or_null("MissionDossier") as Control
 		if route_panel != null:
-			route_panel.custom_minimum_size = Vector2(0 if mode == &"portrait" else 520, 420 if mode == &"portrait" else 0)
+			route_panel.size_flags_horizontal = (
+				Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_BEGIN
+			)
+			route_panel.custom_minimum_size = Vector2(
+				0.0 if mode == &"portrait" else ROUTE_PANEL_WIDE_WIDTH,
+				420.0 if mode == &"portrait" else 0.0,
+			)
 		if dossier != null:
 			dossier.custom_minimum_size = Vector2(0 if mode == &"portrait" else 420, 300 if mode == &"portrait" else 0)
-	if _recruitment_grid != null:
-		_recruitment_grid.columns = 1 if mode == &"portrait" else 2
-	if _recruitment_metrics != null:
-		_recruitment_metrics.columns = 2
-	if _hire_body != null:
-		_hire_body.visible = mode != &"portrait"
-	if _hire_recruit != null:
-		_hire_recruit.custom_minimum_size.x = 0.0 if mode == &"portrait" else 280.0
-		_hire_recruit.custom_minimum_size.y = 56.0 if mode == &"portrait" else 72.0
 	# A full-safe-area shell computes its available plate before this callback.
 	# Refit once after descendant column minima settle so landscape widths cannot
 	# survive a live rotation into portrait.
@@ -638,24 +419,6 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 
 func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh_header_copy()
-	if _hire_title != null:
-		_hire_title.text = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
-		).to_upper()
-	if _hire_body != null:
-		_hire_body.text = UiCopyType.text(
-			&"ui.campaign.basic_hire_body",
-			"Hire one persistent basic Recruit. Training can specialize them later.",
-		)
-	if _hire_recruit != null:
-		_hire_recruit.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
-		)
-	if _hire_status != null:
-		_hire_status.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
-		)
-		_refresh_recruitment_desk()
 	if _route_note != null:
 		_route_note.text = UiCopyType.text(
 			&"ui.campaign.route_note",
