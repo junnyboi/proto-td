@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Execution in progress; Phases 0–1 complete |
-| **Source candidate** | `94a85b6ad9ae2fb5c55ee108079e190782887776` |
+| **Status** | Execution in progress; Phases 0–2 complete |
+| **Source candidate** | `cd69b07607cdc5b4bdfea2bd36c43014ffc93e53` |
 | **Runtime** | Godot `4.7.2.stable.official.ed1daf0bf` |
 | **Scope** | Compact pull-history drawer and duplicate-character conversion feedback |
 
@@ -82,7 +82,7 @@ This approach preserves replay compatibility, save hashes, migration behavior, c
 |---|---|---|---|
 | 0 | Canon inspection and binding concept | Design references command receipts and preserves life authority | Complete |
 | 1 | Generate GPT Image 2 archive and reserve-life glyphs; clean alpha; register in art manifest | Both assets pass one visual QA check and remain readable at runtime sizes | Complete |
-| 2 | Add receipt-derived history projection and lifecycle regressions | No save-schema change; replay and history rows match committed receipts | Pending |
+| 2 | Add receipt-derived history projection and lifecycle regressions | No save-schema change; replay and history rows match committed receipts | Complete |
 | 3 | Implement drawer, focus trap, localization, responsive layout, and conversion choreography | Focus restoration, controller cancel, reduced motion, and duplicate/revival copy pass | Pending |
 | 4 | Reconcile master and run import, boot, focused tests, full regression suite, and Xvfb desktop/portrait captures | No error diagnostics; all success sentinels pass | Pending |
 | 5 | Export Web, stage streams, update existing `proto-td-web`, checkpoint, and publish when available | Required artifacts, HTTP runtime, WebDev type/build, fullscreen host | Pending |
