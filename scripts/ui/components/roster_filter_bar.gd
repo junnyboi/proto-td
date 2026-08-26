@@ -7,6 +7,8 @@ const FilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const DEFAULT_FACTION_BUTTON_WIDTH_SCALE := 1.0
+const DEFAULT_FACTION_ICON_COUNT_GAP := 14
 
 var status: StringName = FilterType.STATUS_ACTIVE
 var faction_id: StringName = FilterType.FACTION_ALL
@@ -19,6 +21,8 @@ var _dense_inline := false
 var _inline := false
 var _generous_spacing := false
 var _narrow := false
+var _faction_button_width_scale := DEFAULT_FACTION_BUTTON_WIDTH_SCALE
+var _faction_icon_count_gap := DEFAULT_FACTION_ICON_COUNT_GAP
 var _controls: BoxContainer
 var _status_row: HFlowContainer
 var _faction_row: HFlowContainer
@@ -139,6 +143,15 @@ func set_auxiliary_stacked(value: bool) -> void:
 		_auxiliary_row.vertical = value
 
 
+func set_faction_button_geometry(width_scale: float, icon_count_gap: int) -> void:
+	_faction_button_width_scale = maxf(1.0, width_scale)
+	_faction_icon_count_gap = maxi(0, icon_count_gap)
+	for raw: Variant in _faction_buttons:
+		var button := _faction_buttons[StringName(raw)] as Button
+		button.add_theme_constant_override(&"icon_separation", _faction_icon_count_gap)
+	_refresh_controls()
+
+
 func _build_controls() -> void:
 	_controls = BoxContainer.new()
 	_controls.name = "RosterFilterControls"
@@ -183,7 +196,7 @@ func _add_faction_button(value: StringName) -> void:
 	button.expand_icon = true
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	button.add_theme_constant_override(&"icon_separation", 14)
+	button.add_theme_constant_override(&"icon_separation", _faction_icon_count_gap)
 	if value != FilterType.FACTION_ALL:
 		button.icon = FactionHeraldryType.symbol(value)
 		button.tooltip_text = FactionHeraldryType.display_name(value)
@@ -267,12 +280,13 @@ func _refresh_controls() -> void:
 			)
 			var faction_height := 54.0 if _compact else 66.0
 			button.custom_minimum_size = Vector2(
-				faction_width * (2.0 if _roomy else 1.0),
+				faction_width * (2.0 if _roomy else 1.0) * _faction_button_width_scale,
 				78.0 if _roomy else faction_height,
 			)
 			button.add_theme_constant_override(
 				&"icon_max_width", 28 if _dense_inline else (45 if _compact else 54),
 			)
+			button.add_theme_constant_override(&"icon_separation", _faction_icon_count_gap)
 		Style.apply_button(button, &"selected" if value == faction_id else &"quiet")
 		if _generous_spacing:
 			_apply_button_insets(button, 18.0, 12.0)

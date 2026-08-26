@@ -129,7 +129,7 @@ func _run() -> void:
 	if mission_actions != null:
 		_check(mission_actions.get_child_count() == 3, "Mission action contract changed")
 		_check(mission_actions.get_theme_constant(&"h_separation") >= 28, "Mission actions did not gain the requested spacing")
-		var mission_widths := {"BackButton": 238.0, "TrainingButton": 336.0, "StartBattle": 294.0}
+		var mission_widths := {"BackButton": 238.0, "TrainingButton": 336.0, "StartBattle": 588.0}
 		for child: Node in mission_actions.get_children():
 			var action := child as Button
 			_check(action != null and action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Mission action does not retain its compact alignment")
