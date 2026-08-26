@@ -14,6 +14,9 @@ const HOVER_READY_META := &"_sfx_hover_ready_msec"
 const HOVER_DISABLED_META := &"sfx_hover_disabled"
 const HOVER_BIND_DELAY_MSEC := 120
 const HOVER_DEBOUNCE_MSEC := 65
+const MUTED_ROUTINE_CUE_IDS := {
+	&"ui_click": true,
+}
 
 var _catalog: Resource = null
 var _players: Array[AudioStreamPlayer] = []
@@ -88,6 +91,8 @@ func play(id: String) -> bool:
 		return false
 	var resolved_id := resolved_id_for(raw_id)
 	if resolved_id.is_empty():
+		return false
+	if MUTED_ROUTINE_CUE_IDS.has(resolved_id):
 		return false
 	var frame := Engine.get_process_frames()
 	if int(_last_started_frame_by_id.get(resolved_id, -1)) == frame:
