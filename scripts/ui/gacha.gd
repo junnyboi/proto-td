@@ -9,9 +9,16 @@ const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loadin
 
 const HARD_PITY_WINDOW := 10
 const FIVE_STAR_RARITY := 5
-const CINEMATIC_FINAL_PLATE_SECONDS := 7.44
-const CINEMATIC_RESULT_RISE_SECONDS := 0.32
-const CINEMATIC_RESULT_SETTLE_SECONDS := 0.24
+const CINEMATIC_WATCHDOG_SECONDS := 8.75
+const CINEMATIC_WATCHDOG_POLL_SECONDS := 0.5
+const REVEAL_NAME_FADE_SECONDS := 0.42
+const REVEAL_STAR_GROW_SECONDS := 0.56
+const REVEAL_STAR_PULSE_SECONDS := 0.82
+const GACHA_FULLSIZE_PORTRAITS := {
+	"archive_caster": &"portrait_archive_caster_fullsize",
+	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
+	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
+}
 const CONFIRM_ENTRY_SECONDS := 0.16
 const CONFIRM_READABLE_MAX_WIDTH := 1480.0
 
@@ -65,18 +72,16 @@ var _reveal_layer: Control
 var _reveal_shade: ColorRect
 var _cinematic_player: GachaCinematicPlayer
 var _reveal_burst: Control
-var _reveal_panel: PanelContainer
-var _reveal_content_grid: GridContainer
-var _reveal_eyebrow: Label
+var _reveal_title_stack: VBoxContainer
 var _reveal_title: Label
-var _reveal_portrait: TextureRect
 var _reveal_stars: HBoxContainer
-var _reveal_result: Label
-var _reveal_lives: Label
-var _reveal_pity: Label
+var _reveal_hint: Label
 var _skip_button: Button
 var _reveal_tween: Tween
+var _cinematic_watchdog: Tween
+var _star_pulse_tweens: Array[Tween] = []
 var _is_revealing := false
+var _reveal_result_ready := false
 var _pending_pull: Dictionary = {}
 
 
@@ -100,11 +105,23 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	_kill_confirmation_tween()
 	_kill_reveal_tween()
+	_kill_cinematic_watchdog()
+	_stop_star_pulses()
 	_stop_cinematic()
 
 
 func _input(event: InputEvent) -> void:
-	if _flow_state != FlowState.COMMITTING or not event.is_pressed():
+	if not event.is_pressed():
+		return
+	if (
+		_flow_state == FlowState.REVEAL
+		and _reveal_result_ready
+		and (event is InputEventMouseButton or event is InputEventScreenTouch)
+	):
+		get_viewport().set_input_as_handled()
+		_finish_reveal()
+		return
+	if _flow_state != FlowState.COMMITTING:
 		return
 	if event is InputEventKey and event.echo:
 		get_viewport().set_input_as_handled()
@@ -124,7 +141,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _flow_state == FlowState.COMMITTING:
 		get_viewport().set_input_as_handled()
 		return
-	if _flow_state == FlowState.REVEAL and (event.is_action(&"ui_accept") or event.is_action(&"ui_cancel")):
+	if (
+		_flow_state == FlowState.REVEAL
+		and _reveal_result_ready
+		and (event.is_action(&"ui_accept") or event.is_action(&"ui_cancel"))
+	):
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
 		return
@@ -135,6 +156,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _flow_state == FlowState.BROWSE and event.is_action(&"ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_back_pressed()
+
+
+func _on_reveal_gui_input(event: InputEvent) -> void:
+	if not _is_revealing or not _reveal_result_ready:
+		return
+	if event is InputEventMouseButton and event.pressed:
+		accept_event()
+		_finish_reveal()
+	elif event is InputEventScreenTouch and event.pressed:
+		accept_event()
+		_finish_reveal()
 
 
 func _build_screen() -> void:
@@ -405,6 +437,7 @@ func _build_reveal_layer() -> void:
 	_reveal_layer.name = "PullRevealLayer"
 	_reveal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_reveal_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	_reveal_layer.gui_input.connect(_on_reveal_gui_input)
 	_reveal_layer.visible = false
 	_reveal_layer.modulate.a = 0.0
 	add_child(_reveal_layer)
@@ -412,12 +445,14 @@ func _build_reveal_layer() -> void:
 	_reveal_shade = ColorRect.new()
 	_reveal_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_reveal_shade.color = Color(0.004, 0.008, 0.016, 1.0)
-	_reveal_shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	_reveal_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reveal_layer.add_child(_reveal_shade)
 
 	_cinematic_player = CinematicPlayerType.new()
 	_cinematic_player.name = "GachaCinematicPlayer"
 	_cinematic_player.cinematic_started.connect(_on_cinematic_started)
+	_cinematic_player.cinematic_finished.connect(_on_cinematic_finished)
+	_cinematic_player.cinematic_failed.connect(_on_cinematic_failed)
 	_reveal_layer.add_child(_cinematic_player)
 
 	_reveal_burst = Control.new()
@@ -443,15 +478,19 @@ func _build_reveal_layer() -> void:
 	safe_margin.add_theme_constant_override(&"margin_left", 24)
 	safe_margin.add_theme_constant_override(&"margin_top", 20)
 	safe_margin.add_theme_constant_override(&"margin_right", 24)
-	safe_margin.add_theme_constant_override(&"margin_bottom", 24)
+	safe_margin.add_theme_constant_override(&"margin_bottom", 42)
+	safe_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reveal_layer.add_child(safe_margin)
 	var overlay_box := VBoxContainer.new()
-	overlay_box.add_theme_constant_override(&"separation", 14)
+	overlay_box.add_theme_constant_override(&"separation", 12)
+	overlay_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	safe_margin.add_child(overlay_box)
 	var top_row := HBoxContainer.new()
+	top_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	overlay_box.add_child(top_row)
 	var top_spacer := Control.new()
 	top_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top_row.add_child(top_spacer)
 	_skip_button = Button.new()
 	_skip_button.name = "SkipRevealButton"
@@ -461,64 +500,41 @@ func _build_reveal_layer() -> void:
 	top_row.add_child(_skip_button)
 	var vertical_spacer := Control.new()
 	vertical_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vertical_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	overlay_box.add_child(vertical_spacer)
-	_reveal_panel = PanelContainer.new()
-	_reveal_panel.name = "RevealCard"
-	_reveal_panel.custom_minimum_size = Vector2(760, 236)
-	_reveal_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	Style.apply_panel(_reveal_panel, &"screen")
-	overlay_box.add_child(_reveal_panel)
-	_reveal_content_grid = GridContainer.new()
-	_reveal_content_grid.columns = 2
-	_reveal_content_grid.add_theme_constant_override(&"h_separation", 22)
-	_reveal_content_grid.add_theme_constant_override(&"v_separation", 10)
-	_reveal_panel.add_child(_reveal_content_grid)
-	_reveal_portrait = TextureRect.new()
-	_reveal_portrait.name = "RevealPortrait"
-	_reveal_portrait.custom_minimum_size = Vector2(220, 190)
-	_reveal_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_reveal_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_reveal_portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_reveal_content_grid.add_child(_reveal_portrait)
-	var info_margin := MarginContainer.new()
-	info_margin.add_theme_constant_override(&"margin_top", 8)
-	info_margin.add_theme_constant_override(&"margin_right", 14)
-	info_margin.add_theme_constant_override(&"margin_bottom", 28)
-	_reveal_content_grid.add_child(info_margin)
-	var reveal_box := VBoxContainer.new()
-	reveal_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	reveal_box.add_theme_constant_override(&"separation", 8)
-	info_margin.add_child(reveal_box)
-	_reveal_eyebrow = _label(_copy(&"ui.gacha.signal_lock", "SIGNAL LOCK"), &"eyebrow")
-	_reveal_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reveal_box.add_child(_reveal_eyebrow)
-	_reveal_title = _label(_copy(&"ui.gacha.reveal_title", "RESONANCE"), &"title")
+	_reveal_title_stack = VBoxContainer.new()
+	_reveal_title_stack.name = "CinematicIdentityReveal"
+	_reveal_title_stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	_reveal_title_stack.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_reveal_title_stack.custom_minimum_size.x = 680
+	_reveal_title_stack.add_theme_constant_override(&"separation", 8)
+	_reveal_title_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reveal_title_stack.visible = false
+	overlay_box.add_child(_reveal_title_stack)
+	_reveal_title = _label(_copy(&"ui.gacha.unknown_signal", "UNKNOWN SIGNAL"), &"title")
 	_reveal_title.name = "RevealTitle"
 	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reveal_box.add_child(_reveal_title)
+	_reveal_title.add_theme_font_size_override(&"font_size", 52)
+	_reveal_title.modulate.a = 0.0
+	_reveal_title_stack.add_child(_reveal_title)
 	_reveal_stars = HBoxContainer.new()
 	_reveal_stars.name = "RarityStars"
 	_reveal_stars.alignment = BoxContainer.ALIGNMENT_CENTER
-	_reveal_stars.add_theme_constant_override(&"separation", 8)
-	reveal_box.add_child(_reveal_stars)
+	_reveal_stars.add_theme_constant_override(&"separation", 12)
+	_reveal_stars.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reveal_title_stack.add_child(_reveal_stars)
 	for index: int in FIVE_STAR_RARITY:
 		var star := ResonanceStarType.new()
 		star.name = "Star_%d" % (index + 1)
+		star.custom_minimum_size = Vector2(58, 58)
 		star.set_state(Style.GOLD, false)
+		star.visible = false
 		_reveal_stars.add_child(star)
-	_reveal_result = _label(_copy(&"ui.gacha.signal_acquired", "SIGNAL ACQUIRED"), &"heading")
-	_reveal_result.name = "RevealResult"
-	_reveal_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_reveal_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	reveal_box.add_child(_reveal_result)
-	_reveal_lives = _label(_copy(&"ui.gacha.one_life_ready", "1 LIFE READY"), &"metric")
-	_reveal_lives.name = "RevealLives"
-	_reveal_lives.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reveal_box.add_child(_reveal_lives)
-	_reveal_pity = _label(_copy(&"ui.gacha.guarantee_default", "5-star guaranteed within 10 pulls"), &"detail")
-	_reveal_pity.name = "RevealPity"
-	_reveal_pity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reveal_box.add_child(_reveal_pity)
+	_reveal_hint = _label(_copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE"), &"eyebrow")
+	_reveal_hint.name = "RevealContinueHint"
+	_reveal_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_reveal_hint.modulate.a = 0.0
+	_reveal_title_stack.add_child(_reveal_hint)
 
 
 func _refresh() -> void:
@@ -587,10 +603,14 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	box.add_child(rarity_label)
 	var portrait := TextureRect.new()
 	portrait.name = "Portrait"
-	portrait.texture = Art.texture(StringName(catalog["portrait_asset_id"]))
-	portrait.custom_minimum_size = Vector2(340 if rarity == FIVE_STAR_RARITY else 190, 270 if rarity == FIVE_STAR_RARITY else 190)
+	portrait.texture = Art.texture(_gacha_portrait_asset_id(String(catalog["premium_id"])))
+	portrait.custom_minimum_size = Vector2(
+		340 if rarity == FIVE_STAR_RARITY else 190,
+		270 if rarity == FIVE_STAR_RARITY else 220,
+	)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	box.add_child(portrait)
 	var name := _label(String(catalog["callsign"]), &"heading")
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -635,14 +655,14 @@ func _apply_responsive_layout() -> void:
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
 	_apply_confirmation_layout(viewport_size)
-	if _reveal_content_grid != null:
-		_reveal_content_grid.columns = 1 if portrait else 2
-	if _reveal_panel != null:
-		_reveal_panel.custom_minimum_size.x = 0
-		_reveal_panel.custom_minimum_size.y = 450 if portrait else 270
-	if _reveal_portrait != null:
-		_reveal_portrait.custom_minimum_size.x = 0 if portrait else 220
-		_reveal_portrait.custom_minimum_size.y = 150 if portrait else 190
+	if _reveal_title_stack != null:
+		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 680
+	if _reveal_title != null:
+		_reveal_title.add_theme_font_size_override(&"font_size", 40 if portrait else 52)
+	if _reveal_stars != null:
+		for child: Node in _reveal_stars.get_children():
+			var star := child as ResonanceStar
+			star.custom_minimum_size = Vector2(46, 46) if portrait else Vector2(58, 58)
 
 
 func _on_pull_pressed() -> void:
@@ -715,8 +735,10 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_screen_margin.visible = false
 	_pending_pull = pull.duplicate(true)
 	_is_revealing = true
+	_reveal_result_ready = false
 	_pull_button.disabled = true
 	_back_button.disabled = true
+	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	var premium_id := String(pull.get("premium_id", ""))
 	var row := _pool_row(premium_id)
 	var callsign := String(row.get("callsign", pull.get("premium_id", "Unknown Signal")))
@@ -725,77 +747,156 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_reveal_layer.visible = true
 	_reveal_layer.modulate.a = 0.0
 	_reveal_shade.color = Color(0.035, 0.025, 0.01, 0.96) if rarity == FIVE_STAR_RARITY else Color(0.01, 0.025, 0.05, 0.94)
-	_reveal_panel.scale = Vector2(0.96, 0.96)
-	_reveal_panel.modulate = Color(1, 1, 1, 0)
-	_reveal_portrait.texture = Art.texture(StringName(row.get("portrait_asset_id", "")))
-	_reveal_portrait.modulate = Color.WHITE
-	_reveal_eyebrow.text = _copy(&"ui.gacha.guarantee_fulfilled", "GUARANTEE FULFILLED") if bool(pull.get("pity_forced", false)) else _copy(&"ui.gacha.signal_acquired", "SIGNAL ACQUIRED")
-	_reveal_eyebrow.add_theme_color_override(&"font_color", accent)
-	_reveal_title.text = _format(&"ui.gacha.resonance_rarity", "{rarity}-STAR RESONANCE", {&"rarity": rarity})
+	_reveal_title_stack.visible = false
+	_reveal_title.text = callsign.to_upper()
 	_reveal_title.add_theme_color_override(&"font_color", accent)
-	_reveal_result.text = "%s — %s" % [callsign, _result_kind(pull)]
-	_reveal_result.add_theme_color_override(&"font_color", accent)
-	var lives_after := int(pull.get("lives_after", 1))
-	_reveal_lives.text = _format(&"ui.gacha.lives_ready", "{count} {unit} READY", {&"count": lives_after, &"unit": _life_unit(lives_after)})
-	var guarantee_after := int(pull.get("guarantee_in_after", HARD_PITY_WINDOW))
-	_reveal_pity.text = _format(&"ui.gacha.next_guarantee", "Next 5-star guaranteed in {count} {unit}", {&"count": guarantee_after, &"unit": _pull_unit(guarantee_after)})
+	_reveal_title.modulate.a = 0.0
+	_reveal_title.scale = Vector2(0.96, 0.96)
+	_reveal_hint.modulate.a = 0.0
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		star.set_state(accent, false)
+		star.visible = false
+		star.modulate.a = 0.0
+		star.scale = Vector2(0.18, 0.18)
+		star.rotation = -TAU * 1.25
 	_reveal_burst.modulate = Color(accent.r, accent.g, accent.b, 0.8)
 	_reveal_burst.rotation = -0.08
-	call_deferred("_center_reveal_pivot")
 	_kill_reveal_tween()
+	_kill_cinematic_watchdog()
+	_stop_star_pulses()
 	_stop_cinematic()
 	var motion_reduced := _motion_reduced()
 	_cinematic_player.play_cinematic(premium_id, motion_reduced)
 	if motion_reduced:
 		_reveal_layer.modulate.a = 1.0
 		_cinematic_player.show_final_plate()
-		_reveal_panel.modulate.a = 1.0
-		_reveal_panel.scale = Vector2.ONE
-		_ignite_stars(rarity)
+		_reveal_result_ready = true
+		_reveal_identity_immediately(rarity, accent)
 		_skip_button.grab_focus()
 		return
 	_reveal_tween = create_tween()
 	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_reveal_tween.tween_property(_reveal_layer, "modulate:a", 1.0, 0.18)
 	_reveal_tween.parallel().tween_property(_reveal_burst, "rotation", 0.08, 0.56)
-	_reveal_tween.tween_callback(_ignite_stars.bind(rarity))
-	_reveal_tween.tween_interval(CINEMATIC_FINAL_PLATE_SECONDS - 0.56)
-	_reveal_tween.tween_callback(_cinematic_player.show_final_plate)
-	_reveal_tween.tween_property(_reveal_panel, "modulate:a", 1.0, 0.16)
-	_reveal_tween.parallel().tween_property(
-		_reveal_panel, "scale", Vector2.ONE, CINEMATIC_RESULT_RISE_SECONDS,
-	).set_trans(Tween.TRANS_BACK)
-	_reveal_tween.tween_interval(CINEMATIC_RESULT_SETTLE_SECONDS)
-	_reveal_tween.tween_callback(_skip_button.grab_focus)
 
 
 func _on_cinematic_started(cue_id: StringName) -> void:
 	if not _is_revealing or cue_id.is_empty():
 		return
 	Music.play_cue(cue_id)
+	_kill_cinematic_watchdog()
+	_cinematic_watchdog = create_tween()
+	_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_SECONDS)
+	_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
 
 
-func _ignite_stars(rarity: int) -> void:
+func _on_cinematic_finished() -> void:
+	if not _is_revealing:
+		return
+	_kill_cinematic_watchdog()
+	_begin_identity_reveal()
+
+
+func _on_cinematic_failed(_stream_key: StringName, _reason: String) -> void:
+	if _is_revealing:
+		call_deferred("_begin_identity_reveal")
+
+
+func _on_cinematic_watchdog_timeout() -> void:
+	_cinematic_watchdog = null
+	if not _is_revealing:
+		return
+	var video := _cinematic_player.video_player()
+	if video != null and video.is_playing():
+		_cinematic_watchdog = create_tween()
+		_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_POLL_SECONDS)
+		_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
+		return
+	_cinematic_player.show_final_plate()
+	_begin_identity_reveal()
+
+
+func _begin_identity_reveal() -> void:
+	if not _is_revealing or _reveal_title_stack.visible:
+		return
+	_reveal_result_ready = true
+	_kill_cinematic_watchdog()
+	_cinematic_player.show_final_plate()
+	var rarity := int(_pending_pull.get("rarity", 4))
+	var accent := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
+	_reveal_title_stack.visible = true
+	_reveal_title.modulate.a = 0.0
+	_reveal_title.scale = Vector2(0.96, 0.96)
+	_reveal_title.pivot_offset = _reveal_title.size * 0.5
+	_kill_reveal_tween()
+	_reveal_tween = create_tween()
+	_reveal_tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	_reveal_tween.tween_property(_reveal_title, "modulate:a", 1.0, REVEAL_NAME_FADE_SECONDS)
+	_reveal_tween.parallel().tween_property(_reveal_title, "scale", Vector2.ONE, REVEAL_NAME_FADE_SECONDS)
+	for index: int in rarity:
+		var star := _reveal_stars.get_child(index) as ResonanceStar
+		_reveal_tween.tween_callback(_prepare_reveal_star.bind(star, accent))
+		_reveal_tween.tween_property(star, "modulate:a", 1.0, REVEAL_STAR_GROW_SECONDS)
+		_reveal_tween.parallel().tween_property(
+			star, "scale", Vector2.ONE, REVEAL_STAR_GROW_SECONDS,
+		).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_reveal_tween.parallel().tween_property(
+			star, "rotation", 0.0, REVEAL_STAR_GROW_SECONDS,
+		).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		_reveal_tween.tween_callback(_start_star_pulse.bind(star))
+		_reveal_tween.tween_interval(0.08)
+	_reveal_tween.tween_property(_reveal_hint, "modulate:a", 0.78, 0.28)
+
+
+func _prepare_reveal_star(star: ResonanceStar, accent: Color) -> void:
+	star.visible = true
+	star.modulate.a = 0.0
+	star.scale = Vector2(0.18, 0.18)
+	star.rotation = -TAU * 1.25
+	star.pivot_offset = star.size * 0.5
+	star.set_state(accent, true)
+
+
+func _start_star_pulse(star: ResonanceStar) -> void:
+	if not _is_revealing:
+		return
+	var pulse := create_tween().set_loops()
+	pulse.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(star, "scale", Vector2(1.06, 1.06), REVEAL_STAR_PULSE_SECONDS * 0.5)
+	pulse.tween_property(star, "scale", Vector2.ONE, REVEAL_STAR_PULSE_SECONDS * 0.5)
+	_star_pulse_tweens.append(pulse)
+
+
+func _reveal_identity_immediately(rarity: int, accent: Color) -> void:
+	_reveal_title_stack.visible = true
+	_reveal_title.modulate.a = 1.0
+	_reveal_title.scale = Vector2.ONE
+	_reveal_hint.modulate.a = 0.78
 	for index: int in _reveal_stars.get_child_count():
 		var star := _reveal_stars.get_child(index) as ResonanceStar
 		var lit := index < rarity
-		var color := Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN
-		star.set_state(color, lit)
+		star.visible = lit
+		star.modulate.a = 1.0 if lit else 0.0
+		star.scale = Vector2.ONE
+		star.rotation = 0.0
+		star.set_state(accent, lit)
 
 
 func _finish_reveal() -> void:
 	if not _is_revealing:
 		return
 	_kill_reveal_tween()
+	_kill_cinematic_watchdog()
+	_stop_star_pulses()
 	_stop_cinematic()
 	var final_copy := _result_copy(_pending_pull)
 	_is_revealing = false
+	_reveal_result_ready = false
 	_flow_state = FlowState.BROWSE
 	_reveal_layer.visible = false
 	_reveal_layer.modulate.a = 0.0
+	_reveal_title_stack.visible = false
 	_pending_pull = {}
 	_screen_margin.visible = true
 	_refresh()
@@ -809,17 +910,25 @@ func _kill_reveal_tween() -> void:
 	_reveal_tween = null
 
 
+func _kill_cinematic_watchdog() -> void:
+	if _cinematic_watchdog != null and _cinematic_watchdog.is_valid():
+		_cinematic_watchdog.kill()
+	_cinematic_watchdog = null
+
+
+func _stop_star_pulses() -> void:
+	for pulse: Tween in _star_pulse_tweens:
+		if pulse != null and pulse.is_valid():
+			pulse.kill()
+	_star_pulse_tweens.clear()
+
+
 func _stop_cinematic() -> void:
 	if _cinematic_player != null:
 		_cinematic_player.stop()
 	if String(Music.current_id()).begins_with("gacha_"):
 		Music.stop()
 		Music.play_staging(&"lunaris")
-
-
-func _center_reveal_pivot() -> void:
-	if _reveal_panel != null:
-		_reveal_panel.pivot_offset = _reveal_panel.size * 0.5
 
 
 func _result_kind(pull: Dictionary) -> String:
@@ -859,6 +968,10 @@ func _class_name(class_id: String) -> String:
 	var path := "res://data/classes/%s.tres" % class_id
 	var definition := load(path) as ClassDefType if ResourceLoader.exists(path) else null
 	return definition.name if definition != null else class_id.replace("_", " ").capitalize()
+
+
+func _gacha_portrait_asset_id(premium_id: String) -> StringName:
+	return StringName(GACHA_FULLSIZE_PORTRAITS.get(premium_id, &""))
 
 
 func _error_copy(code: StringName) -> String:
@@ -1106,30 +1219,11 @@ func _refresh_static_copy() -> void:
 		"Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls.",
 	)
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
+	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
 	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
-		var rarity := int(_pending_pull.get("rarity", 4))
-		_reveal_eyebrow.text = (
-			_copy(&"ui.gacha.guarantee_fulfilled", "GUARANTEE FULFILLED")
-			if bool(_pending_pull.get("pity_forced", false))
-			else _copy(&"ui.gacha.signal_acquired", "SIGNAL ACQUIRED")
-		)
-		_reveal_title.text = _format(
-			&"ui.gacha.resonance_rarity", "{rarity}-STAR RESONANCE", {&"rarity": rarity},
-		)
-		_reveal_result.text = "%s — %s" % [
-			_callsign_for(String(_pending_pull.get("premium_id", ""))),
-			_result_kind(_pending_pull),
-		]
-		var lives_after := int(_pending_pull.get("lives_after", 1))
-		_reveal_lives.text = _format(
-			&"ui.gacha.lives_ready", "{count} {unit} READY",
-			{&"count": lives_after, &"unit": _life_unit(lives_after)},
-		)
-		var guarantee_after := int(_pending_pull.get("guarantee_in_after", HARD_PITY_WINDOW))
-		_reveal_pity.text = _format(
-			&"ui.gacha.next_guarantee", "Next 5-star guaranteed in {count} {unit}",
-			{&"count": guarantee_after, &"unit": _pull_unit(guarantee_after)},
-		)
+		_reveal_title.text = _callsign_for(
+			String(_pending_pull.get("premium_id", "")),
+		).to_upper()
 
 
 func flow_state_name() -> StringName:
@@ -1142,6 +1236,10 @@ func flow_state_name() -> StringName:
 
 func confirmation_projection_snapshot() -> Dictionary:
 	return _confirmation_projection.duplicate(true)
+
+
+func reveal_result_ready() -> bool:
+	return _reveal_result_ready
 
 
 func _label(text: String, role: StringName) -> Label:

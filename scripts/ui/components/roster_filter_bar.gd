@@ -13,6 +13,8 @@ var faction_id: StringName = FilterType.FACTION_ALL
 var _rows: Array[Dictionary] = []
 var _show_status_tabs := true
 var _compact := false
+var _inline := false
+var _controls: BoxContainer
 var _status_row: HFlowContainer
 var _faction_row: HFlowContainer
 var _status_buttons := {}
@@ -55,16 +57,38 @@ func set_rows(rows: Array) -> void:
 
 func set_compact(value: bool) -> void:
 	_compact = value
+	if _status_row != null and _inline:
+		_status_row.custom_minimum_size.x = 260.0 if _compact else 320.0
 	_refresh_controls()
 
 
+func set_inline(value: bool) -> void:
+	_inline = value
+	if _controls != null:
+		_controls.vertical = not value
+		_controls.add_theme_constant_override(&"separation", 12)
+		_status_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if value else Control.SIZE_EXPAND_FILL
+		_status_row.custom_minimum_size.x = (
+			(260.0 if _compact else 320.0) if value else 0.0
+		)
+		_faction_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_controls.queue_sort()
+		queue_sort()
+
+
 func _build_controls() -> void:
+	_controls = BoxContainer.new()
+	_controls.name = "RosterFilterControls"
+	_controls.vertical = not _inline
+	_controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_controls.add_theme_constant_override(&"separation", 12)
+	add_child(_controls)
 	_status_row = HFlowContainer.new()
 	_status_row.name = "RosterStatusTabs"
 	_status_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status_row.add_theme_constant_override(&"h_separation", 8)
 	_status_row.add_theme_constant_override(&"v_separation", 8)
-	add_child(_status_row)
+	_controls.add_child(_status_row)
 	_add_status_button(FilterType.STATUS_ACTIVE)
 	_add_status_button(FilterType.STATUS_FALLEN)
 
@@ -73,7 +97,7 @@ func _build_controls() -> void:
 	_faction_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_faction_row.add_theme_constant_override(&"h_separation", 8)
 	_faction_row.add_theme_constant_override(&"v_separation", 8)
-	add_child(_faction_row)
+	_controls.add_child(_faction_row)
 	_add_faction_button(FilterType.FACTION_ALL)
 	for item: StringName in FactionHeraldryType.ORDER:
 		_add_faction_button(item)

@@ -16,9 +16,7 @@ const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narr
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
-const SHELL_SIZE := Vector2(1210.0, 660.0)
-const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
-const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
+const ACTION_SAFE_INSET := 16.0
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -45,6 +43,8 @@ var _roster_scroll: ScrollContainer = null
 var _intel_scroll: ScrollContainer = null
 var _footer: BoxContainer = null
 var _header: BoxContainer = null
+var _header_status: VBoxContainer = null
+var _roster_heading: BoxContainer = null
 var _actions: GridContainer = null
 var _filter_bar: RosterFilterBarType = null
 var _roster_empty: Label = null
@@ -62,10 +62,12 @@ func _ready() -> void:
 	LunarisOpsType.add_backdrop(self, BACKDROP)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "MissionCommandShell"
-	_shell.preferred_size = SHELL_SIZE
+	_shell.full_safe_area = true
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
-	LunarisOpsType.apply_panel(_shell.reading_plate() as PanelContainer, &"screen")
+	var reading_plate := _shell.reading_plate() as PanelContainer
+	reading_plate.name = "MissionFullscreenWorkspace"
+	reading_plate.add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
 
 	var surface := VBoxContainer.new()
 	surface.name = "MissionCommandSurface"
@@ -113,18 +115,18 @@ func _build_header() -> BoxContainer:
 	title_block.add_child(_label("MissionTitle", UiCopyType.stage_title(_stage).to_upper(), &"title"))
 	identity.add_child(title_block)
 	_header.add_child(identity)
-	var status := VBoxContainer.new()
-	status.custom_minimum_size.x = 220.0
-	status.alignment = BoxContainer.ALIGNMENT_CENTER
+	_header_status = VBoxContainer.new()
+	_header_status.name = "MissionStatus"
+	_header_status.custom_minimum_size.x = 220.0
+	_header_status.alignment = BoxContainer.ALIGNMENT_CENTER
 	var threat := _label("ThreatLabel", "RELIQUARY THREAT", &"eyebrow")
 	threat.autowrap_mode = TextServer.AUTOWRAP_OFF
 	threat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	status.add_child(threat)
+	_header_status.add_child(threat)
 	var limit := _label("SquadLimit", "SQUAD LIMIT %d" % _stage.squad_size, &"metric")
-	limit.autowrap_mode = TextServer.AUTOWRAP_OFF
 	limit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	status.add_child(limit)
-	_header.add_child(status)
+	_header_status.add_child(limit)
+	_header.add_child(_header_status)
 	return _header
 
 
@@ -143,18 +145,20 @@ func _build_body() -> GridContainer:
 	roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	roster_panel.size_flags_stretch_ratio = 2.1
 	roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	LunarisOpsType.apply_panel(roster_panel, &"quiet")
+	LunarisOpsType.apply_panel(roster_panel, &"workspace")
 	var roster_column := VBoxContainer.new()
 	roster_column.add_theme_constant_override(&"separation", 12)
 	roster_panel.add_child(roster_column)
-	var roster_heading := HBoxContainer.new()
+	_roster_heading = BoxContainer.new()
+	_roster_heading.name = "FieldTeamHeader"
 	var roster_title := _label("FieldTeamHeading", "FIELD TEAM", &"heading")
 	roster_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	roster_heading.add_child(roster_title)
+	_roster_heading.add_child(roster_title)
 	_counter = _label("PickCounter", "", &"metric")
+	_counter.custom_minimum_size.x = 178.0
 	_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	roster_heading.add_child(_counter)
-	roster_column.add_child(roster_heading)
+	_roster_heading.add_child(_counter)
+	roster_column.add_child(_roster_heading)
 	_all_roster_rows = _campaign_roster_rows()
 	_filter_bar = RosterFilterBarType.new()
 	_filter_bar.configure(
@@ -193,7 +197,7 @@ func _build_body() -> GridContainer:
 	briefing_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	briefing_panel.size_flags_stretch_ratio = 1.0
 	briefing_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	LunarisOpsType.apply_panel(briefing_panel, &"quiet")
+	LunarisOpsType.apply_panel(briefing_panel, &"workspace")
 	_intel_scroll = ScrollContainer.new()
 	_intel_scroll.name = "MissionIntelScroll"
 	_intel_scroll.custom_minimum_size.y = 270.0
@@ -248,20 +252,23 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_filter_input.name = "DeploymentNameFilter"
 	_filter_input.text = _name_filter
 	_filter_input.placeholder_text = UiCopyType.text(
-		&"ui.identity_filter.placeholder", "Filter by name or title",
+		&"ui.identity_filter.placeholder", "Filter operators",
 	)
 	_filter_input.clear_button_enabled = true
-	_filter_input.custom_minimum_size = Vector2(240.0, 50.0)
+	_filter_input.custom_minimum_size = Vector2(180.0, 50.0)
 	_filter_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_line_edit(_filter_input)
+	_filter_input.add_theme_font_size_override(&"font_size", 16)
 	_filter_input.text_changed.connect(_on_name_filter_changed)
 	_filter_toolbar.add_child(_filter_input)
 	_sort_select = OptionButton.new()
 	_sort_select.name = "DeploymentNameSort"
-	_sort_select.custom_minimum_size = Vector2(200.0, 50.0)
+	_sort_select.custom_minimum_size = Vector2(180.0, 50.0)
 	_sort_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sort_select.fit_to_longest_item = false
+	_sort_select.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	for option: Dictionary in [
-		{"id": &"recruitment", "label": UiCopyType.text(&"ui.identity_sort.recruitment", "Recruitment order")},
+		{"id": &"recruitment", "label": UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")},
 		{"id": &"name_asc", "label": UiCopyType.text(&"ui.identity_sort.name_asc", "Name A–Z")},
 		{"id": &"name_desc", "label": UiCopyType.text(&"ui.identity_sort.name_desc", "Name Z–A")},
 	]:
@@ -271,9 +278,12 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		if option["id"] == _name_sort:
 			_sort_select.select(option_index)
 	LunarisOpsType.apply_button(_sort_select, &"secondary")
+	_sort_select.add_theme_font_size_override(&"font_size", 16)
+	_sort_select.tooltip_text = UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")
 	_sort_select.item_selected.connect(_on_name_sort_selected)
 	_filter_toolbar.add_child(_sort_select)
 	_filter_summary = _label("DeploymentFilterSummary", "", &"dense_detail")
+	_filter_summary.custom_minimum_size.x = 100.0
 	_filter_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_filter_toolbar.add_child(_filter_summary)
 	return _filter_toolbar
@@ -359,10 +369,7 @@ func _rebuild_operator_cards() -> void:
 		pick.set_presentation_text(card_text, card_text)
 		pick.disabled = fallen
 		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
-		var card_label := pick.get_node("PresentationLabel") as Label
-		card_label.offset_top = 106.0
-		card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		_apply_operator_card_text_style(pick)
 		if not fallen:
 			pick.set_pressed_no_signal(_picked.has(hero_id))
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
@@ -372,6 +379,20 @@ func _rebuild_operator_cards() -> void:
 			_hero_order.append(hero_id)
 		else:
 			LunarisOpsType.apply_button(pick, &"disabled")
+			_apply_operator_card_text_style(pick)
+
+
+func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
+	var card_label := button.get_node("PresentationLabel") as Label
+	card_label.offset_left = 14.0
+	card_label.offset_top = 106.0
+	card_label.offset_right = -14.0
+	card_label.offset_bottom = -14.0
+	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	card_label.clip_text = false
+	card_label.add_theme_font_size_override(&"font_size", 15)
+	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 
 
 func _build_footer() -> BoxContainer:
@@ -381,6 +402,7 @@ func _build_footer() -> BoxContainer:
 	_footer.add_theme_constant_override(&"separation", 16)
 	var readiness := VBoxContainer.new()
 	readiness.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	readiness.size_flags_stretch_ratio = 1.0
 	readiness.add_child(_label("ReadinessEyebrow", "PRE-DEPLOYMENT", &"eyebrow"))
 	readiness.add_child(_label("ReadinessCopy", "Train, review, then commit the field team.", &"detail"))
 	_footer.add_child(readiness)
@@ -388,6 +410,7 @@ func _build_footer() -> BoxContainer:
 	_actions.name = "MissionActions"
 	_actions.columns = 3
 	_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_actions.size_flags_stretch_ratio = 1.35
 	_actions.add_theme_constant_override(&"h_separation", 10)
 	_actions.add_theme_constant_override(&"v_separation", 10)
 	_footer.add_child(_actions)
@@ -407,12 +430,21 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	var button := AetheriaButtonType.new()
 	button.name = node_name
 	button.text = text_value
-	button.custom_minimum_size = Vector2(170.0, 62.0)
+	button.custom_minimum_size = Vector2(
+		240.0 if node_name == "TrainingButton" else (210.0 if node_name == "StartBattle" else 170.0),
+		68.0,
+	)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.set_presentation_text(text_value, text_value)
 	LunarisOpsType.apply_button(button, role)
 	var presentation := button.get_node("PresentationLabel") as Label
-	presentation.add_theme_font_size_override(&"font_size", 18)
+	presentation.offset_left = ACTION_SAFE_INSET
+	presentation.offset_top = 8.0
+	presentation.offset_right = -ACTION_SAFE_INSET
+	presentation.offset_bottom = -8.0
+	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	presentation.clip_text = false
+	presentation.add_theme_font_size_override(&"font_size", 17)
 	return button
 
 
@@ -469,6 +501,7 @@ func _refresh() -> void:
 		var hero_id := StringName(raw_id)
 		var button := _buttons[hero_id] as AetheriaButtonType
 		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
+		_apply_operator_card_text_style(button)
 	var selected_names: Array[String] = []
 	for hero_id: StringName in _picked:
 		var hero := _hero_by_id(hero_id)
@@ -553,18 +586,28 @@ func _hero_label(hero: Dictionary) -> String:
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
-	if _shell != null:
-		var target_size := SHELL_SIZE
-		if mode == &"portrait":
-			target_size = PORTRAIT_SHELL_SIZE
-		elif mode == &"compact_landscape":
-			target_size = COMPACT_SHELL_SIZE
-		if _shell.preferred_size != target_size:
-			_shell.preferred_size = target_size
 	if _header != null:
 		_header.vertical = mode == &"portrait"
+	if _header_status != null:
+		_header_status.custom_minimum_size.x = 0.0 if mode == &"portrait" else 220.0
+		for child: Node in _header_status.get_children():
+			if child is Label:
+				(child as Label).horizontal_alignment = (
+					HORIZONTAL_ALIGNMENT_LEFT
+					if mode == &"portrait"
+					else HORIZONTAL_ALIGNMENT_RIGHT
+				)
+	if _roster_heading != null:
+		_roster_heading.vertical = mode != &"regular_landscape"
+	if _counter != null:
+		_counter.custom_minimum_size.x = 0.0 if mode != &"regular_landscape" else 178.0
+		_counter.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_LEFT
+			if mode != &"regular_landscape"
+			else HORIZONTAL_ALIGNMENT_RIGHT
+		)
 	if _filter_toolbar != null:
-		_filter_toolbar.vertical = mode == &"portrait"
+		_filter_toolbar.vertical = mode != &"regular_landscape"
 	if _filter_summary != null:
 		_filter_summary.horizontal_alignment = (
 			HORIZONTAL_ALIGNMENT_LEFT
@@ -586,7 +629,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			180.0, 190.0 if mode == &"portrait" else 220.0,
 		)
 	if _footer != null:
-		_footer.vertical = mode == &"portrait"
+		_footer.vertical = mode != &"regular_landscape"
 	if _actions != null:
 		_actions.columns = 1 if mode == &"portrait" else 3
 
@@ -610,10 +653,15 @@ func _label(label_name: String, label_text: String, role: StringName) -> Aetheri
 	var label := AetheriaLabelType.new()
 	label.name = label_name
 	label.text = label_text
-	label.autowrap_mode = (
-		TextServer.AUTOWRAP_WORD_SMART if role in [&"body", &"detail"]
-		else TextServer.AUTOWRAP_OFF
+	var wraps := role in [&"title", &"heading", &"body", &"detail", &"metric", &"dense_detail"]
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if wraps else TextServer.AUTOWRAP_OFF
+	label.clip_text = not wraps
+	label.text_overrun_behavior = (
+		TextServer.OVERRUN_NO_TRIMMING
+		if wraps
+		else TextServer.OVERRUN_TRIM_ELLIPSIS
 	)
+	label.custom_minimum_size.x = 0.0
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_label(label, role)
 	return label

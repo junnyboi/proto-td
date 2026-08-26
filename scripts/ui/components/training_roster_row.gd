@@ -19,7 +19,7 @@ var _progress: ProgressBar
 
 func _init() -> void:
 	toggle_mode = true
-	custom_minimum_size.x = 500.0
+	custom_minimum_size.x = 0.0
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	set_presentation_text("Training recruit", " ")
 	_build_content()
@@ -61,7 +61,7 @@ func set_selected(value: bool) -> void:
 
 
 func set_compact(value: bool) -> void:
-	_portrait.custom_minimum_size = Vector2(82.0, 104.0) if value else Vector2(96.0, 104.0)
+	_portrait.custom_minimum_size = Vector2(82.0, 108.0) if value else Vector2(96.0, 116.0)
 	fit_to_content()
 
 
@@ -75,7 +75,7 @@ func fit_to_content() -> void:
 		callsign_height + title_height + class_height + status_height
 		+ _progress.custom_minimum_size.y + reason_height
 	)
-	custom_minimum_size.y = ceilf(maxf(details_height, _portrait.custom_minimum_size.y) + 24.0)
+	custom_minimum_size.y = ceilf(maxf(details_height, _portrait.custom_minimum_size.y) + 32.0)
 	update_minimum_size()
 
 
@@ -87,7 +87,7 @@ func _build_content() -> void:
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
-		margin.add_theme_constant_override(side, 12)
+		margin.add_theme_constant_override(side, 16)
 	add_child(margin)
 	var row := HBoxContainer.new()
 	row.name = "RosterRowContent"
@@ -104,7 +104,7 @@ func _build_content() -> void:
 	var details := VBoxContainer.new()
 	details.name = "RosterDetails"
 	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	details.add_theme_constant_override(&"separation", 0)
+	details.add_theme_constant_override(&"separation", 2)
 	details.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(details)
 	_callsign = _label("Callsign", &"dense_body")
@@ -140,8 +140,19 @@ func _label(node_name: String, role: StringName) -> TrainingLabelType:
 	var label := TrainingLabelType.new()
 	label.name = node_name
 	label.apply_role(role)
+	match role:
+		&"dense_body":
+			LunarisOpsType.apply_label(label, &"body")
+			label.add_theme_font_size_override(&"font_size", 19)
+		&"dense_detail":
+			LunarisOpsType.apply_label(label, &"detail")
+			label.add_theme_font_size_override(&"font_size", 16)
+		&"eyebrow":
+			LunarisOpsType.apply_label(label, &"eyebrow")
+			label.add_theme_font_size_override(&"font_size", 15)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return label
 

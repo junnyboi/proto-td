@@ -16,6 +16,14 @@
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
+- [x] Convert Mission Control to a full-safe-area workspace, remove its decorative outer frame, and eliminate text/action overflow across 1280×720, 1024×576, 720×1280, and 390×844 layouts.
+- [x] Add dedicated cold-blizzard Slow Field cast and expiration cues through GPT Image 2 carrier anchors, audio-bearing video extraction, deterministic mastering, and one-shot presentation lifecycle tests.
+
+# Premium Resonance Cinematic Completion
+
+- [x] Replace the fixed 7.44-second result timer with natural `VideoStreamPlayer.finished` completion so every verified eight-second cinematic plays from start to finish.
+- [x] Keep result input locked during download/playback, then allow mouse/touch anywhere or keyboard accept/cancel to dismiss the completed reveal and return to Resonance.
+- [x] Preserve explicit Skip Reveal, reduced-motion fallback, failure fallback, localization, authoritative pull receipts, and Company Command audio restoration.
 
 # Company Command Sizing Reimplementation
 
@@ -30,7 +38,8 @@
 - [x] Preserve the user-approved concept and implementation plan verbatim under repository-root `docs/`.
 - [x] Audit the synchronized runtime against all eight approved concept targets after the latest upstream feature integrations.
 - [x] Close material visual/interaction gaps while preserving every authoritative behavior contract.
-- [ ] Run final Web export, browser, WebDev checkpoint, public deployment, and push gates on the accepted implementation.
+- [x] Run final Web export, direct/managed browser, WebDev checkpoint, and source push gates on the accepted implementation.
+- [ ] Promote WebDev checkpoint `7c9b6467` through **Publish**, then verify public exact PCK `index_1d0b5e82.pck`, input, cinematic transport, geometry, and console.
 
 # Faction-Led Soundtrack Redesign
 
