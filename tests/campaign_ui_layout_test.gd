@@ -74,6 +74,23 @@ func _run() -> void:
 	_check(training_shell != null and bool(training_shell.get("full_safe_area")), "Training did not use the full-safe-area workspace")
 	_check(not_now != null, "Training safe exit action is missing")
 	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
+	var rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit
+	var rename_title := training.find_child("RenameTitleInput", true, false) as LineEdit
+	var rename_review := training.find_child("RenameUnitAction", true, false) as Button
+	_check(rename_input != null and rename_title != null and rename_review != null, "Training rename editor is incomplete")
+	if rename_input != null and rename_title != null and rename_review != null:
+		rename_input.text = "Layout Sentinel"
+		rename_input.text_changed.emit(rename_input.text)
+		rename_title.text = "Safe Area"
+		rename_title.text_changed.emit(rename_title.text)
+		await process_frame
+		rename_review.pressed.emit()
+		await process_frame
+		var rename_confirm := training.find_child("RenameConfirm", true, false) as Button
+		var rename_header := training.find_child("TrainingPersistentHeader", true, false) as VBoxContainer
+		_check(StringName(training.call("mode")) == &"rename_confirmation", "Training rename review is not an in-page mode")
+		_check(rename_confirm != null and not _has_scroll_ancestor(rename_confirm), "Training rename confirmation action scrolls with the body")
+		_check(rename_header != null and rename_header.visible and not _has_scroll_ancestor(rename_header), "Training rename confirmation header scrolls with the body")
 	_dispose(training)
 	game.set("content", null)
 

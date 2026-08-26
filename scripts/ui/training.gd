@@ -17,6 +17,12 @@ const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd"
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
+enum RenameConfirmationState {
+	INACTIVE,
+	ACTIVE,
+	COMMITTING,
+}
+
 const SHELL_SIZE := Vector2(1210.0, 660.0)
 const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
 const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
@@ -115,6 +121,7 @@ var _shell: AetheriaScreenShellType
 var _page: VBoxContainer
 var _dialog_scroll: ScrollContainer
 var _workspace: VBoxContainer
+var _persistent_header: VBoxContainer
 var _action_dock: VBoxContainer
 var _mode: StringName = &"roster"
 var _layout_mode: StringName = &"regular_landscape"
@@ -145,9 +152,14 @@ var _rename_input: LineEdit
 var _rename_title_input: LineEdit
 var _rename_action: AetheriaButtonType
 var _rename_error: AetheriaLabelType
-var _rename_confirmation: ConfirmationDialog
+var _rename_comparison: BoxContainer
+var _rename_cancel: AetheriaButtonType
+var _rename_confirm: AetheriaButtonType
+var _identity_edit_draft: Dictionary = {}
 var _pending_identity: Dictionary = {}
-var _rename_dispatching := false
+var _rename_state := RenameConfirmationState.INACTIVE
+var _rename_editor_error: StringName = &""
+var _rename_dispatch_count := 0
 var _confirmation_consumed := false
 var _promotion_dispatch_count := 0
 
@@ -159,7 +171,7 @@ func _ready() -> void:
 		return
 	Game.content = self
 	_build_shell()
-	_build_rename_confirmation()
+	I18n.locale_changed.connect(_on_locale_changed)
 	_refresh_roster()
 	_show_roster(_roster_projection_error())
 
@@ -168,6 +180,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
+	if _mode == &"rename_confirmation":
+		if _rename_state == RenameConfirmationState.ACTIVE:
+			_cancel_rename()
+		return
 	if _mode == &"review":
 		_on_review_back()
 	elif _mode == &"paths":
@@ -230,6 +246,11 @@ func _build_shell() -> void:
 	_workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_workspace.add_theme_constant_override(&"separation", 12)
 	content_host.add_child(_workspace)
+	_persistent_header = VBoxContainer.new()
+	_persistent_header.name = "TrainingPersistentHeader"
+	_persistent_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_persistent_header.visible = false
+	_workspace.add_child(_persistent_header)
 	_workspace.add_child(_dialog_scroll)
 	_action_dock = VBoxContainer.new()
 	_action_dock.name = "TrainingActionDock"
@@ -237,31 +258,6 @@ func _build_shell() -> void:
 	_workspace.add_child(_action_dock)
 	_layout_mode = _shell.layout_mode()
 	_shell.preferred_size = _shell_size_for(_layout_mode)
-
-
-func _build_rename_confirmation() -> void:
-	_rename_confirmation = ConfirmationDialog.new()
-	_rename_confirmation.name = "RenameConfirmationDialog"
-	_rename_confirmation.title = _t(&"ui.rename.confirm_title", "Confirm identity")
-	_rename_confirmation.ok_button_text = _t(&"ui.rename.confirm_action", "Confirm")
-	_rename_confirmation.get_cancel_button().text = _t(&"ui.action.cancel", "Cancel")
-	_rename_confirmation.exclusive = true
-	_rename_confirmation.transient = true
-	_rename_confirmation.add_theme_stylebox_override(
-		&"panel", LunarisOpsType.panel_style(&"screen"),
-	)
-	var confirmation_label := _rename_confirmation.get_label()
-	confirmation_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	LunarisOpsType.apply_label(confirmation_label, &"body")
-	var confirm_button := _rename_confirmation.get_ok_button()
-	confirm_button.custom_minimum_size = Vector2(150.0, 52.0)
-	LunarisOpsType.apply_button(confirm_button, &"primary")
-	var cancel_button := _rename_confirmation.get_cancel_button()
-	cancel_button.custom_minimum_size = Vector2(150.0, 52.0)
-	LunarisOpsType.apply_button(cancel_button, &"secondary")
-	_rename_confirmation.confirmed.connect(_confirm_rename)
-	_rename_confirmation.canceled.connect(_cancel_rename)
-	add_child(_rename_confirmation)
 
 
 func _refresh_roster() -> void:
@@ -275,6 +271,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	_mode = &"roster"
 	_selected_choice_id = ""
 	_clear_page()
+	_set_persistent_header(null)
 	_page.add_child(_header(
 		"TrainingTitle", _t(&"ui.training.title", "TRAINING"),
 			_t(&"ui.training.manage_personnel", "Manage callsigns and training paths."),
@@ -614,7 +611,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	))
 	_rename_input = LineEdit.new()
 	_rename_input.name = "RenameUnitInput"
-	_rename_input.text = String(summary["callsign"])
+	_rename_input.text = _identity_draft_callsign(summary)
 	_rename_input.placeholder_text = _t(&"ui.rename.placeholder", "Enter callsign")
 	_rename_input.max_length = 20
 	_rename_input.clear_button_enabled = true
@@ -635,9 +632,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	))
 	_rename_title_input = LineEdit.new()
 	_rename_title_input.name = "RenameTitleInput"
-	_rename_title_input.text = String(
-		summary.get("custom_title", "") if summary.get("custom_title") != null else "",
-	)
+	_rename_title_input.text = _identity_draft_title(summary)
 	_rename_title_input.placeholder_text = _t(&"ui.rename.title_placeholder", "No title")
 	_rename_title_input.max_length = 24
 	_rename_title_input.clear_button_enabled = true
@@ -659,24 +654,45 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	column.add_child(_rename_row)
 	_rename_error = _label("RenameUnitError", "", &"dense_detail")
 	_rename_error.custom_minimum_size.y = 24.0
+	if not String(_rename_editor_error).is_empty():
+		_rename_error.text = _error_text(_rename_editor_error)
+		_apply_identity_error_style(_rename_editor_error)
 	column.add_child(_rename_error)
 	panel.add_child(column)
+	_sync_identity_action()
 	return panel
 
 
 func _on_identity_text_changed(_value: String) -> void:
+	_rename_editor_error = &""
 	if _rename_error != null:
 		_rename_error.text = ""
 	if _rename_input != null:
 		LunarisOpsType.apply_line_edit(_rename_input)
 	if _rename_title_input != null:
 		LunarisOpsType.apply_line_edit(_rename_title_input)
+	_persist_identity_edit_draft()
+	_sync_identity_action()
+
+
+func _persist_identity_edit_draft() -> void:
+	if _rename_input == null or _rename_title_input == null or _selected_hero_id.is_empty():
+		return
+	_identity_edit_draft = {
+		"hero_id": _selected_hero_id,
+		"callsign": _rename_input.text,
+		"title_text": _rename_title_input.text,
+		"title": _title_candidate(),
+	}
+
+
+func _sync_identity_action() -> void:
 	var summary := _summary_by_id(_selected_hero_id)
 	var candidate := _rename_input.text.strip_edges() if _rename_input != null else ""
 	var title: Variant = _title_candidate()
 	var current_title: Variant = summary.get("custom_title") if not summary.is_empty() else null
 	var enabled: bool = (
-		not _rename_dispatching
+		_rename_state == RenameConfirmationState.INACTIVE
 		and not summary.is_empty()
 		and bool(summary.get("can_rename", false))
 		and HeroCodecScript.valid_callsign(candidate)
@@ -689,6 +705,19 @@ func _on_identity_text_changed(_value: String) -> void:
 		LunarisOpsType.apply_button(
 			_rename_action, &"primary" if enabled else &"disabled",
 		)
+
+
+func _identity_draft_callsign(summary: Dictionary) -> String:
+	if String(_identity_edit_draft.get("hero_id", "")) == _selected_hero_id:
+		return String(_identity_edit_draft.get("callsign", summary["callsign"]))
+	return String(summary["callsign"])
+
+
+func _identity_draft_title(summary: Dictionary) -> String:
+	if String(_identity_edit_draft.get("hero_id", "")) == _selected_hero_id:
+		return String(_identity_edit_draft.get("title_text", ""))
+	var title: Variant = summary.get("custom_title")
+	return "" if title == null else String(title)
 
 
 func _on_identity_submitted(_value: String) -> void:
@@ -704,7 +733,7 @@ func _title_candidate() -> Variant:
 
 func _request_rename_confirmation() -> void:
 	if (
-		_rename_dispatching
+		_rename_state != RenameConfirmationState.INACTIVE
 		or _rename_input == null
 		or _rename_action == null
 		or _rename_action.disabled
@@ -713,63 +742,215 @@ func _request_rename_confirmation() -> void:
 	var summary := _summary_by_id(_selected_hero_id)
 	if summary.is_empty():
 		return
-	var current_title: Variant = summary.get("custom_title")
-	var next_title: Variant = _title_candidate()
+	_persist_identity_edit_draft()
 	_pending_identity = {
 		"hero_id": _selected_hero_id,
-		"callsign": _rename_input.text.strip_edges(),
-		"title": next_title,
+		"callsign": String(_identity_edit_draft["callsign"]).strip_edges(),
+		"title": _identity_edit_draft["title"],
+		"current_callsign": String(summary["callsign"]),
+		"current_title": summary.get("custom_title"),
+		"class_id": String(summary["current_class_id"]),
 	}
-	_rename_confirmation.title = _t(&"ui.rename.confirm_title", "Confirm identity")
-	_rename_confirmation.ok_button_text = _t(&"ui.rename.confirm_action", "Confirm")
-	_rename_confirmation.get_cancel_button().text = _t(&"ui.action.cancel", "Cancel")
-	_rename_confirmation.dialog_text = _fmt(
-		&"ui.rename.confirm_body",
-		"Current: {current}\nNew: {next}\n\nThis cosmetic identity can be changed again outside active operations.",
-		{
-			&"current": _identity_preview(String(summary["callsign"]), current_title),
-			&"next": _identity_preview(String(_pending_identity["callsign"]), next_title),
-		},
+	_rename_state = RenameConfirmationState.ACTIVE
+	Sfx.play("menu_open")
+	_render_rename_confirmation(&"RenameConfirm")
+
+
+func _render_rename_confirmation(focus_name: StringName = &"RenameConfirm") -> void:
+	if _pending_identity.is_empty() or _rename_state == RenameConfirmationState.INACTIVE:
+		return
+	_mode = &"rename_confirmation"
+	_clear_page()
+	_set_persistent_header(_header(
+		"RenameConfirmationTitle",
+		_t(&"ui.rename.confirm_title", "Confirm identity"),
+		_t(
+			&"ui.rename.guidance",
+			"Choose a unique 1–20 character name and an optional 24 character title.",
+		),
+	))
+	_page.add_child(_build_selected_identity_panel())
+	_rename_comparison = BoxContainer.new()
+	_rename_comparison.name = "RenameIdentityComparison"
+	_rename_comparison.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rename_comparison.add_theme_constant_override(&"separation", 16)
+	_rename_comparison.add_child(_build_identity_comparison_panel(
+		"CurrentIdentityPanel",
+		_t(&"ui.rename.current_identity", "CURRENT IDENTITY"),
+		String(_pending_identity["current_callsign"]),
+		_pending_identity["current_title"],
+		&"quiet",
+	))
+	_rename_comparison.add_child(_build_identity_comparison_panel(
+		"NewIdentityPanel",
+		_t(&"ui.rename.new_identity", "NEW IDENTITY"),
+		String(_pending_identity["callsign"]),
+		_pending_identity["title"],
+		&"selected",
+	))
+	_page.add_child(_rename_comparison)
+	var note := _label(
+		"RenameReversibilityNote",
+		_t(
+			&"ui.rename.reversible_note",
+			"This cosmetic identity can be changed again outside active operations.",
+		),
+		&"detail",
 	)
-	_rename_confirmation.popup_centered(Vector2i(560, 330))
-	_rename_confirmation.get_ok_button().grab_focus.call_deferred()
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_page.add_child(note)
+	var footer := _footer("RenameConfirmationActions")
+	var active := _rename_state == RenameConfirmationState.ACTIVE
+	_rename_cancel = _button(
+		"RenameCancel", _t(&"ui.action.cancel", "Cancel"), active,
+		&"secondary" if active else &"disabled",
+	)
+	_rename_cancel.pressed.connect(_cancel_rename)
+	_rename_confirm = _button(
+		"RenameConfirm",
+		_t(&"ui.rename.confirm_action", "Confirm") if active else _t(
+			&"ui.rename.committing", "RENAMING…",
+		),
+		active,
+		&"primary" if active else &"disabled",
+	)
+	_rename_confirm.pressed.connect(_confirm_rename)
+	footer.add_child(_rename_cancel)
+	footer.add_child(_rename_confirm)
+	_set_action_footer(footer)
+	_apply_rename_confirmation_layout()
+	_apply_footer_layouts()
+	_reset_outer_scroll()
+	if active:
+		_wire_focus([_rename_cancel, _rename_confirm], not _rename_confirmation_stacks())
+		_focus_confirmation_control.call_deferred(focus_name)
+
+
+func _build_selected_identity_panel() -> AetheriaPanelType:
+	var panel := AetheriaPanelType.new()
+	panel.name = "RenameSelectedOperator"
+	panel.apply_role(&"inspector")
+	LunarisOpsType.apply_panel(panel, &"screen")
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override(&"separation", 6)
+	content.add_child(_label(
+		"RenameSelectedOperatorLabel",
+		_t(&"ui.rename.selected_operator", "SELECTED OPERATOR"),
+		&"eyebrow",
+	))
+	content.add_child(_label(
+		"RenameSelectedOperatorIdentity",
+		_identity_preview(
+			String(_pending_identity["current_callsign"]),
+			_pending_identity["current_title"],
+		),
+		&"heading",
+	))
+	content.add_child(_label(
+		"RenameSelectedOperatorClass",
+		class_label(String(_pending_identity["class_id"])),
+		&"detail",
+	))
+	panel.add_child(content)
+	return panel
+
+
+func _build_identity_comparison_panel(
+	node_name: String,
+	heading: String,
+	callsign: String,
+	title: Variant,
+	role: StringName,
+) -> AetheriaPanelType:
+	var panel := AetheriaPanelType.new()
+	panel.name = node_name
+	panel.apply_role(&"hud")
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_stretch_ratio = 1.0
+	panel.custom_minimum_size.x = 0.0
+	LunarisOpsType.apply_panel(panel, role)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override(&"separation", 8)
+	content.add_child(_label("Heading", heading, &"eyebrow"))
+	content.add_child(_label("Callsign", callsign, &"heading"))
+	content.add_child(_label(
+		"Title",
+		_t(&"ui.rename.title_placeholder", "No title") if title == null else String(title),
+		&"detail",
+	))
+	panel.add_child(content)
+	return panel
 
 
 func _identity_preview(callsign: String, title: Variant) -> String:
-	return (
-		callsign
-		if title == null
-		else "%s — %s" % [callsign, String(title)]
-	)
+	return callsign if title == null else "%s — %s" % [callsign, String(title)]
 
 
 func _confirm_rename() -> void:
-	if _rename_dispatching or _pending_identity.is_empty():
+	if _rename_state != RenameConfirmationState.ACTIVE or _pending_identity.is_empty():
 		return
-	_rename_dispatching = true
+	_rename_state = RenameConfirmationState.COMMITTING
+	_set_rename_actions_locked()
+	Sfx.play("ui_confirm")
+	_rename_dispatch_count += 1
 	var committed: Dictionary = Game.rename_hero(
 		String(_pending_identity["hero_id"]),
 		String(_pending_identity["callsign"]),
 		_pending_identity["title"],
 	)
-	_rename_dispatching = false
-	_pending_identity.clear()
-	if not committed["accepted"]:
+	if not bool(committed.get("accepted", false)):
 		var error_code := StringName(committed.get("error_code", &"invalid_callsign"))
-		_rename_error.text = _error_text(error_code)
-		LunarisOpsType.apply_line_edit(_rename_input, true)
-		_on_identity_text_changed(_rename_input.text)
-		_rename_error.text = _error_text(error_code)
-		_rename_input.grab_focus.call_deferred()
+		_pending_identity.clear()
+		_rename_state = RenameConfirmationState.INACTIVE
+		_rename_editor_error = error_code
+		_show_roster()
+		_focus_rename_editor.call_deferred()
 		return
+	_pending_identity.clear()
+	_identity_edit_draft.clear()
+	_rename_editor_error = &""
+	_rename_state = RenameConfirmationState.INACTIVE
 	_refresh_roster()
 	_show_roster()
 
 
+func _set_rename_actions_locked() -> void:
+	for action: AetheriaButtonType in [_rename_cancel, _rename_confirm]:
+		if action == null:
+			continue
+		action.disabled = true
+		action.focus_mode = Control.FOCUS_NONE
+		LunarisOpsType.apply_button(action, &"disabled")
+	if _rename_confirm != null:
+		var pending_text := _t(&"ui.rename.committing", "RENAMING…")
+		_rename_confirm.set_presentation_text(pending_text, pending_text)
+
+
 func _cancel_rename() -> void:
+	if _rename_state != RenameConfirmationState.ACTIVE:
+		return
 	_pending_identity.clear()
-	if _rename_input != null:
-		_rename_input.grab_focus.call_deferred()
+	_rename_state = RenameConfirmationState.INACTIVE
+	Sfx.play("menu_close")
+	_show_roster()
+	_focus_rename_editor.call_deferred()
+
+
+func _focus_rename_editor() -> void:
+	if _rename_input != null and is_instance_valid(_rename_input) and _rename_input.is_visible_in_tree():
+		_rename_input.grab_focus()
+		_dialog_scroll.ensure_control_visible(_rename_input)
+		return
+	if _rename_action != null and is_instance_valid(_rename_action):
+		_rename_action.grab_focus()
+
+
+func _focus_confirmation_control(control_name: StringName) -> void:
+	var control := find_child(String(control_name), true, false) as Control
+	if control == null or not control.is_visible_in_tree() or control.focus_mode == Control.FOCUS_NONE:
+		control = _rename_confirm
+	if control != null:
+		control.grab_focus()
 
 
 func _show_paths() -> void:
@@ -1104,8 +1285,11 @@ func _on_layout_mode_changed(value: StringName) -> void:
 		_apply_paths_layout()
 	elif _mode == &"roster":
 		_apply_roster_layout()
+	elif _mode == &"rename_confirmation":
+		_apply_rename_confirmation_layout()
 	_apply_footer_layouts()
-	_reset_outer_scroll()
+	if _mode != &"rename_confirmation":
+		_reset_outer_scroll()
 
 
 func _shell_size_for(mode_value: StringName) -> Vector2:
@@ -1154,6 +1338,24 @@ func _apply_paths_layout() -> void:
 		card.fit_to_content()
 
 
+func _apply_rename_confirmation_layout() -> void:
+	if _rename_comparison == null:
+		return
+	var focused_name := &""
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and is_ancestor_of(focused):
+		focused_name = focused.name
+	_rename_comparison.vertical = _rename_confirmation_stacks()
+	if _rename_state == RenameConfirmationState.ACTIVE:
+		_wire_focus([_rename_cancel, _rename_confirm], not _rename_confirmation_stacks())
+	if not String(focused_name).is_empty():
+		_focus_confirmation_control.call_deferred(focused_name)
+
+
+func _rename_confirmation_stacks() -> bool:
+	return _layout_mode == &"portrait" or get_viewport_rect().size.x <= 620.0
+
+
 func _reset_outer_scroll() -> void:
 	if _dialog_scroll == null:
 		return
@@ -1197,7 +1399,10 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 func _footer(node_name: String) -> BoxContainer:
 	var footer := BoxContainer.new()
 	footer.name = node_name
-	footer.vertical = _layout_mode == &"portrait"
+	footer.vertical = (
+		_layout_mode == &"portrait"
+		or (node_name == "RenameConfirmationActions" and _rename_confirmation_stacks())
+	)
 	footer.alignment = BoxContainer.ALIGNMENT_END
 	footer.add_theme_constant_override(&"separation", 16)
 	return footer
@@ -1267,7 +1472,9 @@ func _clear_page() -> void:
 	_rename_title_input = null
 	_rename_action = null
 	_rename_error = null
-	_rename_dispatching = false
+	_rename_comparison = null
+	_rename_cancel = null
+	_rename_confirm = null
 
 
 func _summary_by_id(hero_id: String) -> Dictionary:
@@ -1408,7 +1615,10 @@ func _apply_footer_layouts() -> void:
 	for node: Node in _all_nodes(footer_root):
 		if node is BoxContainer and String(node.name).ends_with("Actions"):
 			var footer := node as BoxContainer
-			footer.vertical = _layout_mode == &"portrait"
+			footer.vertical = (
+				_layout_mode == &"portrait"
+				or (footer.name == "RenameConfirmationActions" and _rename_confirmation_stacks())
+		)
 			var actions: Array[Control] = []
 			for child: Node in footer.get_children():
 				if child is AetheriaButtonType:
@@ -1508,6 +1718,51 @@ func _set_action_footer(footer: BoxContainer) -> void:
 		_action_dock.remove_child(child)
 		child.queue_free()
 	_action_dock.add_child(footer)
+
+
+func _set_persistent_header(header: VBoxContainer) -> void:
+	if _persistent_header == null:
+		return
+	for child: Node in _persistent_header.get_children():
+		_persistent_header.remove_child(child)
+		child.queue_free()
+	_persistent_header.visible = header != null
+	if header != null:
+		_persistent_header.add_child(header)
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	var focused_name := &""
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and is_ancestor_of(focused):
+		focused_name = focused.name
+	if _mode == &"rename_confirmation":
+		_render_rename_confirmation(focused_name)
+	elif _mode == &"paths":
+		_show_paths()
+	elif _mode == &"review":
+		_show_review()
+	else:
+		_show_roster()
+
+
+func _apply_identity_error_style(error_code: StringName) -> void:
+	if _rename_input != null:
+		LunarisOpsType.apply_line_edit(_rename_input, error_code != &"invalid_title")
+	if _rename_title_input != null:
+		LunarisOpsType.apply_line_edit(_rename_title_input, error_code == &"invalid_title")
+
+
+func rename_dispatch_count() -> int:
+	return _rename_dispatch_count
+
+
+func pending_identity_snapshot() -> Dictionary:
+	return _pending_identity.duplicate(true)
+
+
+func identity_edit_draft() -> Dictionary:
+	return _identity_edit_draft.duplicate(true)
 
 
 func _all_nodes(root: Node) -> Array[Node]:
