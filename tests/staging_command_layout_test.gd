@@ -66,11 +66,13 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 	var context := "%s/%s" % [locale_id, viewport_case["name"]]
 	var top_bar := staging.find_child("TopCommandBar", true, false) as PanelContainer
+	var top_row := staging.find_child("TopBarContent", true, false) as HBoxContainer
 	var identity_plate := staging.find_child("IdentityPlate", true, false) as PanelContainer
 	var identity_label := staging.find_child("FactionIdentity", true, false) as Label
 	var status_chip := staging.find_child("CampaignStatusChip", true, false) as PanelContainer
 	var status_label := staging.find_child("TopCampaignSummary", true, false) as Label
 	var utility_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
+	var exit_alignment_spacer := staging.find_child("ExitAlignmentSpacer", true, false) as Control
 	var exit_label := staging.find_child("ExitLabel", true, false) as Label
 	var navigation := staging.find_child("NavigationRail", true, false) as PanelContainer
 	var command_deck := staging.find_child("CommandDeck", true, false) as PanelContainer
@@ -94,6 +96,8 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 	_check(top_bar != null and top_bar.size.y >= 156.0, "%s: segmented top HUD is shorter than 156px" % context)
 	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
+	_check(exit_alignment_spacer != null and exit_alignment_spacer.size_flags_horizontal == Control.SIZE_EXPAND_FILL, "%s: Exit right-alignment spacer missing" % context)
+	_check(top_row != null and absf(utility_plate.get_global_rect().end.x - top_row.get_global_rect().end.x) <= 1.0, "%s: Exit is not aligned to the top row's right edge" % context)
 	_check(identity_plate.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s: PROTOS DEFENSE identity retained a container frame" % context)
 	_check(identity_label != null and identity_label.text == expected_identity, "%s: top-left identity is not localized game identity" % context)
 	_check(identity_label != null and _contains(identity_plate, identity_label), "%s: faction identity text escaped its enlarged plate" % context)
@@ -108,6 +112,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_title != null and _font_size(mission_title) >= 24, "%s: mission title below 24px" % context)
 	_check(objective != null and _font_size(objective) >= 18, "%s: mission body below 18px" % context)
 	_check(mission_action != null and mission_action.custom_minimum_size.y >= 150.0, "%s: primary action below responsive 150px floor" % context)
+	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
 	_check(mission_action != null and mission_action.tooltip_text == ("任务指挥" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
@@ -158,7 +163,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(_font_size(exit_label) >= 22, "%s: Exit type below 22px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
 		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 18 and _font_size(next_label) >= 18, "%s: command header typography below attachment-relative doubled size" % context)
-		_check(mission_card.size.y >= 260.0, "%s: next-mission card below attachment-relative doubled height" % context)
+		_check(mission_card.custom_minimum_size.y >= 260.0 and mission_card.size.y >= 260.0, "%s: next-mission card lacks its doubled 260px minimum height" % context)
 		var expected_action_height := 168.0 if viewport_size.y < 850 else 180.0
 		_check(mission_action.custom_minimum_size.y >= expected_action_height, "%s: ultrawide primary action below attachment-relative 1.5x height" % context)
 		_check(deck_style.content_margin_top >= (24.0 if viewport_size.y < 850 else 36.0), "%s: ultrawide deck lost its safe inset" % context)
