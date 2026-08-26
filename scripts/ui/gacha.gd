@@ -19,7 +19,9 @@ const GACHA_FULLSIZE_PORTRAITS := {
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
 	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
 }
-const CONFIRM_ENTRY_SECONDS := 0.16
+const CONFIRM_ENTRY_SECONDS := 0.20
+const CONFIRM_EXIT_SECONDS := 0.15
+const CONFIRM_FRAME_OFFSET := 12.0
 const CONFIRM_READABLE_MAX_WIDTH := 1480.0
 const CONFIRM_ACTION_SIZE := Vector2(280.0, 92.0)
 const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
@@ -30,6 +32,13 @@ enum FlowState {
 	CONFIRM,
 	COMMITTING,
 	REVEAL,
+}
+
+enum ConfirmationTransition {
+	NONE,
+	ENTERING,
+	OPEN,
+	EXITING,
 }
 
 @export var reduced_motion := false
@@ -65,10 +74,17 @@ var _confirmation_context_label: Label
 var _confirmation_review_eyebrow: Label
 var _confirmation_review_label: Label
 var _confirmation_action_dock: PanelContainer
+var _confirmation_status_label: Label
 var _confirmation_actions: GridContainer
 var _confirmation_cancel: Button
 var _confirmation_confirm: Button
 var _confirmation_tween: Tween
+var _confirmation_transition := ConfirmationTransition.NONE
+var _confirmation_transition_token := 0
+var _focus_request_token := 0
+var _confirmation_return_focus: Control
+var _confirmation_exit_status := ""
+var _confirmation_exit_live := AccessibilityServer.LIVE_OFF
 var _premium_pull_dispatched := false
 
 var _reveal_layer: Control
@@ -106,7 +122,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	_kill_confirmation_tween()
+	_invalidate_confirmation_transition()
+	_confirmation_transition = ConfirmationTransition.NONE
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
@@ -124,24 +141,41 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
 		return
-	if _flow_state != FlowState.COMMITTING:
-		return
 	if event is InputEventKey and event.echo:
 		get_viewport().set_input_as_handled()
 		return
 	if (
-			event is InputEventKey
-			or event is InputEventJoypadButton
-			or event is InputEventJoypadMotion
-			or event is InputEventMouseButton
-		):
+			_confirmation_transition == ConfirmationTransition.ENTERING
+			and event.is_action(&"ui_cancel")
+	):
+		get_viewport().set_input_as_handled()
+		_on_pull_cancelled()
+		return
+	if (
+			_flow_state == FlowState.COMMITTING
+			or _confirmation_transition in [
+				ConfirmationTransition.ENTERING, ConfirmationTransition.EXITING,
+			]
+	):
 		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
 		return
-	if _flow_state == FlowState.COMMITTING:
+	if (
+			_confirmation_transition == ConfirmationTransition.ENTERING
+			and event.is_action(&"ui_cancel")
+	):
+		get_viewport().set_input_as_handled()
+		_on_pull_cancelled()
+		return
+	if (
+			_flow_state == FlowState.COMMITTING
+			or _confirmation_transition in [
+				ConfirmationTransition.ENTERING, ConfirmationTransition.EXITING,
+			]
+	):
 		get_viewport().set_input_as_handled()
 		return
 	if (
@@ -270,6 +304,8 @@ func _build_screen() -> void:
 	_status_label.name = "PullStatusLabel"
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.accessibility_name = _copy(&"ui.gacha.status_name", "Premium resonance status")
+	_status_label.accessibility_live = AccessibilityServer.LIVE_OFF
 	_action_grid.add_child(_status_label)
 	_pull_button = Button.new()
 	_pull_button.name = "PremiumPullButton"
@@ -286,6 +322,8 @@ func _build_pull_confirmation() -> void:
 	_confirmation_layer.mouse_filter = Control.MOUSE_FILTER_STOP
 	_confirmation_layer.z_index = 100
 	_confirmation_layer.visible = false
+	_confirmation_layer.modulate.a = 0.0
+	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	add_child(_confirmation_layer)
 
 	var background := ColorRect.new()
@@ -312,6 +350,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_frame.name = "ConfirmationCommandFrame"
 	_confirmation_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
 	Style.apply_panel(_confirmation_frame, &"screen")
 	_confirmation_safe.add_child(_confirmation_frame)
 
@@ -328,6 +367,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_header_cancel.name = "CancelPremiumPull"
 	_confirmation_header_cancel.custom_minimum_size = Vector2(0, 88)
 	_confirmation_header_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_prepare_confirmation_button(_confirmation_header_cancel)
 	_confirmation_header_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_header_cancel, &"quiet")
 	_confirmation_header_cancel.add_theme_font_size_override(&"font_size", 36)
@@ -432,17 +472,29 @@ func _build_pull_confirmation() -> void:
 	_confirmation_action_dock.name = "ConfirmationActionDock"
 	Style.apply_panel(_confirmation_action_dock, &"quiet")
 	_confirmation_stack.add_child(_confirmation_action_dock)
+	var dock_stack := VBoxContainer.new()
+	dock_stack.name = "ConfirmationDockStack"
+	dock_stack.add_theme_constant_override(&"separation", 8)
+	_confirmation_action_dock.add_child(dock_stack)
+	_confirmation_status_label = _label("", &"detail")
+	_confirmation_status_label.name = "ConfirmationStatusLabel"
+	_confirmation_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	_confirmation_status_label.visible = false
+	dock_stack.add_child(_confirmation_status_label)
 	_confirmation_actions = GridContainer.new()
 	_confirmation_actions.name = "ConfirmationActions"
 	_confirmation_actions.columns = 2
 	_confirmation_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_confirmation_actions.add_theme_constant_override(&"h_separation", 16)
 	_confirmation_actions.add_theme_constant_override(&"v_separation", 12)
-	_confirmation_action_dock.add_child(_confirmation_actions)
+	dock_stack.add_child(_confirmation_actions)
 	_confirmation_cancel = Button.new()
 	_confirmation_cancel.name = "CancelPremiumPullDock"
 	_confirmation_cancel.custom_minimum_size = CONFIRM_ACTION_SIZE
 	_confirmation_cancel.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_prepare_confirmation_button(_confirmation_cancel)
 	_confirmation_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_cancel, &"quiet")
 	_apply_confirmation_action_style(_confirmation_cancel, false)
@@ -454,6 +506,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_confirm.name = "ConfirmPremiumPull"
 	_confirmation_confirm.custom_minimum_size = CONFIRM_ACTION_SIZE
 	_confirmation_confirm.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_prepare_confirmation_button(_confirmation_confirm)
 	_confirmation_confirm.pressed.connect(_on_confirm_pull)
 	Style.apply_button(_confirmation_confirm, &"gold")
 	_apply_confirmation_action_style(_confirmation_confirm, true)
@@ -461,8 +514,9 @@ func _build_pull_confirmation() -> void:
 	_confirmation_confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_confirm.clip_text = false
 	_confirmation_actions.add_child(_confirmation_confirm)
-	_bind_confirmation_focus_scope()
+	_bind_confirmation_focus_scope(false)
 	_refresh_confirmation_copy()
+	_refresh_confirmation_accessibility()
 
 
 func _apply_confirmation_action_style(button: Button, primary: bool) -> void:
@@ -741,7 +795,11 @@ func _apply_responsive_layout() -> void:
 
 
 func _on_pull_pressed() -> void:
-	if _flow_state != FlowState.BROWSE or _pull_button.disabled:
+	if (
+			_flow_state != FlowState.BROWSE
+			or _confirmation_transition != ConfirmationTransition.NONE
+			or _pull_button.disabled
+	):
 		return
 	if _game == null or not bool(_game.get("campaign_active")):
 		_refresh()
@@ -756,58 +814,86 @@ func _on_pull_pressed() -> void:
 	if cost <= 0 or marks < cost or bool(projection.get("attempt_pending", false)):
 		_refresh()
 		return
+	var focused := get_viewport().gui_get_focus_owner()
+	_confirmation_return_focus = focused if _is_focus_candidate(focused) else _pull_button
 	_confirmation_projection = projection.duplicate(true)
+	_confirmation_exit_status = ""
+	_confirmation_exit_live = AccessibilityServer.LIVE_OFF
 	_premium_pull_dispatched = false
 	_flow_state = FlowState.CONFIRM
-	_screen_margin.visible = false
+	_suppress_browse_focus()
+	_confirmation_layer.modulate.a = 0.0
+	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
+	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	_confirmation_layer.visible = true
+	_set_confirmation_status("", AccessibilityServer.LIVE_POLITE)
+	_set_confirmation_pending(false)
 	_refresh_confirmation_copy()
 	_apply_responsive_layout()
-	_confirmation_layer.visible = true
-	_confirmation_layer.modulate.a = 1.0
 	Sfx.play("ui_click")
 	_play_confirmation_entry()
-	_confirmation_cancel.grab_focus.call_deferred()
 
 
 func _on_pull_cancelled() -> void:
-	if _flow_state != FlowState.CONFIRM:
+	if (
+			_flow_state != FlowState.CONFIRM
+			or _confirmation_transition not in [
+				ConfirmationTransition.ENTERING, ConfirmationTransition.OPEN,
+			]
+	):
 		return
 	Sfx.play("ui_back")
-	_return_to_browse(true)
+	_start_confirmation_exit(
+		_copy(&"ui.gacha.ready", "The pool is ready."), AccessibilityServer.LIVE_OFF,
+	)
 
 
 func _on_confirm_pull() -> void:
-	if _flow_state != FlowState.CONFIRM or _premium_pull_dispatched:
+	if (
+			_flow_state != FlowState.CONFIRM
+			or _confirmation_transition != ConfirmationTransition.OPEN
+			or _premium_pull_dispatched
+	):
 		return
 	_flow_state = FlowState.COMMITTING
 	_premium_pull_dispatched = true
 	Sfx.play("ui_confirm")
 	_set_confirmation_pending(true)
 	_pull_button.disabled = true
-	_status_label.text = _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
-	call_deferred("_commit_premium_pull")
+	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	_set_confirmation_status(pending_copy, AccessibilityServer.LIVE_POLITE)
+	_status_label.text = pending_copy
+	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	var commit_token := _confirmation_transition_token
+	_commit_premium_pull.bind(commit_token).call_deferred()
 
 
-func _commit_premium_pull() -> void:
-	if _flow_state != FlowState.COMMITTING or not _premium_pull_dispatched:
+func _commit_premium_pull(token: int) -> void:
+	if (
+			token != _confirmation_transition_token
+			or _flow_state != FlowState.COMMITTING
+			or _confirmation_transition != ConfirmationTransition.OPEN
+			or not _premium_pull_dispatched
+	):
 		return
 	var committed: Dictionary = _game.call("pull_premium_hero")
 	if not committed.get("accepted", false):
 		var error_code := StringName(committed.get("error_code", &"unknown_error"))
-		_return_to_browse(false)
-		_status_label.text = _error_copy(error_code)
+		var error_text := _error_copy(error_code)
+		_set_confirmation_status(error_text, AccessibilityServer.LIVE_ASSERTIVE)
+		_start_confirmation_exit(error_text, AccessibilityServer.LIVE_ASSERTIVE)
 		return
 	var result: Dictionary = committed.get("result", {})
 	var pull: Dictionary = result.get("premium_pull", {})
-	_hide_confirmation()
-	_confirmation_projection = {}
-	_refresh()
-	_begin_reveal(pull)
+	_handoff_confirmation_to_reveal(pull)
 
 
 func _begin_reveal(pull: Dictionary) -> void:
+	if _confirmation_return_focus == null:
+		var focused := get_viewport().gui_get_focus_owner()
+		_confirmation_return_focus = focused if _is_focus_candidate(focused) else _pull_button
+	_suppress_browse_focus()
 	_flow_state = FlowState.REVEAL
-	_screen_margin.visible = false
 	_pending_pull = pull.duplicate(true)
 	_is_revealing = true
 	_reveal_result_ready = false
@@ -974,9 +1060,11 @@ func _finish_reveal() -> void:
 	_reveal_title_stack.visible = false
 	_pending_pull = {}
 	_screen_margin.visible = true
+	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 	_refresh()
 	_status_label.text = final_copy
-	_restore_pull_focus()
+	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	_restore_confirmation_return_focus(_confirmation_transition_token)
 
 
 func _kill_reveal_tween() -> void:
@@ -1081,6 +1169,12 @@ func _on_back_pressed() -> void:
 		_game.call("open_staging")
 
 
+func _prepare_confirmation_button(button: Button) -> void:
+	button.focus_mode = Control.FOCUS_ALL
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.clip_text = false
+
+
 func _set_confirmation_pending(pending: bool) -> void:
 	_confirmation_header_cancel.disabled = pending
 	_confirmation_cancel.disabled = pending
@@ -1092,41 +1186,162 @@ func _set_confirmation_pending(pending: bool) -> void:
 	)
 
 
-func _return_to_browse(play_cancel_refresh: bool) -> void:
-	_kill_confirmation_tween()
-	_hide_confirmation()
+func _set_confirmation_status(text: String, live_mode: int) -> void:
+	_confirmation_status_label.accessibility_live = live_mode
+	_confirmation_status_label.text = text
+	_confirmation_status_label.visible = not text.is_empty()
+
+
+func _start_confirmation_exit(status_text: String, live_mode: int) -> void:
+	if (
+			_flow_state not in [FlowState.CONFIRM, FlowState.COMMITTING]
+			or _confirmation_transition not in [
+				ConfirmationTransition.ENTERING, ConfirmationTransition.OPEN,
+			]
+	):
+		return
+	_confirmation_exit_status = status_text
+	_confirmation_exit_live = live_mode
+	if live_mode == AccessibilityServer.LIVE_ASSERTIVE:
+		_set_confirmation_status(status_text, live_mode)
+	var token := _begin_confirmation_transition(ConfirmationTransition.EXITING)
+	if _motion_reduced():
+		_finish_confirmation_exit(token)
+		return
+	_confirmation_tween = create_tween()
+	_confirmation_tween.tween_property(
+		_confirmation_layer, "modulate:a", 0.0, CONFIRM_EXIT_SECONDS,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_confirmation_tween.parallel().tween_property(
+		_confirmation_frame,
+		"offset_transform_position:y",
+		CONFIRM_FRAME_OFFSET,
+		CONFIRM_EXIT_SECONDS,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_confirmation_tween.finished.connect(_finish_confirmation_exit.bind(token), CONNECT_ONE_SHOT)
+
+
+func _finish_confirmation_exit(token: int) -> void:
+	if (
+			token != _confirmation_transition_token
+			or _confirmation_transition != ConfirmationTransition.EXITING
+			or _flow_state not in [FlowState.CONFIRM, FlowState.COMMITTING]
+	):
+		return
+	_confirmation_tween = null
+	_confirmation_layer.visible = false
+	_confirmation_layer.modulate.a = 0.0
+	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
+	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	_confirmation_transition = ConfirmationTransition.NONE
 	_confirmation_projection = {}
 	_premium_pull_dispatched = false
 	_flow_state = FlowState.BROWSE
 	_screen_margin.visible = true
+	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 	_set_confirmation_pending(false)
 	_refresh()
-	if play_cancel_refresh:
-		_status_label.text = _copy(&"ui.gacha.ready", "The pool is ready.")
-	_restore_pull_focus()
+	_status_label.text = _confirmation_exit_status
+	_status_label.accessibility_live = _confirmation_exit_live
+	_restore_confirmation_return_focus(token)
+	_confirmation_exit_status = ""
+	_confirmation_exit_live = AccessibilityServer.LIVE_OFF
 
 
-func _hide_confirmation() -> void:
-	_kill_confirmation_tween()
+func _handoff_confirmation_to_reveal(pull: Dictionary) -> void:
+	_invalidate_confirmation_transition()
+	_confirmation_transition = ConfirmationTransition.NONE
 	_confirmation_layer.visible = false
-	_confirmation_layer.modulate.a = 1.0
+	_confirmation_layer.modulate.a = 0.0
+	_confirmation_frame.offset_transform_position = Vector2(0.0, CONFIRM_FRAME_OFFSET)
+	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	_confirmation_projection = {}
+	_premium_pull_dispatched = false
+	_set_confirmation_pending(false)
+	_begin_reveal(pull)
+
+
+func _suppress_browse_focus() -> void:
+	_focus_request_token += 1
+	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and (focused == _screen_margin or _screen_margin.is_ancestor_of(focused)):
+		focused.release_focus()
+	_screen_margin.visible = false
+
+
+func _restore_confirmation_return_focus(transition_token: int) -> void:
+	var target := _confirmation_return_focus
+	if not _is_focus_candidate(target):
+		target = _fallback_browse_focus()
+	_confirmation_return_focus = null
+	_queue_guarded_focus(
+		target,
+		FlowState.BROWSE,
+		ConfirmationTransition.NONE,
+		transition_token,
+	)
 
 
 func _restore_pull_focus() -> void:
+	_queue_guarded_focus(
+		_fallback_browse_focus(),
+		FlowState.BROWSE,
+		ConfirmationTransition.NONE,
+		_confirmation_transition_token,
+	)
+
+
+func _fallback_browse_focus() -> Control:
+	if _is_focus_candidate(_pull_button):
+		return _pull_button
+	if _is_focus_candidate(_back_button):
+		return _back_button
+	return null
+
+
+func _is_focus_candidate(candidate: Control) -> bool:
+	return (
+		candidate != null
+		and is_instance_valid(candidate)
+		and candidate.is_inside_tree()
+		and candidate.is_visible_in_tree()
+		and candidate.focus_mode != Control.FOCUS_NONE
+		and not (candidate is BaseButton and (candidate as BaseButton).disabled)
+	)
+
+
+func _queue_guarded_focus(
+		target: Control,
+		expected_flow: int,
+		expected_transition: int,
+		transition_token: int,
+	) -> void:
+	if target == null:
+		return
+	_focus_request_token += 1
+	var focus_token := _focus_request_token
+	_apply_guarded_focus.bind(
+		target, focus_token, transition_token, expected_flow, expected_transition,
+	).call_deferred()
+
+
+func _apply_guarded_focus(
+		target: Control,
+		focus_token: int,
+		transition_token: int,
+		expected_flow: int,
+		expected_transition: int,
+	) -> void:
 	if (
-			_pull_button != null
-			and _pull_button.is_inside_tree()
-			and _pull_button.is_visible_in_tree()
-			and not _pull_button.disabled
-		):
-		_pull_button.grab_focus.call_deferred()
-	elif (
-			_back_button != null
-			and _back_button.is_inside_tree()
-			and _back_button.is_visible_in_tree()
-			and not _back_button.disabled
-		):
-		_back_button.grab_focus.call_deferred()
+		focus_token != _focus_request_token
+		or transition_token != _confirmation_transition_token
+		or _flow_state != expected_flow
+		or _confirmation_transition != expected_transition
+		or not _is_focus_candidate(target)
+	):
+		return
+	target.grab_focus()
 
 
 func _refresh_confirmation_copy() -> void:
@@ -1159,20 +1374,127 @@ func _refresh_confirmation_copy() -> void:
 			},
 		)
 	_set_confirmation_pending(_flow_state == FlowState.COMMITTING)
+	_refresh_confirmation_accessibility()
 
 
-func _bind_confirmation_focus_scope() -> void:
-	var actions: Array[Control] = [_confirmation_cancel, _confirmation_confirm]
+func _refresh_confirmation_accessibility() -> void:
+	if _confirmation_layer == null:
+		return
+	var title_text := _confirmation_title.text
+	var description := "%s %s" % [
+		_confirmation_context_label.text,
+		_confirmation_review_label.text.replace("\n", " "),
+	]
+	_confirmation_layer.accessibility_name = title_text
+	_confirmation_layer.accessibility_description = description
+	_confirmation_frame.accessibility_name = title_text
+	_confirmation_frame.accessibility_description = description
+	_confirmation_title.accessibility_name = title_text
+	_confirmation_title.accessibility_description = _copy(
+		&"ui.gacha.confirm_title_description", "Premium resonance transaction confirmation",
+	)
+	_confirmation_body_grid.accessibility_name = _copy(
+		&"ui.gacha.confirm_body_name", "Resonance transaction details",
+	)
+	_confirmation_body_grid.accessibility_description = description
+	_confirmation_action_dock.accessibility_name = _copy(
+		&"ui.gacha.confirm_actions_name", "Resonance confirmation actions",
+	)
+	_confirmation_action_dock.accessibility_description = description
+	_confirmation_header_cancel.accessibility_name = _copy(
+		&"ui.gacha.confirm_header_cancel_name", "Cancel resonance, header",
+	)
+	_confirmation_header_cancel.accessibility_description = _copy(
+		&"ui.gacha.confirm_cancel_description", "Close without spending Marks or changing the guarantee.",
+	)
+	_confirmation_cancel.accessibility_name = _copy(
+		&"ui.gacha.confirm_dock_cancel_name", "Cancel resonance, action dock",
+	)
+	_confirmation_cancel.accessibility_description = _confirmation_header_cancel.accessibility_description
+	_confirmation_confirm.accessibility_name = _copy(
+		&"ui.gacha.confirm_action_name", "Confirm premium resonance",
+	)
+	_confirmation_confirm.accessibility_description = description
+	_confirmation_status_label.accessibility_name = _copy(
+		&"ui.gacha.confirm_status_name", "Resonance confirmation status",
+	)
+	_confirmation_layer.accessibility_labeled_by_nodes = [
+		_confirmation_layer.get_path_to(_confirmation_title),
+	]
+	_confirmation_layer.accessibility_described_by_nodes = [
+		_confirmation_layer.get_path_to(_confirmation_context_label),
+		_confirmation_layer.get_path_to(_confirmation_review_label),
+		_confirmation_layer.get_path_to(_confirmation_status_label),
+	]
+	_confirmation_frame.accessibility_labeled_by_nodes = [
+		_confirmation_frame.get_path_to(_confirmation_title),
+	]
+	_confirmation_frame.accessibility_described_by_nodes = [
+		_confirmation_frame.get_path_to(_confirmation_context_label),
+		_confirmation_frame.get_path_to(_confirmation_review_label),
+		_confirmation_frame.get_path_to(_confirmation_status_label),
+	]
+	_confirmation_title.accessibility_controls_nodes = [
+		_confirmation_title.get_path_to(_confirmation_body_grid),
+		_confirmation_title.get_path_to(_confirmation_action_dock),
+	]
+	_confirmation_body_grid.accessibility_labeled_by_nodes = [
+		_confirmation_body_grid.get_path_to(_confirmation_title),
+	]
+	_confirmation_action_dock.accessibility_labeled_by_nodes = [
+		_confirmation_action_dock.get_path_to(_confirmation_title),
+	]
+	_confirmation_confirm.accessibility_described_by_nodes = [
+		_confirmation_confirm.get_path_to(_confirmation_review_label),
+		_confirmation_confirm.get_path_to(_confirmation_status_label),
+	]
+
+
+func _bind_confirmation_focus_scope(stacked: bool) -> void:
+	var actions: Array[Control] = [
+		_confirmation_cancel,
+		_confirmation_confirm,
+	]
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
 		var following := actions[(index + 1) % actions.size()]
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_next = current.get_path_to(following)
-		current.focus_neighbor_left = current.get_path_to(previous)
-		current.focus_neighbor_top = current.get_path_to(previous)
-		current.focus_neighbor_right = current.get_path_to(following)
-		current.focus_neighbor_bottom = current.get_path_to(following)
+	if stacked:
+		for index: int in actions.size():
+			var current := actions[index]
+			var previous := actions[(index - 1 + actions.size()) % actions.size()]
+			var following := actions[(index + 1) % actions.size()]
+			current.focus_neighbor_left = current.get_path_to(current)
+			current.focus_neighbor_right = current.get_path_to(current)
+			current.focus_neighbor_top = current.get_path_to(previous)
+			current.focus_neighbor_bottom = current.get_path_to(following)
+		return
+	_confirmation_cancel.focus_neighbor_left = _confirmation_cancel.get_path_to(
+		_confirmation_confirm,
+	)
+	_confirmation_cancel.focus_neighbor_right = _confirmation_cancel.get_path_to(
+		_confirmation_confirm,
+	)
+	_confirmation_cancel.focus_neighbor_top = _confirmation_cancel.get_path_to(
+		_confirmation_cancel,
+	)
+	_confirmation_cancel.focus_neighbor_bottom = _confirmation_cancel.get_path_to(
+		_confirmation_cancel,
+	)
+	_confirmation_confirm.focus_neighbor_left = _confirmation_confirm.get_path_to(
+		_confirmation_cancel,
+	)
+	_confirmation_confirm.focus_neighbor_right = _confirmation_confirm.get_path_to(
+		_confirmation_cancel,
+	)
+	_confirmation_confirm.focus_neighbor_top = _confirmation_confirm.get_path_to(
+		_confirmation_confirm,
+	)
+	_confirmation_confirm.focus_neighbor_bottom = _confirmation_confirm.get_path_to(
+		_confirmation_confirm,
+	)
 
 
 func _apply_confirmation_layout(viewport_size: Vector2) -> void:
@@ -1234,9 +1556,15 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	_confirmation_body_center.custom_minimum_size.x = content_width
 	_confirmation_body_grid.custom_minimum_size.x = content_width
 	_confirmation_body_scroll.custom_minimum_size.y = 0
-	_bind_confirmation_focus_scope()
-	if focus_in_scope and focused != null and focused.is_visible_in_tree() and not focused.disabled:
-		focused.grab_focus.call_deferred()
+	var stacked_actions := _confirmation_actions.columns == 1
+	_bind_confirmation_focus_scope(stacked_actions)
+	if focus_in_scope and _is_focus_candidate(focused):
+		_queue_guarded_focus(
+			focused,
+			_flow_state,
+			_confirmation_transition,
+			_confirmation_transition_token,
+		)
 
 
 func _display_safe_insets(viewport_size: Vector2) -> Vector4:
@@ -1258,16 +1586,53 @@ func _display_safe_insets(viewport_size: Vector2) -> Vector4:
 
 
 func _play_confirmation_entry() -> void:
-	_kill_confirmation_tween()
+	var token := _begin_confirmation_transition(ConfirmationTransition.ENTERING)
 	if _motion_reduced():
-		_confirmation_layer.modulate.a = 1.0
+		_finish_confirmation_entry(token)
 		return
-	_confirmation_layer.modulate.a = 0.0
 	_confirmation_tween = create_tween()
-	_confirmation_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_confirmation_tween.tween_property(
 		_confirmation_layer, "modulate:a", 1.0, CONFIRM_ENTRY_SECONDS,
+	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	_confirmation_tween.parallel().tween_property(
+		_confirmation_frame,
+		"offset_transform_position:y",
+		0.0,
+		CONFIRM_ENTRY_SECONDS,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_confirmation_tween.finished.connect(_finish_confirmation_entry.bind(token), CONNECT_ONE_SHOT)
+
+
+func _finish_confirmation_entry(token: int) -> void:
+	if (
+			token != _confirmation_transition_token
+			or _confirmation_transition != ConfirmationTransition.ENTERING
+			or _flow_state != FlowState.CONFIRM
+	):
+		return
+	_confirmation_tween = null
+	_confirmation_layer.modulate.a = 1.0
+	_confirmation_frame.offset_transform_position = Vector2.ZERO
+	_confirmation_layer.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
+	_confirmation_transition = ConfirmationTransition.OPEN
+	_queue_guarded_focus(
+		_confirmation_cancel,
+		FlowState.CONFIRM,
+		ConfirmationTransition.OPEN,
+		token,
 	)
+
+
+func _begin_confirmation_transition(next_state: int) -> int:
+	_invalidate_confirmation_transition()
+	_confirmation_transition = next_state
+	return _confirmation_transition_token
+
+
+func _invalidate_confirmation_transition() -> void:
+	_confirmation_transition_token += 1
+	_focus_request_token += 1
+	_kill_confirmation_tween()
 
 
 func _kill_confirmation_tween() -> void:
@@ -1288,8 +1653,13 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh()
 	_refresh_confirmation_copy()
 	_apply_responsive_layout()
-	if focused != null and focused.is_inside_tree() and focused.is_visible_in_tree() and not focused.disabled:
-		focused.grab_focus.call_deferred()
+	if _is_focus_candidate(focused):
+		_queue_guarded_focus(
+			focused,
+			_flow_state,
+			_confirmation_transition,
+			_confirmation_transition_token,
+		)
 
 
 func _refresh_static_copy() -> void:
@@ -1314,6 +1684,20 @@ func flow_state_name() -> StringName:
 		FlowState.COMMITTING: return &"COMMITTING"
 		FlowState.REVEAL: return &"REVEAL"
 		_: return &"BROWSE"
+
+
+func transition_state_name() -> StringName:
+	match _confirmation_transition:
+		ConfirmationTransition.ENTERING: return &"ENTERING"
+		ConfirmationTransition.OPEN: return &"OPEN"
+		ConfirmationTransition.EXITING: return &"EXITING"
+		_: return &"NONE"
+
+
+func transition_active() -> bool:
+	return _confirmation_transition in [
+		ConfirmationTransition.ENTERING, ConfirmationTransition.EXITING,
+	]
 
 
 func confirmation_projection_snapshot() -> Dictionary:
