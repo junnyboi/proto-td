@@ -44,7 +44,7 @@ func _run() -> void:
 	await process_frame
 	var locale_list := locale_selector.call("locale_list") as ItemList
 	_check(locale_list.custom_minimum_size.x == 0.0, "compact locale selector retained a fixed width")
-	_check(locale_list.custom_minimum_size.y == 60.0, "pre-ready compact locale sizing was not retained")
+	_check(locale_list.custom_minimum_size.y == 84.0, "pre-ready scrollbar-free compact locale sizing was not retained")
 	_check(bool(locale_selector.call("select_locale", &"zh-CN")), "default locale selector could not activate Chinese")
 	_check(root.get_node("I18n").call("locale") == &"zh-CN", "default locale selector stopped committing its selection")
 	_check(bool(locale_selector.call("select_locale", &"en-US")), "default locale selector could not restore English")

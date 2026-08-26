@@ -111,6 +111,22 @@ func set_rail_mode(rail_mode: bool) -> void:
 	)
 
 
+func set_short_rail_mode() -> void:
+	custom_minimum_size = Vector2(0.0, 64.0)
+	_margin.add_theme_constant_override(&"margin_left", 24)
+	_margin.add_theme_constant_override(&"margin_top", 2)
+	_margin.add_theme_constant_override(&"margin_right", 24)
+	_margin.add_theme_constant_override(&"margin_bottom", 2)
+	_row.add_theme_constant_override(&"separation", 12)
+	_glyph.custom_minimum_size = Vector2(40.0, 40.0)
+	StagingSkinType.apply_display_type(
+		_title_label,
+		40,
+		MUTED if disabled else GOLD,
+		540,
+	)
+
+
 func _build_content() -> void:
 	var transparent := Color(0.0, 0.0, 0.0, 0.0)
 	for color_name: StringName in [

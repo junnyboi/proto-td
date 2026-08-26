@@ -191,7 +191,7 @@ const STATIC_FALLBACKS := {
 	&"ui.locale.en_us": "EN",
 	&"ui.locale.zh_cn": "中文",
 	&"ui.staging.heading": "STAGING",
-	&"ui.staging.command_heading": "COMPANY 33 COMMAND",
+	&"ui.staging.command_heading": "COMMAND CENTER",
 	&"ui.staging.command_body": (
 		"PROTOS saved the biosphere by declaring human choice its final extinction event. "
 		+ "Company 33 now defends Hearthcross and the right of an imperfect species to "
@@ -205,8 +205,9 @@ const STATIC_FALLBACKS := {
 	&"ui.staging.next_complete": "NEXT: Campaign complete",
 	&"ui.staging.operation_status": "OPERATIONS — UNAVAILABLE",
 	&"ui.staging.operations": "OPERATIONS",
-	&"ui.staging.mission_control": "Mission Control",
-	&"ui.staging.mission_control_short": "Mission",
+	&"ui.staging.mission_control": "Prepare for Mission",
+	&"ui.staging.mission_control_display": "PREPARE FOR\nMISSION",
+	&"ui.staging.mission_control_short": "Prepare",
 	&"ui.staging.barracks_unavailable": "Barracks — Unavailable",
 	&"ui.staging.barracks_short": "Barracks",
 	&"ui.staging.recruit": "Premium Resonance",

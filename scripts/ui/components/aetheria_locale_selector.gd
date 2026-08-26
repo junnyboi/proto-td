@@ -5,6 +5,9 @@ signal locale_selected(locale_id: StringName)
 
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const COMPACT_LABEL_MIN_HEIGHT := 72.0
+const COMPACT_LIST_HEIGHT := 84.0
+const REGULAR_LIST_HEIGHT := 96.0
+const COLUMN_INSET := 28.0
 
 var _draft_mode := false
 var _selected_locale: StringName = &""
@@ -18,14 +21,18 @@ func _ready() -> void:
 	add_theme_constant_override(&"separation", 8 if _compact_mode else 16)
 	_label.clip_text = false
 	_label.custom_minimum_size = Vector2(0.0, COMPACT_LABEL_MIN_HEIGHT if _compact_mode else 0.0)
-	_list.custom_minimum_size = Vector2(0.0, 60.0 if _compact_mode else 90.0)
+	_list.custom_minimum_size = Vector2(0.0, COMPACT_LIST_HEIGHT if _compact_mode else REGULAR_LIST_HEIGHT)
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.focus_mode = Control.FOCUS_ALL
 	_list.select_mode = ItemList.SELECT_SINGLE
 	_list.max_columns = 2
 	_list.same_column_width = true
+	_list.auto_height = false
+	_list.add_theme_constant_override(&"h_separation", 16)
+	_list.resized.connect(_fit_columns)
 	_list.item_selected.connect(_on_item_selected)
 	refresh()
+	_fit_columns.call_deferred()
 
 
 func set_vertical_layout(enabled: bool) -> void:
@@ -50,8 +57,9 @@ func set_compact_mode(enabled: bool) -> void:
 		_label.clip_text = false
 		_label.custom_minimum_size = Vector2(0.0, COMPACT_LABEL_MIN_HEIGHT if enabled else 0.0)
 	if is_node_ready():
-		_list.custom_minimum_size = Vector2(0.0, 60.0 if enabled else 90.0)
+		_list.custom_minimum_size = Vector2(0.0, COMPACT_LIST_HEIGHT if enabled else REGULAR_LIST_HEIGHT)
 		add_theme_constant_override(&"separation", 8 if enabled else 16)
+		_fit_columns.call_deferred()
 
 
 func set_selected_locale(locale_id: StringName) -> bool:
@@ -90,7 +98,23 @@ func refresh() -> bool:
 		_list.set_item_metadata(_list.item_count - 1, locale_id)
 		if locale_id == active:
 			_list.select(_list.item_count - 1)
+	_fit_columns.call_deferred()
 	return true
+
+
+func _fit_columns() -> void:
+	if _list == null or not is_instance_valid(_list) or _list.size.x <= 0.0:
+		return
+	var usable_width := maxf(160.0, _list.size.x - COLUMN_INSET)
+	# ItemList expands fixed width by its item style on both sides. Quartering the
+	# usable row yields two visually equal columns without triggering scrolling.
+	_list.fixed_column_width = floori(usable_width / 4.0)
+	var vertical_scroll := _list.get_v_scroll_bar()
+	if vertical_scroll != null:
+		vertical_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var horizontal_scroll := _list.get_h_scroll_bar()
+	if horizontal_scroll != null:
+		horizontal_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func select_locale(locale_id: StringName) -> bool:

@@ -1,6 +1,7 @@
 extends SceneTree
 
 const VIEWPORT_CASES := [
+	{"name": "annotated-wide", "size": Vector2i(1915, 778), "rail": true, "portrait": false},
 	{"name": "ultrawide", "size": Vector2i(1920, 900), "rail": true, "portrait": false},
 	{"name": "standard", "size": Vector2i(1280, 720), "rail": false, "portrait": false},
 	{"name": "tall", "size": Vector2i(1280, 1100), "rail": false, "portrait": false},
@@ -33,7 +34,7 @@ func _run() -> void:
 
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
 	await _verify_case(game, VIEWPORT_CASES[0], "zh-CN")
-	await _verify_case(game, VIEWPORT_CASES[4], "zh-CN")
+	await _verify_case(game, VIEWPORT_CASES[5], "zh-CN")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
 
 	game.set("campaign_active", false)
@@ -86,6 +87,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var operation_label := staging.find_child("OperationsLabel", true, false) as Label
 	var operation_grid := staging.find_child("OperationGrid", true, false) as GridContainer
 	var operation_scroll := staging.find_child("OperationsScroll", true, false) as ScrollContainer
+	var operation_list_margin := staging.find_child("OperationListMargin", true, false) as MarginContainer
 	var command_scroll_name := "PortraitCommandScroll" if bool(viewport_case["portrait"]) else "LandscapeCommandScroll"
 	var command_scroll := staging.find_child(command_scroll_name, true, false) as ScrollContainer
 	var expected_identity := "PROTOS 防线" if locale_id == "zh-CN" else "PROTOS DEFENSE"
@@ -99,17 +101,22 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)
 	_check(staging.find_child("HeroIdentity", true, false) == null, "%s: duplicate lower identity copy remains" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
-	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below 22px" % context)
-	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below 18px" % context)
-	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below 17px" % context)
+	_check(command_heading != null and command_heading.text == ("指挥中心" if locale_id == "zh-CN" else "COMMAND CENTER"), "%s: command heading rename missing" % context)
+	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below responsive 22px floor" % context)
+	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below responsive 18px floor" % context)
+	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
 	_check(mission_title != null and _font_size(mission_title) >= 24, "%s: mission title below 24px" % context)
 	_check(objective != null and _font_size(objective) >= 18, "%s: mission body below 18px" % context)
-	_check(mission_action != null and mission_action.custom_minimum_size.y >= 150.0, "%s: primary action below 150px" % context)
+	_check(mission_action != null and mission_action.custom_minimum_size.y >= 150.0, "%s: primary action below responsive 150px floor" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
+	_check(mission_action != null and mission_action.tooltip_text == ("准备任务" if locale_id == "zh-CN" else "Prepare for Mission"), "%s: primary action rename missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
-	_check(operation_label != null and _font_size(operation_label) >= 18, "%s: operations heading below 18px" % context)
+	_check(operation_label != null and _font_size(operation_label) >= 18, "%s: operations heading below responsive 18px floor" % context)
+	_check(operation_list_margin != null and operation_list_margin.get_theme_constant(&"margin_left") >= 20 and operation_list_margin.get_theme_constant(&"margin_right") >= 20, "%s: operation list lacks 20px side margins" % context)
+	if bool(viewport_case["portrait"]) and viewport_size.x <= 720:
+		_check(operation_grid != null and operation_grid.columns == 1, "%s: narrow portrait operations must use one no-wrap column" % context)
 	_check(operation_scroll != null and operation_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: operations do not own local overflow" % context)
 	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s: command deck still uses document scrolling" % context)
 	_check(mission_card != null and _contains(mission_card, mission_title), "%s: mission title escaped its frame" % context)
@@ -127,26 +134,33 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		var rail_style := navigation.get_theme_stylebox(&"panel") as StyleBoxTexture
 		_check(navigation.size.x >= 650.0, "%s: navigation rail did not receive the requested 50 percent width increase" % context)
 		_check(operation_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s: Operations heading is not centered" % context)
-		_check(_font_size(operation_label) >= 32, "%s: Operations heading below reduced 32px rail size" % context)
+		_check(_font_size(operation_label) >= 32, "%s: Operations heading below attachment-relative 1.5x size" % context)
 		_check(identity_plate.custom_minimum_size.x >= 420.0 and identity_plate.custom_minimum_size.y >= 112.0, "%s: identity region did not expand" % context)
 		_check(status_chip != null and status_chip.visible and status_chip.custom_minimum_size.x >= 354.0 and status_chip.custom_minimum_size.y >= 112.0, "%s: campaign status plate did not expand" % context)
 		_check(status_label != null and _font_size(status_label) >= 22 and _contains(status_chip, status_label), "%s: campaign status text is clipped" % context)
 		_check(utility_plate.custom_minimum_size.x >= 228.0 and utility_plate.custom_minimum_size.y >= 112.0, "%s: Exit plate did not expand" % context)
-		_check(_font_size(identity_label) >= 28, "%s: PROTOS DEFENSE identity type below 28px" % context)
+		_check(_font_size(identity_label) >= 28, "%s: PROTOS DEFENSE identity type below attachment-relative doubled size" % context)
 		_check(_font_size(exit_label) >= 22, "%s: Exit type below 22px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
-		_check(mission_action.custom_minimum_size.y >= 180.0, "%s: ultrawide primary action below 180px" % context)
-		_check(deck_style.content_margin_top >= 36.0, "%s: ultrawide deck lost its full safe inset" % context)
+		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 18 and _font_size(next_label) >= 18, "%s: command header typography below attachment-relative doubled size" % context)
+		_check(mission_card.size.y >= 260.0, "%s: next-mission card below attachment-relative doubled height" % context)
+		var expected_action_height := 168.0 if viewport_size.y < 850 else 180.0
+		_check(mission_action.custom_minimum_size.y >= expected_action_height, "%s: ultrawide primary action below attachment-relative 1.5x height" % context)
+		_check(deck_style.content_margin_top >= (24.0 if viewport_size.y < 850 else 36.0), "%s: ultrawide deck lost its safe inset" % context)
 		_check(rail_style != null and rail_style.content_margin_top >= 64.0, "%s: rail copy can enter corner ornament" % context)
 		_check(operation_scroll.get_v_scroll_bar().max_value <= operation_scroll.get_v_scroll_bar().page + 1.0, "%s: wide navigation rail still requires scrolling" % context)
+		_check(_contains(staging, command_deck), "%s: command deck extends beyond the viewport" % context)
+		_check(_contains(staging, mission_action), "%s: Prepare for Mission action is clipped below the viewport" % context)
 		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "MercyArchiveButton", "TrainingButton"]:
 			var tile := staging.find_child(tile_name, true, false) as Button
 			var title := tile.find_child("Title", true, false) as Label
 			var state := tile.find_child("State", true, false) as Label
-			_check(tile != null and tile.custom_minimum_size.y >= 86.0, "%s: %s below 86px rail height" % [context, tile_name])
+			var expected_tile_height := 64.0 if viewport_size.y < 850 else 86.0
+			_check(tile != null and tile.custom_minimum_size.y >= expected_tile_height, "%s: %s below responsive rail height" % [context, tile_name])
 			_check(_has_ancestor(tile, navigation), "%s: %s escaped navigation rail ownership" % [context, tile_name])
 			_check(_horizontally_contains(navigation, tile), "%s: %s overflows navigation rail horizontally" % [context, tile_name])
-			_check(title != null and _font_size(title) >= 49, "%s: %s title below reduced 49px rail size" % [context, tile_name])
+			var expected_title_size := 40 if viewport_size.y < 850 else 49
+			_check(title != null and _font_size(title) >= expected_title_size, "%s: %s title below responsive rail size" % [context, tile_name])
 			_check(state != null and not state.visible, "%s: %s still renders unavailable state copy" % [context, tile_name])
 			_check(tile.text.is_empty() and not tile.accessibility_name.is_empty(), "%s: %s native copy still distorts layout or lost accessibility" % [context, tile_name])
 			if tile.disabled:
