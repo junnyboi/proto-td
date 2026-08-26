@@ -1,9 +1,14 @@
 extends SceneTree
 
+const TEST_TIMEOUT_SECONDS := 30.0
+const STATE_WAIT_SECONDS := 2.0
+
 var _failures: Array[String] = []
+var _finished := false
 
 
 func _init() -> void:
+	create_timer(TEST_TIMEOUT_SECONDS).timeout.connect(_on_timeout)
 	call_deferred("_run")
 
 
@@ -66,6 +71,8 @@ func _run() -> void:
 	_dispose(mission)
 	game.set("content", null)
 
+	game.set("training_return_path", &"mission")
+	root.size = Vector2i(1280, 720)
 	var training: Node = load("res://scenes/training.tscn").instantiate()
 	root.add_child(training)
 	await process_frame
@@ -73,32 +80,93 @@ func _run() -> void:
 	var training_shell := training.find_child("ReliquaryAtelierShell", true, false)
 	var training_dock := training.find_child("TrainingActionDock", true, false) as VBoxContainer
 	var not_now := training.find_child("TrainingBack", true, false) as Button
+	var return_to_mission := training.find_child("ReturnToMission", true, false) as Button
 	_check(training_shell != null and bool(training_shell.get("full_safe_area")), "Training did not use the full-safe-area workspace")
 	_check(not_now != null, "Training safe exit action is missing")
+	_check(return_to_mission != null, "Training mission-return fixture is unavailable")
 	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
+	_check(not String(training.get("accessibility_name")).is_empty() and not String(training.get("accessibility_description")).is_empty(), "Training root lacks accessibility metadata")
 	var rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit
 	var rename_title := training.find_child("RenameTitleInput", true, false) as LineEdit
 	var rename_review := training.find_child("RenameUnitAction", true, false) as Button
 	_check(rename_input != null and rename_title != null and rename_review != null, "Training rename editor is incomplete")
 	if rename_input != null and rename_title != null and rename_review != null:
+		await _check_nested_scroll_visibility(training, rename_input)
 		rename_input.text = "Layout Sentinel"
 		rename_input.text_changed.emit(rename_input.text)
 		rename_title.text = "Safe Area"
 		rename_title.text_changed.emit(rename_title.text)
 		await process_frame
 		rename_review.pressed.emit()
+		_check(StringName(training.call("rename_presentation_state")) == &"entering", "Training rename review did not begin ENTERING")
+		_check(_owned_focus(training) == null, "Training confirmation focused a control during ENTERING")
+		_check(training.find_child("ReturnToMission", true, false) == null, "ReturnToMission was not excluded while confirmation was active")
+		_check(await _wait_for_state(training, &"active"), "Training rename confirmation never settled")
 		await process_frame
 		var rename_confirm := training.find_child("RenameConfirm", true, false) as Button
+		var rename_cancel := training.find_child("RenameCancel", true, false) as Button
+		var rename_comparison := training.find_child("RenameIdentityComparison", true, false) as BoxContainer
+		var rename_actions := training.find_child("RenameConfirmationActions", true, false) as BoxContainer
 		var rename_header := training.find_child("TrainingPersistentHeader", true, false) as VBoxContainer
+		var rename_status := training.find_child("RenameConfirmationStatus", true, false) as Label
 		_check(StringName(training.call("mode")) == &"rename_confirmation", "Training rename review is not an in-page mode")
+		_check(rename_confirm != null and rename_confirm.has_focus(), "Training confirmation did not focus Confirm after settling")
 		_check(rename_confirm != null and not _has_scroll_ancestor(rename_confirm), "Training rename confirmation action scrolls with the body")
 		_check(rename_header != null and rename_header.visible and not _has_scroll_ancestor(rename_header), "Training rename confirmation header scrolls with the body")
+		_check(rename_comparison != null and not rename_comparison.vertical, "wide Training rename comparison did not use columns")
+		_check(rename_actions != null and not rename_actions.vertical, "wide Training rename actions did not use a row")
+		_check(rename_status != null and rename_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "Training rename status is not a polite live region")
+		_check(rename_status != null and not String(rename_status.accessibility_name).is_empty() and not String(rename_status.accessibility_description).is_empty(), "Training rename status lacks accessibility metadata")
+		if rename_confirm != null and rename_cancel != null:
+			_check(rename_confirm.focus_neighbor_left == rename_confirm.get_path_to(rename_cancel), "wide Confirm left graph is incorrect")
+			_check(rename_confirm.focus_neighbor_right == rename_confirm.get_path_to(rename_cancel), "wide Confirm right graph is incorrect")
+			_check(rename_confirm.focus_neighbor_top == rename_confirm.get_path_to(rename_confirm), "wide Confirm retained a stale top edge")
+			_check(rename_confirm.focus_neighbor_bottom == rename_confirm.get_path_to(rename_confirm), "wide Confirm retained a stale bottom edge")
+
+		root.size = Vector2i(720, 1280)
+		await process_frame
+		await process_frame
+		rename_confirm = training.find_child("RenameConfirm", true, false) as Button
+		rename_cancel = training.find_child("RenameCancel", true, false) as Button
+		rename_comparison = training.find_child("RenameIdentityComparison", true, false) as BoxContainer
+		rename_actions = training.find_child("RenameConfirmationActions", true, false) as BoxContainer
+		_check(rename_comparison != null and rename_comparison.vertical, "stacked Training rename comparison did not use rows")
+		_check(rename_actions != null and rename_actions.vertical, "stacked Training rename actions did not use a column")
+		if rename_confirm != null and rename_cancel != null:
+			_check(rename_confirm.focus_neighbor_top == rename_confirm.get_path_to(rename_cancel), "stacked Confirm top graph is incorrect")
+			_check(rename_confirm.focus_neighbor_bottom == rename_confirm.get_path_to(rename_cancel), "stacked Confirm bottom graph is incorrect")
+			_check(rename_confirm.focus_neighbor_left == rename_confirm.get_path_to(rename_confirm), "stacked Confirm retained a stale left edge")
+			_check(rename_confirm.focus_neighbor_right == rename_confirm.get_path_to(rename_confirm), "stacked Confirm retained a stale right edge")
+		if rename_cancel != null:
+			rename_cancel.pressed.emit()
+		_check(StringName(training.call("rename_presentation_state")) == &"exiting", "Training cancel did not begin EXITING")
+		_check(StringName(training.call("mode")) == &"rename_confirmation", "Training confirmation stopped being modal during EXITING")
+		_check(training.find_child("ReturnToMission", true, false) == null, "ReturnToMission appeared before confirmation exit completed")
+		_check(await _wait_for_state(training, &"idle"), "Training confirmation exit never completed")
+		await process_frame
+		await process_frame
+		rename_input = training.find_child("RenameUnitInput", true, false) as LineEdit
+		_check(rename_input != null and rename_input.has_focus(), "Training cancel did not restore callsign focus")
+		_check(training.find_child("ReturnToMission", true, false) != null, "ReturnToMission did not return after confirmation exit")
+
+		ProjectSettings.set_setting("accessibility/reduced_motion", true)
+		rename_review = training.find_child("RenameUnitAction", true, false) as Button
+		if rename_review != null:
+			rename_review.pressed.emit()
+		_check(StringName(training.call("rename_presentation_state")) == &"active", "reduced-motion Training confirmation was not immediate")
+		rename_cancel = training.find_child("RenameCancel", true, false) as Button
+		if rename_cancel != null:
+			rename_cancel.pressed.emit()
+		_check(StringName(training.call("rename_presentation_state")) == &"idle", "reduced-motion Training exit was not immediate")
+		ProjectSettings.set_setting("accessibility/reduced_motion", false)
 	_dispose(training)
 	game.set("content", null)
 
 	game.set("campaign_active", false)
 	game.set("campaign", null)
 	game.set("campaign_store", null)
+	game.set("training_return_path", &"staging")
+	root.size = Vector2i(1280, 720)
 	var music := root.get_node_or_null("Music")
 	if music != null and music.has_method("stop"):
 		music.call("stop")
@@ -107,6 +175,39 @@ func _run() -> void:
 		sfx.call("stop_all")
 	await create_timer(0.25).timeout
 	_finish()
+
+
+func _wait_for_state(screen: Node, expected: StringName, timeout_seconds := STATE_WAIT_SECONDS) -> bool:
+	var elapsed := 0.0
+	while is_instance_valid(screen) and StringName(screen.call("rename_presentation_state")) != expected and elapsed < timeout_seconds:
+		await create_timer(0.02).timeout
+		elapsed += 0.02
+	return is_instance_valid(screen) and StringName(screen.call("rename_presentation_state")) == expected
+
+
+func _check_nested_scroll_visibility(screen: Node, control: Control) -> void:
+	var ancestors: Array[ScrollContainer] = []
+	var current := control.get_parent()
+	while current != null:
+		if current is ScrollContainer:
+			ancestors.append(current as ScrollContainer)
+		current = current.get_parent()
+	_check(ancestors.size() >= 2, "Training rename editor is not nested inside both local and document ScrollContainers")
+	for scroll: ScrollContainer in ancestors:
+		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
+	screen.call("_ensure_focus_visible", control)
+	await process_frame
+	await process_frame
+	for scroll: ScrollContainer in ancestors:
+		var visible_rect := scroll.get_global_rect().intersection(control.get_global_rect())
+		_check(visible_rect.size.x > 0.0 and visible_rect.size.y > 0.0, "%s did not reveal the focused Training rename control" % scroll.name)
+
+
+func _owned_focus(screen: Node) -> Control:
+	var focused := root.gui_get_focus_owner()
+	if focused != null and screen.is_ancestor_of(focused):
+		return focused
+	return null
 
 
 func _has_scroll_ancestor(node: Node) -> bool:
@@ -133,6 +234,9 @@ func _check(condition: bool, message: String) -> void:
 
 
 func _finish() -> void:
+	if _finished:
+		return
+	_finished = true
 	if _failures.is_empty():
 		print("CAMPAIGN_UI_LAYOUT_TEST_OK")
 		quit(0)
@@ -140,3 +244,11 @@ func _finish() -> void:
 	for failure: String in _failures:
 		push_error(failure)
 	quit(1)
+
+
+func _on_timeout() -> void:
+	if _finished:
+		return
+	_finished = true
+	push_error("campaign UI layout test exceeded %.1f seconds" % TEST_TIMEOUT_SECONDS)
+	quit(124)
