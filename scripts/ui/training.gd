@@ -37,15 +37,15 @@ const SHELL_SIZE := Vector2(1210.0, 660.0)
 const COMPACT_SHELL_SIZE := Vector2(920.0, 680.0)
 const PORTRAIT_SHELL_SIZE := Vector2(680.0, 1180.0)
 const TRAINING_FONT_SIZES := {
-	&"eyebrow": 16,
-	&"title": 40,
-	&"heading": 24,
-	&"body": 20,
-	&"detail": 17,
-	&"metric": 22,
-	&"dense_heading": 22,
-	&"dense_body": 18,
-	&"dense_detail": 16,
+	&"eyebrow": 24,
+	&"title": 60,
+	&"heading": 36,
+	&"body": 30,
+	&"detail": 26,
+	&"metric": 33,
+	&"dense_heading": 33,
+	&"dense_body": 27,
+	&"dense_detail": 24,
 }
 const RENAME_ENTRY_SECONDS := 0.20
 const RENAME_EXIT_SECONDS := 0.16
@@ -732,7 +732,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_input.text_changed.connect(_on_identity_text_changed)
 	_rename_input.text_submitted.connect(_on_identity_submitted)
 	LunarisOpsType.apply_line_edit(_rename_input)
-	_rename_input.add_theme_font_size_override(&"font_size", 20)
+	_rename_input.add_theme_font_size_override(&"font_size", 30)
 	_bind_focus_scroll(_rename_input, _dialog_scroll)
 	callsign_field.add_child(_rename_input)
 	_rename_row.add_child(callsign_field)
@@ -759,7 +759,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_title_input.text_changed.connect(_on_identity_text_changed)
 	_rename_title_input.text_submitted.connect(_on_identity_submitted)
 	LunarisOpsType.apply_line_edit(_rename_title_input)
-	_rename_title_input.add_theme_font_size_override(&"font_size", 20)
+	_rename_title_input.add_theme_font_size_override(&"font_size", 30)
 	_bind_focus_scroll(_rename_title_input, _dialog_scroll)
 	title_field.add_child(_rename_title_input)
 	_rename_row.add_child(title_field)
@@ -1789,7 +1789,7 @@ func _button(
 	_bind_focus_scroll(button, _dialog_scroll)
 	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
 	LunarisOpsType.apply_label(presentation, &"body")
-	presentation.add_theme_font_size_override(&"font_size", 20)
+	presentation.add_theme_font_size_override(&"font_size", 30)
 	return button
 
 
@@ -2109,11 +2109,7 @@ func _apply_footer_layouts() -> void:
 
 
 func _roster_uses_fixed_workspace() -> bool:
-	var viewport := get_viewport_rect().size
-	return (
-		_layout_mode == &"regular_landscape"
-		or (_layout_mode == &"portrait" and viewport.x >= 600.0 and viewport.y >= 1000.0)
-	)
+	return _layout_mode == &"regular_landscape"
 
 
 func _ensure_panel_padding(panel: PanelContainer, padding: float) -> void:

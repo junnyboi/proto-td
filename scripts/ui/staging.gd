@@ -895,7 +895,7 @@ func _apply_company_typography() -> void:
 	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
 	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait else 26, IVORY, 560)
-	_mission_objective.add_theme_font_size_override(&"font_size", 18 if compact else 20)
+	_mission_objective.add_theme_font_size_override(&"font_size", 27 if compact else 30)
 	StagingSkinType.apply_display_type(_mission_action_label, 24 if compact or _portrait else 26, IVORY, 560)
 	StagingSkinType.apply_display_type(_operations_label, 36 if rail_mode else 18, GOLD, 560)
 

@@ -10,13 +10,15 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
-const ACTION_SAFE_INSET := 16.0
+const ACTION_SAFE_INSET := 12.0
+const OPERATOR_INFO_SPLIT := 0.55
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -42,8 +44,11 @@ var _body: GridContainer = null
 var _command_scroll: ScrollContainer = null
 var _roster_scroll: ScrollContainer = null
 var _intel_scroll: ScrollContainer = null
+var _roster_panel: PanelContainer = null
+var _intel_panel: PanelContainer = null
 var _footer: BoxContainer = null
 var _header: BoxContainer = null
+var _header_identity: BoxContainer = null
 var _header_status: VBoxContainer = null
 var _roster_heading: BoxContainer = null
 var _actions: GridContainer = null
@@ -103,11 +108,12 @@ func _build_header() -> BoxContainer:
 	_header.name = "MissionHeader"
 	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_theme_constant_override(&"separation", 18)
-	var identity := HBoxContainer.new()
+	var identity := BoxContainer.new()
+	_header_identity = identity
 	identity.name = "MissionFactionIdentity"
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	identity.add_theme_constant_override(&"separation", 12)
-	var symbol := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 52.0)
+	var symbol := FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 78.0)
 	symbol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	identity.add_child(symbol)
 	var title_block := VBoxContainer.new()
@@ -119,7 +125,7 @@ func _build_header() -> BoxContainer:
 	_header.add_child(identity)
 	_header_status = VBoxContainer.new()
 	_header_status.name = "MissionStatus"
-	_header_status.custom_minimum_size.x = 220.0
+	_header_status.custom_minimum_size.x = 280.0
 	_header_status.alignment = BoxContainer.ALIGNMENT_CENTER
 	var threat := _label("ThreatLabel", "RELIQUARY THREAT", &"eyebrow")
 	threat.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -143,13 +149,19 @@ func _build_body() -> GridContainer:
 	_body.add_theme_constant_override(&"v_separation", 16)
 
 	var roster_panel := PanelContainer.new()
+	_roster_panel = roster_panel
 	roster_panel.name = "FieldTeamPanel"
 	roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	roster_panel.size_flags_stretch_ratio = 2.1
+	roster_panel.size_flags_stretch_ratio = 3.0
 	roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	LunarisOpsType.apply_panel(roster_panel, &"workspace")
+	var roster_style := LunarisOpsType.panel_style(&"workspace")
+	roster_style.content_margin_left = 8.0
+	roster_style.content_margin_top = 8.0
+	roster_style.content_margin_right = 8.0
+	roster_style.content_margin_bottom = 8.0
+	roster_panel.add_theme_stylebox_override(&"panel", roster_style)
 	var roster_column := VBoxContainer.new()
-	roster_column.add_theme_constant_override(&"separation", 12)
+	roster_column.add_theme_constant_override(&"separation", 6)
 	roster_panel.add_child(roster_column)
 	_roster_heading = BoxContainer.new()
 	_roster_heading.name = "FieldTeamHeader"
@@ -185,7 +197,7 @@ func _build_body() -> GridContainer:
 	roster_column.add_child(_roster_scroll)
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
-	_grid.columns = 3
+	_grid.columns = 2
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_grid.add_theme_constant_override(&"h_separation", 10)
@@ -195,9 +207,11 @@ func _build_body() -> GridContainer:
 	_body.add_child(roster_panel)
 
 	var briefing_panel := PanelContainer.new()
+	_intel_panel = briefing_panel
 	briefing_panel.name = "MissionIntelligencePanel"
 	briefing_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	briefing_panel.size_flags_stretch_ratio = 1.0
+	briefing_panel.custom_minimum_size.x = 0.0
 	briefing_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_panel(briefing_panel, &"workspace")
 	_intel_scroll = ScrollContainer.new()
@@ -257,15 +271,15 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		&"ui.identity_filter.placeholder", "Filter operators",
 	)
 	_filter_input.clear_button_enabled = true
-	_filter_input.custom_minimum_size = Vector2(180.0, 50.0)
+	_filter_input.custom_minimum_size = Vector2(180.0, 54.0)
 	_filter_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	LunarisOpsType.apply_line_edit(_filter_input)
-	_filter_input.add_theme_font_size_override(&"font_size", 16)
+	_filter_input.add_theme_font_size_override(&"font_size", 24)
 	_filter_input.text_changed.connect(_on_name_filter_changed)
 	_filter_toolbar.add_child(_filter_input)
 	_sort_select = OptionButton.new()
 	_sort_select.name = "DeploymentNameSort"
-	_sort_select.custom_minimum_size = Vector2(180.0, 50.0)
+	_sort_select.custom_minimum_size = Vector2(180.0, 54.0)
 	_sort_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_sort_select.fit_to_longest_item = false
 	_sort_select.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -280,7 +294,7 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		if option["id"] == _name_sort:
 			_sort_select.select(option_index)
 	LunarisOpsType.apply_button(_sort_select, &"secondary")
-	_sort_select.add_theme_font_size_override(&"font_size", 16)
+	_sort_select.add_theme_font_size_override(&"font_size", 24)
 	_sort_select.tooltip_text = UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")
 	_sort_select.item_selected.connect(_on_name_sort_selected)
 	_filter_toolbar.add_child(_sort_select)
@@ -338,9 +352,7 @@ func _rebuild_operator_cards() -> void:
 	if visible_rows.is_empty():
 		_grid.columns = 1
 		return
-	_grid.columns = 1 if _shell.layout_mode() == &"portrait" else (
-		2 if _shell.layout_mode() == &"compact_landscape" else 3
-	)
+	_grid.columns = 1 if _shell.layout_mode() == &"portrait" else 2
 	for hero: Dictionary in visible_rows:
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
@@ -362,13 +374,23 @@ func _rebuild_operator_cards() -> void:
 			card_text = "%s\nFALLEN • VAHALLA" % _hero_label(hero)
 		pick.text = card_text
 		pick.tooltip_text = card_text.replace("\n", " — ")
-		pick.icon = Art.texture(StringName(hero["portrait_asset_id"]))
-		pick.expand_icon = true
-		pick.add_theme_constant_override(&"icon_max_width", 112)
-		pick.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		pick.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pick.custom_minimum_size = Vector2(190.0, 220.0)
+		pick.custom_minimum_size = Vector2(300.0, 180.0)
 		pick.set_presentation_text(card_text, card_text)
+		var portrait := TextureRect.new()
+		portrait.name = "OperatorPortrait"
+		portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
+		portrait.anchor_left = OPERATOR_INFO_SPLIT
+		portrait.anchor_top = 0.0
+		portrait.anchor_right = 1.0
+		portrait.anchor_bottom = 1.0
+		portrait.offset_left = 12.0
+		portrait.offset_top = 12.0
+		portrait.offset_right = -18.0
+		portrait.offset_bottom = -12.0
+		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pick.add_child(portrait)
 		pick.disabled = fallen
 		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
 		_apply_operator_card_text_style(pick)
@@ -388,15 +410,19 @@ func _rebuild_operator_cards() -> void:
 
 func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	var card_label := button.get_node("PresentationLabel") as Label
-	card_label.offset_left = 16.0
-	card_label.offset_top = 106.0
-	card_label.offset_right = -16.0
+	card_label.anchor_left = 0.0
+	card_label.anchor_top = 0.0
+	card_label.anchor_right = OPERATOR_INFO_SPLIT
+	card_label.anchor_bottom = 1.0
+	card_label.offset_left = 22.0
+	card_label.offset_top = 16.0
+	card_label.offset_right = -12.0
 	card_label.offset_bottom = -16.0
 	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card_label.clip_text = false
-	card_label.add_theme_font_size_override(&"font_size", 16)
-	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	card_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	card_label.add_theme_font_size_override(&"font_size", 24)
+	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
 func _build_footer() -> BoxContainer:
@@ -413,8 +439,7 @@ func _build_footer() -> BoxContainer:
 	_actions = GridContainer.new()
 	_actions.name = "MissionActions"
 	_actions.columns = 3
-	_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_actions.size_flags_stretch_ratio = 1.35
+	_actions.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_actions.add_theme_constant_override(&"h_separation", 10)
 	_actions.add_theme_constant_override(&"v_separation", 10)
 	_footer.add_child(_actions)
@@ -422,6 +447,7 @@ func _build_footer() -> BoxContainer:
 	_back.pressed.connect(_on_back)
 	_actions.add_child(_back)
 	_training = _action("TrainingButton", "TRAIN OPERATORS", &"gold")
+	_apply_clean_training_style(_training)
 	_training.pressed.connect(_on_training)
 	_actions.add_child(_training)
 	_start = _action("StartBattle", "DEPLOY SQUAD", &"primary")
@@ -434,22 +460,45 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	var button := AetheriaButtonType.new()
 	button.name = node_name
 	button.text = text_value
+	var rendered_text := text_value
+	if node_name == "TrainingButton":
+		rendered_text = "TRAIN\nOPERATORS"
+	elif node_name == "StartBattle":
+		rendered_text = "DEPLOY\nSQUAD"
 	button.custom_minimum_size = Vector2(
-		240.0 if node_name == "TrainingButton" else (210.0 if node_name == "StartBattle" else 170.0),
-		68.0,
+		168.0 if node_name == "TrainingButton" else (147.0 if node_name == "StartBattle" else 119.0),
+		99.0,
 	)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.set_presentation_text(text_value, text_value)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	button.set_presentation_text(text_value, rendered_text)
 	LunarisOpsType.apply_button(button, role)
 	var presentation := button.get_node("PresentationLabel") as Label
 	presentation.offset_left = ACTION_SAFE_INSET
-	presentation.offset_top = 10.0
+	presentation.offset_top = 8.0
 	presentation.offset_right = -ACTION_SAFE_INSET
-	presentation.offset_bottom = -10.0
-	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	presentation.offset_bottom = -8.0
+	presentation.autowrap_mode = TextServer.AUTOWRAP_OFF
 	presentation.clip_text = false
-	presentation.add_theme_font_size_override(&"font_size", 17)
+	presentation.add_theme_font_size_override(&"font_size", 26)
 	return button
+
+
+func _apply_clean_training_style(button: AetheriaButtonType) -> void:
+	var normal := StagingSkinType.clean_button_style(
+		Color("10202fed"), Color(LunarisOpsType.GOLD, 0.72), 4,
+	)
+	var hover := StagingSkinType.clean_button_style(
+		Color("183448f5"), LunarisOpsType.CYAN, 4,
+	)
+	var pressed := StagingSkinType.clean_button_style(
+		Color("09131df5"), LunarisOpsType.GOLD, 4,
+	)
+	button.add_theme_stylebox_override(&"normal", normal)
+	button.add_theme_stylebox_override(&"hover", hover)
+	button.add_theme_stylebox_override(&"pressed", pressed)
+	button.add_theme_stylebox_override(
+		&"focus", StagingSkinType.transparent_focus_style(LunarisOpsType.CYAN),
+	)
 
 
 func _add_intel_item(parent: VBoxContainer, heading: String, field: StageNarrativeDefType.Field) -> void:
@@ -592,8 +641,10 @@ func _hero_label(hero: Dictionary) -> String:
 func _on_layout_mode_changed(mode: StringName) -> void:
 	if _header != null:
 		_header.vertical = mode == &"portrait"
+	if _header_identity != null:
+		_header_identity.vertical = mode == &"portrait"
 	if _header_status != null:
-		_header_status.custom_minimum_size.x = 0.0 if mode == &"portrait" else 220.0
+		_header_status.custom_minimum_size.x = 0.0 if mode == &"portrait" else 280.0
 		for child: Node in _header_status.get_children():
 			if child is Label:
 				(child as Label).horizontal_alignment = (
@@ -622,6 +673,15 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _body != null:
 		_body.columns = 1 if mode == &"portrait" else 2
 		_body.custom_minimum_size.y = 0.0
+	if _roster_panel != null and _intel_panel != null:
+		if mode == &"portrait":
+			_roster_panel.custom_minimum_size.x = 0.0
+			_intel_panel.custom_minimum_size.x = 0.0
+		else:
+			var body_width := maxf(760.0, get_viewport_rect().size.x - 112.0)
+			var intel_width := clampf(body_width * 0.25, 220.0, 320.0)
+			_intel_panel.custom_minimum_size.x = intel_width
+			_roster_panel.custom_minimum_size.x = body_width - intel_width - 16.0
 	if _command_scroll != null:
 		_command_scroll.vertical_scroll_mode = (
 			ScrollContainer.SCROLL_MODE_DISABLED
@@ -633,18 +693,23 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
 	if _grid != null:
-		_grid.columns = 1 if mode == &"portrait" else (2 if mode == &"compact_landscape" else 3)
+		_grid.columns = 1 if mode == &"portrait" else 2
 	if _filter_bar != null:
-		_filter_bar.set_compact(mode != &"portrait")
-		_filter_bar.set_inline(mode != &"portrait")
+		_filter_bar.set_compact(true)
+		_filter_bar.set_inline(mode == &"regular_landscape")
 	for button: Button in _buttons.values():
+		var portrait_card_width := 270.0 if get_viewport_rect().size.x < 480.0 else 300.0
 		button.custom_minimum_size = Vector2(
-			180.0, 190.0 if mode == &"portrait" else 220.0,
+			portrait_card_width if mode == &"portrait" else 280.0,
+			180.0 if mode == &"regular_landscape" else 260.0,
 		)
 	if _footer != null:
 		_footer.vertical = mode == &"portrait"
 	if _actions != null:
 		_actions.columns = 1 if mode == &"portrait" else 3
+		_actions.size_flags_horizontal = (
+			Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_END
+		)
 
 
 func _on_training() -> void:

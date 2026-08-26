@@ -41,23 +41,28 @@ func _run() -> void:
 
 
 func _verify_title_scale() -> void:
+	var entry_scroll := _title.find_child("EntryScroll", true, false) as ScrollContainer
+	var entry_host := _title.find_child("EntryControls", true, false) as Control
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var synopsis := _title.find_child("CanonSynopsis", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
-	_check(wordmark.get_theme_font_size(&"font_size") == 138, "landscape wordmark did not retain near-doubled readability")
-	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 27, "canon synopsis typography is unreadable")
+	_check(wordmark.get_theme_font_size(&"font_size") == 207, "landscape wordmark is not 1.5×")
+	_check(synopsis != null and synopsis.get_theme_font_size(&"font_size") >= 41, "canon synopsis is not 1.5×")
 	_check(synopsis != null and not synopsis.text.to_lower().contains("resurrected"), "title synopsis restored removed wording")
 	_check(synopsis != null and synopsis.text.contains("Command the champions of Company 33"), "title synopsis copy changed unexpectedly")
 	_check(synopsis != null and synopsis.get_visible_line_count() == synopsis.get_line_count(), "canon synopsis is clipped")
-	_check(start.get_theme_font_size(&"font_size") == 55, "Start typography is not doubled")
-	_check(settings.get_theme_font_size(&"font_size") == 46, "Settings typography is not doubled")
-	_check(start.custom_minimum_size.y >= 90.0, "Start container did not grow with typography")
-	_check(settings.custom_minimum_size.y >= 80.0, "Settings container did not grow with typography")
-	_check(_inside(_title, wordmark), "doubled wordmark overflows the title viewport")
-	_check(_inside(_title, synopsis), "canon synopsis overflows the title viewport")
-	_check(_inside(_title, start), "doubled Start action is outside the title viewport")
-	_check(_inside(_title, settings), "doubled Settings action is outside the title viewport")
+	_check(start.get_theme_font_size(&"font_size") == 83, "Start typography is not 1.5×")
+	_check(settings.get_theme_font_size(&"font_size") == 69, "Settings typography is not 1.5×")
+	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
+	_check(settings.get_combined_minimum_size().y >= 121.0, "Settings container did not grow with 1.5× typography")
+	_check(entry_scroll != null and entry_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "title entry is not scroll-safe")
+	_check(_inside(entry_host, wordmark), "1.5× wordmark overflows title content")
+	_check(_inside(entry_host, synopsis), "canon synopsis overflows title content")
+	_check(_inside(entry_host, start), "1.5× Start action overflows title content")
+	_check(_inside(entry_host, settings), "1.5× Settings action overflows title content")
+	_check(entry_scroll != null and entry_scroll.scroll_vertical == 0, "title does not open at the top of its enlarged content")
+	_check(entry_scroll != null and entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "title wordmark is not visible in the initial viewport")
 
 
 func _verify_settings(label: String, viewport: Vector2i) -> void:
@@ -102,10 +107,10 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(not music_button.accessibility_description.is_empty() and not motion.accessibility_description.is_empty() and not frame_option.accessibility_description.is_empty(), "%s settings controls lack accessibility descriptions" % label)
 	_check(error.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "%s Settings error is not assertive live content" % label)
 	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
-	var compact := viewport.x <= 720 or float(viewport.x) / float(viewport.y) <= 1.2
+	var compact := viewport.x <= 720 or viewport.y <= 560 or float(viewport.x) / float(viewport.y) <= 1.2
 	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
-	_check(frame_row.vertical == compact, "%s frame-limit row has wrong compact orientation" % label)
-	_check(locale_selector.vertical == compact, "%s locale selector has wrong compact orientation" % label)
+	_check(frame_row.vertical, "%s frame-limit row is not stacked for 1.5× type" % label)
+	_check(locale_selector.vertical, "%s locale selector is not stacked for 1.5× type" % label)
 	_check(focus_owner != null and state.is_ancestor_of(focus_owner), "%s initial focus escaped Settings" % label)
 	for control: Control in _focus_controls(state):
 		for path: NodePath in [

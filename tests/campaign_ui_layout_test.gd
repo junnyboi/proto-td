@@ -64,10 +64,13 @@ func _run() -> void:
 	var mission_actions := mission.find_child("MissionActions", true, false) as GridContainer
 	_check(mission_actions != null and not _has_scroll_ancestor(mission_actions), "Mission actions remain trapped in body scrolling")
 	if mission_actions != null:
-		_check(mission_actions.size_flags_horizontal == Control.SIZE_EXPAND_FILL, "Mission action grid does not fill portrait width")
 		_check(mission_actions.get_child_count() == 3, "Mission action contract changed")
+		var mission_widths := {"BackButton": 119.0, "TrainingButton": 168.0, "StartBattle": 147.0}
 		for child: Node in mission_actions.get_children():
-			_check(child is Button and (child as Button).size_flags_horizontal == Control.SIZE_EXPAND_FILL, "Mission action does not expand safely")
+			var action := child as Button
+			_check(action != null and action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Mission action does not retain its compact alignment")
+			if action != null and mission_widths.has(String(action.name)):
+				_check(is_equal_approx(action.custom_minimum_size.x, float(mission_widths[String(action.name)])), "Mission action width reduction changed")
 	_dispose(mission)
 	game.set("content", null)
 

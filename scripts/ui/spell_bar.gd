@@ -135,7 +135,7 @@ func _make_status_label(label_name: String) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", 21)
 	label.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.08, 0.95))
 	label.add_theme_constant_override("outline_size", 3)
 	return label

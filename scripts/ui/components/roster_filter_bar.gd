@@ -58,7 +58,7 @@ func set_rows(rows: Array) -> void:
 func set_compact(value: bool) -> void:
 	_compact = value
 	if _status_row != null and _inline:
-		_status_row.custom_minimum_size.x = 260.0 if _compact else 320.0
+		_status_row.custom_minimum_size.x = 360.0 if _compact else 408.0
 	_refresh_controls()
 
 
@@ -69,7 +69,7 @@ func set_inline(value: bool) -> void:
 		_controls.add_theme_constant_override(&"separation", 12)
 		_status_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if value else Control.SIZE_EXPAND_FILL
 		_status_row.custom_minimum_size.x = (
-			(260.0 if _compact else 320.0) if value else 0.0
+			(360.0 if _compact else 408.0) if value else 0.0
 		)
 		_faction_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_controls.queue_sort()
@@ -140,7 +140,7 @@ func _refresh_controls() -> void:
 			else UiCopyType.text(&"ui.roster.tab.active", "Active")
 		)
 		button.text = "%s  %d" % [label.to_upper(), count]
-		button.custom_minimum_size = Vector2(126.0 if _compact else 156.0, 44.0)
+		button.custom_minimum_size = Vector2(176.0 if _compact else 200.0, 54.0)
 		Style.apply_button(button, &"selected" if value == status else &"quiet")
 
 	for raw: Variant in _faction_buttons:
@@ -153,10 +153,10 @@ func _refresh_controls() -> void:
 			else str(count)
 		)
 		button.custom_minimum_size = Vector2(
-			82.0 if value == FilterType.FACTION_ALL else (58.0 if _compact else 68.0),
-			48.0 if _compact else 56.0,
+			108.0 if value == FilterType.FACTION_ALL else (72.0 if _compact else 84.0),
+			54.0 if _compact else 66.0,
 		)
-		button.add_theme_constant_override(&"icon_max_width", 30 if _compact else 36)
+		button.add_theme_constant_override(&"icon_max_width", 45 if _compact else 54)
 		Style.apply_button(button, &"selected" if value == faction_id else &"quiet")
 
 

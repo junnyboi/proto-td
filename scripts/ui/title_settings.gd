@@ -12,7 +12,7 @@ const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const FRAME_LIMITS := [0, 30, 60, 120]
 const TITLE_UI_SCALE := 1.15
-const TITLE_FONT_SCALE := 2.0
+const TITLE_FONT_SCALE := 3.0
 const IVORY := Color("f5efe1")
 const GOLD := Color("d8b978")
 const MUTED := Color("aebfd0")
@@ -84,6 +84,7 @@ func _ready() -> void:
 	_sfx_slider.value_changed.connect(_on_volume_changed.bind(&"sfx_volume"))
 	_music_button.pressed.connect(_toggle_music)
 	_frame_option.item_selected.connect(_on_frame_selected)
+	_frame_option.fit_to_longest_item = false
 	_motion_button.pressed.connect(_toggle_motion)
 	I18n.locale_changed.connect(_on_locale_changed)
 	resized.connect(_apply_responsive_layout)
@@ -476,7 +477,7 @@ func _apply_responsive_layout() -> void:
 	var portrait := viewport.x / maxf(viewport.y, 1.0) <= 1.2
 	var short := viewport.y <= 560.0
 	var wide := viewport.x >= 1200.0 and not portrait and not narrow
-	var two_columns := viewport.x >= 840.0 and not portrait and not narrow
+	var two_columns := viewport.x >= 840.0 and not portrait and not narrow and not short
 	_layout_mode = &"wide" if wide else (&"narrow" if narrow else (&"portrait" if portrait else &"regular"))
 	if short:
 		_layout_mode = StringName("%s_short" % _layout_mode)
@@ -484,13 +485,13 @@ func _apply_responsive_layout() -> void:
 	var vertical_gutter := clampi(roundi(viewport.y * 0.028), 10 if short else 12, 32)
 	_set_margins(_safe_frame, horizontal_gutter, vertical_gutter)
 	var frame_style := StagingSkinType.command_deck_style()
-	var frame_content_margin := 4.0 if narrow else 28.0
+	var frame_content_margin := 4.0 if narrow or short else 28.0
 	frame_style.content_margin_left = frame_content_margin
 	frame_style.content_margin_top = frame_content_margin
 	frame_style.content_margin_right = frame_content_margin
 	frame_style.content_margin_bottom = frame_content_margin
 	_command_frame.add_theme_stylebox_override(&"panel", frame_style)
-	var padding := 0 if narrow else (10 if short else 22)
+	var padding := 0 if narrow or short else 22
 	_set_margins(_frame_padding, padding, padding)
 	_state_layout.add_theme_constant_override(&"separation", 6 if short else 12)
 	_header.add_theme_constant_override(&"separation", 6 if narrow else 14)
@@ -499,10 +500,25 @@ func _apply_responsive_layout() -> void:
 	_columns.columns = 2 if two_columns else 1
 	_columns.add_theme_constant_override(&"h_separation", 20 if wide else 0)
 	_columns.add_theme_constant_override(&"v_separation", 12)
-	_locale_selector.set_vertical_layout(narrow or portrait)
+	_locale_selector.set_vertical_layout(true)
 	_locale_selector.set_compact_mode(narrow or short)
-	_frame_row.vertical = narrow or portrait
+	_frame_row.vertical = true
+	for section_name: String in ["LanguageAudioSection", "GraphicsAccessibilitySection"]:
+		var section := _columns.get_node_or_null(section_name) as PanelContainer
+		if section != null:
+			var section_style := section.get_theme_stylebox(&"panel").duplicate() as StyleBox
+			section_style.content_margin_left = 0.0 if narrow else 18.0
+			section_style.content_margin_right = 0.0 if narrow else 18.0
+			section.add_theme_stylebox_override(&"panel", section_style)
+			var section_margin := section.get_node_or_null("SectionMargin") as MarginContainer
+			if section_margin != null:
+				_set_margins(section_margin, 0 if narrow else 18, 8 if narrow else 16)
 	_frame_option.custom_minimum_size.x = 0.0 if narrow or portrait else 180.0
+	if narrow:
+		for index: int in _frame_option.item_count:
+			_frame_option.set_item_text(index, "∞" if FRAME_LIMITS[index] == 0 else str(FRAME_LIMITS[index]))
+	else:
+		_refresh_frame_items()
 	_action_dock.columns = 1
 	_apply_button.custom_minimum_size.y = 76.0 if short else _title_size(76.0)
 	_back_button.text = "←" if narrow else UiCopyType.text(&"ui.common.back", "Back").to_upper()
@@ -513,12 +529,25 @@ func _apply_responsive_layout() -> void:
 	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider]:
 		slider.custom_minimum_size.y = 48.0
 	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(16 if narrow else (30 if portrait else 36)))
+	var locale_heading := UiCopyType.text(&"ui.locale.label", "Language").to_upper()
+	if narrow and locale_heading.length() > 6:
+		locale_heading = locale_heading.substr(0, 4)
+	_locale_label.text = locale_heading
+	_locale_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER if narrow else HORIZONTAL_ALIGNMENT_LEFT
+	)
+	for heading: Label in [_locale_label, _audio_heading, _graphics_heading]:
+		heading.autowrap_mode = (
+			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
+		)
 	_back_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 17))
 	_apply_button.add_theme_font_size_override(&"font_size", _title_font_size(15 if narrow else 17))
 	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
-		action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		action.autowrap_mode = (
+			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
+		)
 		action.clip_text = false
 	_rebuild_focus_graph()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):

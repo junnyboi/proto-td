@@ -252,7 +252,7 @@ func _build_screen() -> void:
 	_back_button.clip_text = false
 	_back_button.pressed.connect(_on_back_pressed)
 	Style.apply_button(_back_button, &"quiet")
-	_back_button.add_theme_font_size_override(&"font_size", 26)
+	_back_button.add_theme_font_size_override(&"font_size", 39)
 	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -272,7 +272,7 @@ func _build_screen() -> void:
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_marks_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_marks_label.add_theme_color_override(&"font_color", Style.GOLD)
-	_marks_label.add_theme_font_size_override(&"font_size", 38)
+	_marks_label.add_theme_font_size_override(&"font_size", 57)
 	_marks_safe.add_child(_marks_label)
 
 	_pity_layout = BoxContainer.new()
@@ -284,7 +284,7 @@ func _build_screen() -> void:
 	_pity_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_pity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_pity_label.add_theme_color_override(&"font_color", Style.GOLD)
-	_pity_label.add_theme_font_size_override(&"font_size", 30)
+	_pity_label.add_theme_font_size_override(&"font_size", 45)
 	_pity_layout.add_child(_pity_label)
 	_pity_segments = HBoxContainer.new()
 	_pity_segments.name = "PitySegments"
@@ -344,7 +344,7 @@ func _build_screen() -> void:
 	_pull_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_pull_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_pull_button.clip_text = false
-	_pull_button.add_theme_font_size_override(&"font_size", 24)
+	_pull_button.add_theme_font_size_override(&"font_size", 54)
 	var pull_center := CenterContainer.new()
 	pull_center.name = "PremiumPullActionCenter"
 	pull_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -407,7 +407,7 @@ func _build_pull_confirmation() -> void:
 	_prepare_confirmation_button(_confirmation_header_cancel)
 	_confirmation_header_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_header_cancel, &"quiet")
-	_confirmation_header_cancel.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_header_cancel.add_theme_font_size_override(&"font_size", 54)
 	_confirmation_header_cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_header_cancel.clip_text = false
 	_confirmation_header.add_child(_confirmation_header_cancel)
@@ -417,7 +417,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_title.custom_minimum_size.x = 0
 	_confirmation_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_confirmation_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_confirmation_title.add_theme_font_size_override(&"font_size", 76)
+	_confirmation_title.add_theme_font_size_override(&"font_size", 114)
 	_confirmation_header.add_child(_confirmation_title)
 	var header_rule := ColorRect.new()
 	header_rule.name = "ConfirmationHeaderRule"
@@ -466,14 +466,14 @@ func _build_pull_confirmation() -> void:
 		_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow",
 	)
 	_confirmation_context_eyebrow.name = "ConfirmationContextEyebrow"
-	_confirmation_context_eyebrow.add_theme_font_size_override(&"font_size", 28)
+	_confirmation_context_eyebrow.add_theme_font_size_override(&"font_size", 42)
 	context_stack.add_child(_confirmation_context_eyebrow)
 	_confirmation_context_label = _label("", &"body")
 	_confirmation_context_label.name = "ConfirmationContextCopy"
 	_confirmation_context_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_context_label.custom_minimum_size.x = 0
 	_confirmation_context_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_confirmation_context_label.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_context_label.add_theme_font_size_override(&"font_size", 54)
 	context_stack.add_child(_confirmation_context_label)
 
 	var review_panel := PanelContainer.new()
@@ -495,14 +495,14 @@ func _build_pull_confirmation() -> void:
 		_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"eyebrow",
 	)
 	_confirmation_review_eyebrow.name = "ConfirmationReviewEyebrow"
-	_confirmation_review_eyebrow.add_theme_font_size_override(&"font_size", 28)
+	_confirmation_review_eyebrow.add_theme_font_size_override(&"font_size", 42)
 	review_stack.add_child(_confirmation_review_eyebrow)
 	_confirmation_review_label = _label("", &"body")
 	_confirmation_review_label.name = "ConfirmationTransactionCopy"
 	_confirmation_review_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_review_label.custom_minimum_size.x = 0
 	_confirmation_review_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_confirmation_review_label.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_review_label.add_theme_font_size_override(&"font_size", 54)
 	review_stack.add_child(_confirmation_review_label)
 
 	_confirmation_action_dock = PanelContainer.new()
@@ -535,7 +535,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_cancel, &"quiet")
 	_apply_confirmation_action_style(_confirmation_cancel, false)
-	_confirmation_cancel.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_cancel.add_theme_font_size_override(&"font_size", 54)
 	_confirmation_cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_cancel.clip_text = false
 	_confirmation_actions.add_child(_confirmation_cancel)
@@ -547,7 +547,7 @@ func _build_pull_confirmation() -> void:
 	_confirmation_confirm.pressed.connect(_on_confirm_pull)
 	Style.apply_button(_confirmation_confirm, &"gold")
 	_apply_confirmation_action_style(_confirmation_confirm, true)
-	_confirmation_confirm.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_confirm.add_theme_font_size_override(&"font_size", 54)
 	_confirmation_confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirmation_confirm.clip_text = false
 	_confirmation_actions.add_child(_confirmation_confirm)
@@ -648,7 +648,7 @@ func _build_reveal_layer() -> void:
 	_skip_button.clip_text = false
 	_skip_button.pressed.connect(_finish_reveal)
 	Style.apply_button(_skip_button, &"quiet")
-	_skip_button.add_theme_font_size_override(&"font_size", 36)
+	_skip_button.add_theme_font_size_override(&"font_size", 54)
 	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
 		var padded_style := _skip_button.get_theme_stylebox(state).duplicate() as StyleBox
 		padded_style.content_margin_left = 42.0
@@ -674,7 +674,7 @@ func _build_reveal_layer() -> void:
 	_reveal_title.name = "RevealTitle"
 	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_reveal_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_reveal_title.add_theme_font_size_override(&"font_size", 104)
+	_reveal_title.add_theme_font_size_override(&"font_size", 156)
 	_reveal_title.modulate.a = 0.0
 	_reveal_title_stack.add_child(_reveal_title)
 	_reveal_stars = HBoxContainer.new()
@@ -694,7 +694,7 @@ func _build_reveal_layer() -> void:
 	_reveal_hint.name = "RevealContinueHint"
 	_reveal_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_reveal_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_reveal_hint.add_theme_font_size_override(&"font_size", 28)
+	_reveal_hint.add_theme_font_size_override(&"font_size", 42)
 	_reveal_hint.modulate.a = 0.0
 	_reveal_title_stack.add_child(_reveal_hint)
 	_reveal_pull_again = Button.new()
@@ -710,7 +710,7 @@ func _build_reveal_layer() -> void:
 	_reveal_pull_again.pressed.connect(_on_pull_again_pressed)
 	Style.apply_button(_reveal_pull_again, &"gold")
 	_apply_confirmation_action_style(_reveal_pull_again, true)
-	_reveal_pull_again.add_theme_font_size_override(&"font_size", 36)
+	_reveal_pull_again.add_theme_font_size_override(&"font_size", 54)
 	_reveal_title_stack.add_child(_reveal_pull_again)
 
 
@@ -850,18 +850,18 @@ func _apply_responsive_layout() -> void:
 			maxf(280.0, viewport_size.x - 48.0) if portrait else 1120.0
 		)
 	if _reveal_title != null:
-		var portrait_title_size := clampi(int(viewport_size.x * 0.11), 44, 72)
+		var portrait_title_size := clampi(int(viewport_size.x * 0.165), 66, 108)
 		_reveal_title.add_theme_font_size_override(
-			&"font_size", portrait_title_size if portrait else 104,
+			&"font_size", portrait_title_size if portrait else 156,
 		)
 	if _reveal_hint != null:
-		_reveal_hint.add_theme_font_size_override(&"font_size", 28)
+		_reveal_hint.add_theme_font_size_override(&"font_size", 42)
 	if _reveal_pull_again != null:
 		_reveal_pull_again.custom_minimum_size = Vector2(600, 84) if portrait else REVEAL_PULL_AGAIN_SIZE
-		_reveal_pull_again.add_theme_font_size_override(&"font_size", 30 if portrait else 36)
+		_reveal_pull_again.add_theme_font_size_override(&"font_size", 45 if portrait else 54)
 	if _skip_button != null:
 		_skip_button.custom_minimum_size = Vector2(300 if portrait else 340, 92)
-		_skip_button.add_theme_font_size_override(&"font_size", 36)
+		_skip_button.add_theme_font_size_override(&"font_size", 54)
 	if _reveal_stars != null:
 		for child: Node in _reveal_stars.get_children():
 			var star := child as ResonanceStar
@@ -1760,7 +1760,7 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 		Control.SIZE_EXPAND_FILL if narrow else Control.SIZE_SHRINK_BEGIN
 	)
 	_confirmation_header_cancel.custom_minimum_size.x = 0.0 if narrow else 280.0
-	_confirmation_title.add_theme_font_size_override(&"font_size", 44 if narrow else (64 if short else 76))
+	_confirmation_title.add_theme_font_size_override(&"font_size", 66 if narrow else (96 if short else 114))
 	_confirmation_body_grid.columns = 2 if wide else 1
 	_confirmation_context_eyebrow.visible = not narrow
 	_confirmation_review_eyebrow.visible = not narrow
@@ -1939,7 +1939,7 @@ func _set_browse_status(text: String, live_mode: int) -> void:
 
 func _apply_pull_button_style(disabled: bool) -> void:
 	Style.apply_button(_pull_button, &"disabled" if disabled else &"gold")
-	_pull_button.add_theme_font_size_override(&"font_size", 24)
+	_pull_button.add_theme_font_size_override(&"font_size", 54)
 	_pull_button.add_theme_color_override(
 		&"font_color", Color(Style.MUTED, 0.64) if disabled else Style.IVORY,
 	)

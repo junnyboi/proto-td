@@ -27,9 +27,9 @@ const LANDSCAPE_WIDTH := 820.0
 const BODY_MIN_HEIGHT := 200.0
 const BODY_MAX_HEIGHT := 360.0
 const FULL_READABLE_WIDTH := 980.0
-const TITLE_FONT_SIZE := 44
-const BODY_FONT_SIZE := 36
-const ACTION_FONT_SIZE := 36
+const TITLE_FONT_SIZE := 66
+const BODY_FONT_SIZE := 54
+const ACTION_FONT_SIZE := 54
 const ACTION_MIN_HEIGHT := 88.0
 const ENTRY_SECONDS := 0.20
 const EXIT_SECONDS := 0.15
@@ -95,7 +95,21 @@ static func create(
 	var stack := VBoxContainer.new()
 	stack.name = "Content"
 	stack.add_theme_constant_override(&"separation", 16)
-	panel.add_child(stack)
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sheet_scroll: ScrollContainer = null
+	if full_viewport:
+		panel.add_child(stack)
+	else:
+		sheet_scroll = ScrollContainer.new()
+		sheet_scroll.name = "SheetScroll"
+		sheet_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		sheet_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+		sheet_scroll.follow_focus = true
+		sheet_scroll.draw_focus_border = false
+		sheet_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sheet_scroll.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		panel.add_child(sheet_scroll)
+		sheet_scroll.add_child(stack)
 
 	var header := VBoxContainer.new()
 	header.name = "Header"
@@ -229,6 +243,7 @@ static func create(
 		&"safe": safe,
 		&"placement": placement,
 		&"panel": panel,
+		&"sheet_scroll": sheet_scroll,
 		&"stack": stack,
 		&"header": header,
 		&"title": title,
@@ -654,6 +669,7 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 	var safe := dialog.get(&"safe") as MarginContainer
 	var placement := dialog.get(&"placement") as VBoxContainer
 	var panel := dialog.get(&"panel") as PanelContainer
+	var sheet_scroll := dialog.get(&"sheet_scroll") as ScrollContainer
 	var stack := dialog.get(&"stack") as VBoxContainer
 	var header := dialog.get(&"header") as VBoxContainer
 	var body_scroll := dialog.get(&"body_scroll") as ScrollContainer
@@ -719,6 +735,12 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 		panel.size_flags_vertical = Control.SIZE_SHRINK_END if viewport_size.y > viewport_size.x or narrow_sheet else Control.SIZE_SHRINK_CENTER
 		var available_width := maxf(0.0, viewport_size.x - float(margin * 2))
 		panel.custom_minimum_size.x = minf(LANDSCAPE_WIDTH, available_width)
+		if sheet_scroll != null:
+			var available_height := maxf(
+				180.0,
+				viewport_size.y - float(margin * 2) - panel_content_margin * 2.0,
+			)
+			sheet_scroll.custom_minimum_size.y = minf(620.0, available_height)
 		body.custom_minimum_size.x = maxf(0.0, panel.custom_minimum_size.x - 72.0)
 		var body_min_height := 80.0 if short_height else BODY_MIN_HEIGHT
 		var body_max_height := 128.0 if short_height else BODY_MAX_HEIGHT

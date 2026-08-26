@@ -429,7 +429,10 @@ func _layout_slot_box() -> void:
 		(child as Control).custom_minimum_size.x = 0.0
 	_slot_box.reset_size()
 	var content_height := _slot_box.get_combined_minimum_size().y + DECK_PADDING * 2.0
-	var height_ratio := 0.46 if short_landscape else 0.42
+	# The global 1.5× type scale increases each two-line slot's rendered
+	# minimum height. Standard landscape must expose both rows without relying
+	# on clipping; short landscape retains local scrolling by design.
+	var height_ratio := 0.46 if short_landscape else 0.56
 	var deck_height := minf(content_height, maxf(BAR_HEIGHT, size.y * height_ratio))
 	_slot_deck.position = Vector2(SAFE_MARGIN, size.y - deck_height - SAFE_MARGIN)
 	_slot_deck.size = Vector2(deck_width, deck_height)

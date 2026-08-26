@@ -144,13 +144,13 @@ func _label(node_name: String, role: StringName) -> TrainingLabelType:
 	match role:
 		&"dense_body":
 			LunarisOpsType.apply_label(label, &"body")
-			label.add_theme_font_size_override(&"font_size", 19)
+			label.add_theme_font_size_override(&"font_size", 29)
 		&"dense_detail":
 			LunarisOpsType.apply_label(label, &"detail")
-			label.add_theme_font_size_override(&"font_size", 16)
+			label.add_theme_font_size_override(&"font_size", 24)
 		&"eyebrow":
 			LunarisOpsType.apply_label(label, &"eyebrow")
-			label.add_theme_font_size_override(&"font_size", 15)
+			label.add_theme_font_size_override(&"font_size", 23)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

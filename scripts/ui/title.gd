@@ -18,7 +18,7 @@ const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.12
 const FOCUS_PULSE_MAX_ALPHA := 0.30
 const TITLE_UI_SCALE := 1.15
-const TITLE_FONT_SCALE := 2.0
+const TITLE_FONT_SCALE := 3.0
 const ENTRY_FADE_SECONDS := 0.56
 const ENTRY_STAGGER_SECONDS := 0.09
 const HOVER_SCALE := Vector2(1.025, 1.025)
@@ -32,6 +32,7 @@ enum ScreenState { TITLE, SETTINGS, COMMITTING }
 var _screen_state := ScreenState.TITLE
 var _settings_snapshot: Dictionary = {}
 var _backdrop: LunarisBackdropType = null
+var _entry_scroll: ScrollContainer = null
 var _entry_host: MarginContainer = null
 var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
@@ -53,6 +54,7 @@ var _entry_tween: Tween = null
 var _hover_tweens: Dictionary = {}
 var _highlighted_actions: Dictionary = {}
 var _interaction_feedback_ready := false
+var _title_focus_scroll_ready := false
 
 @onready var _settings_state: TitleSettings = $TitleSettings
 
@@ -130,9 +132,19 @@ func _build_screen() -> void:
 	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(atmosphere)
 
+	_entry_scroll = ScrollContainer.new()
+	_entry_scroll.name = "EntryScroll"
+	_entry_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_entry_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_entry_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_entry_scroll.follow_focus = false
+	_entry_scroll.draw_focus_border = false
+	add_child(_entry_scroll)
+
 	_entry_host = MarginContainer.new()
 	_entry_host.name = "EntryControls"
-	add_child(_entry_host)
+	_entry_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_entry_scroll.add_child(_entry_host)
 
 	_entry_stack = VBoxContainer.new()
 	_entry_stack.name = "EntryStack"
@@ -248,6 +260,12 @@ func _wire_entry_focus() -> void:
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_next = current.get_path_to(following)
+		current.focus_entered.connect(_on_title_action_focused.bind(current))
+
+
+func _on_title_action_focused(action: Control) -> void:
+	if _title_focus_scroll_ready and _entry_scroll != null:
+		_entry_scroll.ensure_control_visible.call_deferred(action)
 
 
 func _begin_title_reveal() -> void:
@@ -255,6 +273,7 @@ func _begin_title_reveal() -> void:
 		_wordmark, _orbit_rule, _synopsis, _start_button, _settings_button,
 	]
 	_interaction_feedback_ready = false
+	_title_focus_scroll_ready = false
 	if _entry_tween != null and _entry_tween.is_valid():
 		_entry_tween.kill()
 	for item: CanvasItem in reveal_nodes:
@@ -273,7 +292,14 @@ func _finish_title_reveal() -> void:
 	for item: CanvasItem in [_wordmark, _orbit_rule, _synopsis, _start_button, _settings_button]:
 		if item != null:
 			item.modulate.a = 1.0
+	_reset_title_scroll.call_deferred()
 	_interaction_feedback_ready = true
+
+
+func _reset_title_scroll() -> void:
+	if _entry_scroll != null:
+		_entry_scroll.scroll_vertical = 0
+	_title_focus_scroll_ready = true
 
 
 func _wire_title_action_feedback(button: Button) -> void:
@@ -542,7 +568,7 @@ func _refresh_copy() -> void:
 
 
 func _apply_responsive_layout() -> void:
-	if _entry_host == null:
+	if _entry_scroll == null or _entry_host == null:
 		return
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
@@ -551,15 +577,14 @@ func _apply_responsive_layout() -> void:
 	var portrait := viewport_size.y > viewport_size.x
 	var narrow := viewport_size.x <= 520.0
 	var short := viewport_size.y <= 560.0
-	var entry_width := minf(viewport_size.x - 48.0, _title_size(1080.0 if not portrait else 520.0))
-	var entry_height := minf(
-		viewport_size.y - 32.0,
-		_title_size(650.0),
-	)
-	var entry_top := minf(viewport_size.y - entry_height - 16.0, viewport_size.y * (0.58 if not portrait else 0.66))
-	var entry_y := 0.0 if viewport_size.y <= 800.0 else maxf(16.0, entry_top - (32.0 if portrait else 0.0))
-	_entry_host.position = Vector2((viewport_size.x - entry_width) * 0.5, entry_y)
-	_entry_host.size = Vector2(entry_width, entry_height)
+	var horizontal_margin := 16 if narrow else (24 if portrait or short else 36)
+	var vertical_margin := 12 if short else 16
+	_entry_host.add_theme_constant_override(&"margin_left", horizontal_margin)
+	_entry_host.add_theme_constant_override(&"margin_right", horizontal_margin)
+	_entry_host.add_theme_constant_override(&"margin_top", vertical_margin)
+	_entry_host.add_theme_constant_override(&"margin_bottom", vertical_margin)
+	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
+	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
 	_entry_stack.add_theme_constant_override(&"separation", 8)
 	var wordmark_size := 26 if narrow else (46 if portrait or short else 60)
 	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(wordmark_size))
