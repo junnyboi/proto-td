@@ -10,10 +10,14 @@ enum Presentation {
 
 const SAFE_MARGIN := 18
 const NARROW_SAFE_MARGIN := 12
-const LANDSCAPE_WIDTH := 520.0
-const BODY_MIN_HEIGHT := 112.0
-const BODY_MAX_HEIGHT := 180.0
-const FULL_READABLE_WIDTH := 760.0
+const LANDSCAPE_WIDTH := 820.0
+const BODY_MIN_HEIGHT := 200.0
+const BODY_MAX_HEIGHT := 360.0
+const FULL_READABLE_WIDTH := 980.0
+const TITLE_FONT_SIZE := 44
+const BODY_FONT_SIZE := 36
+const ACTION_FONT_SIZE := 36
+const ACTION_MIN_HEIGHT := 88.0
 const ENTRY_SECONDS := 0.16
 
 
@@ -86,6 +90,7 @@ static func create(
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_label(title, &"heading")
+	title.add_theme_font_size_override(&"font_size", TITLE_FONT_SIZE)
 	header.add_child(title)
 
 	var rule := ColorRect.new()
@@ -123,6 +128,7 @@ static func create(
 	body.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	Style.apply_label(body, &"body")
+	body.add_theme_font_size_override(&"font_size", BODY_FONT_SIZE)
 	if body_frame != null:
 		body_frame.add_child(body)
 	else:
@@ -148,19 +154,25 @@ static func create(
 	var cancel := Button.new()
 	cancel.name = "CancelButton"
 	cancel.text = cancel_text
-	cancel.custom_minimum_size = Vector2(0.0 if full_viewport else 190.0, 54.0)
+	cancel.custom_minimum_size = Vector2(0.0 if full_viewport else 300.0, ACTION_MIN_HEIGHT)
 	cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cancel.focus_mode = Control.FOCUS_ALL
 	Style.apply_button(cancel, &"quiet")
+	cancel.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
+	cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	cancel.clip_text = false
 	actions.add_child(cancel)
 
 	var confirm := Button.new()
 	confirm.name = "ConfirmButton"
 	confirm.text = confirm_text
-	confirm.custom_minimum_size = Vector2(0.0 if full_viewport else 190.0, 54.0)
+	confirm.custom_minimum_size = Vector2(0.0 if full_viewport else 300.0, ACTION_MIN_HEIGHT)
 	confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	confirm.focus_mode = Control.FOCUS_ALL
 	Style.apply_button(confirm, &"danger" if destructive else &"primary")
+	confirm.add_theme_font_size_override(&"font_size", ACTION_FONT_SIZE)
+	confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm.clip_text = false
 	actions.add_child(confirm)
 	confirm.set_meta(&"resting_text", confirm_text)
 
@@ -339,6 +351,13 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 	var narrow := viewport_size.x <= 720.0
 	var short_height := viewport_size.y <= 560.0
 	var full_viewport := int(dialog.get(&"presentation", Presentation.SHEET)) == Presentation.FULL_VIEWPORT
+	var panel_style := Style.panel_style(&"screen" if full_viewport else &"dialog")
+	var panel_content_margin := 4.0 if short_height else 22.0
+	panel_style.content_margin_left = panel_content_margin
+	panel_style.content_margin_top = panel_content_margin
+	panel_style.content_margin_right = panel_content_margin
+	panel_style.content_margin_bottom = panel_content_margin
+	panel.add_theme_stylebox_override(&"panel", panel_style)
 	if full_viewport:
 		var horizontal_gutter := int(clampf(roundf(viewport_size.x * 0.033), 12.0, 42.0))
 		var vertical_cap := 18.0 if short_height else 32.0
@@ -362,14 +381,15 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 		body.custom_minimum_size.x = readable_width
 		if body_frame != null:
 			body_frame.custom_minimum_size.x = readable_width
-		var stack_actions := narrow or portrait
-		actions.columns = 1 if stack_actions else 2
-		if cancel != null and confirm != null:
-			cancel.custom_minimum_size = Vector2(0.0, 54.0)
-			confirm.custom_minimum_size = Vector2(0.0, 54.0)
+			var stack_actions := narrow or portrait
+			actions.columns = 1 if stack_actions else 2
+			if cancel != null and confirm != null:
+				var action_height := 72.0 if short_height else ACTION_MIN_HEIGHT
+				cancel.custom_minimum_size = Vector2(0.0, action_height)
+				confirm.custom_minimum_size = Vector2(0.0, action_height)
 	else:
 		var narrow_sheet := viewport_size.x <= 620.0
-		var margin := NARROW_SAFE_MARGIN if narrow_sheet else SAFE_MARGIN
+		var margin := 4 if short_height else (NARROW_SAFE_MARGIN if narrow_sheet else SAFE_MARGIN)
 		for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 			safe.add_theme_constant_override(side, margin)
 		placement.alignment = BoxContainer.ALIGNMENT_END if viewport_size.y > viewport_size.x or narrow_sheet else BoxContainer.ALIGNMENT_CENTER
@@ -377,10 +397,13 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 		var available_width := maxf(0.0, viewport_size.x - float(margin * 2))
 		panel.custom_minimum_size.x = minf(LANDSCAPE_WIDTH, available_width)
 		body.custom_minimum_size.x = maxf(0.0, panel.custom_minimum_size.x - 72.0)
-		body_scroll.custom_minimum_size.y = clampf(viewport_size.y * 0.18, BODY_MIN_HEIGHT, BODY_MAX_HEIGHT)
+		var body_min_height := 80.0 if short_height else BODY_MIN_HEIGHT
+		var body_max_height := 128.0 if short_height else BODY_MAX_HEIGHT
+		body_scroll.custom_minimum_size.y = clampf(viewport_size.y * 0.24, body_min_height, body_max_height)
 		actions.columns = 1 if narrow_sheet else 2
 		if cancel != null and confirm != null:
-			var action_width := 0.0 if narrow_sheet else 190.0
-			cancel.custom_minimum_size.x = action_width
-			confirm.custom_minimum_size.x = action_width
+			var action_width := 0.0 if narrow_sheet else 300.0
+			var action_height := 72.0 if short_height else ACTION_MIN_HEIGHT
+			cancel.custom_minimum_size = Vector2(action_width, action_height)
+			confirm.custom_minimum_size = Vector2(action_width, action_height)
 	_bind_focus_scope(cancel, confirm)

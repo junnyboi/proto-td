@@ -323,16 +323,21 @@ func _build_pull_confirmation() -> void:
 	_confirmation_stack.add_child(_confirmation_header)
 	_confirmation_header_cancel = Button.new()
 	_confirmation_header_cancel.name = "CancelPremiumPull"
-	_confirmation_header_cancel.custom_minimum_size = Vector2(0, 48)
+	_confirmation_header_cancel.custom_minimum_size = Vector2(0, 88)
 	_confirmation_header_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_header_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_header_cancel, &"quiet")
+	_confirmation_header_cancel.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_header_cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_header_cancel.clip_text = false
 	_confirmation_header.add_child(_confirmation_header_cancel)
 	_confirmation_title = _label("", &"title")
 	_confirmation_title.name = "ConfirmationTitle"
 	_confirmation_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_title.custom_minimum_size.x = 0
+	_confirmation_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_confirmation_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_title.add_theme_font_size_override(&"font_size", 76)
 	_confirmation_header.add_child(_confirmation_title)
 	var header_rule := ColorRect.new()
 	header_rule.name = "ConfirmationHeaderRule"
@@ -367,6 +372,12 @@ func _build_pull_confirmation() -> void:
 	context_panel.custom_minimum_size.y = 196.0
 	context_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(context_panel, &"quiet")
+	var context_style := Style.panel_style(&"quiet")
+	context_style.content_margin_left = 28.0
+	context_style.content_margin_top = 28.0
+	context_style.content_margin_right = 28.0
+	context_style.content_margin_bottom = 28.0
+	context_panel.add_theme_stylebox_override(&"panel", context_style)
 	_confirmation_body_grid.add_child(context_panel)
 	var context_stack := VBoxContainer.new()
 	context_stack.add_theme_constant_override(&"separation", 10)
@@ -375,12 +386,14 @@ func _build_pull_confirmation() -> void:
 		_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow",
 	)
 	_confirmation_context_eyebrow.name = "ConfirmationContextEyebrow"
+	_confirmation_context_eyebrow.add_theme_font_size_override(&"font_size", 28)
 	context_stack.add_child(_confirmation_context_eyebrow)
 	_confirmation_context_label = _label("", &"body")
 	_confirmation_context_label.name = "ConfirmationContextCopy"
 	_confirmation_context_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_context_label.custom_minimum_size.x = 0
 	_confirmation_context_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_context_label.add_theme_font_size_override(&"font_size", 36)
 	context_stack.add_child(_confirmation_context_label)
 
 	var review_panel := PanelContainer.new()
@@ -388,6 +401,12 @@ func _build_pull_confirmation() -> void:
 	review_panel.custom_minimum_size.y = 196.0
 	review_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(review_panel, &"result")
+	var review_style := Style.panel_style(&"result")
+	review_style.content_margin_left = 28.0
+	review_style.content_margin_top = 28.0
+	review_style.content_margin_right = 28.0
+	review_style.content_margin_bottom = 28.0
+	review_panel.add_theme_stylebox_override(&"panel", review_style)
 	_confirmation_body_grid.add_child(review_panel)
 	var review_stack := VBoxContainer.new()
 	review_stack.add_theme_constant_override(&"separation", 10)
@@ -396,12 +415,14 @@ func _build_pull_confirmation() -> void:
 		_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"eyebrow",
 	)
 	_confirmation_review_eyebrow.name = "ConfirmationReviewEyebrow"
+	_confirmation_review_eyebrow.add_theme_font_size_override(&"font_size", 28)
 	review_stack.add_child(_confirmation_review_eyebrow)
 	_confirmation_review_label = _label("", &"body")
 	_confirmation_review_label.name = "ConfirmationTransactionCopy"
 	_confirmation_review_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_review_label.custom_minimum_size.x = 0
 	_confirmation_review_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_review_label.add_theme_font_size_override(&"font_size", 36)
 	review_stack.add_child(_confirmation_review_label)
 
 	_confirmation_action_dock = PanelContainer.new()
@@ -416,17 +437,23 @@ func _build_pull_confirmation() -> void:
 	_confirmation_action_dock.add_child(_confirmation_actions)
 	_confirmation_cancel = Button.new()
 	_confirmation_cancel.name = "CancelPremiumPullDock"
-	_confirmation_cancel.custom_minimum_size = Vector2(0, 54)
+	_confirmation_cancel.custom_minimum_size = Vector2(0, 88)
 	_confirmation_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_cancel.pressed.connect(_on_pull_cancelled)
 	Style.apply_button(_confirmation_cancel, &"quiet")
+	_confirmation_cancel.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_cancel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_cancel.clip_text = false
 	_confirmation_actions.add_child(_confirmation_cancel)
 	_confirmation_confirm = Button.new()
 	_confirmation_confirm.name = "ConfirmPremiumPull"
-	_confirmation_confirm.custom_minimum_size = Vector2(0, 54)
+	_confirmation_confirm.custom_minimum_size = Vector2(0, 88)
 	_confirmation_confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_confirmation_confirm.pressed.connect(_on_confirm_pull)
 	Style.apply_button(_confirmation_confirm, &"gold")
+	_confirmation_confirm.add_theme_font_size_override(&"font_size", 36)
+	_confirmation_confirm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_confirm.clip_text = false
 	_confirmation_actions.add_child(_confirmation_confirm)
 	_bind_confirmation_focus_scope()
 	_refresh_confirmation_copy()
@@ -691,7 +718,7 @@ func _on_pull_pressed() -> void:
 	_confirmation_layer.modulate.a = 1.0
 	Sfx.play("ui_click")
 	_play_confirmation_entry()
-	_confirmation_header_cancel.grab_focus.call_deferred()
+	_confirmation_cancel.grab_focus.call_deferred()
 
 
 func _on_pull_cancelled() -> void:
@@ -1087,11 +1114,7 @@ func _refresh_confirmation_copy() -> void:
 
 
 func _bind_confirmation_focus_scope() -> void:
-	var actions: Array[Control] = [
-		_confirmation_header_cancel,
-		_confirmation_cancel,
-		_confirmation_confirm,
-	]
+	var actions: Array[Control] = [_confirmation_cancel, _confirmation_confirm]
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -1116,8 +1139,15 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	var portrait := aspect <= 1.2 and viewport_size.y > 560.0
 	var short := viewport_size.y <= 560.0
 	var wide := viewport_size.x >= 1200.0 and aspect > 1.2 and not short
+	var frame_style := Style.panel_style(&"screen")
+	var frame_content_margin := 4.0 if narrow else 22.0
+	frame_style.content_margin_left = frame_content_margin
+	frame_style.content_margin_top = frame_content_margin
+	frame_style.content_margin_right = frame_content_margin
+	frame_style.content_margin_bottom = frame_content_margin
+	_confirmation_frame.add_theme_stylebox_override(&"panel", frame_style)
 	var safe_insets := _display_safe_insets(viewport_size)
-	var horizontal_gutter := clampi(roundi(viewport_size.x * 0.033), 12, 42)
+	var horizontal_gutter := 4 if narrow else clampi(roundi(viewport_size.x * 0.033), 12, 42)
 	var vertical_gutter := clampi(roundi(viewport_size.y * 0.028), 12, 32)
 	_confirmation_safe.add_theme_constant_override(
 		&"margin_left", maxi(horizontal_gutter, roundi(safe_insets.x)),
@@ -1133,18 +1163,22 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	)
 	_confirmation_stack.add_theme_constant_override(&"separation", 8 if short else 14)
 	_confirmation_header.add_theme_constant_override(&"separation", 8 if narrow else 16)
-	_confirmation_header.columns = 1 if narrow else 2
+	_confirmation_header_cancel.visible = false
+	_confirmation_header_cancel.focus_mode = Control.FOCUS_NONE
+	_confirmation_header.columns = 1
 	_confirmation_header_cancel.size_flags_horizontal = (
 		Control.SIZE_EXPAND_FILL if narrow else Control.SIZE_SHRINK_BEGIN
 	)
-	_confirmation_header_cancel.custom_minimum_size.x = 0.0 if narrow else 180.0
-	_confirmation_title.add_theme_font_size_override(&"font_size", 32 if narrow or short else 38)
+	_confirmation_header_cancel.custom_minimum_size.x = 0.0 if narrow else 280.0
+	_confirmation_title.add_theme_font_size_override(&"font_size", 44 if narrow else (64 if short else 76))
 	_confirmation_body_grid.columns = 2 if wide else 1
+	_confirmation_context_eyebrow.visible = not narrow
+	_confirmation_review_eyebrow.visible = not narrow
 	_confirmation_actions.columns = 1 if narrow or portrait else 2
-	var action_height := 48.0 if short else 54.0
+	var action_height := 72.0 if short else 88.0
 	_confirmation_cancel.custom_minimum_size = Vector2(0, action_height)
 	_confirmation_confirm.custom_minimum_size = Vector2(0, action_height)
-	_confirmation_header_cancel.custom_minimum_size.y = 44.0 if short else 48.0
+	_confirmation_header_cancel.custom_minimum_size.y = action_height
 	var content_width := minf(
 		CONFIRM_READABLE_MAX_WIDTH,
 		maxf(0.0, viewport_size.x - float(horizontal_gutter * 2 + 44)),

@@ -9,6 +9,7 @@ const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const FRAME_LIMITS := [0, 30, 60, 120]
 const TITLE_UI_SCALE := 1.15
+const TITLE_FONT_SCALE := 2.0
 const IVORY := Color("f5efe1")
 const GOLD := Color("d8b978")
 const MUTED := Color("aebfd0")
@@ -19,11 +20,13 @@ var _layout_mode: StringName = &"wide"
 var _committing := false
 
 @onready var _safe_frame: MarginContainer = $SafeFrame
+@onready var _command_frame: PanelContainer = $SafeFrame/CommandFrame
 @onready var _frame_padding: MarginContainer = $SafeFrame/CommandFrame/FramePadding
 @onready var _state_layout: VBoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout
 @onready var _header: HBoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header
 @onready var _back_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/SettingsBackButton
 @onready var _title_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/SettingsTitle
+@onready var _header_seal: TextureRect = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/LunarisSeal
 @onready var _body_scroll: ScrollContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll
 @onready var _columns: GridContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns
 @onready var _locale_selector: AetheriaLocaleSelector = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/LocaleSelector
@@ -288,13 +291,22 @@ func _apply_responsive_layout() -> void:
 	_layout_mode = &"wide" if wide else (&"narrow" if narrow else (&"portrait" if portrait else &"regular"))
 	if short:
 		_layout_mode = StringName("%s_short" % _layout_mode)
-	var horizontal_gutter := clampi(roundi(viewport.x * 0.033), 12, 42)
+	var horizontal_gutter := clampi(roundi(viewport.x * 0.033), 10, 42)
 	var vertical_gutter := clampi(roundi(viewport.y * 0.028), 10 if short else 12, 32)
 	_set_margins(_safe_frame, horizontal_gutter, vertical_gutter)
-	var padding := 8 if narrow else (10 if short else 22)
+	var frame_style := StagingSkinType.command_deck_style()
+	var frame_content_margin := 4.0 if narrow else 28.0
+	frame_style.content_margin_left = frame_content_margin
+	frame_style.content_margin_top = frame_content_margin
+	frame_style.content_margin_right = frame_content_margin
+	frame_style.content_margin_bottom = frame_content_margin
+	_command_frame.add_theme_stylebox_override(&"panel", frame_style)
+	var padding := 0 if narrow else (10 if short else 22)
 	_set_margins(_frame_padding, padding, padding)
 	_state_layout.add_theme_constant_override(&"separation", 6 if short else 12)
-	_header.custom_minimum_size.y = 44.0 if short else 54.0
+	_header.add_theme_constant_override(&"separation", 6 if narrow else 14)
+	_header_seal.visible = not narrow
+	_header.custom_minimum_size.y = 72.0 if narrow or short else 96.0
 	_columns.columns = 2 if two_columns else 1
 	_columns.add_theme_constant_override(&"h_separation", 20 if wide else 0)
 	_columns.add_theme_constant_override(&"v_separation", 12)
@@ -303,15 +315,20 @@ func _apply_responsive_layout() -> void:
 	_frame_row.vertical = narrow or portrait
 	_frame_option.custom_minimum_size.x = 0.0 if narrow or portrait else 180.0
 	_action_dock.columns = 1
-	_apply_button.custom_minimum_size.y = 50.0 if short else _title_size(54.0)
-	_back_button.custom_minimum_size = Vector2(72.0 if narrow else 128.0, 44.0 if short else _title_size(54.0))
-	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(22 if narrow else (30 if portrait else 36)))
+	_apply_button.custom_minimum_size.y = 76.0 if short else _title_size(76.0)
+	_back_button.text = "←" if narrow else UiCopyType.text(&"ui.common.back", "Back").to_upper()
+	_back_button.custom_minimum_size = Vector2(48.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
+	_frame_option.custom_minimum_size.y = 72.0
+	_music_button.custom_minimum_size.y = 82.0
+	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
+	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(16 if narrow else (30 if portrait else 36)))
 	_back_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(11 if narrow else 17))
 	_apply_button.add_theme_font_size_override(&"font_size", _title_font_size(15 if narrow else 17))
 	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
-		action.clip_text = narrow
+		action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		action.clip_text = false
 	_rebuild_focus_graph()
 	_ensure_focus_visible.call_deferred()
 
@@ -366,4 +383,4 @@ func _title_size(value: float) -> float:
 
 
 func _title_font_size(value: int) -> int:
-	return roundi(float(value) * TITLE_UI_SCALE)
+	return roundi(float(value) * TITLE_UI_SCALE * TITLE_FONT_SCALE)
