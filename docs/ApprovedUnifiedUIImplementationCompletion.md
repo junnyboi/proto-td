@@ -39,4 +39,4 @@ The complete audit is recorded in [`UI_IMPLEMENTATION_GAP_AUDIT.md`](UI_IMPLEMEN
 
 ## Release status
 
-Canonical source `496a96574f590fd12b350c8b95e3d79c3dab3b04` is pushed and accepted. The exact 135,734,400-byte Web PCK, streamed-cinematic mappings, direct/managed browser flow, fullscreen geometry, representative input, and clean console are verified. WebDev checkpoint `7c9b6467` is ready; the public domain still serves predecessor `index_e5122afa.pck` and requires promotion through the WebDev **Publish** control.
+Canonical source `0547f8e9298cf08bf0a55de1013fc58304429ead` is pushed and accepted. The exact 135,735,904-byte Web PCK, streamed-cinematic mappings, direct/managed browser flow, fullscreen geometry, representative input, and clean console are verified. WebDev checkpoint `7f533c6d` is ready; the public domain still serves predecessor `index_e5122afa.pck` and requires promotion through the WebDev **Publish** control.
