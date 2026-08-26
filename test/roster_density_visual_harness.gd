@@ -33,7 +33,9 @@ func _mount_fixture() -> void:
 			_mount("res://scenes/vahalla.tscn")
 		"results", "results-defeat":
 			var projection: Dictionary = Game.campaign_projection()
-			var hero_id := String(projection.get("ready_heroes", [])[0].get("hero_id", ""))
+			var ready_heroes: Array = projection.get("ready_heroes", [])
+			var hero_id := String(ready_heroes[0].get("hero_id", ""))
+			var survivor_id := String(ready_heroes[1].get("hero_id", "")) if ready_heroes.size() > 1 else hero_id
 			var defeated := screen_id == "results-defeat"
 			Game.last_result = {
 				"stage_id": &"s1",
@@ -43,7 +45,7 @@ func _mount_fixture() -> void:
 				"leaks": 12 if defeated else 0,
 				"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7 if defeated else 40}],
 				"class_entitlements_granted": [] if defeated else [&"mage_apprentice"],
-				"xp_awards": [{"hero_id": hero_id, "xp": 2 if defeated else 6}],
+				"xp_awards": [{"hero_id": survivor_id if defeated else hero_id, "delta": 100}],
 				"dead_hero_ids": [hero_id] if defeated else [],
 				"premium_life_losses": [],
 			}

@@ -20,7 +20,9 @@ func _run() -> void:
 	game.call("set_run_seed", 2026)
 	_check(bool(game.call("start_campaign", false, true)), "results campaign fixture failed")
 	var projection: Dictionary = game.call("campaign_projection")
-	var hero_id := String(projection.get("ready_heroes", [])[0].get("hero_id", ""))
+	var ready_heroes: Array = projection.get("ready_heroes", [])
+	var hero_id := String(ready_heroes[0].get("hero_id", ""))
+	var second_hero_id := String(ready_heroes[1].get("hero_id", ""))
 	game.set("last_result", {
 		"stage_id": &"s1",
 		"result": BattleModel.Result.CLEAR,
@@ -29,7 +31,10 @@ func _run() -> void:
 		"leaks": 0,
 		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 40}],
 		"class_entitlements_granted": [&"mage_apprentice"],
-		"xp_awards": [{"hero_id": hero_id, "xp": 6}],
+		"xp_awards": [
+			{"hero_id": hero_id, "delta": 100},
+			{"hero_id": second_hero_id, "delta": 100},
+		],
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
@@ -50,8 +55,10 @@ func _run() -> void:
 	var reward := screen.find_child("Reward0", true, false) as Control
 	var entitlement := screen.find_child("Entitlement0", true, false) as Control
 	var xp := screen.find_child("XpAward0", true, false) as Control
+	var second_xp := screen.find_child("XpAward1", true, false) as Control
 	var reward_count: Label = reward.find_child("Title", true, false) as Label if reward != null else null
 	var xp_count: Label = xp.find_child("Detail", true, false) as Label if xp != null else null
+	var second_xp_count: Label = second_xp.find_child("Detail", true, false) as Label if second_xp != null else null
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
@@ -76,12 +83,14 @@ func _run() -> void:
 	_check(outcome_summary != null and outcome_meta != null and headline.get_parent() == outcome_summary and outcome_meta.get_parent() == outcome_summary and stars.get_parent() == outcome_meta, "headline and result metadata are not grouped")
 	_check(stars != null and stars.get_child_count() == 3 and stars.alignment == BoxContainer.ALIGNMENT_BEGIN, "native result stars are missing or not left flushed")
 	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
-	_check(reward != null and entitlement != null and xp != null, "typed result payload cards are incomplete")
-	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer, "Mission Yield rows retained inner panel styling")
+	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
+	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
 	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Marks reward was not registered for count reveal")
 	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Marks reward is not first in the reveal sequence")
-	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 6, "XP reward was not registered for count reveal")
+	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "first survivor XP reward did not use the canonical delta")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after Marks")
+	_check(second_xp_count != null and int(second_xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "second survivor XP reward did not use the canonical delta")
+	_check(second_xp_count != null and int(second_xp_count.get_meta(&"reward_reveal_order", -1)) == 2, "second survivor XP reward is not staggered after the first")
 	_check(
 		xp_count != null
 		and float(xp_count.get_meta(&"reward_reveal_stagger_seconds", 0.0)) > float(reward_count.get_meta(&"reward_reveal_stagger_seconds", 0.0)),
@@ -89,10 +98,11 @@ func _run() -> void:
 	)
 	await create_timer(0.9).timeout
 	_check(reward_count.text == "+40 MARKS" and bool(reward_count.get_meta(&"reward_reveal_complete", false)), "Marks counter did not finish at its authoritative value")
-	_check(xp_count.text == "+6 XP" and bool(xp_count.get_meta(&"reward_reveal_complete", false)), "XP counter did not finish at its authoritative value")
+	_check(xp_count.text == "+100 XP" and bool(xp_count.get_meta(&"reward_reveal_complete", false)), "first survivor XP counter did not finish at its authoritative value")
+	_check(second_xp_count.text == "+100 XP" and bool(second_xp_count.get_meta(&"reward_reveal_complete", false)), "second survivor XP counter did not finish at its authoritative value")
 	_check(reward_count.modulate.a == 1.0 and reward_count.scale == Vector2.ONE, "Marks reveal did not settle cleanly")
 	_check(xp_count.modulate.a == 1.0 and xp_count.scale == Vector2.ONE, "XP reveal did not settle cleanly")
-	for row: Control in [reward, entitlement, xp]:
+	for row: Control in [reward, entitlement, xp, second_xp]:
 		if row != null:
 			var row_title := row.find_child("Title", true, false) as Label
 			var row_detail := row.find_child("Detail", true, false) as Label
@@ -156,7 +166,7 @@ func _run() -> void:
 		"leaks": 12,
 		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7}],
 		"class_entitlements_granted": [],
-		"xp_awards": [{"hero_id": hero_id, "xp": 2}],
+		"xp_awards": [{"hero_id": hero_id, "delta": 100}],
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
@@ -205,7 +215,7 @@ func _run() -> void:
 		_check(intact_style.content_margin_left >= 48.0 and intact_style.content_margin_right >= 48.0 and intact_style.content_margin_top >= 24.0 and intact_style.content_margin_bottom >= 24.0, "defeat Company Intact lacks 48px horizontal / 24px vertical padding")
 	_check(defeat_reward is MarginContainer and defeat_xp is MarginContainer, "defeat Mission Yield rows regained inner frames")
 	_check(defeat_reward_count.text == "+7 MARKS" and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat Marks immediately")
-	_check(defeat_xp_count.text == "+2 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat XP immediately")
+	_check(defeat_xp_count.text == "+100 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not project the canonical defeat survivor XP immediately")
 	_check(defeat_screen.find_child("ClearTransmission", true, false) == null, "defeat incorrectly presents a clear transmission")
 	for child: Node in defeat_actions.get_children():
 		if child is Button:
