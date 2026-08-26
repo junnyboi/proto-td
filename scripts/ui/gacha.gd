@@ -30,6 +30,8 @@ const CONFIRM_READABLE_MAX_WIDTH := 1480.0
 const CONFIRM_ACTION_SIZE := Vector2(280.0, 92.0)
 const CONFIRM_ACTION_HORIZONTAL_PADDING := 32.0
 const CONFIRM_ACTION_VERTICAL_PADDING := 18.0
+const BROWSE_PULL_WIDTH := 320.0
+const BROWSE_PULL_HEIGHT := 68.0
 
 enum FlowState {
 	BROWSE,
@@ -52,15 +54,14 @@ var _flow_state := FlowState.BROWSE
 var _marks_label: Label
 var _pull_button: Button
 var _back_button: Button
-var _browse_eyebrow: Label
 var _browse_title: Label
-var _browse_intro: Label
 var _status_label: Label
 var _hero_grid: GridContainer
 var _hero_scroll: ScrollContainer
 var _hero_stage: CenterContainer
 var _header_grid: GridContainer
 var _action_grid: GridContainer
+var _marks_safe: MarginContainer
 var _screen_margin: MarginContainer
 var _pity_label: Label
 var _pity_layout: BoxContainer
@@ -214,25 +215,17 @@ func _on_reveal_gui_input(event: InputEvent) -> void:
 
 func _build_screen() -> void:
 	_screen_margin = MarginContainer.new()
-	_screen_margin.name = "PremiumScreenMargin"
+	_screen_margin.name = "PremiumBrowseSafeFrame"
 	_screen_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_screen_margin.add_theme_constant_override(&"margin_left", 42)
-	_screen_margin.add_theme_constant_override(&"margin_top", 30)
-	_screen_margin.add_theme_constant_override(&"margin_right", 42)
-	_screen_margin.add_theme_constant_override(&"margin_bottom", 30)
 	add_child(_screen_margin)
 
-	var shell := PanelContainer.new()
-	shell.name = "PremiumGachaShell"
-	Style.apply_panel(shell, &"screen")
-	_screen_margin.add_child(shell)
-
 	var content := VBoxContainer.new()
-	content.name = "PremiumGachaPage"
-	content.add_theme_constant_override(&"separation", 18)
-	shell.add_child(content)
+	content.name = "PremiumBrowseContent"
+	content.add_theme_constant_override(&"separation", 16)
+	_screen_margin.add_child(content)
 
 	_header_grid = GridContainer.new()
+	_header_grid.name = "PremiumBrowseHeader"
 	_header_grid.columns = 3
 	_header_grid.add_theme_constant_override(&"h_separation", 16)
 	_header_grid.add_theme_constant_override(&"v_separation", 10)
@@ -240,52 +233,58 @@ func _build_screen() -> void:
 	_back_button = Button.new()
 	_back_button.name = "BackButton"
 	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
+	_back_button.custom_minimum_size = Vector2(360, 76)
+	_back_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_back_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_back_button.clip_text = false
 	_back_button.pressed.connect(_on_back_pressed)
 	Style.apply_button(_back_button, &"quiet")
+	_back_button.add_theme_font_size_override(&"font_size", 26)
 	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(title_box)
-	_browse_eyebrow = _label(_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow")
-	title_box.add_child(_browse_eyebrow)
 	_browse_title = _label(_copy(&"ui.gacha.title", "Premium Resonance"), &"title")
+	_browse_title.name = "PremiumBrowseTitle"
+	_browse_title.custom_minimum_size.x = 0
+	_browse_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_browse_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_box.add_child(_browse_title)
+	_marks_safe = MarginContainer.new()
+	_marks_safe.name = "MarksSafeMargin"
+	_marks_safe.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_header_grid.add_child(_marks_safe)
 	_marks_label = _label("0 MARKS", &"metric")
 	_marks_label.name = "MarksLabel"
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_header_grid.add_child(_marks_label)
+	_marks_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_marks_label.add_theme_color_override(&"font_color", Style.GOLD)
+	_marks_label.add_theme_font_size_override(&"font_size", 38)
+	_marks_safe.add_child(_marks_label)
 
-	var intro := PanelContainer.new()
-	intro.name = "PremiumIntroPanel"
-	Style.apply_panel(intro, &"quiet")
-	content.add_child(intro)
-	var intro_box := VBoxContainer.new()
-	intro_box.add_theme_constant_override(&"separation", 10)
-	intro.add_child(intro_box)
-	_browse_intro = _label(
-		_copy(&"ui.gacha.intro", "Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls."),
-		&"body",
-	)
-	_browse_intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	intro_box.add_child(_browse_intro)
 	_pity_layout = BoxContainer.new()
-	_pity_layout.name = "PremiumPityLayout"
-	_pity_layout.add_theme_constant_override(&"separation", 12)
-	intro_box.add_child(_pity_layout)
+	_pity_layout.name = "GuaranteeTelemetry"
+	_pity_layout.add_theme_constant_override(&"separation", 18)
+	content.add_child(_pity_layout)
 	_pity_label = _label(_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"detail")
 	_pity_label.name = "PityLabel"
-	_pity_label.custom_minimum_size.x = 210
+	_pity_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_pity_label.add_theme_color_override(&"font_color", Style.GOLD)
+	_pity_label.add_theme_font_size_override(&"font_size", 30)
 	_pity_layout.add_child(_pity_label)
 	_pity_segments = HBoxContainer.new()
 	_pity_segments.name = "PitySegments"
 	_pity_segments.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_pity_segments.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_pity_segments.add_theme_constant_override(&"separation", 5)
 	_pity_layout.add_child(_pity_segments)
 	for index: int in HARD_PITY_WINDOW:
 		var segment := ColorRect.new()
 		segment.name = "Pity_%02d" % (index + 1)
-		segment.custom_minimum_size = Vector2(24, 8)
+		segment.custom_minimum_size = Vector2(24, 16)
 		segment.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		segment.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_pity_segments.add_child(segment)
 
@@ -311,24 +310,33 @@ func _build_screen() -> void:
 	hero_stage.add_child(_hero_grid)
 
 	_action_grid = GridContainer.new()
-	_action_grid.name = "PremiumActionDock"
-	_action_grid.columns = 2
+	_action_grid.name = "PremiumBrowseActions"
+	_action_grid.columns = 1
 	_action_grid.add_theme_constant_override(&"h_separation", 18)
 	_action_grid.add_theme_constant_override(&"v_separation", 10)
 	content.add_child(_action_grid)
-	_status_label = _label(_copy(&"ui.gacha.ready", "The pool is ready."), &"detail")
+	_status_label = _label("", &"detail")
 	_status_label.name = "PullStatusLabel"
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_label.visible = false
 	_status_label.accessibility_name = _copy(&"ui.gacha.status_name", "Premium resonance status")
 	_status_label.accessibility_live = AccessibilityServer.LIVE_OFF
 	_action_grid.add_child(_status_label)
 	_pull_button = Button.new()
 	_pull_button.name = "PremiumPullButton"
-	_pull_button.custom_minimum_size = Vector2(280, 60)
+	_pull_button.custom_minimum_size = Vector2(BROWSE_PULL_WIDTH, BROWSE_PULL_HEIGHT)
 	_pull_button.pressed.connect(_on_pull_pressed)
-	_pull_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_action_grid.add_child(_pull_button)
+	_pull_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_pull_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pull_button.clip_text = false
+	_pull_button.add_theme_font_size_override(&"font_size", 24)
+	var pull_center := CenterContainer.new()
+	pull_center.name = "PremiumPullActionCenter"
+	pull_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pull_center.add_child(_pull_button)
+	_action_grid.add_child(pull_center)
 
 
 func _build_pull_confirmation() -> void:
@@ -702,8 +710,11 @@ func _refresh() -> void:
 		_pull_button.text = _copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE")
 		_pull_button.disabled = true
 		_back_button.disabled = _flow_state != FlowState.BROWSE
-		Style.apply_button(_pull_button, &"disabled")
-		_status_label.text = _copy(&"ui.gacha.campaign_required", "Start or continue a campaign to access premium resonance.")
+		_apply_pull_button_style(true)
+		_set_browse_status(
+			_copy(&"ui.gacha.campaign_required", "Start or continue a campaign to access premium resonance."),
+			AccessibilityServer.LIVE_OFF,
+		)
 		return
 	var projection: Dictionary = _game.get("campaign").runtime_projection()
 	var marks := int(projection["marks"])
@@ -716,7 +727,7 @@ func _refresh() -> void:
 	var browse_locked := _flow_state != FlowState.BROWSE
 	_pull_button.disabled = marks < cost or attempt_pending or browse_locked
 	_back_button.disabled = browse_locked
-	Style.apply_button(_pull_button, &"disabled" if _pull_button.disabled else &"gold")
+	_apply_pull_button_style(_pull_button.disabled)
 	_pity_label.text = _format(&"ui.gacha.guarantee_in", "5-STAR GUARANTEED IN {count} {unit}", {
 		&"count": guarantee_in, &"unit": _pull_unit(guarantee_in).to_upper(),
 	})
@@ -725,10 +736,17 @@ func _refresh() -> void:
 		segment.color = Style.GOLD if index < pity_streak else Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
 	if _flow_state in [FlowState.CONFIRM, FlowState.COMMITTING]:
 		_refresh_confirmation_copy()
+	_set_browse_status("", AccessibilityServer.LIVE_OFF)
 	if attempt_pending:
-		_status_label.text = _copy(&"ui.gacha.attempt_pending", "Resolve the active operation before using premium resonance.")
+		_set_browse_status(
+			_copy(&"ui.gacha.attempt_pending", "Resolve the active operation before using premium resonance."),
+			AccessibilityServer.LIVE_OFF,
+		)
 	elif marks < cost:
-		_status_label.text = _format(&"ui.gacha.marks_needed", "Earn {count} more Marks for another resonance pull.", {&"count": cost - marks})
+		_set_browse_status(
+			_format(&"ui.gacha.marks_needed", "Earn {count} more Marks for another resonance pull.", {&"count": cost - marks}),
+			AccessibilityServer.LIVE_OFF,
+		)
 	_rebuild_cards(projection)
 
 
@@ -751,26 +769,16 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	var rarity := int(catalog.get("rarity", 4))
-	panel.set_meta(&"rarity", rarity)
-	panel.custom_minimum_size = Vector2(360 if rarity == FIVE_STAR_RARITY else 230, 0)
-	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else (&"result" if rarity == FIVE_STAR_RARITY else &"quiet"))
+	panel.custom_minimum_size = Vector2(320, 430)
+	Style.apply_panel(panel, &"danger" if not hero.is_empty() and hero["life_status"] == "dead" else &"result")
 	var box := VBoxContainer.new()
 	box.name = "PremiumCardContent"
-	box.add_theme_constant_override(&"separation", 6)
+	box.add_theme_constant_override(&"separation", 10)
 	panel.add_child(box)
-	var rarity_label := _label(_format(&"ui.gacha.rarity", "{rarity}-STAR PREMIUM", {&"rarity": rarity}), &"eyebrow")
-	rarity_label.name = "RarityLabel"
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_color_override(&"font_color", Style.GOLD if rarity == FIVE_STAR_RARITY else Style.CYAN)
-	box.add_child(rarity_label)
 	var portrait := TextureRect.new()
 	portrait.name = "Portrait"
 	portrait.texture = Art.texture(_gacha_portrait_asset_id(String(catalog["premium_id"])))
-	portrait.custom_minimum_size = Vector2(
-		340 if rarity == FIVE_STAR_RARITY else 190,
-		270 if rarity == FIVE_STAR_RARITY else 220,
-	)
+	portrait.custom_minimum_size = Vector2(300, 280)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -785,14 +793,11 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(role)
 	var status := _copy(&"ui.gacha.unacquired", "UNACQUIRED")
-	var detail := _copy(&"ui.gacha.pull_to_recruit", "Pull to recruit • Fixed elite kit")
 	if not hero.is_empty():
 		var lives := int(hero["premium_lives"])
 		status = _format(&"ui.gacha.lives", "{count} {unit}", {&"count": lives, &"unit": _life_unit(lives)})
-		detail = _format(&"ui.gacha.total_copies", "{count} total copies • Fixed elite kit", {&"count": int(hero["premium_pull_count"])})
 		if lives == 0:
 			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
-			detail = _copy(&"ui.gacha.restore_hint", "Pull this hero again to restore deployment")
 	var status_label := _label(status, &"metric")
 	status_label.name = "OwnershipMetric"
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -800,11 +805,6 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 		&"font_color", Style.DANGER if status.begins_with("LOCKED") else Style.CYAN,
 	)
 	box.add_child(status_label)
-	var detail_label := _label(detail, &"detail")
-	detail_label.name = "HeroDetail"
-	detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(detail_label)
 	return panel
 
 
@@ -812,20 +812,26 @@ func _apply_responsive_layout() -> void:
 	if _hero_grid == null or _header_grid == null or _action_grid == null:
 		return
 	var viewport_size := get_viewport_rect().size
-	var portrait := viewport_size.x < 900.0
-	var side_margin := 18 if portrait else 42
-	var usable_width := viewport_size.x - float(side_margin * 2) - 44.0
-	_hero_grid.columns = 3 if usable_width >= 1000.0 else (2 if usable_width >= 740.0 else 1)
+	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
+	var compact_landscape := not portrait and viewport_size.x < 1180.0
+	_hero_grid.columns = 1 if portrait else (2 if compact_landscape else 3)
 	_header_grid.columns = 1 if portrait else 3
-	_action_grid.columns = 1 if portrait else 2
-	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if portrait else HORIZONTAL_ALIGNMENT_RIGHT
+	_action_grid.columns = 1
+	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_marks_safe.add_theme_constant_override(&"margin_left", 0)
+	_marks_safe.add_theme_constant_override(&"margin_right", 16 if portrait else 30)
+	var side_margin := 12 if portrait else 30
+	var vertical_margin := 14 if portrait else 22
 	_screen_margin.add_theme_constant_override(&"margin_left", side_margin)
+	_screen_margin.add_theme_constant_override(&"margin_top", vertical_margin)
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
-	_pull_button.custom_minimum_size.x = 0 if portrait else 280
-	_pity_layout.vertical = usable_width < 600.0
-	_pity_label.custom_minimum_size.x = 0.0 if _pity_layout.vertical else 210.0
+	_screen_margin.add_theme_constant_override(&"margin_bottom", vertical_margin)
+	_back_button.custom_minimum_size.x = minf(360.0, viewport_size.x - float(side_margin * 2))
+	_pull_button.custom_minimum_size.x = minf(BROWSE_PULL_WIDTH, viewport_size.x - float(side_margin * 2))
+	_pity_layout.vertical = portrait
+	_pity_label.custom_minimum_size.x = 0.0 if portrait else 560.0
 	for child: Node in _pity_segments.get_children():
-		(child as Control).custom_minimum_size.x = 12.0 if _pity_layout.vertical else 24.0
+		(child as Control).custom_minimum_size.x = 12.0 if portrait else 24.0
 	_apply_hero_card_layout(_hero_grid.columns)
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
@@ -851,21 +857,13 @@ func _apply_hero_card_layout(columns: int) -> void:
 	)
 	for child: Node in _hero_grid.get_children():
 		var panel := child as PanelContainer
-		var rarity := int(panel.get_meta(&"rarity", 4))
-		var featured := rarity == FIVE_STAR_RARITY
 		panel.size_flags_horizontal = (
 			Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
 		)
-		panel.custom_minimum_size = Vector2(
-			360.0 if columns == 3 and featured else 230.0 if columns == 3 else 300.0 if columns == 2 and featured else 0.0,
-			420.0 if featured else 380.0,
-		)
+		panel.custom_minimum_size = Vector2(320.0 if columns == 3 else 0.0, 430.0)
 		var portrait := panel.find_child("Portrait", true, false) as TextureRect
 		if portrait != null:
-			portrait.custom_minimum_size = Vector2(
-				300.0 if columns == 3 and featured else 180.0 if columns == 3 else 0.0,
-				150.0 if featured else 130.0 if columns == 3 else 210.0,
-			)
+			portrait.custom_minimum_size = Vector2(300.0 if columns == 3 else 0.0, 280.0)
 
 
 func _on_pull_pressed() -> void:
@@ -896,8 +894,7 @@ func _on_pull_pressed() -> void:
 	_pull_button.disabled = true
 	_back_button.disabled = true
 	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
-	_status_label.text = pending_copy
-	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	_set_browse_status(pending_copy, AccessibilityServer.LIVE_POLITE)
 	Sfx.play("ui_confirm")
 	_commit_direct_premium_pull.call_deferred()
 
@@ -914,8 +911,7 @@ func _commit_direct_premium_pull() -> void:
 		_screen_margin.visible = true
 		_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 		_refresh()
-		_status_label.text = error_text
-		_status_label.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
+		_set_browse_status(error_text, AccessibilityServer.LIVE_ASSERTIVE)
 		_restore_confirmation_return_focus(_confirmation_transition_token)
 		return
 	var result: Dictionary = committed.get("result", {})
@@ -1161,8 +1157,7 @@ func _finish_reveal() -> void:
 	_screen_margin.visible = true
 	_screen_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_ENABLED
 	_refresh()
-	_status_label.text = final_copy
-	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
+	_set_browse_status(final_copy, AccessibilityServer.LIVE_POLITE)
 	_restore_confirmation_return_focus(_confirmation_transition_token)
 
 
@@ -1766,12 +1761,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 
 func _refresh_static_copy() -> void:
 	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
-	_browse_eyebrow.text = _copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY")
 	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
-	_browse_intro.text = _copy(
-		&"ui.gacha.intro",
-		"Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls.",
-	)
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
 	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
@@ -1815,3 +1805,48 @@ func _label(text: String, role: StringName) -> Label:
 	label.text = text
 	Style.apply_label(label, role)
 	return label
+
+
+func _set_browse_status(text: String, live_mode: int) -> void:
+	_status_label.text = text
+	_status_label.accessibility_live = live_mode
+	_status_label.visible = not text.is_empty()
+
+
+func _apply_pull_button_style(disabled: bool) -> void:
+	Style.apply_button(_pull_button, &"disabled" if disabled else &"gold")
+	_pull_button.add_theme_font_size_override(&"font_size", 24)
+	_pull_button.add_theme_color_override(
+		&"font_color", Color(Style.MUTED, 0.64) if disabled else Style.IVORY,
+	)
+	_pull_button.add_theme_color_override(
+		&"font_disabled_color", Color(Style.MUTED, 0.64),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"normal", _pull_button_box(Color("241f15f2"), Color(Style.GOLD, 0.78)),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"hover", _pull_button_box(Color("3b3119f7"), Style.GOLD, 2),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"pressed", _pull_button_box(Color("17130cfb"), Style.GOLD, 2),
+	)
+	_pull_button.add_theme_stylebox_override(
+		&"disabled", _pull_button_box(Color("12181edb"), Color(Style.MUTED, 0.24)),
+	)
+
+
+func _pull_button_box(fill: Color, edge: Color, width: int = 1) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = edge
+	style.set_border_width_all(width)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 28.0
+	style.content_margin_top = 14.0
+	style.content_margin_right = 28.0
+	style.content_margin_bottom = 14.0
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.32)
+	style.shadow_size = 4
+	style.shadow_offset = Vector2(0.0, 2.0)
+	return style

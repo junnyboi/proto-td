@@ -36,6 +36,14 @@ func _run() -> void:
 	var pity_label := screen.find_child("PityLabel", true, false) as Label
 	var pity_segments := screen.find_child("PitySegments", true, false) as HBoxContainer
 	var hero_scroll := screen.find_child("PremiumHeroScroll", true, false) as ScrollContainer
+	var browse_safe := screen.find_child("PremiumBrowseSafeFrame", true, false) as MarginContainer
+	var browse_content := screen.find_child("PremiumBrowseContent", true, false) as VBoxContainer
+	var browse_header := screen.find_child("PremiumBrowseHeader", true, false) as GridContainer
+	var browse_title := screen.find_child("PremiumBrowseTitle", true, false) as Label
+	var marks_safe := screen.find_child("MarksSafeMargin", true, false) as MarginContainer
+	var guarantee := screen.find_child("GuaranteeTelemetry", true, false) as BoxContainer
+	var browse_actions := screen.find_child("PremiumBrowseActions", true, false) as GridContainer
+	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120 MARKS" and pity_label.text.contains("10 PULLS"), "initial economy projection changed")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
@@ -49,23 +57,49 @@ func _run() -> void:
 	_check(hero_scroll != null and hero_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "premium roster does not own a bounded flexible scroll")
 	_check(hero_scroll != null and hero_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "premium roster permits horizontal scrolling")
 	_check(grid.columns == 3, "desktop premium roster does not use all three columns")
-	var featured := grid.get_node_or_null("Premium_lunaris_vessel") as PanelContainer
-	var side_card := grid.get_node_or_null("Premium_archive_caster") as PanelContainer
-	_check(featured != null and side_card != null and featured.custom_minimum_size.x > side_card.custom_minimum_size.x, "premium featured identity is not visually dominant")
+	_check(browse_safe != null and browse_content != null and browse_content.get_parent() == browse_safe, "browse content retained an outer panel shell")
+	_check(screen.find_child("PremiumGachaShell", true, false) == null and screen.find_child("PremiumIntroPanel", true, false) == null, "obsolete browse containers remain")
+	_check(browse_header.columns == 3 and not guarantee.vertical and browse_actions.columns == 1, "wide browse hierarchy changed")
+	_check(back.custom_minimum_size.x >= 360.0 and back.custom_minimum_size.y >= 76.0, "Command Deck action is not comfortably extended")
+	_check(back.get_theme_font_size(&"font_size") >= 26 and back.autowrap_mode != TextServer.AUTOWRAP_OFF and not back.clip_text, "Command Deck typography or wrapping regressed")
+	_check(browse_title.get_theme_font_size(&"font_size") == marks.get_theme_font_size(&"font_size"), "Marks does not match title size")
+	_check(marks.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Marks is not gold")
+	_check(marks.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT and marks_safe.get_theme_constant(&"margin_right") >= 30, "Marks lacks its right safe inset")
+	_check(pity_label.get_theme_font_size(&"font_size") >= 30 and pity_label.custom_minimum_size.x >= 560.0, "guarantee telemetry is not doubled or landscape-contained")
+	_check(not browse_status.visible and browse_status.text.is_empty(), "unnecessary ready copy remains visible")
+	_check(is_equal_approx(pull.custom_minimum_size.x, 320.0) and pull.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Resonate action is not fixed-width and centered")
+	_check(pull.get_theme_stylebox(&"normal") is StyleBoxFlat and pull.get_theme_font_size(&"font_size") >= 24, "Resonate action retained the struck texture or undersized type")
+	_check(not _tree_text(browse_content).contains("LUNARIS RELIQUARY"), "browse eyebrow copy remains")
+	_check(not _tree_text(browse_content).contains("FIXED ELITE KIT") and not _tree_text(browse_content).contains("PULL TO RECRUIT"), "obsolete recruitment detail copy remains")
 	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
 		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
 		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
-		var detail := card.find_child("HeroDetail", true, false) as Label if card != null else null
 		var card_style := card.get_theme_stylebox(&"panel") if card != null else null
 		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
-		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 16, "premium detail copy is below 16px for %s" % premium_id)
+		_check(card.custom_minimum_size == Vector2(320, 430), "unequal card size for %s" % premium_id)
+		_check(portrait.custom_minimum_size == Vector2(300, 280), "unequal portrait size for %s" % premium_id)
+		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 16.0 and card_style.content_margin_top >= 16.0, "premium card padding is below 16px for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 
 	var confirmation_layer := screen.find_child("PremiumPullConfirmationLayer", true, false)
-	var browse_status := screen.find_child("PullStatusLabel", true, false) as Label
 	var reveal := screen.find_child("PullRevealLayer", true, false) as Control
 	_check(confirmation_layer == null, "obsolete pull confirmation screen is still mounted")
+	root.size = Vector2i(1024, 576)
+	await _frames(2)
+	_check(grid.columns == 2 and browse_header.columns == 3 and not guarantee.vertical, "compact landscape browse did not use two card columns")
+	for card: Control in grid.get_children():
+		var compact_bounds := card.get_global_rect()
+		_check(compact_bounds.position.x >= -0.5 and compact_bounds.end.x <= 1024.5, "%s overflows compact landscape width" % card.name)
+	root.size = Vector2i(390, 844)
+	await _frames(2)
+	_check(grid.columns == 1 and browse_header.columns == 1 and guarantee.vertical, "portrait browse did not stack")
+	_check(back.custom_minimum_size.x <= 366.0 and pull.custom_minimum_size.x <= 366.0, "portrait browse action exceeds its safe width")
+	for card: Control in grid.get_children():
+		var portrait_bounds := card.get_global_rect()
+		_check(portrait_bounds.position.x >= -0.5 and portrait_bounds.end.x <= 390.5, "%s overflows portrait width" % card.name)
+	root.size = Vector2i(1280, 720)
+	await _frames(2)
 
 	# Missing durable authority is rejected at preflight without opening any second-step UI.
 	var before: Dictionary = game.get("campaign").runtime_projection()
@@ -254,6 +288,19 @@ func _sample_pull(rarity: int, forced: bool) -> Dictionary:
 		"guarantee_in_after": 10 if rarity == 5 else 9,
 		"save_revision": 2,
 	}
+
+
+func _tree_text(node: Node) -> String:
+	if node == null:
+		return ""
+	var values: Array[String] = []
+	if node is Label:
+		values.append((node as Label).text.to_upper())
+	elif node is Button:
+		values.append((node as Button).text.to_upper())
+	for child: Node in node.get_children():
+		values.append(_tree_text(child))
+	return " ".join(values)
 
 
 func _on_timeout() -> void:
