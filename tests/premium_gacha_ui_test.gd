@@ -233,6 +233,8 @@ func _run() -> void:
 	cinematic.call("_on_video_finished")
 	await _frames(1)
 	_check(reveal_stack.visible, "cinematic completion did not reveal identity")
+	_check(video.is_playing() and video.visible, "identity reveal did not preserve loop playback")
+	_check(not plate.visible, "identity reveal froze onto the final plate instead of looping")
 	await _seconds(4.0)
 	for index: int in 5:
 		var star := stars.get_child(index) as ResonanceStar
@@ -246,10 +248,14 @@ func _run() -> void:
 	_check(not reveal.visible and video.stream == null and not pull.disabled and not back.disabled, "click skip did not finalize/release")
 	_check(StringName(music.call("current_id")) == &"lunaris_staging_archive_command", "click skip did not restore music")
 
+	root.size = Vector2i(720, 1280)
+	await _frames(2)
 	screen.set("reduced_motion", true)
 	screen.call("_begin_reveal", _sample_pull(4, false))
 	await _frames(1)
 	_check(reveal.visible and reveal_stack.visible and reveal_title.text == "ARCHIVE CASTER", "reduced reveal did not settle identity")
+	_check(reveal_stack.custom_minimum_size.x >= 672.0, "portrait identity stack collapsed horizontally")
+	_check(reveal_title.get_theme_font_size(&"font_size") <= 72, "portrait identity title did not scale down")
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
 	for index: int in 5:
@@ -261,6 +267,8 @@ func _run() -> void:
 			_check(bool(star.call("uses_generated_art")), "Archive Caster star %d is not using generated art" % (index + 1))
 	await _action(&"ui_cancel")
 	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal cancel did not finalize")
+	root.size = Vector2i(1280, 720)
+	await _frames(2)
 
 	pull.disabled = true
 	back.disabled = false

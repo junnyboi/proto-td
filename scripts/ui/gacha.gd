@@ -751,9 +751,14 @@ func _apply_responsive_layout() -> void:
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
-		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 1120
+		_reveal_title_stack.custom_minimum_size.x = (
+			maxf(280.0, viewport_size.x - 48.0) if portrait else 1120.0
+		)
 	if _reveal_title != null:
-		_reveal_title.add_theme_font_size_override(&"font_size", 80 if portrait else 104)
+		var portrait_title_size := clampi(int(viewport_size.x * 0.11), 44, 72)
+		_reveal_title.add_theme_font_size_override(
+			&"font_size", portrait_title_size if portrait else 104,
+		)
 	if _reveal_hint != null:
 		_reveal_hint.add_theme_font_size_override(&"font_size", 28)
 	if _skip_button != null:
@@ -941,9 +946,9 @@ func _on_cinematic_watchdog_timeout() -> void:
 		return
 	var video := _cinematic_player.video_player()
 	if video != null and video.is_playing():
-		_cinematic_watchdog = create_tween()
-		_cinematic_watchdog.tween_interval(CINEMATIC_WATCHDOG_POLL_SECONDS)
-		_cinematic_watchdog.tween_callback(_on_cinematic_watchdog_timeout)
+		# Looping films stay active behind the deterministic result UI. If the
+		# first-cycle timer ever misses, the watchdog still reveals at 8.75 s.
+		_begin_identity_reveal()
 		return
 	_cinematic_player.show_final_plate()
 	_begin_identity_reveal()
@@ -954,7 +959,9 @@ func _begin_identity_reveal() -> void:
 		return
 	_reveal_result_ready = true
 	_kill_cinematic_watchdog()
-	_cinematic_player.show_final_plate()
+	var video := _cinematic_player.video_player()
+	if video == null or not video.is_playing():
+		_cinematic_player.show_final_plate()
 	var rarity := int(_pending_pull.get("rarity", 4))
 	var accent := _reveal_accent(_pending_pull)
 	_reveal_title_stack.visible = true
