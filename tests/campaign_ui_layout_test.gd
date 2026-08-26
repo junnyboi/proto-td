@@ -128,12 +128,13 @@ func _run() -> void:
 	_check(mission_actions != null and not _has_scroll_ancestor(mission_actions), "Mission actions remain trapped in body scrolling")
 	if mission_actions != null:
 		_check(mission_actions.get_child_count() == 3, "Mission action contract changed")
-		var mission_widths := {"BackButton": 119.0, "TrainingButton": 168.0, "StartBattle": 147.0}
+		_check(mission_actions.get_theme_constant(&"h_separation") >= 28, "Mission actions did not gain the requested spacing")
+		var mission_widths := {"BackButton": 238.0, "TrainingButton": 336.0, "StartBattle": 294.0}
 		for child: Node in mission_actions.get_children():
 			var action := child as Button
 			_check(action != null and action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "Mission action does not retain its compact alignment")
 			if action != null and mission_widths.has(String(action.name)):
-				_check(is_equal_approx(action.custom_minimum_size.x, float(mission_widths[String(action.name)])), "Mission action width reduction changed")
+				_check(is_equal_approx(action.custom_minimum_size.x, float(mission_widths[String(action.name)])), "Mission action doubled-width contract changed")
 	_dispose(mission)
 	game.set("content", null)
 
