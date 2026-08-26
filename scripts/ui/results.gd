@@ -15,6 +15,7 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
+const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -209,18 +210,19 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 			var amount := int(reward.get("amount", 0))
 			var reward_row := _result_card(
 				"Reward%d" % i,
-				UiCopyType.format_text(&"ui.results.marks_reward", "+{count} MARKS", {&"count": amount}),
+				UiCopyType.format_text(&"ui.results.marks_reward", "+{count}", {&"count": amount}),
 				UiCopyType.text(&"ui.results.premium_fund", "Premium Resonance fund"),
 				false,
 				true,
 			)
+			_apply_currency_reward_presentation(reward_row, amount)
 			rewards.add_child(reward_row)
 			_register_reward_reveal(
 				reward_row,
 				&"Title",
 				amount,
 				&"ui.results.marks_reward",
-				"+{count} MARKS",
+				"+{count}",
 			)
 		else:
 			rewards.add_child(_result_card("Reward%d" % i, _reward_name(reward).to_upper(), UiCopyType.format_text(&"ui.results.unlocked_kind", "UNLOCKED · {kind}", {&"kind": _reward_kind(StringName(reward.get("kind", &"record"))).to_upper()}), false, true))
@@ -548,6 +550,23 @@ func _result_card(
 	detail.add_theme_font_size_override(&"font_size", 30)
 	stack.add_child(detail)
 	return card
+
+
+func _apply_currency_reward_presentation(row: Control, amount: int) -> void:
+	var title := row.find_child("Title", true, false) as Label
+	if title == null:
+		return
+	var stack := title.get_parent() as VBoxContainer
+	var title_index := title.get_index()
+	stack.remove_child(title)
+	title.free()
+	var display := ResonanceCurrencyDisplayType.new()
+	display.name = "RewardResonanceShard"
+	display.configure("+%d" % amount, 36, 46.0)
+	display.alignment = BoxContainer.ALIGNMENT_BEGIN
+	display.amount_label.name = "Title"
+	stack.add_child(display)
+	stack.move_child(display, title_index)
 
 
 func _register_reward_reveal(

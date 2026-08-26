@@ -10,6 +10,7 @@ const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_s
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
+const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
@@ -32,6 +33,7 @@ var _dossier_facts: AetheriaLabelType = null
 var _dossier_objective: AetheriaLabelType = null
 var _dossier_threat: AetheriaLabelType = null
 var _dossier_reward: AetheriaLabelType = null
+var _dossier_reward_icon: TextureRect = null
 var _dossier_hint: AetheriaLabelType = null
 var _dossier_stars: HBoxContainer = null
 var _shell: AetheriaScreenShellType = null
@@ -236,12 +238,25 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_facts.apply_role(&"body")
 	_dossier_facts.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dossier_stack.add_child(_dossier_facts)
+	var reward_row := HBoxContainer.new()
+	reward_row.name = "DossierRewardRow"
+	reward_row.add_theme_constant_override(&"separation", 8)
+	_dossier_reward_icon = TextureRect.new()
+	_dossier_reward_icon.name = "DossierResonanceShard"
+	_dossier_reward_icon.texture = ResonanceCurrencyDisplayType.ICON_TEXTURE
+	_dossier_reward_icon.custom_minimum_size = Vector2(30, 30)
+	_dossier_reward_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_dossier_reward_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_dossier_reward_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	reward_row.add_child(_dossier_reward_icon)
 	_dossier_reward = AetheriaLabelType.new()
 	_dossier_reward.name = "DossierReward"
 	_dossier_reward.apply_role(&"dense_heading")
 	_dossier_reward.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dossier_stack.add_child(_dossier_reward)
-	dossier_stack.move_child(_dossier_reward, _dossier_facts.get_index())
+	_dossier_reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reward_row.add_child(_dossier_reward)
+	dossier_stack.add_child(reward_row)
+	dossier_stack.move_child(reward_row, _dossier_facts.get_index())
 	_dossier_hint = AetheriaLabelType.new()
 	_dossier_hint.name = "DossierHint"
 	_dossier_hint.apply_role(&"detail")
@@ -335,8 +350,13 @@ func _show_dossier(stage_id: StringName) -> void:
 		},
 	)
 	var reward_names: Array[String] = []
+	var has_shard_reward := false
 	for reward: Dictionary in stage.rewards:
+		has_shard_reward = has_shard_reward or (
+			reward.get("kind") == "currency" and reward.get("id") == "marks"
+		)
 		reward_names.append(_reward_name(reward))
+	_dossier_reward_icon.visible = has_shard_reward
 	_dossier_reward.text = UiCopyType.format_text(
 		&"ui.campaign.first_clear_reward", "FIRST CLEAR — {rewards}",
 		{&"rewards": _localized_list(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
@@ -486,6 +506,8 @@ func _on_back_to_staging() -> void:
 func _reward_name(reward: Dictionary) -> String:
 	var kind := StringName(reward.get("kind", &""))
 	var identifier := StringName(reward.get("id", &""))
+	if kind == &"currency" and identifier == &"marks":
+		return str(int(reward.get("amount", 0)))
 	if not REWARD_DIRS.has(kind):
 		return String(identifier).replace("_", " ").capitalize()
 	var definition: Resource = load("%s/%s.tres" % [REWARD_DIRS[kind], identifier])

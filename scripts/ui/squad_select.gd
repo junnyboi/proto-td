@@ -11,6 +11,7 @@ const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd"
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const SelectedSquadChipType := preload("res://scripts/ui/components/selected_squad_chip.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
@@ -97,7 +98,8 @@ var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _recruitment_grid: GridContainer = null
 var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
-var _hire_marks: AetheriaLabelType = null
+var _hire_currency_display: ResonanceCurrencyDisplay = null
+var _hire_marks: Label = null
 var _hire_status: AetheriaLabelType = null
 var _deploy_pulse_tween: Tween = null
 var _deploy_ready_pulsing := false
@@ -349,16 +351,25 @@ func _build_selected_squad_order() -> PanelContainer:
 	_selected_squad_order.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_selected_squad_order.add_theme_constant_override(&"h_separation", 10)
 	_selected_squad_scroll.add_child(_selected_squad_order)
-	_selected_squad_empty = _label(
+	_selected_squad_empty = _selected_squad_empty_label()
+	_selected_squad_order.add_child(_selected_squad_empty)
+	return _selected_squad_panel
+
+
+func _selected_squad_empty_label() -> Label:
+	var empty := _label(
 		"SelectedSquadOrderEmpty",
 		UiCopyType.text(
 			&"ui.squad.order_empty",
-			"Select operators, then drag them here to set deployment order.",
+			"Select operators, then drag to reorder.",
 		),
 		&"dense_detail",
 	)
-	_selected_squad_order.add_child(_selected_squad_empty)
-	return _selected_squad_panel
+	empty.custom_minimum_size = Vector2(560.0, 44.0)
+	empty.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	empty.autowrap_mode = TextServer.AUTOWRAP_OFF
+	empty.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return empty
 
 
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
@@ -386,12 +397,14 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	).to_upper()
 	_hire_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_recruitment_grid.add_child(_hire_title)
-	_hire_marks = AetheriaLabelType.new()
+	_hire_currency_display = ResonanceCurrencyDisplayType.new()
+	_hire_currency_display.name = "BasicRecruitCurrency"
+	_hire_currency_display.configure("0", 24, 34.0)
+	_hire_currency_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_hire_marks = _hire_currency_display.amount_label
 	_hire_marks.name = "BasicRecruitMarks"
-	_hire_marks.apply_role(&"cost_badge")
-	_hire_marks.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_marks.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_recruitment_grid.add_child(_hire_marks)
+	_recruitment_grid.add_child(_hire_currency_display)
 	_hire_recruit = AetheriaButtonType.new()
 	_hire_recruit.name = "HireBasicRecruit"
 	_hire_recruit.custom_minimum_size = Vector2(220.0, 72.0)
@@ -994,7 +1007,7 @@ func _on_hire_basic_recruit() -> void:
 	_refresh_recruitment_desk(
 		UiCopyType.format_text(
 			&"ui.campaign.basic_hire_success",
-			"{callsign} • JOINED COMPANY 33 • {remaining} MARKS REMAIN",
+			"{callsign} • JOINED COMPANY 33 • BALANCE {remaining}",
 			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
 		),
 		false,
@@ -1013,22 +1026,25 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		(projection.get("ready_heroes", []) as Array).size()
 		+ (projection.get("fallen_heroes", []) as Array).size()
 	)
-	_hire_marks.text = UiCopyType.format_text(
-		&"ui.campaign.basic_hire_marks", "{count} MARKS AVAILABLE", {&"count": marks},
-	)
+	_hire_currency_display.set_amount(str(marks))
 	var action_text := UiCopyType.format_text(
-		&"ui.campaign.basic_hire_action", "HIRE • {cost} MARKS", {&"cost": cost},
+		&"ui.campaign.basic_hire_action", "HIRE • {cost}", {&"cost": cost},
 	)
-	_hire_recruit.set_presentation_text(action_text, action_text)
+	var action_accessible := "%s, %d Resonance Shards" % [action_text, cost]
+	_hire_recruit.set_presentation_text(action_accessible, action_text)
+	ResonanceCurrencyDisplayType.apply_to_button(
+		_hire_recruit, action_accessible, action_accessible, 34,
+	)
 	var presentation := _hire_recruit.get_node("PresentationLabel") as Label
+	presentation.text = action_text
 	presentation.offset_left = 12.0
 	presentation.offset_top = 12.0
 	presentation.offset_right = -12.0
 	presentation.offset_bottom = -12.0
 	presentation.clip_text = false
 	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hire_recruit.tooltip_text = action_text
-	_hire_recruit.accessibility_description = action_text
+	_hire_recruit.tooltip_text = action_accessible
+	_hire_recruit.accessibility_description = action_accessible
 	var unavailable := (
 		projection.is_empty()
 		or marks < cost
@@ -1054,7 +1070,7 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 			)
 		elif marks < cost:
 			message = UiCopyType.text(
-				&"ui.campaign.basic_hire_insufficient", "INSUFFICIENT MARKS",
+				&"ui.campaign.basic_hire_insufficient", "INSUFFICIENT BALANCE",
 			)
 		else:
 			message = UiCopyType.text(
@@ -1074,7 +1090,7 @@ func _hire_error_text(code: StringName) -> String:
 	match code:
 		&"insufficient_marks":
 			return UiCopyType.text(
-				&"ui.campaign.basic_hire_insufficient", "INSUFFICIENT MARKS",
+				&"ui.campaign.basic_hire_insufficient", "INSUFFICIENT BALANCE",
 			)
 		&"attempt_pending":
 			return UiCopyType.text(
@@ -1165,14 +1181,7 @@ func _refresh_selected_squad_order() -> void:
 		_selected_squad_order.remove_child(child)
 		child.queue_free()
 	if _picked.is_empty():
-		_selected_squad_empty = _label(
-			"SelectedSquadOrderEmpty",
-			UiCopyType.text(
-				&"ui.squad.order_empty",
-				"Select operators, then drag them here to set deployment order.",
-			),
-			&"dense_detail",
-		)
+		_selected_squad_empty = _selected_squad_empty_label()
 		_selected_squad_order.add_child(_selected_squad_empty)
 		return
 	_selected_squad_empty = null

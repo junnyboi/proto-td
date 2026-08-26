@@ -57,6 +57,7 @@ func _run() -> void:
 	var xp := screen.find_child("XpAward0", true, false) as Control
 	var second_xp := screen.find_child("XpAward1", true, false) as Control
 	var reward_count: Label = reward.find_child("Title", true, false) as Label if reward != null else null
+	var reward_icon := reward.find_child("ResonanceShardIcon", true, false) as TextureRect if reward != null else null
 	var xp_count: Label = xp.find_child("Detail", true, false) as Label if xp != null else null
 	var second_xp_count: Label = second_xp.find_child("Detail", true, false) as Label if second_xp != null else null
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
@@ -85,10 +86,10 @@ func _run() -> void:
 	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
 	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
-	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Marks reward was not registered for count reveal")
-	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Marks reward is not first in the reveal sequence")
+	_check(reward_count != null and reward_icon != null and reward_icon.texture != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Shard reward was not registered with its icon for count reveal")
+	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Shard reward is not first in the reveal sequence")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "first survivor XP reward did not use the canonical delta")
-	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after Marks")
+	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after the shard reward")
 	_check(second_xp_count != null and int(second_xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "second survivor XP reward did not use the canonical delta")
 	_check(second_xp_count != null and int(second_xp_count.get_meta(&"reward_reveal_order", -1)) == 2, "second survivor XP reward is not staggered after the first")
 	_check(
@@ -97,10 +98,10 @@ func _run() -> void:
 		"Mission Yield counters do not have increasing stagger delays",
 	)
 	await create_timer(0.9).timeout
-	_check(reward_count.text == "+40 MARKS" and bool(reward_count.get_meta(&"reward_reveal_complete", false)), "Marks counter did not finish at its authoritative value")
+	_check(reward_count.text == "+40" and bool(reward_count.get_meta(&"reward_reveal_complete", false)), "Shard counter did not finish at its authoritative value")
 	_check(xp_count.text == "+100 XP" and bool(xp_count.get_meta(&"reward_reveal_complete", false)), "first survivor XP counter did not finish at its authoritative value")
 	_check(second_xp_count.text == "+100 XP" and bool(second_xp_count.get_meta(&"reward_reveal_complete", false)), "second survivor XP counter did not finish at its authoritative value")
-	_check(reward_count.modulate.a == 1.0 and reward_count.scale == Vector2.ONE, "Marks reveal did not settle cleanly")
+	_check(reward_count.modulate.a == 1.0 and reward_count.scale == Vector2.ONE, "Shard reveal did not settle cleanly")
 	_check(xp_count.modulate.a == 1.0 and xp_count.scale == Vector2.ONE, "XP reveal did not settle cleanly")
 	for row: Control in [reward, entitlement, xp, second_xp]:
 		if row != null:
@@ -214,7 +215,8 @@ func _run() -> void:
 		var intact_style := defeat_company_intact.get_theme_stylebox(&"panel")
 		_check(intact_style.content_margin_left >= 48.0 and intact_style.content_margin_right >= 48.0 and intact_style.content_margin_top >= 24.0 and intact_style.content_margin_bottom >= 24.0, "defeat Company Intact lacks 48px horizontal / 24px vertical padding")
 	_check(defeat_reward is MarginContainer and defeat_xp is MarginContainer, "defeat Mission Yield rows regained inner frames")
-	_check(defeat_reward_count.text == "+7 MARKS" and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat Marks immediately")
+	var defeat_reward_icon := defeat_reward.find_child("ResonanceShardIcon", true, false) as TextureRect if defeat_reward != null else null
+	_check(defeat_reward_count.text == "+7" and defeat_reward_icon != null and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat shard reward immediately")
 	_check(defeat_xp_count.text == "+100 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not project the canonical defeat survivor XP immediately")
 	_check(defeat_screen.find_child("ClearTransmission", true, false) == null, "defeat incorrectly presents a clear transmission")
 	for child: Node in defeat_actions.get_children():

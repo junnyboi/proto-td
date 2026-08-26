@@ -160,10 +160,26 @@ func _run() -> void:
 			"mission-start dialogue expanded beyond its compact tactical height: size=%s minimum=%s"
 			% [dialogue.size, dialogue.get_combined_minimum_size()],
 		)
-	controls.call("_on_pause_pressed")
-	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Pause did not stop battle tick consumption")
-	controls.call("_on_pause_pressed")
-	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Resume did not restore prior battle speed")
+	speed.grab_focus()
+	await process_frame
+	controls.call("_input", _space_key_event())
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Space did not pause while a battle command held focus")
+	_check(speed.has_focus(), "Space pause changed the focused battle command")
+	controls.call("_input", _space_key_event())
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Space did not resume the prior battle speed")
+
+	controls.call("_on_speed_pressed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "speed selector did not cycle 1× → 2×")
+	controls.call("_on_speed_pressed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 4.0), "speed selector did not cycle 2× → 4×")
+	controls.call("_on_speed_pressed")
+	controls.call("_process", 0.0)
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "speed selector did not cycle 4× → paused")
+	_check(speed.text == "0×" and pause.text == "RESUME", "paused speed-selector state is not visible")
+	controls.call("_on_speed_pressed")
+	controls.call("_process", 0.0)
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "speed selector did not cycle paused → 1×")
+	_check(speed.text == "1×" and pause.text == "PAUSE", "resumed speed-selector state is not visible")
 	battle.set("ticks_per_frame_scale", 0.0)
 	controls.call("_process", 0.0)
 	_check(bool(controls.call("request_resign_confirmation")), "paused resign confirmation did not open")
@@ -355,6 +371,13 @@ func _send_action(action: StringName) -> void:
 func _action_event(action: StringName) -> InputEventAction:
 	var event := InputEventAction.new()
 	event.action = action
+	event.pressed = true
+	return event
+
+
+func _space_key_event() -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = KEY_SPACE
 	event.pressed = true
 	return event
 

@@ -28,6 +28,7 @@
 - [x] Refit Field Team selection with a 60/40 roster/intelligence split, intelligence-owned Company Reinforcements, concise Marks/Hire copy, compact padded Recruit Order, 1.5× faction filters with tighter heraldry/count spacing, one doubled-width operator card per row with enlarged portraits, no Field Note, and promoted Loadout hierarchy.
 - [x] Extend Field Team with rarity/level sorting, a draggable and keyboard-reorderable deployment-order rail, visible rarity/level card facts, and reduced-motion-safe hover/focus/selection animation.
 - [x] Refine Training with universal 24×12 button padding, a 1,136px two-column ultrawide roster, a transparent gold inspector, tripled selected portrait, enlarged inspector typography, a padded Edit affordance, and fixed centered two-line Recruitment Order sorting.
+- [x] Forfeit all survivor XP on voluntary resignation while preserving ordinary clear/leak/base survivor awards; add Space pause/resume before GUI dispatch and cycle the top-right speed selector through 1×, 2×, 4×, and paused (`0×`) with responsive Xvfb verification.
 
 # Premium Resonance Cinematic Completion
 

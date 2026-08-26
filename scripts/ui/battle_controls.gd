@@ -13,7 +13,7 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 ## enters deterministic state.
 
 const FONT_SIZE := GameTypographyType.DETAIL
-const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
+const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0, 0.0]
 const PAUSED_LABEL_MIN_WIDTH := 0.0
 const COMMAND_TARGET_SIZE := Vector2(112.0, 64.0)
 const DECK_PADDING := 16.0
@@ -199,12 +199,27 @@ func _process(_delta: float) -> void:
 	var running := model.result == BattleModel.Result.RUNNING
 	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if paused else _copy(&"ui.battle.pause", "PAUSE")
 	_paused_label.text = _copy(&"ui.battle.paused", "PAUSED") if paused and _confirmation_state == ConfirmationState.CLOSED else ""
-	_speed_button.text = "%d×" % int(round(_resume_scale))
+	_speed_button.text = "%d×" % int(round(current))
 	_refresh_action_enabled()
 	if paused != _last_paused:
 		Style.apply_button(_pause_button, &"selected" if paused else &"secondary")
 		_last_paused = paused
 		relayout()
+
+
+func _input(event: InputEvent) -> void:
+	# Battle pause owns Space before GUI dispatch so a focused Pause, Speed, or
+	# Resign button cannot also activate through Space's ui_accept binding.
+	if not event.is_action_pressed(&"battle_pause"):
+		return
+	if (
+		_interaction_enabled
+		and _confirmation_state == ConfirmationState.CLOSED
+		and model != null
+		and model.result == BattleModel.Result.RUNNING
+	):
+		_on_pause_pressed()
+	get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -215,18 +230,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		# prevents map, tutorial, deployment, spell, pause, and shortcut fallthrough.
 		get_viewport().set_input_as_handled()
 		return
-	if not _interaction_enabled:
-		return
-	var key := event as InputEventKey
-	if key == null or not key.pressed or key.is_echo():
-		return
-	if key.physical_keycode != KEY_SPACE:
-		return
-	var focused := get_viewport().gui_get_focus_owner()
-	if focused is BaseButton:
-		return
-	_on_pause_pressed()
-	get_viewport().set_input_as_handled()
 
 
 func _on_pause_pressed() -> void:
@@ -245,10 +248,10 @@ func _on_speed_pressed() -> void:
 		return
 	Sfx.play("ui_click")
 	var base := _current_scale()
-	if base == 0.0:
-		base = _resume_scale
 	var idx := SPEED_CYCLE.find(base)
 	var next: float = SPEED_CYCLE[(idx + 1) % SPEED_CYCLE.size()] if idx >= 0 else 1.0
+	if next > 0.0:
+		_resume_scale = next
 	_set_scale(next)
 
 

@@ -51,6 +51,7 @@ func _run() -> void:
 	var dossier_scroll := campaign.find_child("MissionDossierScroll", true, false) as ScrollContainer
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
+	var dossier_shard := campaign.find_child("DossierResonanceShard", true, false) as TextureRect
 	var next_stage := campaign.find_child("Stage_s1", true, false) as Button
 	var route_panel := campaign.find_child("CampaignRoutePanel", true, false) as PanelContainer
 	var route_content_inset := campaign.find_child("RouteContentInset", true, false) as MarginContainer
@@ -61,7 +62,8 @@ func _run() -> void:
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
-	_check(dossier_reward != null and not dossier_reward.text.is_empty(), "Campaign dossier does not expose the typed first-clear reward")
+	_check(dossier_reward != null and not dossier_reward.text.is_empty() and not dossier_reward.text.contains("MARKS"), "Campaign dossier does not expose the symbol-first first-clear reward")
+	_check(dossier_shard != null and not dossier_shard.visible and dossier_shard.texture != null, "Campaign dossier did not preserve conditional Resonance Shard reward rendering")
 	_check(route_panel != null and is_equal_approx(route_panel.size.x, 480.0), "Campaign route rail is not fixed at the doubled 480px width")
 	_check(route_panel != null and route_panel.size_flags_horizontal == Control.SIZE_SHRINK_BEGIN, "Campaign route rail can still absorb surplus landscape width")
 	_check(route_content_inset != null, "Campaign route content inset is missing")

@@ -6,6 +6,7 @@ const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.g
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
 const HistoryDrawerType := preload("res://scripts/ui/components/gacha_history_drawer.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const HARD_PITY_WINDOW := 10
@@ -44,8 +45,16 @@ const BROWSE_PULL_WIDTH := 800.0
 const BROWSE_PULL_HEIGHT := 112.0
 const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
 const BROWSE_PORTRAIT_HEIGHT := 420.0
-const BROWSE_PORTRAIT_ZOOM := 1.25
+const BROWSE_PORTRAIT_ZOOM := 2.80
 const BROWSE_CARD_PADDING := 24.0
+const BROWSE_PORTRAIT_TOP_RATIOS := {
+	"lunaris_vessel": 0.025,
+	"archive_caster": 0.135,
+	"reliquary_duelist": 0.100,
+}
+const BROWSE_RETURN_SIZE := Vector2(300.0, 76.0)
+const BROWSE_HISTORY_SIZE := Vector2(230.0, 68.0)
+const BROWSE_FOOTER_VERTICAL_PADDING := 12.0
 const REVEAL_PULL_AGAIN_SIZE := Vector2(780.0, 88.0)
 const CONVERSION_FADE_SECONDS := 0.34
 const CONVERSION_PULSE_SECONDS := 1.10
@@ -69,9 +78,11 @@ enum ConfirmationTransition {
 var _game: Node
 var _flow_state := FlowState.BROWSE
 var _browse_backdrop_art: TextureRect
+var _marks_display: ResonanceCurrencyDisplay
 var _marks_label: Label
 var _pull_button: Button
 var _pull_action_label: Label
+var _pull_cost_display: ResonanceCurrencyDisplay
 var _pull_cost_label: Label
 var _pull_hover_tween: Tween
 var _pull_pointer_hovered := false
@@ -281,26 +292,10 @@ func _build_screen() -> void:
 
 	_header_grid = GridContainer.new()
 	_header_grid.name = "PremiumBrowseHeader"
-	_header_grid.columns = 3
+	_header_grid.columns = 2
 	_header_grid.add_theme_constant_override(&"h_separation", 16)
 	_header_grid.add_theme_constant_override(&"v_separation", 10)
 	content.add_child(_header_grid)
-	_back_button = Button.new()
-	_back_button.name = "BackButton"
-	_back_button.text = _copy(&"ui.gacha.back", "RETURN")
-	_back_button.icon = Art.texture(RETURN_ICON_ID)
-	_back_button.expand_icon = true
-	_back_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_back_button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	_back_button.add_theme_constant_override(&"icon_max_width", 54)
-	_back_button.custom_minimum_size = Vector2(300, 76)
-	_back_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_back_button.clip_text = false
-	_back_button.pressed.connect(_on_back_pressed)
-	Style.apply_button(_back_button, &"quiet")
-	_back_button.add_theme_font_size_override(&"font_size", 36)
-	_header_grid.add_child(_back_button)
 	var title_box := VBoxContainer.new()
 	title_box.name = "PremiumTitleCenter"
 	title_box.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -324,29 +319,16 @@ func _build_screen() -> void:
 	_header_tools.alignment = BoxContainer.ALIGNMENT_END
 	_header_tools.add_theme_constant_override(&"separation", 12)
 	_marks_safe.add_child(_header_tools)
-	_history_button = Button.new()
-	_history_button.name = "PullHistoryButton"
-	_history_button.text = _copy(&"ui.gacha.history_action", "HISTORY")
-	_history_button.icon = Art.texture(HISTORY_ICON_ID)
-	_history_button.expand_icon = true
-	_history_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_history_button.add_theme_constant_override(&"icon_max_width", 42)
-	_history_button.custom_minimum_size = Vector2(210, 68)
-	_history_button.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_history_button.clip_text = false
-	_history_button.pressed.connect(_open_pull_history)
-	Style.apply_button(_history_button, &"quiet")
-	_history_button.add_theme_font_size_override(&"font_size", 27)
-	_header_tools.add_child(_history_button)
-	_marks_label = _label(
-		_format(&"ui.gacha.marks", "{count} MARKS", {&"count": 0}), &"metric",
-	)
+	_marks_display = ResonanceCurrencyDisplayType.new()
+	_marks_display.name = "PremiumShardBalance"
+	_marks_display.configure("0", 57, 58.0)
+	_marks_display.alignment = BoxContainer.ALIGNMENT_END
+	_marks_label = _marks_display.amount_label
 	_marks_label.name = "MarksLabel"
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_marks_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_marks_label.add_theme_color_override(&"font_color", Style.GOLD)
-	_marks_label.add_theme_font_size_override(&"font_size", 57)
-	_header_tools.add_child(_marks_label)
+	_header_tools.add_child(_marks_display)
 
 	_pity_layout = BoxContainer.new()
 	_pity_layout.name = "GuaranteeTelemetry"
@@ -397,10 +379,9 @@ func _build_screen() -> void:
 
 	_action_grid = GridContainer.new()
 	_action_grid.name = "PremiumBrowseActions"
-	_action_grid.columns = 1
+	_action_grid.columns = 3
 	_action_grid.add_theme_constant_override(&"h_separation", 18)
 	_action_grid.add_theme_constant_override(&"v_separation", 10)
-	content.add_child(_action_grid)
 	_status_label = _label("", &"detail")
 	_status_label.name = "PullStatusLabel"
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -409,7 +390,14 @@ func _build_screen() -> void:
 	_status_label.visible = false
 	_status_label.accessibility_name = _copy(&"ui.gacha.status_name", "Premium resonance status")
 	_status_label.accessibility_live = AccessibilityServer.LIVE_OFF
-	_action_grid.add_child(_status_label)
+	content.add_child(_status_label)
+	content.add_child(_action_grid)
+	_back_button = _footer_action_button(
+		"BackButton", _copy(&"ui.gacha.back", "RETURN"), BROWSE_RETURN_SIZE,
+	)
+	_back_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_back_button.pressed.connect(_on_back_pressed)
+	_action_grid.add_child(_back_button)
 	_pull_button = Button.new()
 	_pull_button.name = "PremiumPullButton"
 	_pull_button.custom_minimum_size = Vector2(BROWSE_PULL_WIDTH, BROWSE_PULL_HEIGHT)
@@ -441,17 +429,25 @@ func _build_screen() -> void:
 	_pull_action_label.add_theme_font_size_override(&"font_size", 48)
 	_pull_action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pull_presentation.add_child(_pull_action_label)
-	_pull_cost_label = _label("40 MARKS", &"detail")
+	_pull_cost_display = ResonanceCurrencyDisplayType.new()
+	_pull_cost_display.name = "PremiumPullCostDisplay"
+	_pull_cost_display.configure("40", 27, 34.0)
+	_pull_cost_label = _pull_cost_display.amount_label
 	_pull_cost_label.name = "PremiumPullCostLabel"
 	_pull_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_pull_cost_label.add_theme_font_size_override(&"font_size", 27)
 	_pull_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pull_presentation.add_child(_pull_cost_label)
+	pull_presentation.add_child(_pull_cost_display)
 	var pull_center := CenterContainer.new()
 	pull_center.name = "PremiumPullActionCenter"
 	pull_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pull_center.add_child(_pull_button)
 	_action_grid.add_child(pull_center)
+	_history_button = _footer_action_button(
+		"PullHistoryButton", _copy(&"ui.gacha.history_action", "HISTORY"), BROWSE_HISTORY_SIZE,
+	)
+	_history_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_history_button.pressed.connect(_open_pull_history)
+	_action_grid.add_child(_history_button)
 
 
 func _build_history_drawer() -> void:
@@ -881,6 +877,7 @@ func _build_reveal_layer() -> void:
 
 func _refresh() -> void:
 	if _game == null or not bool(_game.get("campaign_active")) or _game.get("campaign") == null:
+		_marks_display.icon.visible = false
 		_marks_label.text = _copy(&"ui.gacha.campaign_offline", "CAMPAIGN OFFLINE")
 		_set_pull_presentation(
 			_copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE"),
@@ -903,11 +900,12 @@ func _refresh() -> void:
 	var cost := int(projection["premium_pull_cost"])
 	var pity_streak := int(projection.get("premium_pity_streak", 0))
 	var guarantee_in := int(projection.get("premium_guarantee_in", HARD_PITY_WINDOW))
-	_marks_label.text = _format(&"ui.gacha.marks", "{count} MARKS", {&"count": marks})
+	_marks_display.icon.visible = true
+	_marks_display.set_amount(str(marks))
 	_set_pull_presentation(
-		_format(&"ui.gacha.pull_action", "RESONATE\n{cost} MARKS", {&"cost": cost}),
+		"RESONATE, %d Resonance Shards" % cost,
 		_copy(&"ui.gacha.resonate", "RESONATE"),
-		_format(&"ui.gacha.marks", "{count} MARKS", {&"count": cost}),
+		str(cost),
 	)
 	var attempt_pending := bool(projection.get("attempt_pending", false))
 	var browse_locked := _flow_state != FlowState.BROWSE
@@ -931,7 +929,7 @@ func _refresh() -> void:
 		)
 	elif marks < cost:
 		_set_browse_status(
-			_format(&"ui.gacha.marks_needed", "Earn {count} more Marks for another resonance pull.", {&"count": cost - marks}),
+			_format(&"ui.gacha.marks_needed", "Earn {count} more Resonance Shards for another resonance pull.", {&"count": cost - marks}),
 			AccessibilityServer.LIVE_OFF,
 		)
 	_rebuild_cards(projection)
@@ -980,9 +978,13 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	portrait.texture = Art.texture(_gacha_portrait_asset_id(String(catalog["premium_id"])))
 	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait.set_meta(
+		&"source_top_ratio",
+		float(BROWSE_PORTRAIT_TOP_RATIOS.get(String(catalog["premium_id"]), 0.0)),
+	)
 	portrait_frame.add_child(portrait)
 	portrait_frame.resized.connect(_fit_hero_portrait_zoom.bind(portrait_frame, portrait))
 	_fit_hero_portrait_zoom(portrait_frame, portrait)
@@ -1030,8 +1032,13 @@ func _fit_hero_portrait_zoom(frame: Control, portrait: TextureRect) -> void:
 	if frame == null or portrait == null:
 		return
 	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var zoom := 4.20 if frame.custom_minimum_size.y < 300.0 else BROWSE_PORTRAIT_ZOOM
+	var top_ratio := float(portrait.get_meta(&"source_top_ratio", 0.0))
+	var top_trim := maxf(0.0, frame.size.y * top_ratio * zoom - 10.0)
+	portrait.offset_top = -top_trim
+	portrait.offset_bottom = -top_trim
 	portrait.pivot_offset = Vector2(frame.size.x * 0.5, 0.0)
-	portrait.scale = Vector2.ONE * BROWSE_PORTRAIT_ZOOM
+	portrait.scale = Vector2.ONE * zoom
 
 
 func _apply_responsive_layout() -> void:
@@ -1042,21 +1049,30 @@ func _apply_responsive_layout() -> void:
 	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
 	var compact_landscape := not portrait and viewport_size.x < 1600.0
 	_hero_grid.columns = 1 if portrait else (2 if compact_landscape else 3)
-	_header_grid.columns = 1 if portrait else 3
-	_action_grid.columns = 1
-	_header_tools.vertical = portrait
+	_header_grid.columns = 1 if portrait else 2
+	_action_grid.columns = 1 if (portrait or compact_landscape) else 3
+	_header_tools.vertical = false
 	_header_tools.alignment = (
+		BoxContainer.ALIGNMENT_CENTER if portrait else BoxContainer.ALIGNMENT_END
+	)
+	_marks_display.alignment = (
 		BoxContainer.ALIGNMENT_CENTER if portrait else BoxContainer.ALIGNMENT_END
 	)
 	_marks_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER if portrait else HORIZONTAL_ALIGNMENT_RIGHT
 	)
-	_marks_label.add_theme_font_size_override(&"font_size", 45 if portrait else 57)
-	_history_button.custom_minimum_size = Vector2(
-		minf(250.0, viewport_size.x - 48.0) if portrait else 210.0,
-		62.0 if portrait else 68.0,
+	_marks_display.configure(
+		_marks_label.text, 45 if portrait else 57, 46.0 if portrait else 58.0,
 	)
+	_history_button.custom_minimum_size = Vector2(minf(230.0, viewport_size.x - 48.0), 68.0)
+	_back_button.custom_minimum_size = Vector2(minf(300.0, viewport_size.x - 48.0), 76.0)
 	_history_button.add_theme_font_size_override(&"font_size", 24 if portrait else 27)
+	_back_button.size_flags_horizontal = (
+		Control.SIZE_SHRINK_CENTER if portrait else Control.SIZE_SHRINK_BEGIN
+	)
+	_history_button.size_flags_horizontal = (
+		Control.SIZE_SHRINK_CENTER if portrait else Control.SIZE_SHRINK_END
+	)
 	_marks_safe.add_theme_constant_override(&"margin_left", 0)
 	_marks_safe.add_theme_constant_override(&"margin_right", 0)
 	var side_margin := 24 if portrait else (40 if compact_landscape else 64)
@@ -1066,6 +1082,7 @@ func _apply_responsive_layout() -> void:
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_bottom", vertical_margin)
 	_back_button.custom_minimum_size.x = minf(300.0, viewport_size.x - float(side_margin * 2))
+	_history_button.custom_minimum_size.x = minf(230.0, viewport_size.x - float(side_margin * 2))
 	_pull_button.custom_minimum_size.x = minf(BROWSE_PULL_WIDTH, viewport_size.x - float(side_margin * 2))
 	_pity_layout.vertical = portrait
 	_pity_label.custom_minimum_size.x = 0.0 if portrait else 460.0
@@ -1134,7 +1151,11 @@ func _fit_browse_backdrop() -> void:
 func _apply_hero_card_layout(columns: int) -> void:
 	if _hero_grid == null:
 		return
-	var viewport_width := get_viewport_rect().size.x
+	var viewport_size := get_viewport_rect().size
+	var viewport_width := viewport_size.x
+	var short_wide := columns == 3 and viewport_size.y < 840.0
+	var card_height := 420.0 if short_wide else BROWSE_CARD_SIZE.y
+	var portrait_height := 190.0 if short_wide else BROWSE_PORTRAIT_HEIGHT
 	var side_margin := 24.0 if columns == 1 else (40.0 if columns == 2 else 64.0)
 	var available_width := maxf(0.0, viewport_width - side_margin * 2.0 - 20.0)
 	var card_width := BROWSE_CARD_SIZE.x
@@ -1153,14 +1174,26 @@ func _apply_hero_card_layout(columns: int) -> void:
 		panel.size_flags_horizontal = (
 			Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
 		)
-		panel.custom_minimum_size = Vector2(card_width if columns == 3 else 0.0, BROWSE_CARD_SIZE.y)
+		panel.custom_minimum_size = Vector2(card_width if columns == 3 else 0.0, card_height)
+		var content := panel.find_child("PremiumCardContent", true, false) as VBoxContainer
+		if content != null:
+			content.add_theme_constant_override(&"separation", 8 if short_wide else 12)
 		var portrait_frame := panel.find_child("PortraitFrame", true, false) as Control
 		var portrait := panel.find_child("Portrait", true, false) as TextureRect
 		if portrait_frame != null:
 			portrait_frame.custom_minimum_size = Vector2(
-				maxf(0.0, card_width - BROWSE_CARD_PADDING * 2.0), BROWSE_PORTRAIT_HEIGHT,
+				maxf(0.0, card_width - BROWSE_CARD_PADDING * 2.0), portrait_height,
 			)
 			_fit_hero_portrait_zoom(portrait_frame, portrait)
+		var name := panel.find_child("HeroName", true, false) as Label
+		var role := panel.find_child("HeroClass", true, false) as Label
+		var metric := panel.find_child("OwnershipMetric", true, false) as Label
+		if name != null:
+			name.add_theme_font_size_override(&"font_size", 36 if short_wide else 48)
+		if role != null:
+			role.add_theme_font_size_override(&"font_size", 27 if short_wide else 36)
+		if metric != null:
+			metric.add_theme_font_size_override(&"font_size", 27 if short_wide else 36)
 
 
 func _on_pull_pressed() -> void:
@@ -1568,14 +1601,17 @@ func _refresh_reveal_pull_again() -> void:
 	var cost := 0
 	if _game != null and _game.get("campaign") != null:
 		cost = int(_game.get("campaign").runtime_projection().get("premium_pull_cost", 0))
-	_reveal_pull_again.text = _format(
-		&"ui.gacha.pull_again", "PULL AGAIN • {cost} MARKS", {&"cost": cost},
+	ResonanceCurrencyDisplayType.apply_to_button(
+		_reveal_pull_again,
+		"PULL AGAIN, %d Resonance Shards" % cost,
+		_format(&"ui.gacha.pull_again", "PULL AGAIN • {cost}", {&"cost": cost}),
+		38,
 	)
 	_reveal_pull_again.disabled = not _can_pull_again()
 	_reveal_pull_again.focus_mode = (
 		Control.FOCUS_ALL if not _reveal_pull_again.disabled else Control.FOCUS_NONE
 	)
-	_reveal_pull_again.accessibility_name = _reveal_pull_again.text
+	_reveal_pull_again.accessibility_name = "PULL AGAIN, %d Resonance Shards" % cost
 
 
 func _arm_reveal_pull_again() -> void:
@@ -1726,7 +1762,7 @@ func _gacha_portrait_asset_id(premium_id: String) -> StringName:
 
 func _error_copy(code: StringName) -> String:
 	match code:
-		&"insufficient_marks": return _copy(&"ui.gacha.error.insufficient_marks", "Not enough Marks for another resonance pull.")
+		&"insufficient_marks": return _copy(&"ui.gacha.error.insufficient_marks", "Not enough Resonance Shards for another resonance pull.")
 		&"attempt_pending": return _copy(&"ui.gacha.error.attempt_pending", "Resolve the active operation before using the reliquary.")
 		&"premium_life_cap": return _copy(&"ui.gacha.error.life_cap", "This hero has reached the maximum stored-life count.")
 		&"campaign_inactive": return _copy(&"ui.gacha.error.campaign_inactive", "No active campaign is available.")
@@ -1995,7 +2031,7 @@ func _refresh_confirmation_copy() -> void:
 		))
 		_confirmation_review_label.text = _format(
 			&"ui.gacha.confirm_body",
-			"One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
+			"One random signal • {cost} Resonance Shards\nBalance  {before} → {after} Resonance Shards\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
 			{
 				&"cost": cost,
 				&"before": marks,
@@ -2036,7 +2072,7 @@ func _refresh_confirmation_accessibility() -> void:
 		&"ui.gacha.confirm_header_cancel_name", "Cancel resonance, header",
 	)
 	_confirmation_header_cancel.accessibility_description = _copy(
-		&"ui.gacha.confirm_cancel_description", "Close without spending Marks or changing the guarantee.",
+		&"ui.gacha.confirm_cancel_description", "Close without spending Resonance Shards or changing the guarantee.",
 	)
 	_confirmation_cancel.accessibility_name = _copy(
 		&"ui.gacha.confirm_dock_cancel_name", "Cancel resonance, action dock",
@@ -2294,8 +2330,8 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 
 
 func _refresh_static_copy() -> void:
-	_back_button.text = _copy(&"ui.gacha.back", "RETURN")
-	_history_button.text = _copy(&"ui.gacha.history_action", "HISTORY")
+	_set_footer_action_text(_back_button, _copy(&"ui.gacha.back", "RETURN"))
+	_set_footer_action_text(_history_button, _copy(&"ui.gacha.history_action", "HISTORY"))
 	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
 	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
 	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
@@ -2347,6 +2383,57 @@ func _label(text: String, role: StringName) -> Label:
 	label.text = text
 	Style.apply_label(label, role)
 	return label
+
+
+func _footer_action_button(node_name: String, text: String, minimum_size: Vector2) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.custom_minimum_size = minimum_size
+	button.autowrap_mode = TextServer.AUTOWRAP_OFF
+	button.clip_text = false
+	button.focus_mode = Control.FOCUS_ALL
+	Style.apply_button(button, &"quiet")
+	button.add_theme_font_size_override(&"font_size", 30)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled", &"focus"]:
+		var base := button.get_theme_stylebox(state)
+		if base == null:
+			continue
+		var fitted := base.duplicate() as StyleBox
+		fitted.content_margin_left = 0.0
+		fitted.content_margin_top = BROWSE_FOOTER_VERTICAL_PADDING
+		fitted.content_margin_right = 0.0
+		fitted.content_margin_bottom = BROWSE_FOOTER_VERTICAL_PADDING
+		button.add_theme_stylebox_override(state, fitted)
+	var transparent := Color(0.0, 0.0, 0.0, 0.0)
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_focus_color", &"font_disabled_color",
+	]:
+		button.add_theme_color_override(color_name, transparent)
+	var presentation := _label(text, &"dense_heading")
+	presentation.name = "PresentationLabel"
+	presentation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	presentation.offset_left = 0.0
+	presentation.offset_top = BROWSE_FOOTER_VERTICAL_PADDING
+	presentation.offset_right = 0.0
+	presentation.offset_bottom = -BROWSE_FOOTER_VERTICAL_PADDING
+	presentation.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	presentation.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	presentation.add_theme_font_size_override(&"font_size", 30)
+	presentation.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(presentation)
+	_set_footer_action_text(button, text)
+	return button
+
+
+func _set_footer_action_text(button: Button, text: String) -> void:
+	if button == null:
+		return
+	button.text = text
+	button.accessibility_name = text
+	var presentation := button.get_node_or_null("PresentationLabel") as Label
+	if presentation != null:
+		presentation.text = text
 
 
 func _set_browse_status(text: String, live_mode: int) -> void:

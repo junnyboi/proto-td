@@ -40,6 +40,7 @@ func _run() -> void:
 			await _verify_launch_retry_feedback(game)
 		_dispose_mission(game)
 		await process_frame
+	await _verify_managed_order_rail(game)
 	game.set("campaign_active", false)
 	game.set("campaign", null)
 	game.set("campaign_store", null)
@@ -51,6 +52,23 @@ func _run() -> void:
 		sfx.call("stop_all")
 	await create_timer(0.25).timeout
 	_finish()
+
+
+func _verify_managed_order_rail(game: Node) -> void:
+	root.size = Vector2i(1280, 1100)
+	_mission = load("res://scenes/squad_select.tscn").instantiate() as Control
+	root.add_child(_mission)
+	await process_frame
+	await process_frame
+	await process_frame
+	var order_scroll := _mission.find_child("SelectedSquadOrderScroll", true, false) as ScrollContainer
+	var order_empty := _mission.find_child("SelectedSquadOrderEmpty", true, false) as Label
+	_check(order_scroll != null and order_empty != null, "managed selected-squad guidance is missing")
+	_check(order_empty != null and order_empty.autowrap_mode == TextServer.AUTOWRAP_OFF, "managed selected-squad guidance can collapse into vertical character wrapping")
+	_check(order_empty != null and order_empty.custom_minimum_size.x >= 560.0 and order_empty.custom_minimum_size.y >= 44.0, "managed selected-squad guidance lacks stable horizontal rail geometry")
+	_check(order_empty != null and order_scroll != null and order_empty.size.y <= order_scroll.size.y + EPSILON, "managed selected-squad guidance exceeds its scroll viewport vertically")
+	_dispose_mission(game)
+	await process_frame
 
 
 func _verify_layout(label: String, viewport: Vector2i) -> void:
@@ -149,7 +167,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var filter_input := _mission.find_child("DeploymentNameFilter", true, false) as LineEdit
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
 	var order_panel := _mission.find_child("SelectedSquadOrderPanel", true, false) as PanelContainer
+	var order_scroll := _mission.find_child("SelectedSquadOrderScroll", true, false) as ScrollContainer
 	var order_rail := _mission.find_child("SelectedSquadOrder", true, false) as HBoxContainer
+	var order_empty := _mission.find_child("SelectedSquadOrderEmpty", true, false) as Label
 	var roster_scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
@@ -160,6 +180,10 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(sort_select != null and sort_select.item_count >= 7, "%s sort control lacks rarity and level modes" % label)
 	_check(order_panel != null and field_panel != null and _inside(field_panel, order_panel), "%s selected-squad order rail exceeds Field Team" % label)
 	_check(order_rail != null, "%s selected-squad drag rail is missing" % label)
+	_check(order_scroll != null and order_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO and order_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s selected-squad guidance does not use horizontal-only scrolling" % label)
+	_check(order_empty != null and order_empty.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s selected-squad guidance can collapse into vertical character wrapping" % label)
+	_check(order_empty != null and order_empty.custom_minimum_size.x >= 560.0 and order_empty.custom_minimum_size.y >= 44.0, "%s selected-squad guidance lacks stable horizontal rail geometry" % label)
+	_check(order_empty != null and order_scroll != null and order_empty.size.y <= order_scroll.size.y + EPSILON, "%s selected-squad guidance exceeds its scroll viewport vertically" % label)
 	_check(roster_scroll != null and roster_scroll.custom_minimum_size.y >= 240.0, "%s operator list lacks a usable local scroll viewport" % label)
 	var active_tab := _mission.find_child("ActiveRosterTab", true, false) as Button
 	var fallen_tab := _mission.find_child("FallenRosterTab", true, false) as Button
@@ -238,20 +262,22 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
 	var hire_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
+	var hire_currency := _mission.find_child("BasicRecruitCurrency", true, false) as HBoxContainer
+	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
-	_check(hire_button != null and not hire_button.disabled, "Field Team five-Mark recruit action is unavailable")
-	_check(hire_button != null and hire_button.text.contains("5") and hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its exact price")
-	_check(hire_marks != null and hire_marks.text.contains("120"), "Field Team does not show current Marks")
+	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
+	_check(hire_button != null and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its icon-backed exact price")
+	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Field Team does not show the current shard balance")
 	_check(recruit_body == null, "Field Team still creates redundant recruitment body copy")
 	_check(_mission.find_child("BasicRecruitRoster", true, false) == null, "Field Team still creates personnel-ready copy")
-	_check(not FileAccess.get_file_as_string("res://localization/en-US.json").contains("Earn {count} more Marks to hire another Recruit."), "Field Team still ships the removed Marks-deficit sentence")
+	_check(not FileAccess.get_file_as_string("res://localization/en-US.json").contains("MARKS"), "Field Team still ships retired currency wording")
 	if i18n != null:
 		_check(bool(i18n.call("set_locale", &"zh-CN")), "Field Team could not activate Chinese")
 		await process_frame
 		await process_frame
 		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
-		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5枚印记"), "Field Team recruitment action did not refresh to Chinese")
-		_check(hire_marks != null and hire_marks.text.contains("可用印记"), "Field Team recruitment Marks did not refresh to Chinese")
+		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
+		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
 		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
 		_check(bool(i18n.call("set_locale", &"en-US")), "Field Team could not restore English")
 		await process_frame
@@ -266,7 +292,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Field Team hire did not add exactly one Recruit")
 	var newest: Dictionary = (projection_after.get("ready_heroes", []) as Array)[-1]
 	_check(newest.get("recruit_source") == "basic_hire" and newest.get("source_id") == "mission_control", "Field Team hire bypassed the authoritative source contract")
-	_check(hire_marks != null and hire_marks.text.contains("115"), "Field Team did not refresh the Marks balance")
+	_check(hire_marks != null and hire_marks.text == "115", "Field Team did not refresh the shard balance")
 	_check(hire_status != null and hire_status.text.contains("JOINED COMPANY 33"), "Field Team did not announce the accepted hire")
 	_check(hire_button != null and hire_button.has_focus(), "accepted Field Team hire did not restore action focus")
 	_check(_mission.find_child("Pick_%s" % newest.get("hero_id", ""), true, false) != null, "new Recruit did not appear in the Field Team roster")
