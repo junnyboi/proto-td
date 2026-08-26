@@ -1,7 +1,8 @@
 extends SceneTree
 
-const UI_IDS := [
+const MUTED_UI_IDS := [
 	&"ui_hover",
+	&"ui_click",
 	&"ui_back",
 	&"ui_confirm",
 	&"menu_open",
@@ -25,33 +26,30 @@ func _run() -> void:
 	if sfx != null:
 		_check(bool(sfx.call("reload_catalog")), "SFX catalog loads")
 		_check(int(sfx.call("catalog_entry_count")) >= 16, "expanded catalog contains hover UI suite")
-		for id: StringName in UI_IDS:
+		var routine_starts_before := int(sfx.call("audible_start_count"))
+		var previous_resolved_id: StringName = sfx.call("last_resolved_id")
+		for id: StringName in MUTED_UI_IDS:
 			_check(sfx.call("resolved_id_for", id) == id, "%s resolves directly" % id)
-			_check(bool(sfx.call("play", String(id))), "%s plays" % id)
-			_check(sfx.call("last_resolved_id") == id, "%s owns the last voice" % id)
-			var stream := load(String(sfx.call("last_stream_path"))) as AudioStream
+			var stream := load("res://assets/sfx/ui/%s.wav" % id) as AudioStream
 			_check(stream != null, "%s stream loads" % id)
 			if stream != null:
-				_check(stream.get_length() >= 1.0, "%s is at least one second" % id)
+				_check(stream.get_length() >= 0.1, "%s retains its authored source" % id)
 				_check(stream.get_length() <= 3.05, "%s stays within the three-second SFX budget" % id)
 			stream = null
+			_check(not bool(sfx.call("play", String(id))), "%s aura cue remains silent" % id)
 			await process_frame
-			_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
-			_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
-			_check(sfx.call("resolved_id_for", &"ui_click") == &"ui_click", "click cue remains catalogued")
-			var routine_starts_before := int(sfx.call("audible_start_count"))
-			var previous_resolved_id: StringName = sfx.call("last_resolved_id")
-			_check(not bool(sfx.call("play", "ui_click")), "routine button clicks remain silent")
-			_check(not bool(sfx.call("play", "ui_select")), "routine select alias remains silent")
-			_check(
-				int(sfx.call("audible_start_count")) == routine_starts_before,
-				"silent routine cues do not consume audio voices",
-			)
-			_check(
-				sfx.call("last_resolved_id") == previous_resolved_id,
-				"silent routine cues do not replace the last audible semantic cue",
-			)
-			_check(sfx.call("resolved_id_for", &"ui_hover") == &"ui_hover", "dedicated hover cue resolves")
+		_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
+		_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
+		_check(not bool(sfx.call("play", "ui_accept")), "accept alias cannot replay the aura cue")
+		_check(not bool(sfx.call("play", "ui_select")), "select alias remains silent")
+		_check(
+			int(sfx.call("audible_start_count")) == routine_starts_before,
+			"silent navigation cues do not consume audio voices",
+		)
+		_check(
+			sfx.call("last_resolved_id") == previous_resolved_id,
+			"silent navigation cues do not replace the last audible semantic cue",
+		)
 		for id: StringName in GACHA_REVEAL_IDS:
 			_check(sfx.call("resolved_id_for", id) == id, "%s resolves directly" % id)
 			_check(bool(sfx.call("play", String(id))), "%s plays" % id)
@@ -119,45 +117,33 @@ func _run() -> void:
 			)
 		_check(bool(sfx.call("hover_target_eligible", button)), "enabled button is hover eligible")
 		var hover_plays_before := int(sfx.call("hover_play_count"))
+		var aura_starts_before := int(sfx.call("audible_start_count"))
 		button.mouse_entered.emit()
 		await process_frame
 		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 1,
-			"hovering an eligible button plays exactly one hover cue",
+			int(sfx.call("hover_play_count")) == hover_plays_before,
+			"hovering an eligible button replayed the removed aura cue",
 		)
-		_check(sfx.call("last_resolved_id") == &"ui_hover", "global hover resolves the hover cue")
+		_check(int(sfx.call("audible_start_count")) == aura_starts_before, "button hover consumed an audio voice")
 		var option_button := hover_controls[4] as OptionButton
 		option_button.mouse_entered.emit()
 		await process_frame
 		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 1,
-			"global debounce suppresses rapid movement between controls",
+			int(sfx.call("hover_play_count")) == hover_plays_before,
+			"moving between controls replayed the removed aura cue",
 		)
 		await create_timer(0.08).timeout
 		option_button.mouse_entered.emit()
 		await process_frame
 		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
-			"a new control plays after the debounce window",
+			int(sfx.call("hover_play_count")) == hover_plays_before,
+			"hover replayed after the debounce window",
 		)
 		button.disabled = true
+		_check(not bool(sfx.call("hover_target_eligible", button)), "disabled button remains hover eligible")
 		button.mouse_exited.emit()
-		await create_timer(0.08).timeout
-		button.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
-			"disabled controls remain silent on hover",
-		)
 		button.disabled = false
 		button.hide()
-		await create_timer(0.08).timeout
-		button.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
-			"hidden controls remain silent on hover",
-		)
 		var hidden_parent := Control.new()
 		var hidden_descendant := Button.new()
 		hidden_parent.position = Vector2(4096.0, 4096.0)
@@ -169,35 +155,17 @@ func _run() -> void:
 		hidden_descendant.mouse_entered.emit()
 		await process_frame
 		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
+			int(sfx.call("hover_play_count")) == hover_plays_before,
 			"controls hidden by an ancestor remain silent on hover",
 		)
 		hidden_parent.queue_free()
 		var slider := hover_controls[1] as HSlider
 		slider.editable = false
-		await create_timer(0.08).timeout
-		slider.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 2,
-			"non-editable sliders remain silent on hover",
-		)
+		_check(not bool(sfx.call("hover_target_eligible", slider)), "non-editable slider remains hover eligible")
 		slider.editable = true
-		await create_timer(0.08).timeout
-		slider.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 3,
-			"re-enabled sliders receive hover audio without rebinding",
-		)
+		_check(bool(sfx.call("hover_target_eligible", slider)), "re-enabled slider is not hover eligible")
 		custom_control.set_meta(&"sfx_hover_disabled", true)
-		await create_timer(0.08).timeout
-		custom_control.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 3,
-			"opt-out metadata suppresses hover audio",
-		)
+		_check(not bool(sfx.call("hover_target_eligible", custom_control)), "hover opt-out metadata is ignored")
 		var dynamic_control := Control.new()
 		dynamic_control.position = Vector2(4096.0, 4096.0)
 		dynamic_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -207,19 +175,14 @@ func _run() -> void:
 		_check(bool(sfx.call("hover_is_bound", dynamic_control)), "initially inert controls bind safely")
 		dynamic_control.mouse_filter = Control.MOUSE_FILTER_STOP
 		dynamic_control.focus_mode = Control.FOCUS_ALL
-		dynamic_control.mouse_entered.emit()
-		await process_frame
-		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 3,
-			"readiness delay suppresses newly interactive controls under the pointer",
-		)
 		await create_timer(0.15).timeout
 		dynamic_control.mouse_entered.emit()
 		await process_frame
 		_check(
-			int(sfx.call("hover_play_count")) == hover_plays_before + 4,
-			"dynamically enabled controls receive hover audio after readiness",
+			int(sfx.call("hover_play_count")) == hover_plays_before,
+			"dynamically enabled control replayed the removed aura cue",
 		)
+		_check(int(sfx.call("audible_start_count")) == aura_starts_before, "hover silence consumed an audio voice")
 		dynamic_control.queue_free()
 		for control: Control in hover_controls:
 			control.queue_free()

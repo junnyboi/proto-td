@@ -38,12 +38,11 @@ func _verify_animated_reveal_and_hover() -> void:
 		var starts_before := int(sfx.call("audible_start_count"))
 		title.call("_on_title_action_hover_changed", settings, true)
 		await create_timer(0.24).timeout
-		_check(sfx.call("last_raw_id") == &"ui_hover", "Settings hover did not request the semantic hover cue")
-		_check(int(sfx.call("audible_start_count")) == starts_before + 1, "Settings hover did not start exactly one sound")
+		_check(int(sfx.call("audible_start_count")) == starts_before, "Settings hover replayed the removed aura sound")
 		_check(settings.scale.x > 1.0 and settings.scale.y > 1.0, "Settings hover did not apply visual emphasis")
 		title.call("_on_title_action_hover_changed", settings, true)
 		await process_frame
-		_check(int(sfx.call("audible_start_count")) == starts_before + 1, "duplicate hover state replayed the sound")
+		_check(int(sfx.call("audible_start_count")) == starts_before, "duplicate hover state replayed the removed aura sound")
 		title.call("_on_title_action_hover_changed", settings, false)
 		await create_timer(0.24).timeout
 		_check(settings.scale.is_equal_approx(Vector2.ONE), "Settings hover scale did not settle after exit")
