@@ -225,9 +225,18 @@ func _run() -> void:
 	_check(cinematic_video != null and cinematic_video.stream != null, "five-star cinematic stream did not load")
 	_check(cinematic_video != null and cinematic_video.is_playing(), "five-star cinematic did not start")
 	_check(final_plate != null and final_plate.texture != null, "five-star final identity plate did not load")
+	_check(not final_plate.visible, "final identity plate covered active cinematic playback")
+	_check(not screen.call("reveal_result_ready"), "result became dismissible before cinematic completion")
 	_check(StringName(music.call("current_id")) == &"gacha_lunaris_vessel", "five-star cinematic mix did not start")
-	cinematic.call("_on_video_finished")
+	var early_accept := InputEventAction.new()
+	early_accept.action = &"ui_accept"
+	early_accept.pressed = true
+	screen.call("_unhandled_input", early_accept)
+	_check(reveal_layer.visible, "accept truncated active cinematic playback")
+	cinematic_video.finished.emit()
 	await process_frame
+	_check(screen.call("reveal_result_ready"), "cinematic completion did not arm reveal dismissal")
+	_check(final_plate.visible, "cinematic completion did not expose final identity plate")
 	_check(reveal_stack != null and reveal_stack.visible, "video completion did not begin character reveal")
 	await create_timer(4.0).timeout
 	_check(is_equal_approx(reveal_title.modulate.a, 1.0), "character name did not finish fading in")
@@ -240,17 +249,17 @@ func _run() -> void:
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
-	screen.call("_on_reveal_gui_input", click)
+	screen.call("_input", click)
 	await process_frame
-	_check(not reveal_layer.visible, "click-anywhere skip left the reveal layer visible")
-	_check(not pull.disabled and not back.disabled, "click-anywhere skip did not restore navigation input")
-	_check(cinematic_video != null and cinematic_video.stream == null, "click-anywhere skip did not release the video stream")
+	_check(not reveal_layer.visible, "click-anywhere did not close completed reveal")
+	_check(not pull.disabled and not back.disabled, "click-anywhere dismissal did not restore navigation input")
+	_check(cinematic_video != null and cinematic_video.stream == null, "click-anywhere dismissal did not release the video stream")
 	_check(
 		StringName(music.call("current_id")) == &"lunaris_staging_archive_command",
-		"skip did not resume Company Command audio",
+		"click-anywhere dismissal did not resume Company Command audio",
 	)
 	var status := screen.find_child("PullStatusLabel", true, false) as Label
-	_check(status != null and status.text.contains("5-STAR SIGNAL"), "skip did not apply final result copy")
+	_check(status != null and status.text.contains("5-STAR SIGNAL"), "click-anywhere dismissal did not apply final result copy")
 
 	screen.set("reduced_motion", true)
 	var four_star := _sample_pull(4, false)
