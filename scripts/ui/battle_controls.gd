@@ -12,9 +12,13 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 ## ticks_per_frame_scale or model.apply_action([&"resign"]); presentation never
 ## enters deterministic state.
 
-const FONT_SIZE := GameTypographyType.BODY
+const FONT_SIZE := GameTypographyType.BODY * 2
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0]
-const PAUSED_LABEL_MIN_WIDTH := 96.0
+const PAUSED_LABEL_MIN_WIDTH := 192.0
+const COMMAND_TARGET_SIZE := Vector2(152.0, 92.0)
+const DECK_PADDING := 24.0
+const FIRST_ACTION_LEFT_INSET := 12.0
+const ACTION_GAP := 16
 
 enum ConfirmationState {
 	CLOSED,
@@ -32,6 +36,7 @@ var _speed_button: Button = null
 var _resign_button: Button = null
 var _paused_label: Label = null
 var _controls_deck: PanelContainer = null
+var _controls_box: GridContainer = null
 var _confirm: Control = null
 var _confirm_dialog: Dictionary = {}
 var _resume_scale: float = 1.0
@@ -68,24 +73,47 @@ func relayout() -> void:
 	if not _confirm_dialog.is_empty():
 		DialogType.relayout(_confirm_dialog)
 	if _controls_deck != null:
+		var compact := size.y > size.x or size.x < 760.0
+		_controls_box.columns = 2 if compact else 4
+		var target_width := minf(size.x - 32.0, 520.0 if compact else 780.0)
+		_controls_deck.custom_minimum_size = Vector2(target_width, 0.0)
 		_controls_deck.reset_size()
 		var y := 98.0 if size.y > size.x else 64.0
-		_controls_deck.position = Vector2(size.x - _controls_deck.get_combined_minimum_size().x - 16.0, y)
+		var deck_size := _controls_deck.get_combined_minimum_size()
+		_controls_deck.size = Vector2(maxf(target_width, deck_size.x), deck_size.y)
+		_controls_deck.position = Vector2(size.x - _controls_deck.size.x - 16.0, y)
 
 
 func _build_row() -> void:
 	_controls_deck = PanelContainer.new()
 	_controls_deck.name = "BattleCommandDeck"
 	_controls_deck.mouse_filter = Control.MOUSE_FILTER_PASS
-	Style.apply_panel(_controls_deck, &"hud")
+	var deck_style := Style.panel_style(&"hud").duplicate() as StyleBox
+	deck_style.content_margin_left = DECK_PADDING
+	deck_style.content_margin_top = DECK_PADDING
+	deck_style.content_margin_right = DECK_PADDING
+	deck_style.content_margin_bottom = DECK_PADDING
+	_controls_deck.add_theme_stylebox_override(&"panel", deck_style)
 	add_child(_controls_deck)
-	var box := HBoxContainer.new()
+	var center := CenterContainer.new()
+	center.name = "ControlsCenter"
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_controls_deck.add_child(center)
+	var box := GridContainer.new()
 	box.name = "ControlsBox"
-	box.add_theme_constant_override(&"separation", 10)
-	_controls_deck.add_child(box)
+	box.columns = 4
+	box.add_theme_constant_override(&"h_separation", ACTION_GAP)
+	box.add_theme_constant_override(&"v_separation", ACTION_GAP)
+	center.add_child(box)
+	_controls_box = box
 	_pause_button = _make_button("PauseButton", _copy(&"ui.battle.pause", "PAUSE"), &"secondary")
 	_pause_button.pressed.connect(_on_pause_pressed)
-	box.add_child(_pause_button)
+	var first_action := MarginContainer.new()
+	first_action.name = "FirstActionInset"
+	first_action.add_theme_constant_override(&"margin_left", int(FIRST_ACTION_LEFT_INSET))
+	first_action.add_child(_pause_button)
+	box.add_child(first_action)
 	_speed_button = _make_button("SpeedButton", "1×", &"secondary")
 	_speed_button.pressed.connect(_on_speed_pressed)
 	box.add_child(_speed_button)
@@ -98,6 +126,8 @@ func _build_row() -> void:
 	_paused_label.custom_minimum_size = Vector2(PAUSED_LABEL_MIN_WIDTH, 0)
 	_paused_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	Style.apply_label(_paused_label, &"status")
+	_paused_label.add_theme_font_size_override(&"font_size", GameTypographyType.DISPLAY)
+	_paused_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_paused_label)
 	_controls_deck.reset_size()
 	relayout()
@@ -136,8 +166,9 @@ func _make_button(button_name: String, text: String, role: StringName) -> Button
 	btn.name = button_name
 	btn.text = text
 	btn.focus_mode = Control.FOCUS_ALL
-	btn.custom_minimum_size = Vector2(76.0, 46.0)
+	btn.custom_minimum_size = COMMAND_TARGET_SIZE
 	Style.apply_button(btn, role)
+	btn.add_theme_font_size_override(&"font_size", FONT_SIZE)
 	return btn
 
 

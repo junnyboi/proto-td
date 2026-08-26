@@ -17,8 +17,12 @@ const RECOMMENDED_CELL := Vector2i(3, 2)
 const RECOMMENDED_FACING := UnitState.Facing.LEFT
 const CARD_Z := 92
 const GUIDE_Z := 88
-const LANDSCAPE_CARD_WIDTH := 500.0
-const PORTRAIT_MARGIN := 16.0
+const LANDSCAPE_CARD_WIDTH := 960.0
+const LANDSCAPE_CARD_HEIGHT := 420.0
+const PORTRAIT_CARD_HEIGHT := 620.0
+const VIEWPORT_MARGIN := 24.0
+const TUTORIAL_TOP_SAFE := 88.0
+const DEPLOYMENT_CLEARANCE := 20.0
 const LIVE_SECONDS := 6.0
 
 const ROUTE_COLOR := Color(0.36, 0.78, 0.83, 0.26)
@@ -103,25 +107,26 @@ func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	var portrait := size.y > size.x
 	var card_width := (
-		minf(size.x - PORTRAIT_MARGIN * 2.0, 688.0)
+		minf(size.x - VIEWPORT_MARGIN * 2.0, 688.0)
 		if portrait
-		else minf(size.x - 40.0, LANDSCAPE_CARD_WIDTH)
+		else minf(size.x - VIEWPORT_MARGIN * 2.0, LANDSCAPE_CARD_WIDTH)
 	)
-	_card.custom_minimum_size = Vector2(card_width, 0.0)
+	var desired_height := PORTRAIT_CARD_HEIGHT if portrait else LANDSCAPE_CARD_HEIGHT
+	var slot_top := size.y - VIEWPORT_MARGIN
+	var slot_rect := deploy_bar.slot_screen_rect(_deployment_id)
+	if slot_rect.size.y > 0.0:
+		slot_top = slot_rect.position.y
+	var available_bottom := maxf(TUTORIAL_TOP_SAFE + 260.0, slot_top - DEPLOYMENT_CLEARANCE)
+	var available_height := maxf(260.0, available_bottom - TUTORIAL_TOP_SAFE)
+	var card_height := minf(desired_height, available_height)
+	_card.custom_minimum_size = Vector2(card_width, card_height)
 	_card.reset_size()
-	_card.size = Vector2(card_width, _card.get_combined_minimum_size().y)
-	if portrait:
-		var slot_top := size.y - 180.0
-		var slot_rect := deploy_bar.slot_screen_rect(_deployment_id)
-		if slot_rect.size.y > 0.0:
-			slot_top = slot_rect.position.y
-		_card.position = Vector2(
-			(size.x - _card.size.x) * 0.5,
-			maxf(112.0, slot_top - _card.size.y - 16.0),
-		)
-	else:
-		_card.position = Vector2(size.x - _card.size.x - 20.0, 116.0)
-	_icon.custom_minimum_size = Vector2.ONE * (112.0 if portrait else 128.0)
+	_card.size = Vector2(card_width, maxf(card_height, _card.get_combined_minimum_size().y))
+	_card.position = Vector2(
+		(size.x - _card.size.x) * 0.5,
+		TUTORIAL_TOP_SAFE + maxf(0.0, (available_height - _card.size.y) * 0.5),
+	)
+	_icon.custom_minimum_size = Vector2.ONE * (160.0 if portrait else 192.0)
 	_relayout_guides()
 
 
@@ -179,52 +184,52 @@ func _build_card() -> void:
 	add_child(_card)
 	var column := VBoxContainer.new()
 	column.name = "TutorialColumn"
-	column.add_theme_constant_override("separation", 10)
+	column.add_theme_constant_override("separation", 20)
 	_card.add_child(column)
 	_step_label = Label.new()
 	_step_label.name = "StepLabel"
 	_step_label.theme_type_variation = &"AuiDenseDetailLabel"
-	_step_label.add_theme_font_size_override("font_size", 20)
+	_step_label.add_theme_font_size_override("font_size", 26)
 	column.add_child(_step_label)
 	var content := HBoxContainer.new()
 	content.name = "TutorialContent"
-	content.add_theme_constant_override("separation", 16)
+	content.add_theme_constant_override("separation", 28)
 	column.add_child(content)
 	_icon = TextureRect.new()
 	_icon.name = "TutorialArt"
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_icon.custom_minimum_size = Vector2.ONE * 128.0
+	_icon.custom_minimum_size = Vector2.ONE * 192.0
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(_icon)
 	var copy_column := VBoxContainer.new()
 	copy_column.name = "CopyColumn"
 	copy_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	copy_column.add_theme_constant_override("separation", 8)
+	copy_column.add_theme_constant_override("separation", 14)
 	content.add_child(copy_column)
 	_title = Label.new()
 	_title.name = "TutorialTitle"
 	_title.theme_type_variation = &"AuiDenseHeadingLabel"
-	_title.add_theme_font_size_override("font_size", 30)
+	_title.add_theme_font_size_override("font_size", 40)
 	copy_column.add_child(_title)
 	_body = Label.new()
 	_body.name = "TutorialBody"
 	_body.theme_type_variation = &"AuiDenseBodyLabel"
-	_body.add_theme_font_size_override("font_size", 22)
+	_body.add_theme_font_size_override("font_size", 28)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	copy_column.add_child(_body)
 	_feedback_label = Label.new()
 	_feedback_label.name = "TutorialFeedback"
 	_feedback_label.theme_type_variation = &"AuiDenseDetailLabel"
-	_feedback_label.add_theme_font_size_override("font_size", 20)
+	_feedback_label.add_theme_font_size_override("font_size", 24)
 	_feedback_label.add_theme_color_override("font_color", Color("f0cf65"))
 	_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	copy_column.add_child(_feedback_label)
 	var actions := HBoxContainer.new()
 	actions.name = "TutorialActions"
-	actions.alignment = BoxContainer.ALIGNMENT_END
-	actions.add_theme_constant_override("separation", 12)
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions.add_theme_constant_override("separation", 24)
 	column.add_child(actions)
 	_skip_button = _make_button("SkipTutorial", &"AuiSecondaryButton")
 	_skip_button.pressed.connect(_on_skip_pressed)
@@ -238,8 +243,15 @@ func _make_button(button_name: String, variation: StringName) -> Button:
 	var button := Button.new()
 	button.name = button_name
 	button.theme_type_variation = variation
-	button.custom_minimum_size = Vector2(150.0, 48.0)
-	button.add_theme_font_size_override("font_size", 22)
+	button.custom_minimum_size = Vector2(260.0, 84.0)
+	button.add_theme_font_size_override("font_size", 30)
+	var action_ink := Color("f5efe1")
+	for state: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
+	]:
+		button.add_theme_color_override(state, action_ink)
+	button.add_theme_color_override(&"font_outline_color", Color(0.02, 0.04, 0.08, 0.96))
+	button.add_theme_constant_override(&"outline_size", 3)
 	return button
 
 
