@@ -2,8 +2,8 @@
   "schema_version": 2,
   "bible": {
     "path": "docs/NARRATIVE_CANON.md",
-    "version": "1.0",
-    "sha256": "d8862ebdf543632592cde0fcf50013e7428ed9c389d8e804e469c361fa0f7195"
+    "version": "1.1",
+    "sha256": "5a4813f683326785fdc011141e97111e34d07a2163612312457bd7a5e7876274"
   },
   "active_surface_sources": [
     "UiCopy.STATIC_FALLBACKS",
@@ -14,7 +14,11 @@
     "scripts/ui/staging.gd",
     "scripts/ui/squad_select.gd",
     "scripts/ui/results.gd",
-    "scripts/ui/narrative_archive.gd"
+    "scripts/ui/narrative_archive.gd",
+    "scripts/ui/battle_dialogue_presenter.gd",
+    "scripts/ui/components/archive_audio_log_player.gd",
+    "scripts/view/battle_view.gd",
+    "assets/audio/narrative/mercy-archive/"
   ],
   "required_terms": [
     "PROTOS",

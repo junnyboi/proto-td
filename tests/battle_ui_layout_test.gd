@@ -48,6 +48,9 @@ func _run() -> void:
 	var tutorial := battle.find_child("FirstStandTutorial", true, false) as Node
 	var tutorial_card := battle.find_child("TutorialCard", true, false) as PanelContainer
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
+	var dialogue := battle.find_child("BattleDialogue", true, false) as PanelContainer
+	var dialogue_speaker := battle.find_child("DialogueSpeaker", true, false) as Label
+	var dialogue_line := battle.find_child("DialogueLine", true, false) as Label
 	_check(hud != null and hud.get_theme_stylebox(&"normal") is StyleBoxTexture, "battle HUD does not use the Lunaris command frame")
 	_check(deployment_deck != null and deployment_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "deployment deck is not textured")
 	if deployment_deck != null:
@@ -64,6 +67,7 @@ func _run() -> void:
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
 	_check(recenter != null and recenter.focus_mode == Control.FOCUS_ALL, "map recenter is not controller focusable")
 	_check(tutorial_card != null and tutorial_card.get_theme_stylebox(&"panel") is StyleBoxTexture, "tutorial card did not inherit the Lunaris modal frame")
+	_check(dialogue != null and not dialogue.visible, "mission-start dialogue competed with the guided tutorial")
 	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control
 	spell_probe.name = "Phase0SpellProbe"
 	battle.add_child(spell_probe)
@@ -95,6 +99,11 @@ func _run() -> void:
 	for _frame: int in range(3):
 		await process_frame
 	_check(bool(controls.call("interaction_enabled")) and bool(deploy_bar.call("operator_interaction_enabled")), "tutorial completion did not restore controls")
+	_check(dialogue != null and dialogue.visible, "mission-start dialogue did not appear after the tutorial")
+	_check(dialogue_speaker != null and not dialogue_speaker.text.is_empty(), "mission-start speaker is missing")
+	_check(dialogue_line != null and not dialogue_line.text.is_empty(), "mission-start dialogue line is missing")
+	if dialogue != null:
+		_check(dialogue.get_global_rect().end.x <= LANDSCAPE.x + 1.0, "mission-start dialogue exceeds landscape width")
 	controls.call("_on_pause_pressed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Pause did not stop battle tick consumption")
 	controls.call("_on_pause_pressed")

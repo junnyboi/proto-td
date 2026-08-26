@@ -92,6 +92,8 @@ const STATIC_FALLBACKS := {
 	&"ui.battle.hud_wide": "CORE  {core}    DP  {dp}    ELIMINATIONS  {eliminations}    {state}",
 	&"ui.battle.continue_debrief": "CONTINUE TO DEBRIEF",
 	&"ui.battle.retreat": "Retreat",
+	&"ui.battle.dialogue.mission_start": "MISSION START // LIVE TRANSMISSION",
+	&"ui.battle.dialogue.wave": "WAVE {wave} // LIVE TRANSMISSION",
 	&"ui.spell.cooldown": "CD {seconds}s",
 	&"ui.spell.field_duration": "FIELD {seconds}s",
 	&"ui.spell.ready": "READY",
@@ -212,6 +214,17 @@ const STATIC_FALLBACKS := {
 	&"ui.archive.records": "{unlocked} / {total} RECORDS DECRYPTED",
 	&"ui.archive.locked": "ENCRYPTED RECORD",
 	&"ui.archive.unlock_requirement": "CLEAR OPERATION {index} TO DECRYPT",
+	&"ui.archive.audio.title": "INTERACTIVE AUDIO LOG",
+	&"ui.archive.audio.ready": "VOICE RECORD READY",
+	&"ui.archive.audio.playing": "ARCHIVE CASTER // NARRATING",
+	&"ui.archive.audio.paused": "NARRATION PAUSED",
+	&"ui.archive.audio.complete": "LOG COMPLETE",
+	&"ui.archive.audio.unavailable": "VOICE RECORD UNAVAILABLE",
+	&"ui.archive.audio.play": "Play audio log",
+	&"ui.archive.audio.pause": "Pause narration",
+	&"ui.archive.audio.restart": "Restart",
+	&"ui.archive.audio.seek": "Audio log position",
+	&"ui.archive.audio.time": "{current} / {total}",
 	&"ui.roster.tab.active": "Active",
 	&"ui.roster.tab.fallen": "Fallen",
 	&"ui.roster.filter.all": "All",
@@ -403,6 +416,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.gacha.error.unknown": {&"code": &"String"},
 	&"ui.battle.hud_compact": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
 	&"ui.battle.hud_wide": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
+	&"ui.battle.dialogue.wave": {&"wave": &"int"},
 	&"ui.results.marks_reward": {&"count": &"int"},
 	&"ui.results.unlocked_kind": {&"kind": &"String"},
 	&"ui.results.xp_reward": {&"count": &"int"},
@@ -420,6 +434,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.staging.next_operation_title": {&"index": &"int", &"title": &"String"},
 	&"ui.archive.records": {&"unlocked": &"int", &"total": &"int"},
 	&"ui.archive.unlock_requirement": {&"index": &"int"},
+	&"ui.archive.audio.time": {&"current": &"String", &"total": &"String"},
 	&"ui.vahalla.record": {&"stage": &"String", &"reason": &"String", &"tick": &"int"},
 	&"ui.campaign.objective": {&"text": &"String"},
 	&"ui.campaign.threat": {&"text": &"String"},
@@ -464,11 +479,20 @@ const PLACEHOLDER_TYPES := {
 
 
 static func text(key: StringName, fallback: String) -> String:
-	return I18n.t(key, fallback)
+	var i18n := _i18n()
+	return String(i18n.call("t", key, fallback)) if i18n != null else fallback
 
 
 static func format_text(key: StringName, fallback: String, args: Dictionary) -> String:
-	return I18n.format_text(key, fallback, args)
+	var i18n := _i18n()
+	return String(i18n.call("format_text", key, fallback, args)) if i18n != null else fallback.format(args)
+
+
+static func _i18n() -> Node:
+	var main_loop := Engine.get_main_loop()
+	if main_loop is SceneTree:
+		return (main_loop as SceneTree).root.get_node_or_null("I18n")
+	return null
 
 
 static func stage_narrative_text(record: Resource, field: int) -> String:

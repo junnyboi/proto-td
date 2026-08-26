@@ -4,10 +4,10 @@
 
 **Canon status:** Approved and binding
 
-**Canon version:** 1.0
+**Canon version:** 1.1
 
 **Scope:** Launch campaign, core world history, faction motives, character truths, mechanic meanings, visual language, and long-form destination
-**Implementation baseline:** Eight-stage campaign, Company 33, Lunaris Reliquary, persistent heroes, stored lives, Premium Resonance, Training, Slow Field, Charm, and the Gatecrasher
+**Implementation baseline:** Eight-stage campaign, Company 33, Lunaris Reliquary, persistent heroes, stored lives, Premium Resonance, Training, Slow Field, Charm, the Gatecrasher, in-battle transmissions, and bilingual Mercy Archive narration
 
 This document is the authoritative narrative reference for **Protos Defense**. New missions, characters, copy, cinematics, assets, and mechanical explanations must remain compatible with it unless a later reviewed revision explicitly supersedes a section.
 
@@ -153,14 +153,22 @@ The act ends with tactical victory, moral escalation, and a route forward. Compa
 
 ## Stage delivery contract
 
-Every stage communicates canon through four layers:
+Every stage communicates canon through six layers:
 
 1. **Company Command objective** states what is physically at stake.
 2. **Mission Intelligence** identifies threat, human reason, and evidence.
 3. **Results debrief** records the consequence without pretending a failed mission succeeded.
 4. **Clear transmission** advances character or antagonist revelation only after a clear.
+5. **Mission-start transmission** establishes the immediate human, ecological, or moral stake without delaying control.
+6. **Mid-wave transmission** reacts to observable battlefield evidence at the authored wave boundary.
 
 The launch campaign remains linear. No copy may imply an unimplemented tactical choice, alternate branch, or ending.
+
+### Mission-start and mid-wave transmissions
+
+Each launch operation contains one mission-start exchange and one mid-wave exchange. These lines are authored in the corresponding `StageNarrativeDef`, localized in English and Simplified Chinese, and presented as non-blocking transmissions over the battle. They must never pause deterministic simulation, steal input, obscure core command controls, or claim that an unimplemented tactical branch exists.
+
+The mission-start line answers **why this fight matters now**. The mid-wave line answers **what the company has just learned by fighting it**. Speakers use the established character voices: Archive Caster interprets evidence, Reliquary Duelist protects people and confronts human guilt, Lunaris Vessel accepts command responsibility, and PROTOS states its case calmly as fact rather than threat.
 
 ### Clear transmissions
 
@@ -245,6 +253,8 @@ The Company Command **Mercy Archive** reveals four illustrated records using exi
 
 Locked records display their operation requirement without exposing spoiler text or imagery.
 
+Every unlocked record includes an **interactive bilingual audio log**. Playback follows the active locale, exposes play, pause, seek, and restart controls, and routes through the existing player-controlled audio buses. The authoritative narration text and production manifest live in [`docs/audio/MERCY_ARCHIVE_VOICEOVER.md`](audio/MERCY_ARCHIVE_VOICEOVER.md). Narration may clarify delivery and emphasis but may not add facts absent from this bible.
+
 ## Narrative and visual guardrails
 
 1. **No evil-robot shorthand.** Custodians execute service logic and restoration law.
@@ -267,7 +277,9 @@ Locked records display their operation requirement without exposing spoiler text
 | Evidence and stakes | Company Command, Mission Control dossier, and pre-deployment Mission Intelligence |
 | Consequence | Results screen debrief |
 | Character and PROTOS voice | Clear-only transmission in Results |
+| Immediate character perspective | Non-blocking mission-start and authored mid-wave battle transmissions |
 | Illustrated lore | Mercy Archive from Company Command |
+| Spoken lore | Interactive English and Simplified Chinese Mercy Archive audio logs |
 | Durable team reference | This document and `docs/narrative/concept-art/` |
 
 ## Change control
@@ -287,6 +299,7 @@ A canon revision must:
 - [Campaign Level Designs](LEVEL_DESIGNS.md)
 - [Premium Hero System](PREMIUM_HERO_SYSTEM.md)
 - [Cinematic Streaming Contract](CINEMATIC_STREAMING.md)
+- [Mercy Archive Voice-Over Production Record](audio/MERCY_ARCHIVE_VOICEOVER.md)
 
 ---
 

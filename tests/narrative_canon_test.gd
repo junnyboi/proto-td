@@ -20,6 +20,8 @@ const DOCUMENT_CONCEPT_PATHS := [
 	"res://docs/narrative/concept-art/the-first-garden.jpg",
 ]
 const REQUIRED_TERMS := ["PROTOS", "Mercy Equation", "Continuance", "Quieting", "First Garden"]
+const ARCHIVE_ENTRY_IDS: Array[StringName] = [&"stewardship", &"choir", &"equation", &"garden"]
+const ARCHIVE_AUDIO_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 
 var _failures: Array[String] = []
 
@@ -40,6 +42,11 @@ func _run() -> void:
 			if record != null:
 				_check(not record.transmission_speaker.is_empty(), "%s transmission speaker is blank" % stage_id)
 				_check(not record.transmission.is_empty(), "%s transmission is blank" % stage_id)
+				_check(not record.battle_start_speaker.is_empty(), "%s battle-start speaker is blank" % stage_id)
+				_check(not record.battle_start.is_empty(), "%s battle-start dialogue is blank" % stage_id)
+				_check(record.mid_wave_number >= 2, "%s mid-wave trigger is invalid" % stage_id)
+				_check(not record.mid_wave_speaker.is_empty(), "%s mid-wave speaker is blank" % stage_id)
+				_check(not record.mid_wave.is_empty(), "%s mid-wave dialogue is blank" % stage_id)
 
 	_check(FileAccess.file_exists(CANON_PATH), "canon lore document is missing")
 	var canon := FileAccess.get_file_as_string(CANON_PATH)
@@ -61,6 +68,12 @@ func _run() -> void:
 		_check(texture != null and texture.get_width() >= 1400 and texture.get_height() >= 1000, "concept asset is incomplete: %s" % path)
 	for path: String in DOCUMENT_CONCEPT_PATHS:
 		_check(FileAccess.file_exists(path), "durable docs concept is missing: %s" % path)
+	for locale_id: StringName in ARCHIVE_AUDIO_LOCALES:
+		for entry_id: StringName in ARCHIVE_ENTRY_IDS:
+			var audio_path := "res://assets/audio/narrative/mercy-archive/%s/%s.ogg" % [locale_id, entry_id]
+			_check(ResourceLoader.exists(audio_path), "archive narration is not importable: %s" % audio_path)
+			var stream := load(audio_path) as AudioStream
+			_check(stream != null and stream.get_length() >= 30.0, "archive narration is incomplete: %s" % audio_path)
 
 	_check(NarrativeArchiveUnlocksType.record_unlocked(0, {}), "foundation archive should unlock at campaign start")
 	_check(not NarrativeArchiveUnlocksType.record_unlocked(2, {&"s1": 3}), "Choir archive unlocked before S2 clear")
@@ -74,7 +87,10 @@ func _run() -> void:
 		for locale_id: StringName in [&"en-US", &"zh-CN"]:
 			_check(bool(i18n.call("set_locale", locale_id)), "locale activation failed: %s" % locale_id)
 			for stage_index: int in range(1, 9):
-				for slug: String in ["objective", "clear_debrief", "transmission_speaker", "transmission"]:
+				for slug: String in [
+					"objective", "clear_debrief", "transmission_speaker", "transmission",
+					"battle_start_speaker", "battle_start", "mid_wave_speaker", "mid_wave",
+				]:
 					var key := StringName("data.stage.s%d.narrative.%s" % [stage_index, slug])
 					var value := String(i18n.call("t", key, ""))
 					_check(not value.is_empty(), "%s missing localized canon key %s" % [locale_id, key])
@@ -92,9 +108,12 @@ func _run() -> void:
 		var record_one := archive.find_child("ArchiveRecord_01", true, false) as Button
 		var record_two := archive.find_child("ArchiveRecord_02", true, false) as Button
 		var art := archive.find_child("ArchiveConceptArt", true, false) as TextureRect
+		var audio_log := archive.find_child("ArchiveAudioLog", true, false) as Control
+		var audio_play := archive.find_child("AudioLogPlayPause", true, false) as Button
 		_check(record_one != null and not record_one.disabled, "foundation archive UI is not available")
 		_check(record_two != null and record_two.disabled, "S2 archive UI is not progression gated")
 		_check(art != null and art.texture != null, "archive UI omitted its approved concept art")
+		_check(audio_log != null and audio_play != null and not audio_play.disabled, "archive UI omitted interactive narration")
 		_dispose(archive)
 		game.set("content", null)
 		game.set("campaign_active", false)

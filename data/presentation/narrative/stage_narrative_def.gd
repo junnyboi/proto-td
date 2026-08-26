@@ -11,6 +11,10 @@ enum Field {
 	DEFEAT_DEBRIEF,
 	TRANSMISSION_SPEAKER,
 	TRANSMISSION,
+	BATTLE_START_SPEAKER,
+	BATTLE_START,
+	MID_WAVE_SPEAKER,
+	MID_WAVE,
 }
 
 @export var id: StringName = &""
@@ -23,6 +27,11 @@ enum Field {
 @export_multiline var defeat_debrief: String = ""
 @export var transmission_speaker: String = ""
 @export_multiline var transmission: String = ""
+@export var battle_start_speaker: String = ""
+@export_multiline var battle_start: String = ""
+@export_range(2, 99, 1) var mid_wave_number: int = 2
+@export var mid_wave_speaker: String = ""
+@export_multiline var mid_wave: String = ""
 
 
 func validate_contract() -> PackedStringArray:
@@ -33,9 +42,13 @@ func validate_contract() -> PackedStringArray:
 		Field.OBJECTIVE, Field.THREAT, Field.HUMAN_REASON, Field.CLUE,
 		Field.CORE_SERVICE, Field.CLEAR_DEBRIEF, Field.DEFEAT_DEBRIEF,
 		Field.TRANSMISSION_SPEAKER, Field.TRANSMISSION,
+		Field.BATTLE_START_SPEAKER, Field.BATTLE_START,
+		Field.MID_WAVE_SPEAKER, Field.MID_WAVE,
 	]:
 		if fallback_for(field).strip_edges().is_empty():
 			errors.append("%s: blank" % field_slug(field))
+	if mid_wave_number < 2:
+		errors.append("mid_wave_number: expected 2 or greater")
 	return errors
 
 
@@ -59,6 +72,14 @@ func fallback_for(field: Field) -> String:
 			return transmission_speaker
 		Field.TRANSMISSION:
 			return transmission
+		Field.BATTLE_START_SPEAKER:
+			return battle_start_speaker
+		Field.BATTLE_START:
+			return battle_start
+		Field.MID_WAVE_SPEAKER:
+			return mid_wave_speaker
+		Field.MID_WAVE:
+			return mid_wave
 	push_error("StageNarrativeDef.fallback_for: invalid field %s" % field)
 	return ""
 
@@ -83,5 +104,13 @@ func field_slug(field: Field) -> StringName:
 			return &"transmission_speaker"
 		Field.TRANSMISSION:
 			return &"transmission"
+		Field.BATTLE_START_SPEAKER:
+			return &"battle_start_speaker"
+		Field.BATTLE_START:
+			return &"battle_start"
+		Field.MID_WAVE_SPEAKER:
+			return &"mid_wave_speaker"
+		Field.MID_WAVE:
+			return &"mid_wave"
 	push_error("StageNarrativeDef.field_slug: invalid field %s" % field)
 	return &""

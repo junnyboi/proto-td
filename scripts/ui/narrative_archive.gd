@@ -9,6 +9,9 @@ const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const NarrativeArchiveUnlocksType := preload("res://scripts/ui/components/narrative_archive_unlocks.gd")
+const ArchiveAudioLogPlayerType := preload(
+	"res://scripts/ui/components/archive_audio_log_player.gd"
+)
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
@@ -37,6 +40,7 @@ var _title: AetheriaLabelType = null
 var _subtitle: AetheriaLabelType = null
 var _body_copy: AetheriaLabelType = null
 var _quote: AetheriaLabelType = null
+var _audio_log: ArchiveAudioLogPlayer = null
 var _back: AetheriaButtonType = null
 var _record_buttons: Array[Button] = []
 var _selected_index := 0
@@ -193,6 +197,8 @@ func _build_body(column: VBoxContainer) -> void:
 	for label: AetheriaLabelType in [_eyebrow, _title, _subtitle, _body_copy, _quote]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		detail.add_child(label)
+	_audio_log = ArchiveAudioLogPlayerType.new() as ArchiveAudioLogPlayer
+	detail.add_child(_audio_log)
 
 
 func _populate_records() -> void:
@@ -252,6 +258,8 @@ func _show_record(index: int) -> void:
 	_subtitle.text = _entry_text(entry, &"subtitle", "")
 	_body_copy.text = _entry_text(entry, &"body", "")
 	_quote.text = _entry_text(entry, &"quote", "")
+	if _audio_log != null:
+		_audio_log.set_entry(entry[&"id"])
 	for button_index: int in _record_buttons.size():
 		var button := _record_buttons[button_index] as AetheriaButtonType
 		if not button.disabled:
@@ -271,10 +279,12 @@ func _is_unlocked(entry: Dictionary) -> bool:
 
 
 func _wire_focus() -> void:
-	var focusable: Array[Button] = []
+	var focusable: Array[Control] = []
 	for button: Button in _record_buttons:
 		if not button.disabled:
 			focusable.append(button)
+	if _audio_log != null:
+		focusable.append_array(_audio_log.focus_controls())
 	focusable.append(_back)
 	for index: int in focusable.size():
 		var current := focusable[index]

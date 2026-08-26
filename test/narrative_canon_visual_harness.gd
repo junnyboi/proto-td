@@ -18,7 +18,7 @@ func _run() -> void:
 	if _mode == "title":
 		_mount(load("res://scenes/title.tscn").instantiate())
 		await get_tree().create_timer(1.2).timeout
-	elif _mode == "archive":
+	elif _mode == "archive" or _mode == "archive_audio":
 		game.call("set_run_seed", 3308)
 		game.call("start_campaign", false, true)
 		var staging := load("res://scenes/staging.tscn").instantiate() as Control
@@ -30,6 +30,13 @@ func _run() -> void:
 			archive_button.emit_signal("pressed")
 		for _frame: int in range(8):
 			await get_tree().process_frame
+		if _mode == "archive_audio":
+			var archive := game.get("content") as Control
+			var detail_scroll := archive.find_child("ArchiveDetailScroll", true, false) as ScrollContainer
+			if detail_scroll != null:
+				detail_scroll.scroll_vertical = 100000
+			for _frame: int in range(4):
+				await get_tree().process_frame
 	elif _mode == "results":
 		game.call("set_run_seed", 3309)
 		game.call("start_campaign", false, true)

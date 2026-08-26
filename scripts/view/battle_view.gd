@@ -13,6 +13,13 @@ const OPERATOR_VISUAL_CATALOG_SCRIPT := preload(
 const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutorial.gd")
 const SLOW_FIELD_TUTORIAL_SCRIPT := preload("res://scripts/ui/slow_field_tutorial.gd")
 const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_overlay.gd")
+const BATTLE_DIALOGUE_PRESENTER_SCRIPT := preload("res://scripts/ui/battle_dialogue_presenter.gd")
+const STAGE_NARRATIVE_CATALOG := preload(
+	"res://data/presentation/narrative/stage_narrative_catalog.tres"
+)
+const StageNarrativeCatalogType := preload(
+	"res://data/presentation/narrative/stage_narrative_catalog.gd"
+)
 const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
@@ -78,6 +85,7 @@ var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
 var _tutorial: Node = null
 var _map_navigation_overlay: MapNavigationOverlay = null
+var _battle_dialogue: BattleDialoguePresenter = null
 var _battle_confirmation_active := false
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
@@ -206,11 +214,14 @@ func _ready() -> void:
 	_map_navigation_overlay.recenter_requested.connect(_on_recenter_map_requested)
 	_map_navigation_overlay.setup()
 	model = candidate_model
+	_build_battle_dialogue(stage.id)
 	var initial_music_state := &"boss" if _stage.music_variant_id == &"boss" else &"low"
 	_music_director.configure(Music.minimum_state_hold_seconds(_stage.music_profile_id))
 	_music_director.reset(initial_music_state, 0.0)
 	_music_last_leaked_count = model.leaked
 	_start_stage_tutorial()
+	if _battle_dialogue != null and _tutorial == null:
+		_battle_dialogue.show_mission_start.call_deferred()
 	_refresh_map_navigation_overlay()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
@@ -229,6 +240,15 @@ func _start_stage_tutorial() -> void:
 		_tutorial.name = "SlowFieldTutorial"
 		_connect_tutorial()
 		_tutorial.call("setup", model, self, _spell_bar)
+
+
+func _build_battle_dialogue(stage_id: StringName) -> void:
+	var record := (STAGE_NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
+	if record == null:
+		return
+	_battle_dialogue = BATTLE_DIALOGUE_PRESENTER_SCRIPT.new() as BattleDialoguePresenter
+	add_child(_battle_dialogue)
+	_battle_dialogue.setup(record, get_viewport_rect().size)
 
 
 func _connect_tutorial() -> void:
@@ -270,6 +290,8 @@ func _on_tutorial_hold_changed(held: bool) -> void:
 func _on_tutorial_finished(_skipped: bool) -> void:
 	_tutorial = null
 	_refresh_battle_interaction_gates()
+	if _battle_dialogue != null:
+		_battle_dialogue.show_mission_start.call_deferred()
 
 
 func set_battle_confirmation_active(active: bool) -> void:
@@ -612,6 +634,8 @@ func _detect_wave() -> void:
 	_banner_seen_wave = wave
 	_juice.banner("WAVE %d" % (wave + 1))
 	Sfx.play("wave")
+	if _battle_dialogue != null:
+		_battle_dialogue.show_mid_wave(wave + 1)
 
 
 ## Terminal stamp is one-shot on result flip, shared with campaign unlock flow.
@@ -620,6 +644,8 @@ func _detect_result_stamp() -> void:
 		return
 	if _controls != null:
 		_controls.notify_battle_terminal()
+	if _battle_dialogue != null:
+		_battle_dialogue.dismiss()
 	_refresh_battle_interaction_gates()
 	if not Game.record_result(model.result, model.stars):
 		return
@@ -810,6 +836,8 @@ func _relayout() -> void:
 	if _map_navigation_overlay != null:
 		_map_navigation_overlay.relayout()
 		_refresh_map_navigation_overlay()
+	if _battle_dialogue != null:
+		_battle_dialogue.relayout(viewport)
 	if _tutorial != null and is_instance_valid(_tutorial):
 		_tutorial.call("relayout")
 	if _juice != null:
