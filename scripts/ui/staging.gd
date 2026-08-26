@@ -888,8 +888,8 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
 	_exit_label.visible = not narrow
-	_back.custom_minimum_size.x = 52.0 if narrow else (72.0 if compact else 96.0)
-	_exit_plate.custom_minimum_size.x = 64.0 if narrow else (88.0 if compact else 112.0)
+	_back.custom_minimum_size.x = 52.0 if narrow else 96.0
+	_exit_plate.custom_minimum_size.x = 64.0 if narrow else 112.0
 	StagingSkinType.apply_display_type(_exit_label, 15 if compact else 16, MUTED, 560)
 
 

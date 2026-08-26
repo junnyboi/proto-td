@@ -6,6 +6,7 @@ extends RefCounted
 
 const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
 const DEFINITIONS: Dictionary = {
+	&"archive_caster": preload("res://data/presentation/operator_visuals/archive_caster.tres"),
 	&"caster_1": preload("res://data/presentation/operator_visuals/caster_1.tres"),
 	&"caster_2": preload("res://data/presentation/operator_visuals/caster_2.tres"),
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
@@ -13,6 +14,7 @@ const DEFINITIONS: Dictionary = {
 	&"guard_1": preload("res://data/presentation/operator_visuals/guard_1.tres"),
 	&"guard_2": preload("res://data/presentation/operator_visuals/guard_2.tres"),
 	&"lunaris_vessel": preload("res://data/presentation/operator_visuals/lunaris_vessel.tres"),
+	&"reliquary_duelist": preload("res://data/presentation/operator_visuals/reliquary_duelist.tres"),
 	&"recruit_female": preload("res://data/presentation/operator_visuals/recruit_female.tres"),
 	&"recruit_male": preload("res://data/presentation/operator_visuals/recruit_male.tres"),
 	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
@@ -24,7 +26,9 @@ const VISUAL_ALIASES: Dictionary = {
 	&"witch_doctor_1": &"caster_1",
 }
 const PREMIUM_VISUAL_BY_PORTRAIT: Dictionary = {
+	&"portrait_archive_caster": &"archive_caster",
 	&"portrait_lunaris_vessel": &"lunaris_vessel",
+	&"portrait_reliquary_duelist": &"reliquary_duelist",
 }
 
 

@@ -1,11 +1,16 @@
 extends SceneTree
 
-const LANDSCAPE := Vector2i(1280, 720)
-const PORTRAIT := Vector2i(720, 1280)
-const ULTRAWIDE := Vector2i(2560, 1080)
-const SHORT_LANDSCAPE := Vector2i(1024, 576)
-const EPSILON := 0.05
-const PREFERENCES_PATH := "user://title_ui_scale_test.cfg"
+const VIEWPORTS := {
+	"ultrawide": Vector2i(2560, 1080),
+	"regular": Vector2i(1280, 720),
+	"short_baseline": Vector2i(1024, 576),
+	"short": Vector2i(960, 420),
+	"portrait": Vector2i(720, 1280),
+	"narrow_390": Vector2i(390, 844),
+	"narrow_360": Vector2i(360, 800),
+}
+const PATH := "user://title_ui_scale_test.cfg"
+const EPSILON := 1.0
 
 var _failures: Array[String] = []
 var _title: Control = null
@@ -16,118 +21,118 @@ func _init() -> void:
 
 
 func _run() -> void:
-	_remove_preferences()
-	root.size = LANDSCAPE
+	_remove()
+	root.size = VIEWPORTS["regular"]
 	_title = load("res://scenes/title.tscn").instantiate() as Control
-	_title.call("set_preferences_path", PREFERENCES_PATH)
+	_title.call("set_preferences_path", PATH)
 	root.add_child(_title)
 	await process_frame
 	await process_frame
-	_verify_landscape()
-
-	root.size = PORTRAIT
-	await process_frame
-	await process_frame
-	_verify_portrait()
-	await _verify_settings_typography()
-	_title.call("_close_settings")
-	await process_frame
-
-	root.size = ULTRAWIDE
-	await process_frame
-	await process_frame
-	await _verify_responsive_settings(ULTRAWIDE, "ultrawide", false)
-
-	root.size = SHORT_LANDSCAPE
-	await process_frame
-	await process_frame
-	await _verify_responsive_settings(SHORT_LANDSCAPE, "short landscape", true)
+	_verify_title_scale()
+	for label: String in VIEWPORTS:
+		root.size = VIEWPORTS[label]
+		await process_frame
+		await process_frame
+		await _verify_settings(label, VIEWPORTS[label])
 	await _cleanup()
-	_remove_preferences()
+	_remove()
 	call_deferred("_finish")
 
 
-func _verify_landscape() -> void:
+func _verify_title_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
-	var entry := _title.find_child("EntryControls", true, false) as Control
-	_check(wordmark != null and wordmark.get_theme_font_size(&"font_size") == 76, "landscape wordmark is not scaled by 15%")
-	_check(start != null and start.get_theme_font_size(&"font_size") == 28, "Start font is not scaled by 15%")
-	_check(settings != null and settings.get_theme_font_size(&"font_size") == 23, "Settings font is not scaled by 15%")
-	_check(start != null and _near(start.custom_minimum_size.x, 598.0), "Start width is not scaled by 15%")
-	_check(start != null and _near(start.custom_minimum_size.y, 78.2), "Start height is not scaled by 15%")
-	_check(settings != null and _near(settings.custom_minimum_size.x, 494.5), "Settings width is not scaled by 15%")
-	_check(settings != null and _near(settings.custom_minimum_size.y, 66.7), "Settings height is not scaled by 15%")
-	_check(_inside_viewport(entry, LANDSCAPE), "scaled landscape title controls leave the viewport")
+	_check(wordmark.get_theme_font_size(&"font_size") == 76, "landscape wordmark scale changed")
+	_check(start.get_theme_font_size(&"font_size") == 28, "Start typography scale changed")
+	_check(settings.get_theme_font_size(&"font_size") == 23, "Settings typography scale changed")
 
 
-func _verify_portrait() -> void:
-	var wordmark := _title.find_child("Wordmark", true, false) as Label
-	var start := _title.find_child("StartButton", true, false) as Button
-	var settings := _title.find_child("SettingsButton", true, false) as Button
-	var entry := _title.find_child("EntryControls", true, false) as Control
-	_check(wordmark != null and wordmark.get_theme_font_size(&"font_size") == 53, "portrait wordmark is not scaled by 15%")
-	_check(start != null and _near(start.custom_minimum_size.x, 598.0), "portrait Start width is not scaled by 15%")
-	_check(start != null and _near(start.custom_minimum_size.y, 69.0), "portrait Start height is not scaled by 15%")
-	_check(settings != null and _near(settings.custom_minimum_size.x, 490.36), "portrait Settings width is not scaled by 15%")
-	_check(settings != null and _near(settings.custom_minimum_size.y, 62.1), "portrait Settings height is not scaled by 15%")
-	_check(_inside_viewport(entry, PORTRAIT), "scaled portrait title controls leave the viewport")
-
-
-func _verify_settings_typography() -> void:
+func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_title.call("_open_settings")
 	await process_frame
-	var heading := _title.find_child("SettingsTitle", true, false) as Label
-	var locale_label := _title.find_child("LocaleLabel", true, false) as Label
-	var locale_list := _title.find_child("LocaleList", true, false) as ItemList
-	var music := _title.find_child("MusicButton", true, false) as Button
-	var motion := _title.find_child("MotionButton", true, false) as Button
-	var back := _title.find_child("SettingsBackButton", true, false) as Button
-	_check(heading != null and heading.get_theme_font_size(&"font_size") == 35, "portrait Settings heading is not scaled by 15%")
-	_check(locale_label != null and locale_label.get_theme_font_size(&"font_size") == 20, "Language label is not scaled by 15%")
-	_check(locale_list != null and locale_list.get_theme_font_size(&"font_size") == 23, "language options are not scaled by 15%")
-	for button: Button in [music, motion, back]:
-		_check(button != null and button.get_theme_font_size(&"font_size") == 20, "settings action font is not scaled by 15%")
-		_check(button != null and _near(button.custom_minimum_size.y, 62.1), "settings action height is not scaled by 15%")
-	var audio_heading := _title.find_child("AudioHeading", true, false) as Label
-	var graphics_heading := _title.find_child("GraphicsHeading", true, false) as Label
-	var frame_option := _title.find_child("FrameLimitOption", true, false) as OptionButton
-	_check(audio_heading != null and audio_heading.get_theme_font_size(&"font_size") == 21, "Audio heading is not scaled by 15%")
-	_check(graphics_heading != null and graphics_heading.get_theme_font_size(&"font_size") == 21, "Graphics heading is not scaled by 15%")
-	_check(frame_option != null and frame_option.item_count == 4, "frame-limit choices are missing")
-
-
-func _verify_responsive_settings(viewport_size: Vector2i, label: String, expect_scroll: bool) -> void:
-	var entry := _title.find_child("EntryControls", true, false) as Control
-	_check(_inside_viewport(entry, viewport_size), "%s title controls leave the viewport" % label)
-	_title.call("_open_settings")
 	await process_frame
-	var panel := _title.find_child("SettingsPanel", true, false) as Control
-	var scroll := _title.find_child("SettingsScroll", true, false) as ScrollContainer
-	var stack := _title.find_child("SettingsStack", true, false) as VBoxContainer
-	_check(_inside_viewport(panel, viewport_size), "%s settings panel leaves the viewport" % label)
-	_check(scroll != null and scroll.size.x > 0.0 and scroll.size.y > 0.0, "%s settings scroll host is invalid" % label)
-	if expect_scroll and scroll != null and stack != null:
-		_check(stack.size.y > scroll.size.y, "%s modal does not expose scroll overflow" % label)
+	var state := _title.get_node("TitleSettings") as Control
+	var safe := state.get_node("SafeFrame") as Control
+	var frame := state.get_node("SafeFrame/CommandFrame") as Control
+	var header := state.find_child("Header", true, false) as Control
+	var scroll := state.find_child("SettingsScroll", true, false) as ScrollContainer
+	var columns := state.find_child("SettingsColumns", true, false) as GridContainer
+	var dock := state.find_child("ActionDock", true, false) as Control
+	var apply := state.find_child("SettingsApplyButton", true, false) as Button
+	var back := state.find_child("SettingsBackButton", true, false) as Button
+	var locale_selector := state.find_child("LocaleSelector", true, false) as BoxContainer
+	var locale_list := state.find_child("LocaleList", true, false) as ItemList
+	var frame_row := state.find_child("FrameLimitRow", true, false) as BoxContainer
+	var focus_owner := root.gui_get_focus_owner()
+	_check(_rect_matches(state, viewport), "%s state root is not full viewport" % label)
+	_check(_inside(state, safe) and _inside(state, frame), "%s safe command frame overflows" % label)
+	_check(_inside(state, header) and _inside(state, dock), "%s persistent header/dock overflows" % label)
+	_check(_inside(frame, header) and _inside(frame, scroll) and _inside(frame, dock), "%s command-frame content overflows" % label)
+	_check(scroll.size.y > 0.0 and scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s body scroll is invalid" % label)
+	_check(header.get_global_rect().end.y <= scroll.get_global_rect().position.y + EPSILON, "%s header entered body scroll" % label)
+	_check(scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + EPSILON, "%s dock entered body scroll" % label)
+	_check(apply.custom_minimum_size.y >= 44.0 and back.custom_minimum_size.y >= 44.0, "%s actions are not touch safe" % label)
+	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
+	var compact := viewport.x <= 720 or float(viewport.x) / float(viewport.y) <= 1.2
+	_check(columns.columns == (1 if compact else 2), "%s has wrong section composition" % label)
+	_check(frame_row.vertical == compact, "%s frame-limit row has wrong compact orientation" % label)
+	_check(locale_selector.vertical == compact, "%s locale selector has wrong compact orientation" % label)
+	_check(focus_owner != null and state.is_ancestor_of(focus_owner), "%s initial focus escaped Settings" % label)
+	for control: Control in _focus_controls(state):
+		for path: NodePath in [
+			control.focus_next,
+			control.focus_previous,
+			control.focus_neighbor_top,
+			control.focus_neighbor_bottom,
+			control.focus_neighbor_left,
+			control.focus_neighbor_right,
+		]:
+			var target := control.get_node_or_null(path) as Control
+			_check(target != null and state.is_ancestor_of(target), "%s has an open focus edge at %s" % [label, control.name])
+	if label == "short":
+		var body := state.find_child("SettingsColumns", true, false) as Control
+		_check(body.size.y > scroll.size.y, "short settings body does not expose vertical overflow")
+	_check(apply.focus_next == apply.get_path_to(back), "%s Apply traversal does not wrap to Back" % label)
+	_check(back.focus_previous == back.get_path_to(apply), "%s Back reverse traversal does not wrap to Apply" % label)
+	var retained_focus := state.find_child("MotionButton", true, false) as Button
+	retained_focus.grab_focus()
+	root.get_node("I18n").call("set_locale", &"zh-CN")
+	await process_frame
+	await process_frame
+	_check(retained_focus.has_focus(), "%s locale refresh lost logical focus" % label)
+	_check(not apply.text.is_empty() and apply.text != "APPLY", "%s locale refresh did not update mounted copy" % label)
+	root.get_node("I18n").call("set_locale", &"en-US")
+	await process_frame
 	_title.call("_close_settings")
 	await process_frame
 
 
-func _inside_viewport(control: Control, viewport_size: Vector2i) -> bool:
-	if control == null:
+func _focus_controls(state: Control) -> Array[Control]:
+	return [
+		state.find_child("SettingsBackButton", true, false) as Control,
+		state.find_child("LocaleList", true, false) as Control,
+		state.find_child("MasterVolumeSlider", true, false) as Control,
+		state.find_child("MusicVolumeSlider", true, false) as Control,
+		state.find_child("SfxVolumeSlider", true, false) as Control,
+		state.find_child("MusicButton", true, false) as Control,
+		state.find_child("FrameLimitOption", true, false) as Control,
+		state.find_child("MotionButton", true, false) as Control,
+		state.find_child("SettingsApplyButton", true, false) as Control,
+	]
+
+
+func _rect_matches(control: Control, viewport: Vector2i) -> bool:
+	var rect := control.get_global_rect()
+	return rect.position.length() <= EPSILON and absf(rect.size.x - viewport.x) <= EPSILON and absf(rect.size.y - viewport.y) <= EPSILON
+
+
+func _inside(parent: Control, child: Control) -> bool:
+	if parent == null or child == null:
 		return false
-	var rect := control.get_rect()
-	return (
-		rect.position.x >= -EPSILON
-		and rect.position.y >= -EPSILON
-		and rect.end.x <= float(viewport_size.x) + EPSILON
-		and rect.end.y <= float(viewport_size.y) + EPSILON
-	)
-
-
-func _near(actual: float, expected: float) -> bool:
-	return absf(actual - expected) <= EPSILON
+	var outer := parent.get_global_rect()
+	var inner := child.get_global_rect()
+	return inner.position.x >= outer.position.x - EPSILON and inner.position.y >= outer.position.y - EPSILON and inner.end.x <= outer.end.x + EPSILON and inner.end.y <= outer.end.y + EPSILON
 
 
 func _cleanup() -> void:
@@ -140,20 +145,15 @@ func _cleanup() -> void:
 	var sfx := root.get_node_or_null("Sfx")
 	if sfx != null:
 		sfx.call("stop_all")
-	if _title != null:
-		_title.queue_free()
-	_title = null
+	_title.queue_free()
 	for _frame: int in range(12):
 		await process_frame
-	# Opening Settings plays a short confirmation sample. Let the audio server
-	# retire that one-shot playback before the standalone SceneTree runs its
-	# ObjectDB and resource-lifetime checks.
 	await create_timer(0.5).timeout
 
 
-func _remove_preferences() -> void:
-	if FileAccess.file_exists(PREFERENCES_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(PREFERENCES_PATH))
+func _remove() -> void:
+	if FileAccess.file_exists(PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
 
 
 func _finish() -> void:

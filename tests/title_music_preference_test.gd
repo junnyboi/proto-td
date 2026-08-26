@@ -1,7 +1,7 @@
 extends SceneTree
 
-const VIEW_PREFERENCES := preload("res://scripts/view/view_preferences.gd")
-const PREFERENCES_PATH := "user://title_music_preference_test.cfg"
+const PREFS := preload("res://scripts/view/view_preferences.gd")
+const PATH := "user://title_music_preference_test.cfg"
 
 var _failures: Array[String] = []
 
@@ -11,91 +11,95 @@ func _init() -> void:
 
 
 func _run() -> void:
-	_remove_preferences()
+	_remove()
 	var music := root.get_node_or_null("Music")
 	var game := root.get_node_or_null("Game")
-	_check(music != null, "Music autoload is available")
-	_check(game != null, "Game autoload is available")
-	_check(
-		bool(VIEW_PREFERENCES.title_music_enabled(PREFERENCES_PATH)),
-		"missing preference defaults title music to enabled",
-	)
-	_check(
-		bool(VIEW_PREFERENCES.mark_pan_hint_seen(PREFERENCES_PATH)),
-		"unrelated navigation preference is created",
-	)
+	_check(music != null and game != null, "required autoloads are available")
+	_check(PREFS.title_music_enabled(PATH), "missing preference does not default enabled")
+	_check(PREFS.mark_pan_hint_seen(PATH), "unrelated preference was not created")
 	if music != null and game != null:
-		await _exercise_sessions(music, game)
-		await _clean_up(music, game)
-	_remove_preferences()
+		await _exercise(music, game)
+		await _cleanup(music, game)
+	_remove()
 	call_deferred("_finish")
 
 
-func _exercise_sessions(music: Node, game: Node) -> void:
-	var first: Node = await _create_title()
+func _exercise(music: Node, game: Node) -> void:
+	var first := await _create_title()
 	_check(bool(first.call("title_music_enabled")), "first session starts enabled")
-	_check(music.call("current_id") == &"title_lunaris", "first session starts the title cue")
-	first.call("_toggle_music")
+	_check(music.call("current_id") == &"title_lunaris", "first session starts title cue")
+	first.call("_open_settings")
 	await process_frame
-	_check(not bool(first.call("title_music_enabled")), "toggle disables title music")
-	_check(not bool(VIEW_PREFERENCES.title_music_enabled(PREFERENCES_PATH)), "disabled state is saved")
-	_check(
-		bool(VIEW_PREFERENCES.has_seen_pan_hint(PREFERENCES_PATH)),
-		"saving music preserves unrelated preferences",
-	)
-	_check(StringName(music.call("current_id")).is_empty(), "disabled toggle stops the title cue")
-	await _release_title(first, game)
-
-	var second: Node = await _create_title()
-	_check(not bool(second.call("title_music_enabled")), "second session restores disabled state")
-	_check(StringName(music.call("current_id")).is_empty(), "restored disabled state stays silent")
-	var music_button := second.find_child("MusicButton", true, false) as Button
-	_check(music_button != null and music_button.text.contains("OFF"), "settings copy restores OFF")
-	second.call("_toggle_music")
+	(first.find_child("MusicButton", true, false) as Button).pressed.emit()
 	await process_frame
-	_check(bool(VIEW_PREFERENCES.title_music_enabled(PREFERENCES_PATH)), "enabled state is saved")
-	_check(music.call("current_id") == &"title_lunaris", "re-enabling starts the title cue")
-	await _release_title(second, game)
+	_check(not bool(first.call("title_music_enabled")), "draft toggle did not preview disabled")
+	_check(PREFS.title_music_enabled(PATH), "draft toggle persisted before Apply")
+	_check(StringName(music.call("current_id")).is_empty(), "draft disable did not stop title cue")
+	first.call("_close_settings")
+	await process_frame
+	_check(bool(first.call("title_music_enabled")), "Cancel did not restore enabled preference")
+	_check(music.call("current_id") == &"title_lunaris", "Cancel did not restore title cue")
+	_check(PREFS.title_music_enabled(PATH), "Cancel persisted music preference")
 
-	var third: Node = await _create_title()
-	_check(bool(third.call("title_music_enabled")), "third session restores enabled state")
-	_check(music.call("current_id") == &"title_lunaris", "restored enabled state starts the title cue")
-	await _release_title(third, game)
+	first.call("_open_settings")
+	await process_frame
+	(first.find_child("MusicButton", true, false) as Button).pressed.emit()
+	await process_frame
+	(first.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_check(not PREFS.title_music_enabled(PATH), "Apply did not persist disabled preference")
+	_check(PREFS.has_seen_pan_hint(PATH), "Apply removed unrelated preferences")
+	await _release(first, game)
+
+	var second := await _create_title()
+	_check(not bool(second.call("title_music_enabled")), "second session did not restore disabled preference")
+	_check(StringName(music.call("current_id")).is_empty(), "restored disabled preference did not stay silent")
+	second.call("_open_settings")
+	await process_frame
+	(second.find_child("MusicButton", true, false) as Button).pressed.emit()
+	await process_frame
+	(second.find_child("SettingsApplyButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_check(PREFS.title_music_enabled(PATH), "Apply did not persist enabled preference")
+	_check(music.call("current_id") == &"title_lunaris", "preview enable did not restore title cue")
+	await _release(second, game)
+
+	var third := await _create_title()
+	_check(bool(third.call("title_music_enabled")), "third session did not restore enabled preference")
+	_check(music.call("current_id") == &"title_lunaris", "restored enabled preference did not start title cue")
+	await _release(third, game)
 
 
-func _create_title() -> Node:
-	var title: Node = load("res://scenes/title.tscn").instantiate()
-	title.call("set_preferences_path", PREFERENCES_PATH)
+func _create_title() -> Control:
+	var title := load("res://scenes/title.tscn").instantiate() as Control
+	title.call("set_preferences_path", PATH)
 	root.add_child(title)
 	await process_frame
 	await process_frame
 	return title
 
 
-func _release_title(title: Node, game: Node) -> void:
+func _release(title: Control, game: Node) -> void:
 	if game.get("content") == title:
 		game.set("content", null)
 	title.queue_free()
-	for _frame: int in range(4):
+	for _frame: int in range(6):
 		await process_frame
 
 
-func _clean_up(music: Node, game: Node) -> void:
+func _cleanup(music: Node, game: Node) -> void:
 	game.set("content", null)
 	music.call("stop")
 	var sfx := root.get_node_or_null("Sfx")
 	if sfx != null:
 		sfx.call("stop_all")
-	# The test starts and stops the same Ogg stream across multiple title sessions.
-	# Leave enough idle frames for the audio server to release its playback object
-	# before the standalone SceneTree exits and runs the resource-leak scan.
 	for _frame: int in range(16):
 		await process_frame
 
 
-func _remove_preferences() -> void:
-	if FileAccess.file_exists(PREFERENCES_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(PREFERENCES_PATH))
+func _remove() -> void:
+	if FileAccess.file_exists(PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
 
 
 func _finish() -> void:

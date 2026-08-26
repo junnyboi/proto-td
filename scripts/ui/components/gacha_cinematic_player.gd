@@ -243,7 +243,12 @@ func _start_download(stream_key: String) -> void:
 	_request.accept_gzip = false
 	_request.body_size_limit = _download_total + COPY_CHUNK_BYTES
 	_request.download_chunk_size = 256 * 1024
-	_request.download_file = _download_temp_path
+	# Emscripten's direct-to-file HTTP path can report success while leaving no
+	# durable user:// record. Keep the Web body in memory, then write it through
+	# FileAccess in _on_request_completed so verification and cache promotion use
+	# the same filesystem API. Native builds retain streaming-to-disk behavior.
+	if not OS.has_feature("web"):
+		_request.download_file = _download_temp_path
 	_request.timeout = DOWNLOAD_TIMEOUT_SECONDS
 	_request.request_completed.connect(_on_request_completed)
 	add_child(_request)
@@ -427,6 +432,7 @@ func _cleanup_failed_download(path: String) -> void:
 
 func _fail_download(reason: String, failed_key: String = "") -> void:
 	var stream_key := failed_key if not failed_key.is_empty() else _download_key
+	printerr("Cinematic stream '%s' failed: %s" % [stream_key, reason])
 	_download_key = ""
 	_download_temp_path = ""
 	_download_total = 0
@@ -438,6 +444,7 @@ func _fail_download(reason: String, failed_key: String = "") -> void:
 
 
 func _fail_active(reason: String) -> void:
+	printerr("Cinematic stream '%s' unavailable: %s" % [_active_stream_key, reason])
 	_set_failure_status(reason)
 	stream_state_changed.emit(StringName(_active_stream_key), &"failed", 0, 0)
 	cinematic_failed.emit(StringName(_active_stream_key), reason)

@@ -128,6 +128,18 @@ func cancel_inertia() -> void:
 	_last_drag_sample_usec = 0
 
 
+func cancel_interaction() -> bool:
+	var previous_pan := pan
+	cancel_inertia()
+	_middle_dragging = false
+	_primary_pressed = false
+	_primary_dragging = false
+	_primary_touch_index = -1
+	_suppress_primary_click = false
+	pan = IsoProjection.clamp_pan(pan, bounds)
+	return not previous_pan.is_equal_approx(pan)
+
+
 ## Advances view-only momentum in render time. Returns true only when the pan
 ## changed and BattleView needs to re-apply the map transform.
 func advance_inertia(delta: float) -> bool:

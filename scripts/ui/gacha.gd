@@ -1,7 +1,6 @@
 extends Control
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
-const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
@@ -19,13 +18,26 @@ const GACHA_FULLSIZE_PORTRAITS := {
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
 	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
 }
+const CONFIRM_ENTRY_SECONDS := 0.16
+const CONFIRM_READABLE_MAX_WIDTH := 1480.0
+
+enum FlowState {
+	BROWSE,
+	CONFIRM,
+	COMMITTING,
+	REVEAL,
+}
 
 @export var reduced_motion := false
 
 var _game: Node
+var _flow_state := FlowState.BROWSE
 var _marks_label: Label
 var _pull_button: Button
 var _back_button: Button
+var _browse_eyebrow: Label
+var _browse_title: Label
+var _browse_intro: Label
 var _status_label: Label
 var _hero_grid: GridContainer
 var _header_grid: GridContainer
@@ -33,7 +45,27 @@ var _action_grid: GridContainer
 var _screen_margin: MarginContainer
 var _pity_label: Label
 var _pity_segments: HBoxContainer
-var _pull_confirmation: Dictionary = {}
+var _confirmation_projection: Dictionary = {}
+var _confirmation_layer: Control
+var _confirmation_safe: MarginContainer
+var _confirmation_frame: PanelContainer
+var _confirmation_stack: VBoxContainer
+var _confirmation_header: GridContainer
+var _confirmation_title: Label
+var _confirmation_header_cancel: Button
+var _confirmation_body_scroll: ScrollContainer
+var _confirmation_body_center: CenterContainer
+var _confirmation_body_grid: GridContainer
+var _confirmation_context_eyebrow: Label
+var _confirmation_context_label: Label
+var _confirmation_review_eyebrow: Label
+var _confirmation_review_label: Label
+var _confirmation_action_dock: PanelContainer
+var _confirmation_actions: GridContainer
+var _confirmation_cancel: Button
+var _confirmation_confirm: Button
+var _confirmation_tween: Tween
+var _premium_pull_dispatched := false
 
 var _reveal_layer: Control
 var _reveal_shade: ColorRect
@@ -60,21 +92,44 @@ func _ready() -> void:
 	_build_pull_confirmation()
 	_build_reveal_layer()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
+	var i18n := get_node_or_null("/root/I18n")
+	if i18n != null and i18n.has_signal("locale_changed"):
+		i18n.connect("locale_changed", _on_locale_changed)
 	_apply_responsive_layout()
 	_refresh()
+	_restore_pull_focus()
 
 
 func _exit_tree() -> void:
+	_kill_confirmation_tween()
 	_kill_reveal_tween()
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
 	_stop_cinematic()
 
 
+func _input(event: InputEvent) -> void:
+	if _flow_state != FlowState.COMMITTING or not event.is_pressed():
+		return
+	if event is InputEventKey and event.echo:
+		get_viewport().set_input_as_handled()
+		return
+	if (
+			event is InputEventKey
+			or event is InputEventJoypadButton
+			or event is InputEventJoypadMotion
+			or event is InputEventMouseButton
+		):
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
 		return
-	if _is_revealing and (
+	if _flow_state == FlowState.COMMITTING:
+		get_viewport().set_input_as_handled()
+		return
+	if _flow_state == FlowState.REVEAL and (
 		event.is_action(&"ui_accept")
 		or event.is_action(&"ui_cancel")
 		or event is InputEventMouseButton
@@ -83,12 +138,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		_finish_reveal()
 		return
-	var confirmation_overlay := _pull_confirmation.get(&"overlay") as Control
-	if confirmation_overlay != null and confirmation_overlay.visible and event.is_action(&"ui_cancel"):
+	if _flow_state == FlowState.CONFIRM and event.is_action(&"ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_pull_cancelled()
 		return
-	if event.is_action(&"ui_cancel"):
+	if _flow_state == FlowState.BROWSE and event.is_action(&"ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_back_pressed()
 
@@ -135,8 +189,10 @@ func _build_screen() -> void:
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_grid.add_child(title_box)
-	title_box.add_child(_label(_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow"))
-	title_box.add_child(_label(_copy(&"ui.gacha.title", "Premium Resonance"), &"title"))
+	_browse_eyebrow = _label(_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow")
+	title_box.add_child(_browse_eyebrow)
+	_browse_title = _label(_copy(&"ui.gacha.title", "Premium Resonance"), &"title")
+	title_box.add_child(_browse_title)
 	_marks_label = _label("0 MARKS", &"metric")
 	_marks_label.name = "MarksLabel"
 	_marks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -148,12 +204,12 @@ func _build_screen() -> void:
 	var intro_box := VBoxContainer.new()
 	intro_box.add_theme_constant_override(&"separation", 10)
 	intro.add_child(intro_box)
-	var intro_text := _label(
+	_browse_intro = _label(
 		_copy(&"ui.gacha.intro", "Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls."),
 		&"body",
 	)
-	intro_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	intro_box.add_child(intro_text)
+	_browse_intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro_box.add_child(_browse_intro)
 	var pity_row := HBoxContainer.new()
 	pity_row.add_theme_constant_override(&"separation", 12)
 	intro_box.add_child(pity_row)
@@ -210,20 +266,159 @@ func _build_screen() -> void:
 
 
 func _build_pull_confirmation() -> void:
-	_pull_confirmation = DialogType.create(
-		self,
-		"PullConfirmationLayer",
-		_copy(&"ui.gacha.confirm_title", "CONFIRM RESONANCE"),
-		_copy(&"ui.gacha.confirm_intro", "Align one signal through the random premium pool."),
-		_copy(&"ui.gacha.resonate", "RESONATE"),
-		_copy(&"ui.common.cancel", "CANCEL"),
+	_confirmation_layer = Control.new()
+	_confirmation_layer.name = "PremiumPullConfirmationLayer"
+	_confirmation_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_confirmation_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	_confirmation_layer.z_index = 100
+	_confirmation_layer.visible = false
+	add_child(_confirmation_layer)
+
+	var background := ColorRect.new()
+	background.name = "ConfirmationAtmosphere"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.color = Style.INK_DEEP
+	background.mouse_filter = Control.MOUSE_FILTER_STOP
+	_confirmation_layer.add_child(background)
+	var atmosphere := TextureRect.new()
+	atmosphere.name = "ConfirmationAtmosphereArt"
+	atmosphere.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	atmosphere.texture = LUNARIS_BACKDROP
+	atmosphere.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	atmosphere.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	atmosphere.modulate = Color(0.42, 0.62, 0.72, 0.30)
+	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_confirmation_layer.add_child(atmosphere)
+
+	_confirmation_safe = MarginContainer.new()
+	_confirmation_safe.name = "ConfirmationSafeFrame"
+	_confirmation_safe.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_confirmation_layer.add_child(_confirmation_safe)
+	_confirmation_frame = PanelContainer.new()
+	_confirmation_frame.name = "ConfirmationCommandFrame"
+	_confirmation_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	Style.apply_panel(_confirmation_frame, &"screen")
+	_confirmation_safe.add_child(_confirmation_frame)
+
+	_confirmation_stack = VBoxContainer.new()
+	_confirmation_stack.name = "ConfirmationStateLayout"
+	_confirmation_stack.add_theme_constant_override(&"separation", 14)
+	_confirmation_frame.add_child(_confirmation_stack)
+	_confirmation_header = GridContainer.new()
+	_confirmation_header.name = "ConfirmationHeader"
+	_confirmation_header.columns = 2
+	_confirmation_header.add_theme_constant_override(&"separation", 16)
+	_confirmation_stack.add_child(_confirmation_header)
+	_confirmation_header_cancel = Button.new()
+	_confirmation_header_cancel.name = "CancelPremiumPull"
+	_confirmation_header_cancel.custom_minimum_size = Vector2(0, 48)
+	_confirmation_header_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_header_cancel.pressed.connect(_on_pull_cancelled)
+	Style.apply_button(_confirmation_header_cancel, &"quiet")
+	_confirmation_header.add_child(_confirmation_header_cancel)
+	_confirmation_title = _label("", &"title")
+	_confirmation_title.name = "ConfirmationTitle"
+	_confirmation_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_title.custom_minimum_size.x = 0
+	_confirmation_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirmation_header.add_child(_confirmation_title)
+	var header_rule := ColorRect.new()
+	header_rule.name = "ConfirmationHeaderRule"
+	header_rule.custom_minimum_size = Vector2(0, 2)
+	header_rule.color = Color(Style.CYAN, 0.66)
+	header_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_confirmation_stack.add_child(header_rule)
+
+	_confirmation_body_scroll = ScrollContainer.new()
+	_confirmation_body_scroll.name = "ConfirmationBodyScroll"
+	_confirmation_body_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_body_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_confirmation_body_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_confirmation_body_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_confirmation_body_scroll.follow_focus = true
+	_confirmation_stack.add_child(_confirmation_body_scroll)
+	_confirmation_body_center = CenterContainer.new()
+	_confirmation_body_center.name = "ConfirmationReadableBody"
+	_confirmation_body_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_body_center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_confirmation_body_scroll.add_child(_confirmation_body_center)
+	_confirmation_body_grid = GridContainer.new()
+	_confirmation_body_grid.name = "ConfirmationBodyGrid"
+	_confirmation_body_grid.columns = 2
+	_confirmation_body_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_body_grid.add_theme_constant_override(&"h_separation", 22)
+	_confirmation_body_grid.add_theme_constant_override(&"v_separation", 14)
+	_confirmation_body_center.add_child(_confirmation_body_grid)
+
+	var context_panel := PanelContainer.new()
+	context_panel.name = "ConfirmationContextPanel"
+	context_panel.custom_minimum_size.y = 196.0
+	context_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Style.apply_panel(context_panel, &"quiet")
+	_confirmation_body_grid.add_child(context_panel)
+	var context_stack := VBoxContainer.new()
+	context_stack.add_theme_constant_override(&"separation", 10)
+	context_panel.add_child(context_stack)
+	_confirmation_context_eyebrow = _label(
+		_copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY"), &"eyebrow",
 	)
-	var confirm := _pull_confirmation.get(&"confirm") as Button
-	var cancel := _pull_confirmation.get(&"cancel") as Button
-	confirm.name = "ConfirmPremiumPull"
-	cancel.name = "CancelPremiumPull"
-	confirm.pressed.connect(_on_confirm_pull)
-	cancel.pressed.connect(_on_pull_cancelled)
+	_confirmation_context_eyebrow.name = "ConfirmationContextEyebrow"
+	context_stack.add_child(_confirmation_context_eyebrow)
+	_confirmation_context_label = _label("", &"body")
+	_confirmation_context_label.name = "ConfirmationContextCopy"
+	_confirmation_context_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_context_label.custom_minimum_size.x = 0
+	_confirmation_context_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	context_stack.add_child(_confirmation_context_label)
+
+	var review_panel := PanelContainer.new()
+	review_panel.name = "ConfirmationTransactionPanel"
+	review_panel.custom_minimum_size.y = 196.0
+	review_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Style.apply_panel(review_panel, &"result")
+	_confirmation_body_grid.add_child(review_panel)
+	var review_stack := VBoxContainer.new()
+	review_stack.add_theme_constant_override(&"separation", 10)
+	review_panel.add_child(review_stack)
+	_confirmation_review_eyebrow = _label(
+		_copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE"), &"eyebrow",
+	)
+	_confirmation_review_eyebrow.name = "ConfirmationReviewEyebrow"
+	review_stack.add_child(_confirmation_review_eyebrow)
+	_confirmation_review_label = _label("", &"body")
+	_confirmation_review_label.name = "ConfirmationTransactionCopy"
+	_confirmation_review_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_review_label.custom_minimum_size.x = 0
+	_confirmation_review_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	review_stack.add_child(_confirmation_review_label)
+
+	_confirmation_action_dock = PanelContainer.new()
+	_confirmation_action_dock.name = "ConfirmationActionDock"
+	Style.apply_panel(_confirmation_action_dock, &"quiet")
+	_confirmation_stack.add_child(_confirmation_action_dock)
+	_confirmation_actions = GridContainer.new()
+	_confirmation_actions.name = "ConfirmationActions"
+	_confirmation_actions.columns = 2
+	_confirmation_actions.add_theme_constant_override(&"h_separation", 14)
+	_confirmation_actions.add_theme_constant_override(&"v_separation", 10)
+	_confirmation_action_dock.add_child(_confirmation_actions)
+	_confirmation_cancel = Button.new()
+	_confirmation_cancel.name = "CancelPremiumPullDock"
+	_confirmation_cancel.custom_minimum_size = Vector2(0, 54)
+	_confirmation_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_cancel.pressed.connect(_on_pull_cancelled)
+	Style.apply_button(_confirmation_cancel, &"quiet")
+	_confirmation_actions.add_child(_confirmation_cancel)
+	_confirmation_confirm = Button.new()
+	_confirmation_confirm.name = "ConfirmPremiumPull"
+	_confirmation_confirm.custom_minimum_size = Vector2(0, 54)
+	_confirmation_confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_confirmation_confirm.pressed.connect(_on_confirm_pull)
+	Style.apply_button(_confirmation_confirm, &"gold")
+	_confirmation_actions.add_child(_confirmation_confirm)
+	_bind_confirmation_focus_scope()
+	_refresh_confirmation_copy()
 
 
 func _build_reveal_layer() -> void:
@@ -336,7 +531,7 @@ func _refresh() -> void:
 		_marks_label.text = _copy(&"ui.gacha.campaign_offline", "CAMPAIGN OFFLINE")
 		_pull_button.text = _copy(&"ui.gacha.pull_unavailable", "PULL UNAVAILABLE")
 		_pull_button.disabled = true
-		_back_button.disabled = _is_revealing
+		_back_button.disabled = _flow_state != FlowState.BROWSE
 		Style.apply_button(_pull_button, &"disabled")
 		_status_label.text = _copy(&"ui.gacha.campaign_required", "Start or continue a campaign to access premium resonance.")
 		return
@@ -348,8 +543,9 @@ func _refresh() -> void:
 	_marks_label.text = _format(&"ui.gacha.marks", "{count} MARKS", {&"count": marks})
 	_pull_button.text = _format(&"ui.gacha.pull_action", "RESONATE • {cost} MARKS", {&"cost": cost})
 	var attempt_pending := bool(projection.get("attempt_pending", false))
-	_pull_button.disabled = marks < cost or attempt_pending or _is_revealing
-	_back_button.disabled = _is_revealing
+	var browse_locked := _flow_state != FlowState.BROWSE
+	_pull_button.disabled = marks < cost or attempt_pending or browse_locked
+	_back_button.disabled = browse_locked
 	Style.apply_button(_pull_button, &"disabled" if _pull_button.disabled else &"gold")
 	_pity_label.text = _format(&"ui.gacha.guarantee_in", "5-STAR GUARANTEED IN {count} {unit}", {
 		&"count": guarantee_in, &"unit": _pull_unit(guarantee_in).to_upper(),
@@ -357,12 +553,8 @@ func _refresh() -> void:
 	for index: int in _pity_segments.get_child_count():
 		var segment := _pity_segments.get_child(index) as ColorRect
 		segment.color = Style.GOLD if index < pity_streak else Color(Style.CYAN.r, Style.CYAN.g, Style.CYAN.b, 0.16)
-	var confirm_body := _pull_confirmation.get(&"body") as Label
-	if confirm_body != null:
-		confirm_body.text = _format(&"ui.gacha.confirm_body", "One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.", {
-			&"cost": cost, &"before": marks, &"after": maxi(0, marks - cost),
-			&"count": guarantee_in, &"unit": _pull_unit(guarantee_in),
-		})
+	if _flow_state in [FlowState.CONFIRM, FlowState.COMMITTING]:
+		_refresh_confirmation_copy()
 	if attempt_pending:
 		_status_label.text = _copy(&"ui.gacha.attempt_pending", "Resolve the active operation before using premium resonance.")
 	elif marks < cost:
@@ -441,7 +633,8 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 func _apply_responsive_layout() -> void:
 	if _hero_grid == null or _header_grid == null or _action_grid == null:
 		return
-	var portrait := get_viewport_rect().size.x < 900.0
+	var viewport_size := get_viewport_rect().size
+	var portrait := viewport_size.x < 900.0
 	_hero_grid.columns = 1 if portrait else 3
 	_header_grid.columns = 1 if portrait else 3
 	_action_grid.columns = 1 if portrait else 2
@@ -450,6 +643,7 @@ func _apply_responsive_layout() -> void:
 	_screen_margin.add_theme_constant_override(&"margin_left", side_margin)
 	_screen_margin.add_theme_constant_override(&"margin_right", side_margin)
 	_pull_button.custom_minimum_size.x = 0 if portrait else 280
+	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
 		_reveal_title_stack.custom_minimum_size.x = 0 if portrait else 680
 	if _reveal_title != null:
@@ -461,43 +655,73 @@ func _apply_responsive_layout() -> void:
 
 
 func _on_pull_pressed() -> void:
-	if _is_revealing:
-		_finish_reveal()
+	if _flow_state != FlowState.BROWSE or _pull_button.disabled:
 		return
-	if _pull_button.disabled:
+	if _game == null or not bool(_game.get("campaign_active")):
+		_refresh()
 		return
+	var campaign: Variant = _game.get("campaign")
+	if campaign == null or _game.get("campaign_store") == null:
+		_refresh()
+		return
+	var projection: Dictionary = campaign.runtime_projection()
+	var marks := int(projection.get("marks", 0))
+	var cost := int(projection.get("premium_pull_cost", 0))
+	if cost <= 0 or marks < cost or bool(projection.get("attempt_pending", false)):
+		_refresh()
+		return
+	_confirmation_projection = projection.duplicate(true)
+	_premium_pull_dispatched = false
+	_flow_state = FlowState.CONFIRM
+	_screen_margin.visible = false
+	_refresh_confirmation_copy()
+	_apply_responsive_layout()
+	_confirmation_layer.visible = true
+	_confirmation_layer.modulate.a = 1.0
 	Sfx.play("ui_click")
-	DialogType.show_dialog(_pull_confirmation, _pull_button)
+	_play_confirmation_entry()
+	_confirmation_header_cancel.grab_focus.call_deferred()
 
 
 func _on_pull_cancelled() -> void:
+	if _flow_state != FlowState.CONFIRM:
+		return
 	Sfx.play("ui_back")
-	DialogType.hide_dialog(_pull_confirmation)
+	_return_to_browse(true)
 
 
 func _on_confirm_pull() -> void:
-	var overlay := _pull_confirmation.get(&"overlay") as Control
-	if overlay == null or not overlay.visible:
+	if _flow_state != FlowState.CONFIRM or _premium_pull_dispatched:
 		return
-	DialogType.set_pending(_pull_confirmation, true, _copy(&"ui.gacha.aligning_short", "ALIGNING…"))
+	_flow_state = FlowState.COMMITTING
+	_premium_pull_dispatched = true
+	Sfx.play("ui_confirm")
+	_set_confirmation_pending(true)
 	_pull_button.disabled = true
 	_status_label.text = _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	call_deferred("_commit_premium_pull")
+
+
+func _commit_premium_pull() -> void:
+	if _flow_state != FlowState.COMMITTING or not _premium_pull_dispatched:
+		return
 	var committed: Dictionary = _game.call("pull_premium_hero")
 	if not committed.get("accepted", false):
-		DialogType.set_pending(_pull_confirmation, false)
-		DialogType.hide_dialog(_pull_confirmation)
-		_status_label.text = _error_copy(StringName(committed.get("error_code", &"unknown_error")))
-		_refresh()
+		var error_code := StringName(committed.get("error_code", &"unknown_error"))
+		_return_to_browse(false)
+		_status_label.text = _error_copy(error_code)
 		return
-	DialogType.set_pending(_pull_confirmation, false)
-	DialogType.hide_dialog(_pull_confirmation)
 	var result: Dictionary = committed.get("result", {})
 	var pull: Dictionary = result.get("premium_pull", {})
+	_hide_confirmation()
+	_confirmation_projection = {}
 	_refresh()
 	_begin_reveal(pull)
 
 
 func _begin_reveal(pull: Dictionary) -> void:
+	_flow_state = FlowState.REVEAL
+	_screen_margin.visible = false
 	_pending_pull = pull.duplicate(true)
 	_is_revealing = true
 	_pull_button.disabled = true
@@ -529,7 +753,7 @@ func _begin_reveal(pull: Dictionary) -> void:
 	_kill_cinematic_watchdog()
 	_stop_star_pulses()
 	_stop_cinematic()
-	var motion_reduced := reduced_motion or bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+	var motion_reduced := _motion_reduced()
 	_cinematic_player.play_cinematic(premium_id, motion_reduced)
 	if motion_reduced:
 		_reveal_layer.modulate.a = 1.0
@@ -648,13 +872,15 @@ func _finish_reveal() -> void:
 	_stop_cinematic()
 	var final_copy := _result_copy(_pending_pull)
 	_is_revealing = false
+	_flow_state = FlowState.BROWSE
 	_reveal_layer.visible = false
 	_reveal_layer.modulate.a = 0.0
 	_reveal_title_stack.visible = false
 	_pending_pull = {}
+	_screen_margin.visible = true
 	_refresh()
 	_status_label.text = final_copy
-	_pull_button.grab_focus()
+	_restore_pull_focus()
 
 
 func _kill_reveal_tween() -> void:
@@ -753,11 +979,242 @@ func _format(key: StringName, fallback: String, args: Dictionary) -> String:
 
 
 func _on_back_pressed() -> void:
-	if _is_revealing:
-		_finish_reveal()
+	if _flow_state != FlowState.BROWSE:
 		return
 	if _game != null and _game.has_method("open_staging"):
 		_game.call("open_staging")
+
+
+func _set_confirmation_pending(pending: bool) -> void:
+	_confirmation_header_cancel.disabled = pending
+	_confirmation_cancel.disabled = pending
+	_confirmation_confirm.disabled = pending
+	_confirmation_confirm.text = (
+		_copy(&"ui.gacha.aligning_short", "ALIGNING…")
+		if pending
+		else _copy(&"ui.gacha.resonate", "RESONATE")
+	)
+
+
+func _return_to_browse(play_cancel_refresh: bool) -> void:
+	_kill_confirmation_tween()
+	_hide_confirmation()
+	_confirmation_projection = {}
+	_premium_pull_dispatched = false
+	_flow_state = FlowState.BROWSE
+	_screen_margin.visible = true
+	_set_confirmation_pending(false)
+	_refresh()
+	if play_cancel_refresh:
+		_status_label.text = _copy(&"ui.gacha.ready", "The pool is ready.")
+	_restore_pull_focus()
+
+
+func _hide_confirmation() -> void:
+	_kill_confirmation_tween()
+	_confirmation_layer.visible = false
+	_confirmation_layer.modulate.a = 1.0
+
+
+func _restore_pull_focus() -> void:
+	if (
+			_pull_button != null
+			and _pull_button.is_inside_tree()
+			and _pull_button.is_visible_in_tree()
+			and not _pull_button.disabled
+		):
+		_pull_button.grab_focus.call_deferred()
+	elif (
+			_back_button != null
+			and _back_button.is_inside_tree()
+			and _back_button.is_visible_in_tree()
+			and not _back_button.disabled
+		):
+		_back_button.grab_focus.call_deferred()
+
+
+func _refresh_confirmation_copy() -> void:
+	if _confirmation_title == null:
+		return
+	_confirmation_title.text = _copy(&"ui.gacha.confirm_title", "CONFIRM RESONANCE")
+	_confirmation_context_eyebrow.text = _copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY")
+	_confirmation_review_eyebrow.text = _copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE")
+	_confirmation_header_cancel.text = _copy(&"ui.common.cancel", "CANCEL")
+	_confirmation_cancel.text = _copy(&"ui.common.cancel", "CANCEL")
+	_confirmation_context_label.text = _copy(
+		&"ui.gacha.confirm_intro",
+		"Align one signal through the random premium pool.",
+	)
+	if not _confirmation_projection.is_empty():
+		var marks := int(_confirmation_projection.get("marks", 0))
+		var cost := int(_confirmation_projection.get("premium_pull_cost", 0))
+		var guarantee_in := int(_confirmation_projection.get(
+			"premium_guarantee_in", HARD_PITY_WINDOW,
+		))
+		_confirmation_review_label.text = _format(
+			&"ui.gacha.confirm_body",
+			"One random signal • {cost} Marks\nBalance  {before} → {after} Marks\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
+			{
+				&"cost": cost,
+				&"before": marks,
+				&"after": maxi(0, marks - cost),
+				&"count": guarantee_in,
+				&"unit": _pull_unit(guarantee_in),
+			},
+		)
+	_set_confirmation_pending(_flow_state == FlowState.COMMITTING)
+
+
+func _bind_confirmation_focus_scope() -> void:
+	var actions: Array[Control] = [
+		_confirmation_header_cancel,
+		_confirmation_cancel,
+		_confirmation_confirm,
+	]
+	for index: int in actions.size():
+		var current := actions[index]
+		var previous := actions[(index - 1 + actions.size()) % actions.size()]
+		var following := actions[(index + 1) % actions.size()]
+		current.focus_previous = current.get_path_to(previous)
+		current.focus_next = current.get_path_to(following)
+		current.focus_neighbor_left = current.get_path_to(previous)
+		current.focus_neighbor_top = current.get_path_to(previous)
+		current.focus_neighbor_right = current.get_path_to(following)
+		current.focus_neighbor_bottom = current.get_path_to(following)
+
+
+func _apply_confirmation_layout(viewport_size: Vector2) -> void:
+	if _confirmation_layer == null or viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+	var focused := get_viewport().gui_get_focus_owner()
+	var focus_in_scope := focused in [
+		_confirmation_header_cancel, _confirmation_cancel, _confirmation_confirm,
+	]
+	var aspect := viewport_size.x / viewport_size.y
+	var narrow := viewport_size.x <= 720.0
+	var portrait := aspect <= 1.2 and viewport_size.y > 560.0
+	var short := viewport_size.y <= 560.0
+	var wide := viewport_size.x >= 1200.0 and aspect > 1.2 and not short
+	var safe_insets := _display_safe_insets(viewport_size)
+	var horizontal_gutter := clampi(roundi(viewport_size.x * 0.033), 12, 42)
+	var vertical_gutter := clampi(roundi(viewport_size.y * 0.028), 12, 32)
+	_confirmation_safe.add_theme_constant_override(
+		&"margin_left", maxi(horizontal_gutter, roundi(safe_insets.x)),
+	)
+	_confirmation_safe.add_theme_constant_override(
+		&"margin_top", maxi(vertical_gutter, roundi(safe_insets.y)),
+	)
+	_confirmation_safe.add_theme_constant_override(
+		&"margin_right", maxi(horizontal_gutter, roundi(safe_insets.z)),
+	)
+	_confirmation_safe.add_theme_constant_override(
+		&"margin_bottom", maxi(vertical_gutter, roundi(safe_insets.w)),
+	)
+	_confirmation_stack.add_theme_constant_override(&"separation", 8 if short else 14)
+	_confirmation_header.add_theme_constant_override(&"separation", 8 if narrow else 16)
+	_confirmation_header.columns = 1 if narrow else 2
+	_confirmation_header_cancel.size_flags_horizontal = (
+		Control.SIZE_EXPAND_FILL if narrow else Control.SIZE_SHRINK_BEGIN
+	)
+	_confirmation_header_cancel.custom_minimum_size.x = 0.0 if narrow else 180.0
+	_confirmation_title.add_theme_font_size_override(&"font_size", 32 if narrow or short else 38)
+	_confirmation_body_grid.columns = 2 if wide else 1
+	_confirmation_actions.columns = 1 if narrow or portrait else 2
+	var action_height := 48.0 if short else 54.0
+	_confirmation_cancel.custom_minimum_size = Vector2(0, action_height)
+	_confirmation_confirm.custom_minimum_size = Vector2(0, action_height)
+	_confirmation_header_cancel.custom_minimum_size.y = 44.0 if short else 48.0
+	var content_width := minf(
+		CONFIRM_READABLE_MAX_WIDTH,
+		maxf(0.0, viewport_size.x - float(horizontal_gutter * 2 + 44)),
+	)
+	_confirmation_body_center.custom_minimum_size.x = content_width
+	_confirmation_body_grid.custom_minimum_size.x = content_width
+	_confirmation_body_scroll.custom_minimum_size.y = 0
+	_bind_confirmation_focus_scope()
+	if focus_in_scope and focused != null and focused.is_visible_in_tree() and not focused.disabled:
+		focused.grab_focus.call_deferred()
+
+
+func _display_safe_insets(viewport_size: Vector2) -> Vector4:
+	var safe_rect := DisplayServer.get_display_safe_area()
+	var window_size := DisplayServer.window_get_size()
+	if safe_rect.size.x <= 0 or safe_rect.size.y <= 0 or window_size.x <= 0 or window_size.y <= 0:
+		return Vector4.ZERO
+	var scale := Vector2(
+		viewport_size.x / float(window_size.x),
+		viewport_size.y / float(window_size.y),
+	)
+	var left := maxf(0.0, float(safe_rect.position.x) * scale.x)
+	var top := maxf(0.0, float(safe_rect.position.y) * scale.y)
+	var right := maxf(0.0, float(window_size.x - safe_rect.end.x) * scale.x)
+	var bottom := maxf(0.0, float(window_size.y - safe_rect.end.y) * scale.y)
+	if left + right > viewport_size.x * 0.25 or top + bottom > viewport_size.y * 0.25:
+		return Vector4.ZERO
+	return Vector4(left, top, right, bottom)
+
+
+func _play_confirmation_entry() -> void:
+	_kill_confirmation_tween()
+	if _motion_reduced():
+		_confirmation_layer.modulate.a = 1.0
+		return
+	_confirmation_layer.modulate.a = 0.0
+	_confirmation_tween = create_tween()
+	_confirmation_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_confirmation_tween.tween_property(
+		_confirmation_layer, "modulate:a", 1.0, CONFIRM_ENTRY_SECONDS,
+	)
+
+
+func _kill_confirmation_tween() -> void:
+	if _confirmation_tween != null and _confirmation_tween.is_valid():
+		_confirmation_tween.kill()
+	_confirmation_tween = null
+
+
+func _motion_reduced() -> bool:
+	return reduced_motion or bool(ProjectSettings.get_setting(
+		"accessibility/reduced_motion", false,
+	))
+
+
+func _on_locale_changed(_locale_id: StringName) -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	_refresh_static_copy()
+	_refresh()
+	_refresh_confirmation_copy()
+	_apply_responsive_layout()
+	if focused != null and focused.is_inside_tree() and focused.is_visible_in_tree() and not focused.disabled:
+		focused.grab_focus.call_deferred()
+
+
+func _refresh_static_copy() -> void:
+	_back_button.text = _copy(&"ui.gacha.back", "← COMMAND DECK")
+	_browse_eyebrow.text = _copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY")
+	_browse_title.text = _copy(&"ui.gacha.title", "Premium Resonance")
+	_browse_intro.text = _copy(
+		&"ui.gacha.intro",
+		"Every resonance grants one life. Premium heroes keep fixed elite kits and cannot be trained. 5-star base rate: 5% • guaranteed within ten pulls.",
+	)
+	_skip_button.text = _copy(&"ui.gacha.skip_reveal", "SKIP REVEAL")
+	_reveal_hint.text = _copy(&"ui.gacha.click_anywhere", "CLICK ANYWHERE TO CONTINUE")
+	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
+		_reveal_title.text = _callsign_for(
+			String(_pending_pull.get("premium_id", "")),
+		).to_upper()
+
+
+func flow_state_name() -> StringName:
+	match _flow_state:
+		FlowState.CONFIRM: return &"CONFIRM"
+		FlowState.COMMITTING: return &"COMMITTING"
+		FlowState.REVEAL: return &"REVEAL"
+		_: return &"BROWSE"
+
+
+func confirmation_projection_snapshot() -> Dictionary:
+	return _confirmation_projection.duplicate(true)
 
 
 func _label(text: String, role: StringName) -> Label:

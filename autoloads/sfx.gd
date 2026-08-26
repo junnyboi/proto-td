@@ -217,8 +217,10 @@ func hover_target_eligible(control: Control) -> bool:
 		return item_index >= 0 and not item_list.is_item_disabled(item_index)
 	if control is MenuBar:
 		var menu_bar := control as MenuBar
-		var menu_index: int = menu_bar.get_menu_idx_at_point(menu_bar.get_local_mouse_position())
-		return menu_index >= 0 and not menu_bar.is_menu_disabled(menu_index)
+		for menu_index: int in menu_bar.get_menu_count():
+			if not menu_bar.is_menu_hidden(menu_index) and not menu_bar.is_menu_disabled(menu_index):
+				return true
+		return false
 	return control.focus_mode != Control.FOCUS_NONE
 
 
@@ -295,7 +297,7 @@ func _try_bind_hover(control: Control) -> void:
 
 func _on_control_hovered(control: Control) -> void:
 	var hover_owner := _hover_owner_for(control)
-	if hover_owner == null or not hover_owner.is_visible_in_tree():
+	if hover_owner == null or not _hover_hierarchy_visible(hover_owner):
 		return
 	var now_msec := Time.get_ticks_msec()
 	if now_msec < int(hover_owner.get_meta(HOVER_READY_META, 0)):
@@ -344,3 +346,12 @@ func _hover_owner_for(control: Control) -> Control:
 			owner = candidate
 		cursor = cursor.get_parent()
 	return owner
+
+
+func _hover_hierarchy_visible(control: Control) -> bool:
+	var cursor: Node = control
+	while cursor != null:
+		if cursor is CanvasItem and not (cursor as CanvasItem).visible:
+			return false
+		cursor = cursor.get_parent()
+	return true

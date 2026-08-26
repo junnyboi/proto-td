@@ -45,6 +45,15 @@ func _verify_animated_reveal_and_hover() -> void:
 		title.call("_on_title_action_hover_changed", settings, false)
 		await create_timer(0.24).timeout
 		_check(settings.scale.is_equal_approx(Vector2.ONE), "Settings hover scale did not settle after exit")
+		title.call("_open_settings")
+		await process_frame
+		var gated_starts := int(sfx.call("audible_start_count"))
+		title.call("_on_title_action_hover_changed", settings, true)
+		await process_frame
+		_check(int(sfx.call("audible_start_count")) == gated_starts, "hidden title hover feedback remained active in Settings")
+		_check(settings.scale.is_equal_approx(Vector2.ONE), "hidden title hover still transformed in Settings")
+		title.call("_close_settings")
+		await process_frame
 	await _release_title(title)
 
 

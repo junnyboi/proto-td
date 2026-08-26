@@ -108,6 +108,7 @@ var _heal_cursor: Polygon2D = null
 var _selected_unit_id: int = -1
 var _selection_ring: Node2D = null
 var _operator_interaction_enabled := true
+var _interaction_enabled := true
 
 
 ## Call after add_child: the bar sizes itself from the viewport (a Control
@@ -138,6 +139,39 @@ func is_mend_targeting() -> bool:
 
 func set_operator_interaction_enabled(enabled: bool) -> void:
 	_operator_interaction_enabled = enabled
+
+
+func operator_interaction_enabled() -> bool:
+	return _operator_interaction_enabled
+
+
+func set_interaction_enabled(enabled: bool) -> void:
+	_interaction_enabled = enabled
+	if not enabled:
+		cancel_transient_intent()
+
+
+func interaction_enabled() -> bool:
+	return _interaction_enabled
+
+
+func transient_intent_active() -> bool:
+	return (
+		_placement_op != &""
+		or _placement_trap != &""
+		or _pending_cell.x >= 0
+		or _heal_source_unit_id >= 0
+		or _retreat_unit_id >= 0
+		or _selected_unit_id >= 0
+	)
+
+
+func cancel_transient_intent() -> void:
+	if _placement_op != &"" or _placement_trap != &"" or _pending_cell.x >= 0:
+		_cancel_placement()
+	_cancel_heal_targeting()
+	_hide_retreat_chip()
+	_select_unit(-1)
 
 
 func first_deployment_id() -> StringName:
@@ -207,13 +241,15 @@ func _process(_delta: float) -> void:
 	_update_selection_ring()
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
-		slot.disabled = not _operator_interaction_enabled or not model.is_deployable(op_id)
+		slot.disabled = not _interaction_enabled or not _operator_interaction_enabled or not model.is_deployable(op_id)
 	for trap_id: StringName in _trap_slots:
 		var slot: Button = _trap_slots[trap_id]
-		slot.disabled = not _operator_interaction_enabled or not model.is_trap_placeable(trap_id)
+		slot.disabled = not _interaction_enabled or not _operator_interaction_enabled or not model.is_trap_placeable(trap_id)
 
 
 func _input(event: InputEvent) -> void:
+	if not _interaction_enabled:
+		return
 	if _heal_source_unit_id >= 0:
 		if event is InputEventMouseMotion:
 			_pointer = (event as InputEventMouseMotion).position
@@ -244,6 +280,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _interaction_enabled:
+		return
 	# Idle-state grid clicks: select an alive unit -> retreat chip.
 	if _placement_op != &"" or _placement_trap != &"" or model == null:
 		return
@@ -425,6 +463,8 @@ func _make_overlay_rect(color: Color) -> Polygon2D:
 
 
 func _start_placement(op_id: StringName) -> void:
+	if not _interaction_enabled or not _operator_interaction_enabled:
+		return
 	_cancel_heal_targeting()
 	_hide_retreat_chip()
 	_placement_op = op_id
@@ -436,6 +476,8 @@ func _start_placement(op_id: StringName) -> void:
 
 
 func _start_trap_placement(trap_id: StringName) -> void:
+	if not _interaction_enabled or not _operator_interaction_enabled:
+		return
 	_cancel_heal_targeting()
 	_hide_retreat_chip()
 	_placement_trap = trap_id
@@ -583,6 +625,8 @@ func _animate_facing_icons() -> void:
 
 
 func _confirm_deploy(facing: UnitState.Facing) -> void:
+	if not _interaction_enabled:
+		return
 	if _pending_cell.x >= 0:
 		var deployment_id := _placement_op
 		var cell := _pending_cell
@@ -645,6 +689,8 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 
 
 func _confirm_retreat() -> void:
+	if not _interaction_enabled:
+		return
 	if _retreat_unit_id >= 0:
 		model.apply_action([&"retreat", _retreat_unit_id])
 		_select_unit(-1)

@@ -48,7 +48,17 @@ func _exercise_scope(music: Node, game: Node) -> void:
 	_check(music.call("current_id") == &"title_lunaris", "approved title cue starts on player entry")
 	var player := music.get_node_or_null("Player") as AudioStreamPlayer
 	_check(player != null and player.playing, "approved title cue is actively playing")
+	var starts_before := int(music.call("start_count"))
 	var stops_before := int(music.call("stop_count"))
+	title.call("_open_settings")
+	await process_frame
+	_check(game.get("content") == title, "Settings replaced the Title host content")
+	_check(music.call("current_id") == &"title_lunaris", "Settings entry changed the title cue")
+	_check(int(music.call("start_count")) == starts_before, "Settings entry restarted the title cue")
+	title.call("_close_settings")
+	await process_frame
+	_check(game.get("content") == title, "Settings exit replaced the Title host content")
+	_check(int(music.call("start_count")) == starts_before, "Settings exit restarted the title cue")
 	for cue_id: StringName in REMOVED_CUES:
 		_check(not bool(music.call("play_cue", cue_id)), "removed cue remains playable: %s" % cue_id)
 	for stream_path: String in REMOVED_STREAMS:
