@@ -33,6 +33,8 @@ The field profile cleared S9 and S12 at two stars but failed S16. That is the de
 | S12 | All spawns now follow a continuous 60-tick cadence; wave boundaries align at ticks 480 and 1020 | Enemy roster, lattice tuning, and leak limit remain unchanged | Removes the anomalous 30-tick burst and makes pressure legible, rhythmic, and learnable |
 | S16 | Wave boundaries move to 0/510/1050/1590 with 120-tick inter-wave recovery; final spawn moves to tick 2100 | Leak limit rises from 1 to 2; enemy roster, dual minibosses, and lattice healing remain unchanged | Keeps the boss lethal to incomplete play while giving a disciplined squad enough deployment and cooldown recovery to execute the intended counterplay |
 
+The post-balance presentation pass marks the escalation windows with authored high-threat telegraphs: S9 waves two and three, S12 waves two and three, and S16 waves two through four. These indicators do not change simulation. They make the tuned cadence legible with stage-specific HUD emblems and spawn-point particle effects; the full contract is recorded in [High-Threat Wave Warning System](HIGH_THREAT_WAVE_WARNINGS.md).
+
 ## Final results
 
 | Stage | Policy | Result | Stars | Duration | Leaks | Base HP | Peak alive | Weighted pressure | Unit falls | Restoration healed |

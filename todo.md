@@ -107,7 +107,15 @@
 - [x] Retune S9 lane windows, S12 continuous three-lane cadence, and S16 four-wave breathing room plus two-leak tolerance; regression-lock final difficulty envelopes.
 - [x] Generate, preserve, master, checksum, catalog, and route eight unique looped Act II battle tracks with clean loudness, true-peak, and silence analysis.
 - [x] Add responsive Restoration-seal entry and terminal transitions with local simulation hold, cue continuity, and reduced-motion behavior; accept landscape and portrait Xvfb captures.
-- [ ] Reconcile and push shared master, export/serve/browser-test the exact Godot Web release, advance the forward-only `proto-td-web` host, and save the final checkpoint.
+- [x] Reconcile and push shared master, export/serve/browser-test the exact Godot Web release, advance the forward-only `proto-td-web` host, and save managed checkpoint `ac19895c`.
+
+# High-Threat Wave Warnings
+
+- [x] Author presentation-only escalation boundaries for S9 waves 2–3, S12 waves 2–3, and S16 waves 2–4 without changing the balanced simulation.
+- [x] Generate and retain six distinct GPT Image 2 warning/particle masters; ship 600px transparent, mipmapped, quality-0.92 runtime derivatives.
+- [x] Add localized stage-specific warning panels, portal-local emblem pulses and particles, warning-first transmission sequencing, terminal cleanup, and responsive reduced-motion behavior.
+- [x] Add all-stage metadata validation plus permanent warning, asset, particle-count, and accessibility regression coverage; accept S9/S12/S16 landscape and S16 portrait captures.
+- [ ] Reconcile and push shared master, export and browser-test the exact Godot Web release, layer it onto the newest `proto-td-web` host, and save the final checkpoint.
 
 # Promoted Operator Portrait Continuity
 
