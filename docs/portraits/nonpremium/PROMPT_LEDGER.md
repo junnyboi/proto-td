@@ -1,5 +1,8 @@
 # Non-Premium Portrait Prompt Ledger
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](../../NARRATIVE_CANON.md).
+
+
 **Model:** GPT Image 2
 
 **Output:** 1:1 PNG, transparent background, highest-resolution source retained
@@ -10,7 +13,7 @@
 
 ## Shared generation prompt
 
-Create one clearly adult Company 33 operator, age 21 or older, as a polished painterly anime-realism **shoulder-up three-quarter UI portrait**. Keep the full head, hair silhouette, neck, both shoulders, upper costume construction, and one class-defining tool or weapon cue inside the square frame. Use mature facial proportions, confident professional posture, intentional aligned eyes, believable anatomy, refined material separation, restrained directional studio lighting, and a clean isolated silhouette on a temporary chroma-green background for transparent removal. The operator must feel native to the Protos faction concepts: deep near-black textiles, faction accent color, practical armor or technical couture, sparse brushed-gold hardware, and only controlled cyan energy where the role requires it.
+Create one clearly adult Company Manus operator, age 21 or older, as a polished painterly anime-realism **shoulder-up three-quarter UI portrait**. Keep the full head, hair silhouette, neck, both shoulders, upper costume construction, and one class-defining tool or weapon cue inside the square frame. Use mature facial proportions, confident professional posture, intentional aligned eyes, believable anatomy, refined material separation, restrained directional studio lighting, and a clean isolated silhouette on a temporary chroma-green background for transparent removal. The operator must feel native to the Protos faction concepts: deep near-black textiles, faction accent color, practical armor or technical couture, sparse brushed-gold hardware, and only controlled cyan energy where the role requires it.
 
 These are **non-premium personnel**. Use standardized service equipment, limited ornament, practical coverage, modest glow, and no banner-character spectacle. Do not add text, logos, frames, watermark, divine halo, angel wings, elaborate environment, rarity particles, extreme bloom, giant mechanisms, school styling, juvenile features, sexualized framing, malformed anatomy, hidden eyes, or equipment crossing the face.
 

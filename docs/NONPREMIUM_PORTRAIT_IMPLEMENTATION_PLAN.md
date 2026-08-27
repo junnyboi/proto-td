@@ -1,8 +1,11 @@
 # Non-Premium Recruit and Specialization Portrait Regeneration — Implementation Plan
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](NARRATIVE_CANON.md).
+
+
 **Author:** Manus AI
 
-**Canonical repository:** `https://github.com/junnyboi/proto-td`
+**Source repository:** `https://github.com/junnyboi/proto-td`
 
 **Planning baseline:** `662e71c7964027a566bc40b9721bfffd2f10a54b`
 
@@ -14,7 +17,7 @@
 
 ## 1. Objective
 
-This implementation replaces the inconsistent legacy 128×128 non-premium portrait set with a coherent collection of mature, role-readable Company 33 operators. The collection must follow the approved Protos faction concepts and painterly anime-realism pipeline while remaining deliberately less ornate than the three Premium Resonance heroes.[1] [2]
+This implementation replaces the inconsistent legacy 128×128 non-premium portrait set with a coherent collection of mature, role-readable Company Manus operators. The collection must follow the approved Protos faction concepts and painterly anime-realism pipeline while remaining deliberately less ornate than the three Premium Resonance heroes.[1] [2]
 
 The release will ship **30 generated portrait sources**: eight identity portraits for the repeatable basic Recruit pool and twenty-two specialization-kit portraits covering both male and female variants of all eleven authored non-recruit classes. The runtime will preserve campaign authority, hero identity, promotion legality, receipts, hashes, save compatibility, and premium assets. Portrait selection remains presentation-only.
 
@@ -30,9 +33,9 @@ Promotion deliberately retains a recruit's stable identity portrait. This plan d
 
 ### 3.1 Basic Recruit identity pool
 
-The existing canonical IDs remain unchanged to protect save and receipt compatibility. They will map to one male/female service pair per approved faction concept. Faction styling is visual lineage only; roster faction filtering remains governed by its existing presentation projection.
+The existing stable IDs remain unchanged to protect save and receipt compatibility. They will map to one male/female service pair per approved faction concept. Faction styling is visual lineage only; roster faction filtering remains governed by its existing presentation projection.
 
-| Canonical asset ID | Runtime file | Variant | Visual lineage | Restraint contract |
+| Stable asset ID | Runtime file | Variant | Visual lineage | Restraint contract |
 |---|---|---|---|---|
 | `portrait_recruit_00` | `assets/portraits/recruits/solcrest_female.png` | Female | Solcrest Accord | White-gold civic lamellar, black underlayer, deep-teal sash, compact service shield |
 | `portrait_recruit_01` | `assets/portraits/recruits/solcrest_male.png` | Male | Solcrest Accord | Matching practical kit with mature masculine tailoring |
@@ -63,7 +66,7 @@ Each class receives two explicit presentation assets. Stage 1 paths use practica
 
 ## 4. Generation specification
 
-GPT Image 2 will generate every source as a **1:1 PNG** using canonical repository references. Each prompt will request one clearly adult operator, age 21 or older, in a chest-up three-quarter portrait with direct or near-direct eye line, complete visible shoulders, coherent role equipment, and a clean transparent background. The visual renderer must preserve high-end painterly anime realism, mature facial structure, believable anatomy, clear material separation, and restrained controlled lighting.[1]
+GPT Image 2 will generate every source as a **1:1 PNG** using the recorded repository production references. Each prompt will request one clearly adult operator, age 21 or older, in a chest-up three-quarter portrait with direct or near-direct eye line, complete visible shoulders, coherent role equipment, and a clean transparent background. The visual renderer must preserve high-end painterly anime realism, mature facial structure, believable anatomy, clear material separation, and restrained controlled lighting.[1]
 
 The generation pass will use the four faction concept images, the Lunaris production sheets, and the Recruit Training UI concept as references. Female and male variants share class equipment language but remain distinct people rather than gender-swapped duplicates. Runtime derivatives are 512×512 RGBA PNGs; the highest-resolution generated sources remain in `docs/portraits/nonpremium/sources/`, which is excluded from Godot import by `docs/.gdignore`.
 
@@ -116,13 +119,13 @@ The implementation will add focused coverage for the following conditions:
 | B — GPT Image 2 production | **Complete** | 30 unique 1920×1920 GPT Image 2 sources, 30 reviewed 512×512 RGBA derivatives, SHA-256 ledger, and accepted 128px contact sheet. |
 | C — Runtime integration | **Complete** | Eight stable Recruit IDs, twenty-two specialization IDs, eleven compatibility aliases, presentation resolver, Training card binding, and bilingual TEMP ART removal. |
 | D — Native verification | **Complete** | Godot 4.7.2 direct import, bounded boot, all 57 standalone tests/harness smokes, aggregate error scan, and female-landscape/male-portrait Xvfb captures pass. |
-| E — Reconciliation and deployment | **Complete** | Portrait release `1ee9082` was independently reviewed, pushed, and forward-reconciled into canonical `d5881ff`; exact 197,017,352-byte PCK `411e6c18…9f30` is mapped by WebDev checkpoint `6a813c18` after type/build, HTTP, desktop/portrait geometry, native input, lazy-media, and console acceptance. |
+| E — Reconciliation and deployment | **Complete** | Portrait release `1ee9082` was independently reviewed, pushed, and forward-reconciled into source revision `d5881ff`; exact 197,017,352-byte PCK `411e6c18…9f30` is mapped by WebDev checkpoint `6a813c18` after type/build, HTTP, desktop/portrait geometry, native input, lazy-media, and console acceptance. |
 
 ## References
 
 [1]: ART_DIRECTION.md "Protos Visual Art Direction"
 [2]: LUNARIS_CHARACTER_DESIGNS.md "Lunaris Reliquary Launch Character Designs"
 [3]: ../assets/manifest.tres "Runtime asset manifest"
-[4]: ../data/campaigns/p16_v3.tres "Canonical V3 campaign portrait pool"
+[4]: ../data/campaigns/p16_v3.tres "V3 campaign portrait pool"
 [5]: ui-concepts/ui-revamp/audits/03-training.md "Roster, Training, Promotion, and Naming audit"
 [6]: ui-concepts/assets/GPT%20Image%202%20-%20Recruit%20Training.webp "Approved Recruit Training visual concept"

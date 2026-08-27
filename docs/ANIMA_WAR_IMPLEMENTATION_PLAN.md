@@ -12,7 +12,7 @@ The caretaker account is **superseded, not an alternate interpretation**. Active
 
 > **Implementation boundary:** This plan authorizes narrative, localization, presentation, documentation, media, tests, import metadata, and release-record changes. It does not authorize a gameplay redesign. The existing sixteen-stage V3 scaffold, tactical maps, paths, waves, rewards, economy, deterministic simulation, saves, accessibility behavior, Charm rules, Slow Field rules, Gatecrasher behavior, and `restoration_*` mechanic remain intact.
 
-**Plan status:** planning document only. Creating this file does not implement any source, localization, asset, audio, test, export, or deployment change.
+**Plan status:** implementation in progress. Phase completion is recorded in the live checklist below.
 
 ## Non-negotiable preservation contract
 
@@ -463,7 +463,7 @@ The following categories are explicitly **not** deletion targets: README run/bui
 
 Update this table during implementation. A phase may change from `[ ]` to `[x]` only after its commit is visible on the named upstream branch.
 
-- [ ] **Phase 1 — Sole canon:** corrected approved source; `docs/NARRATIVE_CANON.md`; README narrative; technical Act II plan label; `ACT_II_PROPOSAL.md` deleted. Source commit: `________` pushed to `origin/master`.
+- [x] **Phase 1 — Sole canon:** corrected approved source; `docs/NARRATIVE_CANON.md`; README narrative; technical Act II plan label; `ACT_II_PROPOSAL.md` deleted. Source commit: `728dbd4a8b7d159e5272916239d9e26ca25c8aa9` pushed to `origin/master`.
 - [ ] **Phase 2 — Documentation:** active lore rewritten; technical/history docs preserved and labeled; document scans pass. Source commit: `________` pushed to `origin/master`.
 - [ ] **Phase 3 — Act I:** S1–S8 resources, hints, EN/zh-CN copy, focused dialogue/localization/stage tests pass. Source commit: `________` pushed to `origin/master`.
 - [ ] **Phase 4 — Act II:** S9–S16 presentation, repair wording, EN/zh-CN copy, campaign/restoration/save tests pass. Source commit: `________` pushed to `origin/master`.

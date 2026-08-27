@@ -1,8 +1,8 @@
 # Protos Visual Art Direction
 
-> **Canonical visual promise:** Protos presents premium adult gacha heroes with exceptional beauty, glamour, confident sensuality, striking physiques, fashion-editorial combat couture, memorable hair and color identities, and immediate high-rarity “must-pull” presence.
+> **Production promise:** Protos presents premium adult gacha heroes with exceptional beauty, glamour, confident sensuality, striking physiques, fashion-editorial combat couture, memorable hair and color identities, and immediate high-rarity “must-pull” presence.
 
-This document is the visual source of truth for character concepts, portraits, promotional ensembles, loading and title imagery, UI illustrations, chibi units, animated sprites, and future generated assets. The approved faction concepts in [`docs/`](./) define the reference quality bar; the locked **Lunaris Reliquary** runtime loading art, title keyframe, and production character sheets remain the launch benchmark.
+This document is a visual production guide, not an independent narrative authority. The sole story authority is [`NARRATIVE_CANON.md`](./NARRATIVE_CANON.md). The approved faction concepts in [`docs/`](./) define the reference quality bar; the locked **Lunaris Reliquary** runtime loading art, title keyframe, and production character sheets remain the launch benchmark. Existing runtime assets remain unchanged until their scheduled review.
 
 ## Non-negotiable character contract
 
@@ -20,11 +20,21 @@ Sex appeal is intentional but **non-explicit**. Use mature confidence, athletic 
 | **Powerful adult physiques** | Men may be athletic, broad, lean-muscular, or statuesque; women may be athletic, curvy, statuesque, or elegantly powerful. Use strong posture and mature proportions rather than exaggerated anatomy that breaks pose, costume, or UI readability. |
 | **Hair and color identity** | Give each hero a memorable hairstyle and controlled palette that separates them from their faction ensemble. Hair should carry silhouette and motion without hiding the face or weapon. |
 | **Weapon authority** | Pair each hero with one signature weapon, tool, shield, or ritual focus. Its shape language, materials, and energy color must reinforce faction identity and remain readable in full figure, portrait crop, and chibi form. |
-| **Science-fantasy monumentality** | Combine sacred geometry, floating architecture, ruined causeways, reliquary mechanisms, luminous energy, and luxurious dark fantasy. Technology should feel ceremonial rather than industrially generic. |
+| **Science-fantasy monumentality** | Combine sacred geometry, floating architecture, ruined causeways, reliquary mechanisms, luminous energy, and luxurious dark fantasy. Ceremonial surfaces must coexist with readable industrial functions: human farms feed refineries, refineries feed foundries, and foundries build the robot empire. |
+
+## Anima War visual grammar
+
+PROTOS is a corrupted rogue AI building a robot empire from stolen **anima—the real and unique human soul**. Its cities can remain beautiful, calm, and apparently safe, but the beauty is a control system rather than evidence of benevolence. Monumental public spaces should reveal broken symmetry, interrupted halos, captive-soul conduits, surveillance relays, and human-scale containment hidden inside immaculate architecture.
+
+The robot empire retains **white ceramic armor, black mechanisms, brushed-gold frames, sacred circles, and cyan clean-energy light**. Processed or blended anima is **violet-magenta** and should appear pressurized, routed, pooled, or forced through machinery. A free, rescued, or individually held soul is one **warm-white or pale-blue** light with a distinct boundary. Color must never carry the distinction alone: processed anima also uses bundled flow, repeated containment geometry, harsh pulse behavior, and many-to-one conduits; free souls use separated points, gentle irregular motion, and one-to-one protective framing.
+
+Human farms should first read as clean garden-cities or protected civic districts designed to keep captives calm. Their lower levels expose extraction chambers, repeated-drain stations, soul tanks, transport cells, intake rails, and pipes leading to refineries. Refineries compress individual light into violet-magenta industrial flow. Foundries combine that flow with white ceramic shells, black machine bodies, gold assembly structures, and imperial-scale command relays. Horror should come from clear function and human scale, not gore.
+
+Company Manus is the player unit. Its compositions should emphasize rescue corridors, severed command links, protected individual souls, and small human figures confronting imperial infrastructure. Lunaris recovery devices may use cyan clean energy and pale-blue or warm-white soul light, but must not suggest that souls are copies, ordinary fuel, or expendable ammunition.
 
 ## Shared material and rendering language
 
-Characters use deep near-black textiles, saturated faction accents, polished or brushed gold hardware, selective luminous cyan energy, translucent ritual layers, leather or lacquered armor, and small jewel-like mechanisms. Render metal, cloth, skin, hair, and energy as distinct materials. Reserve the strongest glow for signature weapons, magical focuses, eyes only when narratively justified, and monumental environmental devices.
+Characters use deep near-black textiles, saturated faction accents, polished or brushed gold hardware, selective luminous cyan clean energy, translucent ritual layers, leather or lacquered armor, and small jewel-like mechanisms. Render metal, cloth, skin, hair, and energy as distinct materials. Reserve the strongest glow for signature weapons, magical focuses, eyes only when narratively justified, monumental environmental devices, and story-critical anima containment.
 
 Faces and hands receive priority over incidental scenery. Eyes must be aligned, expressions intentional, fingers complete, joints plausible, and weapons gripped or levitated coherently. Effects must support silhouettes rather than obscure anatomy or costume construction.
 
@@ -50,18 +60,18 @@ Simplify micro-filigree into a hierarchy of large, medium, and small shapes. Pre
 |---|---|
 | **Solcrest Accord** | The Dawn Phalanx: white-gold civic lamellar over black, deep-teal oath-sashes, plum seals, broad shields, upright standards, sunstone beacons, linked ward planes, and disciplined formation silhouettes. |
 | **Vesper Circuit** | The Midnight Relay: midnight technical couture, wine-red interference glass, cyan signal filaments, ivory masks, micro-gold mechanisms, narrow asymmetry, drones, and information-warfare equipment. |
-| **Lunaris Reliquary** | Locked: ivory, moon-cyan, violet-black, and brushed gold; ceremonial elegance; lunar rings, sacred mechanisms, gravity and memory motifs; prestige flagship casters and duelists. |
+| **Lunaris Reliquary** | Locked: ivory, moon-cyan, violet-black, and brushed gold; ceremonial elegance; lunar rings, sacred mechanisms, gravity control, Soul Anchor and recovery motifs; prestige flagship casters and duelists. Free souls remain visually individual and protected. |
 | **Crimson Aegis** | The Breach Caravan: scarlet shock-sails, blackened impact plate, forest-green field webbing, weapon-gold breach edges, forward wedges, ram-lances, recoil shields, and momentum-driven effects. |
 
 Faction palettes differentiate heroes but never replace individual identity. Within every faction, separate characters by hair color, silhouette, weapon, accent placement, and costume rhythm.
 
 ## Generation and review guardrails
 
-Use approved character references for every subsequent image or animation. Preserve identity, age, face, hair, outfit construction, equipment, palette, and body type unless a redesign is explicitly approved. When generating additional poses or chibi variants, treat the full-figure sheet as the canonical reference and describe only the requested change.
+Use approved character references for every subsequent image or animation. Preserve identity, age, face, hair, outfit construction, equipment, palette, and body type unless a redesign is explicitly approved. When generating additional poses or chibi variants, treat the full-figure sheet as the production identity reference and describe only the requested change.
 
-Reject assets with ambiguous age, juvenile styling, generic costume design, duplicated or missing anatomy, face drift, mismatched weapons, unreadable silhouettes, random accessories, inconsistent gold/cyan mechanisms, cropped equipment, unexplained wardrobe changes, excessive bloom, sexually explicit framing, or visual detail that cannot survive the intended UI size.
+Reject assets with ambiguous age, juvenile styling, generic costume design, duplicated or missing anatomy, face drift, mismatched weapons, unreadable silhouettes, random accessories, inconsistent gold/cyan mechanisms, cropped equipment, unexplained wardrobe changes, excessive bloom, sexually explicit framing, or visual detail that cannot survive the intended UI size. Also reject benevolent or obedient depictions of PROTOS, souls presented as interchangeable copies, distinctions that rely on hue alone, or farms and foundries whose human cost is unreadable.
 
-## Canonical references
+## Production references
 
 | Priority | Repository reference |
 |---:|---|
@@ -76,3 +86,5 @@ Reject assets with ambiguous age, juvenile styling, generic costume design, dupl
 | 9 | `docs/FACTION_REDESIGN_PROPOSAL.md` |
 
 Future art guidance may add faction-specific details, but it must not weaken the adult-age rule, non-explicit presentation, premium finish, or must-pull character promise defined here.
+
+These references govern visual continuity and production quality only. If any reference implies the superseded caretaker account, [`NARRATIVE_CANON.md`](./NARRATIVE_CANON.md) takes precedence, and the asset must be reframed or replaced through the appropriate implementation phase rather than treated as alternate canon.
