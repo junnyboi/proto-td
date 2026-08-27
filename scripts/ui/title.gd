@@ -88,6 +88,9 @@ func _ready() -> void:
 	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
 	if cinematic_prefetch != null:
 		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
+	var mission_cinematic_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
+	if mission_cinematic_prefetch != null:
+		mission_cinematic_prefetch.call("prefetch_from_title")
 	var content_packs := get_node_or_null("/root/ContentPacks")
 	if content_packs != null:
 		content_packs.call("prefetch_from_title")

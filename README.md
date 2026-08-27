@@ -56,34 +56,29 @@ Export the complete bundle with:
 ```bash
 godot --headless --path . --export-release Web build/web/index.html
 tools/stage_cinematic_streams.sh build/web/cinematics
+tools/stage_mission_cinematic_streams.sh build/web/mission-cinematics
 tools/stage_web_content_packs.sh build/web/content-packs
 ```
 
-The Web base PCK excludes the six Premium Resonance Ogg Theora videos, the
-retired historical enemy-variant atlases, and the eleven advanced operator
-class atlas families. Every production non-grunt enemy now ships as one
-core-resident 640×640 static sprite and receives deterministic Godot transform
-animation; the Grunt alone remains frame-animated. The 176 deferred advanced
-operator WebP atlases remain at authored resolution and are staged as eleven
-class-scoped PCK resource packs; the host supplies their exact URL, byte length,
-and SHA-256 through `--content-pack` arguments. `Art` requests an advanced class
-pack only when its first resource is needed, then the verified cache mounts with
-`replace_files = false` so downloaded content can add omitted presentation
-resources but cannot replace core code or data. Failed or in-flight packs
-preserve incumbent operator visuals and can never turn enemies into fallback
-squares.
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos and all
+sixteen mission-intro OGV streams, while mission fallback posters stay in core.
+The retired historical enemy-variant atlases and eleven advanced operator class
+atlas families also remain deferred. Every production non-grunt enemy now ships
+as one core-resident 640×640 static sprite and receives deterministic Godot
+transform animation; the Grunt alone remains frame-animated. The 176 deferred
+advanced operator WebP atlases remain at authored resolution and are staged as
+eleven class-scoped PCK resource packs; the host supplies their exact URL, byte
+length, and SHA-256 through `--content-pack` arguments. `Art` requests an
+advanced class pack only when its first resource is needed, then the verified
+cache mounts with `replace_files = false` so downloaded content can add omitted
+presentation resources but cannot replace core code or data. Failed or in-flight
+packs preserve incumbent operator visuals and can never turn enemies into
+fallback squares.
 
-Campaign restoration now predicts the next advanced operator assets without
-blindly downloading the full class catalog. Any class in an already committed
-mission squad leads the queue, followed by at most three unique advanced
-classes from the active roster. Field Team card focus, hover, and selection,
-plus visible or selected Training paths, reprioritize the matching class pack
-ahead of lower-confidence background work. A successful promotion repeats the
-priority request at the authoritative commit boundary; duplicate requests join
-the existing queue or verified cache rather than starting another transfer.
-
-As soon as Title opens, a separate persistent background service downloads all
-six cinematic streams sequentially—current orientation first—verifies exact
+As soon as Title opens, the Premium Resonance service downloads all six cinematic
+streams sequentially—current orientation first—and a dedicated mission service
+queues configured S1–S16 prologues in campaign order. Both remain nonblocking;
+selected missions are promoted and each finalized mapping verifies exact
 size and SHA-256, and caches them under `user://`. A pull joins or prioritizes
 the shared transfer instead of duplicating it, then plays the verified file
 through `VideoStreamTheora`; the final identity plate remains a safe fallback. See
