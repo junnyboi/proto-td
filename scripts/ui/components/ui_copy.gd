@@ -218,8 +218,8 @@ const STATIC_FALLBACKS := {
 		+ "and breaks the harvesting network."
 	),
 	&"ui.staging.next_operation_title": "NEXT {index}: {title}",
-	&"ui.staging.next_operation_action": "Open Field Team for {stage}",
-	&"ui.staging.next_operation_description": "Select this operation and open Field Team without starting the battle.",
+	&"ui.staging.next_operation_action": "Review {stage} in Mission Control",
+	&"ui.staging.next_operation_description": "Open Mission Control with this operation ready for selection.",
 	&"ui.staging.campaign_summary": "{cleared}/{total} CLEARED",
 	&"ui.staging.next_none": "NEXT: No active campaign",
 	&"ui.staging.next_label": "NEXT OPERATION",

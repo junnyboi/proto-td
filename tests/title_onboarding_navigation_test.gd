@@ -105,11 +105,12 @@ func _run() -> void:
 	action.pressed.emit()
 	for _frame: int in range(8):
 		await process_frame
-	var field_team := game.get("content") as Node
-	_check(game.get("selected_stage_id") == &"s1", "next operation did not select the exact unlocked stage")
-	_check(field_team != null and field_team.name == "SquadSelect", "next operation did not open Field Team")
-	_check(game.get("current_battle") == null and game.get("pending_stage") == null, "direct Field Team route started a battle")
-	await _dispose_content(field_team, game)
+	var mission_control := game.get("content") as Node
+	_check(game.get("selected_stage_id") == &"", "next operation bypassed the mission cinematic gate")
+	_check(mission_control != null and mission_control.name == "StageSelect", "next operation did not open Mission Control")
+	_check(mission_control != null and mission_control.find_child("Stage_s1", true, false) != null, "Mission Control did not expose the exact unlocked operation")
+	_check(game.get("current_battle") == null and game.get("pending_stage") == null, "Mission Control shortcut started a battle")
+	await _dispose_content(mission_control, game)
 
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	game.call("request_command_tutorial")

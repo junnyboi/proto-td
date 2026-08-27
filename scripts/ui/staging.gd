@@ -1213,22 +1213,22 @@ func _refresh_next_operation_action() -> void:
 	var stage_title := UiCopyType.stage_title(_next_stage) if _next_stage != null else ""
 	var action_copy := UiCopyType.format_text(
 		&"ui.staging.next_operation_action",
-		"Open Field Team for {stage}",
+		"Review {stage} in Mission Control",
 		{&"stage": stage_title},
 	) if available else ""
 	_next_operation_action.tooltip_text = action_copy
 	_next_operation_action.accessibility_name = action_copy
 	_next_operation_action.accessibility_description = UiCopyType.text(
 		&"ui.staging.next_operation_description",
-		"Select this operation and open Field Team without starting the battle.",
+		"Open Mission Control with this operation ready for selection.",
 	) if available else ""
 
 
 func _on_next_operation() -> void:
 	if _next_stage == null or _narrative_missing:
 		return
-	if Game.open_field_team_for_stage(_next_stage.id):
-		Sfx.play("ui_click")
+	Sfx.play("ui_click")
+	Game.open_stage_select()
 
 
 func set_preferences_path(path: String) -> void:

@@ -18,8 +18,8 @@
   },
   "structural": {
     "catalog_counts": {
-      "en-US": 980,
-      "zh-CN": 980
+      "en-US": 989,
+      "zh-CN": 989
     },
     "missing_chinese": [],
     "extra_chinese": [],
@@ -110,7 +110,7 @@
         "value": "{class_name} • {status}"
       }
     ],
-    "production_key_count": 656,
+    "production_key_count": 662,
     "missing_catalog_keys": [],
     "unreferenced_catalog_keys": [
       "data.enemy.breacher.name",
@@ -421,6 +421,9 @@
       "ui.archive.entry.stewardship.short_title",
       "ui.archive.entry.stewardship.subtitle",
       "ui.archive.entry.stewardship.title",
+      "ui.battle.high_threat.empire_foundry.heading",
+      "ui.battle.high_threat.green_cage.heading",
+      "ui.battle.high_threat.unlit.heading",
       "ui.campaign.act_2_title",
       "ui.campaign.row_cleared",
       "ui.rename.action",

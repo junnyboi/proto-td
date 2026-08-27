@@ -35,9 +35,9 @@ A new `CommandCenterTutorial` presentation component will own:
 
 `ViewPreferences` will add an unrelated presentation key for tutorial completion. The title arms a pending tutorial request through `Game`; Command Center consumes that request only when the preference has not been completed. This prevents direct test fixtures and non-title routes from unexpectedly mounting onboarding.
 
-### Direct mission-card routing
+### Next-operation routing
 
-The next-operation panel retains its existing framed visual structure. A transparent, accessible full-card `Button` overlay receives pointer and keyboard input. A new `Game.open_field_team_for_stage(stage_id)` method validates campaign activity, membership in the campaign route, unlock state, and stage resource existence before publishing `selected_stage_id` and opening Field Team. Stage Select will use the same facade so both routes obey one navigation contract.
+The next-operation panel retains its existing framed visual structure. A transparent, accessible full-card `Button` overlay receives pointer and keyboard input. Its original direct Field Team behavior was superseded by the approved mission-cinematic system: the shortcut now opens Mission Control with the next unlocked operation available, and the player selects that mission there. Mission Control owns the cinematic gate and calls the validated `Game.open_field_team_for_stage(stage_id)` facade only after Skip, completion, Reduced Motion, or a transport fallback emits one terminal signal.
 
 ### Focus presentation
 

@@ -13,7 +13,7 @@ func _run() -> void:
 	var output_path := String(args.get("output", ""))
 	var mode := StringName(args.get("mode", "mission"))
 	var locale_id := StringName(args.get("locale", "en-US"))
-	if output_path.is_empty() or mode not in [&"mission", &"resonance", &"operation_focus", &"field_team"]:
+	if output_path.is_empty() or mode not in [&"mission", &"resonance", &"operation_focus", &"mission_control"]:
 		push_error("valid visual output path and mode are required")
 		get_tree().quit(1)
 		return
@@ -21,7 +21,7 @@ func _run() -> void:
 	VIEW_PREFERENCES.set_locale(locale_id, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_title_music_enabled(false, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_reduced_motion(true, PREFERENCES_PATH)
-	if mode in [&"operation_focus", &"field_team"]:
+	if mode in [&"operation_focus", &"mission_control"]:
 		VIEW_PREFERENCES.mark_command_tutorial_seen(PREFERENCES_PATH)
 	I18n.set_locale(locale_id)
 	Game.set_run_seed(82417)
@@ -45,12 +45,12 @@ func _run() -> void:
 	elif mode == &"operation_focus":
 		(staging.find_child("NextOperationAction", true, false) as Button).grab_focus()
 		await get_tree().process_frame
-	elif mode == &"field_team":
+	elif mode == &"mission_control":
 		(staging.find_child("NextOperationAction", true, false) as Button).pressed.emit()
 		for _frame: int in range(12):
 			await get_tree().process_frame
-		if Game.content == null or Game.content.name != "SquadSelect":
-			push_error("visual direct operation route did not open Field Team")
+		if Game.content == null or Game.content.name != "StageSelect":
+			push_error("visual next-operation route did not open Mission Control")
 			get_tree().quit(1)
 			return
 	var image := get_viewport().get_texture().get_image()

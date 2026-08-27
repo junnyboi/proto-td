@@ -7,7 +7,7 @@
 
 ## Scope and invariants
 
-The implementation adds a presentation gate between an unlocked Mission Control row and the existing Field Team route. It does not alter stage data, enemy waves, campaign unlocks, squad rules, battle tickets, rewards, save schemas, deterministic hashes, or the Start Battle authority. Every mission click, including replays, presents its mission film. The source video is 16:9; the runtime cover crop is portrait-safe. The Title starts background prefetch immediately, but navigation never waits on media.
+The implementation adds a presentation gate between an unlocked Mission Control row and the existing Field Team route. It does not alter stage data, enemy waves, campaign unlocks, squad rules, battle tickets, rewards, save schemas, deterministic hashes, or the Start Battle authority. Every mission click, including replays, presents its mission film. The Company Command next-operation shortcut opens Mission Control instead of bypassing the gate. The source video is 16:9; the runtime cover crop is portrait-safe. The Title starts background prefetch immediately, but navigation never waits on media.
 
 ## Phase plan
 

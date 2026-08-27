@@ -16,6 +16,8 @@ The Stage Select regression activates the actual focused **Skip** button rather 
 
 Opening, playing, skipping, completing, failing, or tearing down a film does not change the campaign save revision, strategic hash, core hash, stage unlocks, rewards, squad rules, or Start Battle authority. A visual teardown test exposed and corrected an edge case where freeing Stage Select during an active film could interpret the child's exit signal as a mission selection; `scene_exit` is now treated as cancellation and cannot authorize Field Team.
 
+Browser route verification exposed a second bypass in the older Company Command **Next Operation** shortcut, which previously opened Field Team directly. The shortcut now opens Mission Control with the next unlocked operation available; stage selection and the film gate remain mandatory. Updated onboarding navigation, localization parity, strict localization, mission runtime, Stage Select, and Xvfb shortcut checks all pass in English and Simplified Chinese.
+
 ## Visual acceptance
 
 The Xvfb matrix contains **12** captures across English and Simplified Chinese, 1280×720 landscape and 720×1280 portrait, all at 150% text scale. It verifies live S1 playback through Stage Select, live S16 playback through the player, and real-button S1 Skip routing. Both `Skip` and `跳过` remain contained in the upper-right safe area, focused, and at least 160×64 logical pixels. Cover cropping preserves the premium protagonist and signature device in portrait. Full findings are recorded in [NATIVE_VISUAL_VALIDATION.md](NATIVE_VISUAL_VALIDATION.md).
