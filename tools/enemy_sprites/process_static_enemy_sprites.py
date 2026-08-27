@@ -199,6 +199,18 @@ def process(enemy_id: str, kind: str) -> dict[str, object]:
     }
 
 
+def configure_imports() -> None:
+    for enemy_id in ENEMIES:
+        import_path = RUNTIME_DIR / f"{enemy_id}.png.import"
+        if not import_path.exists():
+            continue
+        source = import_path.read_text()
+        source = source.replace("compress/mode=1", "compress/mode=0")
+        source = source.replace("mipmaps/generate=false", "mipmaps/generate=true")
+        source = source.replace("process/size_limit=2048", "process/size_limit=0")
+        import_path.write_text(source)
+
+
 def main() -> None:
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -209,6 +221,7 @@ def main() -> None:
         lines.append(f"{record['source_sha256']}  {record['source']}")
         lines.append(f"{record['runtime_sha256']}  {record['runtime']}")
     CHECKSUM_PATH.write_text("\n".join(lines) + "\n")
+    configure_imports()
     print(f"STATIC_ENEMY_SPRITES_OK|count={len(records)}|report={REPORT_PATH}")
 
 

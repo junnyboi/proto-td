@@ -54,6 +54,9 @@ func _validate_asset_contract() -> void:
 		var pattern := String(metadata.get("pattern", ""))
 		_check(pattern == "res://assets/sprites/enemies/static/%s.png" % enemy_id, "%s must resolve from the core static directory" % asset_id)
 		_check(FileAccess.file_exists(pattern), "%s source PNG must be core-resident" % asset_id)
+		var import_text := FileAccess.get_file_as_string(pattern + ".import")
+		_check(import_text.contains("compress/mode=0"), "%s must preserve lossless imported storage" % asset_id)
+		_check(import_text.contains("mipmaps/generate=true"), "%s must generate mipmaps for tile-scale sampling" % asset_id)
 		var texture := Art.texture(asset_id, 0)
 		_check(texture != null, "%s texture must load" % asset_id)
 		if texture != null:

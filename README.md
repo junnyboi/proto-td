@@ -60,16 +60,18 @@ tools/stage_web_content_packs.sh build/web/content-packs
 ```
 
 The Web base PCK excludes the six Premium Resonance Ogg Theora videos, the
-three production enemy-variant atlas families, and the eleven advanced
-operator class atlas families. The 200 deferred WebP atlases remain at their
-authored resolution and are staged as twelve class-scoped PCK resource packs;
-the host supplies their exact URL, byte length, and SHA-256 through
-`--content-pack` arguments. Title warms the enemy pack without blocking
-navigation. `Art` requests an advanced class pack only when its first resource
-is needed, then the verified cache mounts with `replace_files = false` so
-downloaded content can add omitted presentation resources but cannot replace
-core code or data. Failed or in-flight packs preserve the incumbent operator
-and enemy fallback visuals.
+retired historical enemy-variant atlases, and the eleven advanced operator
+class atlas families. Every production non-grunt enemy now ships as one
+core-resident 640×640 static sprite and receives deterministic Godot transform
+animation; the Grunt alone remains frame-animated. The 176 deferred advanced
+operator WebP atlases remain at authored resolution and are staged as eleven
+class-scoped PCK resource packs; the host supplies their exact URL, byte length,
+and SHA-256 through `--content-pack` arguments. `Art` requests an advanced class
+pack only when its first resource is needed, then the verified cache mounts with
+`replace_files = false` so downloaded content can add omitted presentation
+resources but cannot replace core code or data. Failed or in-flight packs
+preserve incumbent operator visuals and can never turn enemies into fallback
+squares.
 
 As soon as Title opens, a separate persistent background service downloads all
 six cinematic streams sequentially—current orientation first—verifies exact
@@ -92,6 +94,8 @@ Campaign economy mutations follow the same rule: UI code calls the `Game` facade
 All character concepts, portraits, UI illustrations, chibi units, and animated sprite references follow [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md). The canonical launch-faction trio and their full-figure/chibi production sheets are documented in [`docs/LUNARIS_CHARACTER_DESIGNS.md`](docs/LUNARIS_CHARACTER_DESIGNS.md) and stored together under [`docs/lunaris-reliquary/`](docs/lunaris-reliquary/).
 
 All eleven recruit-derived specializations have distinct adult male and female idle/attack sets in four isometric directions. The 22 resources resolve after premium portrait overrides and before legacy fallback; generated east facings and deterministic west mirrors use 640×640 source cells while Godot owns their runtime footprint. See [`docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md`](docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md) and `tools/operator_sprites/` for the complete GPT Image 2 → Veo carrier → validated atlas pipeline.
+
+The PROTOS enemy roster now uses one lore-aligned GPT Image 2 static sprite for every non-grunt archetype. Immutable 1920×1920 concept masters, deterministic 640×640 runtime derivatives, checksums, the shared ivory/gold/black/anima visual language, and procedural locomotion/attack profiles are documented in [`docs/ENEMY_VISUAL_REDESIGN_PROPOSAL.md`](docs/ENEMY_VISUAL_REDESIGN_PROPOSAL.md) and [`docs/ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md`](docs/ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md). The Grunt remains the only frame-animated enemy.
 
 The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female kit previews for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Training derives its kit-preview variant from the persisted Recruit portrait ID without adding gender data to campaign state, command receipts, hashes, or save bytes.
 

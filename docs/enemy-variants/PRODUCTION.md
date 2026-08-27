@@ -1,5 +1,7 @@
 # Early Enemy Variety Production Record
 
+> **Historical status:** The gameplay lessons and balance values below remain canonical, but the video-derived S2–S4 animation atlases are retained only for provenance and source recovery. Production visuals now use the core-resident static roster documented in [`../ENEMY_VISUAL_REDESIGN_PROPOSAL.md`](../ENEMY_VISUAL_REDESIGN_PROPOSAL.md) and [`../ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md`](../ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md). The Grunt is the only frame-animated enemy.
+
 ## Scope
 
 The early campaign now introduces one mechanically legible enemy lesson per stage without changing spawn totals or wave boundaries. **S2** replaces one Grunt with an armored Shieldbearer, **S3** replaces two Grunts with two-block Breachers, and **S4** replaces two Drones with durable Interceptors. Mage Apprentice and Sorcerer basic attacks now deal Arts damage, giving the S2 Caster lesson a real mechanical counter instead of decorative copy.
