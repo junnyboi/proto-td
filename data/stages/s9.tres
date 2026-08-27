@@ -7,7 +7,7 @@ script = ExtResource("1")
 id = &"s9"
 title = "The Green Cage"
 music_profile_id = &"lunaris"
-music_variant_id = &"orbit_early"
+music_variant_id = &"act2_s09"
 grid_rows = PackedStringArray("............", "SGGGG.......", "..EXG.XE....", "....GGGGGGGB", "...XG..X.E..", "SGGGG.......", "............")
 paths = Array[PackedVector2Array]([PackedVector2Array(0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 4, 2, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3), PackedVector2Array(0, 5, 1, 5, 2, 5, 3, 5, 4, 5, 4, 4, 4, 3, 5, 3, 6, 3, 7, 3, 8, 3, 9, 3, 10, 3, 11, 3)])
 waves = Array[Dictionary]([{
@@ -41,47 +41,47 @@ waves = Array[Dictionary]([{
 }, {
 "enemy_id": &"grunt",
 "path_idx": 0,
-"tick": 510
+"tick": 500
 }, {
 "enemy_id": &"shieldbearer",
 "path_idx": 1,
-"tick": 570
+"tick": 550
 }, {
 "enemy_id": &"runner",
 "path_idx": 1,
-"tick": 630
+"tick": 600
 }, {
 "enemy_id": &"spellcaster",
 "path_idx": 0,
-"tick": 690
+"tick": 650
 }, {
 "enemy_id": &"grunt",
 "path_idx": 1,
-"tick": 750
+"tick": 700
 }, {
 "enemy_id": &"heavy",
 "path_idx": 0,
-"tick": 900
+"tick": 870
 }, {
 "enemy_id": &"shieldbearer",
 "path_idx": 1,
-"tick": 960
+"tick": 920
 }, {
 "enemy_id": &"runner",
 "path_idx": 0,
-"tick": 1020
+"tick": 970
 }, {
 "enemy_id": &"runner",
 "path_idx": 1,
-"tick": 1080
+"tick": 1020
 }, {
 "enemy_id": &"spellcaster",
 "path_idx": 0,
-"tick": 1140
+"tick": 1070
 }, {
 "enemy_id": &"grunt",
 "path_idx": 1,
-"tick": 1200
+"tick": 1120
 }])
 wave_starts = PackedInt32Array(0, 420, 840)
 leak_limit = 3

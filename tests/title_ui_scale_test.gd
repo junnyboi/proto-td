@@ -50,6 +50,8 @@ func _verify_title_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
+	var footer_dock := _title.find_child("FooterSettingsDock", true, false) as MarginContainer
+	var footer_settings := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 207, "landscape wordmark is not 1.5×")
 	_check(_title.find_child("CanonSynopsis", true, false) == null, "removed title synopsis returned to the start screen")
 	_check(start.get_theme_font_size(&"font_size") == 83, "Start typography is not 1.5×")
@@ -68,6 +70,9 @@ func _verify_title_scale() -> void:
 	_check(_inside(entry_host, settings), "1.5× Settings action overflows title content")
 	_check(entry_scroll != null and entry_scroll.scroll_vertical == 0, "title does not open at the top of its enlarged content")
 	_check(entry_scroll != null and entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "title wordmark is not visible in the initial viewport")
+	_check(footer_dock != null and footer_settings != null, "fixed footer Settings control is missing")
+	_check(_inside(_title, footer_dock) and _inside(footer_dock, footer_settings), "fixed footer Settings control overflows the title")
+	_check(footer_settings.custom_minimum_size.y >= 44.0, "fixed footer Settings control is not touch safe")
 
 
 func _verify_chinese_title_portrait() -> void:
@@ -115,6 +120,11 @@ func _verify_accessibility_scale() -> void:
 
 
 func _verify_settings(label: String, viewport: Vector2i) -> void:
+	var footer_dock := _title.find_child("FooterSettingsDock", true, false) as MarginContainer
+	var footer_button := _title.find_child("FooterSettingsButton", true, false) as Button
+	_check(footer_dock != null and footer_button != null and footer_dock.visible, "%s footer Settings action is not visible" % label)
+	_check(_inside(_title, footer_dock) and _inside(footer_dock, footer_button), "%s footer Settings action escaped the viewport" % label)
+	_check(absf(footer_dock.get_global_rect().end.y - float(viewport.y)) <= EPSILON, "%s footer dock is not fixed to the bottom edge" % label)
 	_title.call("_open_settings")
 	var state := _title.get_node("TitleSettings") as Control
 	await _wait_for_transition(state, &"ACTIVE")

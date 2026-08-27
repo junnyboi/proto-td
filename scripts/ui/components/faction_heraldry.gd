@@ -34,23 +34,23 @@ const SHORT_NAMES := {
 	&"crimson_aegis": "CRIMSON",
 }
 const SUBTITLES := {
-	&"solcrest_accord": "DAWN PHALANX",
-	&"vesper_circuit": "MIDNIGHT RELAY",
-	&"lunaris_reliquary": "SACRED ARCHIVE",
-	&"crimson_aegis": "BREACH CARAVAN",
+	&"solcrest_accord": "CIVIL DEFENSE COMMAND",
+	&"vesper_circuit": "FREE SIGNAL NETWORK",
+	&"lunaris_reliquary": "SOUL RECOVERY ORDER",
+	&"crimson_aegis": "FARM-BREAKER COLUMN",
 }
 const SPECIALIZATIONS := {
 	&"solcrest_accord": (
-		"Formation defense, linked wards, rally commands, interception, and coordinated counterattacks."
+		"Shield formations, civilian corridors, interception, and coordinated counterattacks."
 	),
 	&"vesper_circuit": (
-		"Stealth deployment, marks, decoys, signal hijacking, rerouting, traps, and precision execution."
+		"Stealth deployment, decoys, signal breaks, rerouting, traps, and precision strikes."
 	),
 	&"lunaris_reliquary": (
-		"Memory, gravity, ritual geometry, prestige casters, and duelists."
+		"Soul recovery, gravity control, protective geometry, elite casters, and duelists."
 	),
 	&"crimson_aegis": (
-		"Mobility, displacement, armor fracture, breach chains, and forward deployment."
+		"Mobile assaults, displacement, armor breaks, demolition, and forward deployment."
 	),
 }
 const ACCENTS := {
@@ -114,7 +114,7 @@ static func specialization(faction_id: StringName) -> String:
 
 
 static func company_name() -> String:
-	return _text(&"data.company.33.name", "COMPANY 33")
+	return _text(&"data.company.33.name", "COMPANY MANUS")
 
 
 static func accent(faction_id: StringName) -> Color:

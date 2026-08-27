@@ -379,7 +379,7 @@ func _build_screen() -> void:
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status_label.visible = false
-	_status_label.accessibility_name = _copy(&"ui.gacha.status_name", "Premium resonance status")
+	_status_label.accessibility_name = _copy(&"ui.gacha.status_name", "Premium Resonance status")
 	_status_label.accessibility_live = AccessibilityServer.LIVE_OFF
 	content.add_child(_status_label)
 	content.add_child(_action_grid)
@@ -768,7 +768,7 @@ func _build_reveal_layer() -> void:
 	_reveal_title_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reveal_title_stack.visible = false
 	overlay_box.add_child(_reveal_title_stack)
-	_reveal_title = _label(_copy(&"ui.gacha.unknown_signal", "UNKNOWN SIGNAL"), &"title")
+	_reveal_title = _label(_copy(&"ui.gacha.unknown_signal", "Unknown soul anchor"), &"title")
 	_reveal_title.name = "RevealTitle"
 	_reveal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_reveal_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -825,14 +825,14 @@ func _build_reveal_layer() -> void:
 	conversion_copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	conversion_row.add_child(conversion_copy)
 	_conversion_title = _label(
-		_copy(&"ui.gacha.conversion_title", "DUPLICATE RESONANCE CONVERTED"), &"eyebrow",
+		_copy(&"ui.gacha.conversion_title", "SAME SOUL · NEW RECOVERY BODY"), &"eyebrow",
 	)
 	_conversion_title.name = "DuplicateConversionTitle"
 	_conversion_title.add_theme_font_size_override(&"font_size", 24)
 	_conversion_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	conversion_copy.add_child(_conversion_title)
 	_conversion_outcome = _label(
-		_copy(&"ui.gacha.conversion_duplicate", "RESERVE LIFE +1"), &"heading",
+		_copy(&"ui.gacha.conversion_duplicate", "ANOTHER BODY + SOUL ANCHOR"), &"heading",
 	)
 	_conversion_outcome.name = "DuplicateConversionOutcome"
 	_conversion_outcome.add_theme_font_size_override(&"font_size", 30)
@@ -921,7 +921,7 @@ func _refresh() -> void:
 		)
 	elif marks < cost:
 		_set_browse_status(
-			_format(&"ui.gacha.marks_needed", "Earn {count} more Resonance Shards for another resonance pull.", {&"count": cost - marks}),
+			_format(&"ui.gacha.marks_needed", "Earn {count} more Resonance Shards to reconnect another known soul.", {&"count": cost - marks}),
 			AccessibilityServer.LIVE_OFF,
 		)
 	_rebuild_cards(projection)
@@ -1010,7 +1010,7 @@ func _hero_card(catalog: Dictionary, hero: Dictionary, entrance_index: int = 0) 
 		status = _format(&"ui.gacha.lives", "{count} {unit}", {&"count": lives, &"unit": _life_unit(lives)})
 		is_locked = lives == 0
 		if is_locked:
-			status = _copy(&"ui.gacha.locked_lives", "LOCKED • 0 LIVES")
+			status = _copy(&"ui.gacha.locked_lives", "LOCKED • NO RECOVERY BODY")
 	var status_label := _label(status, &"metric")
 	status_label.name = "OwnershipMetric"
 	status_label.custom_minimum_size.x = 0.0
@@ -1220,7 +1220,7 @@ func _on_pull_pressed() -> void:
 	_suppress_browse_focus()
 	_pull_button.disabled = true
 	_back_button.disabled = true
-	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	var pending_copy := _copy(&"ui.gacha.aligning", "Locating the known soul anchor…")
 	_set_browse_status(pending_copy, AccessibilityServer.LIVE_POLITE)
 	Sfx.play("ui_confirm")
 	_commit_direct_premium_pull.call_deferred()
@@ -1257,7 +1257,7 @@ func _on_pull_cancelled() -> void:
 		return
 	Sfx.play("ui_back")
 	_start_confirmation_exit(
-		_copy(&"ui.gacha.ready", "The pool is ready."), AccessibilityServer.LIVE_OFF,
+		_copy(&"ui.gacha.ready", "Recovery network ready."), AccessibilityServer.LIVE_OFF,
 	)
 
 
@@ -1273,7 +1273,7 @@ func _on_confirm_pull() -> void:
 	Sfx.play("ui_confirm")
 	_set_confirmation_pending(true)
 	_pull_button.disabled = true
-	var pending_copy := _copy(&"ui.gacha.aligning", "Aligning the reliquary signal…")
+	var pending_copy := _copy(&"ui.gacha.aligning", "Locating the known soul anchor…")
 	_set_confirmation_status(pending_copy, AccessibilityServer.LIVE_POLITE)
 	_status_label.text = pending_copy
 	_status_label.accessibility_live = AccessibilityServer.LIVE_POLITE
@@ -1476,15 +1476,15 @@ func _refresh_conversion_copy() -> void:
 		return
 	var revived := bool(_pending_pull.get("revived", false))
 	_conversion_title.text = _copy(
-		&"ui.gacha.conversion_title", "DUPLICATE RESONANCE CONVERTED",
+		&"ui.gacha.conversion_title", "SAME SOUL · NEW RECOVERY BODY",
 	)
 	_conversion_outcome.text = (
-		_copy(&"ui.gacha.conversion_revival", "REVIVAL PROTOCOL • LIFE +1")
+		_copy(&"ui.gacha.conversion_revival", "RECOVERY BODY READY")
 		if revived
-		else _copy(&"ui.gacha.conversion_duplicate", "RESERVE LIFE +1")
+		else _copy(&"ui.gacha.conversion_duplicate", "ANOTHER BODY + SOUL ANCHOR")
 	)
 	_conversion_detail.text = _format(
-		&"ui.gacha.conversion_detail", "LIVES {before} → {after}",
+		&"ui.gacha.conversion_detail", "PREPARED BODIES {before} → {after}",
 		{
 			&"before": int(_pending_pull.get("lives_before", 0)),
 			&"after": int(_pending_pull.get("lives_after", 0)),
@@ -1701,10 +1701,10 @@ func _stop_cinematic() -> void:
 
 func _result_kind(pull: Dictionary) -> String:
 	if bool(pull.get("new_hero", false)):
-		return _copy(&"ui.gacha.result_new", "NEW HERO")
+		return _copy(&"ui.gacha.result_new", "SOUL RECONNECTED")
 	if bool(pull.get("revived", false)):
-		return _copy(&"ui.gacha.result_revived", "REVIVED")
-	return _copy(&"ui.gacha.result_life", "LIFE +1")
+		return _copy(&"ui.gacha.result_revived", "RECOVERY BODY READY")
+	return _copy(&"ui.gacha.result_life", "BODY +1")
 
 
 func _result_copy(pull: Dictionary) -> String:
@@ -1713,10 +1713,10 @@ func _result_copy(pull: Dictionary) -> String:
 	var guarantee := int(pull.get("guarantee_in_after", HARD_PITY_WINDOW))
 	var prefix := _format(&"ui.gacha.rarity_short", "{rarity}-STAR", {&"rarity": rarity})
 	if bool(pull.get("new_hero", false)):
-		return _format(&"ui.gacha.receipt_new", "{rarity} SIGNAL — {callsign} joins with 1 life. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
+		return _format(&"ui.gacha.receipt_new", "{rarity} SOUL RECONNECTED — {callsign} has 1 prepared body. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
 	if bool(pull.get("revived", false)):
-		return _format(&"ui.gacha.receipt_restored", "{rarity} RESTORED — {callsign} returns with 1 life. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
-	return _format(&"ui.gacha.receipt_duplicate", "{rarity} DUPLICATE — {callsign} gains +1 life ({lives} total). Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"lives": int(pull.get("lives_after", 0)), &"guarantee": guarantee})
+		return _format(&"ui.gacha.receipt_restored", "{rarity} BODY PREPARED — {callsign} can deploy with 1 prepared body. Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"guarantee": guarantee})
+	return _format(&"ui.gacha.receipt_duplicate", "{rarity} SAME SOUL — {callsign} gains another body and Soul Anchor ({lives} prepared). Next 5-star in {guarantee} pulls.", {&"rarity": prefix, &"callsign": callsign, &"lives": int(pull.get("lives_after", 0)), &"guarantee": guarantee})
 
 
 func _pool_row(premium_id: String) -> Dictionary:
@@ -1731,7 +1731,7 @@ func _pool_row(premium_id: String) -> Dictionary:
 func _callsign_for(premium_id: String) -> String:
 	var fallback := String(_pool_row(premium_id).get("callsign", ""))
 	if fallback.is_empty():
-		fallback = _copy(&"ui.gacha.unknown_signal", "UNKNOWN SIGNAL")
+		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown soul anchor")
 	return _premium_name(premium_id, fallback)
 
 
@@ -1763,7 +1763,7 @@ func _error_copy(code: StringName) -> String:
 	match code:
 		&"insufficient_marks": return _copy(&"ui.gacha.error.insufficient_marks", "Not enough Resonance Shards for another resonance pull.")
 		&"attempt_pending": return _copy(&"ui.gacha.error.attempt_pending", "Resolve the active operation before using the reliquary.")
-		&"premium_life_cap": return _copy(&"ui.gacha.error.life_cap", "This hero has reached the maximum stored-life count.")
+		&"premium_life_cap": return _copy(&"ui.gacha.error.life_cap", "This hero’s single soul has the maximum number of prepared recovery bodies.")
 		&"campaign_inactive": return _copy(&"ui.gacha.error.campaign_inactive", "No active campaign is available.")
 		_: return _format(&"ui.gacha.error.unknown", "The resonance failed safely ({code}). Please try again.", {&"code": String(code)})
 
@@ -1773,7 +1773,7 @@ func _pull_unit(count: int) -> String:
 
 
 func _life_unit(count: int) -> String:
-	return _copy(&"ui.gacha.life_singular", "LIFE") if count == 1 else _copy(&"ui.gacha.life_plural", "LIVES")
+	return _copy(&"ui.gacha.life_singular", "BODY") if count == 1 else _copy(&"ui.gacha.life_plural", "BODIES")
 
 
 func _copy(key: StringName, fallback: String) -> String:
@@ -2016,11 +2016,11 @@ func _refresh_confirmation_copy() -> void:
 	_confirmation_title.text = _copy(&"ui.gacha.confirm_title", "CONFIRM RESONANCE")
 	_confirmation_context_eyebrow.text = _copy(&"ui.gacha.eyebrow", "LUNARIS RELIQUARY")
 	_confirmation_review_eyebrow.text = _copy(&"ui.gacha.guarantee", "5-STAR GUARANTEE")
-	_confirmation_header_cancel.text = _copy(&"ui.common.cancel", "CANCEL")
-	_confirmation_cancel.text = _copy(&"ui.common.cancel", "CANCEL")
+	_confirmation_header_cancel.text = _copy(&"ui.common.cancel", "Cancel")
+	_confirmation_cancel.text = _copy(&"ui.common.cancel", "Cancel")
 	_confirmation_context_label.text = _copy(
 		&"ui.gacha.confirm_intro",
-		"Align one signal through the random premium pool.",
+		"Reconnect one known soul and prepare a compatible recovery body through the random premium pool.",
 	)
 	if not _confirmation_projection.is_empty():
 		var marks := int(_confirmation_projection.get("marks", 0))
@@ -2030,7 +2030,7 @@ func _refresh_confirmation_copy() -> void:
 		))
 		_confirmation_review_label.text = _format(
 			&"ui.gacha.confirm_body",
-			"One random signal • {cost} Resonance Shards\nBalance  {before} → {after} Resonance Shards\n5-star guarantee in {count} {unit}. Every accepted resonance grants exactly one life.",
+			"One known soul • {cost} Resonance Shards\nBalance  {before} → {after} Resonance Shards\n5-star guarantee in {count} {unit}. The soul is unique; success prepares one compatible recovery body.",
 			{
 				&"cost": cost,
 				&"before": marks,
@@ -2068,13 +2068,13 @@ func _refresh_confirmation_accessibility() -> void:
 	)
 	_confirmation_action_dock.accessibility_description = description
 	_confirmation_header_cancel.accessibility_name = _copy(
-		&"ui.gacha.confirm_header_cancel_name", "Cancel resonance, header",
+		&"ui.gacha.confirm_header_cancel_name", "Cancel resonance (header)",
 	)
 	_confirmation_header_cancel.accessibility_description = _copy(
-		&"ui.gacha.confirm_cancel_description", "Close without spending Resonance Shards or changing the guarantee.",
+		&"ui.gacha.confirm_cancel_description", "Close confirmation without spending Resonance Shards or changing guarantee progress.",
 	)
 	_confirmation_cancel.accessibility_name = _copy(
-		&"ui.gacha.confirm_dock_cancel_name", "Cancel resonance, action dock",
+		&"ui.gacha.confirm_dock_cancel_name", "Cancel resonance (action dock)",
 	)
 	_confirmation_cancel.accessibility_description = _confirmation_header_cancel.accessibility_description
 	_confirmation_confirm.accessibility_name = _copy(
@@ -2338,7 +2338,7 @@ func _refresh_static_copy() -> void:
 		_history_drawer.refresh_copy()
 	_refresh_reveal_pull_again()
 	_status_label.accessibility_name = _copy(
-		&"ui.gacha.status_name", "Premium resonance status",
+		&"ui.gacha.status_name", "Premium Resonance status",
 	)
 	if _flow_state == FlowState.REVEAL and not _pending_pull.is_empty():
 		_reveal_title.text = _callsign_for(

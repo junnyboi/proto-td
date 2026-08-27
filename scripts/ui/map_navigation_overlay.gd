@@ -151,7 +151,7 @@ func _build_hint() -> void:
 	_hint_direction = PanDirectionGlyph.new()
 	_hint_direction.name = "PanDirections"
 	_hint_direction.accessibility_name = _copy(
-		&"ui.map_navigation.hint_title", "Drag to pan",
+		&"ui.map_navigation.hint_title", "DRAG TO PAN",
 	)
 	row.add_child(_hint_direction)
 	var copy_column := VBoxContainer.new()
@@ -187,7 +187,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		)
 	if _hint_direction != null:
 		_hint_direction.accessibility_name = _copy(
-			&"ui.map_navigation.hint_title", "Drag to pan",
+			&"ui.map_navigation.hint_title", "DRAG TO PAN",
 		)
 
 

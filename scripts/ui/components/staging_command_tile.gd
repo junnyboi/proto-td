@@ -45,7 +45,7 @@ func _process(delta: float) -> void:
 	if not _reduced_motion:
 		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
 		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
-	_focus_style.bg_color = Color(GOLD, pulse)
+	_focus_style.border_color = Color(GOLD, 0.56 + pulse)
 	queue_redraw()
 
 

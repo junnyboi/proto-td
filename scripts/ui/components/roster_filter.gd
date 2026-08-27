@@ -8,6 +8,7 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 
 const STATUS_ACTIVE: StringName = &"active"
 const STATUS_FALLEN: StringName = &"fallen"
+const STATUS_ALL: StringName = &"all"
 const STATUS_PROMOTION_READY: StringName = &"promotion_ready"
 const FACTION_ALL: StringName = &"all"
 
@@ -54,7 +55,9 @@ static func filter_rows(
 	var filtered: Array[Dictionary] = []
 	for raw: Dictionary in rows:
 		var row := annotate(raw)
-		if status == STATUS_FALLEN:
+		if status == STATUS_ALL:
+			pass
+		elif status == STATUS_FALLEN:
 			if not bool(row["fallen"]):
 				continue
 		elif bool(row["fallen"]):

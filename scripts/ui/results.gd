@@ -157,7 +157,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	_result_meta.add_child(_result_stars)
 	_tally = _label(
 		"TallyLine",
-		UiCopyType.format_text(&"ui.results.tally", "KILLS {kills}   LEAKS {leaks}", {
+		UiCopyType.format_text(&"ui.results.tally", "kills {kills}   leaks {leaks}", {
 			&"kills": int(result.get("kills", 0)),
 			&"leaks": int(result.get("leaks", 0)),
 		}).to_upper(),
@@ -208,7 +208,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	rewards.add_child(_rewards_heading)
 	var granted: Array = result.get("rewards_granted", [])
 	if granted.is_empty():
-		rewards.add_child(_result_card("RewardNone", UiCopyType.text(&"ui.results.no_rewards", "NO NEW MATERIAL REWARDS"), UiCopyType.text(&"ui.results.record_preserved", "Operation record preserved."), false, true))
+		rewards.add_child(_result_card("RewardNone", UiCopyType.text(&"ui.results.no_rewards", "NO NEW MATERIAL REWARDS"), UiCopyType.text(&"ui.results.record_preserved", "Company Manus preserved the operation record."), false, true))
 	for i: int in granted.size():
 		var reward: Dictionary = granted[i]
 		if reward.get("kind") == "currency" and reward.get("id") == "marks":
@@ -216,7 +216,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 			var reward_row := _result_card(
 				"Reward%d" % i,
 				UiCopyType.format_text(&"ui.results.marks_reward", "+{count}", {&"count": amount}),
-				UiCopyType.text(&"ui.results.premium_fund", "Premium Resonance fund"),
+				UiCopyType.text(&"ui.results.premium_fund", "Ordinary salvage and payment"),
 				false,
 				true,
 			)
@@ -291,9 +291,9 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	for i: int in premium_losses.size():
 		var loss: Dictionary = premium_losses[i]
 		var callsign := _premium_name(String(loss["premium_id"]))
-		var detail := UiCopyType.format_text(&"ui.results.reserve_life_spent", "1 RESERVE LIFE SPENT · {count} REMAINING", {&"count": int(loss["lives_after"])})
+		var detail := UiCopyType.format_text(&"ui.results.reserve_life_spent", "1 PREPARED BODY USED · {count} REMAINING", {&"count": int(loss["lives_after"])})
 		if bool(loss["locked_out"]):
-			detail = UiCopyType.text(&"ui.results.final_life_spent", "FINAL LIFE SPENT · LOCKED UNTIL SAME IDENTITY IS PULLED AGAIN")
+			detail = UiCopyType.text(&"ui.results.final_life_spent", "FINAL BODY LOST · SOUL ANCHORED · PREPARE ANOTHER BODY TO DEPLOY")
 		consequences.add_child(_result_card("PremiumLifeLoss%d" % i, callsign.to_upper(), detail, bool(loss["locked_out"])))
 	if dead_ids.is_empty() and premium_losses.is_empty():
 		var intact_card := _result_card("NoCasualties", UiCopyType.text(&"ui.results.company_intact", "COMPANY INTACT"), UiCopyType.text(&"ui.results.no_losses", "No terminal losses recorded."))
@@ -326,18 +326,18 @@ func _build_actions(layout: VBoxContainer) -> void:
 			_actions.add_child(training)
 			focusable.append(training)
 			_landscape_action_columns = 4
-		var retry := _button("RetryButton", UiCopyType.text(&"ui.results.retry", "Retry Mission"), UiCopyType.text(&"ui.results.retry_short", "Retry"), &"secondary")
+		var retry := _button("RetryButton", UiCopyType.text(&"ui.results.retry", "Retry"), UiCopyType.text(&"ui.results.retry_short", "Retry"), &"secondary")
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
 		focusable.append(retry)
-		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Company Command"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
+		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
 		if not _cleared_result:
 			next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
 			ActionHoverFeedbackType.wire(self, next)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
-	var title := _button("BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), UiCopyType.text(&"ui.common.back", "Title"), &"secondary" if not focusable.is_empty() else &"primary")
+	var title := _button("BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), UiCopyType.text(&"ui.common.back", "Back"), &"secondary" if not focusable.is_empty() else &"primary")
 	title.pressed.connect(_on_back_to_title)
 	_actions.add_child(title)
 	focusable.append(title)
@@ -568,7 +568,7 @@ func _apply_currency_reward_presentation(row: Control, amount: int) -> void:
 	title.free()
 	var display := ResonanceCurrencyDisplayType.new()
 	display.name = "RewardResonanceShard"
-	display.configure("+%d" % amount, 36, 46.0)
+	display.configure("+%d" % amount, 36, 46.0, "", &"marks")
 	display.alignment = BoxContainer.ALIGNMENT_BEGIN
 	display.amount_label.name = "Title"
 	stack.add_child(display)

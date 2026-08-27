@@ -348,30 +348,30 @@ func _refresh_copy() -> void:
 	_graphics_heading.text = UiCopyType.text(&"ui.title.graphics", "Graphics").to_upper()
 	_accessibility_heading.text = UiCopyType.text(&"ui.title.accessibility", "Accessibility").to_upper()
 	_master_label.text = UiCopyType.format_text(
-		&"ui.title.master_volume", "MASTER VOLUME  //  {value}%",
+		&"ui.title.master_volume", "Master Volume  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"master_volume", 1.0)) * 100.0)},
 	).to_upper()
 	_music_label.text = UiCopyType.format_text(
-		&"ui.title.music_volume", "MUSIC VOLUME  //  {value}%",
+		&"ui.title.music_volume", "Music Volume  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"music_volume", 1.0)) * 100.0)},
 	).to_upper()
 	_sfx_label.text = UiCopyType.format_text(
-		&"ui.title.sfx_volume", "SFX VOLUME  //  {value}%",
+		&"ui.title.sfx_volume", "SFX Volume  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"sfx_volume", 1.0)) * 100.0)},
 	).to_upper()
 	_text_scale_label.text = UiCopyType.format_text(
-		&"ui.title.text_scale", "TEXT SCALE  //  {value}%",
+		&"ui.title.text_scale", "Text Scale  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"text_scale", 1.0)) * 100.0)},
 	).to_upper()
 	var music_enabled := bool(_draft.get(&"title_music_enabled", true))
 	_music_button.text = UiCopyType.format_text(
-		&"ui.title.music_state", "MUSIC  //  {state}",
+		&"ui.title.music_state", "Music  //  {state}",
 		{&"state": UiCopyType.text(&"ui.common.on" if music_enabled else &"ui.common.off", "On" if music_enabled else "Off")},
 	).to_upper()
 	_frame_label.text = UiCopyType.text(&"ui.title.frame_limit", "Frame Limit").to_upper()
 	var reduced := bool(_draft.get(&"reduced_motion", false))
 	_motion_button.text = UiCopyType.format_text(
-		&"ui.title.motion_state", "ANIMATED BACKGROUND  //  {state}",
+		&"ui.title.motion_state", "Animated Background  //  {state}",
 		{&"state": UiCopyType.text(&"ui.common.off" if reduced else &"ui.common.on", "Off" if reduced else "On")},
 	).to_upper()
 	_back_button.text = UiCopyType.text(&"ui.common.back", "Back").to_upper()

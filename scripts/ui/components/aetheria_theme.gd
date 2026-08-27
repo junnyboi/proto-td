@@ -71,6 +71,7 @@ func _load_cjk_font() -> FontFile:
 
 
 func _build_buttons() -> void:
+	set_stylebox(&"focus", &"Button", _focus_box())
 	_button(&"AuiPrimaryButton", &"primary", &"dark_ink", &"primary")
 	_button(&"AuiSecondaryButton", &"secondary", &"body", &"secondary")
 	_button(&"AuiSelectedButton", &"selected", &"dark_ink", &"selected")
@@ -216,7 +217,7 @@ func _texture_box(
 
 
 func _focus_box(corner_radius := 3) -> StyleBoxFlat:
-	var style := _flat_box(Color(COLORS[&"selected"], 0.10), COLORS[&"focus"], 2, corner_radius, [0, 0, 0, 0])
+	var style := _flat_box(Color.TRANSPARENT, COLORS[&"primary_hover"], 2, corner_radius, [0, 0, 0, 0])
 	style.set_expand_margin_all(3.0)
 	return style
 

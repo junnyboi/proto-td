@@ -67,6 +67,7 @@ func _run() -> void:
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
 	var transmission_body := screen.find_child("TransmissionBody", true, false) as Label
+	var s1_narrative: Resource = load("res://data/presentation/narrative/stages/s1.tres")
 	var rewards_panel := screen.find_child("RewardsPanel", true, false) as PanelContainer
 	var consequence_panel := screen.find_child("ConsequencePanel", true, false) as PanelContainer
 	var rewards_scroll := screen.find_child("RewardsScroll", true, false) as ScrollContainer
@@ -90,7 +91,7 @@ func _run() -> void:
 	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
 	_check(reward_count != null and reward_icon != null and reward_icon.texture != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Shard reward was not registered with its icon for count reveal")
-	_check(reward_display != null and reward_display.tooltip_text.contains("premium energy") and reward_display.accessibility_description.contains("Premium Resonance"), "Shard reward lacks its explanatory tooltip")
+	_check(reward_display != null and reward_display.tooltip_text.contains("ordinary salvage") and reward_display.tooltip_text.contains("no anima or souls") and reward_display.accessibility_description.contains("Company Manus payment"), "Marks reward lacks its ordinary soul-free payment explanation")
 	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Shard reward is not first in the reveal sequence")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "first survivor XP reward did not use the canonical delta")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after the shard reward")
@@ -116,7 +117,18 @@ func _run() -> void:
 	_check(no_casualties != null, "no-casualty state is missing")
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
-	_check(transmission_body != null and transmission_body.text.contains("renewable stock"), "clear transmission body is not canonical")
+	_check(
+		transmission_body != null
+		and s1_narrative != null
+		and transmission_body.text == String(s1_narrative.get("transmission")),
+		"clear transmission body is not canonical",
+	)
+	_check(
+		transmission_body != null
+		and transmission_body.text.contains("renewable stock")
+		and transmission_body.text.contains("take Hearthcross residents"),
+		"clear transmission body does not preserve the approved S1 people-taking reveal",
+	)
 	_check(transmission_speaker != null and transmission_speaker.get_theme_font_size(&"font_size") >= 24, "clear transmission speaker was not enlarged")
 	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 20, "clear transmission body is below 20px")
 	_check(rewards_heading != null and rewards_heading.get_theme_font_size(&"font_size") >= 30, "Mission Yield heading was not enlarged")

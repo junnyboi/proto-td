@@ -80,7 +80,7 @@ func _run() -> void:
 		"life_status": "ready", "is_premium": true, "premium_lives": 2,
 	}
 	_check(String(screen.call("_status_text", premium)) == "高级英雄就绪", "premium ready status is not localized")
-	_check(String(screen.call("_progress_text", premium)) == "固定配置 • 2条生命", "premium progress is not localized")
+	_check(String(screen.call("_progress_text", premium)) == "固定配置 • 2具准备好的身体", "premium progress does not explain prepared recovery bodies in Chinese")
 
 	root.size = Vector2i(720, 1280)
 	await process_frame

@@ -28,6 +28,7 @@ const LANDSCAPE_ENTRY_DROP_RATIO := 0.24
 const PORTRAIT_ENTRY_DROP_RATIO := 0.16
 const SHORT_ENTRY_DROP_RATIO := 0.10
 const ENTRY_STACK_EXTRA_DROP := 64
+const FOOTER_DOCK_HEIGHT := 84.0
 const MASTER_BUS := &"Master"
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
@@ -44,6 +45,8 @@ var _wordmark: Label = null
 var _orbit_rule: HBoxContainer = null
 var _start_button: Button = null
 var _settings_button: Button = null
+var _footer_settings_dock: MarginContainer = null
+var _footer_settings_button: Button = null
 var _title_music_enabled := true
 var _reduced_motion := false
 var _master_volume := 1.0
@@ -68,6 +71,7 @@ var _start_failed := false
 
 func _ready() -> void:
 	theme = STAGING_THEME
+	Game.set_view_preferences_path(_preferences_path)
 	var stored_locale := ViewPreferencesType.locale(_preferences_path)
 	I18n.set_locale(stored_locale)
 	_title_music_enabled = ViewPreferencesType.title_music_enabled(_preferences_path)
@@ -79,6 +83,9 @@ func _ready() -> void:
 	_text_scale = ViewPreferencesType.text_scale(_preferences_path)
 	_apply_audio_settings()
 	_apply_graphics_settings()
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
 	_build_screen()
 	move_child(_settings_state, get_child_count() - 1)
 	_settings_state.cancel_requested.connect(_cancel_settings)
@@ -116,7 +123,7 @@ func _process(delta: float) -> void:
 	for button in _focus_pulse_styles:
 		var style: StyleBoxFlat = _focus_pulse_styles[button]
 		var accent: Color = _focus_pulse_colors[button]
-		style.bg_color = Color(accent, pulse)
+		style.border_color = Color(accent, 0.56 + pulse)
 		(button as Button).queue_redraw()
 
 
@@ -197,7 +204,57 @@ func _build_screen() -> void:
 	_entry_stack.add_child(_settings_button)
 	_wire_title_action_feedback(_start_button)
 	_wire_title_action_feedback(_settings_button)
+	_build_footer_settings()
 	_wire_entry_focus()
+
+
+func _build_footer_settings() -> void:
+	_footer_settings_dock = MarginContainer.new()
+	_footer_settings_dock.name = "FooterSettingsDock"
+	_footer_settings_dock.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_footer_settings_dock.offset_top = -FOOTER_DOCK_HEIGHT
+	_footer_settings_dock.add_theme_constant_override(&"margin_left", 16)
+	_footer_settings_dock.add_theme_constant_override(&"margin_right", 16)
+	_footer_settings_dock.add_theme_constant_override(&"margin_bottom", 14)
+	add_child(_footer_settings_dock)
+
+	var center := HBoxContainer.new()
+	center.name = "FooterSettingsCenter"
+	center.alignment = BoxContainer.ALIGNMENT_CENTER
+	_footer_settings_dock.add_child(center)
+
+	_footer_settings_button = Button.new()
+	_footer_settings_button.name = "FooterSettingsButton"
+	_footer_settings_button.icon = StagingSkinType.SETTINGS_ICON
+	_footer_settings_button.expand_icon = true
+	_footer_settings_button.add_theme_constant_override(&"icon_max_width", 30)
+	_footer_settings_button.custom_minimum_size = Vector2(260.0, 58.0)
+	_footer_settings_button.focus_mode = Control.FOCUS_ALL
+	_footer_settings_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	StagingSkinType.apply_display_type(_footer_settings_button, 18, IVORY, 600)
+	_footer_settings_button.add_theme_color_override(&"font_focus_color", BRIGHT_GOLD)
+	_footer_settings_button.add_theme_stylebox_override(
+		&"normal",
+		StagingSkinType.clean_button_style(
+			Color(0.012, 0.028, 0.046, 0.86), Color(GOLD, 0.34), 14,
+		),
+	)
+	_footer_settings_button.add_theme_stylebox_override(
+		&"hover",
+		StagingSkinType.clean_button_style(
+			Color(GOLD, 0.14), Color(BRIGHT_GOLD, 0.72), 14,
+		),
+	)
+	_footer_settings_button.add_theme_stylebox_override(
+		&"pressed",
+		StagingSkinType.clean_button_style(
+			Color(GOLD, 0.22), BRIGHT_GOLD, 14,
+		),
+	)
+	_register_focus_pulse(_footer_settings_button, BRIGHT_GOLD)
+	_footer_settings_button.pressed.connect(_open_settings)
+	center.add_child(_footer_settings_button)
+	_wire_title_action_feedback(_footer_settings_button)
 
 
 func _entry_button(node_name: String, primary: bool) -> Button:
@@ -211,7 +268,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	StagingSkinType.apply_display_type(button, _title_font_size(24 if primary else 20), IVORY, 600)
-	button.add_theme_color_override(&"font_focus_color", BRIGHT_GOLD if primary else MOON_CYAN)
+	button.add_theme_color_override(&"font_focus_color", BRIGHT_GOLD)
 	button.add_theme_stylebox_override(
 		&"normal",
 		StagingSkinType.clean_button_style(
@@ -236,7 +293,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 			TITLE_BUTTON_CORNER_RADIUS,
 		),
 	)
-	_register_focus_pulse(button, BRIGHT_GOLD if primary else MOON_CYAN)
+	_register_focus_pulse(button, BRIGHT_GOLD)
 	return button
 
 
@@ -249,7 +306,7 @@ func _register_focus_pulse(button: Button, accent: Color) -> void:
 
 
 func _wire_entry_focus() -> void:
-	var actions: Array[Control] = [_start_button, _settings_button]
+	var actions: Array[Control] = [_start_button, _settings_button, _footer_settings_button]
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -262,13 +319,17 @@ func _wire_entry_focus() -> void:
 
 
 func _on_title_action_focused(action: Control) -> void:
-	if _title_focus_scroll_ready and _entry_scroll != null:
+	if (
+		_title_focus_scroll_ready
+		and _entry_scroll != null
+		and _entry_scroll.is_ancestor_of(action)
+	):
 		_entry_scroll.ensure_control_visible.call_deferred(action)
 
 
 func _begin_title_reveal() -> void:
 	var reveal_nodes: Array[CanvasItem] = [
-		_wordmark, _orbit_rule, _start_button, _settings_button,
+		_wordmark, _orbit_rule, _start_button, _settings_button, _footer_settings_dock,
 	]
 	_interaction_feedback_ready = false
 	_title_focus_scroll_ready = false
@@ -287,7 +348,7 @@ func _begin_title_reveal() -> void:
 
 
 func _finish_title_reveal() -> void:
-	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _settings_button]:
+	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _settings_button, _footer_settings_dock]:
 		if item != null:
 			item.modulate.a = 1.0
 	_reset_title_scroll.call_deferred()
@@ -369,6 +430,7 @@ func _on_start_pressed() -> void:
 	_start_button.disabled = true
 	Sfx.play("ui_confirm")
 	if Game.start_campaign():
+		Game.request_command_tutorial()
 		return
 	_start_pending = false
 	_start_failed = true
@@ -381,7 +443,13 @@ func _open_settings() -> void:
 	if _screen_state != ScreenState.TITLE:
 		return
 	var return_focus := get_viewport().gui_get_focus_owner()
-	if return_focus == null or not _entry_host.is_ancestor_of(return_focus):
+	if (
+		return_focus == null
+		or (
+			not _entry_host.is_ancestor_of(return_focus)
+			and return_focus != _footer_settings_button
+		)
+	):
 		return_focus = _settings_button
 	_settings_snapshot = _current_preferences()
 	_settings_snapshot[&"return_focus"] = return_focus
@@ -390,6 +458,7 @@ func _open_settings() -> void:
 	_reset_title_action_feedback()
 	_set_title_interaction_enabled(false)
 	_entry_host.visible = false
+	_footer_settings_dock.visible = false
 	_settings_state.open(_settings_snapshot)
 
 
@@ -471,6 +540,7 @@ func _on_settings_close_completed() -> void:
 func _leave_settings(return_focus: Control) -> void:
 	_screen_state = ScreenState.TITLE
 	_entry_host.visible = true
+	_footer_settings_dock.visible = true
 	_set_title_interaction_enabled(true)
 	var target := return_focus
 	if target == null or not is_instance_valid(target) or not target.is_visible_in_tree() or target.focus_mode == Control.FOCUS_NONE:
@@ -482,8 +552,10 @@ func _set_title_interaction_enabled(enabled: bool) -> void:
 	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
 	_start_button.disabled = not enabled or _start_pending
 	_settings_button.disabled = not enabled
+	_footer_settings_button.disabled = not enabled
 	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	_footer_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
 func _current_preferences() -> Dictionary:
@@ -575,7 +647,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 func _refresh_copy() -> void:
 	if _wordmark == null:
 		return
-	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
+	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "Protos Defense").to_upper()
 	_start_button.text = UiCopyType.text(
 		&"ui.title.start_retry" if _start_failed else &"ui.title.start",
 		"Retry Start" if _start_failed else "Start",
@@ -589,6 +661,11 @@ func _refresh_copy() -> void:
 		else ""
 	)
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
+	_footer_settings_button.text = _settings_button.text
+	_footer_settings_button.tooltip_text = _settings_button.text
+	_footer_settings_button.accessibility_name = UiCopyType.text(
+		&"ui.title.footer_settings_a11y", "Open Settings",
+	)
 
 
 func _apply_responsive_layout() -> void:
@@ -616,7 +693,9 @@ func _apply_responsive_layout() -> void:
 	_entry_host.add_theme_constant_override(
 		&"margin_top", vertical_margin + entry_drop + ENTRY_STACK_EXTRA_DROP,
 	)
-	_entry_host.add_theme_constant_override(&"margin_bottom", vertical_margin)
+	_entry_host.add_theme_constant_override(
+		&"margin_bottom", vertical_margin + roundi(FOOTER_DOCK_HEIGHT),
+	)
 	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
 	_entry_stack.add_theme_constant_override(&"separation", 8)
@@ -636,6 +715,10 @@ func _apply_responsive_layout() -> void:
 	_wordmark.add_theme_font_size_override(&"font_size", wordmark_base)
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
 	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
+	_footer_settings_dock.offset_top = -FOOTER_DOCK_HEIGHT
+	_footer_settings_button.custom_minimum_size.x = minf(
+		maxf(220.0, viewport_size.x - float(horizontal_margin * 2)), 320.0,
+	)
 
 
 func _title_size(value: float) -> float:
