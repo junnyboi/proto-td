@@ -80,4 +80,21 @@ The implementation uses Godot 4.7.2 and the repository Web preset. Generated 192
 
 ## Completion record
 
-This section will be updated after implementation with final source revision, generated asset hashes, exact display footprints, procedural amplitudes, test counts, export artifact hashes, managed URLs, and WebDev checkpoint identity.
+The implementation is complete on the pushed canonical lineage through `ed77425`. Investigation confirmed the square was the release fallback `ColorRect`: production S2–S4 atlas WebPs were excluded from the core PCK, while the accepted host supplied no matching `--content-pack` arguments. The remaining experimental families were vulnerable to the same deferred-resource failure. The redesign removes that dependency rather than decorating the fallback.
+
+GPT Image 2 concept masters are preserved under `docs/enemy-redesign/source/concepts/`. `tools/enemy_sprites/process_static_enemy_sprites.py` performs reproducible chroma cleanup, detached-component rejection, ground/aerial anchoring, 600px subject normalization on transparent 640×640 canvases, SHA-256 provenance, and lossless mipmapped import pinning. The generated manifest is `assets/enemy_static_manifest.tres`; runtime textures are `assets/sprites/enemies/static/<enemy>.png`; exact source/runtime hashes are in `docs/enemy-redesign/SHA256SUMS.txt` and `docs/enemy-redesign/static-sprite-processing.json`.
+
+| Enemy | Godot footprint | Frequency | Bob/hover | Roll | Attack lunge |
+|---|---:|---:|---:|---:|---:|
+| Runner | 58px | 2.80Hz | 1.2px | 0.030rad | 3.0px |
+| Shieldbearer | 72px | 1.35Hz | 1.4px | 0.013rad | 3.0px |
+| Breacher | 80px | 1.15Hz | 1.3px | 0.014rad | 4.0px |
+| Heavy | 74px | 0.82Hz | 1.0px | 0.012rad | 2.5px |
+| Hunter Drone | 56px | 1.70Hz | 2.2px hover | 0.035rad | 1.0px |
+| Interceptor | 66px | 1.25Hz | 1.7px hover | 0.040rad | 2.0px |
+| Channeler | 68px | 1.10Hz | 1.4px | 0.020rad | 2.0px |
+| Gatecrasher | 88px | 0.72Hz | 1.0px | 0.011rad | 3.0px |
+
+`EnemyAnimator` now selects `enemy_static_<id>` for all eight non-grunts, keeps Grunt directional frame animation, applies deterministic ID-phased transform motion to the sprite child only, mirrors westward travel, derives attack anticipation/impact from existing counters, preserves Charm tint and damage flash, and suppresses rotation/lateral drift/squash under Reduced Motion. Missing core textures emit a bounded diagnostic and mark the body for harness failure. The legacy `assets/enemy-variants` sources remain preserved but are no longer routed or staged; Web content packs now contain only the eleven advanced-operator classes.
+
+The planned separate procedural-motion test was intentionally folded into `tests/enemy_static_sprite_test.gd`, because the same fixture can prove manifest resolution, one-frame identity, body-anchor immutability, transform motion, attack telegraph, Charm tint, and Reduced Motion without duplicating battle construction. `test/enemy_roster_visual_harness.tscn` emits a nine-enemy texture/fallback report and captures landscape/portrait views. The final native gate passed Godot 4.7.2 direct import, bounded boot, **68 regression scripts**, **6 Xvfb smoke harnesses**, and strict parse/runtime/resource log scans. Exact Web artifact hashes, managed URLs, browser evidence, and checkpoint identity are maintained in the forward-only `proto-td-web` release records.
