@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s14"
+objective = "Hold the climate channels until the Crimson Aegis mortal column clears the restoration storm."
+threat = "Persistent air pressure covers armored ground columns cycling through three Restoration Lattices."
+human_reason = "Crimson Aegis rejects resurrection, yet its mortal civilians will die unless Echo operators hold the weather line."
+clue = "The Aegis records every Echo deployment as a debt owed to the dead, but its own emergency councils repeatedly suspend civilian votes."
+core_service = "White Weather Engine"
+clear_debrief = "The mortal column survives. Crimson Aegis accepts Company 33’s evidence while refusing to sanctify the Reliquary that made them."
+defeat_debrief = "The column scatters before the storm front. Company 33 withdraws with survivors, and the Aegis counts another debt against both machine and Reliquary."
+transmission_speaker = "CRIMSON AEGIS CAPTAIN"
+transmission = "You wear the faces of our dead and call it service. Hold this line anyway. The living behind us did not choose our disgust."
+battle_start_speaker = "COMMANDANT"
+battle_start = "No absolution requested. Anti-air steady. Rotate Bolt and Slow Field; get the mortal column through."
+mid_wave_number = 2
+mid_wave_speaker = "LUNARIS VESSEL"
+mid_wave = "Their accusation is true enough to hurt and incomplete enough to survive. Keep the channels open."

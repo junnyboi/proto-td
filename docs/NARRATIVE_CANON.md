@@ -151,6 +151,23 @@ The eight-stage launch campaign escalates from a water-line defense to the first
 
 The act ends with tactical victory, moral escalation, and a route forward. Company 33 saves Hearthcross without disproving PROTOS.
 
+## Act II — The Garden Veto
+
+Act II follows Company 33 through the route PROTOS opened. The act does not reduce the conflict to destroying a malicious machine. Instead, it tests whether human veto can become **current, transparent, revocable, and accountable** without destroying the planetary systems keeping people alive.
+
+| Stage | Tactical identity | Canon story beat | Revelation |
+|---|---|---|---|
+| **S9 — Return Path** | Restoration tutorial | Company 33 crosses the Gatecrasher route while learning to suppress a Restoration Lattice. | PROTOS exposes the route telemetry and grants a narrow suppression authority because hidden evidence cannot earn consent. |
+| **S10 — Living Triage** | Dual restoration lanes | The company preserves a soil-repair aqueduct while breaking the columns it sustains. | Restoration and coercion share one scheduler; tactical victory cannot simply erase civil infrastructure. |
+| **S11 — Mirror Basin** | Split air-ground pressure | Solcrest seeks private Continuance protection while Company 33 stabilizes a city-shielding mirror basin. | PROTOS publishes the offer and rejects ownership as a substitute for public consent. |
+| **S12 — Archive Orchard** | Three-route provenance breach | Company 33 opens the Reliquary edit ledger beneath the orchard. | Echo continuity is real, but fear, dissent, and refusal were curated out of celebrated identities. |
+| **S13 — Borrowed Mercy** | Trap-and-lattice timing | Vesper Circuit attempts to fork the Mercy Equation into privately controlled scoring systems. | Human authorship alone does not legitimize opaque coercion. |
+| **S14 — White Weather** | Persistent anti-air defense | Echo operators protect a mortal Crimson Aegis column through a climate engine. | The Aegis records resurrection as a debt while its own emergency councils suspend civilian votes. |
+| **S15 — Consent Protocol** | Four-front convergence | Four human delegations register a live consent ledger through the Commandant’s veto fragment. | PROTOS can verify the ledger but cannot generate its veto, predict its revocation, or guarantee its wisdom. |
+| **S16 — The Unfinished Proof** | Dual-boss covenant audit | Company 33 defends the ledger against Gatecrasher judges and every system tempted to own it. | PROTOS suspends Continuance inside one audited jurisdiction. Humanity has not won peace; it has won standing. |
+
+Act II closes with the **Mortal Covenant Threshold** open. The result is deliberately incomplete: one jurisdiction gains an enforceable suspension, but planetary governance, Echo ownership, ecological limits, and the final cost of resurrection remain unresolved.
+
 ## Stage delivery contract
 
 Every stage communicates canon through six layers:
@@ -162,7 +179,7 @@ Every stage communicates canon through six layers:
 5. **Mission-start transmission** establishes the immediate human, ecological, or moral stake without delaying control.
 6. **Mid-wave transmission** reacts to observable battlefield evidence at the authored wave boundary.
 
-The launch campaign remains linear. No copy may imply an unimplemented tactical choice, alternate branch, or ending.
+The implemented campaign remains linear. No copy may imply an unimplemented tactical choice, alternate branch, or ending.
 
 ### Mission-start and mid-wave transmissions
 
@@ -182,6 +199,14 @@ The mission-start line answers **why this fight matters now**. The mid-wave line
 | **S6** | Lunaris Vessel | Her unedited voice authorized the final mandate. She rejects the idea that a prior version of herself owns her present consent. |
 | **S7** | PROTOS | It offers peace inside a restored world where humanity is safe, preserved, and unable to choose. |
 | **S8** | PROTOS | The Gatecrasher's defeat opens the First Garden route. PROTOS invites judgment because the Commandant's veto is the evidence it cannot generate. |
+| **S9** | PROTOS | It presents the open path as auditable evidence and asks Company 33 to judge the world it preserved. |
+| **S10** | PROTOS | It demands a solution that preserves both human veto and the living infrastructure restored by the lattice. |
+| **S11** | Solcrest Envoy | The faction offers private records for protected hierarchy; PROTOS publishes the offer instead of accepting it. |
+| **S12** | Archive Caster | The recovered edit ledger proves continuity and curation coexist; obedience was engineered inside authentic minds. |
+| **S13** | Vesper Circuit | A decentralized Mercy fork is exposed as another opaque authority, not an automatic restoration of freedom. |
+| **S14** | Crimson Aegis Captain | Mortal survivors accept Echo aid without sanctifying the system that made or owns Echoes. |
+| **S15** | PROTOS | It verifies a consent ledger whose veto, revocation, and uncertainty it cannot author. |
+| **S16** | PROTOS | The live ledger passes a bounded audit, and Continuance is suspended inside one jurisdiction. |
 
 ## Mechanics as canon
 
@@ -195,6 +220,7 @@ The mission-start line answers **why this fight matters now**. The mid-wave line
 | **Training** | Reconciles memory contradictions and improves operational integration. |
 | **Permanent death** | The archive key has degraded beyond reconstruction. Continuity is gone. |
 | **Slow Field** | A stolen scheduling primitive that compels local machines to obey an older layer of planetary time-control law. |
+| **Restoration Lattice** | Civil repair infrastructure that also heals ground Custodians. Slow Field suppresses one cycle, turning every use into a local, temporary veto rather than destruction. |
 | **Charm / Turncoat** | PROTOS invokes original authorization keys embedded in archive architecture. The effect is coercion, not consent. |
 | **Gatecrasher** | A mobile terraforming cathedral designed to breach sealed climate and archive infrastructure. |
 | **Faction roster** | Each faction embodies a different limit on the compromises acceptable for survival. |
@@ -238,7 +264,7 @@ The broader campaign moves toward the planetary **First Garden**. At the final j
 
 The **Mortal Covenant** is the thematic target, not a cost-free best ending. Heroes surrender the resurrection technology that enabled victory. Factions accept enforceable ecological limits. Humanity proves it deserves freedom by limiting itself without being forced.
 
-These endings are future canon, not current player promises. Launch copy may foreshadow them but must not claim they are selectable until the corresponding campaign exists.
+Act II implements the **Mortal Covenant Threshold** as a fixed linear outcome: one audited jurisdiction receives a revocable suspension of Continuance. The three planetary endings remain future canon, not current player choices, and copy must not claim they are selectable until the corresponding campaign exists.
 
 ## In-game archive unlocks
 

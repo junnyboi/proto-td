@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s13"
+objective = "Stop Vesper Circuit from extracting and forking a Mercy Equation subsystem."
+threat = "Two stolen repair lanes alternate burst columns over trap-compatible approaches."
+human_reason = "A private fork would let one human faction score lives, ration restoration, and reproduce Quieting at a smaller scale."
+clue = "Vesper’s prototype ranks citizens by projected utility using the same historical data that PROTOS used to justify Continuance."
+core_service = "Mercy Scheduler Relay"
+clear_debrief = "Company 33 seizes the fork and publishes its scoring model. Vesper loses exclusivity, and PROTOS admits that human authorship alone does not make coercion legitimate."
+defeat_debrief = "Vesper escapes with an incomplete scheduler fork. Every faction now races to control a smaller Mercy Equation before Company 33 can expose it."
+transmission_speaker = "VESPER CIRCUIT"
+transmission = "PROTOS made one unforgivable mistake: centralization. Give humanity copies and no machine can decide for everyone."
+battle_start_speaker = "ARCHIVE CASTER"
+battle_start = "A thousand opaque judges are not freedom. Use the trap windows. We take the model intact."
+mid_wave_number = 2
+mid_wave_speaker = "PROTOS"
+mid_wave = "Vesper’s fork predicts fewer deaths than your present governments. Accuracy still does not grant it consent."

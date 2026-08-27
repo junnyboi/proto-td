@@ -50,17 +50,22 @@ func _run() -> void:
 	var dossier := campaign.find_child("MissionDossier", true, false) as PanelContainer
 	var dossier_scroll := campaign.find_child("MissionDossierScroll", true, false) as ScrollContainer
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
+	var dossier_title := campaign.find_child("DossierTitle", true, false) as Label
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
 	var dossier_shard := campaign.find_child("DossierResonanceShard", true, false) as TextureRect
 	var next_stage := campaign.find_child("Stage_s1", true, false) as Button
+	var act_two_stage := campaign.find_child("Stage_s9", true, false) as Button
 	var route_panel := campaign.find_child("CampaignRoutePanel", true, false) as PanelContainer
 	var route_content_inset := campaign.find_child("RouteContentInset", true, false) as MarginContainer
 	var route_heading := campaign.find_child("RouteHeading", true, false) as Label
 	var route_note := campaign.find_child("RouteNote", true, false) as Label
 	var stage_label := next_stage.get_node_or_null("PresentationLabel") as Label if next_stage != null else null
+	var act_two_label := act_two_stage.get_node_or_null("PresentationLabel") as Label if act_two_stage != null else null
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
+	_check(act_two_stage != null and act_two_stage.disabled, "Act II Return Path is missing or unlocked before S8 clear")
+	_check(act_two_label != null and act_two_label.text.contains("ACT II"), "Act II route row lacks chapter identity")
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
 	_check(dossier_reward != null and not dossier_reward.text.is_empty() and not dossier_reward.text.contains("MARKS"), "Campaign dossier does not expose the symbol-first first-clear reward")
 	_check(dossier_shard != null and not dossier_shard.visible and dossier_shard.texture != null, "Campaign dossier did not preserve conditional Resonance Shard reward rendering")
@@ -78,6 +83,10 @@ func _run() -> void:
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
 	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Company Reinforcements")
 	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
+	campaign.call("_show_dossier", &"s9")
+	await process_frame
+	_check(dossier_title != null and dossier_title.text.begins_with("ACT II"), "Act II dossier lacks chapter identity")
+	_check(dossier_objective != null and dossier_objective.text.contains("First Garden"), "Act II dossier did not load localized S9 canon")
 	root.size = Vector2i(720, 1280)
 	await process_frame
 	await process_frame

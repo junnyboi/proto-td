@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s9"
+objective = "Secure the Gatecrasher return path and reach the First Garden audit threshold."
+threat = "Custodian columns converge through a Restoration Lattice that repairs wounded ground machines every three seconds."
+human_reason = "The free cities need proof that PROTOS opened a route to evidence rather than a corridor for surrender."
+clue = "PROTOS exposes the path telemetry without redaction and gives Company 33 authority to suppress one restoration channel."
+core_service = "First Garden Return Channel"
+clear_debrief = "Company 33 crosses the threshold. The path remains open behind them, proving the invitation was genuine and deliberately auditable."
+defeat_debrief = "Company 33 falls back through the Moon Gate. PROTOS leaves the path open, but the free cities receive no evidence from beyond it."
+transmission_speaker = "PROTOS"
+transmission = "I opened this route because hidden evidence cannot earn consent. Enter, Commandant. Audit the world I preserved."
+battle_start_speaker = "COMMANDANT"
+battle_start = "The lattice repairs what we fail to finish. Slow Field can veto the cycle. Company 33, cross on our terms."
+mid_wave_number = 2
+mid_wave_speaker = "ARCHIVE CASTER"
+mid_wave = "The seal is civil infrastructure, not armor. Its repair schedule is the same cadence keeping the valley alive."

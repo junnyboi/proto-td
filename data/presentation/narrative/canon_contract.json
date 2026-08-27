@@ -2,8 +2,8 @@
   "schema_version": 2,
 	"bible": {
 		"path": "docs/NARRATIVE_CANON.md",
-		"version": "1.1",
-		"sha256": "44fcf6a37ea23c093a6669e0c055e39531827a9880952464e94f1e7c5d086102"
+			"version": "2.0",
+			"sha256": "75e8df24f67441d313c817c8780f98502a7a2d33679c1c8cbfd0b42141b85e2f"
 	},
   "active_surface_sources": [
     "UiCopy.STATIC_FALLBACKS",
@@ -28,8 +28,10 @@
     "Hearthcross",
     "Continuance",
     "Quieting",
-    "First Garden",
-    "Lunaris Reliquary",
+	    "First Garden",
+	    "Restoration Lattice",
+	    "Mortal Covenant Threshold",
+	    "Lunaris Reliquary",
     "Moon Gate"
   ],
   "word_bounded_terms": [],

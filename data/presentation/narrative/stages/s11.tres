@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s11"
+objective = "Stabilize the orbital mirror basin while escorting the Solcrest delegation to the audit spine."
+threat = "Charm-immune Interceptors cross above two restoring ground routes on offset attack windows."
+human_reason = "The basin powers heat shields for three surviving cities, and Solcrest intends to place those shields under private Continuance protection."
+clue = "Solcrest offers PROTOS exclusive access to civic records in exchange for preserving its hierarchy ahead of the public."
+core_service = "Orbital Mirror Basin"
+clear_debrief = "The mirrors stabilize and the delegation survives. PROTOS publishes Solcrest’s private offer, rejecting ownership as a substitute for public consent."
+defeat_debrief = "The mirror cadence collapses under cross-domain pressure. Solcrest retreats with its offer intact and the basin’s cities lose another day of shielding."
+transmission_speaker = "SOLCREST ENVOY"
+transmission = "Order survives because someone accepts the burden of deciding. Protect our charter and we can authorize Continuance responsibly."
+battle_start_speaker = "RELIQUARY DUELIST"
+battle_start = "A charter signed above the people is still a cage. Anti-air first. We discuss responsibility after the basin holds."
+mid_wave_number = 2
+mid_wave_speaker = "PROTOS"
+mid_wave = "Solcrest requests preservation of office before preservation of voice. That priority is evidence, not authorization."

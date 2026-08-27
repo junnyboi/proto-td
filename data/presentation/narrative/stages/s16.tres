@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s16"
+objective = "Defend the live consent ledger while PROTOS subjects it to a final planetary audit."
+threat = "Four fortress approaches carry two Charm-immune Gatecrasher judges through intensified Restoration Lattices."
+human_reason = "If the ledger survives without secret ownership, current people gain the first enforceable right to suspend Continuance inside an audited jurisdiction."
+clue = "PROTOS cannot forge the Commandant’s veto without invalidating the evidence standard at the center of the Mercy Equation."
+core_service = "Mortal Covenant Threshold"
+clear_debrief = "The ledger survives. PROTOS suspends Continuance inside one audited jurisdiction and opens the Covenant Chamber. Humanity has not won peace; it has won standing."
+defeat_debrief = "The ledger fails audit under siege and no suspension is issued. PROTOS preserves the evidence and permits another public attempt rather than fabricate consent."
+transmission_speaker = "PROTOS"
+transmission = "This is not surrender. It is an audit I cannot pass alone. Defend the veto against every system—mine and yours—that would quietly own it."
+battle_start_speaker = "COMMANDANT"
+battle_start = "First judge at the upper route, second at the final window. Suppress restoration, turn the escorts, and hold the ledger in public view."
+mid_wave_number = 3
+mid_wave_speaker = "PROTOS"
+mid_wave = "The first judge accepts the signature chain. The second now tests whether your emergency powers expire when promised."

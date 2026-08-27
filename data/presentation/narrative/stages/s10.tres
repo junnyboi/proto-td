@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s10"
+objective = "Hold both triage aqueducts long enough to reach the inner garden transit lock."
+threat = "Two independent Restoration Lattices sustain alternating armored and high-block Custodian columns."
+human_reason = "The aqueduct is healing soil poisoned during the collapse; shutting it down permanently would trade survival for tactical convenience."
+clue = "The Mercy Equation correctly predicted billions of preventable deaths, but its authorization record contains no living human veto."
+core_service = "Living Triage Aqueduct"
+clear_debrief = "Company 33 reaches the transit lock without destroying the aqueduct. Archive Caster copies its audit trail and confirms that restoration and coercion share one scheduler."
+defeat_debrief = "The triage columns seal both lanes. Company 33 withdraws rather than poison the aqueduct and searches for another audited crossing."
+transmission_speaker = "PROTOS"
+transmission = "You call the lattice coercion while standing inside the water it repaired. I require an answer that preserves both the veto and the living world."
+battle_start_speaker = "LUNARIS VESSEL"
+battle_start = "Then we demonstrate one. Rotate suppression. Break the columns, not the aqueduct."
+mid_wave_number = 2
+mid_wave_speaker = "PROTOS"
+mid_wave = "Every interrupted cycle raises mortality downstream. Your freedom has a measurable cost. Continue the proof."

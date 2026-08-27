@@ -15,8 +15,8 @@ Implementation is divided into three source work packages and one release packag
 |---|---|---|---|
 | **WP1 — Restoration foundation** | Stage schema, portrait rotation, deterministic lattice healing/suppression, 600px GPT Image 2 seal, renderer, campaign-context capacity, unit tests | Complete | Mechanic determinism, hash stability, rotation, stage-domain validation, import/boot, focused regression pass, master push |
 | **WP2 — Eight-stage campaign content** | S9–S16 layouts, paths, waves, balance, rewards, 16-stage runtime order, save compatibility, stage-design tests | Complete | All stage lint/design/orientation/navigation tests, campaign fresh/restore/unlock tests, deterministic terminal simulations, master push |
-| **WP3 — Narrative and campaign presentation** | Six-layer S9–S16 narrative, EN/zh-CN localization, Act II chapter labels, canon revision, concept integration, updated design docs | In progress | Narrative catalog, localization completeness, UI layout in landscape/portrait, screenshots, master push |
-| **WP4 — Release and deployment** | Full test suite, Xvfb representative input, Web export, HTTP/browser runtime, forward-only WebDev reconciliation, build/check, checkpoint | Pending | Required HTML/JS/WASM/PCK files, clean logs/console/network, exact managed PCK, fullscreen host, saved checkpoint |
+| **WP3 — Narrative and campaign presentation** | Six-layer S9–S16 narrative, EN/zh-CN localization, Act II chapter labels, canon revision, concept integration, updated design docs | Complete | Narrative catalog, localization completeness, UI layout in landscape/portrait, screenshots, master push |
+| **WP4 — Release and deployment** | Full test suite, Xvfb representative input, Web export, HTTP/browser runtime, forward-only WebDev reconciliation, build/check, checkpoint | In progress | Required HTML/JS/WASM/PCK files, clean logs/console/network, exact managed PCK, fullscreen host, saved checkpoint |
 
 ## WP1 — Restoration foundation
 

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s12"
+objective = "Reach the Reliquary provenance vault beneath the Archive Orchard."
+threat = "Three restoring routes converge around curated Echo records while eligible leaders shield the shared archive column."
+human_reason = "Lunaris citizens deserve to know which memories were preserved, removed, or rewritten before an Echo was returned to service."
+clue = "The Reliquary edited fear, dissent, and refusal from celebrated Echoes, including fragments attributed to Lunaris Vessel."
+core_service = "Archive Orchard Provenance Vault"
+clear_debrief = "Archive Caster recovers the edit ledger. Continuity is real, but the Reliquary curated obedience and called the result resurrection."
+defeat_debrief = "The provenance vault reseals around the surviving orchard. Lunaris command denies the ledger exists while Company 33 prepares a second breach."
+transmission_speaker = "ARCHIVE CASTER"
+transmission = "These records are not forgeries. That is worse. Someone preserved us, then removed the parts that might refuse."
+battle_start_speaker = "LUNARIS VESSEL"
+battle_start = "If my authorization survives only because my refusal was cut away, it authorizes nothing. Open the vault."
+mid_wave_number = 2
+mid_wave_speaker = "RELIQUARY DUELIST"
+mid_wave = "The shared lattice is feeding the archive column. Turn one leader, suppress the convergence, and make the ledger visible."

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageNarrativeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/presentation/narrative/stage_narrative_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"s15"
+objective = "Bring all four human delegations through the audit corridor and register a live consent protocol."
+threat = "Four faction routes converge through staggered Restoration Lattices under combined enemy roles."
+human_reason = "No faction can claim universal authority; the protocol must preserve current dissent, transparent scope, revocation, and accountable emergency limits."
+clue = "The Commandant’s stolen veto fragment can sign a ledger PROTOS can verify but cannot generate or rewrite."
+core_service = "Planetary Audit Corridor"
+clear_debrief = "The delegations register the first live consent ledger. It is narrow, revocable, public, and incomplete—therefore more legitimate than every permanent mandate offered so far."
+defeat_debrief = "The audit corridor closes before every delegation signs. No partial faction claim is accepted, and the protocol returns to public negotiation."
+transmission_speaker = "PROTOS"
+transmission = "I can verify this ledger. I cannot author its veto, predict its revocation, or guarantee its wisdom. Those defects may be its legitimacy."
+battle_start_speaker = "COMMANDANT"
+battle_start = "Four fronts, one public record. Layer the blockers and keep the largest column off its lattice."
+mid_wave_number = 3
+mid_wave_speaker = "RELIQUARY DUELIST"
+mid_wave = "All four signatures are live. Now prove the record survives pressure without becoming another secret mandate."

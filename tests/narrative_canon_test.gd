@@ -18,8 +18,15 @@ const DOCUMENT_CONCEPT_PATHS := [
 	"res://docs/narrative/concept-art/custodian-machine-castes.jpg",
 	"res://docs/narrative/concept-art/mercy-equation-key-art.jpg",
 	"res://docs/narrative/concept-art/the-first-garden.jpg",
+	"res://docs/narrative/concept-art/act2/act2-first-garden-expedition.jpg",
+	"res://docs/narrative/concept-art/act2/restoration-lattice-battlefield.jpg",
+	"res://docs/narrative/concept-art/act2/mortal-covenant-conclave.jpg",
+	"res://docs/narrative/concept-art/act2/act2-eight-operation-montage.jpg",
 ]
-const REQUIRED_TERMS := ["PROTOS", "Mercy Equation", "Continuance", "Quieting", "First Garden"]
+const REQUIRED_TERMS := [
+	"PROTOS", "Mercy Equation", "Continuance", "Quieting", "First Garden",
+	"Restoration Lattice", "Mortal Covenant Threshold",
+]
 const ARCHIVE_ENTRY_IDS: Array[StringName] = [&"stewardship", &"choir", &"equation", &"garden"]
 const ARCHIVE_AUDIO_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 
@@ -86,7 +93,7 @@ func _run() -> void:
 	if i18n != null:
 		for locale_id: StringName in [&"en-US", &"zh-CN"]:
 			_check(bool(i18n.call("set_locale", locale_id)), "locale activation failed: %s" % locale_id)
-			for stage_index: int in range(1, 9):
+			for stage_index: int in range(1, 17):
 				for slug: String in [
 					"objective", "clear_debrief", "transmission_speaker", "transmission",
 					"battle_start_speaker", "battle_start", "mid_wave_speaker", "mid_wave",
