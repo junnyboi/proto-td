@@ -1030,10 +1030,9 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	var action_text := UiCopyType.format_text(
 		&"ui.campaign.basic_hire_action", "HIRE • {cost}", {&"cost": cost},
 	)
-	var action_accessible := "%s, %d Resonance Shards" % [action_text, cost]
-	_hire_recruit.set_presentation_text(action_accessible, action_text)
+	_hire_recruit.set_presentation_text(action_text, action_text)
 	ResonanceCurrencyDisplayType.apply_to_button(
-		_hire_recruit, action_accessible, action_accessible, 34,
+		_hire_recruit, action_text, action_text, 34,
 	)
 	var presentation := _hire_recruit.get_node("PresentationLabel") as Label
 	presentation.text = action_text
@@ -1043,8 +1042,6 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	presentation.offset_bottom = -12.0
 	presentation.clip_text = false
 	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hire_recruit.tooltip_text = action_accessible
-	_hire_recruit.accessibility_description = action_accessible
 	var unavailable := (
 		projection.is_empty()
 		or marks < cost
