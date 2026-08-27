@@ -87,6 +87,7 @@ New keys will be added with strict `en-US` / `zh-CN` parity for the two tutorial
 |---|---|
 | Audit and design | Complete |
 | Runtime implementation | Complete |
+| Centered callout, padding, arrowhead, and tutorial focus refinement | Complete |
 | Focused and visual verification | Complete |
 | Reconciliation and full native gate | Complete |
 | Web export and managed deployment | Pending |
