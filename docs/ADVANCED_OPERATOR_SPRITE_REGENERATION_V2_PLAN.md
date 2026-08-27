@@ -94,7 +94,7 @@ The archive contains:
 - `references/<class>/paired/design_reference.png`
 - `references/<class>/<gender>/design_reference.png`
 - `references/<class>/<gender>/chibi_reference.png`
-- `keyframes/<class>/<gender>/<action>_<direction>.png`
+- `keyframes/<class>/<gender>/neutral_<direction>.png`, with each neutral anchor reused as the idle first/last frame and the attack first frame
 - `carriers/<class>/<gender>/<action>_<direction>.mp4`
 - `runtime-previews/<class>/<gender>/*.validation.json`
 - `source_manifest.json` with model, prompt, source, SHA-256, media, mirror, and runtime-output provenance
@@ -152,8 +152,8 @@ Inspect final atlases rather than performing forensic frame-by-frame criticism o
 
 | Phase | Status | Evidence |
 |---|---|---|
-| 0 — Contract | **In progress** | Plan authored on baseline `b860f111`. |
-| 1 — References | Pending | — |
+| 0 — Contract | **Complete** | Matrix, source custody, mirroring topology, quality ceiling, runtime scale, validation contract, and phased release gates were frozen and pushed as `1eae2965`. |
+| 1 — References | **Complete** | Eleven reviewed 2560 × 1440 paired GPT Image 2 boards, twenty-two per-gender derivatives, forty-four approved `NE`/`SE` production keyframes, preserved raw sources, exact-chroma copies, SHA-256 provenance, and male/female contact-sheet review. Sorcerer female identity continuity and Banner Guard female equipment clearance were corrected before acceptance. |
 | 2 — Carriers and atlases | Pending | — |
 | 3 — Runtime integration | Pending | — |
 | 4 — Native and visual acceptance | Pending | — |

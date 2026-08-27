@@ -73,6 +73,15 @@ resources but cannot replace core code or data. Failed or in-flight packs
 preserve incumbent operator visuals and can never turn enemies into fallback
 squares.
 
+Campaign restoration now predicts the next advanced operator assets without
+blindly downloading the full class catalog. Any class in an already committed
+mission squad leads the queue, followed by at most three unique advanced
+classes from the active roster. Field Team card focus, hover, and selection,
+plus visible or selected Training paths, reprioritize the matching class pack
+ahead of lower-confidence background work. A successful promotion repeats the
+priority request at the authoritative commit boundary; duplicate requests join
+the existing queue or verified cache rather than starting another transfer.
+
 As soon as Title opens, a separate persistent background service downloads all
 six cinematic streams sequentially—current orientation first—verifies exact
 size and SHA-256, and caches them under `user://`. A pull joins or prioritizes
