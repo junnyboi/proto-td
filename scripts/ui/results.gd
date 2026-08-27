@@ -19,6 +19,9 @@ const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/reson
 const ActionHoverFeedbackType := preload(
 	"res://scripts/ui/components/action_hover_feedback.gd"
 )
+const DefeatAmbientLayerType := preload(
+	"res://scripts/ui/components/defeat_ambient_layer.gd"
+)
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -61,6 +64,7 @@ var _cleared_result := false
 var _landscape_action_columns := 3
 var _reward_reveal_entries: Array[Dictionary] = []
 var _reward_reveal_tween: Tween = null
+var _defeat_ambient: DefeatAmbientLayerType = null
 
 
 func _ready() -> void:
@@ -85,6 +89,8 @@ func _build_presentation() -> void:
 		backdrop.color = Color(Style.INK_DEEP, 0.84)
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	if not cleared:
+		_build_defeat_ambient()
 
 	var layout := VBoxContainer.new()
 	layout.name = "ResultsLayout"
@@ -97,6 +103,16 @@ func _build_presentation() -> void:
 	_build_actions(layout)
 	_on_layout_mode_changed(_shell.layout_mode())
 	_play_reward_reveals.call_deferred()
+
+
+func _build_defeat_ambient() -> void:
+	_defeat_ambient = DefeatAmbientLayerType.new()
+	_defeat_ambient.name = "DefeatAmbient"
+	_defeat_ambient.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_shell.add_child(_defeat_ambient)
+	# Backdrop remains below the ambience; SafeMargin and all readable content
+	# remain above it. The embers can breathe without ever intercepting input.
+	_shell.move_child(_defeat_ambient, 1)
 
 
 func _exit_tree() -> void:

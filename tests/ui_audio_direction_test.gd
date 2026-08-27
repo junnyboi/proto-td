@@ -2,7 +2,6 @@ extends SceneTree
 
 const MUTED_UI_IDS := [
 	&"ui_hover",
-	&"ui_click",
 	&"ui_back",
 	&"ui_confirm",
 	&"menu_open",
@@ -38,12 +37,11 @@ func _run() -> void:
 			stream = null
 			_check(not bool(sfx.call("play", String(id))), "%s aura cue remains silent" % id)
 			await process_frame
-		_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
-		_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
-		_check(not bool(sfx.call("play", "ui_accept")), "accept alias cannot replay the aura cue")
-		_check(not bool(sfx.call("play", "ui_select")), "select alias remains silent")
-		_check(
-			int(sfx.call("audible_start_count")) == routine_starts_before,
+			_check(sfx.call("resolved_id_for", &"ui_accept") == &"ui_confirm", "accept alias resolves")
+			_check(sfx.call("resolved_id_for", &"ui_select") == &"ui_click", "select alias resolves")
+			_check(not bool(sfx.call("play", "ui_accept")), "accept alias cannot replay the aura cue")
+			_check(
+				int(sfx.call("audible_start_count")) == routine_starts_before,
 			"silent navigation cues do not consume audio voices",
 		)
 		_check(
@@ -110,11 +108,30 @@ func _run() -> void:
 		ephemeral_control.queue_free()
 		await process_frame
 		await create_timer(0.15).timeout
-		for control: Control in hover_controls:
+		for bound_control: Control in hover_controls:
 			_check(
-				bool(sfx.call("hover_is_bound", control)),
-				"%s receives global hover binding" % control.get_class(),
+				bool(sfx.call("hover_is_bound", bound_control)),
+				"%s receives global hover binding" % bound_control.get_class(),
 			)
+		var click_stream := load("res://assets/sfx/ui/ui_click.wav") as AudioStream
+		_check(click_stream != null, "global button click stream loads")
+		if click_stream != null:
+			_check(click_stream.get_length() >= 1.0, "global click retains its authored body")
+			_check(click_stream.get_length() <= 3.05, "global click stays within the SFX budget")
+		var click_starts_before := int(sfx.call("audible_start_count"))
+		var feedback := root.get_node_or_null("UiFeedback")
+		var feedback_clicks_before := int(feedback.call("click_play_count")) if feedback != null else -1
+		button.pressed.emit()
+		await process_frame
+		_check(
+			int(sfx.call("audible_start_count")) == click_starts_before + 1,
+			"enabled button activation did not start exactly one click voice",
+		)
+		_check(sfx.call("last_resolved_id") == &"ui_click", "button activation did not resolve to ui_click")
+		_check(
+			feedback != null and int(feedback.call("click_play_count")) == feedback_clicks_before + 1,
+			"UiFeedback did not own the global button click",
+		)
 		_check(bool(sfx.call("hover_target_eligible", button)), "enabled button is hover eligible")
 		var hover_plays_before := int(sfx.call("hover_play_count"))
 		var aura_starts_before := int(sfx.call("audible_start_count"))

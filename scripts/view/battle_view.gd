@@ -30,6 +30,9 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ActionHoverFeedbackType := preload(
 	"res://scripts/ui/components/action_hover_feedback.gd"
 )
+const DefeatAmbientLayerType := preload(
+	"res://scripts/ui/components/defeat_ambient_layer.gd"
+)
 const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
@@ -92,6 +95,7 @@ var _skill_ready_feedback: RefCounted = SKILL_READY_FEEDBACK_SCRIPT.new()
 var _portrait_flash: ColorRect = null
 var _portrait_flash_frames := 0
 var _continue_btn: Button = null
+var _defeat_ambient: DefeatAmbientLayerType = null
 var _deploy_bar: DeployBar = null
 var _spell_bar: SpellBar = null
 var _controls: BattleControls = null
@@ -675,6 +679,7 @@ func _detect_result_stamp() -> void:
 		Sfx.play("victory")
 		Music.play_result(true)
 	else:
+		_show_defeat_ambient()
 		_juice.stamp(
 			UiCopyType.text(&"ui.battle.stamp_defeat", "Defeat"),
 			0,
@@ -704,6 +709,18 @@ func _detect_result_stamp() -> void:
 	# clears the gate; set_battle_confirmation_active(false) focuses Continue.
 	if not _battle_confirmation_active:
 		next.grab_focus()
+
+
+func _show_defeat_ambient() -> void:
+	if _defeat_ambient != null and is_instance_valid(_defeat_ambient):
+		return
+	_defeat_ambient = DefeatAmbientLayerType.new()
+	_defeat_ambient.name = "DefeatAmbient"
+	_defeat_ambient.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_defeat_ambient.z_index = JUICE_Z - 1
+	_defeat_ambient.position = Vector2.ZERO
+	_defeat_ambient.size = get_viewport_rect().size
+	add_child(_defeat_ambient)
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
@@ -966,6 +983,9 @@ func _relayout() -> void:
 	_apply_map_transform()
 	if _backdrop != null:
 		_backdrop.size = viewport
+	if _defeat_ambient != null and is_instance_valid(_defeat_ambient):
+		_defeat_ambient.position = Vector2.ZERO
+		_defeat_ambient.size = viewport
 	BATTLE_HUD_PRESENTER.relayout(_hud, viewport)
 	if _portrait_flash != null:
 		_portrait_flash.position = Vector2((viewport.x - PORTRAIT_FLASH_PX) * 0.5, 56.0)
