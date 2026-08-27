@@ -94,7 +94,7 @@
 - [x] Version the manifest and animation schemas, register 22 class/gender resources plus 176 provenance rows, route canonical class identity after premium overrides, preserve classless legacy fallback, and remove the 192px animator assumption.
 - [x] Add processor, registrar, schema, row-boundary, routing, premium-precedence, live-animator, generated-cache, and Xvfb visual-matrix coverage; repair three hidden keyed-collapse frames and validate all 88 authored records / 176 outputs.
 - [x] Run the synchronized full 68-gate repository baseline, bounded boot, final error scans, and a 16-gate regression after the second forward reconciliation.
-- [ ] Commit and push the reconciled release to `master` without rewriting shared history.
+- [x] Commit and push the reconciled release to `master` without rewriting shared history.
 - [ ] Export the exact pushed Godot revision, verify HTML/JS/WASM/PCK over HTTP and in-browser, and measure PCK/runtime loading behavior.
 - [ ] Layer the release onto the newest `proto-td-web` host, pass check/build/preview gates, and save a new managed checkpoint.
 
