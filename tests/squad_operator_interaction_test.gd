@@ -99,10 +99,21 @@ func _verify_sorting() -> void:
 	var metadata: Array[StringName] = []
 	for index: int in sort_select.item_count:
 		metadata.append(StringName(sort_select.get_item_metadata(index)))
-	for required: StringName in [&"rarity_desc", &"rarity_asc", &"level_desc", &"level_asc"]:
+	for required: StringName in [
+		&"cost_asc", &"cost_desc", &"rarity_desc", &"rarity_asc",
+		&"level_desc", &"level_asc", &"name_asc", &"name_desc",
+	]:
 		_check(metadata.has(required), "operator sort dropdown missing %s" % required)
-	await _select_sort(sort_select, &"rarity_desc")
+	_check(sort_select.accessibility_name == "Sort operators", "operator sort dropdown lacks an explicit accessible name")
+	await _select_sort(sort_select, &"cost_asc")
 	var rows := _visible_hero_rows()
+	_check(rows.size() >= 3, "cost sort fixture lacks enough operators")
+	_check(_nondecreasing(rows, "dp_cost", "recruitment_index"), "cost low-high order is unstable")
+	await _select_sort(sort_select, &"cost_desc")
+	rows = _visible_hero_rows()
+	_check(_nonincreasing(rows, "dp_cost", "recruitment_index"), "cost high-low order is unstable")
+	await _select_sort(sort_select, &"rarity_desc")
+	rows = _visible_hero_rows()
 	_check(rows.size() >= 3, "rarity sort fixture lacks enough operators")
 	_check(_nonincreasing(rows, "rarity", "recruitment_index"), "rarity high-low order is unstable")
 	await _select_sort(sort_select, &"rarity_asc")
@@ -114,9 +125,16 @@ func _verify_sorting() -> void:
 	await _select_sort(sort_select, &"level_asc")
 	rows = _visible_hero_rows()
 	_check(_nondecreasing(rows, "level", "xp"), "level low-high order is unstable")
+	await _select_sort(sort_select, &"name_asc")
+	rows = _visible_hero_rows()
+	_check(_names_sorted(rows, true), "name A-Z order is unstable")
+	await _select_sort(sort_select, &"name_desc")
+	rows = _visible_hero_rows()
+	_check(_names_sorted(rows, false), "name Z-A order is unstable")
 	for hero: Dictionary in rows:
 		_check(int(hero.get("rarity", 0)) >= 1, "operator row lacks rarity")
 		_check(int(hero.get("level", 0)) >= 1, "operator row lacks level")
+		_check(int(hero.get("dp_cost", 0)) > 0, "operator row lacks deployment cost")
 
 
 func _verify_selection_feedback_and_reorder() -> void:
@@ -172,6 +190,13 @@ func _verify_selection_feedback_and_reorder() -> void:
 		animated_card.grab_focus()
 		await create_timer(0.18).timeout
 		_check(animated_card.scale.x >= 1.02, "operator focus feedback does not reach its emphasized scale")
+		var hover_glow := animated_card.find_child("OperatorHoverGlow", true, false) as Panel
+		_check(bool(animated_card.get_meta(&"operator_hover_glow_enabled", false)), "operator card lacks hover-glow telemetry")
+		_check(hover_glow != null, "operator card hover glow is missing")
+		if hover_glow != null:
+			var glow_style := hover_glow.get_theme_stylebox(&"panel") as StyleBoxFlat
+			_check(hover_glow.self_modulate.a >= 0.75, "operator focus does not reveal the hover glow")
+			_check(glow_style != null and glow_style.border_width_left >= 2 and glow_style.shadow_size >= 8, "operator glow lacks a luminous border")
 		animated_card.button_pressed = false
 		await process_frame
 		_check(_feedback_tween_active(animated_card), "operator deselection did not schedule release feedback")
@@ -182,6 +207,10 @@ func _verify_selection_feedback_and_reorder() -> void:
 		_check(_feedback_tween_active(animated_card), "operator selection did not schedule confirmation feedback")
 		await create_timer(0.30).timeout
 		_check(animated_card.scale.x >= 1.02, "selected focused operator did not return to its focus scale")
+		if sort_select != null:
+			sort_select.grab_focus()
+			await create_timer(0.20).timeout
+			_check(hover_glow == null or hover_glow.self_modulate.a <= 0.05, "operator glow remains visible after focus exits")
 
 
 func _feedback_tween_active(card: Control) -> bool:
@@ -245,6 +274,17 @@ func _nondecreasing(rows: Array[Dictionary], primary: String, secondary: String)
 		if int(previous.get(primary, 0)) == int(current.get(primary, 0)) and primary == "level":
 			if int(previous.get(secondary, 0)) > int(current.get(secondary, 0)):
 				return false
+	return true
+
+
+func _names_sorted(rows: Array[Dictionary], ascending: bool) -> bool:
+	for index: int in range(1, rows.size()):
+		var previous := String(rows[index - 1].get("callsign", "")).to_lower()
+		var current := String(rows[index].get("callsign", "")).to_lower()
+		if ascending and previous > current:
+			return false
+		if not ascending and previous < current:
+			return false
 	return true
 
 

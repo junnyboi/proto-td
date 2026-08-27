@@ -37,6 +37,11 @@ extends Resource
 @export var leak_hit_stop_frames: int = 0
 
 @export var wave_banner_frames: int = 45
+@export var high_threat_warning_frames: int = 96
+@export var high_threat_spawn_pulse_frames: int = 54
+@export var high_threat_particle_frames: int = 42
+@export var high_threat_particles_per_spawn: int = 4
+@export var high_threat_particle_speed_px: float = 3.5
 @export var star_burst_stagger_frames: int = 10
 
 @export var trap_sprung_frames: int = 8

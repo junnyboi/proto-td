@@ -125,6 +125,7 @@ var _deploy_seen: Dictionary = {}
 var _spark_seen: Dictionary = {}
 var _leaked_seen := 0
 var _banner_seen_wave := -1
+var _pending_high_threat_dialogue_wave := -1
 var _stamp_shown := false
 var _snaps_seen := 0
 var _trap_trigger_seen: Dictionary = {}
@@ -662,12 +663,64 @@ func _detect_wave() -> void:
 	if wave <= _banner_seen_wave:
 		return
 	_banner_seen_wave = wave
-	_juice.banner(_format_copy(
-		&"ui.battle.wave", "Wave {wave}", {&"wave": wave + 1},
-	))
+	if _stage.is_high_threat_wave(wave):
+		if _battle_dialogue != null:
+			_battle_dialogue.dismiss()
+		_present_high_threat_wave(wave)
+		_queue_high_threat_dialogue(wave + 1)
+	else:
+		_juice.banner(_format_copy(
+			&"ui.battle.wave", "Wave {wave}", {&"wave": wave + 1},
+		))
+		if _battle_dialogue != null:
+			_battle_dialogue.show_mid_wave(wave + 1)
 	Sfx.play("wave")
-	if _battle_dialogue != null:
-		_battle_dialogue.show_mid_wave(wave + 1)
+
+
+func _queue_high_threat_dialogue(wave_number: int) -> void:
+	_pending_high_threat_dialogue_wave = wave_number
+	var delay := float(maxi(cfg.high_threat_warning_frames, 1)) / 60.0
+	get_tree().create_timer(delay).timeout.connect(
+		func() -> void:
+			if (
+				_pending_high_threat_dialogue_wave != wave_number
+				or _battle_dialogue == null
+				or model == null
+				or model.result != BattleModel.Result.RUNNING
+			):
+				return
+			_pending_high_threat_dialogue_wave = -1
+			_battle_dialogue.show_mid_wave(wave_number),
+		CONNECT_ONE_SHOT,
+	)
+
+
+func _present_high_threat_wave(wave: int) -> void:
+	var warning_id: StringName = _stage.high_threat_warning_id
+	var heading_key := StringName("ui.battle.high_threat.%s.heading" % warning_id)
+	var detail_key := StringName("ui.battle.high_threat.%s.detail" % warning_id)
+	_juice.high_threat_warning(
+		warning_id,
+		_format_copy(heading_key, "HIGH-THREAT WAVE", {}),
+		_format_copy(detail_key, "Wave {wave} escalation detected", {&"wave": wave + 1}),
+		_high_threat_spawn_centers(),
+		bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)),
+	)
+
+
+func _high_threat_spawn_centers() -> Array[Vector2]:
+	var centers: Array[Vector2] = []
+	var seen: Dictionary = {}
+	for path_index: int in _stage.paths.size():
+		var cells: Array[Vector2i] = _stage.path_cells(path_index)
+		if cells.is_empty():
+			continue
+		var spawn_cell := cells[0]
+		if seen.has(spawn_cell):
+			continue
+		seen[spawn_cell] = true
+		centers.append(IsoProjection.face_center(spawn_cell))
+	return centers
 
 
 ## Terminal stamp is one-shot on result flip, shared with campaign unlock flow.
@@ -741,6 +794,24 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	if wave_label != null and _banner_seen_wave >= 0:
 		wave_label.text = _format_copy(
 			&"ui.battle.wave", "Wave {wave}", {&"wave": _banner_seen_wave + 1},
+		)
+	if (
+		_juice != null
+		and _juice.high_threat_warning_visible()
+		and _banner_seen_wave >= 0
+	):
+		var warning_id := _juice.high_threat_warning_id()
+		_juice.update_high_threat_copy(
+			_format_copy(
+				StringName("ui.battle.high_threat.%s.heading" % warning_id),
+				"HIGH-THREAT WAVE",
+				{},
+			),
+			_format_copy(
+				StringName("ui.battle.high_threat.%s.detail" % warning_id),
+				"Wave {wave} escalation detected",
+				{&"wave": _banner_seen_wave + 1},
+			),
 		)
 	var stamp_label := find_child("ResultStampLabel", true, false) as Label
 	if stamp_label != null and model != null:

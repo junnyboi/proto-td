@@ -105,6 +105,8 @@ func _validate_stage(stage: StageDef, failures: PackedStringArray) -> void:
 			failures.append("wave starts are not ascending: %s" % stage.id)
 	for error: String in stage.restoration_contract_errors():
 		failures.append("restoration contract invalid %s: %s" % [stage.id, error])
+	for error: String in stage.high_threat_contract_errors():
+		failures.append("high-threat contract invalid %s: %s" % [stage.id, error])
 	if stage.id in [&"s1", &"s2", &"s3"]:
 		var theme := load("res://data/presentation/%s_world_theme.tres" % stage.id) as StageArtTheme
 		if theme == null:

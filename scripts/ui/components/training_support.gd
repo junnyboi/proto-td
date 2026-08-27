@@ -174,10 +174,16 @@ static func filtered_sorted(
 			var b_title := String(b.get("custom_title", "") if b.get("custom_title") != null else "").to_lower()
 			var a_rarity := int(a.get("rarity", 0))
 			var b_rarity := int(b.get("rarity", 0))
+			var a_cost := int(a.get("dp_cost", 0))
+			var b_cost := int(b.get("dp_cost", 0))
 			var a_level := int(a.get("level", 1))
 			var b_level := int(b.get("level", 1))
 			var a_xp := int(a.get("xp", 0))
 			var b_xp := int(b.get("xp", 0))
+			if sort_mode == &"cost_desc" and a_cost != b_cost:
+				return a_cost > b_cost
+			if sort_mode == &"cost_asc" and a_cost != b_cost:
+				return a_cost < b_cost
 			if sort_mode == &"rarity_desc" and a_rarity != b_rarity:
 				return a_rarity > b_rarity
 			if sort_mode == &"rarity_asc" and a_rarity != b_rarity:

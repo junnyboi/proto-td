@@ -40,6 +40,10 @@ const TILE_CHARS := {
 # snapshots, saves, tickets, or deterministic simulation decisions.
 @export var music_profile_id: StringName = &""
 @export var music_variant_id: StringName = &""
+## Presentation-only escalation markers. Indices are zero-based wave windows;
+## they never enter battle decisions, hashes, tickets, snapshots, or saves.
+@export var high_threat_wave_indices: PackedInt32Array = []
+@export var high_threat_warning_id: StringName = &""
 ## Act II restoration infrastructure. Cells are authored on hostile ground
 ## routes; due cycles repair hostile ground Custodians unless a Slow Field
 ## currently covers that cell.
@@ -159,6 +163,29 @@ func restoration_contract_errors() -> PackedStringArray:
 		if not on_path:
 			errors.append("restoration lattice is outside every hostile path at %s" % cell)
 	return errors
+
+
+func high_threat_contract_errors() -> PackedStringArray:
+	var errors := PackedStringArray()
+	if high_threat_wave_indices.is_empty():
+		if not high_threat_warning_id.is_empty():
+			errors.append("high-threat warning id requires at least one wave index")
+		return errors
+	if high_threat_warning_id.is_empty():
+		errors.append("high-threat wave indices require a warning id")
+	var previous := -1
+	for wave_index: int in high_threat_wave_indices:
+		if wave_index < 0 or wave_index >= wave_starts.size():
+			errors.append("high-threat wave index %d is outside the authored wave windows" % wave_index)
+		continue
+		if wave_index <= previous:
+			errors.append("high-threat wave indices must be unique and ascending")
+		previous = wave_index
+	return errors
+
+
+func is_high_threat_wave(wave_index: int) -> bool:
+	return high_threat_wave_indices.has(wave_index)
 
 
 func spell_target_in_domain(spell_def: SpellDef, target: Variant) -> bool:
