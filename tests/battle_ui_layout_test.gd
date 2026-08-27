@@ -270,9 +270,11 @@ func _run() -> void:
 	if deploy_cell.x >= 0:
 		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
 		_check(bool(deploy_bar.call("transient_intent_active")), "retreat/selection intent did not start")
+		_check(is_equal_approx(Engine.time_scale, 0.75), "selected field operator did not slow battle time by 25%")
 		bool(controls.call("request_resign_confirmation"))
 		await _wait_for_confirmation_state(controls, &"active")
 		_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel retreat/selection intent")
+		_check(is_equal_approx(Engine.time_scale, 1.0), "selection slowdown survived selection cancellation")
 		bool(controls.call("cancel_resign_confirmation"))
 		await _wait_for_confirmation_state(controls, &"closed")
 		var deployed_unit := model.alive_unit_at(deploy_cell)
@@ -283,6 +285,16 @@ func _run() -> void:
 		_check(not bool(deploy_bar.call("is_mend_targeting")), "confirmation did not cancel mend targeting")
 		bool(controls.call("cancel_resign_confirmation"))
 		await _wait_for_confirmation_state(controls, &"closed")
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
+		_check(is_equal_approx(Engine.time_scale, 0.75), "retreat selection did not restore tactical slowdown")
+		deploy_bar.call("_confirm_retreat")
+		deploy_bar.call("_process", 0.0)
+		var cooldown_slot := battle.find_child("Slot_%s" % deployment_id, true, false) as Button
+		_check(deployed_unit != null and not deployed_unit.alive, "retreat action did not remove the selected operator")
+		_check(model.is_redeploy_cooling_down(deployment_id), "retreat did not start an authoritative redeploy cooldown")
+		_check(cooldown_slot != null and cooldown_slot.text.contains("COOLDOWN"), "deploy card does not expose the retreat cooldown")
+		_check(cooldown_slot != null and cooldown_slot.disabled, "cooling-down deploy card remains actionable")
+		_check(is_equal_approx(Engine.time_scale, 1.0), "retreat did not clear tactical selection slowdown")
 
 	bool(controls.call("request_resign_confirmation"))
 	await _wait_for_confirmation_state(controls, &"active")

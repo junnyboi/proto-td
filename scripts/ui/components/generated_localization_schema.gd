@@ -4,6 +4,7 @@ extends RefCounted
 ## Generated from the reviewed localization key manifests. Keep catalog placeholders typed.
 const PLACEHOLDER_TYPES := {
 	&"ui.battle.deploy_operator_card": {&"cost": &"int", &"name": &"String", &"slot": &"String"},
+	&"ui.battle.deploy_operator_cooldown": {&"name": &"String", &"seconds": &"int", &"slot": &"String"},
 	&"ui.battle.deploy_trap_card": {&"cost": &"int", &"name": &"String"},
 	&"ui.battle.facing_description": {&"direction": &"String"},
 	&"ui.battle.wave": {&"wave": &"int"},
