@@ -263,7 +263,7 @@ func _clear_active() -> void:
 
 func _cache_path(pack_id: String) -> String:
 	var digest := String((_specs.get(pack_id, {}) as Dictionary).get(&"sha256", ""))
-	return "%s/%s-%s.zip" % [CACHE_DIR, pack_id, digest.left(16)]
+	return "%s/%s-%s.pck" % [CACHE_DIR, pack_id, digest.left(16)]
 
 
 func _verify_file(path: String, spec: Dictionary) -> bool:

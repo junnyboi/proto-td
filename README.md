@@ -62,7 +62,7 @@ tools/stage_web_content_packs.sh build/web/content-packs
 The Web base PCK excludes the six Premium Resonance Ogg Theora videos, the
 three production enemy-variant atlas families, and the eleven advanced
 operator class atlas families. The 200 deferred WebP atlases remain at their
-authored resolution and are staged as twelve class-scoped ZIP resource packs;
+authored resolution and are staged as twelve class-scoped PCK resource packs;
 the host supplies their exact URL, byte length, and SHA-256 through
 `--content-pack` arguments. Title warms the enemy pack without blocking
 navigation. `Art` requests an advanced class pack only when its first resource

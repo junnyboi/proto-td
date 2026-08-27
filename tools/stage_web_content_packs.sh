@@ -3,8 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="${1:-${ROOT}/build/web/content-packs}"
+GODOT_BIN="${GODOT_BIN:-godot}"
 mkdir -p "$OUT"
-find "$OUT" -maxdepth 1 -type f \( -name '*.zip' -o -name 'manifest.tsv' \) -delete
+find "$OUT" -maxdepth 1 -type f \( -name '*.pck' -o -name '*.zip' -o -name 'manifest.tsv' \) -delete
 
 manifest="$OUT/manifest.tsv"
 printf 'key\tfile\tbytes\tsha256\tresources\n' > "$manifest"
@@ -13,16 +14,24 @@ stage_pack() {
   local key="$1"
   local expected_count="$2"
   shift 2
-  local target="$OUT/${key}.zip"
+  local target="$OUT/${key}.pck"
   local -a files=("$@")
   if [[ "${#files[@]}" -ne "$expected_count" ]]; then
     printf 'Expected %d resources for %s, found %d\n' "$expected_count" "$key" "${#files[@]}" >&2
     exit 1
   fi
-  (
-    cd "$ROOT"
-    zip -q -0 -X "$target" "${files[@]}"
-  )
+  local -a resource_paths=()
+  local file
+  for file in "${files[@]}"; do
+    resource_paths+=("res://${file}")
+  done
+  local output
+  output="$(
+    GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --audio-driver Dummy \
+      --path "$ROOT" --script res://tools/build_web_content_pack.gd -- \
+      "$target" "${resource_paths[@]}"
+  )"
+  printf '%s\n' "$output" | grep -q "CONTENT_PACK_BUILD_OK|$target|resources=$expected_count"
   local bytes sha
   bytes="$(stat -c %s "$target")"
   sha="$(sha256sum "$target" | cut -d' ' -f1)"
