@@ -57,7 +57,9 @@ var _redirect_pending := false
 @onready var _locale_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/LocaleSelector/LocaleLabel
 @onready var _audio_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/AudioHeading
 @onready var _master_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterVolumeLabel
-@onready var _master_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterVolumeSlider
+@onready var _master_controls: BoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls
+@onready var _master_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls/MasterVolumeSlider
+@onready var _master_mute_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls/MasterMuteButton
 @onready var _music_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicVolumeRow/MusicVolumeLabel
 @onready var _music_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicVolumeRow/MusicVolumeSlider
 @onready var _sfx_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/SfxVolumeRow/SfxVolumeLabel
@@ -85,6 +87,7 @@ func _ready() -> void:
 	_back_button.pressed.connect(_request_cancel)
 	_apply_button.pressed.connect(_request_apply)
 	_master_slider.value_changed.connect(_on_volume_changed.bind(&"master_volume"))
+	_master_mute_button.pressed.connect(_toggle_master_mute)
 	_music_slider.value_changed.connect(_on_volume_changed.bind(&"music_volume"))
 	_sfx_slider.value_changed.connect(_on_volume_changed.bind(&"sfx_volume"))
 	_music_button.pressed.connect(_toggle_music)
@@ -278,6 +281,16 @@ func _on_volume_changed(value: float, key: StringName) -> void:
 	_refresh_copy()
 
 
+func _toggle_master_mute() -> void:
+	if _transition_state != TransitionState.ACTIVE:
+		return
+	_clear_error()
+	_draft[&"master_muted"] = not bool(_draft.get(&"master_muted", false))
+	preview_requested.emit(_draft.duplicate(true))
+	Sfx.play("ui_click")
+	_refresh_copy()
+
+
 func _toggle_music() -> void:
 	if _transition_state != TransitionState.ACTIVE:
 		return
@@ -333,6 +346,7 @@ func _sync_controls() -> void:
 	_suppress_callbacks = true
 	_locale_selector.set_selected_locale(StringName(_draft.get(&"locale", I18n.locale())))
 	_master_slider.value = float(_draft.get(&"master_volume", 1.0)) * 100.0
+	_master_mute_button.set_pressed_no_signal(bool(_draft.get(&"master_muted", false)))
 	_music_slider.value = float(_draft.get(&"music_volume", 1.0)) * 100.0
 	_sfx_slider.value = float(_draft.get(&"sfx_volume", 1.0)) * 100.0
 	_text_scale_slider.value = float(_draft.get(&"text_scale", 1.0)) * 100.0
@@ -350,6 +364,12 @@ func _refresh_copy() -> void:
 	_master_label.text = UiCopyType.format_text(
 		&"ui.title.master_volume", "MASTER VOLUME  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"master_volume", 1.0)) * 100.0)},
+	).to_upper()
+	var master_muted := bool(_draft.get(&"master_muted", false))
+	_master_mute_button.set_pressed_no_signal(master_muted)
+	_master_mute_button.text = UiCopyType.text(
+		&"ui.title.unmute" if master_muted else &"ui.title.mute",
+		"Unmute" if master_muted else "Mute",
 	).to_upper()
 	_music_label.text = UiCopyType.format_text(
 		&"ui.title.music_volume", "MUSIC VOLUME  //  {value}%",
@@ -408,7 +428,7 @@ func _apply_type() -> void:
 		StagingSkinType.apply_display_type(heading, _title_font_size(18), GOLD, 620)
 	for label: Label in [_master_label, _music_label, _sfx_label, _frame_label, _text_scale_label]:
 		StagingSkinType.apply_display_type(label, _title_font_size(15), MUTED, 560)
-	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _apply_button]:
 		StagingSkinType.apply_display_type(action, _title_font_size(17), IVORY, 560)
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
@@ -423,7 +443,7 @@ func _apply_type() -> void:
 
 
 func _configure_readable_actions() -> void:
-	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _apply_button]:
 		action.clip_text = false
 		action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		action.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
@@ -444,6 +464,7 @@ func _configure_accessibility_relationships() -> void:
 		var control := pair[1] as Control
 		control.accessibility_labeled_by_nodes = [control.get_path_to(label)]
 		label.accessibility_controls_nodes = [label.get_path_to(control)]
+	_master_label.accessibility_controls_nodes.append(_master_label.get_path_to(_master_mute_button))
 
 
 func _refresh_accessibility() -> void:
@@ -465,6 +486,15 @@ func _refresh_accessibility() -> void:
 		"Choose the interface language.",
 	)
 	_set_slider_accessibility(_master_slider, UiCopyType.text(&"ui.title.a11y.master_name", "Master volume"))
+	var master_muted := bool(_draft.get(&"master_muted", false))
+	_master_mute_button.accessibility_name = UiCopyType.text(
+		&"ui.title.unmute_master" if master_muted else &"ui.title.mute_master",
+		"Unmute Master" if master_muted else "Mute Master",
+	)
+	_master_mute_button.accessibility_description = _copy(
+		&"ui.title.a11y.master_mute_description",
+		"Mute or restore all game audio without changing the Master volume slider.",
+	)
 	_set_slider_accessibility(_music_slider, UiCopyType.text(&"ui.title.a11y.music_volume_name", "Music volume"))
 	_set_slider_accessibility(_sfx_slider, UiCopyType.text(&"ui.title.a11y.sfx_name", "Sound effects volume"))
 	_set_slider_accessibility(_text_scale_slider, UiCopyType.text(&"ui.title.a11y.text_scale_name", "Text scale"))
@@ -544,6 +574,7 @@ func _apply_responsive_layout() -> void:
 	_columns.add_theme_constant_override(&"v_separation", 12)
 	_locale_selector.set_vertical_layout(true)
 	_locale_selector.set_compact_mode(narrow or short)
+	_master_controls.vertical = narrow
 	_frame_row.vertical = true
 	for section_name: String in ["LanguageAudioSection", "GraphicsAccessibilitySection"]:
 		var section := _columns.get_node_or_null(section_name) as PanelContainer
@@ -576,6 +607,7 @@ func _apply_responsive_layout() -> void:
 	_back_button.custom_minimum_size = Vector2(92.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
 	_frame_option.custom_minimum_size.y = 72.0
 	_music_button.custom_minimum_size.y = 82.0
+	_master_mute_button.custom_minimum_size = Vector2(0.0 if narrow else 176.0, 64.0 if narrow else 48.0)
 	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
 	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider, _text_scale_slider]:
 		slider.custom_minimum_size.y = 48.0
@@ -598,9 +630,10 @@ func _apply_responsive_layout() -> void:
 		)
 	_back_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(9 if narrow else 17), 1.15))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
+	_master_mute_button.add_theme_font_size_override(&"font_size", _title_font_size(11 if narrow else 14))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 17))
 	_apply_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(15 if narrow else 17), 1.15))
-	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _apply_button]:
 		action.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
@@ -633,6 +666,7 @@ func _rebuild_focus_graph() -> void:
 		_back_button,
 		_locale_list,
 		_master_slider,
+		_master_mute_button,
 		_music_slider,
 		_sfx_slider,
 		_music_button,
@@ -650,6 +684,7 @@ func _rebuild_focus_graph() -> void:
 	_text_scale_slider.focus_neighbor_bottom = _text_scale_slider.get_path_to(_apply_button)
 	_locale_list.focus_neighbor_right = _locale_list.get_path_to(_frame_option)
 	_master_slider.focus_neighbor_right = _master_slider.get_path_to(_frame_option)
+	_master_mute_button.focus_neighbor_right = _master_mute_button.get_path_to(_frame_option)
 	_music_slider.focus_neighbor_right = _music_slider.get_path_to(_motion_button)
 	_sfx_slider.focus_neighbor_right = _sfx_slider.get_path_to(_text_scale_slider)
 	_music_button.focus_neighbor_right = _music_button.get_path_to(_text_scale_slider)
@@ -663,6 +698,7 @@ func _focus_controls() -> Array[Control]:
 		_back_button,
 		_locale_list,
 		_master_slider,
+		_master_mute_button,
 		_music_slider,
 		_sfx_slider,
 		_music_button,
