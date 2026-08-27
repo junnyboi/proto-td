@@ -13,6 +13,7 @@ const CACHE_DIR := "user://content-packs"
 const COPY_CHUNK_BYTES := 256 * 1024
 const DOWNLOAD_TIMEOUT_SECONDS := 180.0
 const MAX_PACK_BYTES := 64 * 1024 * 1024
+const MAX_PREDICTIVE_CLASSES := 3
 const ADVANCED_CLASSES := [
 	"banner_guard",
 	"defender",
@@ -91,6 +92,45 @@ func request_pack(pack_id: String, prioritize := true) -> bool:
 	pack_state_changed.emit(StringName(pack_id), &"queued", 0, int(spec[&"bytes"]))
 	_pump_queue.call_deferred()
 	return false
+
+
+func request_class(class_id: String, prioritize := true) -> bool:
+	var pack_id := pack_id_for_class(class_id)
+	if pack_id.is_empty():
+		return false
+	return request_pack(pack_id, prioritize)
+
+
+func prefetch_class_ids(
+		class_ids: Array,
+		prioritize := false,
+		limit := 0,
+	) -> Array[String]:
+	var requested: Array[String] = []
+	for value: Variant in class_ids:
+		var class_id := String(value)
+		var pack_id := pack_id_for_class(class_id)
+		if pack_id.is_empty() or requested.has(pack_id):
+			continue
+		requested.append(pack_id)
+		if limit > 0 and requested.size() >= limit:
+			break
+	if prioritize:
+		for index: int in range(requested.size() - 1, -1, -1):
+			request_pack(requested[index], true)
+	else:
+		for pack_id: String in requested:
+			request_pack(pack_id, false)
+	return requested
+
+
+func prefetch_roster(
+		roster_rows: Array,
+		selected_hero_ids: Array = [],
+	) -> Array[String]:
+	return prefetch_class_ids(
+		predictive_class_order(roster_rows, selected_hero_ids), false,
+	)
 
 
 func configured_pack_count() -> int:
@@ -316,9 +356,47 @@ static func pack_id_for_resource(path: String) -> String:
 		return ""
 	var relative := path.substr(prefix.length())
 	var class_id := relative.get_slice("/", 0)
+	return pack_id_for_class(class_id)
+
+
+static func pack_id_for_class(class_id: String) -> String:
 	if not ADVANCED_CLASSES.has(class_id):
 		return ""
 	return "operator-%s" % class_id.replace("_", "-")
+
+
+static func predictive_class_order(
+		roster_rows: Array,
+		selected_hero_ids: Array = [],
+		max_classes := MAX_PREDICTIVE_CLASSES,
+	) -> Array[String]:
+	var rows_by_hero: Dictionary = {}
+	for value: Variant in roster_rows:
+		if value is not Dictionary:
+			continue
+		var row := value as Dictionary
+		var hero_id := String(row.get("hero_id", ""))
+		if not hero_id.is_empty():
+			rows_by_hero[hero_id] = row
+	var ordered: Array[String] = []
+	for value: Variant in selected_hero_ids:
+		var selected_row := rows_by_hero.get(String(value), {}) as Dictionary
+		_append_predictive_class(ordered, String(selected_row.get("current_class_id", "")))
+	var target_count := maxi(max_classes, ordered.size())
+	for value: Variant in roster_rows:
+		if ordered.size() >= target_count:
+			break
+		if value is Dictionary:
+			_append_predictive_class(
+				ordered, String((value as Dictionary).get("current_class_id", "")),
+			)
+	return ordered
+
+
+static func _append_predictive_class(ordered: Array[String], class_id: String) -> void:
+	if pack_id_for_class(class_id).is_empty() or ordered.has(class_id):
+		return
+	ordered.append(class_id)
 
 
 static func valid_pack_ids() -> Array[String]:

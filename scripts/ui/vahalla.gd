@@ -260,7 +260,7 @@ func _rebuild_dossier() -> void:
 	_dossier_panel.add_child(layout)
 	var portrait := TextureRect.new()
 	portrait.name = "SelectedMemorialPortrait"
-	portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
+	portrait.texture = Art.texture(TrainingSupportType.presentation_portrait_asset_id(hero))
 	portrait.custom_minimum_size = Vector2(320, 420)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

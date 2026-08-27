@@ -107,3 +107,11 @@
 - [x] Generate, preserve, master, checksum, catalog, and route eight unique looped Act II battle tracks with clean loudness, true-peak, and silence analysis.
 - [x] Add responsive Restoration-seal entry and terminal transitions with local simulation hold, cue continuity, and reduced-motion behavior; accept landscape and portrait Xvfb captures.
 - [ ] Reconcile and push shared master, export/serve/browser-test the exact Godot Web release, advance the forward-only `proto-td-web` host, and save the final checkpoint.
+
+# Promoted Operator Portrait Continuity
+
+- [x] Preserve canonical Recruit portrait identity while deriving the visible female/male specialization portrait from each non-premium operator's current promoted class.
+- [x] Apply the shared presentation resolver to Training roster/dossier, Field Team cards, and Valhalla dossiers while preserving premium portrait precedence.
+- [x] Add 11-class × two-gender routing, second-stage continuity, idempotency, real promotion/save restoration/receipt, Field Team texture, premium, and fallen-operator regression coverage.
+- [x] Pass focused affected tests, the full Godot 4.7.2 baseline with zero failures, and representative landscape/portrait Xvfb visual acceptance.
+- [x] Reconcile and push shared master, export source `16e8586` into the exact 231,526,672-byte core, pass local and managed HTTP/WebGL/geometry/input/console gates, advance the newest forward-only `proto-td-web` host, and save the final checkpoint.

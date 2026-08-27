@@ -117,6 +117,9 @@ func _ready() -> void:
 	_narrative = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(Game.selected_stage_id)
 	_narrative_missing = _narrative == null
 	_ready_heroes = _identity_rows(Game.campaign_projection()["ready_heroes"])
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call("prefetch_roster", _ready_heroes, Game.selected_squad)
 	LunarisOpsType.add_backdrop(self, BACKDROP)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "MissionCommandShell"
@@ -516,6 +519,11 @@ func _identity_rows(raw_rows: Array) -> Array[Dictionary]:
 	for raw: Variant in raw_rows:
 		var hero := (raw as Dictionary).duplicate(true)
 		hero["callsign"] = _hero_callsign(hero)
+		hero["identity_portrait_asset_id"] = hero.get(
+			"identity_portrait_asset_id",
+			hero.get("portrait_asset_id", hero.get("identity_portrait_id", "")),
+		)
+		hero["portrait_asset_id"] = TrainingSupportType.presentation_portrait_asset_id(hero)
 		if not hero.has("custom_title"):
 			hero["custom_title"] = null
 		rows.append(hero)
@@ -699,6 +707,8 @@ func _rebuild_operator_cards() -> void:
 		if not fallen:
 			pick.set_pressed_no_signal(_picked.has(hero_id))
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
+			pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
+			pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
 			pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
 			pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
 			pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
@@ -1191,10 +1201,22 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 			(_buttons[hero_id] as Button).set_pressed_no_signal(false)
 			return
 		_picked.append(hero_id)
+		_prefetch_hero_pack(hero_id, true)
 	else:
 		_picked.erase(hero_id)
 	_refresh()
 	_animate_operator_selection(_buttons.get(hero_id) as AetheriaButtonType, pressed)
+
+
+func _prefetch_hero_pack(hero_id: StringName, prioritize: bool) -> void:
+	var hero := _hero_by_id(hero_id)
+	if hero.is_empty():
+		return
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call(
+			"request_class", String(hero.get("current_class_id", "")), prioritize,
+		)
 
 
 func selected_squad_order() -> Array[StringName]:

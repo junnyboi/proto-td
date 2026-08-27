@@ -68,6 +68,19 @@ static func supports_campaign(value: Variant) -> bool:
 	return true
 
 
+static func presentation_portrait_asset_id(hero: Dictionary) -> StringName:
+	var identity_portrait_asset_id := StringName(
+		hero.get("identity_portrait_asset_id", hero.get(
+			"portrait_asset_id", hero.get("identity_portrait_id", ""),
+		))
+	)
+	return OperatorPortraitCatalogType.presentation_asset_id(
+		StringName(hero.get("current_class_id", hero.get("class_id", ""))),
+		identity_portrait_asset_id,
+		String(hero.get("hero_kind", "recruit")) == "premium",
+	)
+
+
 static func roster(value: Variant) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	if not supports_campaign(value):
@@ -78,14 +91,17 @@ static func roster(value: Variant) -> Array[Dictionary]:
 		var current_class_id := String(hero.get("current_class_id", ""))
 		var definition := class_definition(current_class_id)
 		var is_premium := String(hero.get("hero_kind", "recruit")) == "premium"
-		var portrait_asset_id := String(
+		var identity_portrait_asset_id := String(
 			hero.get("portrait_asset_id", hero.get("identity_portrait_id", ""))
 		)
+		var portrait_asset_id := String(presentation_portrait_asset_id(hero))
 		var required := (
 			0 if is_premium else int(definition.promotion_xp_required) if definition != null else 0
 		)
 		var options: Dictionary = value.call("promotion_options", hero_id)
-		var projection := enrich_choices(options.get("choices", []), portrait_asset_id)
+		var projection := enrich_choices(
+			options.get("choices", []), identity_portrait_asset_id,
+		)
 		var model_accepted := bool(options.get("accepted", false))
 		var projection_accepted := bool(projection["accepted"])
 		rows.append(
@@ -96,6 +112,7 @@ static func roster(value: Variant) -> Array[Dictionary]:
 					"recruitment_index": int(hero.get("recruitment_index", -1)),
 					"current_class_id": current_class_id,
 					"operator_def_id": String(hero.get("operator_def_id", "")),
+					"identity_portrait_asset_id": identity_portrait_asset_id,
 					"portrait_asset_id": portrait_asset_id,
 				"life_status": String(hero.get("life_status", "")),
 				"hero_kind": String(hero.get("hero_kind", "recruit")),

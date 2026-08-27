@@ -1,11 +1,12 @@
 class_name OperatorPortraitCatalog
 extends RefCounted
 
-## Presentation-only gender variant routing for non-premium portrait art.
+## Presentation-only identity and promoted-class routing for non-premium portraits.
 ##
 ## Campaign identity, command payloads, receipts, save bytes, and promotion
-## authority stay unchanged. The already-persisted identity portrait selects a
-## deterministic visual variant for class-kit previews in Training.
+## authority stay unchanged. The already-persisted Recruit identity portrait
+## selects a deterministic gender variant. Recruit operators display that
+## identity; promoted operators display their matching specialization portrait.
 
 const FEMALE: StringName = &"female"
 const MALE: StringName = &"male"
@@ -41,9 +42,9 @@ static func identity_variant(portrait_asset_id: StringName) -> StringName:
 
 
 static func specialization_asset_id(
-	class_id: StringName,
-	identity_portrait_asset_id: StringName,
-) -> StringName:
+		class_id: StringName,
+		identity_portrait_asset_id: StringName,
+	) -> StringName:
 	if not SPECIALIZATION_CLASS_IDS.has(class_id):
 		return &""
 	return StringName(
@@ -51,7 +52,18 @@ static func specialization_asset_id(
 			class_id,
 			identity_variant(identity_portrait_asset_id),
 		]
-	)
+		)
+
+
+static func presentation_asset_id(
+		class_id: StringName,
+		identity_portrait_asset_id: StringName,
+		is_premium: bool = false,
+	) -> StringName:
+	if identity_portrait_asset_id == &"" or is_premium:
+		return identity_portrait_asset_id
+	var specialization_id := specialization_asset_id(class_id, identity_portrait_asset_id)
+	return identity_portrait_asset_id if specialization_id == &"" else specialization_id
 
 
 static func specialization_asset_ids() -> Array[StringName]:
