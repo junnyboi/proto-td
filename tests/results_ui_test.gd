@@ -58,6 +58,7 @@ func _run() -> void:
 	var second_xp := screen.find_child("XpAward1", true, false) as Control
 	var reward_count: Label = reward.find_child("Title", true, false) as Label if reward != null else null
 	var reward_icon := reward.find_child("ResonanceShardIcon", true, false) as TextureRect if reward != null else null
+	var reward_display := reward_icon.get_parent() as Control if reward_icon != null else null
 	var xp_count: Label = xp.find_child("Detail", true, false) as Label if xp != null else null
 	var second_xp_count: Label = second_xp.find_child("Detail", true, false) as Label if second_xp != null else null
 	var no_casualties := screen.find_child("NoCasualties", true, false) as PanelContainer
@@ -87,6 +88,7 @@ func _run() -> void:
 	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
 	_check(reward_count != null and reward_icon != null and reward_icon.texture != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Shard reward was not registered with its icon for count reveal")
+	_check(reward_display != null and reward_display.tooltip_text.contains("premium energy") and reward_display.accessibility_description.contains("Premium Resonance"), "Shard reward lacks its explanatory tooltip")
 	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Shard reward is not first in the reveal sequence")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "first survivor XP reward did not use the canonical delta")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after the shard reward")
