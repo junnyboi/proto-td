@@ -27,6 +27,9 @@ func _test_default_active_filter() -> void:
 		_check(not bool(row["fallen"]), "default active filter exposed a fallen soldier")
 	_check(FilterType.count(rows, FilterType.STATUS_ACTIVE) == 2, "active count mismatch")
 	_check(FilterType.count(rows, FilterType.STATUS_FALLEN) == 2, "fallen count mismatch")
+	var all_operators := FilterType.filter_rows(rows, FilterType.STATUS_ALL)
+	_check(all_operators.size() == 4, "all status did not include active and fallen operators")
+	_check(FilterType.count(rows, FilterType.STATUS_ALL) == 4, "all status count mismatch")
 
 
 func _test_fallen_and_faction_filters() -> void:

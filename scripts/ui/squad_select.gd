@@ -24,14 +24,15 @@ const ACTION_SAFE_INSET := 12.0
 const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
-const OPERATOR_CARD_WIDTH := 640.0
+const OPERATOR_CARD_WIDTH := 520.0
 const OPERATOR_CARD_HEIGHT := 220.0
 const OPERATOR_CARD_TALL_HEIGHT := 280.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
-const FIELD_TEAM_FACTION_WIDTH_SCALE := 1.5
-const FIELD_TEAM_FACTION_ICON_COUNT_GAP := 6
+const FIELD_TEAM_STATUS_WIDTH_SCALE := 2.0
+const REINFORCEMENT_DESK_WIDTH := 220.0
+const REINFORCEMENT_HIRE_WIDTH := 100.0
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
@@ -97,10 +98,13 @@ var _all_roster_rows: Array[Dictionary] = []
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _recruitment_grid: GridContainer = null
+var _recruitment_header: BoxContainer = null
 var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
 var _hire_currency_display: ResonanceCurrencyDisplay = null
 var _hire_marks: Label = null
+var _hire_action_label: Label = null
+var _hire_cost_label: Label = null
 var _hire_status: AetheriaLabelType = null
 var _deploy_pulse_tween: Tween = null
 var _deploy_ready_pulsing := false
@@ -243,9 +247,9 @@ func _build_body() -> GridContainer:
 	_filter_bar.configure(
 		_all_roster_rows, true, RosterFilterType.STATUS_ACTIVE, RosterFilterType.FACTION_ALL,
 	)
-	_filter_bar.set_faction_button_geometry(
-		FIELD_TEAM_FACTION_WIDTH_SCALE, FIELD_TEAM_FACTION_ICON_COUNT_GAP,
-	)
+	_filter_bar.set_show_all_status_tab(true)
+	_filter_bar.set_show_faction_filters(false)
+	_filter_bar.set_status_button_width_scale(FIELD_TEAM_STATUS_WIDTH_SCALE)
 	_filter_bar.filters_changed.connect(_on_filters_changed)
 	roster_column.add_child(_filter_bar)
 	roster_column.add_child(_build_identity_filter_toolbar())
@@ -374,11 +378,23 @@ func _selected_squad_empty_label() -> Label:
 
 
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
+	var desk_row := HBoxContainer.new()
+	desk_row.name = "BasicRecruitDeskCenter"
+	desk_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	desk_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	parent.add_child(desk_row)
 	var panel := PanelContainer.new()
 	panel.name = "BasicRecruitDesk"
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.custom_minimum_size.x = REINFORCEMENT_DESK_WIDTH
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	LunarisOpsType.apply_panel(panel, &"selected")
-	parent.add_child(panel)
+	var panel_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	panel_style.content_margin_left = 10.0
+	panel_style.content_margin_right = 10.0
+	panel_style.content_margin_top = 12.0
+	panel_style.content_margin_bottom = 12.0
+	panel.add_theme_stylebox_override(&"panel", panel_style)
+	desk_row.add_child(panel)
 	var stack := VBoxContainer.new()
 	stack.name = "BasicRecruitStack"
 	stack.add_theme_constant_override(&"separation", 10)
@@ -389,39 +405,77 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_recruitment_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_recruitment_grid.add_theme_constant_override(&"v_separation", 10)
 	stack.add_child(_recruitment_grid)
+	_recruitment_header = BoxContainer.new()
+	_recruitment_header.name = "BasicRecruitHeader"
+	_recruitment_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recruitment_header.add_theme_constant_override(&"separation", 6)
+	_recruitment_grid.add_child(_recruitment_header)
 	_hire_title = AetheriaLabelType.new()
 	_hire_title.name = "BasicRecruitTitle"
 	_hire_title.apply_role(&"dense_heading")
-	_hire_title.add_theme_font_size_override(&"font_size", 24)
+	_hire_title.add_theme_font_size_override(&"font_size", 14)
 	_hire_title.text = UiCopyType.text(
 		&"ui.campaign.basic_hire_title", "Company Reinforcements",
 	).to_upper()
 	_hire_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_recruitment_grid.add_child(_hire_title)
+	_hire_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hire_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hire_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recruitment_header.add_child(_hire_title)
 	_hire_currency_display = ResonanceCurrencyDisplayType.new()
 	_hire_currency_display.name = "BasicRecruitCurrency"
-	_hire_currency_display.configure("0", 24, 34.0)
-	_hire_currency_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_hire_currency_display.configure("0", 18, 24.0)
+	_hire_currency_display.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_hire_currency_display.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_END
+	_hire_currency_display.add_theme_constant_override(&"separation", 4)
 	_hire_marks = _hire_currency_display.amount_label
 	_hire_marks.name = "BasicRecruitMarks"
-	_recruitment_grid.add_child(_hire_currency_display)
+	_recruitment_header.add_child(_hire_currency_display)
 	_hire_recruit = AetheriaButtonType.new()
 	_hire_recruit.name = "HireBasicRecruit"
-	_hire_recruit.custom_minimum_size = Vector2(220.0, 72.0)
-	_hire_recruit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hire_recruit.custom_minimum_size = Vector2(REINFORCEMENT_HIRE_WIDTH, 72.0)
+	_hire_recruit.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.apply_role(&"primary")
 	_apply_clean_training_style(_hire_recruit)
 	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
-	_hire_recruit.accessibility_name = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
-	)
+	var hire_content := HBoxContainer.new()
+	hire_content.name = "BasicRecruitActionContent"
+	hire_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hire_content.alignment = BoxContainer.ALIGNMENT_CENTER
+	hire_content.add_theme_constant_override(&"separation", 4)
+	hire_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hire_recruit.add_child(hire_content)
+	_hire_action_label = Label.new()
+	_hire_action_label.name = "BasicRecruitActionLabel"
+	_hire_action_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hire_action_label.add_theme_font_size_override(&"font_size", 18)
+	_hire_action_label.add_theme_color_override(&"font_color", LunarisOpsType.IVORY)
+	_hire_action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hire_content.add_child(_hire_action_label)
+	var cost_icon := TextureRect.new()
+	cost_icon.name = "BasicRecruitCostIcon"
+	cost_icon.texture = ResonanceCurrencyDisplayType.ICON_TEXTURE
+	cost_icon.custom_minimum_size = Vector2(20.0, 20.0)
+	cost_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	cost_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	cost_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	cost_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hire_content.add_child(cost_icon)
+	_hire_cost_label = Label.new()
+	_hire_cost_label.name = "BasicRecruitCostLabel"
+	_hire_cost_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hire_cost_label.add_theme_font_size_override(&"font_size", 18)
+	_hire_cost_label.add_theme_color_override(&"font_color", LunarisOpsType.GOLD)
+	_hire_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hire_content.add_child(_hire_cost_label)
 	_recruitment_grid.add_child(_hire_recruit)
 	_hire_status = AetheriaLabelType.new()
 	_hire_status.name = "BasicRecruitStatus"
 	_hire_status.apply_role(&"dense_detail")
 	_hire_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hire_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hire_status.accessibility_name = UiCopyType.text(
 		&"ui.campaign.basic_hire_title", "Company Reinforcements",
 	)
@@ -862,18 +916,22 @@ func _wide_action_width(node_name: String) -> float:
 
 
 func _operator_grid_columns(mode: StringName) -> int:
-	return 1
+	return 1 if mode == &"portrait" or get_viewport_rect().size.x < 1280.0 else 2
 
 
 func _operator_card_width(mode: StringName) -> float:
 	if mode == &"portrait":
-		return minf(OPERATOR_CARD_WIDTH, maxf(240.0, get_viewport_rect().size.x - 96.0))
-	var available_field_width := get_viewport_rect().size.x * FIELD_TEAM_WIDTH_RATIO - 72.0
-	return minf(OPERATOR_CARD_WIDTH, maxf(320.0, available_field_width))
+		return minf(640.0, maxf(240.0, get_viewport_rect().size.x - 96.0))
+	var available_grid_width := get_viewport_rect().size.x * FIELD_TEAM_WIDTH_RATIO - 96.0
+	if _operator_grid_columns(mode) == 1:
+		return minf(640.0, maxf(320.0, available_grid_width))
+	return minf(OPERATOR_CARD_WIDTH, maxf(240.0, (available_grid_width - 12.0) * 0.5))
 
 
 func _operator_info_split(mode: StringName) -> float:
-	return 0.54 if mode == &"portrait" else OPERATOR_INFO_SPLIT
+	if mode == &"portrait":
+		return 0.54
+	return 0.59 if _operator_card_width(mode) < 400.0 else OPERATOR_INFO_SPLIT
 
 
 func _operator_card_height(hero: Dictionary, mode: StringName) -> float:
@@ -1036,18 +1094,16 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	var action_text := UiCopyType.format_text(
 		&"ui.campaign.basic_hire_action", "HIRE • {cost}", {&"cost": cost},
 	)
-	_hire_recruit.set_presentation_text(action_text, action_text)
-	ResonanceCurrencyDisplayType.apply_to_button(
-		_hire_recruit, action_text, action_text, 34,
-	)
-	var presentation := _hire_recruit.get_node("PresentationLabel") as Label
-	presentation.text = action_text
-	presentation.offset_left = 12.0
-	presentation.offset_top = 12.0
-	presentation.offset_right = -12.0
-	presentation.offset_bottom = -12.0
-	presentation.clip_text = false
-	presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var action_parts := action_text.split("•", true, 1)
+	_hire_action_label.text = action_parts[0].strip_edges()
+	_hire_cost_label.text = str(cost)
+	_hire_recruit.text = ""
+	_hire_recruit.icon = null
+	_hire_recruit.accessibility_name = "%s, %s" % [
+		action_text,
+		UiCopyType.text(&"ui.currency.resonance_shards_name", "Resonance Shards"),
+	]
+	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, action_text)
 	var unavailable := (
 		projection.is_empty()
 		or marks < cost
@@ -1642,15 +1698,19 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 	if _filter_bar != null:
 		_filter_bar.set_compact(true)
 		_filter_bar.set_roomy(false)
+		var status_width_scale := FIELD_TEAM_STATUS_WIDTH_SCALE
+		if mode == &"portrait":
+			status_width_scale = minf(
+				FIELD_TEAM_STATUS_WIDTH_SCALE,
+				maxf(1.0, (get_viewport_rect().size.x - 96.0) / 176.0),
+			)
+		_filter_bar.set_status_button_width_scale(status_width_scale)
 		_filter_bar.set_dense_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)
 		_filter_bar.set_inline(mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0)
 	if _recruitment_grid != null:
 		_recruitment_grid.columns = 1
 	if _hire_recruit != null:
-		_hire_recruit.custom_minimum_size = Vector2(
-			220.0 if mode == &"regular_landscape" else 0.0,
-			72.0,
-		)
+		_hire_recruit.custom_minimum_size = Vector2(REINFORCEMENT_HIRE_WIDTH, 72.0)
 	for button: Button in _buttons.values():
 		var hero: Dictionary = button.get_meta(&"hero", {})
 		button.custom_minimum_size = Vector2(

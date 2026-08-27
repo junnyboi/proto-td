@@ -14,7 +14,9 @@ var status: StringName = FilterType.STATUS_ACTIVE
 var faction_id: StringName = FilterType.FACTION_ALL
 var _rows: Array[Dictionary] = []
 var _show_status_tabs := true
+var _show_all_status_tab := false
 var _show_promotion_ready_tab := false
+var _show_faction_filters := true
 var _compact := false
 var _roomy := false
 var _dense_inline := false
@@ -22,6 +24,7 @@ var _inline := false
 var _generous_spacing := false
 var _narrow := false
 var _faction_button_width_scale := DEFAULT_FACTION_BUTTON_WIDTH_SCALE
+var _status_button_width_scale := 1.0
 var _faction_icon_count_gap := DEFAULT_FACTION_ICON_COUNT_GAP
 var _controls: BoxContainer
 var _status_row: HFlowContainer
@@ -53,6 +56,7 @@ func configure(
 		if initial_status in [
 			FilterType.STATUS_ACTIVE,
 			FilterType.STATUS_FALLEN,
+			FilterType.STATUS_ALL,
 			FilterType.STATUS_PROMOTION_READY,
 		]
 		else FilterType.STATUS_ACTIVE
@@ -63,6 +67,9 @@ func configure(
 		else FilterType.FACTION_ALL
 	)
 	_status_row.visible = _show_status_tabs
+	var all_button := _status_buttons.get(FilterType.STATUS_ALL) as Button
+	if all_button != null:
+		all_button.visible = _show_all_status_tab
 	var promotion_button := _status_buttons.get(FilterType.STATUS_PROMOTION_READY) as Button
 	if promotion_button != null:
 		promotion_button.visible = _show_promotion_ready_tab
@@ -71,6 +78,31 @@ func configure(
 
 func set_rows(rows: Array) -> void:
 	_rows = FilterType.annotate_all(rows)
+	_refresh_controls()
+
+
+func set_show_all_status_tab(value: bool) -> void:
+	_show_all_status_tab = value
+	var all_button := _status_buttons.get(FilterType.STATUS_ALL) as Button
+	if all_button != null:
+		all_button.visible = value
+	if _status_row != null and _inline:
+		_status_row.custom_minimum_size.x = _inline_status_width()
+	_refresh_controls()
+
+
+func set_show_faction_filters(value: bool) -> void:
+	_show_faction_filters = value
+	faction_id = FilterType.FACTION_ALL
+	if _faction_row != null:
+		_faction_row.visible = value
+	_refresh_controls()
+
+
+func set_status_button_width_scale(value: float) -> void:
+	_status_button_width_scale = maxf(1.0, value)
+	if _status_row != null and _inline:
+		_status_row.custom_minimum_size.x = _inline_status_width()
 	_refresh_controls()
 
 
@@ -173,6 +205,7 @@ func _build_controls() -> void:
 	_controls.add_child(_status_row)
 	_add_status_button(FilterType.STATUS_ACTIVE)
 	_add_status_button(FilterType.STATUS_FALLEN)
+	_add_status_button(FilterType.STATUS_ALL)
 	_add_status_button(FilterType.STATUS_PROMOTION_READY)
 
 	_faction_row = HFlowContainer.new()
@@ -222,9 +255,13 @@ func _refresh_controls() -> void:
 			UiCopyType.text(&"ui.roster.tab.fallen", "Fallen")
 			if value == FilterType.STATUS_FALLEN
 			else (
-				UiCopyType.text(&"ui.roster.tab.promotion_ready", "Promotion Ready")
-				if value == FilterType.STATUS_PROMOTION_READY
-				else UiCopyType.text(&"ui.roster.tab.active", "Active")
+				UiCopyType.text(&"ui.roster.filter.all", "All")
+				if value == FilterType.STATUS_ALL
+				else (
+					UiCopyType.text(&"ui.roster.tab.promotion_ready", "Promotion Ready")
+					if value == FilterType.STATUS_PROMOTION_READY
+					else UiCopyType.text(&"ui.roster.tab.active", "Active")
+				)
 			)
 		)
 		button.text = "%s  %d" % [label.to_upper(), count]
@@ -245,7 +282,7 @@ func _refresh_controls() -> void:
 		else:
 			var status_width := 176.0 if _dense_inline else (176.0 if _compact else 200.0)
 			button.custom_minimum_size = Vector2(
-				status_width * (2.0 if _roomy else 1.0),
+				status_width * (2.0 if _roomy else 1.0) * _status_button_width_scale,
 				78.0 if _roomy else 54.0,
 			)
 		Style.apply_button(button, &"selected" if value == status else &"quiet")
@@ -317,9 +354,10 @@ func _apply_button_insets(button: Button, horizontal: float, vertical: float) ->
 func _inline_status_width() -> float:
 	if _generous_spacing:
 		return 744.0 if _show_promotion_ready_tab else 388.0
-	if _dense_inline:
-		return 360.0
-	return 360.0 if _compact else 408.0
+	var visible_count := 2 + int(_show_all_status_tab) + int(_show_promotion_ready_tab)
+	var button_width := 176.0 if _dense_inline or _compact else 200.0
+	button_width *= (2.0 if _roomy else 1.0) * _status_button_width_scale
+	return button_width * visible_count + 8.0 * maxi(0, visible_count - 1)
 
 
 func _on_status_pressed(value: StringName) -> void:
