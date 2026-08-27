@@ -161,7 +161,7 @@ func _finish() -> void:
 		return
 	_finished = true
 	if _failures.is_empty():
-		print("nonpremium_portrait_catalog_test: PASS")
+		print("NONPREMIUM_PORTRAIT_CATALOG_TEST_OK")
 		quit(0)
 		return
 	for failure: String in _failures:
