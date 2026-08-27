@@ -120,6 +120,17 @@ func _check_reviewed_chinese(entries: Dictionary) -> void:
 	_check(entries["data.stage.s10.narrative.battle_start_speaker"] == "月辉载体", "Act II Lunaris Vessel identity drifted")
 	_check(entries["data.stage.s11.narrative.battle_start_speaker"] == "圣物决斗者", "Act II Reliquary Duelist identity drifted")
 	_check(entries["data.stage.s12.narrative.transmission_speaker"] == "档案术师", "Act II Archive Caster identity drifted")
+	const EXACT_REPAIR_COPY_ZH := "每3秒修复受伤的地面机器人；用减速力场覆盖平台可阻止修复。"
+	for stage_index: int in range(9, 17):
+		_check(entries["data.stage.s%d.hint" % stage_index] == EXACT_REPAIR_COPY_ZH, "Chinese Act II repair wording drifted in s%d" % stage_index)
+	_check(entries["data.stage.s9.narrative.core_service"].contains("样板城市养殖场"), "Chinese S9 model-city farm beat drifted")
+	_check(entries["data.stage.s10.narrative.threat"].contains("固定人数"), "Chinese S10 quota beat drifted")
+	_check(entries["data.stage.s11.narrative.clear_debrief"].contains("先营救、后拆毁"), "Chinese S11 rescue-first beat drifted")
+	_check(entries["data.stage.s12.narrative.transmission"].contains("数字生命") and entries["data.stage.s12.narrative.transmission"].contains("无需夺取人类灵魂"), "Chinese S12 clean digital-life beat drifted")
+	_check(entries["data.stage.s13.narrative.battle_start"].contains("同一个灵魂"), "Chinese S13 Patient 33 same-soul beat drifted")
+	_check(entries["data.stage.s14.narrative.transmission"].contains("我授权") and entries["data.stage.s14.narrative.transmission"].contains("选择腐化"), "Chinese S14 authorization beat drifted")
+	_check(entries["data.stage.s15.narrative.battle_start"].contains("顺序固定"), "Chinese S15 fixed rescue-first beat drifted")
+	_check(entries["data.stage.s16.narrative.clear_debrief"].contains("区域铸造厂被摧毁") and entries["data.stage.s16.narrative.clear_debrief"].contains("PROTOS仍然存活"), "Chinese S16 foundry/survival beat drifted")
 
 
 func _check_standalone_control_fonts() -> void:

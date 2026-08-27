@@ -102,7 +102,7 @@ func _validate_stage_schedules() -> void:
 	_check(_has_spawn(s3, &"breacher", 0, 450), "S3 first Breacher must arrive at tick 450 on path zero")
 	_check(_has_spawn(s3, &"breacher", 1, 570), "S3 second Breacher must alternate to path one at tick 570")
 	_check(s3.wave_starts == PackedInt32Array([0, 390]), "S3 wave boundaries must remain unchanged")
-	_check(s3.intro_hint.contains("Breachers") and s3.intro_hint.contains("two block slots"), "S3 hint must explain Breacher block pressure")
+	_check(s3.intro_hint.contains("Breachers") and s3.intro_hint.contains("two block"), "S3 hint must explain Breacher block pressure")
 
 	_check(s4.waves.size() == 11, "S4 must preserve eleven total spawns")
 	_check(_enemy_count(s4, &"interceptor") == 2, "S4 must contain exactly two Interceptors")

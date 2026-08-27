@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s16"
-title = "The Unfinished Proof"
+title = "Empire Foundry"
 music_profile_id = &"lunaris"
 music_variant_id = &"boss"
 grid_rows = PackedStringArray("SGGGGGGG........", "..E.X..G.E......", "SGGGGG.GX...E...", "....XG.G..X.....", "..E..GGGGGGGGGGB", "......X..GXG.E..", "SGGGGGGGGG.GX...", "...E....E..G....", "SGGGGGGGGGGG....")
@@ -146,7 +146,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 16
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Two Gatecrasher judges audit the live consent ledger. They ignore Charm: suppress each restoration window, turn eligible escorts, burst support, then fall back to the final line."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(7, 2, 5, 3, 9, 5, 12, 4)
 restoration_heal_amount = 12
 restoration_interval_ticks = 90

@@ -465,7 +465,7 @@ Update this table during implementation. A phase may change from `[ ]` to `[x]` 
 
 - [x] **Phase 1 — Sole canon:** corrected approved source; `docs/NARRATIVE_CANON.md`; README narrative; technical Act II plan label; `ACT_II_PROPOSAL.md` deleted. Source commit: `728dbd4a8b7d159e5272916239d9e26ca25c8aa9` pushed to `origin/master`.
 - [x] **Phase 2 — Documentation:** active lore rewritten; technical/history docs preserved and labeled; document scans pass. Source commit: `3b33c0e3d37f614358800f352207f0c46afb494d` pushed to `origin/master`.
-- [ ] **Phase 3 — Act I:** S1–S8 resources, hints, EN/zh-CN copy, focused dialogue/localization/stage tests pass. Source commit: `________` pushed to `origin/master`.
+- [x] **Phase 3 — Act I:** S1–S8 resources, hints, EN/zh-CN copy, focused dialogue/localization/stage tests pass. Source commit: `50113076fdb9931ccafd28a1be8d2a3279df208f` pushed to `origin/master`.
 - [ ] **Phase 4 — Act II:** S9–S16 presentation, repair wording, EN/zh-CN copy, campaign/restoration/save tests pass. Source commit: `________` pushed to `origin/master`.
 - [ ] **Phase 5 — Runtime/system copy:** title, staging, fallback, Results, Training, Premium Resonance, Valhalla, canon contract, and strict audit pass. Source commit: `________` pushed to `origin/master`.
 - [ ] **Phase 6 — Archive:** four records, art, eight recordings, manifest, gates, imports, tests; obsolete archive media deleted. Source commit: `________` pushed to `origin/master`.

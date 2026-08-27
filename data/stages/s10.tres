@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s10"
-title = "Living Triage"
+title = "Rain Debt"
 music_profile_id = &"lunaris"
 music_variant_id = &"gravity_lattice"
 grid_rows = PackedStringArray(".............", "SGGGGG.......", "..E.XG.EX....", "...GGGGGGGGGB", "...GX...XE...", "SGGG.E.......", ".............")
@@ -102,7 +102,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 10
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Two triage lanes restore durable targets independently. Rotate Slow Field between lattices and reserve Arts damage for Shieldbearers."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(5, 2, 3, 4)
 restoration_heal_amount = 8
 restoration_interval_ticks = 90
