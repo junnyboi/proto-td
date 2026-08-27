@@ -12,6 +12,7 @@ const STAGE_SELECT_SCENE_PATH := "res://scenes/stage_select.tscn"
 const SQUAD_SELECT_SCENE_PATH := "res://scenes/squad_select.tscn"
 const RESULTS_SCENE_PATH := "res://scenes/results.tscn"
 const NARRATIVE_ARCHIVE_SCENE_PATH := "res://scenes/narrative_archive.tscn"
+const DEFAULT_VIEW_PREFERENCES_PATH := "user://view_preferences.cfg"
 const LEGACY_CAMPAIGN_ADAPTER_SCRIPT := preload("res://sim/legacy_campaign_adapter.gd")
 const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_context.gd")
 const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
@@ -43,6 +44,8 @@ var _pending_recruitment_mutation: Variant = null
 var _pending_launch_mutation: Variant = null
 var _pending_launch_open_battle := true
 var _campaign_battle_active := false
+var _command_tutorial_requested := false
+var _view_preferences_path := DEFAULT_VIEW_PREFERENCES_PATH
 
 
 func set_run_seed(value: int) -> void:
@@ -527,6 +530,26 @@ func strategic_mutation_pending() -> bool:
 	)
 
 
+## Title presentation arms this one-shot request. Command Center consumes it so
+## non-title routes and test fixtures do not unexpectedly mount onboarding.
+func request_command_tutorial() -> void:
+	_command_tutorial_requested = true
+
+
+func consume_command_tutorial_request() -> bool:
+	var requested := _command_tutorial_requested
+	_command_tutorial_requested = false
+	return requested
+
+
+func set_view_preferences_path(path: String) -> void:
+	_view_preferences_path = path if not path.is_empty() else DEFAULT_VIEW_PREFERENCES_PATH
+
+
+func view_preferences_path() -> String:
+	return _view_preferences_path
+
+
 ## next Start always creates a fresh campaign with no stale selection.
 func open_title() -> void:
 	pending_stage = null
@@ -547,6 +570,7 @@ func open_title() -> void:
 	_pending_launch_mutation = null
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false
+	_command_tutorial_requested = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
@@ -586,6 +610,21 @@ func open_narrative_archive() -> void:
 
 func open_stage_select() -> void:
 	_swap_content.call_deferred(STAGE_SELECT_SCENE_PATH)
+
+
+## Select one authenticated campaign stage and open the existing Field Team
+## workspace. This is presentation routing only; no attempt is committed here.
+func open_field_team_for_stage(stage_id: StringName) -> bool:
+	if not campaign_active or campaign == null or stage_id.is_empty():
+		return false
+	if stage_id not in campaign_stage_ids() or not is_stage_unlocked(stage_id):
+		return false
+	var stage_path := "res://data/stages/%s.tres" % stage_id
+	if not ResourceLoader.exists(stage_path):
+		return false
+	selected_stage_id = stage_id
+	open_squad_select()
+	return true
 
 
 func open_squad_select() -> void:

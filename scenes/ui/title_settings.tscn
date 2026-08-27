@@ -168,14 +168,33 @@ layout_mode = 2
 text = "MASTER VOLUME"
 autowrap_mode = 2
 
-[node name="MasterVolumeSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow"]
+[node name="MasterControls" type="BoxContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MasterVolumeSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 2
 mouse_default_cursor_shape = 2
 max_value = 100.0
 step = 5.0
 value = 100.0
+tick_count = 11
+ticks_on_borders = true
+
+[node name="MasterMuteButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls"]
+custom_minimum_size = Vector2(176, 48)
+layout_mode = 2
+focus_mode = 2
+mouse_default_cursor_shape = 2
+theme_type_variation = &"AuiSecondaryButton"
+toggle_mode = true
+text = ""
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
 
 [node name="MusicVolumeRow" type="VBoxContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection"]
 layout_mode = 2

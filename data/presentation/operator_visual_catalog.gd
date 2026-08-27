@@ -7,20 +7,55 @@ extends RefCounted
 const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
 const DEFINITIONS: Dictionary = {
 	&"archive_caster": preload("res://data/presentation/operator_visuals/archive_caster.tres"),
+	&"banner_guard_female": preload("res://data/presentation/operator_visuals/banner_guard_female.tres"),
+	&"banner_guard_male": preload("res://data/presentation/operator_visuals/banner_guard_male.tres"),
 	&"caster_1": preload("res://data/presentation/operator_visuals/caster_1.tres"),
 	&"caster_2": preload("res://data/presentation/operator_visuals/caster_2.tres"),
+	&"defender_female": preload("res://data/presentation/operator_visuals/defender_female.tres"),
+	&"defender_male": preload("res://data/presentation/operator_visuals/defender_male.tres"),
 	&"defender_1": preload("res://data/presentation/operator_visuals/defender_1.tres"),
 	&"defender_2": preload("res://data/presentation/operator_visuals/defender_2.tres"),
+	&"gunner_female": preload("res://data/presentation/operator_visuals/gunner_female.tres"),
+	&"gunner_male": preload("res://data/presentation/operator_visuals/gunner_male.tres"),
 	&"guard_1": preload("res://data/presentation/operator_visuals/guard_1.tres"),
 	&"guard_2": preload("res://data/presentation/operator_visuals/guard_2.tres"),
+	&"immovable_female": preload("res://data/presentation/operator_visuals/immovable_female.tres"),
+	&"immovable_male": preload("res://data/presentation/operator_visuals/immovable_male.tres"),
 	&"lunaris_vessel": preload("res://data/presentation/operator_visuals/lunaris_vessel.tres"),
+	&"mage_apprentice_female": preload("res://data/presentation/operator_visuals/mage_apprentice_female.tres"),
+	&"mage_apprentice_male": preload("res://data/presentation/operator_visuals/mage_apprentice_male.tres"),
 	&"reliquary_duelist": preload("res://data/presentation/operator_visuals/reliquary_duelist.tres"),
 	&"recruit_female": preload("res://data/presentation/operator_visuals/recruit_female.tres"),
 	&"recruit_male": preload("res://data/presentation/operator_visuals/recruit_male.tres"),
+	&"shock_trooper_female": preload("res://data/presentation/operator_visuals/shock_trooper_female.tres"),
+	&"shock_trooper_male": preload("res://data/presentation/operator_visuals/shock_trooper_male.tres"),
+	&"sniper_female": preload("res://data/presentation/operator_visuals/sniper_female.tres"),
+	&"sniper_male": preload("res://data/presentation/operator_visuals/sniper_male.tres"),
 	&"sniper_1": preload("res://data/presentation/operator_visuals/sniper_1.tres"),
 	&"sniper_2": preload("res://data/presentation/operator_visuals/sniper_2.tres"),
+	&"sorcerer_female": preload("res://data/presentation/operator_visuals/sorcerer_female.tres"),
+	&"sorcerer_male": preload("res://data/presentation/operator_visuals/sorcerer_male.tres"),
+	&"sword_saint_female": preload("res://data/presentation/operator_visuals/sword_saint_female.tres"),
+	&"sword_saint_male": preload("res://data/presentation/operator_visuals/sword_saint_male.tres"),
+	&"swordmaster_female": preload("res://data/presentation/operator_visuals/swordmaster_female.tres"),
+	&"swordmaster_male": preload("res://data/presentation/operator_visuals/swordmaster_male.tres"),
 	&"vanguard_1": preload("res://data/presentation/operator_visuals/vanguard_1.tres"),
 	&"vanguard_2": preload("res://data/presentation/operator_visuals/vanguard_2.tres"),
+	&"witch_doctor_female": preload("res://data/presentation/operator_visuals/witch_doctor_female.tres"),
+	&"witch_doctor_male": preload("res://data/presentation/operator_visuals/witch_doctor_male.tres"),
+}
+const ADVANCED_CLASS_IDS: Dictionary = {
+	&"banner_guard": true,
+	&"defender": true,
+	&"gunner": true,
+	&"immovable": true,
+	&"mage_apprentice": true,
+	&"shock_trooper": true,
+	&"sniper": true,
+	&"sorcerer": true,
+	&"sword_saint": true,
+	&"swordmaster": true,
+	&"witch_doctor": true,
 }
 const VISUAL_ALIASES: Dictionary = {
 	&"witch_doctor_1": &"caster_1",
@@ -37,19 +72,34 @@ static func template_for_unit(
 	portrait_asset_id: StringName,
 	hero_id: StringName,
 	unit_id: int,
+	class_id: StringName = &"",
 ) -> StringName:
 	var premium_template: Variant = PREMIUM_VISUAL_BY_PORTRAIT.get(portrait_asset_id)
 	if typeof(premium_template) == TYPE_STRING_NAME:
 		return premium_template
+	var advanced_class: Variant = class_id if ADVANCED_CLASS_IDS.has(class_id) else null
+	if typeof(advanced_class) == TYPE_STRING_NAME:
+		return StringName(
+			"%s_%s"
+			% [advanced_class, deterministic_identity_gender(hero_id, portrait_asset_id, unit_id)]
+		)
 	if op_id != &"recruit":
 		return op_id
+	return StringName(
+		"recruit_%s" % deterministic_identity_gender(hero_id, portrait_asset_id, unit_id)
+	)
+
+
+static func deterministic_identity_gender(
+	hero_id: StringName, portrait_asset_id: StringName, unit_id: int
+) -> StringName:
 	var identity := String(hero_id)
 	if identity.is_empty():
 		identity = String(portrait_asset_id)
 	var parity := posmod(unit_id, 2) if identity.is_empty() else 0
 	for index: int in identity.length():
 		parity = posmod(parity + identity.unicode_at(index), 2)
-	return &"recruit_female" if parity == 0 else &"recruit_male"
+	return &"female" if parity == 0 else &"male"
 
 
 static func get_animation(template_id: StringName) -> OperatorAnimationDefType:
@@ -111,7 +161,7 @@ static func _validate_manifest(
 				errors.append(
 					"%s/%s/%s: manifest frame count mismatch" % [template_id, family, direction]
 				)
-			if Art.size(logical_id) != Vector2i(192, 192):
+			if Art.size(logical_id) != Vector2i.ONE * animation.source_cell_px:
 				errors.append("%s/%s/%s: manifest cell mismatch" % [template_id, family, direction])
 			if not is_equal_approx(Art.fps(logical_id), animation.fps):
 				errors.append("%s/%s/%s: manifest fps mismatch" % [template_id, family, direction])
@@ -122,3 +172,11 @@ static func _validate_manifest(
 				var expected_placeholder := animation.is_placeholder(logical_id)
 				if bool(metadata.get(&"placeholder", true)) != expected_placeholder:
 					errors.append("%s/%s/%s: placeholder mismatch" % [template_id, family, direction])
+				if animation.schema_version == 2:
+					if int(metadata.get(&"columns", 0)) != 8:
+						errors.append("%s/%s/%s: generated columns mismatch" % [template_id, family, direction])
+					if Art.pivot(logical_id) != animation.pivot:
+						errors.append("%s/%s/%s: generated pivot mismatch" % [template_id, family, direction])
+					var provenance: Variant = metadata.get(&"provenance")
+					if provenance is not Dictionary or String(provenance.get(&"atlas_sha256", "")).is_empty():
+						errors.append("%s/%s/%s: generated provenance missing" % [template_id, family, direction])

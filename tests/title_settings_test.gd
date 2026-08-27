@@ -21,7 +21,11 @@ func _run() -> void:
 	_original_max_fps = Engine.max_fps
 	_capture_buses()
 	_check(PREFS.locale(PATH) == &"en-US", "locale default is not English")
+	_check(not PREFS.master_muted(PATH), "missing Master mute preference did not default to unmuted")
 	_check(PREFS.mark_pan_hint_seen(PATH), "unrelated navigation preference was not created")
+	_check(not PREFS.has_seen_command_tutorial(PATH), "command tutorial should be unseen by default")
+	_check(PREFS.mark_command_tutorial_seen(PATH), "command tutorial completion was not created")
+	_check(PREFS.has_seen_command_tutorial(PATH), "command tutorial completion did not persist")
 	_check(not PREFS.save_batch({&"locale": &"en-US"}, PATH), "invalid batch was accepted")
 	var game := root.get_node_or_null("Game")
 	var music := root.get_node_or_null("Music")
@@ -41,6 +45,8 @@ func _run() -> void:
 func _verify_transition_contract(game: Node) -> void:
 	var title := await _create_title(PATH)
 	var settings_button := title.find_child("SettingsButton", true, false) as Button
+	var footer_button := title.find_child("FooterSettingsButton", true, false) as Button
+	_check(footer_button != null, "fixed footer Settings action is missing")
 	settings_button.grab_focus()
 	title.call("_open_settings")
 	var state := title.get_node("TitleSettings") as Control
@@ -55,6 +61,13 @@ func _verify_transition_contract(game: Node) -> void:
 	_check(not settings_button.is_visible_in_tree() and not settings_button.has_focus(), "Title returned during Settings exit")
 	await _wait_for_transition(state, &"CLOSED")
 	_check(StringName(title.call("screen_state")) == &"TITLE" and settings_button.has_focus(), "normal close did not restore Title focus after exit")
+	footer_button.grab_focus()
+	title.call("_open_settings")
+	await _wait_for_transition(state, &"ACTIVE")
+	_check(not footer_button.is_visible_in_tree() and footer_button.disabled, "footer Settings remained interactive behind the modal")
+	title.call("_close_settings")
+	await _wait_for_transition(state, &"CLOSED")
+	_check(footer_button.has_focus(), "footer Settings did not receive exact return focus")
 	await _release(title, game)
 
 	_remove(REDUCED_PATH)
@@ -102,6 +115,7 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == roundi(project_body_base * 1.35), "Title/Settings shared theme compounded during preview")
 	_check(PREFS.frame_limit(PATH) == 0, "draft frame limit persisted before Apply")
 	_check(_near(PREFS.master_volume(PATH), 1.0), "draft volume persisted before Apply")
+	_check(not PREFS.master_muted(PATH), "draft Master mute state persisted before Apply")
 	_check(PREFS.locale(PATH) == &"en-US", "draft locale persisted before Apply")
 	title.call("_close_settings")
 	await _wait_for_transition(state_root, &"CLOSED")
@@ -128,6 +142,7 @@ func _verify_apply(game: Node, music: Node) -> void:
 	await _wait_for_transition(first.get_node("TitleSettings") as Control, &"CLOSED")
 	_check(StringName(first.call("screen_state")) == &"TITLE", "Apply did not restore TITLE state")
 	_check(_near(PREFS.master_volume(PATH), 0.35), "master volume batch was not saved")
+	_check(not PREFS.master_muted(PATH), "unchanged Master mute state was not saved as unmuted")
 	_check(_near(PREFS.music_volume(PATH), 0.45), "music volume batch was not saved")
 	_check(_near(PREFS.sfx_volume(PATH), 0.55), "SFX volume batch was not saved")
 	_check(PREFS.frame_limit(PATH) == 60 and PREFS.reduced_motion(PATH), "graphics batch was not saved")
@@ -135,6 +150,7 @@ func _verify_apply(game: Node, music: Node) -> void:
 	_check(PREFS.locale(PATH) == &"zh-CN", "locale batch was not saved")
 	_check(not PREFS.title_music_enabled(PATH), "music preference batch was not saved")
 	_check(PREFS.has_seen_pan_hint(PATH), "batch save removed unrelated navigation preference")
+	_check(PREFS.has_seen_command_tutorial(PATH), "batch save removed tutorial completion")
 	await _release(first, game)
 	var second := await _create_title(PATH)
 	_check(root.get_node("I18n").call("locale") == &"zh-CN", "committed locale was not restored")

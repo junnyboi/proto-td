@@ -81,6 +81,14 @@ func _mount_fixture() -> void:
 	if not output_path.is_empty():
 		for _frame: int in range(16):
 			await get_tree().process_frame
+		if screen_id == "results" and OS.get_environment("PROTO_RESULTS_SCROLL_BOTTOM") == "1":
+			var consequence_scroll := find_child("ConsequenceScroll", true, false) as ScrollContainer
+			if consequence_scroll != null:
+				consequence_scroll.scroll_vertical = ceili(
+					consequence_scroll.get_v_scroll_bar().max_value,
+				)
+				for _scroll_frame: int in range(4):
+					await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var image := get_viewport().get_texture().get_image()
 		var error := image.save_png(output_path)
