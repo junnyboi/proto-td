@@ -1,10 +1,38 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "bible": {
     "path": "docs/NARRATIVE_CANON.md",
     "version": "2.0",
     "sha256": "75a03cc3d975311b869192e2ccc2b0f79168770cd72e13de1c00fe3a13f34daa"
   },
+  "campaign_compatibility": {
+    "save_schema": "prototype_td_campaign",
+    "save_version": 3,
+    "fixture_seed": 3301,
+    "fixture_generation": 1,
+    "environment_sha256": "94368da5ab8df24620f9987229a3448385226755d36dc9950faebd66ccab8e1e",
+    "fresh_save_text_sha256": "3fc3ba9e945dcdfd97710515085f9d56ba7ce77df4d294841c74a52aa7d419c2",
+    "fresh_strategic_hash": "cf53a0b07aac6ce3",
+    "fresh_core_hash": "f357ba9e3ed11ca7"
+  },
+  "archive_unlock_gates": {
+    "stewardship": 0,
+    "choir": 3,
+    "equation": 6,
+    "garden": 7
+  },
+  "active_prose_sources": [
+    "README.md",
+    "docs/FACTIONS.md",
+    "docs/LEVEL_DESIGNS.md",
+    "docs/PREMIUM_HERO_SYSTEM.md",
+    "docs/ART_DIRECTION.md",
+    "docs/ACT_II_IMPLEMENTATION_PLAN.md",
+    "docs/audio/ANIMA_ARCHIVE_VOICEOVER.md",
+    "docs/audio/ANIMA_WAR_LISTENING_REVIEW.md",
+    "docs/audio/LUNARIS_GAMEPLAY_SCORE.md",
+    "docs/audio/ACT_II_SCORE.md"
+  ],
   "active_surface_sources": [
     "localization/en-US.json",
     "localization/zh-CN.json",

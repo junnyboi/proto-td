@@ -4,6 +4,9 @@ const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narr
 
 var _mode := "start"
 var _output_path := "/tmp/proto-td-battle-dialogue.png"
+var _locale := "en-US"
+var _stage_id := "s1"
+var _text_scale := 1.0
 
 
 func _ready() -> void:
@@ -12,10 +15,22 @@ func _ready() -> void:
 			_mode = argument.trim_prefix("--mode=")
 		elif argument.begins_with("--out="):
 			_output_path = argument.trim_prefix("--out=")
+		elif argument.begins_with("--locale="):
+			_locale = argument.trim_prefix("--locale=")
+		elif argument.begins_with("--stage="):
+			_stage_id = argument.trim_prefix("--stage=")
+		elif argument.begins_with("--text-scale="):
+			_text_scale = clampf(argument.trim_prefix("--text-scale=").to_float(), 0.8, 1.5)
 	call_deferred("_run")
 
 
 func _run() -> void:
+	var i18n := get_tree().root.get_node_or_null("I18n")
+	if i18n != null:
+		i18n.call("set_locale", StringName(_locale))
+	var text_scale := get_tree().root.get_node_or_null("TextScale")
+	if text_scale != null:
+		text_scale.call("set_scale", _text_scale)
 	var backdrop := ColorRect.new()
 	backdrop.name = "BattlefieldBackdrop"
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -29,7 +44,8 @@ func _run() -> void:
 	battlefield.offset_top = 28.0
 	battlefield.offset_right = -28.0
 	battlefield.offset_bottom = -28.0
-	battlefield.text = "COMPANY MANUS // HEARTHCROSS\n\nWAVE 01 / 05\nLIVES 20     DP 30\n\n\n\n\n\n\n\n\nTACTICAL COMMANDS"
+	var company_name := String(i18n.call("t", &"data.company.33.name", "COMPANY MANUS")) if i18n != null else "COMPANY MANUS"
+	battlefield.text = "%s // %s\n\nWAVE 01 / 05\nLIVES 20     DP 30\n\n\n\n\n\n\n\n\nTACTICAL COMMANDS" % [company_name, _stage_id.to_upper()]
 	battlefield.add_theme_color_override("font_color", Color(0.27, 0.64, 0.78, 0.54))
 	battlefield.add_theme_font_size_override("font_size", 18)
 	backdrop.add_child(battlefield)
@@ -37,7 +53,11 @@ func _run() -> void:
 	var dialogue := BattleDialoguePresenter.new()
 	dialogue.name = "BattleDialogue"
 	backdrop.add_child(dialogue)
-	var record := NARRATIVE_CATALOG.get_record(&"s1")
+	var record := NARRATIVE_CATALOG.get_record(StringName(_stage_id))
+	if record == null:
+		push_error("Unknown narrative stage: %s" % _stage_id)
+		get_tree().quit(1)
+		return
 	dialogue.setup(record, Vector2(get_viewport().size))
 	var shown := false
 	if _mode == "start":
@@ -73,5 +93,5 @@ func _run() -> void:
 		sfx.call("stop_all")
 	for _frame: int in range(12):
 		await get_tree().process_frame
-	print("BATTLE_DIALOGUE_VISUAL_OK mode=%s path=%s" % [_mode, _output_path])
+	print("BATTLE_DIALOGUE_VISUAL_OK mode=%s path=%s locale=%s stage=%s text_scale=%.2f" % [_mode, _output_path, _locale, _stage_id, _text_scale])
 	get_tree().quit(0)
