@@ -38,9 +38,6 @@ stage_pack() {
   printf '%s\t%s\t%s\t%s\t%s\n' "$key" "$(basename "$target")" "$bytes" "$sha" "$expected_count" >> "$manifest"
 }
 
-mapfile -t enemy_files < <(cd "$ROOT" && find assets/enemy-variants -maxdepth 1 -type f -name '*.webp' -printf '%p\n' | sort)
-stage_pack enemy-variants 24 "${enemy_files[@]}"
-
 classes=(
   banner_guard defender gunner immovable mage_apprentice shock_trooper
   sniper sorcerer sword_saint swordmaster witch_doctor
@@ -53,5 +50,5 @@ for class_id in "${classes[@]}"; do
   stage_pack "$key" 16 "${class_files[@]}"
 done
 
-[[ "$(tail -n +2 "$manifest" | wc -l)" -eq 12 ]]
-printf 'Staged 12 verified Web content packs in %s\n' "$OUT"
+[[ "$(tail -n +2 "$manifest" | wc -l)" -eq 11 ]]
+printf 'Staged 11 verified advanced-operator Web content packs in %s\n' "$OUT"

@@ -13,7 +13,6 @@ const CACHE_DIR := "user://content-packs"
 const COPY_CHUNK_BYTES := 256 * 1024
 const DOWNLOAD_TIMEOUT_SECONDS := 180.0
 const MAX_PACK_BYTES := 64 * 1024 * 1024
-const ENEMY_PACK_ID := "enemy-variants"
 const ADVANCED_CLASSES := [
 	"banner_guard",
 	"defender",
@@ -55,7 +54,6 @@ func configure(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> voi
 
 func prefetch_from_title(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> void:
 	configure(arguments)
-	request_pack(ENEMY_PACK_ID, false)
 
 
 func request_resource(path: String) -> bool:
@@ -313,8 +311,6 @@ static func parse_argument(argument: String) -> Dictionary:
 
 
 static func pack_id_for_resource(path: String) -> String:
-	if path.begins_with("res://assets/enemy-variants/"):
-		return ENEMY_PACK_ID
 	const prefix := "res://assets/sprites/operators/animated/"
 	if not path.begins_with(prefix):
 		return ""
@@ -326,7 +322,7 @@ static func pack_id_for_resource(path: String) -> String:
 
 
 static func valid_pack_ids() -> Array[String]:
-	var result: Array[String] = [ENEMY_PACK_ID]
+	var result: Array[String] = []
 	for class_id: String in ADVANCED_CLASSES:
 		result.append("operator-%s" % class_id.replace("_", "-"))
 	return result

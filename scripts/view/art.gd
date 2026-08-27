@@ -10,6 +10,7 @@ static var _manifest: AssetManifest = null
 static var _supplemental_manifest: AssetManifest = null
 static var _experimental_manifest: AssetManifest = null
 static var _enemy_variant_manifest: AssetManifest = null
+static var _enemy_static_manifest: AssetManifest = null
 static var _manifest_entries: Dictionary = {}
 static var _manifest_error := false
 static var _cache: Dictionary = {}
@@ -19,10 +20,11 @@ static func _load_manifests() -> void:
 	if (
 		(
 			_manifest != null
-			and _supplemental_manifest != null
-			and _experimental_manifest != null
-			and _enemy_variant_manifest != null
-		)
+				and _supplemental_manifest != null
+				and _experimental_manifest != null
+				and _enemy_variant_manifest != null
+				and _enemy_static_manifest != null
+			)
 		or _manifest_error
 	):
 		return
@@ -32,15 +34,17 @@ static func _load_manifests() -> void:
 		load("res://assets/experimental_salvage_manifest.tres") as AssetManifest
 	)
 	_enemy_variant_manifest = load("res://assets/enemy_variant_manifest.tres") as AssetManifest
+	_enemy_static_manifest = load("res://assets/enemy_static_manifest.tres") as AssetManifest
 	if (
 		_manifest == null
-		or _supplemental_manifest == null
-		or _experimental_manifest == null
-		or _enemy_variant_manifest == null
-	):
+			or _supplemental_manifest == null
+			or _experimental_manifest == null
+			or _enemy_variant_manifest == null
+			or _enemy_static_manifest == null
+		):
 		_manifest_error = true
 		push_error(
-			"Art: failed to load base, supplemental, experimental, or enemy-variant manifest"
+				"Art: failed to load base, supplemental, experimental, enemy-variant, or enemy-static manifest"
 		)
 		return
 	var merged := merge_manifest_entries(_manifest.entries, _supplemental_manifest.entries)
@@ -70,7 +74,17 @@ static func _load_manifests() -> void:
 			% merged_variants[&"duplicate_id"]
 		)
 		return
-	_manifest_entries = merged_variants[&"entries"]
+	var merged_static := merge_manifest_entries(
+		merged_variants[&"entries"], _enemy_static_manifest.entries
+	)
+	if not bool(merged_static[&"ok"]):
+		_manifest_error = true
+		push_error(
+			"Art: duplicate enemy-static asset id across manifest layers: %s"
+			% merged_static[&"duplicate_id"]
+		)
+		return
+	_manifest_entries = merged_static[&"entries"]
 
 
 ## Pure test seam: base owns precedence, but overlap fails closed rather than shadowing.
@@ -91,6 +105,7 @@ static func _reset_manifests_for_test() -> void:
 	_supplemental_manifest = null
 	_experimental_manifest = null
 	_enemy_variant_manifest = null
+	_enemy_static_manifest = null
 	_manifest_entries = {}
 	_manifest_error = false
 	_cache.clear()
