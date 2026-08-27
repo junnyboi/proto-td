@@ -116,7 +116,7 @@ func _run() -> void:
 	_check(no_casualties != null, "no-casualty state is missing")
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
-	_check(transmission_body != null and transmission_body.text.contains("PROTOS"), "clear transmission body is not canonical")
+	_check(transmission_body != null and transmission_body.text.contains("renewable stock"), "clear transmission body is not canonical")
 	_check(transmission_speaker != null and transmission_speaker.get_theme_font_size(&"font_size") >= 24, "clear transmission speaker was not enlarged")
 	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 20, "clear transmission body is below 20px")
 	_check(rewards_heading != null and rewards_heading.get_theme_font_size(&"font_size") >= 30, "Mission Yield heading was not enlarged")
