@@ -343,9 +343,19 @@ static func refresh(
 ) -> void:
 	var sprite := body.get_node_or_null("Sprite") as TextureRect
 	if sprite == null:
-		if enemy.faction == EnemyState.Faction.CHARMED:
-			body.color = CHARMED_COLOR
-		return
+		var deferred_id := animation_id_for(enemy, battle)
+		var deferred_texture := Art.texture(
+			deferred_id, frame_for(enemy, deferred_id, seconds)
+		)
+		if deferred_texture != null:
+			_activate_directional_body(
+				body, deferred_texture, VARIANT_ENEMIES.has(enemy.def_id), enemy.aerial
+			)
+			sprite = body.get_node_or_null("Sprite") as TextureRect
+		if sprite == null:
+			if enemy.faction == EnemyState.Faction.CHARMED:
+				body.color = CHARMED_COLOR
+			return
 	if not uses_directional_animation(enemy.def_id):
 		var legacy_id := legacy_sprite_id(enemy, definitions)
 		var legacy_frame := 0
@@ -383,6 +393,35 @@ static func refresh(
 		keys[enemy.id] = sprite_id
 	if sprite.texture != texture:
 		sprite.texture = texture
+
+
+static func _activate_directional_body(
+	body: ColorRect, texture: Texture2D, uses_variant: bool, aerial: bool
+) -> void:
+	body.color = Color(0.0, 0.0, 0.0, 0.0)
+	var body_px := (
+		(VARIANT_AERIAL_PX if aerial else VARIANT_BODY_PX)
+		if uses_variant
+		else EXPERIMENTAL_BODY_PX
+	)
+	body.size = Vector2.ONE * body_px
+	var sprite := _texture_rect("Sprite", texture, body.size)
+	if uses_variant:
+		sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	body.add_child(sprite)
+	var blend := _texture_rect("BlendSprite", null, body.size)
+	if uses_variant:
+		blend.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	blend.visible = false
+	body.add_child(blend)
+	var shadow := body.get_node_or_null("Shadow") as Polygon2D
+	if shadow != null:
+		shadow.position = Vector2(
+			body.size.x * 0.5, body.size.y + (AERIAL_SHADOW_DROP if aerial else 0.0)
+		)
+	var hp_bar := body.get_node_or_null("HpBarBg") as ColorRect
+	if hp_bar != null:
+		hp_bar.size.x = body.size.x
 
 
 static func apply_blend(body: ColorRect, frames_left: int) -> void:

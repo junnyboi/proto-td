@@ -56,14 +56,26 @@ Export the complete bundle with:
 ```bash
 godot --headless --path . --export-release Web build/web/index.html
 tools/stage_cinematic_streams.sh build/web/cinematics
+tools/stage_web_content_packs.sh build/web/content-packs
 ```
 
-The Web base PCK excludes the six Premium Resonance Ogg Theora videos. As soon
-as Title opens, a persistent background service downloads all six streams
-sequentially—current orientation first—verifies exact size and SHA-256, and
-caches them under `user://`. A pull joins or prioritizes the shared transfer
-instead of duplicating it, then plays the verified file through
-`VideoStreamTheora`; the final identity plate remains a safe fallback. See
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos, the
+three production enemy-variant atlas families, and the eleven advanced
+operator class atlas families. The 200 deferred WebP atlases remain at their
+authored resolution and are staged as twelve class-scoped ZIP resource packs;
+the host supplies their exact URL, byte length, and SHA-256 through
+`--content-pack` arguments. Title warms the enemy pack without blocking
+navigation. `Art` requests an advanced class pack only when its first resource
+is needed, then the verified cache mounts with `replace_files = false` so
+downloaded content can add omitted presentation resources but cannot replace
+core code or data. Failed or in-flight packs preserve the incumbent operator
+and enemy fallback visuals.
+
+As soon as Title opens, a separate persistent background service downloads all
+six cinematic streams sequentially—current orientation first—verifies exact
+size and SHA-256, and caches them under `user://`. A pull joins or prioritizes
+the shared transfer instead of duplicating it, then plays the verified file
+through `VideoStreamTheora`; the final identity plate remains a safe fallback. See
 [`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
 arguments, the stream manifest, and release checks.
 
