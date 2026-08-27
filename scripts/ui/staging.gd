@@ -418,7 +418,7 @@ func _build_command_content() -> VBoxContainer:
 	progress_glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	progress_row.add_child(progress_glyph)
 	_command_heading = _label(
-		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER"),
+		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY COMMAND"),
 		24, GOLD,
 	)
 	_command_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -551,7 +551,7 @@ func _build_navigation_content() -> VBoxContainer:
 	_archive.configure(
 		StagingGlyphType.Kind.ARCHIVE,
 		UiCopyType.text(&"ui.staging.archive_short", "Archive"),
-		UiCopyType.text(&"ui.staging.archive", "Mercy Archive"),
+		UiCopyType.text(&"ui.staging.archive", "Anima Archive"),
 		true,
 	)
 	_archive.pressed.connect(_on_archive)
@@ -1060,7 +1060,7 @@ func _refresh_locale_copy() -> void:
 	_campaign_progress_text.text = _campaign_summary_text()
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
-	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER")
+	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMPANY COMMAND")
 	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
@@ -1073,7 +1073,7 @@ func _refresh_locale_copy() -> void:
 	_mission.tooltip_text = mission_copy
 	_recruit.configure(StagingGlyphType.Kind.RECRUIT, UiCopyType.text(&"ui.staging.recruit_short", "Resonance"), UiCopyType.text(&"ui.staging.recruit", "Premium Resonance"), true)
 	_vahalla.configure(StagingGlyphType.Kind.MEMORIAL, UiCopyType.text(&"ui.staging.valhalla_short", "Valhalla"), UiCopyType.text(&"ui.staging.valhalla", "Valhalla"), true)
-	_archive.configure(StagingGlyphType.Kind.ARCHIVE, UiCopyType.text(&"ui.staging.archive_short", "Archive"), UiCopyType.text(&"ui.staging.archive", "Mercy Archive"), true)
+	_archive.configure(StagingGlyphType.Kind.ARCHIVE, UiCopyType.text(&"ui.staging.archive_short", "Archive"), UiCopyType.text(&"ui.staging.archive", "Anima Archive"), true)
 	var training_available := _training_available()
 	_training.configure(StagingGlyphType.Kind.TRAINING, UiCopyType.text(&"ui.staging.training_short", "Training"), UiCopyType.text(&"ui.staging.training" if training_available else &"ui.staging.training_unavailable", "Training" if training_available else "Training — Unavailable"), training_available)
 	var barracks := find_child("BarracksButton", true, false) as StagingCommandTileType
@@ -1085,7 +1085,7 @@ func _refresh_locale_copy() -> void:
 
 
 func _company_identity(_compact: bool) -> String:
-	return UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
+	return UiCopyType.text(&"ui.title.full_title", "Protos Defense").to_upper()
 
 
 func _campaign_summary_text() -> String:
@@ -1137,7 +1137,7 @@ func _next_operation_objective() -> String:
 	if _next_record == null:
 		return UiCopyType.text(
 			&"ui.staging.command_body",
-			"PROTOS saved the biosphere by declaring human choice its final extinction event. Company 33 defends Hearthcross and humanity's right to remain free and unfinished.",
+			"PROTOS drains living captives in human farms and uses their souls to power a robot empire. Company Manus defends Hearthcross, rescues people and souls, and breaks the harvesting network.",
 		)
 	return UiCopyType.stage_narrative_text(_next_record, StageNarrativeDefType.Field.OBJECTIVE)
 

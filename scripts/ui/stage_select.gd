@@ -248,7 +248,7 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_reward_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_dossier_reward_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_dossier_reward_icon.mouse_filter = Control.MOUSE_FILTER_STOP
-	ResonanceCurrencyDisplayType.apply_tooltip(_dossier_reward_icon)
+	ResonanceCurrencyDisplayType.apply_tooltip(_dossier_reward_icon, "", &"marks")
 	reward_row.add_child(_dossier_reward_icon)
 	_dossier_reward = AetheriaLabelType.new()
 	_dossier_reward.name = "DossierReward"
@@ -312,7 +312,7 @@ func _populate_route() -> void:
 func _show_dossier(stage_id: StringName) -> void:
 	if not _stage_by_id.has(stage_id):
 		return
-	ResonanceCurrencyDisplayType.apply_tooltip(_dossier_reward_icon)
+	ResonanceCurrencyDisplayType.apply_tooltip(_dossier_reward_icon, "", &"marks")
 	var stage: StageDef = _stage_by_id[stage_id]
 	_dossier_stage_id = stage_id
 	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage_id, 0))

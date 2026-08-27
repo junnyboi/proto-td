@@ -83,7 +83,7 @@ func _build_screen() -> void:
 	content.add_child(_header_grid)
 	_back_button = Button.new()
 	_back_button.name = "BackToCommand"
-	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "COMPANY COMMAND")
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
 	_back_button.tooltip_text = _back_button.text
 	_back_button.accessibility_name = _back_button.text
 	_back_button.custom_minimum_size = Vector2(210, 56)
@@ -108,7 +108,7 @@ func _build_screen() -> void:
 	_header_grid.add_child(_status_label)
 
 	_intro_label = _label(
-		UiCopyType.text(&"ui.vahalla.intro", "Those recorded here are no longer deployable. Their service remains part of Company 33."),
+		UiCopyType.text(&"ui.vahalla.intro", "Valhalla records Company Manus personnel whose souls are missing, captured, or permanently lost. Recoverable souls remain rescue targets; consumed or shattered souls cannot return."),
 		&"detail",
 	)
 	_intro_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -300,21 +300,21 @@ func _rebuild_dossier() -> void:
 	var ledger_stack := VBoxContainer.new()
 	ledger_stack.add_theme_constant_override(&"separation", 8)
 	service_ledger.add_child(ledger_stack)
-	var terminal := _label(UiCopyType.text(&"ui.vahalla.terminal_record", "TERMINAL SERVICE RECORD"), &"eyebrow")
+	var terminal := _label(UiCopyType.text(&"ui.vahalla.terminal_record", "SOUL STATUS AND FINAL SERVICE RECORD"), &"eyebrow")
 	terminal.add_theme_color_override(&"font_color", Style.DANGER)
 	ledger_stack.add_child(terminal)
 	var record := _label(_death_record(hero), &"body")
 	record.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ledger_stack.add_child(record)
-	var continuity := _label(UiCopyType.text(&"ui.vahalla.permanence", "Identity sealed by stable hero record. Ordinary loss remains permanent."), &"detail")
+	var continuity := _label(UiCopyType.text(&"ui.vahalla.permanence", "Status follows the same unique soul: missing or captured may be recoverable; consumed or shattered is permanent."), &"detail")
 	continuity.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ledger_stack.add_child(continuity)
 	var honor := Button.new()
 	honor.name = "Honor_%s" % _selected_hero_id
 	honor.text = (
-		UiCopyType.text(&"ui.vahalla.honored", "HONORED")
+		UiCopyType.text(&"ui.vahalla.honored", "Honored")
 		if _honored.has(_selected_hero_id)
-		else UiCopyType.text(&"ui.vahalla.honor", "HONOR MEMORY")
+		else UiCopyType.text(&"ui.vahalla.honor", "Honor")
 	).to_upper()
 	honor.custom_minimum_size = Vector2(0, 58)
 	honor.disabled = _honored.has(_selected_hero_id)
@@ -372,12 +372,12 @@ func _terminal_reason(reason: StringName) -> String:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	if _back_button == null:
 		return
-	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "COMPANY COMMAND")
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
 	_back_button.tooltip_text = _back_button.text
 	_back_button.accessibility_name = _back_button.text
 	_eyebrow_label.text = UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN")
 	_title_label.text = UiCopyType.text(&"ui.vahalla.title_display", "Valhalla").to_upper()
-	_intro_label.text = UiCopyType.text(&"ui.vahalla.intro", "Those recorded here are no longer deployable. Their service remains part of Company 33.")
+	_intro_label.text = UiCopyType.text(&"ui.vahalla.intro", "Valhalla records Company Manus personnel whose souls are missing, captured, or permanently lost. Recoverable souls remain rescue targets; consumed or shattered souls cannot return.")
 	_roster_heading.text = UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY")
 	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
 	_refresh_filter_accessibility()

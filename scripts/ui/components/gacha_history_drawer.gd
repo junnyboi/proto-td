@@ -102,12 +102,12 @@ func refresh(projection: Dictionary) -> void:
 
 
 func refresh_copy() -> void:
-	_title.text = _copy(&"ui.gacha.history_title", "MOON ARCHIVE")
+	_title.text = _copy(&"ui.gacha.history_title", "RESONANCE HISTORY")
 	_close_button.text = _copy(&"ui.gacha.close_history", "CLOSE")
 	_empty_title.text = _copy(&"ui.gacha.history_empty", "NO RESONANCE RECORDS")
 	_empty_detail.text = _copy(
 		&"ui.gacha.history_empty_detail",
-		"Committed premium pulls will appear here.",
+		"Completed soul-reconnection operations will appear here.",
 	)
 	_rebuild_rows()
 
@@ -125,7 +125,7 @@ func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	accessibility_name = _copy(&"ui.gacha.history_title", "MOON ARCHIVE")
+	accessibility_name = _copy(&"ui.gacha.history_title", "RESONANCE HISTORY")
 
 	_scrim = ColorRect.new()
 	_scrim.name = "PullHistoryScrim"
@@ -170,7 +170,7 @@ func _build() -> void:
 	_title_stack.alignment = BoxContainer.ALIGNMENT_CENTER
 	_title_stack.add_theme_constant_override(&"separation", 0)
 	_header.add_child(_title_stack)
-	_title = _label(_copy(&"ui.gacha.history_title", "MOON ARCHIVE"), &"heading")
+	_title = _label(_copy(&"ui.gacha.history_title", "RESONANCE HISTORY"), &"heading")
 	_title.name = "MoonArchiveTitle"
 	_title.add_theme_font_size_override(&"font_size", 36)
 	_title_stack.add_child(_title)
@@ -240,7 +240,7 @@ func _build() -> void:
 	_empty_title.add_theme_font_size_override(&"font_size", 27)
 	_empty_state.add_child(_empty_title)
 	_empty_detail = _label(
-		_copy(&"ui.gacha.history_empty_detail", "Committed premium pulls will appear here."),
+		_copy(&"ui.gacha.history_empty_detail", "Completed soul-reconnection operations will appear here."),
 		&"detail",
 	)
 	_empty_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -257,7 +257,7 @@ func _rebuild_rows() -> void:
 	var history: Array = _projection.get("premium_pull_history", [])
 	var total := int(_projection.get("premium_pull_history_total", history.size()))
 	_summary.text = _format(
-		&"ui.gacha.history_summary", "{count} COMMITTED PULLS", {&"count": total},
+		&"ui.gacha.history_summary", "{count} COMPLETED RESONANCES", {&"count": total},
 	)
 	_empty_state.visible = history.is_empty()
 	accessibility_description = _summary.text
@@ -353,7 +353,7 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	var detail := _label(
 		_format(
 			&"ui.gacha.history_detail",
-			"LIVES {before} → {after} • GUARANTEE IN {guarantee}",
+			"PREPARED BODIES {before} → {after} • GUARANTEE IN {guarantee}",
 			{
 				&"before": int(receipt.get("lives_before", 0)),
 				&"after": int(receipt.get("lives_after", 0)),
@@ -382,10 +382,10 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 
 func _history_badge(receipt: Dictionary) -> String:
 	if bool(receipt.get("new_hero", false)):
-		return _copy(&"ui.gacha.history_badge_new", "NEW SIGNAL")
+		return _copy(&"ui.gacha.history_badge_new", "SOUL RECONNECTED")
 	if bool(receipt.get("revived", false)):
-		return _copy(&"ui.gacha.history_badge_revived", "REVIVAL")
-	return _copy(&"ui.gacha.history_badge_duplicate", "LIFE CONVERTED")
+		return _copy(&"ui.gacha.history_badge_revived", "BODY RESTORED")
+	return _copy(&"ui.gacha.history_badge_duplicate", "BODY PREPARED")
 
 
 func _callsign(premium_id: String) -> String:
@@ -395,7 +395,7 @@ func _callsign(premium_id: String) -> String:
 			fallback = String((raw as Dictionary).get("callsign", ""))
 			break
 	if fallback.is_empty():
-		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown signal")
+		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown soul anchor")
 	return UiCopyType.premium_name(premium_id, fallback)
 
 

@@ -48,6 +48,11 @@ var _selected_index := 0
 
 func _ready() -> void:
 	Game.content = self
+	accessibility_name = UiCopyType.text(&"ui.archive.title", "Anima Archive")
+	accessibility_description = UiCopyType.text(
+		&"ui.archive.intro",
+		"Recovered records track the discovery of anima, PROTOS corruption, human farms, and the robot empire. Clear operations to unlock every record.",
+	)
 	Style.add_backdrop(self, GARDEN_ART)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
 	_shell.name = "MercyArchiveShell"
@@ -90,7 +95,7 @@ func _build_header(column: VBoxContainer) -> void:
 	))
 	headings.add_child(_label(
 		"ArchiveTitle",
-		UiCopyType.text(&"ui.archive.title", "Mercy Archive").to_upper(),
+		UiCopyType.text(&"ui.archive.title", "Anima Archive").to_upper(),
 		&"title",
 	))
 	identity.add_child(headings)
@@ -125,7 +130,7 @@ func _build_header(column: VBoxContainer) -> void:
 		"ArchiveIntro",
 		UiCopyType.text(
 			&"ui.archive.intro",
-			"Recovered records explain why PROTOS calls extinction mercy. Clear operations to decrypt the complete history.",
+			"Recovered records track the discovery of anima, PROTOS corruption, human farms, and the robot empire. Clear operations to unlock every record.",
 		),
 		&"body",
 	)
@@ -253,7 +258,7 @@ func _show_record(index: int) -> void:
 	_selected_index = index
 	var entry := ENTRIES[index]
 	_art.texture = entry[&"texture"] as Texture2D
-	_art.tooltip_text = _entry_text(entry, &"title", "Archive concept")
+	_art.tooltip_text = _entry_text(entry, &"title", "Anima Archive illustration")
 	_eyebrow.text = _entry_text(entry, &"eyebrow", "ARCHIVE RECORD")
 	_title.text = _entry_text(entry, &"title", "Record").to_upper()
 	_subtitle.text = _entry_text(entry, &"subtitle", "")

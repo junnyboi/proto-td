@@ -362,7 +362,7 @@ func _selected_squad_empty_label() -> Label:
 		"SelectedSquadOrderEmpty",
 		UiCopyType.text(
 			&"ui.squad.order_empty",
-			"Select operators, then drag to reorder.",
+			"Choose operators for the field team, then drag to set deployment order.",
 		),
 		&"dense_detail",
 	)
@@ -400,7 +400,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_recruitment_grid.add_child(_hire_title)
 	_hire_currency_display = ResonanceCurrencyDisplayType.new()
 	_hire_currency_display.name = "BasicRecruitCurrency"
-	_hire_currency_display.configure("0", 24, 34.0)
+	_hire_currency_display.configure("0", 24, 34.0, "", &"marks")
 	_hire_currency_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_BEGIN
 	_hire_marks = _hire_currency_display.amount_label
@@ -770,7 +770,7 @@ func _build_footer() -> BoxContainer:
 	_launch_status = _label(
 		"ReadinessCopy",
 		UiCopyType.text(
-			&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+			&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment.",
 		),
 		&"detail",
 	)
@@ -1013,7 +1013,7 @@ func _on_hire_basic_recruit() -> void:
 	_refresh_recruitment_desk(
 		UiCopyType.format_text(
 			&"ui.campaign.basic_hire_success",
-			"{callsign} • JOINED COMPANY 33 • BALANCE {remaining}",
+			"{callsign} • JOINED COMPANY MANUS • {remaining} MARKS REMAIN",
 			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
 		),
 		false,
@@ -1038,7 +1038,7 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	)
 	_hire_recruit.set_presentation_text(action_text, action_text)
 	ResonanceCurrencyDisplayType.apply_to_button(
-		_hire_recruit, action_text, action_text, 34,
+		_hire_recruit, action_text, action_text, 34, "", &"marks",
 	)
 	var presentation := _hire_recruit.get_node("PresentationLabel") as Label
 	presentation.text = action_text
@@ -1319,19 +1319,19 @@ func _refresh_launch_status() -> void:
 	if _launch_status == null or _start == null:
 		return
 	var status_text := UiCopyType.text(
-		&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+		&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment.",
 	)
 	var action_text := UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	var is_error := false
 	if _launch_locked:
 		status_text = UiCopyType.text(
-			&"ui.squad.launch_committing", "Authenticating deployment record…",
+			&"ui.squad.launch_committing", "Saving the field-team assignment…",
 		)
 		action_text = UiCopyType.text(&"ui.squad.launch_committing_action", "Deploying…")
 	elif Game.mission_launch_retry_pending():
 		status_text = UiCopyType.text(
 			&"ui.squad.launch_retryable_error",
-			"Deployment was not saved. Retry the exact field-team order.",
+			"The field-team assignment was not saved. Retry the exact same order.",
 		)
 		action_text = UiCopyType.text(&"ui.squad.launch_retry_action", "Retry Deployment")
 		is_error = true
@@ -1385,7 +1385,7 @@ func _launch_error_text(code: StringName) -> String:
 		&"store_write_failed", &"store_restore_failed":
 			return UiCopyType.text(
 				&"ui.squad.launch_retryable_error",
-				"Deployment was not saved. Retry the exact field-team order.",
+				"The field-team assignment was not saved. Retry the exact same order.",
 			)
 		&"store_integrity_failure", &"invalid_campaign_state":
 			return UiCopyType.text(
@@ -1412,7 +1412,7 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 		)
 	if hero.get("hero_kind", "recruit") == "premium":
 		return _format_copy(
-			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} lives", args,
+			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} prepared bodies", args,
 		)
 	return _format_copy(
 		&"ui.squad.card_ready", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Ready", args,
@@ -1450,7 +1450,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		"LoadoutHeading": UiCopyType.text(&"ui.squad.loadout_heading", "Loadout"),
 		"LoadoutStrip": _loadout_text(),
 		"ReadinessEyebrow": UiCopyType.text(&"ui.squad.predeployment_heading", "Pre-deployment"),
-		"ReadinessCopy": UiCopyType.text(&"ui.squad.predeployment_body", "Train, review, and confirm the field team."),
+		"ReadinessCopy": UiCopyType.text(&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment."),
 	}
 	for node_name: String in copy_by_node:
 		var label := find_child(node_name, true, false) as Label

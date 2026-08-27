@@ -1,5 +1,8 @@
 extends SceneTree
 
+const EnemyAnimatorType := preload("res://scripts/view/enemy_animator.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
 var _failures: Array[String] = []
 
 
@@ -26,7 +29,37 @@ func _run() -> void:
 	_check(_has_axis(&"ui_down", JOY_AXIS_LEFT_Y, 1.0), "left stick positive Y is not mapped to ui_down")
 	_check(is_equal_approx(InputMap.action_get_deadzone(&"ui_accept"), 0.5), "ui_accept deadzone drifted")
 	_check(is_equal_approx(InputMap.action_get_deadzone(&"ui_cancel"), 0.5), "ui_cancel deadzone drifted")
+	_check_enemy_display_accessibility()
 	_finish()
+
+
+func _check_enemy_display_accessibility() -> void:
+	var expected := {
+		&"grunt": "Collector",
+		&"runner": "Tagger",
+		&"drone": "Hunter Drone",
+		&"shieldbearer": "Shieldbearer",
+		&"breacher": "Breacher",
+		&"spellcaster": "Channeler",
+		&"heavy": "Farm Warden",
+		&"mini_boss": "Gatecrasher",
+	}
+	for enemy_id: StringName in expected:
+		_check(UiCopyType.enemy_name(enemy_id) == expected[enemy_id], "enemy display role changed for %s" % enemy_id)
+	var enemy := EnemyState.new()
+	enemy.id = 7
+	enemy.def_id = &"runner"
+	enemy.path_idx = 0
+	var battle := BattleModel.create(
+		load("res://data/stages/s1.tres") as StageDef, [], 7, GameConfig.new(), {},
+	)
+	_check(battle != null, "enemy accessibility battle fixture failed")
+	if battle == null:
+		return
+	var body := EnemyAnimatorType.make_body(enemy, battle, {})
+	_check(String(body.accessibility_name) == "Tagger", "enemy body accessibility exposes an internal ID instead of its display role")
+	_check(body.mouse_filter == Control.MOUSE_FILTER_IGNORE, "enemy accessibility label changed pointer interaction")
+	body.free()
 
 
 func _has_key(action: StringName, physical_code: Key) -> bool:

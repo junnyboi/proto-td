@@ -23,10 +23,6 @@ const DOCUMENT_CONCEPT_PATHS := [
 	"res://docs/narrative/concept-art/act2/mortal-covenant-conclave.jpg",
 	"res://docs/narrative/concept-art/act2/act2-eight-operation-montage.jpg",
 ]
-const REQUIRED_TERMS := [
-	"PROTOS", "Mercy Equation", "Continuance", "Quieting", "First Garden",
-	"Restoration Lattice", "Mortal Covenant Threshold",
-]
 const ARCHIVE_ENTRY_IDS: Array[StringName] = [&"stewardship", &"choir", &"equation", &"garden"]
 const ARCHIVE_AUDIO_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 
@@ -62,13 +58,28 @@ func _run() -> void:
 	var bible: Dictionary = contract.get("bible", {})
 	_check(String(bible.get("path", "")) == "docs/NARRATIVE_CANON.md", "canon contract points at the wrong bible")
 	_check(String(bible.get("sha256", "")) == _sha256(CANON_PATH), "canon bible hash drifted without a contract update")
-	for term: String in REQUIRED_TERMS:
-		_check(canon.contains(term), "canon lore omits required term %s" % term)
-	for term: Variant in contract.get("required_terms", []):
+	_check(int(contract.get("schema_version", 0)) == 3, "canon contract schema version drifted")
+	for term: Variant in contract.get("required_canon_terms", []):
 		_check(canon.contains(String(term)), "canon contract term is absent from bible: %s" % term)
-	var active_english := FileAccess.get_file_as_string("res://localization/en-US.json")
-	for term: Variant in contract.get("retired_terms", []):
-		_check(not active_english.contains(String(term)), "retired lore remains in active English copy: %s" % term)
+	var required_display := contract.get("required_company_display", {}) as Dictionary
+	_check(String(required_display.get("stable_key", "")) == "data.company.33.name", "Company Manus stable localization key changed")
+	_check(String(required_display.get("en-US", "")) == "COMPANY MANUS", "English Company Manus display contract changed")
+	_check(String(required_display.get("zh-CN", "")) == "MANUS连队", "Chinese Company Manus display contract changed")
+	var waivers := contract.get("phase6_temporary_waivers", []) as Array
+	_check(waivers.size() == 4, "Phase 6 must retain exactly four narrow temporary waivers")
+	var waiver_paths: Array[String] = []
+	for waiver: Dictionary in waivers:
+		var waiver_path := String(waiver.get("path", ""))
+		waiver_paths.append(waiver_path)
+		_check(not String(waiver.get("reason", "")).is_empty(), "Phase 6 waiver lacks a reason: %s" % waiver_path)
+		_check(waiver.has("json_key_prefix") != waiver.has("line_pattern"), "Phase 6 waiver must use one narrow selector: %s" % waiver_path)
+	waiver_paths.sort()
+	_check(waiver_paths == [
+		"localization/en-US.json",
+		"localization/zh-CN.json",
+		"scripts/ui/components/archive_audio_log_player.gd",
+		"scripts/ui/narrative_archive.gd",
+	], "Phase 6 waiver paths widened or changed")
 	for path: String in CONCEPT_PATHS:
 		_check(ResourceLoader.exists(path), "GPT Image 2 concept is not importable: %s" % path)
 		var texture := load(path) as Texture2D
@@ -118,6 +129,7 @@ func _run() -> void:
 		var detail_scroll := archive.find_child("ArchiveDetailScroll", true, false) as ScrollContainer
 		var audio_log := archive.find_child("ArchiveAudioLog", true, false) as Control
 		var audio_play := archive.find_child("AudioLogPlayPause", true, false) as Button
+		_check(String(archive.accessibility_name) == "Anima Archive", "archive visible accessibility name is not Anima Archive")
 		_check(record_one != null and not record_one.disabled, "foundation archive UI is not available")
 		_check(record_two != null and record_two.disabled, "S2 archive UI is not progression gated")
 		_check(art != null and art.texture != null, "archive UI omitted its approved concept art")

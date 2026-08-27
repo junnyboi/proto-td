@@ -575,7 +575,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 func _refresh_copy() -> void:
 	if _wordmark == null:
 		return
-	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
+	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "Protos Defense").to_upper()
 	_start_button.text = UiCopyType.text(
 		&"ui.title.start_retry" if _start_failed else &"ui.title.start",
 		"Retry Start" if _start_failed else "Start",

@@ -114,7 +114,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)
 	_check(staging.find_child("HeroIdentity", true, false) == null, "%s: duplicate lower identity copy remains" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
-	_check(command_heading != null and command_heading.text == ("指挥中心" if locale_id == "zh-CN" else "COMMAND CENTER"), "%s: command heading rename missing" % context)
+	_check(command_heading != null and command_heading.text == ("连队指挥部" if locale_id == "zh-CN" else "COMPANY COMMAND"), "%s: Company Command heading copy is incorrect" % context)
 	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below responsive 22px floor" % context)
 	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below responsive 18px floor" % context)
 	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
@@ -124,7 +124,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
-	_check(mission_action != null and mission_action.tooltip_text == ("任务指挥中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
+	_check(mission_action != null and mission_action.tooltip_text == ("任务中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
 	if locale_id == "en-US" and String(viewport_case["name"]) == "annotated-wide":
