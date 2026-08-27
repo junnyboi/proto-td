@@ -16,7 +16,7 @@ Implementation is divided into three source work packages and one release packag
 | **WP1 — Restoration foundation** | Stage schema, portrait rotation, deterministic lattice healing/suppression, 600px GPT Image 2 seal, renderer, campaign-context capacity, unit tests | Complete | Mechanic determinism, hash stability, rotation, stage-domain validation, import/boot, focused regression pass, master push |
 | **WP2 — Eight-stage campaign content** | S9–S16 layouts, paths, waves, balance, rewards, 16-stage runtime order, save compatibility, stage-design tests | Complete | All stage lint/design/orientation/navigation tests, campaign fresh/restore/unlock tests, deterministic terminal simulations, master push |
 | **WP3 — Narrative and campaign presentation** | Six-layer S9–S16 narrative, EN/zh-CN localization, Act II chapter labels, canon revision, concept integration, updated design docs | Complete | Narrative catalog, localization completeness, UI layout in landscape/portrait, screenshots, master push |
-| **WP4 — Release and deployment** | Full test suite, Xvfb representative input, Web export, HTTP/browser runtime, forward-only WebDev reconciliation, build/check, checkpoint | In progress | Required HTML/JS/WASM/PCK files, clean logs/console/network, exact managed PCK, fullscreen host, saved checkpoint |
+| **WP4 — Release and deployment** | Full test suite, Xvfb representative input, Web export, HTTP/browser runtime, forward-only WebDev reconciliation, build/check, checkpoint | Complete | Required HTML/JS/WASM/PCK files, clean logs/console/network, exact managed PCK, fullscreen host, saved checkpoint |
 
 ## WP1 — Restoration foundation
 
@@ -40,7 +40,7 @@ Implementation is divided into three source work packages and one release packag
 
 ## WP3 — Narrative and campaign presentation
 
-1. Revise the canon bible to version 1.2 with the binding Act II table, clear transmissions, mechanic meaning, and future-boundary language.
+1. Revise the canon bible to version 2.0 with the binding Act II table, clear transmissions, mechanic meaning, and future-boundary language.
 2. Add eight complete `StageNarrativeDef` resources and extend the catalog to S1–S16.
 3. Add every stage title, hint, dossier field, debrief, speaker, and transmission key to English and Simplified Chinese catalogs.
 4. Add Act I/Act II chapter identity to Mission Control rows and dossiers without breaking scroll, keyboard, or portrait behavior.
@@ -70,4 +70,8 @@ Implementation is divided into three source work packages and one release packag
 
 ## Completion record
 
-This section is updated after implementation. It will list final source commits, environment hash, test counts, visual evidence, export artifacts, managed PCK, and WebDev checkpoint.
+Runtime source `f2ffcc65aae0170f26448a65f55aa78bb11e8807` is pushed to shared `master`. The sixteen-stage V3 catalog uses environment fingerprint `94368da5ab8df24620f9987229a3448385226755d36dc9950faebd66ccab8e1e`; historical eight-stage V3 saves restore additively and the V2 boundary remains unchanged.
+
+Godot 4.7.2 direct import and bounded boot pass. All current standalone regressions and repository smokes pass, including sixteen-stage campaign, topology, orientation, navigation, deterministic terminal, restoration, narrative, localization, and Mission Control coverage. Strict localization audit reports 925/925 English/Simplified Chinese entries with zero missing/extra keys, placeholder drift, missing production keys, or hard-coded visible candidates. Landscape and portrait Xvfb captures accept Mission Control and S9 lattice presentation.
+
+The final Web export contains HTML, JavaScript, WASM, and a **197,110,152-byte** PCK with SHA-256 `177d545d3df4ae816658f558109f3b39132db44b46b94a842cf742eb05db88fd`. Local and managed HTTP/browser checks verify one exact PCK, zero eager OGV streams, real input, all sixteen route rows, borderless fullscreen geometry, portrait containment, and clean runtime logs. The existing `proto-td-web` host is saved at checkpoint `7da5e373`.
