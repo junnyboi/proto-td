@@ -162,6 +162,20 @@ def gd_manifest_entry(
 def update_manifest(repository: Path) -> int:
     manifest_path = repository / "assets/manifest.tres"
     text = manifest_path.read_text(encoding="utf-8")
+    schema_line = "schema_version = 3"
+    if "\nschema_version = " in text:
+        lines = text.splitlines()
+        replaced = False
+        for index, line in enumerate(lines):
+            if not replaced and line.startswith("schema_version = "):
+                lines[index] = schema_line
+                replaced = True
+        text = "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+    else:
+        resource_script = 'script = ExtResource("1_g6syk")\n'
+        if resource_script not in text:
+            raise ValueError("assets/manifest.tres is missing its expected resource script")
+        text = text.replace(resource_script, resource_script + schema_line + "\n", 1)
     for begin_marker, end_marker in (
         (BEGIN_MARKER, END_MARKER),
         (LEGACY_BEGIN_MARKER, LEGACY_END_MARKER),

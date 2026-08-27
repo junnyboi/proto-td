@@ -124,6 +124,7 @@ func _ready() -> void:
 	_resolve_next_operation()
 	_build_screen()
 	I18n.locale_changed.connect(_on_locale_changed)
+	TextScale.scale_changed.connect(_on_text_scale_changed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
 	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
@@ -821,8 +822,16 @@ func _connect_focus_cycle() -> void:
 		current.focus_neighbor_left = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_neighbor_right = current.get_path_to(following)
-		if _operation_scroll != null and _operation_scroll.is_ancestor_of(current):
-			current.focus_entered.connect(_operation_scroll.ensure_control_visible.bind(current))
+		if not bool(current.get_meta(&"_staging_focus_visibility_connected", false)):
+			current.focus_entered.connect(_ensure_action_visible.bind(current))
+			current.set_meta(&"_staging_focus_visibility_connected", true)
+
+
+func _ensure_action_visible(control: Control) -> void:
+	for scroll_name: String in ["LandscapeCommandScroll", "PortraitCommandScroll", "OperationsScroll"]:
+		var scroll := find_child(scroll_name, true, false) as ScrollContainer
+		if scroll != null and scroll.is_ancestor_of(control):
+			scroll.ensure_control_visible.call_deferred(control)
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
@@ -845,6 +854,14 @@ func _apply_responsive_layout() -> void:
 	var aspect := viewport_size.x / viewport_size.y
 	_portrait = viewport_size.y > viewport_size.x
 	_compact_landscape = not _portrait and (aspect < 1.45 or viewport_size.x < 1700.0)
+	var large_text := float(TextScale.value()) >= 1.20
+	var landscape_scroll := _landscape_deck.get_node_or_null("LandscapeCommandScroll") as ScrollContainer
+	var portrait_scroll := _portrait_sheet.get_node_or_null("PortraitCommandScroll") as ScrollContainer
+	for document_scroll: ScrollContainer in [landscape_scroll, portrait_scroll]:
+		if document_scroll != null:
+			document_scroll.vertical_scroll_mode = (
+				ScrollContainer.SCROLL_MODE_AUTO if large_text else ScrollContainer.SCROLL_MODE_DISABLED
+			)
 	_landscape_layout.visible = not _portrait
 	_portrait_layout.visible = _portrait
 	_place_responsive_content()
@@ -1029,6 +1046,10 @@ func _display_safe_insets(viewport_size: Vector2) -> Vector4:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh_locale_copy()
 	_apply_responsive_layout()
+
+
+func _on_text_scale_changed(_value: float) -> void:
+	_apply_responsive_layout.call_deferred()
 
 
 func _refresh_locale_copy() -> void:

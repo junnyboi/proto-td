@@ -13,6 +13,7 @@ const ClassDefType := preload("res://data/class_def.gd")
 const StageDefType := preload("res://data/stage_def.gd")
 const LEGACY_CAMPAIGN := preload("res://data/campaigns/p16_v2.tres")
 const RECRUIT_CAMPAIGN := preload("res://data/campaigns/p16_v3.tres")
+const LEGACY_STAGE_COUNT := 8
 
 
 static func build() -> Dictionary:
@@ -20,9 +21,9 @@ static func build() -> Dictionary:
 	var classes := _resources("res://data/classes")
 	var traps := _ids("res://data/traps")
 	var spells := _ids("res://data/spells")
-	var stages: Array = []
-	for index: int in range(1, 9):
-		stages.append(load("res://data/stages/s%d.tres" % index) as StageDefType)
+	var stages := _campaign_stages()
+	var legacy_stages := stages.filter(func(stage: StageDefType) -> bool:
+		return stage.campaign_index <= LEGACY_STAGE_COUNT)
 	var text_entries := _class_text_entries(classes)
 	var legacy_operator_ids := _ids("res://data/operators").filter(func(value: Variant) -> bool:
 		return String(value) != "recruit")
@@ -30,7 +31,7 @@ static func build() -> Dictionary:
 		"operators": legacy_operator_ids,
 		"traps": traps,
 		"spells": spells,
-	}, stages)
+	}, legacy_stages)
 	if not legacy_combat["accepted"]:
 		return {}
 	var legacy_context := (
@@ -39,7 +40,7 @@ static func build() -> Dictionary:
 			legacy_operator_ids,
 			traps,
 			spells,
-			stages,
+			legacy_stages,
 			(LEGACY_CAMPAIGN as CampaignDefType).paid_offers,
 			[],
 			[],
@@ -60,6 +61,17 @@ static func build() -> Dictionary:
 			legacy_context,
 		)
 	)
+
+
+static func _campaign_stages() -> Array:
+	var stages: Array = []
+	for filename: String in _resource_filenames("res://data/stages"):
+		var stage := load("res://data/stages/%s" % filename) as StageDefType
+		if stage != null and stage.campaign_index >= 1:
+			stages.append(stage)
+	stages.sort_custom(func(a: StageDefType, b: StageDefType) -> bool:
+		return a.campaign_index < b.campaign_index)
+	return stages
 
 
 static func _class_text_entries(classes: Array) -> Dictionary:

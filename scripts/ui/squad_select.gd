@@ -10,6 +10,7 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const SelectedSquadChipType := preload("res://scripts/ui/components/selected_squad_chip.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
@@ -594,7 +595,8 @@ func _rebuild_operator_cards() -> void:
 		_grid.columns = 1
 		return
 		_grid.columns = _operator_grid_columns(_shell.layout_mode())
-	for hero: Dictionary in visible_rows:
+	for visible_index: int in visible_rows.size():
+		var hero := visible_rows[visible_index] as Dictionary
 		var hero_id := StringName(hero["hero_id"])
 		var op_id := StringName(hero["operator_def_id"])
 		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
@@ -631,6 +633,12 @@ func _rebuild_operator_cards() -> void:
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		pick.add_child(portrait)
+		PremiumPortraitEntranceType.apply(
+			portrait,
+			StringName(hero["portrait_asset_id"]),
+			visible_index,
+			_reduced_motion(),
+		)
 		pick.disabled = fallen
 		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
 		_apply_operator_card_text_style(pick)
@@ -836,12 +844,10 @@ func _apply_deploy_text_contrast(button: AetheriaButtonType = _start) -> void:
 
 
 func _action_presentation_text(node_name: String, text_value: String) -> String:
-	if I18n.locale() == &"zh-CN":
-		return text_value
 	if node_name == "TrainingButton":
-		return "TRAIN\nOPERATORS"
+		return UiCopyType.text(&"ui.squad.training_presentation", "TRAIN\nOPERATORS")
 	if node_name == "StartBattle":
-		return "DEPLOY SQUAD"
+		return UiCopyType.text(&"ui.squad.deploy_presentation", "DEPLOY SQUAD")
 	return text_value
 
 
@@ -1347,10 +1353,10 @@ func _refresh_launch_status() -> void:
 
 
 func _start_action_presentation(action_text: String) -> String:
-	if I18n.locale() == &"zh-CN" or _launch_locked:
+	if _launch_locked:
 		return action_text
 	if Game.mission_launch_retry_pending():
-		return "RETRY\nDEPLOYMENT"
+		return UiCopyType.text(&"ui.squad.retry_presentation", "RETRY\nDEPLOYMENT")
 	return _action_presentation_text("StartBattle", action_text)
 
 

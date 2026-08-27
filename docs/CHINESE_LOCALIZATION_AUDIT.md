@@ -1,5 +1,8 @@
 # Simplified Chinese Localization Audit and Remediation
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](NARRATIVE_CANON.md).
+
+
 **Status:** Implemented and release-gated
 
 **Locale:** `zh-CN`
@@ -52,7 +55,7 @@ Reviewed Chinese corrections include:
 - corrected Stage 6 consent narrative and Stage 7 tactical hint;
 - accurate Recruit blocking/deployment tutorial instructions;
 - Chinese Training combat facts without misleading `ATK`/`T` abbreviations;
-- consistent `迟缓领域`, `部署点`, `高级共鸣`, `露娜莉丝圣物库`, `月辉载体`, `第33连队`, and `英灵殿` terminology;
+- consistent `迟缓领域`, `部署点`, `高级共鸣`, `露娜莉丝圣物库`, `月辉载体`, `Manus连队`, and `英灵殿` terminology;
 - natural classifier and spacing rules for lives, pulls, Marks, stars, rewards, and numeric placeholders;
 - corrected Settings, Results, memorial, archive, and gacha phrasing;
 - exact placeholder compatibility for every bilingual entry.
@@ -67,7 +70,7 @@ Source paths were updated so Chinese is consumed at presentation time rather tha
 - Squad identity, cards, loadout, tactical hints, and accessibility;
 - operator, trap, spell, wave, result-stamp, deployment, and map-overlay presentation;
 - Training identity, statistics, skills, eligibility, progression, rename, errors, tooltips, and accessibility landmarks;
-- faction names, subtitles, specializations, and Company 33 identity;
+- faction names, subtitles, specializations, and Company Manus identity;
 - loading phases and cinematic streaming status;
 - premium hero callsigns, classes, receipts, state, confirmation, Moon Archive history, duplicate conversion, and screen-reader transaction consequences;
 - Results rewards, transmissions, actions, and consequences;

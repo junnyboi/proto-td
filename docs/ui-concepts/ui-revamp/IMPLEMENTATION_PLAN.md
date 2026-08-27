@@ -1,11 +1,13 @@
 # Protos Unified UI Revamp — Implementation Plan
 
-**Owner:** Agent 2  
-**Canonical repository:** `https://github.com/junnyboi/proto-td`  
-**Starting revision:** `6f382b621c812c29dacfa79a41fe59e19909709c`  
-**Engine:** Godot `4.7.2.stable.official.ed1daf0bf`  
-**Visual authority:** [`DESIGN_CONCEPT.md`](DESIGN_CONCEPT.md) and the eight GPT Image 2 concepts  
-**Behavior authority:** [`UI_AUDIT.md`](UI_AUDIT.md), existing models/presenters, and focused tests
+> **Historical technical evidence; not narrative canon.** This document preserves the UI migration contract, stable behavior boundaries, accessibility requirements, and completed verification record. It does not define narrative truth. The sole narrative authority is [`../../NARRATIVE_CANON.md`](../../NARRATIVE_CANON.md). Older copy, screenshots, and visual concepts are superseded wherever they conflict with that canon.
+
+**Owner:** Agent 2
+**Source repository:** `https://github.com/junnyboi/proto-td`
+**Starting revision:** `6f382b621c812c29dacfa79a41fe59e19909709c`
+**Engine:** Godot `4.7.2.stable.official.ed1daf0bf`
+**Historical visual reference:** [`DESIGN_CONCEPT.md`](DESIGN_CONCEPT.md) and the eight GPT Image 2 concepts
+**Technical behavior evidence:** [`UI_AUDIT.md`](UI_AUDIT.md), existing models/presenters, and focused tests
 
 ## Execution rules
 
@@ -17,9 +19,9 @@ The UI may format, stage, animate, filter, and invoke existing route/action brid
 
 | Decision | Approved behavior |
 |---|---|
-| Player-facing memorial spelling | Retain **Vahalla** for compatibility with current copy, identifiers, tests, and route handles. A later naming migration may change it deliberately. |
-| Training success destination | Preserve the current Company Command destination and one-time acknowledgement. Origin-aware Cancel/Back behavior remains unchanged. |
-| Results cancel behavior | Preserve the visible Back to Title action, but route `ui_cancel` to Company Command while a campaign is active and to Title only when no campaign is active. This prevents an invisible destructive shortcut without removing the feature. |
+| Player-facing memorial spelling | Display **Valhalla**. Preserve stable internal `vahalla` identifiers, tests, save fields, and route handles for compatibility. |
+| Training success destination | Preserve the current Company Manus command destination and one-time acknowledgement. Origin-aware Cancel/Back behavior remains unchanged. |
+| Results cancel behavior | Preserve the visible Back to Title action, but route `ui_cancel` to Company Manus command while a campaign is active and to Title only when no campaign is active. This prevents an invisible destructive shortcut without removing the feature. |
 | Generated concepts | Use as composition/material targets only. Runtime data, character identity, text, and behavior remain native and authoritative. |
 | New gameplay | None. Barracks and Armory remain disabled; no economy or purchase system is created. |
 
@@ -45,9 +47,9 @@ Evolve `AetheriaScreenShell` into a full-safe-area-capable premium shell while r
 
 ### 1.3 Shared modal and motion behavior
 
-Add reusable presentation-only dialog helpers for a veil, angular sheet, Cancel-default focus, focus containment/restoration, resize clamping, `ui_cancel` parity, and submit-once pending state. Apply the helper first to battle resign and gacha pull confirmation. Continue using the existing title settings implementation until extraction can be done without regressing music, locale, or reduced-motion state; Company Command settings remains in the established route.
+Add reusable presentation-only dialog helpers for a veil, angular sheet, Cancel-default focus, focus containment/restoration, resize clamping, `ui_cancel` parity, and submit-once pending state. Apply the helper first to battle resign and gacha pull confirmation. Continue using the existing title settings implementation until extraction can be done without regressing music, locale, or reduced-motion state; Company Manus command settings remains in the established route.
 
-**Regression gate:** import, bounded boot, all focused tests, new semantic-style/shell/dialog smoke tests, and native title/Company Command/Stage Select/Training/Results captures at both target orientations.
+**Regression gate:** import, bounded boot, all focused tests, new semantic-style/shell/dialog smoke tests, and native title/Company Manus command/Stage Select/Training/Results captures at both target orientations.
 
 ## Phase 2 — Campaign, character workspaces, premium collection, and consequences
 
@@ -61,13 +63,13 @@ Training and Squad Select retain their existing functional decomposition, filter
 
 ### 2.3 Premium Recruit
 
-Recompose Premium Resonance around the canonical Lunaris backdrop and a featured five-star hero hierarchy. Preserve the three-identity pool, 40-Mark cost, authoritative pity projection, single-pull behavior, duplicate lives, revival, Skip, and reduced motion. Add an explicit pre-commit confirmation sheet showing cost, current balance, post-pull balance, and guarantee distance. Only Confirm invokes `Game.pull_premium_hero`; Cancel is presentation-only. The receipt-driven reveal keeps the same committed payload while receiving stronger rarity, forced-pity, and outcome hierarchy.
+Recompose Premium Resonance around the established Lunaris backdrop and a featured five-star hero hierarchy. Preserve the three-identity pool, 40-Mark cost, authoritative pity projection, single-pull behavior, stored-life and revival mechanics, Skip, and reduced motion. Presentation must describe one unique human soul, clean Resonance Shards, Soul Anchors, and prepared recovery bodies; it must never imply copied souls. Add an explicit pre-commit confirmation sheet showing cost, current balance, post-pull balance, and guarantee distance. Only Confirm invokes `Game.pull_premium_hero`; Cancel is presentation-only. The receipt-driven reveal keeps the same committed payload while receiving stronger rarity, forced-pity, and outcome hierarchy.
 
-### 2.4 Vahalla and Results
+### 2.4 Valhalla and Results
 
-Rebuild Vahalla as a selected fallen-identity archive: filter rail, selected memorial dossier, service record, visit-local Honor action, and stable `hero_id` selection. Preserve all filtering and campaign read-only behavior. Results becomes a full-safe-area after-action reliquary with distinct clear/defeat identity, native star indicators, typed reward/loss sections, readable consequence copy, and a persistent action dock. Existing Retry, Training, Company Command, and Title routes remain.
+Rebuild the player-facing Valhalla memorial as a selected fallen-identity archive while retaining internal `vahalla` compatibility: filter rail, selected memorial dossier, service record, visit-local Honor action, and stable `hero_id` selection. Preserve all filtering and campaign read-only behavior. Results becomes a full-safe-area after-action reliquary with distinct clear/defeat identity, native star indicators, typed reward/loss sections, readable consequence copy, and a persistent action dock. Existing Retry, Training, Company Manus command, and Title routes remain.
 
-**Regression gate:** import, bounded boot, all focused tests, new gacha confirmation/cancel tests, Vahalla selection/Honor tests, Results route tests, and deterministic desktop/portrait captures for Stage Select, Mission, Training, Gacha, Vahalla, and Results.
+**Regression gate:** import, bounded boot, all focused tests, new gacha confirmation/cancel tests, Valhalla selection/Honor tests, Results route tests, and deterministic desktop/portrait captures for Stage Select, Mission, Training, Gacha, Valhalla, and Results.
 
 ## Phase 3 — Battle field-command layer
 
@@ -89,7 +91,7 @@ Update the existing `proto-td-web` project only. Preserve the dynamic-viewport, 
 
 | Domain | Required evidence |
 |---|---|
-| Authority | Cancel/filter/Honor/Skip/reduced-motion paths do not mutate authoritative state. |
+| State integrity | Cancel/filter/Honor/Skip/reduced-motion paths do not mutate authoritative state. |
 | Navigation | Stable route handles and every Back/Cancel/return path remain valid. |
 | Transactions | Launch, rename, promotion, pull, and result boundaries retain accepted/rejected/idempotent behavior. |
 | Responsive | `1280×720` and `720×1280` contain all primary actions and avoid horizontal overflow. |
@@ -105,11 +107,11 @@ Update the existing `proto-td-web` project only. Preserve the dynamic-viewport, 
 |---|---|---|
 | **0 — Audit and contract freeze** | Complete | Pushed in `4b6a728`; 79-state audit, eight GPT Image 2 concepts, preserved-feature ledger, and accepted pre-change suite. |
 | **1 — Shared Lunaris foundations** | Complete | Unified textured Aetheria theme, upgraded programmatic Lunaris style, full-safe-area shell mode, reusable modal helper, and `lunaris_ui_foundation_test.gd`. Import and Xvfb logs are clean. Landscape Stage Select confirms the material migration. Portrait Stage Select was completed in Phase 2. The three historical success-sentinel process-code quirks were corrected upstream before final integration. |
-| **2 — Screen-family migration** | Complete | Stage Select now uses a full-area route+dossier workspace; Training uses the full-area atelier; Mission keeps its proven scaled contract with a fixed action dock; Premium Resonance adds a Confirm-only transaction sheet and featured five-star banner; Vahalla uses a selected memorial dossier; Results uses a two-pane after-action reliquary with persistent actions. `campaign_ui_layout_test.gd`, expanded gacha tests, `results_ui_test.gd`, existing Vahalla tests, full import, and all focused suites pass. Twelve accepted Xvfb captures cover `1280×720` and `720×1280`; logs are clean. |
+| **2 — Screen-family migration** | Complete | Stage Select now uses a full-area route+dossier workspace; Training uses the full-area atelier; Mission keeps its proven scaled contract with a fixed action dock; Premium Resonance adds a Confirm-only transaction sheet and featured five-star banner; Valhalla uses a selected memorial dossier; Results uses a two-pane after-action reliquary with persistent actions. `campaign_ui_layout_test.gd`, expanded gacha tests, `results_ui_test.gd`, existing internal `vahalla` tests, full import, and all focused suites pass. Twelve accepted Xvfb captures cover `1280×720` and `720×1280`; logs are clean. |
 | **3 — Battle field-command layer** | Complete | Battle HUD, spell/deployment decks, pause-speed-resign strip, veiled Confirm-only withdrawal sheet, tutorial, map guidance, wave/result ceremony, and debrief handoff now share the engraved Lunaris command material. `battle_ui_layout_test.gd` verifies Cancel invariance, safe modal focus, pause/speed restoration, Confirm-only defeat, terminal disablement, and navigation suppression. The complete integrated focused suite passes with zero failures. Eight accepted Xvfb captures cover tutorial/live/resign/terminal at `1280×720` and `720×1280`; logs are clean. |
-| **4 — Export and deployment** | Complete / public | Synchronized runtime source `a6f358e286fd62eadb729ecce93c86fb530ec5e9` integrates the unified UI, 15% title readability, capped Company Command deck, soundtrack-redesign Phase 0, and Slow Field gameplay/UI. Direct import, bounded boot, all 20 current focused tests, English/Chinese parity, CJK glyph coverage, and error scans pass with zero failures. Twenty native landscape/portrait captures, title-specific input captures, and Slow Field Xvfb evidence are accepted. The Godot 4.7.2 Web export contains non-empty HTML, JavaScript, WASM, and a 98,202,864-byte PCK with checksums. Managed and public verification proved exact resource loading, no obsolete pack requests or status, zero-chrome geometry, title containment, capped deck height, pointer and Enter navigation, and clean consoles. Public checkpoint `4f4e6ce6` is live at `https://protohost-sqtjrsla.manus.space/`. |
+| **4 — Export and deployment** | Complete / public | Synchronized runtime source `a6f358e286fd62eadb729ecce93c86fb530ec5e9` integrates the unified UI, 15% title readability, capped Company Manus command deck, soundtrack-redesign Phase 0, and Slow Field gameplay/UI. Direct import, bounded boot, all 20 current focused tests, English/Chinese parity, CJK glyph coverage, and error scans pass with zero failures. Twenty native landscape/portrait captures, title-specific input captures, and Slow Field Xvfb evidence are accepted. The historical Godot 4.7.2 Web export contained non-empty HTML, JavaScript, WASM, and a 98,202,864-byte PCK with checksums; this is retained as past release evidence, not a current artifact-size claim. Managed and public verification proved exact resource loading, no obsolete pack requests or status, zero-chrome geometry, title containment, capped deck height, pointer and Enter navigation, and clean consoles. Public checkpoint `4f4e6ce6` is live at `https://protohost-sqtjrsla.manus.space/`. |
 | **Title readability follow-up** | Complete | A title-local `1.15` scale contract enlarges the wordmark, Start/Settings actions, settings panel typography/actions, and locale list without changing shared component defaults. `title_ui_scale_test.gd` enforces exact landscape/portrait dimensions and safe-area containment. Direct import, bounded boot, all 20 standalone regressions, five input-exercised Xvfb captures, and error scans pass. |
-| **Company Command sizing reimplementation** | Complete | Replaced the stretched divider-bearing navbar with GPT Image 2 segmented HUD/rail frames; separated navigation, hero, and command surfaces; enlarged the 1280×720 hierarchy to 24px command, 18px section/status, 26px mission/action, 20px body, and 18/15px operation/state roles; applied per-frame content-safe margins; and added standard, compact-landscape, tall-landscape, and portrait reflow with display-safe-area insets and local scrolling. `staging_command_layout_test.gd` enforces exact English/Chinese viewport geometry, typography floors, 72px primary/navigation targets, text containment, rail ornament clearance, and breakpoint placement. Four exact-resolution native captures are accepted with clean self-terminating harness logs. |
+| **Company Manus command sizing reimplementation** | Complete | Replaced the stretched divider-bearing navbar with GPT Image 2 segmented HUD/rail frames; separated navigation, hero, and command surfaces; enlarged the 1280×720 hierarchy to 24px command, 18px section/status, 26px mission/action, 20px body, and 18/15px operation/state roles; applied per-frame content-safe margins; and added standard, compact-landscape, tall-landscape, and portrait reflow with display-safe-area insets and local scrolling. `staging_command_layout_test.gd` enforces exact English/Chinese viewport geometry, typography floors, 72px primary/navigation targets, text containment, rail ornament clearance, and breakpoint placement. Four exact-resolution native captures are accepted with clean self-terminating harness logs. |
 | **Gameplay extension — Slow Field** | Complete | Added a deterministic CELL spell with a 600-tick cooldown, radius-1 footprint, 240-tick duration, and strongest-only 50% ground slow. S6 grants the spell; S7 teaches it at the three-front convergence; S8 retains it for boss-column control. GPT Image 2 icon/VFX assets are manifest-backed. `slow_field_spell_test.gd`, the expanded stage smoke, the full focused suite, direct import/boot, and landscape/portrait Xvfb field captures pass with clean logs. |
 | **Slow Field onboarding, indicators, and telemetry** | Complete | First-clear S7 now pauses battle time, spotlights the Slow Field card, marks the median shared corridor, and requires an accepted cast before resuming. SpellBar projects separate cyan field-duration and gold cooldown countdowns from authoritative model ticks. `slow_field_tutorial_ui_test.gd` covers the guided cast and timer lifecycle; `slow_field_balance_telemetry_test.gd` runs deterministic no-combat paired S7/S8 wave telemetry with JSON/CSV output. English/Chinese parity and four native target/active landscape/portrait captures pass. The isolated policy adds 9.2% mean ground transit in S7 and 8.6% in S8 while changing aerial transit by 0.0 ticks; current 240/600-tick balance is retained. |
 | **Slow Field aura refinement** | Complete | Reduced the active field projection from 0.72 to 0.46 opacity and added a continuous 18-second rotation around the aura center. The native harness now rejects opaque or static projections; landscape and portrait captures retain field readability without obscuring terrain, enemies, path art, health bars, or the dual timer card. |

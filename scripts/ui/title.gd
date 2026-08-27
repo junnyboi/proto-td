@@ -50,6 +50,7 @@ var _master_volume := 1.0
 var _music_volume := 1.0
 var _sfx_volume := 1.0
 var _frame_limit := 0
+var _text_scale := 1.0
 var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
@@ -59,6 +60,8 @@ var _hover_tweens: Dictionary = {}
 var _highlighted_actions: Dictionary = {}
 var _interaction_feedback_ready := false
 var _title_focus_scroll_ready := false
+var _start_pending := false
+var _start_failed := false
 
 @onready var _settings_state: TitleSettings = $TitleSettings
 
@@ -73,6 +76,7 @@ func _ready() -> void:
 	_music_volume = ViewPreferencesType.music_volume(_preferences_path)
 	_sfx_volume = ViewPreferencesType.sfx_volume(_preferences_path)
 	_frame_limit = ViewPreferencesType.frame_limit(_preferences_path)
+	_text_scale = ViewPreferencesType.text_scale(_preferences_path)
 	_apply_audio_settings()
 	_apply_graphics_settings()
 	_build_screen()
@@ -358,10 +362,19 @@ func _rule(color: Color) -> ColorRect:
 
 
 func _on_start_pressed() -> void:
-	if _screen_state != ScreenState.TITLE:
+	if _screen_state != ScreenState.TITLE or _start_pending:
 		return
+	_start_pending = true
+	_start_failed = false
+	_start_button.disabled = true
 	Sfx.play("ui_confirm")
-	Game.start_campaign()
+	if Game.start_campaign():
+		return
+	_start_pending = false
+	_start_failed = true
+	_start_button.disabled = false
+	_refresh_copy()
+	_start_button.grab_focus.call_deferred()
 
 
 func _open_settings() -> void:
@@ -430,6 +443,7 @@ func _apply_preference_values(values: Dictionary) -> void:
 	_master_volume = float(values.get(&"master_volume", _master_volume))
 	_music_volume = float(values.get(&"music_volume", _music_volume))
 	_sfx_volume = float(values.get(&"sfx_volume", _sfx_volume))
+	_text_scale = float(values.get(&"text_scale", _text_scale))
 	var previous_music_enabled := _title_music_enabled
 	_title_music_enabled = bool(values.get(&"title_music_enabled", _title_music_enabled))
 	_apply_graphics_settings()
@@ -442,6 +456,8 @@ func _apply_preference_values(values: Dictionary) -> void:
 	if _reduced_motion:
 		_reset_title_action_feedback()
 	_refresh_copy()
+	_apply_responsive_layout()
+	_settings_state.call_deferred("_apply_responsive_layout")
 
 
 func _on_settings_close_completed() -> void:
@@ -464,7 +480,7 @@ func _leave_settings(return_focus: Control) -> void:
 
 func _set_title_interaction_enabled(enabled: bool) -> void:
 	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
-	_start_button.disabled = not enabled
+	_start_button.disabled = not enabled or _start_pending
 	_settings_button.disabled = not enabled
 	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
@@ -479,6 +495,7 @@ func _current_preferences() -> Dictionary:
 		&"sfx_volume": _sfx_volume,
 		&"frame_limit": _frame_limit,
 		&"reduced_motion": _reduced_motion,
+		&"text_scale": _text_scale,
 	}
 
 
@@ -522,6 +539,10 @@ func reduced_motion() -> bool:
 	return _reduced_motion
 
 
+func text_scale() -> float:
+	return _text_scale
+
+
 func settings_draft() -> Dictionary:
 	return _settings_state.draft()
 
@@ -543,6 +564,7 @@ func _set_bus_volume(bus_name: StringName, value: float) -> void:
 func _apply_graphics_settings() -> void:
 	Engine.max_fps = _frame_limit
 	ProjectSettings.set_setting("accessibility/reduced_motion", _reduced_motion)
+	TextScale.set_scale(_text_scale)
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
@@ -554,7 +576,18 @@ func _refresh_copy() -> void:
 	if _wordmark == null:
 		return
 	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
-	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
+	_start_button.text = UiCopyType.text(
+		&"ui.title.start_retry" if _start_failed else &"ui.title.start",
+		"Retry Start" if _start_failed else "Start",
+	).to_upper()
+	_start_button.accessibility_description = (
+		UiCopyType.text(
+			&"ui.title.a11y.start_failed_description",
+			"Campaign startup failed. Activate Start again to retry.",
+		)
+		if _start_failed
+		else ""
+	)
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
 
 
@@ -576,6 +609,8 @@ func _apply_responsive_layout() -> void:
 		else (PORTRAIT_ENTRY_DROP_RATIO if portrait else LANDSCAPE_ENTRY_DROP_RATIO)
 	)
 	var entry_drop := roundi(viewport_size.y * entry_drop_ratio)
+	if not portrait and _text_scale > 1.0:
+		entry_drop -= roundi(minf(viewport_size.y * 0.16, (_text_scale - 1.0) * 180.0))
 	_entry_host.add_theme_constant_override(&"margin_left", horizontal_margin)
 	_entry_host.add_theme_constant_override(&"margin_right", horizontal_margin)
 	_entry_host.add_theme_constant_override(
@@ -591,7 +626,14 @@ func _apply_responsive_layout() -> void:
 		wordmark_size = 16 if narrow else (18 if short else (22 if portrait else 26))
 	_wordmark.autowrap_mode = TextServer.AUTOWRAP_OFF if chinese else TextServer.AUTOWRAP_WORD_SMART
 	_wordmark.max_lines_visible = 1 if chinese else 2
-	_wordmark.add_theme_font_size_override(&"font_size", _title_font_size(wordmark_size))
+	var wordmark_default := _title_font_size(wordmark_size)
+	var wordmark_visual := float(wordmark_default)
+	if _text_scale > 1.0:
+		var fit_cap := float(_title_font_size(24 if narrow else (20 if chinese else 32)))
+		var fit_weight := clampf((_text_scale - 1.0) / 0.5, 0.0, 1.0)
+		wordmark_visual = lerpf(float(wordmark_default), minf(float(wordmark_default), fit_cap), fit_weight)
+	var wordmark_base := maxi(1, roundi(wordmark_visual / maxf(_text_scale, 0.01)))
+	_wordmark.add_theme_font_size_override(&"font_size", wordmark_base)
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
 	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
 

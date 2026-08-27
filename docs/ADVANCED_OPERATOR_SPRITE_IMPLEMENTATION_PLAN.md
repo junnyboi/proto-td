@@ -5,6 +5,10 @@
 **Prepared against revision:** `662e71c2c85e36e1d902f78b812177cec99dec2b`  
 **Inputs:** the eleven briefs in `docs/operator-specializations/design-briefs/`, the four faction concept boards in `docs/Faction - *.webp`, the current recruit animation sets, and the current Godot presentation catalog.
 
+## Execution status
+
+As of the release candidate prepared on 2026-08-27, Phases 0–6 are complete: the immutable archive contains 22 approved GPT Image 2 gender references, 44 NE/SE directional keyframes, and 88 silent four-second carriers; the runtime contains 176 validated atlases and 22 generated visual definitions. Premium portrait precedence, canonical `class_id` routing, deterministic presentation gender, classless legacy fallback, 640px row-major slicing, generated-cache release, serialized manifest schema 3, and registration idempotency are covered by focused regressions. The 11-class Xvfb matrix is visually accepted after a frame-metric sweep found and deterministically repaired three isolated keyed-collapse samples. Phases 7–8 remain open until the synchronized full repository baseline, exact-revision Web export/HTTP/browser checks, source push, and a new `proto-td-web` checkpoint all pass.
+
 ## 1. Objective and non-negotiable scope
 
 This work replaces generic operator-ID presentation reuse with complete, class-specific animation for every **recruit-derived, non-premium specialization**. Each of the eleven classes receives a clearly adult male variant and a clearly adult female variant. Both variants use the same class equipment, gameplay footprint, reach, effect origin, timing, and screen-space authority; gender is an identity presentation attribute, never a combat attribute.
@@ -187,7 +191,7 @@ Every atlas uses exactly **8 columns**, in row-major frame order:
 | Idle | 24 | 8 | 3 | `5120 × 1920` |
 | Attack | 13 | 8 | 2 | `5120 × 1280`; row two contains frames 8–12 and three transparent unused cells |
 
-The unused attack cells are transparent padding and are not counted as frames. Lossless WebP encoding must round-trip to identical RGBA pixels. Color space, premultiplication policy, and alpha threshold are pinned in the processor manifest.
+The unused attack cells are transparent padding and are not counted as frames. Quality-92 VP8 encoding preserves lossless alpha and permits only the validator's bounded RGB compression delta; alpha mirrors must remain exact per frame. Color space, premultiplication policy, and alpha threshold are pinned in the processor manifest.
 
 ### 6.2 Repository filenames
 

@@ -47,7 +47,7 @@ def build_matrix(repository: Path, source_root: Path, class_filter: set[str]) ->
                 for direction in DIRECTION_ORDER:
                     carrier = source_root / "carriers" / class_id / gender / f"{action}_{direction}.mp4"
                     if not carrier.is_file():
-                        continue
+                        raise FileNotFoundError(f"missing canonical carrier: {carrier}")
                     command = [
                         sys.executable, str(builder), "--carrier", str(carrier),
                         "--class-id", class_id, "--gender", gender, "--action", action,

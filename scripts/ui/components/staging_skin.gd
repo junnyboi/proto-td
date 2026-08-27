@@ -4,7 +4,7 @@ extends RefCounted
 const StagingGlyphType := preload("res://scripts/ui/components/staging_glyph.gd")
 
 const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
-const FALLBACK_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
+const CJK_FONT := preload("res://assets/fonts/ProtosSansSC.otf")
 
 const LUNARIS_SEAL := preload("res://assets/ui/staging/icons/lunaris_seal.png")
 const MISSION_ICON := preload("res://assets/ui/staging/icons/mission.png")
@@ -42,6 +42,17 @@ const MUTED := Color("aebfd0")
 const INK := Color("07111c")
 
 static var _display_font: FontVariation = null
+static var _body_font: FontVariation = null
+
+
+static func body_font() -> FontVariation:
+	if _body_font != null:
+		return _body_font
+	_body_font = FontVariation.new()
+	_body_font.base_font = CJK_FONT
+	_body_font.fallbacks = [ThemeDB.fallback_font]
+	_body_font.resource_name = "Protos bundled Chinese body"
+	return _body_font
 
 
 static func display_font() -> FontVariation:
@@ -49,11 +60,20 @@ static func display_font() -> FontVariation:
 		return _display_font
 	_display_font = FontVariation.new()
 	_display_font.base_font = CINZEL
-	if FALLBACK_THEME.default_font != null:
-		_display_font.fallbacks = [FALLBACK_THEME.default_font]
+	_display_font.fallbacks = [body_font()]
 	_display_font.variation_opentype = {&"wght": 520}
 	_display_font.resource_name = "Cinzel with Protos CJK fallback"
 	return _display_font
+
+
+static func apply_body_type(
+	control: Control,
+	size: int,
+	color: Color = IVORY,
+) -> void:
+	control.add_theme_font_override(&"font", body_font())
+	control.add_theme_font_size_override(&"font_size", size)
+	control.add_theme_color_override(&"font_color", color)
 
 
 static func apply_display_type(
@@ -64,8 +84,7 @@ static func apply_display_type(
 ) -> void:
 	var font := FontVariation.new()
 	font.base_font = CINZEL
-	if FALLBACK_THEME.default_font != null:
-		font.fallbacks = [FALLBACK_THEME.default_font]
+	font.fallbacks = [body_font()]
 	font.variation_opentype = {&"wght": weight}
 	control.add_theme_font_override(&"font", font)
 	control.add_theme_font_size_override(&"font_size", size)

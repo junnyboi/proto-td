@@ -2,11 +2,13 @@
 
 **Status:** Implemented launch soundtrack
 
-**Protected asset:** *Astra Memoriam* remains the unchanged loading/title cue.
+**Protected asset:** *Astra Memoriam* remains unchanged pending the scheduled listening review. This document does not authorize replacement of runtime audio.
 
 ## Production decision
 
-The launch soundtrack now follows the faction-led contract in [`FACTION_MUSIC_REDESIGN_PROPOSAL.md`](../FACTION_MUSIC_REDESIGN_PROPOSAL.md). Company Command and related campaign surfaces use a restrained Sacred Archive staging loop. Stages S1–S7 route to three authored adaptive battle families, and S8 routes to a dedicated Gatecrasher boss suite. Victory and defeat use compact Lunaris resolutions rather than reusing combat or title material.
+This is a technical production record, not an independent narrative authority. The sole story authority is [`NARRATIVE_CANON.md`](../NARRATIVE_CANON.md). Runtime files, cue IDs, routing, checksums, and mixes remain unchanged unless a later listening review separately approves replacements in place.
+
+The launch soundtrack now follows the faction-led contract in [`FACTION_MUSIC_REDESIGN_PROPOSAL.md`](../FACTION_MUSIC_REDESIGN_PROPOSAL.md). Company Command and related campaign surfaces use a restrained Lunaris rescue-planning loop. Stages S1–S7 route to three authored adaptive battle families, and S8 routes to a dedicated Gatecrasher boss suite. Victory and defeat use compact Lunaris resolutions rather than reusing combat or title material.
 
 All music masters were generated as original instrumental material with the Manus Lyria 3 Pro production path. The prompts and structural timing are recorded in the proposal. Runtime derivatives were mastered from true 48 kHz, 24-bit PCM masters to stereo Ogg Vorbis, gain-staged beneath tactical SFX, and loop-closed with bar-length head/tail crossfades. The exact generated sources, lossless masters, anchors, carrier videos, and raw outputs are preserved in the Manus project archive `audio-production-2026-08-25`; checksums are recorded in [`LUNARIS_GAMEPLAY_SCORE.sha256`](./LUNARIS_GAMEPLAY_SCORE.sha256).
 
@@ -15,7 +17,7 @@ All music masters were generated as original instrumental material with the Manu
 | Surface | Cue family | Routing |
 |---|---|---|
 | Loading and title | `title_lunaris` | Existing *Astra Memoriam* asset; persistent global music toggle |
-| Company Command, mission, squad, training, gacha, Vahalla | `lunaris_staging_archive_command` | One uninterrupted staging-family loop |
+| Company Command, mission, squad, training, gacha, Valhalla | `lunaris_staging_archive_command` | One uninterrupted staging-family loop |
 | S1–S3 | `lunaris_battle_orbit_early_{low,medium,high}` | Horizontal adaptive states at 120 BPM |
 | S4 | `lunaris_battle_air_raid_{low,medium,high}` | Horizontal aerial-pressure states at 126 BPM |
 | S5–S7 | `lunaris_battle_gravity_lattice_{low,medium,high}` | Horizontal combined-arms states at 124 BPM |
@@ -33,6 +35,12 @@ The synchronized title Settings surface provides persisted Master, Music, and SF
 
 Final runtime measurements are 48 kHz stereo with staging at −20.0 LUFS, battle low/medium/high states calibrated to approximately −19.5/−18.0/−16.5 LUFS, the boss suite at −17.5 LUFS, and both result stingers at approximately −18 LUFS. Music true peaks remain at or below −2.6 dBFS. Mono fold-down checks preserve the principal motifs and transient identity.
 
+## Anima War listening direction
+
+The retained cue map should be reviewed against the Anima War rather than caretaker-era intent. Lunaris material should frame Company Manus as a rescue force protecting **anima—the real and unique human soul**. A single free or rescued soul is represented by an exposed, warm human breath, solo string, or pale-blue glass tone; processed anima is represented by strained violet-magenta spectral pressure, compressed wordless voices, and bundled pulses. PROTOS should read as corrupted, calm, and imperial through processed digital fragments, rigid many-to-one routing, low mechanical scale, and the pressure of farms, refineries, and foundries. The music must never imply that PROTOS is benevolent, that souls are safe copies, or that human farms are peaceful gardens.
+
+These directions are review criteria, not instructions to replace the checked-in score automatically. Any approved future replacement must preserve the stable cue IDs above, BPM and bar grids, transition anchors, routing, loudness hierarchy, loop behavior, mobile and mono compatibility, and safe silence fallback.
+
 ## UI sound direction
 
 The complementary UI suite uses a **moon-glass and brushed-gold mechanism** vocabulary. Each sound was produced through the required carrier workflow: a GPT Image 2 visual anchor, a short audio-capable carrier video, extraction, 48 kHz normalization, and a controlled tail. Every delivered SFX is between one and three seconds.
@@ -44,7 +52,7 @@ The complementary UI suite uses a **moon-glass and brushed-gold mechanism** voca
 | `ui_back` | Back navigation | Descending glass gesture, soft gravity retreat, muted release |
 | `ui_confirm` | Mission launch and decisive acceptance | Gold-cyan convergence, three aligned orbit points, compact gravity seal |
 | `menu_open` | Modal or scene deck opening | Layered glass planes unfolding with clockwork alignment |
-| `menu_close` | Modal or scene deck dismissal | Descending retraction and one clean archive latch |
+| `menu_close` | Modal or scene deck dismissal | Descending retraction and one clean reliquary latch |
 | `slow_field_cast` | Accepted Slow Field cast | Cold polar howl blooms outward with ice-grain hiss and a restrained frost activation accent |
 | `slow_field_expire` | Active field reaches its exclusive end tick | Blizzard pressure pulls inward, snow hiss recedes, and a faint brittle frost crack dissolves |
 
@@ -72,4 +80,4 @@ The cast derivative is 2.900 seconds at −18.0 LUFS; expiration is 2.950 second
 
 ## Acceptance contract
 
-The candidate is accepted only when *Astra Memoriam* remains bit-identical, the persistent toggle controls every music surface, title transitions cleanly into Company Command, adaptive requests cannot thrash or mutate simulation state, missing audio falls back safely, every new SFX resolves through the catalog, direct import and all tests pass without leak diagnostics, and the Web export loads all audio without MIME, CORS, decoding, or console errors.
+The candidate is accepted only when *Astra Memoriam* remains bit-identical, the persistent toggle controls every music surface, title transitions cleanly into Company Command, adaptive requests cannot thrash or mutate simulation state, missing audio falls back safely, every new SFX resolves through the catalog, direct import and all tests pass without leak diagnostics, and the Web export loads all audio without MIME, CORS, decoding, or console errors. Listening review must also confirm stolen-soul pressure, corrupted PROTOS presence, imperial scale, and clear separation between singular free souls and processed anima, without masking alerts or depending on stereo width alone.

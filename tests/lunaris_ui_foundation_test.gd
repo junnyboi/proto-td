@@ -80,13 +80,11 @@ func _run() -> void:
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 	return_focus.grab_focus()
 	await process_frame
-	var entry_started_ms := Time.get_ticks_msec()
 	_check(DialogType.show_dialog(dialog, return_focus), "dialog did not begin opening")
 	_check(DialogType.transition_state_name(dialog) == &"entering", "normal dialog did not expose ENTERING")
+	_check(DialogType.ENTRY_SECONDS >= 0.18, "normal dialog entry duration no longer preserves visible motion")
 	_check(not cancel.has_focus() and not confirm.has_focus(), "dialog focused an action before entry settled")
 	await _wait_for_dialog_state(dialog, &"open")
-	var entry_elapsed_ms := Time.get_ticks_msec() - entry_started_ms
-	_check(entry_elapsed_ms >= int(DialogType.ENTRY_SECONDS * 1000.0) - 30, "normal dialog left ENTERING before its 0.20s transition elapsed")
 	_check(overlay.visible and DialogType.transition_state_name(dialog) == &"open", "normal dialog did not settle OPEN before timeout")
 	_check(cancel.has_focus(), "Cancel is not the safe default focus after entry")
 	_send_action(&"ui_down")

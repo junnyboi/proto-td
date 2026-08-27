@@ -101,6 +101,10 @@ func _test_identity_routing() -> void:
 		) == StringName("sword_saint_%s" % expected_gender),
 		"canonical class_id must override a stale operator fallback without changing identity gender",
 	)
+	_check(
+		Catalog.template_for_unit(&"guard_2", &"portrait_guard_2", &"legacy", 18) == &"guard_2",
+		"classless legacy/replay units must preserve incumbent operator-id presentation",
+	)
 
 
 func _test_premium_precedence() -> void:

@@ -60,7 +60,8 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 		else CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.load_or_create(run_seed, _campaign_context)
 	)
 	if not started["accepted"]:
-		push_error("Game.start_campaign: %s" % started["error_code"])
+		last_campaign_error = StringName(started["error_code"])
+		push_error("Game.start_campaign: %s" % last_campaign_error)
 		return false
 	campaign = started["state"]
 	campaign_store = started["store"]

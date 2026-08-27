@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_g6syk")
+schema_version = 3
 entries = {
 &"caster_1": {
 "animations": {
@@ -2355,7 +2356,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_caster_2": {
 "animations": {
@@ -2370,7 +2371,7 @@ entries = {
 "pattern": "res://assets/portraits/caster_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_defender_1": {
 "animations": {
@@ -2385,7 +2386,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_defender_2": {
 "animations": {
@@ -2400,7 +2401,7 @@ entries = {
 "pattern": "res://assets/portraits/defender_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_guard_1": {
 "animations": {
@@ -2415,7 +2416,7 @@ entries = {
 "pattern": "res://assets/portraits/guard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_guard_2": {
 "animations": {
@@ -2430,7 +2431,7 @@ entries = {
 "pattern": "res://assets/portraits/guard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_00": {
 "animations": {
@@ -2442,10 +2443,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/vanguard_1.png",
+"pattern": "res://assets/portraits/recruits/solcrest_female.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_01": {
 "animations": {
@@ -2457,10 +2458,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/guard_1.png",
+"pattern": "res://assets/portraits/recruits/solcrest_male.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_02": {
 "animations": {
@@ -2472,10 +2473,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/defender_1.png",
+"pattern": "res://assets/portraits/recruits/vesper_female.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_03": {
 "animations": {
@@ -2487,10 +2488,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/sniper_1.png",
+"pattern": "res://assets/portraits/recruits/vesper_male.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_04": {
 "animations": {
@@ -2502,10 +2503,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/caster_1.png",
+"pattern": "res://assets/portraits/recruits/lunaris_female.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_05": {
 "animations": {
@@ -2517,10 +2518,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/vanguard_2.png",
+"pattern": "res://assets/portraits/recruits/lunaris_male.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_06": {
 "animations": {
@@ -2532,10 +2533,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/guard_2.png",
+"pattern": "res://assets/portraits/recruits/crimson_female.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_recruit_07": {
 "animations": {
@@ -2547,10 +2548,10 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/defender_2.png",
+"pattern": "res://assets/portraits/recruits/crimson_male.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_sniper_1": {
 "animations": {
@@ -2565,7 +2566,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_sniper_2": {
 "animations": {
@@ -2580,7 +2581,7 @@ entries = {
 "pattern": "res://assets/portraits/sniper_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_vanguard_1": {
 "animations": {
@@ -2595,7 +2596,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_1.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_vanguard_2": {
 "animations": {
@@ -2610,7 +2611,7 @@ entries = {
 "pattern": "res://assets/portraits/vanguard_2.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
-"size": Vector2i(128, 128)
+"size": Vector2i(512, 512)
 },
 &"portrait_witch_doctor_1": {
 "animations": {
@@ -2624,8 +2625,338 @@ entries = {
 "frames": 1,
 "pattern": "res://assets/portraits/witch_doctor_1.png",
 "pivot": Vector2(0.5, 0.5),
-"placeholder": true,
-"size": Vector2i(128, 128)
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_banner_guard_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/banner_guard_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_banner_guard_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/banner_guard_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_defender_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/defender_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_defender_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/defender_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_gunner_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/gunner_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_gunner_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/gunner_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_immovable_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/immovable_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_immovable_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/immovable_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_mage_apprentice_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/mage_apprentice_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_mage_apprentice_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/mage_apprentice_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_shock_trooper_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/shock_trooper_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_shock_trooper_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/shock_trooper_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sniper_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sniper_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sniper_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sniper_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sorcerer_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sorcerer_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sorcerer_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sorcerer_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sword_saint_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sword_saint_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_sword_saint_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/sword_saint_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_swordmaster_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/swordmaster_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_swordmaster_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/swordmaster_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_witch_doctor_female": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/witch_doctor_female.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
+},
+&"portrait_specialization_witch_doctor_male": {
+"animations": {
+&"default": {
+&"fps": 1.0,
+&"length": 1,
+&"loop": true,
+&"start": 0
+}
+},
+"frames": 1,
+"pattern": "res://assets/portraits/specializations/witch_doctor_male.png",
+"pivot": Vector2(0.5, 0.5),
+"placeholder": false,
+"size": Vector2i(512, 512)
 },
 &"portrait_archive_caster": {
 "animations": {
@@ -2637,7 +2968,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/archive_caster_premium.png",
+"pattern": "res://assets/portraits/premium/archive_caster.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
@@ -2652,7 +2983,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/lunaris_vessel_premium.png",
+"pattern": "res://assets/portraits/premium/lunaris_vessel.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
@@ -2667,7 +2998,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/reliquary_duelist_premium.png",
+"pattern": "res://assets/portraits/premium/reliquary_duelist.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
@@ -3835,7 +4166,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "idle",
-&"atlas_sha256": "29b971a84f90c9053b72d1aabd740d81b4a06a49c9c211ccb245cd445ee2e5b8",
+&"atlas_sha256": "ccc3708dca80f377005bdfd62ff73b67a5b970ae409514247a33378cccd1e09c",
 &"class_id": "gunner",
 &"direction": "ne",
 &"gender": "male",
@@ -3861,7 +4192,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "idle",
-&"atlas_sha256": "5db9c1a637892627d3ab0ca9ca2f2df9c80c676cab12ce5368259df39aea2517",
+&"atlas_sha256": "4ee5cf6aa1ed481edcb55b0ece8adff0a6a055a523e10350801880ae47dcbd63",
 &"class_id": "gunner",
 &"direction": "nw",
 &"gender": "male",
@@ -3939,7 +4270,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "attack",
-&"atlas_sha256": "a6b1647a8775befb9bde414fc03d33917e69333e946d05890a54e7995a958954",
+&"atlas_sha256": "f3d0740371ca647796202ec7024b64734c22c75d37bfb2ab9e89b0c13f5a4923",
 &"class_id": "gunner",
 &"direction": "ne",
 &"gender": "male",
@@ -3965,7 +4296,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "attack",
-&"atlas_sha256": "2268a1d0f3dc855330ab65849ecc8cb0f7d778a4b02d14601ab182b6c1731dbc",
+&"atlas_sha256": "818591f4950cbe0e72f5409196b88159125ea86d2ec3897772b1c195db642127",
 &"class_id": "gunner",
 &"direction": "nw",
 &"gender": "male",
@@ -7111,7 +7442,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "attack",
-&"atlas_sha256": "6c35e8eb202b0e41d4f09b54728c16f4baaa3fa89643185eb4967c4dab237532",
+&"atlas_sha256": "a832c43fe241a0e55722ff711dab75b1d115bbb93b196d0f559a9a4e71d24bde",
 &"class_id": "banner_guard",
 &"direction": "se",
 &"gender": "female",
@@ -7137,7 +7468,7 @@ entries = {
 "placeholder": false,
 "provenance": {
 &"action": "attack",
-&"atlas_sha256": "0afd20405a81d7f92a54cf8e977aee76eebfdf8a603f6f3c7a402d64f2b7bc98",
+&"atlas_sha256": "448c1360de9cb0b07916932a6a501536c6e816ee9ca677797f71b4c88471eff7",
 &"class_id": "banner_guard",
 &"direction": "sw",
 &"gender": "female",

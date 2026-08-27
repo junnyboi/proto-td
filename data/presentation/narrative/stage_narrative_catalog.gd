@@ -2,7 +2,10 @@ class_name StageNarrativeCatalog
 extends Resource
 
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
-const EXPECTED_IDS: Array[StringName] = [&"s1", &"s2", &"s3", &"s4", &"s5", &"s6", &"s7", &"s8"]
+const EXPECTED_IDS: Array[StringName] = [
+	&"s1", &"s2", &"s3", &"s4", &"s5", &"s6", &"s7", &"s8",
+	&"s9", &"s10", &"s11", &"s12", &"s13", &"s14", &"s15", &"s16",
+]
 
 @export var records: Array[StageNarrativeDefType] = []
 
@@ -10,7 +13,7 @@ const EXPECTED_IDS: Array[StringName] = [&"s1", &"s2", &"s3", &"s4", &"s5", &"s6
 func validate_contract() -> PackedStringArray:
 	var errors := PackedStringArray()
 	if records.size() != EXPECTED_IDS.size():
-		errors.append("records: expected 8, got %d" % records.size())
+		errors.append("records: expected 16, got %d" % records.size())
 	var seen: Dictionary = {}
 	for index: int in records.size():
 		var record: StageNarrativeDefType = records[index]

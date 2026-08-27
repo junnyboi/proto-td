@@ -306,6 +306,36 @@ def union_boxes(boxes: Sequence[tuple[int, int, int, int]]) -> tuple[int, int, i
     )
 
 
+def repair_pathological_keyed_frames(
+    frames: Sequence[Image.Image], neutral_edge: int, minimum_ratio: float = 0.25,
+) -> tuple[list[Image.Image], dict[int, int]]:
+    """Replace keyed collapse frames with the nearest valid authored sample.
+
+    Video carriers can occasionally contain a single nearly-empty chroma frame.
+    Magnifying a one-pixel remnant to the runtime target creates a full-cell blank
+    flash. Preserve timing and deterministic frame count by borrowing the nearest
+    valid sampled pose; ties resolve to the earlier frame.
+    """
+    if neutral_edge < 1:
+        raise ValueError("neutral subject edge must be positive")
+    edges = []
+    for frame in frames:
+        box = subject_bbox(frame)
+        edges.append(max(box[2] - box[0], box[3] - box[1]))
+    valid = [index for index, edge in enumerate(edges) if edge >= neutral_edge * minimum_ratio]
+    if not valid:
+        raise ValueError("all sampled keyed frames collapsed below the neutral subject threshold")
+    repaired = list(frames)
+    replacements: dict[int, int] = {}
+    for index, edge in enumerate(edges):
+        if edge >= neutral_edge * minimum_ratio:
+            continue
+        source = min(valid, key=lambda candidate: (abs(candidate - index), candidate))
+        repaired[index] = frames[source].copy()
+        replacements[index] = source
+    return repaired, replacements
+
+
 def _decontaminate_spill(image: Image.Image, chroma: tuple[int, int, int]) -> Image.Image:
     """Estimate foreground RGB from straight alpha for fringe pixels only."""
     pixels = image.load()
@@ -439,6 +469,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             end_union = union_boxes(tuple(subject_bbox(frame) for frame in keyed_endpoints))
             union_width, union_height = end_union[2] - end_union[0], end_union[3] - end_union[1]
             scale = TARGET_EDGE / max(union_width, union_height)
+            keyed, repaired_frames = repair_pathological_keyed_frames(
+                keyed, max(union_width, union_height),
+            )
             cells: list[Image.Image] = []
             frame_metrics: list[dict[str, object]] = []
             for frame in keyed:
@@ -474,6 +507,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         "window": {"start": args.window_start, "end": args.window_end},
         "requested_chroma": args.chroma.upper(), "measured_chroma": "#%02X%02X%02X" % measured,
         "neutral_scale": scale, "endpoint_union_bbox": list(end_union),
+        "repaired_frame_indices": {str(index): source for index, source in repaired_frames.items()},
         "cell_size": [CELL_SIZE, CELL_SIZE], "columns": ATLAS_COLUMNS,
         "atlas_path": str(east_path), "atlas_sha256": sha256_file(east_path),
         "mirror_path": str(west_path), "mirror_sha256": sha256_file(west_path),

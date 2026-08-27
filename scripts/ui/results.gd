@@ -16,6 +16,9 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
+const ActionHoverFeedbackType := preload(
+	"res://scripts/ui/components/action_hover_feedback.gd"
+)
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -92,6 +95,8 @@ func _build_presentation() -> void:
 
 
 func _exit_tree() -> void:
+	var command := find_child("ReturnToStaging", true, false) as Button
+	ActionHoverFeedbackType.reset(command)
 	_kill_reward_reveal_tween()
 
 
@@ -328,6 +333,7 @@ func _build_actions(layout: VBoxContainer) -> void:
 		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Company Command"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
 		if not _cleared_result:
 			next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
+			ActionHoverFeedbackType.wire(self, next)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
@@ -692,7 +698,8 @@ func _reward_name(reward: Dictionary) -> String:
 	var kind := StringName(reward.get("kind", &""))
 	var identifier := StringName(reward.get("id", &""))
 	if not KIND_DIRS.has(kind):
-		return String(identifier).replace("_", " ").capitalize()
+		push_warning("Results: unknown reward kind/id %s/%s" % [kind, identifier])
+		return UiCopyType.text(&"ui.results.unknown_reward", "Unknown reward")
 	var definition: Resource = load("%s/%s.tres" % [KIND_DIRS[kind], identifier])
 	if definition is OperatorDef:
 		return UiCopyType.operator_name(definition)
@@ -700,7 +707,8 @@ func _reward_name(reward: Dictionary) -> String:
 		return UiCopyType.trap_name(definition)
 	if definition is SpellDef:
 		return UiCopyType.spell_name(definition)
-	return String(identifier).replace("_", " ").capitalize()
+	push_warning("Results: unresolved reward %s/%s" % [kind, identifier])
+	return UiCopyType.text(&"ui.results.unknown_reward", "Unknown reward")
 
 
 func _reward_kind(kind: StringName) -> String:
@@ -752,21 +760,36 @@ func _hero_name(hero_id: String) -> String:
 	for key: String in ["ready_heroes", "fallen_heroes", "premium_heroes"]:
 		for row: Dictionary in projection.get(key, []):
 			if String(row.get("hero_id", "")) == hero_id:
-				return String(row.get("callsign", row.get("premium_id", hero_id)))
-	return hero_id.replace("_", " ").capitalize()
+				var raw_callsign: Variant = row.get("callsign", "")
+				var raw_premium_id: Variant = row.get("premium_id", "")
+				var callsign := "" if raw_callsign == null else str(raw_callsign)
+				var premium_id := "" if raw_premium_id == null else str(raw_premium_id)
+				return (
+					UiCopyType.premium_name(premium_id, callsign)
+					if not premium_id.is_empty()
+					else callsign
+				)
+	push_warning("Results: unknown hero %s" % hero_id)
+	return UiCopyType.text(&"ui.results.unknown_hero", "Unknown hero")
 
 
 func _premium_name(premium_id: String) -> String:
 	var projection := Game.campaign_projection()
 	for row: Dictionary in projection.get("premium_pool", []):
 		if String(row.get("premium_id", "")) == premium_id:
-			return String(row.get("callsign", premium_id))
-	return premium_id.replace("_", " ").capitalize()
+			var raw_callsign: Variant = row.get("callsign", "")
+			var callsign := "" if raw_callsign == null else str(raw_callsign)
+			return UiCopyType.premium_name(premium_id, callsign)
+	push_warning("Results: unknown premium hero %s" % premium_id)
+	return UiCopyType.text(&"ui.results.unknown_premium_hero", "Unknown premium hero")
 
 
 func _class_name(class_id: String) -> String:
 	var definition := load("res://data/classes/%s.tres" % class_id) as ClassDefType
-	return UiCopyType.text(definition.name_key, definition.name) if definition != null else class_id
+	if definition != null:
+		return UiCopyType.text(definition.name_key, definition.name)
+	push_warning("Results: unknown class %s" % class_id)
+	return UiCopyType.text(&"ui.results.unknown_class", "Unknown class")
 
 
 func _wire_focus(focusable: Array[Button]) -> void:

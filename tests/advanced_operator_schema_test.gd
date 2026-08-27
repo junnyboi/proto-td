@@ -12,6 +12,7 @@ func _init() -> void:
 	_test_manifest_profiles()
 	_test_animation_profiles()
 	_test_atlas_boundaries()
+	_test_generated_cache_policy()
 	_test_existing_catalog()
 	if _failures.is_empty():
 		print("ADVANCED_OPERATOR_SCHEMA_TEST_OK")
@@ -48,6 +49,18 @@ func _test_manifest_profiles() -> void:
 		manifest.entry_diagnostics(&"generated", generated).is_empty(),
 		"generated eight-field row failed",
 	)
+	var invalid_columns := generated.duplicate(true)
+	invalid_columns["columns"] = 4
+	_check(
+		not manifest.entry_diagnostics(&"generated_wrong_columns", invalid_columns).is_empty(),
+		"generated row admitted a non-eight-column atlas",
+	)
+	var invalid_mirror := generated.duplicate(true)
+	invalid_mirror["provenance"] = _provenance("idle", "nw", "mirrored", "se")
+	_check(
+		not manifest.entry_diagnostics(&"generated_wrong_mirror", invalid_mirror).is_empty(),
+		"generated row admitted an invalid mirror source",
+	)
 	generated.erase("provenance")
 	_check(
 		not manifest.entry_diagnostics(&"generated_without_provenance", generated).is_empty(),
@@ -62,6 +75,7 @@ func _test_manifest_profiles() -> void:
 		var existing := load(path) as AssetManifestType
 		_check(existing != null, "%s failed to load" % path)
 		if existing != null:
+			_check(existing.schema_version == 3, "%s did not serialize schema version 3" % path)
 			_check(existing.validate_contract().is_empty(), "%s contract failed" % path)
 
 
@@ -117,6 +131,17 @@ func _test_atlas_boundaries() -> void:
 	_check(Art.atlas_region_for_frame(entry, 24) == Rect2i(), "padded cell became addressable")
 
 
+func _test_generated_cache_policy() -> void:
+	Art._reset_manifests_for_test()
+	var first := Art.texture(&"op_anim_defender_female_idle_ne", 0)
+	var second := Art.texture(&"op_anim_defender_female_idle_ne", 1)
+	_check(first != null and second != null, "generated cache test failed to load atlas frames")
+	_check(
+		Art._cached_texture_count_for_test() == 0,
+		"generated animation frames accumulated in the process-lifetime Art cache",
+	)
+
+
 func _test_existing_catalog() -> void:
 	for error: String in OperatorVisualCatalogType.validate_all():
 		_failures.append("existing catalog: %s" % error)
@@ -144,7 +169,7 @@ func _provenance(
 		&"source_kind": source_kind,
 		&"mirrored_from": mirrored_from,
 		&"source_manifest_id": "fixture-source",
-		&"atlas_sha256": "0123456789abcdef",
+		&"atlas_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 	}
 
 

@@ -8,9 +8,12 @@ const STATIC_FALLBACKS := {
 	&"ui.title.full_title": "Protos Defense",
 	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
 	&"ui.title.start": "Start",
+	&"ui.title.start_retry": "Retry Start",
+	&"ui.title.a11y.start_failed_description": "Campaign startup failed. Activate Start again to retry.",
 	&"ui.title.settings": "Settings",
 	&"ui.title.settings_save_failed": "Settings could not be saved. Review the draft and try again.",
 	&"ui.title.audio": "Audio",
+	&"ui.title.accessibility": "Accessibility",
 	&"ui.title.graphics": "Graphics",
 	&"ui.title.master_volume": "Master Volume  //  {value}%",
 	&"ui.title.music_volume": "Music Volume  //  {value}%",
@@ -20,6 +23,7 @@ const STATIC_FALLBACKS := {
 	&"ui.title.frame_unlimited": "Unlimited",
 	&"ui.title.frame_value": "{value} FPS",
 	&"ui.title.motion_state": "Animated Background  //  {state}",
+	&"ui.title.text_scale": "Text Scale  //  {value}%",
 	&"ui.title.seed": "seed {seed}",
 	&"ui.common.on": "On",
 	&"ui.common.off": "Off",
@@ -388,7 +392,7 @@ const STATIC_FALLBACKS := {
 	&"ui.training.class.sword_saint": "Sword Saint",
 	&"ui.training.class.swordmaster": "Swordmaster",
 	&"ui.training.class.witch_doctor": "Witch Doctor",
-	&"ui.training.class_kit_placeholder": "CLASS KIT\nTEMP ART",
+	&"ui.training.class_kit_placeholder": "CLASS KIT",
 	&"ui.training.confirm_action": "Confirm Training",
 	&"ui.training.confirm_permanent": "This training choice cannot be changed.",
 	&"ui.training.confirm_title": "CONFIRM {class_name} TRAINING?",
@@ -498,6 +502,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.title.master_volume": {&"value": &"int"},
 	&"ui.title.music_volume": {&"value": &"int"},
 	&"ui.title.sfx_volume": {&"value": &"int"},
+	&"ui.title.text_scale": {&"value": &"int"},
 	&"ui.title.frame_value": {&"value": &"int"},
 	&"ui.staging.campaign_summary": {&"cleared": &"int", &"total": &"int"},
 	&"ui.staging.next_detail": {&"index": &"int", &"title": &"String"},
@@ -622,6 +627,12 @@ static func spell_name(definition: SpellDef) -> String:
 		push_error("UiCopy.spell_name: null definition")
 		return ""
 	return text(StringName("data.spell.%s.name" % definition.id), definition.display_name)
+
+
+static func premium_name(premium_id: String, fallback: String) -> String:
+	if premium_id.is_empty():
+		return text(&"ui.gacha.unknown_signal", "Unknown signal")
+	return text(StringName("data.premium.%s.name" % premium_id), fallback)
 
 
 static func static_fallbacks() -> Dictionary:

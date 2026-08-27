@@ -68,6 +68,9 @@ var _redirect_pending := false
 @onready var _frame_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/FrameLimitRow/FrameLimitLabel
 @onready var _frame_option: OptionButton = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/FrameLimitRow/FrameLimitOption
 @onready var _motion_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/MotionButton
+@onready var _accessibility_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/AccessibilityHeading
+@onready var _text_scale_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow/TextScaleLabel
+@onready var _text_scale_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow/TextScaleSlider
 @onready var _error_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsError
 @onready var _action_dock: GridContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/ActionDock
 @onready var _apply_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/ActionDock/SettingsApplyButton
@@ -88,6 +91,7 @@ func _ready() -> void:
 	_frame_option.item_selected.connect(_on_frame_selected)
 	_frame_option.fit_to_longest_item = false
 	_motion_button.pressed.connect(_toggle_motion)
+	_text_scale_slider.value_changed.connect(_on_text_scale_changed)
 	_locale_selector.alignment = BoxContainer.ALIGNMENT_CENTER
 	_apply_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	for color_name: StringName in [
@@ -304,6 +308,16 @@ func _toggle_motion() -> void:
 	_refresh_copy()
 
 
+func _on_text_scale_changed(value: float) -> void:
+	if _suppress_callbacks or _transition_state != TransitionState.ACTIVE:
+		return
+	_clear_error()
+	_draft[&"text_scale"] = value / 100.0
+	preview_requested.emit(_draft.duplicate(true))
+	_refresh_copy()
+	_apply_responsive_layout.call_deferred()
+
+
 func _on_locale_changed(_locale_id: StringName) -> void:
 	var focus_owner := get_viewport().gui_get_focus_owner()
 	_refresh_copy()
@@ -321,6 +335,7 @@ func _sync_controls() -> void:
 	_master_slider.value = float(_draft.get(&"master_volume", 1.0)) * 100.0
 	_music_slider.value = float(_draft.get(&"music_volume", 1.0)) * 100.0
 	_sfx_slider.value = float(_draft.get(&"sfx_volume", 1.0)) * 100.0
+	_text_scale_slider.value = float(_draft.get(&"text_scale", 1.0)) * 100.0
 	_frame_option.select(maxi(FRAME_LIMITS.find(int(_draft.get(&"frame_limit", 0))), 0))
 	_suppress_callbacks = false
 
@@ -331,6 +346,7 @@ func _refresh_copy() -> void:
 	_title_label.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
 	_audio_heading.text = UiCopyType.text(&"ui.title.audio", "Audio").to_upper()
 	_graphics_heading.text = UiCopyType.text(&"ui.title.graphics", "Graphics").to_upper()
+	_accessibility_heading.text = UiCopyType.text(&"ui.title.accessibility", "Accessibility").to_upper()
 	_master_label.text = UiCopyType.format_text(
 		&"ui.title.master_volume", "MASTER VOLUME  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"master_volume", 1.0)) * 100.0)},
@@ -342,6 +358,10 @@ func _refresh_copy() -> void:
 	_sfx_label.text = UiCopyType.format_text(
 		&"ui.title.sfx_volume", "SFX VOLUME  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"sfx_volume", 1.0)) * 100.0)},
+	).to_upper()
+	_text_scale_label.text = UiCopyType.format_text(
+		&"ui.title.text_scale", "TEXT SCALE  //  {value}%",
+		{&"value": roundi(float(_draft.get(&"text_scale", 1.0)) * 100.0)},
 	).to_upper()
 	var music_enabled := bool(_draft.get(&"title_music_enabled", true))
 	_music_button.text = UiCopyType.format_text(
@@ -384,9 +404,9 @@ func _refresh_frame_items() -> void:
 
 func _apply_type() -> void:
 	StagingSkinType.apply_display_type(_title_label, _title_font_size(36), IVORY, 620)
-	for heading: Label in [_audio_heading, _graphics_heading]:
+	for heading: Label in [_audio_heading, _graphics_heading, _accessibility_heading]:
 		StagingSkinType.apply_display_type(heading, _title_font_size(18), GOLD, 620)
-	for label: Label in [_master_label, _music_label, _sfx_label, _frame_label]:
+	for label: Label in [_master_label, _music_label, _sfx_label, _frame_label, _text_scale_label]:
 		StagingSkinType.apply_display_type(label, _title_font_size(15), MUTED, 560)
 	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
 		StagingSkinType.apply_display_type(action, _title_font_size(17), IVORY, 560)
@@ -418,6 +438,7 @@ func _configure_accessibility_relationships() -> void:
 		[_music_label, _music_slider],
 		[_sfx_label, _sfx_slider],
 		[_frame_label, _frame_option],
+		[_text_scale_label, _text_scale_slider],
 	]:
 		var label := pair[0] as Label
 		var control := pair[1] as Control
@@ -431,7 +452,7 @@ func _refresh_accessibility() -> void:
 	accessibility_name = UiCopyType.text(&"ui.title.settings", "Settings")
 	accessibility_description = _copy(
 		&"ui.title.a11y.root_description",
-		"Adjust language, audio, graphics, and motion preferences.",
+		"Adjust language, audio, graphics, motion, and text-size preferences.",
 	)
 	_back_button.accessibility_name = UiCopyType.text(&"ui.common.back", "Back")
 	_back_button.accessibility_description = _copy(
@@ -446,6 +467,11 @@ func _refresh_accessibility() -> void:
 	_set_slider_accessibility(_master_slider, UiCopyType.text(&"ui.title.a11y.master_name", "Master volume"))
 	_set_slider_accessibility(_music_slider, UiCopyType.text(&"ui.title.a11y.music_volume_name", "Music volume"))
 	_set_slider_accessibility(_sfx_slider, UiCopyType.text(&"ui.title.a11y.sfx_name", "Sound effects volume"))
+	_set_slider_accessibility(_text_scale_slider, UiCopyType.text(&"ui.title.a11y.text_scale_name", "Text scale"))
+	_text_scale_slider.accessibility_description = _copy(
+		&"ui.title.a11y.text_scale_description",
+		"Adjust all interface text from 80 to 150 percent. Changes preview immediately.",
+	)
 	_music_button.accessibility_name = _music_button.text
 	_music_button.accessibility_description = _copy(
 		&"ui.title.a11y.music_description",
@@ -491,7 +517,8 @@ func _apply_responsive_layout() -> void:
 	var portrait := viewport.x / maxf(viewport.y, 1.0) <= 1.2
 	var short := viewport.y <= 560.0
 	var wide := viewport.x >= 1200.0 and not portrait and not narrow
-	var two_columns := viewport.x >= 840.0 and not portrait and not narrow and not short
+	var current_text_scale := maxf(float(TextScale.value()), 0.01)
+	var two_columns := viewport.x >= 840.0 and not portrait and not narrow and not short and current_text_scale <= 1.20
 	_layout_mode = &"wide" if wide else (&"narrow" if narrow else (&"portrait" if portrait else &"regular"))
 	if short:
 		_layout_mode = StringName("%s_short" % _layout_mode)
@@ -550,9 +577,12 @@ func _apply_responsive_layout() -> void:
 	_frame_option.custom_minimum_size.y = 72.0
 	_music_button.custom_minimum_size.y = 82.0
 	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
-	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider]:
+	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider, _text_scale_slider]:
 		slider.custom_minimum_size.y = 48.0
-	_title_label.add_theme_font_size_override(&"font_size", _title_font_size(12 if narrow else (30 if portrait else 36)))
+	_title_label.add_theme_font_size_override(
+		&"font_size",
+		_scaled_base_for_cap(_title_font_size(12 if narrow else (30 if portrait else 36)), 1.0),
+	)
 	var locale_heading := UiCopyType.text(&"ui.locale.label", "Language").to_upper()
 	_locale_label.text = locale_heading
 	_locale_label.horizontal_alignment = (
@@ -561,20 +591,21 @@ func _apply_responsive_layout() -> void:
 	_locale_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_locale_label.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 14))
 	_locale_list.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 10))
-	for heading: Label in [_audio_heading, _graphics_heading]:
+	for heading: Label in [_audio_heading, _graphics_heading, _accessibility_heading]:
+		heading.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(18), 1.20))
 		heading.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
-	_back_button.add_theme_font_size_override(&"font_size", _title_font_size(9 if narrow else 17))
+	_back_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(9 if narrow else 17), 1.15))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 17))
-	_apply_button.add_theme_font_size_override(&"font_size", _title_font_size(15 if narrow else 17))
+	_apply_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(15 if narrow else 17), 1.15))
 	for action: Button in [_back_button, _music_button, _motion_button, _apply_button]:
 		action.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
 		action.clip_text = false
-	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF if narrow else TextServer.AUTOWRAP_WORD_SMART
+	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_rebuild_focus_graph()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):
 		_last_valid_focus = focus_owner
@@ -614,14 +645,17 @@ func _rebuild_focus_graph() -> void:
 	_frame_option.focus_neighbor_top = _frame_option.get_path_to(_back_button)
 	_frame_option.focus_neighbor_bottom = _frame_option.get_path_to(_motion_button)
 	_motion_button.focus_neighbor_top = _motion_button.get_path_to(_frame_option)
-	_motion_button.focus_neighbor_bottom = _motion_button.get_path_to(_apply_button)
+	_motion_button.focus_neighbor_bottom = _motion_button.get_path_to(_text_scale_slider)
+	_text_scale_slider.focus_neighbor_top = _text_scale_slider.get_path_to(_motion_button)
+	_text_scale_slider.focus_neighbor_bottom = _text_scale_slider.get_path_to(_apply_button)
 	_locale_list.focus_neighbor_right = _locale_list.get_path_to(_frame_option)
 	_master_slider.focus_neighbor_right = _master_slider.get_path_to(_frame_option)
 	_music_slider.focus_neighbor_right = _music_slider.get_path_to(_motion_button)
-	_sfx_slider.focus_neighbor_right = _sfx_slider.get_path_to(_motion_button)
-	_music_button.focus_neighbor_right = _music_button.get_path_to(_motion_button)
+	_sfx_slider.focus_neighbor_right = _sfx_slider.get_path_to(_text_scale_slider)
+	_music_button.focus_neighbor_right = _music_button.get_path_to(_text_scale_slider)
 	_frame_option.focus_neighbor_left = _frame_option.get_path_to(_locale_list)
 	_motion_button.focus_neighbor_left = _motion_button.get_path_to(_music_button)
+	_text_scale_slider.focus_neighbor_left = _text_scale_slider.get_path_to(_music_button)
 
 
 func _focus_controls() -> Array[Control]:
@@ -634,6 +668,7 @@ func _focus_controls() -> Array[Control]:
 		_music_button,
 		_frame_option,
 		_motion_button,
+		_text_scale_slider,
 		_apply_button,
 	]
 
@@ -766,3 +801,9 @@ func _title_size(value: float) -> float:
 
 func _title_font_size(value: int) -> int:
 	return roundi(float(value) * TITLE_UI_SCALE * TITLE_FONT_SCALE)
+
+
+func _scaled_base_for_cap(base_size: int, maximum_visual_scale: float) -> int:
+	var current_scale := maxf(float(TextScale.value()), 0.01)
+	var visual_scale := minf(current_scale, maximum_visual_scale)
+	return maxi(1, roundi(float(base_size) * visual_scale / current_scale))

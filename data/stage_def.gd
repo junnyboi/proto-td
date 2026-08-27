@@ -40,6 +40,12 @@ const TILE_CHARS := {
 # snapshots, saves, tickets, or deterministic simulation decisions.
 @export var music_profile_id: StringName = &""
 @export var music_variant_id: StringName = &""
+## Act II restoration infrastructure. Cells are authored on hostile ground
+## routes; due cycles repair hostile ground Custodians unless a Slow Field
+## currently covers that cell.
+@export var restoration_cells: PackedVector2Array = []
+@export_range(0, 1000, 1) var restoration_heal_amount: int = 0
+@export_range(0, 3600, 1) var restoration_interval_ticks: int = 0
 
 
 func grid_size() -> Vector2i:
@@ -75,6 +81,12 @@ func clockwise_rotated_copy() -> StageDef:
 			rotated_path.append(Vector2(rotate_cell_clockwise(Vector2i(point), source_size)))
 		rotated_paths.append(rotated_path)
 	rotated.paths = rotated_paths
+	var rotated_restoration_cells := PackedVector2Array()
+	for point: Vector2 in restoration_cells:
+		rotated_restoration_cells.append(
+			Vector2(rotate_cell_clockwise(Vector2i(point), source_size))
+		)
+	rotated.restoration_cells = rotated_restoration_cells
 	return rotated
 
 
@@ -117,6 +129,36 @@ func trap_cell_in_domain(cell: Vector2i) -> bool:
 		if path_cells(path_index).has(cell):
 			return true
 	return false
+
+
+func restoration_contract_errors() -> PackedStringArray:
+	var errors := PackedStringArray()
+	if restoration_cells.is_empty():
+		if restoration_heal_amount != 0 or restoration_interval_ticks != 0:
+			errors.append("restoration tuning requires at least one lattice cell")
+		return errors
+	if restoration_heal_amount <= 0:
+		errors.append("restoration heal amount must be positive")
+	if restoration_interval_ticks <= 0:
+		errors.append("restoration interval must be positive")
+	var seen := {}
+	for point: Vector2 in restoration_cells:
+		var cell := Vector2i(point)
+		if seen.has(cell):
+			errors.append("duplicate restoration lattice cell %s" % cell)
+			continue
+		seen[cell] = true
+		if tile_at(cell) != Tile.GROUND:
+			errors.append("restoration lattice must occupy GROUND at %s" % cell)
+			continue
+		var on_path := false
+		for path_index: int in paths.size():
+			if path_cells(path_index).has(cell):
+				on_path = true
+				break
+		if not on_path:
+			errors.append("restoration lattice is outside every hostile path at %s" % cell)
+	return errors
 
 
 func spell_target_in_domain(spell_def: SpellDef, target: Variant) -> bool:

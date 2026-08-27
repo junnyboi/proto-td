@@ -221,7 +221,7 @@ The redesign should remain concentrated in presentation files. Gameplay source u
 | `localization/en-US.json` and `localization/zh-CN.json` | Add canonically sorted, parity-checked gacha keys for all states, errors, outcomes, counts, rate, confirmation, and accessibility labels. |
 | `assets/ui/staging/frames/` and `assets/ui/staging/icons/` | Reuse approved frames/symbols where semantically correct. Do not modify them solely to bake in gacha text. |
 | `assets/ui/gacha/` | **New proposed asset family:** only for a Marks symbol, featured banner/reveal frame, guarantee seal, and rarity-specific ornament not covered by staging assets; preserve transparent standalone provenance. |
-| `assets/portraits/lunaris_vessel_premium.png` | Replace only through the approved character-art pipeline with a clearly mature 21+ crop that preserves identity, costume, hair, palette, and Crescent Reliquary authority. Review the other two portraits in the same pass for ensemble consistency. |
+| `docs/portraits/premium/` and `assets/portraits/premium/` | Completed through the approved GPT Image 2 character-art pipeline: all three clearly mature 21+ crops preserve canonical identity, costume, hair, palette, and signature-equipment authority. Immutable 1920px sources, deterministic 512px runtime assets, compatibility derivatives, prompts, hashes, and a catalog are retained together. |
 | `scripts/ui/staging.gd` | Surface real Marks on or adjacent to the Premium Resonance tile/header, clearly separate from the presentation-only mock wallet, and preserve `Game.open_gacha()` entry behavior. |
 | `autoloads/game.gd` | Preserve the `open_gacha()`, `pull_premium_hero()`, durable commit, and `open_staging()` bridges. UI redesign should not bypass these methods. |
 

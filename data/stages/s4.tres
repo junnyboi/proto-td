@@ -35,7 +35,7 @@ waves = Array[Dictionary]([{
 "path_idx": 0,
 "tick": 510
 }, {
-"enemy_id": &"drone",
+"enemy_id": &"interceptor",
 "path_idx": 0,
 "tick": 540
 }, {
@@ -51,7 +51,7 @@ waves = Array[Dictionary]([{
 "path_idx": 0,
 "tick": 750
 }, {
-"enemy_id": &"drone",
+"enemy_id": &"interceptor",
 "path_idx": 0,
 "tick": 810
 }])
@@ -68,4 +68,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 4
 requires = Array[StringName]([&"sniper_1"])
-intro_hint = "The air lane crosses the ground convoy near center. Place and face Sniper to cover the sky before the mixed pairs arrive."
+intro_hint = "Use a Sniper to sustain fire against Interceptors in the air lane while blockers hold the ground route."

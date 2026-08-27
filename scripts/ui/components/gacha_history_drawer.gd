@@ -6,15 +6,16 @@ signal closed
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const ASTRAL_STAR := preload("res://assets/ui/gacha/astral_star.png")
 const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const MAX_DRAWER_WIDTH := 430.0
 const OPEN_SECONDS := 0.24
 const CLOSE_SECONDS := 0.18
-const FULLSIZE_PORTRAITS := {
-	"archive_caster": &"portrait_archive_caster_fullsize",
-	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
-	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
+const PREMIUM_PORTRAITS := {
+	"archive_caster": &"portrait_archive_caster",
+	"lunaris_vessel": &"portrait_lunaris_vessel",
+	"reliquary_duelist": &"portrait_reliquary_duelist",
 }
 
 var reduced_motion := false
@@ -262,13 +263,14 @@ func _rebuild_rows() -> void:
 	accessibility_description = _summary.text
 	if history.is_empty():
 		return
-	for raw: Variant in history:
+	for history_index: int in history.size():
+		var raw: Variant = history[history_index]
 		if raw is Dictionary:
-			_rows.add_child(_history_row(raw as Dictionary))
+			_rows.add_child(_history_row(raw as Dictionary, history_index))
 	_rows.move_child(_empty_state, _rows.get_child_count() - 1)
 
 
-func _history_row(receipt: Dictionary) -> Control:
+func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	var five_star := int(receipt.get("rarity", 4)) == 5
 	var panel := PanelContainer.new()
 	panel.name = "HistoryPull_%04d" % (int(receipt.get("pull_index", 0)) + 1)
@@ -294,6 +296,12 @@ func _history_row(receipt: Dictionary) -> Control:
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		_portrait_id(String(receipt.get("premium_id", ""))),
+		entrance_index,
+		reduced_motion,
+	)
 
 	var copy_stack := VBoxContainer.new()
 	copy_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -381,14 +389,18 @@ func _history_badge(receipt: Dictionary) -> String:
 
 
 func _callsign(premium_id: String) -> String:
+	var fallback := ""
 	for raw: Variant in _projection.get("premium_pool", []):
 		if raw is Dictionary and String((raw as Dictionary).get("premium_id", "")) == premium_id:
-			return String((raw as Dictionary).get("callsign", premium_id))
-	return premium_id.replace("_", " ").capitalize()
+			fallback = String((raw as Dictionary).get("callsign", ""))
+			break
+	if fallback.is_empty():
+		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown signal")
+	return UiCopyType.premium_name(premium_id, fallback)
 
 
 func _portrait_id(premium_id: String) -> StringName:
-	return StringName(FULLSIZE_PORTRAITS.get(premium_id, &""))
+	return StringName(PREMIUM_PORTRAITS.get(premium_id, &""))
 
 
 func _apply_layout() -> void:

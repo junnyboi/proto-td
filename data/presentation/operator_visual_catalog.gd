@@ -44,19 +44,6 @@ const DEFINITIONS: Dictionary = {
 	&"witch_doctor_female": preload("res://data/presentation/operator_visuals/witch_doctor_female.tres"),
 	&"witch_doctor_male": preload("res://data/presentation/operator_visuals/witch_doctor_male.tres"),
 }
-const ADVANCED_CLASS_BY_OPERATOR: Dictionary = {
-	&"caster_1": &"mage_apprentice",
-	&"caster_2": &"sorcerer",
-	&"defender_1": &"defender",
-	&"defender_2": &"immovable",
-	&"guard_1": &"swordmaster",
-	&"guard_2": &"sword_saint",
-	&"sniper_1": &"gunner",
-	&"sniper_2": &"sniper",
-	&"vanguard_1": &"shock_trooper",
-	&"vanguard_2": &"banner_guard",
-	&"witch_doctor_1": &"witch_doctor",
-}
 const ADVANCED_CLASS_IDS: Dictionary = {
 	&"banner_guard": true,
 	&"defender": true,
@@ -90,9 +77,7 @@ static func template_for_unit(
 	var premium_template: Variant = PREMIUM_VISUAL_BY_PORTRAIT.get(portrait_asset_id)
 	if typeof(premium_template) == TYPE_STRING_NAME:
 		return premium_template
-	var advanced_class: Variant = (
-		class_id if ADVANCED_CLASS_IDS.has(class_id) else ADVANCED_CLASS_BY_OPERATOR.get(op_id)
-	)
+	var advanced_class: Variant = class_id if ADVANCED_CLASS_IDS.has(class_id) else null
 	if typeof(advanced_class) == TYPE_STRING_NAME:
 		return StringName(
 			"%s_%s"

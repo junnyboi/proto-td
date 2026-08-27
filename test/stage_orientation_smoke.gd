@@ -7,7 +7,7 @@ func _init() -> void:
 
 func _run() -> void:
 	var failures := PackedStringArray()
-	for stage_number: int in range(1, 9):
+	for stage_number: int in range(1, 17):
 		var stage_id := "s%d" % stage_number
 		var source := load("res://data/stages/%s.tres" % stage_id) as StageDef
 		if source == null:
@@ -68,11 +68,20 @@ func _validate_rotated_stage(
 				var step := rotated_path[point_index] - rotated_path[point_index - 1]
 				if absi(step.x) + absi(step.y) != 1:
 					failures.append("rotated path is not adjacent: %s:%d" % [source.id, path_index])
-			if not rotated_path.is_empty():
-				if portrait.tile_at(rotated_path.front()) != StageDef.Tile.SPAWN:
-					failures.append("rotated path does not start at SPAWN: %s" % source.id)
-				if portrait.tile_at(rotated_path.back()) != StageDef.Tile.BASE:
-					failures.append("rotated path does not end at BASE: %s" % source.id)
+				if not rotated_path.is_empty():
+					if portrait.tile_at(rotated_path.front()) != StageDef.Tile.SPAWN:
+						failures.append("rotated path does not start at SPAWN: %s" % source.id)
+					if portrait.tile_at(rotated_path.back()) != StageDef.Tile.BASE:
+						failures.append("rotated path does not end at BASE: %s" % source.id)
+	if portrait.restoration_cells.size() != source.restoration_cells.size():
+		failures.append("rotated restoration-cell count mismatch: %s" % source.id)
+	else:
+		for point_index: int in source.restoration_cells.size():
+			var expected := StageDef.rotate_cell_clockwise(
+				Vector2i(source.restoration_cells[point_index]), source_size,
+			)
+			if Vector2i(portrait.restoration_cells[point_index]) != expected:
+				failures.append("rotated restoration cell mismatch: %s:%d" % [source.id, point_index])
 	_validate_metadata(source, portrait, failures)
 
 
@@ -84,6 +93,7 @@ func _validate_metadata(
 	var fields := [
 		"id", "title", "waves", "wave_starts", "leak_limit", "squad_size",
 		"recovery_roster", "rewards", "campaign_index", "requires", "intro_hint",
+		"restoration_heal_amount", "restoration_interval_ticks",
 	]
 	for field: String in fields:
 		if source.get(field) != portrait.get(field):
@@ -94,7 +104,11 @@ func _validate_round_trip(source: StageDef, failures: PackedStringArray) -> void
 	var rotated := source
 	for _rotation: int in 4:
 		rotated = rotated.clockwise_rotated_copy()
-	if rotated.grid_rows != source.grid_rows or rotated.paths != source.paths:
+	if (
+		rotated.grid_rows != source.grid_rows
+		or rotated.paths != source.paths
+		or rotated.restoration_cells != source.restoration_cells
+	):
 		failures.append("four-rotation round trip mismatch: %s" % source.id)
 
 

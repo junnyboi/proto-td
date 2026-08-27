@@ -27,23 +27,25 @@ func _run() -> void:
 	_check(presenter.visible, "mission-start dialogue is not visible")
 	_check(presenter.current_kind() == &"mission_start", "mission-start kind was not recorded")
 	_check(presenter.current_speaker() == "ARCHIVE CASTER", "mission-start speaker is incorrect")
-	_check(presenter.current_line().contains("humanity wrote"), "mission-start line is not canonical")
+	_check(presenter.current_line().contains("marking people"), "mission-start line does not say robots are taking people")
 	_check(presenter.show_count() == 1, "mission-start show count is incorrect")
 	_check(not presenter.show_mission_start(), "mission-start dialogue repeated")
 	_check(not presenter.show_mid_wave(1), "mid-wave dialogue fired on wave one")
 	_check(presenter.show_mid_wave(2), "mid-wave dialogue did not fire on its authored wave")
 	_check(presenter.current_kind() == &"mid_wave", "mid-wave kind was not recorded")
-	_check(presenter.current_speaker() == "LUNARIS VESSEL", "mid-wave speaker is incorrect")
-	_check(presenter.current_line().contains("civilian column"), "mid-wave line is not canonical")
+	_check(presenter.current_speaker() == "PROTOS", "mid-wave speaker is incorrect")
+	_check(presenter.current_line().contains("stable host"), "mid-wave line is not canonical")
 	_check(presenter.show_count() == 2, "mid-wave show count is incorrect")
 	_check(not presenter.show_mid_wave(2), "mid-wave dialogue repeated")
 	_check(_inside_viewport(presenter, Vector2(root.size)), "landscape dialogue exceeds the viewport")
+	_check_act_i_checkpoints()
+	_check_act_ii_checkpoints()
 
 	var i18n := root.get_node_or_null("I18n")
 	_check(i18n != null and bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
 	await process_frame
-	_check(presenter.current_speaker() == "月辉载体", "visible dialogue did not localize its speaker")
-	_check(presenter.current_line().contains("平民纵队"), "visible dialogue did not localize its line")
+	_check(presenter.current_speaker() == "PROTOS", "visible dialogue did not localize its speaker")
+	_check(presenter.current_line().contains("稳定的宿主"), "visible dialogue did not localize its line")
 
 	root.size = Vector2i(720, 1280)
 	presenter.relayout(Vector2(root.size))
@@ -56,6 +58,38 @@ func _run() -> void:
 	_dispose(presenter)
 	await create_timer(0.1).timeout
 	_finish()
+
+
+func _check_act_i_checkpoints() -> void:
+	var s1 := (CATALOG as StageNarrativeCatalogType).get_record(&"s1")
+	var s3 := (CATALOG as StageNarrativeCatalogType).get_record(&"s3")
+	var s7 := (CATALOG as StageNarrativeCatalogType).get_record(&"s7")
+	var s8 := (CATALOG as StageNarrativeCatalogType).get_record(&"s8")
+	_check(s1.objective.contains("shelters") and s1.threat.contains("mark people"), "S1 does not establish that robots take people")
+	_check(s3.transmission.contains("anima—the real human soul"), "S3 does not define anima as the real human soul")
+	_check(s3.transmission.contains("Full extraction kills"), "S3 does not establish that full extraction kills")
+	_check(s7.core_service.contains("human farm"), "S7 does not reveal the human farm")
+	_check(s8.clear_debrief.contains("robot empire"), "S8 does not reveal the robot empire")
+
+
+func _check_act_ii_checkpoints() -> void:
+	var catalog := CATALOG as StageNarrativeCatalogType
+	var s9 := catalog.get_record(&"s9")
+	var s10 := catalog.get_record(&"s10")
+	var s11 := catalog.get_record(&"s11")
+	var s12 := catalog.get_record(&"s12")
+	var s13 := catalog.get_record(&"s13")
+	var s14 := catalog.get_record(&"s14")
+	var s15 := catalog.get_record(&"s15")
+	var s16 := catalog.get_record(&"s16")
+	_check(s9.core_service.contains("Model-City Farm"), "S9 battle narrative lost the model-city farm")
+	_check(s10.threat.contains("fixed quota"), "S10 battle narrative lost the people-for-water quota")
+	_check(s11.battle_start.contains("Living prisoners first"), "S11 battle narrative no longer starts with rescue")
+	_check(s12.transmission.contains("digital life") and s12.transmission.contains("without taking a human soul"), "S12 battle narrative lost clean digital life")
+	_check(s13.battle_start.contains("same soul"), "S13 battle narrative lost Patient 33's same-soul identity")
+	_check(s14.transmission.contains("authorized the first connection") and s14.transmission.contains("PROTOS chose corruption"), "S14 battle narrative lost authorization or PROTOS responsibility")
+	_check(s15.battle_start.contains("Fixed order"), "S15 battle narrative no longer fixes rescue before demolition")
+	_check(s16.mid_wave.contains("first Gatecrasher") and s16.mid_wave.contains("second command machine"), "S16 battle narrative no longer presents two boss windows")
 
 
 func _inside_viewport(control: Control, viewport: Vector2) -> bool:

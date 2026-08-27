@@ -11,8 +11,16 @@ func _ready() -> void:
 
 func _mount_fixture() -> void:
 	var screen_id := OS.get_environment("ROSTER_DENSITY_SCREEN").strip_edges().to_lower()
+	var locale_id := StringName(OS.get_environment("PROTO_UI_LOCALE").strip_edges())
+	var output_path := OS.get_environment("PROTO_UI_OUT").strip_edges()
 	if screen_id.is_empty():
 		screen_id = "mission"
+	if locale_id.is_empty():
+		locale_id = &"en-US"
+	if not I18n.set_locale(locale_id):
+		push_error("roster density fixture could not set locale %s" % locale_id)
+		get_tree().quit(1)
+		return
 	Game.set_run_seed(9917)
 	if not Game.start_campaign(false, true):
 		push_error("roster density fixture could not start campaign")
@@ -52,6 +60,13 @@ func _mount_fixture() -> void:
 			_mount("res://scenes/results.tscn")
 		"staging":
 			_mount("res://scenes/staging.tscn")
+		"campaign":
+			_mount("res://scenes/stage_select.tscn")
+		"training":
+			Game.training_return_path = &"staging"
+			_mount("res://scenes/training.tscn")
+		"archive":
+			_mount("res://scenes/narrative_archive.tscn")
 		"battle":
 			Game.start_battle(&"s1", true)
 			await get_tree().process_frame
@@ -61,6 +76,20 @@ func _mount_fixture() -> void:
 				skip.pressed.emit()
 		_:
 			push_error("unknown roster density screen: %s" % screen_id)
+			get_tree().quit(1)
+			return
+	if not output_path.is_empty():
+		for _frame: int in range(16):
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var image := get_viewport().get_texture().get_image()
+		var error := image.save_png(output_path)
+		if error != OK:
+			push_error("roster density visual capture failed: %s" % error_string(error))
+			get_tree().quit(1)
+			return
+		print("ROSTER_DENSITY_VISUAL_OK|%s|%s|%dx%d" % [screen_id, locale_id, image.get_width(), image.get_height()])
+		get_tree().quit(0)
 
 
 func _mount(path: String) -> void:

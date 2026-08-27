@@ -10,6 +10,7 @@ const SAVE_SCHEMA := "prototype_td_campaign"
 const SAVE_VERSION := 3
 const LEGACY_OFFER_OPERATOR := "caster_1"
 const RECRUIT_ID := "recruit"
+const LEGACY_STAGE_COUNT := 8
 const U63_MAX := 9_223_372_036_854_775_807
 const MARKS_MAX := 1_000_000_000
 const TargetPolicyDefScript := preload("res://data/target_policy_def.gd")
@@ -203,11 +204,13 @@ static func build_context(
 		return {}
 	var legacy_operator_ids := operator_ids.filter(func(value: Variant) -> bool:
 		return String(value) != RECRUIT_ID)
+	var legacy_stages := _campaign_stages(stages).filter(func(stage: StageDef) -> bool:
+		return stage.campaign_index <= LEGACY_STAGE_COUNT)
 	var legacy_combat := CombatContentBindingScript.build({
 		"operators": legacy_operator_ids,
 		"traps": trap_ids,
 		"spells": spell_ids,
-	}, _campaign_stages(stages))
+	}, legacy_stages)
 	if (
 		not legacy_combat["accepted"]
 		or String(legacy_context.get("combat_rules_sha256", "")) != legacy_combat["sha256"]
@@ -933,7 +936,8 @@ static func _normalize_campaign(
 		or definition.starter_rows.size() != 5
 		or definition.portrait_asset_ids.size() != 11
 		or definition.paid_offers.size() != 1
-		or definition.v3_stage_rewards.size() != 8
+		or definition.v3_stage_rewards.is_empty()
+		or definition.v3_stage_rewards.size() > 99
 		or definition.basic_recruit_cost != 5
 		or definition.premium_pull_cost != 40
 		or definition.premium_hero_rows.size() != 3
@@ -1237,7 +1241,7 @@ static func _normalize_stage_order(values: Array) -> Dictionary:
 			rows.append({"stage_id": String(stage.id), "index": stage.campaign_index})
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a["index"]) < int(b["index"]))
-	if rows.size() != 8:
+	if rows.is_empty() or rows.size() > 99:
 		return _reject(&"invalid_campaign_stage")
 	var ids: Array[String] = []
 	for index: int in rows.size():
@@ -1272,6 +1276,8 @@ static func _validate_v3_reward_projection(
 			if reward["kind"] != "currency":
 				content_rewards.append(reward)
 		authored_by_stage[String(row["stage_id"])] = content_rewards
+	if authored_by_stage.size() != _campaign_stages(stages).size():
+		return _reject(&"invalid_v3_stage_rewards")
 	for raw: Variant in stages:
 		if not raw is StageDef or raw.campaign_index < 1:
 			continue

@@ -23,6 +23,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageStat
 REPOSITORY = Path(__file__).resolve().parents[1]
 BUILDER_PATH = REPOSITORY / "tools/operator_sprites/build_advanced_operator_sprites.py"
 VALIDATOR_PATH = REPOSITORY / "tools/operator_sprites/validate_advanced_operator_sprites.py"
+REGISTRAR_PATH = REPOSITORY / "tools/operator_sprites/register_advanced_operator_sprites.py"
 CELL = 640
 
 
@@ -37,6 +38,7 @@ def load_module(name: str, path: Path) -> ModuleType:
 
 builder = load_module("advanced_sprite_builder", BUILDER_PATH)
 validator = load_module("advanced_sprite_validator", VALIDATOR_PATH)
+registrar = load_module("advanced_sprite_registrar", REGISTRAR_PATH)
 
 
 def sha256(path: Path) -> str:
@@ -113,6 +115,52 @@ class SamplingAndChromaTests(unittest.TestCase):
             builder.select_frame_indices(48, "idle", 12.0, 0.0, 1.0)
         with self.assertRaisesRegex(ValueError, "too few"):
             builder.select_frame_indices(10, "idle", 12.0)
+
+    def test_pathological_keyed_frame_uses_nearest_valid_sample(self) -> None:
+        valid_a = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+        ImageDraw.Draw(valid_a).rectangle((30, 10, 70, 99), fill=(220, 40, 30, 255))
+        collapsed = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+        collapsed.putpixel((50, 80), (20, 20, 20, 255))
+        valid_b = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+        ImageDraw.Draw(valid_b).rectangle((25, 10, 75, 99), fill=(40, 80, 220, 255))
+        repaired, replacements = builder.repair_pathological_keyed_frames(
+            [valid_a, collapsed, valid_b], neutral_edge=90,
+        )
+        self.assertEqual({1: 0}, replacements)
+        self.assertEqual(valid_a.tobytes(), repaired[1].tobytes())
+        self.assertEqual(valid_b.tobytes(), repaired[2].tobytes())
+
+    def test_manifest_registration_is_idempotent_and_pins_schema(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="advanced-operator-registration-") as temporary:
+            repository = Path(temporary)
+            manifest = repository / "assets/manifest.tres"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                '[gd_resource type="Resource" script_class="AssetManifest" format=3]\n\n'
+                '[ext_resource type="Script" path="res://assets/asset_manifest.gd" id="1_g6syk"]\n\n'
+                '[resource]\nscript = ExtResource("1_g6syk")\nentries = {\n'
+                '&"fixture": {\n"animations": {\n&"default": {\n&"fps": 1.0,\n'
+                '&"length": 1,\n&"loop": true,\n&"start": 0\n}\n},\n"frames": 1,\n'
+                '"pattern": "res://fixture.webp",\n"pivot": Vector2(0.5, 0.5),\n'
+                '"placeholder": false,\n"size": Vector2i(1, 1)\n}\n}\n',
+                encoding="utf-8",
+            )
+            for class_id in registrar.CLASS_ORDER:
+                for gender in registrar.GENDER_ORDER:
+                    for action in registrar.ACTION_ORDER:
+                        for direction in registrar.DIRECTION_ORDER:
+                            atlas = registrar.atlas_path(
+                                repository, class_id, gender, action, direction,
+                            )
+                            atlas.parent.mkdir(parents=True, exist_ok=True)
+                            atlas.write_bytes(
+                                f"{class_id}:{gender}:{action}:{direction}".encode("utf-8")
+                            )
+            self.assertEqual(176, registrar.update_manifest(repository))
+            first = manifest.read_bytes()
+            self.assertIn(b"schema_version = 3", first)
+            self.assertEqual(176, registrar.update_manifest(repository))
+            self.assertEqual(first, manifest.read_bytes())
 
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "ffmpeg is required")

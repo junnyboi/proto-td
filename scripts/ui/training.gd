@@ -11,6 +11,7 @@ const AetheriaPanelType := preload("res://scripts/ui/components/aetheria_panel.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
@@ -552,7 +553,8 @@ func _build_roster_list() -> ScrollContainer:
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_roster_list.add_child(empty)
 		return scroll
-	for summary: Dictionary in visible_rows:
+	for visible_index: int in visible_rows.size():
+		var summary := visible_rows[visible_index] as Dictionary
 		var row := TrainingRosterRowType.new()
 		row.name = "Recruit_%s" % summary["hero_id"]
 		row.configure(
@@ -562,6 +564,7 @@ func _build_roster_list() -> ScrollContainer:
 			_progress_text(summary),
 			_eligibility_text(summary),
 			_operator_stats_tooltip(summary),
+			visible_index,
 		)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
@@ -730,6 +733,12 @@ func _build_inspector() -> AetheriaPanelType:
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		dossier.add_child(portrait)
+		PremiumPortraitEntranceType.apply(
+			portrait,
+			StringName(selected["portrait_asset_id"]),
+			0,
+			_motion_reduced(),
+		)
 		column.add_child(dossier)
 		column.add_child(_build_rename_panel(selected))
 	column.add_child(_label(

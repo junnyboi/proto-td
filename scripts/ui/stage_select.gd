@@ -318,7 +318,9 @@ func _show_dossier(stage_id: StringName) -> void:
 	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage_id, 0))
 	var unlocked := Game.is_stage_unlocked(stage_id)
 	var localized_title := UiCopyType.stage_title(stage)
-	_dossier_title.text = "%02d · %s" % [stage.campaign_index, localized_title]
+	_dossier_title.text = "%s · %02d · %s" % [
+		_act_short(stage), stage.campaign_index, localized_title,
+	]
 	_route_heading.text = _format_copy(
 		&"ui.campaign.route_heading", "{stage} · Operation Route", {&"stage": localized_title},
 	)
@@ -394,7 +396,16 @@ func _row_presentation_text(stage: StageDef, unlocked: bool, is_next: bool) -> S
 			),
 			"Cleared" if stars > 0 else ("Next" if is_next else "Available"),
 		)
-	return "%02d  %s  ·  %s" % [stage.campaign_index, UiCopyType.stage_title(stage), state]
+	return "%s  %02d  %s  ·  %s" % [
+		_act_short(stage), stage.campaign_index, UiCopyType.stage_title(stage), state,
+	]
+
+
+func _act_short(stage: StageDef) -> String:
+	return UiCopyType.text(
+		&"ui.campaign.act_2_short" if stage.campaign_index >= 9 else &"ui.campaign.act_1_short",
+		"ACT II" if stage.campaign_index >= 9 else "ACT I",
+	)
 
 
 func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:

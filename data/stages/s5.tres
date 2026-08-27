@@ -104,4 +104,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 5
 requires = Array[StringName]([&"bolt"])
-intro_hint = "Inner high ground covers more but sits inside spellcaster range. Save Bolt for each tightly packed caster column."
+intro_hint = "Hold the exposed high ground and save Bolt for each tight Channeler group."

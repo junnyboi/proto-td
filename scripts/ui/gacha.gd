@@ -5,6 +5,7 @@ const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
 const HistoryDrawerType := preload("res://scripts/ui/components/gacha_history_drawer.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
@@ -23,15 +24,10 @@ const STAR_BLOOM_SFX := "gacha_star_bloom"
 const RETURN_ICON_ID := &"ui_gacha_return"
 const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const RESERVE_LIFE_ICON_ID := &"ui_gacha_reserve_life"
-const GACHA_FULLSIZE_PORTRAITS := {
-	"archive_caster": &"portrait_archive_caster_fullsize",
-	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
-	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
-}
-const PREMIUM_IDENTITY_KEYS := {
-	"archive_caster": &"data.premium.archive_caster.name",
-	"lunaris_vessel": &"data.premium.lunaris_vessel.name",
-	"reliquary_duelist": &"data.premium.reliquary_duelist.name",
+const GACHA_PORTRAITS := {
+	"archive_caster": &"portrait_archive_caster",
+	"lunaris_vessel": &"portrait_lunaris_vessel",
+	"reliquary_duelist": &"portrait_reliquary_duelist",
 }
 const CONFIRM_ENTRY_SECONDS := 0.20
 const CONFIRM_EXIT_SECONDS := 0.15
@@ -45,13 +41,8 @@ const BROWSE_PULL_WIDTH := 800.0
 const BROWSE_PULL_HEIGHT := 112.0
 const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
 const BROWSE_PORTRAIT_HEIGHT := 420.0
-const BROWSE_PORTRAIT_ZOOM := 2.80
+const BROWSE_PORTRAIT_ZOOM := 1.03
 const BROWSE_CARD_PADDING := 24.0
-const BROWSE_PORTRAIT_TOP_RATIOS := {
-	"lunaris_vessel": 0.025,
-	"archive_caster": 0.135,
-	"reliquary_duelist": 0.100,
-}
 const BROWSE_RETURN_SIZE := Vector2(300.0, 76.0)
 const BROWSE_HISTORY_SIZE := Vector2(230.0, 68.0)
 const BROWSE_FOOTER_VERTICAL_PADDING := 12.0
@@ -946,12 +937,15 @@ func _rebuild_cards(projection: Dictionary) -> void:
 	pool.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a.get("rarity", 4)) > int(b.get("rarity", 4))
 	)
-	for row: Dictionary in pool:
-		_hero_grid.add_child(_hero_card(row, owned.get(String(row["premium_id"]), {})))
+	for index: int in pool.size():
+		var row := pool[index] as Dictionary
+		_hero_grid.add_child(_hero_card(
+			row, owned.get(String(row["premium_id"]), {}), index,
+		))
 	_apply_hero_card_layout(_hero_grid.columns)
 
 
-func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
+func _hero_card(catalog: Dictionary, hero: Dictionary, entrance_index: int = 0) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -982,13 +976,15 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait.set_meta(
-		&"source_top_ratio",
-		float(BROWSE_PORTRAIT_TOP_RATIOS.get(String(catalog["premium_id"]), 0.0)),
-	)
 	portrait_frame.add_child(portrait)
 	portrait_frame.resized.connect(_fit_hero_portrait_zoom.bind(portrait_frame, portrait))
 	_fit_hero_portrait_zoom(portrait_frame, portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		_gacha_portrait_asset_id(String(catalog["premium_id"])),
+		entrance_index,
+		_motion_reduced(),
+	)
 	var premium_id := String(catalog["premium_id"])
 	var name := _label(_premium_name(premium_id, String(catalog["callsign"])), &"heading")
 	name.name = "HeroName"
@@ -1033,11 +1029,10 @@ func _fit_hero_portrait_zoom(frame: Control, portrait: TextureRect) -> void:
 	if frame == null or portrait == null:
 		return
 	portrait.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var zoom := 4.20 if frame.custom_minimum_size.y < 300.0 else BROWSE_PORTRAIT_ZOOM
-	var top_ratio := float(portrait.get_meta(&"source_top_ratio", 0.0))
-	var top_trim := maxf(0.0, frame.size.y * top_ratio * zoom - 10.0)
-	portrait.offset_top = -top_trim
-	portrait.offset_bottom = -top_trim
+	var fit_size := frame.size.max(frame.custom_minimum_size)
+	var zoom := maxf(BROWSE_PORTRAIT_ZOOM, fit_size.x / maxf(fit_size.y, 1.0))
+	portrait.offset_top = 0.0
+	portrait.offset_bottom = 0.0
 	portrait.pivot_offset = Vector2(frame.size.x * 0.5, 0.0)
 	portrait.scale = Vector2.ONE * zoom
 
@@ -1612,7 +1607,11 @@ func _refresh_reveal_pull_again() -> void:
 	_reveal_pull_again.focus_mode = (
 		Control.FOCUS_ALL if not _reveal_pull_again.disabled else Control.FOCUS_NONE
 	)
-	_reveal_pull_again.accessibility_name = "PULL AGAIN, %d Resonance Shards" % cost
+	_reveal_pull_again.accessibility_name = _format(
+		&"ui.gacha.pull_again_accessibility",
+		"Pull again, {cost} Resonance Shards",
+		{&"cost": cost},
+	)
 
 
 func _arm_reveal_pull_again() -> void:
@@ -1737,8 +1736,7 @@ func _callsign_for(premium_id: String) -> String:
 
 
 func _premium_name(premium_id: String, fallback: String) -> String:
-	var key := StringName(PREMIUM_IDENTITY_KEYS.get(premium_id, &""))
-	return fallback if String(key).is_empty() else _copy(key, fallback)
+	return UiCopyType.premium_name(premium_id, fallback)
 
 
 func _reveal_accent(_pull: Dictionary) -> Color:
@@ -1758,7 +1756,7 @@ func _class_name(class_id: String) -> String:
 
 
 func _gacha_portrait_asset_id(premium_id: String) -> StringName:
-	return StringName(GACHA_FULLSIZE_PORTRAITS.get(premium_id, &""))
+	return StringName(GACHA_PORTRAITS.get(premium_id, &""))
 
 
 func _error_copy(code: StringName) -> String:

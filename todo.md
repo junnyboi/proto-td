@@ -14,6 +14,7 @@
 - [x] Update the existing `proto-td-web` fullscreen host, run type/build checks, save public checkpoint `4f4e6ce6`, and verify exact-PCK deployment at `https://protohost-sqtjrsla.manus.space/`.
 - [x] Increase title-screen wordmark, action buttons, and settings typography by exactly 15%; verify desktop/portrait containment and Start/Settings input flows.
 - [x] Remove “resurrected” from the English title synopsis and its Chinese equivalent; align fallback/canon copy and verify landscape/portrait containment.
+- [x] Complete a full Simplified Chinese localization and glyph-rendering audit: reach 925/925 catalog parity, including the full Act II narrative, with zero placeholder drift, missing production keys, or unresolved hard-coded visible strings; install the bundled CJK font across global, Aetheria, staging, battle, spell, input, and accessibility paths; repair reviewed gameplay/narrative terminology; regression-lock live locale switching; and visually accept 28 landscape/portrait states with no tofu.
 - [x] Gameplay extension: implement Slow Field, unlock it after S6, teach it in S7, carry it into S8, and cover deterministic mechanics plus landscape/portrait visuals.
 - [x] Add the first-clear S7 guided Slow Field cast, explicit duration/cooldown UI indicators, and deterministic S7/S8 paired balance telemetry with raw JSON/CSV evidence.
 - [x] Refine the Slow Field aura to 0.46 opacity with an 18-second centered rotation, enforced by the native visual harness.
@@ -76,3 +77,22 @@
 - [x] Phase 3: passed direct import, bounded boot, all 39 standalone regressions plus all 6 repository smokes, clean Xvfb landscape/portrait input checks, Web export/HTTP/browser gates, updated the existing `proto-td-web` fullscreen host, and saved final checkpoint `6c50b142`; public Publish remains the explicit handoff because no direct publish tool is exposed.
 - [x] Endpoint quality rebuild: preserved 589×600 portal and 401×600 crystal source frames in ≤4096px row-major atlases, displayed them at one-tile size with mipmapped linear filtering, verified native/Web sharpness, pushed master, and updated WebDev checkpoint `8b492ecd`.
 - [x] Phase 4: applied the annotated in-battle UI corrections—doubled and centered the HUD with a 48px left inset, removed manual CENTER, compacted and rounded battle/deployment controls, left-aligned and responsively refit the First Stand tutorial, renamed its action to NEXT, and installed the approved English/Chinese route copy; passed import, bounded boot, all 50 current tests/smokes, strict error scans, and four clean Xvfb tutorial/live landscape/portrait captures.
+
+# Act II — The Garden Veto
+
+- [x] Audit Act I canon, progression, balance, stage architecture, save compatibility, and available combat systems.
+- [x] Generate and retain four GPT Image 2 concept boards plus a 600px Restoration Lattice runtime seal with a 1920px master.
+- [x] Publish the Act II proposal and phased implementation plan balancing story, topology, mechanics, economy, and accessibility.
+- [x] Implement S9–S16, deterministic Restoration Lattice healing and Slow Field suppression, sixteen-stage progression/rewards, historical save restore, bilingual six-layer narrative, Act labels, and complete regression coverage.
+- [x] Pass Godot 4.7.2 import/boot, all current tests and smokes, strict 925/925 localization audit, landscape/portrait Xvfb checks, exact Web export/HTTP/browser gates, forward-only `proto-td-web` reconciliation, TypeScript/build checks, and checkpoint `7da5e373`.
+
+# Advanced Operator Video-to-Sprites Release
+
+- [x] Freeze eleven canon-aligned, restrained non-premium specialization briefs and generate 22 GPT Image 2 male/female reference sources plus 44 isometric NE/SE keyframes.
+- [x] Generate and archive 88 silent four-second image-conditioned carriers; deterministically produce 176 quality-92 VP8 atlases with lossless alpha, 640×640 cells, 24-frame idle and 13-frame attack at 12 FPS, and exact-alpha NW/SW mirrors.
+- [x] Version the manifest and animation schemas, register 22 class/gender resources plus 176 provenance rows, route canonical class identity after premium overrides, preserve classless legacy fallback, and remove the 192px animator assumption.
+- [x] Add processor, registrar, schema, row-boundary, routing, premium-precedence, live-animator, generated-cache, and Xvfb visual-matrix coverage; repair three hidden keyed-collapse frames and validate all 88 authored records / 176 outputs.
+- [ ] Run the synchronized full repository baseline, bounded boot, final error scans, and post-baseline reconciliation.
+- [ ] Commit and push the reconciled release to `master` without rewriting shared history.
+- [ ] Export the exact pushed Godot revision, verify HTML/JS/WASM/PCK over HTTP and in-browser, and measure PCK/runtime loading behavior.
+- [ ] Layer the release onto the newest `proto-td-web` host, pass check/build/preview gates, and save a new managed checkpoint.

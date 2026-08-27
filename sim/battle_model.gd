@@ -537,9 +537,11 @@ func snapshot() -> Dictionary:
 
 
 ## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
-## (3) combat — units strike first, then charmed allies, then enemies;
+## (3) authored restoration lattices repair eligible hostile ground enemies,
+## unless covered by Slow Field, (4) combat — units strike first, then charmed
+## allies, then enemies;
 ## deaths resolve immediately,
-## (4) spawn, (5) terminal check. Later phases append sub-steps, never reorder.
+## (5) spawn, (6) terminal check. Later phases append sub-steps, never reorder.
 ## Expiry runs before combat so a timed effect is active for exactly
 ## duration_ticks ticks (exclusive end at expires_tick); enemies a lapsed
 ## BLOCK_PLUS can no longer hold resume walking in this same tick's sub-step 2.
@@ -551,6 +553,7 @@ func _step_one() -> void:
 	_tick_dp()
 	var entrants := _advance_enemies()
 	_resolve_trap_triggers(entrants)
+	_apply_restoration_lattices()
 	_assign_duels()
 	_tick_combat()
 	for entry: Dictionary in timeline.due(tick):
@@ -636,6 +639,42 @@ func _expire_slow_fields() -> void:
 	for index: int in range(slow_fields.size() - 1, -1, -1):
 		if slow_fields[index].expires_tick <= tick:
 			slow_fields.remove_at(index)
+
+
+func _apply_restoration_lattices() -> void:
+	if (
+		stage.restoration_cells.is_empty()
+		or stage.restoration_heal_amount <= 0
+		or stage.restoration_interval_ticks <= 0
+		or tick <= 0
+		or tick % stage.restoration_interval_ticks != 0
+	):
+		return
+	var lattice_cells := {}
+	for point: Vector2 in stage.restoration_cells:
+		var cell := Vector2i(point)
+		if not _slow_field_covers(cell):
+			lattice_cells[cell] = true
+	if lattice_cells.is_empty():
+		return
+	for enemy: EnemyState in enemies:
+		if (
+			not enemy.alive
+			or enemy.aerial
+			or enemy.faction != EnemyState.Faction.ENEMY
+			or enemy.hp >= enemy.hp_max
+		):
+			continue
+		var cell := Pathing.cell_of(path_for(enemy.path_idx), enemy.progress_units)
+		if lattice_cells.has(cell):
+			enemy.hp = mini(enemy.hp_max, enemy.hp + stage.restoration_heal_amount)
+
+
+func _slow_field_covers(cell: Vector2i) -> bool:
+	for field: SlowFieldState in slow_fields:
+		if field.covers(cell):
+			return true
+	return false
 
 
 ## ON_ENTER resolution (M2): after the advance pass, before combat — a

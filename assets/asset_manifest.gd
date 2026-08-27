@@ -103,10 +103,8 @@ func _validate_generated_entry(
 	entry: Dictionary, frames: Variant, size: Variant, errors: PackedStringArray
 ) -> void:
 	var columns: Variant = entry.get(&"columns")
-	if typeof(columns) != TYPE_INT or int(columns) < 1:
-		errors.append("columns: expected positive int")
-	elif typeof(frames) == TYPE_INT and int(columns) > int(frames):
-		errors.append("columns: cannot exceed frame count")
+	if typeof(columns) != TYPE_INT or int(columns) != 8:
+		errors.append("columns: generated atlas expected exactly 8")
 	if typeof(size) == TYPE_VECTOR2I and size != Vector2i(640, 640):
 		errors.append("size: generated atlas expected 640x640 cell")
 	var provenance: Variant = entry.get(&"provenance")
@@ -120,6 +118,30 @@ func _validate_generated_entry(
 		var stored: Variant = provenance.get(key)
 		if typeof(stored) != TYPE_STRING or String(stored).is_empty() and key != &"mirrored_from":
 			errors.append("provenance.%s: expected String" % key)
+	var gender := String(provenance.get(&"gender", ""))
+	var action := String(provenance.get(&"action", ""))
+	var direction := String(provenance.get(&"direction", ""))
+	var source_kind := String(provenance.get(&"source_kind", ""))
+	var mirrored_from := String(provenance.get(&"mirrored_from", ""))
+	var atlas_sha256 := String(provenance.get(&"atlas_sha256", ""))
+	if gender not in ["female", "male"]:
+		errors.append("provenance.gender: expected female or male")
+	if action not in ["idle", "attack"]:
+		errors.append("provenance.action: expected idle or attack")
+	if direction not in ["ne", "nw", "se", "sw"]:
+		errors.append("provenance.direction: expected isometric direction")
+	if source_kind not in ["generated", "mirrored"]:
+		errors.append("provenance.source_kind: expected generated or mirrored")
+	elif source_kind == "generated" and (direction not in ["ne", "se"] or not mirrored_from.is_empty()):
+		errors.append("provenance: generated atlas must be east-facing with empty mirrored_from")
+	elif source_kind == "mirrored":
+		var expected_source := "ne" if direction == "nw" else ("se" if direction == "sw" else "")
+		if expected_source.is_empty() or mirrored_from != expected_source:
+			errors.append("provenance: mirrored atlas source direction mismatch")
+	if atlas_sha256.length() != 64 or not atlas_sha256.is_valid_hex_number(false):
+		errors.append("provenance.atlas_sha256: expected 64 lowercase hexadecimal characters")
+	elif atlas_sha256 != atlas_sha256.to_lower():
+		errors.append("provenance.atlas_sha256: expected lowercase hexadecimal characters")
 
 
 static func legacy_pivot(id: StringName, frames: int) -> Vector2:

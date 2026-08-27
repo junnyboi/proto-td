@@ -45,4 +45,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 1
 requires = Array[StringName]([])
-intro_hint = "Open with the Shock Trooper, then reinforce after the bend before the paired push arrives."
+intro_hint = "Deploy two melee blockers on the path to hold the shelters."

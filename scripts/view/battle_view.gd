@@ -24,6 +24,9 @@ const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ActionHoverFeedbackType := preload(
+	"res://scripts/ui/components/action_hover_feedback.gd"
+)
 const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
@@ -544,6 +547,7 @@ func _apply_time_scale() -> void:
 
 
 func _exit_tree() -> void:
+	ActionHoverFeedbackType.reset(_continue_btn)
 	Engine.time_scale = 1.0
 
 
@@ -673,6 +677,7 @@ func _detect_result_stamp() -> void:
 	next.custom_minimum_size = _terminal_continue_size(viewport)
 	LunarisOpsType.apply_button(next, &"primary")
 	_apply_terminal_continue_style(next)
+	ActionHoverFeedbackType.wire(self, next)
 	next.z_index = HUD_Z
 	add_child(next)
 	next.position = Vector2(
@@ -686,6 +691,7 @@ func _detect_result_stamp() -> void:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_hud_copy()
 	if _continue_btn != null:
 		_continue_btn.text = UiCopyType.text(
 			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
@@ -959,6 +965,12 @@ func _project() -> void:
 	_project_traps()
 	_project_units()
 	_project_tracers()
+	_refresh_hud_copy()
+
+
+func _refresh_hud_copy() -> void:
+	if _hud == null or model == null:
+		return
 	var s := model.snapshot()
 	_hud.text = BATTLE_HUD_PRESENTER.text_for(s, get_viewport_rect().size)
 	if int(s["result"]) == BattleModel.Result.CLEAR:

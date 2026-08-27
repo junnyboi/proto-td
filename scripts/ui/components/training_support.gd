@@ -10,6 +10,9 @@ const HeroNamesScript := preload("res://sim/hero_names.gd")
 const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const OperatorDefType := preload("res://data/operator_def.gd")
+const OperatorPortraitCatalogType := preload(
+	"res://data/presentation/operator_portrait_catalog.gd"
+)
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 const SKILL_NAME_FALLBACKS := {
@@ -75,11 +78,14 @@ static func roster(value: Variant) -> Array[Dictionary]:
 		var current_class_id := String(hero.get("current_class_id", ""))
 		var definition := class_definition(current_class_id)
 		var is_premium := String(hero.get("hero_kind", "recruit")) == "premium"
+		var portrait_asset_id := String(
+			hero.get("portrait_asset_id", hero.get("identity_portrait_id", ""))
+		)
 		var required := (
 			0 if is_premium else int(definition.promotion_xp_required) if definition != null else 0
 		)
 		var options: Dictionary = value.call("promotion_options", hero_id)
-		var projection := enrich_choices(options.get("choices", []))
+		var projection := enrich_choices(options.get("choices", []), portrait_asset_id)
 		var model_accepted := bool(options.get("accepted", false))
 		var projection_accepted := bool(projection["accepted"])
 		rows.append(
@@ -87,12 +93,10 @@ static func roster(value: Variant) -> Array[Dictionary]:
 				"hero_id": hero_id,
 				"callsign": callsign(hero),
 				"custom_title": RenamingScript.title_for(data, hero_id),
-				"recruitment_index": int(hero.get("recruitment_index", -1)),
-				"current_class_id": current_class_id,
-				"operator_def_id": String(hero.get("operator_def_id", "")),
-				"portrait_asset_id": String(
-					hero.get("portrait_asset_id", hero.get("identity_portrait_id", ""))
-				),
+					"recruitment_index": int(hero.get("recruitment_index", -1)),
+					"current_class_id": current_class_id,
+					"operator_def_id": String(hero.get("operator_def_id", "")),
+					"portrait_asset_id": portrait_asset_id,
 				"life_status": String(hero.get("life_status", "")),
 				"hero_kind": String(hero.get("hero_kind", "recruit")),
 				"premium_id": hero.get("premium_id"),
@@ -215,10 +219,22 @@ static func options(value: Variant, hero_id: String) -> Dictionary:
 			"error_code": StringName(result.get("error_code", &"unknown_error")),
 			"choices": [],
 		}
-	return enrich_choices(result.get("choices", []))
+	var identity_portrait_asset_id := ""
+	var data: Dictionary = value.call("data_copy")
+	for hero: Dictionary in data.get("heroes", []):
+		if String(hero.get("hero_id", "")) != hero_id:
+			continue
+		identity_portrait_asset_id = String(
+			hero.get("portrait_asset_id", hero.get("identity_portrait_id", ""))
+		)
+		break
+	return enrich_choices(result.get("choices", []), identity_portrait_asset_id)
 
 
-static func enrich_choices(raw_choices: Array) -> Dictionary:
+static func enrich_choices(
+	raw_choices: Array,
+	identity_portrait_asset_id: String = "",
+) -> Dictionary:
 	var result: Array[Dictionary] = []
 	for raw: Variant in raw_choices:
 		if typeof(raw) != TYPE_DICTIONARY:
@@ -240,6 +256,14 @@ static func enrich_choices(raw_choices: Array) -> Dictionary:
 		choice["placement"] = int(operator.placement)
 		choice["range_cells"] = operator.range_offsets.size()
 		choice["attack_interval_ticks"] = operator.atk_interval_ticks
+		var specialization_portrait_asset_id := (
+			OperatorPortraitCatalogType.specialization_asset_id(
+				StringName(class_id), StringName(identity_portrait_asset_id)
+			)
+		)
+		if specialization_portrait_asset_id == &"":
+			return {"accepted": false, "error_code": &"missing_catalog", "choices": []}
+		choice["specialization_portrait_asset_id"] = specialization_portrait_asset_id
 		var skill_id := String(operator.skill.id) if operator.skill != null else ""
 		choice["skill_id"] = skill_id
 		choice["skill_name_key"] = StringName(
