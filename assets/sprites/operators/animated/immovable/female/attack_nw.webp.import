@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/attack_nw.webp-5ab83b7b2c8aa779044b4f973b296f
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
