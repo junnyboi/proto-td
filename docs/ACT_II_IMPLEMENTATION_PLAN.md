@@ -1,6 +1,6 @@
 # Act II Technical Implementation Record
 
-> **Non-canon technical evidence.** The sole narrative authority is [`NARRATIVE_CANON.md`](NARRATIVE_CANON.md). This file records how the existing S9–S16 scaffold was implemented and verified; it does not define story, names, motives, or future events.
+> **Non-canon technical evidence.** The sole narrative authority is [`NARRATIVE_CANON.md`](NARRATIVE_CANON.md). This file records how the stable S9–S16 scaffold is implemented and verified; it does not define story, names, motives, or future events.
 
 **Canonical repository:** `https://github.com/junnyboi/proto-td`
 
@@ -13,9 +13,9 @@
 | Work package | Preserved result | Status |
 |---|---|---|
 | Restoration foundation | Deterministic hostile-ground repair cells, Slow Field suppression, rotation, renderer integration, and validation | Complete |
-| Eight-stage expansion | Existing S9–S16 layouts, paths, waves, rewards, sixteen-stage runtime order, and bounded balance simulations | Complete |
+| Eight-stage expansion | Stable S9–S16 layouts, paths, waves, rewards, sixteen-stage runtime order, and bounded balance simulations | Complete |
 | Campaign presentation | Sixteen narrative resource slots, bilingual localization surfaces, chapter labels, responsive Mission Control, and visual harnesses | Complete; story content is governed only by the canon bible |
-| Release pipeline | Godot import/boot, regression suite, Web export, HTTP/browser verification, forward-only WebDev integration | Complete for the historical release |
+| Historical release pipeline | Godot import/boot, regression suite, Web export, HTTP/browser verification, forward-only WebDev integration | Complete for the historical release |
 
 ## Compatibility boundary
 
@@ -29,4 +29,15 @@ The original scaffold completion recorded source `f2ffcc65aae0170f26448a65f55aa7
 
 ## Current change control
 
-Any new Act II text must follow [`NARRATIVE_CANON.md`](NARRATIVE_CANON.md), preserve the sixteen-stage scaffold, run focused regressions, reconcile concurrent work forward, push shared `master`, and deploy through the existing `proto-td-web` host.
+Any new Act II text must follow [`NARRATIVE_CANON.md`](NARRATIVE_CANON.md), preserve the sixteen-stage scaffold, run focused regressions, reconcile concurrent work forward, push shared `master`, and deploy through the existing `proto-td-web` host. The current Anima War implementation plan is authoritative for narrative migration.
+
+## Post-launch balance and score release
+
+| Work package | Status | Exit criteria |
+|---|---|---|
+| **Representative balance playtests** | Complete | Run deterministic field/standard/rapid policies for stable IDs S9, S12, and S16; preserve raw JSON/CSV telemetry; tune only spawn cadence and explicit leak tolerance; regression-lock terminal results and pressure envelopes |
+| **Unique Act II soundtrack** | Complete | Generate, preserve, master, catalog, and route eight distinct 48 kHz looped cues; enforce loudness, true peak, silence, and checksum contracts; preserve Act I adaptive behavior |
+| **Smooth Act II transitions** | Complete | Add responsive operation-identity entry/exit composition, locally pause battle simulation, retain audio/UI time, support reduced motion, and accept 1280×720 plus 720×1280 live captures |
+| **Release verification** | In progress | Reconcile current master and Anima War copy, push the source package, export exact Web artifacts, verify direct HTTP/browser audio and transition behavior, advance the forward-only WebDev host, and save a checkpoint |
+
+The detailed tuning evidence is recorded in [`ACT_II_BALANCE_PLAYTEST.md`](./ACT_II_BALANCE_PLAYTEST.md). The music production, mastering, runtime routing, and transition contract is recorded in [`audio/ACT_II_SCORE.md`](./audio/ACT_II_SCORE.md). Those files identify stages by stable S-number first so later canon renames do not invalidate technical evidence.

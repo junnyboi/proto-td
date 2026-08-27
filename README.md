@@ -43,7 +43,7 @@ The baseline and Slow Field scenarios use identical authored waves with no comba
 
 ## Web export and soundtrack scope
 
-The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris score across Company Command, S1–S16 battle states, both Gatecrasher audit windows, and results. Act II deliberately reuses the established adaptive battle profiles while its own faction suites remain future production work. `AudioCue` and `MusicProfile` resources drive presentation-only routing; `MusicDirector` requests bar-quantized low/medium/high transitions without entering deterministic battle state. The persisted music toggle governs every music surface.
+The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris score across Company Command, S1–S16, both Gatecrasher audit windows, and results. Act II gives S9–S16 one unique looped battle composition each, while cue-continuous intensity metadata avoids restarting or seeking those stage identities. Responsive repair-platform-seal entry and terminal transitions pause only local battle simulation, preserve audio/UI time, and collapse to a minimal reduced-motion path. `AudioCue` and `MusicProfile` resources keep routing presentation-only; Act I adaptive requests remain bar-quantized without entering deterministic battle state. The persisted music toggle governs every music surface.
 
 The UI interaction suite uses generated moon-glass click, back, confirm, menu-open, and menu-close cues. Production masters, carrier media, runtime checksums, routing, and reproduction instructions live in [`docs/audio/LUNARIS_GAMEPLAY_SCORE.md`](docs/audio/LUNARIS_GAMEPLAY_SCORE.md). Rebuild the runtime derivatives with:
 
@@ -58,9 +58,11 @@ godot --headless --path . --export-release Web build/web/index.html
 tools/stage_cinematic_streams.sh build/web/cinematics
 ```
 
-The Web base PCK excludes the six Premium Resonance Ogg Theora videos. The
-selected hero/orientation stream is downloaded on demand, verified by exact
-size and SHA-256, cached under `user://`, and played through
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos. As soon
+as Title opens, a persistent background service downloads all six streams
+sequentially—current orientation first—verifies exact size and SHA-256, and
+caches them under `user://`. A pull joins or prioritizes the shared transfer
+instead of duplicating it, then plays the verified file through
 `VideoStreamTheora`; the final identity plate remains a safe fallback. See
 [`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
 arguments, the stream manifest, and release checks.

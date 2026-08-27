@@ -287,7 +287,7 @@ theme_override_constants/separation = 5
 
 [node name="TextScaleLabel" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow"]
 layout_mode = 2
-text = "TEXT SCALE  //  100%"
+text = ""
 autowrap_mode = 2
 
 [node name="TextScaleSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow"]
