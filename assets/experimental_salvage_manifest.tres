@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_manifest")
+schema_version = 3
 entries = {
 &"experimental_salvage_drone_attack_ne": {
 "animations": {

@@ -21,6 +21,7 @@
 - [x] Convert Mission Control to a full-safe-area workspace, remove its decorative outer frame, and eliminate text/action overflow across 1280×720, 1024×576, 720×1280, and 390×844 layouts.
 - [x] Add dedicated cold-blizzard Slow Field cast and expiration cues through GPT Image 2 carrier anchors, audio-bearing video extraction, deterministic mastering, and one-shot presentation lifecycle tests.
 - [x] Refit the annotated Stage Clear screen with stage-number outcome copy, adjacent stars, enlarged tally and information typography, unframed Mission Yield rows, generous desktop margins, compact portrait scroll surfaces, and centered fixed 260×96 flat actions.
+- [x] Apply the final annotated Stage Cleared spacing pass: keep the stage-clear title on one line inside a uniform 24px header inset, reuse 58px/46px Premium Resonance reveal stars, push metadata right with a 24px LEAKS inset, use uniform 24px Mission Yield/Consequence/Company Intact padding, and widen only Command by 36px with a narrow-portrait clamp; visually accept English and Chinese landscape/portrait plus bottom-scrolled Company Intact states.
 - [x] Increase runtime typography by exactly 50% across the game and refit Mission Preparation with a transparent First Stand icon, padded status tabs, 3:1 roster/intelligence split, split information/portrait cards, and 30%-shorter clean actions.
 - [x] Add eased staggered Mission Yield reward counters with reduced-motion completion, and apply the same stage-number, metadata, information, responsive, and fixed-action hierarchy to Stage Defeat.
 - [x] Repair Mission Yield survivor XP projection to consume the canonical `{hero_id, delta: 100}` receipt schema, regression-lock multiple survivor rows, and visually verify settled `+100 XP` values in landscape and portrait.
@@ -85,6 +86,17 @@
 - [x] Preserve the superseded proposal as historical evidence until the Anima War rewrite replaced its narrative authority.
 - [x] Implement stable S9–S16 maps, deterministic repair-platform behavior and Slow Field suppression, sixteen-stage progression/rewards, historical save restore, narrative slots, Act labels, and complete regression coverage; active story copy now follows `NARRATIVE_CANON.md`.
 - [x] Pass Godot 4.7.2 import/boot, all current tests and smokes, strict 925/925 localization audit, landscape/portrait Xvfb checks, exact Web export/HTTP/browser gates, forward-only `proto-td-web` reconciliation, TypeScript/build checks, and checkpoint `7da5e373`.
+
+# Advanced Operator Video-to-Sprites Release
+
+- [x] Freeze eleven canon-aligned, restrained non-premium specialization briefs and generate 22 GPT Image 2 male/female reference sources plus 44 isometric NE/SE keyframes.
+- [x] Generate and archive 88 silent four-second image-conditioned carriers; deterministically produce 176 quality-92 VP8 atlases with lossless alpha, 640×640 cells, 24-frame idle and 13-frame attack at 12 FPS, and exact-alpha NW/SW mirrors.
+- [x] Version the manifest and animation schemas, register 22 class/gender resources plus 176 provenance rows, route canonical class identity after premium overrides, preserve classless legacy fallback, and remove the 192px animator assumption.
+- [x] Add processor, registrar, schema, row-boundary, routing, premium-precedence, live-animator, generated-cache, and Xvfb visual-matrix coverage; repair three hidden keyed-collapse frames and validate all 88 authored records / 176 outputs.
+- [x] Run the synchronized full 68-gate repository baseline, bounded boot, final error scans, and a 16-gate regression after the second forward reconciliation.
+- [x] Commit and push the reconciled release to `master` without rewriting shared history.
+- [ ] Export the exact pushed Godot revision, verify HTML/JS/WASM/PCK over HTTP and in-browser, and measure PCK/runtime loading behavior.
+- [ ] Layer the release onto the newest `proto-td-web` host, pass check/build/preview gates, and save a new managed checkpoint.
 
 # Act II Balance, Transitions, and Unique Score
 

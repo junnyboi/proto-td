@@ -7,7 +7,6 @@ extends RefCounted
 const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
 const UnitStateType := preload("res://sim/unit_state.gd")
 
-const SOURCE_CELL_PX := 192.0
 const MODEL_TICKS_PER_SECOND := 30.0
 const NO_ATTACK_AGE := 1_000_000
 const IDLE_FRAMES := 24
@@ -75,7 +74,7 @@ static func selection(
 
 static func body_size(animation: OperatorAnimationDefType) -> Vector2:
 	var scale := float(animation.display_height_px) / float(animation.normalized_subject_height_px)
-	return Vector2.ONE * SOURCE_CELL_PX * scale
+	return Vector2.ONE * float(animation.source_cell_px) * scale
 
 
 static func apply(
