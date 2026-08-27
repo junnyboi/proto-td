@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/idle_sw.webp-f9803d915a26ef4ae87686f4938d9991
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
