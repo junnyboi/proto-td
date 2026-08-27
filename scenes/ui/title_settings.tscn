@@ -185,7 +185,7 @@ tick_count = 11
 ticks_on_borders = true
 
 [node name="MasterMuteButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MasterVolumeRow/MasterControls"]
-custom_minimum_size = Vector2(176, 48)
+custom_minimum_size = Vector2(228, 48)
 layout_mode = 2
 focus_mode = 2
 mouse_default_cursor_shape = 2
@@ -193,7 +193,7 @@ theme_type_variation = &"AuiSecondaryButton"
 toggle_mode = true
 text = ""
 clip_text = false
-autowrap_mode = 2
+autowrap_mode = 0
 text_overrun_behavior = 0
 
 [node name="MusicVolumeRow" type="VBoxContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection"]
