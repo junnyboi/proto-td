@@ -1,6 +1,8 @@
 extends SceneTree
 
 const VIEWPORT_CASES := [
+	{"name": "4k", "size": Vector2i(3840, 2160), "rail": true, "portrait": false},
+	{"name": "native-ultrawide", "size": Vector2i(3440, 1440), "rail": true, "portrait": false},
 	{"name": "annotated-wide", "size": Vector2i(1915, 778), "rail": true, "portrait": false},
 	{"name": "ultrawide", "size": Vector2i(1920, 900), "rail": true, "portrait": false},
 	{"name": "standard", "size": Vector2i(1280, 720), "rail": false, "portrait": false},
@@ -33,9 +35,16 @@ func _run() -> void:
 		await _verify_case(game, viewport_case, "en-US")
 
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
-	await _verify_case(game, VIEWPORT_CASES[0], "zh-CN")
-	await _verify_case(game, VIEWPORT_CASES[5], "zh-CN")
+	await _verify_case(game, VIEWPORT_CASES[2], "zh-CN")
+	await _verify_case(game, VIEWPORT_CASES[7], "zh-CN")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
+	root.get_node("TextScale").call("set_scale", 1.2)
+	await _verify_large_text_overflow(game, Vector2i(1280, 720), "120-percent-landscape")
+	await _verify_large_text_overflow(game, Vector2i(720, 1280), "120-percent-portrait")
+	root.get_node("TextScale").call("set_scale", 1.5)
+	await _verify_large_text_overflow(game, Vector2i(1280, 720), "large-text-landscape")
+	await _verify_large_text_overflow(game, Vector2i(720, 1280), "large-text-portrait")
+	root.get_node("TextScale").call("set_scale", 1.0)
 
 	game.set("campaign_active", false)
 	game.set("campaign", null)
@@ -105,7 +114,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)
 	_check(staging.find_child("HeroIdentity", true, false) == null, "%s: duplicate lower identity copy remains" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
-	_check(command_heading != null and command_heading.text == ("指挥中心" if locale_id == "zh-CN" else "COMMAND CENTER"), "%s: command heading rename missing" % context)
+	_check(command_heading != null and command_heading.text == ("连队指挥部" if locale_id == "zh-CN" else "COMPANY COMMAND"), "%s: Company Command heading copy is incorrect" % context)
 	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below responsive 22px floor" % context)
 	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below responsive 18px floor" % context)
 	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
@@ -115,7 +124,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
-	_check(mission_action != null and mission_action.tooltip_text == ("任务指挥" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
+	_check(mission_action != null and mission_action.tooltip_text == ("任务中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
 	if locale_id == "en-US" and String(viewport_case["name"]) == "annotated-wide":
@@ -197,6 +206,34 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(command_deck.size.x >= 560.0, "%s: landscape command deck below 560px" % context)
 		_check(_contains(command_deck, mission_action), "%s: bottom Mission Control action escaped the command deck" % context)
 
+	_dispose(staging)
+	game.set("content", null)
+	await process_frame
+
+
+func _verify_large_text_overflow(game: Node, viewport_size: Vector2i, context: String) -> void:
+	DisplayServer.window_set_size(viewport_size)
+	root.size = viewport_size
+	await process_frame
+	var staging := load("res://scenes/staging.tscn").instantiate() as Control
+	root.add_child(staging)
+	for _frame: int in range(6):
+		await process_frame
+	var scroll_name := "PortraitCommandScroll" if viewport_size.y > viewport_size.x else "LandscapeCommandScroll"
+	var command_scroll := staging.find_child(scroll_name, true, false) as ScrollContainer
+	var mission_action := staging.find_child("MissionControlButton", true, false) as Button
+	var objective := staging.find_child("NextOperationObjective", true, false) as Label
+	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: command deck did not enable large-text overflow" % context)
+	var expected_objective_size := roundi(22.0 * float(root.get_node("TextScale").call("value")))
+	_check(objective != null and _font_size(objective) >= expected_objective_size, "%s: mission body did not receive the global text scale" % context)
+	if command_scroll != null and mission_action != null:
+		mission_action.grab_focus()
+		for _frame: int in range(4):
+			await process_frame
+		_check(
+			command_scroll.scroll_vertical > 0 or command_scroll.get_global_rect().intersects(mission_action.get_global_rect()),
+			"%s: focused Mission Control was not scrolled into view" % context,
+		)
 	_dispose(staging)
 	game.set("content", null)
 	await process_frame

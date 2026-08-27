@@ -9,6 +9,7 @@
   "loop": false,
   "columns": 4,
   "rows": 2,
+  "provenance": "generated_enemy_variant",
   "cell_width": 620,
   "cell_height": 347,
   "sheet": "interceptor_attack_ne.webp",

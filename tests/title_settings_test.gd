@@ -21,7 +21,11 @@ func _run() -> void:
 	_original_max_fps = Engine.max_fps
 	_capture_buses()
 	_check(PREFS.locale(PATH) == &"en-US", "locale default is not English")
+	_check(not PREFS.master_muted(PATH), "missing Master mute preference did not default to unmuted")
 	_check(PREFS.mark_pan_hint_seen(PATH), "unrelated navigation preference was not created")
+	_check(not PREFS.has_seen_command_tutorial(PATH), "command tutorial should be unseen by default")
+	_check(PREFS.mark_command_tutorial_seen(PATH), "command tutorial completion was not created")
+	_check(PREFS.has_seen_command_tutorial(PATH), "command tutorial completion did not persist")
 	_check(not PREFS.save_batch({&"locale": &"en-US"}, PATH), "invalid batch was accepted")
 	var game := root.get_node_or_null("Game")
 	var music := root.get_node_or_null("Music")
@@ -41,6 +45,8 @@ func _run() -> void:
 func _verify_transition_contract(game: Node) -> void:
 	var title := await _create_title(PATH)
 	var settings_button := title.find_child("SettingsButton", true, false) as Button
+	var footer_button := title.find_child("FooterSettingsButton", true, false) as Button
+	_check(footer_button != null, "fixed footer Settings action is missing")
 	settings_button.grab_focus()
 	title.call("_open_settings")
 	var state := title.get_node("TitleSettings") as Control
@@ -55,6 +61,13 @@ func _verify_transition_contract(game: Node) -> void:
 	_check(not settings_button.is_visible_in_tree() and not settings_button.has_focus(), "Title returned during Settings exit")
 	await _wait_for_transition(state, &"CLOSED")
 	_check(StringName(title.call("screen_state")) == &"TITLE" and settings_button.has_focus(), "normal close did not restore Title focus after exit")
+	footer_button.grab_focus()
+	title.call("_open_settings")
+	await _wait_for_transition(state, &"ACTIVE")
+	_check(not footer_button.is_visible_in_tree() and footer_button.disabled, "footer Settings remained interactive behind the modal")
+	title.call("_close_settings")
+	await _wait_for_transition(state, &"CLOSED")
+	_check(footer_button.has_focus(), "footer Settings did not receive exact return focus")
 	await _release(title, game)
 
 	_remove(REDUCED_PATH)
@@ -86,6 +99,8 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(title.find_child("SettingsPanel", true, false) == null, "legacy centered panel remains")
 	_check(not settings_button.is_visible_in_tree() and settings_button.disabled, "underlying title input remains active")
 	var content_before: Node = game.get("content") as Node
+	var project_theme := ThemeDB.get_project_theme()
+	var project_body_base := project_theme.get_font_size(&"font_size", &"AuiBodyLabel")
 	title.call("_on_start_pressed")
 	await process_frame
 	_check(game.get("content") == content_before, "Start dispatched while Settings was active")
@@ -96,8 +111,11 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(_bus_near(&"Master", 0.35), "master-volume edit did not preview")
 	_check(not bool(title.call("title_music_enabled")), "music edit did not preview")
 	_check(bool(title.call("reduced_motion")) and bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)), "reduced-motion edit did not preview")
+	_check(_near(float(title.call("text_scale")), 1.35) and _near(float(root.get_node("TextScale").call("value")), 1.35), "text-scale edit did not preview globally")
+	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == roundi(project_body_base * 1.35), "Title/Settings shared theme compounded during preview")
 	_check(PREFS.frame_limit(PATH) == 0, "draft frame limit persisted before Apply")
 	_check(_near(PREFS.master_volume(PATH), 1.0), "draft volume persisted before Apply")
+	_check(not PREFS.master_muted(PATH), "draft Master mute state persisted before Apply")
 	_check(PREFS.locale(PATH) == &"en-US", "draft locale persisted before Apply")
 	title.call("_close_settings")
 	await _wait_for_transition(state_root, &"CLOSED")
@@ -106,6 +124,8 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(_bus_near(&"Master", 1.0), "Cancel did not restore master volume")
 	_check(bool(title.call("title_music_enabled")), "Cancel did not restore music preference")
 	_check(not bool(title.call("reduced_motion")) and not bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)), "Cancel did not restore reduced motion")
+	_check(_near(float(title.call("text_scale")), 1.0) and _near(float(root.get_node("TextScale").call("value")), 1.0), "Cancel did not restore global text scale")
+	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == project_body_base, "Cancel did not restore the shared project theme baseline")
 	_check(music.call("current_id") == &"title_lunaris", "Cancel did not restore title cue")
 	_check(settings_button.has_focus(), "Cancel did not restore deterministic focus")
 	_check(PREFS.has_seen_pan_hint(PATH), "Cancel changed unrelated preference")
@@ -122,17 +142,21 @@ func _verify_apply(game: Node, music: Node) -> void:
 	await _wait_for_transition(first.get_node("TitleSettings") as Control, &"CLOSED")
 	_check(StringName(first.call("screen_state")) == &"TITLE", "Apply did not restore TITLE state")
 	_check(_near(PREFS.master_volume(PATH), 0.35), "master volume batch was not saved")
+	_check(not PREFS.master_muted(PATH), "unchanged Master mute state was not saved as unmuted")
 	_check(_near(PREFS.music_volume(PATH), 0.45), "music volume batch was not saved")
 	_check(_near(PREFS.sfx_volume(PATH), 0.55), "SFX volume batch was not saved")
 	_check(PREFS.frame_limit(PATH) == 60 and PREFS.reduced_motion(PATH), "graphics batch was not saved")
+	_check(_near(PREFS.text_scale(PATH), 1.35), "text-scale batch was not saved")
 	_check(PREFS.locale(PATH) == &"zh-CN", "locale batch was not saved")
 	_check(not PREFS.title_music_enabled(PATH), "music preference batch was not saved")
 	_check(PREFS.has_seen_pan_hint(PATH), "batch save removed unrelated navigation preference")
+	_check(PREFS.has_seen_command_tutorial(PATH), "batch save removed tutorial completion")
 	await _release(first, game)
 	var second := await _create_title(PATH)
 	_check(root.get_node("I18n").call("locale") == &"zh-CN", "committed locale was not restored")
 	_check(_near(float(second.call("master_volume")), 0.35), "committed master volume was not restored")
 	_check(int(second.call("frame_limit")) == 60 and bool(second.call("reduced_motion")), "committed graphics were not restored")
+	_check(_near(float(second.call("text_scale")), 1.35) and _near(float(root.get_node("TextScale").call("value")), 1.35), "committed text scale was not restored")
 	_check(StringName(music.call("current_id")).is_empty(), "disabled committed title music did not stay silent")
 	await _release(second, game)
 
@@ -162,6 +186,7 @@ func _edit_draft(title: Control) -> void:
 	(title.find_child("LocaleSelector", true, false) as Node).call("select_locale", &"zh-CN")
 	(title.find_child("MusicButton", true, false) as Button).pressed.emit()
 	(title.find_child("MotionButton", true, false) as Button).pressed.emit()
+	(title.find_child("TextScaleSlider", true, false) as HSlider).value = 135.0
 
 
 func _create_title(path: String) -> Control:
@@ -224,6 +249,7 @@ func _cleanup(game: Node, music: Node, sfx: Node) -> void:
 	root.get_node("I18n").call("set_locale", &"en-US")
 	Engine.max_fps = _original_max_fps
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+	root.get_node("TextScale").call("set_scale", 1.0)
 	_restore_buses()
 	for _frame: int in range(12):
 		await process_frame

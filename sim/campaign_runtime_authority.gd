@@ -31,6 +31,11 @@ static func load_or_create(seed_value: int, context: Dictionary) -> Dictionary:
 		# Legacy/pre-command bytes remain valid migration inputs, but cannot
 		# authenticate new commands. Roll them into a fresh Recruit generation.
 		return start_new(seed_value, context)
+	if loaded["error_code"] == &"slot_corrupt":
+		var quarantined: Dictionary = store.quarantine_invalid_slot()
+		if not quarantined["accepted"]:
+			return _reject(quarantined["error_code"])
+		return start_new(seed_value, context)
 	if loaded["error_code"] != &"slot_missing":
 		return _reject(loaded["error_code"])
 	return start_new(seed_value, context)

@@ -35,6 +35,7 @@ capture ultrawide-title 2560 1080 false
 capture ultrawide-settings 2560 1080 true
 capture short-landscape-title 1024 576 false
 capture short-landscape-settings 1024 576 true
+capture portrait-title 720 1280 false
 
 sha256sum "$OUT_DIR"/*.png >"$OUT_DIR/SHA256SUMS"
 printf '%s\n' 'TITLE_RESPONSIVE_SCREENSHOT_REGRESSIONS_OK'

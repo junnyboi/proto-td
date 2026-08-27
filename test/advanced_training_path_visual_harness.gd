@@ -24,8 +24,8 @@ class TrainingPathVisualCampaign:
 			"first_class_id": null,
 			"advanced_class_id": null,
 			"operator_def_id": "recruit",
-			"portrait_asset_id": "portrait_recruit",
-			"identity_portrait_id": "portrait_recruit",
+			"portrait_asset_id": "portrait_recruit_00",
+			"identity_portrait_id": "portrait_recruit_00",
 			"life_status": "ready",
 			"hero_kind": "recruit",
 			"premium_id": null,
@@ -60,13 +60,22 @@ class TrainingPathVisualCampaign:
 		return {"accepted": true, "value": "training-path-visual"}
 
 
+	func set_identity_variant(variant: StringName) -> void:
+		var portrait_id := "portrait_recruit_01" if variant == &"male" else "portrait_recruit_00"
+		_data["heroes"][0]["portrait_asset_id"] = portrait_id
+		_data["heroes"][0]["identity_portrait_id"] = portrait_id
+
+
 func _ready() -> void:
 	Game.set_run_seed(1701)
 	if not Game.start_campaign(false, true):
 		push_error("advanced_training_path_visual_harness: campaign fixture failed")
 		get_tree().quit(2)
 		return
-	Game.campaign = TrainingPathVisualCampaign.new()
+	var campaign := TrainingPathVisualCampaign.new()
+	var requested_variant := StringName(OS.get_environment("TRAINING_IDENTITY_VARIANT"))
+	campaign.set_identity_variant(requested_variant)
+	Game.campaign = campaign
 	Game.training_return_path = &"staging"
 	var scene := load("res://scenes/training.tscn") as PackedScene
 	var training := scene.instantiate()

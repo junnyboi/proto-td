@@ -21,16 +21,20 @@ func _run() -> void:
 	var state: Variant = created["value"]
 	var initial: Dictionary = state.runtime_projection()
 	var fallen_id := String(initial["ready_heroes"][0]["hero_id"])
+	var active_id := String(initial["ready_heroes"][1]["hero_id"])
 	state = _fall_once(state, context, fallen_id)
 	if state == null:
 		_finish()
 		return
 
 	var game: Node = root.get_node_or_null("Game")
+	var i18n: Node = root.get_node_or_null("I18n")
 	_check(game != null, "Game autoload missing")
-	if game == null:
+	_check(i18n != null, "I18n autoload missing")
+	if game == null or i18n == null:
 		_finish()
 		return
+	_check(bool(i18n.call("set_locale", &"en-US")), "English Vahalla locale activation failed")
 	game.set("campaign", state)
 	game.set("campaign_active", true)
 	game.set("selected_stage_id", &"s1")
@@ -42,6 +46,7 @@ func _run() -> void:
 	var grid := squad.find_child("OperatorGrid", true, false) as GridContainer
 	var active_tab := squad.find_child("ActiveRosterTab", true, false) as Button
 	var fallen_tab := squad.find_child("FallenRosterTab", true, false) as Button
+	var all_tab := squad.find_child("AllRosterTab", true, false) as Button
 	_check(grid != null, "squad roster grid missing")
 	_check(active_tab != null and active_tab.text.contains("4"), "active tab count is wrong")
 	_check(fallen_tab != null and fallen_tab.text.contains("1"), "fallen tab count is wrong")
@@ -53,6 +58,11 @@ func _run() -> void:
 		var fallen_card := grid.get_node_or_null("Pick_%s" % fallen_id) as Button
 		_check(fallen_card != null, "fallen tab did not reveal the dead soldier")
 		_check(fallen_card != null and fallen_card.disabled, "fallen squad card remained deployable")
+	if all_tab != null:
+		all_tab.pressed.emit()
+		await process_frame
+		_check(grid.get_node_or_null("Pick_%s" % fallen_id) != null, "all tab omitted the fallen soldier")
+		_check(grid.get_node_or_null("Pick_%s" % active_id) != null, "all tab omitted active soldiers")
 	_dispose(squad)
 	game.set("content", null)
 	await process_frame
@@ -97,12 +107,19 @@ func _run() -> void:
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
 		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
 		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Vahalla locale activation failed")
+	await process_frame
+	await process_frame
+	var chinese_memorial := _tree_text(memorial)
+	_check(chinese_memorial.contains("英灵殿"), "Vahalla title did not refresh to Chinese")
+	_check(chinese_memorial.contains("失踪或被俘时可能获救") and chinese_memorial.contains("被消耗或粉碎则永久失去"), "Valhalla soul-status distinctions lost their reviewed Chinese meaning")
+	_check(chinese_memorial.contains("第20刻"), "Vahalla service record did not localize its battle tick")
 	if honor != null:
 		honor.pressed.emit()
 		await process_frame
 		var honored := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
 		_check(honored != null and honored.disabled, "honor action did not become visit-local honored state")
-		_check(honored != null and honored.text == "HONORED", "honor action copy did not update")
+		_check(honored != null and honored.text == "已致敬", "Chinese honor action copy did not update")
 	_dispose(memorial)
 	game.set("content", null)
 	var music := root.get_node_or_null("Music")
@@ -186,6 +203,15 @@ func _dispose(node: Node) -> void:
 	if parent != null:
 		parent.remove_child(node)
 	node.free()
+
+
+func _tree_text(node: Node) -> String:
+	var text := ""
+	if node is Label or node is Button:
+		text += String(node.get("text")) + "\n"
+	for child: Node in node.get_children():
+		text += _tree_text(child)
+	return text
 
 
 func _finish() -> void:

@@ -14,7 +14,7 @@ The main scene is `res://scenes/title.tscn`.
 
 ## Gameplay and campaign features
 
-The launch campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Mercy Archive. Mission Control displays the authoritative roster and Marks balance and offers a compact repeatable **basic Recruit contract for 5 Marks**; the Field Team workspace repeats the same authoritative contract beside the live roster. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
+The sixteen-operation campaign spans **Act I — The Harvest Line** and **Act II — Into the Machine Empire**. The player leads **Company Manus** against corrupted PROTOS, which drains anima—the real human soul—from captive people to power a robot empire. The campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Anima Archive. S9–S16 retain authored repair platforms that heal hostile ground robots on deterministic intervals unless an active Slow Field covers the platform. Mission Control displays the authoritative roster and Marks balance and offers a compact repeatable **basic Recruit contract for 5 Marks**; the Field Team workspace repeats the same authoritative contract beside the live roster. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
 
 Battlefields use an endpoint-aware isometric projection with bounded portrait panning and a shared 0.92 tactical framing multiplier. Recruit animation definitions share a source ground line so male and female idle/attack sprites remain centered on their tile faces in every direction. Camera, placement, economy, persistence, keyboard focus, bilingual copy, and responsive Mission Control layouts are covered by standalone Godot regressions and Xvfb visual harnesses.
 
@@ -43,7 +43,7 @@ The baseline and Slow Field scenarios use identical authored waves with no comba
 
 ## Web export and soundtrack scope
 
-The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris launch score across Company Command, S1–S8 battle states, the Gatecrasher boss, and results. `AudioCue` and `MusicProfile` resources drive presentation-only routing; `MusicDirector` requests bar-quantized low/medium/high transitions without entering deterministic battle state. The persisted music toggle governs every music surface.
+The runtime preserves the approved loading/title theme, **Astra Memoriam**, and ships the faction-led Lunaris score across Company Command, S1–S16, both Gatecrasher audit windows, and results. Act II gives S9–S16 one unique looped battle composition each, while cue-continuous intensity metadata avoids restarting or seeking those stage identities. Responsive repair-platform-seal entry and terminal transitions pause only local battle simulation, preserve audio/UI time, and collapse to a minimal reduced-motion path. `AudioCue` and `MusicProfile` resources keep routing presentation-only; Act I adaptive requests remain bar-quantized without entering deterministic battle state. The persisted music toggle governs every music surface.
 
 The UI interaction suite uses generated moon-glass click, back, confirm, menu-open, and menu-close cues. Production masters, carrier media, runtime checksums, routing, and reproduction instructions live in [`docs/audio/LUNARIS_GAMEPLAY_SCORE.md`](docs/audio/LUNARIS_GAMEPLAY_SCORE.md). Rebuild the runtime derivatives with:
 
@@ -58,9 +58,11 @@ godot --headless --path . --export-release Web build/web/index.html
 tools/stage_cinematic_streams.sh build/web/cinematics
 ```
 
-The Web base PCK excludes the six Premium Resonance Ogg Theora videos. The
-selected hero/orientation stream is downloaded on demand, verified by exact
-size and SHA-256, cached under `user://`, and played through
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos. As soon
+as Title opens, a persistent background service downloads all six streams
+sequentially—current orientation first—verifies exact size and SHA-256, and
+caches them under `user://`. A pull joins or prioritizes the shared transfer
+instead of duplicating it, then plays the verified file through
 `VideoStreamTheora`; the final identity plate remains a safe fallback. See
 [`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
 arguments, the stream manifest, and release checks.
@@ -77,11 +79,17 @@ Campaign economy mutations follow the same rule: UI code calls the `Game` facade
 
 All character concepts, portraits, UI illustrations, chibi units, and animated sprite references follow [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md). The canonical launch-faction trio and their full-figure/chibi production sheets are documented in [`docs/LUNARIS_CHARACTER_DESIGNS.md`](docs/LUNARIS_CHARACTER_DESIGNS.md) and stored together under [`docs/lunaris-reliquary/`](docs/lunaris-reliquary/).
 
+All eleven recruit-derived specializations have distinct adult male and female idle/attack sets in four isometric directions. The 22 resources resolve after premium portrait overrides and before legacy fallback; generated east facings and deterministic west mirrors use 640×640 source cells while Godot owns their runtime footprint. See [`docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md`](docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md) and `tools/operator_sprites/` for the complete GPT Image 2 → Veo carrier → validated atlas pipeline.
+
+The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female kit previews for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Training derives its kit-preview variant from the persisted Recruit portrait ID without adding gender data to campaign state, command receipts, hashes, or save bytes.
+
+The three premium heroes use dedicated **GPT Image 2** portraits derived from their canonical full-size Lunaris design sheets. Immutable 1920×1920 sources, deterministic 512×512 Field Team/Training assets, 640×800 compatibility derivatives, prompts, checksums, and runtime acceptance are documented in [`docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/premium/`](docs/portraits/premium/). The same identity IDs now drive Field Team, Training, Premium Resonance, and Moon Archive presentation without changing premium ownership, rarity, lives, fixed kits, command receipts, hashes, or save bytes. A shared portrait-only entrance adds a 14px vertical and alternating 8px horizontal parallax drift, a short opacity ramp, and a 55ms roster-order stagger; it animates only transform and opacity and resolves immediately under Reduced Motion.
+
 The deterministic premium gacha lifecycle, save migration, fixed-kit rule, stored-life economy, death behavior, and validation contract are documented in [`docs/PREMIUM_HERO_SYSTEM.md`](docs/PREMIUM_HERO_SYSTEM.md).
 
 ## Narrative canon
 
-The binding world history, Mercy Equation, PROTOS doctrine, Custodian Choir, Lunaris character truths, launch-campaign revelations, future destination, and change-control rules live in [`docs/NARRATIVE_CANON.md`](docs/NARRATIVE_CANON.md). New story copy and generated narrative visuals must remain compatible with that document unless an approved revision explicitly supersedes it.
+The sole binding world history, anima rules, corrupted-PROTOS doctrine, Company Manus mission, Lunaris character truths, faction motives, two-act campaign, and change-control rules live in [`docs/NARRATIVE_CANON.md`](docs/NARRATIVE_CANON.md). Technical plans describe implementation but do not create independent canon.
 
 ## Contributions
 

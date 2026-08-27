@@ -4,4 +4,4 @@ build/*
 .DS_Store
 override.cfg
 __pycache__/
-*.pyc
+*.py[cod]

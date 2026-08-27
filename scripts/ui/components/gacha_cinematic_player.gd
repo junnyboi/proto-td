@@ -2,9 +2,9 @@ extends Control
 class_name GachaCinematicPlayer
 
 ## Presentation-only Premium Resonance media owner. Gameplay state remains in gacha.gd.
-## Web exports omit the heavy Ogg Theora streams from the base PCK. The active
-## orientation is downloaded on demand, verified, cached in user://, and played
-## through VideoStreamTheora. Native/editor builds retain the bundled fallback.
+## Web exports omit the heavy Ogg Theora streams from the base PCK. Title warms
+## the shared verified cache; a reveal joins or prioritizes any outstanding
+## transfer, then plays the cached file. Native/editor builds retain the bundle.
 
 signal cinematic_started(music_id: StringName)
 signal cinematic_finished
@@ -112,6 +112,7 @@ var _status_state := &"receiving"
 var _status_percent := 0
 
 var _stream_urls: Dictionary = {}
+var _prefetch_service: Node = null
 var _request: HTTPRequest
 var _download_key := ""
 var _download_temp_path := ""
@@ -125,8 +126,13 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_layers()
 	_i18n = get_node_or_null("/root/I18n")
+	_prefetch_service = get_node_or_null("/root/CinematicPrefetch")
 	if _i18n != null and _i18n.has_signal("locale_changed"):
 		_i18n.connect("locale_changed", _on_locale_changed)
+	if _prefetch_service != null:
+		_prefetch_service.stream_state_changed.connect(_on_prefetch_state_changed)
+		_prefetch_service.stream_ready.connect(_on_prefetch_ready)
+		_prefetch_service.stream_failed.connect(_on_prefetch_failed)
 	configure_streams(OS.get_cmdline_user_args())
 	get_viewport().size_changed.connect(_fit_current_viewport)
 	_fit_current_viewport()
@@ -134,7 +140,13 @@ func _ready() -> void:
 
 
 func configure_streams(arguments: PackedStringArray) -> void:
-	_stream_urls.clear()
+	_stream_urls = parse_stream_urls(arguments)
+	if _prefetch_service != null:
+		_prefetch_service.call("configure_streams", arguments)
+
+
+static func parse_stream_urls(arguments: PackedStringArray) -> Dictionary:
+	var parsed: Dictionary = {}
 	for argument: String in arguments:
 		if not argument.begins_with(STREAM_ARG_PREFIX):
 			continue
@@ -145,7 +157,8 @@ func configure_streams(arguments: PackedStringArray) -> void:
 		var stream_key := payload.substr(0, separator)
 		var url := payload.substr(separator + 1)
 		if STREAMS.has(stream_key) and (url.begins_with("https://") or url.begins_with("http://")):
-			_stream_urls[stream_key] = url
+			parsed[stream_key] = url
+	return parsed
 
 
 func play_cinematic(premium_id: String, reduced_motion: bool) -> bool:
@@ -276,6 +289,15 @@ func _start_download(stream_key: String) -> void:
 	if spec.is_empty() or url.is_empty():
 		_fail_active("Cinematic source is not configured.")
 		return
+	if _prefetch_service != null:
+		_download_key = stream_key
+		_download_total = int(spec.get("bytes", 0))
+		_last_progress_bytes = 0
+		_update_download_status(0, _download_total)
+		var ready_now := bool(_prefetch_service.call("request_stream", stream_key, url))
+		if ready_now:
+			_on_prefetch_ready(StringName(stream_key), String(_prefetch_service.call("cached_stream_path", stream_key)))
+		return
 	_ensure_cache_dir()
 	_download_key = stream_key
 	_download_total = int(spec.get("bytes", 0))
@@ -301,6 +323,38 @@ func _start_download(stream_key: String) -> void:
 	var error := _request.request(url)
 	if error != OK:
 		_fail_download("Request could not start (%s)." % error_string(error))
+
+
+func _on_prefetch_state_changed(
+		stream_key: StringName,
+		state: StringName,
+		current: int,
+		total: int,
+) -> void:
+	if String(stream_key) != _download_key:
+		return
+	if state == &"queued" or state == &"downloading":
+		_update_download_status(current, total if total > 0 else _download_total)
+
+
+func _on_prefetch_ready(stream_key: StringName, cache_path: String) -> void:
+	var completed_key := String(stream_key)
+	if completed_key != _download_key:
+		return
+	var expected_bytes := int(STREAMS.get(completed_key, {}).get("bytes", 0))
+	_download_key = ""
+	_download_total = 0
+	_last_progress_bytes = -1
+	_set_status_visible(false)
+	stream_state_changed.emit(stream_key, &"ready", expected_bytes, expected_bytes)
+	if _allow_video_start and _active_stream_key == completed_key and not _active_profile.is_empty():
+		_start_file_stream(cache_path)
+
+
+func _on_prefetch_failed(stream_key: StringName, reason: String) -> void:
+	if String(stream_key) != _download_key:
+		return
+	_fail_download(reason, String(stream_key))
 
 
 func _on_request_completed(

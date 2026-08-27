@@ -59,7 +59,7 @@ func _run() -> void:
 	var history_empty := screen.find_child("PullHistoryEmptyState", true, false) as VBoxContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120" and balance_icon != null and balance_icon.texture != null and pity_label.text.contains("10 PULLS"), "initial shard economy projection changed")
-	_check(marks_display != null and marks_display.tooltip_text.contains("premium energy") and marks_display.accessibility_description.contains("Premium Resonance"), "shard balance lacks its explanatory tooltip")
+	_check(marks_display != null and marks_display.tooltip_text.contains("clean Lunaris crystal") and marks_display.tooltip_text.contains("no soul inside") and marks_display.accessibility_description.contains("recovery body"), "shard balance lacks its clean soul-free recovery explanation")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
 	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
 		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
@@ -96,14 +96,15 @@ func _run() -> void:
 	_check(pull_action_label != null and pull_action_label.text == "RESONATE" and pull_action_label.get_theme_font_size(&"font_size") == 48, "Resonate primary label hierarchy changed")
 	_check(pull_cost_label != null and pull_cost_label.text == "40" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate shard cost is not a smaller second line")
 	_check(pull.accessibility_name.contains("40 Resonance Shards") and not pull.text.contains("MARKS"), "Resonate accessibility or symbol-first copy regressed")
-	_check(pull.tooltip_text.contains("RESONATE") and pull.tooltip_text.contains("premium energy"), "Resonate action lacks its explanatory shard tooltip")
+	_check(pull.tooltip_text.contains("RESONATE") and pull.tooltip_text.contains("one known soul") and pull.tooltip_text.contains("recovery body"), "Resonate action lacks its unique-soul recovery explanation")
 	_check(pull_cost_label.get_parent().mouse_filter == Control.MOUSE_FILTER_IGNORE, "Resonate shard cost can intercept parent button input")
 	var pull_normal := pull.get_theme_stylebox(&"normal") as StyleBoxFlat
 	var pull_hover := pull.get_theme_stylebox(&"hover") as StyleBoxFlat
 	_check(pull_normal != null and pull_hover != null and not pull_normal.bg_color.is_equal_approx(pull_hover.bg_color), "Resonate action lacks a distinct hover surface")
 	_check(not _tree_text(browse_content).contains("LUNARIS RELIQUARY"), "browse eyebrow copy remains")
 	_check(not _tree_text(browse_content).contains("FIXED ELITE KIT") and not _tree_text(browse_content).contains("PULL TO RECRUIT"), "obsolete recruitment detail copy remains")
-	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
+	for card_index: int in grid.get_child_count():
+		var premium_id := String((grid.get_child(card_index) as Control).name).trim_prefix("Premium_")
 		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
 		var portrait_frame := card.find_child("PortraitFrame", true, false) as Control if card != null else null
 		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
@@ -111,10 +112,14 @@ func _run() -> void:
 		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
 		_check(card.custom_minimum_size == Vector2(480, 645), "card did not increase by 50%% for %s" % premium_id)
 		_check(portrait_frame != null and portrait_frame.custom_minimum_size == Vector2(432, 420), "portrait frame did not scale with %s" % premium_id)
-		_check(portrait.scale.is_equal_approx(Vector2(2.80, 2.80)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "portrait is not top-anchored at 180%% bust zoom without pre-cropping for %s" % premium_id)
+		_check(portrait.scale.is_equal_approx(Vector2(1.03, 1.03)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "custom premium portrait is not using the top-safe square crop for %s" % premium_id)
+		_check(bool(portrait.get_meta(&"premium_portrait_entrance", false)), "premium portrait entrance is missing for %s" % premium_id)
+		_check(int(portrait.get_meta(&"premium_portrait_entrance_index", -1)) == card_index, "premium portrait stagger order drifted for %s" % premium_id)
+		_check(float(portrait.get_meta(&"premium_portrait_entrance_duration", 0.0)) <= 0.45, "premium portrait entrance is no longer subtle for %s" % premium_id)
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 24.0 and card_style.content_margin_top >= 24.0 and card_style.content_margin_right >= 24.0 and card_style.content_margin_bottom >= 24.0, "premium card padding is below 24px for %s" % premium_id)
 		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
+		_check(Art.size(StringName("portrait_%s" % premium_id)) == Vector2i(512, 512), "custom identity portrait changed for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 	_check(Art.size(&"ui_gacha_return") == Vector2i(512, 512), "generated Return glyph is absent from the art manifest")
 	_check(Art.size(&"ui_resonance_shard") == Vector2i(512, 512), "GPT Image 2 Resonance Shard is absent from the art manifest")
@@ -145,15 +150,24 @@ func _run() -> void:
 	_check(browse_backdrop != null and browse_backdrop.size.y > 825.0, "browse background did not retain cover crop")
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.pivot_offset.y), "browse background pivot is not top anchored")
 	var short_wide_portrait := grid.get_child(0).find_child("Portrait", true, false) as TextureRect
-	_check(short_wide_portrait != null and short_wide_portrait.scale.is_equal_approx(Vector2(4.20, 4.20)), "short-wide card did not retain its bust crop")
+	var short_wide_frame := grid.get_child(0).find_child("PortraitFrame", true, false) as Control
+	var short_wide_zoom := maxf(
+		1.03,
+		short_wide_frame.custom_minimum_size.x / short_wide_frame.custom_minimum_size.y,
+	)
+	_check(
+		short_wide_portrait != null
+		and short_wide_portrait.scale.is_equal_approx(Vector2.ONE * short_wide_zoom),
+		"short-wide card did not retain its responsive custom-portrait crop",
+	)
 
 	# Source localization must refresh existing cards and accessibility metadata in place.
 	_check(i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate")
 	await _frames(2)
-	var premium_keys: Dictionary = screen.get("PREMIUM_IDENTITY_KEYS")
-	_check(premium_keys.get("archive_caster") == &"data.premium.archive_caster.name", "Archive Caster stable key changed")
-	_check(premium_keys.get("lunaris_vessel") == &"data.premium.lunaris_vessel.name", "Lunaris Vessel stable key changed")
-	_check(premium_keys.get("reliquary_duelist") == &"data.premium.reliquary_duelist.name", "Reliquary Duelist stable key changed")
+	var ui_copy := load("res://scripts/ui/components/ui_copy.gd") as Script
+	_check(ui_copy.call("premium_name", "archive_caster", "Archive Caster") == "档案术师", "Archive Caster stable key changed")
+	_check(ui_copy.call("premium_name", "lunaris_vessel", "Lunaris Vessel") == "月辉载体", "Lunaris Vessel stable key changed")
+	_check(ui_copy.call("premium_name", "reliquary_duelist", "Reliquary Duelist") == "圣物决斗者", "Reliquary Duelist stable key changed")
 	var localized_tree_text := _tree_text(grid)
 	_check(localized_tree_text.contains("月辉载体"), "Lunaris Vessel name did not refresh to natural Chinese")
 	for expected_class: String in ["见习法师", "术士", "剑圣"]:
@@ -170,11 +184,11 @@ func _run() -> void:
 			)
 	_check(browse_status.accessibility_name == "高级共鸣状态", "gacha status metadata did not refresh")
 	_check(history_button.text == "共鸣记录", "Moon Archive action did not refresh to Chinese")
-	_check(marks_display.tooltip_text.contains("高级能量"), "shard tooltip did not refresh to Chinese")
+	_check(marks_display.tooltip_text.contains("不含灵魂") and marks_display.tooltip_text.contains("恢复用身体"), "clean-shard tooltip did not refresh to Chinese")
 	var localized_history_text := _tree_text(history_drawer)
-	_check(localized_history_text.contains("月影档案"), "Moon Archive title did not refresh to Chinese")
+	_check(localized_history_text.contains("共鸣记录"), "Resonance History title did not refresh to Chinese")
 	_check(localized_history_text.contains("暂无共鸣记录"), "Moon Archive empty state did not refresh to Chinese")
-	_check(screen.call("_callsign_for", "missing_signal") == "未知信号", "unknown signal fallback did not localize")
+	_check(screen.call("_callsign_for", "missing_signal") == "未知灵魂锚", "unknown Soul Anchor fallback did not localize")
 	var locked_card := screen.call("_hero_card", {
 		"premium_id": "archive_caster", "callsign": "Archive Caster", "class_id": "mage_apprentice",
 	}, {"premium_lives": 0, "life_status": "dead"}) as PanelContainer
@@ -263,7 +277,9 @@ func _run() -> void:
 		if String(history_child.name).begins_with("HistoryPull_"):
 			committed_history_rows += 1
 	_check(committed_history_rows == 1 and not history_empty.visible, "committed pull did not enter the Moon Archive")
-	_check(_tree_text(history_drawer).contains("1 COMMITTED PULLS"), "Moon Archive total did not match the canonical receipt count")
+	var history_portrait := history_drawer.find_child("HistoryPortrait", true, false) as TextureRect
+	_check(history_portrait != null and bool(history_portrait.get_meta(&"premium_portrait_entrance", false)), "Moon Archive premium portrait lacks its entrance motion")
+	_check(_tree_text(history_drawer).contains("1 COMPLETED RESONANCES"), "Resonance History total did not match the canonical receipt count")
 	await _action(&"ui_cancel")
 	await _seconds(0.24)
 
@@ -326,7 +342,7 @@ func _run() -> void:
 	_check(conversion_panel != null and conversion_icon != null and not conversion_panel.visible, "first acquisition showed duplicate conversion feedback")
 	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
 	_check(pull_again.text == "PULL AGAIN • 40" and pull_again.icon != null and pull_again.accessibility_name.contains("40 Resonance Shards"), "Pull Again does not expose the icon-backed authoritative cost")
-	_check(pull_again.tooltip_text.contains("PULL AGAIN") and pull_again.tooltip_text.contains("premium energy"), "Pull Again lacks its explanatory shard tooltip")
+	_check(pull_again.tooltip_text.contains("PULL AGAIN") and pull_again.tooltip_text.contains("one known soul") and pull_again.tooltip_text.contains("recovery body"), "Pull Again lacks its unique-soul recovery explanation")
 	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 54, "Pull Again is not comfortably sized")
 	_check(root.gui_get_focus_owner() == pull_again, "settled reveal did not focus Pull Again")
 	var hover_surface := cinematic.call("hover_surface") as Control
@@ -379,8 +395,8 @@ func _run() -> void:
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
 	_check(conversion_panel.visible and conversion_icon.texture != null, "duplicate reveal omitted generated conversion feedback")
-	_check(conversion_title.text == "DUPLICATE RESONANCE CONVERTED", "duplicate conversion title changed")
-	_check(conversion_outcome.text == "RESERVE LIFE +1" and conversion_detail.text == "LIVES 1 → 2", "duplicate life conversion copy is not receipt-accurate")
+	_check(conversion_title.text == "SAME SOUL · NEW RECOVERY BODY", "duplicate conversion lost the same-soul recovery-body explanation")
+	_check(conversion_outcome.text == "ANOTHER BODY + SOUL ANCHOR" and conversion_detail.text == "PREPARED BODIES 1 → 2", "duplicate prepared-body conversion copy is not receipt-accurate")
 	_check(conversion_icon.scale.is_equal_approx(Vector2.ONE), "reduced motion still pulsed the reserve-life sigil")
 	_check(not reveal_hint.visible, "duplicate reveal retained redundant click-anywhere copy below conversion feedback")
 	_check(is_zero_approx(plate.position.y) and plate.size.y > 1000.0, "portrait final plate is not top-aligned cover")
@@ -400,7 +416,7 @@ func _run() -> void:
 	revival_pull["lives_after"] = 1
 	screen.set("_pending_pull", revival_pull)
 	screen.call("_refresh_conversion_copy")
-	_check(conversion_outcome.text == "REVIVAL PROTOCOL • LIFE +1" and conversion_detail.text == "LIVES 0 → 1", "revival conversion feedback is not receipt-accurate")
+	_check(conversion_outcome.text == "RECOVERY BODY READY" and conversion_detail.text == "PREPARED BODIES 0 → 1", "recovery-body restoration feedback is not receipt-accurate")
 	cinematic.call("_on_final_plate_mouse_entered")
 	await _frames(4)
 	_check(plate.scale.is_equal_approx(Vector2.ONE) and plate.offset_transform_position.is_zero_approx(), "reduced motion still transformed the final plate")
@@ -410,6 +426,10 @@ func _run() -> void:
 	screen.call("_on_reveal_gui_input", click)
 	await _frames(1)
 	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal click did not finalize")
+	for reduced_card: PanelContainer in grid.get_children():
+		var reduced_portrait := reduced_card.find_child("Portrait", true, false) as TextureRect
+		_check(reduced_portrait != null and bool(reduced_portrait.get_meta(&"premium_portrait_entrance_reduced", false)), "%s ignored Reduced Motion for its portrait entrance" % reduced_card.name)
+		_check(reduced_portrait != null and reduced_portrait.offset_transform_position.is_zero_approx() and is_equal_approx(reduced_portrait.modulate.a, 1.0), "%s retained portrait drift or fade under Reduced Motion" % reduced_card.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
 

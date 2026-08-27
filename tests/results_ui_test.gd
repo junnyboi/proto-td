@@ -9,8 +9,10 @@ func _init() -> void:
 
 func _run() -> void:
 	var game := root.get_node_or_null("Game")
+	var i18n := root.get_node_or_null("I18n")
 	_check(game != null, "Game autoload missing")
-	if game == null:
+	_check(i18n != null, "I18n autoload missing")
+	if game == null or i18n == null:
 		_finish()
 		return
 	var previous_reduced_motion: Variant = ProjectSettings.get_setting(
@@ -38,7 +40,7 @@ func _run() -> void:
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
-	root.size = Vector2i(1280, 720)
+	root.size = Vector2i(1920, 768)
 	var screen: Node = load("res://scenes/results.tscn").instantiate()
 	root.add_child(screen)
 	await process_frame
@@ -47,6 +49,7 @@ func _run() -> void:
 	var ceremony := screen.find_child("OutcomeCeremony", true, false) as PanelContainer
 	var headline := screen.find_child("Headline", true, false) as Label
 	var outcome_summary := screen.find_child("OutcomeSummary", true, false) as BoxContainer
+	var ceremony_spacer := screen.find_child("CeremonySpacer", true, false) as Control
 	var outcome_meta := screen.find_child("OutcomeMeta", true, false) as BoxContainer
 	var eyebrow := screen.find_child("OutcomeEyebrow", true, false)
 	var stage_title := screen.find_child("StageTitle", true, false)
@@ -65,6 +68,7 @@ func _run() -> void:
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
 	var transmission_body := screen.find_child("TransmissionBody", true, false) as Label
+	var s1_narrative: Resource = load("res://data/presentation/narrative/stages/s1.tres")
 	var rewards_panel := screen.find_child("RewardsPanel", true, false) as PanelContainer
 	var consequence_panel := screen.find_child("ConsequencePanel", true, false) as PanelContainer
 	var rewards_scroll := screen.find_child("RewardsScroll", true, false) as ScrollContainer
@@ -79,16 +83,28 @@ func _run() -> void:
 	var title := screen.find_child("BackToTitle", true, false) as Button
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
 	_check(ceremony != null and ceremony.custom_minimum_size.y >= 132.0, "Results outcome ceremony is still claustrophobic")
+	_check(ceremony != null and _has_uniform_margin(ceremony.get_theme_stylebox(&"panel"), 24.0), "clear ceremony does not have uniform 24px inner padding")
 	_check(headline != null and headline.text == "STAGE 1 CLEARED", "stage-number clear headline is incorrect")
 	_check(headline != null and headline.get_theme_font_size(&"font_size") >= 40 and headline.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "Results outcome headline is not dominant or vertically centered")
+	_check(headline != null and headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "clear headline can still wrap across lines")
+	_check(headline != null and headline.get_visible_line_count() == 1 and headline.get_combined_minimum_size().x <= headline.size.x + 1.0, "clear headline is clipped instead of rendering on one line")
 	_check(eyebrow == null and stage_title == null, "obsolete result eyebrow or stage title remains")
-	_check(outcome_summary != null and outcome_meta != null and headline.get_parent() == outcome_summary and outcome_meta.get_parent() == outcome_summary and stars.get_parent() == outcome_meta, "headline and result metadata are not grouped")
+	_check(outcome_summary != null and ceremony_spacer != null and outcome_meta != null and headline.get_parent() == outcome_summary and ceremony_spacer.get_parent() == outcome_summary and outcome_meta.get_parent() == outcome_summary and stars.get_parent() == outcome_meta, "headline, expanding spacer, and result metadata are not grouped")
 	_check(stars != null and stars.get_child_count() == 3 and stars.alignment == BoxContainer.ALIGNMENT_BEGIN, "native result stars are missing or not left flushed")
+	if stars != null:
+		for star: Node in stars.get_children():
+			_check(star.has_method("uses_generated_art") and bool(star.call("uses_generated_art")), "%s does not reuse Premium Resonance star art" % star.name)
+			_check((star as Control).custom_minimum_size == Vector2(58.0, 58.0), "%s does not match Premium Resonance reveal sizing" % star.name)
 	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
+	var tally_inset := tally.get_parent() as MarginContainer if tally != null else null
+	_check(tally_inset != null and tally_inset.name == "TallyInset" and tally_inset.get_theme_constant(&"margin_right") == 24, "result LEAKS tally lacks its 24px right inset")
+	if ceremony != null and ceremony_spacer != null and stars != null and tally != null:
+		_check(ceremony_spacer.size.x > 1.0 and stars.get_global_rect().position.x >= headline.get_global_rect().end.x, "Premium Resonance stars were not pushed right of the clear title")
+		_check(ceremony.get_global_rect().end.x - tally.get_global_rect().end.x >= 47.0, "rendered LEAKS tally is not inset by 24px inside the padded ceremony")
 	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
 	_check(reward_count != null and reward_icon != null and reward_icon.texture != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Shard reward was not registered with its icon for count reveal")
-	_check(reward_display != null and reward_display.tooltip_text.contains("premium energy") and reward_display.accessibility_description.contains("Premium Resonance"), "Shard reward lacks its explanatory tooltip")
+	_check(reward_display != null and reward_display.tooltip_text.contains("ordinary salvage") and reward_display.tooltip_text.contains("no anima or souls") and reward_display.accessibility_description.contains("Company Manus payment"), "Marks reward lacks its ordinary soul-free payment explanation")
 	_check(reward_count != null and int(reward_count.get_meta(&"reward_reveal_order", -1)) == 0, "Shard reward is not first in the reveal sequence")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_count", -1)) == 100, "first survivor XP reward did not use the canonical delta")
 	_check(xp_count != null and int(xp_count.get_meta(&"reward_reveal_order", -1)) == 1, "XP reward is not staggered after the shard reward")
@@ -112,9 +128,21 @@ func _run() -> void:
 			_check(row_title != null and row_title.get_theme_font_size(&"font_size") >= 24, "%s title was not enlarged" % row.name)
 			_check(row_detail != null and row_detail.get_theme_font_size(&"font_size") >= 20, "%s detail was not enlarged" % row.name)
 	_check(no_casualties != null, "no-casualty state is missing")
+	_check(no_casualties != null and _has_uniform_margin(no_casualties.get_theme_stylebox(&"panel"), 24.0), "clear Company Intact card lacks uniform 24px inner padding")
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
-	_check(transmission_body != null and transmission_body.text.contains("PROTOS"), "clear transmission body is not canonical")
+	_check(
+		transmission_body != null
+		and s1_narrative != null
+		and transmission_body.text == String(s1_narrative.get("transmission")),
+		"clear transmission body is not canonical",
+	)
+	_check(
+		transmission_body != null
+		and transmission_body.text.contains("renewable stock")
+		and transmission_body.text.contains("take Hearthcross residents"),
+		"clear transmission body does not preserve the approved S1 people-taking reveal",
+	)
 	_check(transmission_speaker != null and transmission_speaker.get_theme_font_size(&"font_size") >= 24, "clear transmission speaker was not enlarged")
 	_check(transmission_body != null and transmission_body.get_theme_font_size(&"font_size") >= 20, "clear transmission body is below 20px")
 	_check(rewards_heading != null and rewards_heading.get_theme_font_size(&"font_size") >= 30, "Mission Yield heading was not enlarged")
@@ -122,10 +150,10 @@ func _run() -> void:
 	_check(consequence_line != null and consequence_line.get_theme_font_size(&"font_size") >= 20, "Consequence body was not enlarged")
 	if rewards_panel != null:
 		var rewards_style := rewards_panel.get_theme_stylebox(&"panel")
-		_check(rewards_style.content_margin_left >= 30.0 and rewards_style.content_margin_top >= 26.0, "Mission Yield content margins are too small")
+		_check(_has_uniform_margin(rewards_style, 24.0), "clear Mission Yield does not have uniform 24px inner padding")
 	if consequence_panel != null:
 		var consequence_style := consequence_panel.get_theme_stylebox(&"panel")
-		_check(consequence_style.content_margin_left >= 30.0 and consequence_style.content_margin_top >= 26.0 and consequence_style.content_margin_right >= 30.0, "Consequence content margins are too small")
+		_check(_has_uniform_margin(consequence_style, 24.0), "clear Consequence does not have uniform 24px inner padding")
 	_check(rewards_scroll != null and consequence_scroll != null, "Results payload columns lack independent local scrolling")
 	_check(rewards_scroll != null and rewards_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Rewards scroll is not flexible")
 	_check(consequence_scroll != null and consequence_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Consequence scroll is not flexible")
@@ -136,7 +164,8 @@ func _run() -> void:
 			if child is Button:
 				var action := child as Button
 				var presentation := action.find_child("PresentationLabel", true, false) as Label
-				_check(action.custom_minimum_size == Vector2(260, 96), "%s is not fixed at 260×96" % action.name)
+				var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+				_check(action.custom_minimum_size == Vector2(expected_width, 96), "%s lost its annotated fixed width" % action.name)
 				_check(action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "%s still expands horizontally" % action.name)
 				_check(action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s retained a struck texture frame" % action.name)
 				_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s typography was not doubled" % action.name)
@@ -152,10 +181,55 @@ func _run() -> void:
 	_check(header.columns == 1 and body.columns == 1 and actions.columns == 1, "portrait Results layout did not stack")
 	_check(outcome_summary.vertical, "portrait outcome summary did not stack")
 	_check(outcome_meta.vertical, "portrait stars and tally did not stack beneath the headline")
+	_check(headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "portrait clear headline can still wrap")
+	_check(staging.custom_minimum_size.x == 260.0, "clear Command did not clamp safely on narrow portrait")
+	for star: Node in stars.get_children():
+		_check((star as Control).custom_minimum_size == Vector2(46.0, 46.0), "%s does not match portrait Premium Resonance star sizing" % star.name)
 	for child: Node in actions.get_children():
 		if child is Button:
-			var bounds := (child as Button).get_global_rect()
+			var action := child as Button
+			var bounds := action.get_global_rect()
+			_check(action.custom_minimum_size.x == 260.0, "%s is not 260px wide at the narrow portrait breakpoint" % action.name)
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
+	root.size = Vector2i(720, 1280)
+	await _frames(2)
+	_check(staging.custom_minimum_size.x == 296.0, "clear Command is not 36px wider above the narrow portrait breakpoint")
+	for child: Node in actions.get_children():
+		if child is Button:
+			var action := child as Button
+			var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong wide-portrait width" % action.name)
+			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows wide portrait" % action.name)
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Results locale activation failed")
+	await _frames(2)
+	await create_timer(0.9).timeout
+	var chinese_ceremony := screen.find_child("OutcomeCeremony", true, false) as PanelContainer
+	var chinese_headline := screen.find_child("Headline", true, false) as Label
+	var chinese_stars := screen.find_child("ResultStars", true, false) as HBoxContainer
+	var chinese_tally := screen.find_child("TallyLine", true, false) as Label
+	var chinese_actions := screen.find_child("ActionRow", true, false) as GridContainer
+	var chinese_rewards := screen.find_child("RewardsHeading", true, false) as Label
+	var chinese_consequence := screen.find_child("ConsequenceHeading", true, false) as Label
+	var chinese_transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
+	var chinese_return := screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_xp := screen.find_child("XpAward0", true, false) as Control
+	var chinese_xp_count := chinese_xp.find_child("Detail", true, false) as Label
+	_check(chinese_headline != null and chinese_headline.text == "第1关已通关" and chinese_headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese clear headline is incorrect or wrap-enabled")
+	_check(chinese_headline != null and chinese_headline.get_visible_line_count() == 1 and chinese_headline.get_combined_minimum_size().x <= chinese_headline.size.x + 1.0, "Chinese clear headline is clipped in portrait")
+	_check(chinese_ceremony != null and chinese_tally != null and chinese_ceremony.get_global_rect().end.x - chinese_tally.get_global_rect().end.x >= 47.0, "Chinese LEAKS tally lost its rendered 24px right inset")
+	for star: Node in chinese_stars.get_children():
+		_check((star as Control).custom_minimum_size == Vector2(46.0, 46.0), "%s lost Chinese portrait reveal-star sizing" % star.name)
+	for child: Node in chinese_actions.get_children():
+		if child is Button:
+			var action := child as Button
+			var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong Chinese wide-portrait width" % action.name)
+			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows Chinese wide portrait" % action.name)
+	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
+	_check(chinese_transmission != null and _tree_text(chinese_transmission).contains("胜利传讯"), "clear transmission did not refresh to Chinese")
+	_check(chinese_return.text == "返回连队指挥部", "Results destination did not refresh to Chinese")
+	_check(chinese_xp_count.text == "+100 经验值", "canonical survivor XP did not refresh to Chinese")
+	_check(bool(i18n.call("set_locale", &"en-US")), "English Results locale restoration failed")
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
 	root.remove_child(screen)
@@ -230,9 +304,25 @@ func _run() -> void:
 			_check(defeat_action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s regained struck defeat styling" % defeat_action.name)
 			_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s defeat text is not doubled" % defeat_action.name)
 	_check(defeat_command != null and defeat_command.get_combined_minimum_size().x <= defeat_command.size.x + 1.0, "defeat Command text overflows its wider action")
+	_check(defeat_command != null and bool(defeat_command.get_meta(&"action_hover_feedback_wired", false)), "defeat Command lacks shared hover feedback")
+	if defeat_command != null:
+		var command_normal := defeat_command.get_theme_stylebox(&"normal") as StyleBoxFlat
+		var command_hover := defeat_command.get_theme_stylebox(&"hover") as StyleBoxFlat
+		_check(command_normal != null and command_hover != null and not command_normal.bg_color.is_equal_approx(command_hover.bg_color), "defeat Command lacks a distinct hover surface")
+		ProjectSettings.set_setting("accessibility/reduced_motion", false)
+		var command_idle_tint := defeat_command.modulate
+		defeat_command.emit_signal(&"mouse_entered")
+		await create_timer(0.22).timeout
+		_check(defeat_command.scale.x >= 1.035 and defeat_command.scale.y >= 1.035, "defeat Command does not lift on hover")
+		_check(not defeat_command.modulate.is_equal_approx(command_idle_tint), "defeat Command lacks hover luminance feedback")
+		defeat_command.emit_signal(&"mouse_exited")
+		await create_timer(0.22).timeout
+		_check(defeat_command.scale.distance_to(Vector2.ONE) < 0.02, "defeat Command did not settle after hover")
+		ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	root.size = Vector2i(390, 844)
 	await _frames(2)
 	_check(defeat_summary.vertical and defeat_meta.vertical and defeat_actions.columns == 1, "defeat hierarchy does not stack in portrait")
+	_check(defeat_headline.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART and defeat_headline.get_theme_font_size(&"font_size") == 45, "defeat portrait headline presentation changed during clear-only refit")
 	var defeat_command_presentation := defeat_command.find_child("PresentationLabel", true, false) as Label
 	_check(defeat_command.custom_minimum_size.x == 320.0, "defeat Command did not retain its wider portrait target")
 	_check(defeat_command_presentation != null and defeat_command_presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "defeat Command still permits copy wrapping")
@@ -243,6 +333,16 @@ func _run() -> void:
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows defeat portrait width" % child.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese defeat locale activation failed")
+	await _frames(2)
+	var chinese_defeat_rewards := defeat_screen.find_child("RewardsHeading", true, false) as Label
+	var chinese_defeat_consequence := defeat_screen.find_child("ConsequenceHeading", true, false) as Label
+	var chinese_defeat_return := defeat_screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_defeat_xp := defeat_screen.find_child("XpAward0", true, false) as Control
+	var chinese_defeat_xp_count := chinese_defeat_xp.find_child("Detail", true, false) as Label
+	_check(chinese_defeat_rewards.text == "行动收益" and chinese_defeat_consequence.text == "行动后果", "defeat headings did not refresh to Chinese")
+	_check(chinese_defeat_return.text == "返回连队指挥部", "defeat destination did not refresh to Chinese")
+	_check(chinese_defeat_xp_count.text == "+100 经验值", "defeat survivor XP did not refresh to Chinese")
 
 	var cancel := InputEventAction.new()
 	cancel.action = &"ui_cancel"
@@ -284,6 +384,25 @@ func _has_scroll_ancestor(node: Node) -> bool:
 func _frames(count: int) -> void:
 	for _index: int in count:
 		await process_frame
+
+
+func _tree_text(node: Node) -> String:
+	var text := ""
+	if node is Label or node is Button:
+		text += String(node.get("text")) + "\n"
+	for child: Node in node.get_children():
+		text += _tree_text(child)
+	return text
+
+
+func _has_uniform_margin(style: StyleBox, expected: float) -> bool:
+	return (
+		style != null
+		and is_equal_approx(style.content_margin_left, expected)
+		and is_equal_approx(style.content_margin_top, expected)
+		and is_equal_approx(style.content_margin_right, expected)
+		and is_equal_approx(style.content_margin_bottom, expected)
+	)
 
 
 func _check(condition: bool, message: String) -> void:

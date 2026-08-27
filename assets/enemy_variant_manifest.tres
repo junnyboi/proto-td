@@ -19,6 +19,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_attack_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 474)
 },
 &"enemy_variant_breacher_attack_nw": {
@@ -35,6 +36,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_attack_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 474)
 },
 &"enemy_variant_breacher_attack_se": {
@@ -51,6 +53,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_attack_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 475)
 },
 &"enemy_variant_breacher_attack_sw": {
@@ -67,6 +70,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_attack_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 475)
 },
 &"enemy_variant_breacher_walk_ne": {
@@ -83,6 +87,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_walk_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 351)
 },
 &"enemy_variant_breacher_walk_nw": {
@@ -99,6 +104,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_walk_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 351)
 },
 &"enemy_variant_breacher_walk_se": {
@@ -115,6 +121,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_walk_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 571)
 },
 &"enemy_variant_breacher_walk_sw": {
@@ -131,6 +138,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/breacher_walk_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 571)
 },
 &"enemy_variant_interceptor_attack_ne": {
@@ -147,6 +155,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_attack_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 347)
 },
 &"enemy_variant_interceptor_attack_nw": {
@@ -163,6 +172,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_attack_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 347)
 },
 &"enemy_variant_interceptor_attack_se": {
@@ -179,6 +189,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_attack_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 389)
 },
 &"enemy_variant_interceptor_attack_sw": {
@@ -195,6 +206,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_attack_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 389)
 },
 &"enemy_variant_interceptor_walk_ne": {
@@ -211,6 +223,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_walk_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 339)
 },
 &"enemy_variant_interceptor_walk_nw": {
@@ -227,6 +240,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_walk_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 339)
 },
 &"enemy_variant_interceptor_walk_se": {
@@ -243,6 +257,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_walk_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 320)
 },
 &"enemy_variant_interceptor_walk_sw": {
@@ -259,6 +274,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/interceptor_walk_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 320)
 },
 &"enemy_variant_shieldbearer_attack_ne": {
@@ -275,6 +291,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_attack_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 570)
 },
 &"enemy_variant_shieldbearer_attack_nw": {
@@ -291,6 +308,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_attack_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 499)
 },
 &"enemy_variant_shieldbearer_attack_se": {
@@ -307,6 +325,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_attack_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 500)
 },
 &"enemy_variant_shieldbearer_attack_sw": {
@@ -323,6 +342,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_attack_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 504)
 },
 &"enemy_variant_shieldbearer_walk_ne": {
@@ -339,6 +359,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_walk_ne.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(557, 620)
 },
 &"enemy_variant_shieldbearer_walk_nw": {
@@ -355,6 +376,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_walk_nw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(600, 620)
 },
 &"enemy_variant_shieldbearer_walk_se": {
@@ -371,6 +393,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_walk_se.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(585, 620)
 },
 &"enemy_variant_shieldbearer_walk_sw": {
@@ -387,6 +410,7 @@ entries = {
 "pattern": "res://assets/enemy-variants/shieldbearer_walk_sw.webp",
 "pivot": Vector2(0.5, 1),
 "placeholder": false,
+"provenance": &"generated_enemy_variant",
 "size": Vector2i(620, 609)
 }
 }

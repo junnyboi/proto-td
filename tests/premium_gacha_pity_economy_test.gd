@@ -47,8 +47,8 @@ func _test_pool_contract() -> void:
 				stage_marks += int(reward["amount"])
 		_check(stage_marks == 40, "%s does not grant exactly 40 Marks" % stage["stage_id"])
 		marks_sum += stage_marks
-	_check(marks_sum == 320, "campaign first-clear Marks total is not 320")
-	_check((120 + marks_sum) / 40 == 11, "campaign does not fund exactly 11 lifetime pulls")
+	_check(marks_sum == 640, "campaign first-clear Marks total is not 640")
+	_check((120 + marks_sum) / 40 == 19, "campaign does not fund exactly 19 lifetime pulls")
 
 
 func _test_hard_pity_and_natural_reset() -> void:

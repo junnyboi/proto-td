@@ -11,6 +11,7 @@ const AetheriaPanelType := preload("res://scripts/ui/components/aetheria_panel.g
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 const TrainingRosterRowType := preload("res://scripts/ui/components/training_roster_row.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const HeroCodecScript := preload("res://sim/campaign_hero_codec.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
@@ -440,7 +441,7 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_filter_input.name = "TrainingNameFilter"
 	_filter_input.text = _name_filter
 	_filter_input.placeholder_text = _t(
-		&"ui.identity_filter.placeholder", "Filter by name or title",
+		&"ui.identity_filter.placeholder", "Filter operators",
 	)
 	_filter_input.clear_button_enabled = true
 	_filter_input.custom_minimum_size = Vector2(220.0, 72.0)
@@ -456,7 +457,7 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_sort_select.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_sort_select.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	for option: Dictionary in [
-		{"id": &"recruitment", "label": _t(&"ui.identity_sort.recruitment", "Recruitment order")},
+		{"id": &"recruitment", "label": _t(&"ui.identity_sort.recruitment", "Recruit order")},
 		{"id": &"name_asc", "label": _t(&"ui.identity_sort.name_asc", "Name A–Z")},
 		{"id": &"name_desc", "label": _t(&"ui.identity_sort.name_desc", "Name Z–A")},
 	]:
@@ -552,7 +553,8 @@ func _build_roster_list() -> ScrollContainer:
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_roster_list.add_child(empty)
 		return scroll
-	for summary: Dictionary in visible_rows:
+	for visible_index: int in visible_rows.size():
+		var summary := visible_rows[visible_index] as Dictionary
 		var row := TrainingRosterRowType.new()
 		row.name = "Recruit_%s" % summary["hero_id"]
 		row.configure(
@@ -562,6 +564,7 @@ func _build_roster_list() -> ScrollContainer:
 			_progress_text(summary),
 			_eligibility_text(summary),
 			_operator_stats_tooltip(summary),
+			visible_index,
 		)
 		row.set_selected(String(summary["hero_id"]) == _selected_hero_id)
 		row.pressed.connect(_on_roster_selected.bind(String(summary["hero_id"])))
@@ -687,7 +690,7 @@ func _build_inspector() -> AetheriaPanelType:
 		))
 		identity.add_child(_label(
 			"SelectedContinuity",
-			_t(&"ui.training.same_recruit_new_job", "Same recruit. New job."),
+			_t(&"ui.training.same_recruit_new_job", "Same person. New training and equipment."),
 			&"eyebrow",
 		))
 		if bool(selected.get("is_premium", false)):
@@ -695,7 +698,7 @@ func _build_inspector() -> AetheriaPanelType:
 				"SelectedPremiumStatus",
 				_manifest_fmt(
 					&"ui.training.premium_identity",
-					"PREMIUM • FIXED ELITE KIT • {count} LIVES",
+					"PREMIUM • FIXED ELITE KIT • {count} PREPARED BODIES",
 					{&"count": int(selected["premium_lives"])},
 				),
 				&"metric",
@@ -730,6 +733,12 @@ func _build_inspector() -> AetheriaPanelType:
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		dossier.add_child(portrait)
+		PremiumPortraitEntranceType.apply(
+			portrait,
+			StringName(selected["portrait_asset_id"]),
+			0,
+			_motion_reduced(),
+		)
 		column.add_child(dossier)
 		column.add_child(_build_rename_panel(selected))
 	column.add_child(_label(
@@ -739,7 +748,7 @@ func _build_inspector() -> AetheriaPanelType:
 		"TrainingExplainer",
 		_t(
 			&"ui.training.training_explainer",
-			"Advanced training changes equipment, duties, and field role. It does not replace the person.",
+			"Practice, equipment work, and field duty improve the same person. Training never replaces or rewrites a soul.",
 		),
 		&"detail",
 	))
@@ -843,7 +852,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	_rename_input.custom_minimum_size = Vector2(220.0, 58.0)
 	_rename_input.accessibility_name = _t(&"ui.rename.callsign_label", "CALLSIGN")
 	_rename_input.accessibility_description = _t(
-		&"ui.rename.callsign_description", "Unique name, 1 to 20 characters.",
+		&"ui.rename.callsign_description", "Unique callsign, 1 to 20 characters.",
 	)
 	_rename_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rename_input.text_changed.connect(_on_identity_text_changed)
@@ -915,7 +924,7 @@ func _on_identity_text_changed(_value: String) -> void:
 		_rename_error.accessibility_live = AccessibilityServer.LIVE_OFF
 	if _rename_input != null:
 		_rename_input.accessibility_description = _t(
-			&"ui.rename.callsign_description", "Unique name, 1 to 20 characters.",
+			&"ui.rename.callsign_description", "Unique callsign, 1 to 20 characters.",
 		)
 		LunarisOpsType.apply_line_edit(_rename_input)
 		_rename_input.add_theme_font_size_override(&"font_size", IDENTITY_INPUT_FONT_SIZE)
@@ -1537,7 +1546,7 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 	_ensure_panel_padding(panel, 16.0)
 	var text := _fmt(
 		&"ui.training.same_identity",
-		"SAME RECRUIT • SAME HERO ID • SAME CALLSIGN • SAME HISTORY",
+		"SAME PERSON • SAME HERO ID • SAME CALLSIGN • SAME HISTORY",
 		{},
 	)
 	var label := _label("IdentityContinuity", text, &"dense_detail")
@@ -1599,7 +1608,7 @@ func _show_review(error_code: StringName = &"", removed_rows: Array = []) -> voi
 		_t(&"ui.training.review_title", "REVIEW TRAINING PLAN"),
 		_t(
 			&"ui.training.confirm_permanent",
-			"These training choices cannot be changed.",
+			"This training choice cannot be changed.",
 		),
 	))
 	var list := VBoxContainer.new()
@@ -2295,7 +2304,7 @@ func _status_text(summary: Dictionary) -> String:
 func _progress_text(summary: Dictionary) -> String:
 	if bool(summary.get("is_premium", false)):
 		return _manifest_fmt(
-			&"ui.training.premium_progress", "FIXED KIT • {count} LIVES",
+			&"ui.training.premium_progress", "FIXED KIT • {count} PREPARED BODIES",
 			{&"count": int(summary["premium_lives"])},
 		)
 	return _fmt(
@@ -2401,7 +2410,7 @@ func _combat_text(choice: Dictionary) -> String:
 	)
 	return _fmt(
 		&"ui.training.combat_facts",
-		"{cost} DP • {placement} • Block {block} • Range {range} • ATK {cadence}T",
+		"{cost} DP • {placement} • Block {block} • Range {range} cells • Attack interval {cadence} ticks",
 		{
 			&"cost": int(choice["dp_cost"]),
 			&"placement": placement,

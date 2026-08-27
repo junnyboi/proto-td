@@ -176,6 +176,14 @@ func request_battle_state(state_id: StringName, danger: bool = false) -> bool:
 	var active_cue := _cue_for(_current_id)
 	if cue == null or active_cue == null:
 		return false
+	if (
+		cue_id == _current_id
+		and _active_player().playing
+		and String(_current_variant_id).begins_with("act2_")
+	):
+		_clear_pending()
+		_current_state_id = state_id
+		return true
 	var bar_seconds := active_cue.seconds_per_bar()
 	if bar_seconds <= 0.0 or not _active_player().playing:
 		if not _transition_to(
@@ -413,10 +421,13 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 
 
 func _ensure_bus() -> void:
-	if AudioServer.get_bus_index(BUS_NAME) >= 0:
-		return
-	AudioServer.add_bus()
-	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS_NAME)
+	var index := AudioServer.get_bus_index(BUS_NAME)
+	if index < 0:
+		AudioServer.add_bus()
+		index = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(index, BUS_NAME)
+	if AudioServer.get_bus_send(index) != &"Master":
+		AudioServer.set_bus_send(index, &"Master")
 
 
 func _active_player() -> AudioStreamPlayer:

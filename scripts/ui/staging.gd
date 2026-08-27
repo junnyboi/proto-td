@@ -21,6 +21,10 @@ const LunarisBackdropType := preload(
 )
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const CommandCenterTutorialType := preload(
+	"res://scripts/ui/components/command_center_tutorial.gd"
+)
+const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 const MISSION_ART := preload("res://assets/world/act1/panorama.png")
 const MISSION_CONTROL_PLATE := preload(
@@ -79,6 +83,7 @@ var _portrait_stack: VBoxContainer = null
 var _command_content: VBoxContainer = null
 var _navigation_content: VBoxContainer = null
 var _mission_card: PanelContainer = null
+var _next_operation_action: Button = null
 var _mission_grid: GridContainer = null
 var _mission_body_grid: GridContainer = null
 var _mission_preview: TextureRect = null
@@ -113,20 +118,26 @@ var _mission_hovered := false
 var _mission_hover_tween: Tween = null
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
-var _focus_pulse_colors: Dictionary = {}
+var _tutorial: CommandCenterTutorialType = null
+var _preferences_path := ViewPreferencesType.DEFAULT_PATH
+var _preferences_path_explicit := false
 
 
 func _ready() -> void:
 	theme = STAGING_THEME
+	if not _preferences_path_explicit:
+		_preferences_path = Game.view_preferences_path()
 	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 	Game.content = self
 	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
 	_build_screen()
 	I18n.locale_changed.connect(_on_locale_changed)
+	TextScale.scale_changed.connect(_on_text_scale_changed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
-	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
+	if not _maybe_mount_command_tutorial():
+		(_back if _mission.disabled else _mission).grab_focus.call_deferred()
 	if not _training_acknowledgement.is_empty():
 		Game.training_call(&"consume_acknowledgement")
 
@@ -139,13 +150,14 @@ func _process(delta: float) -> void:
 		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
 	for button in _focus_pulse_styles:
 		var style: StyleBoxFlat = _focus_pulse_styles[button]
-		var accent: Color = _focus_pulse_colors[button]
-		style.bg_color = Color(accent, pulse)
+		style.border_color = Color(GOLD, 0.56 + pulse)
 		(button as Button).queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
+		if _tutorial != null and is_instance_valid(_tutorial) and _tutorial.is_active():
+			return
 		get_viewport().set_input_as_handled()
 		_on_exit()
 
@@ -417,7 +429,7 @@ func _build_command_content() -> VBoxContainer:
 	progress_glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	progress_row.add_child(progress_glyph)
 	_command_heading = _label(
-		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER"),
+		"CommandHeading", UiCopyType.text(&"ui.staging.command_heading", "COMPANY COMMAND"),
 		24, GOLD,
 	)
 	_command_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -550,7 +562,7 @@ func _build_navigation_content() -> VBoxContainer:
 	_archive.configure(
 		StagingGlyphType.Kind.ARCHIVE,
 		UiCopyType.text(&"ui.staging.archive_short", "Archive"),
-		UiCopyType.text(&"ui.staging.archive", "Mercy Archive"),
+		UiCopyType.text(&"ui.staging.archive", "Anima Archive"),
 		true,
 	)
 	_archive.pressed.connect(_on_archive)
@@ -663,6 +675,23 @@ func _build_mission_card() -> PanelContainer:
 	_mission_objective.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_mission_objective.max_lines_visible = -1
 	_mission_body_grid.add_child(_mission_objective)
+
+	_next_operation_action = Button.new()
+	_next_operation_action.name = "NextOperationAction"
+	_next_operation_action.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_next_operation_action.focus_mode = Control.FOCUS_ALL
+	_next_operation_action.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_next_operation_action.add_theme_stylebox_override(&"normal", StyleBoxEmpty.new())
+	_next_operation_action.add_theme_stylebox_override(
+		&"hover", _panel_style(Color(GOLD, 0.07), Color(GOLD, 0.24), 1, 4),
+	)
+	_next_operation_action.add_theme_stylebox_override(
+		&"pressed", _panel_style(Color(GOLD, 0.12), Color(BRIGHT_GOLD, 0.42), 1, 4),
+	)
+	_register_focus_pulse(_next_operation_action, GOLD)
+	_next_operation_action.pressed.connect(_on_next_operation)
+	_mission_card.add_child(_next_operation_action)
+	_refresh_next_operation_action()
 	return _mission_card
 
 
@@ -708,7 +737,7 @@ func _build_mission_button() -> AetheriaButtonType:
 	_mission_plate.modulate = Color(0.48, 0.52, 0.56, 0.78) if button.disabled else Color.WHITE
 	button.add_child(_mission_plate)
 	button.move_child(_mission_plate, 0)
-	button.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	_register_focus_pulse(button, GOLD)
 	button.mouse_entered.connect(_on_mission_hover_changed.bind(true))
 	button.mouse_exited.connect(_on_mission_hover_changed.bind(false))
 	button.focus_entered.connect(_update_mission_plate_state)
@@ -735,7 +764,7 @@ func _update_mission_plate_state() -> void:
 		_mission_action_label.scale = Vector2.ONE
 		_mission_action_label.add_theme_color_override(&"font_shadow_color", Color.TRANSPARENT)
 		return
-	var active := _mission_hovered or _mission.has_focus()
+	var active := _mission_hovered
 	var plate_color := Color(1.10, 1.16, 1.24, 1.0) if active else Color.WHITE
 	var plate_scale := Vector2(1.012, 1.025) if active else Vector2.ONE
 	var label_color := Color(1.04, 1.10, 1.16, 1.0) if active else Color.WHITE
@@ -759,7 +788,6 @@ func _register_focus_pulse(button: Button, accent: Color) -> void:
 	var style := StagingSkinType.transparent_focus_style(accent)
 	button.add_theme_stylebox_override(&"focus", style)
 	_focus_pulse_styles[button] = style
-	_focus_pulse_colors[button] = accent
 
 
 func _build_acknowledgement() -> PanelContainer:
@@ -803,6 +831,8 @@ func _add_locked_operation(
 
 func _connect_focus_cycle() -> void:
 	var actions: Array[Control] = [_mission, _back]
+	if _next_operation_action != null and not _next_operation_action.disabled:
+		actions.insert(1, _next_operation_action)
 	if _recruit != null and not _recruit.disabled:
 		actions.append(_recruit)
 	if _vahalla != null and not _vahalla.disabled:
@@ -821,8 +851,16 @@ func _connect_focus_cycle() -> void:
 		current.focus_neighbor_left = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(following)
 		current.focus_neighbor_right = current.get_path_to(following)
-		if _operation_scroll != null and _operation_scroll.is_ancestor_of(current):
-			current.focus_entered.connect(_operation_scroll.ensure_control_visible.bind(current))
+		if not bool(current.get_meta(&"_staging_focus_visibility_connected", false)):
+			current.focus_entered.connect(_ensure_action_visible.bind(current))
+			current.set_meta(&"_staging_focus_visibility_connected", true)
+
+
+func _ensure_action_visible(control: Control) -> void:
+	for scroll_name: String in ["LandscapeCommandScroll", "PortraitCommandScroll", "OperationsScroll"]:
+		var scroll := find_child(scroll_name, true, false) as ScrollContainer
+		if scroll != null and scroll.is_ancestor_of(control):
+			scroll.ensure_control_visible.call_deferred(control)
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
@@ -845,6 +883,14 @@ func _apply_responsive_layout() -> void:
 	var aspect := viewport_size.x / viewport_size.y
 	_portrait = viewport_size.y > viewport_size.x
 	_compact_landscape = not _portrait and (aspect < 1.45 or viewport_size.x < 1700.0)
+	var large_text := float(TextScale.value()) >= 1.20
+	var landscape_scroll := _landscape_deck.get_node_or_null("LandscapeCommandScroll") as ScrollContainer
+	var portrait_scroll := _portrait_sheet.get_node_or_null("PortraitCommandScroll") as ScrollContainer
+	for document_scroll: ScrollContainer in [landscape_scroll, portrait_scroll]:
+		if document_scroll != null:
+			document_scroll.vertical_scroll_mode = (
+				ScrollContainer.SCROLL_MODE_AUTO if large_text else ScrollContainer.SCROLL_MODE_DISABLED
+			)
 	_landscape_layout.visible = not _portrait
 	_portrait_layout.visible = _portrait
 	_place_responsive_content()
@@ -895,6 +941,8 @@ func _apply_responsive_layout() -> void:
 	_apply_command_geometry(viewport_size)
 	_apply_company_typography()
 	_connect_focus_cycle()
+	if _tutorial != null and is_instance_valid(_tutorial):
+		_tutorial.relayout.call_deferred()
 
 
 func _place_responsive_content() -> void:
@@ -1031,6 +1079,10 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	_apply_responsive_layout()
 
 
+func _on_text_scale_changed(_value: float) -> void:
+	_apply_responsive_layout.call_deferred()
+
+
 func _refresh_locale_copy() -> void:
 	if _top_identity == null:
 		return
@@ -1039,10 +1091,11 @@ func _refresh_locale_copy() -> void:
 	_campaign_progress_text.text = _campaign_summary_text()
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
-	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMMAND CENTER")
+	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMPANY COMMAND")
 	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
+	_refresh_next_operation_action()
 	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
 	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
 	var mission_display := UiCopyType.text(
@@ -1052,7 +1105,7 @@ func _refresh_locale_copy() -> void:
 	_mission.tooltip_text = mission_copy
 	_recruit.configure(StagingGlyphType.Kind.RECRUIT, UiCopyType.text(&"ui.staging.recruit_short", "Resonance"), UiCopyType.text(&"ui.staging.recruit", "Premium Resonance"), true)
 	_vahalla.configure(StagingGlyphType.Kind.MEMORIAL, UiCopyType.text(&"ui.staging.valhalla_short", "Valhalla"), UiCopyType.text(&"ui.staging.valhalla", "Valhalla"), true)
-	_archive.configure(StagingGlyphType.Kind.ARCHIVE, UiCopyType.text(&"ui.staging.archive_short", "Archive"), UiCopyType.text(&"ui.staging.archive", "Mercy Archive"), true)
+	_archive.configure(StagingGlyphType.Kind.ARCHIVE, UiCopyType.text(&"ui.staging.archive_short", "Archive"), UiCopyType.text(&"ui.staging.archive", "Anima Archive"), true)
 	var training_available := _training_available()
 	_training.configure(StagingGlyphType.Kind.TRAINING, UiCopyType.text(&"ui.staging.training_short", "Training"), UiCopyType.text(&"ui.staging.training" if training_available else &"ui.staging.training_unavailable", "Training" if training_available else "Training — Unavailable"), training_available)
 	var barracks := find_child("BarracksButton", true, false) as StagingCommandTileType
@@ -1064,7 +1117,7 @@ func _refresh_locale_copy() -> void:
 
 
 func _company_identity(_compact: bool) -> String:
-	return UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
+	return UiCopyType.text(&"ui.title.full_title", "Protos Defense").to_upper()
 
 
 func _campaign_summary_text() -> String:
@@ -1116,9 +1169,68 @@ func _next_operation_objective() -> String:
 	if _next_record == null:
 		return UiCopyType.text(
 			&"ui.staging.command_body",
-			"PROTOS saved the biosphere by declaring human choice its final extinction event. Company 33 defends Hearthcross and humanity's right to remain free and unfinished.",
+			"PROTOS drains living captives in human farms and uses their souls to power a robot empire. Company Manus defends Hearthcross, rescues people and souls, and breaks the harvesting network.",
 		)
 	return UiCopyType.stage_narrative_text(_next_record, StageNarrativeDefType.Field.OBJECTIVE)
+
+
+func _refresh_next_operation_action() -> void:
+	if _next_operation_action == null:
+		return
+	var available := _next_stage != null and not _narrative_missing
+	_next_operation_action.disabled = not available
+	_next_operation_action.focus_mode = Control.FOCUS_ALL if available else Control.FOCUS_NONE
+	_next_operation_action.mouse_default_cursor_shape = (
+		Control.CURSOR_POINTING_HAND if available else Control.CURSOR_ARROW
+	)
+	var stage_title := UiCopyType.stage_title(_next_stage) if _next_stage != null else ""
+	var action_copy := UiCopyType.format_text(
+		&"ui.staging.next_operation_action",
+		"Open Field Team for {stage}",
+		{&"stage": stage_title},
+	) if available else ""
+	_next_operation_action.tooltip_text = action_copy
+	_next_operation_action.accessibility_name = action_copy
+	_next_operation_action.accessibility_description = UiCopyType.text(
+		&"ui.staging.next_operation_description",
+		"Select this operation and open Field Team without starting the battle.",
+	) if available else ""
+
+
+func _on_next_operation() -> void:
+	if _next_stage == null or _narrative_missing:
+		return
+	if Game.open_field_team_for_stage(_next_stage.id):
+		Sfx.play("ui_click")
+
+
+func set_preferences_path(path: String) -> void:
+	if is_node_ready() or path.is_empty():
+		return
+	_preferences_path = path
+	_preferences_path_explicit = true
+
+
+func _maybe_mount_command_tutorial() -> bool:
+	if not Game.consume_command_tutorial_request():
+		return false
+	if ViewPreferencesType.has_seen_command_tutorial(_preferences_path):
+		return false
+	var tutorial := CommandCenterTutorialType.new()
+	add_child(tutorial)
+	if not tutorial.setup(_mission, _recruit, _preferences_path, _reduced_motion):
+		tutorial.queue_free()
+		return false
+	_tutorial = tutorial
+	_tutorial.finished.connect(_on_command_tutorial_finished)
+	return true
+
+
+func _on_command_tutorial_finished(_skipped: bool, persisted: bool) -> void:
+	_tutorial = null
+	if not persisted:
+		push_warning("Command Center tutorial completion could not be persisted")
+	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
 
 
 func _on_mission_control() -> void:

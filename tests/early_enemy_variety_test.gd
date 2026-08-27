@@ -1,6 +1,7 @@
 extends SceneTree
 
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
+const CampaignRuntimeContextScript := preload("res://sim/campaign_runtime_context.gd")
 
 var _failures := PackedStringArray()
 
@@ -96,7 +97,7 @@ func _validate_stage_schedules() -> void:
 	_check(_enemy_count(s2, &"grunt") == 3 and _enemy_count(s2, &"runner") == 6, "S2 one-for-one composition must remain 3/6/1")
 	_check(_has_spawn(s2, &"shieldbearer", 0, 420), "S2 Shieldbearer must open wave two at tick 420 on path zero")
 	_check(s2.wave_starts == PackedInt32Array([0, 390]), "S2 wave boundaries must remain unchanged")
-	_check(s2.intro_hint.contains("Caster Arts") and s2.intro_hint.contains("Shieldbearer"), "S2 hint must explain armored Caster counterplay")
+	_check(s2.intro_hint.contains("Caster") and s2.intro_hint.contains("armored"), "S2 hint must explain armored Caster counterplay")
 
 	_check(s3.waves.size() == 9, "S3 must preserve nine total spawns")
 	_check(_enemy_count(s3, &"breacher") == 2, "S3 must contain exactly two Breachers")
@@ -104,7 +105,7 @@ func _validate_stage_schedules() -> void:
 	_check(_has_spawn(s3, &"breacher", 0, 450), "S3 first Breacher must arrive at tick 450 on path zero")
 	_check(_has_spawn(s3, &"breacher", 1, 570), "S3 second Breacher must alternate to path one at tick 570")
 	_check(s3.wave_starts == PackedInt32Array([0, 390]), "S3 wave boundaries must remain unchanged")
-	_check(s3.intro_hint.contains("two block capacity"), "S3 hint must explain Breacher block pressure")
+	_check(s3.intro_hint.contains("Breachers") and s3.intro_hint.contains("two block"), "S3 hint must explain Breacher block pressure")
 
 	_check(s4.waves.size() == 11, "S4 must preserve eleven total spawns")
 	_check(_enemy_count(s4, &"interceptor") == 2, "S4 must contain exactly two Interceptors")
@@ -112,7 +113,17 @@ func _validate_stage_schedules() -> void:
 	_check(_has_spawn(s4, &"interceptor", 0, 540), "S4 first Interceptor must follow a Drone at tick 540")
 	_check(_has_spawn(s4, &"interceptor", 0, 810), "S4 second Interceptor must close the air wave at tick 810")
 	_check(s4.wave_starts == PackedInt32Array([0, 390]), "S4 wave boundaries must remain unchanged")
-	_check(s4.intro_hint.contains("sustain fire") and s4.intro_hint.contains("Interceptors"), "S4 hint must explain durable anti-air")
+	_check(s4.intro_hint.contains("Sniper") and s4.intro_hint.contains("air lane"), "S4 hint must explain durable anti-air")
+
+
+func _validate_campaign_context() -> void:
+	var context := CampaignRuntimeContextScript.build()
+	_check(not context.is_empty(), "Early enemy variety must preserve a valid production campaign context")
+	if not context.is_empty():
+		_check(
+			String(context.get("environment_sha256", "")) == CampaignDef.P16_V3_ENVIRONMENT_SHA256,
+			"Early enemy variety environment hash must remain pinned to the production campaign",
+		)
 
 
 func _validate_interceptor_attack_authority() -> void:
@@ -149,16 +160,6 @@ func _validate_interceptor_attack_authority() -> void:
 	model._tick_combat()
 	_check(defender.hp < hp_before, "Interceptor authoritative attack must damage its selected operator")
 	_check(interceptor.atk_counter == interceptor.atk_interval_ticks - 1, "Interceptor attack must start its authoritative cooldown")
-
-
-func _validate_campaign_context() -> void:
-	var context := CampaignRuntimeContext.build()
-	_check(not context.is_empty(), "approved combat content must build the canonical campaign runtime context")
-	if context.is_empty():
-		return
-	_check(String(context.get("environment_sha256", "")) == CampaignDef.P16_V3_ENVIRONMENT_SHA256, "campaign context must use the new combat environment hash")
-
-
 func _enemy(enemy_id: StringName) -> EnemyDef:
 	return load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 

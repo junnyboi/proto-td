@@ -14,6 +14,9 @@ const FIRST_STAND_TUTORIAL_SCRIPT := preload("res://scripts/ui/first_stand_tutor
 const SLOW_FIELD_TUTORIAL_SCRIPT := preload("res://scripts/ui/slow_field_tutorial.gd")
 const MAP_NAVIGATION_OVERLAY_SCRIPT := preload("res://scripts/ui/map_navigation_overlay.gd")
 const BATTLE_DIALOGUE_PRESENTER_SCRIPT := preload("res://scripts/ui/battle_dialogue_presenter.gd")
+const ACT2_STAGE_TRANSITION_SCRIPT := preload(
+	"res://scripts/ui/components/act2_stage_transition.gd"
+)
 const STAGE_NARRATIVE_CATALOG := preload(
 	"res://data/presentation/narrative/stage_narrative_catalog.tres"
 )
@@ -24,6 +27,9 @@ const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ActionHoverFeedbackType := preload(
+	"res://scripts/ui/components/action_hover_feedback.gd"
+)
 const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
@@ -93,6 +99,9 @@ var _tutorial: Node = null
 var _map_navigation_overlay: MapNavigationOverlay = null
 var _battle_dialogue: BattleDialoguePresenter = null
 var _battle_confirmation_active := false
+var _act2_transition: Act2StageTransition = null
+var _act2_entry_active := false
+var _act2_exit_active := false
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _spell_defs: Dictionary = {}
@@ -234,6 +243,8 @@ func _ready() -> void:
 	if not I18n.locale_changed.is_connected(_on_locale_changed):
 		I18n.locale_changed.connect(_on_locale_changed)
 	startup_succeeded = true
+	if _is_act2_stage():
+		_play_act2_entry_transition.call_deferred()
 
 
 func _start_stage_tutorial() -> void:
@@ -328,15 +339,18 @@ func _tutorial_holding_battle() -> bool:
 func _refresh_battle_interaction_gates() -> void:
 	var running := model == null or model.result == BattleModel.Result.RUNNING
 	var tutorial_holding := _tutorial_holding_battle()
+	var transition_blocked := _act2_entry_active or _act2_exit_active
 	if _controls != null:
-		_controls.set_interaction_enabled(not tutorial_holding and running)
+		_controls.set_interaction_enabled(not tutorial_holding and not transition_blocked and running)
 	if _deploy_bar != null:
 		# FirstStandTutorial owns its step-specific operator gate. The battle-level
 		# confirmation gate composes independently so closing it cannot overwrite
 		# ROUTE/BLOCK or DEPLOY/FACING tutorial intent.
-		_deploy_bar.set_interaction_enabled(not _battle_confirmation_active and running)
+		_deploy_bar.set_interaction_enabled(
+			not _battle_confirmation_active and not transition_blocked and running
+		)
 	if _spell_bar != null:
-		_spell_bar.set_interaction_enabled(not _battle_confirmation_active and running)
+		_spell_bar.set_interaction_enabled(not _battle_confirmation_active and not transition_blocked and running)
 	_refresh_map_navigation_overlay()
 
 
@@ -421,6 +435,8 @@ func _map_navigation_blocked() -> bool:
 	var deploy_bar := find_child("DeployBar", true, false) as DeployBar
 	return (
 		_battle_confirmation_active
+		or _act2_entry_active
+		or _act2_exit_active
 		or (model != null and model.result != BattleModel.Result.RUNNING)
 		or _tutorial_holding_battle()
 		or (deploy_cursor != null and deploy_cursor.visible)
@@ -435,6 +451,9 @@ func _is_lifted_cell(cell: Vector2i) -> bool:
 
 func _physics_process(delta: float) -> void:
 	if model == null:
+		return
+	if _act2_entry_active or _act2_exit_active:
+		_project()
 		return
 	# hit-stop: suspend tick consumption only — outcome-safe by rule 6
 	if _hit_stop_frames > 0:
@@ -544,6 +563,7 @@ func _apply_time_scale() -> void:
 
 
 func _exit_tree() -> void:
+	ActionHoverFeedbackType.reset(_continue_btn)
 	Engine.time_scale = 1.0
 
 
@@ -673,6 +693,7 @@ func _detect_result_stamp() -> void:
 	next.custom_minimum_size = _terminal_continue_size(viewport)
 	LunarisOpsType.apply_button(next, &"primary")
 	_apply_terminal_continue_style(next)
+	ActionHoverFeedbackType.wire(self, next)
 	next.z_index = HUD_Z
 	add_child(next)
 	next.position = Vector2(
@@ -686,6 +707,7 @@ func _detect_result_stamp() -> void:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_hud_copy()
 	if _continue_btn != null:
 		_continue_btn.text = UiCopyType.text(
 			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
@@ -753,6 +775,62 @@ func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String
 
 func _on_continue_pressed() -> void:
 	Sfx.play("ui_confirm")
+	if _is_act2_stage() and not _act2_exit_active:
+		_play_act2_exit_transition()
+		return
+	Game.open_results()
+
+
+func _is_act2_stage() -> bool:
+	return _stage != null and _stage.campaign_index >= 9
+
+
+func _stage_display_title() -> String:
+	if _stage == null:
+		return ""
+	return UiCopyType.text(
+		StringName("data.stage.%s.title" % _stage.id),
+		_stage.title,
+	)
+
+
+func _reduced_motion() -> bool:
+	return bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+
+
+func _play_act2_entry_transition() -> void:
+	if not _is_act2_stage() or _act2_entry_active or _act2_exit_active:
+		return
+	_act2_entry_active = true
+	_refresh_battle_interaction_gates()
+	_act2_transition = ACT2_STAGE_TRANSITION_SCRIPT.new() as Act2StageTransition
+	_act2_transition.name = "ActIIStageTransition"
+	add_child(_act2_transition)
+	_act2_transition.entry_finished.connect(_on_act2_entry_finished, CONNECT_ONE_SHOT)
+	_act2_transition.play_entry(_stage.campaign_index, _stage_display_title(), _reduced_motion())
+
+
+func _on_act2_entry_finished() -> void:
+	_act2_entry_active = false
+	_act2_transition = null
+	_refresh_battle_interaction_gates()
+
+
+func _play_act2_exit_transition() -> void:
+	_act2_exit_active = true
+	if _continue_btn != null:
+		_continue_btn.disabled = true
+	_refresh_battle_interaction_gates()
+	_act2_transition = ACT2_STAGE_TRANSITION_SCRIPT.new() as Act2StageTransition
+	_act2_transition.name = "ActIIStageTransition"
+	add_child(_act2_transition)
+	_act2_transition.exit_finished.connect(_on_act2_exit_finished, CONNECT_ONE_SHOT)
+	_act2_transition.play_exit(_stage.campaign_index, _stage_display_title(), _reduced_motion())
+
+
+func _on_act2_exit_finished() -> void:
+	_act2_exit_active = false
+	_act2_transition = null
 	Game.open_results()
 
 
@@ -959,6 +1037,12 @@ func _project() -> void:
 	_project_traps()
 	_project_units()
 	_project_tracers()
+	_refresh_hud_copy()
+
+
+func _refresh_hud_copy() -> void:
+	if _hud == null or model == null:
+		return
 	var s := model.snapshot()
 	_hud.text = BATTLE_HUD_PRESENTER.text_for(s, get_viewport_rect().size)
 	if int(s["result"]) == BattleModel.Result.CLEAR:
@@ -1165,7 +1249,7 @@ func _project_units() -> void:
 
 func _operator_visual_template_id(u: UnitState) -> StringName:
 	return OPERATOR_VISUAL_CATALOG_SCRIPT.template_for_unit(
-		u.op_id, u.portrait_asset_id, u.hero_id, u.id,
+		u.op_id, u.portrait_asset_id, u.hero_id, u.id, u.class_id,
 	)
 
 
@@ -1300,8 +1384,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	else:
 		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
-	# feet on the face: admitted animation cells carry a normalized 0.94 pivot;
-	# legacy sprites remain bottom-center anchored exactly as before.
+	# Feet stay on the face through each admitted animation definition's versioned
+	# pivot; legacy sprites remain bottom-center anchored exactly as before.
 	var pivot_y := animation.pivot.y if animated else 1.0
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y * pivot_y)
 	EnemyAnimator.add_shadow(rect, false)

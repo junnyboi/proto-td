@@ -10,6 +10,8 @@ const ProtoIsometricTerrainScript := preload("res://scripts/view/proto_isometric
 const EndpointLandmarkScript := preload("res://scripts/view/battle_endpoint_landmark.gd")
 const SPAWN_LANDMARK_ID := &"world.act1.spawn"
 const CORE_LANDMARK_ID := &"world.act1.core"
+const RESTORATION_SEAL := preload("res://assets/world/act2/restoration_lattice_seal.webp")
+const RESTORATION_DISPLAY_SIZE := Vector2(72.0, 40.0)
 
 
 static func build_stage(
@@ -64,10 +66,36 @@ static func build_stage_with_theme(
 		terrain.queue_free()
 		return false
 	grid_root.add_child(terrain)
+	if not _add_restoration_lattices(grid_root, stage):
+		if report_error:
+			push_error("iso_grid_builder: restoration lattice setup failed")
+		return false
 	if not _add_endpoint_landmarks(grid_root, stage):
 		if report_error:
 			push_error("iso_grid_builder: generated endpoint landmark setup failed")
 		return false
+	return true
+
+
+static func _add_restoration_lattices(grid_root: Node2D, stage: StageDef) -> bool:
+	if stage.restoration_cells.is_empty():
+		return true
+	if RESTORATION_SEAL == null or not stage.restoration_contract_errors().is_empty():
+		return false
+	for point: Vector2 in stage.restoration_cells:
+		var cell := Vector2i(point)
+		var rect := TextureRect.new()
+		rect.name = "RestorationLattice_%d_%d" % [cell.x, cell.y]
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		rect.texture = RESTORATION_SEAL
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_SCALE
+		rect.size = RESTORATION_DISPLAY_SIZE
+		rect.position = IsoProjection.face_center(cell) - rect.size * 0.5
+		rect.modulate = Color(0.92, 1.0, 0.92, 0.88)
+		rect.z_index = IsoProjection.tile_z(cell) + 1
+		grid_root.add_child(rect)
 	return true
 
 

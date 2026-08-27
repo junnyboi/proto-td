@@ -10,19 +10,38 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var stream_argument := ""
+	var stream_arguments := PackedStringArray()
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with(PlayerType.STREAM_ARG_PREFIX):
-			stream_argument = argument
-			break
-	if stream_argument.is_empty():
+			stream_arguments.append(argument)
+	if stream_arguments.is_empty():
 		await _run_source_contract()
+	elif stream_arguments.size() == PlayerType.STREAMS.size():
+		await _run_title_prefetch_remote_contract(stream_arguments)
 	else:
-		await _run_remote_contract(stream_argument)
+		await _run_remote_contract(stream_arguments[0])
 	_finish()
 
 
 func _run_source_contract() -> void:
+	var prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(prefetch != null, "CinematicPrefetch autoload is missing")
+	if prefetch != null:
+		prefetch.call("reset_for_tests")
+		var all_arguments := PackedStringArray()
+		for stream_key: String in PlayerType.STREAMS:
+			all_arguments.append("%s%s|https://example.invalid/%s.ogv" % [
+				PlayerType.STREAM_ARG_PREFIX, stream_key, stream_key,
+			])
+		prefetch.call("configure_streams", all_arguments)
+		_check(int(prefetch.call("configured_stream_count")) == 6, "prefetch did not accept all six configured streams")
+		var landscape_order: Array = prefetch.call("preferred_stream_order", Vector2(1280, 720))
+		var portrait_order: Array = prefetch.call("preferred_stream_order", Vector2(720, 1280))
+		_check(landscape_order.size() == 6 and landscape_order[0].ends_with("landscape"), "landscape prefetch order did not prioritize visible orientation")
+		_check(portrait_order.size() == 6 and portrait_order[0].ends_with("portrait"), "portrait prefetch order did not prioritize visible orientation")
+		_check(landscape_order.slice(0, 3).all(func(key: String) -> bool: return key.ends_with("landscape")), "landscape streams are not the first prefetch group")
+		_check(portrait_order.slice(0, 3).all(func(key: String) -> bool: return key.ends_with("portrait")), "portrait streams are not the first prefetch group")
+		prefetch.call("reset_for_tests")
 	var player := PlayerType.new()
 	root.add_child(player)
 	await process_frame
@@ -87,6 +106,10 @@ func _run_remote_contract(stream_argument: String) -> void:
 	if profile_id.is_empty():
 		return
 	root.size = Vector2i(1280, 720)
+	var prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(prefetch != null, "remote fixture is missing CinematicPrefetch")
+	if prefetch != null:
+		prefetch.call("reset_for_tests")
 	_remove_cached_stream(stream_key)
 	var player := PlayerType.new()
 	root.add_child(player)
@@ -102,6 +125,15 @@ func _run_remote_contract(stream_argument: String) -> void:
 	var immediate := player.play_cinematic(profile_id, false)
 	_check(not immediate, "cold remote stream started before download")
 	_check(player.download_key() == stream_key, "cold remote stream did not begin downloading")
+	var prefetch_queue: Array = prefetch.call("queued_stream_keys") if prefetch != null else []
+	_check(
+		prefetch != null and (
+			String(prefetch.call("active_stream_key")) == stream_key
+			or prefetch_queue.has(stream_key)
+		),
+		"cold remote stream was not owned by the shared prefetch service",
+	)
+	_check(player.find_child("CinematicDownload", false, false) == null, "player started a duplicate cinematic request")
 	var deadline := Time.get_ticks_msec() + 45000
 	while not started[0] and failed[0].is_empty() and Time.get_ticks_msec() < deadline:
 		await create_timer(0.05).timeout
@@ -116,7 +148,52 @@ func _run_remote_contract(stream_argument: String) -> void:
 	player.stop()
 	root.remove_child(player)
 	player.free()
+	if prefetch != null:
+		prefetch.call("reset_for_tests")
 	await process_frame
+
+
+func _run_title_prefetch_remote_contract(stream_arguments: PackedStringArray) -> void:
+	var prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(prefetch != null, "title prefetch fixture is missing CinematicPrefetch")
+	if prefetch == null:
+		return
+	prefetch.call("reset_for_tests")
+	for stream_key: String in PlayerType.STREAMS:
+		_remove_cached_stream(stream_key)
+	var ready_order: Array[String] = []
+	var failures: Array[String] = []
+	prefetch.stream_ready.connect(func(stream_key: StringName, _path: String) -> void:
+		ready_order.append(String(stream_key))
+	)
+	prefetch.stream_failed.connect(func(stream_key: StringName, reason: String) -> void:
+		failures.append("%s: %s" % [stream_key, reason])
+	)
+	prefetch.call("prefetch_from_title", Vector2(1280, 720), stream_arguments)
+	var initial_queue: Array = prefetch.call("queued_stream_keys")
+	_check(initial_queue.size() == 6, "title prefetch did not queue all six streams")
+	_check(
+		initial_queue.slice(0, 3).all(func(key: String) -> bool: return key.ends_with("landscape")),
+		"title prefetch did not queue current orientation first",
+	)
+	var deadline := Time.get_ticks_msec() + 180000
+	while ready_order.size() < 6 and failures.is_empty() and Time.get_ticks_msec() < deadline:
+		await create_timer(0.05).timeout
+	_check(failures.is_empty(), "title prefetch failed: %s" % "; ".join(failures))
+	_check(ready_order.size() == 6, "title prefetch did not finish all six streams before timeout")
+	_check(
+		ready_order.slice(0, 3).all(func(key: String) -> bool: return key.ends_with("landscape")),
+		"title prefetch completion order did not preserve orientation priority",
+	)
+	for stream_key: String in PlayerType.STREAMS:
+		var cached_path := String(prefetch.call("cached_stream_path", stream_key))
+		var spec: Dictionary = PlayerType.STREAMS[stream_key]
+		_check(not cached_path.is_empty(), "title prefetch did not cache %s" % stream_key)
+		_check(
+			FileAccess.get_sha256(cached_path) == String(spec.get("sha256", "")),
+			"title prefetch digest mismatch for %s" % stream_key,
+		)
+	prefetch.call("reset_for_tests")
 
 
 func _profile_for_stream(stream_key: String) -> String:

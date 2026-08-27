@@ -5,6 +5,8 @@ extends RefCounted
 ## family. It reads authoritative path/counter facts but never mutates the
 ## battle model.
 
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+
 const FRAME_COUNT := 25
 const LOOP_FRAME_COUNT := FRAME_COUNT - 1
 const WALK_FPS := 12.0
@@ -242,6 +244,7 @@ static func make_body(enemy: EnemyState, battle: BattleModel, definitions: Dicti
 	var body := ColorRect.new()
 	body.name = "Enemy%d" % enemy.id
 	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.accessibility_name = UiCopyType.enemy_name(enemy.def_id)
 	var directional := uses_directional_animation(enemy.def_id)
 	var sprite_id := (
 		animation_id_for(enemy, battle) if directional else legacy_sprite_id(enemy, definitions)

@@ -1,9 +1,15 @@
 class_name AssetManifest
 extends Resource
 
-const SCHEMA_VERSION := 2
-const ENTRY_KEYS: Array[String] = [
+const SCHEMA_VERSION := 3
+const LEGACY_ENTRY_KEYS: Array[String] = [
 	"pattern", "frames", "size", "placeholder", "pivot", "animations",
+]
+const LEGACY_ATLAS_ENTRY_KEYS: Array[String] = [
+	"pattern", "frames", "size", "placeholder", "pivot", "animations", "columns", "display_size",
+]
+const GENERATED_ENTRY_KEYS: Array[String] = [
+	"pattern", "frames", "size", "placeholder", "pivot", "animations", "columns", "provenance",
 ]
 const REGION_KEYS: Array[StringName] = [&"start", &"length", &"fps", &"loop"]
 
@@ -14,7 +20,7 @@ const REGION_KEYS: Array[StringName] = [&"start", &"length", &"fps", &"loop"]
 func validate_contract() -> PackedStringArray:
 	var errors := PackedStringArray()
 	if schema_version != SCHEMA_VERSION:
-		errors.append("schema_version: expected 2")
+		errors.append("schema_version: expected 3")
 	for raw_id: Variant in entries:
 		if typeof(raw_id) != TYPE_STRING_NAME or raw_id == &"":
 			errors.append("entries: expected nonempty StringName key")
@@ -30,13 +36,29 @@ func validate_contract() -> PackedStringArray:
 
 func entry_diagnostics(id: StringName, entry: Dictionary) -> PackedStringArray:
 	var errors := PackedStringArray()
-	if entry.size() != ENTRY_KEYS.size():
-		errors.append("shape: expected exact six fields")
-	for key: String in ENTRY_KEYS:
+	var generated := entry.has("provenance")
+	var legacy_atlas := entry.has("display_size")
+	var expected_keys := (
+		GENERATED_ENTRY_KEYS
+		if generated
+		else (LEGACY_ATLAS_ENTRY_KEYS if legacy_atlas else LEGACY_ENTRY_KEYS)
+	)
+	if entry.size() != expected_keys.size():
+		errors.append(
+			(
+				"shape: expected exact %s fields"
+				% (
+					"eight generated"
+					if generated
+					else ("eight legacy atlas" if legacy_atlas else "six legacy")
+				)
+			)
+		)
+	for key: String in expected_keys:
 		if not entry.has(key):
 			errors.append("shape: missing %s" % key)
 	for raw_key: Variant in entry:
-		if typeof(raw_key) != TYPE_STRING or not ENTRY_KEYS.has(raw_key):
+		if typeof(raw_key) != TYPE_STRING or not expected_keys.has(raw_key):
 			errors.append("shape: unexpected key %s" % raw_key)
 	var pattern: Variant = entry.get(&"pattern")
 	var frames: Variant = entry.get(&"frames")
@@ -57,7 +79,69 @@ func entry_diagnostics(id: StringName, entry: Dictionary) -> PackedStringArray:
 		errors.append("animations: expected Dictionary")
 	elif typeof(frames) == TYPE_INT and int(frames) > 0:
 		_validate_animations(id, animations, int(frames), errors)
+	if generated:
+		_validate_generated_entry(entry, frames, size, errors)
+	elif legacy_atlas:
+		_validate_legacy_atlas_entry(entry, frames, errors)
 	return errors
+
+
+func _validate_legacy_atlas_entry(
+	entry: Dictionary, frames: Variant, errors: PackedStringArray
+) -> void:
+	var columns: Variant = entry.get(&"columns")
+	if typeof(columns) != TYPE_INT or int(columns) < 1:
+		errors.append("columns: expected positive int")
+	elif typeof(frames) == TYPE_INT and int(columns) > int(frames):
+		errors.append("columns: cannot exceed frame count")
+	var display_size: Variant = entry.get(&"display_size")
+	if typeof(display_size) != TYPE_VECTOR2I or display_size.x <= 0 or display_size.y <= 0:
+		errors.append("display_size: expected positive Vector2i")
+
+
+func _validate_generated_entry(
+	entry: Dictionary, frames: Variant, size: Variant, errors: PackedStringArray
+) -> void:
+	var columns: Variant = entry.get(&"columns")
+	if typeof(columns) != TYPE_INT or int(columns) != 8:
+		errors.append("columns: generated atlas expected exactly 8")
+	if typeof(size) == TYPE_VECTOR2I and size != Vector2i(640, 640):
+		errors.append("size: generated atlas expected 640x640 cell")
+	var provenance: Variant = entry.get(&"provenance")
+	if typeof(provenance) != TYPE_DICTIONARY:
+		errors.append("provenance: expected Dictionary")
+		return
+	for key: StringName in [
+		&"class_id", &"gender", &"action", &"direction", &"source_kind",
+		&"mirrored_from", &"source_manifest_id", &"atlas_sha256",
+	]:
+		var stored: Variant = provenance.get(key)
+		if typeof(stored) != TYPE_STRING or String(stored).is_empty() and key != &"mirrored_from":
+			errors.append("provenance.%s: expected String" % key)
+	var gender := String(provenance.get(&"gender", ""))
+	var action := String(provenance.get(&"action", ""))
+	var direction := String(provenance.get(&"direction", ""))
+	var source_kind := String(provenance.get(&"source_kind", ""))
+	var mirrored_from := String(provenance.get(&"mirrored_from", ""))
+	var atlas_sha256 := String(provenance.get(&"atlas_sha256", ""))
+	if gender not in ["female", "male"]:
+		errors.append("provenance.gender: expected female or male")
+	if action not in ["idle", "attack"]:
+		errors.append("provenance.action: expected idle or attack")
+	if direction not in ["ne", "nw", "se", "sw"]:
+		errors.append("provenance.direction: expected isometric direction")
+	if source_kind not in ["generated", "mirrored"]:
+		errors.append("provenance.source_kind: expected generated or mirrored")
+	elif source_kind == "generated" and (direction not in ["ne", "se"] or not mirrored_from.is_empty()):
+		errors.append("provenance: generated atlas must be east-facing with empty mirrored_from")
+	elif source_kind == "mirrored":
+		var expected_source := "ne" if direction == "nw" else ("se" if direction == "sw" else "")
+		if expected_source.is_empty() or mirrored_from != expected_source:
+			errors.append("provenance: mirrored atlas source direction mismatch")
+	if atlas_sha256.length() != 64 or not atlas_sha256.is_valid_hex_number(false):
+		errors.append("provenance.atlas_sha256: expected 64 lowercase hexadecimal characters")
+	elif atlas_sha256 != atlas_sha256.to_lower():
+		errors.append("provenance.atlas_sha256: expected lowercase hexadecimal characters")
 
 
 static func legacy_pivot(id: StringName, frames: int) -> Vector2:

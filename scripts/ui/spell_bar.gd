@@ -137,6 +137,7 @@ func _make_status_label(label_name: String) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	Style.apply_label(label, &"detail")
 	label.add_theme_font_size_override("font_size", 21)
 	label.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.08, 0.95))
 	label.add_theme_constant_override("outline_size", 3)
@@ -281,7 +282,12 @@ func _tooltip_for(def: SpellDef) -> String:
 	if def.effect == SpellDef.Effect.SLOW_FIELD:
 		return UI_COPY.text(
 			&"ui.spell.slow_field.tooltip",
-			"3×3 ground field • 50% slow • 8s duration • 20s cooldown",
+			"Create a gravity field that slows ground robots. It does not touch anima or souls.",
+		)
+	if def.effect == SpellDef.Effect.CHARM:
+		return UI_COPY.text(
+			&"ui.spell.charm.tooltip",
+			"Break a PROTOS command link and force one eligible robot to attack its own side temporarily.",
 		)
 	return UI_COPY.spell_name(def)
 

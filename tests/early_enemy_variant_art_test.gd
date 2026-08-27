@@ -19,6 +19,7 @@ func _run() -> void:
 		for action: StringName in ACTIONS:
 			for direction: StringName in DIRECTIONS:
 				_validate_sequence(enemy_id, action, direction, seen_patterns)
+	_check(Art._cached_texture_count_for_test() == 0, "generated enemy frames must not accumulate in the process-lifetime cache")
 	_validate_mirror_contracts()
 	_validate_portable_provenance()
 	_validate_timed_attack_frames()
@@ -48,6 +49,7 @@ func _validate_sequence(
 	_check(int(metadata.get("frames", 0)) == 8, "%s must expose eight frames" % asset_id)
 	_check(int(metadata.get("columns", 0)) == 4, "%s must use a WebGL-safe four-column sheet" % asset_id)
 	_check(not bool(metadata.get("placeholder", true)), "%s must be a production asset" % asset_id)
+	_check(String(metadata.get("provenance", "")) == "generated_enemy_variant", "%s must use provenance-aware bounded-memory loading" % asset_id)
 	var size := Art.size(asset_id)
 	_check(maxi(size.x, size.y) >= 560 and maxi(size.x, size.y) <= 640, "%s longest edge must remain 560-640px" % asset_id)
 	_check(mini(size.x, size.y) >= 256, "%s cell must preserve readable subject detail" % asset_id)

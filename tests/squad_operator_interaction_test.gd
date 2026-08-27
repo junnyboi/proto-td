@@ -114,11 +114,21 @@ func _verify_selection_feedback_and_reorder() -> void:
 		await create_timer(0.18).timeout
 		_check(animated_card.scale.x >= 1.02, "operator focus feedback does not reach its emphasized scale")
 		animated_card.button_pressed = false
-		await create_timer(0.05).timeout
-		_check(animated_card.scale.x < 1.0, "operator deselection animation lacks a visible release phase")
+		await process_frame
+		_check(_feedback_tween_active(animated_card), "operator deselection did not schedule release feedback")
+		await create_timer(0.30).timeout
+		_check(animated_card.scale.x >= 1.02, "deselected focused operator did not return to its focus scale")
 		animated_card.button_pressed = true
-		await create_timer(0.08).timeout
-		_check(animated_card.scale.x > 1.03, "operator selection animation lacks a visible confirmation pulse")
+		await process_frame
+		_check(_feedback_tween_active(animated_card), "operator selection did not schedule confirmation feedback")
+		await create_timer(0.30).timeout
+		_check(animated_card.scale.x >= 1.02, "selected focused operator did not return to its focus scale")
+
+
+func _feedback_tween_active(card: Control) -> bool:
+	var tweens := _mission.get("_operator_feedback_tweens") as Dictionary
+	var tween := tweens.get(card.get_instance_id()) as Tween
+	return tween != null and tween.is_valid()
 
 
 func _select_sort(select: OptionButton, mode: StringName) -> void:

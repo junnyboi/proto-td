@@ -23,6 +23,9 @@ boot_splash/use_filter=true
 
 I18n="*res://autoloads/i18n.gd"
 Music="*res://autoloads/music.gd"
+TextScale="*res://autoloads/text_scale.gd"
+UiFeedback="*res://autoloads/ui_feedback.gd"
+CinematicPrefetch="*res://autoloads/cinematic_prefetch.gd"
 Game="*res://autoloads/game.gd"
 Sfx="*res://autoloads/sfx.gd"
 
@@ -34,6 +37,10 @@ window/size/viewport_height=720
 [editor]
 
 export/convert_text_resources_to_binary=false
+
+[gui]
+
+theme/custom="res://data/presentation/ui/threshold_theme.tres"
 
 [input]
 

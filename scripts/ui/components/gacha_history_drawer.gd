@@ -6,15 +6,16 @@ signal closed
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const ASTRAL_STAR := preload("res://assets/ui/gacha/astral_star.png")
 const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const MAX_DRAWER_WIDTH := 430.0
 const OPEN_SECONDS := 0.24
 const CLOSE_SECONDS := 0.18
-const FULLSIZE_PORTRAITS := {
-	"archive_caster": &"portrait_archive_caster_fullsize",
-	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
-	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
+const PREMIUM_PORTRAITS := {
+	"archive_caster": &"portrait_archive_caster",
+	"lunaris_vessel": &"portrait_lunaris_vessel",
+	"reliquary_duelist": &"portrait_reliquary_duelist",
 }
 
 var reduced_motion := false
@@ -101,12 +102,12 @@ func refresh(projection: Dictionary) -> void:
 
 
 func refresh_copy() -> void:
-	_title.text = _copy(&"ui.gacha.history_title", "MOON ARCHIVE")
+	_title.text = _copy(&"ui.gacha.history_title", "RESONANCE HISTORY")
 	_close_button.text = _copy(&"ui.gacha.close_history", "CLOSE")
 	_empty_title.text = _copy(&"ui.gacha.history_empty", "NO RESONANCE RECORDS")
 	_empty_detail.text = _copy(
 		&"ui.gacha.history_empty_detail",
-		"Committed premium pulls will appear here.",
+		"Completed soul-reconnection operations will appear here.",
 	)
 	_rebuild_rows()
 
@@ -124,7 +125,7 @@ func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	accessibility_name = _copy(&"ui.gacha.history_title", "MOON ARCHIVE")
+	accessibility_name = _copy(&"ui.gacha.history_title", "RESONANCE HISTORY")
 
 	_scrim = ColorRect.new()
 	_scrim.name = "PullHistoryScrim"
@@ -169,7 +170,7 @@ func _build() -> void:
 	_title_stack.alignment = BoxContainer.ALIGNMENT_CENTER
 	_title_stack.add_theme_constant_override(&"separation", 0)
 	_header.add_child(_title_stack)
-	_title = _label(_copy(&"ui.gacha.history_title", "MOON ARCHIVE"), &"heading")
+	_title = _label(_copy(&"ui.gacha.history_title", "RESONANCE HISTORY"), &"heading")
 	_title.name = "MoonArchiveTitle"
 	_title.add_theme_font_size_override(&"font_size", 36)
 	_title_stack.add_child(_title)
@@ -239,7 +240,7 @@ func _build() -> void:
 	_empty_title.add_theme_font_size_override(&"font_size", 27)
 	_empty_state.add_child(_empty_title)
 	_empty_detail = _label(
-		_copy(&"ui.gacha.history_empty_detail", "Committed premium pulls will appear here."),
+		_copy(&"ui.gacha.history_empty_detail", "Completed soul-reconnection operations will appear here."),
 		&"detail",
 	)
 	_empty_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -256,19 +257,20 @@ func _rebuild_rows() -> void:
 	var history: Array = _projection.get("premium_pull_history", [])
 	var total := int(_projection.get("premium_pull_history_total", history.size()))
 	_summary.text = _format(
-		&"ui.gacha.history_summary", "{count} COMMITTED PULLS", {&"count": total},
+		&"ui.gacha.history_summary", "{count} COMPLETED RESONANCES", {&"count": total},
 	)
 	_empty_state.visible = history.is_empty()
 	accessibility_description = _summary.text
 	if history.is_empty():
 		return
-	for raw: Variant in history:
+	for history_index: int in history.size():
+		var raw: Variant = history[history_index]
 		if raw is Dictionary:
-			_rows.add_child(_history_row(raw as Dictionary))
+			_rows.add_child(_history_row(raw as Dictionary, history_index))
 	_rows.move_child(_empty_state, _rows.get_child_count() - 1)
 
 
-func _history_row(receipt: Dictionary) -> Control:
+func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	var five_star := int(receipt.get("rarity", 4)) == 5
 	var panel := PanelContainer.new()
 	panel.name = "HistoryPull_%04d" % (int(receipt.get("pull_index", 0)) + 1)
@@ -294,6 +296,12 @@ func _history_row(receipt: Dictionary) -> Control:
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		_portrait_id(String(receipt.get("premium_id", ""))),
+		entrance_index,
+		reduced_motion,
+	)
 
 	var copy_stack := VBoxContainer.new()
 	copy_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -345,7 +353,7 @@ func _history_row(receipt: Dictionary) -> Control:
 	var detail := _label(
 		_format(
 			&"ui.gacha.history_detail",
-			"LIVES {before} → {after} • GUARANTEE IN {guarantee}",
+			"PREPARED BODIES {before} → {after} • GUARANTEE IN {guarantee}",
 			{
 				&"before": int(receipt.get("lives_before", 0)),
 				&"after": int(receipt.get("lives_after", 0)),
@@ -374,21 +382,25 @@ func _history_row(receipt: Dictionary) -> Control:
 
 func _history_badge(receipt: Dictionary) -> String:
 	if bool(receipt.get("new_hero", false)):
-		return _copy(&"ui.gacha.history_badge_new", "NEW SIGNAL")
+		return _copy(&"ui.gacha.history_badge_new", "SOUL RECONNECTED")
 	if bool(receipt.get("revived", false)):
-		return _copy(&"ui.gacha.history_badge_revived", "REVIVAL")
-	return _copy(&"ui.gacha.history_badge_duplicate", "LIFE CONVERTED")
+		return _copy(&"ui.gacha.history_badge_revived", "BODY RESTORED")
+	return _copy(&"ui.gacha.history_badge_duplicate", "BODY PREPARED")
 
 
 func _callsign(premium_id: String) -> String:
+	var fallback := ""
 	for raw: Variant in _projection.get("premium_pool", []):
 		if raw is Dictionary and String((raw as Dictionary).get("premium_id", "")) == premium_id:
-			return String((raw as Dictionary).get("callsign", premium_id))
-	return premium_id.replace("_", " ").capitalize()
+			fallback = String((raw as Dictionary).get("callsign", ""))
+			break
+	if fallback.is_empty():
+		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown soul anchor")
+	return UiCopyType.premium_name(premium_id, fallback)
 
 
 func _portrait_id(premium_id: String) -> StringName:
-	return StringName(FULLSIZE_PORTRAITS.get(premium_id, &""))
+	return StringName(PREMIUM_PORTRAITS.get(premium_id, &""))
 
 
 func _apply_layout() -> void:

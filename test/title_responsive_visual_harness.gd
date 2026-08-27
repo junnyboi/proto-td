@@ -12,11 +12,13 @@ func _run() -> void:
 	var args := _parse_user_args()
 	var output_path := String(args.get("output", ""))
 	var show_settings := String(args.get("settings", "false")).to_lower() == "true"
+	var locale_id := StringName(args.get("locale", "en-US"))
 	if output_path.is_empty():
 		push_error("visual output path missing")
 		get_tree().quit(1)
 		return
 	_remove_preferences()
+	VIEW_PREFERENCES.set_locale(locale_id, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_title_music_enabled(false, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_reduced_motion(true, PREFERENCES_PATH)
 	var title := load("res://scenes/title.tscn").instantiate() as Control

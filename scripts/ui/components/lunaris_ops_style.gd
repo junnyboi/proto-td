@@ -165,6 +165,7 @@ static func apply_compact_rounded_button(
 	button.add_theme_stylebox_override(&"pressed", pressed)
 	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(CYAN))
 	button.add_theme_stylebox_override(&"disabled", disabled)
+	StagingSkinType.apply_display_type(button, GameTypographyType.ACTION, ink, 560)
 	for item: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
 	]:
@@ -205,8 +206,7 @@ static func apply_label(label: Label, role: StringName) -> void:
 	if display:
 		StagingSkinType.apply_display_type(label, size, color, weight)
 	else:
-		label.add_theme_color_override(&"font_color", color)
-		label.add_theme_font_size_override(&"font_size", size)
+		StagingSkinType.apply_body_type(label, size, color)
 	label.add_theme_constant_override(&"outline_size", 0)
 
 
@@ -221,7 +221,7 @@ static func apply_line_edit(field: LineEdit, invalid: bool = false) -> void:
 	field.add_theme_color_override(&"caret_color", GOLD)
 	field.add_theme_color_override(&"selection_color", CYAN_DIM)
 	field.add_theme_color_override(&"placeholder_color", MUTED)
-	field.add_theme_font_size_override(&"font_size", 27)
+	StagingSkinType.apply_body_type(field, 27, IVORY)
 
 
 static func apply_progress(progress: ProgressBar) -> void:

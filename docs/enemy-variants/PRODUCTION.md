@@ -34,7 +34,7 @@ The final runtime package under `assets/enemy-variants/` contains **24 WebP shee
 
 `assets/enemy_variant_manifest.tres` is a fourth non-overlapping `Art` manifest layer. IDs follow `enemy_variant_<enemy>_<state>_<direction>`. `EnemyAnimator` routes the three new enemy IDs to this production prefix, preserves ordinary experimental assets for existing enemies, uses each sheet's 8 FPS metadata for both looping walk and non-looping attack frames, and retains damage flash, health bars, and directional transitions. Charmed Shieldbearers and Breachers keep their recognizable production silhouette, reverse direction with faction authority, and receive a distinct blue faction tint instead of degrading to generic Grunt art. Interceptors use `enemy_blocker_then_nearest` with a two-cell range, so their attack sheets are reachable through authoritative target acquisition and cooldown state.
 
-Because the approved S2–S4 schedules and Caster damage kind are combat-authoritative content, the canonical CampaignSave v3 environment hash advances to `36abb05ea24ba5be2d406f4a748c5ab947276b697147dc5d32fdfe930cd95fa3`. Runtime-context construction, fresh campaign startup, and the existing historical-save compatibility suite all pass under the new binding.
+Because the approved S2–S4 schedules and Caster damage kind are combat-authoritative content, the canonical CampaignSave v3 environment hash is reconciled with the concurrent Act II campaign at `94368da5ab8df24620f9987229a3448385226755d36dc9950faebd66ccab8e1e`. Runtime-context construction, fresh campaign startup, and the existing historical-save compatibility suite all pass under the combined binding.
 
 ## Deterministic balance telemetry
 
