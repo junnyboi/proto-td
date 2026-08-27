@@ -282,7 +282,12 @@ func _tooltip_for(def: SpellDef) -> String:
 	if def.effect == SpellDef.Effect.SLOW_FIELD:
 		return UI_COPY.text(
 			&"ui.spell.slow_field.tooltip",
-			"3×3 ground field • 50% slow • 8s duration • 20s cooldown",
+			"Create a gravity field that slows ground robots. It does not touch anima or souls.",
+		)
+	if def.effect == SpellDef.Effect.CHARM:
+		return UI_COPY.text(
+			&"ui.spell.charm.tooltip",
+			"Break a PROTOS command link and force one eligible robot to attack its own side temporarily.",
 		)
 	return UI_COPY.spell_name(def)
 

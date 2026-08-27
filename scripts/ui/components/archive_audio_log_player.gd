@@ -65,7 +65,7 @@ func _build_ui() -> void:
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_theme_constant_override(&"separation", 12)
 	column.add_child(header)
-	var title := _label("AudioLogTitle", UiCopyType.text(&"ui.archive.audio.title", "INTERACTIVE AUDIO LOG"), &"dense_heading")
+	var title := _label("AudioLogTitle", UiCopyType.text(&"ui.archive.audio.title", "ANIMA ARCHIVE AUDIO LOG"), &"dense_heading")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	_status = _label("AudioLogStatus", "", &"dense_detail")
@@ -79,7 +79,7 @@ func _build_ui() -> void:
 	_seek.step = 0.05
 	_seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_seek.focus_mode = Control.FOCUS_ALL
-	_seek.tooltip_text = UiCopyType.text(&"ui.archive.audio.seek", "Audio log position")
+	_seek.tooltip_text = UiCopyType.text(&"ui.archive.audio.seek", "Anima Archive audio position")
 	_seek.accessibility_name = _seek.tooltip_text
 	_seek.value_changed.connect(_on_seek_changed)
 	column.add_child(_seek)

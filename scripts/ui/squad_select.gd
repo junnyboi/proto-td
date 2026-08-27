@@ -25,8 +25,8 @@ const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
-const OPERATOR_CARD_HEIGHT := 220.0
-const OPERATOR_CARD_TALL_HEIGHT := 280.0
+const OPERATOR_CARD_HEIGHT := 252.0
+const OPERATOR_CARD_TALL_HEIGHT := 330.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
@@ -366,7 +366,7 @@ func _selected_squad_empty_label() -> Label:
 		"SelectedSquadOrderEmpty",
 		UiCopyType.text(
 			&"ui.squad.order_empty",
-			"Select operators, then drag to reorder.",
+			"Choose operators for the field team, then drag to set deployment order.",
 		),
 		&"dense_detail",
 	)
@@ -424,7 +424,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_recruitment_header.add_child(_hire_title)
 	_hire_currency_display = ResonanceCurrencyDisplayType.new()
 	_hire_currency_display.name = "BasicRecruitCurrency"
-	_hire_currency_display.configure("0", 18, 24.0)
+	_hire_currency_display.configure("0", 18, 24.0, "", &"marks")
 	_hire_currency_display.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_hire_currency_display.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_END
@@ -824,7 +824,7 @@ func _build_footer() -> BoxContainer:
 	_launch_status = _label(
 		"ReadinessCopy",
 		UiCopyType.text(
-			&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+			&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment.",
 		),
 		&"detail",
 	)
@@ -1071,7 +1071,7 @@ func _on_hire_basic_recruit() -> void:
 	_refresh_recruitment_desk(
 		UiCopyType.format_text(
 			&"ui.campaign.basic_hire_success",
-			"{callsign} • JOINED COMPANY 33 • BALANCE {remaining}",
+			"{callsign} • JOINED COMPANY MANUS • {remaining} MARKS REMAIN",
 			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
 		),
 		false,
@@ -1101,9 +1101,9 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	_hire_recruit.icon = null
 	_hire_recruit.accessibility_name = "%s, %s" % [
 		action_text,
-		UiCopyType.text(&"ui.currency.resonance_shards_name", "Resonance Shards"),
+		ResonanceCurrencyDisplayType.currency_name_for(&"marks"),
 	]
-	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, action_text)
+	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, action_text, &"marks")
 	var unavailable := (
 		projection.is_empty()
 		or marks < cost
@@ -1375,19 +1375,19 @@ func _refresh_launch_status() -> void:
 	if _launch_status == null or _start == null:
 		return
 	var status_text := UiCopyType.text(
-		&"ui.squad.predeployment_body", "Train, review, and confirm the field team.",
+		&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment.",
 	)
 	var action_text := UiCopyType.text(&"ui.squad.start_battle", "Start Battle")
 	var is_error := false
 	if _launch_locked:
 		status_text = UiCopyType.text(
-			&"ui.squad.launch_committing", "Authenticating deployment record…",
+			&"ui.squad.launch_committing", "Saving the field-team assignment…",
 		)
 		action_text = UiCopyType.text(&"ui.squad.launch_committing_action", "Deploying…")
 	elif Game.mission_launch_retry_pending():
 		status_text = UiCopyType.text(
 			&"ui.squad.launch_retryable_error",
-			"Deployment was not saved. Retry the exact field-team order.",
+			"The field-team assignment was not saved. Retry the exact same order.",
 		)
 		action_text = UiCopyType.text(&"ui.squad.launch_retry_action", "Retry Deployment")
 		is_error = true
@@ -1441,7 +1441,7 @@ func _launch_error_text(code: StringName) -> String:
 		&"store_write_failed", &"store_restore_failed":
 			return UiCopyType.text(
 				&"ui.squad.launch_retryable_error",
-				"Deployment was not saved. Retry the exact field-team order.",
+				"The field-team assignment was not saved. Retry the exact same order.",
 			)
 		&"store_integrity_failure", &"invalid_campaign_state":
 			return UiCopyType.text(
@@ -1468,7 +1468,7 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 		)
 	if hero.get("hero_kind", "recruit") == "premium":
 		return _format_copy(
-			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} lives", args,
+			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} prepared bodies", args,
 		)
 	return _format_copy(
 		&"ui.squad.card_ready", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Ready", args,
@@ -1506,7 +1506,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		"LoadoutHeading": UiCopyType.text(&"ui.squad.loadout_heading", "Loadout"),
 		"LoadoutStrip": _loadout_text(),
 		"ReadinessEyebrow": UiCopyType.text(&"ui.squad.predeployment_heading", "Pre-deployment"),
-		"ReadinessCopy": UiCopyType.text(&"ui.squad.predeployment_body", "Train, review, and confirm the field team."),
+		"ReadinessCopy": UiCopyType.text(&"ui.squad.predeployment_body", "Review the mission, choose the field team, and confirm deployment."),
 	}
 	for node_name: String in copy_by_node:
 		var label := find_child(node_name, true, false) as Label

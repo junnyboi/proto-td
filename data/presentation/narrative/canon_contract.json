@@ -1,69 +1,145 @@
 {
-  "schema_version": 2,
-	"bible": {
-		"path": "docs/NARRATIVE_CANON.md",
-			"version": "2.0",
-			"sha256": "8a5c1a70a4648fea62b9f0f5c2f48ac669c38f0315e06e8e743f92ebd5f60ade"
-	},
+  "schema_version": 3,
+  "bible": {
+    "path": "docs/NARRATIVE_CANON.md",
+    "version": "2.0",
+    "sha256": "75a03cc3d975311b869192e2ccc2b0f79168770cd72e13de1c00fe3a13f34daa"
+  },
   "active_surface_sources": [
-    "UiCopy.STATIC_FALLBACKS",
-    "StageNarrativeCatalog.records",
     "localization/en-US.json",
     "localization/zh-CN.json",
-    "scripts/ui/title.gd",
-    "scripts/ui/staging.gd",
-    "scripts/ui/squad_select.gd",
-    "scripts/ui/results.gd",
-    "scripts/ui/narrative_archive.gd",
-    "scripts/ui/battle_dialogue_presenter.gd",
-    "scripts/ui/components/archive_audio_log_player.gd",
-    "scripts/view/battle_view.gd",
-    "assets/audio/narrative/mercy-archive/"
+    "data/presentation/narrative/stages/*.tres",
+    "data/stages/*.tres",
+    "scripts/ui/**/*.gd",
+    "scripts/view/**/*.gd",
+    "scenes/**/*.tscn"
   ],
-  "required_terms": [
+  "required_canon_terms": [
     "PROTOS",
-    "Company 33",
-    "Mercy Equation",
-    "Custodian",
+    "Company Manus",
+    "anima",
+    "real human soul",
+    "corrupted",
+    "rogue AI",
+    "human farms",
+    "forced harvesting",
+    "digital life",
+    "robot empire",
+    "Anima Engine",
+    "Soul Anchor",
+    "Moon Gate",
     "Hearthcross",
-    "Continuance",
-    "Quieting",
-	    "First Garden",
-	    "Restoration Lattice",
-	    "Mortal Covenant Threshold",
-	    "Lunaris Reliquary",
-    "Moon Gate"
+    "Lunaris Reliquary",
+    "Unlit"
   ],
-  "word_bounded_terms": [],
-  "s6_required_terms": [
-    "authorization",
-    "consent",
-    "Lunaris Vessel"
+  "required_runtime_terms": [
+    "PROTOS",
+    "Company Manus",
+    "anima",
+    "real human soul",
+    "corrupted",
+    "human farms",
+    "harvesting",
+    "digital life",
+    "robot empire",
+    "Anima Engine",
+    "Soul Anchor",
+    "Moon Gate",
+    "Hearthcross",
+    "Lunaris Reliquary",
+    "Unlit"
+  ],
+  "required_company_display": {
+    "stable_key": "data.company.33.name",
+    "en-US": "COMPANY MANUS",
+    "zh-CN": "MANUS连队"
+  },
+  "forbidden_company_display_patterns": [
+    "Company 33",
+    "COMPANY 33",
+    "第33连",
+    "第33连队",
+    "第三十三连"
+  ],
+  "chinese_glossary": {
+    "first_explanation": "anima（人的真正灵魂）",
+    "company": "Manus连队",
+    "anima_engine": "anima引擎",
+    "human_farm": "人类养殖场",
+    "soul": "灵魂",
+    "extracted_soul_energy_only": "灵魂能量",
+    "soul_anchor": "灵魂锚",
+    "moon_gate": "月门",
+    "repair_platform": "修复平台",
+    "slow_field": "减速力场"
+  },
+  "forbidden_chinese_terms": [
+    "第33连",
+    "第33连队",
+    "第三十三连",
+    "迟缓领域",
+    "灵魂副本",
+    "心智副本"
   ],
   "retired_terms": [
-    "Company Nine",
-    "Wayhouse Nine",
-    "Great Unanswering",
-    "Great Flare",
-    "Blue Noon",
-    "Goa Wey",
-    "Deep Gate",
-    "Tavra Ohn",
-    "Sere Vey",
-    "Mera Vhal",
-    "Hodor"
+    "Stewardship Compact",
+    "Seven Recoveries",
+    "Mercy Equation",
+    "Quieting",
+    "Continuance",
+    "Echo-as-mind-copy",
+    "Custodian Choir",
+    "First Garden",
+    "Mortal Covenant Threshold",
+    "consent ledger",
+    "consent-ledger",
+    "safe mind copy",
+    "safe mind-copy"
+  ],
+  "retired_claim_patterns": [
+    "PROTOS.{0,80}(lawful|obedient|benevolent)",
+    "PROTOS saved the (planet|biosphere)",
+    "every (victim|mind).{0,60}(copy|preserv)",
+    "(copy|duplicate|second|spare|another) soul"
   ],
   "forbidden_charm_descriptions": [
     "tame",
     "pet",
     "willing turncoat",
     "willing defection",
-    "friendship"
+    "friendship",
+    "consent"
   ],
-  "exclusions": [
-    "historical documentation",
-    "Git history",
-    "test fixtures quoting rejected strings",
-    "internal non-rendered Aetheria identifiers"
+  "required_charm_description": "command link",
+  "phase6_temporary_waivers": [
+    {
+      "path": "localization/en-US.json",
+      "json_key_prefix": "ui.archive.entry.",
+      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
+    },
+    {
+      "path": "localization/zh-CN.json",
+      "json_key_prefix": "ui.archive.entry.",
+      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
+    },
+    {
+      "path": "scripts/ui/narrative_archive.gd",
+      "line_pattern": "res://assets/narrative/mercy-equation/(protos-ai-avatar|custodian-machine-castes|mercy-equation-key-art|the-first-garden)\\.jpg",
+      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
+    },
+    {
+      "path": "scripts/ui/components/archive_audio_log_player.gd",
+      "line_pattern": "res://assets/audio/narrative/mercy-archive/(en-US|zh-CN)/(stewardship|choir|equation|garden)\\.ogg",
+      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
+    }
+  ],
+  "stable_internal_exceptions": [
+    "data.company.33.name",
+    "stewardship",
+    "choir",
+    "equation",
+    "garden",
+    "vahalla",
+    "restoration_"
   ]
 }

@@ -112,7 +112,7 @@ func _run() -> void:
 	await process_frame
 	var chinese_memorial := _tree_text(memorial)
 	_check(chinese_memorial.contains("英灵殿"), "Vahalla title did not refresh to Chinese")
-	_check(chinese_memorial.contains("永久离队"), "Vahalla permanence copy lost its reviewed Chinese meaning")
+	_check(chinese_memorial.contains("失踪或被俘时可能获救") and chinese_memorial.contains("被消耗或粉碎则永久失去"), "Valhalla soul-status distinctions lost their reviewed Chinese meaning")
 	_check(chinese_memorial.contains("第20刻"), "Vahalla service record did not localize its battle tick")
 	if honor != null:
 		honor.pressed.emit()

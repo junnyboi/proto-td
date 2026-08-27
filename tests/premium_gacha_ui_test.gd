@@ -59,7 +59,7 @@ func _run() -> void:
 	var history_empty := screen.find_child("PullHistoryEmptyState", true, false) as VBoxContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120" and balance_icon != null and balance_icon.texture != null and pity_label.text.contains("10 PULLS"), "initial shard economy projection changed")
-	_check(marks_display != null and marks_display.tooltip_text.contains("premium energy") and marks_display.accessibility_description.contains("Premium Resonance"), "shard balance lacks its explanatory tooltip")
+	_check(marks_display != null and marks_display.tooltip_text.contains("clean Lunaris crystal") and marks_display.tooltip_text.contains("no soul inside") and marks_display.accessibility_description.contains("recovery body"), "shard balance lacks its clean soul-free recovery explanation")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
 	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
 		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
@@ -96,7 +96,7 @@ func _run() -> void:
 	_check(pull_action_label != null and pull_action_label.text == "RESONATE" and pull_action_label.get_theme_font_size(&"font_size") == 48, "Resonate primary label hierarchy changed")
 	_check(pull_cost_label != null and pull_cost_label.text == "40" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate shard cost is not a smaller second line")
 	_check(pull.accessibility_name.contains("40 Resonance Shards") and not pull.text.contains("MARKS"), "Resonate accessibility or symbol-first copy regressed")
-	_check(pull.tooltip_text.contains("RESONATE") and pull.tooltip_text.contains("premium energy"), "Resonate action lacks its explanatory shard tooltip")
+	_check(pull.tooltip_text.contains("RESONATE") and pull.tooltip_text.contains("one known soul") and pull.tooltip_text.contains("recovery body"), "Resonate action lacks its unique-soul recovery explanation")
 	_check(pull_cost_label.get_parent().mouse_filter == Control.MOUSE_FILTER_IGNORE, "Resonate shard cost can intercept parent button input")
 	var pull_normal := pull.get_theme_stylebox(&"normal") as StyleBoxFlat
 	var pull_hover := pull.get_theme_stylebox(&"hover") as StyleBoxFlat
@@ -184,11 +184,11 @@ func _run() -> void:
 			)
 	_check(browse_status.accessibility_name == "高级共鸣状态", "gacha status metadata did not refresh")
 	_check(history_button.text == "共鸣记录", "Moon Archive action did not refresh to Chinese")
-	_check(marks_display.tooltip_text.contains("高级能量"), "shard tooltip did not refresh to Chinese")
+	_check(marks_display.tooltip_text.contains("不含灵魂") and marks_display.tooltip_text.contains("恢复用身体"), "clean-shard tooltip did not refresh to Chinese")
 	var localized_history_text := _tree_text(history_drawer)
-	_check(localized_history_text.contains("月之档案"), "Moon Archive title did not refresh to Chinese")
+	_check(localized_history_text.contains("共鸣记录"), "Resonance History title did not refresh to Chinese")
 	_check(localized_history_text.contains("暂无共鸣记录"), "Moon Archive empty state did not refresh to Chinese")
-	_check(screen.call("_callsign_for", "missing_signal") == "未知信号", "unknown signal fallback did not localize")
+	_check(screen.call("_callsign_for", "missing_signal") == "未知灵魂锚", "unknown Soul Anchor fallback did not localize")
 	var locked_card := screen.call("_hero_card", {
 		"premium_id": "archive_caster", "callsign": "Archive Caster", "class_id": "mage_apprentice",
 	}, {"premium_lives": 0, "life_status": "dead"}) as PanelContainer
@@ -279,7 +279,7 @@ func _run() -> void:
 	_check(committed_history_rows == 1 and not history_empty.visible, "committed pull did not enter the Moon Archive")
 	var history_portrait := history_drawer.find_child("HistoryPortrait", true, false) as TextureRect
 	_check(history_portrait != null and bool(history_portrait.get_meta(&"premium_portrait_entrance", false)), "Moon Archive premium portrait lacks its entrance motion")
-	_check(_tree_text(history_drawer).contains("1 COMMITTED PULLS"), "Moon Archive total did not match the canonical receipt count")
+	_check(_tree_text(history_drawer).contains("1 COMPLETED RESONANCES"), "Resonance History total did not match the canonical receipt count")
 	await _action(&"ui_cancel")
 	await _seconds(0.24)
 
@@ -342,7 +342,7 @@ func _run() -> void:
 	_check(conversion_panel != null and conversion_icon != null and not conversion_panel.visible, "first acquisition showed duplicate conversion feedback")
 	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
 	_check(pull_again.text == "PULL AGAIN • 40" and pull_again.icon != null and pull_again.accessibility_name.contains("40 Resonance Shards"), "Pull Again does not expose the icon-backed authoritative cost")
-	_check(pull_again.tooltip_text.contains("PULL AGAIN") and pull_again.tooltip_text.contains("premium energy"), "Pull Again lacks its explanatory shard tooltip")
+	_check(pull_again.tooltip_text.contains("PULL AGAIN") and pull_again.tooltip_text.contains("one known soul") and pull_again.tooltip_text.contains("recovery body"), "Pull Again lacks its unique-soul recovery explanation")
 	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 54, "Pull Again is not comfortably sized")
 	_check(root.gui_get_focus_owner() == pull_again, "settled reveal did not focus Pull Again")
 	var hover_surface := cinematic.call("hover_surface") as Control
@@ -395,8 +395,8 @@ func _run() -> void:
 	_check(reveal_title.get_theme_color(&"font_color").is_equal_approx(Style.GOLD), "Archive Caster title is not gold")
 	_check(plate.visible and plate.texture != null and video.stream == null, "reduced reveal loaded video instead of final plate")
 	_check(conversion_panel.visible and conversion_icon.texture != null, "duplicate reveal omitted generated conversion feedback")
-	_check(conversion_title.text == "DUPLICATE RESONANCE CONVERTED", "duplicate conversion title changed")
-	_check(conversion_outcome.text == "RESERVE LIFE +1" and conversion_detail.text == "LIVES 1 → 2", "duplicate life conversion copy is not receipt-accurate")
+	_check(conversion_title.text == "SAME SOUL · NEW RECOVERY BODY", "duplicate conversion lost the same-soul recovery-body explanation")
+	_check(conversion_outcome.text == "ANOTHER BODY + SOUL ANCHOR" and conversion_detail.text == "PREPARED BODIES 1 → 2", "duplicate prepared-body conversion copy is not receipt-accurate")
 	_check(conversion_icon.scale.is_equal_approx(Vector2.ONE), "reduced motion still pulsed the reserve-life sigil")
 	_check(not reveal_hint.visible, "duplicate reveal retained redundant click-anywhere copy below conversion feedback")
 	_check(is_zero_approx(plate.position.y) and plate.size.y > 1000.0, "portrait final plate is not top-aligned cover")
@@ -416,7 +416,7 @@ func _run() -> void:
 	revival_pull["lives_after"] = 1
 	screen.set("_pending_pull", revival_pull)
 	screen.call("_refresh_conversion_copy")
-	_check(conversion_outcome.text == "REVIVAL PROTOCOL • LIFE +1" and conversion_detail.text == "LIVES 0 → 1", "revival conversion feedback is not receipt-accurate")
+	_check(conversion_outcome.text == "RECOVERY BODY READY" and conversion_detail.text == "PREPARED BODIES 0 → 1", "recovery-body restoration feedback is not receipt-accurate")
 	cinematic.call("_on_final_plate_mouse_entered")
 	await _frames(4)
 	_check(plate.scale.is_equal_approx(Vector2.ONE) and plate.offset_transform_position.is_zero_approx(), "reduced motion still transformed the final plate")

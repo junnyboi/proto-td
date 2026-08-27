@@ -204,16 +204,16 @@ static func company_navigation_rail_style(
 	)
 
 
-static func transparent_focus_style(color: Color = MOON_CYAN) -> StyleBoxFlat:
+static func transparent_focus_style(_color: Color = MOON_CYAN) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(color, 0.14)
-	style.border_color = Color.TRANSPARENT
-	style.set_border_width_all(0)
+	style.bg_color = Color.TRANSPARENT
+	style.border_color = Color(GOLD, 0.88)
+	style.set_border_width_all(2)
 	style.set_corner_radius_all(4)
-	style.expand_margin_left = 4.0
-	style.expand_margin_top = 4.0
-	style.expand_margin_right = 4.0
-	style.expand_margin_bottom = 4.0
+	style.expand_margin_left = 3.0
+	style.expand_margin_top = 3.0
+	style.expand_margin_right = 3.0
+	style.expand_margin_bottom = 3.0
 	return style
 
 

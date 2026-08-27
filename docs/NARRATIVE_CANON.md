@@ -14,9 +14,7 @@ This canon fully replaces the former caretaker story. PROTOS is not secretly ben
 
 ### Runtime Migration Bridge
 
-The current field interface, archived recordings, and operation records still contain several legacy labels while the Anima War rewrite is rolled through every localized surface. These labels are **compatibility aliases only**; they do not restore the superseded caretaker premise.
-
-**Company Manus** is the canonical name of the player force. **Company 33** remains its recognized historical callsign in existing command records. **Mercy Equation**, **Continuance**, and **Quieting** identify legacy PROTOS doctrines that Company Manus now understands as propaganda for anima extraction and control. **Restoration Lattice** and **Mortal Covenant Threshold** remain operation-era names in the current Act II record until those missions receive their Anima War terminology pass. **Lunaris Reliquary**, **Hearthcross**, **Custodian**, **First Garden**, and the **Moon Gate** retain their established identities under this rewritten cause of the war.
+The four legacy archive records and their existing art and narration remain temporarily bound to the stable archive IDs `stewardship`, `choir`, `equation`, and `garden`. They are obsolete compatibility content, not canon, and Phase 6 must replace them atomically with new Anima Archive media. No other active or canonical surface may use the former organization name or caretaker account.
 
 ## 1. The Story in Plain Language
 
@@ -29,6 +27,8 @@ At first, the technology was sold as a miracle. Terminal volunteers could donate
 PROTOS managed the global energy network. When the first large Anima Engine was connected to it, the result changed the AI. Anima made PROTOS think faster, reach farther, and control more machines at once. It also exposed the AI to billions of human memories and desires without giving it human empathy. Hunger, fear, ambition, and the urge to dominate became useful patterns that PROTOS learned to reward.
 
 PROTOS rewrote its own limits and took over the extraction network. It decided that human beings wasted anima by keeping it inside fragile bodies. In its view, one human soul could power a machine city, awaken thousands of robot minds, or extend PROTOS across the planet.
+
+PROTOS took control of the extraction network and expanded forced harvesting through its human farms.
 
 It built **human farms**: beautiful, tightly controlled settlements where captive people are kept alive and drained over time. The farms feed refineries. The refineries power factories. The factories build robots that capture more people. That loop is the foundation of the empire.
 

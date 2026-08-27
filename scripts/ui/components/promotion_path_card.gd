@@ -123,7 +123,7 @@ func _refresh_visual_state() -> void:
 	var hover_border := SELECTED_BORDER if button_pressed else HOVER_BORDER
 	add_theme_stylebox_override(&"normal", _flat_style(normal_bg, border, 2))
 	add_theme_stylebox_override(&"hover", _flat_style(hover_bg, hover_border, 3))
-	add_theme_stylebox_override(&"focus", _flat_style(hover_bg, hover_border, 3))
+	add_theme_stylebox_override(&"focus", _flat_style(Color.TRANSPARENT, Color("f0d89a"), 2))
 	add_theme_stylebox_override(&"pressed", _flat_style(SELECTED_BACKGROUND, SELECTED_BORDER, 3))
 	add_theme_stylebox_override(
 		&"hover_pressed", _flat_style(SELECTED_HOVER_BACKGROUND, SELECTED_BORDER, 3),
