@@ -36,11 +36,17 @@ func _run() -> void:
 	var backdrop_video := staging.find_child("LunarisTitleLoop", true, false) as VideoStreamPlayer
 	var backdrop_fallback := staging.find_child("LunarisFallback", true, false) as TextureRect
 	var archive_button := staging.find_child("MercyArchiveButton", true, false) as Button
+	var mission_sparkles := staging.find_child("MissionControlSparkles", true, false) as Control
+	var resonance_sparkles := staging.find_child("ResonanceSparkles", true, false) as Control
 	_check(staging.find_child("MockResourceWallet", true, false) == null, "Company Command still presents the fabricated wallet")
 	_check(staging.find_child("UtilityIcons", true, false) == null, "Company Command still presents inert utility chrome")
 	_check(backdrop_video != null and not backdrop_video.visible and not backdrop_video.is_playing(), "reduced motion did not suppress Company Command video playback")
 	_check(backdrop_fallback != null and backdrop_fallback.visible, "reduced motion did not preserve the Company Command static backdrop")
 	_check(archive_button != null and not archive_button.disabled, "Company Command is missing the Anima Archive route")
+	_check(mission_sparkles != null and bool(mission_sparkles.call("motion_reduced")) and not mission_sparkles.is_processing(), "Reduced Motion did not freeze Mission Control sparkles")
+	_check(mission_sparkles != null and int(mission_sparkles.call("visible_particle_count")) == 3, "Reduced Motion did not preserve Mission Control's static glints")
+	_check(resonance_sparkles != null and bool(resonance_sparkles.call("motion_reduced")) and not resonance_sparkles.is_processing(), "Reduced Motion did not freeze Resonance sparkles")
+	_check(resonance_sparkles != null and int(resonance_sparkles.call("visible_particle_count")) == 3, "Reduced Motion did not preserve Resonance's static glints")
 	_dispose(staging)
 	game.set("content", null)
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)

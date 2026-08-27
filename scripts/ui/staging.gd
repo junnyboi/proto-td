@@ -24,6 +24,9 @@ const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CommandCenterTutorialType := preload(
 	"res://scripts/ui/components/command_center_tutorial.gd"
 )
+const StagingButtonSparklesType := preload(
+	"res://scripts/ui/components/staging_button_sparkles.gd"
+)
 const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
 const STAGING_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
 const MISSION_ART := preload("res://assets/world/act1/panorama.png")
@@ -118,6 +121,8 @@ var _mission_hovered := false
 var _mission_hover_tween: Tween = null
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
+var _mission_sparkles: StagingButtonSparklesType = null
+var _resonance_sparkles: StagingButtonSparklesType = null
 var _tutorial: CommandCenterTutorialType = null
 var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _preferences_path_explicit := false
@@ -541,6 +546,10 @@ func _build_navigation_content() -> VBoxContainer:
 	_recruit.pressed.connect(_on_recruit)
 	_command_tiles.append(_recruit)
 	_operation_grid.add_child(_recruit)
+	_resonance_sparkles = _mount_button_sparkles(
+		_recruit, "ResonanceSparkles", 0.41,
+	)
+	_recruit.move_child(_resonance_sparkles, 0)
 	_add_locked_operation(
 		"ArmoryButton", StagingGlyphType.Kind.ARMORY,
 		&"ui.staging.armory_short", "Armory",
@@ -737,12 +746,30 @@ func _build_mission_button() -> AetheriaButtonType:
 	_mission_plate.modulate = Color(0.48, 0.52, 0.56, 0.78) if button.disabled else Color.WHITE
 	button.add_child(_mission_plate)
 	button.move_child(_mission_plate, 0)
+	_mission_sparkles = _mount_button_sparkles(
+		button, "MissionControlSparkles", 0.07,
+	)
+	button.move_child(_mission_sparkles, 1)
 	_register_focus_pulse(button, GOLD)
 	button.mouse_entered.connect(_on_mission_hover_changed.bind(true))
 	button.mouse_exited.connect(_on_mission_hover_changed.bind(false))
 	button.focus_entered.connect(_update_mission_plate_state)
 	button.focus_exited.connect(_update_mission_plate_state)
 	return button
+
+
+func _mount_button_sparkles(
+	button: Button,
+	node_name: String,
+	phase_offset: float,
+) -> StagingButtonSparklesType:
+	var sparkles := StagingButtonSparklesType.new()
+	sparkles.name = node_name
+	sparkles.configure(phase_offset)
+	button.add_child(sparkles)
+	sparkles.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sparkles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return sparkles
 
 
 func _on_mission_hover_changed(hovered: bool) -> void:
