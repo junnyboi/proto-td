@@ -27,8 +27,8 @@ class TrainingLayoutCampaign:
 			"first_class_id": null,
 			"advanced_class_id": null,
 			"operator_def_id": "recruit",
-			"portrait_asset_id": "portrait_recruit",
-			"identity_portrait_id": "portrait_recruit",
+			"portrait_asset_id": "portrait_recruit_00",
+			"identity_portrait_id": "portrait_recruit_00",
 			"life_status": "ready",
 			"hero_kind": "recruit",
 			"premium_id": null,
@@ -45,8 +45,8 @@ class TrainingLayoutCampaign:
 			"first_class_id": null,
 			"advanced_class_id": null,
 			"operator_def_id": "recruit",
-			"portrait_asset_id": "portrait_recruit",
-			"identity_portrait_id": "portrait_recruit",
+			"portrait_asset_id": "portrait_recruit_01",
+			"identity_portrait_id": "portrait_recruit_01",
 			"life_status": "ready",
 			"hero_kind": "recruit",
 			"premium_id": null,
@@ -353,6 +353,12 @@ func _run() -> void:
 		var class_title := first_card.find_child("AdvancedClassName", true, false) as Label
 		var detail := first_card.find_child("ClassDescription", true, false) as Label
 		_check(portrait != null and portrait.custom_minimum_size.x >= 124.0 and portrait.custom_minimum_size.y >= 128.0, "specialization portrait was not scaled with the doubled card")
+		_check(
+			StringName(first_card.get("portrait_asset_id"))
+			== StringName("portrait_specialization_%s_female" % first_card.get("class_id")),
+			"female Recruit did not receive the matching female specialization portrait",
+		)
+		_check(portrait != null and portrait.texture != null, "generated specialization portrait did not load")
 		_check(class_title != null and class_title.get_theme_font_size(&"font_size") >= 40, "specialization title typography was not doubled")
 		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 26, "specialization body typography was not doubled")
 		_check(bool(first_card.call("uses_flat_color_states")), "specialization card still depends on ornamental selected-state graphics")

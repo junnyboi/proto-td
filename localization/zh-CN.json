@@ -631,7 +631,7 @@
     "ui.training.class.sword_saint": "剑圣",
     "ui.training.class.swordmaster": "剑术大师",
     "ui.training.class.witch_doctor": "巫医",
-    "ui.training.class_kit_placeholder": "职业装备\n临时美术",
+    "ui.training.class_kit_placeholder": "职业装备",
     "ui.training.combat_facts": "{cost}部署点 • {placement} • 阻挡数 {block} • 范围 {range}格 • 攻击间隔 {cadence}刻",
     "ui.training.confirm_action": "确认训练",
     "ui.training.confirm_permanent": "此训练选择无法更改。",

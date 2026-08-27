@@ -388,7 +388,7 @@ const STATIC_FALLBACKS := {
 	&"ui.training.class.sword_saint": "Sword Saint",
 	&"ui.training.class.swordmaster": "Swordmaster",
 	&"ui.training.class.witch_doctor": "Witch Doctor",
-	&"ui.training.class_kit_placeholder": "CLASS KIT\nTEMP ART",
+	&"ui.training.class_kit_placeholder": "CLASS KIT",
 	&"ui.training.confirm_action": "Confirm Training",
 	&"ui.training.confirm_permanent": "This training choice cannot be changed.",
 	&"ui.training.confirm_title": "CONFIRM {class_name} TRAINING?",

@@ -23,6 +23,7 @@ const SELECTED_BORDER := Color(0.92, 0.75, 0.36, 1.0)
 
 var class_id := ""
 var operator_def_id := ""
+var portrait_asset_id: StringName = &""
 var _portrait: TextureRect
 var _class_name: TrainingLabelType
 var _placeholder: TrainingLabelType
@@ -62,6 +63,7 @@ func configure(
 	) -> void:
 	class_id = String(choice["to_class_id"])
 	operator_def_id = String(choice["operator_def_id"])
+	portrait_asset_id = StringName(choice.get("specialization_portrait_asset_id", &""))
 	_class_name.text = class_label.to_upper()
 	_role_label.text = role_text.to_upper()
 	_description.text = description_text
@@ -69,7 +71,7 @@ func configure(
 	_cost.text = cost_text
 	_placeholder.text = placeholder_text
 	_kit.text = kit_text
-	_portrait.texture = ArtType.texture(StringName("portrait_%s" % operator_def_id))
+	_portrait.texture = ArtType.texture(portrait_asset_id)
 	text = "%s — %s — %s — %s — %s — %s — %s" % [
 		_class_name.text, _role_label.text, _description.text, _skill.text, _cost.text,
 		_placeholder.text, _kit.text,
