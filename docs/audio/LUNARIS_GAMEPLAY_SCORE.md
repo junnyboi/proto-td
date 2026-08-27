@@ -40,7 +40,7 @@ Final runtime measurements are 48 kHz stereo with staging at −20.0 LUFS, Act I
 
 The retained cue map should be reviewed against the Anima War rather than caretaker-era intent. Lunaris material should frame Company Manus as a rescue force protecting **anima—the real and unique human soul**. A single free or rescued soul is represented by an exposed, warm human breath, solo string, or pale-blue glass tone; processed anima is represented by strained violet-magenta spectral pressure, compressed wordless voices, and bundled pulses. PROTOS should read as corrupted, calm, and imperial through processed digital fragments, rigid many-to-one routing, low mechanical scale, and the pressure of farms, refineries, and foundries. The music must never imply that PROTOS is benevolent, that souls are safe copies, or that human farms are peaceful gardens.
 
-These directions are review criteria, not instructions to replace the checked-in score automatically. Any approved future replacement must preserve the stable cue IDs above, BPM and bar grids, transition anchors, routing, loudness hierarchy, loop behavior, mobile and mono compatibility, and safe silence fallback.
+The completed [`ANIMA_WAR_LISTENING_REVIEW.md`](./ANIMA_WAR_LISTENING_REVIEW.md) accepts the checked-in score for the current release. These directions remain review criteria rather than automatic replacement instructions. Any approved future replacement must preserve the stable cue IDs above, BPM and bar grids, transition anchors, routing, loudness hierarchy, loop behavior, mobile and mono compatibility, and safe silence fallback.
 
 ## UI sound direction
 
