@@ -230,6 +230,21 @@ func _run() -> void:
 			_check(defeat_action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s regained struck defeat styling" % defeat_action.name)
 			_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s defeat text is not doubled" % defeat_action.name)
 	_check(defeat_command != null and defeat_command.get_combined_minimum_size().x <= defeat_command.size.x + 1.0, "defeat Command text overflows its wider action")
+	_check(defeat_command != null and bool(defeat_command.get_meta(&"action_hover_feedback_wired", false)), "defeat Command lacks shared hover feedback")
+	if defeat_command != null:
+		var command_normal := defeat_command.get_theme_stylebox(&"normal") as StyleBoxFlat
+		var command_hover := defeat_command.get_theme_stylebox(&"hover") as StyleBoxFlat
+		_check(command_normal != null and command_hover != null and not command_normal.bg_color.is_equal_approx(command_hover.bg_color), "defeat Command lacks a distinct hover surface")
+		ProjectSettings.set_setting("accessibility/reduced_motion", false)
+		var command_idle_tint := defeat_command.modulate
+		defeat_command.emit_signal(&"mouse_entered")
+		await create_timer(0.22).timeout
+		_check(defeat_command.scale.x >= 1.035 and defeat_command.scale.y >= 1.035, "defeat Command does not lift on hover")
+		_check(not defeat_command.modulate.is_equal_approx(command_idle_tint), "defeat Command lacks hover luminance feedback")
+		defeat_command.emit_signal(&"mouse_exited")
+		await create_timer(0.22).timeout
+		_check(defeat_command.scale.distance_to(Vector2.ONE) < 0.02, "defeat Command did not settle after hover")
+		ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	root.size = Vector2i(390, 844)
 	await _frames(2)
 	_check(defeat_summary.vertical and defeat_meta.vertical and defeat_actions.columns == 1, "defeat hierarchy does not stack in portrait")

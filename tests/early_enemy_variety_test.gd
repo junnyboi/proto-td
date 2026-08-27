@@ -1,6 +1,7 @@
 extends SceneTree
 
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
+const CampaignRuntimeContextScript := preload("res://sim/campaign_runtime_context.gd")
 
 var _failures := PackedStringArray()
 
@@ -13,6 +14,7 @@ func _run() -> void:
 	_validate_enemy_definitions()
 	_validate_caster_arts_counterplay()
 	_validate_stage_schedules()
+	_validate_campaign_context()
 	if _failures.is_empty():
 		print("EARLY_ENEMY_VARIETY_OK")
 		quit(0)
@@ -109,6 +111,16 @@ func _validate_stage_schedules() -> void:
 	_check(_has_spawn(s4, &"interceptor", 0, 810), "S4 second Interceptor must close the air wave at tick 810")
 	_check(s4.wave_starts == PackedInt32Array([0, 390]), "S4 wave boundaries must remain unchanged")
 	_check(s4.intro_hint.contains("sustain fire") and s4.intro_hint.contains("Interceptors"), "S4 hint must explain durable anti-air")
+
+
+func _validate_campaign_context() -> void:
+	var context := CampaignRuntimeContextScript.build()
+	_check(not context.is_empty(), "Early enemy variety must preserve a valid production campaign context")
+	if not context.is_empty():
+		_check(
+			String(context.get("environment_sha256", "")) == CampaignDef.P16_V3_ENVIRONMENT_SHA256,
+			"Early enemy variety environment hash must remain pinned to the production campaign",
+		)
 
 
 func _enemy(enemy_id: StringName) -> EnemyDef:

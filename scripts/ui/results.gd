@@ -16,6 +16,9 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
+const ActionHoverFeedbackType := preload(
+	"res://scripts/ui/components/action_hover_feedback.gd"
+)
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -92,6 +95,8 @@ func _build_presentation() -> void:
 
 
 func _exit_tree() -> void:
+	var command := find_child("ReturnToStaging", true, false) as Button
+	ActionHoverFeedbackType.reset(command)
 	_kill_reward_reveal_tween()
 
 
@@ -328,6 +333,7 @@ func _build_actions(layout: VBoxContainer) -> void:
 		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Company Command"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
 		if not _cleared_result:
 			next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
+			ActionHoverFeedbackType.wire(self, next)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)

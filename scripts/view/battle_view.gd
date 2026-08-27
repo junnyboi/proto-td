@@ -24,6 +24,9 @@ const StageArtThemeType := preload("res://data/presentation/stage_art_theme.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const ActionHoverFeedbackType := preload(
+	"res://scripts/ui/components/action_hover_feedback.gd"
+)
 const MUSIC_DIRECTOR_SCRIPT := preload("res://scripts/view/music_director.gd")
 
 const HUD_FONT_SIZE := GameTypographyType.ACTION
@@ -544,6 +547,7 @@ func _apply_time_scale() -> void:
 
 
 func _exit_tree() -> void:
+	ActionHoverFeedbackType.reset(_continue_btn)
 	Engine.time_scale = 1.0
 
 
@@ -673,6 +677,7 @@ func _detect_result_stamp() -> void:
 	next.custom_minimum_size = _terminal_continue_size(viewport)
 	LunarisOpsType.apply_button(next, &"primary")
 	_apply_terminal_continue_style(next)
+	ActionHoverFeedbackType.wire(self, next)
 	next.z_index = HUD_Z
 	add_child(next)
 	next.position = Vector2(
