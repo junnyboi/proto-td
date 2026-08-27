@@ -18,6 +18,11 @@ const CARD_MIN_HEIGHT := 272.0
 const VIEWPORT_MARGIN := 24.0
 const TARGET_GROW := 9.0
 const CARD_Z := 122
+const CALLOUT_PADDING_HORIZONTAL := 12
+const CALLOUT_PADDING_VERTICAL := 24
+const ACTION_PADDING := 12
+const ARROW_HEAD_LENGTH := 18.0
+const ARROW_HEAD_HALF_WIDTH := 8.0
 
 enum Step { MISSION_CONTROL, RESONANCE }
 
@@ -31,6 +36,7 @@ var _entry_tween: Tween = null
 var _shield: ColorRect = null
 var _target_ring: PanelContainer = null
 var _connector: Line2D = null
+var _arrow_head: Polygon2D = null
 var _card: PanelContainer = null
 var _step_label: Label = null
 var _title: Label = null
@@ -132,13 +138,16 @@ func _build() -> void:
 	_connector.antialiased = true
 	add_child(_connector)
 
+	_arrow_head = Polygon2D.new()
+	_arrow_head.name = "TutorialArrowHead"
+	_arrow_head.color = Color(GOLD, 0.94)
+	add_child(_arrow_head)
+
 	_target_ring = AetheriaPanelType.new()
 	_target_ring.name = "TutorialTargetRing"
 	_target_ring.apply_role(&"focus_ring")
 	_target_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_target_ring.add_theme_stylebox_override(
-		&"panel", StagingSkinType.transparent_focus_style(GOLD),
-	)
+	_target_ring.visible = false
 	add_child(_target_ring)
 
 	_card = AetheriaPanelType.new()
@@ -147,10 +156,18 @@ func _build() -> void:
 	_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_card)
 
+	var card_insets := MarginContainer.new()
+	card_insets.name = "CalloutInsets"
+	card_insets.add_theme_constant_override(&"margin_left", CALLOUT_PADDING_HORIZONTAL)
+	card_insets.add_theme_constant_override(&"margin_right", CALLOUT_PADDING_HORIZONTAL)
+	card_insets.add_theme_constant_override(&"margin_top", CALLOUT_PADDING_VERTICAL)
+	card_insets.add_theme_constant_override(&"margin_bottom", CALLOUT_PADDING_VERTICAL)
+	_card.add_child(card_insets)
+
 	var column := VBoxContainer.new()
 	column.name = "CalloutColumn"
 	column.add_theme_constant_override(&"separation", 12)
-	_card.add_child(column)
+	card_insets.add_child(column)
 
 	_step_label = Label.new()
 	_step_label.name = "TutorialStep"
@@ -175,12 +192,18 @@ func _build() -> void:
 	actions.name = "TutorialActions"
 	actions.alignment = BoxContainer.ALIGNMENT_END
 	actions.add_theme_constant_override(&"separation", 12)
-	column.add_child(actions)
+	var action_insets := MarginContainer.new()
+	action_insets.name = "TutorialActionInsets"
+	for margin: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
+		action_insets.add_theme_constant_override(margin, ACTION_PADDING)
+	action_insets.add_child(actions)
+	column.add_child(action_insets)
 
 	_skip = AetheriaButtonType.new()
 	_skip.name = "TutorialSkip"
 	_skip.apply_role(&"secondary")
 	_skip.custom_minimum_size = Vector2(164.0, 56.0)
+	_skip.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
 	_skip.pressed.connect(_on_skip_pressed)
 	actions.add_child(_skip)
 
@@ -188,6 +211,12 @@ func _build() -> void:
 	_primary.name = "TutorialPrimary"
 	_primary.apply_role(&"primary")
 	_primary.custom_minimum_size = Vector2(164.0, 56.0)
+	_primary.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	for color_name: StringName in [
+		&"font_color", &"font_hover_color", &"font_pressed_color",
+		&"font_hover_pressed_color", &"font_focus_color",
+	]:
+		_primary.add_theme_color_override(color_name, Color.WHITE)
 	_primary.pressed.connect(_on_primary_pressed)
 	actions.add_child(_primary)
 
@@ -256,7 +285,6 @@ func relayout() -> void:
 	_target_ring.position = target_rect.position
 	_target_ring.size = target_rect.size
 
-	var portrait := viewport_size.y > viewport_size.x
 	var card_width := minf(CARD_MAX_WIDTH, viewport_size.x - VIEWPORT_MARGIN * 2.0)
 	var card_height := minf(
 		maxf(CARD_MIN_HEIGHT, _card.get_combined_minimum_size().y),
@@ -264,32 +292,31 @@ func relayout() -> void:
 	)
 	_card.size = Vector2(card_width, card_height)
 	_card.pivot_offset = _card.size * 0.5
-	var position := Vector2.ZERO
-	if portrait:
-		position.x = (viewport_size.x - card_width) * 0.5
-		var below := target_rect.end.y + 22.0
-		position.y = below if below + card_height <= viewport_size.y - VIEWPORT_MARGIN else target_rect.position.y - card_height - 22.0
-	else:
-		position.x = (
-			VIEWPORT_MARGIN
-			if target_rect.get_center().x >= viewport_size.x * 0.5
-			else viewport_size.x - card_width - VIEWPORT_MARGIN
-		)
-		position.y = target_rect.get_center().y - card_height * 0.5
+	var position := (viewport_size - Vector2(card_width, card_height)) * 0.5
 	position.x = clampf(position.x, VIEWPORT_MARGIN, viewport_size.x - card_width - VIEWPORT_MARGIN)
 	position.y = clampf(position.y, VIEWPORT_MARGIN, viewport_size.y - card_height - VIEWPORT_MARGIN)
 	_card.position = position
 
 	var card_rect := _card.get_global_rect()
-	var target_center := target_rect.get_center()
 	var card_center := card_rect.get_center()
+	var target_center := target_rect.get_center()
 	var card_edge := Vector2(
 		clampf(target_center.x, card_rect.position.x, card_rect.end.x),
 		clampf(target_center.y, card_rect.position.y, card_rect.end.y),
 	)
 	if target_rect.has_point(card_edge):
 		card_edge = card_center
-	_connector.points = PackedVector2Array([target_center, card_edge])
+	var target_edge := Vector2(
+		clampf(card_center.x, target_rect.position.x, target_rect.end.x),
+		clampf(card_center.y, target_rect.position.y, target_rect.end.y),
+	)
+	if card_rect.has_point(target_edge):
+		target_edge = target_center
+	var safe_end := viewport_size - Vector2.ONE * VIEWPORT_MARGIN
+	target_edge.x = clampf(target_edge.x, VIEWPORT_MARGIN, safe_end.x)
+	target_edge.y = clampf(target_edge.y, VIEWPORT_MARGIN, safe_end.y)
+	_connector.points = PackedVector2Array([card_edge, target_edge])
+	_layout_arrow_head(card_edge, target_edge)
 
 	var narrow := viewport_size.x <= 560.0
 	StagingSkinType.apply_display_type(_step_label, 16 if narrow else 18, GOLD, 560)
@@ -297,6 +324,23 @@ func relayout() -> void:
 	StagingSkinType.apply_body_type(_body, 20 if narrow else 22, MUTED)
 	_skip.custom_minimum_size = Vector2(132.0 if narrow else 164.0, 54.0)
 	_primary.custom_minimum_size = Vector2(132.0 if narrow else 164.0, 54.0)
+
+
+func _layout_arrow_head(start: Vector2, tip: Vector2) -> void:
+	if _arrow_head == null:
+		return
+	var direction := start.direction_to(tip)
+	if direction.is_zero_approx():
+		_arrow_head.visible = false
+		return
+	var base_center := tip - direction * ARROW_HEAD_LENGTH
+	var perpendicular := Vector2(-direction.y, direction.x) * ARROW_HEAD_HALF_WIDTH
+	_arrow_head.polygon = PackedVector2Array([
+		tip,
+		base_center + perpendicular,
+		base_center - perpendicular,
+	])
+	_arrow_head.visible = true
 
 
 func _animate_card() -> void:

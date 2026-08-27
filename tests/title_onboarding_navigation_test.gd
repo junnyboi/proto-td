@@ -157,6 +157,54 @@ func _verify_tutorial_step(staging: Control, tutorial: Control, step: StringName
 		card != null and _contains(tutorial, card),
 		"%s tutorial card %s escapes viewport %s" % [step, card.get_global_rect() if card != null else Rect2(), tutorial.get_global_rect()],
 	)
+	if card != null:
+		_check(
+			card.get_global_rect().get_center().distance_to(tutorial.get_global_rect().get_center()) <= 2.0,
+			"%s tutorial card is not centered in the viewport" % step,
+		)
+	var ring := tutorial.find_child("TutorialTargetRing", true, false) as Control
+	_check(ring != null and not ring.visible, "%s tutorial target border is still visible" % step)
+	var arrow_head := tutorial.find_child("TutorialArrowHead", true, false) as Polygon2D
+	_check(
+		arrow_head != null and arrow_head.visible and arrow_head.polygon.size() == 3,
+		"%s tutorial connector is missing its arrowhead" % step,
+	)
+	if arrow_head != null and arrow_head.polygon.size() == 3:
+		_check(
+			tutorial.get_global_rect().grow(1.0).has_point(arrow_head.polygon[0]),
+			"%s tutorial arrowhead escapes the viewport" % step,
+		)
+	var card_insets := tutorial.find_child("CalloutInsets", true, false) as MarginContainer
+	_check(
+		card_insets != null
+		and card_insets.get_theme_constant(&"margin_top") == 24
+		and card_insets.get_theme_constant(&"margin_bottom") == 24
+		and card_insets.get_theme_constant(&"margin_left") == 12
+		and card_insets.get_theme_constant(&"margin_right") == 12,
+		"%s tutorial callout padding changed" % step,
+	)
+	var action_insets := tutorial.find_child("TutorialActionInsets", true, false) as MarginContainer
+	_check(
+		action_insets != null
+		and action_insets.get_theme_constant(&"margin_top") == 12
+		and action_insets.get_theme_constant(&"margin_bottom") == 12
+		and action_insets.get_theme_constant(&"margin_left") == 12
+		and action_insets.get_theme_constant(&"margin_right") == 12,
+		"%s tutorial action padding changed" % step,
+	)
+	var primary := tutorial.find_child("TutorialPrimary", true, false) as Button
+	var skip := tutorial.find_child("TutorialSkip", true, false) as Button
+	_check(
+		primary != null and primary.get_theme_color(&"font_color").is_equal_approx(Color.WHITE),
+		"%s tutorial primary label is not white" % step,
+	)
+	_check(
+		primary != null
+		and skip != null
+		and primary.get_theme_stylebox(&"focus") is StyleBoxEmpty
+		and skip.get_theme_stylebox(&"focus") is StyleBoxEmpty,
+		"%s tutorial actions still show a focus border" % step,
+	)
 
 
 func _transparent_gold_focus(button: Button) -> bool:
