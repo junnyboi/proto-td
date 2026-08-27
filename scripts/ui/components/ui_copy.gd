@@ -318,6 +318,9 @@ const STATIC_FALLBACKS := {
 	&"ui.campaign.row": "{index}. {title}{status}",
 	&"ui.campaign.locked_suffix": "  LOCKED",
 	&"ui.campaign.cleared_suffix": "  {stars}",
+	&"ui.campaign.next_highlight_description": "Recommended next operation, highlighted with a glow and sparkles.",
+	&"ui.campaign.row_star": "{count} star",
+	&"ui.campaign.row_stars": "{count} stars",
 	&"ui.campaign.back_to_staging": "Back to Staging",
 	&"ui.campaign.objective": "OBJECTIVE — {text}",
 	&"ui.campaign.threat": "THREAT — {text}",
@@ -480,6 +483,8 @@ const STATIC_FALLBACKS := {
 }
 
 const PLACEHOLDER_TYPES := {
+	&"ui.campaign.row_star": {&"count": &"int"},
+	&"ui.campaign.row_stars": {&"count": &"int"},
 	&"ui.gacha.marks": {&"count": &"int"},
 	&"ui.gacha.pull_action": {&"cost": &"int"},
 	&"ui.gacha.pull_again": {&"cost": &"int"},
