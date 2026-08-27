@@ -87,7 +87,7 @@ func _apply_readable_style() -> void:
 	var pressed := _flat_style(Color(0.025, 0.08, 0.11, 1.0), Style.GOLD, 2)
 	add_theme_stylebox_override(&"normal", normal)
 	add_theme_stylebox_override(&"hover", hover)
-	add_theme_stylebox_override(&"focus", hover)
+	add_theme_stylebox_override(&"focus", _flat_style(Color.TRANSPARENT, Style.GOLD, 2))
 	add_theme_stylebox_override(&"pressed", pressed)
 	add_theme_stylebox_override(&"hover_pressed", pressed)
 	add_theme_font_size_override(&"font_size", 20)

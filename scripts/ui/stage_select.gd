@@ -432,8 +432,7 @@ func _refresh_focus_chain() -> void:
 
 func _on_stage_pressed(stage_id: StringName) -> void:
 	Sfx.play("ui_click")
-	Game.selected_stage_id = stage_id
-	Game.open_squad_select()
+	Game.open_field_team_for_stage(stage_id)
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:

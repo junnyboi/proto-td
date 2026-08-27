@@ -7,6 +7,7 @@ extends RefCounted
 const DEFAULT_PATH := "user://view_preferences.cfg"
 const NAVIGATION_SECTION := "navigation"
 const PAN_HINT_KEY := "pan_hint_completed"
+const COMMAND_TUTORIAL_KEY := "command_tutorial_completed"
 const LOCALIZATION_SECTION := "localization"
 const LOCALE_KEY := "locale"
 const AUDIO_SECTION := "audio"
@@ -44,6 +45,17 @@ static func mark_pan_hint_seen(path: String = DEFAULT_PATH) -> bool:
 		config = ConfigFile.new()
 	config.set_value(NAVIGATION_SECTION, PAN_HINT_KEY, true)
 	return config.save(path) == OK
+
+
+static func has_seen_command_tutorial(path: String = DEFAULT_PATH) -> bool:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return false
+	return bool(config.get_value(NAVIGATION_SECTION, COMMAND_TUTORIAL_KEY, false))
+
+
+static func mark_command_tutorial_seen(path: String = DEFAULT_PATH) -> bool:
+	return _set_value(NAVIGATION_SECTION, COMMAND_TUTORIAL_KEY, true, path)
 
 
 static func locale(path: String = DEFAULT_PATH) -> StringName:
@@ -215,6 +227,6 @@ static func _set_value(section: String, key: String, value: Variant, path: Strin
 	var config := ConfigFile.new()
 	var load_error := config.load(path)
 	if load_error != OK and load_error != ERR_FILE_NOT_FOUND:
-		config = ConfigFile.new()
+		return false
 	config.set_value(section, key, value)
 	return config.save(path) == OK
