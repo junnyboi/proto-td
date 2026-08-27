@@ -11,10 +11,10 @@ const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const MAX_DRAWER_WIDTH := 430.0
 const OPEN_SECONDS := 0.24
 const CLOSE_SECONDS := 0.18
-const FULLSIZE_PORTRAITS := {
-	"archive_caster": &"portrait_archive_caster_fullsize",
-	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
-	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
+const PREMIUM_PORTRAITS := {
+	"archive_caster": &"portrait_archive_caster",
+	"lunaris_vessel": &"portrait_lunaris_vessel",
+	"reliquary_duelist": &"portrait_reliquary_duelist",
 }
 
 var reduced_motion := false
@@ -392,7 +392,7 @@ func _callsign(premium_id: String) -> String:
 
 
 func _portrait_id(premium_id: String) -> StringName:
-	return StringName(FULLSIZE_PORTRAITS.get(premium_id, &""))
+	return StringName(PREMIUM_PORTRAITS.get(premium_id, &""))
 
 
 func _apply_layout() -> void:
