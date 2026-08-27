@@ -4,7 +4,7 @@
     {
       "id": "s9",
       "index": 9,
-      "title": "Return Path",
+      "title": "The Green Cage",
       "size": [
         12,
         7
@@ -37,7 +37,7 @@
     {
       "id": "s10",
       "index": 10,
-      "title": "Living Triage",
+      "title": "Rain Debt",
       "size": [
         13,
         7
@@ -74,7 +74,7 @@
     {
       "id": "s11",
       "index": 11,
-      "title": "Mirror Basin",
+      "title": "The Long Convoy",
       "size": [
         13,
         8
@@ -113,7 +113,7 @@
     {
       "id": "s12",
       "index": 12,
-      "title": "Archive Orchard",
+      "title": "Unlit",
       "size": [
         14,
         8
@@ -131,7 +131,7 @@
       "wave_starts": [
         0,
         480,
-        960
+        1020
       ],
       "restoration_cells": [
         [
@@ -154,7 +154,7 @@
     {
       "id": "s13",
       "index": 13,
-      "title": "Borrowed Mercy",
+      "title": "Thirty-Three",
       "size": [
         14,
         8
@@ -191,7 +191,7 @@
     {
       "id": "s14",
       "index": 14,
-      "title": "White Weather",
+      "title": "The Price of Dawn",
       "size": [
         14,
         9
@@ -234,7 +234,7 @@
     {
       "id": "s15",
       "index": 15,
-      "title": "Consent Protocol",
+      "title": "Soulstorm",
       "size": [
         15,
         9
@@ -282,7 +282,7 @@
     {
       "id": "s16",
       "index": 16,
-      "title": "The Unfinished Proof",
+      "title": "Empire Foundry",
       "size": [
         16,
         9
@@ -302,9 +302,9 @@
       },
       "wave_starts": [
         0,
-        480,
-        960,
-        1500
+        510,
+        1050,
+        1590
       ],
       "restoration_cells": [
         [
@@ -326,7 +326,7 @@
       ],
       "heal_amount": 12,
       "interval_ticks": 90,
-      "leak_limit": 1
+      "leak_limit": 2
     }
   ]
 }

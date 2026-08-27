@@ -8,7 +8,7 @@
 
 This is a technical production record, not an independent narrative authority. The sole story authority is [`NARRATIVE_CANON.md`](../NARRATIVE_CANON.md). Runtime files, cue IDs, routing, checksums, and mixes remain unchanged unless a later listening review separately approves replacements in place.
 
-The launch soundtrack now follows the faction-led contract in [`FACTION_MUSIC_REDESIGN_PROPOSAL.md`](../FACTION_MUSIC_REDESIGN_PROPOSAL.md). Company Command and related campaign surfaces use a restrained Lunaris rescue-planning loop. Stages S1–S7 route to three authored adaptive battle families, and S8 routes to a dedicated Gatecrasher boss suite. Victory and defeat use compact Lunaris resolutions rather than reusing combat or title material.
+The launch soundtrack follows the faction-led contract in [`FACTION_MUSIC_REDESIGN_PROPOSAL.md`](../FACTION_MUSIC_REDESIGN_PROPOSAL.md). Company Command and related campaign surfaces use a restrained Lunaris rescue-planning loop. Act I stages S1–S7 retain three authored adaptive battle families, and S8 retains its dedicated Gatecrasher boss suite. In response to the approved Act II score request, S9–S16 now each own a unique operation-length loop documented in [`ACT_II_SCORE.md`](./ACT_II_SCORE.md). Victory and defeat retain their compact Lunaris resolutions rather than reusing combat or title material.
 
 All music masters were generated as original instrumental material with the Manus Lyria 3 Pro production path. The prompts and structural timing are recorded in the proposal. Runtime derivatives were mastered from true 48 kHz, 24-bit PCM masters to stereo Ogg Vorbis, gain-staged beneath tactical SFX, and loop-closed with bar-length head/tail crossfades. The exact generated sources, lossless masters, anchors, carrier videos, and raw outputs are preserved in the Manus project archive `audio-production-2026-08-25`; checksums are recorded in [`LUNARIS_GAMEPLAY_SCORE.sha256`](./LUNARIS_GAMEPLAY_SCORE.sha256).
 
@@ -22,6 +22,7 @@ All music masters were generated as original instrumental material with the Manu
 | S4 | `lunaris_battle_air_raid_{low,medium,high}` | Horizontal aerial-pressure states at 126 BPM |
 | S5–S7 | `lunaris_battle_gravity_lattice_{low,medium,high}` | Horizontal combined-arms states at 124 BPM |
 | S8 | `lunaris_boss_gatecrasher` | Dedicated 80 BPM half-time boss loop |
+| S9–S16 | `lunaris_act2_s09_*` through `lunaris_act2_s16_*` | Eight stage-unique cues at 84–132 BPM |
 | Clear | `lunaris_result_victory` | Non-looping eight-second result resolution |
 | Defeat | `lunaris_result_defeat` | Non-looping eight-second result reduction |
 
@@ -29,11 +30,11 @@ All music masters were generated as original instrumental material with the Manu
 
 `MusicProfile` declares faction cue routing and transition timing. Each `StageDef` references a `music_profile_id` and `music_variant_id`; no file path or generic act number appears in stage data. `MusicDirector` reads presentation-safe facts from the already authoritative `BattleModel` and requests low, medium, high, critical, or boss states. Escalation requires stable pressure, de-escalation is deliberately slower, and an eight-second minimum hold prevents musical chatter.
 
-Routine state changes quantize to a four-bar boundary. Danger changes quantize to the next bar. When base health falls **below 30%**, a 150 ms anti-flap window bypasses the routine hold, reuses the authored high-intensity arrangement, and raises playback tempo by 8%; recovery returns to the ordinary state ladder through normal de-escalation hysteresis. Scheduling follows the audio playback clock rather than wall time, so pauses, suspended tabs, and device stalls cannot advance a transition off-grid. The `Music` autoload owns two players and performs bounded crossfades; missing profiles, cues, or streams reject without changing routing metadata, battle state, or navigation. Result routing interrupts the adaptive queue with the appropriate non-looping stinger. The global persisted music setting now governs title, staging, battle, boss, result, and premium-cinematic music.
+Routine Act I state changes quantize to a four-bar boundary. Danger changes quantize to the next bar. When base health falls **below 30%**, a 150 ms anti-flap window bypasses the routine hold, reuses the authored high-intensity arrangement, and raises playback tempo by 8%; recovery returns to the ordinary state ladder through normal de-escalation hysteresis. Act II state metadata remains cue-continuous at authored tempo because each operation has one dedicated composition; state changes never seek or restart that stream. Scheduling follows the audio playback clock rather than wall time, so pauses, suspended tabs, and device stalls cannot advance a transition off-grid. The `Music` autoload owns two players and performs bounded crossfades; missing profiles, cues, or streams reject without changing routing metadata, battle state, or navigation. Result routing interrupts the adaptive queue with the appropriate non-looping stinger. The global persisted music setting now governs title, staging, battle, boss, result, and premium-cinematic music.
 
 The synchronized title Settings surface provides persisted Master, Music, and SFX volume sliders. Both adaptive players route through the `Music` bus, all pooled interaction voices route through `SFX`, and browser/native sessions restore the same levels. Existing premium-reveal cinematic cues remain in the mixed catalog; finishing or skipping a reveal returns to the Company Command loop instead of leaving the gacha surface silent.
 
-Final runtime measurements are 48 kHz stereo with staging at −20.0 LUFS, battle low/medium/high states calibrated to approximately −19.5/−18.0/−16.5 LUFS, the boss suite at −17.5 LUFS, and both result stingers at approximately −18 LUFS. Music true peaks remain at or below −2.6 dBFS. Mono fold-down checks preserve the principal motifs and transient identity.
+Final runtime measurements are 48 kHz stereo with staging at −20.0 LUFS, Act I battle low/medium/high states calibrated to approximately −19.5/−18.0/−16.5 LUFS, the Act I boss suite at −17.5 LUFS, Act II stage cues between −20.4 and −18.0 LUFS, and both result stingers at approximately −18 LUFS. Act II true peaks remain at or below −2.1 dBFS after Vorbis encoding. Mono fold-down checks preserve the principal motifs and transient identity.
 
 ## Anima War listening direction
 
@@ -68,6 +69,13 @@ PRODUCTION_ROOT=/home/ubuntu/projects/proto-td-1515240c/audio-production-2026-08
 ```
 
 The script regenerates all runtime Ogg and WAV derivatives from the durable project archive. It requires `ffmpeg`, `ffprobe`, and `bc`. Godot 4.7.2 then generates the corresponding import metadata during direct import.
+
+Regenerate the Act II operation cues from their retained 24-bit PCM masters with:
+
+```bash
+PRODUCTION_ROOT=/home/ubuntu/webdev-static-assets/proto-td-act2 \
+  tools/audio/process_act2_score.sh
+```
 
 Slow Field blizzard cues use their own GPT Image 2 carrier anchors and audio-capable videos. Rebuild their 48 kHz stereo WAV derivatives with:
 
