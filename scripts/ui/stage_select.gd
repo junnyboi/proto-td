@@ -15,9 +15,12 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
+const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
 const ROUTE_PANEL_WIDE_WIDTH := 480.0
-const ROUTE_CONTENT_INSET := 24
-const STAGE_ROW_VERTICAL_PADDING := 12.0
+const ROUTE_CONTENT_INSET := 36
+const DOSSIER_HORIZONTAL_INSET := 80
+const DOSSIER_VERTICAL_INSET := 36
+const STAGE_ROW_PADDING := 12.0
 const REWARD_DIRS := {
 	&"operator": "res://data/operators",
 	&"trap": "res://data/traps",
@@ -201,11 +204,19 @@ func _build_body(column: VBoxContainer) -> void:
 	dossier_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	dossier_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	dossier.add_child(dossier_scroll)
+	var dossier_inset := MarginContainer.new()
+	dossier_inset.name = "MissionDossierInset"
+	dossier_inset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for side: StringName in [&"margin_left", &"margin_right"]:
+		dossier_inset.add_theme_constant_override(side, DOSSIER_HORIZONTAL_INSET)
+	for side: StringName in [&"margin_top", &"margin_bottom"]:
+		dossier_inset.add_theme_constant_override(side, DOSSIER_VERTICAL_INSET)
+	dossier_scroll.add_child(dossier_inset)
 	var dossier_stack := VBoxContainer.new()
 	dossier_stack.name = "DossierContent"
 	dossier_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dossier_stack.add_theme_constant_override(&"separation", 8)
-	dossier_scroll.add_child(dossier_stack)
+	dossier_inset.add_child(dossier_stack)
 	_dossier_eyebrow = AetheriaLabelType.new()
 	_dossier_eyebrow.name = "DossierEyebrow"
 	_dossier_eyebrow.apply_role(&"dense_detail")
@@ -284,14 +295,29 @@ func _populate_route() -> void:
 		row.set_presentation_text(row.text, _row_presentation_text(stage, unlocked, is_next))
 		row.apply_compact_action_layout()
 		var presentation := row.get_node("PresentationLabel") as Label
-		presentation.offset_left = 16.0
-		presentation.offset_top = STAGE_ROW_VERTICAL_PADDING
-		presentation.offset_right = -16.0
-		presentation.offset_bottom = -STAGE_ROW_VERTICAL_PADDING
+		presentation.offset_left = STAGE_ROW_PADDING
+		presentation.offset_top = STAGE_ROW_PADDING
+		presentation.offset_right = -STAGE_ROW_PADDING
+		presentation.offset_bottom = -STAGE_ROW_PADDING
 		presentation.clip_text = false
 		presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if not unlocked:
+			var locked_gray := Color(Style.MUTED, 0.64)
+			presentation.add_theme_color_override(&"font_color", locked_gray)
+			presentation.add_theme_color_override(&"font_disabled_color", locked_gray)
+		if is_next:
+			var sparkles := CampaignNextSparklesType.new()
+			sparkles.name = "NextOperationSparkles"
+			row.add_child(sparkles)
+			sparkles.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		row.custom_minimum_size.y = maxf(row.custom_minimum_size.y, 76.0)
 		row.tooltip_text = row.text
+		row.accessibility_name = row.text
+		if is_next:
+			row.accessibility_description = UiCopyType.text(
+				&"ui.campaign.next_highlight_description",
+				"Recommended next operation, highlighted with a glow and sparkles.",
+			)
 		if not unlocked:
 			row.focus_mode = Control.FOCUS_NONE
 		else:
@@ -389,12 +415,16 @@ func _row_text(stage: StageDef, unlocked: bool) -> String:
 func _row_presentation_text(stage: StageDef, unlocked: bool, is_next: bool) -> String:
 	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage.id, 0))
 	var state := UiCopyType.text(&"ui.campaign.row_locked", "Locked")
-	if unlocked:
+	if stars > 0:
+		state = UiCopyType.format_text(
+			&"ui.campaign.row_star" if stars == 1 else &"ui.campaign.row_stars",
+			"{count} star" if stars == 1 else "{count} stars",
+			{&"count": stars},
+		)
+	elif unlocked:
 		state = UiCopyType.text(
-			&"ui.campaign.row_cleared" if stars > 0 else (
-				&"ui.campaign.row_next" if is_next else &"ui.campaign.row_available"
-			),
-			"Cleared" if stars > 0 else ("Next" if is_next else "Available"),
+			&"ui.campaign.row_next" if is_next else &"ui.campaign.row_available",
+			"Next" if is_next else "Available",
 		)
 	return "%s  %02d  %s  ·  %s" % [
 		_act_short(stage), stage.campaign_index, UiCopyType.stage_title(stage), state,
