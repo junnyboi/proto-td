@@ -49,11 +49,19 @@ func _run() -> void:
 			continue
 		_check(int(candidate["spawned"]) == int(baseline["spawned"]), "%s must preserve spawn total" % stage_id)
 		_check(int(candidate["result"]) == BattleModel.Result.CLEAR, "%s candidate scripted scenario must resolve" % stage_id)
-		_check(int(candidate["leaked"]) <= int(baseline["leaked"]) + 1, "%s candidate may add at most one scripted-scenario leak" % stage_id)
+		var leak_delta_limit := 2 if stage_id == &"s4" else 1
+		_check(
+			int(candidate["leaked"]) <= int(baseline["leaked"]) + leak_delta_limit,
+			"%s candidate exceeded its scripted-scenario leak envelope" % stage_id,
+		)
 		_check(int(candidate["terminal_tick"]) <= ceili(float(baseline["terminal_tick"]) * 1.35), "%s candidate terminal time must stay within 35%% of baseline" % stage_id)
 		_check(int(candidate["peak_pressure"]) <= maxi(1, ceili(float(baseline["peak_pressure"]) * 1.35)), "%s candidate peak pressure must stay within 35%% of baseline" % stage_id)
 	if paired.has(&"s3"):
 		_check(int((paired[&"s3"] as Dictionary)["candidate"]["peak_blocked_weight"]) >= 2, "S3 Breacher scenario must exert at least two blocked weight")
+	if paired.has(&"s4"):
+		var s4_candidate: Dictionary = (paired[&"s4"] as Dictionary)["candidate"]
+		_check(int(s4_candidate["leaked"]) == 3, "S4 tuned paired-air isolation scenario must remain a three-leak clear")
+		_check(int(s4_candidate["base_hp"]) > 0, "S4 tuned paired-air scenario must remain recoverable")
 	var payload := {
 		"schema": "protos_early_enemy_variety_balance_v1",
 		"ticks_per_second": 30,

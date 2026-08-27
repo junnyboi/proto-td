@@ -358,6 +358,7 @@ const STATIC_FALLBACKS := {
 	&"ui.squad.briefing.human_reason": "Why it matters",
 	&"ui.squad.briefing.clue": "Field note",
 	&"ui.squad.tactical_hint": "Tactical hint — {hint}",
+	&"ui.battle.deploy_operator_cooldown": "{name}{slot}\nCOOLDOWN {seconds}s",
 	&"ui.results.clear": "CLEAR",
 	&"ui.results.defeat": "DEFEAT",
 	&"ui.results.eyebrow": "AFTER-ACTION RELIQUARY",
@@ -517,6 +518,9 @@ const PLACEHOLDER_TYPES := {
 	&"ui.battle.hud_compact": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
 	&"ui.battle.hud_wide": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
 	&"ui.battle.dialogue.wave": {&"wave": &"int"},
+	&"ui.battle.deploy_operator_cooldown": {
+		&"name": &"String", &"slot": &"String", &"seconds": &"int",
+	},
 	&"ui.results.marks_reward": {&"count": &"int"},
 	&"ui.results.unlocked_kind": {&"kind": &"String"},
 	&"ui.results.xp_reward": {&"count": &"int"},

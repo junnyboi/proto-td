@@ -161,6 +161,8 @@ static func copy_legacy_unit(definition: OperatorDef, unit: UnitState) -> void:
 static func is_deployable(model: BattleModel, battle_id: StringName) -> bool:
 	if not model._ticket_rows.has(battle_id):
 		return false
+	if model.is_redeploy_cooling_down(battle_id):
+		return false
 	var record := record_for(model._battle_records, battle_id)
 	if record.is_empty() or bool(record["fell"]):
 		return false

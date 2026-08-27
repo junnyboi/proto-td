@@ -15,7 +15,7 @@ The implementation adds a presentation gate between an unlocked Mission Control 
 |---|---|---|---|
 | 1 — Design contract | Adopt proposal, reference review, and sixteen-stage production manifest. | JSON parse, 16 unique stage IDs, forbidden-copy scan, source-link check. | Commit and push to `master`. |
 | 2 — GPT Image 2 anchors | Generate 16 identity-locked 1920×1080 opening plates; preserve originals and WebP runtime fallbacks. | Inspect every plate for hero identity, signature device, adult anatomy, color semantics, text, crop, and Skip reserve. | Commit and push to `master`. |
-| 3 — Veo 3.1 carriers | Generate 16 maximum-eight-second image-conditioned carriers with native ambience; extract OGG audio and transcode silent OGV video. | `ffprobe` duration/codec/audio checks, frame-contact sheets, semantic video review, file hashes. | Commit and push to `master`. |
+| 3 — Advanced carriers | Generate 16 maximum-eight-second image-conditioned carriers with native ambience; prefer Veo 3.1 and use the strongest capacity-safe image-conditioned model when Veo is unavailable; extract OGG audio and transcode silent OGV video. | `ffprobe` duration/codec/audio checks, frame-contact sheets, semantic video review, speech scan, file hashes. | Commit and push to `master`. |
 | 4 — Runtime | Add mission cinematic registry, dedicated background prefetch service, full-screen player, localized controls/status, Stage Select gate, Reduced Motion fallback, and export exclusions/staging. | Focused parser, locale, stream, Stage Select, save/hash, and prefetch tests. | Commit and push to `master`. |
 | 5 — Native final | Import, bounded boot, complete suite, log scans, Xvfb interaction and landscape/portrait visual checks in EN/ZH. | No parse/runtime/resource/test errors; Skip and auto-complete route to Field Team; no strategic mutation. | Commit and push to `master`. |
 | 6 — Web release | Export HTML/JS/WASM/PCK, stage sixteen streams, serve over HTTP, verify MIME/length/runtime logs, layer onto newest `proto-td-web`, build, restart, checkpoint, publish when available. | Exact managed mappings, nonblocking Title startup, mission-film network/runtime checks, clean console, fullscreen geometry. | WebDev checkpoint and Publish handoff if no publish tool is exposed. |
@@ -37,8 +37,8 @@ New keys are added together to `en-US.json` and `zh-CN.json` for Skip, Continue,
 - [x] Canon, character sheets, stage flow, existing stream architecture, export, and WebDev host audited.
 - [x] Detailed proposal, reference review, and production manifest written.
 - [x] Sixteen GPT Image 2 anchors generated and accepted at 2560×1440; runtime 1920×1080 WebP plates and SHA-256 manifests created.
-- [ ] Sixteen Veo 3.1 carriers generated and accepted.
-- [ ] Audio extracted; runtime OGG and silent OGV assets verified and hashed.
+- [x] Sixteen carriers generated and accepted: Veo 3.1 Quality for S1–S2 and Seedance 2.5 1080p high-bitrate omni-reference for S3–S16 after Veo capacity rejection.
+- [x] Audio extracted; sixteen runtime OGG and silent OGV pairs verified, speech-scanned, duration-clamped to exact 8.000 seconds, and hashed.
 - [ ] Runtime player, prefetch, mission gate, localization, export staging, and tests implemented.
 - [ ] Native complete suite and bilingual visual matrix passed.
 - [ ] Web export, HTTP verification, forward-only WebDev integration, restart, and checkpoint completed.

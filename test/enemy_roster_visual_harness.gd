@@ -49,6 +49,8 @@ func _ready() -> void:
 	for index: int in ENEMY_IDS.size():
 		_spawn_enemy(ENEMY_IDS[index], index)
 	_project()
+	if OS.get_environment("ENEMY_EFFECTS_PREVIEW") == "1":
+		_preview_static_enemy_effects()
 	_relayout()
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
@@ -103,6 +105,29 @@ func _add_nameplate(body: ColorRect, enemy_id: StringName, resolved: bool) -> vo
 	label.size = Vector2(body.size.x + 88.0, 24.0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(label)
+
+
+func _preview_static_enemy_effects() -> void:
+	for enemy: EnemyState in model.enemies:
+		if not EnemyAnimator.uses_static_sprite(enemy.def_id):
+			continue
+		var body := _enemy_rects.get(enemy.id) as ColorRect
+		if body == null:
+			continue
+		var total := EnemyAnimator.damage_flash_frames_for(enemy.def_id, 6)
+		EnemyAnimator.apply_damage_flash(
+			body,
+			maxi(1, total / 2),
+			total,
+			Color.WHITE,
+			Color.RED,
+			enemy.def_id,
+		)
+		EnemyAnimator.begin_death_effect(body, enemy.def_id, enemy.id, false)
+		EnemyAnimator.advance_death_effect(
+			body,
+			EnemyAnimator.static_effect_duration(enemy.def_id) * 0.34,
+		)
 
 
 func _on_watchdog_timeout() -> void:

@@ -75,7 +75,7 @@ Display changes must not rename stage, enemy, operator, trap, spell, reward, sav
 
 **Story beat.** Hunter Drones expose Hearthcross families and carry filled cells toward the empire. Company Manus overloads reservoir turbines to jam the relay, diverting water from Khepri Vale and creating the debt resolved in S10. Fresh anima lets PROTOS command distant robots in real time.
 
-**Implemented design.** The `11 × 6` map separates a straight aerial lane from a bent ground route. Eleven enemies: three `drone`, two `interceptor`, four `grunt`, two `runner`. Ground preview leads to isolated and then mixed air-ground pressure. Wave starts: `0, 390`; leak limit: `3`; squad: `5`.
+**Implemented design.** The `11 × 6` map separates a straight aerial lane from a bent ground route. Eleven enemies: three `drone`, two `interceptor`, four `grunt`, two `runner`. Ground preview leads to isolated and then mixed air-ground pressure; each durable Interceptor now leads a Drone pair so the anti-air lesson escalates cleanly after S3 instead of ending on a lone target. Wave starts: `0, 390`; leak limit: `3`; squad: `5`.
 
 **Progression.** Authored rewards: `sniper_2`, `bolt`. V3: `bolt`, 40 Marks. Class entitlement: `sniper`. Requirement: `sniper_1`.
 

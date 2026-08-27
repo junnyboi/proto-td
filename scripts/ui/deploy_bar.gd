@@ -109,6 +109,7 @@ var _trap_slots: Dictionary = {}
 var _op_defs: Dictionary = {}
 var _trap_defs: Dictionary = {}
 var _ticket_rows: Dictionary = {}
+var _slot_cooldown_seconds: Dictionary = {}
 var _slot_deck: PanelContainer = null
 var _slot_scroll: ScrollContainer = null
 var _slot_box: GridContainer = null
@@ -264,6 +265,7 @@ func _process(_delta: float) -> void:
 	_update_selection_ring()
 	for op_id: StringName in _slots:
 		var slot: Button = _slots[op_id]
+		_refresh_operator_slot(op_id, slot)
 		slot.disabled = not _interaction_enabled or not _operator_interaction_enabled or not model.is_deployable(op_id)
 	for trap_id: StringName in _trap_slots:
 		var slot: Button = _trap_slots[trap_id]
@@ -323,6 +325,7 @@ func _rebuild_slots() -> void:
 	_slot_scroll = null
 	_slot_box = null
 	_slots.clear()
+	_slot_cooldown_seconds.clear()
 	_trap_slots.clear()
 	_build_slots(_op_defs)
 
@@ -390,6 +393,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 		slot.button_down.connect(_start_placement.bind(deployment_id))
 		box.add_child(slot)
 		_slots[deployment_id] = slot
+		_slot_cooldown_seconds[deployment_id] = -1
 	# String-copy sort (P14): StringName sort is interning-ordered — slot
 	# order would vary across launches
 	var trap_names: Array = []
@@ -523,19 +527,9 @@ func _build_overlays() -> void:
 
 func _on_locale_changed(_locale_id: StringName) -> void:
 	for deployment_id: StringName in _slots:
-		var row: Dictionary = _ticket_rows.get(deployment_id, {})
-		var operator_id := StringName(row.get("operator_def_id", deployment_id))
-		var definition := _op_defs.get(operator_id) as OperatorDef
 		var slot := _slots[deployment_id] as Button
-		if definition == null or slot == null:
-			continue
-		var dp_cost := definition.dp_cost
-		var identity_suffix := ""
-		if not row.is_empty():
-			dp_cost = int(row["combat_spec"]["dp_cost"])
-			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
-		slot.text = _operator_card_text(definition, identity_suffix, dp_cost)
-		slot.tooltip_text = slot.text.replace("\n", " — ")
+		_slot_cooldown_seconds[deployment_id] = -1
+		_refresh_operator_slot(deployment_id, slot)
 	for trap_id: StringName in _trap_slots:
 		var definition := _trap_defs.get(trap_id) as TrapDef
 		var slot := _trap_slots[trap_id] as Button
@@ -555,6 +549,48 @@ func _operator_card_text(definition: OperatorDef, identity_suffix: String, cost:
 		"{name}{slot}\n{cost} DP",
 		{&"name": UI_COPY.operator_name(definition), &"slot": identity_suffix, &"cost": cost},
 	)
+
+
+func _operator_cooldown_card_text(
+	definition: OperatorDef,
+	identity_suffix: String,
+	seconds: int,
+) -> String:
+	return UI_COPY.format_text(
+		&"ui.battle.deploy_operator_cooldown",
+		"{name}{slot}\nCOOLDOWN {seconds}s",
+		{
+			&"name": UI_COPY.operator_name(definition),
+			&"slot": identity_suffix,
+			&"seconds": seconds,
+		},
+	)
+
+
+func _refresh_operator_slot(deployment_id: StringName, slot: Button) -> void:
+	if slot == null or model == null:
+		return
+	var seconds := model.redeploy_cooldown_seconds_remaining(deployment_id)
+	if int(_slot_cooldown_seconds.get(deployment_id, -1)) == seconds:
+		return
+	_slot_cooldown_seconds[deployment_id] = seconds
+	var row: Dictionary = _ticket_rows.get(deployment_id, {})
+	var operator_id := StringName(row.get("operator_def_id", deployment_id))
+	var definition := _op_defs.get(operator_id) as OperatorDef
+	if definition == null:
+		return
+	var dp_cost := definition.dp_cost
+	var identity_suffix := ""
+	if not row.is_empty():
+		dp_cost = int(row["combat_spec"]["dp_cost"])
+		identity_suffix = " %d" % (int(row["slot_index"]) + 1)
+	slot.text = (
+		_operator_cooldown_card_text(definition, identity_suffix, seconds)
+		if seconds > 0
+		else _operator_card_text(definition, identity_suffix, dp_cost)
+	)
+	slot.tooltip_text = slot.text.replace("\n", " — ")
+	slot.accessibility_description = slot.tooltip_text
 
 
 func _trap_card_text(definition: TrapDef) -> String:
@@ -839,7 +875,11 @@ func _confirm_retreat() -> void:
 
 
 func _select_unit(unit_id: int) -> void:
+	if _selected_unit_id == unit_id:
+		return
 	_selected_unit_id = unit_id
+	if view != null and view.has_method("operator_selection_changed"):
+		view.call("operator_selection_changed", unit_id >= 0)
 	_update_selection_ring()
 
 
@@ -851,8 +891,7 @@ func _update_selection_ring() -> void:
 		return
 	var unit := model.unit_by_id(_selected_unit_id)
 	if unit == null or not unit.alive:
-		_selected_unit_id = -1
-		_selection_ring.visible = false
+		_select_unit(-1)
 		return
 	_selection_ring.position = view.call("cell_center", unit.cell)
 	_selection_ring.scale = Vector2.ONE * float(view.call("grid_scale"))
