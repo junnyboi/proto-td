@@ -26,7 +26,7 @@ The title controller will create a bottom-wide safe-area dock containing `Footer
 A new `CommandCenterTutorial` presentation component will own:
 
 - two steps: Mission Control, then Premium Resonance;
-- a viewport-level input shield, target ring, connector, and responsive callout card;
+- a viewport-level input shield, centered padded callout card, and directional connector with a clear arrowhead;
 - Skip, Next, and Done actions;
 - keyboard focus containment and `ui_cancel` Skip behavior;
 - reduced-motion-safe entry and step transitions;
@@ -41,7 +41,9 @@ The next-operation panel retains its existing framed visual structure. A transpa
 
 ### Focus presentation
 
-Shared button focus styles will use:
+Shared buttons outside the tutorial retain accessible keyboard focus styles. The tutorial itself removes the decorative gold target border around Mission Control and Resonance; its connector arrowhead now communicates the active destination without visually impersonating keyboard focus.
+
+Shared button focus styles outside the tutorial will use:
 
 - transparent fill;
 - warm-gold 2 px outline;
@@ -60,7 +62,7 @@ New keys will be added with strict `en-US` / `zh-CN` parity for the two tutorial
 |---|---|
 | Preference regression | default unseen; completion persists; Settings batch preserves tutorial state |
 | Title regression | both Settings actions exist, are reachable, open the same state, restore exact focus, and remain inside all target viewports |
-| Tutorial regression | first requested Command Center entry shows two steps; target ring moves correctly; Skip/Done persists; second entry stays silent; locale and Reduced Motion pass |
+| Tutorial regression | first requested Command Center entry shows two centered padded steps; target geometry and arrowhead move correctly without a visible target border; Skip/Done persists; primary copy is white; second entry stays silent; locale and Reduced Motion pass |
 | Routing regression | clicking or activating next-operation card selects the exact next unlocked stage and opens Field Team; invalid/locked stages fail without mutation |
 | Focus regression | all shared Button focus boxes have effectively transparent fill and a warm-gold visible border; specialist button components obey the same contract |
 | Responsive layout | 4K, ultrawide, 1280×720, short landscape, 720×1280, and narrow portrait remain contained |
@@ -85,6 +87,7 @@ New keys will be added with strict `en-US` / `zh-CN` parity for the two tutorial
 |---|---|
 | Audit and design | Complete |
 | Runtime implementation | Complete |
+| Centered callout, padding, arrowhead, and tutorial focus refinement | Complete |
 | Focused and visual verification | Complete |
 | Reconciliation and full native gate | Complete |
 | Web export and managed deployment | Pending |
