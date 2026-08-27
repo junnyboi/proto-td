@@ -32,6 +32,7 @@
 - [x] Refine Training with universal 24×12 button padding, a 1,136px two-column ultrawide roster, a transparent gold inspector, tripled selected portrait, enlarged inspector typography, a padded Edit affordance, and fixed centered two-line Recruitment Order sorting.
 - [x] Replace Training's global View Paths footer action with a promotion-eligible-only Choose Promotion control directly below the selected operator's Promotion Ready status.
 - [x] Forfeit all survivor XP on voluntary resignation while preserving ordinary clear/leak/base survivor awards; add Space pause/resume before GUI dispatch and cycle the top-right speed selector through 1×, 2×, 4×, and paused (`0×`) with responsive Xvfb verification.
+- [x] Implement early enemy variety with an armored S2 Shieldbearer, two-block S3 Breacher, durable S4 Interceptor, real Caster Arts attacks, GPT Image 2/video-to-sprites production assets, deterministic paired balance telemetry, and native landscape/portrait battle acceptance.
 
 # Premium Resonance Cinematic Completion
 
