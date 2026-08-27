@@ -88,4 +88,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 6
 requires = Array[StringName]([&"charm"])
-intro_hint = "Let the heavy advance, wait until its escorts commit behind it, then Charm the leader into its own column."
+intro_hint = "Wait for the escort to gather, then use Charm to force the heavy leader to attack its own column."

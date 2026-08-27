@@ -68,4 +68,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 4
 requires = Array[StringName]([&"sniper_1"])
-intro_hint = "The air lane crosses the convoy near center. Sniper must sustain fire through durable Interceptors, not only burst light Drones."
+intro_hint = "Use a Sniper for the air lane while blockers hold the ground route."

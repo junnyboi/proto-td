@@ -114,4 +114,4 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 8
 requires = Array[StringName]([&"tar_pit", &"sniper_1", &"bolt", &"charm", &"slow_field", &"witch_doctor_1"])
-intro_hint = "The Gatecrasher ignores Charm. Slow the column, turn its escort, burst the support, then fall back to a second blocking line."
+intro_hint = "The Gatecrasher ignores Charm. Slow it, turn its escorts, and keep a second blocking line ready."

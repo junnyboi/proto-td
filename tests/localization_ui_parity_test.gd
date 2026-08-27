@@ -111,6 +111,12 @@ func _check_reviewed_chinese(entries: Dictionary) -> void:
 	_check(String(entries["ui.squad.launch_retryable_error"]).contains("完全相同"), "deployment retry lost exact-order requirement")
 	for key: String in ["ui.gacha.receipt_new", "ui.gacha.receipt_restored", "ui.gacha.receipt_duplicate"]:
 		_check(String(entries[key]).contains("内必得五星"), "gacha guarantee is not expressed as an upper bound: %s" % key)
+	_check(entries["data.stage.s1.narrative.clear_debrief"].contains("Manus连队"), "Act I Company Manus name drifted")
+	_check(entries["data.stage.s1.narrative.battle_start"].contains("标记人"), "Act I opening no longer says robots mark people")
+	_check(entries["data.stage.s3.narrative.transmission"].contains("anima（人的真正灵魂）"), "Act I anima definition drifted")
+	_check(entries["data.stage.s3.narrative.transmission"].contains("完全提取会杀人"), "Act I full-extraction consequence drifted")
+	_check(entries["data.stage.s7.narrative.core_service"].contains("人类养殖场"), "Act I human-farm reveal drifted")
+	_check(entries["data.stage.s8.narrative.clear_debrief"].contains("机器人帝国"), "Act I robot-empire reveal drifted")
 	_check(entries["data.stage.s10.narrative.battle_start_speaker"] == "月辉载体", "Act II Lunaris Vessel identity drifted")
 	_check(entries["data.stage.s11.narrative.battle_start_speaker"] == "圣物决斗者", "Act II Reliquary Duelist identity drifted")
 	_check(entries["data.stage.s12.narrative.transmission_speaker"] == "档案术师", "Act II Archive Caster identity drifted")

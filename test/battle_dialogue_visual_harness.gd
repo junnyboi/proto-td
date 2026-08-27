@@ -29,7 +29,7 @@ func _run() -> void:
 	battlefield.offset_top = 28.0
 	battlefield.offset_right = -28.0
 	battlefield.offset_bottom = -28.0
-	battlefield.text = "COMPANY 33 // HEARTHCROSS\n\nWAVE 01 / 05\nLIVES 20     DP 30\n\n\n\n\n\n\n\n\nTACTICAL COMMANDS"
+	battlefield.text = "COMPANY MANUS // HEARTHCROSS\n\nWAVE 01 / 05\nLIVES 20     DP 30\n\n\n\n\n\n\n\n\nTACTICAL COMMANDS"
 	battlefield.add_theme_color_override("font_color", Color(0.27, 0.64, 0.78, 0.54))
 	battlefield.add_theme_font_size_override("font_size", 18)
 	backdrop.add_child(battlefield)
