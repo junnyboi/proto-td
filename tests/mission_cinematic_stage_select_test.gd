@@ -35,6 +35,7 @@ func _run() -> void:
 	await process_frame
 	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "locked mission row opened a cinematic")
 	unlocked.pressed.emit()
+	await process_frame
 	var overlay := campaign.find_child("MissionCinematicOverlay", true, false)
 	_check(overlay != null, "unlocked mission row did not open the cinematic overlay")
 	_check(bool(campaign.call("cinematic_gate_active")), "Stage Select route input did not lock during the overlay")
@@ -44,7 +45,10 @@ func _run() -> void:
 	_check(state.strategic_hash() == before_strategic, "opening the mission cinematic changed the strategic hash")
 	_check(state.core_hash() == before_core, "opening the mission cinematic changed the core hash")
 	if overlay != null:
-		overlay.call("finish_for_test", &"skip")
+		var skip := overlay.call("action_button") as Button
+		_check(skip != null and skip.has_focus(), "mission cinematic Skip did not own initial focus")
+		if skip != null:
+			skip.pressed.emit()
 	await process_frame
 	await process_frame
 	await process_frame

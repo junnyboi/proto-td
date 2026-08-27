@@ -18,8 +18,8 @@
   },
   "structural": {
     "catalog_counts": {
-      "en-US": 979,
-      "zh-CN": 979
+      "en-US": 980,
+      "zh-CN": 980
     },
     "missing_chinese": [],
     "extra_chinese": [],
@@ -110,7 +110,7 @@
         "value": "{class_name} • {status}"
       }
     ],
-    "production_key_count": 655,
+    "production_key_count": 656,
     "missing_catalog_keys": [],
     "unreferenced_catalog_keys": [
       "data.enemy.breacher.name",

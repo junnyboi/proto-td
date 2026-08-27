@@ -1,6 +1,6 @@
 # Mission Intro Cinematics Implementation Plan
 
-**Status:** In progress  
+**Status:** Native accepted; Web release in progress
 **Canonical repository:** `https://github.com/junnyboi/proto-td`  
 **Engine:** Godot `4.7.2.stable.official.ed1daf0bf`  
 **WebDev mapping:** `proto-td` → `proto-td-web`
@@ -40,7 +40,7 @@ New keys are added together to `en-US.json` and `zh-CN.json` for Skip, Continue,
 - [x] Sixteen carriers generated and accepted: Veo 3.1 Quality for S1–S2 and Seedance 2.5 1080p high-bitrate omni-reference for S3–S16 after Veo capacity rejection.
 - [x] Audio extracted; sixteen runtime OGG and silent OGV pairs verified, speech-scanned, duration-clamped to exact 8.000 seconds, and hashed.
 - [x] Runtime player, prefetch, mission gate, localization, export staging, and focused tests implemented.
-- [ ] Native complete suite and bilingual visual matrix passed.
+- [x] Native complete suite passed: Godot 4.7.2 import/boot, 78/78 tests, strict localization and staging gates, and a 12-capture bilingual landscape/portrait matrix at 150% text scale.
 - [ ] Web export, HTTP verification, forward-only WebDev integration, restart, and checkpoint completed.
 - [ ] Published, or exact verified checkpoint handed to the Publish control when no publish tool exists.
 
@@ -51,3 +51,9 @@ Phase 4 adds a typed sixteen-record catalog under `data/presentation/cinematics/
 The Web base export excludes `assets/cinematics/missions/video/*.ogv`; fallback posters remain core-resident. `tools/stage_mission_cinematic_streams.sh` requires exactly `s1.ogv` through `s16.ogv`, validates every duration at no more than 8.05 seconds, optionally stages same-name OGG ambience, honors the `core` or `stage` poster policy, and emits JSON plus TSV manifests. The existing Premium Resonance staging script and service are unchanged.
 
 The catalog's OGV/OGG byte sizes and SHA-256 fields are pinned to the accepted `assets/cinematics/missions/media-manifest.json` outputs. Nonzero byte fields and nonempty digests are independently enforced by runtime verification, and no generated MP4 is loaded at runtime.
+
+## Phase delivery record
+
+Phases 1–2 established the proposal and sixteen GPT Image 2 anchors. Phase 3 was pushed in `b64301cbda53a9b01f38d87758565a99e6e7ac2f` after reconciling concurrent advanced-operator work. Phase 4 was pushed in `74e1757b37fb6d27185fe843541bf901c4a13a28` after preserving concurrent balance, enemy-effect, and retreat-cooldown work.
+
+Phase 5 passed a direct import, bounded boot, all 78 standalone native tests, strict localization and stream-staging checks, and the bilingual 12-capture Xvfb matrix. The final interaction regression presses the same focused Skip button exposed to the player and verifies exact one-time routing without campaign, save, or hash mutation. [NATIVE_RELEASE.md](mission-cinematics/NATIVE_RELEASE.md) is the durable gate record.

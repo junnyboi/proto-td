@@ -80,6 +80,17 @@ func _ready() -> void:
 		I18n.locale_changed.connect(_on_locale_changed)
 
 
+func _exit_tree() -> void:
+	_cinematic_route_committed = true
+	_cinematic_gate_locked = false
+	if (
+		_cinematic_overlay != null
+		and is_instance_valid(_cinematic_overlay)
+		and _cinematic_overlay.terminal.is_connected(_on_mission_cinematic_terminal)
+	):
+		_cinematic_overlay.terminal.disconnect(_on_mission_cinematic_terminal)
+
+
 func _build_header(column: VBoxContainer) -> void:
 	_header = GridContainer.new()
 	_header.name = "CampaignHeader"
@@ -496,8 +507,14 @@ func _set_route_input_enabled(enabled: bool) -> void:
 		_back.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
 
 
-func _on_mission_cinematic_terminal(stage_id: StringName, _reason: StringName) -> void:
+func _on_mission_cinematic_terminal(stage_id: StringName, reason: StringName) -> void:
 	if not _cinematic_gate_locked or _cinematic_route_committed or stage_id != _cinematic_stage_id:
+		return
+	if reason == &"scene_exit":
+		_cinematic_gate_locked = false
+		_cinematic_overlay = null
+		if is_inside_tree():
+			_set_route_input_enabled(true)
 		return
 	_cinematic_route_committed = true
 	_cinematic_gate_locked = false
