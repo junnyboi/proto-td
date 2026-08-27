@@ -14,6 +14,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.company.identity_compact": {&"company": &"String", &"faction": &"String"},
 	&"ui.gacha.cinematic_receiving": {&"percent": &"int"},
 	&"ui.gacha.pull_again_accessibility": {&"cost": &"int"},
+	&"ui.mission_cinematic.loading": {&"percent": &"int"},
 	&"ui.squad.card_fallen": {&"level": &"int", &"name": &"String", &"rarity": &"int"},
 	&"ui.squad.card_premium": {&"cost": &"int", &"level": &"int", &"lives": &"int", &"name": &"String", &"rarity": &"int"},
 	&"ui.squad.card_ready": {&"cost": &"int", &"level": &"int", &"name": &"String", &"rarity": &"int"},

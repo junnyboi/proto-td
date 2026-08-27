@@ -16,6 +16,7 @@ const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narr
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
+const MissionCinematicPlayerType := preload("res://scripts/ui/components/mission_cinematic_player.gd")
 const ROUTE_PANEL_WIDE_WIDTH := 480.0
 const ROUTE_CONTENT_INSET := 36
 const DOSSIER_HORIZONTAL_INSET := 80
@@ -50,6 +51,10 @@ var _route_note: AetheriaLabelType = null
 var _dossier_eyebrow: AetheriaLabelType = null
 var _back: AetheriaButtonType = null
 var _enabled_rows: Array[Button] = []
+var _cinematic_overlay: MissionCinematicPlayerType = null
+var _cinematic_stage_id: StringName = &""
+var _cinematic_gate_locked := false
+var _cinematic_route_committed := false
 
 
 func _ready() -> void:
@@ -402,6 +407,8 @@ func _show_dossier(stage_id: StringName) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _cinematic_gate_locked:
+		return
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_on_back_to_staging()
@@ -461,7 +468,42 @@ func _refresh_focus_chain() -> void:
 
 
 func _on_stage_pressed(stage_id: StringName) -> void:
+	if _cinematic_gate_locked or not Game.is_stage_unlocked(stage_id):
+		return
 	Sfx.play("ui_click")
+	_cinematic_gate_locked = true
+	_cinematic_route_committed = false
+	_cinematic_stage_id = stage_id
+	_set_route_input_enabled(false)
+	_cinematic_overlay = MissionCinematicPlayerType.new()
+	_cinematic_overlay.name = "MissionCinematicOverlay"
+	_cinematic_overlay.terminal.connect(_on_mission_cinematic_terminal)
+	add_child(_cinematic_overlay)
+	move_child(_cinematic_overlay, get_child_count() - 1)
+	_cinematic_overlay.present(stage_id)
+
+
+func cinematic_gate_active() -> bool:
+	return _cinematic_gate_locked
+
+
+func _set_route_input_enabled(enabled: bool) -> void:
+	for row: Button in _enabled_rows:
+		row.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+		row.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	if _back != null:
+		_back.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+		_back.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+
+
+func _on_mission_cinematic_terminal(stage_id: StringName, _reason: StringName) -> void:
+	if not _cinematic_gate_locked or _cinematic_route_committed or stage_id != _cinematic_stage_id:
+		return
+	_cinematic_route_committed = true
+	_cinematic_gate_locked = false
+	if _cinematic_overlay != null and is_instance_valid(_cinematic_overlay):
+		_cinematic_overlay.queue_free()
+	_cinematic_overlay = null
 	Game.open_field_team_for_stage(stage_id)
 
 

@@ -15,9 +15,13 @@ func _init() -> void:
 
 func _run() -> void:
 	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	var mission_cinematic_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
 	_check(cinematic_prefetch != null, "CinematicPrefetch autoload is missing")
+	_check(mission_cinematic_prefetch != null, "MissionCinematicPrefetch autoload is missing")
 	if cinematic_prefetch != null:
 		cinematic_prefetch.call("reset_for_tests")
+	if mission_cinematic_prefetch != null:
+		mission_cinematic_prefetch.call("reset_for_tests")
 	_remove_preferences(PREFERENCES_PATH)
 	_remove_preferences(REDUCED_PREFERENCES_PATH)
 	await _verify_animated_reveal_and_hover()
@@ -27,6 +31,9 @@ func _run() -> void:
 	if cinematic_prefetch != null:
 		_check(int(cinematic_prefetch.call("title_entry_count")) == 2, "each title entry did not start cinematic prefetch")
 		cinematic_prefetch.call("reset_for_tests")
+	if mission_cinematic_prefetch != null:
+		_check(int(mission_cinematic_prefetch.call("title_entry_count")) == 2, "each title entry did not start mission cinematic prefetch")
+		mission_cinematic_prefetch.call("reset_for_tests")
 	call_deferred("_finish")
 
 
@@ -36,6 +43,8 @@ func _verify_animated_reveal_and_hover() -> void:
 	var settings := title.find_child("SettingsButton", true, false) as Button
 	var sfx := root.get_node_or_null("Sfx")
 	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	var mission_cinematic_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
+	_check(mission_cinematic_prefetch != null and int(mission_cinematic_prefetch.call("title_entry_count")) == 1, "animated title entry did not start mission cinematic prefetch immediately")
 	_check(cinematic_prefetch != null and int(cinematic_prefetch.call("title_entry_count")) == 1, "animated title entry did not start cinematic prefetch immediately")
 	_check(wordmark != null and wordmark.modulate.a < 1.0, "wordmark did not begin inside the fade-in window")
 	_check(title.find_child("CanonSynopsis", true, false) == null, "removed canon synopsis returned to the title reveal")
@@ -74,6 +83,8 @@ func _verify_reduced_motion() -> void:
 	var wordmark := title.find_child("Wordmark", true, false) as Label
 	var settings := title.find_child("SettingsButton", true, false) as Button
 	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	var mission_cinematic_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
+	_check(mission_cinematic_prefetch != null and int(mission_cinematic_prefetch.call("title_entry_count")) == 2, "reduced-motion title entry did not preserve mission background prefetch")
 	_check(cinematic_prefetch != null and int(cinematic_prefetch.call("title_entry_count")) == 2, "reduced-motion title entry did not preserve background prefetch")
 	_check(wordmark != null and _near(wordmark.modulate.a, 1.0), "reduced motion did not reveal the wordmark instantly")
 	_check(title.find_child("CanonSynopsis", true, false) == null, "reduced-motion title restored removed synopsis")

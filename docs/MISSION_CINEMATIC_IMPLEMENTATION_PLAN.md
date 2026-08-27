@@ -39,7 +39,15 @@ New keys are added together to `en-US.json` and `zh-CN.json` for Skip, Continue,
 - [x] Sixteen GPT Image 2 anchors generated and accepted at 2560×1440; runtime 1920×1080 WebP plates and SHA-256 manifests created.
 - [x] Sixteen carriers generated and accepted: Veo 3.1 Quality for S1–S2 and Seedance 2.5 1080p high-bitrate omni-reference for S3–S16 after Veo capacity rejection.
 - [x] Audio extracted; sixteen runtime OGG and silent OGV pairs verified, speech-scanned, duration-clamped to exact 8.000 seconds, and hashed.
-- [ ] Runtime player, prefetch, mission gate, localization, export staging, and tests implemented.
+- [x] Runtime player, prefetch, mission gate, localization, export staging, and focused tests implemented.
 - [ ] Native complete suite and bilingual visual matrix passed.
 - [ ] Web export, HTTP verification, forward-only WebDev integration, restart, and checkpoint completed.
 - [ ] Published, or exact verified checkpoint handed to the Publish control when no publish tool exists.
+
+## Phase 4 runtime implementation
+
+Phase 4 adds a typed sixteen-record catalog under `data/presentation/cinematics/`, the independent `MissionCinematicPrefetch` autoload, and a full-screen poster-first `MissionCinematicPlayer`. Title starts configured mission downloads without awaiting them. Mission Control disables route input while the player owns focus and invokes the unchanged Field Team facade exactly once after the player's terminal signal. Reduced Motion, transport failure, user skip, completion, and scene exit all resolve through the same terminal-once edge.
+
+The Web base export excludes `assets/cinematics/missions/video/*.ogv`; fallback posters remain core-resident. `tools/stage_mission_cinematic_streams.sh` requires exactly `s1.ogv` through `s16.ogv`, validates every duration at no more than 8.05 seconds, optionally stages same-name OGG ambience, honors the `core` or `stage` poster policy, and emits JSON plus TSV manifests. The existing Premium Resonance staging script and service are unchanged.
+
+The catalog's OGV/OGG byte sizes and SHA-256 fields are pinned to the accepted `assets/cinematics/missions/media-manifest.json` outputs. Nonzero byte fields and nonempty digests are independently enforced by runtime verification, and no generated MP4 is loaded at runtime.
