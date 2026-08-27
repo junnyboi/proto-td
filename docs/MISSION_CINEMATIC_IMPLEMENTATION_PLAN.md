@@ -36,7 +36,7 @@ New keys are added together to `en-US.json` and `zh-CN.json` for Skip, Continue,
 
 - [x] Canon, character sheets, stage flow, existing stream architecture, export, and WebDev host audited.
 - [x] Detailed proposal, reference review, and production manifest written.
-- [ ] Sixteen GPT Image 2 anchors generated and accepted.
+- [x] Sixteen GPT Image 2 anchors generated and accepted at 2560×1440; runtime 1920×1080 WebP plates and SHA-256 manifests created.
 - [ ] Sixteen Veo 3.1 carriers generated and accepted.
 - [ ] Audio extracted; runtime OGG and silent OGV assets verified and hashed.
 - [ ] Runtime player, prefetch, mission gate, localization, export staging, and tests implemented.
