@@ -1165,7 +1165,7 @@ func _project_units() -> void:
 
 func _operator_visual_template_id(u: UnitState) -> StringName:
 	return OPERATOR_VISUAL_CATALOG_SCRIPT.template_for_unit(
-		u.op_id, u.portrait_asset_id, u.hero_id, u.id,
+		u.op_id, u.portrait_asset_id, u.hero_id, u.id, u.class_id,
 	)
 
 
@@ -1300,8 +1300,8 @@ func _make_unit_node(u: UnitState) -> Node2D:
 	else:
 		rect.color = BattlePalette.OPERATOR_CLASS[op_class]
 		rect.size = Vector2(UNIT_PX, UNIT_PX)
-	# feet on the face: admitted animation cells carry a normalized 0.94 pivot;
-	# legacy sprites remain bottom-center anchored exactly as before.
+	# Feet stay on the face through each admitted animation definition's versioned
+	# pivot; legacy sprites remain bottom-center anchored exactly as before.
 	var pivot_y := animation.pivot.y if animated else 1.0
 	rect.position = Vector2(-rect.size.x * 0.5, IsoProjection.FEET_OFFSET - rect.size.y * pivot_y)
 	EnemyAnimator.add_shadow(rect, false)

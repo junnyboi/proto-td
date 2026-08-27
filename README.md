@@ -77,6 +77,8 @@ Campaign economy mutations follow the same rule: UI code calls the `Game` facade
 
 All character concepts, portraits, UI illustrations, chibi units, and animated sprite references follow [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md). The canonical launch-faction trio and their full-figure/chibi production sheets are documented in [`docs/LUNARIS_CHARACTER_DESIGNS.md`](docs/LUNARIS_CHARACTER_DESIGNS.md) and stored together under [`docs/lunaris-reliquary/`](docs/lunaris-reliquary/).
 
+All eleven recruit-derived specializations have distinct adult male and female idle/attack sets in four isometric directions. The 22 resources resolve after premium portrait overrides and before legacy fallback; generated east facings and deterministic west mirrors use 640×640 source cells while Godot owns their runtime footprint. See [`docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md`](docs/ADVANCED_OPERATOR_SPRITE_IMPLEMENTATION_PLAN.md) and `tools/operator_sprites/` for the complete GPT Image 2 → Veo carrier → validated atlas pipeline.
+
 The deterministic premium gacha lifecycle, save migration, fixed-kit rule, stored-life economy, death behavior, and validation contract are documented in [`docs/PREMIUM_HERO_SYSTEM.md`](docs/PREMIUM_HERO_SYSTEM.md).
 
 ## Narrative canon

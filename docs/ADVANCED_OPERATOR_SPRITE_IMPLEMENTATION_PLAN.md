@@ -70,7 +70,7 @@ The production also requires `11 × 2 × 2 = 44` approved directional chroma key
 | Sword Saint | 2 | 4 | 8 | 8 | 16 |
 | **Total** | **22** | **44** | **88** | **88** | **176** |
 
-No north-west or south-west video may be generated. `NW` must be an exact horizontal mirror of `NE`, and `SW` must be an exact horizontal mirror of `SE`, retaining frame order, alpha, ground contact, effect timing, reach, and bounds. The briefs are explicitly mirror-safe: permanent features must remain centered or bilaterally paired, and no prompt or paint-over may introduce meaningful handedness, one-sided gear, directional writing, unilateral injuries, or fixed-side lighting.
+No north-west or south-west video may be generated. `NW` is deterministically derived as the horizontal mirror of `NE`, and `SW` from `SE`, retaining frame order, exact alpha, ground contact, effect timing, reach, and bounds. Quality-92 RGB encoding may introduce only the validator's tightly bounded per-channel compression delta. The briefs are explicitly mirror-safe: permanent features must remain centered or bilaterally paired, and no prompt or paint-over may introduce meaningful handedness, one-sided gear, directional writing, unilateral injuries, or fixed-side lighting.
 
 ## 4. Generative media specification
 
@@ -176,7 +176,7 @@ Model output itself is not assumed bit-reproducible. Reproducibility means that 
 
 ### 6.1 Fixed-cell output
 
-Each of the 176 runtime sequences is a **lossless WebP atlas** with transparent background and fixed **640 × 640** cells. The neutral body/equipment union is fitted without distortion so its longest non-transparent edge is **560–640 px**; target 600 px where the silhouette allows, reserve visible alpha margin, and reject clipping. The same variant/direction uses one neutral scale transform for idle and attack so transient VFX cannot shrink the character.
+Each of the 176 runtime sequences is a **quality-92 VP8 WebP atlas with lossless alpha** and fixed **640 × 640** cells. Immutable GPT Image 2 references, directional keyframes, and Veo carriers remain at full generated resolution in the external source archive. The neutral body/equipment union is fitted without distortion so its longest non-transparent edge is **560–640 px**; target 600 px where the silhouette allows, reserve visible alpha margin, and reject clipping. The same variant/direction uses one neutral scale transform for idle and attack so transient VFX cannot shrink the character.
 
 All cells use a **bottom-center pivot** at normalized `(0.5, 1.0)`, corresponding to pixel `(320, 640)`. Feet or the planted equipment ferrule register to that ground axis in every frame. If a source pose contains transparent floor clearance, normalize it out rather than compensating with a different manifest pivot. Class-specific display height remains a presentation calibration, approximately the existing 58–64 px tower read, and must not change gameplay collision.
 
@@ -275,7 +275,7 @@ Add exactly **176 logical animation rows** for the new class/gender sequences. `
 
 Implement `tools/operator_sprites/build_advanced_operator_sprites.py` as a deterministic CLI. It must accept the source root, class, gender, action, generated direction, chroma, temporal window, and output root; remove measured carrier chroma with spill decontamination; preserve soft alpha and costume cyan/teal; sample frames; normalize against a neutral anchor; pack eight columns; derive the west atlas by RGBA pixel mirroring; and write validation JSON. Save the script before execution and pin all Python dependencies in the source archive lockfile.
 
-Implement `tools/operator_sprites/validate_advanced_operator_sprites.py` to fail on wrong carrier count, audio streams, duration drift, non-16:9 media, camera/root drift above tolerance, missing recovery, wrong frame count, wrong atlas dimensions, non-lossless WebP, longest edge outside 560–640 px, clipped alpha, pivot drift, chroma fringe, unequal variant scale, incorrect mirror pixels, missing hashes, or unexpected files.
+Implement `tools/operator_sprites/validate_advanced_operator_sprites.py` to fail on wrong carrier count, audio streams, duration drift, non-16:9 media, camera/root drift above tolerance, missing recovery, wrong frame count, wrong atlas dimensions, missing WebP alpha, longest edge outside 560–640 px, clipped alpha, pivot drift, chroma fringe, unequal variant scale, mirror alpha mismatch or excessive RGB compression drift, missing hashes, or unexpected files.
 
 A representative deterministic build command is:
 
@@ -424,14 +424,14 @@ The program is complete only when all of the following are true:
 
 - all eleven named recruit-derived classes have separate adult male and adult female production variants;
 - the archive contains exactly 44 approved NE/SE directional keyframes and exactly **88** silent, locked-camera, four-second Veo 3.1 carriers with identical first/last keyframes;
-- runtime contains exactly **176** idle/attack direction sequences: generated NE/SE and exact mirrored NW/SW;
+- runtime contains exactly **176** idle/attack direction sequences: generated NE/SE and deterministic mirrored NW/SW with exact alpha;
 - every idle is 24 frames and every attack is 13 frames at 12 FPS, preserving current presentation timing and authoritative simulation behavior;
-- every runtime atlas is lossless WebP, 640 × 640 per cell, eight columns, bottom-center pivot, with subject longest edge in the 560–640 px range and no clipping;
+- every runtime atlas is quality-92 VP8 WebP with lossless alpha, 640 × 640 per cell, eight columns, bottom-center pivot, with subject longest edge in the 560–640 px range and no clipping;
 - highest-resolution GPT Image 2 references, keyframes, Veo carriers, prompts, request records, processing metadata, and hashes are preserved under `/home/ubuntu/projects/proto-td-1515240c/advanced-operator-sprites-sources`;
 - all 22 class/gender resources and 176 manifest rows are non-placeholder and auditable;
 - catalog routing is premium portrait first, then class plus deterministic identity gender, then recruit/legacy fallback;
 - premium mappings and all authoritative campaign/battle/replay behavior are unchanged;
-- automated contracts, exact mirror checks, repository regression, direct import, bounded boot, and the complete native 176-sequence visual matrix pass;
+- automated contracts, exact-alpha and bounded-RGB mirror checks, repository regression, direct import, bounded boot, and the complete native 176-sequence visual matrix pass;
 - the exact Godot Web preset exports successfully, the bundle passes HTTP/browser checks and memory/texture-size gates, and the same revision is built, checkpointed, and deployed through the WebDev host; and
 - rollback can restore the prior catalog/manifest/WebDev checkpoint without deleting or overwriting any approved source original.
 

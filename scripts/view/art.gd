@@ -163,15 +163,9 @@ static func texture(id: StringName, frame := 0) -> Texture2D:
 		var frame_size := size(id)
 		var atlas_source := _load_texture(pattern)
 		if atlas_source != null and frame_size != Vector2i.ZERO:
-			var columns := maxi(1, int(entry.get("columns", frames)))
 			var atlas := AtlasTexture.new()
 			atlas.atlas = atlas_source
-			atlas.region = Rect2i(
-				(frame % columns) * frame_size.x,
-				(frame / columns) * frame_size.y,
-				frame_size.x,
-				frame_size.y,
-			)
+			atlas.region = atlas_region_for_frame(entry, frame)
 			atlas.filter_clip = true
 			tex = atlas
 	else:
@@ -180,6 +174,20 @@ static func texture(id: StringName, frame := 0) -> Texture2D:
 	if tex != null:
 		_cache[key] = tex
 	return tex
+
+
+static func atlas_region_for_frame(entry: Dictionary, frame: int) -> Rect2i:
+	var frames := int(entry.get(&"frames", 0))
+	var stored_size: Variant = entry.get(&"size", Vector2i.ZERO)
+	if frame < 0 or frame >= frames or stored_size is not Vector2i or stored_size == Vector2i.ZERO:
+		return Rect2i()
+	var columns := maxi(1, int(entry.get(&"columns", frames)))
+	return Rect2i(
+		(frame % columns) * stored_size.x,
+		(frame / columns) * stored_size.y,
+		stored_size.x,
+		stored_size.y,
+	)
 
 
 static func _load_texture(path: String) -> Texture2D:

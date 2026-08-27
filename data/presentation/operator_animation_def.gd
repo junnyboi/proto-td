@@ -14,6 +14,7 @@ const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
 @export var attack_frame_count: int = 13
 @export var fps: float = 12.0
 @export var pivot: Vector2 = Vector2(0.5, 0.94)
+@export var source_cell_px: int = 192
 @export var display_height_px: int = 64
 @export var normalized_subject_height_px: int = 168
 @export var placeholder: bool = true
@@ -22,8 +23,8 @@ const DIRECTIONS: Array[StringName] = [&"se", &"ne", &"nw", &"sw"]
 
 func validate_contract() -> PackedStringArray:
 	var errors := PackedStringArray()
-	if schema_version != 1:
-		errors.append("schema_version: expected 1")
+	if schema_version not in [1, 2]:
+		errors.append("schema_version: expected 1 or 2")
 	if visual_id.is_empty():
 		errors.append("visual_id: expected nonempty StringName")
 	_validate_direction_map(&"idle", idle_by_direction, errors)
@@ -36,10 +37,18 @@ func validate_contract() -> PackedStringArray:
 		errors.append("fps: expected 12.0")
 	if not pivot.is_finite() or pivot.x < 0.0 or pivot.x > 1.0 or pivot.y < 0.0 or pivot.y > 1.0:
 		errors.append("pivot: expected finite normalized Vector2")
+	if schema_version == 1 and source_cell_px != 192:
+		errors.append("source_cell_px: schema 1 expected 192")
+	if schema_version == 2 and source_cell_px != 640:
+		errors.append("source_cell_px: schema 2 expected 640")
+	if schema_version == 2 and not pivot.is_equal_approx(Vector2(0.5, 1.0)):
+		errors.append("pivot: schema 2 expected bottom-center (0.5, 1.0)")
 	if display_height_px <= 0:
 		errors.append("display_height_px: expected positive int")
-	if normalized_subject_height_px <= 0 or normalized_subject_height_px > 192:
-		errors.append("normalized_subject_height_px: expected 1..192")
+	if normalized_subject_height_px <= 0 or normalized_subject_height_px > source_cell_px:
+		errors.append("normalized_subject_height_px: expected 1..source_cell_px")
+	if schema_version == 2 and placeholder:
+		errors.append("placeholder: schema 2 generated animation must be production art")
 	_validate_placeholders(errors)
 	return errors
 

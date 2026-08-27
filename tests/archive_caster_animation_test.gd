@@ -37,21 +37,24 @@ func _init() -> void:
 func _test_premium_identity_routing() -> void:
 	var premium := UnitStateScript.new()
 	premium.op_id = &"caster_1"
+	premium.class_id = &"mage_apprentice"
 	premium.portrait_asset_id = &"portrait_archive_caster"
 	_check(
 		OperatorVisualCatalogScript.template_for_unit(
-			premium.op_id, premium.portrait_asset_id, premium.hero_id, premium.id,
+			premium.op_id, premium.portrait_asset_id, premium.hero_id, premium.id, premium.class_id,
 		) == &"archive_caster",
 		"Archive Caster portrait did not resolve to the unique visual template",
 	)
 	var ordinary := UnitStateScript.new()
 	ordinary.op_id = &"caster_1"
+	ordinary.class_id = &"mage_apprentice"
 	ordinary.portrait_asset_id = &"portrait_caster_1"
+	var ordinary_template := OperatorVisualCatalogScript.template_for_unit(
+		ordinary.op_id, ordinary.portrait_asset_id, ordinary.hero_id, ordinary.id, ordinary.class_id,
+	)
 	_check(
-		OperatorVisualCatalogScript.template_for_unit(
-			ordinary.op_id, ordinary.portrait_asset_id, ordinary.hero_id, ordinary.id,
-		) == &"caster_1",
-		"ordinary caster_1 visual routing changed",
+		ordinary_template in [&"mage_apprentice_female", &"mage_apprentice_male"],
+		"ordinary caster_1 did not resolve to a generated Mage Apprentice variant",
 	)
 
 
