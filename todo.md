@@ -96,7 +96,8 @@
 - [x] Add processor, registrar, schema, row-boundary, routing, premium-precedence, live-animator, generated-cache, and Xvfb visual-matrix coverage; repair three hidden keyed-collapse frames and validate all 88 authored records / 176 outputs.
 - [x] Run the synchronized full 68-gate repository baseline, bounded boot, final error scans, and a 16-gate regression after the second forward reconciliation.
 - [x] Commit and push the reconciled release to `master` without rewriting shared history.
-- [ ] Export the exact pushed Godot revision, verify HTML/JS/WASM/PCK over HTTP and in-browser, and measure PCK/runtime loading behavior.
+- [x] Preserve every 640px source cell while configuring all 176 class/gender imports for quality-0.92 compressed storage plus mipmaps; reduce the Web PCK from 802,693,488 to 520,738,608 bytes and pass heavy-class visual matrices.
+- [x] Export the optimized Godot revision, verify HTML/JS/WASM/PCK over HTTP and in Chromium, confirm WebGL 2 with 8192px textures, and reach Title plus Company Command without console, page, or request errors.
 - [ ] Layer the release onto the newest `proto-td-web` host, pass check/build/preview gates, and save a new managed checkpoint.
 
 # Act II Balance, Transitions, and Unique Score

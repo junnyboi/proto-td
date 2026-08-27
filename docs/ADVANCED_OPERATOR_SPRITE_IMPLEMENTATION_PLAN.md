@@ -415,7 +415,7 @@ Verify the borderless `/game/index.html` iframe at desktop and portrait sizes, e
 | Attack lacks full recovery | Stuck pose at authoritative timing boundary | Require neutral endpoint, choose complete action window, inspect frame 13→idle frame 1, regenerate if recovery is absent |
 | Wide weapon/effect clips at 640 | Lost silhouette or false scale | Target 600 longest edge, neutral-anchor scale, alpha-margin test, brief-conforming compact effect; reject oversized generation |
 | 8-column atlas exceeds device limit | 5120-wide textures fail on lower-end WebGL hardware | Require `MAX_TEXTURE_SIZE ≥ 8192` on supported Web targets, test representative desktop/mobile browsers, and block release if target policy cannot support the mandated atlas |
-| 640-cell atlases exhaust memory | Browser crash or long load | Keep `Art` loading demand-driven, add bounded per-template atlas cache/unload between battles, measure compressed bundle and decoded peak memory, set release budgets before full cutover |
+| 640-cell atlases exhaust memory | Browser crash or long load | Preserve the 640px quality-92 WebP sources, but import the 176 class/gender atlases with Godot high-quality lossy mode (`quality = 0.92`) plus mipmaps. `configure_advanced_operator_imports.py` regression-locks the settings. Reject any Web PCK above 600 MiB or any representative browser load that crashes before Title. |
 | Manifest schema migration breaks old art | Recruit/premium or legacy textures fail | Version schema, migrate fixtures, retain old resource semantics, test old and new cell profiles together |
 | Class/gender resolver affects simulation | Save/replay/hash divergence | Resolver remains in presentation catalog; read stable identity only; mutation guard and paired simulation-hash tests |
 | Premium mapping regression | Named heroes receive class art | Premium portrait lookup is first and exact; dedicated tests pin all three mappings |
@@ -431,6 +431,7 @@ The program is complete only when all of the following are true:
 - runtime contains exactly **176** idle/attack direction sequences: generated NE/SE and deterministic mirrored NW/SW with exact alpha;
 - every idle is 24 frames and every attack is 13 frames at 12 FPS, preserving current presentation timing and authoritative simulation behavior;
 - every runtime atlas is quality-92 VP8 WebP with lossless alpha, 640 × 640 per cell, eight columns, bottom-center pivot, with subject longest edge in the 560–640 px range and no clipping;
+- all 176 advanced atlas imports retain unlimited 640px dimensions, add mipmaps for tower-scale sampling, and use high-quality compressed storage so the Web PCK remains within the 600 MiB release budget;
 - highest-resolution GPT Image 2 references, keyframes, Veo carriers, prompts, request records, processing metadata, and hashes are preserved under `/home/ubuntu/projects/proto-td-1515240c/advanced-operator-sprites-sources`;
 - all 22 class/gender resources and 176 manifest rows are non-placeholder and auditable;
 - catalog routing is premium portrait first, then class plus deterministic identity gender, then recruit/legacy fallback;
