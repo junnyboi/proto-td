@@ -61,6 +61,20 @@ const FACING_DIRECTIONS := {
 	UnitState.Facing.UP: Vector2(0.70710678, -0.70710678),
 }
 
+const FACING_LOCALIZATION_KEYS := {
+	UnitState.Facing.RIGHT: &"ui.battle.facing_southeast",
+	UnitState.Facing.DOWN: &"ui.battle.facing_southwest",
+	UnitState.Facing.LEFT: &"ui.battle.facing_northwest",
+	UnitState.Facing.UP: &"ui.battle.facing_northeast",
+}
+
+const FACING_FALLBACKS := {
+	UnitState.Facing.RIGHT: "Southeast",
+	UnitState.Facing.DOWN: "Southwest",
+	UnitState.Facing.LEFT: "Northwest",
+	UnitState.Facing.UP: "Northeast",
+}
+
 const FACING_PHASES := {
 	UnitState.Facing.RIGHT: 0.0,
 	UnitState.Facing.DOWN: PI * 0.5,
@@ -361,7 +375,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 			dp_cost = int(row["combat_spec"]["dp_cost"])
 			sprite_id = StringName(row["visual_spec"]["sprite_id"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
-		slot.text = "%s%s\n%d DP" % [UI_COPY.operator_name(def), identity_suffix, dp_cost]
+		slot.text = _operator_card_text(def, identity_suffix, dp_cost)
 		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(sprite_id, 0)
 		slot.expand_icon = true
@@ -387,7 +401,7 @@ func _build_slots(op_defs: Dictionary) -> void:
 		var def: TrapDef = _trap_defs[trap_id]
 		var slot := Button.new()
 		slot.name = "Slot_%s" % trap_id
-		slot.text = "%s\n%d DP" % [UI_COPY.trap_name(def), def.dp_cost]
+		slot.text = _trap_card_text(def)
 		slot.custom_minimum_size = Vector2(SLOT_TARGET_WIDTH, SLOT_TARGET_HEIGHT)
 		slot.icon = Art.texture(
 			&"trap_tar" if def.trigger == TrapDef.Trigger.CELL_AURA else &"trap_spike_armed"
@@ -474,6 +488,7 @@ func _build_overlays() -> void:
 		btn.custom_minimum_size = FACING_BUTTON_SIZE
 		btn.z_index = FACING_BUTTON_Z
 		_apply_facing_button_styles(btn)
+		_apply_facing_accessibility(btn, facing)
 		btn.visible = false
 		btn.pressed.connect(_confirm_deploy.bind(facing))
 		btn.mouse_entered.connect(_refresh_facing_icon.bind(facing))
@@ -519,17 +534,50 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		if not row.is_empty():
 			dp_cost = int(row["combat_spec"]["dp_cost"])
 			identity_suffix = " %d" % (int(row["slot_index"]) + 1)
-		slot.text = "%s%s\n%d DP" % [UI_COPY.operator_name(definition), identity_suffix, dp_cost]
+		slot.text = _operator_card_text(definition, identity_suffix, dp_cost)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
 	for trap_id: StringName in _trap_slots:
 		var definition := _trap_defs.get(trap_id) as TrapDef
 		var slot := _trap_slots[trap_id] as Button
 		if definition == null or slot == null:
 			continue
-		slot.text = "%s\n%d DP" % [UI_COPY.trap_name(definition), definition.dp_cost]
+		slot.text = _trap_card_text(definition)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
 	if _retreat_chip != null:
 		_retreat_chip.text = UI_COPY.text(&"ui.battle.retreat", "Retreat")
+	for facing: UnitState.Facing in _facing_buttons:
+		_apply_facing_accessibility(_facing_buttons[facing] as Button, facing)
+
+
+func _operator_card_text(definition: OperatorDef, identity_suffix: String, cost: int) -> String:
+	return UI_COPY.format_text(
+		&"ui.battle.deploy_operator_card",
+		"{name}{slot}\n{cost} DP",
+		{&"name": UI_COPY.operator_name(definition), &"slot": identity_suffix, &"cost": cost},
+	)
+
+
+func _trap_card_text(definition: TrapDef) -> String:
+	return UI_COPY.format_text(
+		&"ui.battle.deploy_trap_card",
+		"{name}\n{cost} DP",
+		{&"name": UI_COPY.trap_name(definition), &"cost": definition.dp_cost},
+	)
+
+
+func _apply_facing_accessibility(button: Button, facing: UnitState.Facing) -> void:
+	if button == null:
+		return
+	var direction := UI_COPY.text(
+		StringName(FACING_LOCALIZATION_KEYS[facing]),
+		String(FACING_FALLBACKS[facing]),
+	)
+	button.accessibility_name = direction
+	button.accessibility_description = UI_COPY.format_text(
+		&"ui.battle.facing_description",
+		"Deploy facing {direction}",
+		{&"direction": direction},
+	)
 
 
 func _apply_facing_button_styles(button: Button) -> void:

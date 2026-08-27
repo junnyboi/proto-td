@@ -3,6 +3,7 @@ extends Theme
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC.otf"
+const CJK_FONT: FontFile = preload(CJK_FONT_PATH)
 const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
 const COMMAND_DECK_FRAME := preload("res://assets/ui/staging/frames/command_deck.png")
 const MISSION_CARD_FRAME := preload("res://assets/ui/staging/frames/mission_card.png")
@@ -63,20 +64,10 @@ func _init() -> void:
 
 
 func _load_cjk_font() -> FontFile:
-	if FileAccess.file_exists(CJK_FONT_PATH):
-		var source_font := FontFile.new()
-		var source_error := source_font.load_dynamic_font(CJK_FONT_PATH)
-		if source_error == OK:
-			source_font.resource_name = "ProtosSansSC"
-			return source_font
-		push_warning(
-			"AetheriaTheme: source font load failed (%d); trying imported resource"
-			% source_error,
-		)
-	var imported_font := ResourceLoader.load(CJK_FONT_PATH, "FontFile") as FontFile
-	if imported_font == null:
+	if CJK_FONT == null:
 		push_error("AetheriaTheme: CJK font unavailable at %s" % CJK_FONT_PATH)
-	return imported_font
+		return null
+	return CJK_FONT
 
 
 func _build_buttons() -> void:

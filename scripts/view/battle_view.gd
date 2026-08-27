@@ -691,6 +691,7 @@ func _detect_result_stamp() -> void:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
+	_refresh_hud_copy()
 	if _continue_btn != null:
 		_continue_btn.text = UiCopyType.text(
 			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
@@ -964,6 +965,12 @@ func _project() -> void:
 	_project_traps()
 	_project_units()
 	_project_tracers()
+	_refresh_hud_copy()
+
+
+func _refresh_hud_copy() -> void:
+	if _hud == null or model == null:
+		return
 	var s := model.snapshot()
 	_hud.text = BATTLE_HUD_PRESENTER.text_for(s, get_viewport_rect().size)
 	if int(s["result"]) == BattleModel.Result.CLEAR:

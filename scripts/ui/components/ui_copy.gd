@@ -624,6 +624,12 @@ static func spell_name(definition: SpellDef) -> String:
 	return text(StringName("data.spell.%s.name" % definition.id), definition.display_name)
 
 
+static func premium_name(premium_id: String, fallback: String) -> String:
+	if premium_id.is_empty():
+		return text(&"ui.gacha.unknown_signal", "Unknown signal")
+	return text(StringName("data.premium.%s.name" % premium_id), fallback)
+
+
 static func static_fallbacks() -> Dictionary:
 	return STATIC_FALLBACKS.duplicate(true)
 

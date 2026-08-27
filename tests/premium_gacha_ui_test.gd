@@ -150,10 +150,10 @@ func _run() -> void:
 	# Source localization must refresh existing cards and accessibility metadata in place.
 	_check(i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate")
 	await _frames(2)
-	var premium_keys: Dictionary = screen.get("PREMIUM_IDENTITY_KEYS")
-	_check(premium_keys.get("archive_caster") == &"data.premium.archive_caster.name", "Archive Caster stable key changed")
-	_check(premium_keys.get("lunaris_vessel") == &"data.premium.lunaris_vessel.name", "Lunaris Vessel stable key changed")
-	_check(premium_keys.get("reliquary_duelist") == &"data.premium.reliquary_duelist.name", "Reliquary Duelist stable key changed")
+	var ui_copy := load("res://scripts/ui/components/ui_copy.gd") as Script
+	_check(ui_copy.call("premium_name", "archive_caster", "Archive Caster") == "档案术师", "Archive Caster stable key changed")
+	_check(ui_copy.call("premium_name", "lunaris_vessel", "Lunaris Vessel") == "月辉载体", "Lunaris Vessel stable key changed")
+	_check(ui_copy.call("premium_name", "reliquary_duelist", "Reliquary Duelist") == "圣物决斗者", "Reliquary Duelist stable key changed")
 	var localized_tree_text := _tree_text(grid)
 	_check(localized_tree_text.contains("月辉载体"), "Lunaris Vessel name did not refresh to natural Chinese")
 	for expected_class: String in ["见习法师", "术士", "剑圣"]:
@@ -172,7 +172,7 @@ func _run() -> void:
 	_check(history_button.text == "共鸣记录", "Moon Archive action did not refresh to Chinese")
 	_check(marks_display.tooltip_text.contains("高级能量"), "shard tooltip did not refresh to Chinese")
 	var localized_history_text := _tree_text(history_drawer)
-	_check(localized_history_text.contains("月影档案"), "Moon Archive title did not refresh to Chinese")
+	_check(localized_history_text.contains("月之档案"), "Moon Archive title did not refresh to Chinese")
 	_check(localized_history_text.contains("暂无共鸣记录"), "Moon Archive empty state did not refresh to Chinese")
 	_check(screen.call("_callsign_for", "missing_signal") == "未知信号", "unknown signal fallback did not localize")
 	var locked_card := screen.call("_hero_card", {

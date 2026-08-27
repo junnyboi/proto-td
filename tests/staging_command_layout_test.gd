@@ -117,7 +117,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
-	_check(mission_action != null and mission_action.tooltip_text == ("任务指挥" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
+	_check(mission_action != null and mission_action.tooltip_text == ("任务指挥中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
 	if locale_id == "en-US" and String(viewport_case["name"]) == "annotated-wide":

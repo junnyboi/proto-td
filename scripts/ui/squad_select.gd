@@ -836,12 +836,10 @@ func _apply_deploy_text_contrast(button: AetheriaButtonType = _start) -> void:
 
 
 func _action_presentation_text(node_name: String, text_value: String) -> String:
-	if I18n.locale() == &"zh-CN":
-		return text_value
 	if node_name == "TrainingButton":
-		return "TRAIN\nOPERATORS"
+		return UiCopyType.text(&"ui.squad.training_presentation", "TRAIN\nOPERATORS")
 	if node_name == "StartBattle":
-		return "DEPLOY SQUAD"
+		return UiCopyType.text(&"ui.squad.deploy_presentation", "DEPLOY SQUAD")
 	return text_value
 
 
@@ -1347,10 +1345,10 @@ func _refresh_launch_status() -> void:
 
 
 func _start_action_presentation(action_text: String) -> String:
-	if I18n.locale() == &"zh-CN" or _launch_locked:
+	if _launch_locked:
 		return action_text
 	if Game.mission_launch_retry_pending():
-		return "RETRY\nDEPLOYMENT"
+		return UiCopyType.text(&"ui.squad.retry_presentation", "RETRY\nDEPLOYMENT")
 	return _action_presentation_text("StartBattle", action_text)
 
 

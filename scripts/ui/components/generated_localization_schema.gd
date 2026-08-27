@@ -3,6 +3,9 @@ extends RefCounted
 
 ## Generated from the reviewed localization key manifests. Keep catalog placeholders typed.
 const PLACEHOLDER_TYPES := {
+	&"ui.battle.deploy_operator_card": {&"cost": &"int", &"name": &"String", &"slot": &"String"},
+	&"ui.battle.deploy_trap_card": {&"cost": &"int", &"name": &"String"},
+	&"ui.battle.facing_description": {&"direction": &"String"},
 	&"ui.battle.wave": {&"wave": &"int"},
 	&"ui.campaign.facts": {&"leak_limit": &"int", &"rewards": &"int", &"squad": &"int", &"waves": &"int"},
 	&"ui.campaign.progress": {&"cleared": &"int", &"total": &"int"},
@@ -10,6 +13,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.company.identity": {&"company": &"String", &"faction": &"String"},
 	&"ui.company.identity_compact": {&"company": &"String", &"faction": &"String"},
 	&"ui.gacha.cinematic_receiving": {&"percent": &"int"},
+	&"ui.gacha.pull_again_accessibility": {&"cost": &"int"},
 	&"ui.squad.card_fallen": {&"level": &"int", &"name": &"String", &"rarity": &"int"},
 	&"ui.squad.card_premium": {&"cost": &"int", &"level": &"int", &"lives": &"int", &"name": &"String", &"rarity": &"int"},
 	&"ui.squad.card_ready": {&"cost": &"int", &"level": &"int", &"name": &"String", &"rarity": &"int"},

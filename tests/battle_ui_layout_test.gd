@@ -116,8 +116,20 @@ func _run() -> void:
 		_check(tutorial_primary.text == "NEXT", "tutorial route action was not renamed to NEXT")
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
 	await process_frame
-	_check(tutorial_body.text == "敌人从传送门出发，沿发光路径前往你的基地水晶。本任务允许3次漏怪；第4次漏怪将结束任务。", "Chinese tutorial route copy does not match the approved meaning")
+	_check(tutorial_body.text == "敌人从传送门出发，沿发光路径前往你的基地水晶。本任务最多允许3名敌人漏过；第4名敌人漏过时，任务失败。", "Chinese tutorial route copy does not match the approved meaning")
 	_check(tutorial_primary.text == "下一步", "Chinese tutorial route action was not renamed to 下一步")
+	_check(hud.text.contains("核心") and hud.text.contains("歼灭"), "battle HUD did not refresh to Chinese")
+	_check(pause.text == "暂停" and resign.text == "撤出行动", "battle commands did not refresh to distinct Chinese actions")
+	if slot_box != null:
+		for child: Node in slot_box.get_children():
+			var slot := child as Button
+			_check(slot.get_theme_font(&"font").has_char("兵".unicode_at(0)), "%s lacks bundled Chinese glyph coverage" % slot.name)
+	var facing_southeast := battle.find_child("FacingRight", true, false) as Button
+	var facing_southwest := battle.find_child("FacingDown", true, false) as Button
+	var facing_northwest := battle.find_child("FacingLeft", true, false) as Button
+	var facing_northeast := battle.find_child("FacingUp", true, false) as Button
+	_check(facing_southeast.accessibility_name == "东南" and facing_southeast.accessibility_description == "面向东南部署", "southeast facing accessibility is not localized")
+	_check(facing_southwest.accessibility_name == "西南" and facing_northwest.accessibility_name == "西北" and facing_northeast.accessibility_name == "东北", "facing accessibility directions are incomplete")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
 	await process_frame
 	var spell_probe := (load("res://scripts/ui/spell_bar.gd") as Script).new() as Control

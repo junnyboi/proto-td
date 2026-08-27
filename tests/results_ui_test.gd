@@ -9,8 +9,10 @@ func _init() -> void:
 
 func _run() -> void:
 	var game := root.get_node_or_null("Game")
+	var i18n := root.get_node_or_null("I18n")
 	_check(game != null, "Game autoload missing")
-	if game == null:
+	_check(i18n != null, "I18n autoload missing")
+	if game == null or i18n == null:
 		_finish()
 		return
 	var previous_reduced_motion: Variant = ProjectSettings.get_setting(
@@ -158,6 +160,21 @@ func _run() -> void:
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Results locale activation failed")
+	await _frames(2)
+	await create_timer(0.9).timeout
+	var chinese_rewards := screen.find_child("RewardsHeading", true, false) as Label
+	var chinese_consequence := screen.find_child("ConsequenceHeading", true, false) as Label
+	var chinese_transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
+	var chinese_return := screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_xp := screen.find_child("XpAward0", true, false) as Control
+	var chinese_xp_count := chinese_xp.find_child("Detail", true, false) as Label
+	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
+	_check(chinese_transmission != null and _tree_text(chinese_transmission).contains("胜利传讯"), "clear transmission did not refresh to Chinese")
+	_check(chinese_return.text == "返回连队指挥部", "Results destination did not refresh to Chinese")
+	_check(chinese_xp_count.text == "+100 经验值", "canonical survivor XP did not refresh to Chinese")
+	_check(bool(i18n.call("set_locale", &"en-US")), "English Results locale restoration failed")
+	await _frames(2)
 	root.remove_child(screen)
 	screen.free()
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
@@ -258,6 +275,16 @@ func _run() -> void:
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows defeat portrait width" % child.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese defeat locale activation failed")
+	await _frames(2)
+	var chinese_defeat_rewards := defeat_screen.find_child("RewardsHeading", true, false) as Label
+	var chinese_defeat_consequence := defeat_screen.find_child("ConsequenceHeading", true, false) as Label
+	var chinese_defeat_return := defeat_screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_defeat_xp := defeat_screen.find_child("XpAward0", true, false) as Control
+	var chinese_defeat_xp_count := chinese_defeat_xp.find_child("Detail", true, false) as Label
+	_check(chinese_defeat_rewards.text == "行动收益" and chinese_defeat_consequence.text == "行动后果", "defeat headings did not refresh to Chinese")
+	_check(chinese_defeat_return.text == "返回连队指挥部", "defeat destination did not refresh to Chinese")
+	_check(chinese_defeat_xp_count.text == "+100 经验值", "defeat survivor XP did not refresh to Chinese")
 
 	var cancel := InputEventAction.new()
 	cancel.action = &"ui_cancel"
@@ -299,6 +326,15 @@ func _has_scroll_ancestor(node: Node) -> bool:
 func _frames(count: int) -> void:
 	for _index: int in count:
 		await process_frame
+
+
+func _tree_text(node: Node) -> String:
+	var text := ""
+	if node is Label or node is Button:
+		text += String(node.get("text")) + "\n"
+	for child: Node in node.get_children():
+		text += _tree_text(child)
+	return text
 
 
 func _check(condition: bool, message: String) -> void:

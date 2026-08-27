@@ -381,10 +381,14 @@ func _history_badge(receipt: Dictionary) -> String:
 
 
 func _callsign(premium_id: String) -> String:
+	var fallback := ""
 	for raw: Variant in _projection.get("premium_pool", []):
 		if raw is Dictionary and String((raw as Dictionary).get("premium_id", "")) == premium_id:
-			return String((raw as Dictionary).get("callsign", premium_id))
-	return premium_id.replace("_", " ").capitalize()
+			fallback = String((raw as Dictionary).get("callsign", ""))
+			break
+	if fallback.is_empty():
+		fallback = _copy(&"ui.gacha.unknown_signal", "Unknown signal")
+	return UiCopyType.premium_name(premium_id, fallback)
 
 
 func _portrait_id(premium_id: String) -> StringName:

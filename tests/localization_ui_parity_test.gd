@@ -1,8 +1,12 @@
 extends SceneTree
 
 const ThemeType := preload("res://scripts/ui/components/aetheria_theme.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
+const LunarisStyleType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const CHINESE_CATALOG_PATH := "res://localization/zh-CN.json"
 const BUNDLED_CHINESE_FONT_PATH := "res://assets/fonts/ProtosSansSC.otf"
+const GLOBAL_THEME_PATH := "res://data/presentation/ui/threshold_theme.tres"
+const BUNDLED_CHINESE_FONT: FontFile = preload(BUNDLED_CHINESE_FONT_PATH)
 const SOURCE_ROOTS := ["res://scripts/ui", "res://scripts/view"]
 const SOURCE_SYMBOLS := "←→↔↕《》×…"
 
@@ -42,9 +46,15 @@ func _run() -> void:
 	var theme := ThemeType.new()
 	var body_font := theme.default_font
 	var display_font := theme.get_font(&"font", &"AuiTitleLabel")
-	var bundled_font := FontFile.new()
-	var font_error := bundled_font.load_dynamic_font(BUNDLED_CHINESE_FONT_PATH)
-	_check(font_error == OK, "bundled Chinese font failed to load")
+	var staged_body_font := StagingSkinType.body_font()
+	var staged_display_font := StagingSkinType.display_font()
+	var project_theme := load(GLOBAL_THEME_PATH) as Theme
+	_check(BUNDLED_CHINESE_FONT != null, "bundled Chinese font failed to preload")
+	_check(project_theme != null, "global Chinese-capable theme failed to load")
+	_check(
+		String(ProjectSettings.get_setting("gui/theme/custom", "")) == GLOBAL_THEME_PATH,
+		"project does not apply the bundled Chinese-capable theme globally",
+	)
 	var catalog_text := FileAccess.get_file_as_string(CHINESE_CATALOG_PATH)
 	var catalog_variant: Variant = JSON.parse_string(catalog_text)
 	_check(catalog_variant is Dictionary, "Chinese catalog JSON failed to parse for font coverage")
@@ -54,9 +64,14 @@ func _run() -> void:
 		var required := _required_codepoints(entries)
 		for codepoint: int in required:
 			var label := "U+%04X '%s'" % [codepoint, String.chr(codepoint)]
-			_check(bundled_font.has_char(codepoint), "bundled Chinese font lacks %s" % label)
+			_check(BUNDLED_CHINESE_FONT.has_char(codepoint), "bundled Chinese font lacks %s" % label)
 			_check(body_font != null and body_font.has_char(codepoint), "body font chain lacks %s" % label)
 			_check(display_font != null and display_font.has_char(codepoint), "display font chain lacks %s" % label)
+			_check(staged_body_font.has_char(codepoint), "standalone body font chain lacks %s" % label)
+			_check(staged_display_font.has_char(codepoint), "standalone display font chain lacks %s" % label)
+			_check(project_theme.default_font.has_char(codepoint), "global theme font lacks %s" % label)
+		_check_reviewed_chinese(entries)
+	_check_standalone_control_fonts()
 	_check_literal_source_keys(english_lookup)
 	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
 	_finish()
@@ -77,6 +92,37 @@ func _required_codepoints(entries: Dictionary) -> Array[int]:
 		required.append(int(raw_codepoint))
 	required.sort()
 	return required
+
+
+func _check_reviewed_chinese(entries: Dictionary) -> void:
+	var forbidden := ["索尔冠", "任务控制", "作战指挥部", "固定精英套装", "漏怪", "�"]
+	for raw_key: Variant in entries:
+		var key := String(raw_key)
+		var value := String(entries[raw_key])
+		for token: String in forbidden:
+			_check(not value.contains(token), "deprecated or invalid Chinese token '%s' remains in %s" % [token, key])
+	_check(String(entries["ui.staging.command_body"]).contains("炉心渡"), "Company Command narrative remains mistranslated")
+	_check(entries["ui.battle.resign"] == "撤出行动", "operation resignation term is ambiguous")
+	_check(entries["ui.battle.retreat"] == "撤回干员", "unit retreat term is ambiguous")
+	_check(entries["ui.battle.resign"] != entries["ui.battle.retreat"], "resign and retreat must remain distinct")
+	_check(String(entries["ui.squad.launch_retryable_error"]).contains("完全相同"), "deployment retry lost exact-order requirement")
+	for key: String in ["ui.gacha.receipt_new", "ui.gacha.receipt_restored", "ui.gacha.receipt_duplicate"]:
+		_check(String(entries[key]).contains("内必得五星"), "gacha guarantee is not expressed as an upper bound: %s" % key)
+
+
+func _check_standalone_control_fonts() -> void:
+	var label := Label.new()
+	LunarisStyleType.apply_label(label, &"body")
+	_check(label.get_theme_font(&"font").has_char("中".unicode_at(0)), "standalone battle label lacks Chinese font")
+	var button := Button.new()
+	LunarisStyleType.apply_compact_rounded_button(button, &"secondary")
+	_check(button.get_theme_font(&"font").has_char("文".unicode_at(0)), "standalone battle button lacks Chinese font")
+	var field := LineEdit.new()
+	LunarisStyleType.apply_line_edit(field)
+	_check(field.get_theme_font(&"font").has_char("字".unicode_at(0)), "standalone battle input lacks Chinese font")
+	label.free()
+	button.free()
+	field.free()
 
 
 func _check_literal_source_keys(catalog_lookup: Dictionary) -> void:

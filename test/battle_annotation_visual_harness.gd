@@ -8,16 +8,23 @@ func _ready() -> void:
 func _capture() -> void:
 	var output := ""
 	var mode := "tutorial"
+	var locale_id := &"en-US"
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--out="):
 			output = argument.trim_prefix("--out=")
 		elif argument.begins_with("--mode="):
 			mode = argument.trim_prefix("--mode=")
+		elif argument.begins_with("--locale="):
+			locale_id = StringName(argument.trim_prefix("--locale="))
 	if output.is_empty():
 		push_error("battle annotation visual harness requires --out=<path>")
 		get_tree().quit(1)
 		return
 	Music.set_enabled(false)
+	if not I18n.set_locale(locale_id):
+		push_error("battle annotation visual harness could not set locale %s" % locale_id)
+		get_tree().quit(1)
+		return
 	Game.set_run_seed(3302)
 	if not Game.start_campaign(false, true):
 		push_error("battle annotation visual harness could not start campaign")
@@ -44,7 +51,8 @@ func _capture() -> void:
 			controls_probe._process(0.0)
 			var speed := controls_probe.find_child("SpeedButton", true, false) as Button
 			var pause := controls_probe.find_child("PauseButton", true, false) as Button
-			if speed == null or pause == null or speed.text != "0×" or pause.text != "RESUME":
+			var expected_pause := "继续" if locale_id == &"zh-CN" else "RESUME"
+			if speed == null or pause == null or speed.text != "0×" or pause.text != expected_pause:
 				push_error("battle annotation visual harness did not reach paused speed cycle")
 				get_tree().quit(1)
 				return

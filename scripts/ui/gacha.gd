@@ -28,11 +28,6 @@ const GACHA_FULLSIZE_PORTRAITS := {
 	"lunaris_vessel": &"portrait_lunaris_vessel_fullsize",
 	"reliquary_duelist": &"portrait_reliquary_duelist_fullsize",
 }
-const PREMIUM_IDENTITY_KEYS := {
-	"archive_caster": &"data.premium.archive_caster.name",
-	"lunaris_vessel": &"data.premium.lunaris_vessel.name",
-	"reliquary_duelist": &"data.premium.reliquary_duelist.name",
-}
 const CONFIRM_ENTRY_SECONDS := 0.20
 const CONFIRM_EXIT_SECONDS := 0.15
 const CONFIRM_FRAME_OFFSET := 12.0
@@ -1612,7 +1607,11 @@ func _refresh_reveal_pull_again() -> void:
 	_reveal_pull_again.focus_mode = (
 		Control.FOCUS_ALL if not _reveal_pull_again.disabled else Control.FOCUS_NONE
 	)
-	_reveal_pull_again.accessibility_name = "PULL AGAIN, %d Resonance Shards" % cost
+	_reveal_pull_again.accessibility_name = _format(
+		&"ui.gacha.pull_again_accessibility",
+		"Pull again, {cost} Resonance Shards",
+		{&"cost": cost},
+	)
 
 
 func _arm_reveal_pull_again() -> void:
@@ -1737,8 +1736,7 @@ func _callsign_for(premium_id: String) -> String:
 
 
 func _premium_name(premium_id: String, fallback: String) -> String:
-	var key := StringName(PREMIUM_IDENTITY_KEYS.get(premium_id, &""))
-	return fallback if String(key).is_empty() else _copy(key, fallback)
+	return UiCopyType.premium_name(premium_id, fallback)
 
 
 func _reveal_accent(_pull: Dictionary) -> Color:

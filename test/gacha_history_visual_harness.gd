@@ -4,6 +4,7 @@ var _mode := "history"
 var _premium_id := "archive_caster"
 var _output_path := ""
 var _viewport_size := Vector2i(1280, 720)
+var _locale_id := &"en-US"
 
 
 func _init() -> void:
@@ -17,7 +18,9 @@ func _init() -> void:
 		elif argument.begins_with("--viewport="):
 			var parts := argument.trim_prefix("--viewport=").split("x")
 			if parts.size() == 2:
-				_viewport_size = Vector2i(int(parts[0]), int(parts[1]))
+					_viewport_size = Vector2i(int(parts[0]), int(parts[1]))
+		elif argument.begins_with("--locale="):
+			_locale_id = StringName(argument.trim_prefix("--locale="))
 	call_deferred("_run")
 
 
@@ -27,6 +30,9 @@ func _run() -> void:
 		quit(0)
 		return
 	root.size = _viewport_size
+	if not bool(root.get_node("I18n").call("set_locale", _locale_id)):
+		_fail("locale activation failed: %s" % _locale_id)
+		return
 	var game: Node = root.get_node_or_null("Game")
 	if game == null:
 		_fail("Game autoload missing")

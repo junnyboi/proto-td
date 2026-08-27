@@ -4,6 +4,7 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ROW_HORIZONTAL_PADDING := 48
 const ROW_VERTICAL_PADDING := 24
 const ROW_DEFAULT_WIDTH := 560.0
@@ -26,7 +27,10 @@ func _init() -> void:
 	toggle_mode = true
 	custom_minimum_size.x = ROW_DEFAULT_WIDTH
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	set_presentation_text("Training recruit", " ")
+	set_presentation_text(
+		UiCopyType.text(&"ui.training.roster_row_accessibility_name", "Training recruit"),
+		" ",
+	)
 	_build_content()
 
 

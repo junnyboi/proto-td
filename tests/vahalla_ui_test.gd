@@ -27,10 +27,13 @@ func _run() -> void:
 		return
 
 	var game: Node = root.get_node_or_null("Game")
+	var i18n: Node = root.get_node_or_null("I18n")
 	_check(game != null, "Game autoload missing")
-	if game == null:
+	_check(i18n != null, "I18n autoload missing")
+	if game == null or i18n == null:
 		_finish()
 		return
+	_check(bool(i18n.call("set_locale", &"en-US")), "English Vahalla locale activation failed")
 	game.set("campaign", state)
 	game.set("campaign_active", true)
 	game.set("selected_stage_id", &"s1")
@@ -97,12 +100,19 @@ func _run() -> void:
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
 		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
 		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Vahalla locale activation failed")
+	await process_frame
+	await process_frame
+	var chinese_memorial := _tree_text(memorial)
+	_check(chinese_memorial.contains("英灵殿"), "Vahalla title did not refresh to Chinese")
+	_check(chinese_memorial.contains("永久离队"), "Vahalla permanence copy lost its reviewed Chinese meaning")
+	_check(chinese_memorial.contains("第20刻"), "Vahalla service record did not localize its battle tick")
 	if honor != null:
 		honor.pressed.emit()
 		await process_frame
 		var honored := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
 		_check(honored != null and honored.disabled, "honor action did not become visit-local honored state")
-		_check(honored != null and honored.text == "HONORED", "honor action copy did not update")
+		_check(honored != null and honored.text == "已致敬", "Chinese honor action copy did not update")
 	_dispose(memorial)
 	game.set("content", null)
 	var music := root.get_node_or_null("Music")
@@ -186,6 +196,15 @@ func _dispose(node: Node) -> void:
 	if parent != null:
 		parent.remove_child(node)
 	node.free()
+
+
+func _tree_text(node: Node) -> String:
+	var text := ""
+	if node is Label or node is Button:
+		text += String(node.get("text")) + "\n"
+	for child: Node in node.get_children():
+		text += _tree_text(child)
+	return text
 
 
 func _finish() -> void:
