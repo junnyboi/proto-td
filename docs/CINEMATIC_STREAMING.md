@@ -2,26 +2,28 @@
 
 ## Purpose
 
-The six Premium Resonance Ogg Theora videos are optional presentation media. The current centered loop set totals **10,477,438 bytes**, so Web still excludes `assets/cinematics/gacha/video/*.ogv` from the initial PCK and transfers only the selected identity and orientation when needed. Posters, cinematic audio, hero data, and gameplay resources remain in the base PCK.
+The six Premium Resonance Ogg Theora videos are optional presentation media. The current full-HD landscape/portrait set totals **155,764,928 bytes**, so Web still excludes `assets/cinematics/gacha/video/*.ogv` from the initial PCK. Posters, cinematic audio, hero data, and gameplay resources remain in the base PCK.
 
 ## Runtime behavior
 
-`GachaCinematicPlayer` selects one stream from the revealed hero and current viewport orientation. Native and editor runs load the repository-owned `res://` OGV file. Web deployments provide same-origin URLs through repeated `--cinematic-stream=<key>|<url>` engine arguments.
+`CinematicPrefetch` starts as soon as the Title scene enters. It parses the six same-origin URLs from repeated `--cinematic-stream=<key>|<url>` engine arguments, queues all streams sequentially to avoid six simultaneous 155 MB transfers, and downloads the current viewport orientation before the alternate orientation. Every file is verified by exact byte length and SHA-256 before promotion into `user://cinematic-streams`; valid cached files are skipped on later title entries.
 
-On a Web cache miss, the player immediately shows the matching identity plate, downloads only the selected orientation, reports transfer progress, verifies the exact byte length and SHA-256 digest, and stores the verified OGV under `user://cinematic-streams`. Playback uses `VideoStreamTheora.file` against that cached path. Result identity and rarity UI remain locked until the first complete eight-second cycle finishes. After that first cycle, a healthy video continues looping beneath the deterministic result UI until dismissal; it does not freeze onto the final plate.
+`GachaCinematicPlayer` selects one stream from the revealed hero and current viewport orientation. Native and editor runs load the repository-owned `res://` OGV file. On Web, a pull uses a verified cached stream immediately. If its stream is still queued, the player promotes that item to the front; if the same stream is already downloading, it joins the persistent transfer and displays its progress rather than issuing a duplicate request.
 
-Skip, reduced motion, transfer failure, integrity failure, decode failure, or watchdog fallback stops the motion layer and exposes the matching static identity plate. Authoritative pull state and navigation are unaffected. Reduced-motion mode never requests or plays cinematic video.
+On a Web cache miss, the player immediately shows the matching identity plate while the shared prefetch service reports transfer progress. Playback uses `VideoStreamTheora.file` against the verified cached path. Result identity and rarity UI remain locked until the first complete eight-second cycle finishes. After that first cycle, a healthy video continues looping beneath the deterministic result UI until dismissal; it does not freeze onto the final plate.
+
+Skip, reduced motion, transfer failure, integrity failure, decode failure, or watchdog fallback stops the motion layer and exposes the matching static identity plate. Authoritative pull state and navigation are unaffected. Reduced-motion mode never plays cinematic video, but Title still warms the shared cache so a later preference change is instant.
 
 ## Stream manifest
 
 | Stream key | Bytes | SHA-256 |
 |---|---:|---|
-| `archive-caster-landscape` | 778,793 | `bcb3251e11269027b49a332487964db64fb8e6fe83358c2bb1b78317558c55af` |
-| `archive-caster-portrait` | 2,452,205 | `dd09537610bb5bc0ed7fd2ed6715e4d6b870dce521075b1defe77c6bc6ee0c0f` |
-| `lunaris-vessel-landscape` | 1,257,821 | `38361f28ba7c40e8e95c5aa59919028b0d181d97bd6b7f58f01fd7a31deb59cd` |
-| `lunaris-vessel-portrait` | 2,502,584 | `cd806d989623cbce1180df154efe892aaf8c2b047cee07906ec330f55c6fb6bb` |
-| `reliquary-duelist-landscape` | 1,395,676 | `cfa5bdab1002b428347e4d2d46cd0517acfc876a3460693d7330c8abb0e90151` |
-| `reliquary-duelist-portrait` | 2,090,359 | `ed78d0f92c19dc253a47454e13bb411fed64514f768c3db2157e5deb15b9026c` |
+| `archive-caster-landscape` | 39,223,400 | `94331bef149513a790fcfc2c8fc0440cbb413504d9185311672ef9c53a86653f` |
+| `archive-caster-portrait` | 19,959,147 | `2289a2737bb354949fa19cbfae9c0f4cdfd997ec08eff3024a65007e0b6fbf4` |
+| `lunaris-vessel-landscape` | 16,638,104 | `906011683d0abb8446db648b74ec13b79aea3e9c6234e8cae8fd2a4b1ae1db99` |
+| `lunaris-vessel-portrait` | 23,555,321 | `32c6cab0847a8f9c1e5dbcde199ee57dbb301fba86135e505b482d7dade189f2` |
+| `reliquary-duelist-landscape` | 29,259,884 | `b843467f29774c8679751ab274b2aa0a7d7a75293a0a1f7c4eade6fcc57c97fc` |
+| `reliquary-duelist-portrait` | 27,129,072 | `2d2041a1be6c50b7e003ada11fa9da4a1f97114aa12d4f3d389abf54d80384cc` |
 
 ## Release procedure
 
@@ -42,4 +44,4 @@ The runtime accepts absolute HTTP(S) URLs. A browser shell constructs them from 
 
 ## Verification
 
-`tests/cinematic_streaming_test.gd` covers argument validation, reduced-motion behavior, native fallback, first-cycle completion signalling, continued loop playback, cold HTTP download, integrity verification, persistent cache, `VideoStreamTheora` playback, and cleanup. Release QA additionally inventories the PCK to prove all six OGV entries are absent, serves the exported base over HTTP, exercises a real managed stream in the browser, and confirms that only the selected orientation is requested.
+`tests/cinematic_streaming_test.gd` covers argument validation, six-stream configuration, orientation-prioritized ordering, reduced-motion behavior, native fallback, first-cycle completion signalling, continued loop playback, shared cold HTTP download ownership, duplicate-request exclusion, integrity verification, persistent cache, `VideoStreamTheora` playback, and cleanup. `tests/title_interaction_feedback_test.gd` proves every Title entry triggers the service without blocking reveal behavior. Release QA additionally inventories the PCK to prove all six OGV entries are absent, serves the exported base over HTTP, opens Title against the managed stream manifest, and confirms background OGV requests begin while the title remains interactive.
