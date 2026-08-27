@@ -33,6 +33,7 @@
 - [x] Replace Training's global View Paths footer action with a promotion-eligible-only Choose Promotion control directly below the selected operator's Promotion Ready status.
 - [x] Forfeit all survivor XP on voluntary resignation while preserving ordinary clear/leak/base survivor awards; add Space pause/resume before GUI dispatch and cycle the top-right speed selector through 1×, 2×, 4×, and paused (`0×`) with responsive Xvfb verification.
 - [x] Implement early enemy variety with an armored S2 Shieldbearer, two-block S3 Breacher, durable S4 Interceptor, real Caster Arts attacks, GPT Image 2/video-to-sprites production assets, deterministic paired balance telemetry, and native landscape/portrait battle acceptance.
+- [x] Playtest S2–S4 with guided, two-second slow-polling, and counter-blind policies; keep S2/S3 unchanged, make each S4 Interceptor lead its Drone escort, and regression-lock the resulting 3★→2★→2★ guided difficulty curve with native landscape/portrait acceptance.
 
 # Premium Resonance Cinematic Completion
 

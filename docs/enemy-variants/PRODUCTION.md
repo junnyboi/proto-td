@@ -20,7 +20,7 @@ The early campaign now introduces one mechanically legible enemy lesson per stag
 | Breacher | 90 | 10 | 2 | 0 | 0.65 | 2 | No | Occupies two block capacity while engaged. |
 | Interceptor | 50 | 5 | 1 | 0 | 0.90 | 0 | Yes | Bypasses blocking, attacks nearby deployed operators within two cells, and remains Charm-immune like Drone. |
 
-The stage schedules preserve the original **10 / 9 / 11** total spawns and `[0, 390]` wave boundaries for S2/S3/S4. Intro hints explicitly teach the intended response before each new enemy arrives.
+The stage schedules preserve the original **10 / 9 / 11** total spawns and `[0, 390]` wave boundaries for S2/S3/S4. Intro hints explicitly teach the intended response before each new enemy arrives. A post-release progression playtest retained S2/S3 unchanged and reordered only S4's air pairs so each durable Interceptor leads its Drone escort at ticks `510/540` and `750/810`.
 
 ## Visual production
 
@@ -50,14 +50,16 @@ Because the approved S2–S4 schedules and Caster damage kind are combat-authori
 | S3 | Peak pressure | 800 | 740 | −7.5%; no burst spike. |
 | S3 | Terminal tick | 902 | 1,035 | +14.7%; Breachers create a longer choke interaction. |
 | S3 | Pressure AUC | 260,640 | 372,680 | +42.9%; pressure persists longer, but peak alive enemies fall from 5 to 4 and no leaks occur. |
-| S4 | Peak pressure | 850 | 850 | No peak-pressure increase. |
-| S4 | Terminal tick | 1,100 | 956 | −13.0%; sustained anti-air resolves the mixed wave faster in this fixture. |
-| S4 | Pressure AUC | 346,975 | 331,435 | −4.4%; candidate clears all 11 enemies versus one baseline leak. |
+| S4 | Peak pressure | 850 | 900 | +5.8%; Interceptor-led pairs increase simultaneous air pressure without exceeding the 35% safety envelope. |
+| S4 | Terminal tick | 1,100 | 1,086 | −1.2%; the stronger sequence does not create a cleanup tail. |
+| S4 | Pressure AUC | 346,975 | 455,200 | +31.1%; the candidate remains a recoverable three-leak clear with 996 of 999 base HP in the permissive isolation fixture. |
 
-All candidate scenarios clear deterministically. The accepted tuning preserves S2 parity, makes S3 a longer but less bursty block-capacity lesson, and keeps S4 within baseline pressure while visibly differentiating its air wave.
+All candidate scenarios clear deterministically. The accepted tuning preserves S2 parity, makes S3 a longer but less bursty block-capacity lesson, and gives S4 a bounded execution-pressure increase while visibly differentiating its air wave.
+
+`tests/act1_s2_s4_balance_playtest_test.gd` adds a player-policy progression gate using normal DP income and three deterministic profiles. Guided outcomes are S2 `3★`, S3 `2★`, and S4 `2★`; a two-second decision-polling cadence produces `2★ / 2★ / 1★`, with actual deploy lag governed by DP eligibility. Omitting the intended operator/trap counter package remains recoverable but inefficient in S2 and causes defeat in S3/S4. Its embedded S4 comparison reproduces the original Drone-led order as an overly soft `3★`/zero-leak clear, while Interceptor-led pairs raise guided pressure AUC by 24.5% and produce the intended `2★`/two-leak result. Raw metrics are stored in `../balance/act1-s2-s4-playtest-final.json`, with the complete decision record in `../balance/S2_S4_DIFFICULTY_PLAYTEST.md`.
 
 ## Verification
 
-The implementation is protected by `tests/early_enemy_variety_test.gd`, `tests/early_enemy_variant_art_test.gd`, `tests/early_enemy_variety_balance_telemetry_test.gd`, and the existing stage redesign smoke. These gates cover authoritative Interceptor attacks, Caster counterplay, wave substitutions, 4×2 atlas coordinates, the 4,096px texture ceiling, fixed display footprints, aspect preservation, charmed identity, portable carrier paths, mirror contracts, import quality/mipmap settings, and manifest-FPS attack progression. Native `BattleView` captures render S2/S3/S4 at 1280×720 and S4 at 720×1280 with Dummy audio; the reusable harness includes a 20-second watchdog, and all target sprites load through the production manifest, preserve transparency, and pass script/runtime/resource scans. The optimized imports reduce their CTEX footprint from 42 MiB to 19 MiB; the complete reconciled Web PCK is 527,756,580 bytes and reaches Title plus Company Command in Chromium without console, page, or request errors.
+The implementation is protected by `tests/early_enemy_variety_test.gd`, `tests/early_enemy_variant_art_test.gd`, `tests/early_enemy_variety_balance_telemetry_test.gd`, `tests/act1_s2_s4_balance_playtest_test.gd`, and the existing stage redesign smoke. These gates cover authoritative Interceptor attacks, Caster counterplay, wave substitutions and order, progression outcomes, 4×2 atlas coordinates, the 4,096px texture ceiling, fixed display footprints, aspect preservation, charmed identity, portable carrier paths, mirror contracts, import quality/mipmap settings, and manifest-FPS attack progression. Native `BattleView` captures render S2/S3/S4 guided play at 1280×720 and S4 at 720×1280 with Dummy audio; the responsive harness rotates authored cells/facings through the production stage transform, centers live combat, includes a 20-second watchdog, and passes script/runtime/resource scans.
 
 **Mechanics base revision:** `ece102e` (merged to synchronized master by `b84124e`).

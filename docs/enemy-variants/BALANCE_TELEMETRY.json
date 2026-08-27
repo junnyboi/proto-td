@@ -13,7 +13,10 @@
         "peak_pressure": 480,
         "pressure_auc": 207520,
         "result": 1,
-        "seen_enemy_ids": ["grunt", "runner"],
+        "seen_enemy_ids": [
+          "grunt",
+          "runner"
+        ],
         "spawned": 10,
         "terminal_tick": 917
       },
@@ -26,7 +29,11 @@
         "peak_pressure": 480,
         "pressure_auc": 227840,
         "result": 1,
-        "seen_enemy_ids": ["grunt", "runner", "shieldbearer"],
+        "seen_enemy_ids": [
+          "grunt",
+          "runner",
+          "shieldbearer"
+        ],
         "spawned": 10,
         "terminal_tick": 917
       }
@@ -41,7 +48,10 @@
         "peak_pressure": 800,
         "pressure_auc": 260640,
         "result": 1,
-        "seen_enemy_ids": ["grunt", "runner"],
+        "seen_enemy_ids": [
+          "grunt",
+          "runner"
+        ],
         "spawned": 9,
         "terminal_tick": 902
       },
@@ -54,7 +64,11 @@
         "peak_pressure": 740,
         "pressure_auc": 372680,
         "result": 1,
-        "seen_enemy_ids": ["breacher", "grunt", "runner"],
+        "seen_enemy_ids": [
+          "breacher",
+          "grunt",
+          "runner"
+        ],
         "spawned": 9,
         "terminal_tick": 1035
       }
@@ -69,22 +83,31 @@
         "peak_pressure": 850,
         "pressure_auc": 346975,
         "result": 1,
-        "seen_enemy_ids": ["drone", "grunt", "runner"],
+        "seen_enemy_ids": [
+          "drone",
+          "grunt",
+          "runner"
+        ],
         "spawned": 11,
         "terminal_tick": 1100
       },
       "candidate": {
-        "base_hp": 999,
-        "killed": 11,
-        "leaked": 0,
+        "base_hp": 996,
+        "killed": 8,
+        "leaked": 3,
         "max_alive": 5,
         "peak_blocked_weight": 2,
-        "peak_pressure": 850,
-        "pressure_auc": 331435,
+        "peak_pressure": 900,
+        "pressure_auc": 455200,
         "result": 1,
-        "seen_enemy_ids": ["drone", "grunt", "interceptor", "runner"],
+        "seen_enemy_ids": [
+          "drone",
+          "grunt",
+          "interceptor",
+          "runner"
+        ],
         "spawned": 11,
-        "terminal_tick": 956
+        "terminal_tick": 1086
       }
     }
   },

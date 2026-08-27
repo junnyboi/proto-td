@@ -17,6 +17,7 @@ func _run() -> void:
 	_validate_manifest()
 	_validate_asset_contract()
 	_validate_projection_and_motion()
+	_validate_combat_effects()
 	_validate_grunt_exception()
 	Art._reset_manifests_for_test()
 	EnemyAnimator._damage_flash_shader = null
@@ -106,6 +107,59 @@ func _validate_projection_and_motion() -> void:
 	var attack := EnemyAnimator.static_motion_state(&"breacher", 3, 0.5, true, 0.82, true, false, false)
 	_check(float(attack[&"telegraph"]) > 0.4, "static attack profile must expose a readable telegraph phase")
 	ProjectSettings.set_setting("accessibility/reduced_motion", original_reduced)
+
+
+func _validate_combat_effects() -> void:
+	var stage := load("res://data/stages/s16.tres") as StageDef
+	var config := load("res://data/config/game.tres") as GameConfig
+	var enemy_defs := _load_catalog("res://data/enemies")
+	var operator_defs := _load_catalog("res://data/operators")
+	var model := BattleModel.create(stage, [], 9531, config, enemy_defs, operator_defs)
+	_check(model != null, "enemy effect fixture must create")
+	if model == null:
+		return
+	var seen_modes: Dictionary = {}
+	var seen_styles: Dictionary = {}
+	for index: int in STATIC_ENEMIES.size():
+		var enemy_id := STATIC_ENEMIES[index]
+		var profile := EnemyAnimator.static_effect_profile(enemy_id)
+		_check(not profile.is_empty(), "%s must define a combat effect profile" % enemy_id)
+		_check(float(profile.get(&"flash_seconds", 0.0)) >= 0.08, "%s hit flash is too brief" % enemy_id)
+		_check(float(profile.get(&"dissolve_seconds", 0.0)) >= 0.28, "%s dissolve is too brief" % enemy_id)
+		_check(int(profile.get(&"particle_count", 0)) >= 8, "%s death burst is under-authored" % enemy_id)
+		seen_modes[profile.get(&"dissolve_mode", -1.0)] = true
+		seen_styles[profile.get(&"particle_style", &"")] = true
+		model._spawn({"enemy_id": enemy_id, "path_idx": index % stage.paths.size()})
+		var enemy := model.enemies[-1] as EnemyState
+		var snapshot_before := model.snapshot().duplicate(true)
+		var body := EnemyAnimator.make_body(enemy, model, enemy_defs)
+		var sprite := body.get_node_or_null("Sprite") as TextureRect
+		var total := EnemyAnimator.damage_flash_frames_for(enemy_id, 6)
+		EnemyAnimator.apply_damage_flash(body, total, total, Color.WHITE, Color.RED, enemy_id)
+		var material := sprite.material as ShaderMaterial if sprite != null else null
+		_check(material != null, "%s must expose its combat shader" % enemy_id)
+		if material != null:
+			_check(float(material.get_shader_parameter("flash_strength")) > 0.9, "%s hit flash did not activate" % enemy_id)
+		_check(EnemyAnimator.begin_death_effect(body, enemy_id, enemy.id, false), "%s death effect did not start" % enemy_id)
+		var particles := body.get_node_or_null("DeathParticles") as EnemyDeathParticles
+		_check(particles != null, "%s death particles are missing" % enemy_id)
+		if particles != null:
+			_check(particles.rendered_particle_count() == int(profile[&"particle_count"]), "%s particle count drifted" % enemy_id)
+		var duration := EnemyAnimator.static_effect_duration(enemy_id)
+		_check(not EnemyAnimator.advance_death_effect(body, duration * 0.5), "%s death effect ended too early" % enemy_id)
+		_check(EnemyAnimator.death_effect_progress(body) > 0.4, "%s dissolve did not advance" % enemy_id)
+		_check(EnemyAnimator.advance_death_effect(body, duration), "%s death effect did not complete" % enemy_id)
+		body.free()
+		_check(model.snapshot() == snapshot_before, "%s combat effects mutated authoritative battle state" % enemy_id)
+	_check(seen_modes.size() == STATIC_ENEMIES.size(), "each static enemy must have a unique dissolve mode")
+	_check(seen_styles.size() == STATIC_ENEMIES.size(), "each static enemy must have a unique particle signature")
+	model._spawn({"enemy_id": &"mini_boss", "path_idx": 0})
+	var reduced_enemy := model.enemies[-1] as EnemyState
+	var reduced_body := EnemyAnimator.make_body(reduced_enemy, model, enemy_defs)
+	_check(EnemyAnimator.begin_death_effect(reduced_body, &"mini_boss", reduced_enemy.id, true), "Reduced Motion death effect did not start")
+	var reduced_particles := reduced_body.get_node_or_null("DeathParticles") as EnemyDeathParticles
+	_check(reduced_particles != null and reduced_particles.rendered_particle_count() <= 8, "Reduced Motion must cap moving death particles")
+	reduced_body.free()
 
 
 func _validate_grunt_exception() -> void:
