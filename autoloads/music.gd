@@ -413,10 +413,13 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 
 
 func _ensure_bus() -> void:
-	if AudioServer.get_bus_index(BUS_NAME) >= 0:
-		return
-	AudioServer.add_bus()
-	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS_NAME)
+	var index := AudioServer.get_bus_index(BUS_NAME)
+	if index < 0:
+		AudioServer.add_bus()
+		index = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(index, BUS_NAME)
+	if AudioServer.get_bus_send(index) != &"Master":
+		AudioServer.set_bus_send(index, &"Master")
 
 
 func _active_player() -> AudioStreamPlayer:

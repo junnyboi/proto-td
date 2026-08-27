@@ -8,6 +8,8 @@ const STATIC_FALLBACKS := {
 	&"ui.title.full_title": "Protos Defense",
 	&"ui.title.synopsis": "PROTOS saved the planet by declaring humanity its final extinction event. Command the champions of Company 33 and prove an imperfect species still deserves a future.",
 	&"ui.title.start": "Start",
+	&"ui.title.start_retry": "Retry Start",
+	&"ui.title.a11y.start_failed_description": "Campaign startup failed. Activate Start again to retry.",
 	&"ui.title.settings": "Settings",
 	&"ui.title.settings_save_failed": "Settings could not be saved. Review the draft and try again.",
 	&"ui.title.audio": "Audio",

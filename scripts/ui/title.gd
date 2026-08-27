@@ -60,6 +60,8 @@ var _hover_tweens: Dictionary = {}
 var _highlighted_actions: Dictionary = {}
 var _interaction_feedback_ready := false
 var _title_focus_scroll_ready := false
+var _start_pending := false
+var _start_failed := false
 
 @onready var _settings_state: TitleSettings = $TitleSettings
 
@@ -360,10 +362,19 @@ func _rule(color: Color) -> ColorRect:
 
 
 func _on_start_pressed() -> void:
-	if _screen_state != ScreenState.TITLE:
+	if _screen_state != ScreenState.TITLE or _start_pending:
 		return
+	_start_pending = true
+	_start_failed = false
+	_start_button.disabled = true
 	Sfx.play("ui_confirm")
-	Game.start_campaign()
+	if Game.start_campaign():
+		return
+	_start_pending = false
+	_start_failed = true
+	_start_button.disabled = false
+	_refresh_copy()
+	_start_button.grab_focus.call_deferred()
 
 
 func _open_settings() -> void:
@@ -469,7 +480,7 @@ func _leave_settings(return_focus: Control) -> void:
 
 func _set_title_interaction_enabled(enabled: bool) -> void:
 	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
-	_start_button.disabled = not enabled
+	_start_button.disabled = not enabled or _start_pending
 	_settings_button.disabled = not enabled
 	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
@@ -565,7 +576,18 @@ func _refresh_copy() -> void:
 	if _wordmark == null:
 		return
 	_wordmark.text = UiCopyType.text(&"ui.title.full_title", "PROTOS DEFENSE").to_upper()
-	_start_button.text = UiCopyType.text(&"ui.title.start", "Start").to_upper()
+	_start_button.text = UiCopyType.text(
+		&"ui.title.start_retry" if _start_failed else &"ui.title.start",
+		"Retry Start" if _start_failed else "Start",
+	).to_upper()
+	_start_button.accessibility_description = (
+		UiCopyType.text(
+			&"ui.title.a11y.start_failed_description",
+			"Campaign startup failed. Activate Start again to retry.",
+		)
+		if _start_failed
+		else ""
+	)
 	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
 
 

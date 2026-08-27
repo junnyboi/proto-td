@@ -13,6 +13,7 @@ const COMMITTED := &"committed"
 const RETRYABLE := &"retryable"
 const INDETERMINATE := &"indeterminate"
 const PRODUCTION_SLOT := "user://campaign_v1.json"
+const QUARANTINE_SUFFIX := ".invalid"
 const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
 const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const FILE_OPS_SCRIPT := preload("res://sim/campaign_file_ops.gd")
@@ -56,6 +57,29 @@ static func create_production(state: Variant) -> Dictionary:
 	if created["accepted"]:
 		_authority_store_ref = weakref(created["value"])
 	return created
+
+
+## Preserve unreadable production bytes beside the live slot, then clear the
+## canonical paths so startup can create a fresh authority. This is only called
+## after load() proves that no main/backup/temp candidate is restorable.
+func quarantine_invalid_slot() -> Dictionary:
+	var archived := false
+	for path: String in [_main_path, _bak_path, _tmp_path]:
+		if not _ops.file_exists(path):
+			continue
+		var quarantine_path := path + QUARANTINE_SUFFIX
+		if _ops.file_exists(quarantine_path):
+			var removed: Dictionary = _ops.remove_path(quarantine_path)
+			if not removed["accepted"]:
+				return {"accepted": false, "error_code": &"store_cleanup_failed"}
+		var renamed: Dictionary = _ops.rename_path(path, quarantine_path)
+		if not renamed["accepted"]:
+			return {"accepted": false, "error_code": &"store_rotate_failed"}
+		archived = true
+	return {
+		"accepted": archived,
+		"error_code": &"" if archived else &"slot_missing",
+	}
 
 
 func save(expected_pre_text: String, prospective_state: Variant) -> Dictionary:
