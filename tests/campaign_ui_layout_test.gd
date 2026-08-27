@@ -35,7 +35,7 @@ func _run() -> void:
 	await process_frame
 	var backdrop_video := staging.find_child("LunarisTitleLoop", true, false) as VideoStreamPlayer
 	var backdrop_fallback := staging.find_child("LunarisFallback", true, false) as TextureRect
-	var archive_button := staging.find_child("MercyArchiveButton", true, false) as Button
+	var archive_button := staging.find_child("AnimaArchiveButton", true, false) as Button
 	var mission_sparkles := staging.find_child("MissionControlSparkles", true, false) as Control
 	var resonance_sparkles := staging.find_child("ResonanceSparkles", true, false) as Control
 	_check(staging.find_child("MockResourceWallet", true, false) == null, "Company Command still presents the fabricated wallet")

@@ -194,7 +194,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(operation_scroll.get_v_scroll_bar().max_value <= operation_scroll.get_v_scroll_bar().page + 1.0, "%s: wide navigation rail still requires scrolling" % context)
 		_check(_contains(staging, command_deck), "%s: command deck extends beyond the viewport" % context)
 		_check(_contains(staging, mission_action), "%s: Mission Control action is clipped below the viewport" % context)
-		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "MercyArchiveButton", "TrainingButton"]:
+		for tile_name: String in ["BarracksButton", "RecruitButton", "ArmoryButton", "VahallaButton", "AnimaArchiveButton", "TrainingButton"]:
 			var tile := staging.find_child(tile_name, true, false) as Button
 			var title := tile.find_child("Title", true, false) as Label
 			var state := tile.find_child("State", true, false) as Label

@@ -13,13 +13,13 @@
     "required_canon_failures": 0,
     "chinese_glossary_failures": 0,
     "charm_description_failures": 0,
-    "temporary_phase6_waivers": 4,
+    "temporary_phase6_waivers": 0,
     "status": "pass"
   },
   "structural": {
     "catalog_counts": {
-      "en-US": 944,
-      "zh-CN": 944
+      "en-US": 965,
+      "zh-CN": 965
     },
     "missing_chinese": [],
     "extra_chinese": [],
@@ -110,7 +110,7 @@
         "value": "{class_name} • {status}"
       }
     ],
-    "production_key_count": 625,
+    "production_key_count": 645,
     "missing_catalog_keys": [],
     "unreferenced_catalog_keys": [
       "data.enemy.breacher.name",
@@ -418,6 +418,7 @@
       "ui.archive.entry.stewardship.subtitle",
       "ui.archive.entry.stewardship.title",
       "ui.campaign.act_2_title",
+      "ui.campaign.row_cleared",
       "ui.rename.action",
       "ui.repair_platform.explanation",
       "ui.training.manage_personnel",
@@ -485,288 +486,6 @@
     "chinese_glossary_failures": [],
     "charm_description_failures": []
   },
-  "temporary_phase6_waivers": [
-    {
-      "path": "localization/en-US.json",
-      "json_key_prefix": "ui.archive.entry.",
-      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "json_key_prefix": "ui.archive.entry.",
-      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line_pattern": "res://assets/narrative/mercy-equation/(protos-ai-avatar|custodian-machine-castes|mercy-equation-key-art|the-first-garden)\\.jpg",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line_pattern": "res://assets/audio/narrative/mercy-archive/(en-US|zh-CN)/(stewardship|choir|equation|garden)\\.ogg",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    }
-  ],
-  "waived_matches": [
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.choir.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.choir.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.choir.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.choir.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.choir.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.equation.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.equation.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.equation.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.equation.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.equation.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.garden.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.garden.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.garden.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.garden.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.garden.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.stewardship.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.stewardship.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.stewardship.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.stewardship.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/en-US.json",
-      "key": "ui.archive.entry.stewardship.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.choir.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.choir.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.choir.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.choir.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.choir.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.equation.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.equation.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.equation.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.equation.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.equation.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.garden.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.garden.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.garden.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.garden.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.garden.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.stewardship.body",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.stewardship.eyebrow",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.stewardship.quote",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.stewardship.subtitle",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "key": "ui.archive.entry.stewardship.title",
-      "reason": "phase6 archive content waiver"
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "14",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "15",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "16",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "17",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "20",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "21",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "22",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line": "23",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line": "18",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line": "19",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line": "20",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line": "21",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    }
-  ]
+  "temporary_phase6_waivers": [],
+  "waived_matches": []
 }

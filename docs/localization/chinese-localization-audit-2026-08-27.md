@@ -17,7 +17,7 @@ The game now has **complete English/Simplified Chinese catalog parity across 925
 
 The Chinese glyph failure was caused by an incomplete runtime font contract rather than by the catalog itself. Several standalone battle and utility controls relied on inherited or platform fallback fonts, while the bundled CJK font was loaded through runtime path lookup rather than as an explicit export dependency. The repair makes `ProtosSansSC.otf` an explicit preloaded resource, installs a Chinese-capable global project theme, and applies the same deterministic body/display chain to Aetheria, StagingSkin, Lunaris operations controls, spell status labels, line edits, deployment cards, and accessibility text.[2]
 
-The release candidate was visually inspected through **28 deterministic Godot/Xvfb captures** covering loading, title, settings, Company Command, campaign, Field Team, Training, Premium Resonance browse/history/reveal, victory/defeat Results, the then-visible Mercy Archive, the then-visible Vahalla label, and battle tutorial/live states in landscape and portrait. Every inspected frame was free of tofu boxes, replacement-character glyphs, nonsensical codepoint symbols, destructive clipping, and untranslated primary controls.[3]
+The release candidate was visually inspected through **28 deterministic Godot/Xvfb captures** covering loading, title, settings, Company Command, campaign, Field Team, Training, Premium Resonance browse/history/reveal, victory/defeat Results, the historically captured archive state, the then-visible Vahalla label, and battle tutorial/live states in landscape and portrait. Every inspected frame was free of tofu boxes, replacement-character glyphs, nonsensical codepoint symbols, destructive clipping, and untranslated primary controls.[3]
 
 ## Audit scope and results
 
@@ -31,6 +31,8 @@ The release candidate was visually inspected through **28 deterministic Godot/Xv
 | Production localization keys scanned | 616 | Strict source scan[1] |
 | Missing production catalog keys | 0 | Strict source scan[1] |
 | Unresolved hard-coded visible strings | 0 | `tools/audit_localization.py --strict-hardcoded`[1] |
+| Phase 6 temporary waivers | 0 | Canon contract and strict audit[1] |
+| Anima Archive bilingual fields | 40 | Four records × five fields × two locales; exact-title/theme parity regression[1] |
 | Major routed screens visually checked | 14 screen/state families | Visual matrix[3] |
 | Landscape/portrait screenshots inspected | 28 | Visual matrix and checksums[3] |
 | Tofu/replacement-character findings | 0 | Font regression and visual inspection[2] [3] |
@@ -76,7 +78,7 @@ All high-risk text paths now route through the catalog. Deployment cards use loc
 | Premium reveal | Yes | N/A | Full-screen identity and conversion receipt remain legible. |
 | Results victory | Yes | Yes | Yield, consequence, rewards, narrative, and actions remain accessible. |
 | Results defeat | Yes | N/A | Defeat semantics and consequence layout remain intact. |
-| Superseded Mercy Archive label | Yes | Yes | Long-form Chinese prose stays in scrollable dossier regions. |
+| Anima Archive | Historical layout evidence | Historical layout evidence | Phase 6 replaces all four bilingual records; focused regressions verify exact titles/themes, four no-crop art bindings, eight localized streams, locale switching, playback controls, focus, accessibility, and touch sizing. |
 | Superseded Vahalla label | Yes | Yes | Memorial record, permanence copy, tick, and honor action are complete. |
 | Battle tutorial/live | Yes | Yes | HUD, tutorial, controls, spells, deploy cards, costs, and wave banner are tofu-free. |
 
@@ -90,7 +92,7 @@ The final post-merge release gate passed direct import, bounded boot, **all 57 c
 python3 tools/audit_localization.py --strict-hardcoded
 ```
 
-This command fails on catalog-key drift, placeholder drift, production localization keys missing from the catalogs, or unresolved hard-coded player-visible strings. The generated machine-readable report is written to `docs/localization/latest-audit.json`.[1]
+This command fails on catalog-key drift, placeholder drift, production localization keys missing from the catalogs, unresolved hard-coded player-visible strings, retired canon, canon-hash drift, or any temporary Phase 6 waiver. The Phase 6 run passed with every reported failure count and waiver count at zero. The generated machine-readable report is written to `docs/localization/latest-audit.json`.[1]
 
 ## Conclusion
 

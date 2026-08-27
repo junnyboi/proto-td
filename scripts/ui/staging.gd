@@ -567,7 +567,7 @@ func _build_navigation_content() -> VBoxContainer:
 	_command_tiles.append(_vahalla)
 	_operation_grid.add_child(_vahalla)
 	_archive = StagingCommandTileType.new()
-	_archive.name = "MercyArchiveButton"
+	_archive.name = "AnimaArchiveButton"
 	_archive.configure(
 		StagingGlyphType.Kind.ARCHIVE,
 		UiCopyType.text(&"ui.staging.archive_short", "Archive"),

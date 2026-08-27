@@ -4,7 +4,7 @@
 The audit is deterministic and network-free. In addition to EN/ZH key and
 placeholder parity, it loads ``canon_contract.json`` and checks active runtime
 sources for Company Manus, the Simplified Chinese glossary, retired canon,
-required canon, literal English fallbacks, and narrowly scoped Phase-6 waivers.
+required canon, literal English fallbacks, and zero-waiver release status.
 """
 from __future__ import annotations
 

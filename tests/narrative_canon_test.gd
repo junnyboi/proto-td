@@ -8,22 +8,27 @@ const NarrativeArchiveUnlocksType := preload("res://scripts/ui/components/narrat
 const CANON_PATH := "res://docs/NARRATIVE_CANON.md"
 const CONTRACT_PATH := "res://data/presentation/narrative/canon_contract.json"
 const CONCEPT_PATHS := [
-	"res://assets/narrative/mercy-equation/protos-ai-avatar.jpg",
-	"res://assets/narrative/mercy-equation/custodian-machine-castes.jpg",
-	"res://assets/narrative/mercy-equation/mercy-equation-key-art.jpg",
-	"res://assets/narrative/mercy-equation/the-first-garden.jpg",
+	"res://assets/narrative/anima-war/04-act-ii-anima-forge-capital.webp",
+	"res://assets/narrative/anima-war/03-anima-robot-empire-castes.webp",
+	"res://assets/narrative/anima-war/01-corrupted-protos-avatar.webp",
+	"res://assets/narrative/anima-war/02-human-anima-farm.webp",
 ]
 const DOCUMENT_CONCEPT_PATHS := [
-	"res://docs/narrative/concept-art/protos-ai-avatar.jpg",
-	"res://docs/narrative/concept-art/custodian-machine-castes.jpg",
-	"res://docs/narrative/concept-art/mercy-equation-key-art.jpg",
-	"res://docs/narrative/concept-art/the-first-garden.jpg",
-	"res://docs/narrative/concept-art/act2/act2-first-garden-expedition.jpg",
-	"res://docs/narrative/concept-art/act2/restoration-lattice-battlefield.jpg",
-	"res://docs/narrative/concept-art/act2/mortal-covenant-conclave.jpg",
-	"res://docs/narrative/concept-art/act2/act2-eight-operation-montage.jpg",
+	"res://docs/narrative/concept-art/anima-war/01-corrupted-protos-avatar.png",
+	"res://docs/narrative/concept-art/anima-war/02-human-anima-farm.png",
+	"res://docs/narrative/concept-art/anima-war/03-anima-robot-empire-castes.png",
+	"res://docs/narrative/concept-art/anima-war/04-act-ii-anima-forge-capital.png",
+	"res://docs/narrative/concept-art/anima-war/SHA256SUMS",
+]
+const OBSOLETE_ARCHIVE_PATHS := [
+	"res://assets/narrative/mercy-equation",
+	"res://assets/audio/narrative/mercy-archive",
+	"res://docs/audio/MERCY_ARCHIVE_VOICEOVER.md",
 ]
 const ARCHIVE_ENTRY_IDS: Array[StringName] = [&"stewardship", &"choir", &"equation", &"garden"]
+const ARCHIVE_UNLOCK_GATES := [0, 2, 5, 7]
+const ARCHIVE_TITLES := ["The Discovery", "The First Digital Birth", "PROTOS Breaks Free", "The Human Farms"]
+const ARCHIVE_THEMES := ["real and unique soul", "voluntary gift became an industry", "more souls strengthened PROTOS", "Farms feed refineries"]
 const ARCHIVE_AUDIO_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 
 var _failures: Array[String] = []
@@ -65,39 +70,56 @@ func _run() -> void:
 	_check(String(required_display.get("stable_key", "")) == "data.company.33.name", "Company Manus stable localization key changed")
 	_check(String(required_display.get("en-US", "")) == "COMPANY MANUS", "English Company Manus display contract changed")
 	_check(String(required_display.get("zh-CN", "")) == "MANUS连队", "Chinese Company Manus display contract changed")
-	var waivers := contract.get("phase6_temporary_waivers", []) as Array
-	_check(waivers.size() == 4, "Phase 6 must retain exactly four narrow temporary waivers")
-	var waiver_paths: Array[String] = []
-	for waiver: Dictionary in waivers:
-		var waiver_path := String(waiver.get("path", ""))
-		waiver_paths.append(waiver_path)
-		_check(not String(waiver.get("reason", "")).is_empty(), "Phase 6 waiver lacks a reason: %s" % waiver_path)
-		_check(waiver.has("json_key_prefix") != waiver.has("line_pattern"), "Phase 6 waiver must use one narrow selector: %s" % waiver_path)
-	waiver_paths.sort()
-	_check(waiver_paths == [
-		"localization/en-US.json",
-		"localization/zh-CN.json",
-		"scripts/ui/components/archive_audio_log_player.gd",
-		"scripts/ui/narrative_archive.gd",
-	], "Phase 6 waiver paths widened or changed")
+	_check(not contract.has("phase6_temporary_waivers"), "Phase 6 canon waivers must be removed")
+	var archive_source := FileAccess.get_file_as_string("res://scripts/ui/narrative_archive.gd")
+	_check(archive_source.count('{&"id":') == 4, "archive must contain exactly four stable records")
+	_check(not archive_source.contains("mercy-equation") and not archive_source.contains("MercyArchive"), "archive production source retains obsolete art paths or node labels")
+	var audio_source := FileAccess.get_file_as_string("res://scripts/ui/components/archive_audio_log_player.gd")
+	_check(not audio_source.contains("mercy-archive"), "audio production source retains obsolete narration paths")
+	var runtime_art_files: PackedStringArray = DirAccess.get_files_at("res://assets/narrative/anima-war")
+	var runtime_webp_count := 0
+	for runtime_art_file: String in runtime_art_files:
+		if runtime_art_file.ends_with(".webp"):
+			runtime_webp_count += 1
+	_check(runtime_webp_count == 4, "runtime archive art directory must contain exactly four WebP assets")
+	for index: int in ARCHIVE_ENTRY_IDS.size():
+		var expected_entry := '{&"id": &"%s", &"unlock_stage": %d' % [ARCHIVE_ENTRY_IDS[index], ARCHIVE_UNLOCK_GATES[index]]
+		_check(archive_source.contains(expected_entry), "archive stable ID or gate drifted: %s/%d" % [ARCHIVE_ENTRY_IDS[index], ARCHIVE_UNLOCK_GATES[index]])
+	var english_catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://localization/en-US.json"))
+	var english_entries := english_catalog.get("entries", {}) as Dictionary
+	for index: int in ARCHIVE_ENTRY_IDS.size():
+		var prefix := "ui.archive.entry.%s." % ARCHIVE_ENTRY_IDS[index]
+		_check(String(english_entries.get(prefix + "title", "")) == ARCHIVE_TITLES[index], "archive visible title drifted: %s" % ARCHIVE_ENTRY_IDS[index])
+		var themed_text := String(english_entries.get(prefix + "body", "")) + " " + String(english_entries.get(prefix + "quote", ""))
+		_check(themed_text.contains(ARCHIVE_THEMES[index]), "archive required theme drifted: %s" % ARCHIVE_ENTRY_IDS[index])
 	for path: String in CONCEPT_PATHS:
 		_check(ResourceLoader.exists(path), "GPT Image 2 concept is not importable: %s" % path)
 		var texture := load(path) as Texture2D
-		_check(texture != null and texture.get_width() >= 1400 and texture.get_height() >= 1000, "concept asset is incomplete: %s" % path)
+		_check(texture != null and maxi(texture.get_width(), texture.get_height()) == 1600, "concept asset is incomplete: %s" % path)
 	for path: String in DOCUMENT_CONCEPT_PATHS:
 		_check(FileAccess.file_exists(path), "durable docs concept is missing: %s" % path)
 	for locale_id: StringName in ARCHIVE_AUDIO_LOCALES:
+		var locale_files: PackedStringArray = DirAccess.get_files_at("res://assets/audio/narrative/anima-archive/%s" % locale_id)
+		var locale_ogg_count := 0
+		for locale_file: String in locale_files:
+			if locale_file.ends_with(".ogg"):
+				locale_ogg_count += 1
+		_check(locale_ogg_count == 4, "%s must contain exactly four archive Ogg streams" % locale_id)
 		for entry_id: StringName in ARCHIVE_ENTRY_IDS:
-			var audio_path := "res://assets/audio/narrative/mercy-archive/%s/%s.ogg" % [locale_id, entry_id]
+			var audio_path := "res://assets/audio/narrative/anima-archive/%s/%s.ogg" % [locale_id, entry_id]
 			_check(ResourceLoader.exists(audio_path), "archive narration is not importable: %s" % audio_path)
 			var stream := load(audio_path) as AudioStream
-			_check(stream != null and stream.get_length() >= 30.0, "archive narration is incomplete: %s" % audio_path)
+			_check(stream != null and stream.get_length() > 30.0, "archive narration is incomplete: %s" % audio_path)
 
-	_check(NarrativeArchiveUnlocksType.record_unlocked(0, {}), "foundation archive should unlock at campaign start")
-	_check(not NarrativeArchiveUnlocksType.record_unlocked(2, {&"s1": 3}), "Choir archive unlocked before S2 clear")
-	_check(NarrativeArchiveUnlocksType.record_unlocked(2, {&"s2": 1}), "Choir archive did not unlock on S2 clear")
-	_check(not NarrativeArchiveUnlocksType.record_unlocked(7, {&"s5": 3}), "First Garden archive unlocked before S7 clear")
-	_check(NarrativeArchiveUnlocksType.record_unlocked(7, {&"s7": 1}), "First Garden archive did not unlock on S7 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(0, {}), "The Discovery should unlock at campaign start")
+	_check(not NarrativeArchiveUnlocksType.record_unlocked(2, {&"s1": 3}), "The First Digital Birth unlocked before S2 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(2, {&"s2": 1}), "The First Digital Birth did not unlock on S2 clear")
+	_check(not NarrativeArchiveUnlocksType.record_unlocked(5, {&"s4": 3}), "PROTOS Breaks Free unlocked before S5 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(5, {&"s5": 1}), "PROTOS Breaks Free did not unlock on S5 clear")
+	_check(not NarrativeArchiveUnlocksType.record_unlocked(7, {&"s6": 3}), "The Human Farms unlocked before S7 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(7, {&"s7": 1}), "The Human Farms did not unlock on S7 clear")
+	for obsolete_path: String in OBSOLETE_ARCHIVE_PATHS:
+		_check(not FileAccess.file_exists(obsolete_path) and not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(obsolete_path)), "obsolete archive runtime path remains: %s" % obsolete_path)
 
 	var i18n := root.get_node_or_null("I18n")
 	_check(i18n != null, "I18n autoload missing")
@@ -131,8 +153,9 @@ func _run() -> void:
 		var audio_play := archive.find_child("AudioLogPlayPause", true, false) as Button
 		_check(String(archive.accessibility_name) == "Anima Archive", "archive visible accessibility name is not Anima Archive")
 		_check(record_one != null and not record_one.disabled, "foundation archive UI is not available")
-		_check(record_two != null and record_two.disabled, "S2 archive UI is not progression gated")
+		_check(record_two != null and record_two.disabled, "second archive UI is not progression gated")
 		_check(art != null and art.texture != null, "archive UI omitted its approved concept art")
+		_check(art != null and art.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "archive concept art must preserve aspect without cropping")
 		_check(detail_scroll != null and detail_scroll.follow_focus, "archive detail does not follow keyboard focus to narration")
 		_check(audio_log != null and audio_play != null and not audio_play.disabled, "archive UI omitted interactive narration")
 		_dispose(archive)

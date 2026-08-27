@@ -26,8 +26,8 @@ const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const RESULT_ACTION_WIDTH := 260.0
-const RESULT_CLEAR_COMMAND_ACTION_WIDTH := RESULT_ACTION_WIDTH + 36.0
 const RESULT_COMMAND_ACTION_WIDTH := 400.0
+const RESULT_CLEAR_COMMAND_ACTION_WIDTH := RESULT_COMMAND_ACTION_WIDTH
 const RESULT_COMMAND_PORTRAIT_WIDTH := 320.0
 const RESULT_ACTION_HEIGHT := 96.0
 const RESULT_ACTION_FONT_SIZE := 54
@@ -483,7 +483,6 @@ func _apply_responsive_layout() -> void:
 				else (RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_PORTRAIT_WIDTH)
 			)
 		command.custom_minimum_size.x = command_target
-	if command != null and not _cleared_result:
 		command.add_theme_font_size_override(
 			&"font_size",
 			48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE,

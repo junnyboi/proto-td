@@ -164,13 +164,14 @@ func _run() -> void:
 			if child is Button:
 				var action := child as Button
 				var presentation := action.find_child("PresentationLabel", true, false) as Label
-				var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+				var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
 				_check(action.custom_minimum_size == Vector2(expected_width, 96), "%s lost its annotated fixed width" % action.name)
 				_check(action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "%s still expands horizontally" % action.name)
 				_check(action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s retained a struck texture frame" % action.name)
 				_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s typography was not doubled" % action.name)
 				var action_style := action.get_theme_stylebox(&"normal")
 				_check(action_style.content_margin_top >= 18.0 and action_style.content_margin_bottom >= 18.0, "%s lacks vertical inner padding" % action.name)
+		_check(staging.get_combined_minimum_size().x <= staging.size.x + 1.0, "clear Company Command text overflows its wider action")
 
 	_check(header != null and header.columns == 1 and body != null and body.columns == 2, "regular landscape Results hierarchy changed")
 	root.size = Vector2i(1024, 576)
@@ -193,11 +194,11 @@ func _run() -> void:
 			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
 	root.size = Vector2i(720, 1280)
 	await _frames(2)
-	_check(staging.custom_minimum_size.x == 296.0, "clear Command is not 36px wider above the narrow portrait breakpoint")
+	_check(staging.custom_minimum_size.x == 400.0, "clear Command lacks comfortable width above the narrow portrait breakpoint")
 	for child: Node in actions.get_children():
 		if child is Button:
 			var action := child as Button
-			var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+			var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
 			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong wide-portrait width" % action.name)
 			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows wide portrait" % action.name)
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Results locale activation failed")
@@ -222,7 +223,7 @@ func _run() -> void:
 	for child: Node in chinese_actions.get_children():
 		if child is Button:
 			var action := child as Button
-			var expected_width := 296.0 if action.name == "ReturnToStaging" else 260.0
+			var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
 			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong Chinese wide-portrait width" % action.name)
 			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows Chinese wide portrait" % action.name)
 	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
