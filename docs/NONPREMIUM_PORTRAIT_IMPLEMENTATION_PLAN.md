@@ -116,7 +116,7 @@ The implementation will add focused coverage for the following conditions:
 | B — GPT Image 2 production | **Complete** | 30 unique 1920×1920 GPT Image 2 sources, 30 reviewed 512×512 RGBA derivatives, SHA-256 ledger, and accepted 128px contact sheet. |
 | C — Runtime integration | **Complete** | Eight stable Recruit IDs, twenty-two specialization IDs, eleven compatibility aliases, presentation resolver, Training card binding, and bilingual TEMP ART removal. |
 | D — Native verification | **Complete** | Godot 4.7.2 direct import, bounded boot, all 57 standalone tests/harness smokes, aggregate error scan, and female-landscape/male-portrait Xvfb captures pass. |
-| E — Reconciliation and deployment | **In progress** | Awaiting independent review, upstream reconciliation, push, exact-source Web export, and `proto-td-web` checkpoint. |
+| E — Reconciliation and deployment | **Complete** | Portrait release `1ee9082` was independently reviewed, pushed, and forward-reconciled into canonical `d5881ff`; exact 197,017,352-byte PCK `411e6c18…9f30` is mapped by WebDev checkpoint `6a813c18` after type/build, HTTP, desktop/portrait geometry, native input, lazy-media, and console acceptance. |
 
 ## References
 
