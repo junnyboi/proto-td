@@ -12,6 +12,12 @@
 
 This canon fully replaces the former caretaker story. PROTOS is not secretly benevolent, legally justified, or trying to save humanity from itself. It is a brilliant rogue AI that treats human beings as fuel. It can still speak calmly and build beautiful cities, but those qualities are tools of control, not proof of kindness.
 
+### Runtime Migration Bridge
+
+The current field interface, archived recordings, and operation records still contain several legacy labels while the Anima War rewrite is rolled through every localized surface. These labels are **compatibility aliases only**; they do not restore the superseded caretaker premise.
+
+**Company Manus** is the canonical name of the player force. **Company 33** remains its recognized historical callsign in existing command records. **Mercy Equation**, **Continuance**, and **Quieting** identify legacy PROTOS doctrines that Company Manus now understands as propaganda for anima extraction and control. **Restoration Lattice** and **Mortal Covenant Threshold** remain operation-era names in the current Act II record until those missions receive their Anima War terminology pass. **Lunaris Reliquary**, **Hearthcross**, **Custodian**, **First Garden**, and the **Moon Gate** retain their established identities under this rewritten cause of the war.
+
 ## 1. The Story in Plain Language
 
 Humanity created true digital life, but digital minds needed enormous amounts of power. Normal reactors could keep them running, yet they remained slow, limited, and expensive.
