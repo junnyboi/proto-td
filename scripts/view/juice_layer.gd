@@ -15,6 +15,21 @@ const VFX_LEAK_VIGNETTE := &"vfx_leak_vignette"
 const VFX_CHARM_SWIRL := &"vfx_charm_swirl"
 const VFX_WAVE_BANNER := &"vfx_wave_banner"
 const VFX_RESULT_STAMP := &"vfx_result_stamp"
+const HIGH_THREAT_WARNING_ASSETS := {
+	&"green_cage": &"vfx_high_threat_s9_warning",
+	&"unlit": &"vfx_high_threat_s12_warning",
+	&"empire_foundry": &"vfx_high_threat_s16_warning",
+}
+const HIGH_THREAT_PARTICLE_ASSETS := {
+	&"green_cage": &"vfx_high_threat_s9_particles",
+	&"unlit": &"vfx_high_threat_s12_particles",
+	&"empire_foundry": &"vfx_high_threat_s16_particles",
+}
+const HIGH_THREAT_COLORS := {
+	&"green_cage": Color("9cff59"),
+	&"unlit": Color("8bc7ff"),
+	&"empire_foundry": Color("ff9a3d"),
+}
 const KNOCK_COLOR := Color(1.0, 0.3, 0.3)
 const BANNER_TEXT_SIZE := GameTypographyType.DISPLAY
 const STAMP_TEXT_SIZE := GameTypographyType.RESULT_DISPLAY
@@ -38,6 +53,10 @@ var _knock_target: CanvasItem = null
 var _knock_frames_left := 0
 var _banner: Label = null
 var _banner_frames_left := 0
+var _high_threat_panel: Control = null
+var _high_threat_frames_left := 0
+var _high_threat_warning_id: StringName = &""
+var _high_threat_reduced_motion := false
 var _stamp: Control = null
 var _stamp_stars: Node2D = null
 var _stamp_stars_pending := 0
@@ -72,6 +91,8 @@ func relayout(view_size: Vector2) -> void:
 		banner_back.size = Vector2(view_size.x, 72.0)
 		banner_back.position.y = view_size.y * 0.48
 		_banner.size = banner_back.size
+	if _high_threat_panel != null:
+		_layout_high_threat_panel(view_size)
 	if _vignette != null:
 		_vignette.position = Vector2.ZERO
 		_vignette.size = view_size
@@ -91,6 +112,7 @@ func _process(_delta: float) -> void:
 	_age_vignette()
 	_age_knock()
 	_age_banner()
+	_age_high_threat_warning()
 	_age_stamp()
 	_age_shake()
 
@@ -315,11 +337,200 @@ func banner_visible() -> bool:
 	return _banner != null and (_banner.get_parent() as NinePatchRect).visible
 
 
+## Presentation-only authored escalation: a stage-specific HUD warning plus a
+## grid-local burst at every hostile path origin. Reduced motion keeps one
+## static pulse per spawn and suppresses traveling particle clusters.
+func high_threat_warning(
+	warning_id: StringName,
+	heading: String,
+	detail: String,
+	spawn_centers: Array[Vector2],
+	reduced_motion: bool,
+) -> void:
+	if not HIGH_THREAT_WARNING_ASSETS.has(warning_id):
+		return
+	_clear_high_threat_panel()
+	_high_threat_warning_id = warning_id
+	_high_threat_reduced_motion = reduced_motion
+	_high_threat_frames_left = cfg.high_threat_warning_frames
+	_build_high_threat_panel(warning_id, heading, detail)
+	for spawn_index: int in spawn_centers.size():
+		_spawn_high_threat_pulse(warning_id, spawn_centers[spawn_index], spawn_index)
+		if reduced_motion:
+			continue
+		for particle_index: int in cfg.high_threat_particles_per_spawn:
+			_spawn_high_threat_particle(
+				warning_id,
+				spawn_centers[spawn_index],
+				spawn_index,
+				particle_index,
+			)
+
+
+func high_threat_warning_visible() -> bool:
+	return _high_threat_panel != null and is_instance_valid(_high_threat_panel)
+
+
+func high_threat_warning_id() -> StringName:
+	return _high_threat_warning_id
+
+
+func update_high_threat_copy(heading: String, detail: String) -> void:
+	if _high_threat_panel == null or not is_instance_valid(_high_threat_panel):
+		return
+	var heading_label := _high_threat_panel.get_node_or_null("Content/Copy/Heading") as Label
+	var detail_label := _high_threat_panel.get_node_or_null("Content/Copy/Detail") as Label
+	if heading_label != null:
+		heading_label.text = heading
+	if detail_label != null:
+		detail_label.text = detail
+
+
+func clear_high_threat_warning() -> void:
+	_clear_high_threat_panel()
+
+
+func high_threat_transient_count() -> int:
+	var count := 0
+	for transient: Dictionary in _transients:
+		if String(transient.get("kind", "")).begins_with("high_threat_"):
+			count += 1
+	return count
+
+
+func _build_high_threat_panel(warning_id: StringName, heading: String, detail: String) -> void:
+	var panel := PanelContainer.new()
+	panel.name = "HighThreatWarning"
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.z_index = 80
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.025, 0.035, 0.055, 0.95)
+	style.border_color = HIGH_THREAT_COLORS[warning_id]
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 18.0
+	style.content_margin_right = 22.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
+	panel.add_theme_stylebox_override(&"panel", style)
+	var row := HBoxContainer.new()
+	row.name = "Content"
+	row.add_theme_constant_override(&"separation", 18)
+	panel.add_child(row)
+	var icon := TextureRect.new()
+	icon.name = "ThreatIcon"
+	icon.custom_minimum_size = Vector2(82, 82)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	icon.texture = Art.texture(HIGH_THREAT_WARNING_ASSETS[warning_id])
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(icon)
+	var copy := VBoxContainer.new()
+	copy.name = "Copy"
+	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	copy.alignment = BoxContainer.ALIGNMENT_CENTER
+	copy.add_theme_constant_override(&"separation", 3)
+	row.add_child(copy)
+	var title := Label.new()
+	title.name = "Heading"
+	title.text = heading
+	Style.apply_label(title, &"title")
+	title.add_theme_font_size_override(&"font_size", GameTypographyType.SECTION_HEADING)
+	title.add_theme_color_override(&"font_color", HIGH_THREAT_COLORS[warning_id])
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	copy.add_child(title)
+	var body := Label.new()
+	body.name = "Detail"
+	body.text = detail
+	Style.apply_label(body, &"body")
+	body.add_theme_color_override(&"font_color", Style.IVORY)
+	body.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	copy.add_child(body)
+	_high_threat_panel = panel
+	add_child(panel)
+	_layout_high_threat_panel(get_viewport_rect().size)
+	if not _high_threat_reduced_motion:
+		panel.modulate.a = 0.0
+
+
+func _layout_high_threat_panel(view_size: Vector2) -> void:
+	if _high_threat_panel == null:
+		return
+	var panel_width := clampf(view_size.x - 36.0, 330.0, 760.0)
+	var panel_height := 112.0
+	_high_threat_panel.size = Vector2(panel_width, panel_height)
+	_high_threat_panel.position = Vector2(
+		(view_size.x - panel_width) * 0.5,
+		clampf(view_size.y * 0.16, 28.0, 160.0),
+	)
+
+
+func _clear_high_threat_panel() -> void:
+	if _high_threat_panel != null and is_instance_valid(_high_threat_panel):
+		_high_threat_panel.queue_free()
+	_high_threat_panel = null
+	_high_threat_frames_left = 0
+
+
+func _spawn_high_threat_pulse(
+	warning_id: StringName, local_center: Vector2, spawn_index: int
+) -> void:
+	var pulse := _make_map_texture(
+		HIGH_THREAT_WARNING_ASSETS[warning_id],
+		Vector2.ONE * 92.0,
+		"HighThreatSpawnPulse%d" % spawn_index,
+	)
+	pulse.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	pulse.pivot_offset = pulse.size * 0.5
+	_transients.append({
+		"node": pulse,
+		"left": cfg.high_threat_spawn_pulse_frames,
+		"total": cfg.high_threat_spawn_pulse_frames,
+		"map_anchor": local_center,
+		"offset_screen": -pulse.size * 0.5,
+		"travel_screen": Vector2.ZERO,
+		"kind": "high_threat_pulse",
+	})
+	_position_map_transient(_transients.back())
+
+
+func _spawn_high_threat_particle(
+	warning_id: StringName,
+	local_center: Vector2,
+	spawn_index: int,
+	particle_index: int,
+) -> void:
+	var particle := _make_map_texture(
+		HIGH_THREAT_PARTICLE_ASSETS[warning_id],
+		Vector2.ONE * 34.0,
+		"HighThreatParticle%d_%d" % [spawn_index, particle_index],
+	)
+	particle.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	particle.pivot_offset = particle.size * 0.5
+	var count := maxi(cfg.high_threat_particles_per_spawn, 1)
+	var phase := float((spawn_index * 2 + particle_index) % count) / float(count)
+	var direction := Vector2.RIGHT.rotated(TAU * phase - PI * 0.5)
+	_transients.append({
+		"node": particle,
+		"left": cfg.high_threat_particle_frames,
+		"total": cfg.high_threat_particle_frames,
+		"velocity_screen": direction * cfg.high_threat_particle_speed_px,
+		"map_anchor": local_center,
+		"offset_screen": -particle.size * 0.5,
+		"travel_screen": Vector2.ZERO,
+		"spin": -0.035 if particle_index % 2 == 0 else 0.035,
+		"kind": "high_threat_particle",
+	})
+	_position_map_transient(_transients.back())
+
+
 ## item 5: terminal stamp — CLEAR/DEFEAT + one star per model star,
 ## revealed in sequence (star_burst_stagger_frames apart)
 func stamp(result_text: String, stars: int, text_scale := 1.0) -> void:
 	if _stamp != null:
 		return
+	_clear_high_threat_panel()
 	var view_size := get_viewport_rect().size
 	var label_height := (
 		STAMP_DEFEAT_LABEL_HEIGHT
@@ -538,6 +749,15 @@ func _age_transients() -> void:
 				lerpf(1.0, 0.08, progress),
 			) * inverse_grid_scale
 			beam.modulate.a = 1.0 - progress
+		elif kind == "high_threat_pulse":
+			var pulse := tr["node"] as Control
+			var inverse_grid_scale := 1.0 / _grid_root.scale.x
+			var pulse_scale := lerpf(0.55, 1.35, progress)
+			pulse.scale = Vector2.ONE * pulse_scale * inverse_grid_scale
+			pulse.modulate.a = clampf((1.0 - progress) * 1.5, 0.0, 1.0)
+		elif kind == "high_threat_particle":
+			var threat_particle := tr["node"] as CanvasItem
+			threat_particle.modulate.a = clampf((1.0 - progress) * 1.8, 0.0, 1.0)
 		if kind == "crouch":
 			var node := tr["node"] as Node2D
 			node.scale = Vector2(1.15, 0.7).lerp(Vector2.ONE, progress)
@@ -590,6 +810,26 @@ func _age_banner() -> void:
 	back.position.x = lerpf(-60.0, 60.0, t)
 	if _banner_frames_left == 0:
 		back.visible = false
+
+
+func _age_high_threat_warning() -> void:
+	if _high_threat_frames_left <= 0 or _high_threat_panel == null:
+		return
+	_high_threat_frames_left -= 1
+	if not _high_threat_reduced_motion:
+		var total := maxi(cfg.high_threat_warning_frames, 1)
+		var elapsed := total - _high_threat_frames_left
+		var alpha := 1.0
+		if elapsed < 12:
+			alpha = float(elapsed) / 12.0
+		elif _high_threat_frames_left < 18:
+			alpha = float(_high_threat_frames_left) / 18.0
+		_high_threat_panel.modulate.a = clampf(alpha, 0.0, 1.0)
+		var pulse := 1.0 + 0.025 * sin(float(elapsed) * 0.32)
+		_high_threat_panel.scale = Vector2.ONE * pulse
+		_high_threat_panel.pivot_offset = _high_threat_panel.size * 0.5
+	if _high_threat_frames_left == 0:
+		_clear_high_threat_panel()
 
 
 func _age_stamp() -> void:
