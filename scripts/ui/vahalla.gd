@@ -382,6 +382,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
 	_refresh_filter_accessibility()
 	_rebuild_memorial()
+	_apply_responsive_layout()
 
 
 func _refresh_filter_accessibility() -> void:
@@ -422,8 +423,19 @@ func _apply_responsive_layout() -> void:
 	if _header_grid == null or _body_grid == null:
 		return
 	var portrait := get_viewport_rect().size.y > get_viewport_rect().size.x
+	var large_text := TextScale != null and float(TextScale.value()) > 1.20
 	_header_grid.columns = 1 if portrait else 3
 	_body_grid.columns = 1 if portrait else 2
+	_back_button.text = (
+		UiCopyType.text(&"ui.common.back", "Back")
+		if large_text
+		else UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
+	)
+	_back_button.tooltip_text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
+	_back_button.accessibility_name = _back_button.tooltip_text
+	_eyebrow_label.visible = not large_text
+	_intro_label.visible = not large_text
+	Style.apply_label(_title_label, &"heading" if large_text else &"title")
 	_filter_bar.set_compact(true)
 	_filter_bar.set_inline(not portrait)
 	var margin := 16 if portrait else 28

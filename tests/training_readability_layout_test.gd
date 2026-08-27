@@ -237,6 +237,26 @@ func _run() -> void:
 	if inspector != null:
 		_check(_has_detailed_stats(inspector.tooltip_text), "Training inspector tooltip omits detailed combat statistics")
 
+	var text_scale_autoload := root.get_node("TextScale")
+	text_scale_autoload.call("set_scale", 1.5)
+	screen.call("_on_layout_mode_changed", screen.get("_layout_mode"))
+	await _frames(4)
+	outer = screen.find_child("TrainingDialogScroll", true, false) as ScrollContainer
+	body = screen.find_child("TrainingRosterBody", true, false) as BoxContainer
+	sort_select = screen.find_child("TrainingNameSort", true, false) as OptionButton
+	var large_text_actions := screen.find_child("RosterActions", true, false) as BoxContainer
+	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "150% landscape Training is not scroll-owned")
+	_check(body != null and body.vertical, "150% landscape Training did not stack roster and inspector")
+	_check(sort_select != null and sort_select.custom_minimum_size.x >= 320.0, "150% Recruitment Order selector remains too narrow")
+	_check(large_text_actions != null and large_text_actions.vertical, "150% Training actions did not stack")
+	if large_text_actions != null:
+		for child: Node in large_text_actions.get_children():
+			if child is Button:
+				_check((child as Button).custom_minimum_size.x >= 300.0, "150% Training action remains claustrophobic")
+	text_scale_autoload.call("set_scale", 1.0)
+	screen.call("_on_layout_mode_changed", screen.get("_layout_mode"))
+	await _frames(4)
+
 	root.size = Vector2i(720, 1280)
 	await _frames(4)
 	outer = screen.find_child("TrainingDialogScroll", true, false) as ScrollContainer

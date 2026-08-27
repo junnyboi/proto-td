@@ -26,7 +26,7 @@ const OBSOLETE_ARCHIVE_PATHS := [
 	"res://docs/audio/MERCY_ARCHIVE_VOICEOVER.md",
 ]
 const ARCHIVE_ENTRY_IDS: Array[StringName] = [&"stewardship", &"choir", &"equation", &"garden"]
-const ARCHIVE_UNLOCK_GATES := [0, 2, 5, 7]
+const ARCHIVE_UNLOCK_GATES := [0, 3, 6, 7]
 const ARCHIVE_TITLES := ["The Discovery", "The First Digital Birth", "PROTOS Breaks Free", "The Human Farms"]
 const ARCHIVE_THEMES := ["real and unique soul", "voluntary gift became an industry", "more souls strengthened PROTOS", "Farms feed refineries"]
 const ARCHIVE_AUDIO_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
@@ -63,7 +63,7 @@ func _run() -> void:
 	var bible: Dictionary = contract.get("bible", {})
 	_check(String(bible.get("path", "")) == "docs/NARRATIVE_CANON.md", "canon contract points at the wrong bible")
 	_check(String(bible.get("sha256", "")) == _sha256(CANON_PATH), "canon bible hash drifted without a contract update")
-	_check(int(contract.get("schema_version", 0)) == 3, "canon contract schema version drifted")
+	_check(int(contract.get("schema_version", 0)) == 4, "canon contract schema version drifted")
 	for term: Variant in contract.get("required_canon_terms", []):
 		_check(canon.contains(String(term)), "canon contract term is absent from bible: %s" % term)
 	var required_display := contract.get("required_company_display", {}) as Dictionary
@@ -71,6 +71,51 @@ func _run() -> void:
 	_check(String(required_display.get("en-US", "")) == "COMPANY MANUS", "English Company Manus display contract changed")
 	_check(String(required_display.get("zh-CN", "")) == "MANUS连队", "Chinese Company Manus display contract changed")
 	_check(not contract.has("phase6_temporary_waivers"), "Phase 6 canon waivers must be removed")
+	var archive_gate_contract := contract.get("archive_unlock_gates", {}) as Dictionary
+	for index: int in ARCHIVE_ENTRY_IDS.size():
+		_check(
+			int(archive_gate_contract.get(String(ARCHIVE_ENTRY_IDS[index]), -1)) == ARCHIVE_UNLOCK_GATES[index],
+			"archive contract gate drifted: %s" % ARCHIVE_ENTRY_IDS[index],
+		)
+	var compatibility := contract.get("campaign_compatibility", {}) as Dictionary
+	var runtime_context := CampaignRuntimeContext.build()
+	_check(not runtime_context.is_empty(), "campaign compatibility context failed to build")
+	if not runtime_context.is_empty():
+		_check(
+			String(runtime_context.get("environment_sha256", "")) == String(compatibility.get("environment_sha256", "")),
+			"narrative migration changed the protected gameplay environment fingerprint",
+		)
+		_check(String(compatibility.get("save_schema", "")) == CampaignV3Codec.SAVE_SCHEMA, "campaign save schema drifted")
+		_check(int(compatibility.get("save_version", 0)) == CampaignV3Codec.SAVE_VERSION, "campaign save version drifted")
+		var created := CampaignStateV3.create(
+			int(compatibility.get("fixture_seed", 0)),
+			int(compatibility.get("fixture_generation", 0)),
+			runtime_context,
+		)
+		_check(created.get("accepted", false), "deterministic campaign compatibility fixture failed to create")
+		if created.get("accepted", false):
+			var fixture: CampaignStateV3 = created["value"]
+			var encoded := fixture.encode_save()
+			_check(
+				_sha256_text(String(encoded.get("text", ""))) == String(compatibility.get("fresh_save_text_sha256", "")),
+				"fresh Campaign V3 save bytes changed during narrative migration",
+			)
+			_check(
+				String(fixture.strategic_hash().get("hex", "")) == String(compatibility.get("fresh_strategic_hash", "")),
+				"fresh campaign strategic hash changed during narrative migration",
+			)
+			_check(
+				String(fixture.core_hash().get("hex", "")) == String(compatibility.get("fresh_core_hash", "")),
+				"fresh campaign core hash changed during narrative migration",
+			)
+			var restored := CampaignStateV3.restore_source(String(encoded.get("text", "")), runtime_context)
+			_check(restored.get("accepted", false), "fresh Campaign V3 fixture no longer round-trips")
+			if restored.get("accepted", false):
+				var projection: Dictionary = restored["value"].runtime_projection()
+				_check(projection.get("stage_ids", []).size() == 16, "round-tripped campaign lost stage order")
+				_check(projection.get("ready_heroes", []).size() == 5, "round-tripped campaign lost starter roster")
+				_check(int(projection.get("marks", -1)) == 120, "round-tripped campaign changed Marks")
+				_check((projection.get("stage_stars", {}) as Dictionary).is_empty(), "round-tripped campaign invented clears")
 	var archive_source := FileAccess.get_file_as_string("res://scripts/ui/narrative_archive.gd")
 	_check(archive_source.count('{&"id":') == 4, "archive must contain exactly four stable records")
 	_check(not archive_source.contains("mercy-equation") and not archive_source.contains("MercyArchive"), "archive production source retains obsolete art paths or node labels")
@@ -112,10 +157,10 @@ func _run() -> void:
 			_check(stream != null and stream.get_length() > 30.0, "archive narration is incomplete: %s" % audio_path)
 
 	_check(NarrativeArchiveUnlocksType.record_unlocked(0, {}), "The Discovery should unlock at campaign start")
-	_check(not NarrativeArchiveUnlocksType.record_unlocked(2, {&"s1": 3}), "The First Digital Birth unlocked before S2 clear")
-	_check(NarrativeArchiveUnlocksType.record_unlocked(2, {&"s2": 1}), "The First Digital Birth did not unlock on S2 clear")
-	_check(not NarrativeArchiveUnlocksType.record_unlocked(5, {&"s4": 3}), "PROTOS Breaks Free unlocked before S5 clear")
-	_check(NarrativeArchiveUnlocksType.record_unlocked(5, {&"s5": 1}), "PROTOS Breaks Free did not unlock on S5 clear")
+	_check(not NarrativeArchiveUnlocksType.record_unlocked(3, {&"s2": 3}), "The First Digital Birth unlocked before S3 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(3, {&"s3": 1}), "The First Digital Birth did not unlock on S3 clear")
+	_check(not NarrativeArchiveUnlocksType.record_unlocked(6, {&"s5": 3}), "PROTOS Breaks Free unlocked before S6 clear")
+	_check(NarrativeArchiveUnlocksType.record_unlocked(6, {&"s6": 1}), "PROTOS Breaks Free did not unlock on S6 clear")
 	_check(not NarrativeArchiveUnlocksType.record_unlocked(7, {&"s6": 3}), "The Human Farms unlocked before S7 clear")
 	_check(NarrativeArchiveUnlocksType.record_unlocked(7, {&"s7": 1}), "The Human Farms did not unlock on S7 clear")
 	for obsolete_path: String in OBSOLETE_ARCHIVE_PATHS:
@@ -187,6 +232,13 @@ func _sha256(path: String) -> String:
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
 	context.update(FileAccess.get_file_as_bytes(path))
+	return context.finish().hex_encode()
+
+
+func _sha256_text(value: String) -> String:
+	var context := HashingContext.new()
+	context.start(HashingContext.HASH_SHA256)
+	context.update(value.to_utf8_buffer())
 	return context.finish().hex_encode()
 
 

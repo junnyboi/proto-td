@@ -32,7 +32,7 @@ Free or rescued souls appear as individual warm-white or pale-blue lights. Proce
 
 Lunaris Reliquary remains the selected launch and loading faction. Its centered adult heroine, mechanical lunar halo, adult supporting heroes, ivory-machine setting, and dark reflective lower plane retain the approved launch silhouette. The runtime loading asset is `res://assets/loading/lunaris_reliquary_loading.png`; [`animations/lunaris-reliquary/lunaris-title-keyframe.png`](animations/lunaris-reliquary/lunaris-title-keyframe.png) and the production sheets retain the same identities.
 
-The image must be framed as Company Manus and its Lunaris allies preparing to resist PROTOS and recover stolen souls. The setting is not evidence of a benevolent machine order.
+The image must be framed as Company Manus and its Lunaris allies preparing to resist PROTOS and recover stolen souls. The setting must not soften or romanticize the machine empire.
 
 ## Lunaris launch trio
 

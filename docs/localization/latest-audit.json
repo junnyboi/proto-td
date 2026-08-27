@@ -1,8 +1,8 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "contract": {
     "path": "data/presentation/narrative/canon_contract.json",
-    "schema_version": 3
+    "schema_version": 4
   },
   "summary": {
     "structural_failures": 0,
@@ -18,8 +18,8 @@
   },
   "structural": {
     "catalog_counts": {
-      "en-US": 965,
-      "zh-CN": 965
+      "en-US": 969,
+      "zh-CN": 969
     },
     "missing_chinese": [],
     "extra_chinese": [],
@@ -400,21 +400,25 @@
       "ui.archive.entry.choir.body",
       "ui.archive.entry.choir.eyebrow",
       "ui.archive.entry.choir.quote",
+      "ui.archive.entry.choir.short_title",
       "ui.archive.entry.choir.subtitle",
       "ui.archive.entry.choir.title",
       "ui.archive.entry.equation.body",
       "ui.archive.entry.equation.eyebrow",
       "ui.archive.entry.equation.quote",
+      "ui.archive.entry.equation.short_title",
       "ui.archive.entry.equation.subtitle",
       "ui.archive.entry.equation.title",
       "ui.archive.entry.garden.body",
       "ui.archive.entry.garden.eyebrow",
       "ui.archive.entry.garden.quote",
+      "ui.archive.entry.garden.short_title",
       "ui.archive.entry.garden.subtitle",
       "ui.archive.entry.garden.title",
       "ui.archive.entry.stewardship.body",
       "ui.archive.entry.stewardship.eyebrow",
       "ui.archive.entry.stewardship.quote",
+      "ui.archive.entry.stewardship.short_title",
       "ui.archive.entry.stewardship.subtitle",
       "ui.archive.entry.stewardship.title",
       "ui.campaign.act_2_title",
@@ -433,7 +437,9 @@
       "ui.training.skill_name.rapid_volley",
       "ui.training.skill_name.tempest",
       "ui.training.skill_name.war_banner"
-    ]
+    ],
+    "active_prose_source_count": 10,
+    "missing_active_prose_sources": []
   },
   "fallbacks": {
     "hardcoded_visible_candidates": [],

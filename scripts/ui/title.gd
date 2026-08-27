@@ -724,6 +724,7 @@ func _apply_responsive_layout() -> void:
 		wordmark_visual = lerpf(float(wordmark_default), minf(float(wordmark_default), fit_cap), fit_weight)
 	var wordmark_base := maxi(1, roundi(wordmark_visual / maxf(_text_scale, 0.01)))
 	_wordmark.add_theme_font_size_override(&"font_size", wordmark_base)
+	_settings_button.visible = _text_scale <= 1.20
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
 	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
 	_footer_settings_dock.offset_top = -FOOTER_DOCK_HEIGHT

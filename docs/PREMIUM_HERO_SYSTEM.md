@@ -8,7 +8,7 @@ Premium heroes are fixed, named adults who serve with Company Manus. They retain
 
 ## One soul and prepared lives
 
-Anima is one person's real and unique human soul. It is not a memory file and cannot be copied. Premium Resonance never creates a person, spare soul, or alternate version of a hero.
+Anima is one person's real and unique human soul. It is not a memory file and cannot be copied. Premium Resonance never creates another person or alternate version of a hero.
 
 **Resonance Shards are clean Lunaris crystals.** They contain no human soul and are not harvested anima. Lunaris uses them to locate a known hero's **Soul Anchor**, reconnect that hero's one continuing soul to the Reliquary network, and prepare a compatible recovery body.
 
@@ -24,7 +24,7 @@ A first pull reconnects the known soul and prepares one body. A later pull for t
 | Captured | A hostile system holds the soul beyond Company Manus's reach. Captivity is not preservation and is not automatically permanent. |
 | Permanently lost | The soul was consumed, blended, or shattered beyond recovery. No pull can copy or replace it. |
 
-Player copy must preserve these distinctions. Internal `dead`, memorial, and life fields remain stable for save compatibility, but prose must not call a stored life a spare soul or claim that a zero-life hero is permanently lost.
+Player copy must preserve these distinctions. Internal `dead`, memorial, and life fields remain stable for save compatibility, but prose must describe stored lives as prepared bodies and must not claim that a zero-life hero is permanently lost.
 
 ## Player-facing rules
 
@@ -34,7 +34,7 @@ Player copy must preserve these distinctions. Internal `dead`, memorial, and lif
 | Availability | Pulling is disabled during an unresolved battle attempt, below 40 Resonance Shards, at roster capacity for a first acquisition, or at protected counter and life caps. |
 | Result | Every accepted pull awards exactly one prepared life to one identity in the three-entry Lunaris pool. There are no empty results. |
 | First acquisition | Creates one persistent roster row with one life, fixed class and kit, portrait, callsign, and weapon identity. |
-| Duplicate | Increments `premium_lives` and `premium_pull_count` by one. Roster size does not change. This is another prepared body, never another soul. |
+| Duplicate | Increments `premium_lives` and `premium_pull_count` by one. Roster size does not change. This prepares a body; it never creates a new person. |
 | Revival | A zero-life result grants one life, returns the same hero to `ready`, clears the terminal death record, and removes the Valhalla entry. |
 | Battle fall | Consumes exactly one life. Remaining lives return the hero ready; the last life causes zero-life lockout and a Valhalla entry. |
 | Training | Premium heroes gain no campaign XP and cannot be promoted. Training surfaces label them `PREMIUM / FIXED KIT`. |
