@@ -95,6 +95,10 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var mission_action := staging.find_child("MissionControlButton", true, false) as Button
 	var mission_action_label := mission_action.find_child("PresentationLabel", true, false) as Label
 	var mission_action_plate := mission_action.find_child("MissionControlPlate", true, false) as TextureRect
+	var mission_sparkles := mission_action.find_child("MissionControlSparkles", false, false) as Control
+	var resonance_action := staging.find_child("RecruitButton", true, false) as Button
+	var resonance_content := resonance_action.find_child("TileMargin", false, false) as MarginContainer
+	var resonance_sparkles := resonance_action.find_child("ResonanceSparkles", false, false) as Control
 	var operation_label := staging.find_child("OperationsLabel", true, false) as Label
 	var operation_grid := staging.find_child("OperationGrid", true, false) as GridContainer
 	var operation_scroll := staging.find_child("OperationsScroll", true, false) as ScrollContainer
@@ -127,6 +131,16 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_action != null and mission_action.tooltip_text == ("任务中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
 	_check(mission_action_plate != null and mission_action_plate.texture.resource_path.ends_with("mission_control_plate.png"), "%s: generated Mission Control plate missing" % context)
+	_check(mission_sparkles != null and int(mission_sparkles.call("particle_count")) == 8, "%s: Mission Control lacks its restrained eight-particle sparkle field" % context)
+	_check(mission_sparkles != null and bool(mission_sparkles.call("texture_ready")), "%s: Mission Control sparkle texture is unavailable" % context)
+	_check(mission_sparkles != null and mission_sparkles.mouse_filter == Control.MOUSE_FILTER_IGNORE, "%s: Mission Control sparkles intercept pointer input" % context)
+	_check(mission_sparkles != null and mission_sparkles.is_processing() and not bool(mission_sparkles.call("motion_reduced")), "%s: Mission Control sparkles do not animate in normal motion mode" % context)
+	_check(mission_sparkles != null and mission_action_label != null and mission_sparkles.get_index() < mission_action_label.get_index(), "%s: Mission Control sparkles can obscure its label" % context)
+	_check(resonance_sparkles != null and int(resonance_sparkles.call("particle_count")) == 8, "%s: Resonance lacks its restrained eight-particle sparkle field" % context)
+	_check(resonance_sparkles != null and bool(resonance_sparkles.call("texture_ready")), "%s: Resonance sparkle texture is unavailable" % context)
+	_check(resonance_sparkles != null and resonance_sparkles.mouse_filter == Control.MOUSE_FILTER_IGNORE, "%s: Resonance sparkles intercept pointer input" % context)
+	_check(resonance_sparkles != null and resonance_sparkles.is_processing() and not bool(resonance_sparkles.call("motion_reduced")), "%s: Resonance sparkles do not animate in normal motion mode" % context)
+	_check(resonance_sparkles != null and resonance_content != null and resonance_sparkles.get_index() < resonance_content.get_index(), "%s: Resonance sparkles can obscure its content" % context)
 	if locale_id == "en-US" and String(viewport_case["name"]) == "annotated-wide":
 		mission_action.release_focus()
 		await process_frame
