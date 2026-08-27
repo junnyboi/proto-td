@@ -33,7 +33,10 @@ func _run() -> void:
 	var settings := title.get_node("TitleSettings") as Control
 	await _wait_for_transition(settings, &"ACTIVE")
 	var master := settings.find_child("MasterVolumeSlider", true, false) as HSlider
+	var master_mute := settings.find_child("MasterMuteButton", true, false) as Button
 	var music_slider := settings.find_child("MusicVolumeSlider", true, false) as HSlider
+	_check(master != null and master.tick_count == 11 and master.ticks_on_borders, "Master volume lacks the requested visual ticked slider")
+	_check(master_mute != null and master_mute.toggle_mode, "Master volume lacks the quick mute toggle")
 	master.value = 35.0
 	music_slider.value = 65.0
 	await process_frame
@@ -47,11 +50,25 @@ func _run() -> void:
 	_check(absf(combined_linear - 0.2275) <= EPSILON, "Master and Music buses do not combine into the expected audible gain")
 	_check(not AudioServer.is_bus_mute(master_index), "nonzero Master volume muted the Master bus")
 
+	master_mute.pressed.emit()
+	await process_frame
+	_check(AudioServer.is_bus_mute(master_index), "quick Master mute did not mute the shared output")
+	_check(is_equal_approx(master.value, 35.0), "quick Master mute destructively changed the slider value")
+	_check(bool(settings.call("draft").get(&"master_muted", false)), "quick Master mute did not enter the Settings draft")
+	_check(active_player.playing, "quick Master mute stopped active music playback")
+	master_mute.pressed.emit()
+	await process_frame
+	_check(not AudioServer.is_bus_mute(master_index), "quick Master unmute did not restore the shared output")
+	_check(absf(db_to_linear(AudioServer.get_bus_volume_db(master_index)) - 0.35) <= EPSILON, "quick Master unmute did not retain the slider gain")
+
 	master.value = 0.0
 	await process_frame
 	_check(AudioServer.is_bus_mute(master_index), "zero Master volume did not mute the Master bus")
 	_check(active_player.playing, "Master mute stopped music instead of attenuating the shared output")
 
+	master.value = 35.0
+	master_mute.pressed.emit()
+	await process_frame
 	title.call("_close_settings")
 	await _wait_for_transition(settings, &"CLOSED")
 	_check(not AudioServer.is_bus_mute(master_index), "Settings cancel did not restore Master mute state")
