@@ -20,6 +20,7 @@ static func of(m: BattleModel) -> Dictionary:
 		"deployed": m.deployed_count(),
 		"deploys": m.units.size(),
 		"retreated": m.retreated,
+		"redeploy_cooldowns": _redeploy_cooldowns(m),
 		"dp_spent": m.dp_spent,
 		"skills_fired": m.skills_fired,
 		"traps_placed": m._next_trap_id,
@@ -39,6 +40,22 @@ static func of(m: BattleModel) -> Dictionary:
 		snapshot["battle_rows"] = m._battle_records.duplicate(true)
 		snapshot["outcome"] = m._outcome.duplicate(true)
 	return snapshot
+
+
+static func _redeploy_cooldowns(m: BattleModel) -> Dictionary:
+	var result: Dictionary = {}
+	var ids: Array[String] = []
+	for raw_id: Variant in m.redeploy_ready_tick_by_id:
+		ids.append(String(raw_id))
+	ids.sort()
+	for deployment_id: String in ids:
+		var id := StringName(deployment_id)
+		result[deployment_id] = {
+			"ready_tick": int(m.redeploy_ready_tick_by_id[id]),
+			"ticks_remaining": m.redeploy_cooldown_ticks_remaining(id),
+			"seconds_remaining": m.redeploy_cooldown_seconds_remaining(id),
+		}
+	return result
 
 
 static func _mitigation(m: BattleModel) -> Dictionary:

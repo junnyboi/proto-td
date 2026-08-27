@@ -71,6 +71,7 @@ const TRAP_SPIKE_PX := 24.0
 const TAR_OVERLAY_COLOR := Color(0.08, 0.05, 0.14, 0.6)
 const SLOW_FIELD_AURA_ALPHA := 0.46
 const SLOW_FIELD_ROTATION_SECONDS := 18.0
+const OPERATOR_SELECTION_TIME_SCALE := 0.75
 
 var model: BattleModel = null
 var startup_succeeded: bool = false
@@ -577,6 +578,13 @@ func deploy_drag_started() -> void:
 
 func deploy_drag_ended() -> void:
 	juice_time_pop(&"deploy_drag")
+
+
+func operator_selection_changed(selected: bool) -> void:
+	if selected:
+		juice_time_push(&"operator_selection", OPERATOR_SELECTION_TIME_SCALE)
+	else:
+		juice_time_pop(&"operator_selection")
 
 
 func _detect_deploys() -> void:

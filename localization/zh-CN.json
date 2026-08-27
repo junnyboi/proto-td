@@ -370,6 +370,7 @@
     "ui.battle.confirm_defeat_description": "撤出本次行动，并将本次尝试记录为失败。",
     "ui.battle.continue_debrief": "继续查看战后报告",
     "ui.battle.deploy_operator_card": "{name}{slot}\n{cost} DP",
+    "ui.battle.deploy_operator_cooldown": "{name}{slot}\n冷却 {seconds}秒",
     "ui.battle.deploy_trap_card": "{name}\n{cost} DP",
     "ui.battle.dialogue.mission_start": "任务开始 // 实时通讯",
     "ui.battle.dialogue.wave": "第{wave}波 // 实时通讯",

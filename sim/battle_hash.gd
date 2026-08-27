@@ -135,6 +135,19 @@ static func of(m: BattleModel) -> int:
 			_append_int(bytes, -1 if record["first_fall_tick"] == null else int(record["first_fall_tick"]))
 		_append_ascii(bytes, CanonicalJsonScript.sha256_hex(m._battle_records))
 		_append_ascii(bytes, CanonicalJsonScript.sha256_hex(m._outcome))
+	# RETREAT_COOLDOWN sparse append-only extension. A battle with no retreat
+	# preserves its legacy digest; sorted deployment identities make the
+	# cooldown ledger independent of Dictionary insertion order.
+	if not m.redeploy_ready_tick_by_id.is_empty():
+		_append_int(bytes, 7)
+		var cooldown_ids: Array[String] = []
+		for raw_id: Variant in m.redeploy_ready_tick_by_id:
+			cooldown_ids.append(String(raw_id))
+		cooldown_ids.sort()
+		_append_int(bytes, cooldown_ids.size())
+		for cooldown_id: String in cooldown_ids:
+			_append_ascii(bytes, cooldown_id)
+			_append_int(bytes, int(m.redeploy_ready_tick_by_id[StringName(cooldown_id)]))
 	return _fnv1a64(bytes)
 
 

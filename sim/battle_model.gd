@@ -10,6 +10,9 @@ extends RefCounted
 
 enum Result { RUNNING, CLEAR, DEFEAT }
 
+const STANDARD_RETREAT_COOLDOWN_SECONDS := 10
+const VANGUARD_RETREAT_COOLDOWN_SECONDS := 3
+
 const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const EnemyDamageScript := preload("res://sim/enemy_damage.gd")
 const DamageRulesScript := preload("res://sim/damage_rules.gd")
@@ -44,6 +47,7 @@ var dp_spent: int = 0
 var dp_lost_to_cap: int = 0
 var dp_skill_granted: int = 0
 var retreated: int = 0
+var redeploy_ready_tick_by_id: Dictionary = {}
 var skills_fired: int = 0
 var units: Array[UnitState] = []
 var traps: Array[TrapState] = []
@@ -174,6 +178,8 @@ func apply_action(action: Array) -> bool:
 func is_deployable(op_id: StringName) -> bool:
 	if result != Result.RUNNING:
 		return false
+	if is_redeploy_cooling_down(op_id):
+		return false
 	if _is_ticketed():
 		return BattleTicketRuntimeScript.is_deployable(self, op_id)
 	if not squad.has(op_id) or not _op_defs.has(op_id):
@@ -183,6 +189,32 @@ func is_deployable(op_id: StringName) -> bool:
 			return false
 	var def: OperatorDef = _op_defs[op_id]
 	return dp >= def.dp_cost
+
+
+func redeploy_cooldown_ticks_remaining(deployment_id: StringName) -> int:
+	return maxi(0, int(redeploy_ready_tick_by_id.get(deployment_id, tick)) - tick)
+
+
+func redeploy_cooldown_seconds_remaining(deployment_id: StringName) -> int:
+	if config == null or config.ticks_per_second <= 0:
+		return 0
+	var remaining := redeploy_cooldown_ticks_remaining(deployment_id)
+	return ceili(float(remaining) / float(config.ticks_per_second))
+
+
+func is_redeploy_cooling_down(deployment_id: StringName) -> bool:
+	return redeploy_cooldown_ticks_remaining(deployment_id) > 0
+
+
+func retreat_cooldown_ticks_for_class(op_class: OperatorDef.OpClass) -> int:
+	if config == null:
+		return 0
+	var seconds := (
+		VANGUARD_RETREAT_COOLDOWN_SECONDS
+		if op_class == OperatorDef.OpClass.VANGUARD
+		else STANDARD_RETREAT_COOLDOWN_SECONDS
+	)
+	return seconds * config.ticks_per_second
 
 
 ## Full deploy validation (the highlight query IS the verb's validation —
@@ -290,12 +322,14 @@ func _apply_retreat(unit_id: int) -> bool:
 	var u := unit_by_id(unit_id)
 	if u == null or not u.alive:
 		return false
+	var deployment_id := u.battle_id if not u.battle_id.is_empty() else u.op_id
 	u.alive = false
 	_release_all_blocked(u)
 	if _is_ticketed():
 		var record := BattleTicketRuntimeScript.record_for(_battle_records, u.battle_id)
 		record["retreats"] += 1
 	retreated += 1
+	redeploy_ready_tick_by_id[deployment_id] = tick + retreat_cooldown_ticks_for_class(u.op_class)
 	var refund := floori(u.dp_cost * config.retreat_refund_percent / 100.0)
 	dp_refunded += refund
 	_grant_dp(refund)
