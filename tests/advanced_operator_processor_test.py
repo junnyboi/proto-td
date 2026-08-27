@@ -24,6 +24,9 @@ REPOSITORY = Path(__file__).resolve().parents[1]
 BUILDER_PATH = REPOSITORY / "tools/operator_sprites/build_advanced_operator_sprites.py"
 VALIDATOR_PATH = REPOSITORY / "tools/operator_sprites/validate_advanced_operator_sprites.py"
 REGISTRAR_PATH = REPOSITORY / "tools/operator_sprites/register_advanced_operator_sprites.py"
+IMPORT_CONFIGURATOR_PATH = (
+    REPOSITORY / "tools/operator_sprites/configure_advanced_operator_imports.py"
+)
 CELL = 640
 
 
@@ -39,6 +42,26 @@ def load_module(name: str, path: Path) -> ModuleType:
 builder = load_module("advanced_sprite_builder", BUILDER_PATH)
 validator = load_module("advanced_sprite_validator", VALIDATOR_PATH)
 registrar = load_module("advanced_sprite_registrar", REGISTRAR_PATH)
+
+
+class WebImportBudgetTests(unittest.TestCase):
+    def test_all_advanced_atlases_use_browser_safe_import_settings(self) -> None:
+        root = REPOSITORY / "assets/sprites/operators/animated"
+        imports = sorted(
+            path
+            for path in root.glob("**/*.webp.import")
+            if len(path.relative_to(root).parts) == 3
+        )
+        self.assertEqual(176, len(imports))
+        for path in imports:
+            metadata = path.read_text(encoding="utf-8")
+            self.assertIn("compress/mode=1", metadata, str(path))
+            self.assertIn("compress/lossy_quality=0.92", metadata, str(path))
+            self.assertIn("mipmaps/generate=true", metadata, str(path))
+            self.assertIn("process/size_limit=0", metadata, str(path))
+
+        completed = run([sys.executable, str(IMPORT_CONFIGURATOR_PATH)])
+        self.assertIn("configured=176 changed=0", completed.stdout)
 
 
 def sha256(path: Path) -> str:
