@@ -26,6 +26,7 @@ const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const RESULT_ACTION_WIDTH := 260.0
+const RESULT_CLEAR_COMMAND_ACTION_WIDTH := RESULT_ACTION_WIDTH + 36.0
 const RESULT_COMMAND_ACTION_WIDTH := 400.0
 const RESULT_COMMAND_PORTRAIT_WIDTH := 320.0
 const RESULT_ACTION_HEIGHT := 96.0
@@ -33,6 +34,9 @@ const RESULT_ACTION_FONT_SIZE := 54
 const RESULT_ACTION_HORIZONTAL_PADDING := 28.0
 const RESULT_ACTION_VERTICAL_PADDING := 18.0
 const RESULT_HEADER_HEIGHT := 132.0
+const RESULT_PANEL_PADDING := 24.0
+const RESULT_RESONANCE_STAR_SIZE := 58.0
+const RESULT_RESONANCE_STAR_PORTRAIT_SIZE := 46.0
 const REWARD_REVEAL_STAGGER_SECONDS := 0.14
 const REWARD_REVEAL_DURATION_SECONDS := 0.56
 const REWARD_REVEAL_FADE_SECONDS := 0.28
@@ -45,6 +49,7 @@ var _header_grid: GridContainer = null
 var _outcome_plate: PanelContainer = null
 var _tally: AetheriaLabelType = null
 var _outcome_summary: BoxContainer = null
+var _ceremony_spacer: Control = null
 var _result_meta: BoxContainer = null
 var _headline: AetheriaLabelType = null
 var _result_stars: HBoxContainer = null
@@ -107,7 +112,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	_outcome_plate.custom_minimum_size.y = RESULT_HEADER_HEIGHT
 	if cleared:
 		Style.apply_panel(_outcome_plate, &"result")
-		_set_panel_padding(_outcome_plate, 30.0, 22.0, 30.0, 22.0)
+		_set_panel_padding(_outcome_plate, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 	else:
 		_apply_borderless_defeat_header(_outcome_plate)
 	layout.add_child(_outcome_plate)
@@ -134,12 +139,19 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	)
 	_headline.add_theme_font_size_override(&"font_size", 60)
 	_headline.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_headline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_headline.autowrap_mode = (
+		TextServer.AUTOWRAP_OFF if cleared else TextServer.AUTOWRAP_WORD_SMART
+	)
 	_outcome_summary.add_child(_headline)
+	_ceremony_spacer = Control.new()
+	_ceremony_spacer.name = "CeremonySpacer"
+	_ceremony_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ceremony_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_outcome_summary.add_child(_ceremony_spacer)
 	_result_meta = BoxContainer.new()
 	_result_meta.name = "OutcomeMeta"
 	_result_meta.vertical = false
-	_result_meta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_result_meta.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_result_meta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_result_meta.add_theme_constant_override(&"separation", 16)
 	_outcome_summary.add_child(_result_meta)
@@ -151,7 +163,7 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	for index: int in 3:
 		var star := ResonanceStarType.new()
 		star.name = "ResultStar_%d" % (index + 1)
-		star.custom_minimum_size = Vector2(34, 34)
+		star.custom_minimum_size = Vector2.ONE * RESULT_RESONANCE_STAR_SIZE
 		star.set_state(Style.GOLD, cleared and index < int(result.get("stars", 0)))
 		_result_stars.add_child(star)
 	_result_meta.add_child(_result_stars)
@@ -169,7 +181,12 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	_tally.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_tally.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_result_meta.add_child(_tally)
+	var tally_inset := MarginContainer.new()
+	tally_inset.name = "TallyInset"
+	tally_inset.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tally_inset.add_theme_constant_override(&"margin_right", int(RESULT_PANEL_PADDING))
+	tally_inset.add_child(_tally)
+	_result_meta.add_child(tally_inset)
 
 
 func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> void:
@@ -188,7 +205,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	_rewards_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_rewards_panel, &"result")
 	if cleared:
-		_ensure_panel_padding(_rewards_panel, 30.0, 26.0, 28.0, 20.0)
+		_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 	else:
 		_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
 	_body_grid.add_child(_rewards_panel)
@@ -259,7 +276,10 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	_consequence_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_consequence_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_consequence_panel, &"danger" if not cleared else &"quiet")
-	_ensure_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
+	if cleared:
+		_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+	else:
+		_ensure_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
 	_body_grid.add_child(_consequence_panel)
 	var consequence_scroll := ScrollContainer.new()
 	consequence_scroll.name = "ConsequenceScroll"
@@ -297,8 +317,11 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 		consequences.add_child(_result_card("PremiumLifeLoss%d" % i, callsign.to_upper(), detail, bool(loss["locked_out"])))
 	if dead_ids.is_empty() and premium_losses.is_empty():
 		var intact_card := _result_card("NoCasualties", UiCopyType.text(&"ui.results.company_intact", "COMPANY INTACT"), UiCopyType.text(&"ui.results.no_losses", "No terminal losses recorded."))
-		if not cleared and intact_card is PanelContainer:
-			_set_panel_padding(intact_card as PanelContainer, 48.0, 24.0, 48.0, 24.0)
+		if intact_card is PanelContainer:
+			if cleared:
+				_set_panel_padding(intact_card as PanelContainer, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+			else:
+				_set_panel_padding(intact_card as PanelContainer, 48.0, 24.0, 48.0, 24.0)
 		consequences.add_child(intact_card)
 
 
@@ -331,8 +354,8 @@ func _build_actions(layout: VBoxContainer) -> void:
 		_actions.add_child(retry)
 		focusable.append(retry)
 		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
+		next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH if not _cleared_result else RESULT_CLEAR_COMMAND_ACTION_WIDTH
 		if not _cleared_result:
-			next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
 			ActionHoverFeedbackType.wire(self, next)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
@@ -374,19 +397,23 @@ func _apply_responsive_layout() -> void:
 		_outcome_plate.custom_minimum_size.y = 180.0 if mode == &"portrait" else RESULT_HEADER_HEIGHT
 		if not _cleared_result:
 			_apply_borderless_defeat_header(_outcome_plate)
-		_set_panel_padding(
-			_outcome_plate,
-			18.0 if mode == &"portrait" else 30.0,
-			14.0 if mode == &"portrait" else 22.0,
-			18.0 if mode == &"portrait" else 30.0,
-			14.0 if mode == &"portrait" else 22.0,
-		)
+		if _cleared_result:
+			_set_panel_padding(_outcome_plate, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+		else:
+			_set_panel_padding(
+				_outcome_plate,
+				18.0 if mode == &"portrait" else 30.0,
+				14.0 if mode == &"portrait" else 22.0,
+				18.0 if mode == &"portrait" else 30.0,
+				14.0 if mode == &"portrait" else 22.0,
+			)
 	if _outcome_summary != null:
 		_outcome_summary.vertical = mode == &"portrait"
 		_outcome_summary.alignment = BoxContainer.ALIGNMENT_BEGIN
 		_outcome_summary.add_theme_constant_override(&"separation", 12 if mode == &"portrait" else 22)
 	if _result_meta != null:
 		_result_meta.vertical = mode == &"portrait"
+		_result_meta.size_flags_horizontal = Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_END
 		_result_meta.add_theme_constant_override(&"separation", 12 if mode == &"portrait" else 16)
 	if _rewards_heading != null:
 		_rewards_heading.add_theme_font_size_override(&"font_size", 36 if mode == &"portrait" else 45)
@@ -395,23 +422,37 @@ func _apply_responsive_layout() -> void:
 	if _rewards_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_rewards_panel)
-			if not _cleared_result:
+			if _cleared_result:
+				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+			else:
 				_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
 		else:
 			Style.apply_panel(_rewards_panel, &"result")
 			if _cleared_result:
-				_set_panel_padding(_rewards_panel, 30.0, 26.0, 28.0, 20.0)
+				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 			else:
 				_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
 	if _consequence_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_consequence_panel)
+			if _cleared_result:
+				_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 		else:
 			Style.apply_panel(_consequence_panel, &"quiet" if _cleared_result else &"danger")
-			_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
+			if _cleared_result:
+				_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+			else:
+				_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
 	if _headline != null:
-		var headline_size := 45 if mode == &"portrait" else 60
+		var headline_size := (
+			(38 if _cleared_result else 45) if mode == &"portrait" else 60
+		)
 		_headline.add_theme_font_size_override(&"font_size", headline_size)
+		_headline.autowrap_mode = (
+			TextServer.AUTOWRAP_OFF
+			if _cleared_result
+			else TextServer.AUTOWRAP_WORD_SMART
+		)
 		_headline.size_flags_horizontal = Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_BEGIN
 		_headline.custom_minimum_size.x = 0.0 if mode == &"portrait" else minf(
 			520.0,
@@ -424,19 +465,25 @@ func _apply_responsive_layout() -> void:
 		)
 	if _result_stars != null:
 		for child: Node in _result_stars.get_children():
-			(child as Control).custom_minimum_size = Vector2(26, 26) if mode == &"portrait" else Vector2(34, 34)
+			(child as Control).custom_minimum_size = Vector2.ONE * (
+				RESULT_RESONANCE_STAR_PORTRAIT_SIZE if mode == &"portrait" else RESULT_RESONANCE_STAR_SIZE
+			)
 	if _tally != null:
 		_tally.custom_minimum_size.x = 0.0 if mode == &"portrait" else 270.0
 		_tally.add_theme_font_size_override(&"font_size", 33 if mode == &"portrait" else 42)
 		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if mode == &"portrait" else TextServer.AUTOWRAP_OFF
 		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var command := find_child("ReturnToStaging", true, false) as Button
+	if command != null:
+		var command_target := RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_ACTION_WIDTH
+		if mode == &"portrait":
+			command_target = (
+				RESULT_ACTION_WIDTH
+				if _cleared_result and get_viewport_rect().size.x < 480.0
+				else (RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_PORTRAIT_WIDTH)
+			)
+		command.custom_minimum_size.x = command_target
 	if command != null and not _cleared_result:
-		command.custom_minimum_size.x = (
-			RESULT_COMMAND_PORTRAIT_WIDTH
-			if mode == &"portrait"
-			else RESULT_COMMAND_ACTION_WIDTH
-		)
 		command.add_theme_font_size_override(
 			&"font_size",
 			48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE,
