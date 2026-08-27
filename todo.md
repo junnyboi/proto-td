@@ -77,3 +77,11 @@
 - [x] Phase 3: passed direct import, bounded boot, all 39 standalone regressions plus all 6 repository smokes, clean Xvfb landscape/portrait input checks, Web export/HTTP/browser gates, updated the existing `proto-td-web` fullscreen host, and saved final checkpoint `6c50b142`; public Publish remains the explicit handoff because no direct publish tool is exposed.
 - [x] Endpoint quality rebuild: preserved 589×600 portal and 401×600 crystal source frames in ≤4096px row-major atlases, displayed them at one-tile size with mipmapped linear filtering, verified native/Web sharpness, pushed master, and updated WebDev checkpoint `8b492ecd`.
 - [x] Phase 4: applied the annotated in-battle UI corrections—doubled and centered the HUD with a 48px left inset, removed manual CENTER, compacted and rounded battle/deployment controls, left-aligned and responsively refit the First Stand tutorial, renamed its action to NEXT, and installed the approved English/Chinese route copy; passed import, bounded boot, all 50 current tests/smokes, strict error scans, and four clean Xvfb tutorial/live landscape/portrait captures.
+
+# Act II — The Garden Veto
+
+- [x] Audit Act I canon, progression, balance, stage architecture, save compatibility, and available combat systems.
+- [x] Generate and retain four GPT Image 2 concept boards plus a 600px Restoration Lattice runtime seal with a 1920px master.
+- [x] Publish the Act II proposal and phased implementation plan balancing story, topology, mechanics, economy, and accessibility.
+- [x] Implement S9–S16, deterministic Restoration Lattice healing and Slow Field suppression, sixteen-stage progression/rewards, historical save restore, bilingual six-layer narrative, Act labels, and complete regression coverage.
+- [x] Pass Godot 4.7.2 import/boot, all current tests and smokes, strict 925/925 localization audit, landscape/portrait Xvfb checks, exact Web export/HTTP/browser gates, forward-only `proto-td-web` reconciliation, TypeScript/build checks, and checkpoint `7da5e373`.
