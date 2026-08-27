@@ -77,6 +77,8 @@ Campaign economy mutations follow the same rule: UI code calls the `Game` facade
 
 All character concepts, portraits, UI illustrations, chibi units, and animated sprite references follow [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md). The canonical launch-faction trio and their full-figure/chibi production sheets are documented in [`docs/LUNARIS_CHARACTER_DESIGNS.md`](docs/LUNARIS_CHARACTER_DESIGNS.md) and stored together under [`docs/lunaris-reliquary/`](docs/lunaris-reliquary/).
 
+The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female kit previews for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Training derives its kit-preview variant from the persisted Recruit portrait ID without adding gender data to campaign state, command receipts, hashes, or save bytes.
+
 The deterministic premium gacha lifecycle, save migration, fixed-kit rule, stored-life economy, death behavior, and validation contract are documented in [`docs/PREMIUM_HERO_SYSTEM.md`](docs/PREMIUM_HERO_SYSTEM.md).
 
 ## Narrative canon
