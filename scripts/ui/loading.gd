@@ -16,6 +16,8 @@ const VOID := Color("071019")
 
 const MINIMUM_DISPLAY_SECONDS := 1.8
 const FADE_SECONDS := 0.35
+const REFERENCE_VIEWPORT := Vector2(1920.0, 1080.0)
+const MAX_LARGE_SCREEN_SCALE := 1.6
 
 var _elapsed := 0.0
 var _finishing := false
@@ -26,12 +28,20 @@ var _chapter: Label
 var _detail: Label
 var _percentage: Label
 var _veil: ColorRect
+var _header: MarginContainer
+var _footer: MarginContainer
+var _lower_shade: ColorRect
+var _wordmark: Label
+var _stack: VBoxContainer
+var _status_row: HBoxContainer
 
 
 func _ready() -> void:
 	_build_screen()
+	get_viewport().size_changed.connect(_apply_responsive_layout)
 	I18n.locale_changed.connect(_on_locale_changed)
 	_refresh_copy()
+	_apply_responsive_layout()
 	Game.content = self
 	set_process(true)
 	# Resolve the destination up front so the transition never exposes an empty root.
@@ -73,18 +83,14 @@ func _build_screen() -> void:
 	top_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(top_rule)
 
-	var header := MarginContainer.new()
-	header.name = "Header"
-	header.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	header.offset_left = 42.0
-	header.offset_top = 28.0
-	header.offset_right = -42.0
-	header.offset_bottom = 86.0
-	add_child(header)
+	_header = MarginContainer.new()
+	_header.name = "Header"
+	_header.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	add_child(_header)
 
 	var header_row := HBoxContainer.new()
 	header_row.add_theme_constant_override(&"separation", 16)
-	header.add_child(header_row)
+	_header.add_child(header_row)
 
 	_faction = _label("", GameTypographyType.BADGE, GOLD)
 	_faction.name = "FactionLabel"
@@ -96,46 +102,38 @@ func _build_screen() -> void:
 	_chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	header_row.add_child(_chapter)
 
-	var lower_shade := ColorRect.new()
-	lower_shade.name = "LowerShade"
-	lower_shade.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	lower_shade.offset_top = -194.0
-	lower_shade.color = Color(0.015, 0.035, 0.055, 0.88)
-	lower_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(lower_shade)
+	_lower_shade = ColorRect.new()
+	_lower_shade.name = "LowerShade"
+	_lower_shade.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_lower_shade.color = Color(0.015, 0.035, 0.055, 0.88)
+	_lower_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_lower_shade)
 
-	var footer := MarginContainer.new()
-	footer.name = "LoadingPanel"
-	footer.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	footer.offset_left = 42.0
-	footer.offset_top = -174.0
-	footer.offset_right = -42.0
-	footer.offset_bottom = -30.0
-	add_child(footer)
+	_footer = MarginContainer.new()
+	_footer.name = "LoadingPanel"
+	_footer.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	add_child(_footer)
 
-	var stack := VBoxContainer.new()
-	stack.add_theme_constant_override(&"separation", 9)
-	footer.add_child(stack)
+	_stack = VBoxContainer.new()
+	_footer.add_child(_stack)
 
-	var wordmark := _label("PROTOS", GameTypographyType.SCREEN_TITLE, IVORY)
-	wordmark.name = "Wordmark"
-	wordmark.add_theme_constant_override(&"outline_size", 8)
-	wordmark.add_theme_color_override(&"font_outline_color", Color(0.01, 0.02, 0.03, 0.7))
-	stack.add_child(wordmark)
+	_wordmark = _label("PROTOS", GameTypographyType.SCREEN_TITLE, IVORY)
+	_wordmark.name = "Wordmark"
+	_wordmark.add_theme_color_override(&"font_outline_color", Color(0.01, 0.02, 0.03, 0.7))
+	_stack.add_child(_wordmark)
 
-	var status_row := HBoxContainer.new()
-	status_row.add_theme_constant_override(&"separation", 18)
-	stack.add_child(status_row)
+	_status_row = HBoxContainer.new()
+	_stack.add_child(_status_row)
 
 	_status = _label("", GameTypographyType.STATUS, MUTED)
 	_status.name = "StatusLabel"
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	status_row.add_child(_status)
+	_status_row.add_child(_status)
 
 	_percentage = _label("00%", GameTypographyType.STATUS, MOON_CYAN)
 	_percentage.name = "PercentageLabel"
 	_percentage.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	status_row.add_child(_percentage)
+	_status_row.add_child(_percentage)
 
 	_progress = ProgressBar.new()
 	_progress.name = "Progress"
@@ -144,7 +142,7 @@ func _build_screen() -> void:
 	_progress.value = 0.0
 	_progress.add_theme_stylebox_override(&"background", _bar_style(Color(0.22, 0.29, 0.32, 0.62)))
 	_progress.add_theme_stylebox_override(&"fill", _bar_style(MOON_CYAN))
-	stack.add_child(_progress)
+	_stack.add_child(_progress)
 
 	_detail = _label(
 		"",
@@ -153,7 +151,7 @@ func _build_screen() -> void:
 	)
 	_detail.name = "DetailLabel"
 	_detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	stack.add_child(_detail)
+	_stack.add_child(_detail)
 
 	_veil = ColorRect.new()
 	_veil.name = "FadeVeil"
@@ -169,6 +167,44 @@ func _label(text_value: String, size: int, color: Color) -> Label:
 	label.add_theme_font_size_override(&"font_size", size)
 	label.add_theme_color_override(&"font_color", color)
 	return label
+
+
+func _apply_responsive_layout() -> void:
+	if _header == null or _footer == null:
+		return
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+	var large_screen_scale := clampf(
+		minf(viewport_size.x / REFERENCE_VIEWPORT.x, viewport_size.y / REFERENCE_VIEWPORT.y),
+		1.0,
+		MAX_LARGE_SCREEN_SCALE,
+	)
+	var side_inset := 42.0 * large_screen_scale
+	_header.offset_left = side_inset
+	_header.offset_top = 28.0 * large_screen_scale
+	_header.offset_right = -side_inset
+	_header.offset_bottom = 86.0 * large_screen_scale
+	_lower_shade.offset_top = -194.0 * large_screen_scale
+	_footer.offset_left = side_inset
+	_footer.offset_top = -174.0 * large_screen_scale
+	_footer.offset_right = -side_inset
+	_footer.offset_bottom = -30.0 * large_screen_scale
+	_stack.add_theme_constant_override(&"separation", roundi(9.0 * large_screen_scale))
+	_status_row.add_theme_constant_override(&"separation", roundi(18.0 * large_screen_scale))
+	_set_scaled_font(_faction, GameTypographyType.BADGE, large_screen_scale)
+	_set_scaled_font(_chapter, GameTypographyType.MICRO_LABEL, large_screen_scale)
+	_set_scaled_font(_wordmark, GameTypographyType.SCREEN_TITLE, large_screen_scale)
+	_set_scaled_font(_status, GameTypographyType.STATUS, large_screen_scale)
+	_set_scaled_font(_percentage, GameTypographyType.STATUS, large_screen_scale)
+	_set_scaled_font(_detail, GameTypographyType.CAPTION, large_screen_scale)
+	_wordmark.add_theme_constant_override(&"outline_size", roundi(8.0 * large_screen_scale))
+	_progress.custom_minimum_size.y = 7.0 * large_screen_scale
+
+
+func _set_scaled_font(label: Label, base_size: int, scale: float) -> void:
+	if label != null:
+		label.add_theme_font_size_override(&"font_size", roundi(float(base_size) * scale))
 
 
 func _bar_style(color: Color) -> StyleBoxFlat:

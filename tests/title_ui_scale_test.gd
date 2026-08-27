@@ -1,6 +1,8 @@
 extends SceneTree
 
 const VIEWPORTS := {
+	"4k": Vector2i(3840, 2160),
+	"native_ultrawide": Vector2i(3440, 1440),
 	"ultrawide": Vector2i(2560, 1080),
 	"regular": Vector2i(1280, 720),
 	"short_baseline": Vector2i(1024, 576),
