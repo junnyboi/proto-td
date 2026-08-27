@@ -65,8 +65,14 @@ func _run() -> void:
 	var music := root.get_node_or_null("Music")
 	if music != null:
 		music.call("stop")
-	for _frame: int in range(4):
+		for child: Node in music.get_children():
+			if child is AudioStreamPlayer:
+				var player := child as AudioStreamPlayer
+				player.stop()
+				player.stream = null
+	for _frame: int in range(12):
 		await process_frame
+	await create_timer(0.5).timeout
 	_finish()
 
 
