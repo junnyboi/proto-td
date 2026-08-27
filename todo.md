@@ -98,7 +98,7 @@
 - [x] Commit and push the reconciled release to `master` without rewriting shared history.
 - [x] Preserve every 560–640px source cell while configuring all 176 class/gender and 24 enemy-variant imports for quality-0.92 compressed storage plus mipmaps; reduce the reconciled Web PCK from 802,693,488 to 527,756,580 bytes and pass heavy-class plus S2/S3/S4 visual matrices.
 - [x] Export the optimized Godot revision, verify HTML/JS/WASM/PCK over HTTP and in Chromium, confirm WebGL 2 with 8192px textures, and reach Title plus Company Command without console, page, or request errors.
-- [ ] Layer the release onto the newest `proto-td-web` host, pass check/build/preview gates, and save a new managed checkpoint.
+- [x] Layer the release onto the newest `proto-td-web` host with the exact 202,817,120-byte core and eleven class-scoped packs; pass type/build, managed HTTP, WebGL, fullscreen geometry, native input, responsive visual, and clean-console gates; save the final managed checkpoint.
 
 # Act II Balance, Transitions, and Unique Score
 
