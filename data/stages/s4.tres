@@ -31,11 +31,11 @@ waves = Array[Dictionary]([{
 "path_idx": 1,
 "tick": 450
 }, {
-"enemy_id": &"drone",
+"enemy_id": &"interceptor",
 "path_idx": 0,
 "tick": 510
 }, {
-"enemy_id": &"interceptor",
+"enemy_id": &"drone",
 "path_idx": 0,
 "tick": 540
 }, {
@@ -47,11 +47,11 @@ waves = Array[Dictionary]([{
 "path_idx": 1,
 "tick": 660
 }, {
-"enemy_id": &"drone",
+"enemy_id": &"interceptor",
 "path_idx": 0,
 "tick": 750
 }, {
-"enemy_id": &"interceptor",
+"enemy_id": &"drone",
 "path_idx": 0,
 "tick": 810
 }])
@@ -68,4 +68,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 4
 requires = Array[StringName]([&"sniper_1"])
-intro_hint = "Use a Sniper to sustain fire against Interceptors in the air lane while blockers hold the ground route."
+intro_hint = "Interceptors lead each air pair. Use a Sniper for sustained fire while blockers hold the ground route."

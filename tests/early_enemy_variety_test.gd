@@ -110,10 +110,12 @@ func _validate_stage_schedules() -> void:
 	_check(s4.waves.size() == 11, "S4 must preserve eleven total spawns")
 	_check(_enemy_count(s4, &"interceptor") == 2, "S4 must contain exactly two Interceptors")
 	_check(_enemy_count(s4, &"drone") == 3 and _enemy_count(s4, &"grunt") == 4 and _enemy_count(s4, &"runner") == 2, "S4 one-for-one composition must remain 4/2/3/2")
-	_check(_has_spawn(s4, &"interceptor", 0, 540), "S4 first Interceptor must follow a Drone at tick 540")
-	_check(_has_spawn(s4, &"interceptor", 0, 810), "S4 second Interceptor must close the air wave at tick 810")
+	_check(_has_spawn(s4, &"interceptor", 0, 510), "S4 first Interceptor must lead the first mixed air pair at tick 510")
+	_check(_has_spawn(s4, &"drone", 0, 540), "S4 first Interceptor must retain a Drone escort at tick 540")
+	_check(_has_spawn(s4, &"interceptor", 0, 750), "S4 second Interceptor must lead the closing air pair at tick 750")
+	_check(_has_spawn(s4, &"drone", 0, 810), "S4 closing Interceptor must retain a Drone escort at tick 810")
 	_check(s4.wave_starts == PackedInt32Array([0, 390]), "S4 wave boundaries must remain unchanged")
-	_check(s4.intro_hint.contains("Sniper") and s4.intro_hint.contains("air lane"), "S4 hint must explain durable anti-air")
+	_check(s4.intro_hint.contains("Interceptors lead") and s4.intro_hint.contains("Sniper"), "S4 hint must explain Interceptor-led anti-air pairs")
 
 
 func _validate_campaign_context() -> void:

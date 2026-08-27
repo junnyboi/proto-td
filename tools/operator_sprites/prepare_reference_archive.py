@@ -34,6 +34,28 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def subject_crop(image: Image.Image, margin: int = 48) -> Image.Image:
+    """Crop a white-backed design half around all authored non-white pixels."""
+    rgb = image.convert("RGB")
+    mask = Image.new("L", rgb.size, 0)
+    source = rgb.load()
+    target = mask.load()
+    for y in range(rgb.height):
+        for x in range(rgb.width):
+            red, green, blue = source[x, y]
+            if min(red, green, blue) < 244 or max(red, green, blue) - min(red, green, blue) > 8:
+                target[x, y] = 255
+    bbox = mask.getbbox()
+    if bbox is None:
+        raise ValueError("reference half contains no subject pixels")
+    left, top, right, bottom = bbox
+    left = max(0, left - margin)
+    top = max(0, top - margin)
+    right = min(image.width, right + margin)
+    bottom = min(image.height, bottom + margin)
+    return image.crop((left, top, right, bottom))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
@@ -58,7 +80,7 @@ def main() -> int:
             target_dir.mkdir(parents=True, exist_ok=True)
             design_path = target_dir / "design_reference.png"
             design.save(design_path, format="PNG", optimize=False)
-            chibi = design.crop((0, int(height * 0.55), width // 2, height))
+            chibi = subject_crop(design)
             chibi_path = target_dir / "chibi_reference.png"
             chibi.save(chibi_path, format="PNG", optimize=False)
             rows.append(
