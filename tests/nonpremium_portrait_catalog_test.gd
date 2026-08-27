@@ -6,6 +6,46 @@ const CatalogType := preload("res://data/presentation/operator_portrait_catalog.
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const PromotionPathCardType := preload("res://scripts/ui/components/promotion_path_card.gd")
 
+
+class PromotedPortraitCampaign:
+	extends RefCounted
+
+	var _data := {
+		"command_receipts": [],
+		"heroes": [{
+			"hero_id": "0000000000000042",
+			"custom_callsign": "Vanguard Fixture",
+			"name_version": 1,
+			"recruitment_index": 0,
+			"current_class_id": "shock_trooper",
+			"operator_def_id": "vanguard_1",
+			"portrait_asset_id": "portrait_recruit_01",
+			"identity_portrait_id": "portrait_recruit_01",
+			"life_status": "ready",
+			"hero_kind": "recruit",
+			"premium_id": null,
+			"premium_lives": 0,
+			"premium_pull_count": 0,
+			"xp": 0,
+		}],
+	}
+
+	func data_copy() -> Dictionary:
+		return _data.duplicate(true)
+
+	func promotion_options(_hero_id: Variant) -> Dictionary:
+		return {"accepted": false, "error_code": &"insufficient_xp", "choices": []}
+
+	func campaign_uid() -> String:
+		return "promoted-portrait-fixture"
+
+	func save_revision() -> int:
+		return 1
+
+	func strategic_hash() -> Dictionary:
+		return {"accepted": true, "value": "promoted-portrait-fixture"}
+
+
 const RECRUIT_PATHS := {
 	&"portrait_recruit_00": "res://assets/portraits/recruits/solcrest_female.png",
 	&"portrait_recruit_01": "res://assets/portraits/recruits/solcrest_male.png",
@@ -53,6 +93,64 @@ func _run() -> void:
 		"portrait catalog contract failed: %s" % catalog_diagnostics,
 	)
 	_check(CatalogType.specialization_asset_ids().size() == 22, "specialization matrix is not 11 male/female pairs")
+	_check(
+		CatalogType.presentation_asset_id(
+			&"recruit", &"portrait_recruit_00",
+		) == &"portrait_recruit_00",
+		"unpromoted Recruit did not retain its identity portrait",
+	)
+	for class_id: StringName in CatalogType.SPECIALIZATION_CLASS_IDS:
+		_check(
+			CatalogType.presentation_asset_id(class_id, &"portrait_recruit_00")
+			== StringName("portrait_specialization_%s_female" % class_id),
+			"female promoted portrait resolved incorrectly for %s" % class_id,
+		)
+		_check(
+			CatalogType.presentation_asset_id(class_id, &"portrait_recruit_01")
+			== StringName("portrait_specialization_%s_male" % class_id),
+			"male promoted portrait resolved incorrectly for %s" % class_id,
+		)
+	_check(
+		CatalogType.presentation_asset_id(
+			&"mage_apprentice", &"portrait_archive_caster", true,
+		) == &"portrait_archive_caster",
+		"premium portrait lost precedence over promoted-class art",
+	)
+	var promoted_male := {
+		"current_class_id": "defender",
+		"portrait_asset_id": "portrait_recruit_01",
+		"hero_kind": "recruit",
+	}
+	_check(
+		TrainingSupportType.presentation_portrait_asset_id(promoted_male)
+		== &"portrait_specialization_defender_male",
+		"Training presentation did not replace a promoted male Recruit portrait",
+	)
+	promoted_male["current_class_id"] = "immovable"
+	_check(
+		TrainingSupportType.presentation_portrait_asset_id(promoted_male)
+		== &"portrait_specialization_immovable_male",
+		"second-stage promotion did not preserve the male portrait variant",
+	)
+	promoted_male["identity_portrait_asset_id"] = "portrait_recruit_01"
+	promoted_male["portrait_asset_id"] = "portrait_specialization_defender_male"
+	_check(
+		TrainingSupportType.presentation_portrait_asset_id(promoted_male)
+		== &"portrait_specialization_immovable_male",
+		"repeated presentation projection reinterpreted a male specialization portrait",
+	)
+	var promoted_rows := TrainingSupportType.roster(PromotedPortraitCampaign.new())
+	_check(promoted_rows.size() == 1, "Training roster rejected promoted campaign fixture")
+	if promoted_rows.size() == 1:
+		_check(
+			promoted_rows[0]["identity_portrait_asset_id"] == "portrait_recruit_01",
+			"Training roster mutated the persisted male Recruit portrait",
+		)
+		_check(
+			promoted_rows[0]["portrait_asset_id"]
+			== "portrait_specialization_shock_trooper_male",
+			"Training roster did not display the promoted male Fast Vanguard portrait",
+		)
 
 	for index: int in 8:
 		var recruit_id := StringName("portrait_recruit_%02d" % index)

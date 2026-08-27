@@ -3,6 +3,8 @@ extends SceneTree
 const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
 const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
 const BattleOutcomeV3 := preload("res://sim/battle_outcome_v3.gd")
+const ArtType := preload("res://scripts/view/art.gd")
+const PortraitCatalogType := preload("res://data/presentation/operator_portrait_catalog.gd")
 
 var _failures: Array[String] = []
 
@@ -13,6 +15,7 @@ func _init() -> void:
 
 func _run() -> void:
 	var context := RuntimeContext.build()
+	context["class_by_id"]["recruit"]["promotion_xp_required"] = 0
 	var created: Dictionary = CampaignStateV3.create(31337, 1, context)
 	_check(created.get("accepted", false), "Vahalla campaign fixture failed")
 	if not created.get("accepted", false):
@@ -22,6 +25,24 @@ func _run() -> void:
 	var initial: Dictionary = state.runtime_projection()
 	var fallen_id := String(initial["ready_heroes"][0]["hero_id"])
 	var active_id := String(initial["ready_heroes"][1]["hero_id"])
+	var fallen_identity_portrait := StringName(initial["ready_heroes"][0]["portrait_asset_id"])
+	state = _resolve_without_fall(state, context, fallen_id)
+	if state == null:
+		_finish()
+		return
+	state = _promote_once(state, context, fallen_id, "shock_trooper")
+	if state == null:
+		_finish()
+		return
+	var promoted_data: Dictionary = state.data_copy()
+	var promoted_hero := _hero_by_id(promoted_data["heroes"], fallen_id)
+	_check(
+		StringName(promoted_hero.get("portrait_asset_id", &"")) == fallen_identity_portrait,
+		"promotion changed the persisted Recruit portrait identity",
+	)
+	var expected_memorial_portrait := PortraitCatalogType.specialization_asset_id(
+		&"shock_trooper", fallen_identity_portrait,
+	)
 	state = _fall_once(state, context, fallen_id)
 	if state == null:
 		_finish()
@@ -98,6 +119,10 @@ func _run() -> void:
 	_check(memorial_grid != null and memorial_grid.get_child_count() == 1, "Vahalla memorial card missing")
 	_check(honor != null and not honor.disabled, "Vahalla honor action unavailable")
 	_check(portrait != null and portrait.custom_minimum_size.y >= 380.0, "selected memorial identity is not visually dominant")
+	_check(
+		portrait != null and portrait.texture == ArtType.texture(expected_memorial_portrait),
+		"Vahalla did not preserve the promoted operator's gender-matched specialization portrait",
+	)
 	_check(ledger != null and ledger.custom_minimum_size.y >= 132.0, "terminal service ledger hierarchy is missing")
 	_check(memorial_row != null and memorial_row.custom_minimum_size.y >= 104.0, "memorial row has insufficient internal height")
 	_check(row_margin != null and row_margin.get_theme_constant(&"margin_left") >= 16, "memorial row padding is below 16px")
@@ -146,6 +171,107 @@ func _run() -> void:
 	await process_frame
 	await create_timer(0.1).timeout
 	_finish()
+
+
+func _promote_once(
+		state: Variant, context: Dictionary, hero_id: String, target_class_id: String,
+	) -> Variant:
+	var data := state.get("_data") as Dictionary
+	var hero := _hero_by_id(data["heroes"], hero_id)
+	if hero.is_empty():
+		_check(false, "promotion fixture hero missing")
+		return null
+	var promoted: Dictionary = state.confirm_promotions(
+		"vahalla-promoted-portrait", state.save_revision(), [{
+			"hero_id": hero_id,
+			"to_class_id": target_class_id,
+		}],
+	)
+	_check(
+		promoted.get("accepted", false),
+		"promotion fixture command rejected: %s" % promoted.get("error_code", &"unknown"),
+	)
+	if not promoted.get("accepted", false):
+		return null
+	var mutation: Variant = promoted["payload"]["mutation"]
+	var restored: Dictionary = CampaignStateV3.restore_source(
+		mutation.prospective_save_text(), context,
+	)
+	_check(restored.get("accepted", false), "promoted portrait save did not restore")
+	if not restored.get("accepted", false):
+		return null
+	var mutation_result := mutation.get("_result") as Dictionary
+	var promotion_receipt := mutation_result.get("promotion", {}) as Dictionary
+	_check(
+		promotion_receipt.size() == 3
+		and promotion_receipt.has("command_id")
+		and promotion_receipt.has("save_revision")
+		and promotion_receipt.has("choices"),
+		"promotion receipt schema changed",
+	)
+	for choice: Dictionary in promotion_receipt.get("choices", []):
+		_check(
+			choice.size() == 3
+			and choice.has("hero_id")
+			and choice.has("from_class_id")
+			and choice.has("to_class_id"),
+			"promotion receipt leaked presentation identity fields",
+		)
+	return restored["value"]
+
+
+func _hero_by_id(heroes: Array, hero_id: String) -> Dictionary:
+	for hero: Dictionary in heroes:
+		if String(hero.get("hero_id", "")) == hero_id:
+			return hero
+	return {}
+
+
+func _resolve_without_fall(state: Variant, context: Dictionary, hero_id: String) -> Variant:
+	var begin: Dictionary = state.begin_attempt(
+		"test:vahalla:prepare:begin", "s1", [hero_id], 403, state.save_revision(),
+	)
+	_check(begin.get("accepted", false), "Vahalla promotion preparation attempt failed")
+	if not begin.get("accepted", false):
+		return null
+	state = _restore_mutation(begin, context)
+	if state == null:
+		return null
+	var ticket: Dictionary = state.data_copy()["tickets"][-1]
+	var frozen: Dictionary = ticket["squad"][0]
+	var outcome := BattleOutcomeV3.seal({
+		"schema_version": BattleOutcomeV3.SCHEMA_VERSION,
+		"attempt_id": ticket["attempt_id"],
+		"ticket_hash": ticket["ticket_hash"],
+		"result": "defeat",
+		"terminal_reason": "resign",
+		"terminal_tick": 10,
+		"stars": 0,
+		"leaks": 0,
+		"kills": 0,
+		"rows": [{
+			"slot_index": frozen["slot_index"],
+			"battle_id": frozen["battle_id"],
+			"hero_id": frozen["hero_id"],
+			"class_id": frozen["class_id"],
+			"operator_def_id": frozen["operator_def_id"],
+			"deployments": 1,
+			"retreats": 1,
+			"fell": false,
+			"first_fall_tick": null,
+		}],
+	}, ticket)
+	_check(outcome.get("accepted", false), "Vahalla promotion preparation outcome failed")
+	if not outcome.get("accepted", false):
+		return null
+	var resolved: Dictionary = state.resolve_attempt(
+		"test:vahalla:prepare:resolve",
+		ticket["attempt_id"],
+		outcome["value"],
+		state.save_revision(),
+	)
+	_check(resolved.get("accepted", false), "Vahalla promotion preparation resolution failed")
+	return _restore_mutation(resolved, context) if resolved.get("accepted", false) else null
 
 
 func _fall_once(state: Variant, context: Dictionary, hero_id: String) -> Variant:

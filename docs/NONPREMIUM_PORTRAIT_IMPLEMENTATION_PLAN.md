@@ -27,7 +27,7 @@ The release will ship **30 generated portrait sources**: eight identity portrait
 
 The V3 campaign already allocates eight stable Recruit portrait IDs, but all eight are placeholder aliases to unrelated class portraits. Ten legacy class images exist at 128×128, yet they do not provide systematic male/female coverage, and the current Witch Doctor asset is an unrelated neon pixel avatar. Promotion path cards load one operator-level portrait per class, so their visual does not follow the selected operator's gender presentation.[3] [4]
 
-Promotion deliberately retains a recruit's stable identity portrait. This plan does **not** replace that person after training. Instead, the operator dossier continues showing the identity portrait while the path chooser displays a gender-matched **specialization kit preview**, preserving the established “same person, new duty” contract.[5]
+Promotion retains the recruit's stable identity portrait in canonical campaign state so the person and gender source never change. Presentation surfaces now resolve that identity together with `current_class_id`: Recruit operators show their identity portrait, while promoted operators show the gender-matched **specialization portrait** for their current class. The path chooser previews the same asset that Training, Field Team, and Valhalla display after confirmation, preserving the “same person, new duty” contract without rewriting saves or receipts.[5]
 
 ## 3. Frozen asset matrix
 
@@ -86,7 +86,7 @@ An image is rejected if it has ambiguous age, juvenile facial proportions, sexua
 
 A presentation-only `OperatorPortraitCatalog` will map stable identity portraits to a male/female variant and resolve `class_id + variant` into a specialization-kit asset ID. No gender field will be added to campaign state, codecs, hashes, receipts, or hero rows. This keeps old saves byte-compatible and derives presentation deterministically from the already-persisted identity portrait ID.
 
-`TrainingSupport` will expose the resolved specialization preview ID as derived choice metadata. `PromotionPathCard` will consume that explicit ID instead of reconstructing a legacy operator portrait name. The selected operator dossier will continue using `hero.portrait_asset_id`, so training never visually replaces the person. Existing legacy operator portrait IDs remain registered as compatibility aliases to the new kit art for any older view or test that still requests them.
+`TrainingSupport` exposes the resolved specialization preview ID as derived choice metadata. `PromotionPathCard` consumes that explicit ID instead of reconstructing a legacy operator portrait name. A shared presentation resolver keeps `hero.portrait_asset_id` as the persisted Recruit identity and derives the visible portrait from `current_class_id + identity gender`; Training dossiers and rows, Field Team cards, and Valhalla dossiers therefore advance through first- and second-stage class portraits immediately after promotion. Premium portraits retain priority. Existing legacy operator portrait IDs remain registered as compatibility aliases to the new kit art for any older view or test that still requests them.
 
 ## 6. Work packages
 
@@ -105,7 +105,7 @@ The implementation will add focused coverage for the following conditions:
 1. All eight Recruit IDs resolve to non-placeholder 512×512 runtime images and form four female/male pairs.
 2. All eleven non-premium classes resolve both female and male specialization asset IDs.
 3. Every generated source and runtime derivative is unique by SHA-256, square, non-empty, readable through `Art.texture`, and has verified alpha with no retained chroma background.
-4. Training uses the selected identity portrait to choose a specialization variant while the dossier retains the original identity portrait.
+4. Training uses the persisted identity portrait to preserve gender; after promotion, Training, Field Team, and Valhalla display the current specialization portrait while canonical campaign identity remains unchanged.
 5. Promotion legality, selected target, command payload, receipts, save revision, and restored campaign bytes are unchanged by portrait resolution.
 6. Legacy IDs such as `portrait_caster_1`, `portrait_defender_2`, and `portrait_witch_doctor_1` continue to resolve without placeholders.
 7. Landscape and portrait path cards contain the new portrait without overflow, clipped face, missing texture, focus regression, or inaccessible controls.
@@ -120,6 +120,7 @@ The implementation will add focused coverage for the following conditions:
 | C — Runtime integration | **Complete** | Eight stable Recruit IDs, twenty-two specialization IDs, eleven compatibility aliases, presentation resolver, Training card binding, and bilingual TEMP ART removal. |
 | D — Native verification | **Complete** | Godot 4.7.2 direct import, bounded boot, all 57 standalone tests/harness smokes, aggregate error scan, and female-landscape/male-portrait Xvfb captures pass. |
 | E — Reconciliation and deployment | **Complete** | Portrait release `1ee9082` was independently reviewed, pushed, and forward-reconciled into source revision `d5881ff`; exact 197,017,352-byte PCK `411e6c18…9f30` is mapped by WebDev checkpoint `6a813c18` after type/build, HTTP, desktop/portrait geometry, native input, lazy-media, and console acceptance. |
+| F — Promoted portrait continuity | **Native complete; Web pending** | Presentation-only routing resolves the current specialization from canonical class identity while deriving female/male selection from the unchanged Recruit portrait. Training, Field Team, and Valhalla consume the shared result. The 11-class × two-gender matrix, second-stage continuity, idempotency, premium precedence, real promotion/save restoration/receipt schema, Field Team texture binding, fallen-operator projection, focused gates, full Godot 4.7.2 baseline, and landscape/portrait Xvfb captures pass; exact Web export and checkpointing remain. |
 
 ## References
 

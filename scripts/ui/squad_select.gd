@@ -516,6 +516,11 @@ func _identity_rows(raw_rows: Array) -> Array[Dictionary]:
 	for raw: Variant in raw_rows:
 		var hero := (raw as Dictionary).duplicate(true)
 		hero["callsign"] = _hero_callsign(hero)
+		hero["identity_portrait_asset_id"] = hero.get(
+			"identity_portrait_asset_id",
+			hero.get("portrait_asset_id", hero.get("identity_portrait_id", "")),
+		)
+		hero["portrait_asset_id"] = TrainingSupportType.presentation_portrait_asset_id(hero)
 		if not hero.has("custom_title"):
 			hero["custom_title"] = null
 		rows.append(hero)
