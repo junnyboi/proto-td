@@ -17,12 +17,17 @@ const SFX_VOLUME_KEY := "sfx_volume"
 const GRAPHICS_SECTION := "graphics"
 const REDUCED_MOTION_KEY := "reduced_motion"
 const FRAME_LIMIT_KEY := "frame_limit"
+const ACCESSIBILITY_SECTION := "accessibility"
+const TEXT_SCALE_KEY := "text_scale"
+const MIN_TEXT_SCALE := 0.80
+const MAX_TEXT_SCALE := 1.50
+const TEXT_SCALE_STEP := 0.05
 const VALID_FRAME_LIMITS := [0, 30, 60, 120]
 const VALID_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 const BATCH_KEYS: Array[StringName] = [
-	&"locale", &"title_music_enabled", &"master_volume", &"music_volume",
-	&"sfx_volume", &"frame_limit", &"reduced_motion",
-]
+		&"locale", &"title_music_enabled", &"master_volume", &"music_volume",
+		&"sfx_volume", &"frame_limit", &"reduced_motion", &"text_scale",
+	]
 
 
 static func has_seen_pan_hint(path: String = DEFAULT_PATH) -> bool:
@@ -114,6 +119,19 @@ static func set_frame_limit(value: int, path: String = DEFAULT_PATH) -> bool:
 	return _set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, sanitized, path)
 
 
+static func text_scale(path: String = DEFAULT_PATH) -> float:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return 1.0
+	return _sanitize_text_scale(float(config.get_value(ACCESSIBILITY_SECTION, TEXT_SCALE_KEY, 1.0)))
+
+
+static func set_text_scale(value: float, path: String = DEFAULT_PATH) -> bool:
+	if not is_finite(value) or value < MIN_TEXT_SCALE or value > MAX_TEXT_SCALE:
+		return false
+	return _set_value(ACCESSIBILITY_SECTION, TEXT_SCALE_KEY, _sanitize_text_scale(value), path)
+
+
 ## Validates and durably replaces the complete Title Settings preference batch.
 ## Existing unrelated sections and keys are retained semantically.
 static func save_batch(values: Dictionary, path: String = DEFAULT_PATH) -> bool:
@@ -130,6 +148,7 @@ static func save_batch(values: Dictionary, path: String = DEFAULT_PATH) -> bool:
 	config.set_value(AUDIO_SECTION, SFX_VOLUME_KEY, float(values[&"sfx_volume"]))
 	config.set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, int(values[&"frame_limit"]))
 	config.set_value(GRAPHICS_SECTION, REDUCED_MOTION_KEY, bool(values[&"reduced_motion"]))
+	config.set_value(ACCESSIBILITY_SECTION, TEXT_SCALE_KEY, float(values[&"text_scale"]))
 	var temporary_path := "%s.tmp" % path
 	var global_temporary_path := ProjectSettings.globalize_path(temporary_path)
 	if FileAccess.file_exists(temporary_path):
@@ -166,7 +185,17 @@ static func _valid_batch(values: Dictionary) -> bool:
 		if float(value) < 0.0 or float(value) > 1.0:
 			return false
 	var frame_value: Variant = values[&"frame_limit"]
-	return typeof(frame_value) == TYPE_INT and int(frame_value) in VALID_FRAME_LIMITS
+	if typeof(frame_value) != TYPE_INT or int(frame_value) not in VALID_FRAME_LIMITS:
+		return false
+	var text_scale_value: Variant = values[&"text_scale"]
+	if typeof(text_scale_value) != TYPE_FLOAT or not is_finite(float(text_scale_value)):
+		return false
+	var text_scale := float(text_scale_value)
+	return (
+		text_scale >= MIN_TEXT_SCALE
+		and text_scale <= MAX_TEXT_SCALE
+		and is_equal_approx(text_scale, _sanitize_text_scale(text_scale))
+	)
 
 
 static func _volume_value(key: String, path: String) -> float:
@@ -174,6 +203,12 @@ static func _volume_value(key: String, path: String) -> float:
 	if config.load(path) != OK:
 		return 1.0
 	return clampf(float(config.get_value(AUDIO_SECTION, key, 1.0)), 0.0, 1.0)
+
+
+static func _sanitize_text_scale(value: float) -> float:
+	if not is_finite(value):
+		return 1.0
+	return clampf(roundf(value / TEXT_SCALE_STEP) * TEXT_SCALE_STEP, MIN_TEXT_SCALE, MAX_TEXT_SCALE)
 
 
 static func _set_value(section: String, key: String, value: Variant, path: String) -> bool:

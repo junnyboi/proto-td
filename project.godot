@@ -23,6 +23,7 @@ boot_splash/use_filter=true
 
 I18n="*res://autoloads/i18n.gd"
 Music="*res://autoloads/music.gd"
+TextScale="*res://autoloads/text_scale.gd"
 Game="*res://autoloads/game.gd"
 Sfx="*res://autoloads/sfx.gd"
 

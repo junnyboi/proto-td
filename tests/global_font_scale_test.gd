@@ -8,6 +8,9 @@ var _failures: Array[String] = []
 
 
 func _init() -> void:
+	var text_scale := root.get_node_or_null("TextScale")
+	if text_scale != null:
+		text_scale.call("set_scale", 1.0)
 	_check_typography_constants()
 	_check_aetheria_theme()
 	_check_lunaris_roles()

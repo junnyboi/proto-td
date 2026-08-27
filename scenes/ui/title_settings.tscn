@@ -277,6 +277,29 @@ clip_text = false
 autowrap_mode = 2
 text_overrun_behavior = 0
 
+[node name="AccessibilityHeading" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+layout_mode = 2
+text = "ACCESSIBILITY"
+
+[node name="TextScaleRow" type="VBoxContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TextScaleLabel" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow"]
+layout_mode = 2
+text = "TEXT SCALE  //  100%"
+autowrap_mode = 2
+
+[node name="TextScaleSlider" type="HSlider" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+focus_mode = 2
+mouse_default_cursor_shape = 2
+min_value = 80.0
+max_value = 150.0
+step = 5.0
+value = 100.0
+
 [node name="SettingsError" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout"]
 visible = false
 layout_mode = 2

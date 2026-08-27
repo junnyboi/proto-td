@@ -20,6 +20,7 @@ const PLACEHOLDER_TYPES := {
 	&"ui.squad.limit": {&"limit": &"int"},
 	&"ui.squad.mission_identity": {&"index": &"int", &"title": &"String"},
 	&"ui.title.a11y.slider_name": {&"label": &"String", &"value": &"int"},
+	&"ui.title.text_scale": {&"value": &"int"},
 	&"ui.training.combat_facts": {&"block": &"int", &"cadence": &"int", &"cost": &"int", &"placement": &"String", &"range": &"int"},
 	&"ui.training.error_message": {&"message": &"String"},
 	&"ui.training.fallback_recruit": {&"index": &"int"},
