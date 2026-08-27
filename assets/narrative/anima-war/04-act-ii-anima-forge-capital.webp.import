@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2vaivmb06hdm"
-path="res://.godot/imported/protos-ai-avatar.jpg-31ea63ec7a4aef8014380a034f80e77e.ctex"
+uid="uid://bkydgl5jkccva"
+path="res://.godot/imported/04-act-ii-anima-forge-capital.webp-6db8315939570d7139bd0eeb9dea0645.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/narrative/mercy-equation/protos-ai-avatar.jpg"
-dest_files=["res://.godot/imported/protos-ai-avatar.jpg-31ea63ec7a4aef8014380a034f80e77e.ctex"]
+source_file="res://assets/narrative/anima-war/04-act-ii-anima-forge-capital.webp"
+dest_files=["res://.godot/imported/04-act-ii-anima-forge-capital.webp-6db8315939570d7139bd0eeb9dea0645.ctex"]
 
 [params]
 

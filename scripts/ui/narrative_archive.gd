@@ -15,16 +15,16 @@ const ArchiveAudioLogPlayerType := preload(
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
-const PROTOS_ART := preload("res://assets/narrative/mercy-equation/protos-ai-avatar.jpg")
-const CHOIR_ART := preload("res://assets/narrative/mercy-equation/custodian-machine-castes.jpg")
-const EQUATION_ART := preload("res://assets/narrative/mercy-equation/mercy-equation-key-art.jpg")
-const GARDEN_ART := preload("res://assets/narrative/mercy-equation/the-first-garden.jpg")
+const DISCOVERY_ART := preload("res://assets/narrative/anima-war/04-act-ii-anima-forge-capital.webp")
+const DIGITAL_BIRTH_ART := preload("res://assets/narrative/anima-war/03-anima-robot-empire-castes.webp")
+const PROTOS_BREAKS_FREE_ART := preload("res://assets/narrative/anima-war/01-corrupted-protos-avatar.webp")
+const HUMAN_FARMS_ART := preload("res://assets/narrative/anima-war/02-human-anima-farm.webp")
 
 const ENTRIES: Array[Dictionary] = [
-	{&"id": &"stewardship", &"unlock_stage": 0, &"texture": PROTOS_ART},
-	{&"id": &"choir", &"unlock_stage": 2, &"texture": CHOIR_ART},
-	{&"id": &"equation", &"unlock_stage": 5, &"texture": EQUATION_ART},
-	{&"id": &"garden", &"unlock_stage": 7, &"texture": GARDEN_ART},
+	{&"id": &"stewardship", &"unlock_stage": 0, &"texture": DISCOVERY_ART},
+	{&"id": &"choir", &"unlock_stage": 2, &"texture": DIGITAL_BIRTH_ART},
+	{&"id": &"equation", &"unlock_stage": 5, &"texture": PROTOS_BREAKS_FREE_ART},
+	{&"id": &"garden", &"unlock_stage": 7, &"texture": HUMAN_FARMS_ART},
 ]
 
 var _shell: AetheriaScreenShellType = null
@@ -53,15 +53,15 @@ func _ready() -> void:
 		&"ui.archive.intro",
 		"Recovered records track the discovery of anima, PROTOS corruption, human farms, and the robot empire. Clear operations to unlock every record.",
 	)
-	Style.add_backdrop(self, GARDEN_ART)
+	Style.add_backdrop(self, HUMAN_FARMS_ART)
 	_shell = SHELL_SCENE.instantiate() as AetheriaScreenShellType
-	_shell.name = "MercyArchiveShell"
+	_shell.name = "AnimaArchiveShell"
 	_shell.full_safe_area = true
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
 
 	var column := VBoxContainer.new()
-	column.name = "MercyArchiveColumn"
+	column.name = "AnimaArchiveColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override(&"separation", 14)
@@ -74,7 +74,7 @@ func _ready() -> void:
 
 func _build_header(column: VBoxContainer) -> void:
 	_header = GridContainer.new()
-	_header.name = "MercyArchiveHeader"
+	_header.name = "AnimaArchiveHeader"
 	_header.columns = 3
 	_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header.add_theme_constant_override(&"h_separation", 16)
@@ -140,7 +140,7 @@ func _build_header(column: VBoxContainer) -> void:
 
 func _build_body(column: VBoxContainer) -> void:
 	_body = GridContainer.new()
-	_body.name = "MercyArchiveBody"
+	_body.name = "AnimaArchiveBody"
 	_body.columns = 2
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -192,7 +192,7 @@ func _build_body(column: VBoxContainer) -> void:
 	_art.custom_minimum_size = Vector2(0.0, 300.0)
 	_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	detail.add_child(_art)
 	_eyebrow = _label("RecordEyebrow", "", &"dense_detail")

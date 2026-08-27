@@ -11,16 +11,16 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 const STREAMS := {
 	&"en-US": {
-		&"stewardship": preload("res://assets/audio/narrative/mercy-archive/en-US/stewardship.ogg"),
-		&"choir": preload("res://assets/audio/narrative/mercy-archive/en-US/choir.ogg"),
-		&"equation": preload("res://assets/audio/narrative/mercy-archive/en-US/equation.ogg"),
-		&"garden": preload("res://assets/audio/narrative/mercy-archive/en-US/garden.ogg"),
+		&"stewardship": preload("res://assets/audio/narrative/anima-archive/en-US/stewardship.ogg"),
+		&"choir": preload("res://assets/audio/narrative/anima-archive/en-US/choir.ogg"),
+		&"equation": preload("res://assets/audio/narrative/anima-archive/en-US/equation.ogg"),
+		&"garden": preload("res://assets/audio/narrative/anima-archive/en-US/garden.ogg"),
 	},
 	&"zh-CN": {
-		&"stewardship": preload("res://assets/audio/narrative/mercy-archive/zh-CN/stewardship.ogg"),
-		&"choir": preload("res://assets/audio/narrative/mercy-archive/zh-CN/choir.ogg"),
-		&"equation": preload("res://assets/audio/narrative/mercy-archive/zh-CN/equation.ogg"),
-		&"garden": preload("res://assets/audio/narrative/mercy-archive/zh-CN/garden.ogg"),
+		&"stewardship": preload("res://assets/audio/narrative/anima-archive/zh-CN/stewardship.ogg"),
+		&"choir": preload("res://assets/audio/narrative/anima-archive/zh-CN/choir.ogg"),
+		&"equation": preload("res://assets/audio/narrative/anima-archive/zh-CN/equation.ogg"),
+		&"garden": preload("res://assets/audio/narrative/anima-archive/zh-CN/garden.ogg"),
 	},
 }
 
@@ -29,18 +29,22 @@ var _player: AudioStreamPlayer = null
 var _play_pause: AetheriaButtonType = null
 var _restart: AetheriaButtonType = null
 var _seek: HSlider = null
+var _action_grid: GridContainer = null
 var _status: AetheriaLabelType = null
 var _time: AetheriaLabelType = null
 var _syncing_seek := false
 var _completed := false
+var _presentation_position := 0.0
 var _i18n: Node = null
 
 
 func _ready() -> void:
 	name = "ArchiveAudioLog"
-	custom_minimum_size.y = 128.0
+	custom_minimum_size.y = 196.0
 	Style.apply_panel(self, &"quiet")
 	_build_ui()
+	resized.connect(_refresh_responsive_layout)
+	_refresh_responsive_layout.call_deferred()
 	set_process(true)
 	_i18n = get_node_or_null("/root/I18n")
 	if _i18n != null and not _i18n.is_connected(&"locale_changed", _on_locale_changed):
@@ -60,10 +64,10 @@ func _build_ui() -> void:
 	column.add_theme_constant_override(&"separation", 8)
 	add_child(column)
 
-	var header := HBoxContainer.new()
+	var header := VBoxContainer.new()
 	header.name = "AudioLogHeader"
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_theme_constant_override(&"separation", 12)
+	header.add_theme_constant_override(&"separation", 4)
 	column.add_child(header)
 	var title := _label("AudioLogTitle", UiCopyType.text(&"ui.archive.audio.title", "ANIMA ARCHIVE AUDIO LOG"), &"dense_heading")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -84,25 +88,34 @@ func _build_ui() -> void:
 	_seek.value_changed.connect(_on_seek_changed)
 	column.add_child(_seek)
 
-	var controls := HBoxContainer.new()
+	var controls := VBoxContainer.new()
 	controls.name = "AudioLogControls"
 	controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	controls.add_theme_constant_override(&"separation", 10)
+	controls.add_theme_constant_override(&"separation", 6)
 	column.add_child(controls)
+	_action_grid = GridContainer.new()
+	_action_grid.name = "AudioLogActions"
+	_action_grid.columns = 2
+	_action_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_action_grid.add_theme_constant_override(&"h_separation", 10)
+	_action_grid.add_theme_constant_override(&"v_separation", 6)
+	controls.add_child(_action_grid)
 
 	_play_pause = AetheriaButtonType.new()
 	_play_pause.name = "AudioLogPlayPause"
 	_play_pause.custom_minimum_size = Vector2(190.0, 52.0)
+	_play_pause.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_play_pause.apply_role(&"primary")
 	_play_pause.pressed.connect(_on_play_pause)
-	controls.add_child(_play_pause)
+	_action_grid.add_child(_play_pause)
 
 	_restart = AetheriaButtonType.new()
 	_restart.name = "AudioLogRestart"
 	_restart.custom_minimum_size = Vector2(170.0, 52.0)
+	_restart.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_restart.apply_role(&"secondary")
 	_restart.pressed.connect(_on_restart)
-	controls.add_child(_restart)
+	_action_grid.add_child(_restart)
 
 	_time = _label("AudioLogTime", "0:00 / 0:00", &"dense_detail")
 	_time.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -110,6 +123,12 @@ func _build_ui() -> void:
 	_time.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	controls.add_child(_time)
 	_refresh_copy()
+
+
+func _refresh_responsive_layout() -> void:
+	if _action_grid == null:
+		return
+	_action_grid.columns = 1 if size.x < 410.0 else 2
 
 
 func _label(node_name: String, text_value: String, role: StringName) -> AetheriaLabelType:
@@ -126,6 +145,7 @@ func set_entry(entry_id: StringName) -> bool:
 		return false
 	_entry_id = entry_id
 	_completed = false
+	_presentation_position = 0.0
 	_player.stop()
 	_player.stream_paused = false
 	var locale_id := StringName(_i18n.call("locale")) if _i18n != null else &"en-US"
@@ -150,12 +170,16 @@ func _on_play_pause() -> void:
 		return
 	_play_sfx(&"ui_confirm")
 	if _player.playing and not _player.stream_paused:
+		_presentation_position = _player.get_playback_position()
 		_player.stream_paused = true
 	elif _player.stream_paused:
 		_player.stream_paused = false
+		_player.play(_presentation_position)
 	else:
+		if _completed:
+			_presentation_position = 0.0
 		_completed = false
-		_player.play(0.0)
+		_player.play(_presentation_position)
 	_refresh_copy()
 
 
@@ -164,6 +188,7 @@ func _on_restart() -> void:
 		return
 	_play_sfx(&"ui_click")
 	_completed = false
+	_presentation_position = 0.0
 	_player.stream_paused = false
 	_player.play(0.0)
 	_refresh_copy()
@@ -173,23 +198,29 @@ func _on_seek_changed(value: float) -> void:
 	if _syncing_seek or _player.stream == null:
 		return
 	_completed = false
-	_player.seek(clampf(value, 0.0, _stream_length()))
-	_refresh_time(value)
+	_presentation_position = clampf(value, 0.0, _stream_length())
+	if _player.playing:
+		_player.seek(_presentation_position)
+	_refresh_time(_presentation_position)
 
 
 func _process(_delta: float) -> void:
 	if _player == null or _player.stream == null:
 		return
-	var position := _player.get_playback_position() if _player.playing else (0.0 if not _completed else _stream_length())
+	if _player.playing and not _player.stream_paused:
+		_presentation_position = _player.get_playback_position()
+	elif _completed:
+		_presentation_position = _stream_length()
 	_syncing_seek = true
-	_seek.value = clampf(position, 0.0, _stream_length())
+	_seek.value = clampf(_presentation_position, 0.0, _stream_length())
 	_syncing_seek = false
-	_refresh_time(position)
+	_refresh_time(_presentation_position)
 	_refresh_copy()
 
 
 func _on_finished() -> void:
 	_completed = true
+	_presentation_position = _stream_length()
 	_player.stream_paused = false
 	_syncing_seek = true
 	_seek.value = _stream_length()
@@ -262,9 +293,11 @@ func _on_locale_changed(locale_id: StringName) -> void:
 		_refresh_copy()
 		return
 	var was_playing := _player.playing and not _player.stream_paused
+	var previous_position := _presentation_position
 	set_entry(_entry_id)
+	_presentation_position = clampf(previous_position, 0.0, _stream_length())
 	if was_playing:
-		_player.play(0.0)
+		_player.play(_presentation_position)
 	_refresh_copy()
 
 
@@ -281,7 +314,9 @@ func duration_seconds() -> float:
 
 
 func playback_position() -> float:
-	return _player.get_playback_position() if _player != null and _player.playing else 0.0
+	if _player == null or _player.stream == null:
+		return 0.0
+	return _presentation_position
 
 
 func narration_playing() -> bool:

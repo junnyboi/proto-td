@@ -25,7 +25,7 @@ func _run() -> void:
 		_mount(staging)
 		await get_tree().process_frame
 		await get_tree().process_frame
-		var archive_button := staging.find_child("MercyArchiveButton", true, false) as Button
+		var archive_button := staging.find_child("AnimaArchiveButton", true, false) as Button
 		if archive_button != null:
 			archive_button.emit_signal("pressed")
 		for _frame: int in range(8):

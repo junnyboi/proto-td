@@ -331,9 +331,8 @@ func _build_actions(layout: VBoxContainer) -> void:
 		_actions.add_child(retry)
 		focusable.append(retry)
 		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
-		if not _cleared_result:
-			next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
-			ActionHoverFeedbackType.wire(self, next)
+		next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH
+		ActionHoverFeedbackType.wire(self, next)
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
@@ -431,7 +430,7 @@ func _apply_responsive_layout() -> void:
 		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if mode == &"portrait" else TextServer.AUTOWRAP_OFF
 		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var command := find_child("ReturnToStaging", true, false) as Button
-	if command != null and not _cleared_result:
+	if command != null:
 		command.custom_minimum_size.x = (
 			RESULT_COMMAND_PORTRAIT_WIDTH
 			if mode == &"portrait"

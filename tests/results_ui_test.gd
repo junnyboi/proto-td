@@ -150,12 +150,14 @@ func _run() -> void:
 			if child is Button:
 				var action := child as Button
 				var presentation := action.find_child("PresentationLabel", true, false) as Label
-				_check(action.custom_minimum_size == Vector2(260, 96), "%s is not fixed at 260×96" % action.name)
+				var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
+				_check(action.custom_minimum_size == Vector2(expected_width, 96), "%s lost its contained fixed sizing" % action.name)
 				_check(action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "%s still expands horizontally" % action.name)
 				_check(action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s retained a struck texture frame" % action.name)
 				_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s typography was not doubled" % action.name)
 				var action_style := action.get_theme_stylebox(&"normal")
 				_check(action_style.content_margin_top >= 18.0 and action_style.content_margin_bottom >= 18.0, "%s lacks vertical inner padding" % action.name)
+		_check(staging.get_combined_minimum_size().x <= staging.size.x + 1.0, "clear Company Command text overflows its wider action")
 
 	_check(header != null and header.columns == 1 and body != null and body.columns == 2, "regular landscape Results hierarchy changed")
 	root.size = Vector2i(1024, 576)

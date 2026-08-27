@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s3p02yi7gyry"
-path="res://.godot/imported/the-first-garden.jpg-8fbf864e79eb5f116d25668949f7e802.ctex"
+uid="uid://ih86lda61et"
+path="res://.godot/imported/03-anima-robot-empire-castes.webp-26a767844e8f79a331c08ba6bbc23a73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/narrative/mercy-equation/the-first-garden.jpg"
-dest_files=["res://.godot/imported/the-first-garden.jpg-8fbf864e79eb5f116d25668949f7e802.ctex"]
+source_file="res://assets/narrative/anima-war/03-anima-robot-empire-castes.webp"
+dest_files=["res://.godot/imported/03-anima-robot-empire-castes.webp-26a767844e8f79a331c08ba6bbc23a73.ctex"]
 
 [params]
 

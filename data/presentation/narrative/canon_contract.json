@@ -111,28 +111,6 @@
     "consent"
   ],
   "required_charm_description": "command link",
-  "phase6_temporary_waivers": [
-    {
-      "path": "localization/en-US.json",
-      "json_key_prefix": "ui.archive.entry.",
-      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
-    },
-    {
-      "path": "localization/zh-CN.json",
-      "json_key_prefix": "ui.archive.entry.",
-      "reason": "Four obsolete caretaker-era archive text records remain under stable IDs until Phase 6 replaces content and media atomically."
-    },
-    {
-      "path": "scripts/ui/narrative_archive.gd",
-      "line_pattern": "res://assets/narrative/mercy-equation/(protos-ai-avatar|custodian-machine-castes|mercy-equation-key-art|the-first-garden)\\.jpg",
-      "reason": "Exact obsolete archive art bindings remain until Phase 6 supplies new art; visible archive naming is already Anima Archive."
-    },
-    {
-      "path": "scripts/ui/components/archive_audio_log_player.gd",
-      "line_pattern": "res://assets/audio/narrative/mercy-archive/(en-US|zh-CN)/(stewardship|choir|equation|garden)\\.ogg",
-      "reason": "Exact obsolete archive narration bindings remain until Phase 6 supplies eight replacement streams."
-    }
-  ],
   "stable_internal_exceptions": [
     "data.company.33.name",
     "stewardship",

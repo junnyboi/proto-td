@@ -30,7 +30,7 @@ func _run() -> void:
 	await process_frame
 	var backdrop_video := staging.find_child("LunarisTitleLoop", true, false) as VideoStreamPlayer
 	var backdrop_fallback := staging.find_child("LunarisFallback", true, false) as TextureRect
-	var archive_button := staging.find_child("MercyArchiveButton", true, false) as Button
+	var archive_button := staging.find_child("AnimaArchiveButton", true, false) as Button
 	_check(staging.find_child("MockResourceWallet", true, false) == null, "Company Command still presents the fabricated wallet")
 	_check(staging.find_child("UtilityIcons", true, false) == null, "Company Command still presents inert utility chrome")
 	_check(backdrop_video != null and not backdrop_video.visible and not backdrop_video.is_playing(), "reduced motion did not suppress Company Command video playback")

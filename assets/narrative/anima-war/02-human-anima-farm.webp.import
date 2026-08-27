@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cp40wk5rddc2c"
-path="res://.godot/imported/custodian-machine-castes.jpg-8ee51c56034ef9ecd8c8fd4d70754e93.ctex"
+uid="uid://cjvq074t3dpu1"
+path="res://.godot/imported/02-human-anima-farm.webp-2b8346edd4d4ba362f603ad9b8048286.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/narrative/mercy-equation/custodian-machine-castes.jpg"
-dest_files=["res://.godot/imported/custodian-machine-castes.jpg-8ee51c56034ef9ecd8c8fd4d70754e93.ctex"]
+source_file="res://assets/narrative/anima-war/02-human-anima-farm.webp"
+dest_files=["res://.godot/imported/02-human-anima-farm.webp-2b8346edd4d4ba362f603ad9b8048286.ctex"]
 
 [params]
 
