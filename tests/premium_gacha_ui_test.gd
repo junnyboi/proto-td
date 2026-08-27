@@ -111,10 +111,11 @@ func _run() -> void:
 		_check(card != null and portrait != null and portrait.texture != null, "missing portrait %s" % premium_id)
 		_check(card.custom_minimum_size == Vector2(480, 645), "card did not increase by 50%% for %s" % premium_id)
 		_check(portrait_frame != null and portrait_frame.custom_minimum_size == Vector2(432, 420), "portrait frame did not scale with %s" % premium_id)
-		_check(portrait.scale.is_equal_approx(Vector2(2.80, 2.80)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "portrait is not top-anchored at 180%% bust zoom without pre-cropping for %s" % premium_id)
+		_check(portrait.scale.is_equal_approx(Vector2(1.03, 1.03)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "custom premium portrait is not using the top-safe square crop for %s" % premium_id)
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 24.0 and card_style.content_margin_top >= 24.0 and card_style.content_margin_right >= 24.0 and card_style.content_margin_bottom >= 24.0, "premium card padding is below 24px for %s" % premium_id)
 		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
+		_check(Art.size(StringName("portrait_%s" % premium_id)) == Vector2i(512, 512), "custom identity portrait changed for %s" % premium_id)
 		_check(Art.size(StringName("portrait_%s_fullsize" % premium_id)) == Vector2i(640, 800), "full-size portrait changed for %s" % premium_id)
 	_check(Art.size(&"ui_gacha_return") == Vector2i(512, 512), "generated Return glyph is absent from the art manifest")
 	_check(Art.size(&"ui_resonance_shard") == Vector2i(512, 512), "GPT Image 2 Resonance Shard is absent from the art manifest")
@@ -145,7 +146,16 @@ func _run() -> void:
 	_check(browse_backdrop != null and browse_backdrop.size.y > 825.0, "browse background did not retain cover crop")
 	_check(browse_backdrop != null and is_zero_approx(browse_backdrop.pivot_offset.y), "browse background pivot is not top anchored")
 	var short_wide_portrait := grid.get_child(0).find_child("Portrait", true, false) as TextureRect
-	_check(short_wide_portrait != null and short_wide_portrait.scale.is_equal_approx(Vector2(4.20, 4.20)), "short-wide card did not retain its bust crop")
+	var short_wide_frame := grid.get_child(0).find_child("PortraitFrame", true, false) as Control
+	var short_wide_zoom := maxf(
+		1.03,
+		short_wide_frame.custom_minimum_size.x / short_wide_frame.custom_minimum_size.y,
+	)
+	_check(
+		short_wide_portrait != null
+		and short_wide_portrait.scale.is_equal_approx(Vector2.ONE * short_wide_zoom),
+		"short-wide card did not retain its responsive custom-portrait crop",
+	)
 
 	# Source localization must refresh existing cards and accessibility metadata in place.
 	_check(i18n.call("set_locale", &"zh-CN"), "zh-CN locale could not activate")

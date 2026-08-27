@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4juqcc14uc4d"
-path="res://.godot/imported/reliquary_duelist_premium.png-65026f2e0e475f5d886da4ea7b6072d0.ctex"
+uid="uid://dxp6ipjx60vbg"
+path="res://.godot/imported/archive_caster.png-fb0b534a806c4a3313e6ee35c4177369.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/portraits/reliquary_duelist_premium.png"
-dest_files=["res://.godot/imported/reliquary_duelist_premium.png-65026f2e0e475f5d886da4ea7b6072d0.ctex"]
+source_file="res://assets/portraits/premium/archive_caster.png"
+dest_files=["res://.godot/imported/archive_caster.png-fb0b534a806c4a3313e6ee35c4177369.ctex"]
 
 [params]
 

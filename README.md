@@ -79,6 +79,8 @@ All character concepts, portraits, UI illustrations, chibi units, and animated s
 
 The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female kit previews for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Training derives its kit-preview variant from the persisted Recruit portrait ID without adding gender data to campaign state, command receipts, hashes, or save bytes.
 
+The three premium heroes use dedicated **GPT Image 2** portraits derived from their canonical full-size Lunaris design sheets. Immutable 1920×1920 sources, deterministic 512×512 Field Team/Training assets, 640×800 compatibility derivatives, prompts, checksums, and runtime acceptance are documented in [`docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/premium/`](docs/portraits/premium/). The same identity IDs now drive Field Team, Training, Premium Resonance, and Moon Archive presentation without changing premium ownership, rarity, lives, fixed kits, command receipts, hashes, or save bytes.
+
 The deterministic premium gacha lifecycle, save migration, fixed-kit rule, stored-life economy, death behavior, and validation contract are documented in [`docs/PREMIUM_HERO_SYSTEM.md`](docs/PREMIUM_HERO_SYSTEM.md).
 
 ## Narrative canon

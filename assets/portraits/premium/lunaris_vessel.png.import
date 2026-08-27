@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bd4br6uyh5r1n"
-path="res://.godot/imported/archive_caster_premium.png-d0719845a5797f821a1750311e2be879.ctex"
+uid="uid://b10i86ta6tx8o"
+path="res://.godot/imported/lunaris_vessel.png-760cee2c33919b37d1cf14b0b44cc54c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/portraits/archive_caster_premium.png"
-dest_files=["res://.godot/imported/archive_caster_premium.png-d0719845a5797f821a1750311e2be879.ctex"]
+source_file="res://assets/portraits/premium/lunaris_vessel.png"
+dest_files=["res://.godot/imported/lunaris_vessel.png-760cee2c33919b37d1cf14b0b44cc54c.ctex"]
 
 [params]
 

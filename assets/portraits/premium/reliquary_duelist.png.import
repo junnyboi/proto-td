@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dudxam62jev1f"
-path="res://.godot/imported/lunaris_vessel_premium.png-e513a651fd2f1108dbc3b4a434979c76.ctex"
+uid="uid://civtsac2cp05h"
+path="res://.godot/imported/reliquary_duelist.png-1c6f22e99a34199408926f726942e6a3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/portraits/lunaris_vessel_premium.png"
-dest_files=["res://.godot/imported/lunaris_vessel_premium.png-e513a651fd2f1108dbc3b4a434979c76.ctex"]
+source_file="res://assets/portraits/premium/reliquary_duelist.png"
+dest_files=["res://.godot/imported/reliquary_duelist.png-1c6f22e99a34199408926f726942e6a3.ctex"]
 
 [params]
 

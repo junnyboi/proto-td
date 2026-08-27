@@ -2967,7 +2967,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/archive_caster_premium.png",
+"pattern": "res://assets/portraits/premium/archive_caster.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
@@ -2982,7 +2982,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/lunaris_vessel_premium.png",
+"pattern": "res://assets/portraits/premium/lunaris_vessel.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
@@ -2997,7 +2997,7 @@ entries = {
 }
 },
 "frames": 1,
-"pattern": "res://assets/portraits/reliquary_duelist_premium.png",
+"pattern": "res://assets/portraits/premium/reliquary_duelist.png",
 "pivot": Vector2(0.5, 0.5),
 "placeholder": false,
 "size": Vector2i(512, 512)
