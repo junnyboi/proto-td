@@ -1,5 +1,8 @@
 # Simplified Chinese visual acceptance notes
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](../../../../NARRATIVE_CANON.md).
+
+
 ## Loading and title — landscape
 
 The 1280×720 loading screen renders all Simplified Chinese glyphs cleanly in the bundled typeface. Faction, archive, phase, and detail labels are legible, correctly positioned, and free of tofu, replacement characters, clipping, or Latin fallback artifacts. The 62% state and progress geometry remain intact.
@@ -44,17 +47,17 @@ The victory debrief renders `第1关已通关`, tally, `行动收益`, `行动�
 
 Portrait victory stacks the ceremony, tally, reward, consequence, and three actions without horizontal clipping; localized narrative paragraphs wrap naturally and remain within scrollable panels. Landscape defeat renders `第1关未通过`, subdued stars, tally, corrected `行动收益`/`行动后果` terminology, localized consequence copy, and persistent actions with no tofu. The reward and consequence regions retain independent scrolling for additional XP/reward rows.
 
-## Mercy Archive — landscape and portrait
+## Superseded Mercy Archive capture — landscape and portrait
 
 The archive shell renders `仁慈档案`, decryption progress, corrected explanatory prose, encrypted record rows, record title, image, subtitle, and long-form Chinese body text with complete glyphs. Portrait uses the intended nested scroll regions for the record list and dossier; long prose continues below the viewport rather than being cut from the layout. Mixed `PROTOS`, numerals, punctuation, and Han text share a coherent font chain.
 
-## Vahalla memorial — landscape and portrait
+## Superseded Vahalla-label capture — landscape and portrait
 
 The memorial renders the localized shell, fallen count, reviewed permanence text, faction filters, memorial roster, service record, terminal reason, battle tick, and honor action with complete glyphs. Proper callsigns remain intentionally unchanged. Portrait makes the long dossier fully inspectable and shows `第20刻` plus the permanent-death explanation without replacement boxes or clipped Han text; landscape retains the intended scrollable dossier composition.
 
 ## Battle tutorial — landscape and portrait
 
-The battle HUD, spell cards, controls, deployment cards, tutorial progress, title, approved route copy, and actions all render in Chinese with complete glyphs. The corrected leak rule is explicit: three enemies may pass and the fourth ends the mission. Landscape and portrait retain the left-aligned tutorial card, responsive type scale, centered HUD copy, and contained actions. No `CENTER` control or tofu glyph is present.
+The battle HUD, spell cards, controls, deployment cards, tutorial progress, title, then-approved route copy (now superseded as narrative), and actions all render in Chinese with complete glyphs. The corrected leak rule is explicit: three enemies may pass and the fourth ends the mission. Landscape and portrait retain the left-aligned tutorial card, responsive type scale, centered HUD copy, and contained actions. No `CENTER` control or tofu glyph is present.
 
 ## Live battle — landscape and portrait
 

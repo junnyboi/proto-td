@@ -1,5 +1,8 @@
 # Simplified Chinese Localization and Glyph Rendering Audit
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](../NARRATIVE_CANON.md).
+
+
 **Author:** Manus AI
 
 **Project:** Protos / `junnyboi/proto-td`
@@ -14,7 +17,7 @@ The game now has **complete English/Simplified Chinese catalog parity across 925
 
 The Chinese glyph failure was caused by an incomplete runtime font contract rather than by the catalog itself. Several standalone battle and utility controls relied on inherited or platform fallback fonts, while the bundled CJK font was loaded through runtime path lookup rather than as an explicit export dependency. The repair makes `ProtosSansSC.otf` an explicit preloaded resource, installs a Chinese-capable global project theme, and applies the same deterministic body/display chain to Aetheria, StagingSkin, Lunaris operations controls, spell status labels, line edits, deployment cards, and accessibility text.[2]
 
-The release candidate was visually inspected through **28 deterministic Godot/Xvfb captures** covering loading, title, settings, Company Command, campaign, Field Team, Training, Premium Resonance browse/history/reveal, victory/defeat Results, Mercy Archive, Vahalla, and battle tutorial/live states in landscape and portrait. Every inspected frame was free of tofu boxes, replacement-character glyphs, nonsensical codepoint symbols, destructive clipping, and untranslated primary controls.[3]
+The release candidate was visually inspected through **28 deterministic Godot/Xvfb captures** covering loading, title, settings, Company Command, campaign, Field Team, Training, Premium Resonance browse/history/reveal, victory/defeat Results, the then-visible Mercy Archive, the then-visible Vahalla label, and battle tutorial/live states in landscape and portrait. Every inspected frame was free of tofu boxes, replacement-character glyphs, nonsensical codepoint symbols, destructive clipping, and untranslated primary controls.[3]
 
 ## Audit scope and results
 
@@ -42,7 +45,7 @@ The repair establishes one deterministic chain. The project-level custom theme n
 
 The audit did more than fill missing keys. It corrected gameplay semantics and established consistent terminology across screen families.
 
-| Domain | Canonical Chinese contract | Corrected risks |
+| Domain | Historical Chinese contract | Corrected risks |
 |---|---|---|
 | Mission organization | `任务指挥中心`, `连队指挥部`, `行动收益`, `行动后果` | Removed inconsistent literal translations of “Mission Control,” “staging,” and “yield.” |
 | Battle withdrawal | `撤出行动` for resigning; `撤回干员` for withdrawing one unit | Eliminated an ambiguity that previously used `撤退` for both operations. |
@@ -50,9 +53,9 @@ The audit did more than fill missing keys. It corrected gameplay semantics and e
 | Premium Resonance | `共鸣`, `高级英雄`, `固定精英配置`, `再共鸣…次内必得五星` | Removed “copy” terminology and expressed the pity guarantee as an upper bound rather than an exact pull. |
 | Training and identity | `干员`, `新兵`, `晋升`, `进阶专精`, `代号` | Preserved identity continuity and removed generic unit/personnel wording. |
 | Memorial | `阵亡名册`, `永久离队`, `第{tick}刻` | Removed unsupported resurrection implications and awkward service-record phrasing. |
-| Narrative canon | `日冠`, `延续`, `静默`, `第一花园`, `炉心渡`, `档案术师`, `月辉载体`, `圣物决斗者` | Corrected faction and premium-identity mistranslations, normalized Reliquary terminology, and restored canonical philosophical meaning across Act I/II prose. |
+| Superseded narrative terminology | `日冠`, `延续`, `静默`, `第一花园`, `炉心渡`, `档案术师`, `月辉载体`, `圣物决斗者` | Corrected faction and premium-identity mistranslations, normalized Reliquary terminology, and restored the then-approved philosophical meaning across Act I/II prose; this wording is now superseded by the Anima War canon. |
 
-The review also synchronized the Stage 2–4 tactical hints with the retained Shieldbearer, Breacher, and Interceptor content. After the complete Act II narrative landed concurrently, all 123 new English/Chinese entries were re-audited, and inconsistent `档案术士`, `月之容器`, and `圣匣决斗者` references were normalized to the canonical `档案术师`, `月辉载体`, and `圣物决斗者` identities. Because gameplay resources participate in the campaign validation environment, the corresponding campaign environment hash was regenerated and synchronized in both the campaign definition and campaign resource.[4]
+The review also synchronized the Stage 2–4 tactical hints with the retained Shieldbearer, Breacher, and Interceptor content. After the complete Act II narrative landed concurrently, all 123 new English/Chinese entries were re-audited, and inconsistent `档案术士`, `月之容器`, and `圣匣决斗者` references were normalized to the then-approved `档案术师`, `月辉载体`, and `圣物决斗者` identities. Because gameplay resources participate in the campaign validation environment, the corresponding campaign environment hash was regenerated and synchronized in both the campaign definition and campaign resource.[4]
 
 ## Runtime localization coverage
 
@@ -73,8 +76,8 @@ All high-risk text paths now route through the catalog. Deployment cards use loc
 | Premium reveal | Yes | N/A | Full-screen identity and conversion receipt remain legible. |
 | Results victory | Yes | Yes | Yield, consequence, rewards, narrative, and actions remain accessible. |
 | Results defeat | Yes | N/A | Defeat semantics and consequence layout remain intact. |
-| Mercy Archive | Yes | Yes | Long-form Chinese prose stays in scrollable dossier regions. |
-| Vahalla | Yes | Yes | Memorial record, permanence copy, tick, and honor action are complete. |
+| Superseded Mercy Archive label | Yes | Yes | Long-form Chinese prose stays in scrollable dossier regions. |
+| Superseded Vahalla label | Yes | Yes | Memorial record, permanence copy, tick, and honor action are complete. |
 | Battle tutorial/live | Yes | Yes | HUD, tutorial, controls, spells, deploy cards, costs, and wave banner are tofu-free. |
 
 The complete matrix, visual inspection notes, and SHA-256 checksums are stored with the release evidence.[3]

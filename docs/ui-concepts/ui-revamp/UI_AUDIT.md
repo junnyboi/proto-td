@@ -1,5 +1,8 @@
 # Protos Unified UI Audit
 
+> **Historical technical evidence — not narrative canon.** This document preserves superseded production, localization, visual, screenshot, and regression evidence. Any historical story text, labels, prompts, or approval language shown here is rejected as current lore and must not be used as narrative authority. The sole current narrative authority is [The Anima War canon](../../NARRATIVE_CANON.md).
+
+
 **Scope:** Six UI families spanning entry, Company Command, campaign navigation, Mission, Training, Premium Resonance, Vahalla, live battle, and Results  
 **Audited revision:** `6f382b621c812c29dacfa79a41fe59e19909709c`  
 **Engine / reference canvas:** Godot 4.7.2; `1280×720` landscape and `720×1280` portrait gates  
@@ -7,7 +10,7 @@
 
 ## Executive assessment
 
-Protos has a strong product thesis and a strong behavioral foundation, but not yet a single production UI system. The canonical direction is clear: **premium, unmistakably adult 21+ anime realism; fashion-editorial combat couture; sacred science-fantasy monumentality; near-black and black-blue glass; ivory type; brushed or antique gold structure; restrained moon-cyan state energy; mature portrait crops; and native, scalable controls**.[1] Title, Company Command, and Mission Command already demonstrate meaningful parts of that promise. Campaign state, roster identity, promotion, premium pulls, memorial membership, battle actions, and results are also separated from presentation with unusually disciplined authoritative boundaries.
+Protos has a strong product thesis and a strong behavioral foundation, but not yet a single production UI system. The recorded visual direction for this audited revision was: **premium, unmistakably adult 21+ anime realism; fashion-editorial combat couture; sacred science-fantasy monumentality; near-black and black-blue glass; ivory type; brushed or antique gold structure; restrained moon-cyan state energy; mature portrait crops; and native, scalable controls**.[1] Title, Company Command, and Mission Command already demonstrate meaningful parts of that promise. Campaign state, roster identity, promotion, premium pulls, memorial membership, battle actions, and results are also separated from presentation with unusually disciplined authoritative boundaries.
 
 The principal weakness is continuity. Players repeatedly cross visible quality cliffs: cinematic title and Company Command become a generic centered Stage Select; Mission Command becomes a utility battle HUD; the terminal ceremony becomes a generic Results plate; Premium Resonance—the highest-aspiration collection surface—uses flat equal cards; Training and Vahalla present character-rich systems as administrative forms or lists. Across the six audits, the same structural problems recur:
 
@@ -28,7 +31,7 @@ The recommended program is not a reskin and must not become a gameplay refactor.
 
 > **Program rule:** UI may format, stage, animate, filter, and navigate authoritative projections. It must never calculate or mutate campaign progression, pull results, promotion legality, death/lives, rewards, placement legality, targeting legality, or battle outcome.
 
-## Canonical design principles
+## Historical design principles
 
 The unified direction follows [`docs/ART_DIRECTION.md`][1] and the six family audits.[2][3][4][5][6][7]
 
@@ -52,7 +55,7 @@ The matrix contains **79 family-level screen/state entries** from the six audits
 
 | ID | Screen / state | Principal gap | Target composition | Non-negotiable preservation |
 |---:|---|---|---|---|
-| S01 | Boot/loading bridge | Documentation and runtime entry disagree; continuity is not governed as a shell contract | Canonical full-cover Lunaris static art with clean title handoff | Never expose an empty root; retain minimum display/fade and `Game.open_title()` |
+| S01 | Boot/loading bridge | Documentation and runtime entry disagree; continuity is not governed as a shell contract | Recorded full-cover Lunaris static art with clean title handoff | Never expose an empty root; retain minimum display/fade and `Game.open_title()` |
 | S02 | Lunaris title entry | Strong benchmark but bespoke | Retain cinematic entry; consume shared type, button, backdrop, and dialog primitives | Start campaign route, music behavior, keyboard/controller focus |
 | S03 | Title Settings sheet | Behavior is strong but title-local | Reusable `LunarisSettingsSheet` over input-blocking veil | Locale, music, reduced motion, Back/Escape, focus restoration |
 | S04 | Company Command — active campaign | Passive standards precede current intent | Next Operation → Mission Control → operations; tertiary affiliations/milestones | View-only campaign projection and all existing child routes |
@@ -63,7 +66,7 @@ The matrix contains **79 family-level screen/state entries** from the six audits
 | S09 | Company Command — `1280×720` | Standards and repeated progress push actions below an unmarked fold | 72–80 px rail; character stage; fixed first-view command stack | Mission Control, Resonance, Vahalla, Training state, Exit reachable |
 | S10 | Company Command — `720×1280` | Top bar is width-tight; bottom sheet hides operations | Compact rail, 35–40% art stage, bottom sheet with visible action grid and scroll cue | Same actions and authority as landscape |
 | S11 | Top command/resource bar | Mock economy looks purchasable; Settings/Messages are inert textures | Real Buttons; honest resource source state; overflow/details for hidden stamina | Exit clears active runtime and returns to title; mock wallet stays isolated |
-| S12 | Faction standards gallery | Four equal passive cards imply selection and consume priority space | Featured Lunaris affiliation plus three compact archive/allied seals | All four factions intact; Lunaris remains Company 33 active affiliation |
+| S12 | Faction standards gallery | Four equal passive cards imply selection and consume priority space | Featured Lunaris affiliation plus three compact archive/allied seals | All four factions intact; Lunaris remains Company Manus active affiliation |
 | S13 | Next-operation preview and CTA | Generic tiny pixel panorama for every stage | Stage-specific painterly 16:9 art, location/threat metadata, state variants | First unlocked stage absent from `stage_stars`; narrative guard |
 | S14 | Operation tile — Barracks | Lock is mostly tint | Explicit locked badge/reason on shared operation anatomy | Disabled and nonfocusable until implemented |
 | S15 | Operation tiles — Resonance, Armory, Vahalla, Training | Inconsistent weight and unclear badge semantics | Icon, operation name, one live metric/status, explicit state badge | Exact routes; Armory locked; Training iff `eligible_count > 0` |
@@ -93,7 +96,7 @@ The matrix contains **79 family-level screen/state entries** from the six audits
 | T04 | Callsign and optional title editor | Naming dominates main inspector | `EDIT FIELD IDENTITY` inspector state/sheet with counters and preview | Authoritative Unicode, trim, uniqueness, control-char, eligibility rules |
 | T05 | Rename confirmation modal | Native desktop-tool dialog | Framed responsive review sheet with current/proposed identity | Review before durable commit, one dispatch, errors, focus restoration |
 | T06 | Promotion path selection and class comparison | Large vertical cards fail 1/2/5 choices | Compact ceremonial seals plus selected detail compare | Options only from `promotion_options()`; all authored combat facts retained |
-| T07 | Multi-operator plan review/confirm | Generic list and competing primaries | Portrait-led old-duty → new-duty rows; one commitment action | Canonical hero-ID order, atomic batch, permanence disclosure |
+| T07 | Multi-operator plan review/confirm | Generic list and competing primaries | Portrait-led old-duty → new-duty rows; one commitment action | Stable hero-ID order, atomic batch, permanence disclosure |
 | T08 | Pending promotion-save retry/integrity | Exit lock can look broken | Dominant integrity state with `RETRY SAVE` and disabled rationale | Back/Not Now/ui_cancel blocked; retry pending mutation, no new command |
 | T09 | Post-promotion acknowledgement in Command | Destination and consumption are under-explained | Explicit success-destination policy and idempotent banner | Fresh success publishes once; duplicate receipt does not republish |
 | T10 | Results training-available prompt | Entry exists but visual continuity is weak | Shared training-ready status and origin-aware action | Only when eligible; Results state survives return |
@@ -117,7 +120,7 @@ The matrix contains **79 family-level screen/state entries** from the six audits
 | G11 | Natural five-star reveal | Weak must-pull ceremony | Gold-white fifth-star turn, mature hero rise, restrained light sweep | Natural receipt; pity reset from authority |
 | G12 | Forced-pity five-star reveal | Text-only guarantee | Guarantee seal and lock-release treatment | `pity_forced` receipt value; gameplay reward unchanged |
 | G13 | New-hero outcome | Rich information disappears into status line | Persistent outcome card: NEW HERO, one life, updated guarantee | One persistent fixed-kit hero row |
-| G14 | Duplicate LIFE +1 outcome | Gain can be missed off-scroll | Persistent life delta and total on canonical identity | Same row gains one life/copy; no duplicate hero row |
+| G14 | Duplicate LIFE +1 outcome | Gain can be missed off-scroll | Persistent life delta and total on stable identity | Same row gains one life/copy; no duplicate hero row |
 | G15 | Zero-life revival outcome | Revival can be confused with duplicate | REVIVED state with restored same identity and memorial consequence | Authority clears death/memorial; UI does not perform revival |
 | G16 | Reduced-motion reveal | Immediate state exists but not globally governed | Short opacity transition to identical stable final state | Same receipt, result information, and focus outcome |
 | G17 | Post-reveal settled idle | One-line result is too subtle | Outcome sheet closes to updated banner/gallery with deterministic focus | Pull or Back focus fallback; state remains committed |
@@ -175,7 +178,7 @@ Generated staging frames exist, including primary and operation frames, but live
 
 Cinzel-led display type is present in Staging but absent or inconsistent in Training, Gacha, Vahalla, Battle, and Results. Numerous labels, faction identities, statuses, death reasons, battle controls, and gacha outcomes are hard-coded English. Cinzel has no CJK glyph coverage.
 
-**Requirement:** centralize display/body/detail/action roles in `game_typography.gd`; use Cinzel only where the composite fallback is valid; use the CJK-capable body face for Simplified Chinese and long operational copy; move all player-facing strings through `UiCopy` and canonical `en-US`/`zh-CN` catalogs with placeholder parity.
+**Requirement:** centralize display/body/detail/action roles in `game_typography.gd`; use Cinzel only where the composite fallback is valid; use the CJK-capable body face for Simplified Chinese and long operational copy; move all player-facing strings through `UiCopy` and authoritative runtime `en-US`/`zh-CN` catalogs with placeholder parity.
 
 ### 4. State grammar
 
@@ -185,7 +188,7 @@ Available/locked/new, selected/ready/planned, premium/fallen, valid/invalid, com
 
 ### 5. Character-art integration
 
-Canonical adult 21+ art is the visual promise, but several high-value screens lack character presence or use small undifferentiated portraits. Gacha's featured Vessel crop needs a maturity review; portrait reflow can crop faces, weapons, and couture unsafely.
+The audited adult 21+ art direction is a retained production constraint, but several high-value screens lack character presence or use small undifferentiated portraits. Gacha's featured Vessel crop needs a maturity review; portrait reflow can crop faces, weapons, and couture unsafely.
 
 **Requirement:** add focal metadata or approved dedicated crops; prioritize mature face, hair, upper costume, signature equipment, and faction material; use character art to communicate current operator, squad, casualty, or premium identity. Preserve tactical chibis on the field while reasserting adult identity in trays and inspectors.
 
@@ -224,7 +227,7 @@ Hover tooltips, unsupported Unicode arrows, desktop shortcuts, portrait map pan,
 | Exit | Company Command Exit returns to title and clears active runtime state | Confirmation/presentation | Quitting application or preserving an invalid active session |
 | Locked operations | Barracks and Armory disabled/nonfocusable | Explicit lock badges/reasons | Making them appear or behave actionable |
 | Mock wallet | Deterministic, nonpersistent, nonspendable, nonpurchasable | Honest source labeling or removal | Purchase/spend/progression behavior |
-| Factions | Four canonical factions; Lunaris is active Company 33 affiliation | Compact affiliation/archive rail | Implied selection without authority or save changes |
+| Factions | Four stable factions; Lunaris is active Company Manus affiliation | Compact affiliation/archive rail | Implied selection without authority or save changes |
 | Settings | Modal blocking, locale, music, reduced motion, Back/Escape, focus restoration | Shared sheet extraction | Loss of input containment or preference persistence |
 | Campaign map | Sequential unlock; locked nodes visible/disabled | Spatial route and dossier | Unlock inference in view |
 | Stage route | Enabled stage sets `selected_stage_id`, then opens Squad Select | New node component and focus graph | Mutation from locked activation |
@@ -235,7 +238,7 @@ Hover tooltips, unsupported Unicode arrows, desktop shortcuts, portrait map pan,
 | Training origins | Mission/Results/Staging return paths and state survive | Explicit labels and documented success policy | Silent origin loss |
 | Filtering | Active/Fallen, factions, query, sort, counts, empty state | Collapsed filter UI | Save/hash mutation or clearing valid selected squad |
 | Naming | Unicode/trim/length/control/uniqueness/eligibility validation, review, durable receipt | Responsive identity sheet | UI reimplementation of validation |
-| Promotion | Options data-driven; local multi-hero draft; canonical ordering; atomic/idempotent commit | Seal/compare view and review rows | UI-generated paths or partial batch mutation |
+| Promotion | Options data-driven; local multi-hero draft; stable ordering; atomic/idempotent commit | Seal/compare view and review rows | UI-generated paths or partial batch mutation |
 | Save retry | Pending mutation blocks every exit; Confirm retries same mutation | Integrity state and focused Retry | New command or bypassed exit lock |
 | Premium heroes | Fixed kit, no XP/training/rename; stored lives | Clear seals and life pips | Ordinary progression or local life edits |
 | Gacha | 40 Marks; three identities; 2/40 sole 5-star; 19/40 each 4-star; hard tenth pity | Confirmation and receipt-driven ceremony | Local roll, pity, selection, charge, grant, or revival |
@@ -308,7 +311,7 @@ Hover tooltips, unsupported Unicode arrows, desktop shortcuts, portrait map pan,
 | `LunarisConfirmSheet` | Safe-default Cancel, destructive hierarchy, submit-once state | Resign, campaign exit, pull confirmation, promotion confirmation |
 | `LunarisMotionPolicy` | Shared reduced-motion read, static alternatives, visibility processing, tween cleanup | Backdrops, focus, route, Gacha, Battle, terminal/results |
 | Semantic skin/token layer | Material, spacing, corner, typography, focus, disabled, badge, danger, rarity, terminal roles | All families |
-| `UiCopy` typed catalog | Canonical bilingual keys, placeholder schemas, fallbacks, accessible names | All families |
+| `UiCopy` typed catalog | Stable bilingual keys, placeholder schemas, fallbacks, accessible names | All families |
 
 ### Navigation and campaign components
 
@@ -318,7 +321,7 @@ Hover tooltips, unsupported Unicode arrows, desktop shortcuts, portrait map pan,
 | `MissionDossier` | Objective, threat, squad limit, hint, reward preview, briefing action | Stage and narrative resources |
 | `StagePreviewCard` | Stage-specific 16:9 art, location/threat, offline/complete/corrupt variants | Presentation-only preview catalog |
 | `OperationCard` | Optical icon, operation, one metric/status, state badge | Existing campaign projections only |
-| `AffiliationRail` | Active Lunaris standard plus passive allied/archive seals | Canonical faction presentation metadata |
+| `AffiliationRail` | Active Lunaris standard plus passive allied/archive seals | Stable faction presentation metadata |
 
 ### Character, roster, and consequence components
 
@@ -417,7 +420,7 @@ Hover tooltips, unsupported Unicode arrows, desktop shortcuts, portrait map pan,
 - Add authoritative Marks presentation and ten-cell guarantee track.
 - Add pre-transaction confirmation and submit-once pending state.
 - Implement receipt-only reveal director with visible star charge, forced guarantee seal, frame-one Skip, reduced-motion equivalence, and persistent outcome sheet.
-- Re-approve or replace the Lunaris Vessel crop through the canonical adult 21+ art pipeline.
+- Re-approve or replace the Lunaris Vessel crop through the approved adult 21+ art-production pipeline.
 
 **Exit gate:** confirmation cancel does not mutate state; rejected commits never reveal; 4-star/natural 5-star/forced 5-star and NEW/LIFE +1/REVIVED are deterministic and localized.
 
@@ -469,7 +472,7 @@ The family audits contain detailed file-level test targets. At program level, ac
 3. **Measured battle layout zones:** replace local offsets with one safe-region coordinator, especially in portrait.
 4. **Character-forward adult 21+ hierarchy:** make selected, featured, deployed, and affected heroes visually meaningful with approved mature crops.
 5. **One semantic material/state system:** engraved angular native controls, explicit badges, non-color-only patterns, and restrained gold/cyan/crimson roles.
-6. **Bilingual accessibility as architecture:** canonical copy, CJK fallback, native logical labels, focus containment/restoration, touch parity, and `44×44` targets.
+6. **Bilingual accessibility as architecture:** catalog-backed copy, CJK fallback, native logical labels, focus containment/restoration, touch parity, and `44×44` targets.
 7. **Shared reduced-motion lifecycle:** preference persistence, static equivalence, visibility-aware processing, and tween cleanup.
 8. **Truthful economy and consequence presentation:** distinguish mock resources from Marks; ordinary death from premium life spend/lockout; duplicate from revival.
 9. **Transaction-aware presentation:** pending, rejection, retry, and submit-once states around durable launch, rename, promotion, pull, and result boundaries.
@@ -483,7 +486,7 @@ Success means the player experiences one authored Lunaris product across all 79 
 
 ## References
 
-[1]: ../../ART_DIRECTION.md "Canonical Protos visual art direction"
+[1]: ../../ART_DIRECTION.md "Protos visual art direction"
 [2]: audits/01-staging.md "Audit 01 — Company Command and global staging shell"
 [3]: audits/02-campaign.md "Audit 02 — Campaign map, Mission, deploy flow, and Results"
 [4]: audits/03-training.md "Audit 03 — Roster, Training, promotion, and naming"

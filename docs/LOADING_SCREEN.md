@@ -1,6 +1,8 @@
 # Custom Loading Screen
 
-The game now opens with the **Lunaris Reliquary** artwork before handing off to the existing title scene. The same image is configured as Godot’s engine boot splash and as the background of `scenes/loading.tscn`, producing a visually continuous startup instead of the default Godot brand screen.
+> **Historical technical evidence; not narrative canon.** This document records loading behavior, visual layout, and past verification results. It does not define story, factions, or character truth. The sole narrative authority is [`NARRATIVE_CANON.md`](NARRATIVE_CANON.md). Any older wording visible in recorded screenshots is superseded.
+
+The game opens with **Lunaris Reliquary** resistance artwork before handing off to the existing title scene. The same image is configured as Godot’s engine boot splash and as the background of `scenes/loading.tscn`, producing a visually continuous startup instead of the default Godot brand screen.
 
 ## Visual contract
 
@@ -10,13 +12,13 @@ The early Xvfb capture confirms the custom boot artwork fills the window without
 
 At 720×1280, the engine boot stage preserves the complete 16:9 artwork with dark letterboxing, matching the game preview’s aspect-preservation requirement. Once the custom scene is active, its cover treatment shifts to a dramatic centered portrait crop: the flagship heroine fills the vertical frame, the top faction labels remain inside safe margins, and the complete wordmark, status, percentage, progress bar, and detail line remain readable in the bottom band. No text or focal features clip at the tested portrait size.
 
-## Web preview refresh
+## Historical Web preview verification
 
-The release Web export contains non-empty HTML, JavaScript, WebAssembly, and PCK files. The repository’s documentation archive is protected by `docs/.gdignore`, so the four reusable faction concepts and refined reference image remain in Git without inflating the playable pack. After synchronizing with the latest master VFX changes, the existing fullscreen WebDev host uses the refined Lunaris artwork during the **69,157,760-byte** managed-pack download and then runs the same in-engine boot/loading sequence. Browser validation observed the managed artwork and network progress treatment first, followed by the existing playable title scene with focus intact; no landing page or marketing chrome was added.
+The verified release Web export contained non-empty HTML, JavaScript, WebAssembly, and PCK files. The repository’s documentation archive was protected by `docs/.gdignore`, so the four reusable faction concepts and refined reference image remained in Git without inflating the playable pack. After synchronization with the then-current master VFX changes, the fullscreen WebDev host used the refined Lunaris artwork during a **historical 69,157,760-byte managed-pack download** and then ran the same in-engine boot/loading sequence. Browser validation observed the managed artwork and network progress treatment first, followed by the playable title scene with focus intact; no landing page or marketing chrome was added. This measurement describes that recorded release and is not a current pack-size claim.
 
-The browser console remained empty after startup. Pressing **Enter** on the focused title control advanced into the campaign command/staging flow, confirming keyboard input, scene authority, and the refreshed managed pack remain functional after the loading-screen change.
+The browser console remained empty after startup. Pressing **Enter** on the focused title control advanced into the Company Manus command/staging flow, confirming keyboard input, scene authority, and managed-pack functionality after the loading-screen change.
 
-Final WebDev screenshots confirm the complete custom loading overlay at 1280×720 and the existing title UI centered within the aspect-preserved game frame at 720×1280. Network logs show HTTP 200 responses with the expected `application/wasm` type and exact 39,514,754-byte engine size. The synchronized merged-final browser pass loaded the 69,157,760-byte PCK, displayed the refined managed artwork, completed the in-engine Lunaris sequence, and reached the focused title scene. No failed managed-asset requests were observed.
+The recorded final WebDev screenshots confirmed the complete custom loading overlay at 1280×720 and the title UI centered within the aspect-preserved game frame at 720×1280. Historical network logs showed HTTP 200 responses with the expected `application/wasm` type and an exact **39,514,754-byte engine size**. The synchronized historical browser pass loaded the **69,157,760-byte PCK**, displayed the refined managed artwork, completed the in-engine Lunaris sequence, and reached the focused title scene. No failed managed-asset requests were observed. These sizes are retained as release evidence, not as current artifact measurements.
 
 ## Runtime files
 
