@@ -13,6 +13,7 @@ const LOCALE_KEY := "locale"
 const AUDIO_SECTION := "audio"
 const TITLE_MUSIC_ENABLED_KEY := "title_music_enabled"
 const MASTER_VOLUME_KEY := "master_volume"
+const MASTER_MUTED_KEY := "master_muted"
 const MUSIC_VOLUME_KEY := "music_volume"
 const SFX_VOLUME_KEY := "sfx_volume"
 const GRAPHICS_SECTION := "graphics"
@@ -26,7 +27,7 @@ const TEXT_SCALE_STEP := 0.05
 const VALID_FRAME_LIMITS := [0, 30, 60, 120]
 const VALID_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 const BATCH_KEYS: Array[StringName] = [
-		&"locale", &"title_music_enabled", &"master_volume", &"music_volume",
+		&"locale", &"title_music_enabled", &"master_volume", &"master_muted", &"music_volume",
 		&"sfx_volume", &"frame_limit", &"reduced_motion", &"text_scale",
 	]
 
@@ -89,6 +90,17 @@ static func master_volume(path: String = DEFAULT_PATH) -> float:
 
 static func set_master_volume(value: float, path: String = DEFAULT_PATH) -> bool:
 	return _set_value(AUDIO_SECTION, MASTER_VOLUME_KEY, clampf(value, 0.0, 1.0), path)
+
+
+static func master_muted(path: String = DEFAULT_PATH) -> bool:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return false
+	return bool(config.get_value(AUDIO_SECTION, MASTER_MUTED_KEY, false))
+
+
+static func set_master_muted(muted: bool, path: String = DEFAULT_PATH) -> bool:
+	return _set_value(AUDIO_SECTION, MASTER_MUTED_KEY, muted, path)
 
 
 static func music_volume(path: String = DEFAULT_PATH) -> float:
@@ -156,6 +168,7 @@ static func save_batch(values: Dictionary, path: String = DEFAULT_PATH) -> bool:
 	config.set_value(LOCALIZATION_SECTION, LOCALE_KEY, StringName(values[&"locale"]))
 	config.set_value(AUDIO_SECTION, TITLE_MUSIC_ENABLED_KEY, bool(values[&"title_music_enabled"]))
 	config.set_value(AUDIO_SECTION, MASTER_VOLUME_KEY, float(values[&"master_volume"]))
+	config.set_value(AUDIO_SECTION, MASTER_MUTED_KEY, bool(values[&"master_muted"]))
 	config.set_value(AUDIO_SECTION, MUSIC_VOLUME_KEY, float(values[&"music_volume"]))
 	config.set_value(AUDIO_SECTION, SFX_VOLUME_KEY, float(values[&"sfx_volume"]))
 	config.set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, int(values[&"frame_limit"]))
@@ -187,6 +200,8 @@ static func _valid_batch(values: Dictionary) -> bool:
 	if typeof(locale_value) != TYPE_STRING_NAME or locale_value not in VALID_LOCALES:
 		return false
 	if typeof(values[&"title_music_enabled"]) != TYPE_BOOL:
+		return false
+	if typeof(values[&"master_muted"]) != TYPE_BOOL:
 		return false
 	if typeof(values[&"reduced_motion"]) != TYPE_BOOL:
 		return false

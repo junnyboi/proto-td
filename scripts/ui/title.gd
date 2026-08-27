@@ -50,6 +50,7 @@ var _footer_settings_button: Button = null
 var _title_music_enabled := true
 var _reduced_motion := false
 var _master_volume := 1.0
+var _master_muted := false
 var _music_volume := 1.0
 var _sfx_volume := 1.0
 var _frame_limit := 0
@@ -77,6 +78,7 @@ func _ready() -> void:
 	_title_music_enabled = ViewPreferencesType.title_music_enabled(_preferences_path)
 	_reduced_motion = ViewPreferencesType.reduced_motion(_preferences_path)
 	_master_volume = ViewPreferencesType.master_volume(_preferences_path)
+	_master_muted = ViewPreferencesType.master_muted(_preferences_path)
 	_music_volume = ViewPreferencesType.music_volume(_preferences_path)
 	_sfx_volume = ViewPreferencesType.sfx_volume(_preferences_path)
 	_frame_limit = ViewPreferencesType.frame_limit(_preferences_path)
@@ -510,6 +512,7 @@ func _apply_preference_values(values: Dictionary) -> void:
 	_reduced_motion = bool(values.get(&"reduced_motion", _reduced_motion))
 	_frame_limit = int(values.get(&"frame_limit", _frame_limit))
 	_master_volume = float(values.get(&"master_volume", _master_volume))
+	_master_muted = bool(values.get(&"master_muted", _master_muted))
 	_music_volume = float(values.get(&"music_volume", _music_volume))
 	_sfx_volume = float(values.get(&"sfx_volume", _sfx_volume))
 	_text_scale = float(values.get(&"text_scale", _text_scale))
@@ -563,6 +566,7 @@ func _current_preferences() -> Dictionary:
 		&"locale": I18n.locale(),
 		&"title_music_enabled": _title_music_enabled,
 		&"master_volume": _master_volume,
+		&"master_muted": _master_muted,
 		&"music_volume": _music_volume,
 		&"sfx_volume": _sfx_volume,
 		&"frame_limit": _frame_limit,
@@ -595,6 +599,10 @@ func master_volume() -> float:
 	return _master_volume
 
 
+func master_muted() -> bool:
+	return _master_muted
+
+
 func music_volume() -> float:
 	return _music_volume
 
@@ -620,16 +628,16 @@ func settings_draft() -> Dictionary:
 
 
 func _apply_audio_settings() -> void:
-	_set_bus_volume(MASTER_BUS, _master_volume)
+	_set_bus_volume(MASTER_BUS, _master_volume, _master_muted)
 	_set_bus_volume(MUSIC_BUS, _music_volume)
 	_set_bus_volume(SFX_BUS, _sfx_volume)
 
 
-func _set_bus_volume(bus_name: StringName, value: float) -> void:
+func _set_bus_volume(bus_name: StringName, value: float, force_mute := false) -> void:
 	var bus_index := AudioServer.get_bus_index(bus_name)
 	if bus_index < 0:
 		return
-	AudioServer.set_bus_mute(bus_index, value <= 0.001)
+	AudioServer.set_bus_mute(bus_index, force_mute or value <= 0.001)
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(value, 0.001)))
 
 

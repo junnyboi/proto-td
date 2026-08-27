@@ -21,6 +21,7 @@ func _run() -> void:
 	_original_max_fps = Engine.max_fps
 	_capture_buses()
 	_check(PREFS.locale(PATH) == &"en-US", "locale default is not English")
+	_check(not PREFS.master_muted(PATH), "missing Master mute preference did not default to unmuted")
 	_check(PREFS.mark_pan_hint_seen(PATH), "unrelated navigation preference was not created")
 	_check(not PREFS.has_seen_command_tutorial(PATH), "command tutorial should be unseen by default")
 	_check(PREFS.mark_command_tutorial_seen(PATH), "command tutorial completion was not created")
@@ -114,6 +115,7 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == roundi(project_body_base * 1.35), "Title/Settings shared theme compounded during preview")
 	_check(PREFS.frame_limit(PATH) == 0, "draft frame limit persisted before Apply")
 	_check(_near(PREFS.master_volume(PATH), 1.0), "draft volume persisted before Apply")
+	_check(not PREFS.master_muted(PATH), "draft Master mute state persisted before Apply")
 	_check(PREFS.locale(PATH) == &"en-US", "draft locale persisted before Apply")
 	title.call("_close_settings")
 	await _wait_for_transition(state_root, &"CLOSED")
@@ -140,6 +142,7 @@ func _verify_apply(game: Node, music: Node) -> void:
 	await _wait_for_transition(first.get_node("TitleSettings") as Control, &"CLOSED")
 	_check(StringName(first.call("screen_state")) == &"TITLE", "Apply did not restore TITLE state")
 	_check(_near(PREFS.master_volume(PATH), 0.35), "master volume batch was not saved")
+	_check(not PREFS.master_muted(PATH), "unchanged Master mute state was not saved as unmuted")
 	_check(_near(PREFS.music_volume(PATH), 0.45), "music volume batch was not saved")
 	_check(_near(PREFS.sfx_volume(PATH), 0.55), "SFX volume batch was not saved")
 	_check(PREFS.frame_limit(PATH) == 60 and PREFS.reduced_motion(PATH), "graphics batch was not saved")
