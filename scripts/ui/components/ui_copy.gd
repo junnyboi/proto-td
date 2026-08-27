@@ -59,6 +59,8 @@ const STATIC_FALLBACKS := {
 	&"ui.gacha.campaign_offline": "CAMPAIGN OFFLINE",
 	&"ui.gacha.pull_unavailable": "PULL UNAVAILABLE",
 	&"ui.gacha.campaign_required": "Start or continue a campaign to access premium resonance.",
+	&"ui.currency.resonance_shards_name": "Resonance Shards",
+	&"ui.currency.resonance_shard_tooltip": "Resonance Shard — premium energy\nused for recruitment and Premium Resonance.",
 	&"ui.gacha.marks": "{count}",
 	&"ui.gacha.pull_action": "RESONATE\n{cost}",
 	&"ui.gacha.pull_again": "PULL AGAIN • {cost}",

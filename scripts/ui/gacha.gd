@@ -432,6 +432,7 @@ func _build_screen() -> void:
 	_pull_cost_display = ResonanceCurrencyDisplayType.new()
 	_pull_cost_display.name = "PremiumPullCostDisplay"
 	_pull_cost_display.configure("40", 27, 34.0)
+	_pull_cost_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pull_cost_label = _pull_cost_display.amount_label
 	_pull_cost_label.name = "PremiumPullCostLabel"
 	_pull_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2445,6 +2446,11 @@ func _set_browse_status(text: String, live_mode: int) -> void:
 func _set_pull_presentation(logical_text: String, action_text: String, cost_text: String) -> void:
 	_pull_button.text = logical_text
 	_pull_button.accessibility_name = logical_text.replace("\n", ", ")
+	if cost_text.is_empty():
+		_pull_button.tooltip_text = logical_text
+		_pull_button.accessibility_description = ""
+	else:
+		ResonanceCurrencyDisplayType.apply_tooltip(_pull_button, logical_text)
 	_pull_action_label.text = action_text
 	_pull_cost_label.text = cost_text
 	_pull_cost_label.visible = not cost_text.is_empty()

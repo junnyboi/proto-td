@@ -268,6 +268,9 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
 	_check(hire_button != null and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its icon-backed exact price")
 	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Field Team does not show the current shard balance")
+	_check(hire_currency != null and hire_currency.tooltip_text.contains("premium energy"), "Field Team shard balance lacks its explanatory tooltip")
+	_check(hire_button != null and hire_button.tooltip_text.contains("premium energy"), "Field Team recruit action lacks its explanatory shard tooltip")
+	_check(hire_button != null and not hire_button.tooltip_text.contains("5, 5"), "Field Team shard tooltip duplicates its exact cost")
 	_check(recruit_body == null, "Field Team still creates redundant recruitment body copy")
 	_check(_mission.find_child("BasicRecruitRoster", true, false) == null, "Field Team still creates personnel-ready copy")
 	_check(not FileAccess.get_file_as_string("res://localization/en-US.json").contains("MARKS"), "Field Team still ships retired currency wording")
@@ -278,6 +281,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
 		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
 		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
+		_check(hire_currency.tooltip_text.contains("高级能量") and hire_button.tooltip_text.contains("高级能量"), "Field Team shard tooltips did not refresh to Chinese")
 		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
 		_check(bool(i18n.call("set_locale", &"en-US")), "Field Team could not restore English")
 		await process_frame
