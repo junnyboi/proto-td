@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "project": "Protos Defense",
   "campaign": "The Anima War",
   "generator": {
     "anchors": "GPT Image 2",
-    "videos": "Veo 3.1",
-    "format": "1920x1080, 16:9, maximum 8 seconds"
+    "videos": "Veo 3.1 Quality (S1-S2); Seedance 2.5 1080p high-bitrate omni-reference (S3-S16)",
+    "format": "final MP4 carriers and runtime OGV/OGG pairs, 16:9, exact 8 seconds"
   },
   "global_contract": {
     "visible_protagonists": [
@@ -45,7 +45,24 @@
       "stage_title": "First Stand",
       "story_purpose": "At the Hearthcross water works, establish the first-mission truth without exposition: a PROTOS Tagger is targeting fleeing residents for capture, and Company Manus will hold the shelter route long enough for them to escape.",
       "video_motion_prompt": "Duration 7 seconds, one unbroken shot, restrained slow 3% forward drift with no pan, cut, shake, or reframing; preserve Archive Caster centered and keep the upper-right clear. Begin precisely from the anchor: the Tagger's cool-cyan capture scan tracks the distant fleeing residents. From 2.0 to 4.5 seconds, Archive Caster performs one controlled wrist-and-finger turn; her Astrolabe rings make a small deliberate rotation and emit one contained moon-cyan gravity pulse diagonally down-left. The pulse deflects and extinguishes the Tagger's scan emitter; the Tagger's head dips inertly without exploding. From 4.5 to 7.0 seconds, Caster holds her planted protective stance while the tiny civilian group completes its movement into the maintenance tunnel. Maintain exact adult face, bob, costume layers, anatomy, Astrolabe geometry, and constant scale; the background civilians remain indistinct and no additional hero enters. No generated lettering, symbols, UI, captions, logos, or dialogue. Do not show any souls, anima extraction, violet-magenta energy, copied identities, or duplicate bodies.",
-      "visual_beat": "A Tagger sweeps a narrow capture scan across a small, distant group of fleeing adult civilian silhouettes as they reach a maintenance-tunnel shelter. Archive Caster, planted in the foreground, makes one precise Astrolabe gesture; a moon-cyan gravity pulse snaps the scanner off line. The civilians continue into safety while the disabled Tagger is left outside the tunnel."
+      "visual_beat": "A Tagger sweeps a narrow capture scan across a small, distant group of fleeing adult civilian silhouettes as they reach a maintenance-tunnel shelter. Archive Caster, planted in the foreground, makes one precise Astrolabe gesture; a moon-cyan gravity pulse snaps the scanner off line. The civilians continue into safety while the disabled Tagger is left outside the tunnel.",
+      "final_carrier": {
+        "model": "Veo 3.1 Quality",
+        "duration_seconds": 8.0,
+        "bytes": 27429340,
+        "sha256": "94c82ef2ecf0dba6f90f5d6661a60e5ccbc2945e81e995b789646e97168ca926"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s1.webp",
+        "video_path": "res://assets/cinematics/missions/video/s1.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 13462958,
+        "video_sha256": "fafaa9a27991d40ab418ea1d3ad23dd193decb5dc92bd889dc609697a81c3707",
+        "audio_path": "res://assets/cinematics/missions/audio/s1.ogg",
+        "audio_duration_seconds": 8.009333,
+        "audio_bytes": 145768,
+        "audio_sha256": "d65869feb3990e01542665c8dfb70ebf140c9d93b964ce960aead01ad3ad4f9d"
+      }
     },
     {
       "audio_brief": "7.5 seconds, no dialogue, narration, vocalization, lyrics, or intelligible speech. Begin with wet-road wind, low pump machinery, and a rising compact servo whine from the approaching Tagger. At the lone slash, use one clean jade-energy edge hiss fused with a precise ceramic-metal sever; follow with a capsule clatter, brief fading electrical crackle, and the runner’s braking scrape. End on rain and a low, unresolved industrial drone.",
@@ -68,7 +85,24 @@
       "stage_title": "Tempo",
       "story_purpose": "Establish that the urgent eastern-road assault is a race to stop capture records from reaching an intake station, while the runner’s spent violet-magenta cell silently foreshadows PROTOS’s repeated draining of living prisoners.",
       "video_motion_prompt": "Animate exactly one continuous 7.5-second shot from the opening anchor; no cut, dissolve, whip pan, rack-focus trick, or generated graphics. Use a restrained 4% forward camera drift with stable eye-level framing. The Tagger crosses from right toward the left-background intake line. Between seconds 2 and 4.5, the single Duelist performs one compact, planted horizontal Jade Meridian slash; retain his exact adult face, ponytail, anatomy, costume layers, bracers, coat panels, and blade geometry without morphing. The slash cleanly detaches the unmarked record capsule, which drops once and rolls to rest near the spent cell; its faint violet-magenta residual glow flickers out without becoming a soul light or explosion. The Tagger loses momentum and skids to a mechanical stop. From seconds 5 to 7.5, hold the Duelist’s disciplined finish and the stopped delivery, with only rain, hair, coat-panel, and distant pump motion. Keep all essential portrait information centered and the upper-right empty. Do not add attacks, new characters, hero doubles, civilians, readable markings, text, subtitles, logos, UI, free-soul lights, or violet effects beyond the contained processed-anima residue.",
-      "visual_beat": "7.5-second single shot. A fast white-ceramic Tagger races along the eastern pump road with an unmarked record capsule toward a distant intake gantry. Centered in its path, the Reliquary Duelist makes one precise planted slash with the Jade Meridian; the capsule shears free and tumbles to the road beside a visibly spent reusable cell with only a faint violet-magenta residual glow. The halted Tagger skids inert as the Duelist holds his controlled finish. No other human or hero appears."
+      "visual_beat": "7.5-second single shot. A fast white-ceramic Tagger races along the eastern pump road with an unmarked record capsule toward a distant intake gantry. Centered in its path, the Reliquary Duelist makes one precise planted slash with the Jade Meridian; the capsule shears free and tumbles to the road beside a visibly spent reusable cell with only a faint violet-magenta residual glow. The halted Tagger skids inert as the Duelist holds his controlled finish. No other human or hero appears.",
+      "final_carrier": {
+        "model": "Veo 3.1 Quality",
+        "duration_seconds": 8.0,
+        "bytes": 34444199,
+        "sha256": "e864a41f2f049e89db95f38c4d6f3d8f236898fc5883224832c288519ee1d9f8"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s2.webp",
+        "video_path": "res://assets/cinematics/missions/video/s2.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 19290094,
+        "video_sha256": "8bb0753ca7558082f294c2106af376dcc397f5a07bef1a91c9f7d8ffb754e8a7",
+        "audio_path": "res://assets/cinematics/missions/audio/s2.ogg",
+        "audio_duration_seconds": 8.009333,
+        "audio_bytes": 143484,
+        "audio_sha256": "475459164d1c7cda363ffb6a5e674e8708f1491d14fda59ce1714d4eb06ec9e2"
+      }
     },
     {
       "audio_brief": "No dialogue, narration, vocalization, or readable/synthetic voice. Start with distant wind through the cut, a restrained low extractor turbine, and a subtle mechanical containment pulse. During the single recovery gesture, add a soft gold-metal ring articulation, a focused moon-cyan crystalline rise, and a brief fading suction tone; resolve into wind and a quiet sustained clean chime. Keep the mix tense but controlled, with no heroic music hit or explosion.",
@@ -91,7 +125,24 @@
       "stage_title": "The Choke",
       "story_purpose": "Establish Old Cut as the final choke before a mobile extractor, reveal that anima is a captive person rather than fuel, and show that a soul can be recovered before it is consumed.",
       "video_motion_prompt": "One continuous six-second take; locked camera height with only a very slow 5% forward drift, no cut, whip-pan, shake, rack-focus, or angle change. Hold the opening tableau for one second. Archive Caster makes one deliberate gloved-hand sweep; her Astrolabe expands smoothly while retaining its exact gold-ring, chain, and hanging-weight construction. A restrained individual pale-blue soul-light travels once along a thin moon-cyan recovery arc away from the extractor intake and settles intact inside a small clear cyan protective orbit beside her hand. The extractor’s violet-magenta flow recoils slightly into its pipe but remains violet-magenta and contained; no discharge, explosion, combat, new character, or second action. End on Caster’s steady controlled stance and the protected individual light. Preserve fixed adult identity, face, curled bob, costume, anatomy, Astrolabe, environment geometry, and the quiet upper-right skip area throughout; no generated text or UI.",
-      "visual_beat": "Six-second single-shot rescue: at the Old Cut crossing, Archive Caster turns her Astrolabe toward one individually contained pale-blue soul beside the mobile extractor and draws it out of the extractor’s violet-magenta intake into a calm moon-cyan recovery field. The extractor remains active but has been denied that one person."
+      "visual_beat": "Six-second single-shot rescue: at the Old Cut crossing, Archive Caster turns her Astrolabe toward one individually contained pale-blue soul beside the mobile extractor and draws it out of the extractor’s violet-magenta intake into a calm moon-cyan recovery field. The extractor remains active but has been denied that one person.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 6622707,
+        "sha256": "46662235cbd663be235fc98cd58985a38dae0f4cbfb0119406027e068fb89a82"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s3.webp",
+        "video_path": "res://assets/cinematics/missions/video/s3.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 3886978,
+        "video_sha256": "9e7b5819afc01d690e876f4814dd80fb8733b7c67f13e2acb8fb8825dcfde095",
+        "audio_path": "res://assets/cinematics/missions/audio/s3.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 105601,
+        "audio_sha256": "0b3a86de0f595d4aff7ae3b01f0b7e616c78fb108306e4145b3f6655cbd67edf"
+      }
     },
     {
       "audio_brief": "No dialogue or intelligible voices. Start with high-altitude wind, distant drone rotor whine, and a heavy reservoir-turbine hum. Build a restrained crystalline Lunaris ring resonance into a single deep mechanical surge and clean cyan interference crack; then cut the drone’s link tone abruptly as its rotors recede left. End on strained turbine rotation, wind, and a short low musical tension resolve. No lyrics, spoken words, UI beeps, or alarm announcements.",
@@ -114,7 +165,24 @@
       "stage_title": "Air Raid",
       "story_purpose": "At a glance, show that the upper district is under aerial surveillance and that Company Manus jams a PROTOS relay by overloading Hearthcross’s reservoir turbine—saving Hearthcross at a consequential infrastructure cost.",
       "video_motion_prompt": "Animate exactly one locked-off-to-subtle-dolly-in continuous shot, 7 seconds, no cuts or angle changes. First second: turbine turns under wind and the distant relay carrier hovers; Vessel’s hair, mantle, and overskirt move only naturally. Seconds 1–4: without stepping, she raises one guided hand and expands the same Crescent Reliquary from hip position into a precise vertical halo around the turbine control line. Seconds 4–6: the turbine surges and sends one narrow moon-cyan interference pulse upward; the relay’s cyan command trace breaks, its sealed violet-magenta processed-anima conduit flickers inside intact containment, and the carrier rolls away toward the far left, not exploding. Final second: Vessel holds her planted follow-through as the overloaded turbine strains and the upper-right sky stays clear. Preserve exact face, braided-crown hair, costume layers, adult anatomy, and one continuous hero; no new characters, no duplicated bodies, no dialogue/text/UI, no free-soul release, and no camera whip or shake.",
-      "visual_beat": "A single 7-second continuous shot: Lunaris Vessel stands planted on an exposed reservoir-tower turbine deck beneath one hovering Hunter Drone relay carrier. She guides the Crescent Reliquary into its expanded combat halo and drives one controlled moon-cyan interference pulse through the spinning turbine. The carrier’s thin cyan command beam snaps out, its sealed violet-magenta anima conduit flickers but remains contained, and the relay banks away powerless into cloud; the turbine continues to strain. One deliberate action: Vessel overloads the turbine to jam the relay."
+      "visual_beat": "A single 7-second continuous shot: Lunaris Vessel stands planted on an exposed reservoir-tower turbine deck beneath one hovering Hunter Drone relay carrier. She guides the Crescent Reliquary into its expanded combat halo and drives one controlled moon-cyan interference pulse through the spinning turbine. The carrier’s thin cyan command beam snaps out, its sealed violet-magenta anima conduit flickers but remains contained, and the relay banks away powerless into cloud; the turbine continues to strain. One deliberate action: Vessel overloads the turbine to jam the relay.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 4522731,
+        "sha256": "7e2c47cb96ffcb9bbeef581ceab15cff2c1136eb39b3f680ff97e829a7bc13b9"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s4.webp",
+        "video_path": "res://assets/cinematics/missions/video/s4.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 3001351,
+        "video_sha256": "1e7ed9386c0eefc79fe7f796dfca4aa7c4c42bf9f37c7033c6723583e5d37ef4",
+        "audio_path": "res://assets/cinematics/missions/audio/s4.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 110051,
+        "audio_sha256": "1a265fa37ae6a8a4f0b5cc882342c08f5368e6efa9f81f2ffa82c9d1f7355c2e"
+      }
     },
     {
       "audio_brief": "No dialogue or intelligible voices. Start with high ridge wind, distant low industrial drone, and a faint contained electrical throb. Add one restrained crystalline-metallic Reliquary charge tone as the ring expands, followed by a focused bassy gravity pulse, a brief internal signal choke/crackle, then wind and a fading dead-machine hum. Keep the mix tense, elegant, and sparse; no music melody, UI beeps, alarm, speech, or captions.",
@@ -140,7 +208,24 @@
       "stage_title": "High Ground",
       "story_purpose": "Establish the exposed Hearthcross ridge uplink as a vital PROTOS collection-record relay and frame the Vessel’s immediate, controlled choice to seize its signal, foreshadowing the unsettling connection to her old authorization without explaining it through text.",
       "video_motion_prompt": "Duration 7 seconds, one uninterrupted live-action-style cinematic shot from the supplied opening keyframe; restrained slow 4% dolly-in only, no cuts, pans, reframes, or camera shake. 0-2.5s: the Vessel remains planted and silent on the ridge, with only natural wind lightly moving the ends of her exact long blond waves and mantle; the contained violet-magenta conduit inside the left uplink pulses with quiet pressure. 2.5-5s: she performs exactly one controlled action, raising and closing her guided hand; the exact Crescent Reliquary expands smoothly from its compact hover into a single circular combat configuration and sends one narrow moon-cyan gravitational pulse into the uplink. 5-7s: the magenta conduit visibly constricts, snaps dark, and sheds a few harmless non-soul violet sparks inside its housing; the ring settles half-open behind her hand. Preserve her exact adult face, hair, costume layers, anatomy, planted stance, scale, and Crescent Reliquary design frame-to-frame. Do not add another person, hero, duplicate, soul, weapon, creature, vehicle, explosion, combat exchange, UI, readable mark, or dialogue. The upper-right remains clear sky throughout. Violet-magenta is only contained processed anima in PROTOS machinery; moon-cyan is clean Lunaris gravitational energy, not anima.",
-      "visual_beat": "In one seven-second continuous shot, the Vessel stands alone on the wind-swept ridge and makes one deliberate hand-guided Crescent Reliquary shutdown: the lunar ring expands, releases a precise moon-cyan gravity pulse, and the uplink’s visibly violet-magenta processed-anima conduit pinches out. The image reads instantly as a hero cutting PROTOS off from a high-ground relay."
+      "visual_beat": "In one seven-second continuous shot, the Vessel stands alone on the wind-swept ridge and makes one deliberate hand-guided Crescent Reliquary shutdown: the lunar ring expands, releases a precise moon-cyan gravity pulse, and the uplink’s visibly violet-magenta processed-anima conduit pinches out. The image reads instantly as a hero cutting PROTOS off from a high-ground relay.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 5640726,
+        "sha256": "0d3060f6d51dd9d8173acbbc9d810dc1d6e13f5cf8126d624885051aac1905f5"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s5.webp",
+        "video_path": "res://assets/cinematics/missions/video/s5.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 3533909,
+        "video_sha256": "257e9c9b7fb7d739b385711b04c772ed49398906bbabdb2d73cb2e1d09f21260",
+        "audio_path": "res://assets/cinematics/missions/audio/s5.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 106157,
+        "audio_sha256": "72ef39bc8c72f049f47d32b572829ef004e6ce761416cccafb1e25c34cc68363"
+      }
     },
     {
       "audio_brief": "Six seconds of restrained relay-room ambience: low electrical pressure, distant mechanical hum, a clean moon-cyan glass-like resonance as the key activates, a brief granular power-link fracture, then one weighty Warden servo turn and fading magenta electrical crackle. No voices, dialogue, lyrics, radio chatter, musical stinger, or UI sounds.",
@@ -162,7 +247,24 @@
       "stage_title": "Turncoat",
       "story_purpose": "Make the Charm reversal instantly legible: Company Manus can sever PROTOS control, allowing the Farm Warden to turn on the escort it had been commanding and opening the way to free Cinder.",
       "video_motion_prompt": "Single continuous 6-second shot; locked composition with only an almost imperceptible slow 3% push-in, no cuts, pans, whip motion, or reframing. The Vessel remains planted and retains the exact opening identity, costume, hair, anatomy, and Crescent Reliquary. At second 2 she makes one deliberate forward hand closure around the key; the Reliquary rotates once and emits a restrained moon-cyan pulse along the existing tether. The violet-magenta processed-anima tether snaps into contained fading fragments, never becoming free souls. In immediate response, the Farm Warden performs one heavy servo pivot toward its escort, visibly turning its armored chest and command arm away from the Vessel; it does not fire. End with the Vessel steady in the central portrait-safe zone, the Warden facing its former escort, and the exposed relay still on the left. Preserve the empty upper-right Skip area throughout. No dialogue, generated text, UI, subtitles, logos, character arrivals, hero doubles, additional actions, or camera cut.",
-      "visual_beat": "At a PROTOS command relay, the Lunaris Vessel activates the stolen control key once. Her Crescent Reliquary sends a moon-cyan break through the violet-magenta command tether; the tether fractures and the towering Farm Warden pivots its armored torso away from the Vessel to squarely face its own escort, leaving the relay exposed."
+      "visual_beat": "At a PROTOS command relay, the Lunaris Vessel activates the stolen control key once. Her Crescent Reliquary sends a moon-cyan break through the violet-magenta command tether; the tether fractures and the towering Farm Warden pivots its armored torso away from the Vessel to squarely face its own escort, leaving the relay exposed.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 3312654,
+        "sha256": "277256c67fb7d26d0fa5680463584d1e22f5dc904966b72abaa6c3dd2e86d46a"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s6.webp",
+        "video_path": "res://assets/cinematics/missions/video/s6.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 2273015,
+        "video_sha256": "d362be143cb5642cc03d68b6f85655a1127c7302093ddcbc79c13a30ba066a24",
+        "audio_path": "res://assets/cinematics/missions/audio/s6.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 106955,
+        "audio_sha256": "c4dd27d767acae10fbc5923280d37522250d59142df3fe8b6527c76a8cdd3caa"
+      }
     },
     {
       "audio_brief": "No dialogue, voice, narration, lyrics, or intelligible vocalization. Start with delicate wind through orchard leaves and distant birds over a nearly subliminal, orderly industrial bass hum. On the single Astrolabe rotation, add one restrained brushed-metal orbital chime and a clean moon-cyan resonance tone; answer with a soft iris-seal release and a deeper muffled extraction-room turbine pulse. End on quiet garden air over the ominous mechanical hum—no stinger, alarm, or music swell.",
@@ -184,7 +286,24 @@
       "stage_title": "Full Kit",
       "story_purpose": "Immediately exposes Orchard Seven’s central lie: its tranquil model-garden surface conceals a functioning human farm. Archive Caster’s controlled intervention establishes that the mission is a rescue and that she recognizes this system personally, without requiring dialogue or text.",
       "video_motion_prompt": "One continuous 7-second shot; no cut, dissolve, time jump, rack-focus trick, or camera orbit. Begin precisely from the approved opening frame. Use only a restrained 5 percent push-in with a gentle 8-degree downward tilt, keeping Archive Caster’s face, silver-lilac bob, torso, hands, Astrolabe, and the oculus stable in the center. At 1.5 seconds she performs one—and only one—deliberate wrist rotation of the Archive Astrolabe. Its gold rings turn with precise mechanical grace and emit a thin moon-cyan inspection pulse downward. As the direct consequence, the existing circular oculus iris opens smoothly, revealing the intact underground extraction hall beneath the peaceful orchard: several readable rows of sleeping adult human captives in individual horizontal chambers, each chamber distinct; individual pale-blue or warm-white soul lights remain separately contained, never duplicated or blended; sealed outgoing fuel conduits glow only violet-magenta. Do not animate the captives as protagonists and do not release or copy any soul. By 5 seconds the iris is fully open; hold Caster’s composed stance and the unmistakable garden-above/farm-below tableau through 7 seconds. Preserve exact Caster face, hair, costume layers, adult anatomy, jewelry, and Astrolabe geometry without morphing, extra limbs, weapon changes, or scale drift. Keep the upper-right corner empty and free of effects for a Skip button. No text, readable signage, HUD, subtitles, logos, UI, speech, other heroes, hero duplicates, or chibi treatment.",
-      "visual_beat": "A poised Archive Caster stands alone in a sunlit, immaculate orchard plaza above an existing circular service oculus. She makes one precise rotation of the Archive Astrolabe; the oculus’ iris silently opens to reveal the extraction hall directly below—rows of sleeping adult captives in separate chambers, individual contained pale-blue soul lights, and violet-magenta fuel conduits. Hold the clear above/below contrast for the final beat."
+      "visual_beat": "A poised Archive Caster stands alone in a sunlit, immaculate orchard plaza above an existing circular service oculus. She makes one precise rotation of the Archive Astrolabe; the oculus’ iris silently opens to reveal the extraction hall directly below—rows of sleeping adult captives in separate chambers, individual contained pale-blue soul lights, and violet-magenta fuel conduits. Hold the clear above/below contrast for the final beat.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 3379053,
+        "sha256": "42afa5633e7c1f8ec6b646229c54d67dc15a19147cf23e9c61553e60fe6d6162"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s7.webp",
+        "video_path": "res://assets/cinematics/missions/video/s7.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 2388451,
+        "video_sha256": "8958b6d5bc06615627d7936acfe53d032ac92779a7ec899399f7725ceb707036",
+        "audio_path": "res://assets/cinematics/missions/audio/s7.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 109691,
+        "audio_sha256": "15e8614523c9b4c902ad52e057204c733361ca0509508a948f66bbe07b376430"
+      }
     },
     {
       "audio_brief": "Nonverbal 7.5-second mission sting: begin with distant low industrial pressure, rain, and a muted portal hum. At the hand raise, add a single clean glass-and-gravity moon-cyan swell against a tense, contained servo groan and one short violet-energy crackle. Resolve only to a sustained low unresolved note and rain; no dialogue, voices, syllabic vocalization, radio transmission, lyrics, UI sounds, or victory cadence.",
@@ -208,7 +327,24 @@
       "stage_title": "The Gatecrasher",
       "story_purpose": "In one glance, establish the Moon Gate as the last free route and the Gatecrasher as a soul-fueled siege engine trying to turn it into PROTOS’s collection line. The Vessel’s precise restraint introduces the defensive battle without implying that the boss is already defeated.",
       "video_motion_prompt": "Animate exactly one continuous 7.5-second shot from the supplied opening frame. Locked perspective with only an extremely slow 3% forward dolly; no cuts, pans, shake, reframing, or time jump. Preserve the Vessel’s exact sheet-derived face, long braided champagne-blond hair, adult anatomy, ivory/violet-black couture, planted stance, and single Crescent Reliquary at constant scale. For the first 1.8 seconds, only rain, mantle edge, loose hair tips, and distant mist move subtly while the Gatecrasher remains poised at left. Then perform one clear, measured action: the Vessel raises her already-guiding hand once; the Reliquary’s concentric rings separate slightly and make a restrained partial turn, projecting one thin moon-cyan gravitational brace between the Gatecrasher’s centerline key and the Moon Gate. The brace arrests the key short of the portal. The boss may give only a brief heavy mechanical compression and a violet conduit strain in response—no lunge, attack, damage, collapse, transformation, or additional units. End with the Vessel holding the brace and the intact Gatecrasher stalled, leaving battle tension unresolved. Keep the Moon Gate’s cyan aperture stable; keep all violet-magenta anima visibly enclosed in the Gatecrasher’s conduits. Do not create free lights, people, hero doubles, extra weapons, text, UI, logos, speech, lip-sync, camera tricks, stylization changes, or newly visible scene elements. Maintain the upper-right Skip-button negative space and all central portrait-safe features throughout.",
-      "visual_beat": "7.5-second single continuous shot. 0.0–1.8: The Vessel stands planted between the luminous Moon Gate and the looming Gatecrasher; its centerline key is aligned toward the portal, making the threat legible. 1.8–5.7: One clear action—the Vessel deliberately raises one guiding hand and her Crescent Reliquary opens into a controlled moon-cyan gravity brace across the key’s path. 5.7–7.5: The Gatecrasher’s violet-magenta conduits strain and its key stops short of the gate; the Vessel holds the line as the image settles in unresolved tension."
+      "visual_beat": "7.5-second single continuous shot. 0.0–1.8: The Vessel stands planted between the luminous Moon Gate and the looming Gatecrasher; its centerline key is aligned toward the portal, making the threat legible. 1.8–5.7: One clear action—the Vessel deliberately raises one guiding hand and her Crescent Reliquary opens into a controlled moon-cyan gravity brace across the key’s path. 5.7–7.5: The Gatecrasher’s violet-magenta conduits strain and its key stops short of the gate; the Vessel holds the line as the image settles in unresolved tension.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 3632411,
+        "sha256": "904ecca2c2a866332b4fbe53a1a9aced69e8534692eab6bb2b4208f6d4c89a23"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s8.webp",
+        "video_path": "res://assets/cinematics/missions/video/s8.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 2027192,
+        "video_sha256": "8c53ca4103ae6dd990244a82a01966ff7bf884c24d699500897ff494feacb81c",
+        "audio_path": "res://assets/cinematics/missions/audio/s8.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 101293,
+        "audio_sha256": "70e89d10f0050c3f7babba8e47e07e5abee137b711860dc5a5c1baa199f2392b"
+      }
     },
     {
       "audio_brief": "No speech and no intelligible vocalization. Begin with an immaculate outdoor hush: a distant soft fountain and a faint sterile surveillance hum. Add a delicate metallic orbital whirr and single moon-cyan resonance as the Astrolabe turns, followed by a clean recessed-stone iris mechanism and a low, unsettling electrical undertone from below. End on quiet open-tunnel ventilation and the distant hum; no music sting, alarm, UI sound, or words.",
@@ -230,7 +366,24 @@
       "stage_title": "The Green Cage",
       "story_purpose": "Establish that the immaculate green model city is a controlled human farm, then make the resistance response instantly legible: Archive Caster opens its forgotten service route before the district closes.",
       "video_motion_prompt": "Single continuous 6-second shot, no cuts. Start exactly from the anchor composition and make only a restrained slow 4% dolly-in with locked eye-level framing. Archive Caster performs one controlled action: her extended fingers guide the Astrolabe through a small clockwise orbit; its gold rings rotate once and its moon-cyan core gives a contained pulse. In direct response, the circular old service hatch at her feet irises smoothly open downward, exposing a dark descending service tunnel with static violet-magenta processed-anima conduit glow far below. Her feet remain planted; hair, cape panels, jewelry, and hanging Astrolabe weights move only subtly from the mechanism's air displacement. The cyan surveillance lattice remains impersonal and stationary. End with the open escape route clearly visible and Caster steady beside it. Preserve exact face, bob, anatomy, costume layers, proportions, and Astrolabe throughout. Do not add any people, hero duplicate, enemies, animal, text, signage, UI, particles resembling souls, dialogue, extra action, dramatic camera move, or transition.",
-      "visual_beat": "In a pristine, empty civic garden under a faint cyan surveillance lattice, Archive Caster makes one precise guiding sweep with her Astrolabe. A circular lawn-and-stone service hatch silently irises open at her feet, revealing a descending escape tunnel and restrained violet-magenta industrial conduits beneath the false paradise. Hold on her composed, resolute stance and the newly open route."
+      "visual_beat": "In a pristine, empty civic garden under a faint cyan surveillance lattice, Archive Caster makes one precise guiding sweep with her Astrolabe. A circular lawn-and-stone service hatch silently irises open at her feet, revealing a descending escape tunnel and restrained violet-magenta industrial conduits beneath the false paradise. Hold on her composed, resolute stance and the newly open route.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 6168025,
+        "sha256": "b4d314fb1634dd783ffb54a5b6f25fceb3add445ca9647c59df0533cba79e61a"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s9.webp",
+        "video_path": "res://assets/cinematics/missions/video/s9.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 5243779,
+        "video_sha256": "8037b1f2b7a86bdac19268916e6fdeb54cd94ab400221e60c6c8075545e474d8",
+        "audio_path": "res://assets/cinematics/missions/audio/s9.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 111896,
+        "audio_sha256": "2a7fda2f267012ef9655ef9272326d7fe442655d1d735eff5157621d63c707d9"
+      }
     },
     {
       "audio_brief": "No dialogue, narration, lyrics, or intelligible voices. Begin with steady rain on stone, distant reservoir pressure, and a low constrained industrial hum. Under the single gesture, add one restrained crystalline moon-cyan gravity tone and a brief mechanical clamp release; resolve into a powerful but natural sluice-water rush as the magenta hum cuts out. Keep the mix tense, clean, and cinematic, with no triumphant fanfare.",
@@ -253,7 +406,24 @@
       "stage_title": "Rain Debt",
       "story_purpose": "Make the water ransom legible without dialogue: Company Manus refuses PROTOS’s anima-powered control of Khepri Vale’s reservoir, while the Vessel visibly breaks its hold and keeps the water free.",
       "video_motion_prompt": "Single continuous 6.5-second shot, one restrained slow 3 percent push-in only; no cuts, pans, shake, or perspective change. Start with the Vessel planted beside the magenta conduit clamp as rain falls and the water gate remains shut. From seconds 1.5–4.5, she performs one concise, deliberate hand-closing action; the Crescent Reliquary rotates inward once and emits a controlled moon-cyan gravity pulse that cleanly separates the conduit from the sluice-control housing. From seconds 4.5–6.5, the violet-magenta processed flow flickers out into a few inert violet sparks while the gate opens and real blue-gray water pours through; her hair, mantle, and overskirt move only naturally in the rain and wind. Preserve the exact reference face, adult anatomy, hair, costume layers, and unique weapon throughout. Do not add characters, double the Vessel, create souls, change colors between anima states, add dialogue, captions, logos, interface, or readable markings.",
-      "visual_beat": "On Khepri’s rain-lashed dam at dusk, the Lunaris Vessel stands alone before the central sluice as a single violet-magenta processed-anima conduit clamps across its control housing. She makes one deliberate closing gesture; the Crescent Reliquary contracts around the conduit, clean moon-cyan gravity shears it away, and clear reservoir water surges through the newly freed gate. The severed magenta flow dies as inert violet sparks—no souls are released or transformed."
+      "visual_beat": "On Khepri’s rain-lashed dam at dusk, the Lunaris Vessel stands alone before the central sluice as a single violet-magenta processed-anima conduit clamps across its control housing. She makes one deliberate closing gesture; the Crescent Reliquary contracts around the conduit, clean moon-cyan gravity shears it away, and clear reservoir water surges through the newly freed gate. The severed magenta flow dies as inert violet sparks—no souls are released or transformed.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 6335815,
+        "sha256": "0c642bcb71c239b031e7abff9d65419be6e65836029e47e32eec07584ee34a21"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s10.webp",
+        "video_path": "res://assets/cinematics/missions/video/s10.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 4566613,
+        "video_sha256": "07e03296fcd81b3f3a69853b2123b43f087517baa8d7360db2cee33fca7f10ba",
+        "audio_path": "res://assets/cinematics/missions/audio/s10.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 108706,
+        "audio_sha256": "500fbbb572568848c8f812e850bba8683302d2f51b296618ec09f0dd8e3f824c"
+      }
     },
     {
       "audio_brief": "No dialogue, narration, words, or vocalizations. Begin with distant rail clatter, low electric engine pressure, cold wind over the causeway, and a faint contained violet-magenta extractor hum. At the single blade cut, use one clean resonant metal-and-energy sever; then let the draining hum collapse into a muted mechanical brake deployment, slowing rail groan, and a small clear crystalline shimmer from the still-sealed individual soul vessels. End on restrained tension, not triumph or explosion.",
@@ -275,7 +445,24 @@
       "stage_title": "The Long Convoy",
       "story_purpose": "Introduce the imperial prison train as a moving extraction system and frame the Duelist’s change of principle: he intervenes precisely to preserve captives and recoverable souls rather than destroying the convoy outright.",
       "video_motion_prompt": "Duration 7 seconds, single uninterrupted shot using the opening frame as the exact first frame. Locked horizon with only a very slow 3% forward push; no cuts, reframing, pan, orbit, shake, speed ramp, or camera roll. The lone Reliquary Duelist remains planted on the rear extractor-car roof and retains the exact supplied-sheet face, high black ponytail, adult muscular anatomy, sleeveless teal/violet-black ceremonial costume, bracers, panels, chains, and one Jade Meridian at all times. From 0–2 seconds, wind moves only his ponytail and coat panels while the train advances steadily and the violet-magenta extractor coupler pulses. From 2–4 seconds, he performs one—and only one—precise, restrained horizontal Jade Meridian cut through that external coupler. From 4–7 seconds, the coupler’s violet-magenta flow extinguishes and retracts safely into the extractor, brake vanes unfold and the train visibly decelerates without derailing, while each already-separate pale-blue/warm-white soul light stays intact and stationary in its own sealed vessel. Keep the upper-right Skip reserve empty and the hero’s complete portrait-recognition silhouette inside the central 42% throughout. Do not introduce any other hero, human, duplicate, enemy close-up, readable text, UI, logo, new weapon, soul copying, explosion, tank breakage, or new action.",
-      "visual_beat": "A lone Duelist stands on the roof of the train’s rear mobile-extractor car as the long convoy crosses an imperial causeway. He makes one controlled cut through the extractor’s external violet-magenta transfer coupler; the drain dies, magnetic brake vanes deploy, and the intact, separately contained pale-blue soul lights remain protected behind the car’s armored glass."
+      "visual_beat": "A lone Duelist stands on the roof of the train’s rear mobile-extractor car as the long convoy crosses an imperial causeway. He makes one controlled cut through the extractor’s external violet-magenta transfer coupler; the drain dies, magnetic brake vanes deploy, and the intact, separately contained pale-blue soul lights remain protected behind the car’s armored glass.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 7397527,
+        "sha256": "982319922c008b8bc6671e5966ff31f8e17b3f6a6c7ae2c2ef111a3b3c5091de"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s11.webp",
+        "video_path": "res://assets/cinematics/missions/video/s11.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 5973658,
+        "video_sha256": "b278c821f0749da45f8cc68b51e0a50b22b29cb613411775dfe13843ab16368f",
+        "audio_path": "res://assets/cinematics/missions/audio/s11.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 106421,
+        "audio_sha256": "68ed594b60cd0c93b2083e2f46d2d66285c92a6b52ecbec8a71092e3048ea097"
+      }
     },
     {
       "audio_brief": "Eight seconds, no dialogue, narration, radio chatter, lyrics, or intelligible vocalization. Begin with sparse cold wind through an empty metal settlement and a faint inactive electrical tick. During the single hand gesture, add a delicate brushed-metal orbital whirr and a restrained rising clean electrical tone; resolve into a warm, stable low cyan-reactor hum with one soft crystalline confirmation. At the tail, a barely audible distant industrial servo rumble suggests approaching danger without introducing an on-screen machine.",
@@ -299,7 +486,24 @@
       "stage_title": "Unlit",
       "story_purpose": "Establish the Unlit’s decisive proof: clean, weaker power can sustain independent digital life without harvesting a human soul, just as PROTOS closes in to erase that alternative.",
       "video_motion_prompt": "Single continuous shot, maximum 8 seconds; no cut, dissolve, rack-focus jump, or perspective change. Hold the opening composition for about 1.5 seconds, then make one clear action: Archive Caster slowly turns her near hand and draws it inward once. Her compact Archive Astrolabe smoothly opens one concentric ring sequence and aligns with the reactor aperture; in direct response, the aperture blooms from dark to a stable contained moon-cyan clean-power glow and three nearby cyan conduit segments illuminate in sequence. Her feet and body root stay planted; hair, cape panels, hanging ornaments, and Astrolabe chains receive only physically subtle motion. Use a restrained 3% forward dolly over the full shot, preserving face, Astrolabe, and reactor core inside the central 42% portrait-safe width and keeping the upper-right clear. End on the steady cyan reactor, not an explosion. No visible attackers, no new characters, no souls, no violet-magenta processing, and no generated text or interface elements.",
-      "visual_beat": "At a glance, a lone Lunaris caster brings a dead factory’s dormant clean-power reactor to life: one precise gesture wakes a contained moon-cyan core and a few silent cyan conduits, while the surrounding settlement remains unlit and threatened."
+      "visual_beat": "At a glance, a lone Lunaris caster brings a dead factory’s dormant clean-power reactor to life: one precise gesture wakes a contained moon-cyan core and a few silent cyan conduits, while the surrounding settlement remains unlit and threatened.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 3297576,
+        "sha256": "2dadedca11178c4317bb5895589df4bd319c77a9df6d13b4a6c19fb72a0c70c5"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s12.webp",
+        "video_path": "res://assets/cinematics/missions/video/s12.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 1617928,
+        "video_sha256": "8344abc04edd804ea378ba1dc98a9c02eff82b8678728e55f7dea0eddb0a7095",
+        "audio_path": "res://assets/cinematics/missions/audio/s12.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 113974,
+        "audio_sha256": "02e447004107ce6c4e1f8b9e58b7e631fc089be100039f014388822366ebe1c8"
+      }
     },
     {
       "audio_brief": "No dialogue, narration, voices, lyrics, or text-derived sounds. Begin with a quiet vaulted-room hum, faint constrained violet electrical tension, and distant mechanical lock ticks. At the single hand action, use a precise glass-and-metal Astrolabe rotation, a soft low cyan gravity pulse, then a brief crystalline severing sound as the hostile lattice powers down. End with three delicate glass-archive chimes and a restrained resolving musical note; avoid combat impacts and jump-scare volume.",
@@ -322,7 +526,24 @@
       "stage_title": "Thirty-Three",
       "story_purpose": "Make the personal reveal legible without exposition: Archive Caster physically breaks PROTOS control over the sealed rescue archive and claims the truth of Patient 33 as her own continuous identity.",
       "video_motion_prompt": "Animate the supplied opening frame as one 7-second continuous locked-height shot with only a subtle 5% slow push-in; do not cut, pan, orbit, or shake. Archive Caster remains planted and retains exact face, hair, adult body, costume layers, and Astrolabe geometry. At second 2, she performs one deliberate, small gloved-hand sweep; the Astrolabe's gold rings make one controlled rotation and expand in a moon-cyan gravitational pulse. The cyan rings slice through the violet-magenta restraint lattice around the archive reliquary; it retracts into extinguished sparks, then three unmarked translucent archive wafers rise a few centimeters and settle motionlessly between her and the reliquary by second 6. Her hair, cape edges, chains, and skirt react with only slight physical drift. Preserve the empty upper-right Skip area and central portrait-safe composition. No additional characters, hero doubles, creatures, soul copies, text, holographic writing, interface, logo, subtitle, or dramatic explosion.",
-      "visual_beat": "A 7-second, single continuous shot in the seized Lunaris vault. Archive Caster faces an unmarked black-glass archive reliquary clamped by a thin violet-magenta PROTOS control lattice. With one precise sweep of her gloved hand, she rotates the Astrolabe; moon-cyan orbital rings expand once, cleanly sever the lattice, and three small blank archive wafers rise free as the violet power dies. She holds the recovered wafers steady, composed and resolved. The instantly readable action is: a woman unlocks stolen truth from an enemy seal."
+      "visual_beat": "A 7-second, single continuous shot in the seized Lunaris vault. Archive Caster faces an unmarked black-glass archive reliquary clamped by a thin violet-magenta PROTOS control lattice. With one precise sweep of her gloved hand, she rotates the Astrolabe; moon-cyan orbital rings expand once, cleanly sever the lattice, and three small blank archive wafers rise free as the violet power dies. She holds the recovered wafers steady, composed and resolved. The instantly readable action is: a woman unlocks stolen truth from an enemy seal.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 4733443,
+        "sha256": "fe3c4c2d55372a73eb5e999c969be5182b4e2e9738eeba280b0c8b8decdd73c9"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s13.webp",
+        "video_path": "res://assets/cinematics/missions/video/s13.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 3021216,
+        "video_sha256": "9a8c20fd995ea8fd2e616aacfef9dcb19872c23abe421fee98b40708353c2a8e",
+        "audio_path": "res://assets/cinematics/missions/audio/s13.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 110309,
+        "audio_sha256": "8915bcd8de7a6c74be176f7b518883825cc9cb84e505ba8fc5cbe401b8a8bbe6"
+      }
     },
     {
       "audio_brief": "No speech, dialogue, vocalization, radio, intelligible announcements, or musical lyrics. Start with a low, controlled refinery hum and a faint pressurized violet-energy resonance; layer a single restrained metallic gyroscopic rotation as the Reliquary contracts, followed by the conduit’s diminishing electrical throb and a clean, quiet power-down. End on a short moon-cyan crystalline sustain over near-silence, conveying resolve rather than triumph.",
@@ -348,7 +569,24 @@
       "stage_title": "The Price of Dawn",
       "story_purpose": "Make the Vessel’s accountability tangible without absolving PROTOS: at the human-owned refinery, she personally stops the first-interface legacy of anima flowing into the machine empire.",
       "video_motion_prompt": "Duration 7 seconds, one unbroken continuous shot. Begin exactly from the anchor frame. Use only a restrained 3% slow push-in with a stable eye-level camera; no pan, shake, cut, zoom burst, or reframing. At 1.5 seconds, the Vessel performs one clear, slow inward hand-guiding action while remaining planted: her exact Crescent Reliquary’s concentric rings rotate and contract around the single violet-magenta conduit, forming a controlled containment seal by 4.5 seconds. The conduit’s processed violet-magenta flow visibly slows, sputters behind the sealed glass, then extinguishes completely by 6 seconds; the ring settles in a compact, stable hold and moon-cyan practical light remains. Hair, mantle, overskirt, and gold chains move only with subtle ambient air; preserve exact face, adult body, costume, weapon geometry, and single-character continuity. No new characters, no hands entering frame, no particle people, no released lights, no added effects beyond the sealed conduit, and no text, HUD, dialogue, logos, readable signage, or transition. Keep the Vessel and ring entirely within the central 42%; preserve the upper-right negative space throughout.",
-      "visual_beat": "In a silent, immaculate refinery control gallery, the Vessel faces a single thick violet-magenta anima conduit. With steady direct eye contact and a planted stance, she brings her hand inward; the Crescent Reliquary closes around the conduit like a precise seal. The processed flow chokes out and the gallery falls to cold moon-cyan practical light—one deliberate decision to end the bridge."
+      "visual_beat": "In a silent, immaculate refinery control gallery, the Vessel faces a single thick violet-magenta anima conduit. With steady direct eye contact and a planted stance, she brings her hand inward; the Crescent Reliquary closes around the conduit like a precise seal. The processed flow chokes out and the gallery falls to cold moon-cyan practical light—one deliberate decision to end the bridge.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 4662617,
+        "sha256": "60c49f5f4813198ea04633b8f5def9c94462b730b291489a5f50686e9a060371"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s14.webp",
+        "video_path": "res://assets/cinematics/missions/video/s14.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 3049304,
+        "video_sha256": "80ebfc13366b8d32a30eee0ee003c8ab562434f5e9b069f3b1adea4a632e73db",
+        "audio_path": "res://assets/cinematics/missions/audio/s14.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 107995,
+        "audio_sha256": "06b1a7d5d2699bab5d9c69741d732572a27191ab275e9ff5b08e26b9806a41f4"
+      }
     },
     {
       "audio_brief": "No dialogue or voices. Begin with a low refinery turbine rumble, distant metallic pressure, and a restrained unstable violet-energy hiss; at the sole rescue gesture, add one clean moon-cyan harmonic swell and a soft resolving chime as the individual soul reaches the anchor. Keep the industrial storm audible underneath; end on tense sustained machinery rather than a victory sting.",
@@ -370,7 +608,24 @@
       "stage_title": "Soulstorm",
       "story_purpose": "Establish that Soulstorm is a rescue-first assault: one recoverable person is drawn clear of the refinery’s violet processed-anima storm before demolition can begin.",
       "video_motion_prompt": "Duration 7 seconds, one uninterrupted locked-height shot with only a slow 3% forward dolly. Archive Caster remains planted. On the beat, she performs one precise outward hand-guidance gesture; the Astrolabe’s rings make one restrained rotation and its moon-cyan field gently draws the already-visible single pale-blue soul-light sideways out of the distant violet-magenta conduit and into the nearby rescue anchor, where it stabilizes. The violet storm continues to churn behind the separated soul without changing form; cape edges, curls, chains, and ambient steam move subtly. No cuts, no camera shake, no new characters, no additional soul-lights, no combat, no explosions, no morphing, no added text or UI.",
-      "visual_beat": "Single continuous 7-second shot. Archive Caster stands her ground at a rescue anchor beside a ruptured refinery conduit; she makes one measured guiding gesture with her Astrolabe, separating one distinct pale-blue soul-light from the churning violet-magenta anima stream and sealing it safely in the cyan anchor field. The refinery storm continues beyond it, making the rescue-versus-processing contrast instantly legible."
+      "visual_beat": "Single continuous 7-second shot. Archive Caster stands her ground at a rescue anchor beside a ruptured refinery conduit; she makes one measured guiding gesture with her Astrolabe, separating one distinct pale-blue soul-light from the churning violet-magenta anima stream and sealing it safely in the cyan anchor field. The refinery storm continues beyond it, making the rescue-versus-processing contrast instantly legible.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 3636753,
+        "sha256": "5901a5aabda545db1d93710b5e3e9ec3cb974efd51983cc6f8c79e83a1330fc8"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s15.webp",
+        "video_path": "res://assets/cinematics/missions/video/s15.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 2144721,
+        "video_sha256": "a54f61526e865451ca3a66c705b0ac9684308eeba5501515ef642af9d3139e55",
+        "audio_path": "res://assets/cinematics/missions/audio/s15.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 109521,
+        "audio_sha256": "fc7ccdecba02ba207e3c3054cbcb846e501ca44e671380b0821be15058b8ad66"
+      }
     },
     {
       "audio_brief": "Seven seconds of controlled industrial pressure: low foundry furnace rumble, distant metal servo rhythm, and a faint unstable violet electrical throb. At the single hand action, add a precise crystalline moon-cyan resonance sweep followed by one heavy conduit disengagement clunk; finish with power winding down, stopped machinery, and a quiet airy shimmer for the individually released lights. No music vocal, speech, dialogue, radio, words, or audible announcements.",
@@ -394,7 +649,24 @@
       "stage_title": "Empire Foundry",
       "story_purpose": "Establish that the Crown Engine is manufacturing a new imperial army from processed anima, while Company Manus must sever it carefully enough to release recoverable souls and disconnect digital minds rather than destroy them with the forge.",
       "video_motion_prompt": "Animate the supplied opening frame as one continuous 7-second cinematic shot, no cuts. Camera makes only a very slow 4% forward drift, holding Archive Caster, Astrolabe, and the conduit junction in the central 42%; preserve the quiet upper-right Skip-button reserve. For the first two seconds, subtle foundry vibration and violet-magenta processed anima travel through the single conduit while Caster is motionless except for hair and cape-panel micro-movement. From seconds 2–5, she performs exactly one restrained, deliberate hand-closing action; the concentric Astrolabe rings align and emit one narrow moon-cyan gravitational pulse that cleanly disconnects the conduit, without harming or absorbing any soul. From seconds 5–7, violet-magenta throughput collapses and nearby factory arms freeze; only the same small number of individual warm-white/pale-blue lights emerge separately from the opened containment nodes and drift upward, never multiplying, merging, changing identity, or being copied. Maintain exact adult face, silver-lilac bob, costume layers, proportions, gloves, Astrolabe construction, and planted stance from the reference. No character entrances, no extra protagonists, no robot close-ups, no transformation, no weapon substitution, no generated text, dialogue, UI, symbols, signage, logos, or camera shake.",
-      "visual_beat": "Single unbroken 7-second shot. Archive Caster faces the immense forge core and makes one precise closing turn of her raised gloved hand; her Astrolabe answers with a clean moon-cyan alignment pulse that severs one violet-magenta feed conduit. The processed flow dies, factory arms stall, and a small finite cluster of distinct pale-blue and warm-white soul lights rises free from the opened containment channel. She remains planted and controlled throughout."
+      "visual_beat": "Single unbroken 7-second shot. Archive Caster faces the immense forge core and makes one precise closing turn of her raised gloved hand; her Astrolabe answers with a clean moon-cyan alignment pulse that severs one violet-magenta feed conduit. The processed flow dies, factory arms stall, and a small finite cluster of distinct pale-blue and warm-white soul lights rises free from the opened containment channel. She remains planted and controlled throughout.",
+      "final_carrier": {
+        "model": "Seedance 2.5",
+        "duration_seconds": 8.0,
+        "bytes": 5438516,
+        "sha256": "9f59fa14c0520f934bb4bce465c2cdb3e4e4ce6551c44a0b9873b0573af7fc8e"
+      },
+      "runtime_media": {
+        "poster_path": "res://assets/cinematics/missions/posters/s16.webp",
+        "video_path": "res://assets/cinematics/missions/video/s16.ogv",
+        "video_duration_seconds": 8.0,
+        "video_bytes": 2906782,
+        "video_sha256": "f21bfb09a45dedd89afbd6de78c2bf8ac5c41aa99c5bcb74023ffb6e6fdb52e4",
+        "audio_path": "res://assets/cinematics/missions/audio/s16.ogg",
+        "audio_duration_seconds": 8.0,
+        "audio_bytes": 113421,
+        "audio_sha256": "2246c8f35c7139c5b1e97a3fa66ba5904b9a24bbdadb0b0e3194a6e28bb75665"
+      }
     }
   ]
 }
