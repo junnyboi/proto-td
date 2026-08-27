@@ -73,6 +73,15 @@ resources but cannot replace core code or data. Failed or in-flight packs
 preserve incumbent operator visuals and can never turn enemies into fallback
 squares.
 
+Campaign restoration now predicts the next advanced operator assets without
+blindly downloading the full class catalog. Any class in an already committed
+mission squad leads the queue, followed by at most three unique advanced
+classes from the active roster. Field Team card focus, hover, and selection,
+plus visible or selected Training paths, reprioritize the matching class pack
+ahead of lower-confidence background work. A successful promotion repeats the
+priority request at the authoritative commit boundary; duplicate requests join
+the existing queue or verified cache rather than starting another transfer.
+
 As soon as Title opens, a separate persistent background service downloads all
 six cinematic streams sequentially—current orientation first—verifies exact
 size and SHA-256, and caches them under `user://`. A pull joins or prioritizes
@@ -97,7 +106,7 @@ All eleven recruit-derived specializations have distinct adult male and female i
 
 The PROTOS enemy roster now uses one lore-aligned GPT Image 2 static sprite for every non-grunt archetype. Immutable 1920×1920 concept masters, deterministic 640×640 runtime derivatives, checksums, the shared ivory/gold/black/anima visual language, and procedural locomotion/attack profiles are documented in [`docs/ENEMY_VISUAL_REDESIGN_PROPOSAL.md`](docs/ENEMY_VISUAL_REDESIGN_PROPOSAL.md) and [`docs/ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md`](docs/ENEMY_STATIC_SPRITE_IMPLEMENTATION_PLAN.md). The Grunt remains the only frame-animated enemy.
 
-The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female kit previews for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Training derives its kit-preview variant from the persisted Recruit portrait ID without adding gender data to campaign state, command receipts, hashes, or save bytes.
+The non-premium roster uses a coherent **GPT Image 2** portrait library: eight stable basic Recruit identities and male/female portraits for all eleven advanced classes. High-resolution 1920×1920 sources, deterministic 512×512 RGBA derivatives, prompt provenance, checksums, and the presentation-only identity-to-specialization routing contract are documented in [`docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/NONPREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/nonpremium/`](docs/portraits/nonpremium/). Recruit portraits remain the canonical identity and gender source; after each promotion, Training, Field Team, and Valhalla display the gender-matched portrait for the operator's current specialization without adding gender data to campaign state, command receipts, hashes, or save bytes.
 
 The three premium heroes use dedicated **GPT Image 2** portraits derived from their canonical full-size Lunaris design sheets. Immutable 1920×1920 sources, deterministic 512×512 Field Team/Training assets, 640×800 compatibility derivatives, prompts, checksums, and runtime acceptance are documented in [`docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md`](docs/PREMIUM_PORTRAIT_IMPLEMENTATION_PLAN.md) and [`docs/portraits/premium/`](docs/portraits/premium/). The same identity IDs now drive Field Team, Training, Premium Resonance, and Moon Archive presentation without changing premium ownership, rarity, lives, fixed kits, command receipts, hashes, or save bytes. A shared portrait-only entrance adds a 14px vertical and alternating 8px horizontal parallax drift, a short opacity ramp, and a 55ms roster-order stagger; it animates only transform and opacity and resolves immediately under Reduced Motion.
 

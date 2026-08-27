@@ -85,6 +85,7 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false
 	_restore_pending_attempt()
+	_prefetch_campaign_operator_packs()
 	if open_campaign_ui:
 		if _campaign_battle_active:
 			_queue_battle(selected_stage_id)
@@ -514,11 +515,29 @@ func _retry_promotions() -> Dictionary:
 
 func _publish_promotion_commit(committed: Dictionary) -> void:
 	campaign = committed["state"]
+	var promoted_classes: Array[String] = []
+	for row: Dictionary in committed["result"]["promotion"]["choices"]:
+		promoted_classes.append(String(row.get("to_class_id", "")))
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call("prefetch_class_ids", promoted_classes, true)
 	if not bool(committed["result"].get("fresh", true)):
 		return
 	training_acknowledgement.clear()
 	for row: Dictionary in committed["result"]["promotion"]["choices"]:
 		training_acknowledgement.append(row.duplicate(true))
+
+
+func _prefetch_campaign_operator_packs() -> void:
+	if not campaign_active or campaign == null:
+		return
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs == null:
+		return
+	var projection: Dictionary = campaign.runtime_projection()
+	content_packs.call(
+		"prefetch_roster", projection.get("ready_heroes", []), selected_squad,
+	)
 
 
 func strategic_mutation_pending() -> bool:

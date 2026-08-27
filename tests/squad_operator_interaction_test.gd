@@ -1,9 +1,11 @@
 extends SceneTree
 
 const EPSILON := 0.001
+const ArtType := preload("res://scripts/view/art.gd")
 
 var _failures: Array[String] = []
 var _mission: Control = null
+var _expected_portraits := {}
 
 
 func _init() -> void:
@@ -18,6 +20,7 @@ func _run() -> void:
 		return
 	game.call("set_run_seed", 20260827)
 	_check(bool(game.call("start_campaign", false, true)), "interaction fixture failed")
+	_prepare_portrait_fixtures(game)
 	game.set("selected_stage_id", &"s1")
 	root.size = Vector2i(1280, 720)
 	_mission = load("res://scenes/squad_select.tscn").instantiate() as Control
@@ -25,11 +28,67 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	await process_frame
+	_verify_promoted_portraits()
 	await _verify_sorting()
 	await _verify_selection_feedback_and_reorder()
 	_dispose(game)
 	await process_frame
 	_finish()
+
+
+func _prepare_portrait_fixtures(game: Node) -> void:
+	var state: Variant = game.get("campaign")
+	var data := state.get("_data") as Dictionary
+	var rows: Array = data.get("heroes", [])
+	var targets := {
+		"portrait_recruit_00": {
+			"class_id": "shock_trooper",
+			"operator_def_id": "vanguard_1",
+			"portrait_asset_id": &"portrait_specialization_shock_trooper_female",
+		},
+		"portrait_recruit_01": {
+			"class_id": "defender",
+			"operator_def_id": "defender_1",
+			"portrait_asset_id": &"portrait_specialization_defender_male",
+		},
+	}
+	var premium_assigned := false
+	for hero: Dictionary in rows:
+		var identity_id := String(hero.get("portrait_asset_id", ""))
+		if targets.has(identity_id):
+			var target: Dictionary = targets[identity_id]
+			hero["current_class_id"] = target["class_id"]
+			hero["operator_def_id"] = target["operator_def_id"]
+			_expected_portraits[StringName(hero["hero_id"])] = target["portrait_asset_id"]
+			continue
+		if not premium_assigned:
+			hero["hero_kind"] = "premium"
+			hero["premium_id"] = "archive_caster"
+			hero["current_class_id"] = "mage_apprentice"
+			hero["operator_def_id"] = "caster_1"
+			hero["portrait_asset_id"] = "portrait_archive_caster"
+			_expected_portraits[StringName(hero["hero_id"])] = &"portrait_archive_caster"
+			premium_assigned = true
+	_check(_expected_portraits.size() == 3, "portrait fixtures did not cover female, male, and premium rows")
+
+
+func _verify_promoted_portraits() -> void:
+	for hero_id: StringName in _expected_portraits:
+		var card := _card_by_hero_id(hero_id)
+		var expected_id := StringName(_expected_portraits[hero_id])
+		_check(card != null, "portrait fixture card missing for %s" % hero_id)
+		if card == null:
+			continue
+		var hero: Dictionary = card.get_meta(&"hero", {})
+		_check(
+			StringName(hero.get("portrait_asset_id", &"")) == expected_id,
+			"Field Team projected the wrong portrait for %s" % hero_id,
+		)
+		var portrait := card.find_child("OperatorPortrait", true, false) as TextureRect
+		_check(
+			portrait != null and portrait.texture == ArtType.texture(expected_id),
+			"Field Team card did not bind the expected portrait texture for %s" % hero_id,
+		)
 
 
 func _verify_sorting() -> void:

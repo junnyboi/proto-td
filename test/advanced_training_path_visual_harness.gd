@@ -41,6 +41,9 @@ class TrainingPathVisualCampaign:
 	func promotion_options(hero_id: Variant) -> Dictionary:
 		if String(hero_id) != HERO_ID:
 			return {"accepted": false, "error_code": &"unknown_hero", "choices": []}
+		var current_class_id := String(_data["heroes"][0]["current_class_id"])
+		if current_class_id != "recruit":
+			return {"accepted": false, "error_code": &"insufficient_xp", "choices": []}
 		var choices: Array[Dictionary] = []
 		for path: Dictionary in PATHS:
 			choices.append({
@@ -66,6 +69,19 @@ class TrainingPathVisualCampaign:
 		_data["heroes"][0]["identity_portrait_id"] = portrait_id
 
 
+	func set_current_class(class_id: String) -> void:
+		if class_id.is_empty() or class_id == "recruit":
+			return
+		var definition := load("res://data/classes/%s.tres" % class_id) as ClassDef
+		if definition == null:
+			return
+		_data["heroes"][0]["current_class_id"] = class_id
+		_data["heroes"][0]["operator_def_id"] = String(definition.operator_def_id)
+		_data["heroes"][0]["first_class_id"] = class_id
+		_data["heroes"][0]["advanced_class_id"] = class_id
+		_data["heroes"][0]["xp"] = 0
+
+
 func _ready() -> void:
 	Game.set_run_seed(1701)
 	if not Game.start_campaign(false, true):
@@ -75,14 +91,16 @@ func _ready() -> void:
 	var campaign := TrainingPathVisualCampaign.new()
 	var requested_variant := StringName(OS.get_environment("TRAINING_IDENTITY_VARIANT"))
 	campaign.set_identity_variant(requested_variant)
+	campaign.set_current_class(OS.get_environment("TRAINING_CURRENT_CLASS"))
 	Game.campaign = campaign
 	Game.training_return_path = &"staging"
 	var scene := load("res://scenes/training.tscn") as PackedScene
 	var training := scene.instantiate()
 	add_child(training)
 	await _frames(6)
-	training.call("_show_paths")
-	await _frames(6)
+	if OS.get_environment("TRAINING_CURRENT_CLASS").is_empty():
+		training.call("_show_paths")
+		await _frames(6)
 	if OS.get_environment("TRAINING_SELECT_FIRST") == "1":
 		training.call("_on_path_selected", "defender")
 		await _frames(3)
@@ -91,6 +109,14 @@ func _ready() -> void:
 		var outer_scroll := training.find_child("TrainingDialogScroll", true, false) as ScrollContainer
 		if outer_scroll != null:
 			outer_scroll.scroll_vertical = maxi(0, int(scroll_y_text))
+			await _frames(3)
+	var inspector_scroll_y_text := OS.get_environment("TRAINING_INSPECTOR_SCROLL_Y")
+	if not inspector_scroll_y_text.is_empty():
+		var inspector_scroll := training.find_child(
+			"TrainingInspectorScroll", true, false,
+		) as ScrollContainer
+		if inspector_scroll != null:
+			inspector_scroll.scroll_vertical = maxi(0, int(inspector_scroll_y_text))
 			await _frames(3)
 	var output := OS.get_environment("TRAINING_SCREENSHOT")
 	if not output.is_empty():

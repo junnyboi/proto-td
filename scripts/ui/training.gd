@@ -1491,9 +1491,21 @@ func _show_paths() -> void:
 		card.pressed.connect(
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
+		card.mouse_entered.connect(
+			_prefetch_class_pack.bind(String(choice["to_class_id"]), true),
+		)
+		card.focus_entered.connect(
+			_prefetch_class_pack.bind(String(choice["to_class_id"]), true),
+		)
 		card.focus_entered.connect(_ensure_path_card_visible.bind(card))
 		cards.add_child(card)
 		_path_cards.append(card)
+	var candidate_classes: Array[String] = []
+	for card: PromotionPathCardType in _path_cards:
+		candidate_classes.append(card.class_id)
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call("prefetch_class_ids", candidate_classes, false)
 	_path_cards_scroll.add_child(cards)
 	_page.add_child(_path_cards_scroll)
 	var action_bar := BoxContainer.new()
@@ -1783,12 +1795,19 @@ func _on_choose_promotion() -> void:
 
 func _on_path_selected(choice_id: String) -> void:
 	_selected_choice_id = choice_id
+	_prefetch_class_pack(choice_id, true)
 	for card: PromotionPathCardType in _path_cards:
 		card.set_selected(card.class_id == choice_id)
 	_choose_path.disabled = false
 	_choose_path.focus_mode = Control.FOCUS_ALL
 	_apply_path_action_style(_choose_path)
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
+
+
+func _prefetch_class_pack(class_id: String, prioritize: bool) -> void:
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call("request_class", class_id, prioritize)
 
 
 func _on_layout_mode_changed(value: StringName) -> void:
