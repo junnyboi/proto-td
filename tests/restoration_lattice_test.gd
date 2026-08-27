@@ -22,6 +22,12 @@ func _run() -> void:
 
 
 func _test_stage_contract_and_rotation() -> void:
+	const EXACT_REPAIR_COPY := "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
+	for stage_index: int in range(9, 17):
+		var authored := load("res://data/stages/s%d.tres" % stage_index) as StageDef
+		_check(authored != null, "Act II repair-copy stage failed to load: s%d" % stage_index)
+		if authored != null:
+			_check(authored.intro_hint == EXACT_REPAIR_COPY, "Act II repair explanation drifted in s%d" % stage_index)
 	var stage := _stage_fixture()
 	_check(stage.restoration_contract_errors().is_empty(), "valid lattice contract was rejected")
 	var portrait := stage.clockwise_rotated_copy()

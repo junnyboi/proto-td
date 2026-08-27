@@ -64,7 +64,7 @@ func _run() -> void:
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
-	_check(act_two_stage != null and act_two_stage.disabled, "Act II Return Path is missing or unlocked before S8 clear")
+	_check(act_two_stage != null and act_two_stage.disabled, "Act II Green Cage is missing or unlocked before S8 clear")
 	_check(act_two_label != null and act_two_label.text.contains("ACT II"), "Act II route row lacks chapter identity")
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
 	_check(dossier_reward != null and not dossier_reward.text.is_empty() and not dossier_reward.text.contains("MARKS"), "Campaign dossier does not expose the symbol-first first-clear reward")
@@ -86,7 +86,7 @@ func _run() -> void:
 	campaign.call("_show_dossier", &"s9")
 	await process_frame
 	_check(dossier_title != null and dossier_title.text.begins_with("ACT II"), "Act II dossier lacks chapter identity")
-	_check(dossier_objective != null and dossier_objective.text.contains("First Garden"), "Act II dossier did not load localized S9 canon")
+	_check(dossier_objective != null and dossier_objective.text.contains("model city"), "Act II dossier did not load localized S9 Green Cage canon")
 	root.size = Vector2i(720, 1280)
 	await process_frame
 	await process_frame
