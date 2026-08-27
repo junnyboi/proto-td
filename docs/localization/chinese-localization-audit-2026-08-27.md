@@ -10,7 +10,7 @@
 
 ## Executive summary
 
-The game now has **complete English/Simplified Chinese catalog parity across 802 keys**, with no missing Chinese entries, no extra Chinese-only entries, no placeholder drift, no production localization keys absent from the catalogs, and no unresolved hard-coded player-visible strings detected by the strict repository auditor.[1] The remaining 22 values that are intentionally identical across locales are brand names, numeric templates, input abbreviations such as `DP`, language labels, or layout-only templates whose dynamic values are localized.
+The game now has **complete English/Simplified Chinese catalog parity across 925 keys**, including the complete Act II narrative catalog, with no missing Chinese entries, no extra Chinese-only entries, no placeholder drift, no production localization keys absent from the catalogs, and no unresolved hard-coded player-visible strings detected by the strict repository auditor.[1] The remaining 30 values that are intentionally identical across locales are brand names, speaker names such as `PROTOS`, numeric templates, input abbreviations such as `DP`, language labels, or layout-only templates whose dynamic values are localized.
 
 The Chinese glyph failure was caused by an incomplete runtime font contract rather than by the catalog itself. Several standalone battle and utility controls relied on inherited or platform fallback fonts, while the bundled CJK font was loaded through runtime path lookup rather than as an explicit export dependency. The repair makes `ProtosSansSC.otf` an explicit preloaded resource, installs a Chinese-capable global project theme, and applies the same deterministic body/display chain to Aetheria, StagingSkin, Lunaris operations controls, spell status labels, line edits, deployment cards, and accessibility text.[2]
 
@@ -20,12 +20,12 @@ The release candidate was visually inspected through **28 deterministic Godot/Xv
 
 | Audit dimension | Result | Acceptance evidence |
 |---|---:|---|
-| English catalog keys | 802 | Strict catalog audit[1] |
-| Simplified Chinese catalog keys | 802 | Strict catalog audit[1] |
+| English catalog keys | 925 | Strict catalog audit[1] |
+| Simplified Chinese catalog keys | 925 | Strict catalog audit[1] |
 | Missing Chinese keys | 0 | Strict catalog audit[1] |
 | Extra Chinese keys | 0 | Strict catalog audit[1] |
 | Placeholder mismatches | 0 | Strict catalog audit and Godot parity regression[1] |
-| Production localization keys scanned | 614 | Strict source scan[1] |
+| Production localization keys scanned | 616 | Strict source scan[1] |
 | Missing production catalog keys | 0 | Strict source scan[1] |
 | Unresolved hard-coded visible strings | 0 | `tools/audit_localization.py --strict-hardcoded`[1] |
 | Major routed screens visually checked | 14 screen/state families | Visual matrix[3] |
@@ -50,9 +50,9 @@ The audit did more than fill missing keys. It corrected gameplay semantics and e
 | Premium Resonance | `共鸣`, `高级英雄`, `固定精英配置`, `再共鸣…次内必得五星` | Removed “copy” terminology and expressed the pity guarantee as an upper bound rather than an exact pull. |
 | Training and identity | `干员`, `新兵`, `晋升`, `进阶专精`, `代号` | Preserved identity continuity and removed generic unit/personnel wording. |
 | Memorial | `阵亡名册`, `永久离队`, `第{tick}刻` | Removed unsupported resurrection implications and awkward service-record phrasing. |
-| Narrative canon | `日冠`, `延续`, `静默`, `第一花园`, `炉心渡` | Corrected faction mistranslation and restored canonical philosophical meaning in archive/stage prose. |
+| Narrative canon | `日冠`, `延续`, `静默`, `第一花园`, `炉心渡`, `档案术师`, `月辉载体`, `圣物决斗者` | Corrected faction and premium-identity mistranslations, normalized Reliquary terminology, and restored canonical philosophical meaning across Act I/II prose. |
 
-The review also synchronized the Stage 2–4 tactical hints with the retained Shieldbearer, Breacher, and Interceptor content. Because those gameplay resources participate in the campaign validation environment, the corresponding campaign environment hash was regenerated and synchronized in both the campaign definition and campaign resource.[4]
+The review also synchronized the Stage 2–4 tactical hints with the retained Shieldbearer, Breacher, and Interceptor content. After the complete Act II narrative landed concurrently, all 123 new English/Chinese entries were re-audited, and inconsistent `档案术士`, `月之容器`, and `圣匣决斗者` references were normalized to the canonical `档案术师`, `月辉载体`, and `圣物决斗者` identities. Because gameplay resources participate in the campaign validation environment, the corresponding campaign environment hash was regenerated and synchronized in both the campaign definition and campaign resource.[4]
 
 ## Runtime localization coverage
 
