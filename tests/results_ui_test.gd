@@ -19,6 +19,17 @@ func _run() -> void:
 		"accessibility/reduced_motion", false,
 	)
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+	var ambient_probe := load(
+		"res://scripts/ui/components/defeat_ambient_layer.gd"
+	).new() as Control
+	ambient_probe.size = Vector2(640.0, 360.0)
+	root.add_child(ambient_probe)
+	await create_timer(0.08).timeout
+	_check(ambient_probe.is_processing(), "standard motion did not animate defeat ambience")
+	_check(float(ambient_probe.call("elapsed_seconds")) > 0.0, "defeat ambience elapsed time did not advance")
+	_check(int(ambient_probe.call("particle_count")) >= 18, "defeat ambience lacks its deterministic ember field")
+	root.remove_child(ambient_probe)
+	ambient_probe.free()
 	game.call("set_run_seed", 2026)
 	_check(bool(game.call("start_campaign", false, true)), "results campaign fixture failed")
 	var projection: Dictionary = game.call("campaign_projection")
@@ -81,6 +92,7 @@ func _run() -> void:
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
 	var title := screen.find_child("BackToTitle", true, false) as Button
+	_check(screen.find_child("DefeatAmbient", true, false) == null, "clear Results incorrectly shows defeat ambience")
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
 	_check(ceremony != null and ceremony.custom_minimum_size.y >= 132.0, "Results outcome ceremony is still claustrophobic")
 	_check(ceremony != null and _has_uniform_margin(ceremony.get_theme_stylebox(&"panel"), 24.0), "clear ceremony does not have uniform 24px inner padding")
@@ -269,6 +281,11 @@ func _run() -> void:
 	var defeat_actions := defeat_screen.find_child("ActionRow", true, false) as GridContainer
 	var defeat_company_intact := defeat_screen.find_child("NoCasualties", true, false) as PanelContainer
 	var defeat_command := defeat_screen.find_child("ReturnToStaging", true, false) as Button
+	var defeat_ambient := defeat_screen.find_child("DefeatAmbient", true, false) as Control
+	_check(defeat_ambient != null, "defeated Results omitted the ambient particle layer")
+	_check(defeat_ambient != null and defeat_ambient.mouse_filter == Control.MOUSE_FILTER_IGNORE, "defeat ambience can intercept input")
+	_check(defeat_ambient != null and int(defeat_ambient.call("particle_count")) >= 18, "defeat ambience lacks its ember field")
+	_check(defeat_ambient != null and bool(defeat_ambient.call("motion_reduced")) and not defeat_ambient.is_processing(), "reduced motion did not freeze defeat ambience")
 	_check(defeat_ceremony != null and defeat_ceremony.custom_minimum_size.y >= 132.0, "defeat ceremony did not inherit the taller hierarchy")
 	_check(defeat_ceremony != null and defeat_ceremony.get_theme_stylebox(&"panel") is StyleBoxEmpty, "defeat header parent retained a background or border")
 	_check(defeat_headline != null and defeat_headline.text == "STAGE 1 DEFEATED", "stage-number defeat headline is incorrect")

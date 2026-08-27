@@ -14,8 +14,10 @@ func _init() -> void:
 func _run() -> void:
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 	var feedback := root.get_node_or_null("UiFeedback")
+	var sfx := root.get_node_or_null("Sfx")
 	_check(feedback != null, "UiFeedback autoload is missing")
-	if feedback == null:
+	_check(sfx != null, "Sfx autoload is missing")
+	if feedback == null or sfx == null:
 		_finish()
 		return
 
@@ -53,6 +55,13 @@ func _run() -> void:
 		await create_timer(0.16).timeout
 		_check(_near_vec(button.scale, base_scale), "%s did not release to its original base scale" % button.get_class())
 		_check(not bool(feedback.call("button_feedback_active", button)), "%s press state did not settle" % button.get_class())
+		var audible_before := int(sfx.call("audible_start_count"))
+		var click_count_before := int(feedback.call("click_play_count"))
+		button.pressed.emit()
+		await process_frame
+		_check(int(sfx.call("audible_start_count")) == audible_before + 1, "%s did not play exactly one click" % button.get_class())
+		_check(int(feedback.call("click_play_count")) == click_count_before + 1, "%s click was not globally owned" % button.get_class())
+		_check(sfx.call("last_resolved_id") == &"ui_click", "%s did not resolve to the click cue" % button.get_class())
 
 	var composited := buttons[0]
 	composited.scale = Vector2.ONE
@@ -118,6 +127,7 @@ func _run() -> void:
 	priority_action.queue_free()
 	disabled.queue_free()
 	reduced.queue_free()
+	sfx.call("stop_all")
 	await process_frame
 	call_deferred("_finish")
 

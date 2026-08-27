@@ -6,6 +6,7 @@ extends Node
 
 const PRESS_FACTOR := 0.96
 const RELEASE_SECONDS := 0.12
+const CLICK_CUE_ID := "ui_click"
 const META_BOUND := &"_protos_press_feedback_bound"
 const META_ACTIVE := &"_protos_press_feedback_active"
 const META_BASE_SCALE := &"_protos_press_feedback_base_scale"
@@ -13,6 +14,7 @@ const META_LAST_APPLIED_SCALE := &"_protos_press_feedback_last_applied_scale"
 
 var _states: Dictionary = {}
 var _binding_count := 0
+var _click_play_count := 0
 
 
 func _ready() -> void:
@@ -37,6 +39,10 @@ func button_is_bound(button: BaseButton) -> bool:
 
 func button_feedback_active(button: BaseButton) -> bool:
 	return button != null and bool(button.get_meta(META_ACTIVE, false))
+
+
+func click_play_count() -> int:
+	return _click_play_count
 
 
 func _on_tree_node_added(node: Node) -> void:
@@ -65,6 +71,7 @@ func _bind_button(button: BaseButton) -> void:
 	button.resized.connect(_center_pivot.bind(button))
 	button.button_down.connect(_on_button_down.bind(button))
 	button.button_up.connect(_on_button_up.bind(button))
+	button.pressed.connect(_on_button_pressed.bind(button))
 	button.tree_exiting.connect(_on_button_tree_exiting.bind(button.get_instance_id()))
 	_center_pivot.call_deferred(button)
 	_binding_count += 1
@@ -111,6 +118,14 @@ func _on_button_up(button: BaseButton) -> void:
 	if button == null or not is_instance_valid(button):
 		return
 	_begin_release(button.get_instance_id())
+
+
+func _on_button_pressed(button: BaseButton) -> void:
+	if button == null or not is_instance_valid(button) or button.disabled:
+		return
+	var sfx := get_tree().root.get_node_or_null("Sfx")
+	if sfx != null and bool(sfx.call("play", CLICK_CUE_ID)):
+		_click_play_count += 1
 
 
 func _begin_release(instance_id: int) -> void:

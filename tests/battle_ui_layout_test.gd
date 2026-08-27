@@ -346,6 +346,7 @@ func _run() -> void:
 	await process_frame
 	var continue_button := battle.find_child("ContinueButton", true, false) as Button
 	var defeat_stamp := battle.find_child("ResultStampLabel", true, false) as Label
+	var defeat_ambient := battle.find_child("DefeatAmbient", true, false) as Control
 	var pan_hint := battle.find_child("MapPanHint", true, false) as Control
 	_check(model.result == BattleModel.Result.DEFEAT and not layer.visible, "terminal defeat retained confirmation")
 	_check(pause.disabled and speed.disabled and resign.disabled, "terminal battle controls remain actionable")
@@ -353,6 +354,9 @@ func _run() -> void:
 	_check(pan_hint == null or not pan_hint.visible, "terminal map hint remains visible")
 	_check(continue_button != null and continue_button.has_focus(), "terminal Continue did not own focus")
 	_check(defeat_stamp != null and defeat_stamp.get_theme_font_size(&"font_size") >= 162, "DEFEAT stamp is not three times the prior 54px result size")
+	_check(defeat_ambient != null and defeat_ambient.mouse_filter == Control.MOUSE_FILTER_IGNORE, "terminal defeat ambience is missing or intercepts input")
+	_check(defeat_ambient != null and defeat_ambient.z_index == 59, "terminal defeat ambience is not staged below the result stamp")
+	_check(defeat_ambient != null and int(defeat_ambient.call("particle_count")) >= 18, "terminal defeat ambience lacks its ember field")
 	if continue_button != null:
 		var continue_style := continue_button.get_theme_stylebox(&"normal")
 		_check(continue_button.custom_minimum_size.x >= 600.0, "Continue to Debrief is not wide enough for its copy")
