@@ -68,4 +68,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 4
 requires = Array[StringName]([&"sniper_1"])
-intro_hint = "Use a Sniper for the air lane while blockers hold the ground route."
+intro_hint = "Use a Sniper and sustain fire against Interceptors while blockers hold the ground route."

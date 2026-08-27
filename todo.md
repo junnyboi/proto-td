@@ -78,10 +78,18 @@
 - [x] Endpoint quality rebuild: preserved 589×600 portal and 401×600 crystal source frames in ≤4096px row-major atlases, displayed them at one-tile size with mipmapped linear filtering, verified native/Web sharpness, pushed master, and updated WebDev checkpoint `8b492ecd`.
 - [x] Phase 4: applied the annotated in-battle UI corrections—doubled and centered the HUD with a 48px left inset, removed manual CENTER, compacted and rounded battle/deployment controls, left-aligned and responsively refit the First Stand tutorial, renamed its action to NEXT, and installed the approved English/Chinese route copy; passed import, bounded boot, all 50 current tests/smokes, strict error scans, and four clean Xvfb tutorial/live landscape/portrait captures.
 
-# Act II — The Garden Veto
+# Act II Technical Scaffold — Historical Record
 
-- [x] Audit Act I canon, progression, balance, stage architecture, save compatibility, and available combat systems.
-- [x] Generate and retain four GPT Image 2 concept boards plus a 600px Restoration Lattice runtime seal with a 1920px master.
-- [x] Publish the Act II proposal and phased implementation plan balancing story, topology, mechanics, economy, and accessibility.
-- [x] Implement S9–S16, deterministic Restoration Lattice healing and Slow Field suppression, sixteen-stage progression/rewards, historical save restore, bilingual six-layer narrative, Act labels, and complete regression coverage.
+- [x] Audit progression, balance, stage architecture, save compatibility, and available combat systems for the stable S9–S16 technical scaffold; narrative findings were later superseded by the Anima War canon.
+- [x] Generate and retain four non-canon historical concept boards plus a 600px repair-platform runtime seal with a 1920px master.
+- [x] Preserve the superseded proposal as historical evidence until the Anima War rewrite replaced its narrative authority.
+- [x] Implement stable S9–S16 maps, deterministic repair-platform behavior and Slow Field suppression, sixteen-stage progression/rewards, historical save restore, narrative slots, Act labels, and complete regression coverage; active story copy now follows `NARRATIVE_CANON.md`.
 - [x] Pass Godot 4.7.2 import/boot, all current tests and smokes, strict 925/925 localization audit, landscape/portrait Xvfb checks, exact Web export/HTTP/browser gates, forward-only `proto-td-web` reconciliation, TypeScript/build checks, and checkpoint `7da5e373`.
+
+# Act II Balance, Transitions, and Unique Score
+
+- [x] Playtest S9, S12, and S16 under field, standard, and rapid deterministic policies; preserve JSON/CSV telemetry and a written tuning report.
+- [x] Retune S9 lane windows, S12 continuous three-lane cadence, and S16 four-wave breathing room plus two-leak tolerance; regression-lock final difficulty envelopes.
+- [x] Generate, preserve, master, checksum, catalog, and route eight unique looped Act II battle tracks with clean loudness, true-peak, and silence analysis.
+- [x] Add responsive Restoration-seal entry and terminal transitions with local simulation hold, cue continuity, and reduced-motion behavior; accept landscape and portrait Xvfb captures.
+- [ ] Reconcile and push shared master, export/serve/browser-test the exact Godot Web release, advance the forward-only `proto-td-web` host, and save the final checkpoint.
