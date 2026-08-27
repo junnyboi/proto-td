@@ -303,6 +303,8 @@
     "ui.common.on": "On",
     "ui.company.identity": "{faction}\n{company}",
     "ui.company.identity_compact": "{faction}\n{company}",
+    "ui.currency.resonance_shard_tooltip": "Resonance Shard — premium energy\nused for recruitment and Premium Resonance.",
+    "ui.currency.resonance_shards_name": "Resonance Shards",
     "ui.dialog.close_without_confirming": "Close the dialog without confirming.",
     "ui.dialog.scrollable_details": "Scrollable dialog details",
     "ui.error.missing_stage_narrative": "Mission record unavailable. Return to Mission Control.",

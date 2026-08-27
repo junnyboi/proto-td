@@ -6,8 +6,11 @@ extends RefCounted
 const ENEMY_TYPE := {
 	&"grunt": Color("ef7d57"),
 	&"runner": Color("f4d35e"),
+	&"shieldbearer": Color("c98f65"),
+	&"breacher": Color("c66b5d"),
 	&"heavy": Color("b13e53"),
 	&"drone": Color("73eff7"),
+	&"interceptor": Color("69b9d0"),
 	&"spellcaster": Color("c964cf"),
 	&"mini_boss": Color("94216a"),
 }

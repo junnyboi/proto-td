@@ -1,6 +1,8 @@
 extends SceneTree
 
 const VIEWPORT_CASES := [
+	{"name": "4k", "size": Vector2i(3840, 2160), "rail": true, "portrait": false},
+	{"name": "native-ultrawide", "size": Vector2i(3440, 1440), "rail": true, "portrait": false},
 	{"name": "annotated-wide", "size": Vector2i(1915, 778), "rail": true, "portrait": false},
 	{"name": "ultrawide", "size": Vector2i(1920, 900), "rail": true, "portrait": false},
 	{"name": "standard", "size": Vector2i(1280, 720), "rail": false, "portrait": false},
@@ -33,8 +35,8 @@ func _run() -> void:
 		await _verify_case(game, viewport_case, "en-US")
 
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
-	await _verify_case(game, VIEWPORT_CASES[0], "zh-CN")
-	await _verify_case(game, VIEWPORT_CASES[5], "zh-CN")
+	await _verify_case(game, VIEWPORT_CASES[2], "zh-CN")
+	await _verify_case(game, VIEWPORT_CASES[7], "zh-CN")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English locale restoration failed")
 
 	game.set("campaign_active", false)

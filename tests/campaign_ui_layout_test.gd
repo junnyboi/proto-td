@@ -64,6 +64,7 @@ func _run() -> void:
 	_check(dossier_scroll != null and dossier_objective != null and not dossier_objective.text.is_empty(), "Campaign dossier objective or local scroll is missing")
 	_check(dossier_reward != null and not dossier_reward.text.is_empty() and not dossier_reward.text.contains("MARKS"), "Campaign dossier does not expose the symbol-first first-clear reward")
 	_check(dossier_shard != null and not dossier_shard.visible and dossier_shard.texture != null, "Campaign dossier did not preserve conditional Resonance Shard reward rendering")
+	_check(dossier_shard != null and dossier_shard.tooltip_text.contains("premium energy") and dossier_shard.accessibility_description.contains("Premium Resonance"), "Campaign shard reward lacks its explanatory tooltip")
 	_check(route_panel != null and is_equal_approx(route_panel.size.x, 480.0), "Campaign route rail is not fixed at the doubled 480px width")
 	_check(route_panel != null and route_panel.size_flags_horizontal == Control.SIZE_SHRINK_BEGIN, "Campaign route rail can still absorb surplus landscape width")
 	_check(route_content_inset != null, "Campaign route content inset is missing")

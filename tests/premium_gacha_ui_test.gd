@@ -35,6 +35,7 @@ func _run() -> void:
 	var back := screen.find_child("BackButton", true, false) as Button
 	var marks := screen.find_child("MarksLabel", true, false) as Label
 	var balance_icon := screen.find_child("ResonanceShardIcon", true, false) as TextureRect
+	var marks_display := marks.get_parent() as Control if marks != null else null
 	var pity_label := screen.find_child("PityLabel", true, false) as Label
 	var pity_segments := screen.find_child("PitySegments", true, false) as HBoxContainer
 	var hero_scroll := screen.find_child("PremiumHeroScroll", true, false) as ScrollContainer
@@ -58,6 +59,7 @@ func _run() -> void:
 	var history_empty := screen.find_child("PullHistoryEmptyState", true, false) as VBoxContainer
 	_check(grid != null and grid.get_child_count() == 3, "premium pool did not render")
 	_check(marks.text == "120" and balance_icon != null and balance_icon.texture != null and pity_label.text.contains("10 PULLS"), "initial shard economy projection changed")
+	_check(marks_display != null and marks_display.tooltip_text.contains("premium energy") and marks_display.accessibility_description.contains("Premium Resonance"), "shard balance lacks its explanatory tooltip")
 	_check(not pull.disabled and not back.disabled, "browse actions unavailable")
 	for premium_id: String in ["lunaris_vessel", "reliquary_duelist", "archive_caster"]:
 		var hero_accent: Color = screen.call("_reveal_accent", {"premium_id": premium_id, "rarity": 4})
@@ -94,6 +96,8 @@ func _run() -> void:
 	_check(pull_action_label != null and pull_action_label.text == "RESONATE" and pull_action_label.get_theme_font_size(&"font_size") == 48, "Resonate primary label hierarchy changed")
 	_check(pull_cost_label != null and pull_cost_label.text == "40" and pull_cost_label.get_theme_font_size(&"font_size") < pull_action_label.get_theme_font_size(&"font_size"), "Resonate shard cost is not a smaller second line")
 	_check(pull.accessibility_name.contains("40 Resonance Shards") and not pull.text.contains("MARKS"), "Resonate accessibility or symbol-first copy regressed")
+	_check(pull.tooltip_text.contains("RESONATE") and pull.tooltip_text.contains("premium energy"), "Resonate action lacks its explanatory shard tooltip")
+	_check(pull_cost_label.get_parent().mouse_filter == Control.MOUSE_FILTER_IGNORE, "Resonate shard cost can intercept parent button input")
 	var pull_normal := pull.get_theme_stylebox(&"normal") as StyleBoxFlat
 	var pull_hover := pull.get_theme_stylebox(&"hover") as StyleBoxFlat
 	_check(pull_normal != null and pull_hover != null and not pull_normal.bg_color.is_equal_approx(pull_hover.bg_color), "Resonate action lacks a distinct hover surface")
@@ -166,6 +170,7 @@ func _run() -> void:
 			)
 	_check(browse_status.accessibility_name == "高级共鸣状态", "gacha status metadata did not refresh")
 	_check(history_button.text == "共鸣记录", "Moon Archive action did not refresh to Chinese")
+	_check(marks_display.tooltip_text.contains("高级能量"), "shard tooltip did not refresh to Chinese")
 	var localized_history_text := _tree_text(history_drawer)
 	_check(localized_history_text.contains("月影档案"), "Moon Archive title did not refresh to Chinese")
 	_check(localized_history_text.contains("暂无共鸣记录"), "Moon Archive empty state did not refresh to Chinese")
@@ -321,6 +326,7 @@ func _run() -> void:
 	_check(conversion_panel != null and conversion_icon != null and not conversion_panel.visible, "first acquisition showed duplicate conversion feedback")
 	_check(pull_again.visible and not pull_again.disabled, "Pull Again is unavailable on the settled reveal")
 	_check(pull_again.text == "PULL AGAIN • 40" and pull_again.icon != null and pull_again.accessibility_name.contains("40 Resonance Shards"), "Pull Again does not expose the icon-backed authoritative cost")
+	_check(pull_again.tooltip_text.contains("PULL AGAIN") and pull_again.tooltip_text.contains("premium energy"), "Pull Again lacks its explanatory shard tooltip")
 	_check(pull_again.custom_minimum_size.x >= 400.0 and pull_again.get_theme_font_size(&"font_size") >= 54, "Pull Again is not comfortably sized")
 	_check(root.gui_get_focus_owner() == pull_again, "settled reveal did not focus Pull Again")
 	var hover_surface := cinematic.call("hover_surface") as Control

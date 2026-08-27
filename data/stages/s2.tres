@@ -27,7 +27,7 @@ waves = Array[Dictionary]([{
 "path_idx": 0,
 "tick": 285
 }, {
-"enemy_id": &"grunt",
+"enemy_id": &"shieldbearer",
 "path_idx": 0,
 "tick": 420
 }, {
@@ -61,4 +61,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 2
 requires = Array[StringName]([])
-intro_hint = "Stabilize the runner rush, then choose whether Caster protects the approach or the exit."
+intro_hint = "Stabilize the runner rush, then use Caster Arts to crack the armored Shieldbearer opening wave two."

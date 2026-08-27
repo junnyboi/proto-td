@@ -303,6 +303,8 @@
     "ui.common.on": "开",
     "ui.company.identity": "{faction}\n{company}",
     "ui.company.identity_compact": "{faction}\n{company}",
+    "ui.currency.resonance_shard_tooltip": "共鸣晶——高级能量\n用于招募与高级共鸣。",
+    "ui.currency.resonance_shards_name": "共鸣晶",
     "ui.dialog.close_without_confirming": "关闭对话框且不确认操作。",
     "ui.dialog.scrollable_details": "可滚动的对话框详情",
     "ui.error.missing_stage_narrative": "任务记录不可用。请返回作战指挥部。",
