@@ -202,6 +202,18 @@ def validate_one(
         indices = record.get("frame_indices")
         if not isinstance(indices, list) or len(indices) != ACTION_LAYOUT[action][0] or indices != sorted(set(indices)):
             raise ValidationError(f"{validation_json}: invalid frame_indices")
+        frame_metrics = record.get("frames")
+        if not isinstance(frame_metrics, list) or len(frame_metrics) != ACTION_LAYOUT[action][0]:
+            raise ValidationError(f"{validation_json}: invalid frame metrics")
+        for index, metrics in enumerate(frame_metrics):
+            if not isinstance(metrics, dict):
+                raise ValidationError(f"{validation_json}: frame {index} metrics are not an object")
+            compensation = metrics.get("camera_compensation")
+            if not isinstance(compensation, (int, float)) or not 0.25 <= float(compensation) <= 4.0:
+                raise ValidationError(
+                    f"{validation_json}: frame {index} camera compensation {compensation!r} "
+                    "indicates a keyed collapse or unbounded subject scale"
+                )
         result["validation_json"] = str(validation_json)
     return result
 

@@ -107,12 +107,14 @@ func _verify_accessibility_scale() -> void:
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
 	var settings := _title.find_child("SettingsButton", true, false) as Button
+	var footer_settings := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") <= 120, "150% decorative wordmark did not fit down")
 	_check(start.get_theme_font_size(&"font_size") >= 120, "150% Start text did not receive the global scale")
 	_check(settings.get_theme_font_size(&"font_size") >= 100, "150% Settings text did not receive the global scale")
-	_check(_inside(entry_host, wordmark) and _inside(entry_host, start) and _inside(entry_host, settings), "150% Title content escaped its scroll document")
+	_check(_inside(entry_host, wordmark) and _inside(entry_host, start), "150% Title content escaped its scroll document")
+	_check(not settings.visible, "150% Title retained the overlapping duplicate Settings action")
+	_check(footer_settings != null and footer_settings.visible and _inside(_title, footer_settings), "150% fixed Settings action is unavailable")
 	_check(entry_scroll.get_global_rect().intersects(start.get_global_rect()), "150% Start is not initially visible")
-	_check(entry_scroll.get_global_rect().intersects(settings.get_global_rect()), "150% Settings is not initially visible")
 	values[&"text_scale"] = 1.0
 	_title.call("_apply_preference_values", values)
 	for _frame: int in range(4):

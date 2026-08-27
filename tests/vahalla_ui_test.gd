@@ -107,6 +107,19 @@ func _run() -> void:
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
 		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
 		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+	var text_scale_autoload := root.get_node("TextScale")
+	text_scale_autoload.call("set_scale", 1.5)
+	memorial.call("_apply_responsive_layout")
+	await process_frame
+	var back := memorial.find_child("BackToCommand", true, false) as Button
+	var eyebrow := memorial.get("_eyebrow_label") as Label
+	var intro := memorial.get("_intro_label") as Label
+	_check(back != null and back.text == "Back", "150% Vahalla did not use its compact Back label")
+	_check(eyebrow == null or not eyebrow.visible, "150% Vahalla retained the redundant eyebrow")
+	_check(intro == null or not intro.visible, "150% Vahalla retained the redundant introduction")
+	text_scale_autoload.call("set_scale", 1.0)
+	memorial.call("_apply_responsive_layout")
+	await process_frame
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Vahalla locale activation failed")
 	await process_frame
 	await process_frame

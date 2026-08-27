@@ -1838,15 +1838,18 @@ func _apply_roster_layout() -> void:
 	var body := _page.get_node_or_null("TrainingRosterBody") as BoxContainer
 	if body == null:
 		return
-	body.vertical = _layout_mode == &"portrait"
+	var large_text := _large_text_layout()
+	var stacked := _layout_mode == &"portrait" or large_text
+	body.vertical = stacked
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 0.0
 	body.add_theme_constant_override(
-		&"separation", 16 if _layout_mode == &"portrait" else 64,
+		&"separation", 16 if stacked else 64,
 	)
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
 	var two_column_roster := (
 		_layout_mode == &"regular_landscape"
+		and not large_text
 		and get_viewport_rect().size.x >= ROSTER_TWO_COLUMN_MIN_VIEWPORT
 	)
 	var roster_width := ROSTER_DOUBLE_WIDTH if two_column_roster else ROSTER_CARD_WIDTH
@@ -1859,56 +1862,58 @@ func _apply_roster_layout() -> void:
 			280.0,
 			560.0,
 		)
+	elif large_text:
+		roster_width = clampf(get_viewport_rect().size.x - 48.0, 560.0, 1080.0)
 	if scroll != null:
 		scroll.custom_minimum_size = Vector2(
-			0.0 if _layout_mode == &"portrait" else roster_width + ROSTER_SCROLL_EXTRA,
-			220.0 if _layout_mode == &"portrait" else 0.0,
+			0.0 if stacked else roster_width + ROSTER_SCROLL_EXTRA,
+			220.0 if stacked else 0.0,
 		)
 		scroll.size_flags_horizontal = (
 			Control.SIZE_EXPAND_FILL
-			if _layout_mode == &"portrait"
+			if stacked
 			else Control.SIZE_SHRINK_BEGIN
 		)
 	if _roster_list != null:
 		_roster_list.columns = 2 if two_column_roster else 1
 		_roster_list.custom_minimum_size.x = (
-			0.0 if _layout_mode == &"portrait" else roster_width
+			0.0 if stacked else roster_width
 		)
 	if _inspector_scroll != null:
 		_inspector_scroll.custom_minimum_size.y = (
-			220.0 if _layout_mode == &"portrait" else 0.0
+			220.0 if stacked else 0.0
 		)
 	if _filter_bar != null:
 		_filter_bar.set_compact(_layout_mode != &"portrait")
 		_filter_bar.set_inline(two_column_roster)
-		_filter_bar.set_auxiliary_stacked(_layout_mode != &"regular_landscape")
+		_filter_bar.set_auxiliary_stacked(large_text or _layout_mode != &"regular_landscape")
 	if _roster_controls != null:
-		_roster_controls.vertical = false
+		_roster_controls.vertical = large_text
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(
-			_layout_mode != &"regular_landscape",
+			large_text or _layout_mode != &"regular_landscape",
 			ROSTER_CARD_WIDTH if two_column_roster else roster_width,
 		)
 	if _filter_toolbar != null:
-		_filter_toolbar.vertical = _layout_mode == &"portrait"
+		_filter_toolbar.vertical = stacked
 		_filter_toolbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if _sort_select != null:
 		_sort_select.custom_minimum_size = Vector2(
-			minf(220.0, maxf(180.0, get_viewport_rect().size.x - 96.0))
-			if _layout_mode == &"portrait"
+			minf(560.0 if large_text else 220.0, maxf(320.0 if large_text else 180.0, get_viewport_rect().size.x - 96.0))
+			if stacked
 			else 220.0,
 			96.0,
 		)
 		_sort_select.size_flags_horizontal = (
 			Control.SIZE_SHRINK_BEGIN
-			if _layout_mode == &"portrait"
+			if stacked
 			else Control.SIZE_SHRINK_END
 		)
 	if _filter_summary != null:
-		_filter_summary.visible = _layout_mode == &"portrait"
+		_filter_summary.visible = stacked
 		_filter_summary.horizontal_alignment = (
 			HORIZONTAL_ALIGNMENT_LEFT
-			if _layout_mode == &"portrait"
+			if stacked
 			else HORIZONTAL_ALIGNMENT_RIGHT
 		)
 	if _rename_row != null:
@@ -1930,13 +1935,20 @@ func _apply_roster_layout() -> void:
 		"TrainingRosterBody/TrainingInspector/TrainingInspectorScroll/InspectorColumn/SelectedOperatorDossier",
 	) as BoxContainer
 	if dossier != null:
-		dossier.vertical = not two_column_roster
+		dossier.vertical = large_text or not two_column_roster
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
-		identity_heading.vertical = false
+		identity_heading.vertical = large_text
+	var inspector_header := _page.find_child("SelectedOperatorHeader", true, false) as BoxContainer
+	if inspector_header != null:
+		inspector_header.vertical = large_text
+	var edit_identity := _page.find_child("EditIdentity", true, false) as Button
+	if edit_identity != null and large_text:
+		edit_identity.custom_minimum_size.x = 260.0
+		edit_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var choose_promotion := _page.find_child("ChoosePromotion", true, false) as Button
 	if choose_promotion != null:
-		choose_promotion.custom_minimum_size.x = 260.0 if _layout_mode == &"portrait" else 360.0
+		choose_promotion.custom_minimum_size.x = 260.0 if stacked else 360.0
 
 
 func _apply_paths_layout() -> void:
@@ -2503,11 +2515,13 @@ func _manifest_fmt(key: StringName, fallback: String, args: Dictionary) -> Strin
 
 func _apply_footer_layouts() -> void:
 	var footer_root: Node = _action_dock if _action_dock != null else _page
+	var large_text := _large_text_layout()
 	for node: Node in _all_nodes(footer_root):
 		if node is BoxContainer and String(node.name).ends_with("Actions"):
 			var footer := node as BoxContainer
 			footer.vertical = (
 				_layout_mode == &"portrait"
+				or large_text
 				or (footer.name == "RenameConfirmationActions" and _rename_confirmation_stacks())
 			)
 			var actions: Array[Control] = []
@@ -2520,17 +2534,22 @@ func _apply_footer_layouts() -> void:
 					_apply_path_action_style(action as AetheriaButtonType)
 				continue
 			var available := minf(
-				260.0, maxf(180.0, get_viewport_rect().size.x - 64.0),
+				520.0 if large_text else 260.0,
+				maxf(300.0 if large_text else 180.0, get_viewport_rect().size.x - 64.0),
 			)
 			for action: Control in actions:
-				action.size_flags_horizontal = Control.SIZE_SHRINK_END
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL if large_text else Control.SIZE_SHRINK_END
 				(action as AetheriaButtonType).fit_presentation(
-					available, minf(260.0, available), 84.0,
+					available, available if large_text else minf(260.0, available), 84.0,
 				)
 
 
 func _roster_uses_fixed_workspace() -> bool:
-	return _layout_mode == &"regular_landscape"
+	return _layout_mode == &"regular_landscape" and not _large_text_layout()
+
+
+func _large_text_layout() -> bool:
+	return TextScale != null and float(TextScale.value()) > 1.20
 
 
 func _ensure_panel_padding(panel: PanelContainer, padding: float) -> void:

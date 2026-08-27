@@ -271,6 +271,16 @@ class EndToEndProcessorTests(unittest.TestCase):
         self.assertLessEqual(validated["mirror"]["maximum_rgb_delta"], 32)
         self.assertLessEqual(validated["mirror"]["maximum_rgb_mean"], 3.0)
 
+        malformed = json.loads(json.dumps(record))
+        malformed["frames"][0]["camera_compensation"] = 9.0
+        malformed_path = self.root / "collapsed.validation.json"
+        malformed_path.write_text(json.dumps(malformed), encoding="utf-8")
+        with self.assertRaisesRegex(validator.ValidationError, "keyed collapse"):
+            validator.validate_one(
+                Path(self.idle_result["atlas"]), Path(self.idle_result["mirror"]),
+                "idle", self.carrier, malformed_path,
+            )
+
     def test_attack_atlas_endpoint_indices_padding_and_validation_cli(self) -> None:
         self.assert_atlas_contract(self.attack_result, "attack", 13)
         record = json.loads(Path(self.attack_result["validation"]).read_text())
