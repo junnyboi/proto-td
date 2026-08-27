@@ -188,7 +188,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	if sort_select != null:
 		var sort_style := sort_select.get_theme_stylebox(&"normal")
 		_check(sort_style.content_margin_left >= 24.0 and sort_style.content_margin_right >= 24.0 and sort_style.content_margin_top >= 12.0 and sort_style.content_margin_bottom >= 12.0, "%s Recruit Order lacks 24px horizontal and 12px vertical padding" % label)
-	_check(sort_select != null and sort_select.item_count >= 7, "%s sort control lacks rarity and level modes" % label)
+		_check(sort_select != null and sort_select.item_count >= 9, "%s sort control lacks cost, rarity, level, or name modes" % label)
+		_check(sort_select != null and sort_select.accessibility_name == "Sort operators" and not sort_select.accessibility_description.is_empty(), "%s sort control lacks accessible naming" % label)
 	_check(order_panel != null and field_panel != null and _inside(field_panel, order_panel), "%s selected-squad order rail exceeds Field Team" % label)
 	_check(order_rail != null, "%s selected-squad drag rail is missing" % label)
 	_check(order_scroll != null and order_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO and order_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s selected-squad guidance does not use horizontal-only scrolling" % label)
@@ -228,9 +229,18 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 				_check(absf((child as Button).size.x - expected_width) <= EPSILON, "%s operator card does not fit the responsive grid target" % label)
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
 				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
+				var hover_glow := child.get_node_or_null("OperatorHoverGlow") as Panel
 				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
 				_check(portrait != null, "%s operator-card portrait pane is missing" % label)
 				_check(bool((child as Button).get_meta(&"operator_feedback_enabled", false)), "%s operator-card feedback metadata is missing" % label)
+				_check(bool((child as Button).get_meta(&"operator_hover_glow_enabled", false)) and hover_glow != null, "%s operator-card luminous hover border is missing" % label)
+				var normal_style := (child as Button).get_theme_stylebox(&"normal")
+				var hover_style := (child as Button).get_theme_stylebox(&"hover")
+				if normal_style is StyleBoxTexture and hover_style is StyleBoxTexture:
+					_check((normal_style as StyleBoxTexture).modulate_color.is_equal_approx((hover_style as StyleBoxTexture).modulate_color), "%s operator hover washes out the entire card instead of using its glow border" % label)
+				if hover_glow != null:
+					var glow_style := hover_glow.get_theme_stylebox(&"panel") as StyleBoxFlat
+					_check(glow_style != null and glow_style.border_width_left >= 2 and glow_style.shadow_size >= 8, "%s operator-card hover border is not luminous" % label)
 				if card_label != null:
 					_check(_inside(child as Control, card_label), "%s %s operator-card information pane overflows" % [label, child.name])
 					_check(card_label.offset_left >= 24.0, "%s operator-card horizontal padding is below 24px" % label)
@@ -280,6 +290,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var hire_currency := _mission.find_child("BasicRecruitCurrency", true, false) as HBoxContainer
 	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
+	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
 	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
 	_check(hire_button != null and hire_button.icon == null and hire_button.text.is_empty() and hire_button.accessibility_name.contains("5") and not hire_button.accessibility_name.contains("MARKS"), "Field Team recruit action still uses the legacy native presentation or wording")
 	_check(hire_action_label != null and hire_action_label.text == "HIRE" and hire_cost_icon != null and hire_cost_icon.texture != null and hire_cost_label != null and hire_cost_label.text == "5", "Field Team recruit action does not expose its explicit sprite-backed exact price")
@@ -299,9 +310,11 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
 		_check(hire_currency.tooltip_text.contains("普通打捞物") and hire_button.tooltip_text.contains("不含anima或灵魂"), "Field Team ordinary-Marks tooltips did not refresh to Chinese")
 		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
+		_check(sort_select != null and sort_select.accessibility_name == "干员排序" and _sort_item_text(sort_select, &"cost_asc") == "部署费用从低到高", "Field Team cost sorting did not refresh to Chinese")
 		_check(bool(i18n.call("set_locale", &"en-US")), "Field Team could not restore English")
 		await process_frame
 		await process_frame
+		_check(sort_select != null and sort_select.accessibility_name == "Sort operators" and _sort_item_text(sort_select, &"cost_desc") == "Cost high–low", "Field Team cost sorting did not restore English")
 	var projection_before: Dictionary = game.call("campaign_projection")
 	if hire_button != null:
 		hire_button.pressed.emit()
@@ -414,6 +427,15 @@ func _has_scroll_ancestor(node: Node) -> bool:
 			return true
 		current = current.get_parent()
 	return false
+
+
+func _sort_item_text(select: OptionButton, mode: StringName) -> String:
+	if select == null:
+		return ""
+	for index: int in select.item_count:
+		if StringName(select.get_item_metadata(index)) == mode:
+			return select.get_item_text(index)
+	return ""
 
 
 func _inside(parent: Control, child: Control) -> bool:

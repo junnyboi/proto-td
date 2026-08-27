@@ -52,6 +52,9 @@ const OPERATOR_SELECTION_PEAK_SCALE := Vector2(1.055, 1.055)
 const OPERATOR_HOVER_SECONDS := 0.14
 const OPERATOR_SELECTION_OUT_SECONDS := 0.10
 const OPERATOR_SELECTION_SETTLE_SECONDS := 0.17
+const OPERATOR_GLOW_ALPHA := 0.82
+const OPERATOR_GLOW_EXPAND := 5.0
+const OPERATOR_GLOW_SHADOW_SIZE := 10
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -507,6 +510,7 @@ func _campaign_roster_rows() -> Array[Dictionary]:
 		)
 		hero["level"] = int(class_definition.stage) + 1 if class_definition != null else 1
 		hero["rarity"] = int(operator_definition.rarity) if operator_definition != null else 1
+		hero["dp_cost"] = int(operator_definition.dp_cost) if operator_definition != null else 0
 		if String(hero.get("hero_kind", "recruit")) == "premium":
 			hero["rarity"] = int(premium_rarities.get(
 				String(hero.get("premium_id", "")), hero["rarity"],
@@ -554,16 +558,8 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_sort_select.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_sort_select.fit_to_longest_item = false
 	_sort_select.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	for option: Dictionary in [
-		{"id": &"recruitment", "label": UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")},
-		{"id": &"rarity_desc", "label": UiCopyType.text(&"ui.identity_sort.rarity_desc", "Rarity high–low")},
-		{"id": &"rarity_asc", "label": UiCopyType.text(&"ui.identity_sort.rarity_asc", "Rarity low–high")},
-		{"id": &"level_desc", "label": UiCopyType.text(&"ui.identity_sort.level_desc", "Level high–low")},
-		{"id": &"level_asc", "label": UiCopyType.text(&"ui.identity_sort.level_asc", "Level low–high")},
-		{"id": &"name_asc", "label": UiCopyType.text(&"ui.identity_sort.name_asc", "Name A–Z")},
-		{"id": &"name_desc", "label": UiCopyType.text(&"ui.identity_sort.name_desc", "Name Z–A")},
-	]:
-		_sort_select.add_item(String(option["label"]))
+	for option: Dictionary in _identity_sort_options():
+		_sort_select.add_item(UiCopyType.text(option["key"], option["fallback"]))
 		var option_index := _sort_select.item_count - 1
 		_sort_select.set_item_metadata(option_index, option["id"])
 		if option["id"] == _name_sort:
@@ -573,7 +569,11 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 		_sort_select, SORT_HORIZONTAL_PADDING, SORT_VERTICAL_PADDING,
 		[&"normal", &"hover", &"pressed", &"disabled"],
 	)
-	_sort_select.tooltip_text = UiCopyType.text(&"ui.identity_sort.recruitment", "Recruit order")
+	_sort_select.accessibility_name = UiCopyType.text(&"ui.identity_sort.label", "Sort operators")
+	_sort_select.accessibility_description = _sort_select.get_item_text(_sort_select.selected)
+	_sort_select.tooltip_text = "%s — %s" % [
+		_sort_select.accessibility_name, _sort_select.accessibility_description,
+	]
 	_sort_select.item_selected.connect(_on_name_sort_selected)
 	_filter_toolbar.add_child(_sort_select)
 	_filter_summary = _label("DeploymentFilterSummary", "", &"dense_detail")
@@ -581,6 +581,20 @@ func _build_identity_filter_toolbar() -> BoxContainer:
 	_filter_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_filter_toolbar.add_child(_filter_summary)
 	return _filter_toolbar
+
+
+func _identity_sort_options() -> Array[Dictionary]:
+	return [
+		{"id": &"recruitment", "key": &"ui.identity_sort.recruitment", "fallback": "Recruit order"},
+		{"id": &"cost_asc", "key": &"ui.identity_sort.cost_asc", "fallback": "Cost low–high"},
+		{"id": &"cost_desc", "key": &"ui.identity_sort.cost_desc", "fallback": "Cost high–low"},
+		{"id": &"rarity_desc", "key": &"ui.identity_sort.rarity_desc", "fallback": "Rarity high–low"},
+		{"id": &"rarity_asc", "key": &"ui.identity_sort.rarity_asc", "fallback": "Rarity low–high"},
+		{"id": &"level_desc", "key": &"ui.identity_sort.level_desc", "fallback": "Level high–low"},
+		{"id": &"level_asc", "key": &"ui.identity_sort.level_asc", "fallback": "Level low–high"},
+		{"id": &"name_asc", "key": &"ui.identity_sort.name_asc", "fallback": "Name A–Z"},
+		{"id": &"name_desc", "key": &"ui.identity_sort.name_desc", "fallback": "Name Z–A"},
+	]
 
 
 func _apply_clean_sort_style(button: OptionButton) -> void:
@@ -617,7 +631,10 @@ func _on_name_sort_selected(index: int) -> void:
 	if _sort_select == null:
 		return
 	_name_sort = StringName(_sort_select.get_item_metadata(index))
-	_sort_select.tooltip_text = _sort_select.get_item_text(index)
+	_sort_select.accessibility_description = _sort_select.get_item_text(index)
+	_sort_select.tooltip_text = "%s — %s" % [
+		_sort_select.accessibility_name, _sort_select.accessibility_description,
+	]
 	_rebuild_operator_cards()
 	_refresh()
 	if _sort_select != null:
@@ -680,6 +697,9 @@ func _rebuild_operator_cards() -> void:
 			_operator_card_width(_shell.layout_mode()), _operator_card_height(hero, _shell.layout_mode()),
 		)
 		pick.set_presentation_text(card_text, card_text)
+		var hover_glow := _build_operator_hover_glow()
+		pick.add_child(hover_glow)
+		pick.set_meta(&"operator_hover_glow_enabled", true)
 		var portrait := TextureRect.new()
 		portrait.name = "OperatorPortrait"
 		portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
@@ -704,16 +724,16 @@ func _rebuild_operator_cards() -> void:
 		pick.disabled = fallen
 		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
 		_apply_operator_card_text_style(pick)
+		pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
+		pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
+		pick.resized.connect(_center_operator_card_pivot.bind(pick))
 		if not fallen:
 			pick.set_pressed_no_signal(_picked.has(hero_id))
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
 			pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
 			pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
-			pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
-			pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
 			pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
 			pick.focus_exited.connect(_on_operator_feedback_changed.bind(pick))
-			pick.resized.connect(_center_operator_card_pivot.bind(pick))
 		_grid.add_child(pick)
 		_center_operator_card_pivot(pick)
 		if not fallen:
@@ -743,6 +763,46 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	card_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
+func _apply_operator_card_role(button: AetheriaButtonType, selected: bool) -> void:
+	LunarisOpsType.apply_button(button, &"selected" if selected else &"secondary")
+	var resting_style := button.get_theme_stylebox(&"normal").duplicate() as StyleBox
+	button.add_theme_stylebox_override(&"hover", resting_style)
+	button.add_theme_stylebox_override(&"hover_pressed", resting_style)
+
+
+func _build_operator_hover_glow() -> Panel:
+	var glow := Panel.new()
+	glow.name = "OperatorHoverGlow"
+	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	glow.offset_left = -OPERATOR_GLOW_EXPAND
+	glow.offset_top = -OPERATOR_GLOW_EXPAND
+	glow.offset_right = OPERATOR_GLOW_EXPAND
+	glow.offset_bottom = OPERATOR_GLOW_EXPAND
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow.show_behind_parent = true
+	glow.z_index = -1
+	glow.self_modulate = Color(1.0, 1.0, 1.0, 0.0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color.TRANSPARENT
+	style.border_color = Color(LunarisOpsType.CYAN, OPERATOR_GLOW_ALPHA)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.shadow_color = Color(LunarisOpsType.CYAN, 0.46)
+	style.shadow_size = OPERATOR_GLOW_SHADOW_SIZE
+	glow.add_theme_stylebox_override(&"panel", style)
+	return glow
+
+
+func _operator_hover_glow(button: Control) -> Panel:
+	return button.get_node_or_null("OperatorHoverGlow") as Panel
+
+
+func _set_operator_hover_glow(button: Control, highlighted: bool) -> void:
+	var glow := _operator_hover_glow(button)
+	if glow != null:
+		glow.self_modulate = Color(1.0, 1.0, 1.0, 1.0 if highlighted else 0.0)
+
+
 func _center_operator_card_pivot(button: Control) -> void:
 	if button == null or not is_instance_valid(button):
 		return
@@ -752,29 +812,34 @@ func _center_operator_card_pivot(button: Control) -> void:
 func _on_operator_feedback_changed(button: AetheriaButtonType) -> void:
 	if button == null or not is_instance_valid(button):
 		return
+	var highlighted := button.is_hovered() or button.has_focus()
 	var target := OPERATOR_SELECTED_SCALE if button.button_pressed else Vector2.ONE
-	if button.is_hovered() or button.has_focus():
+	if highlighted:
 		target = OPERATOR_HOVER_SCALE
-	_animate_operator_card_scale(button, target, OPERATOR_HOVER_SECONDS)
+	button.z_index = 2 if highlighted else 1 if button.button_pressed else 0
+	_animate_operator_card_scale(button, target, OPERATOR_HOVER_SECONDS, highlighted)
 
 
 func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> void:
 	if button == null or not is_instance_valid(button):
 		return
 	_kill_operator_feedback_tween(button)
+	var highlighted := button.is_hovered() or button.has_focus()
+	button.z_index = 2 if highlighted else 1 if selected else 0
 	if _reduced_motion():
 		button.scale = (
 			OPERATOR_HOVER_SCALE
-			if button.is_hovered() or button.has_focus()
+			if highlighted
 			else OPERATOR_SELECTED_SCALE
 			if selected
 			else Vector2.ONE
 		)
+		_set_operator_hover_glow(button, highlighted)
 		return
 	var peak := OPERATOR_SELECTION_PEAK_SCALE if selected else Vector2(0.985, 0.985)
 	var resting := (
 		OPERATOR_HOVER_SCALE
-		if button.is_hovered() or button.has_focus()
+		if highlighted
 		else OPERATOR_SELECTED_SCALE
 		if selected
 		else Vector2.ONE
@@ -783,22 +848,36 @@ func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> 
 	_operator_feedback_tweens[button.get_instance_id()] = tween
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", peak, OPERATOR_SELECTION_OUT_SECONDS)
+	var glow := _operator_hover_glow(button)
+	if glow != null:
+		tween.parallel().tween_property(
+			glow, "self_modulate",
+			Color(1.0, 1.0, 1.0, 1.0 if highlighted else 0.0),
+			OPERATOR_SELECTION_OUT_SECONDS,
+		)
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", resting, OPERATOR_SELECTION_SETTLE_SECONDS)
 	tween.finished.connect(_clear_operator_feedback_tween.bind(button.get_instance_id()))
 
 
 func _animate_operator_card_scale(
-		button: AetheriaButtonType, target: Vector2, duration: float,
+		button: AetheriaButtonType, target: Vector2, duration: float, highlighted: bool,
 	) -> void:
 	_kill_operator_feedback_tween(button)
 	if _reduced_motion():
 		button.scale = target
+		_set_operator_hover_glow(button, highlighted)
 		return
 	var tween := create_tween()
 	_operator_feedback_tweens[button.get_instance_id()] = tween
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", target, duration)
+	var glow := _operator_hover_glow(button)
+	if glow != null:
+		tween.parallel().tween_property(
+			glow, "self_modulate",
+			Color(1.0, 1.0, 1.0, 1.0 if highlighted else 0.0), duration,
+		)
 	tween.finished.connect(_clear_operator_feedback_tween.bind(button.get_instance_id()))
 
 
@@ -1300,7 +1379,7 @@ func _refresh() -> void:
 		var button := _buttons[hero_id] as AetheriaButtonType
 		button.disabled = _launch_locked or Game.mission_launch_retry_pending()
 		button.focus_mode = Control.FOCUS_NONE if button.disabled else Control.FOCUS_ALL
-		LunarisOpsType.apply_button(button, &"selected" if _picked.has(hero_id) else &"secondary")
+		_apply_operator_card_role(button, _picked.has(hero_id))
 		_apply_operator_card_text_style(button)
 	_refresh_selected_squad_order()
 	var selected_names: Array[String] = []
@@ -1537,27 +1616,15 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	if _filter_input != null:
 		_filter_input.placeholder_text = UiCopyType.text(&"ui.identity_filter.placeholder", "Filter operators")
 	if _sort_select != null:
-		var sort_keys := [
-			&"ui.identity_sort.recruitment",
-			&"ui.identity_sort.rarity_desc",
-			&"ui.identity_sort.rarity_asc",
-			&"ui.identity_sort.level_desc",
-			&"ui.identity_sort.level_asc",
-			&"ui.identity_sort.name_asc",
-			&"ui.identity_sort.name_desc",
+		var sort_options := _identity_sort_options()
+		for index: int in mini(_sort_select.item_count, sort_options.size()):
+			var option: Dictionary = sort_options[index]
+			_sort_select.set_item_text(index, UiCopyType.text(option["key"], option["fallback"]))
+		_sort_select.accessibility_name = UiCopyType.text(&"ui.identity_sort.label", "Sort operators")
+		_sort_select.accessibility_description = _sort_select.get_item_text(_sort_select.selected)
+		_sort_select.tooltip_text = "%s — %s" % [
+			_sort_select.accessibility_name, _sort_select.accessibility_description,
 		]
-		var sort_fallbacks := [
-			"Recruit order",
-			"Rarity high–low",
-			"Rarity low–high",
-			"Level high–low",
-			"Level low–high",
-			"Name A–Z",
-			"Name Z–A",
-		]
-		for index: int in mini(_sort_select.item_count, sort_keys.size()):
-			_sort_select.set_item_text(index, UiCopyType.text(sort_keys[index], sort_fallbacks[index]))
-		_sort_select.tooltip_text = _sort_select.get_item_text(_sort_select.selected)
 	var order_heading := find_child("SelectedSquadOrderHeading", true, false) as Label
 	if order_heading != null:
 		order_heading.text = UiCopyType.text(&"ui.squad.order_heading", "Deployment Order")
