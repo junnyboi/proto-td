@@ -95,7 +95,10 @@ func _required_codepoints(entries: Dictionary) -> Array[int]:
 
 
 func _check_reviewed_chinese(entries: Dictionary) -> void:
-	var forbidden := ["索尔冠", "任务控制", "作战指挥部", "固定精英套装", "漏怪", "�"]
+	var forbidden := [
+		"索尔冠", "任务控制", "作战指挥部", "固定精英套装", "漏怪", "档案术士",
+		"月之容器", "圣匣决斗者", "圣匣", "�",
+	]
 	for raw_key: Variant in entries:
 		var key := String(raw_key)
 		var value := String(entries[raw_key])
@@ -108,6 +111,9 @@ func _check_reviewed_chinese(entries: Dictionary) -> void:
 	_check(String(entries["ui.squad.launch_retryable_error"]).contains("完全相同"), "deployment retry lost exact-order requirement")
 	for key: String in ["ui.gacha.receipt_new", "ui.gacha.receipt_restored", "ui.gacha.receipt_duplicate"]:
 		_check(String(entries[key]).contains("内必得五星"), "gacha guarantee is not expressed as an upper bound: %s" % key)
+	_check(entries["data.stage.s10.narrative.battle_start_speaker"] == "月辉载体", "Act II Lunaris Vessel identity drifted")
+	_check(entries["data.stage.s11.narrative.battle_start_speaker"] == "圣物决斗者", "Act II Reliquary Duelist identity drifted")
+	_check(entries["data.stage.s12.narrative.transmission_speaker"] == "档案术师", "Act II Archive Caster identity drifted")
 
 
 func _check_standalone_control_fonts() -> void:
