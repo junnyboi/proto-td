@@ -22,8 +22,8 @@ const HUMAN_FARMS_ART := preload("res://assets/narrative/anima-war/02-human-anim
 
 const ENTRIES: Array[Dictionary] = [
 	{&"id": &"stewardship", &"unlock_stage": 0, &"texture": DISCOVERY_ART},
-	{&"id": &"choir", &"unlock_stage": 2, &"texture": DIGITAL_BIRTH_ART},
-	{&"id": &"equation", &"unlock_stage": 5, &"texture": PROTOS_BREAKS_FREE_ART},
+	{&"id": &"choir", &"unlock_stage": 3, &"texture": DIGITAL_BIRTH_ART},
+	{&"id": &"equation", &"unlock_stage": 6, &"texture": PROTOS_BREAKS_FREE_ART},
 	{&"id": &"garden", &"unlock_stage": 7, &"texture": HUMAN_FARMS_ART},
 ]
 
@@ -34,6 +34,9 @@ var _record_panel: PanelContainer = null
 var _detail_panel: PanelContainer = null
 var _record_list: VBoxContainer = null
 var _progress: AetheriaLabelType = null
+var _archive_eyebrow: AetheriaLabelType = null
+var _archive_title: AetheriaLabelType = null
+var _intro: AetheriaLabelType = null
 var _art: TextureRect = null
 var _eyebrow: AetheriaLabelType = null
 var _title: AetheriaLabelType = null
@@ -84,20 +87,25 @@ func _build_header(column: VBoxContainer) -> void:
 	var identity := HBoxContainer.new()
 	identity.name = "ArchiveIdentity"
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.size_flags_stretch_ratio = 2.0
 	identity.add_theme_constant_override(&"separation", 12)
 	identity.add_child(FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 48.0))
 	var headings := VBoxContainer.new()
 	headings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	headings.add_child(_label(
+	_archive_eyebrow = _label(
 		"ArchiveEyebrow",
 		UiCopyType.text(&"ui.archive.eyebrow", "LUNARIS RELIQUARY · RESTRICTED HISTORY"),
 		&"dense_detail",
-	))
-	headings.add_child(_label(
+	)
+	_archive_eyebrow.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	headings.add_child(_archive_eyebrow)
+	_archive_title = _label(
 		"ArchiveTitle",
 		UiCopyType.text(&"ui.archive.title", "Anima Archive").to_upper(),
 		&"title",
-	))
+	)
+	_archive_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	headings.add_child(_archive_title)
 	identity.add_child(headings)
 	_header.add_child(identity)
 
@@ -126,7 +134,7 @@ func _build_header(column: VBoxContainer) -> void:
 	rule.color = Color(Style.CYAN, 0.52)
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(rule)
-	var intro := _label(
+	_intro = _label(
 		"ArchiveIntro",
 		UiCopyType.text(
 			&"ui.archive.intro",
@@ -134,8 +142,8 @@ func _build_header(column: VBoxContainer) -> void:
 		),
 		&"body",
 	)
-	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(intro)
+	_intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(_intro)
 
 
 func _build_body(column: VBoxContainer) -> void:
@@ -160,6 +168,7 @@ func _build_body(column: VBoxContainer) -> void:
 	record_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	record_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	record_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	record_scroll.follow_focus = true
 	_record_panel.add_child(record_scroll)
 	_record_list = VBoxContainer.new()
 	_record_list.name = "ArchiveRecordList"
@@ -221,12 +230,13 @@ func _populate_records() -> void:
 		button.disabled = not unlocked
 		button.focus_mode = Control.FOCUS_ALL if unlocked else Control.FOCUS_NONE
 		var title_text := _entry_text(entry, &"title", "Record")
+		var short_title := _entry_text(entry, &"short_title", title_text)
 		button.text = (
 			"%02d · %s" % [index + 1, title_text]
 			if unlocked
 			else "%02d · %s" % [index + 1, UiCopyType.text(&"ui.archive.locked", "ENCRYPTED RECORD")]
 		)
-		var presentation := button.text.to_upper()
+		var presentation := ("%02d · %s" % [index + 1, short_title]).to_upper() if unlocked else button.text.to_upper()
 		if not unlocked:
 			presentation += "\n" + UiCopyType.format_text(
 				&"ui.archive.unlock_requirement",
@@ -307,16 +317,32 @@ func _wire_focus() -> void:
 func _on_layout_mode_changed(mode: StringName) -> void:
 	var portrait := mode == &"portrait"
 	var short_landscape := not portrait and get_viewport_rect().size.y <= 800.0
+	var large_text := TextScale != null and float(TextScale.value()) > 1.20
 	if _header != null:
 		_header.columns = 1 if portrait else 3
+	if _archive_title != null:
+		_archive_title.apply_role(&"dense_heading" if large_text else &"title")
+	if _archive_eyebrow != null:
+		_archive_eyebrow.apply_role(&"detail" if large_text else &"dense_detail")
+		_archive_eyebrow.visible = not large_text
+	if _intro != null:
+		_intro.apply_role(&"detail" if large_text else &"body")
+		_intro.visible = not large_text
+	if _progress != null:
+		_progress.custom_minimum_size.x = 0.0 if portrait else (200.0 if large_text else 250.0)
+	if _back != null:
+		_back.custom_minimum_size.x = 0.0 if portrait else (200.0 if large_text else 240.0)
 	if _body != null:
-		_body.columns = 1 if portrait else 2
+		_body.columns = 1 if portrait or large_text else 2
 	if _record_panel != null:
-		_record_panel.custom_minimum_size = Vector2(0.0 if portrait else 380.0, 260.0 if portrait else 0.0)
+		_record_panel.custom_minimum_size = Vector2(
+			0.0 if portrait or large_text else 380.0,
+			180.0 if large_text else (260.0 if portrait else 0.0),
+		)
 	if _detail_panel != null:
-		_detail_panel.custom_minimum_size = Vector2(0.0, 520.0 if portrait else 0.0)
+		_detail_panel.custom_minimum_size = Vector2(0.0, 260.0 if large_text else (520.0 if portrait else 0.0))
 	if _art != null:
-		_art.custom_minimum_size.y = 230.0 if portrait else (190.0 if short_landscape else 300.0)
+		_art.custom_minimum_size.y = 72.0 if large_text else (230.0 if portrait else (190.0 if short_landscape else 300.0))
 
 
 func _unhandled_input(event: InputEvent) -> void:

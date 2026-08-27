@@ -384,6 +384,8 @@ func _apply_responsive_layout() -> void:
 	if _shell == null:
 		return
 	var mode := _shell.layout_mode()
+	var large_text := TextScale != null and float(TextScale.value()) > 1.20
+	var stacked_information := mode == &"portrait" or large_text
 	if _actions != null:
 		_actions.columns = (
 			1 if mode == &"portrait"
@@ -408,17 +410,17 @@ func _apply_responsive_layout() -> void:
 				14.0 if mode == &"portrait" else 22.0,
 			)
 	if _outcome_summary != null:
-		_outcome_summary.vertical = mode == &"portrait"
+		_outcome_summary.vertical = stacked_information
 		_outcome_summary.alignment = BoxContainer.ALIGNMENT_BEGIN
-		_outcome_summary.add_theme_constant_override(&"separation", 12 if mode == &"portrait" else 22)
+		_outcome_summary.add_theme_constant_override(&"separation", 12 if stacked_information else 22)
 	if _result_meta != null:
-		_result_meta.vertical = mode == &"portrait"
-		_result_meta.size_flags_horizontal = Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_END
-		_result_meta.add_theme_constant_override(&"separation", 12 if mode == &"portrait" else 16)
+		_result_meta.vertical = stacked_information
+		_result_meta.size_flags_horizontal = Control.SIZE_EXPAND_FILL if stacked_information else Control.SIZE_SHRINK_END
+		_result_meta.add_theme_constant_override(&"separation", 12 if stacked_information else 16)
 	if _rewards_heading != null:
-		_rewards_heading.add_theme_font_size_override(&"font_size", 36 if mode == &"portrait" else 45)
+		_rewards_heading.add_theme_font_size_override(&"font_size", 30 if large_text else (36 if mode == &"portrait" else 45))
 	if _consequence_heading != null:
-		_consequence_heading.add_theme_font_size_override(&"font_size", 36 if mode == &"portrait" else 45)
+		_consequence_heading.add_theme_font_size_override(&"font_size", 30 if large_text else (36 if mode == &"portrait" else 45))
 	if _rewards_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_rewards_panel)
@@ -444,17 +446,15 @@ func _apply_responsive_layout() -> void:
 			else:
 				_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
 	if _headline != null:
-		var headline_size := (
-			(38 if _cleared_result else 45) if mode == &"portrait" else 60
-		)
+		var headline_size := 38 if large_text else ((38 if _cleared_result else 45) if mode == &"portrait" else 60)
 		_headline.add_theme_font_size_override(&"font_size", headline_size)
 		_headline.autowrap_mode = (
 			TextServer.AUTOWRAP_OFF
 			if _cleared_result
 			else TextServer.AUTOWRAP_WORD_SMART
 		)
-		_headline.size_flags_horizontal = Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_BEGIN
-		_headline.custom_minimum_size.x = 0.0 if mode == &"portrait" else minf(
+		_headline.size_flags_horizontal = Control.SIZE_EXPAND_FILL if stacked_information else Control.SIZE_SHRINK_BEGIN
+		_headline.custom_minimum_size.x = 0.0 if stacked_information else minf(
 			520.0,
 			ceilf(_headline.get_theme_font(&"font").get_string_size(
 				_headline.text,
@@ -466,13 +466,23 @@ func _apply_responsive_layout() -> void:
 	if _result_stars != null:
 		for child: Node in _result_stars.get_children():
 			(child as Control).custom_minimum_size = Vector2.ONE * (
-				RESULT_RESONANCE_STAR_PORTRAIT_SIZE if mode == &"portrait" else RESULT_RESONANCE_STAR_SIZE
+				RESULT_RESONANCE_STAR_PORTRAIT_SIZE if stacked_information else RESULT_RESONANCE_STAR_SIZE
 			)
 	if _tally != null:
-		_tally.custom_minimum_size.x = 0.0 if mode == &"portrait" else 270.0
-		_tally.add_theme_font_size_override(&"font_size", 33 if mode == &"portrait" else 42)
-		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if mode == &"portrait" else TextServer.AUTOWRAP_OFF
-		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		_tally.custom_minimum_size.x = 0.0 if stacked_information else 270.0
+		_tally.add_theme_font_size_override(&"font_size", 28 if large_text else (33 if mode == &"portrait" else 42))
+		_tally.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if stacked_information else TextServer.AUTOWRAP_OFF
+		_tally.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if stacked_information else HORIZONTAL_ALIGNMENT_RIGHT
+	if _actions != null and large_text:
+		for child: Node in _actions.get_children():
+			if not child is Button:
+				continue
+			var action := child as Button
+			action.custom_minimum_size.x = 300.0
+			action.add_theme_font_size_override(&"font_size", 32)
+			var presentation := action.find_child("PresentationLabel", true, false) as Label
+			if presentation != null:
+				presentation.add_theme_font_size_override(&"font_size", 32)
 	var command := find_child("ReturnToStaging", true, false) as Button
 	if command != null:
 		var command_target := RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_ACTION_WIDTH
@@ -482,10 +492,12 @@ func _apply_responsive_layout() -> void:
 				if _cleared_result and get_viewport_rect().size.x < 480.0
 				else (RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_PORTRAIT_WIDTH)
 			)
+		elif large_text:
+			command_target = 360.0
 		command.custom_minimum_size.x = command_target
 		command.add_theme_font_size_override(
 			&"font_size",
-			48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE,
+			32 if large_text else (48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE),
 		)
 		var command_presentation := command.find_child(
 			"PresentationLabel", true, false,
@@ -494,7 +506,7 @@ func _apply_responsive_layout() -> void:
 			command_presentation.autowrap_mode = TextServer.AUTOWRAP_OFF
 			command_presentation.add_theme_font_size_override(
 				&"font_size",
-				48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE,
+				32 if large_text else (48 if mode == &"portrait" else RESULT_ACTION_FONT_SIZE),
 			)
 	_relayout_shell.call_deferred()
 
@@ -502,6 +514,14 @@ func _apply_responsive_layout() -> void:
 func _relayout_shell() -> void:
 	if _shell != null and is_instance_valid(_shell):
 		_shell.relayout(Vector2i(get_viewport_rect().size))
+		_reset_information_scrolls.call_deferred()
+
+
+func _reset_information_scrolls() -> void:
+	for node_name: StringName in [&"RewardsScroll", &"ConsequenceScroll"]:
+		var scroll := find_child(String(node_name), true, false) as ScrollContainer
+		if scroll != null:
+			scroll.scroll_vertical = 0
 
 
 func _consequence_copy(result: Dictionary, cleared: bool) -> String:

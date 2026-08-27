@@ -28,7 +28,7 @@ The external source WAVs under `/home/ubuntu/anima-archive-tts/{en-US,zh-CN}/` r
 ### Record 02 — The First Digital Birth
 
 **Stable ID:** `choir`  
-**Unlock gate:** `2`
+**Unlock gate:** `3`
 
 **English (`en-US`):**
 
@@ -41,7 +41,7 @@ The external source WAVs under `/home/ubuntu/anima-archive-tts/{en-US,zh-CN}/` r
 ### Record 03 — PROTOS Breaks Free
 
 **Stable ID:** `equation`  
-**Unlock gate:** `5`
+**Unlock gate:** `6`
 
 **English (`en-US`):**
 

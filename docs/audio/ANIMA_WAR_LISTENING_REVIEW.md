@@ -6,7 +6,7 @@
 
 ## Decision
 
-The existing title art, title music, adaptive Act I score, stage-specific Act II score, and result cues remain in place. They support the revised Anima War without implying that PROTOS is benevolent or that harvested human souls are replaceable data. No runtime audio or title artwork was replaced in this phase.
+The existing title art, title music, adaptive Act I score, stage-specific Act II score, and result cues remain in place. They support the revised Anima War without softening PROTOS or treating harvested human souls as replaceable data. No runtime audio or title artwork was replaced in this phase.
 
 The visual and musical material works because it presents **Company Manus as disciplined, human, and mournful**, while later combat cues become increasingly rigid, urgent, and machine-like. The score therefore supports the campaign's plain-language progression: discover the human-harvesting system, rescue people, attack the farms and refineries, and assault Empire Foundry.
 
@@ -32,7 +32,7 @@ A 108-second montage sampled nine representative runtime cues for twelve seconds
 | S15 — Soulstorm | Dense, unstable orchestration conveys processed anima under extreme pressure and a battle approaching systemic collapse. | **Keep** |
 | S16 — Empire Foundry | Relentless, marching force gives the final operation industrial and imperial scale. | **Keep** |
 
-The suite is primarily orchestral rather than overtly electronic. That is acceptable: the human melodic material keeps Company Manus emotionally legible, while the later ostinatos, repeated pulses, and heavy mechanical pacing provide the robot empire's pressure. None of the sampled cues sounded peaceful, pastoral, or benevolent in a way that undermines the revised conflict.
+The suite is primarily orchestral rather than overtly electronic. That is acceptable: the human melodic material keeps Company Manus emotionally legible, while the later ostinatos, repeated pulses, and heavy mechanical pacing provide the robot empire's pressure. None of the sampled cues romanticized the harvesting system or weakened the revised conflict.
 
 ## Technical verification
 

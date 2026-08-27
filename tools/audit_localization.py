@@ -198,6 +198,7 @@ def main() -> int:
         "localization/en-US.json": runtime_english,
         "localization/zh-CN.json": "\n".join(zh_active.values()),
     }
+    missing_active_prose: list[str] = []
     waived_sources: list[dict[str, str]] = waived_en + waived_zh
     for path in _active_paths(contract):
         relative = path.relative_to(ROOT).as_posix()
@@ -211,6 +212,13 @@ def main() -> int:
                 continue
             lines.append(line)
         active_text_by_path[relative] = "\n".join(lines)
+    for source in contract.get("active_prose_sources", []):
+        relative = str(source)
+        path = ROOT / relative
+        if not path.is_file():
+            missing_active_prose.append(relative)
+            continue
+        active_text_by_path[relative] = path.read_text(encoding="utf-8")
     all_active_text = "\n".join(active_text_by_path.values())
 
     required_canon_failures = [
@@ -273,7 +281,7 @@ def main() -> int:
             charm_failures.append({"forbidden": str(term)})
 
     report: dict[str, Any] = {
-        "schema_version": 3,
+        "schema_version": 4,
         "contract": {"path": CONTRACT_PATH.relative_to(ROOT).as_posix(), "schema_version": contract.get("schema_version")},
         "summary": {},
         "structural": {
@@ -285,6 +293,8 @@ def main() -> int:
             "production_key_count": len(used_keys),
             "missing_catalog_keys": [{"key": key, "locations": used_keys[key]} for key in missing_catalog_keys],
             "unreferenced_catalog_keys": sorted(set(english) - set(used_keys)),
+            "active_prose_source_count": len(contract.get("active_prose_sources", [])),
+            "missing_active_prose_sources": missing_active_prose,
         },
         "fallbacks": {
             "hardcoded_visible_candidates": hardcoded,
@@ -304,7 +314,7 @@ def main() -> int:
         "waived_matches": waived_sources,
     }
     counts = {
-        "structural_failures": len(missing_chinese) + len(extra_chinese) + len(placeholder_drift) + len(missing_catalog_keys),
+        "structural_failures": len(missing_chinese) + len(extra_chinese) + len(placeholder_drift) + len(missing_catalog_keys) + len(missing_active_prose),
         "hardcoded_visible_failures": len(hardcoded),
         "literal_fallback_failures": len(fallback_mismatches),
         "company_name_failures": len(company_name_failures),
