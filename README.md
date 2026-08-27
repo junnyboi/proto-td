@@ -58,9 +58,11 @@ godot --headless --path . --export-release Web build/web/index.html
 tools/stage_cinematic_streams.sh build/web/cinematics
 ```
 
-The Web base PCK excludes the six Premium Resonance Ogg Theora videos. The
-selected hero/orientation stream is downloaded on demand, verified by exact
-size and SHA-256, cached under `user://`, and played through
+The Web base PCK excludes the six Premium Resonance Ogg Theora videos. As soon
+as Title opens, a persistent background service downloads all six streams
+sequentially—current orientation first—verifies exact size and SHA-256, and
+caches them under `user://`. A pull joins or prioritizes the shared transfer
+instead of duplicating it, then plays the verified file through
 `VideoStreamTheora`; the final identity plate remains a safe fallback. See
 [`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
 arguments, the stream manifest, and release checks.

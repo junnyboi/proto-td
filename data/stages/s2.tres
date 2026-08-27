@@ -61,4 +61,4 @@ rewards = Array[Dictionary]([{
 }])
 campaign_index = 2
 requires = Array[StringName]([])
-intro_hint = "Stop the runners first, then use Caster Arts against the Shieldbearer's armored opening of wave two."
+intro_hint = "Stop the runners first, then use Caster Arts against the armored Shieldbearer opening wave two."

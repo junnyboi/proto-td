@@ -14,12 +14,19 @@ func _init() -> void:
 
 
 func _run() -> void:
+	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(cinematic_prefetch != null, "CinematicPrefetch autoload is missing")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call("reset_for_tests")
 	_remove_preferences(PREFERENCES_PATH)
 	_remove_preferences(REDUCED_PREFERENCES_PATH)
 	await _verify_animated_reveal_and_hover()
 	await _verify_reduced_motion()
 	_remove_preferences(PREFERENCES_PATH)
 	_remove_preferences(REDUCED_PREFERENCES_PATH)
+	if cinematic_prefetch != null:
+		_check(int(cinematic_prefetch.call("title_entry_count")) == 2, "each title entry did not start cinematic prefetch")
+		cinematic_prefetch.call("reset_for_tests")
 	call_deferred("_finish")
 
 
@@ -28,6 +35,8 @@ func _verify_animated_reveal_and_hover() -> void:
 	var wordmark := title.find_child("Wordmark", true, false) as Label
 	var settings := title.find_child("SettingsButton", true, false) as Button
 	var sfx := root.get_node_or_null("Sfx")
+	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(cinematic_prefetch != null and int(cinematic_prefetch.call("title_entry_count")) == 1, "animated title entry did not start cinematic prefetch immediately")
 	_check(wordmark != null and wordmark.modulate.a < 1.0, "wordmark did not begin inside the fade-in window")
 	_check(title.find_child("CanonSynopsis", true, false) == null, "removed canon synopsis returned to the title reveal")
 	_check(settings != null and settings.modulate.a < 1.0, "Settings did not begin inside its staggered fade window")
@@ -64,6 +73,8 @@ func _verify_reduced_motion() -> void:
 	var title := await _create_title(REDUCED_PREFERENCES_PATH)
 	var wordmark := title.find_child("Wordmark", true, false) as Label
 	var settings := title.find_child("SettingsButton", true, false) as Button
+	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
+	_check(cinematic_prefetch != null and int(cinematic_prefetch.call("title_entry_count")) == 2, "reduced-motion title entry did not preserve background prefetch")
 	_check(wordmark != null and _near(wordmark.modulate.a, 1.0), "reduced motion did not reveal the wordmark instantly")
 	_check(title.find_child("CanonSynopsis", true, false) == null, "reduced-motion title restored removed synopsis")
 	_check(settings != null and _near(settings.modulate.a, 1.0), "reduced motion did not reveal Settings instantly")

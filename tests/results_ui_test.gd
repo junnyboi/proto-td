@@ -67,6 +67,7 @@ func _run() -> void:
 	var transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var transmission_speaker := screen.find_child("TransmissionSpeaker", true, false) as Label
 	var transmission_body := screen.find_child("TransmissionBody", true, false) as Label
+	var s1_narrative: Resource = load("res://data/presentation/narrative/stages/s1.tres")
 	var rewards_panel := screen.find_child("RewardsPanel", true, false) as PanelContainer
 	var consequence_panel := screen.find_child("ConsequencePanel", true, false) as PanelContainer
 	var rewards_scroll := screen.find_child("RewardsScroll", true, false) as ScrollContainer
@@ -118,9 +119,8 @@ func _run() -> void:
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
 	_check(
 		transmission_body != null
-		and transmission_body.text.contains("people")
-		and transmission_body.text.contains("robots")
-		and transmission_body.text.contains("Hearthcross"),
+		and s1_narrative != null
+		and transmission_body.text == String(s1_narrative.get("transmission")),
 		"clear transmission body is not canonical",
 	)
 	_check(transmission_speaker != null and transmission_speaker.get_theme_font_size(&"font_size") >= 24, "clear transmission speaker was not enlarged")

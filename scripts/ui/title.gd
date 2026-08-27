@@ -79,6 +79,9 @@ func _ready() -> void:
 	_text_scale = ViewPreferencesType.text_scale(_preferences_path)
 	_apply_audio_settings()
 	_apply_graphics_settings()
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
 	_build_screen()
 	move_child(_settings_state, get_child_count() - 1)
 	_settings_state.cancel_requested.connect(_cancel_settings)
