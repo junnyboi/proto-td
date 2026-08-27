@@ -17,15 +17,15 @@ GENDER_ORDER = ("female", "male")
 ACTION_ORDER = ("idle", "attack")
 DIRECTION_ORDER = ("ne", "se")
 CHROMA = {
-    "defender": "#FF00FF",
-    "gunner": "#00FF00",
-    "mage_apprentice": "#00FF00",
-    "shock_trooper": "#FF00FF",
-    "swordmaster": "#FF00FF",
-    "immovable": "#FF00FF",
-    "sniper": "#00FF00",
-    "sorcerer": "#00FF00",
-    "witch_doctor": "#FF00FF",
+	"defender": "#00FF00",
+	"gunner": "#FF00FF",
+	"mage_apprentice": "#00FF00",
+	"shock_trooper": "#FF00FF",
+	"swordmaster": "#00FF00",
+	"immovable": "#FF00FF",
+	"sniper": "#FF00FF",
+	"sorcerer": "#FF00FF",
+	"witch_doctor": "#FF00FF",
     "banner_guard": "#FF00FF",
     "sword_saint": "#00FF00",
 }
