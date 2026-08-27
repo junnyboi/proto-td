@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s9"
-title = "Return Path"
+title = "The Green Cage"
 music_profile_id = &"lunaris"
 music_variant_id = &"orbit_early"
 grid_rows = PackedStringArray("............", "SGGGG.......", "..EXG.XE....", "....GGGGGGGB", "...XG..X.E..", "SGGGG.......", "............")
@@ -90,7 +90,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 9
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Restoration Lattices repair wounded ground Custodians every 3 seconds. Burst them down or cover the green-gold seal with Slow Field to veto the repair cycle."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(6, 3)
 restoration_heal_amount = 8
 restoration_interval_ticks = 90

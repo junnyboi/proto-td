@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s15"
-title = "Consent Protocol"
+title = "Soulstorm"
 music_profile_id = &"lunaris"
 music_variant_id = &"gravity_lattice"
 grid_rows = PackedStringArray("SGGGGGG........", "..E..XG.E......", "SGGGG.GX...E...", "...XG.G..X.....", "..E.GGGGGGGGGGB", ".....X..GXG.E..", "SGGGGGGGG.GX...", "...E...E..G....", "SGGGGGGGGGG....")
@@ -138,7 +138,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 15
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Four claims converge on one audited corridor. Commit blockers in layers, Charm eligible leaders, and reserve Slow Field for the lattice carrying the largest live column."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(6, 2, 4, 3, 8, 5, 11, 4)
 restoration_heal_amount = 10
 restoration_interval_ticks = 90

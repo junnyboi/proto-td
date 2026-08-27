@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s13"
-title = "Borrowed Mercy"
+title = "Thirty-Three"
 music_profile_id = &"lunaris"
 music_variant_id = &"orbit_early"
 grid_rows = PackedStringArray("..............", "SGGGGGGGGG....", "..E.X.E.XG....", ".........GE...", "......GGGGGGGB", "...E.XGX...E..", "......G..EX...", "SGGGGGG.......")
@@ -122,7 +122,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 13
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Vesper-forked repair lanes reward trap timing: Spike Plates finish damaged runners, Tar Pits hold columns off-lattice, and Slow Field cancels the next repair."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(4, 1, 6, 5)
 restoration_heal_amount = 10
 restoration_interval_ticks = 90

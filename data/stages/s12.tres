@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"s12"
-title = "Archive Orchard"
+title = "Unlit"
 music_profile_id = &"lunaris"
 music_variant_id = &"gravity_lattice"
 grid_rows = PackedStringArray("..............", "SGGGGG........", "..E.XGX.E.....", ".....G.....E..", "SGGGGGGGGGGGGB", "...EX.XGX.....", ".......G.E....", "SGGGGGGG......")
@@ -114,7 +114,7 @@ recovery_roster = Array[StringName]([&"vanguard_1", &"guard_2", &"defender_2", &
 rewards = Array[Dictionary]([])
 campaign_index = 12
 requires = Array[StringName]([&"spike_plate", &"tar_pit", &"bolt", &"charm", &"slow_field", &"sniper_1", &"caster_2"])
-intro_hint = "Three orchard lanes restore on approach and again after convergence. Charm an eligible leader, then suppress the shared lattice before the archive column arrives."
+intro_hint = "Repairs wounded enemy ground robots every 3 seconds; Slow Field blocks that repair."
 restoration_cells = PackedVector2Array(5, 3, 7, 5, 9, 4)
 restoration_heal_amount = 10
 restoration_interval_ticks = 90
