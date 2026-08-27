@@ -348,6 +348,15 @@ func _run() -> void:
 		_check(continue_button.get_theme_color(&"font_color") == Color.WHITE, "Continue to Debrief copy is not white")
 		_check(continue_style.content_margin_top >= 24.0 and continue_style.content_margin_bottom >= 24.0, "Continue to Debrief lacks 24px vertical padding")
 		_check(continue_button.get_combined_minimum_size().x <= continue_button.size.x + 1.0, "Continue to Debrief text overflows its action width")
+		_check(bool(continue_button.get_meta(&"action_hover_feedback_wired", false)), "Continue to Debrief lacks shared hover feedback")
+		var continue_idle_tint := continue_button.modulate
+		continue_button.emit_signal(&"mouse_entered")
+		await create_timer(0.22).timeout
+		_check(continue_button.scale.x >= 1.035 and continue_button.scale.y >= 1.035, "Continue to Debrief does not lift on hover")
+		_check(not continue_button.modulate.is_equal_approx(continue_idle_tint), "Continue to Debrief lacks hover luminance feedback")
+		continue_button.emit_signal(&"mouse_exited")
+		await create_timer(0.22).timeout
+		_check(continue_button.scale.x < 1.03 and continue_button.scale.y < 1.03, "Continue to Debrief did not settle after hover")
 	var terminal_pan := battle.call("map_pan") as Vector2
 	var wheel := InputEventMouseButton.new()
 	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
