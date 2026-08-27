@@ -28,6 +28,7 @@ Every source is 1920×1920. The runtime derivatives are generated deterministica
 | D — Integrate | Retarget the manifest to generated identity files and tune Premium Resonance framing for the custom compositions. | The same canonical portrait appears throughout roster and resonance surfaces without save-schema changes. |
 | E — Verify | Run import, bounded boot, portrait catalog, Field Team, Training, gacha, localization, visual matrices, and the complete repository suite. | No parse, resource, runtime, layout, or log errors; desktop and portrait screenshots accepted. |
 | F — Release | Reconcile latest `master`, push, Web export, HTTP runtime checks, forward-only WebDev overlay, type/build, managed preview, checkpoint, publish if available. | Exact pushed source and PCK are verified in the existing zero-chrome host. |
+| G — Portrait entrance motion | Add one shared portrait-only parallax entrance to every premium identity surface. | Premium Resonance, Field Team, Training roster/dossier, and Moon Archive use a subtle staggered drift; Reduced Motion resolves immediately. |
 
 ## Implementation status
 
@@ -38,7 +39,8 @@ Every source is 1920×1920. The runtime derivatives are generated deterministica
 | C — Derive | Complete | The builder is byte-stable across consecutive runs; 512×512 and 640×800 derivatives, report, catalog, and SHA-256 ledger are present. |
 | D — Integrate | Complete | Manifest IDs now resolve generated assets; all target UI surfaces consume the same square identity portraits; obsolete chibi premium files are removed. |
 | E — Verify | Complete | Focused portrait/gacha/roster/localization tests, six responsive Xvfb captures plus hero-specific companion frames, and the complete Godot 4.7.2 baseline pass with no error signatures. |
-| F — Release | In progress | Upstream reconciliation, push, exact-source export, managed-host overlay, and final checkpoint remain. |
+| F — Release | Complete | The portrait release shipped through canonical `e8d4f94` and WebDev checkpoint `f5037a60` before this motion addendum. |
+| G — Portrait entrance motion | In progress | Shared premium-only helper, all four screen integrations, Reduced Motion bypass, lifecycle hardening, focused tests, seven Xvfb captures, and the complete 64-test/smoke Godot 4.7.2 gate pass. Upstream reconciliation, push, exact export, managed verification, and checkpoint remain. |
 
 ## Deterministic rebuild
 
@@ -62,3 +64,7 @@ git diff --exit-code -- assets/portraits docs/portraits/premium/ASSET_REPORT.jso
 ## Acceptance rules
 
 The source art must remain clearly adult (21+), premium painterly anime realism, mature but non-explicit, and faithful to the canonical sheet. Faces and signature equipment must remain legible at 128px. The Resonance crop must not cut the face, hand, core equipment silhouette, or produce cleavage-first framing. Runtime integration is presentation-only: premium ownership, fixed classes, stored lives, rarity, pull history, deterministic receipts, and save hashes remain untouched.
+
+## Portrait entrance motion contract
+
+The surrounding card remains stationary while each premium portrait starts 14px below and 8px to one alternating horizontal side of its authored crop, fades in, and settles over 0.42 seconds. Consecutive portraits use a 0.055-second order-based stagger capped after the sixth item. The effect uses only `offset_transform_position` and opacity, so it cannot change layout geometry or the established crop scale. The global Reduced Motion preference bypasses every tween and presents the final frame immediately. Basic Recruit and non-premium specialization portraits never receive this premium motion metadata.

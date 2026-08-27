@@ -5,6 +5,7 @@ const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
 const HistoryDrawerType := preload("res://scripts/ui/components/gacha_history_drawer.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
@@ -936,12 +937,15 @@ func _rebuild_cards(projection: Dictionary) -> void:
 	pool.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a.get("rarity", 4)) > int(b.get("rarity", 4))
 	)
-	for row: Dictionary in pool:
-		_hero_grid.add_child(_hero_card(row, owned.get(String(row["premium_id"]), {})))
+	for index: int in pool.size():
+		var row := pool[index] as Dictionary
+		_hero_grid.add_child(_hero_card(
+			row, owned.get(String(row["premium_id"]), {}), index,
+		))
 	_apply_hero_card_layout(_hero_grid.columns)
 
 
-func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
+func _hero_card(catalog: Dictionary, hero: Dictionary, entrance_index: int = 0) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Premium_%s" % catalog["premium_id"]
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -975,6 +979,12 @@ func _hero_card(catalog: Dictionary, hero: Dictionary) -> Control:
 	portrait_frame.add_child(portrait)
 	portrait_frame.resized.connect(_fit_hero_portrait_zoom.bind(portrait_frame, portrait))
 	_fit_hero_portrait_zoom(portrait_frame, portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		_gacha_portrait_asset_id(String(catalog["premium_id"])),
+		entrance_index,
+		_motion_reduced(),
+	)
 	var premium_id := String(catalog["premium_id"])
 	var name := _label(_premium_name(premium_id, String(catalog["callsign"])), &"heading")
 	name.name = "HeroName"

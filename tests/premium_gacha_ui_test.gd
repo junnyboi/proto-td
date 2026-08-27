@@ -103,7 +103,8 @@ func _run() -> void:
 	_check(pull_normal != null and pull_hover != null and not pull_normal.bg_color.is_equal_approx(pull_hover.bg_color), "Resonate action lacks a distinct hover surface")
 	_check(not _tree_text(browse_content).contains("LUNARIS RELIQUARY"), "browse eyebrow copy remains")
 	_check(not _tree_text(browse_content).contains("FIXED ELITE KIT") and not _tree_text(browse_content).contains("PULL TO RECRUIT"), "obsolete recruitment detail copy remains")
-	for premium_id: String in ["archive_caster", "lunaris_vessel", "reliquary_duelist"]:
+	for card_index: int in grid.get_child_count():
+		var premium_id := String((grid.get_child(card_index) as Control).name).trim_prefix("Premium_")
 		var card := grid.get_node_or_null("Premium_%s" % premium_id) as PanelContainer
 		var portrait_frame := card.find_child("PortraitFrame", true, false) as Control if card != null else null
 		var portrait := card.find_child("Portrait", true, false) as TextureRect if card != null else null
@@ -112,6 +113,9 @@ func _run() -> void:
 		_check(card.custom_minimum_size == Vector2(480, 645), "card did not increase by 50%% for %s" % premium_id)
 		_check(portrait_frame != null and portrait_frame.custom_minimum_size == Vector2(432, 420), "portrait frame did not scale with %s" % premium_id)
 		_check(portrait.scale.is_equal_approx(Vector2(1.03, 1.03)) and is_zero_approx(portrait.pivot_offset.y) and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "custom premium portrait is not using the top-safe square crop for %s" % premium_id)
+		_check(bool(portrait.get_meta(&"premium_portrait_entrance", false)), "premium portrait entrance is missing for %s" % premium_id)
+		_check(int(portrait.get_meta(&"premium_portrait_entrance_index", -1)) == card_index, "premium portrait stagger order drifted for %s" % premium_id)
+		_check(float(portrait.get_meta(&"premium_portrait_entrance_duration", 0.0)) <= 0.45, "premium portrait entrance is no longer subtle for %s" % premium_id)
 		_check(card.find_child("RarityLabel", true, false) == null and card.find_child("HeroDetail", true, false) == null, "rarity/detail labels remain on %s" % premium_id)
 		_check(card_style != null and card_style.content_margin_left >= 24.0 and card_style.content_margin_top >= 24.0 and card_style.content_margin_right >= 24.0 and card_style.content_margin_bottom >= 24.0, "premium card padding is below 24px for %s" % premium_id)
 		_check((card.find_child("HeroName", true, false) as Label).get_theme_font_size(&"font_size") == 48, "hero content did not scale with %s" % premium_id)
@@ -273,6 +277,8 @@ func _run() -> void:
 		if String(history_child.name).begins_with("HistoryPull_"):
 			committed_history_rows += 1
 	_check(committed_history_rows == 1 and not history_empty.visible, "committed pull did not enter the Moon Archive")
+	var history_portrait := history_drawer.find_child("HistoryPortrait", true, false) as TextureRect
+	_check(history_portrait != null and bool(history_portrait.get_meta(&"premium_portrait_entrance", false)), "Moon Archive premium portrait lacks its entrance motion")
 	_check(_tree_text(history_drawer).contains("1 COMMITTED PULLS"), "Moon Archive total did not match the canonical receipt count")
 	await _action(&"ui_cancel")
 	await _seconds(0.24)
@@ -420,6 +426,10 @@ func _run() -> void:
 	screen.call("_on_reveal_gui_input", click)
 	await _frames(1)
 	_check(not reveal.visible and screen.call("flow_state_name") == &"BROWSE", "reduced reveal click did not finalize")
+	for reduced_card: PanelContainer in grid.get_children():
+		var reduced_portrait := reduced_card.find_child("Portrait", true, false) as TextureRect
+		_check(reduced_portrait != null and bool(reduced_portrait.get_meta(&"premium_portrait_entrance_reduced", false)), "%s ignored Reduced Motion for its portrait entrance" % reduced_card.name)
+		_check(reduced_portrait != null and reduced_portrait.offset_transform_position.is_zero_approx() and is_equal_approx(reduced_portrait.modulate.a, 1.0), "%s retained portrait drift or fade under Reduced Motion" % reduced_card.name)
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
 

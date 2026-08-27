@@ -6,6 +6,7 @@ signal closed
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const ASTRAL_STAR := preload("res://assets/ui/gacha/astral_star.png")
 const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const MAX_DRAWER_WIDTH := 430.0
@@ -262,13 +263,14 @@ func _rebuild_rows() -> void:
 	accessibility_description = _summary.text
 	if history.is_empty():
 		return
-	for raw: Variant in history:
+	for history_index: int in history.size():
+		var raw: Variant = history[history_index]
 		if raw is Dictionary:
-			_rows.add_child(_history_row(raw as Dictionary))
+			_rows.add_child(_history_row(raw as Dictionary, history_index))
 	_rows.move_child(_empty_state, _rows.get_child_count() - 1)
 
 
-func _history_row(receipt: Dictionary) -> Control:
+func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	var five_star := int(receipt.get("rarity", 4)) == 5
 	var panel := PanelContainer.new()
 	panel.name = "HistoryPull_%04d" % (int(receipt.get("pull_index", 0)) + 1)
@@ -294,6 +296,12 @@ func _history_row(receipt: Dictionary) -> Control:
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		_portrait_id(String(receipt.get("premium_id", ""))),
+		entrance_index,
+		reduced_motion,
+	)
 
 	var copy_stack := VBoxContainer.new()
 	copy_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL

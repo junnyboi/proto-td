@@ -4,6 +4,7 @@ extends "res://scripts/ui/components/aetheria_button.gd"
 const TrainingLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ROW_HORIZONTAL_PADDING := 48
 const ROW_VERTICAL_PADDING := 24
@@ -41,6 +42,7 @@ func configure(
 		xp_text: String,
 		reason_text: String,
 		detail_tooltip: String = "",
+		entrance_index: int = 0,
 	) -> void:
 	hero_id = String(summary["hero_id"])
 	can_promote = bool(summary["can_promote"])
@@ -55,7 +57,14 @@ func configure(
 	_reason.text = reason_text
 	_progress.max_value = int(summary["xp_required"])
 	_progress.value = mini(int(summary["xp"]), int(summary["xp_required"]))
-	_portrait.texture = ArtType.texture(StringName(summary["portrait_asset_id"]))
+	var portrait_asset_id := StringName(summary["portrait_asset_id"])
+	_portrait.texture = ArtType.texture(portrait_asset_id)
+	PremiumPortraitEntranceType.apply(
+		_portrait,
+		portrait_asset_id,
+		entrance_index,
+		bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)),
+	)
 	var identity := _callsign.text
 	if not _title_tag.text.is_empty():
 		identity += " — %s" % _title_tag.text

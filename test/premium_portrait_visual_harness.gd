@@ -109,6 +109,8 @@ var _width := 1280
 var _height := 720
 var _scroll_bottom := false
 var _focus_hero := ""
+var _capture_frames := 24
+var _reduced_motion := false
 
 
 func _init() -> void:
@@ -125,6 +127,10 @@ func _init() -> void:
 			_scroll_bottom = true
 		elif argument.begins_with("--focus-hero="):
 			_focus_hero = argument.trim_prefix("--focus-hero=")
+		elif argument.begins_with("--capture-frames="):
+			_capture_frames = maxi(1, int(argument.trim_prefix("--capture-frames=")))
+		elif argument == "--reduced-motion":
+			_reduced_motion = true
 	if _output.is_empty():
 		print("PREMIUM_PORTRAIT_VISUAL_HARNESS_SMOKE_OK")
 		quit(0)
@@ -140,6 +146,7 @@ func _run() -> void:
 		quit(1)
 		return
 	game.call("set_run_seed", 8173)
+	ProjectSettings.set_setting("accessibility/reduced_motion", _reduced_motion)
 	if not bool(game.call("start_campaign", false, true)):
 		push_error("premium portrait visual harness: campaign fixture failed")
 		quit(1)
@@ -163,7 +170,7 @@ func _run() -> void:
 
 	var screen := load(scene_path).instantiate() as Control
 	root.add_child(screen)
-	for _frame: int in range(24):
+	for _frame: int in range(_capture_frames):
 		await process_frame
 	if _screen == "field":
 		var command_scroll := screen.find_child("MissionCommandScroll", true, false) as ScrollContainer
@@ -196,8 +203,11 @@ func _run() -> void:
 				training_scroll.ensure_control_visible(target)
 			else:
 				training_scroll.scroll_vertical = 100000
-		for _frame: int in range(6):
-			await process_frame
+			for _frame: int in range(6):
+				await process_frame
+	if not _validate_screen(screen):
+		quit(1)
+		return
 	await RenderingServer.frame_post_draw
 	var image := root.get_viewport().get_texture().get_image()
 	var save_error := image.save_png(_output)
@@ -205,25 +215,6 @@ func _run() -> void:
 		push_error("premium portrait visual harness: screenshot failed %s" % error_string(save_error))
 		quit(1)
 		return
-
-	if _screen == "gacha":
-		var cards := screen.find_child("PremiumHeroGrid", true, false) as GridContainer
-		if cards == null or cards.get_child_count() != 3:
-			push_error("premium portrait visual harness: resonance cards missing")
-			quit(1)
-			return
-	elif _screen == "field":
-		var grid := screen.find_child("OperatorGrid", true, false) as GridContainer
-		if grid == null or grid.get_child_count() != 3:
-			push_error("premium portrait visual harness: field team cards missing")
-			quit(1)
-			return
-	else:
-		var rows := screen.find_child("TrainingRosterList", true, false) as Container
-		if rows == null or rows.get_child_count() != 3:
-			push_error("premium portrait visual harness: training rows missing")
-			quit(1)
-			return
 
 	print(
 		"PREMIUM_PORTRAIT_VISUAL_CAPTURE screen=%s size=%dx%d path=%s"
@@ -243,3 +234,63 @@ func _run() -> void:
 	for _frame: int in range(8):
 		await process_frame
 	quit(0)
+
+
+func _validate_screen(screen: Control) -> bool:
+	if _screen == "gacha":
+		var cards := screen.find_child("PremiumHeroGrid", true, false) as GridContainer
+		if cards == null or cards.get_child_count() != 3:
+			push_error("premium portrait visual harness: resonance cards missing")
+			return false
+		if not _verify_portrait_motion(screen, "Portrait", 3):
+			return false
+	elif _screen == "field":
+		var grid := screen.find_child("OperatorGrid", true, false) as GridContainer
+		if grid == null or grid.get_child_count() != 3:
+			push_error("premium portrait visual harness: field team cards missing")
+			return false
+		if not _verify_portrait_motion(screen, "OperatorPortrait", 3):
+			return false
+	else:
+		var rows := screen.find_child("TrainingRosterList", true, false) as Container
+		if rows == null or rows.get_child_count() != 3:
+			push_error("premium portrait visual harness: training rows missing")
+			return false
+		if not _verify_portrait_motion(screen, "IdentityPortrait", 3):
+			return false
+		var selected := screen.find_child("SelectedOperatorPortrait", true, false) as TextureRect
+		if selected == null or not bool(selected.get_meta(&"premium_portrait_entrance", false)):
+			push_error("premium portrait visual harness: selected Training portrait lacks entrance motion")
+			return false
+		if bool(selected.get_meta(&"premium_portrait_entrance_reduced", false)) != _reduced_motion:
+			push_error("premium portrait visual harness: selected Training portrait reduced-motion state drifted")
+			return false
+	return true
+
+
+func _verify_portrait_motion(screen: Control, node_name: String, expected: int) -> bool:
+	var matches := screen.find_children(node_name, "TextureRect", true, false)
+	if matches.size() != expected:
+		push_error("premium portrait visual harness: expected %d %s nodes, found %d" % [expected, node_name, matches.size()])
+		return false
+	for raw: Node in matches:
+		var portrait := raw as TextureRect
+		if not bool(portrait.get_meta(&"premium_portrait_entrance", false)):
+			push_error("premium portrait visual harness: %s lacks entrance motion" % portrait.get_path())
+			return false
+		if bool(portrait.get_meta(&"premium_portrait_entrance_reduced", false)) != _reduced_motion:
+			push_error("premium portrait visual harness: %s reduced-motion state drifted" % portrait.get_path())
+			return false
+		if _reduced_motion:
+			if not portrait.offset_transform_position.is_zero_approx() or not is_equal_approx(portrait.modulate.a, 1.0):
+				push_error("premium portrait visual harness: %s retained motion under Reduced Motion" % portrait.get_path())
+				return false
+		elif _capture_frames <= 6:
+			if not bool(portrait.get_meta(&"premium_portrait_entrance_active", false)):
+				push_error("premium portrait visual harness: %s skipped its intermediate entrance state" % portrait.get_path())
+				return false
+		elif _capture_frames >= 40:
+			if bool(portrait.get_meta(&"premium_portrait_entrance_active", true)) or not portrait.offset_transform_position.is_zero_approx() or not is_equal_approx(portrait.modulate.a, 1.0):
+				push_error("premium portrait visual harness: %s did not settle at the final crop" % portrait.get_path())
+				return false
+	return true
