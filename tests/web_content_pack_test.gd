@@ -12,6 +12,7 @@ func _init() -> void:
 func _run() -> void:
 	_test_argument_contract()
 	_test_resource_routing()
+	_test_predictive_class_order()
 	_test_export_boundary()
 	_test_autoload_contract()
 	if _failures.is_empty():
@@ -62,6 +63,30 @@ func _test_resource_routing() -> void:
 		LoaderType.pack_id_for_resource("res://assets/sprites/operators/animated/recruit_female/idle_ne.webp").is_empty(),
 		"Recruit atlas was incorrectly routed out of the core pack",
 	)
+	_check(
+		LoaderType.pack_id_for_class("sword_saint") == "operator-sword-saint",
+		"advanced class id did not route to its pack",
+	)
+	_check(LoaderType.pack_id_for_class("recruit").is_empty(), "Recruit class routed to a pack")
+
+
+func _test_predictive_class_order() -> void:
+	var roster: Array = [
+		{"hero_id": "h1", "current_class_id": "swordmaster"},
+		{"hero_id": "h2", "current_class_id": "defender"},
+		{"hero_id": "h3", "current_class_id": "gunner"},
+		{"hero_id": "h4", "current_class_id": "sorcerer"},
+		{"hero_id": "h5", "current_class_id": "recruit"},
+	]
+	var predicted: Array[String] = LoaderType.predictive_class_order(roster, ["h3", "h2"])
+	_check(
+		predicted == ["gunner", "defender", "swordmaster"],
+		"selected squad classes did not lead the bounded roster prediction",
+	)
+	_check(
+		LoaderType.predictive_class_order(roster, [], 2) == ["swordmaster", "defender"],
+		"roster prediction did not honor its class horizon",
+	)
 
 
 func _test_export_boundary() -> void:
@@ -90,10 +115,28 @@ func _test_autoload_contract() -> void:
 	var digest := "b".repeat(64)
 	loader.call("configure", PackedStringArray([
 		"--content-pack=operator-swordmaster|https://cdn.example/swordmaster.zip|2048|%s" % digest,
+		"--content-pack=operator-defender|https://cdn.example/defender.zip|2048|%s" % digest,
+		"--content-pack=operator-gunner|https://cdn.example/gunner.zip|2048|%s" % digest,
 		"--content-pack=unknown|https://cdn.example/unknown.zip|2048|%s" % digest,
 	]))
-	_check(int(loader.call("configured_pack_count")) == 1, "autoload accepted an unknown content pack")
+	_check(int(loader.call("configured_pack_count")) == 3, "autoload accepted an unknown content pack")
 	_check(loader.call("request_resource", "res://project.godot"), "existing core resource did not resolve immediately")
+	var requested: Array = loader.call(
+		"prefetch_class_ids", ["swordmaster", "recruit", "defender", "swordmaster"], false,
+	)
+	_check(
+		requested == ["operator-swordmaster", "operator-defender"],
+		"class prefetch did not filter and deduplicate pack ids",
+	)
+	_check(
+		loader.call("queued_pack_ids") == ["operator-swordmaster", "operator-defender"],
+		"background prefetch queue did not preserve prediction order",
+	)
+	loader.call("request_class", "defender", true)
+	_check(
+		loader.call("queued_pack_ids") == ["operator-defender", "operator-swordmaster"],
+		"foreground class intent did not reprioritize the queued pack",
+	)
 	loader.call("reset_for_tests")
 
 
