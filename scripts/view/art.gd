@@ -225,6 +225,13 @@ static func atlas_region_for_frame(entry: Dictionary, frame: int) -> Rect2i:
 
 
 static func _load_texture(path: String) -> Texture2D:
+	if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
+		var main_loop := Engine.get_main_loop()
+		if main_loop is SceneTree:
+			var content_packs := (main_loop as SceneTree).root.get_node_or_null("ContentPacks")
+			if content_packs != null:
+				content_packs.call("request_resource", path)
+		return null
 	if not _import_cache_missing(path):
 		var imported := ResourceLoader.load(path) as Texture2D
 		if imported != null:

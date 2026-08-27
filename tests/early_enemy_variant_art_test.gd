@@ -22,6 +22,7 @@ func _run() -> void:
 	_check(Art._cached_texture_count_for_test() == 0, "generated enemy frames must not accumulate in the process-lifetime cache")
 	_validate_mirror_contracts()
 	_validate_portable_provenance()
+	_validate_web_import_contract()
 	_validate_timed_attack_frames()
 	_validate_projection_policy()
 	if _failures.is_empty():
@@ -89,6 +90,25 @@ func _validate_portable_provenance() -> void:
 				var source_video := String(metadata.get("source_video", ""))
 				_check(not source_video.begins_with("/"), "%s %s %s source path must be repository-relative" % [enemy_id, action, direction])
 				_check(FileAccess.file_exists("res://%s" % source_video), "%s %s %s source carrier must exist" % [enemy_id, action, direction])
+
+
+func _validate_web_import_contract() -> void:
+	var import_count := 0
+	for filename: String in DirAccess.get_files_at("res://assets/enemy-variants"):
+		if not filename.ends_with(".webp.import"):
+			continue
+		import_count += 1
+		var path := "res://assets/enemy-variants/%s" % filename
+		var file := FileAccess.open(path, FileAccess.READ)
+		_check(file != null, "%s import metadata must be readable" % filename)
+		if file == null:
+			continue
+		var text := file.get_as_text()
+		_check(text.contains("compress/mode=1"), "%s must use compressed Web storage" % filename)
+		_check(text.contains("compress/lossy_quality=0.92"), "%s must preserve quality-0.92 imports" % filename)
+		_check(text.contains("mipmaps/generate=true"), "%s must generate mipmaps" % filename)
+		_check(text.contains("process/size_limit=0"), "%s must preserve authored dimensions" % filename)
+	_check(import_count == 24, "enemy variant import contract must cover exactly 24 atlases")
 
 
 func _validate_timed_attack_frames() -> void:

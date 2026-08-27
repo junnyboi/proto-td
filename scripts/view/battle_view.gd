@@ -1264,6 +1264,8 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 		and OPERATOR_ANIMATOR_SCRIPT.apply(u, model.tick, _enemy_anim_seconds, sprite, animation)
 	)
 	if animated:
+		if not bool(body.get_meta(&"operator_animation", false)):
+			_activate_unit_animation_body(body, sprite, animation, visual_template_id)
 		return
 	var def: OperatorDef = _op_defs.get(u.op_id)
 	if def == null:
@@ -1281,6 +1283,37 @@ func _refresh_unit_sprite(u: UnitState, body: ColorRect) -> void:
 	var tex := Art.texture(art_id, frame)
 	if tex != null and sprite.texture != tex:
 		sprite.texture = tex
+
+
+func _activate_unit_animation_body(
+	body: ColorRect,
+	sprite: TextureRect,
+	animation: OperatorAnimationDef,
+	visual_template_id: StringName,
+) -> void:
+	body.color = Color(0.0, 0.0, 0.0, 0.0)
+	body.size = OPERATOR_ANIMATOR_SCRIPT.body_size(animation)
+	body.position = Vector2(
+		-body.size.x * 0.5,
+		IsoProjection.FEET_OFFSET - body.size.y * animation.pivot.y,
+	)
+	body.set_meta(&"operator_animation", true)
+	body.set_meta(&"operator_template_id", visual_template_id)
+	sprite.size = body.size
+	sprite.flip_h = false
+	var shadow := body.get_node_or_null("Shadow") as Polygon2D
+	if shadow != null:
+		shadow.position = Vector2(body.size.x * 0.5, body.size.y)
+	var hp_bar := body.get_node_or_null("HpBarBg") as ColorRect
+	if hp_bar != null:
+		hp_bar.size.x = body.size.x
+	var sp_bar := body.get_node_or_null("SpBarBg") as ColorRect
+	if sp_bar != null:
+		sp_bar.size.x = body.size.x
+		sp_bar.position.y = body.size.y + 3.0
+	var chevron := body.get_parent().get_node_or_null("FacingChevron") as Polygon2D
+	if chevron != null:
+		chevron.position = chevron.position.normalized() * (maxf(UNIT_PX, body.size.x) * 0.5 + 6.0)
 
 
 ## Skill trigger flashes the portrait, bursts at the unit, and plays its sting.
@@ -1394,6 +1427,7 @@ func _make_unit_node(u: UnitState) -> Node2D:
 		_add_sp_bar(rect)
 	node.add_child(rect)
 	var chevron := Polygon2D.new()
+	chevron.name = "FacingChevron"
 	chevron.color = CHEVRON_COLOR
 	chevron.polygon = PackedVector2Array([Vector2(-5, -7), Vector2(-5, 7), Vector2(7, 0)])
 	# grid-cardinal facing projected into iso screen space: the arrow points

@@ -607,7 +607,7 @@ func _apply_responsive_layout() -> void:
 	_back_button.custom_minimum_size = Vector2(92.0 if narrow else 190.0, 72.0 if short else _title_size(76.0))
 	_frame_option.custom_minimum_size.y = 72.0
 	_music_button.custom_minimum_size.y = 82.0
-	_master_mute_button.custom_minimum_size = Vector2(0.0 if narrow else 176.0, 64.0 if narrow else 48.0)
+	_master_mute_button.custom_minimum_size = Vector2(0.0 if narrow else 228.0, 64.0 if narrow else 48.0)
 	_motion_button.custom_minimum_size.y = 92.0 if narrow else 82.0
 	for slider: HSlider in [_master_slider, _music_slider, _sfx_slider, _text_scale_slider]:
 		slider.custom_minimum_size.y = 48.0
@@ -630,7 +630,7 @@ func _apply_responsive_layout() -> void:
 		)
 	_back_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(9 if narrow else 17), 1.15))
 	_music_button.add_theme_font_size_override(&"font_size", _title_font_size(13 if narrow else 17))
-	_master_mute_button.add_theme_font_size_override(&"font_size", _title_font_size(11 if narrow else 14))
+	_master_mute_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 12))
 	_motion_button.add_theme_font_size_override(&"font_size", _title_font_size(10 if narrow else 17))
 	_apply_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(15 if narrow else 17), 1.15))
 	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _apply_button]:
@@ -639,6 +639,7 @@ func _apply_responsive_layout() -> void:
 		)
 		action.clip_text = false
 	_back_button.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_master_mute_button.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_rebuild_focus_graph()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):
 		_last_valid_focus = focus_owner

@@ -37,6 +37,7 @@ func _run() -> void:
 	var music_slider := settings.find_child("MusicVolumeSlider", true, false) as HSlider
 	_check(master != null and master.tick_count == 11 and master.ticks_on_borders, "Master volume lacks the requested visual ticked slider")
 	_check(master_mute != null and master_mute.toggle_mode, "Master volume lacks the quick mute toggle")
+	_check(master_mute.autowrap_mode == TextServer.AUTOWRAP_OFF, "Master mute action is allowed to wrap")
 	master.value = 35.0
 	music_slider.value = 65.0
 	await process_frame
@@ -53,6 +54,8 @@ func _run() -> void:
 	master_mute.pressed.emit()
 	await process_frame
 	_check(AudioServer.is_bus_mute(master_index), "quick Master mute did not mute the shared output")
+	_check(master_mute.text == "UNMUTE", "quick Master mute did not expose a compact Unmute action")
+	_check(master_mute.size.x + 0.5 >= master_mute.get_combined_minimum_size().x, "Unmute action exceeds its rendered button width")
 	_check(is_equal_approx(master.value, 35.0), "quick Master mute destructively changed the slider value")
 	_check(bool(settings.call("draft").get(&"master_muted", false)), "quick Master mute did not enter the Settings draft")
 	_check(active_player.playing, "quick Master mute stopped active music playback")

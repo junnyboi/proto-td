@@ -9,9 +9,9 @@ classes=(
   sniper sorcerer witch_doctor banner_guard sword_saint
 )
 for class_id in "${classes[@]}"; do
-  xvfb-run -a -s '-screen 0 1920x1080x24' env \
-    GODOT_AUDIO_DRIVER=Dummy GODOT_SILENCE_ROOT_WARNING=1 \
-    godot --path "$REPOSITORY" \
+	  xvfb-run -a -s '-screen 0 1920x1080x24' env \
+	    GODOT_SILENCE_ROOT_WARNING=1 \
+	    godot --path "$REPOSITORY" --audio-driver Dummy \
     --script test/advanced_operator_visual_harness.gd \
     -- --class "$class_id" --output "$OUTPUT/${class_id}.png" \
     > "$OUTPUT/${class_id}.log" 2>&1
