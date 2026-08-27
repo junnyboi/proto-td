@@ -79,13 +79,17 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var actions := _mission.find_child("MissionActions", true, false) as GridContainer
 	var field_panel := _mission.find_child("FieldTeamPanel", true, false) as PanelContainer
 	var intel_panel := _mission.find_child("MissionIntelligencePanel", true, false) as PanelContainer
+	var recruit_desk_center := _mission.find_child("BasicRecruitDeskCenter", true, false) as HBoxContainer
 	var recruit_desk := _mission.find_child("BasicRecruitDesk", true, false) as PanelContainer
 	var recruit_grid := _mission.find_child("BasicRecruitGrid", true, false) as GridContainer
+	var recruit_header := _mission.find_child("BasicRecruitHeader", true, false) as BoxContainer
 	var recruit_title := _mission.find_child("BasicRecruitTitle", true, false) as Label
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var recruit_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
 	var recruit_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
+	var hire_cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
+	var hire_cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
 	var launch_status := _mission.find_child("ReadinessCopy", true, false) as Label
 	_check(shell != null and bool(shell.get("full_safe_area")), "%s mission shell is not full-safe-area" % label)
@@ -110,21 +114,28 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(recruit_desk != null and intel_panel != null and intel_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements is not inside Mission Intelligence" % label)
 	_check(recruit_desk != null and field_panel != null and not field_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements remained inside Field Team Selection" % label)
 	_check(recruit_grid != null and recruit_grid.columns == 1, "%s Company Reinforcements is not a stable single-column stack" % label)
-	_check(recruit_title != null and recruit_title.get_theme_font_size(&"font_size") >= 24, "%s Company Reinforcements title is below the readability floor" % label)
+	_check(recruit_title != null and recruit_title.get_theme_font_size(&"font_size") >= 14, "%s Company Reinforcements title is below the compact readability floor" % label)
 	_check(recruit_body == null, "%s redundant Company Reinforcements body copy still exists" % label)
 	_check(recruit_roster == null, "%s personnel-ready copy still exists" % label)
-	_check(recruit_title != null and recruit_marks != null and recruit_marks.get_index() == recruit_title.get_index() + 1, "%s Marks balance is not directly below Company Reinforcements" % label)
-	_check(recruit_desk != null and recruit_desk.get_index() == recruit_desk.get_parent().get_child_count() - 1, "%s Company Reinforcements is not the last Mission Intelligence section" % label)
+	_check(recruit_header != null and recruit_title != null and recruit_marks != null and recruit_title.get_parent() == recruit_header and recruit_marks.get_parent() != null and recruit_marks.get_parent().get_parent() == recruit_header, "%s shard balance is not on the Company Reinforcements title row" % label)
+	_check(recruit_title != null and recruit_title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s Company Reinforcements title is not centered" % label)
+	_check(recruit_marks != null and recruit_title != null and recruit_marks.get_global_rect().position.x >= recruit_title.get_global_rect().end.x - EPSILON, "%s shard balance is not top-right of the title" % label)
+	_check(recruit_desk_center != null and recruit_desk_center.get_index() == recruit_desk_center.get_parent().get_child_count() - 1, "%s Company Reinforcements is not the last Mission Intelligence section" % label)
 	_check(hire_button != null and hire_button.focus_mode == Control.FOCUS_ALL, "%s recruit action is not keyboard focusable" % label)
 	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s recruit status is not a polite live region" % label)
 	_check(launch_status != null and launch_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s launch status is not a polite live region" % label)
 	if recruit_desk != null and intel_panel != null:
 		_check(_inside_horizontally(intel_panel, recruit_desk), "%s Company Reinforcements exceeds Mission Intelligence horizontally" % label)
+		_check(is_equal_approx(recruit_desk.custom_minimum_size.x, 220.0), "%s Company Reinforcements does not use its compact fixed width" % label)
+		_check(absf(recruit_desk.get_global_rect().get_center().x - intel_panel.get_global_rect().get_center().x) <= 6.0, "%s Company Reinforcements is not horizontally centered in Mission Intelligence" % label)
 	if hire_button != null:
-		var hire_presentation := hire_button.get_node_or_null("PresentationLabel") as Label
-		_check(hire_presentation != null and _inside(hire_button, hire_presentation), "%s recruit action label overflows" % label)
+		var hire_content := hire_button.get_node_or_null("BasicRecruitActionContent") as HBoxContainer
+		_check(hire_content != null and _inside(hire_button, hire_content), "%s recruit action content overflows" % label)
+		_check(is_equal_approx(hire_button.custom_minimum_size.x, 100.0), "%s recruit action does not use the requested fixed 100px width" % label)
 		_check(hire_button.custom_minimum_size.y >= 72.0, "%s recruit action cannot contain 12px vertical padding" % label)
-		_check(hire_presentation != null and is_equal_approx(hire_presentation.offset_top, 12.0) and is_equal_approx(hire_presentation.offset_bottom, -12.0), "%s recruit action lacks exact 12px top/bottom padding" % label)
+		_check(hire_button.icon == null and hire_cost_icon != null and hire_cost_icon.texture != null, "%s recruit action lacks its explicit shard sprite" % label)
+		_check(hire_cost_label != null and hire_cost_label.text == "5" and hire_cost_icon.get_index() + 1 == hire_cost_label.get_index(), "%s shard sprite is not immediately before the exact hire cost" % label)
+		_check(hire_status != null and hire_status.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s recruit status copy is not centered" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
 		var expected_action_columns := 1 if viewport.y > viewport.x or viewport.x < 1280 else 3
@@ -187,33 +198,34 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	_check(roster_scroll != null and roster_scroll.custom_minimum_size.y >= 240.0, "%s operator list lacks a usable local scroll viewport" % label)
 	var active_tab := _mission.find_child("ActiveRosterTab", true, false) as Button
 	var fallen_tab := _mission.find_child("FallenRosterTab", true, false) as Button
-	for tab: Button in [active_tab, fallen_tab]:
+	var all_tab := _mission.find_child("AllRosterTab", true, false) as Button
+	for tab: Button in [active_tab, fallen_tab, all_tab]:
 		_check(tab != null, "%s roster status tab is missing" % label)
 		if tab != null:
-			var expected_tab_width := 176.0
+			var expected_tab_width := minf(352.0, maxf(176.0, viewport.x - 96.0)) if viewport.y > viewport.x else 352.0
 			var expected_tab_height := 54.0
-			_check(tab.custom_minimum_size.x >= expected_tab_width and tab.custom_minimum_size.y >= expected_tab_height, "%s roster tab geometry does not match its responsive contract" % label)
+			_check(is_equal_approx(tab.custom_minimum_size.x, expected_tab_width) and tab.custom_minimum_size.y >= expected_tab_height, "%s roster tab is not doubled or safely contained" % label)
 			_check(tab.get_theme_font_size(&"font_size") >= 27, "%s roster tab text is below the global 1.5x scale" % label)
+	_check(all_tab != null and all_tab.visible, "%s all-operators filter is not visible" % label)
 	var all_factions := _mission.find_child("AllFactionFilter", true, false) as Button
-	var expected_all_width := 162.0 if label == "wide" else (126.0 if label == "regular" else 162.0)
-	var expected_filter_height := 54.0
-	_check(all_factions != null and all_factions.custom_minimum_size.x >= expected_all_width and all_factions.custom_minimum_size.y >= expected_filter_height, "%s all-factions filter lacks responsive geometry" % label)
+	_check(all_factions != null and all_factions.get_parent() != null and not (all_factions.get_parent() as Control).visible, "%s faction filter row remains visible" % label)
 	for faction_name: String in ["SolcrestAccordFactionFilter", "VesperCircuitFactionFilter", "LunarisReliquaryFactionFilter", "CrimsonAegisFactionFilter"]:
 		var faction := _mission.find_child(faction_name, true, false) as Button
 		_check(faction != null, "%s %s is missing" % [label, faction_name])
-		if faction != null:
-			var expected_faction_width := 108.0 if label == "wide" else (72.0 if label == "regular" else 108.0)
-			_check(faction.custom_minimum_size.x >= expected_faction_width and faction.custom_minimum_size.y >= expected_filter_height, "%s %s lacks responsive width and padding" % [label, faction_name])
-			_check(faction.icon != null and faction.icon_alignment == HORIZONTAL_ALIGNMENT_LEFT, "%s %s heraldry is not left of its count" % [label, faction_name])
-			_check(faction.alignment == HORIZONTAL_ALIGNMENT_RIGHT, "%s %s count is not positioned to the right" % [label, faction_name])
-			_check(faction.get_theme_constant(&"icon_separation") <= 6, "%s %s icon/count gap is not reduced" % [label, faction_name])
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
-		_check(operator_grid.columns == 1, "%s operator grid does not use one doubled-width card per row" % label)
+		var expected_columns := 1 if viewport.y > viewport.x or viewport.x < 1280 else 2
+		_check(operator_grid.columns == expected_columns, "%s operator grid does not use the requested responsive two-column layout" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
-				var expected_width := minf(640.0, maxf(240.0, viewport.x - 96.0)) if viewport.y > viewport.x else minf(640.0, maxf(320.0, viewport.x * 0.60 - 72.0))
-				_check(absf((child as Button).size.x - expected_width) <= EPSILON, "%s operator card is not doubled to the responsive wide target" % label)
+				var expected_width := (
+					minf(640.0, maxf(240.0, viewport.x - 96.0))
+					if viewport.y > viewport.x
+					else minf(640.0, maxf(320.0, viewport.x * 0.60 - 96.0))
+					if viewport.x < 1280
+					else minf(520.0, maxf(240.0, (viewport.x * 0.60 - 108.0) * 0.5))
+				)
+				_check(absf((child as Button).size.x - expected_width) <= EPSILON, "%s operator card does not fit the responsive grid target" % label)
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
 				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
 				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
@@ -261,12 +273,16 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var recruit_title := _mission.find_child("BasicRecruitTitle", true, false) as Label
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
+	var hire_action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
+	var hire_cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
+	var hire_cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
 	var hire_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
 	var hire_currency := _mission.find_child("BasicRecruitCurrency", true, false) as HBoxContainer
 	var hire_icon := hire_currency.find_child("ResonanceShardIcon", true, false) as TextureRect if hire_currency != null else null
 	var hire_status := _mission.find_child("BasicRecruitStatus", true, false) as Label
 	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
-	_check(hire_button != null and hire_button.icon != null and hire_button.text.contains("5") and not hire_button.text.contains("MARKS"), "Field Team recruit action does not expose its icon-backed exact price")
+	_check(hire_button != null and hire_button.icon == null and hire_button.text.is_empty() and hire_button.accessibility_name.contains("5") and not hire_button.accessibility_name.contains("MARKS"), "Field Team recruit action still uses the legacy native presentation or wording")
+	_check(hire_action_label != null and hire_action_label.text == "HIRE" and hire_cost_icon != null and hire_cost_icon.texture != null and hire_cost_label != null and hire_cost_label.text == "5", "Field Team recruit action does not expose its explicit sprite-backed exact price")
 	_check(hire_marks != null and hire_marks.text == "120" and hire_icon != null and hire_icon.texture != null, "Field Team does not show the current shard balance")
 	_check(hire_currency != null and hire_currency.tooltip_text.contains("ordinary salvage") and hire_currency.tooltip_text.contains("no anima or souls"), "Field Team Marks balance is not explained as ordinary soul-free campaign payment")
 	_check(hire_button != null and hire_button.tooltip_text.contains("ordinary salvage") and hire_button.tooltip_text.contains("no anima or souls"), "Field Team recruit action lacks its ordinary Marks explanation")
@@ -279,7 +295,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		await process_frame
 		await process_frame
 		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
-		_check(hire_button != null and hire_button.text.contains("招募") and hire_button.text.contains("5") and hire_button.icon != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
+		_check(hire_button != null and hire_button.accessibility_name.contains("招募") and hire_button.accessibility_name.contains("5") and hire_action_label != null and hire_action_label.text == "招募" and hire_cost_icon != null and hire_cost_icon.texture != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
 		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
 		_check(hire_currency.tooltip_text.contains("普通打捞物") and hire_button.tooltip_text.contains("不含anima或灵魂"), "Field Team ordinary-Marks tooltips did not refresh to Chinese")
 		_check(hire_status != null and hire_status.text.contains("基础新兵合约"), "Field Team recruitment status did not refresh to Chinese")
