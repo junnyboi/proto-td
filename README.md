@@ -14,7 +14,7 @@ The main scene is `res://scenes/title.tscn`.
 
 ## Gameplay and campaign features
 
-The sixteen-operation campaign spans **Act I — The Mercy Equation** and **Act II — The Garden Veto**, routing players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Mercy Archive. S9–S16 add Restoration Lattices: authored civil-repair cells that heal hostile ground Custodians on deterministic intervals unless an active Slow Field covers the lattice. Mission Control displays the authoritative roster and Marks balance and offers a compact repeatable **basic Recruit contract for 5 Marks**; the Field Team workspace repeats the same authoritative contract beside the live roster. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
+The sixteen-operation campaign spans **Act I — The Harvest Line** and **Act II — Into the Machine Empire**. The player leads **Company Manus** against corrupted PROTOS, which drains anima—the real human soul—from captive people to power a robot empire. The campaign routes players from Company Command into Mission Control, squad selection, deterministic isometric battles, results, training, Premium Resonance, Valhalla, and the narrated Anima Archive. S9–S16 retain authored repair platforms that heal hostile ground robots on deterministic intervals unless an active Slow Field covers the platform. Mission Control displays the authoritative roster and Marks balance and offers a compact repeatable **basic Recruit contract for 5 Marks**; the Field Team workspace repeats the same authoritative contract beside the live roster. Premium Resonance remains a separate 40-Mark pull with pity, conversion history, and reserve-life rules; traps and spells are campaign unlocks rather than spendable currencies.
 
 Battlefields use an endpoint-aware isometric projection with bounded portrait panning and a shared 0.92 tactical framing multiplier. Recruit animation definitions share a source ground line so male and female idle/attack sprites remain centered on their tile faces in every direction. Camera, placement, economy, persistence, keyboard focus, bilingual copy, and responsive Mission Control layouts are covered by standalone Godot regressions and Xvfb visual harnesses.
 
@@ -85,7 +85,7 @@ The deterministic premium gacha lifecycle, save migration, fixed-kit rule, store
 
 ## Narrative canon
 
-The binding world history, Mercy Equation, PROTOS doctrine, Custodian Choir, Lunaris character truths, launch-campaign revelations, future destination, and change-control rules live in [`docs/NARRATIVE_CANON.md`](docs/NARRATIVE_CANON.md). New story copy and generated narrative visuals must remain compatible with that document unless an approved revision explicitly supersedes it.
+The sole binding world history, anima rules, corrupted-PROTOS doctrine, Company Manus mission, Lunaris character truths, faction motives, two-act campaign, and change-control rules live in [`docs/NARRATIVE_CANON.md`](docs/NARRATIVE_CANON.md). Technical plans describe implementation but do not create independent canon.
 
 ## Contributions
 
