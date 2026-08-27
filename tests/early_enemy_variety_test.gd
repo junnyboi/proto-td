@@ -13,6 +13,8 @@ func _run() -> void:
 	_validate_enemy_definitions()
 	_validate_caster_arts_counterplay()
 	_validate_stage_schedules()
+	_validate_interceptor_attack_authority()
+	_validate_campaign_context()
 	if _failures.is_empty():
 		print("EARLY_ENEMY_VARIETY_OK")
 		quit(0)
@@ -50,6 +52,8 @@ func _validate_enemy_definitions() -> void:
 		_check(is_equal_approx(interceptor.speed_tiles_per_s, 0.9), "Interceptor speed must remain 0.9")
 		_check(interceptor.aerial and interceptor.block_weight == 0, "Interceptor must bypass ground blocking")
 		_check(interceptor.charm_immune, "Interceptor must remain Charm-immune like Drone")
+		_check(interceptor.atk_range_cells == 2, "Interceptor must retain its short two-cell attack range")
+		_check(interceptor.target_policy.id == &"enemy_blocker_then_nearest", "Interceptor must target nearby deployed units")
 
 
 func _validate_caster_arts_counterplay() -> void:
@@ -111,12 +115,67 @@ func _validate_stage_schedules() -> void:
 	_check(s4.intro_hint.contains("sustain fire") and s4.intro_hint.contains("Interceptors"), "S4 hint must explain durable anti-air")
 
 
+func _validate_interceptor_attack_authority() -> void:
+	var stage := (load("res://data/stages/s4.tres") as StageDef).duplicate(true) as StageDef
+	stage.waves = []
+	stage.wave_starts = PackedInt32Array()
+	var config := (load("res://data/config/game.tres") as GameConfig).duplicate(true) as GameConfig
+	var enemy_defs := _load_catalog("res://data/enemies")
+	var operator_defs := _load_catalog("res://data/operators")
+	var model := BattleModel.create(stage, stage.recovery_roster, 4404, config, enemy_defs, operator_defs)
+	_check(model != null, "Interceptor authority fixture must create")
+	if model == null:
+		return
+	model.dp = config.dp_cap
+	var deployed := model.apply_action([&"deploy", &"defender_1", Vector2i(8, 1), UnitState.Facing.LEFT])
+	_check(deployed, "Interceptor authority fixture must deploy a target")
+	if not deployed:
+		return
+	model._spawn({"enemy_id": &"interceptor", "path_idx": 0})
+	var interceptor := model.enemies[-1] as EnemyState
+	var path := model.path_for(0)
+	var closest_index := 0
+	var closest_distance := 999
+	for index: int in range(path.size()):
+		var distance := maxi(absi(path[index].x - 8), absi(path[index].y - 1))
+		if distance < closest_distance:
+			closest_distance = distance
+			closest_index = index
+	interceptor.progress_units = closest_index * Pathing.PROGRESS_SCALE
+	var decision := TargetDecisionProjection.enemy_target_decision(model, interceptor.id)
+	_check(int(decision.get("selected_id", -1)) >= 0, "Interceptor must acquire a nearby deployed operator")
+	var defender := model.units[0] as UnitState
+	var hp_before := defender.hp
+	model._tick_combat()
+	_check(defender.hp < hp_before, "Interceptor authoritative attack must damage its selected operator")
+	_check(interceptor.atk_counter == interceptor.atk_interval_ticks - 1, "Interceptor attack must start its authoritative cooldown")
+
+
+func _validate_campaign_context() -> void:
+	var context := CampaignRuntimeContext.build()
+	_check(not context.is_empty(), "approved combat content must build the canonical campaign runtime context")
+	if context.is_empty():
+		return
+	_check(String(context.get("environment_sha256", "")) == CampaignDef.P16_V3_ENVIRONMENT_SHA256, "campaign context must use the new combat environment hash")
+
+
 func _enemy(enemy_id: StringName) -> EnemyDef:
 	return load("res://data/enemies/%s.tres" % enemy_id) as EnemyDef
 
 
 func _stage(stage_id: StringName) -> StageDef:
 	return load("res://data/stages/%s.tres" % stage_id) as StageDef
+
+
+func _load_catalog(path: String) -> Dictionary:
+	var result: Dictionary = {}
+	for filename: String in DirAccess.get_files_at(path):
+		if not filename.ends_with(".tres"):
+			continue
+		var resource := load("%s/%s" % [path, filename])
+		if resource != null and "id" in resource:
+			result[resource.id] = resource
+	return result
 
 
 func _enemy_count(stage: StageDef, enemy_id: StringName) -> int:

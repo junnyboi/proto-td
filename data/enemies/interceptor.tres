@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyDef" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://data/enemy_def.gd" id="1"]
-[ext_resource type="Resource" path="res://data/target_policies/enemy_blocker_only.tres" id="3_target_policy"]
+[ext_resource type="Resource" path="res://data/target_policies/enemy_blocker_then_nearest.tres" id="3_target_policy"]
 
 [resource]
 script = ExtResource("1")
@@ -14,6 +14,6 @@ aerial = true
 block_weight = 0
 leak_damage = 1
 charm_immune = true
-atk_range_cells = 0
+atk_range_cells = 2
 target_policy = ExtResource("3_target_policy")
 sprite_id = &"interceptor"

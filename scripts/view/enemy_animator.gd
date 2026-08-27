@@ -12,6 +12,9 @@ const BLEND_FRAMES := 6
 const BODY_PX := 64.0
 const EXPERIMENTAL_BODY_PX := 48.0
 const EXPERIMENTAL_PREFIX := "experimental_salvage_"
+const VARIANT_BODY_PX := 64.0
+const VARIANT_AERIAL_PX := 56.0
+const VARIANT_PREFIX := "enemy_variant_"
 const LEGACY_ENEMY_PX := 40.0
 const LEGACY_AERIAL_PX := 24.0
 const LEGACY_SPRITE_SCALE := 2
@@ -21,6 +24,7 @@ const SHADOW_FACE_SCALE := 0.3125
 const AERIAL_SHADOW_DROP := 10.0
 const FALLBACK_COLOR := Color("ef7d57")
 const CHARMED_COLOR := Color("41a6f6")
+const CHARMED_VARIANT_TINT := Color("7fd7ff")
 const DAMAGE_FLASH_SHADER_SOURCE := """
 shader_type canvas_item;
 uniform vec4 flash_color : source_color = vec4(1.0);
@@ -62,6 +66,11 @@ const DIRECTIONAL_ENEMIES: Array[StringName] = [
 	&"interceptor",
 	&"spellcaster",
 	&"mini_boss",
+]
+const VARIANT_ENEMIES: Array[StringName] = [
+	&"shieldbearer",
+	&"breacher",
+	&"interceptor",
 ]
 
 static var _damage_flash_shader: Shader = null
@@ -125,6 +134,20 @@ static func attack_frame(
 	return roundi(float(elapsed) * float(frame_count - 1) / float(last_counter))
 
 
+static func timed_attack_frame(
+	atk_counter: int,
+	atk_interval_ticks: int,
+	frame_count: int,
+	fps: float,
+	ticks_per_second := 30.0,
+) -> int:
+	if atk_interval_ticks <= 1 or frame_count <= 1 or fps <= 0.0 or ticks_per_second <= 0.0:
+		return 0
+	var last_counter := atk_interval_ticks - 1
+	var elapsed_ticks := last_counter - clampi(atk_counter, 0, last_counter)
+	return clampi(floori(float(elapsed_ticks) * fps / ticks_per_second), 0, frame_count - 1)
+
+
 static func animation_id(state: StringName, direction: StringName, charmed := false) -> StringName:
 	var suffix := "_charmed" if charmed else ""
 	return StringName("grunt_anim_%s_%s%s" % [state, direction, suffix])
@@ -136,8 +159,18 @@ static func experimental_animation_id(
 	return StringName("%s%s_%s_%s" % [EXPERIMENTAL_PREFIX, def_id, state, direction])
 
 
+static func variant_animation_id(
+	def_id: StringName, state: StringName, direction: StringName
+) -> StringName:
+	return StringName("%s%s_%s_%s" % [VARIANT_PREFIX, def_id, state, direction])
+
+
 static func is_experimental_id(animation: StringName) -> bool:
 	return String(animation).begins_with(EXPERIMENTAL_PREFIX)
+
+
+static func is_variant_id(animation: StringName) -> bool:
+	return String(animation).begins_with(VARIANT_PREFIX)
 
 
 static func faction_palette_changed(old_id: StringName, new_id: StringName) -> bool:
@@ -189,8 +222,11 @@ static func animation_id_for(enemy: EnemyState, battle: BattleModel) -> StringNa
 		battle.path_for(enemy.path_idx), enemy.progress_units, charmed
 	)
 	var state := &"attack" if is_attacking(enemy) else &"walk"
-	if not charmed and uses_experimental_state(enemy.def_id, state):
-		return experimental_animation_id(enemy.def_id, state, direction)
+	if VARIANT_ENEMIES.has(enemy.def_id):
+		return variant_animation_id(enemy.def_id, state, direction)
+	if not charmed:
+		if uses_experimental_state(enemy.def_id, state):
+			return experimental_animation_id(enemy.def_id, state, direction)
 	return animation_id(state, direction, charmed)
 
 
@@ -214,15 +250,22 @@ static func make_body(enemy: EnemyState, battle: BattleModel, definitions: Dicti
 	var body_px := LEGACY_AERIAL_PX if enemy.aerial else LEGACY_ENEMY_PX
 	if texture != null:
 		body.color = Color(0.0, 0.0, 0.0, 0.0)
-		body_px = (
-			EXPERIMENTAL_BODY_PX
-			if directional
-			else float(texture.get_width() * LEGACY_SPRITE_SCALE)
-		)
+		var uses_variant := VARIANT_ENEMIES.has(enemy.def_id)
+		if uses_variant:
+			body_px = VARIANT_AERIAL_PX if enemy.aerial else VARIANT_BODY_PX
+		elif directional:
+			body_px = EXPERIMENTAL_BODY_PX
+		else:
+			body_px = float(texture.get_width() * LEGACY_SPRITE_SCALE)
 		body.size = Vector2.ONE * body_px
-		body.add_child(_texture_rect("Sprite", texture, body.size))
+		var sprite := _texture_rect("Sprite", texture, body.size)
+		if uses_variant:
+			sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		body.add_child(sprite)
 		if directional:
 			var blend := _texture_rect("BlendSprite", null, body.size)
+			if uses_variant:
+				blend.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			blend.visible = false
 			body.add_child(blend)
 	else:
@@ -270,11 +313,18 @@ static func is_attacking(enemy: EnemyState) -> bool:
 static func frame_for(enemy: EnemyState, sprite_id: StringName, seconds: float) -> int:
 	var frame_count := Art.frame_count(sprite_id)
 	if String(sprite_id).contains("_attack_"):
+		if is_variant_id(sprite_id):
+			return timed_attack_frame(
+				enemy.atk_counter,
+				enemy.atk_interval_ticks,
+				frame_count,
+				Art.fps(sprite_id),
+			)
 		return attack_frame(enemy.atk_counter, enemy.atk_interval_ticks, frame_count)
 	var animation_fps := Art.fps(sprite_id)
 	if animation_fps <= 0.0:
 		animation_fps = WALK_FPS
-	if is_experimental_id(sprite_id):
+	if is_experimental_id(sprite_id) or is_variant_id(sprite_id):
 		return posmod(floori(maxf(seconds, 0.0) * animation_fps) + enemy.id, maxi(1, frame_count))
 	return walk_frame(seconds, animation_fps, frame_count, enemy.id)
 
@@ -307,9 +357,17 @@ static func refresh(
 	var texture := Art.texture(sprite_id, frame_for(enemy, sprite_id, seconds))
 	if texture == null:
 		return
+	var faction_tint := (
+		CHARMED_VARIANT_TINT
+		if enemy.faction == EnemyState.Faction.CHARMED and VARIANT_ENEMIES.has(enemy.def_id)
+		else Color.WHITE
+	)
+	sprite.modulate = faction_tint
+	var blend := body.get_node_or_null("BlendSprite") as TextureRect
+	if blend != null:
+		blend.modulate = faction_tint
 	var old_key: StringName = keys.get(enemy.id, &"")
 	if old_key != sprite_id:
-		var blend := body.get_node_or_null("BlendSprite") as TextureRect
 		var immediate := old_key != &"" and faction_palette_changed(old_key, sprite_id)
 		if old_key != &"" and not immediate and blend != null and sprite.texture != null:
 			blend.texture = sprite.texture
@@ -330,8 +388,8 @@ static func apply_blend(body: ColorRect, frames_left: int) -> void:
 	if sprite == null or blend == null:
 		return
 	var alpha := blend_alpha(frames_left)
-	blend.modulate = Color(1.0, 1.0, 1.0, alpha.x)
-	sprite.modulate = Color(1.0, 1.0, 1.0, alpha.y)
+	blend.modulate = Color(blend.modulate.r, blend.modulate.g, blend.modulate.b, alpha.x)
+	sprite.modulate = Color(sprite.modulate.r, sprite.modulate.g, sprite.modulate.b, alpha.y)
 	if frames_left <= 0:
 		blend.visible = false
 		blend.texture = null

@@ -3,3 +3,5 @@ build/*
 !build/.gdignore
 .DS_Store
 override.cfg
+__pycache__/
+*.pyc
