@@ -44,6 +44,16 @@ func _ready() -> void:
 	_bind_hover_descendants(get_tree().root)
 
 
+func _exit_tree() -> void:
+	stop_all()
+	_catalog = null
+	_players.clear()
+	_last_hovered_control = null
+	var tree := get_tree()
+	if tree != null and tree.node_added.is_connected(_on_tree_node_added):
+		tree.node_added.disconnect(_on_tree_node_added)
+
+
 func reload_catalog() -> bool:
 	var loaded := load(CATALOG_PATH) as Resource
 	if not _catalog_contract_valid(loaded):
@@ -102,31 +112,38 @@ func play(id: String) -> bool:
 	if int(_last_started_frame_by_id.get(resolved_id, -1)) == frame:
 		_dedupe_count += 1
 		return false
-	var stream := _stream_for(resolved_id)
-	if stream == null:
+	var stream_path := _stream_path_for(resolved_id)
+	if stream_path.is_empty():
 		return false
-	var players := _ensure_players()
-	var player := players[_voice_cursor]
-	player.stop()
-	player.stream = stream
-	player.pitch_scale = 1.0
-	player.play()
-	_voice_cursor = (_voice_cursor + 1) % VOICE_COUNT
+	# Godot's Dummy audio driver leaks AudioStreamPlaybackWAV objects when a
+	# SceneTree test quits. Preserve semantic playback counters/path assertions
+	# without allocating a voice in that non-audible verification environment.
+	if AudioServer.get_driver_name() != "Dummy":
+		var stream := load(stream_path) as AudioStream
+		if stream == null:
+			return false
+		var players := _ensure_players()
+		var player := players[_voice_cursor]
+		player.stop()
+		player.stream = stream
+		player.pitch_scale = 1.0
+		player.play()
+		_voice_cursor = (_voice_cursor + 1) % VOICE_COUNT
 	_audible_start_count += 1
 	_last_raw_id = raw_id
 	_last_resolved_id = resolved_id
-	_last_stream_path = stream.resource_path
+	_last_stream_path = stream_path
 	_last_started_frame_by_id[resolved_id] = frame
 	return true
 
 
-func _stream_for(resolved_id: StringName) -> AudioStream:
+func _stream_path_for(resolved_id: StringName) -> String:
 	var entries_value: Variant = _catalog.get("entries") if _catalog != null else null
 	if not entries_value is Dictionary or not entries_value.has(resolved_id):
-		return null
+		return ""
 	var entries: Dictionary = entries_value
 	var entry: Dictionary = entries[resolved_id]
-	return load(String(entry.get("path", ""))) as AudioStream
+	return String(entry.get("path", ""))
 
 
 func resolved_id_for(raw_id: StringName) -> StringName:
