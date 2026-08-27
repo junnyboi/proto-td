@@ -6,6 +6,7 @@ extends RefCounted
 ## deterministic transform animation. No method mutates authoritative battle state.
 
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const EnemyDeathParticlesType := preload("res://scripts/view/enemy_death_particles.gd")
 
 const FRAME_COUNT := 25
 const LOOP_FRAME_COUNT := FRAME_COUNT - 1
@@ -53,14 +54,104 @@ const STATIC_MOTION_PROFILES := {
 	&"spellcaster": {&"frequency": 1.10, &"bob": 1.4, &"roll": 0.020, &"squash": 0.012, &"lunge": 2.0},
 	&"mini_boss": {&"frequency": 0.72, &"bob": 1.0, &"roll": 0.011, &"squash": 0.012, &"lunge": 3.0},
 }
+const STATIC_EFFECT_PROFILES := {
+	&"runner": {
+		&"flash_primary": Color("fff1c7"), &"flash_secondary": Color("d96adf"),
+		&"flash_seconds": 0.10, &"dissolve_seconds": 0.42, &"dissolve_mode": 0.0,
+		&"edge_color": Color("d96adf"), &"particle_style": &"runner_trail",
+		&"particle_count": 16, &"particle_lifetime": 0.50, &"particle_origin_y": 0.62,
+		&"particle_colors": [Color("f4d35e"), Color("f2e9d8"), Color("17151c"), Color("c964cf"), Color("73eff7")],
+	},
+	&"shieldbearer": {
+		&"flash_primary": Color("fff0cf"), &"flash_secondary": Color("d85bce"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.48, &"dissolve_mode": 1.0,
+		&"edge_color": Color("d9b56b"), &"particle_style": &"shield_fan",
+		&"particle_count": 18, &"particle_lifetime": 0.56, &"particle_origin_y": 0.56,
+		&"particle_colors": [Color("f4e6c8"), Color("d9b56b"), Color("17151c"), Color("b83fae"), Color("73eff7")],
+	},
+	&"breacher": {
+		&"flash_primary": Color("fff1d0"), &"flash_secondary": Color("d94cff"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.48, &"dissolve_mode": 2.0,
+		&"edge_color": Color("d94cff"), &"particle_style": &"ram_fan",
+		&"particle_count": 18, &"particle_lifetime": 0.42, &"particle_origin_y": 0.68,
+		&"particle_colors": [Color("f4e9d8"), Color("c9a227"), Color("17151a"), Color("d94cff"), Color("73e6f2")],
+	},
+	&"heavy": {
+		&"flash_primary": Color("fff4d6"), &"flash_secondary": Color("c43dff"),
+		&"flash_seconds": 0.14, &"dissolve_seconds": 0.52, &"dissolve_mode": 3.0,
+		&"edge_color": Color("c43dff"), &"particle_style": &"bars",
+		&"particle_count": 18, &"particle_lifetime": 0.58, &"particle_origin_y": 0.58,
+		&"particle_colors": [Color("fff4d6"), Color("e8d7b0"), Color("c9a45b"), Color("17151c"), Color("c43dff"), Color("73e6f2")],
+	},
+	&"drone": {
+		&"flash_primary": Color("bdf7ff"), &"flash_secondary": Color("c04cff"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.48, &"dissolve_mode": 4.0,
+		&"edge_color": Color("bdf7ff"), &"particle_style": &"relay",
+		&"particle_count": 18, &"particle_lifetime": 0.55, &"particle_origin_y": 0.50,
+		&"particle_colors": [Color("c04cff"), Color("f06bda"), Color("bdf7ff"), Color("fff4d6"), Color("d8a84e"), Color("11131a")],
+	},
+	&"interceptor": {
+		&"flash_primary": Color("e9c7f2"), &"flash_secondary": Color("73eff7"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.46, &"dissolve_mode": 5.0,
+		&"edge_color": Color("c94bdb"), &"particle_style": &"spear",
+		&"particle_count": 18, &"particle_lifetime": 0.42, &"particle_origin_y": 0.50,
+		&"particle_colors": [Color("c94bdb"), Color("e9c7f2"), Color("d6b36a"), Color("f4ebd0"), Color("73eff7"), Color("14151a")],
+	},
+	&"spellcaster": {
+		&"flash_primary": Color("f08cff"), &"flash_secondary": Color("fff4d6"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.46, &"dissolve_mode": 6.0,
+		&"edge_color": Color("f08cff"), &"particle_style": &"fork",
+		&"particle_count": 18, &"particle_lifetime": 0.52, &"particle_origin_y": 0.54,
+		&"particle_colors": [Color("c964cf"), Color("94216a"), Color("f4d35e"), Color("fff4d6"), Color("11131a")],
+	},
+	&"mini_boss": {
+		&"flash_primary": Color("fff1b8"), &"flash_secondary": Color("d94bc2"),
+		&"flash_seconds": 0.12, &"dissolve_seconds": 0.52, &"dissolve_mode": 7.0,
+		&"edge_color": Color("d6a84f"), &"particle_style": &"key_burst",
+		&"particle_count": 20, &"particle_lifetime": 0.48, &"particle_origin_y": 0.52,
+		&"particle_colors": [Color("f4e9d0"), Color("d6a84f"), Color("17151d"), Color("b83fae"), Color("73eff7")],
+	},
+}
 const DAMAGE_FLASH_SHADER_SOURCE := """
 shader_type canvas_item;
 uniform vec4 flash_color : source_color = vec4(1.0);
 uniform float flash_strength : hint_range(0.0, 1.0) = 0.0;
+uniform float dissolve_progress : hint_range(0.0, 1.0) = 0.0;
+uniform float dissolve_mode : hint_range(0.0, 7.0) = 0.0;
+uniform float dissolve_seed = 0.0;
+uniform vec4 dissolve_edge_color : source_color = vec4(0.8, 0.3, 1.0, 1.0);
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += dot(p, p + 45.32 + dissolve_seed);
+	return fract(p.x * p.y);
+}
+
+float dissolve_metric(vec2 uv) {
+	float mode = floor(dissolve_mode + 0.5);
+	if (mode < 0.5) return uv.x;
+	if (mode < 1.5) return 1.0 - clamp(distance(uv, vec2(0.48, 0.56)) * 1.42, 0.0, 1.0);
+	if (mode < 2.5) return 1.0 - uv.y;
+	if (mode < 3.5) return clamp((1.0 - uv.y) * 0.78 + (1.0 - abs(uv.x - 0.5) * 2.0) * 0.22, 0.0, 1.0);
+	if (mode < 4.5) return 1.0 - uv.y;
+	if (mode < 5.5) return clamp((1.0 - uv.y) * 0.72 + abs(uv.x - 0.5) * 0.56, 0.0, 1.0);
+	if (mode < 6.5) return clamp((1.0 - uv.y) * 0.76 + uv.x * 0.24, 0.0, 1.0);
+	return clamp(distance(uv, vec2(0.5, 0.58)) * 1.16 + (1.0 - uv.y) * 0.22, 0.0, 1.0);
+}
+
 void fragment() {
-	vec4 pixel = texture(TEXTURE, UV);
-	vec3 flashed = mix(pixel.rgb, flash_color.rgb, flash_strength);
-	COLOR = vec4(flashed, COLOR.a);
+	vec4 pixel = COLOR;
+	float metric = dissolve_metric(UV) + (hash21(floor(UV * 96.0)) - 0.5) * 0.16;
+	float active = step(0.0005, dissolve_progress);
+	float survive = mix(1.0, smoothstep(dissolve_progress - 0.055, dissolve_progress + 0.055, metric), active);
+	float edge = (1.0 - smoothstep(0.0, 0.075, abs(metric - dissolve_progress))) * active;
+	float terminal_visible = 1.0 - step(0.9995, dissolve_progress);
+	survive *= terminal_visible;
+	edge *= terminal_visible;
+	pixel.rgb = mix(pixel.rgb, flash_color.rgb, flash_strength);
+	pixel.rgb = mix(pixel.rgb, dissolve_edge_color.rgb, edge * 0.82);
+	pixel.a *= survive;
+	COLOR = pixel;
 }
 """
 const TYPE_COLORS := {
@@ -97,6 +188,25 @@ static func static_sprite_id(def_id: StringName) -> StringName:
 
 static func static_body_px(def_id: StringName, aerial := false) -> float:
 	return float(STATIC_BODY_PX.get(def_id, LEGACY_AERIAL_PX if aerial else LEGACY_ENEMY_PX))
+
+
+static func static_effect_profile(def_id: StringName) -> Dictionary:
+	return (STATIC_EFFECT_PROFILES.get(def_id, {}) as Dictionary).duplicate(true)
+
+
+static func static_effect_duration(def_id: StringName) -> float:
+	var profile: Dictionary = STATIC_EFFECT_PROFILES.get(def_id, {})
+	return maxf(
+		float(profile.get(&"dissolve_seconds", 0.0)),
+		float(profile.get(&"particle_lifetime", 0.0)),
+	)
+
+
+static func damage_flash_frames_for(def_id: StringName, fallback_frames: int) -> int:
+	var profile: Dictionary = STATIC_EFFECT_PROFILES.get(def_id, {})
+	if profile.is_empty():
+		return fallback_frames
+	return maxi(1, roundi(float(profile.get(&"flash_seconds", 0.10)) * 60.0))
 
 
 static func direction_from_tangent(tangent: Vector2i, reverse := false) -> StringName:
@@ -185,9 +295,17 @@ static func damage_flash_color(
 
 
 static func apply_damage_flash(
-	body: ColorRect, frames_left: int, total_frames: int, white: Color, red: Color
+	body: ColorRect,
+	frames_left: int,
+	total_frames: int,
+	white: Color,
+	red: Color,
+	def_id: StringName = &"",
 ) -> void:
-	var color := damage_flash_color(frames_left, total_frames, white, red)
+	var profile: Dictionary = STATIC_EFFECT_PROFILES.get(def_id, {})
+	var primary: Color = profile.get(&"flash_primary", white)
+	var secondary: Color = profile.get(&"flash_secondary", red)
+	var color := damage_flash_color(frames_left, total_frames, primary, secondary)
 	for layer_name: String in ["Sprite", "BlendSprite"]:
 		var layer := body.get_node_or_null(layer_name) as TextureRect
 		if layer != null:
@@ -197,6 +315,67 @@ static func apply_damage_flash(
 				shader_material.set_shader_parameter(
 					"flash_strength", 1.0 if frames_left > 0 else 0.0
 				)
+
+
+static func begin_death_effect(
+	body: ColorRect,
+	def_id: StringName,
+	enemy_id: int,
+	reduced_motion: bool,
+) -> bool:
+	if not uses_static_sprite(def_id) or bool(body.get_meta(&"enemy_death_started", false)):
+		return false
+	var profile := static_effect_profile(def_id)
+	if profile.is_empty():
+		return false
+	body.set_meta(&"enemy_death_started", true)
+	body.set_meta(&"enemy_death_elapsed", 0.0)
+	body.set_meta(&"enemy_death_duration", static_effect_duration(def_id))
+	body.set_meta(&"enemy_death_def_id", def_id)
+	var sprite := body.get_node_or_null("Sprite") as TextureRect
+	if sprite != null:
+		var material := sprite.material as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter("dissolve_progress", 0.001)
+			material.set_shader_parameter("dissolve_mode", float(profile.get(&"dissolve_mode", 0.0)))
+			material.set_shader_parameter("dissolve_seed", float(enemy_id) * 0.173)
+			material.set_shader_parameter("dissolve_edge_color", profile.get(&"edge_color", Color("c964cf")))
+	var particles := EnemyDeathParticlesType.new() as EnemyDeathParticles
+	particles.name = "DeathParticles"
+	particles.setup(profile, body.size, enemy_id, reduced_motion)
+	body.add_child(particles)
+	return true
+
+
+static func advance_death_effect(body: ColorRect, delta: float) -> bool:
+	if not bool(body.get_meta(&"enemy_death_started", false)):
+		return true
+	var elapsed := float(body.get_meta(&"enemy_death_elapsed", 0.0)) + maxf(delta, 0.0)
+	var duration := maxf(float(body.get_meta(&"enemy_death_duration", 0.0)), 0.001)
+	body.set_meta(&"enemy_death_elapsed", elapsed)
+	var def_id := StringName(body.get_meta(&"enemy_death_def_id", &""))
+	var profile: Dictionary = STATIC_EFFECT_PROFILES.get(def_id, {})
+	var dissolve_seconds := maxf(float(profile.get(&"dissolve_seconds", duration)), 0.001)
+	var dissolve_progress := clampf(elapsed / dissolve_seconds, 0.001, 1.0)
+	var sprite := body.get_node_or_null("Sprite") as TextureRect
+	if sprite != null:
+		var material := sprite.material as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter("dissolve_progress", dissolve_progress)
+	var shadow := body.get_node_or_null("Shadow") as Polygon2D
+	if shadow != null:
+		shadow.modulate.a = 1.0 - clampf(elapsed / duration, 0.0, 1.0)
+	var particles := body.get_node_or_null("DeathParticles") as EnemyDeathParticles
+	if particles != null:
+		particles.advance(delta)
+	return elapsed >= duration
+
+
+static func death_effect_progress(body: ColorRect) -> float:
+	if not bool(body.get_meta(&"enemy_death_started", false)):
+		return 0.0
+	var duration := maxf(float(body.get_meta(&"enemy_death_duration", 0.0)), 0.001)
+	return clampf(float(body.get_meta(&"enemy_death_elapsed", 0.0)) / duration, 0.0, 1.0)
 
 
 static func _shared_damage_flash_shader() -> Shader:
@@ -239,6 +418,7 @@ static func make_body(enemy: EnemyState, battle: BattleModel, definitions: Dicti
 	)
 	var texture := Art.texture(sprite_id, 0)
 	var body_px := static_body_px(enemy.def_id, enemy.aerial)
+	body.set_meta(&"enemy_def_id", enemy.def_id)
 	body.set_meta(&"enemy_static", static_enemy)
 	body.set_meta(&"enemy_texture_missing", texture == null)
 	if texture != null:
