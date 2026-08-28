@@ -1155,33 +1155,68 @@ func _fit_browse_backdrop() -> void:
 	_browse_backdrop_art.stretch_mode = TextureRect.STRETCH_SCALE
 
 
+func _hero_grid_available_width() -> float:
+	if _hero_stage != null and _hero_stage.size.x > 0.0:
+		return _hero_stage.size.x
+	if _hero_scroll != null and _hero_scroll.size.x > 0.0:
+		return _hero_scroll.size.x
+	return maxf(0.0, get_viewport_rect().size.x - 48.0)
+
+
+func _hero_grid_columns() -> int:
+	var viewport_size := get_viewport_rect().size
+	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
+	return RosterGridLayoutType.fitting_columns(
+		_hero_grid_available_width(),
+		BROWSE_CARD_MIN_WIDTH,
+		BROWSE_GRID_GAP,
+		3,
+		_hero_candidate_count,
+		portrait,
+	)
+
+
+func _queue_hero_grid_layout() -> void:
+	if _hero_grid_layout_queued or not is_inside_tree():
+		return
+	_hero_grid_layout_queued = true
+	_apply_queued_hero_grid_layout.call_deferred()
+
+
+func _apply_queued_hero_grid_layout() -> void:
+	_hero_grid_layout_queued = false
+	_apply_hero_card_layout(_hero_grid_columns())
+
+
 func _apply_hero_card_layout(columns: int) -> void:
 	if _hero_grid == null:
 		return
+	columns = maxi(1, columns)
 	var viewport_size := get_viewport_rect().size
-	var viewport_width := viewport_size.x
 	var short_wide := columns == 3 and viewport_size.y < 840.0
 	var card_height := 420.0 if short_wide else BROWSE_CARD_SIZE.y
 	var portrait_height := 190.0 if short_wide else BROWSE_PORTRAIT_HEIGHT
-	var side_margin := 24.0 if columns == 1 else (40.0 if columns == 2 else 64.0)
-	var available_width := maxf(0.0, viewport_width - side_margin * 2.0 - 20.0)
-	var card_width := BROWSE_CARD_SIZE.x
-	if columns > 1:
-		card_width = minf(
-			BROWSE_CARD_SIZE.x,
-			(available_width - float(_hero_grid.get_theme_constant(&"h_separation") * (columns - 1))) / float(columns),
-		)
-	else:
-		card_width = minf(BROWSE_CARD_SIZE.x, available_width)
-	_hero_grid.size_flags_horizontal = (
-		Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
+	var card_width := RosterGridLayoutType.fitted_item_width(
+		_hero_grid_available_width(),
+		columns,
+		BROWSE_GRID_GAP,
+		BROWSE_CARD_MIN_WIDTH,
+		BROWSE_CARD_SIZE.x,
 	)
+	if (
+		columns == _last_hero_grid_columns
+		and is_equal_approx(card_width, _last_hero_card_width)
+		and _hero_grid.columns == columns
+	):
+		return
+	_last_hero_grid_columns = columns
+	_last_hero_card_width = card_width
+	_hero_grid.columns = columns
+	_hero_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	for child: Node in _hero_grid.get_children():
 		var panel := child as PanelContainer
-		panel.size_flags_horizontal = (
-			Control.SIZE_SHRINK_CENTER if columns == 3 else Control.SIZE_EXPAND_FILL
-		)
-		panel.custom_minimum_size = Vector2(card_width if columns == 3 else 0.0, card_height)
+		panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		panel.custom_minimum_size = Vector2(card_width, card_height)
 		var content := panel.find_child("PremiumCardContent", true, false) as VBoxContainer
 		if content != null:
 			content.add_theme_constant_override(&"separation", 8 if short_wide else 12)
@@ -1201,7 +1236,6 @@ func _apply_hero_card_layout(columns: int) -> void:
 			role.add_theme_font_size_override(&"font_size", 27 if short_wide else 36)
 		if metric != null:
 			metric.add_theme_font_size_override(&"font_size", 27 if short_wide else 36)
-
 
 func _on_pull_pressed() -> void:
 	if (
