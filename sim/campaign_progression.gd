@@ -6,6 +6,7 @@ extends RefCounted
 
 const RULES_VERSION := 1
 const XP_PER_OPERATION := 100
+const XP_PER_DEFEAT := XP_PER_OPERATION / 2
 const XP_MAX := 9_223_372_036_854_775_807
 const HERO_FIELD_ORDER := [
 	"hero_id", "acquisition_operator_def_id", "operator_def_id",
@@ -208,7 +209,25 @@ static func apply_promotion(hero: Dictionary, choice: Dictionary) -> void:
 	hero["operator_def_id"] = choice["operator_def_id"]
 
 
-static func derive_xp_awards(outcome_heroes: Array, before_heroes: Array) -> Array[Dictionary]:
+static func xp_for_outcome(result: Variant, terminal_reason: Variant) -> int:
+	if String(terminal_reason) == "resign":
+		return 0
+	match String(result):
+		"clear":
+			return XP_PER_OPERATION
+		"defeat":
+			return XP_PER_DEFEAT
+		_:
+			return 0
+
+
+static func derive_xp_awards(
+	outcome_heroes: Array,
+	before_heroes: Array,
+	xp_delta: int = XP_PER_OPERATION,
+) -> Array[Dictionary]:
+	if xp_delta <= 0:
+		return []
 	var ready := {}
 	for hero: Dictionary in before_heroes:
 		if hero["life_status"] == "ready" and hero["death"] == null:
@@ -226,8 +245,19 @@ static func derive_xp_awards(outcome_heroes: Array, before_heroes: Array) -> Arr
 	hero_ids.sort()
 	var rows: Array[Dictionary] = []
 	for hero_id: String in hero_ids:
-		rows.append({"hero_id": hero_id, "delta": XP_PER_OPERATION})
+		rows.append({"hero_id": hero_id, "delta": xp_delta})
 	return rows
+
+
+static func nonpremium_xp_awards(awards: Array, before_heroes: Array) -> Array[Dictionary]:
+	var heroes_by_id := _heroes_by_id(before_heroes)
+	var filtered: Array[Dictionary] = []
+	for award: Dictionary in awards:
+		var hero: Dictionary = heroes_by_id.get(String(award.get("hero_id", "")), {})
+		if hero.is_empty() or String(hero.get("hero_kind", "")) == "premium":
+			continue
+		filtered.append(award.duplicate(true))
+	return filtered
 
 
 static func can_apply_xp(rows: Array, awards: Array) -> bool:

@@ -418,8 +418,15 @@ static func _derive_fresh_receipt(
 	var rewards := _derive_rewards_and_heroes(before, expected, outcome, draft, context)
 	if not rewards["accepted"]:
 		return rewards
-	var xp_awards := CampaignProgression.derive_xp_awards(
-		outcome["heroes"], before["heroes"],
+	var xp_awards := CampaignProgression.nonpremium_xp_awards(
+		CampaignProgression.derive_xp_awards(
+			outcome["heroes"],
+			before["heroes"],
+			CampaignProgression.xp_for_outcome(
+				outcome["result"], outcome["terminal_reason"],
+			),
+		),
+		before["heroes"],
 	)
 	_copy_awarded_hero_rows(expected["heroes"], xp_awards)
 	if not CampaignProgression.apply_xp(expected["heroes"], xp_awards):
@@ -639,8 +646,15 @@ static func _derive_expected_after(
 		return _reject(&"transaction_rewards_mismatch")
 	if resolution["created_hero_ids"] != rewards["created"]:
 		return _reject(&"transaction_created_hero_mismatch")
-	var xp_awards := CampaignProgression.derive_xp_awards(
-		outcome["heroes"], before["heroes"],
+	var xp_awards := CampaignProgression.nonpremium_xp_awards(
+		CampaignProgression.derive_xp_awards(
+			outcome["heroes"],
+			before["heroes"],
+			CampaignProgression.xp_for_outcome(
+				outcome["result"], outcome["terminal_reason"],
+			),
+		),
+		before["heroes"],
 	)
 	if resolution["xp_awards"] != xp_awards:
 		return _reject(&"transaction_xp_mismatch")

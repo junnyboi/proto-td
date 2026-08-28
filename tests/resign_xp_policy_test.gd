@@ -3,11 +3,13 @@ extends SceneTree
 const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
 const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
 const BattleOutcomeV3 := preload("res://sim/battle_outcome_v3.gd")
+const CampaignProgression := preload("res://sim/campaign_progression.gd")
 
 var _failures: Array[String] = []
 
 
 func _init() -> void:
+	_test_shared_xp_policy()
 	_test_survivor_xp_policy()
 	if _failures.is_empty():
 		print("RESIGN_XP_POLICY_TEST_OK")
@@ -18,7 +20,32 @@ func _init() -> void:
 	quit(1)
 
 
+func _test_shared_xp_policy() -> void:
+	_check(CampaignProgression.xp_for_outcome("clear", "clear") == 100, "clear XP policy is not +100")
+	_check(CampaignProgression.xp_for_outcome("defeat", "base_defeat") == 50, "base defeat XP policy is not +50")
+	_check(CampaignProgression.xp_for_outcome("defeat", "resign") == 0, "resignation XP policy is not zero")
+	var awards := [
+		{"hero_id": "recruit-survivor", "delta": 50},
+		{"hero_id": "premium-survivor", "delta": 50},
+	]
+	var heroes := [
+		{"hero_id": "recruit-survivor", "hero_kind": "basic"},
+		{"hero_id": "premium-survivor", "hero_kind": "premium"},
+	]
+	var filtered := CampaignProgression.nonpremium_xp_awards(awards, heroes)
+	_check(filtered == [{"hero_id": "recruit-survivor", "delta": 50}], "premium survivor entered a shared XP receipt")
+
+
 func _test_survivor_xp_policy() -> void:
+	var cleared := _resolve_survivor(&"clear", 8800)
+	_check(not cleared.is_empty(), "clear fixture did not resolve")
+	if not cleared.is_empty():
+		var clear_awards: Array = cleared["resolution"]["xp_awards"]
+		_check(clear_awards.size() == 1, "clear lost its survivor XP award")
+		if clear_awards.size() == 1:
+			_check(int(clear_awards[0]["delta"]) == 100, "clear survivor award is not +100 XP")
+		_check(cleared["xp_after"] == cleared["xp_before"] + 100, "clear did not apply +100 survivor XP")
+
 	var resigned := _resolve_survivor(&"resign", 8801)
 	_check(not resigned.is_empty(), "resignation fixture did not resolve")
 	if not resigned.is_empty():
@@ -31,8 +58,8 @@ func _test_survivor_xp_policy() -> void:
 		var awards: Array = leaked["resolution"]["xp_awards"]
 		_check(awards.size() == 1, "ordinary defeat lost its survivor XP award")
 		if awards.size() == 1:
-			_check(int(awards[0]["delta"]) == 100, "ordinary defeat survivor award is not +100 XP")
-		_check(leaked["xp_after"] == leaked["xp_before"] + 100, "ordinary defeat did not apply +100 survivor XP")
+			_check(int(awards[0]["delta"]) == 50, "ordinary defeat survivor award is not +50 XP")
+		_check(leaked["xp_after"] == leaked["xp_before"] + 50, "ordinary defeat did not apply +50 survivor XP")
 
 
 func _resolve_survivor(reason: StringName, seed: int) -> Dictionary:
@@ -64,10 +91,10 @@ func _resolve_survivor(reason: StringName, seed: int) -> Dictionary:
 		"schema_version": BattleOutcomeV3.SCHEMA_VERSION,
 		"attempt_id": ticket["attempt_id"],
 		"ticket_hash": ticket["ticket_hash"],
-		"result": "defeat",
+		"result": "clear" if reason == &"clear" else "defeat",
 		"terminal_reason": String(reason),
 		"terminal_tick": 120,
-		"stars": 0,
+		"stars": 3 if reason == &"clear" else 0,
 		"leaks": 4 if reason == &"leak_defeat" else 0,
 		"kills": 3,
 		"rows": [{

@@ -38,6 +38,7 @@ const RESULT_ACTION_HORIZONTAL_PADDING := 28.0
 const RESULT_ACTION_VERTICAL_PADDING := 18.0
 const RESULT_HEADER_HEIGHT := 132.0
 const RESULT_PANEL_PADDING := 24.0
+const RESULT_DEFEAT_YIELD_PADDING := 64.0
 const RESULT_RESONANCE_STAR_SIZE := 58.0
 const RESULT_RESONANCE_STAR_PORTRAIT_SIZE := 46.0
 const REWARD_REVEAL_STAGGER_SECONDS := 0.14
@@ -226,7 +227,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	if cleared:
 		_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 	else:
-		_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
+		_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 	_body_grid.add_child(_rewards_panel)
 	var rewards_scroll := ScrollContainer.new()
 	rewards_scroll.name = "RewardsScroll"
@@ -456,13 +457,13 @@ func _apply_responsive_layout() -> void:
 			if _cleared_result:
 				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 			else:
-				_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
+				_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 		else:
 			Style.apply_panel(_rewards_panel, &"result")
 			if _cleared_result:
 				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 			else:
-				_set_panel_padding(_rewards_panel, 48.0, 24.0, 48.0, 24.0)
+				_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 	if _consequence_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_consequence_panel)

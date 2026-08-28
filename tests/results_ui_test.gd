@@ -282,7 +282,7 @@ func _run() -> void:
 		"leaks": 12,
 		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7}],
 		"class_entitlements_granted": [],
-		"xp_awards": [{"hero_id": hero_id, "delta": 100}],
+		"xp_awards": [{"hero_id": hero_id, "delta": 50}],
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
@@ -329,7 +329,7 @@ func _run() -> void:
 	_check(defeat_consequence != null and defeat_consequence.get_theme_stylebox(&"panel") is StyleBoxFlat, "defeat consequence surface is not danger styled")
 	if defeat_rewards != null:
 		var defeat_rewards_style := defeat_rewards.get_theme_stylebox(&"panel")
-		_check(defeat_rewards_style.content_margin_left >= 48.0 and defeat_rewards_style.content_margin_right >= 48.0 and defeat_rewards_style.content_margin_top >= 24.0 and defeat_rewards_style.content_margin_bottom >= 24.0, "defeat Mission Yield lacks 48px horizontal / 24px vertical padding")
+		_check(_has_uniform_margin(defeat_rewards_style, 64.0), "defeat Mission Yield lacks uniform 64px inner padding")
 	if defeat_consequence != null:
 		var defeat_consequence_style := defeat_consequence.get_theme_stylebox(&"panel")
 		_check(
@@ -351,7 +351,7 @@ func _run() -> void:
 	_check(defeat_reward is MarginContainer and defeat_xp is MarginContainer, "defeat Mission Yield rows regained inner frames")
 	var defeat_reward_icon := defeat_reward.find_child("ResonanceShardIcon", true, false) as TextureRect if defeat_reward != null else null
 	_check(defeat_reward_count.text == "+7" and defeat_reward_icon != null and bool(defeat_reward_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not complete defeat shard reward immediately")
-	_check(defeat_xp_count.text == "+100 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not project the canonical defeat survivor XP immediately")
+	_check(defeat_xp_count.text == "+50 XP" and bool(defeat_xp_count.get_meta(&"reward_reveal_complete", false)), "reduced motion did not project the half-rate defeat survivor XP immediately")
 	_check(defeat_screen.find_child("ClearTransmission", true, false) == null, "defeat incorrectly presents a clear transmission")
 	for child: Node in defeat_actions.get_children():
 		if child is Button:
@@ -400,7 +400,7 @@ func _run() -> void:
 	var chinese_defeat_xp_count := chinese_defeat_xp.find_child("Detail", true, false) as Label
 	_check(chinese_defeat_rewards.text == "行动收益" and chinese_defeat_consequence.text == "行动后果", "defeat headings did not refresh to Chinese")
 	_check(chinese_defeat_return.text == "返回连队指挥部", "defeat destination did not refresh to Chinese")
-	_check(chinese_defeat_xp_count.text == "+100 经验值", "defeat survivor XP did not refresh to Chinese")
+	_check(chinese_defeat_xp_count.text == "+50 经验值", "half-rate defeat survivor XP did not refresh to Chinese")
 
 	var cancel := InputEventAction.new()
 	cancel.action = &"ui_cancel"

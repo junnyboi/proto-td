@@ -37,6 +37,7 @@
 - [x] Playtest S2–S4 with guided, two-second slow-polling, and counter-blind policies; keep S2/S3 unchanged, make each S4 Interceptor lead its Drone escort, and regression-lock the resulting 3★→2★→2★ guided difficulty curve with native landscape/portrait acceptance.
 - [x] Refit the annotated battle HUD: move live transmissions to the right beneath gameplay controls with a 64px gap, add localized 88×88 speaker visuals (72×72 below 600px) and 12px header spacing, double the landscape recruit selector to 1,360px, give the command deck 24px all-around padding, coordinate compact spell/pan-hint/deployment collisions, and safely suppress impossible short-landscape transmission layouts.
 - [x] Enforce at least 24px internal padding throughout painted/textured content containers, replace all Button focus outlines and borders with a slight borderless golden surface tint, preserve independent pointer-hover feedback, and regression-lock responsive Mission, Settings, battle, Premium Resonance, Results, Valhalla, cinematic, and warning layouts.
+- [x] Give the Defeated Mission Yield frame exact 64px all-around padding and make campaign authority award surviving deployed units 100 XP on clear, 50 XP on ordinary defeat, and zero XP on resignation; regression-lock English/Chinese Results projection and responsive scrolling.
 
 # Premium Resonance Cinematic Completion
 

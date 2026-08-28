@@ -53,7 +53,7 @@ func _mount_fixture() -> void:
 				"leaks": 12 if defeated else 0,
 				"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7 if defeated else 40}],
 				"class_entitlements_granted": [] if defeated else [&"mage_apprentice"],
-				"xp_awards": [{"hero_id": survivor_id if defeated else hero_id, "delta": 100}],
+				"xp_awards": [{"hero_id": survivor_id if defeated else hero_id, "delta": 50 if defeated else 100}],
 				"dead_hero_ids": [hero_id] if defeated else [],
 				"premium_life_losses": [],
 			}
@@ -97,11 +97,19 @@ func _mount_fixture() -> void:
 						str(hire_desk.get_global_rect() if hire_desk != null else Rect2()),
 					],
 				)
-		if screen_id == "results" and OS.get_environment("PROTO_RESULTS_SCROLL_BOTTOM") == "1":
+		if screen_id.begins_with("results") and OS.get_environment("PROTO_RESULTS_SCROLL_BOTTOM") == "1":
 			var consequence_scroll := find_child("ConsequenceScroll", true, false) as ScrollContainer
 			if consequence_scroll != null:
 				consequence_scroll.scroll_vertical = ceili(
 					consequence_scroll.get_v_scroll_bar().max_value,
+				)
+				for _scroll_frame: int in range(4):
+					await get_tree().process_frame
+		if screen_id.begins_with("results") and OS.get_environment("PROTO_RESULTS_REWARDS_SCROLL_BOTTOM") == "1":
+			var rewards_scroll := find_child("RewardsScroll", true, false) as ScrollContainer
+			if rewards_scroll != null:
+				rewards_scroll.scroll_vertical = ceili(
+					rewards_scroll.get_v_scroll_bar().max_value,
 				)
 				for _scroll_frame: int in range(4):
 					await get_tree().process_frame

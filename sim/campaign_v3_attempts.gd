@@ -306,16 +306,17 @@ static func _derive_resolution(
 		before["class_entitlements"],
 	)
 	after["heroes"] = (after["heroes"] as Array).duplicate(true)
-	var xp_awards: Array[Dictionary] = []
-	# Voluntary withdrawal forfeits operation XP even when deployed operators
-	# survive. Ordinary clear/leak/base outcomes retain the +100 survivor rule.
-	if outcome["terminal_reason"] != "resign":
-		xp_awards = CampaignProgressionScript.derive_xp_awards(
-			outcome["rows"], before["heroes"],
-		)
-	xp_awards = xp_awards.filter(func(award: Dictionary) -> bool:
-		var hero := _hero_by_id(before["heroes"], award["hero_id"])
-		return not hero.is_empty() and hero["hero_kind"] != "premium"
+	# Survivors earn full XP on clear, half XP on ordinary defeat, and no XP
+	# after voluntary withdrawal. Campaign authority owns the receipt amount.
+	var xp_awards := CampaignProgressionScript.nonpremium_xp_awards(
+		CampaignProgressionScript.derive_xp_awards(
+			outcome["rows"],
+			before["heroes"],
+			CampaignProgressionScript.xp_for_outcome(
+				outcome["result"], outcome["terminal_reason"],
+			),
+		),
+		before["heroes"],
 	)
 	if not CampaignProgressionScript.apply_xp(after["heroes"], xp_awards):
 		return _reject(&"xp_overflow")
