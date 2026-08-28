@@ -162,8 +162,15 @@ func _run() -> void:
 	_check(start_mission != null and not start_mission.disabled and start_mission.custom_minimum_size == Vector2(280.0, 68.0), "Campaign dossier lacks its fixed royal-gold Start Mission action")
 	_check(start_mission != null and start_mission.get_parent() != null and dossier != null and dossier.is_ancestor_of(start_mission), "Start Mission is not contained by the selected-operation dossier")
 	if start_mission != null:
-		var start_style := start_mission.get_theme_stylebox(&"normal") as StyleBoxFlat
-		_check(start_style != null and start_style.bg_color.is_equal_approx(Style.GOLD), "Start Mission does not use the royal-gold action theme")
+		var start_style := start_mission.get_theme_stylebox(&"normal") as StyleBoxTexture
+		var start_hover := start_mission.get_theme_stylebox(&"hover") as StyleBoxTexture
+		var start_disabled := start_mission.get_theme_stylebox(&"disabled") as StyleBoxTexture
+		var start_copy := start_mission.get_node_or_null("PresentationLabel") as Label
+		_check(start_style != null and start_style.texture != null and start_style.texture.resource_path.ends_with("/primary_button.png"), "Start Mission does not use the shared ornate golden button art")
+		_check(start_hover != null and start_hover.modulate_color.is_equal_approx(Color("fff8df")), "Start Mission ornate hover treatment drifted")
+		_check(start_disabled != null and start_disabled.modulate_color.is_equal_approx(Color(0.42, 0.48, 0.55, 0.56)), "Start Mission ornate disabled treatment drifted")
+		_check(start_copy != null and start_copy.get_theme_color(&"font_color").is_equal_approx(Color("fff8e7")), "Start Mission ornate label is not high-contrast ivory")
+		_check(start_copy != null and start_copy.get_theme_constant(&"outline_size") >= 5 and start_copy.get_theme_color(&"font_outline_color").get_luminance() < 0.05, "Start Mission ornate label lacks its dark readability outline")
 		start_mission.mouse_entered.emit()
 		await create_timer(0.22).timeout
 		_check(start_mission.scale.x >= 1.039, "Start Mission does not animate on hover")

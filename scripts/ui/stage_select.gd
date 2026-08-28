@@ -13,6 +13,7 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
@@ -33,6 +34,9 @@ const STAGE_ROW_STAR_SIZE := 24.0
 const STAGE_ROW_STAR_SEPARATION := 2
 const READY_STATUS_GOLD := Color("8c6a1f")
 const READY_STATUS_EDGE := Color("f0d89a")
+const START_MISSION_TEXT_COLOR := Color("fff8e7")
+const START_MISSION_TEXT_OUTLINE := Color("09070d")
+const START_MISSION_TEXT_SIZE := 22
 const ROUTE_HOVER_BACKGROUND := Color("2f7f9188")
 const ROUTE_FOCUS_BACKGROUND := Color("22455355")
 const ROUTE_HOVER_SCALE := Vector2(1.025, 1.025)
@@ -325,6 +329,7 @@ func _build_body(column: VBoxContainer) -> void:
 		UiCopyType.text(&"ui.campaign.start_mission", "Start Mission").to_upper(),
 	)
 	Style.apply_button(_start_mission, &"gold")
+	_apply_start_mission_ornate_style()
 	ActionHoverFeedbackType.wire(self, _start_mission)
 	_start_mission.pressed.connect(_on_start_mission_pressed)
 	dossier_stack.add_child(_start_mission)
@@ -776,6 +781,38 @@ func _refresh_start_mission_copy() -> void:
 	_start_mission.tooltip_text = copy
 	_start_mission.accessibility_name = copy
 	_start_mission.accessibility_description = copy
+
+
+func _apply_start_mission_ornate_style() -> void:
+	if _start_mission == null:
+		return
+	_start_mission.add_theme_stylebox_override(
+		&"normal", StagingSkinType.ornate_primary_button_style(),
+	)
+	_start_mission.add_theme_stylebox_override(
+		&"hover", StagingSkinType.ornate_primary_button_style(Color("fff8df")),
+	)
+	_start_mission.add_theme_stylebox_override(
+		&"pressed", StagingSkinType.ornate_primary_button_style(Color("d9b96e")),
+	)
+	_start_mission.add_theme_stylebox_override(
+		&"disabled",
+		StagingSkinType.ornate_primary_button_style(Color(0.42, 0.48, 0.55, 0.56)),
+	)
+	var presentation := _start_mission.get_node_or_null("PresentationLabel") as Label
+	if presentation == null:
+		return
+	StagingSkinType.apply_display_type(
+		presentation, START_MISSION_TEXT_SIZE, START_MISSION_TEXT_COLOR, 650,
+	)
+	presentation.add_theme_color_override(&"font_color", START_MISSION_TEXT_COLOR)
+	presentation.add_theme_color_override(&"font_outline_color", START_MISSION_TEXT_OUTLINE)
+	presentation.add_theme_constant_override(&"outline_size", 5)
+	presentation.add_theme_constant_override(&"shadow_offset_x", 0)
+	presentation.add_theme_constant_override(&"shadow_offset_y", 2)
+	presentation.add_theme_color_override(
+		&"font_shadow_color", Color(0.0, 0.0, 0.0, 0.72),
+	)
 
 
 func _update_start_mission_state(route_input_enabled := true) -> void:
