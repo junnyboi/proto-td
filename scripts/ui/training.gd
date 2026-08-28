@@ -188,11 +188,7 @@ var _path_cards: Array[PromotionPathCardType] = []
 var _path_cards_scroll: ScrollContainer = null
 var _selected_hero_id := ""
 var _selected_choice_id := ""
-var _last_edited_hero_id := ""
-var _draft: Dictionary = {}
 var _choose_path: AetheriaButtonType
-var _review_confirm: AetheriaButtonType
-var _review_error: AetheriaLabelType
 var _return_mission: AetheriaButtonType
 var _rename_row: BoxContainer
 var _rename_input: LineEdit
@@ -214,7 +210,7 @@ var _rename_exit_reason: StringName = &""
 var _rename_exit_error: StringName = &""
 var _rename_editor_error: StringName = &""
 var _rename_dispatch_count := 0
-var _confirmation_consumed := false
+var _promotion_commit_in_flight := false
 var _promotion_dispatch_count := 0
 var _viewport_layout_refresh_queued := false
 
@@ -256,9 +252,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
-	if _mode == &"review":
-		_on_review_back()
-	elif _mode == &"paths":
+	if _mode == &"paths":
+		if bool(Game.training_call(&"retry_pending")):
+			return
 		_show_roster()
 	else:
 		_on_not_now()
@@ -367,6 +363,7 @@ func _refresh_roster() -> void:
 
 
 func _show_roster(error_code: StringName = &"") -> void:
+	var retry_pending := bool(Game.training_call(&"retry_pending"))
 	_mode = &"roster"
 	_selected_choice_id = ""
 	_clear_page()
@@ -414,16 +411,11 @@ func _show_roster(error_code: StringName = &"") -> void:
 	body.add_child(_build_inspector())
 	var footer := _footer("RosterActions")
 	var back := _button(
-		"TrainingBack", _t(&"ui.training.not_now", "Not Now"), true, &"secondary",
+		"TrainingBack", _t(&"ui.training.not_now", "Not Now"), not retry_pending,
+		&"secondary" if not retry_pending else &"disabled",
 	)
 	back.pressed.connect(_on_not_now)
-	var review := _button(
-		"ReviewPlan", _t(&"ui.training.review_plan", "Review Plan"),
-		not _draft.is_empty(), &"primary" if not _draft.is_empty() else &"disabled",
-	)
-	review.pressed.connect(_show_review)
 	footer.add_child(back)
-	footer.add_child(review)
 	_set_action_footer(footer)
 	_apply_roster_layout()
 	_apply_footer_layouts()
@@ -1431,11 +1423,12 @@ func _focus_confirmation_control_guarded(control_name: StringName, generation: i
 		control.grab_focus()
 
 
-func _show_paths() -> void:
+func _show_paths(error_code: StringName = &"") -> void:
 	var options: Dictionary = TrainingSupportType.options(_campaign, _selected_hero_id)
 	if not bool(options.get("accepted", false)):
 		_show_roster(StringName(options.get("error_code", &"missing_catalog")))
 		return
+	var retry_pending := bool(Game.training_call(&"retry_pending"))
 	_mode = &"paths"
 	_clear_page()
 	_apply_path_screen_gutters(true)
@@ -1489,13 +1482,16 @@ func _show_paths() -> void:
 			_t(&"ui.training.class_kit_placeholder", "CLASS KIT"),
 				_t(
 					&"ui.training.field_kit_compact",
-					"FIELD KIT • AFTER CONFIRMATION",
+					"FIELD KIT • AFTER PROMOTION",
 				),
 				_path_stats_tooltip(choice),
 			)
 		card.pressed.connect(
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
+		card.disabled = retry_pending
+		if retry_pending:
+			card.focus_mode = Control.FOCUS_NONE
 		card.mouse_entered.connect(
 			_prefetch_class_pack.bind(String(choice["to_class_id"]), true, true),
 		)
@@ -1527,17 +1523,29 @@ func _show_paths() -> void:
 	warning.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	warning.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	action_bar.add_child(warning)
+	if not String(error_code).is_empty():
+		var promotion_error := _label(
+			"PromotionCommitError", _error_text(error_code), &"dense_detail",
+		)
+		promotion_error.focus_mode = Control.FOCUS_ALL
+		promotion_error.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
+		action_bar.add_child(promotion_error)
 	var footer := _footer("PathActions")
 	footer.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var back := _button(
-		"PathBack", _t(&"ui.common.back", "Back"), true, &"secondary",
+		"PathBack", _t(&"ui.common.back", "Back"), not retry_pending,
+		&"secondary" if not retry_pending else &"disabled",
 	)
 	back.pressed.connect(_show_roster)
 	_choose_path = _button(
-		"ChoosePath", _t(&"ui.training.add_to_plan", "Add to Plan"),
-		false, &"disabled",
+		"ChoosePath",
+		_t(&"ui.training.retry_promotion", "Retry Promotion")
+		if retry_pending
+		else _t(&"ui.training.promote", "Promote"),
+		retry_pending or not _selected_choice_id.is_empty(),
+		&"primary" if retry_pending or not _selected_choice_id.is_empty() else &"disabled",
 	)
-	_choose_path.pressed.connect(_add_selected_choice)
+	_choose_path.pressed.connect(_commit_selected_promotion)
 	footer.add_child(back)
 	footer.add_child(_choose_path)
 	_apply_path_action_style(back)
@@ -1552,7 +1560,14 @@ func _show_paths() -> void:
 	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
-	if not _path_cards.is_empty():
+	if not retry_pending and not _selected_choice_id.is_empty():
+		_on_path_selected(_selected_choice_id)
+	elif retry_pending:
+		for card: PromotionPathCardType in _path_cards:
+			card.set_selected(card.class_id == _selected_choice_id)
+	if retry_pending:
+		_choose_path.grab_focus.call_deferred()
+	elif not _path_cards.is_empty():
 		_path_cards[0].grab_focus.call_deferred()
 
 
@@ -1606,184 +1621,39 @@ func _on_filters_changed(status: StringName, faction_id: StringName) -> void:
 	_show_roster()
 
 
-func _add_selected_choice() -> void:
-	if _selected_hero_id.is_empty() or _selected_choice_id.is_empty():
+func _commit_selected_promotion() -> void:
+	var retry_pending := bool(Game.training_call(&"retry_pending"))
+	if (
+		_promotion_commit_in_flight
+		or _selected_hero_id.is_empty()
+		or (not retry_pending and _selected_choice().is_empty())
+	):
 		return
-	_draft[_selected_hero_id] = _selected_choice_id
-	_last_edited_hero_id = _selected_hero_id
-	_show_roster()
-
-
-func _show_review(error_code: StringName = &"", removed_rows: Array = []) -> void:
-	if _draft.is_empty() and String(error_code).is_empty():
-		_show_roster()
-		return
-	_mode = &"review"
-	_clear_page()
-	_page.add_child(_header(
-		"ReviewTrainingTitle",
-		_t(&"ui.training.review_title", "REVIEW TRAINING PLAN"),
-		_t(
-			&"ui.training.confirm_permanent",
-			"This training choice cannot be changed.",
-		),
-	))
-	var list := VBoxContainer.new()
-	list.name = "TrainingReviewList"
-	list.add_theme_constant_override(&"separation", 10)
-	_page.add_child(list)
-	for summary: Dictionary in _roster_rows:
-		var hero_id := String(summary["hero_id"])
-		if not _draft.has(hero_id):
-			continue
-		var entry := _label(
-			"Review_%s" % hero_id,
-			_fmt(
-				&"ui.training.review_entry", "{callsign} to {class_name}",
-				{
-					&"callsign": String(summary["callsign"]),
-					&"class_name": class_label(String(_draft[hero_id])),
-				},
-			),
-			&"dense_body",
-		)
-		list.add_child(entry)
-	if not removed_rows.is_empty():
-		list.add_child(_label(
-			"RemovedAssignmentsHeading",
-			_t(&"ui.training.removed_heading", "REMOVED AFTER ROSTER REFRESH"),
-			&"dense_heading",
-		))
-		for raw: Variant in removed_rows:
-			var removed := raw as Dictionary
-			list.add_child(_label(
-				"Removed_%s" % removed["hero_id"],
-				_fmt(
-					&"ui.training.removed_entry",
-					"{callsign} to {class_name}: {reason}",
-					{
-						&"callsign": String(removed["callsign"]),
-						&"class_name": class_label(String(removed["to_class_id"])),
-						&"reason": _error_text(StringName(removed["error_code"])),
-					},
-				),
-				&"dense_body",
-			))
-	_review_error = _label("TrainingReviewError", "", &"dense_detail")
-	_review_error.focus_mode = Control.FOCUS_ALL
-	_bind_focus_scroll(_review_error, _dialog_scroll)
-	if not String(error_code).is_empty():
-		_review_error.text = _error_text(error_code)
-	_page.add_child(_review_error)
-	var pending := bool(Game.training_call(&"retry_pending"))
-	var footer := _footer("ReviewActions")
-	var back := _button(
-		"ReviewBack", _t(&"ui.common.back", "Back"), not pending,
-		&"secondary" if not pending else &"disabled",
-	)
-	back.pressed.connect(_on_review_back)
-	_review_confirm = _button(
-		"ConfirmTraining",
-		_t(&"ui.training.confirm_action", "Confirm Training"),
-		not _draft.is_empty(),
-		&"primary" if not _draft.is_empty() else &"disabled",
-	)
-	_review_confirm.custom_minimum_size.x = 320.0
-	_review_confirm.pressed.connect(_confirm_review)
-	footer.add_child(back)
-	footer.add_child(_review_confirm)
-	_set_action_footer(footer)
-	_apply_footer_layouts()
-	_reset_outer_scroll()
-	_wire_focus(_focusable_controls(), false)
-	if not String(error_code).is_empty():
-		_review_error.grab_focus.call_deferred()
-	else:
-		_review_confirm.grab_focus.call_deferred()
-
-
-func _on_review_back() -> void:
-	if bool(Game.training_call(&"retry_pending")):
-		return
-	var hero_id := _last_edited_hero_id
-	if hero_id.is_empty() or not _draft.has(hero_id):
-		_show_roster()
-		return
-	_selected_hero_id = hero_id
-	var choice_id := String(_draft[hero_id])
-	_show_paths()
-	_on_path_selected(choice_id)
-
-
-func _confirm_review() -> void:
-	if _confirmation_consumed or _draft.is_empty():
-		return
-	_confirmation_consumed = true
-	_review_confirm.disabled = true
-	_review_confirm.focus_mode = Control.FOCUS_NONE
+	_promotion_commit_in_flight = true
+	_choose_path.disabled = true
+	_choose_path.focus_mode = Control.FOCUS_NONE
 	_promotion_dispatch_count += 1
+	Sfx.play("ui_confirm")
 	var committed: Dictionary = (
 		Game.training_call(&"retry")
-		if bool(Game.training_call(&"retry_pending"))
-		else Game.training_call(&"commit", _draft_choices())
+		if retry_pending
+		else Game.training_call(&"commit", [{
+			"hero_id": _selected_hero_id,
+			"to_class_id": _selected_choice_id,
+		}])
 	)
+	_promotion_commit_in_flight = false
 	if not committed["accepted"]:
-		_confirmation_consumed = false
-		var removed_rows: Array = []
-		if not bool(Game.training_call(&"retry_pending")):
-			removed_rows = _reconcile_draft()
-		_show_review(
-			StringName(committed.get("error_code", &"unknown_error")), removed_rows,
-		)
+		var commit_error := StringName(committed.get("error_code", &"unknown_error"))
+		if bool(Game.training_call(&"retry_pending")):
+			_show_paths(commit_error)
+		else:
+			_refresh_roster()
+			_show_roster(commit_error)
 		return
-	_confirmation_consumed = false
-	Game.open_squad_select()
-
-
-func _draft_choices() -> Array[Dictionary]:
-	var choices: Array[Dictionary] = []
-	for hero_id: String in _draft:
-		choices.append(
-			{
-				"hero_id": hero_id,
-				"to_class_id": String(_draft[hero_id]),
-			}
-		)
-	choices.sort_custom(
-		func(a: Dictionary, b: Dictionary) -> bool:
-			return String(a["hero_id"]) < String(b["hero_id"])
-	)
-	return choices
-
-
-func _reconcile_draft() -> Array:
-	var previous_rows := {}
-	for summary: Dictionary in _roster_rows:
-		previous_rows[String(summary["hero_id"])] = summary.duplicate(true)
+	_selected_choice_id = ""
 	_refresh_roster()
-	var retained := {}
-	var removed: Array[Dictionary] = []
-	for hero_id: String in _draft:
-		var options := TrainingSupportType.options(_campaign, hero_id)
-		var retained_choice := false
-		for choice: Dictionary in options["choices"]:
-			if String(choice["to_class_id"]) == String(_draft[hero_id]):
-				retained[hero_id] = _draft[hero_id]
-				retained_choice = true
-		if retained_choice:
-			continue
-		var summary: Dictionary = previous_rows.get(hero_id, {})
-		var removal_error := StringName(options.get("error_code", &"invalid_choice"))
-		if String(removal_error).is_empty():
-			removal_error = &"invalid_choice"
-		removed.append({
-			"hero_id": hero_id,
-			"callsign": String(summary.get("callsign", hero_id)),
-			"to_class_id": String(_draft[hero_id]),
-			"error_code": removal_error,
-		})
-	_draft = retained
-	return removed
+	_show_roster()
 
 
 func _on_not_now() -> void:
@@ -1799,6 +1669,8 @@ func _on_choose_promotion() -> void:
 
 
 func _on_path_selected(choice_id: String) -> void:
+	if _promotion_commit_in_flight or bool(Game.training_call(&"retry_pending")):
+		return
 	_selected_choice_id = choice_id
 	_prefetch_class_pack(choice_id, true, false)
 	for card: PromotionPathCardType in _path_cards:
@@ -2194,11 +2066,12 @@ func _header(node_name: String, title: String, subtitle: String) -> VBoxContaine
 	identity.add_child(title_block)
 	top.add_child(identity)
 	if Game.training_return_path == &"mission" and _mode != &"rename_confirmation":
+		var exit_enabled := not bool(Game.training_call(&"retry_pending"))
 		_return_mission = _button(
 			"ReturnToMission",
 			_t(&"ui.training.return_to_mission", "RETURN TO MISSION"),
-			true,
-			&"gold",
+			exit_enabled,
+			&"gold" if exit_enabled else &"disabled",
 		)
 		_return_mission.custom_minimum_size = Vector2(230.0, 58.0)
 		_apply_button_insets(_return_mission, 24.0, 12.0)
@@ -2285,8 +2158,6 @@ func _clear_page(kill_transition: bool = true) -> void:
 	_path_cards.clear()
 	_path_cards_scroll = null
 	_choose_path = null
-	_review_confirm = null
-	_review_error = null
 	_return_mission = null
 	_filter_bar = null
 	_roster_list = null
@@ -2349,12 +2220,6 @@ func _selected_choice() -> Dictionary:
 
 
 func _eligibility_text(summary: Dictionary) -> String:
-	var hero_id := String(summary["hero_id"])
-	if _draft.has(hero_id):
-		return _fmt(
-			&"ui.training.draft_choice", "Planned: {class_name}",
-			{&"class_name": class_label(String(_draft[hero_id]))},
-		)
 	if bool(summary["can_promote"]):
 		return _t(&"ui.training.promotion_ready", "Promotion ready.")
 	var code := StringName(summary["eligibility_error"])
@@ -2860,8 +2725,6 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_render_rename_confirmation(focused_name)
 	elif _mode == &"paths":
 		_show_paths()
-	elif _mode == &"review":
-		_show_review()
 	else:
 		_show_roster()
 	if _mode != &"rename_confirmation" and not String(focused_name).is_empty():

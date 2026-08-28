@@ -57,7 +57,7 @@ Restyle Stage Select as an expedition dossier using the existing eight unlocked/
 
 ### 2.2 Training and roster continuity
 
-Training and Squad Select retain their existing functional decomposition, filters, naming, promotion, review, save retry, premium restrictions, and origin routes. Their shared Aetheria and Lunaris components are migrated to the unified material/type system. Selected dossiers, path cards, roster rows, status seals, and action docks become visually consistent without changing authoritative promotion or naming logic.
+Training and Squad Select retain their existing functional decomposition, filters, naming, promotion authority, save retry, premium restrictions, and origin routes. Training applies each selected specialization immediately as a durable singleton promotion instead of staging a bulk plan for review. Their shared Aetheria and Lunaris components are migrated to the unified material/type system. Selected dossiers, path cards, roster rows, status seals, and action docks become visually consistent without changing authoritative promotion or naming logic.
 
 ### 2.3 Premium Recruit
 

@@ -218,6 +218,7 @@ func _run() -> void:
 	var choose_promotion := screen.find_child("ChoosePromotion", true, false) as Button
 	var selected_status := screen.find_child("SelectedRecruitStatus", true, false) as Label
 	_check(screen.find_child("ViewPaths", true, false) == null, "obsolete View Paths footer action is still present")
+	_check(screen.find_child("ReviewPlan", true, false) == null, "removed bulk promotion review action is still present")
 	_check(choose_promotion != null and choose_promotion.is_visible_in_tree(), "promotion-ready operator lacks contextual Choose Promotion action")
 	if choose_promotion != null:
 		_check(choose_promotion.text == "Choose Promotion", "contextual promotion action has incorrect copy")
@@ -389,10 +390,11 @@ func _run() -> void:
 		_check(normal_style != null and selected_style != null and not normal_style.bg_color.is_equal_approx(selected_style.bg_color), "selected specialization does not use a background color change")
 		_check(first_card.get_theme_stylebox(&"hover") is StyleBoxFlat, "specialization hover state is not a scalable flat background")
 	if path_actions != null and path_back != null and choose_path != null:
+		_check(choose_path.text == "Promote" and not choose_path.disabled, "selected specialization does not expose its immediate Promote action")
 		_check(not path_actions.vertical and path_actions.alignment == BoxContainer.ALIGNMENT_END, "wide path actions are not a bottom-right row")
 		_check(_near(path_back.size.x, 260.0, 1.0) and _near(choose_path.size.x, 260.0, 1.0), "path actions do not share the enlarged 260px width")
 		_check(_near(path_back.size.y, 84.0, 1.0) and _near(choose_path.size.y, 84.0, 1.0), "path actions do not share the enlarged 84px height")
-		_check(path_back.theme_type_variation == choose_path.theme_type_variation, "Back and Add to Plan do not share one visual treatment")
+		_check(path_back.theme_type_variation == choose_path.theme_type_variation, "Back and Promote do not share one visual treatment")
 		_check(choose_path.get_global_rect().end.x >= path_actions.get_global_rect().end.x - 2.0, "path actions are not flush to the bottom-right edge")
 		_check(path_action_safe != null and path_action_safe.get_theme_constant(&"margin_left") == 60 and path_action_safe.get_theme_constant(&"margin_right") == 60, "path action bar does not preserve 60px side padding")
 		for action: Button in [path_back, choose_path]:

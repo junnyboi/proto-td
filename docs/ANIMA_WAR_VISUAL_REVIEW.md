@@ -32,7 +32,7 @@ Training fails at 150%: roster filters, sort controls, and lower action panels c
 
 ## Corrected Training outcome
 
-Training now switches to a stacked, scroll-owned composition above 120% text scale. Filters and auxiliary controls no longer share a narrow row; roster and inspector stack; long selectors widen; inspector controls stack; and the persistent Not Now / Review Plan actions use full-width buttons. At 1280×720 and 720×1280, visible labels stay inside their controls and the remaining roster/inspector content is reachable through the vertical document and panel scrolls.
+Training now switches to a stacked, scroll-owned composition above 120% text scale. Filters and auxiliary controls no longer share a narrow row; roster and inspector stack; long selectors widen; inspector controls stack; and the persistent Not Now action uses a full-width button. The specialization screen provides the direct Promote action without a bulk-plan review step. At 1280×720 and 720×1280, visible labels stay inside their controls and the remaining roster/inspector content is reachable through the vertical document and panel scrolls.
 
 ## English Valhalla and Act II dossier, 150% text scale
 

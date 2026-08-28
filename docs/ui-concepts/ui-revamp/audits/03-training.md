@@ -1,6 +1,8 @@
 # UI Revamp Audit 03 — Roster, Training, Promotion, and Naming
 
 **Audit family:** Recruit roster, roster filters, operator dossier, training and promotion paths, promotion confirmation, custom naming, and contextual return flows  
+
+> **2026-08-29 product update:** Promotion-plan review and bulk approval described in this historical audit have been retired. Selecting an operator specialization now submits that one promotion immediately, refreshes the roster in place, and retains the durable save-retry lock.
 **Repository revision:** `6f382b621c812c29dacfa79a41fe59e19909709c`  
 **Target viewports:** `1280×720` landscape and `720×1280` portrait  
 **Authority boundary:** This audit proposes presentation and interaction-system changes only. Campaign state, promotion legality, renaming validation, deterministic command receipts, save integrity, and battle rules remain model-owned.

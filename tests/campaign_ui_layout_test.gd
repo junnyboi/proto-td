@@ -227,15 +227,17 @@ func _run() -> void:
 	game.set("training_return_path", &"mission")
 	root.size = Vector2i(1280, 720)
 	var training_source := FileAccess.get_file_as_string("res://scripts/ui/training.gd")
-	var confirm_start := training_source.find("func _confirm_review() -> void:")
-	var confirm_end := training_source.find("\n\nfunc _draft_choices()", confirm_start)
-	var confirm_source := (
-		training_source.substr(confirm_start, confirm_end - confirm_start)
-		if confirm_start >= 0 and confirm_end > confirm_start
+	var promote_start := training_source.find("func _commit_selected_promotion() -> void:")
+	var promote_end := training_source.find("\n\nfunc _on_not_now()", promote_start)
+	var promote_source := (
+		training_source.substr(promote_start, promote_end - promote_start)
+		if promote_start >= 0 and promote_end > promote_start
 		else ""
 	)
-	_check(confirm_source.contains("Game.open_squad_select()"), "successful Confirm Training does not return to FIELD TEAM")
-	_check(not confirm_source.contains("Game.open_staging()") and not confirm_source.contains("Game.open_title()"), "successful Confirm Training still exits FIELD TEAM flow")
+	_check(promote_source.contains('Game.training_call(&"commit", [{'), "promotion selection does not immediately dispatch its operator")
+	_check(promote_source.contains('"hero_id": _selected_hero_id') and promote_source.contains('"to_class_id": _selected_choice_id'), "immediate promotion dispatch is not scoped to the selected operator and class")
+	_check(promote_source.contains("_refresh_roster()") and promote_source.contains("_show_roster()"), "successful promotion does not immediately publish the promoted roster")
+	_check(not training_source.contains("ReviewPlan") and not training_source.contains("ConfirmTraining"), "Training still exposes the removed bulk promotion review flow")
 	var training: Node = load("res://scenes/training.tscn").instantiate()
 	root.add_child(training)
 	await process_frame
@@ -244,9 +246,11 @@ func _run() -> void:
 	var training_dock := training.find_child("TrainingActionDock", true, false) as VBoxContainer
 	var not_now := training.find_child("TrainingBack", true, false) as Button
 	var return_to_mission := training.find_child("ReturnToMission", true, false) as Button
+	var review_plan := training.find_child("ReviewPlan", true, false) as Button
 	_check(training_shell != null and bool(training_shell.get("full_safe_area")), "Training did not use the full-safe-area workspace")
 	_check(not_now != null, "Training safe exit action is missing")
 	_check(return_to_mission != null, "Training mission-return fixture is unavailable")
+	_check(review_plan == null, "Training roster still renders Review Plan")
 	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
 	_check(not String(training.get("accessibility_name")).is_empty() and not String(training.get("accessibility_description")).is_empty(), "Training root lacks accessibility metadata")
 	var initial_rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit

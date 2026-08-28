@@ -445,8 +445,9 @@ func training_call(action: StringName, payload: Variant = null) -> Variant:
 	return result
 
 
-## Build and durably commit one atomic, canonical promotion batch. The UI owns
-## only its local draft; CampaignStateV3 remains the sole legality authority.
+## Build and durably commit canonical promotion choices. Training submits the
+## selected operator immediately as a singleton; the model retains batch-shaped
+## command compatibility and remains the sole legality authority.
 func _commit_promotions(choices: Array) -> Dictionary:
 	if not campaign_active or campaign == null or campaign_store == null:
 		return {"accepted": false, "error_code": &"campaign_inactive"}
