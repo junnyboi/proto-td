@@ -5,6 +5,7 @@ const VIEWPORTS := {
 	"native_ultrawide": Vector2i(3440, 1440),
 	"ultrawide": Vector2i(2560, 1080),
 	"regular": Vector2i(1280, 720),
+	"managed_tall_landscape": Vector2i(1280, 1100),
 	"short_baseline": Vector2i(1024, 576),
 	"short": Vector2i(960, 420),
 	"portrait": Vector2i(720, 1280),
@@ -37,6 +38,8 @@ func _run() -> void:
 		root.size = VIEWPORTS[label]
 		await process_frame
 		await process_frame
+		if label == "managed_tall_landscape":
+			_verify_tall_landscape_title()
 		await _verify_settings(label, VIEWPORTS[label])
 	await _verify_accessibility_scale()
 	await _cleanup()
@@ -70,6 +73,17 @@ func _verify_title_scale() -> void:
 	_check(footer_dock != null and footer_settings != null, "fixed footer Settings control is missing")
 	_check(_inside(_title, footer_dock) and _inside(footer_dock, footer_settings), "fixed footer Settings control overflows the title")
 	_check(footer_settings.custom_minimum_size.y >= 44.0, "fixed footer Settings control is not touch safe")
+
+
+func _verify_tall_landscape_title() -> void:
+	var entry_scroll := _title.find_child("EntryScroll", true, false) as ScrollContainer
+	var wordmark := _title.find_child("Wordmark", true, false) as Label
+	var start := _title.find_child("StartButton", true, false) as Button
+	var footer := _title.find_child("FooterSettingsButton", true, false) as Button
+	_check(wordmark.get_line_count() == 1, "managed tall-landscape wordmark wrapped")
+	_check(entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "managed tall-landscape wordmark is not initially visible")
+	_check(entry_scroll.get_global_rect().intersects(start.get_global_rect()), "managed tall-landscape Start is not initially visible")
+	_check(start.get_global_rect().end.y + 8.0 <= footer.get_global_rect().position.y, "managed tall-landscape Start overlaps the fixed Settings footer")
 
 
 func _verify_chinese_title_portrait() -> void:
