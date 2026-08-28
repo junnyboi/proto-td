@@ -19,11 +19,15 @@ const StageNarrativeCatalogType := preload("res://data/presentation/narrative/st
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
 const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
 const MissionCinematicPlayerType := preload("res://scripts/ui/components/mission_cinematic_player.gd")
-const ROUTE_PANEL_WIDE_WIDTH := 480.0
+const ROUTE_PANEL_ANNOTATED_WIDTH := 832.0
+const ROUTE_PANEL_STANDARD_WIDTH := 480.0
+const ROUTE_PANEL_COMPACT_WIDTH := 360.0
+const ROUTE_PANEL_ANNOTATED_MIN_VIEWPORT_WIDTH := 1600.0
 const ROUTE_CONTENT_INSET := 36
 const DOSSIER_HORIZONTAL_INSET := 80
 const DOSSIER_VERTICAL_INSET := 36
-const STAGE_ROW_PADDING := 12.0
+const STAGE_ROW_PADDING := 24.0
+const STAGE_ROW_MIN_HEIGHT := 104.0
 const READY_STATUS_GOLD := Color("8c6a1f")
 const READY_STATUS_EDGE := Color("f0d89a")
 const ROUTE_HOVER_BACKGROUND := Color("2f7f9188")
@@ -75,6 +79,7 @@ func _ready() -> void:
 	_shell.full_safe_area = true
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	resized.connect(_on_viewport_size_changed)
 
 	var column := VBoxContainer.new()
 	column.name = "CampaignColumn"
@@ -171,7 +176,7 @@ func _build_body(column: VBoxContainer) -> void:
 	route_panel.name = "CampaignRoutePanel"
 	route_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	route_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	route_panel.custom_minimum_size.x = ROUTE_PANEL_WIDE_WIDTH
+	route_panel.custom_minimum_size.x = _route_panel_width(_shell.layout_mode())
 	Style.apply_panel(route_panel, &"quiet")
 	_body.add_child(route_panel)
 	var route_content_inset := MarginContainer.new()
@@ -201,8 +206,9 @@ func _build_body(column: VBoxContainer) -> void:
 	_route_note.apply_role(&"detail")
 	_route_note.text = UiCopyType.text(
 		&"ui.campaign.route_note",
-		"Select an available operation. Cleared operations remain replayable.",
+		"Select an available operation, or replay a cleared one.",
 	)
+	_route_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	route_header.add_child(_route_note)
 	var scroll := ScrollContainer.new()
 	scroll.name = "CampaignScroll"
@@ -333,7 +339,7 @@ func _populate_route() -> void:
 		var row := AetheriaButtonType.new()
 		row.name = "Stage_%s" % stage_id
 		row.text = _row_text(stage, unlocked)
-		row.custom_minimum_size = Vector2(44.0, 58.0)
+		row.custom_minimum_size = Vector2(44.0, STAGE_ROW_MIN_HEIGHT)
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.disabled = not unlocked
 		var is_next := unlocked and not stage_stars.has(stage_id) and _next_stage_id == stage_id
@@ -356,7 +362,7 @@ func _populate_route() -> void:
 			sparkles.name = "NextOperationSparkles"
 			row.add_child(sparkles)
 			sparkles.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		row.custom_minimum_size.y = maxf(row.custom_minimum_size.y, 76.0)
+		row.custom_minimum_size.y = maxf(row.custom_minimum_size.y, STAGE_ROW_MIN_HEIGHT)
 		row.tooltip_text = row.text
 		row.accessibility_name = row.text
 		if is_next:
@@ -610,7 +616,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 				Control.SIZE_EXPAND_FILL if mode == &"portrait" else Control.SIZE_SHRINK_BEGIN
 			)
 			route_panel.custom_minimum_size = Vector2(
-				0.0 if mode == &"portrait" else ROUTE_PANEL_WIDE_WIDTH,
+				_route_panel_width(mode),
 				420.0 if mode == &"portrait" else 0.0,
 			)
 		if dossier != null:
@@ -622,12 +628,30 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_shell.relayout.call_deferred(Vector2i(get_viewport_rect().size))
 
 
+func _on_viewport_size_changed() -> void:
+	if _shell == null or not is_instance_valid(_shell) or _body == null:
+		return
+	var route_panel := _body.get_node_or_null("CampaignRoutePanel") as Control
+	if route_panel != null:
+		route_panel.custom_minimum_size.x = _route_panel_width(_shell.layout_mode())
+
+
+func _route_panel_width(mode: StringName) -> float:
+	if mode == &"portrait":
+		return 0.0
+	if mode == &"compact_landscape":
+		return ROUTE_PANEL_COMPACT_WIDTH
+	if get_viewport_rect().size.x >= ROUTE_PANEL_ANNOTATED_MIN_VIEWPORT_WIDTH:
+		return ROUTE_PANEL_ANNOTATED_WIDTH
+	return ROUTE_PANEL_STANDARD_WIDTH
+
+
 func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh_header_copy()
 	if _route_note != null:
 		_route_note.text = UiCopyType.text(
 			&"ui.campaign.route_note",
-			"Select an available operation. Cleared operations remain replayable.",
+			"Select an available operation, or replay a cleared one.",
 		)
 	if _dossier_eyebrow != null:
 		_dossier_eyebrow.text = UiCopyType.text(

@@ -333,9 +333,15 @@ func _refresh_buttons() -> void:
 		cooldown_label.visible = true
 		if compact:
 			if duration_remaining > 0:
-				duration_label.text = "F%s" % _seconds_text(duration_remaining)
+				duration_label.text = UI_COPY.format_text(
+					&"ui.spell.field_duration_compact", "F{seconds}",
+					{&"seconds": _seconds_text(duration_remaining)},
+				)
 			if cooldown_remaining > 0:
-				cooldown_label.text = "CD%s" % _seconds_text(cooldown_remaining)
+				cooldown_label.text = UI_COPY.format_text(
+					&"ui.spell.cooldown_compact", "CD{seconds}",
+					{&"seconds": _seconds_text(cooldown_remaining)},
+				)
 			duration_label.add_theme_font_size_override(&"font_size", 11)
 			cooldown_label.add_theme_font_size_override(&"font_size", 11)
 			duration_label.position = Vector2(2.0, 2.0)
