@@ -462,6 +462,55 @@ func _apply_responsive_layout() -> void:
 	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 360 if portrait else 0)
 	_body_grid.move_child(_dossier_panel, 0 if portrait else 1)
 	_rebuild_dossier()
+	_queue_memorial_grid_layout()
+
+
+func _on_text_scale_changed(_value: float) -> void:
+	_apply_responsive_layout()
+
+
+func _memorial_grid_available_width() -> float:
+	if _memorial_scroll != null and _memorial_scroll.size.x > 0.0:
+		return _memorial_scroll.size.x
+	return MEMORIAL_CARD_MIN_WIDTH
+
+
+func _memorial_grid_columns() -> int:
+	var text_scale := float(TextScale.value()) if TextScale != null else 1.0
+	return RosterGridLayoutType.fitting_columns(
+		_memorial_grid_available_width(),
+		MEMORIAL_CARD_MIN_WIDTH * maxf(1.0, text_scale),
+		float(MEMORIAL_GRID_GAP),
+		0,
+		_visible_rows.size(),
+	)
+
+
+func _queue_memorial_grid_layout() -> void:
+	if _memorial_grid_layout_queued or not is_inside_tree():
+		return
+	_memorial_grid_layout_queued = true
+	_apply_queued_memorial_grid_layout.call_deferred()
+
+
+func _apply_queued_memorial_grid_layout() -> void:
+	_memorial_grid_layout_queued = false
+	if _memorial_grid != null:
+		_memorial_grid.columns = _memorial_grid_columns()
+
+
+func _ensure_memorial_visible(row: Control) -> void:
+	if _memorial_scroll != null and row != null and is_instance_valid(row):
+		_memorial_scroll.ensure_control_visible.call_deferred(row)
+
+
+func _restore_memorial_focus(hero_id: String) -> void:
+	if hero_id.is_empty() or _memorial_grid == null:
+		return
+	var row := _memorial_grid.get_node_or_null("Memorial_%s" % hero_id) as Button
+	if row != null and not row.disabled:
+		row.grab_focus()
+		_ensure_memorial_visible(row)
 
 
 func _label(text: String, role: StringName) -> Label:
