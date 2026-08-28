@@ -24,8 +24,15 @@ const VIEWPORT_MARGIN := 24.0
 const TUTORIAL_TOP_SAFE := 88.0
 const DEPLOYMENT_CLEARANCE := 20.0
 const ACTION_TARGET_SIZE := Vector2(220.0, 64.0)
+const SKIP_ACTION_WIDTH := 440.0
 const ACTION_FONT_SIZE := 27
 const ACTION_CONTENT_PADDING := 12.0
+const CARD_CONTENT_PADDING_HORIZONTAL := 12.0
+const CARD_CONTENT_PADDING_VERTICAL := 48.0
+const TITLE_FONT_SIZE_LANDSCAPE := 54
+const TITLE_FONT_SIZE_PORTRAIT := 36
+const BODY_FONT_SIZE_LANDSCAPE := 38
+const BODY_FONT_SIZE_PORTRAIT := 27
 const LIVE_SECONDS := 6.0
 
 const ROUTE_COLOR := Color(0.36, 0.78, 0.83, 0.26)
@@ -51,6 +58,7 @@ var _icon: TextureRect = null
 var _title: Label = null
 var _body: Label = null
 var _feedback_label: Label = null
+var _actions: BoxContainer = null
 var _primary_button: Button = null
 var _skip_button: Button = null
 var _focus_ring: PanelContainer = null
@@ -130,10 +138,15 @@ func relayout() -> void:
 		TUTORIAL_TOP_SAFE + maxf(0.0, (available_height - _card.size.y) * 0.5),
 	)
 	_step_label.add_theme_font_size_override("font_size", 27 if portrait else 39)
-	_title.add_theme_font_size_override("font_size", 39 if portrait else 60)
-	_body.add_theme_font_size_override("font_size", 30 if portrait else 42)
+	_title.add_theme_font_size_override(
+		"font_size", TITLE_FONT_SIZE_PORTRAIT if portrait else TITLE_FONT_SIZE_LANDSCAPE,
+	)
+	_body.add_theme_font_size_override(
+		"font_size", BODY_FONT_SIZE_PORTRAIT if portrait else BODY_FONT_SIZE_LANDSCAPE,
+	)
 	_feedback_label.add_theme_font_size_override("font_size", 24 if portrait else 36)
 	_icon.custom_minimum_size = Vector2.ONE * (112.0 if portrait else 192.0)
+	_actions.vertical = portrait
 	_relayout_guides()
 
 
@@ -189,6 +202,7 @@ func _build_card() -> void:
 	_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	_card.z_index = CARD_Z
 	add_child(_card)
+	_apply_card_content_padding()
 	var column := VBoxContainer.new()
 	column.name = "TutorialColumn"
 	column.add_theme_constant_override("separation", 20)
@@ -233,19 +247,32 @@ func _build_card() -> void:
 	_feedback_label.add_theme_color_override("font_color", Color("f0cf65"))
 	_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	copy_column.add_child(_feedback_label)
-	var actions := HBoxContainer.new()
-	actions.name = "TutorialActions"
-	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	actions.add_theme_constant_override("separation", 24)
-	column.add_child(actions)
+	_actions = BoxContainer.new()
+	_actions.name = "TutorialActions"
+	_actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	_actions.add_theme_constant_override("separation", 24)
+	column.add_child(_actions)
 	_skip_button = _make_button("SkipTutorial", &"AuiSecondaryButton")
+	_skip_button.custom_minimum_size.x = SKIP_ACTION_WIDTH
 	_skip_button.pressed.connect(_on_skip_pressed)
-	actions.add_child(_skip_button)
+	_actions.add_child(_skip_button)
 	_apply_action_padding(_skip_button)
 	_primary_button = _make_button("TutorialPrimary", &"AuiPrimaryButton")
 	_primary_button.pressed.connect(_on_primary_pressed)
-	actions.add_child(_primary_button)
+	_actions.add_child(_primary_button)
 	_apply_action_padding(_primary_button)
+
+
+func _apply_card_content_padding() -> void:
+	var source := _card.get_theme_stylebox(&"panel")
+	if source == null:
+		return
+	var padded := source.duplicate() as StyleBox
+	padded.content_margin_left = CARD_CONTENT_PADDING_HORIZONTAL
+	padded.content_margin_top = CARD_CONTENT_PADDING_VERTICAL
+	padded.content_margin_right = CARD_CONTENT_PADDING_HORIZONTAL
+	padded.content_margin_bottom = CARD_CONTENT_PADDING_VERTICAL
+	_card.add_theme_stylebox_override(&"panel", padded)
 
 
 func _make_button(button_name: String, variation: StringName) -> Button:
@@ -253,19 +280,23 @@ func _make_button(button_name: String, variation: StringName) -> Button:
 	button.name = button_name
 	button.theme_type_variation = variation
 	button.custom_minimum_size = ACTION_TARGET_SIZE
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.add_theme_font_size_override("font_size", ACTION_FONT_SIZE)
-	var action_ink := Color("f5efe1")
+	var primary := variation == &"AuiPrimaryButton"
+	var action_ink := Color("07111c") if primary else Color("f5efe1")
 	for state: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
 	]:
 		button.add_theme_color_override(state, action_ink)
-	button.add_theme_color_override(&"font_outline_color", Color(0.02, 0.04, 0.08, 0.96))
-	button.add_theme_constant_override(&"outline_size", 3)
+	button.add_theme_color_override(
+		&"font_outline_color", Color.TRANSPARENT if primary else Color(0.02, 0.04, 0.08, 0.96),
+	)
+	button.add_theme_constant_override(&"outline_size", 0 if primary else 3)
 	return button
 
 
 func _apply_action_padding(button: Button) -> void:
-	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
 		var source := button.get_theme_stylebox(state)
 		if source == null:
 			continue

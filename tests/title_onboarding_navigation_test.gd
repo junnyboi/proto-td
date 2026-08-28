@@ -196,8 +196,10 @@ func _verify_tutorial_step(staging: Control, tutorial: Control, step: StringName
 	var primary := tutorial.find_child("TutorialPrimary", true, false) as Button
 	var skip := tutorial.find_child("TutorialSkip", true, false) as Button
 	_check(
-		primary != null and primary.get_theme_color(&"font_color").is_equal_approx(Color.WHITE),
-		"%s tutorial primary label is not white" % step,
+		primary != null
+		and primary.get_theme_color(&"font_color").is_equal_approx(Color("040a12"))
+		and primary.get_theme_stylebox(&"normal") is StyleBoxFlat,
+		"%s tutorial primary action is not solid gold with readable dark ink" % step,
 	)
 	_check(
 		primary != null

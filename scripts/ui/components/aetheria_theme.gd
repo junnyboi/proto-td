@@ -8,7 +8,6 @@ const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
 const COMMAND_DECK_FRAME := preload("res://assets/ui/staging/frames/command_deck.png")
 const MISSION_CARD_FRAME := preload("res://assets/ui/staging/frames/mission_card.png")
 const OPERATION_TILE_FRAME := preload("res://assets/ui/staging/frames/operation_tile.png")
-const PRIMARY_BUTTON_FRAME := preload("res://assets/ui/staging/frames/primary_button.png")
 const NAVBAR_FRAME := preload("res://assets/ui/staging/frames/navbar.png")
 
 const COLORS := {
@@ -95,9 +94,9 @@ func _button(
 		set_color(item_name, variation, COLORS[ink])
 	set_color(&"font_disabled_color", variation, COLORS[&"disabled_text"])
 	if role == &"primary":
-		set_stylebox(&"normal", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color.WHITE))
-		set_stylebox(&"hover", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color("fff2c6")))
-		set_stylebox(&"pressed", variation, _texture_box(PRIMARY_BUTTON_FRAME, Vector4(58, 30, 58, 30), Color("d9b96e")))
+		set_stylebox(&"normal", variation, _flat_box(COLORS[&"primary"], COLORS[&"primary_hover"], 1, 4, [12, 12, 12, 12]))
+		set_stylebox(&"hover", variation, _flat_box(COLORS[&"primary_hover"], Color("fff8df"), 2, 4, [12, 12, 12, 12]))
+		set_stylebox(&"pressed", variation, _flat_box(COLORS[&"primary_pressed"], COLORS[&"primary"], 2, 4, [12, 12, 12, 12]))
 	elif role == &"secondary" or role == &"selected" or role == &"disabled":
 		var normal_tint := Color.WHITE
 		var hover_tint := Color("b9f8fb")
