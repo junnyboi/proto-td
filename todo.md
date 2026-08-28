@@ -139,4 +139,4 @@
 - [x] Capture a real S2 battle with Gunner and Mage Apprentice deployed on the two formerly blocked center platforms in landscape and rotated portrait orientation.
 - [x] Pass the authoritative full baseline with zero failures and an independent code audit with no confirmed runtime defect.
 - [x] Reconcile with concurrent campaign, facing-map, speed-control, and Field Team work; regress once and push shared master without rewriting history.
-- [ ] Export/browser-test the exact Web release, layer it onto the newest `proto-td-web` host, and save a new checkpoint.
+- [x] Export/browser-test exact runtime `8dee659b`, layer it onto the newest `proto-td-web` host, and adopt checkpoint `87858a44` after final managed hash/range/runtime verification.
