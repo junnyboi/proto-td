@@ -19,6 +19,7 @@ const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.g
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 enum RenameConfirmationState {
