@@ -5,6 +5,7 @@ const VIEWPORTS := {
 	"native_ultrawide": Vector2i(3440, 1440),
 	"ultrawide": Vector2i(2560, 1080),
 	"regular": Vector2i(1280, 720),
+	"managed_tall_landscape": Vector2i(1280, 1100),
 	"short_baseline": Vector2i(1024, 576),
 	"short": Vector2i(960, 420),
 	"portrait": Vector2i(720, 1280),
@@ -37,6 +38,8 @@ func _run() -> void:
 		root.size = VIEWPORTS[label]
 		await process_frame
 		await process_frame
+		if label == "managed_tall_landscape":
+			_verify_tall_landscape_title()
 		await _verify_settings(label, VIEWPORTS[label])
 	await _verify_accessibility_scale()
 	await _cleanup()
@@ -49,30 +52,38 @@ func _verify_title_scale() -> void:
 	var entry_host := _title.find_child("EntryControls", true, false) as Control
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
-	var settings := _title.find_child("SettingsButton", true, false) as Button
 	var footer_dock := _title.find_child("FooterSettingsDock", true, false) as MarginContainer
 	var footer_settings := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 207, "landscape wordmark is not 1.5×")
 	_check(_title.find_child("CanonSynopsis", true, false) == null, "removed title synopsis returned to the start screen")
+	_check(_title.find_child("SettingsButton", true, false) == null, "removed duplicate main-stack Settings action returned")
 	_check(start.get_theme_font_size(&"font_size") == 83, "Start typography is not 1.5×")
-	_check(settings.get_theme_font_size(&"font_size") == 69, "Settings typography is not 1.5×")
 	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
-	_check(settings.get_combined_minimum_size().y >= 121.0, "Settings container did not grow with 1.5× typography")
 	var expected_top_margin := 16 + roundi(float(VIEWPORTS["regular"].y) * 0.24) + 64
 	_check(entry_host.get_theme_constant(&"margin_top") == expected_top_margin, "title and action stack did not move down by exactly 64px")
-	for action: Button in [start, settings]:
+	for action: Button in [start]:
 		for style_name: StringName in [&"normal", &"hover", &"pressed"]:
 			var style := action.get_theme_stylebox(style_name) as StyleBoxFlat
 			_check(style != null and style.get_corner_radius(CORNER_TOP_LEFT) >= 20, "%s lacks rounded %s borders" % [action.name, style_name])
 	_check(entry_scroll != null and entry_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "title entry is not scroll-safe")
 	_check(_inside(entry_host, wordmark), "1.5× wordmark overflows title content")
 	_check(_inside(entry_host, start), "1.5× Start action overflows title content")
-	_check(_inside(entry_host, settings), "1.5× Settings action overflows title content")
 	_check(entry_scroll != null and entry_scroll.scroll_vertical == 0, "title does not open at the top of its enlarged content")
 	_check(entry_scroll != null and entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "title wordmark is not visible in the initial viewport")
 	_check(footer_dock != null and footer_settings != null, "fixed footer Settings control is missing")
 	_check(_inside(_title, footer_dock) and _inside(footer_dock, footer_settings), "fixed footer Settings control overflows the title")
 	_check(footer_settings.custom_minimum_size.y >= 44.0, "fixed footer Settings control is not touch safe")
+
+
+func _verify_tall_landscape_title() -> void:
+	var entry_scroll := _title.find_child("EntryScroll", true, false) as ScrollContainer
+	var wordmark := _title.find_child("Wordmark", true, false) as Label
+	var start := _title.find_child("StartButton", true, false) as Button
+	var footer := _title.find_child("FooterSettingsButton", true, false) as Button
+	_check(wordmark.get_line_count() == 1, "managed tall-landscape wordmark wrapped")
+	_check(entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "managed tall-landscape wordmark is not initially visible")
+	_check(entry_scroll.get_global_rect().intersects(start.get_global_rect()), "managed tall-landscape Start is not initially visible")
+	_check(start.get_global_rect().end.y + 8.0 <= footer.get_global_rect().position.y, "managed tall-landscape Start overlaps the fixed Settings footer")
 
 
 func _verify_chinese_title_portrait() -> void:
@@ -106,13 +117,11 @@ func _verify_accessibility_scale() -> void:
 	var entry_host := _title.find_child("EntryControls", true, false) as Control
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
-	var settings := _title.find_child("SettingsButton", true, false) as Button
 	var footer_settings := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") <= 120, "150% decorative wordmark did not fit down")
 	_check(start.get_theme_font_size(&"font_size") >= 120, "150% Start text did not receive the global scale")
-	_check(settings.get_theme_font_size(&"font_size") >= 100, "150% Settings text did not receive the global scale")
 	_check(_inside(entry_host, wordmark) and _inside(entry_host, start), "150% Title content escaped its scroll document")
-	_check(not settings.visible, "150% Title retained the overlapping duplicate Settings action")
+	_check(_title.find_child("SettingsButton", true, false) == null, "150% Title retained the duplicate Settings action")
 	_check(footer_settings != null and footer_settings.visible and _inside(_title, footer_settings), "150% fixed Settings action is unavailable")
 	_check(entry_scroll.get_global_rect().intersects(start.get_global_rect()), "150% Start is not initially visible")
 	values[&"text_scale"] = 1.0

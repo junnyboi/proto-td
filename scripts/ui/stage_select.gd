@@ -7,6 +7,7 @@ const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.t
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
+const ActionHoverFeedbackType := preload("res://scripts/ui/components/action_hover_feedback.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
@@ -16,6 +17,7 @@ const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narr
 const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_narrative_def.gd")
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
+const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
 const MissionCinematicPlayerType := preload("res://scripts/ui/components/mission_cinematic_player.gd")
 const ROUTE_PANEL_WIDE_WIDTH := 480.0
 const ROUTE_CONTENT_INSET := 36
@@ -24,6 +26,11 @@ const DOSSIER_VERTICAL_INSET := 36
 const STAGE_ROW_PADDING := 12.0
 const READY_STATUS_GOLD := Color("8c6a1f")
 const READY_STATUS_EDGE := Color("f0d89a")
+const ROUTE_HOVER_BACKGROUND := Color("2f7f9188")
+const ROUTE_FOCUS_BACKGROUND := Color("22455355")
+const ROUTE_HOVER_SCALE := Vector2(1.025, 1.025)
+const ROUTE_FOCUS_SCALE := Vector2(1.01, 1.01)
+const ROUTE_HOVER_SECONDS := 0.16
 const REWARD_DIRS := {
 	&"operator": "res://data/operators",
 	&"trap": "res://data/traps",
@@ -35,6 +42,7 @@ var _header: GridContainer = null
 var _body: GridContainer = null
 var _dossier_title: AetheriaLabelType = null
 var _dossier_status: AetheriaLabelType = null
+var _dossier_status_shimmer: CampaignReadyShimmerType = null
 var _dossier_facts: AetheriaLabelType = null
 var _dossier_objective: AetheriaLabelType = null
 var _dossier_threat: AetheriaLabelType = null
@@ -52,6 +60,7 @@ var _route_heading: AetheriaLabelType = null
 var _route_note: AetheriaLabelType = null
 var _dossier_eyebrow: AetheriaLabelType = null
 var _back: AetheriaButtonType = null
+var _start_mission: AetheriaButtonType = null
 var _enabled_rows: Array[Button] = []
 var _cinematic_overlay: MissionCinematicPlayerType = null
 var _cinematic_stage_id: StringName = &""
@@ -249,6 +258,11 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_status.name = "DossierStatus"
 	_dossier_status.apply_role(&"completed_badge")
 	dossier_stack.add_child(_dossier_status)
+	_dossier_status_shimmer = CampaignReadyShimmerType.new()
+	_dossier_status_shimmer.name = "DossierReadyShimmer"
+	_dossier_status_shimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_dossier_status.add_child(_dossier_status_shimmer)
+	_dossier_status_shimmer.set_active(false)
 	_dossier_stars = HBoxContainer.new()
 	_dossier_stars.name = "DossierStars"
 	_dossier_stars.add_theme_constant_override(&"separation", 8)
@@ -293,6 +307,19 @@ func _build_body(column: VBoxContainer) -> void:
 	_dossier_hint.apply_role(&"detail")
 	_dossier_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dossier_stack.add_child(_dossier_hint)
+	_start_mission = AetheriaButtonType.new()
+	_start_mission.name = "StartMission"
+	_start_mission.custom_minimum_size = Vector2(280.0, 68.0)
+	_start_mission.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_start_mission.set_presentation_text(
+		UiCopyType.text(&"ui.campaign.start_mission", "Start Mission"),
+		UiCopyType.text(&"ui.campaign.start_mission", "Start Mission").to_upper(),
+	)
+	Style.apply_button(_start_mission, &"gold")
+	ActionHoverFeedbackType.wire(self, _start_mission)
+	_start_mission.pressed.connect(_on_start_mission_pressed)
+	dossier_stack.add_child(_start_mission)
+	dossier_stack.move_child(_start_mission, _dossier_status.get_index() + 1)
 
 func _populate_route() -> void:
 	var stage_stars: Dictionary = Game.campaign_projection().get("stage_stars", {})
@@ -337,17 +364,18 @@ func _populate_route() -> void:
 				&"ui.campaign.next_highlight_description",
 				"Recommended next operation, highlighted with a glow and sparkles.",
 			)
-		if not unlocked:
-			row.focus_mode = Control.FOCUS_NONE
-		else:
-			enabled_rows.append(row)
-			row.focus_entered.connect(_show_dossier.bind(stage_id))
-			row.mouse_entered.connect(_show_dossier.bind(stage_id))
-		row.pressed.connect(_on_stage_pressed.bind(stage_id))
+			if not unlocked:
+				row.focus_mode = Control.FOCUS_NONE
+			else:
+				enabled_rows.append(row)
+				_wire_route_card_feedback(row)
+				row.focus_entered.connect(_show_dossier.bind(stage_id))
+				row.mouse_entered.connect(_show_dossier.bind(stage_id))
+			row.pressed.connect(_on_route_stage_selected.bind(stage_id))
 		_rows.add_child(row)
 
 	_enabled_rows = enabled_rows
-	_refresh_focus_chain()
+	_refresh_focus_chain(true)
 	var dossier_id := _next_stage_id
 	if dossier_id.is_empty() and not Game.campaign_stage_ids().is_empty():
 		dossier_id = Game.campaign_stage_ids()[-1]
@@ -412,6 +440,7 @@ func _show_dossier(stage_id: StringName) -> void:
 		{&"rewards": _localized_list(reward_names) if not reward_names.is_empty() else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")},
 	)
 	_dossier_hint.text = UiCopyType.stage_hint(stage)
+	_update_start_mission_state()
 	for child: Node in _dossier_stars.get_children():
 		child.queue_free()
 	for index: int in 3:
@@ -427,6 +456,8 @@ func _apply_dossier_status_presentation(ready: bool) -> void:
 	if not ready:
 		_dossier_status.remove_theme_stylebox_override(&"normal")
 		_dossier_status.remove_theme_color_override(&"font_color")
+		if _dossier_status_shimmer != null:
+			_dossier_status_shimmer.set_active(false)
 		return
 	var ready_style := StyleBoxFlat.new()
 	ready_style.bg_color = READY_STATUS_GOLD
@@ -439,6 +470,8 @@ func _apply_dossier_status_presentation(ready: bool) -> void:
 	ready_style.content_margin_bottom = 5.0
 	_dossier_status.add_theme_stylebox_override(&"normal", ready_style)
 	_dossier_status.add_theme_color_override(&"font_color", Color.WHITE)
+	if _dossier_status_shimmer != null:
+		_dossier_status_shimmer.set_active(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -480,8 +513,10 @@ func _act_short(stage: StageDef) -> String:
 	)
 
 
-func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
+func _wire_focus(enabled_rows: Array[Button], back: Button, grab_initial := false) -> void:
 	var focusable := enabled_rows.duplicate()
+	if _start_mission != null and not _start_mission.disabled:
+		focusable.append(_start_mission)
 	focusable.append(back)
 	for index: int in focusable.size():
 		var current: Button = focusable[index]
@@ -491,15 +526,15 @@ func _wire_focus(enabled_rows: Array[Button], back: Button) -> void:
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_neighbor_bottom = current.get_path_to(next)
 		current.focus_next = current.get_path_to(next)
-	if not enabled_rows.is_empty():
+	if grab_initial and not enabled_rows.is_empty():
 		enabled_rows[0].grab_focus.call_deferred()
-	else:
+	elif grab_initial:
 		back.grab_focus.call_deferred()
 
 
-func _refresh_focus_chain() -> void:
+func _refresh_focus_chain(grab_initial := false) -> void:
 	if _back != null:
-		_wire_focus(_enabled_rows, _back)
+		_wire_focus(_enabled_rows, _back, grab_initial)
 
 
 func _on_stage_pressed(stage_id: StringName) -> void:
@@ -518,6 +553,20 @@ func _on_stage_pressed(stage_id: StringName) -> void:
 	_cinematic_overlay.present(stage_id)
 
 
+func _on_route_stage_selected(stage_id: StringName) -> void:
+	if _cinematic_gate_locked or not Game.is_stage_unlocked(stage_id):
+		return
+	_show_dossier(stage_id)
+	if _start_mission != null and not _start_mission.disabled:
+		_start_mission.grab_focus.call_deferred()
+
+
+func _on_start_mission_pressed() -> void:
+	if _dossier_stage_id.is_empty():
+		return
+	_on_stage_pressed(_dossier_stage_id)
+
+
 func cinematic_gate_active() -> bool:
 	return _cinematic_gate_locked
 
@@ -529,6 +578,7 @@ func _set_route_input_enabled(enabled: bool) -> void:
 	if _back != null:
 		_back.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 		_back.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	_update_start_mission_state(enabled)
 
 
 func _on_mission_cinematic_terminal(stage_id: StringName, reason: StringName) -> void:
@@ -583,6 +633,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		_dossier_eyebrow.text = UiCopyType.text(
 			&"ui.campaign.selected_operation", "Selected Operation",
 		)
+	_refresh_start_mission_copy()
 	for stage_id: StringName in _stage_by_id:
 		var stage: StageDef = _stage_by_id[stage_id]
 		var row := _rows.get_node_or_null("Stage_%s" % stage_id) as AetheriaButtonType
@@ -610,6 +661,98 @@ func _refresh_header_copy() -> void:
 		_back.text = UiCopyType.text(&"ui.campaign.back_to_staging", "Back to Staging")
 		_back.set_presentation_text(_back.text, UiCopyType.text(&"ui.common.back", "Back"))
 		_back.tooltip_text = _back.text
+
+
+func _refresh_start_mission_copy() -> void:
+	if _start_mission == null:
+		return
+	var copy := UiCopyType.text(&"ui.campaign.start_mission", "Start Mission")
+	_start_mission.set_presentation_text(copy, copy.to_upper())
+	_start_mission.tooltip_text = copy
+	_start_mission.accessibility_name = copy
+	_start_mission.accessibility_description = copy
+
+
+func _update_start_mission_state(route_input_enabled := true) -> void:
+	if _start_mission == null:
+		return
+	var can_start := (
+		route_input_enabled
+		and not _cinematic_gate_locked
+		and not _dossier_stage_id.is_empty()
+		and Game.is_stage_unlocked(_dossier_stage_id)
+	)
+	_start_mission.disabled = not can_start
+	_start_mission.focus_mode = Control.FOCUS_ALL if can_start else Control.FOCUS_NONE
+	_start_mission.mouse_filter = Control.MOUSE_FILTER_STOP if can_start else Control.MOUSE_FILTER_IGNORE
+	_refresh_start_mission_copy()
+	_refresh_focus_chain()
+
+
+func _wire_route_card_feedback(row: Button) -> void:
+	var background := ColorRect.new()
+	background.name = "RouteHoverBackground"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.offset_left = 10.0
+	background.offset_top = 7.0
+	background.offset_right = -10.0
+	background.offset_bottom = -7.0
+	background.color = Color.TRANSPARENT
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(background)
+	row.move_child(background, 0)
+	row.set_meta(&"route_hovered", false)
+	row.set_meta(&"route_focused", row.has_focus())
+	row.resized.connect(_center_route_card_pivot.bind(row))
+	row.mouse_entered.connect(_set_route_card_hovered.bind(row, background, true))
+	row.mouse_exited.connect(_set_route_card_hovered.bind(row, background, false))
+	row.focus_entered.connect(_set_route_card_focused.bind(row, background, true))
+	row.focus_exited.connect(_set_route_card_focused.bind(row, background, false))
+	_center_route_card_pivot.call_deferred(row)
+
+
+func _center_route_card_pivot(row: Button) -> void:
+	if row != null and is_instance_valid(row):
+		row.pivot_offset = row.size * 0.5
+
+
+func _set_route_card_hovered(row: Button, background: ColorRect, highlighted: bool) -> void:
+	if row == null or not is_instance_valid(row):
+		return
+	row.set_meta(&"route_hovered", highlighted)
+	_refresh_route_card_feedback(row, background)
+
+
+func _set_route_card_focused(row: Button, background: ColorRect, highlighted: bool) -> void:
+	if row == null or not is_instance_valid(row):
+		return
+	row.set_meta(&"route_focused", highlighted)
+	_refresh_route_card_feedback(row, background)
+
+
+func _refresh_route_card_feedback(row: Button, background: ColorRect) -> void:
+	if row == null or background == null or not is_instance_valid(row) or not is_instance_valid(background):
+		return
+	var hovered := bool(row.get_meta(&"route_hovered", false))
+	var focused := bool(row.get_meta(&"route_focused", false))
+	var target_scale := ROUTE_HOVER_SCALE if hovered else (ROUTE_FOCUS_SCALE if focused else Vector2.ONE)
+	var target_color := ROUTE_HOVER_BACKGROUND if hovered else (ROUTE_FOCUS_BACKGROUND if focused else Color.TRANSPARENT)
+	if bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)):
+		target_scale = Vector2.ONE
+	if row.has_meta(&"route_hover_tween"):
+		var tween_value: Variant = row.get_meta(&"route_hover_tween")
+		if tween_value is Tween and (tween_value as Tween).is_valid():
+			(tween_value as Tween).kill()
+		row.remove_meta(&"route_hover_tween")
+	if not row.is_inside_tree() or bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)):
+		row.scale = target_scale
+		background.color = target_color
+		return
+	var tween := create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(row, "scale", target_scale, ROUTE_HOVER_SECONDS)
+	tween.tween_property(background, "color", target_color, ROUTE_HOVER_SECONDS)
+	row.set_meta(&"route_hover_tween", tween)
 
 
 func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String:

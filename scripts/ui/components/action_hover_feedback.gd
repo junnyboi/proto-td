@@ -18,17 +18,26 @@ const META_TWEEN := &"action_hover_feedback_tween"
 const META_HOVER_SCALE := &"action_hover_feedback_hover_scale"
 const META_FOCUS_SCALE := &"action_hover_feedback_focus_scale"
 const META_HOVER_TINT := &"action_hover_feedback_hover_tint"
+const META_FOCUS_TINT := &"action_hover_feedback_focus_tint"
 
 
-static func wire(owner: Node, button: Button) -> bool:
+static func wire(
+	owner: Node,
+	button: Button,
+	hover_scale: Vector2 = HOVER_SCALE,
+	focus_scale: Vector2 = FOCUS_SCALE,
+	hover_tint: Color = HOVER_TINT,
+	focus_tint: Color = FOCUS_TINT,
+) -> bool:
 	if owner == null or button == null or bool(button.get_meta(META_WIRED, false)):
 		return false
 	button.set_meta(META_WIRED, true)
 	button.set_meta(META_HOVERED, false)
 	button.set_meta(META_FOCUSED, button.has_focus())
-	button.set_meta(META_HOVER_SCALE, HOVER_SCALE)
-	button.set_meta(META_FOCUS_SCALE, FOCUS_SCALE)
-	button.set_meta(META_HOVER_TINT, HOVER_TINT)
+	button.set_meta(META_HOVER_SCALE, hover_scale)
+	button.set_meta(META_FOCUS_SCALE, focus_scale)
+	button.set_meta(META_HOVER_TINT, hover_tint)
+	button.set_meta(META_FOCUS_TINT, focus_tint)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.resized.connect(_center_pivot.bind(button))
 	button.mouse_entered.connect(_set_hovered.bind(owner, button, true))
@@ -74,8 +83,12 @@ static func _refresh(owner: Node, button: Button, immediate := false) -> void:
 		return
 	var hovered := bool(button.get_meta(META_HOVERED, false))
 	var focused := bool(button.get_meta(META_FOCUSED, false))
-	var target_scale := HOVER_SCALE if hovered else (FOCUS_SCALE if focused else Vector2.ONE)
-	var target_tint := HOVER_TINT if hovered else (FOCUS_TINT if focused else IDLE_TINT)
+	var hover_scale: Vector2 = button.get_meta(META_HOVER_SCALE, HOVER_SCALE)
+	var focus_scale: Vector2 = button.get_meta(META_FOCUS_SCALE, FOCUS_SCALE)
+	var hover_tint: Color = button.get_meta(META_HOVER_TINT, HOVER_TINT)
+	var focus_tint: Color = button.get_meta(META_FOCUS_TINT, FOCUS_TINT)
+	var target_scale := hover_scale if hovered else (focus_scale if focused else Vector2.ONE)
+	var target_tint := hover_tint if hovered else (focus_tint if focused else IDLE_TINT)
 	var reduced_motion := bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
 	if reduced_motion:
 		target_scale = Vector2.ONE

@@ -509,7 +509,7 @@ func _refresh_accessibility() -> void:
 	_back_button.accessibility_name = UiCopyType.text(&"ui.common.back", "Back")
 	_back_button.accessibility_description = _copy(
 		&"ui.title.a11y.back_description",
-		"Discard draft changes and return to the title screen.",
+		"Discard draft changes and return to the previous screen.",
 	)
 	_locale_list.accessibility_name = _locale_label.text
 	_locale_list.accessibility_description = _copy(
@@ -536,7 +536,7 @@ func _refresh_accessibility() -> void:
 	_music_button.accessibility_name = _music_button.text
 	_music_button.accessibility_description = _copy(
 		&"ui.title.a11y.music_description",
-		"Toggle music on the title screen.",
+		"Toggle game music.",
 	)
 	_frame_option.accessibility_name = "%s: %s" % [_frame_label.text, _frame_option.get_item_text(_frame_option.selected)]
 	_frame_option.accessibility_description = _copy(
@@ -556,7 +556,7 @@ func _refresh_accessibility() -> void:
 	_apply_button.accessibility_name = UiCopyType.text(&"ui.common.apply", "Apply")
 	_apply_button.accessibility_description = _copy(
 		&"ui.title.a11y.apply_description",
-		"Save the current settings and return to the title screen.",
+		"Save the current settings and return to the previous screen.",
 	)
 	_error_label.accessibility_name = _copy(&"ui.title.a11y.error_name", "Settings error")
 

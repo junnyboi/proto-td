@@ -1,5 +1,8 @@
 extends SceneTree
 
+const PREFS := preload("res://scripts/view/view_preferences.gd")
+const PREFERENCES_PATH := "user://staging_command_layout_test.cfg"
+
 const VIEWPORT_CASES := [
 	{"name": "4k", "size": Vector2i(3840, 2160), "rail": true, "portrait": false},
 	{"name": "native-ultrawide", "size": Vector2i(3440, 1440), "rail": true, "portrait": false},
@@ -9,6 +12,7 @@ const VIEWPORT_CASES := [
 	{"name": "tall", "size": Vector2i(1280, 1100), "rail": false, "portrait": false},
 	{"name": "compact", "size": Vector2i(1024, 768), "rail": false, "portrait": false},
 	{"name": "portrait", "size": Vector2i(720, 1280), "rail": false, "portrait": true},
+	{"name": "narrow-390", "size": Vector2i(390, 844), "rail": false, "portrait": true},
 ]
 
 var _failures: Array[String] = []
@@ -26,6 +30,9 @@ func _run() -> void:
 	if game == null or i18n == null:
 		_finish()
 		return
+	_remove_preferences()
+	game.call("set_view_preferences_path", PREFERENCES_PATH)
+	_check(PREFS.set_text_scale(1.0, PREFERENCES_PATH), "layout preference fixture was not created")
 	game.call("set_run_seed", 1701)
 	_check(bool(game.call("start_campaign", false, true)), "Company Command fixture failed")
 	game.set("selected_stage_id", &"s1")
@@ -44,7 +51,10 @@ func _run() -> void:
 	root.get_node("TextScale").call("set_scale", 1.5)
 	await _verify_large_text_overflow(game, Vector2i(1280, 720), "large-text-landscape")
 	await _verify_large_text_overflow(game, Vector2i(720, 1280), "large-text-portrait")
+	await _verify_large_text_overflow(game, Vector2i(390, 844), "large-text-narrow-390")
 	root.get_node("TextScale").call("set_scale", 1.0)
+	game.call("set_view_preferences_path", PREFS.DEFAULT_PATH)
+	_remove_preferences()
 
 	game.set("campaign_active", false)
 	game.set("campaign", null)
@@ -61,6 +71,8 @@ func _run() -> void:
 
 
 func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> void:
+	_check(PREFS.set_locale(StringName(locale_id), PREFERENCES_PATH), "%s: locale fixture was not persisted" % locale_id)
+	_check(PREFS.set_text_scale(1.0, PREFERENCES_PATH), "%s: text-scale fixture was not persisted" % locale_id)
 	var viewport_size: Vector2i = viewport_case["size"]
 	DisplayServer.window_set_size(viewport_size)
 	root.size = viewport_size
@@ -80,9 +92,15 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var identity_label := staging.find_child("FactionIdentity", true, false) as Label
 	var status_chip := staging.find_child("CampaignStatusChip", true, false) as PanelContainer
 	var status_label := staging.find_child("TopCampaignSummary", true, false) as Label
+	var utility_actions := staging.find_child("UtilityActions", true, false) as HBoxContainer
+	var settings_plate := staging.find_child("SettingsUtilityPlate", true, false) as PanelContainer
+	var settings_button := staging.find_child("CommandSettingsButton", true, false) as Button
+	var settings_label := staging.find_child("SettingsLabel", true, false) as Label
+	var settings_icon := staging.find_child("SettingsGlyph", true, false) as TextureRect
 	var utility_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
 	var exit_alignment_spacer := staging.find_child("ExitAlignmentSpacer", true, false) as Control
 	var exit_label := staging.find_child("ExitLabel", true, false) as Label
+	var exit_icon := staging.find_child("ExitGlyph", true, false) as TextureRect
 	var navigation := staging.find_child("NavigationRail", true, false) as PanelContainer
 	var command_deck := staging.find_child("CommandDeck", true, false) as PanelContainer
 	var command_sheet := staging.find_child("CommandSheet", true, false) as PanelContainer
@@ -108,25 +126,37 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var expected_identity := "PROTOS 防线" if locale_id == "zh-CN" else "PROTOS DEFENSE"
 
 	_check(top_bar != null and top_bar.size.y >= 156.0, "%s: segmented top HUD is shorter than 156px" % context)
-	_check(identity_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
+	_check(identity_plate != null and settings_plate != null and utility_plate != null, "%s: segmented identity/utility plates missing" % context)
 	_check(exit_alignment_spacer != null and exit_alignment_spacer.size_flags_horizontal == Control.SIZE_EXPAND_FILL, "%s: Exit right-alignment spacer missing" % context)
-	_check(top_row != null and absf(utility_plate.get_global_rect().end.x - top_row.get_global_rect().end.x) <= 1.0, "%s: Exit is not aligned to the top row's right edge" % context)
+	_check(top_row != null and utility_actions != null and absf(utility_actions.get_global_rect().end.x - top_row.get_global_rect().end.x) <= 1.0, "%s: utility actions are not aligned to the top row's right edge" % context)
+	_check(settings_plate.get_parent() == utility_plate.get_parent() and settings_plate.get_index() + 1 == utility_plate.get_index(), "%s: Settings is not immediately beside and before Exit" % context)
 	_check(identity_plate.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s: PROTOS DEFENSE identity retained a container frame" % context)
 	_check(identity_label != null and identity_label.text == expected_identity, "%s: top-left identity is not localized game identity" % context)
-	_check(identity_label != null and _contains(identity_plate, identity_label), "%s: faction identity text escaped its enlarged plate" % context)
-	_check(exit_label != null and _contains(utility_plate, exit_label), "%s: Exit label escaped or touched its compact frame" % context)
+	if viewport_size.x < 480:
+		_check(not identity_label.visible, "%s: ultra-narrow identity text should collapse to the crest" % context)
+	else:
+		_check(_contains(identity_plate, identity_label), "%s: faction identity text escaped its enlarged plate" % context)
+	_check(settings_button != null and settings_label != null and _contains(settings_plate, settings_button), "%s: Settings action escaped its compact frame" % context)
+	_check(settings_label.text == ("设置" if locale_id == "zh-CN" else "SETTINGS"), "%s: Settings utility copy is not localized" % context)
+	if viewport_size.x < 620:
+		_check(not settings_label.visible and not exit_label.visible, "%s: narrow utility labels should collapse to icons" % context)
+		_check(_contains(settings_plate, settings_icon) and _contains(utility_plate, exit_icon), "%s: narrow utility icons escaped their frames" % context)
+	else:
+		_check(_contains(settings_plate, settings_label), "%s: Settings label escaped or touched its compact frame" % context)
+		_check(exit_label != null and _contains(utility_plate, exit_label), "%s: Exit label escaped or touched its compact frame" % context)
 	_check(staging.find_child("BottomShade", true, false) == null, "%s: duplicate lower mask remains" % context)
 	_check(staging.find_child("HeroIdentity", true, false) == null, "%s: duplicate lower identity copy remains" % context)
 	_check(command_deck != null and command_deck.visible, "%s: command deck missing" % context)
 	_check(command_heading != null and command_heading.text == ("连队指挥部" if locale_id == "zh-CN" else "COMPANY COMMAND"), "%s: Company Command heading copy is incorrect" % context)
-	_check(command_heading != null and _font_size(command_heading) >= 22, "%s: command heading below responsive 22px floor" % context)
+	var ultra_narrow := viewport_size.x < 480
+	_check(command_heading != null and _font_size(command_heading) >= (20 if ultra_narrow else 22), "%s: command heading below responsive floor" % context)
 	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below responsive 18px floor" % context)
 	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
-	_check(mission_title != null and _font_size(mission_title) >= 24, "%s: mission title below 24px" % context)
+	_check(mission_title != null and _font_size(mission_title) >= (20 if ultra_narrow else 24), "%s: mission title below responsive floor" % context)
 	_check(objective != null and _font_size(objective) >= 18, "%s: mission body below 18px" % context)
 	_check(mission_action != null and mission_action.custom_minimum_size.y >= 150.0, "%s: primary action below responsive 150px floor" % context)
 	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
-	_check(mission_action_label != null and _font_size(mission_action_label) >= 36, "%s: primary action type below 36px" % context)
+	_check(mission_action_label != null and _font_size(mission_action_label) >= (30 if ultra_narrow else 36), "%s: primary action type below responsive floor" % context)
 	_check(mission_action_label != null and mission_action_label.text.contains("\n"), "%s: primary action does not use two-line copy" % context)
 	_check(mission_action != null and mission_action.tooltip_text == ("任务中心" if locale_id == "zh-CN" else "Mission Control"), "%s: Mission Control primary action copy is missing" % context)
 	_check(mission_action_label != null and mission_action_label.get_visible_line_count() == mission_action_label.get_line_count(), "%s: primary action copy is clipped" % context)
@@ -161,7 +191,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	if bool(viewport_case["portrait"]) and viewport_size.x <= 720:
 		_check(operation_grid != null and operation_grid.columns == 1, "%s: narrow portrait operations must use one no-wrap column" % context)
 	_check(operation_scroll != null and operation_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: operations do not own local overflow" % context)
-	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s: command deck still uses document scrolling" % context)
+	_check(command_scroll != null and command_scroll.vertical_scroll_mode == (ScrollContainer.SCROLL_MODE_AUTO if ultra_narrow else ScrollContainer.SCROLL_MODE_DISABLED), "%s: command deck scrolling does not match responsive policy" % context)
 	_check(mission_card != null and _contains(mission_card, mission_title), "%s: mission title escaped its frame" % context)
 	_check(mission_card != null and _contains(mission_card, objective), "%s: mission objective escaped its frame" % context)
 	_check(objective.get_visible_line_count() == objective.get_line_count(), "%s: mission objective lines are clipped" % context)
@@ -169,7 +199,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var deck_style := command_deck.get_theme_stylebox(&"panel") as StyleBoxTexture
 	var mission_style := mission_card.get_theme_stylebox(&"panel") as StyleBoxTexture
 	_check(deck_style != null and deck_style.content_margin_left >= 48.0 and deck_style.content_margin_top >= 24.0, "%s: command-deck safe inset regressed" % context)
-	_check(mission_style != null and mission_style.content_margin_left >= 44.0 and mission_style.content_margin_top >= 32.0, "%s: mission-frame safe inset regressed" % context)
+	_check(mission_style != null and mission_style.content_margin_left >= (18.0 if ultra_narrow else 44.0) and mission_style.content_margin_top >= 32.0, "%s: mission-frame safe inset regressed" % context)
 
 	var expects_rail := bool(viewport_case["rail"])
 	_check(navigation != null and navigation.is_visible_in_tree() == expects_rail, "%s: navigation rail breakpoint mismatch" % context)
@@ -181,9 +211,10 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(identity_plate.custom_minimum_size.x >= 420.0 and identity_plate.custom_minimum_size.y >= 112.0, "%s: identity region did not expand" % context)
 		_check(status_chip != null and status_chip.visible and status_chip.custom_minimum_size.x >= 354.0 and status_chip.custom_minimum_size.y >= 112.0, "%s: campaign status plate did not expand" % context)
 		_check(status_label != null and _font_size(status_label) >= 22 and _contains(status_chip, status_label), "%s: campaign status text is clipped" % context)
+		_check(settings_plate.custom_minimum_size.x >= 228.0 and settings_plate.custom_minimum_size.y >= 112.0, "%s: Settings plate did not expand" % context)
 		_check(utility_plate.custom_minimum_size.x >= 228.0 and utility_plate.custom_minimum_size.y >= 112.0, "%s: Exit plate did not expand" % context)
 		_check(_font_size(identity_label) >= 28, "%s: PROTOS DEFENSE identity type below attachment-relative doubled size" % context)
-		_check(_font_size(exit_label) >= 22, "%s: Exit type below 22px" % context)
+		_check(_font_size(settings_label) >= 22 and _font_size(exit_label) >= 22, "%s: Settings/Exit type below 22px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
 		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 18 and _font_size(next_label) >= 18, "%s: command header typography below attachment-relative doubled size" % context)
 		_check(mission_card.custom_minimum_size.y >= 260.0 and mission_card.size.y >= 260.0, "%s: next-mission card lacks its doubled 260px minimum height" % context)
@@ -213,9 +244,11 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 	if bool(viewport_case["portrait"]):
 		_check(command_sheet != null and command_sheet.visible, "%s: portrait command sheet missing" % context)
-		_check(command_sheet.size.y >= 760.0, "%s: portrait command sheet below 760px" % context)
-		_check(command_sheet.get_global_rect().position.y >= 300.0, "%s: taller portrait sheet erased the hero stage" % context)
-		_check(_contains(command_sheet, mission_action), "%s: portrait primary action escaped sheet" % context)
+		var expected_sheet_height := 520.0 if viewport_size.x < 620 else 760.0
+		var expected_hero_stage := 200.0 if viewport_size.x < 620 else 300.0
+		_check(command_sheet.size.y >= expected_sheet_height, "%s: portrait command sheet is below its responsive floor" % context)
+		_check(command_sheet.get_global_rect().position.y >= expected_hero_stage, "%s: portrait sheet erased the hero stage" % context)
+		_check(_horizontally_contains(command_sheet, mission_action) if ultra_narrow else _contains(command_sheet, mission_action), "%s: portrait primary action escaped sheet" % context)
 	else:
 		_check(command_deck.size.x >= 560.0, "%s: landscape command deck below 560px" % context)
 		_check(_contains(command_deck, mission_action), "%s: bottom Mission Control action escaped the command deck" % context)
@@ -226,6 +259,8 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 
 func _verify_large_text_overflow(game: Node, viewport_size: Vector2i, context: String) -> void:
+	_check(PREFS.set_locale(&"en-US", PREFERENCES_PATH), "%s: locale fixture was not persisted" % context)
+	_check(PREFS.set_text_scale(float(root.get_node("TextScale").call("value")), PREFERENCES_PATH), "%s: text-scale fixture was not persisted" % context)
 	DisplayServer.window_set_size(viewport_size)
 	root.size = viewport_size
 	await process_frame
@@ -237,9 +272,13 @@ func _verify_large_text_overflow(game: Node, viewport_size: Vector2i, context: S
 	var command_scroll := staging.find_child(scroll_name, true, false) as ScrollContainer
 	var mission_action := staging.find_child("MissionControlButton", true, false) as Button
 	var objective := staging.find_child("NextOperationObjective", true, false) as Label
+	var settings_plate := staging.find_child("SettingsUtilityPlate", true, false) as PanelContainer
+	var exit_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
 	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: command deck did not enable large-text overflow" % context)
-	var expected_objective_size := roundi(22.0 * float(root.get_node("TextScale").call("value")))
+	var expected_base_size := 18.0 if viewport_size.x < 480 else 22.0
+	var expected_objective_size := roundi(expected_base_size * float(root.get_node("TextScale").call("value")))
 	_check(objective != null and _font_size(objective) >= expected_objective_size, "%s: mission body did not receive the global text scale" % context)
+	_check(_contains(staging, settings_plate) and _contains(staging, exit_plate), "%s: Settings/Exit escaped the viewport" % context)
 	if command_scroll != null and mission_action != null:
 		mission_action.grab_focus()
 		for _frame: int in range(4):
@@ -282,6 +321,11 @@ func _has_ancestor(node: Node, ancestor: Node) -> bool:
 			return true
 		current = current.get_parent()
 	return false
+
+
+func _remove_preferences() -> void:
+	if FileAccess.file_exists(PREFERENCES_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PREFERENCES_PATH))
 
 
 func _dispose(node: Node) -> void:

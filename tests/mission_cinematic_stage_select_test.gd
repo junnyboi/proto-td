@@ -31,13 +31,21 @@ func _run() -> void:
 			_check(row.disabled == (index > 1), "Stage Select lock state changed for s%d" % index)
 	var unlocked := campaign.find_child("Stage_s1", true, false) as Button
 	var locked := campaign.find_child("Stage_s2", true, false) as Button
+	var start_mission := campaign.find_child("StartMission", true, false) as Button
 	locked.pressed.emit()
 	await process_frame
 	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "locked mission row opened a cinematic")
 	unlocked.pressed.emit()
 	await process_frame
+	await process_frame
+	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "selecting an unlocked route card bypassed Start Mission")
+	_check(campaign.get("_dossier_stage_id") == &"s1", "unlocked route card did not select its exact operation")
+	_check(start_mission != null and not start_mission.disabled and start_mission.has_focus(), "selection did not hand focus to Start Mission")
+	if start_mission != null:
+		start_mission.pressed.emit()
+	await process_frame
 	var overlay := campaign.find_child("MissionCinematicOverlay", true, false)
-	_check(overlay != null, "unlocked mission row did not open the cinematic overlay")
+	_check(overlay != null, "Start Mission did not open the cinematic overlay")
 	_check(bool(campaign.call("cinematic_gate_active")), "Stage Select route input did not lock during the overlay")
 	_check(game.get("selected_stage_id") == &"", "Stage Select routed before the terminal signal")
 	_check(not unlocked.disabled and unlocked.focus_mode == Control.FOCUS_NONE, "route input was not disabled behind the overlay")

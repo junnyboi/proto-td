@@ -116,6 +116,9 @@ func _build_defeat_ambient() -> void:
 
 
 func _exit_tree() -> void:
+	var viewport := get_viewport()
+	if viewport != null and viewport.size_changed.is_connected(_apply_responsive_layout):
+		viewport.size_changed.disconnect(_apply_responsive_layout)
 	var command := find_child("ReturnToStaging", true, false) as Button
 	ActionHoverFeedbackType.reset(command)
 	_kill_reward_reveal_tween()
@@ -538,7 +541,7 @@ func _apply_responsive_layout() -> void:
 
 
 func _relayout_shell() -> void:
-	if _shell != null and is_instance_valid(_shell):
+	if is_inside_tree() and _shell != null and is_instance_valid(_shell):
 		_shell.relayout(Vector2i(get_viewport_rect().size))
 		_reset_information_scrolls.call_deferred()
 
@@ -826,7 +829,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	if not focus_name.is_empty():
 		var replacement := find_child(focus_name, true, false) as Control
 		if replacement != null:
-			replacement.grab_focus.call_deferred()
+			_focus_control_if_inside.call_deferred(replacement)
 
 
 func _reset_presentation_references() -> void:
@@ -892,7 +895,14 @@ func _wire_focus(focusable: Array[Button]) -> void:
 		current.focus_previous = current.get_path_to(previous)
 		current.focus_next = current.get_path_to(next)
 	if not focusable.is_empty():
-		focusable[0].grab_focus.call_deferred()
+		_focus_control_if_inside.call_deferred(focusable[0])
+
+
+func _focus_control_if_inside(control: Control) -> void:
+	if not is_inside_tree() or control == null or not is_instance_valid(control):
+		return
+	if control.is_inside_tree():
+		control.grab_focus()
 
 
 func _on_return_to_staging() -> void:

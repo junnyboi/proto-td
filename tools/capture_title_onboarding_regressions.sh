@@ -37,6 +37,10 @@ capture tutorial-resonance-landscape 1280 720 resonance
 capture tutorial-mission-portrait 720 1280 mission
 capture tutorial-resonance-portrait 720 1280 resonance
 capture operation-focus-landscape 1280 720 operation_focus
+capture command-settings-button-landscape 1280 720 command_settings_button
+capture command-settings-modal-landscape 1280 720 command_settings_modal
+capture command-settings-button-portrait 720 1280 command_settings_button
+capture command-settings-button-narrow 390 844 command_settings_button
 capture next-operation-mission-control-landscape 1280 720 mission_control
 
 sha256sum "$OUT_DIR"/*.png >"$OUT_DIR/SHA256SUMS"

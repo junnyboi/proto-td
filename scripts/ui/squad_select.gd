@@ -14,6 +14,7 @@ const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premiu
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
+const ActionHoverFeedbackType := preload("res://scripts/ui/components/action_hover_feedback.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -57,6 +58,12 @@ const OPERATOR_SELECTION_SETTLE_SECONDS := 0.17
 const OPERATOR_GLOW_ALPHA := 0.82
 const OPERATOR_GLOW_EXPAND := 5.0
 const OPERATOR_GLOW_SHADOW_SIZE := 10
+const HIRE_RECRUIT_HOVER_SCALE := Vector2(1.022, 1.022)
+const HIRE_RECRUIT_FOCUS_SCALE := Vector2(1.012, 1.012)
+const HIRE_RECRUIT_HOVER_TINT := Color("fff8df")
+const HIRE_RECRUIT_FOCUS_TINT := Color("e9fcff")
+const HIRE_RECRUIT_HOVER_SFX := "hire_recruit_hover"
+const HIRE_RECRUIT_HOVER_ARMED_META := &"hire_recruit_hover_armed"
 
 var _stage: StageDef = null
 var _shell: AetheriaScreenShellType = null
@@ -450,6 +457,17 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_recruit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.apply_role(&"primary")
 	_apply_clean_training_style(_hire_recruit)
+	ActionHoverFeedbackType.wire(
+		self,
+		_hire_recruit,
+		HIRE_RECRUIT_HOVER_SCALE,
+		HIRE_RECRUIT_FOCUS_SCALE,
+		HIRE_RECRUIT_HOVER_TINT,
+		HIRE_RECRUIT_FOCUS_TINT,
+	)
+	_hire_recruit.set_meta(HIRE_RECRUIT_HOVER_ARMED_META, true)
+	_hire_recruit.mouse_entered.connect(_on_hire_recruit_hovered)
+	_hire_recruit.mouse_exited.connect(_on_hire_recruit_hover_exited)
 	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
 	var hire_content := HBoxContainer.new()
 	hire_content.name = "BasicRecruitActionContent"
@@ -1166,10 +1184,23 @@ func _loadout_text() -> String:
 	)
 
 
+func _on_hire_recruit_hovered() -> void:
+	if _hire_recruit == null or _hire_recruit.disabled:
+		return
+	if not bool(_hire_recruit.get_meta(HIRE_RECRUIT_HOVER_ARMED_META, true)):
+		return
+	_hire_recruit.set_meta(HIRE_RECRUIT_HOVER_ARMED_META, false)
+	Sfx.play(HIRE_RECRUIT_HOVER_SFX)
+
+
+func _on_hire_recruit_hover_exited() -> void:
+	if _hire_recruit != null:
+		_hire_recruit.set_meta(HIRE_RECRUIT_HOVER_ARMED_META, true)
+
+
 func _on_hire_basic_recruit() -> void:
 	if _hire_recruit == null or _hire_recruit.disabled:
 		return
-	Sfx.play("ui_click")
 	_hire_recruit.disabled = true
 	var committed: Dictionary = Game.hire_basic_recruit()
 	if not committed.get("accepted", false):

@@ -27,6 +27,7 @@ entries = {
 &"gacha_star_bloom": {"path": "res://assets/sfx/gacha/gacha_star_bloom.wav"}
 }
 aliases = {
+&"hire_recruit_hover": &"ability_ready",
 &"bastion_slam": &"ability_ready",
 &"bolt": &"ability_ready",
 &"charm": &"ability_ready",

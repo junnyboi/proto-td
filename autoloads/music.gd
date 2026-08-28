@@ -407,6 +407,7 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 		if all_valid:
 			for player: AudioStreamPlayer in _players:
 				player.bus = BUS_NAME
+				player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 			return _players
 	_players.clear()
 	for player_name: StringName in PLAYER_NAMES:
@@ -416,6 +417,7 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 			player.name = player_name
 			add_child(player)
 		player.bus = BUS_NAME
+		player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		_players.append(player)
 	return _players
 

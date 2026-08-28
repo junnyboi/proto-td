@@ -60,6 +60,11 @@ const MAJOR_SECTION_GAP := 24
 const OPERATION_LIST_SIDE_MARGIN := 20
 const NEXT_MISSION_CARD_MIN_HEIGHT := 260.0
 const MISSION_ACTION_VERTICAL_PADDING := 12
+const MASTER_BUS := &"Master"
+const MUSIC_BUS := &"Music"
+const SFX_BUS := &"SFX"
+
+enum ScreenState { COMMAND, SETTINGS, COMMITTING }
 
 var _mission: AetheriaButtonType = null
 var _recruit: StagingCommandTileType = null
@@ -67,6 +72,7 @@ var _vahalla: StagingCommandTileType = null
 var _training: StagingCommandTileType = null
 var _archive: StagingCommandTileType = null
 var _back: Button = null
+var _settings_button: Button = null
 var _next_record: StageNarrativeDefType = null
 var _next_stage: StageDef = null
 var _narrative_missing := false
@@ -100,9 +106,14 @@ var _top_summary: Label = null
 var _top_bar: PanelContainer = null
 var _top_bar_margin: MarginContainer = null
 var _top_row: HBoxContainer = null
+var _utility_actions: HBoxContainer = null
 var _top_crest: TextureRect = null
 var _exit_plate: PanelContainer = null
 var _exit_label: Label = null
+var _exit_icon: TextureRect = null
+var _settings_plate: PanelContainer = null
+var _settings_label: Label = null
+var _settings_icon: TextureRect = null
 var _command_heading: Label = null
 var _campaign_progress_text: Label = null
 var _campaign_milestones: HBoxContainer = null
@@ -126,17 +137,44 @@ var _resonance_sparkles: StagingButtonSparklesType = null
 var _tutorial: CommandCenterTutorialType = null
 var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _preferences_path_explicit := false
+var _screen_state := ScreenState.COMMAND
+var _settings_snapshot: Dictionary = {}
+var _music_enabled := true
+var _master_volume := 1.0
+var _master_muted := false
+var _music_volume := 1.0
+var _sfx_volume := 1.0
+var _frame_limit := 0
+var _text_scale := 1.0
+var _background_downloads_enabled := true
+
+@onready var _settings_state: TitleSettings = $TitleSettings
 
 
 func _ready() -> void:
 	theme = STAGING_THEME
 	if not _preferences_path_explicit:
 		_preferences_path = Game.view_preferences_path()
-	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
+	_load_preferences()
+	I18n.set_locale(ViewPreferencesType.locale(_preferences_path))
+	_apply_audio_settings()
+	_apply_graphics_settings()
+	_apply_background_download_policy()
+	Music.set_enabled(_music_enabled)
 	Game.content = self
 	_training_acknowledgement = Game.training_call(&"peek_acknowledgement") as Array[Dictionary]
 	_resolve_next_operation()
 	_build_screen()
+	move_child(_settings_state, get_child_count() - 1)
+	_settings_state.cancel_requested.connect(_cancel_settings)
+	_settings_state.apply_requested.connect(_apply_settings)
+	_settings_state.preview_requested.connect(_preview_settings)
+	_settings_state.close_completed.connect(_on_settings_close_completed)
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null and not content_packs.background_policy_changed.is_connected(
+		_on_content_background_policy_changed,
+	):
+		content_packs.background_policy_changed.connect(_on_content_background_policy_changed)
 	I18n.locale_changed.connect(_on_locale_changed)
 	TextScale.scale_changed.connect(_on_text_scale_changed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
@@ -160,6 +198,8 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _screen_state != ScreenState.COMMAND:
+		return
 	if event.is_action_pressed("ui_cancel"):
 		if _tutorial != null and is_instance_valid(_tutorial) and _tutorial.is_active():
 			return
@@ -276,47 +316,95 @@ func _build_top_bar() -> void:
 	exit_alignment_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	exit_alignment_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_top_row.add_child(exit_alignment_spacer)
-	_exit_plate = PanelContainer.new()
-	_exit_plate.name = "UtilityPlate"
-	_exit_plate.custom_minimum_size = Vector2(228.0, 112.0)
-	_exit_plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_exit_plate.add_theme_stylebox_override(&"panel", StagingSkinType.company_hud_plate_style())
-	_top_row.add_child(_exit_plate)
-	_back = Button.new()
-	_back.name = "ExitButton"
-	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
-	_back.tooltip_text = _back.text
-	_back.custom_minimum_size = Vector2(196.0, 88.0)
-	_back.focus_mode = Control.FOCUS_ALL
-	_back.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_utility_actions = HBoxContainer.new()
+	_utility_actions.name = "UtilityActions"
+	_utility_actions.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_utility_actions.add_theme_constant_override(&"separation", 10)
+	_top_row.add_child(_utility_actions)
+	var settings_parts := _build_top_utility_action(
+		_utility_actions,
+		"SettingsUtilityPlate",
+		"CommandSettingsButton",
+		"SettingsGlyph",
+		"SettingsLabel",
+		StagingSkinType.SETTINGS_ICON,
+		UiCopyType.text(&"ui.title.settings", "Settings"),
+		Callable(self, "_open_settings"),
+	)
+	_settings_plate = settings_parts[&"plate"] as PanelContainer
+	_settings_button = settings_parts[&"button"] as Button
+	_settings_label = settings_parts[&"label"] as Label
+	_settings_icon = settings_parts[&"icon"] as TextureRect
+	var exit_parts := _build_top_utility_action(
+		_utility_actions,
+		"UtilityPlate",
+		"ExitButton",
+		"ExitGlyph",
+		"ExitLabel",
+		StagingSkinType.EXIT_ICON,
+		UiCopyType.text(&"ui.common.exit", "Exit"),
+		Callable(self, "_on_exit"),
+	)
+	_exit_plate = exit_parts[&"plate"] as PanelContainer
+	_back = exit_parts[&"button"] as Button
+	_exit_label = exit_parts[&"label"] as Label
+	_exit_icon = exit_parts[&"icon"] as TextureRect
+
+
+func _build_top_utility_action(
+	parent: Container,
+	plate_name: String,
+	button_name: String,
+	glyph_name: String,
+	label_name: String,
+	icon: Texture2D,
+	copy: String,
+	pressed_callback: Callable,
+) -> Dictionary:
+	var plate := PanelContainer.new()
+	plate.name = plate_name
+	plate.custom_minimum_size = Vector2(228.0, 112.0)
+	plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	plate.add_theme_stylebox_override(&"panel", StagingSkinType.company_hud_plate_style())
+	parent.add_child(plate)
+	var button := Button.new()
+	button.name = button_name
+	button.text = copy
+	button.tooltip_text = copy
+	button.accessibility_name = copy
+	button.custom_minimum_size = Vector2(196.0, 88.0)
+	button.focus_mode = Control.FOCUS_ALL
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
 		&"font_focus_color", &"font_disabled_color",
 	]:
-		_back.add_theme_color_override(color_name, Color.TRANSPARENT)
-	_back.add_theme_stylebox_override(&"normal", _panel_style(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-	_back.add_theme_stylebox_override(&"hover", _panel_style(Color(GOLD, 0.10), Color(GOLD, 0.34), 1, 2))
-	_back.add_theme_stylebox_override(&"pressed", _panel_style(Color(MOON_CYAN, 0.10), Color(MOON_CYAN, 0.48), 1, 2))
-	_register_focus_pulse(_back, GOLD)
-	var exit_margin := MarginContainer.new()
-	exit_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	exit_margin.add_theme_constant_override(&"margin_left", 22)
-	exit_margin.add_theme_constant_override(&"margin_right", 22)
-	exit_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_back.add_child(exit_margin)
-	var exit_row := HBoxContainer.new()
-	exit_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	exit_row.add_theme_constant_override(&"separation", 8)
-	exit_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	exit_margin.add_child(exit_row)
-	exit_row.add_child(_texture_icon("ExitGlyph", StagingSkinType.EXIT_ICON, Vector2(44.0, 44.0)))
-	_exit_label = _label("ExitLabel", _back.text.to_upper(), GameTypographyType.DETAIL, MUTED)
-	_exit_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_exit_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	StagingSkinType.apply_display_type(_exit_label, 22, MUTED, 600)
-	exit_row.add_child(_exit_label)
-	_back.pressed.connect(_on_exit)
-	_exit_plate.add_child(_back)
+		button.add_theme_color_override(color_name, Color.TRANSPARENT)
+	button.add_theme_stylebox_override(&"normal", _panel_style(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
+	button.add_theme_stylebox_override(&"hover", _panel_style(Color(GOLD, 0.10), Color(GOLD, 0.34), 1, 2))
+	button.add_theme_stylebox_override(&"pressed", _panel_style(Color(MOON_CYAN, 0.10), Color(MOON_CYAN, 0.48), 1, 2))
+	_register_focus_pulse(button, GOLD)
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override(&"margin_left", 22)
+	margin.add_theme_constant_override(&"margin_right", 22)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(margin)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override(&"separation", 8)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(row)
+	var glyph := _texture_icon(glyph_name, icon, Vector2(44.0, 44.0))
+	row.add_child(glyph)
+	var label := _label(label_name, copy.to_upper(), GameTypographyType.DETAIL, MUTED)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	StagingSkinType.apply_display_type(label, 22, MUTED, 600)
+	row.add_child(label)
+	button.pressed.connect(pressed_callback)
+	plate.add_child(button)
+	return {&"plate": plate, &"button": button, &"label": label, &"icon": glyph}
 
 
 func _texture_icon(node_name: String, texture: Texture2D, minimum: Vector2) -> TextureRect:
@@ -858,9 +946,9 @@ func _add_locked_operation(
 
 
 func _connect_focus_cycle() -> void:
-	var actions: Array[Control] = [_mission, _back]
+	var actions: Array[Control] = [_mission]
 	if _next_operation_action != null and not _next_operation_action.disabled:
-		actions.insert(1, _next_operation_action)
+		actions.append(_next_operation_action)
 	if _recruit != null and not _recruit.disabled:
 		actions.append(_recruit)
 	if _vahalla != null and not _vahalla.disabled:
@@ -869,6 +957,8 @@ func _connect_focus_cycle() -> void:
 		actions.append(_archive)
 	if _training != null and not _training.disabled:
 		actions.append(_training)
+	actions.append(_settings_button)
+	actions.append(_back)
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -889,6 +979,227 @@ func _ensure_action_visible(control: Control) -> void:
 		var scroll := find_child(scroll_name, true, false) as ScrollContainer
 		if scroll != null and scroll.is_ancestor_of(control):
 			scroll.ensure_control_visible.call_deferred(control)
+
+
+func _load_preferences() -> void:
+	_reduced_motion = ViewPreferencesType.reduced_motion(_preferences_path)
+	_music_enabled = ViewPreferencesType.title_music_enabled(_preferences_path)
+	_master_volume = ViewPreferencesType.master_volume(_preferences_path)
+	_master_muted = ViewPreferencesType.master_muted(_preferences_path)
+	_music_volume = ViewPreferencesType.music_volume(_preferences_path)
+	_sfx_volume = ViewPreferencesType.sfx_volume(_preferences_path)
+	_frame_limit = ViewPreferencesType.frame_limit(_preferences_path)
+	_text_scale = ViewPreferencesType.text_scale(_preferences_path)
+	_background_downloads_enabled = ViewPreferencesType.background_downloads_enabled(_preferences_path)
+
+
+func _open_settings() -> void:
+	if _screen_state != ScreenState.COMMAND:
+		return
+	if _tutorial != null and is_instance_valid(_tutorial) and _tutorial.is_active():
+		return
+	_settings_snapshot = _current_preferences()
+	_settings_snapshot[&"return_focus"] = _settings_button
+	_screen_state = ScreenState.SETTINGS
+	Sfx.play("menu_open")
+	_set_command_interaction_enabled(false)
+	_settings_state.open(_settings_snapshot)
+
+
+func _cancel_settings() -> void:
+	if _screen_state != ScreenState.SETTINGS or _settings_state.transition_state_name() != &"ACTIVE":
+		return
+	var snapshot := _settings_snapshot.duplicate(true)
+	_settings_snapshot[&"closing_return_focus"] = snapshot.get(&"return_focus") as Control
+	if not _settings_state.close():
+		return
+	_apply_preference_values(snapshot)
+	Sfx.play("menu_close")
+
+
+func _apply_settings(draft: Dictionary) -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	_screen_state = ScreenState.COMMITTING
+	_settings_state.set_committing(true)
+	if not ViewPreferencesType.save_batch(draft, _preferences_path):
+		_screen_state = ScreenState.SETTINGS
+		_settings_state.show_save_failure()
+		return
+	_apply_preference_values(draft)
+	Sfx.play("ui_confirm")
+	_settings_snapshot[&"closing_return_focus"] = _settings_snapshot.get(&"return_focus") as Control
+	_screen_state = ScreenState.SETTINGS
+	_settings_state.close()
+
+
+func _preview_settings(draft: Dictionary) -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	_apply_preference_values(draft, false)
+
+
+func _on_settings_close_completed() -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	var return_focus := _settings_snapshot.get(&"closing_return_focus") as Control
+	_settings_snapshot = {}
+	_screen_state = ScreenState.COMMAND
+	_set_command_interaction_enabled(true)
+	var target := return_focus
+	if target == null or not is_instance_valid(target) or not target.is_visible_in_tree():
+		target = _settings_button
+	target.grab_focus()
+
+
+func _current_preferences() -> Dictionary:
+	return {
+		&"locale": I18n.locale(),
+		&"title_music_enabled": _music_enabled,
+		&"master_volume": _master_volume,
+		&"master_muted": _master_muted,
+		&"music_volume": _music_volume,
+		&"sfx_volume": _sfx_volume,
+		&"frame_limit": _frame_limit,
+		&"reduced_motion": _reduced_motion,
+		&"text_scale": _text_scale,
+		&"background_downloads_enabled": _background_downloads_enabled,
+	}
+
+
+func _apply_preference_values(values: Dictionary, apply_background_policy := true) -> void:
+	var locale_id := StringName(values.get(&"locale", I18n.locale()))
+	if I18n.locale() != locale_id:
+		I18n.set_locale(locale_id)
+	_reduced_motion = bool(values.get(&"reduced_motion", _reduced_motion))
+	_frame_limit = int(values.get(&"frame_limit", _frame_limit))
+	_master_volume = float(values.get(&"master_volume", _master_volume))
+	_master_muted = bool(values.get(&"master_muted", _master_muted))
+	_music_volume = float(values.get(&"music_volume", _music_volume))
+	_sfx_volume = float(values.get(&"sfx_volume", _sfx_volume))
+	_text_scale = float(values.get(&"text_scale", _text_scale))
+	var previous_background_downloads := _background_downloads_enabled
+	if apply_background_policy:
+		_background_downloads_enabled = bool(
+			values.get(&"background_downloads_enabled", _background_downloads_enabled),
+		)
+	var previous_music_enabled := _music_enabled
+	_music_enabled = bool(values.get(&"title_music_enabled", _music_enabled))
+	_apply_audio_settings()
+	_apply_graphics_settings()
+	_backdrop.set_reduced_motion(_reduced_motion)
+	_settings_state.set_reduced_motion(_reduced_motion)
+	if _mission_sparkles != null:
+		_mission_sparkles.set_reduced_motion(_reduced_motion)
+	if _resonance_sparkles != null:
+		_resonance_sparkles.set_reduced_motion(_reduced_motion)
+	if apply_background_policy:
+		_apply_background_download_policy()
+		if _background_downloads_enabled and not previous_background_downloads:
+			_resume_background_prefetch()
+	Music.set_enabled(_music_enabled)
+	if _music_enabled and (not previous_music_enabled or Music.current_id().is_empty()):
+		Music.play_staging(&"lunaris")
+	_refresh_locale_copy()
+	_apply_responsive_layout()
+	_settings_state.call_deferred("_apply_responsive_layout")
+
+
+func _apply_background_download_policy() -> void:
+	var limits := {&"classes": 2, &"resonance": 1, &"missions": 2}
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call(
+			"set_background_downloads_enabled", _background_downloads_enabled,
+		)
+		limits = content_packs.call("adaptive_prefetch_limits") as Dictionary
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call(
+			"set_background_download_policy",
+			_background_downloads_enabled,
+			int(limits.get(&"resonance", 0)),
+		)
+	var mission_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
+	if mission_prefetch != null:
+		mission_prefetch.call(
+			"set_background_download_policy",
+			_background_downloads_enabled,
+			int(limits.get(&"missions", 0)),
+		)
+
+
+func _resume_background_prefetch() -> void:
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
+	var mission_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
+	if mission_prefetch != null:
+		mission_prefetch.call("prefetch_from_title")
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null and Game.campaign_active:
+		content_packs.call(
+			"prefetch_roster",
+			Game.campaign_projection().get("ready_heroes", []),
+			Game.selected_squad,
+		)
+
+
+func _on_content_background_policy_changed(
+		_enabled: bool,
+		_network_profile: StringName,
+		_class_limit: int,
+	) -> void:
+	_apply_background_download_policy()
+	if _background_downloads_enabled:
+		_resume_background_prefetch()
+
+
+func _set_command_interaction_enabled(enabled: bool) -> void:
+	var actions: Array[BaseButton] = [
+		_mission, _next_operation_action, _recruit, _vahalla, _archive,
+		_training, _settings_button, _back,
+	]
+	for action: BaseButton in actions:
+		if action == null:
+			continue
+		action.focus_mode = (
+			Control.FOCUS_ALL if enabled and not action.disabled else Control.FOCUS_NONE
+		)
+	if enabled:
+		_connect_focus_cycle()
+
+
+func _apply_audio_settings() -> void:
+	_set_bus_volume(MASTER_BUS, _master_volume, _master_muted)
+	_set_bus_volume(MUSIC_BUS, _music_volume)
+	_set_bus_volume(SFX_BUS, _sfx_volume)
+
+
+func _set_bus_volume(bus_name: StringName, value: float, force_mute := false) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		return
+	AudioServer.set_bus_mute(bus_index, force_mute or value <= 0.001)
+	AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(value, 0.001)))
+
+
+func _apply_graphics_settings() -> void:
+	Engine.max_fps = _frame_limit
+	ProjectSettings.set_setting("accessibility/reduced_motion", _reduced_motion)
+	TextScale.set_scale(_text_scale)
+
+
+func settings_screen_state() -> StringName:
+	match _screen_state:
+		ScreenState.SETTINGS:
+			return &"SETTINGS"
+		ScreenState.COMMITTING:
+			return &"COMMITTING"
+		_:
+			return &"COMMAND"
+
+
 func _apply_responsive_layout() -> void:
 	if _landscape_layout == null or _portrait_layout == null:
 		return
@@ -916,8 +1227,14 @@ func _apply_responsive_layout() -> void:
 	var portrait_scroll := _portrait_sheet.get_node_or_null("PortraitCommandScroll") as ScrollContainer
 	for document_scroll: ScrollContainer in [landscape_scroll, portrait_scroll]:
 		if document_scroll != null:
+			var constrained_portrait := (
+				document_scroll == portrait_scroll
+				and (viewport_size.x < 620.0 or viewport_size.y < 1000.0)
+			)
 			document_scroll.vertical_scroll_mode = (
-				ScrollContainer.SCROLL_MODE_AUTO if large_text else ScrollContainer.SCROLL_MODE_DISABLED
+				ScrollContainer.SCROLL_MODE_AUTO
+				if large_text or constrained_portrait
+				else ScrollContainer.SCROLL_MODE_DISABLED
 			)
 	_landscape_layout.visible = not _portrait
 	_portrait_layout.visible = _portrait
@@ -951,8 +1268,9 @@ func _apply_responsive_layout() -> void:
 		deck_style.content_margin_bottom = 24.0
 	_landscape_deck.add_theme_stylebox_override(&"panel", deck_style)
 
-	var portrait_left := maxf(24.0, safe_insets.x)
-	var portrait_right := maxf(24.0, safe_insets.z)
+	var portrait_gutter := 12.0 if viewport_size.x < 480.0 else 24.0
+	var portrait_left := maxf(portrait_gutter, safe_insets.x)
+	var portrait_right := maxf(portrait_gutter, safe_insets.z)
 	_portrait_layout.offset_left = portrait_left
 	_portrait_layout.offset_right = -(portrait_right + hidden_extent.x)
 	_portrait_layout.offset_top = TOP_HUD_HEIGHT + maxf(0.0, safe_insets.y - 8.0)
@@ -1017,30 +1335,64 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 	_top_bar_margin.add_theme_constant_override(&"margin_top", maxi(10, roundi(safe_insets.y)))
 	_top_bar_margin.add_theme_constant_override(&"margin_right", maxi(16, roundi(safe_insets.z)))
 	_top_bar_margin.add_theme_constant_override(&"margin_bottom", 10)
-	var narrow := viewport_size.x < 620.0
+	var active_text_scale := float(TextScale.value())
+	var narrow := viewport_size.x < 620.0 or (active_text_scale >= 1.20 and viewport_size.x < 850.0)
+	var ultra_narrow := viewport_size.x < 480.0 or (active_text_scale >= 1.45 and viewport_size.x < 850.0)
 	var compact := _portrait or _compact_landscape or viewport_size.x < 1180.0
+	_top_row.add_theme_constant_override(&"separation", 4 if ultra_narrow else (6 if narrow else 14))
+	_utility_actions.add_theme_constant_override(&"separation", 2 if ultra_narrow else (4 if narrow else 10))
+	_top_bar_margin.add_theme_constant_override(&"margin_left", maxi(4 if ultra_narrow else (8 if narrow else 16), roundi(safe_insets.x)))
+	_top_bar_margin.add_theme_constant_override(&"margin_right", maxi(4 if ultra_narrow else (8 if narrow else 16), roundi(safe_insets.z)))
 	_top_status_chip.visible = not compact and viewport_size.x >= 1120.0
 	_top_identity_plate.custom_minimum_size = (
-		Vector2(190.0, 92.0) if narrow
+		Vector2(44.0, 88.0) if ultra_narrow
+		else Vector2(150.0, 92.0) if narrow
 		else (Vector2(300.0, 104.0) if compact else Vector2(420.0, 112.0))
 	)
 	_top_identity.text = _company_identity(narrow)
+	_top_identity.visible = not ultra_narrow
 	_top_crest.custom_minimum_size = (
-		Vector2(42.0, 42.0) if narrow else (Vector2(48.0, 48.0) if compact else Vector2(58.0, 58.0))
+		Vector2(28.0, 28.0) if ultra_narrow
+		else Vector2(32.0, 32.0) if narrow
+		else (Vector2(44.0, 44.0) if compact else Vector2(58.0, 58.0))
 	)
 	StagingSkinType.apply_display_type(_top_identity, 16 if narrow else (22 if compact else 28), IVORY, 620)
 	StagingSkinType.apply_display_type(_top_summary, 20 if compact else 24, IVORY, 560)
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
+	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings")
+	_settings_button.tooltip_text = _settings_button.text
+	_settings_button.accessibility_name = _settings_button.text
+	_settings_label.text = _settings_button.text.to_upper()
 	_exit_label.visible = not narrow
-	_back.custom_minimum_size = Vector2(92.0, 68.0) if narrow else (Vector2(164.0, 80.0) if compact else Vector2(196.0, 88.0))
-	_exit_plate.custom_minimum_size = Vector2(108.0, 88.0) if narrow else (Vector2(190.0, 104.0) if compact else Vector2(228.0, 112.0))
+	_settings_label.visible = not narrow
+	var utility_button_size := Vector2(54.0, 62.0) if ultra_narrow else (Vector2(68.0, 68.0) if narrow else (Vector2(154.0, 80.0) if compact else Vector2(196.0, 88.0)))
+	var utility_plate_size := Vector2(64.0, 82.0) if ultra_narrow else (Vector2(80.0, 88.0) if narrow else (Vector2(180.0, 104.0) if compact else Vector2(228.0, 112.0)))
+	_back.custom_minimum_size = utility_button_size
+	_settings_button.custom_minimum_size = utility_button_size
+	_exit_plate.custom_minimum_size = utility_plate_size
+	_settings_plate.custom_minimum_size = utility_plate_size
+	var utility_plate_style: StyleBox = (
+		StyleBoxEmpty.new() if ultra_narrow else StagingSkinType.company_hud_plate_style()
+	)
+	_settings_plate.add_theme_stylebox_override(&"panel", utility_plate_style)
+	_exit_plate.add_theme_stylebox_override(
+		&"panel", StyleBoxEmpty.new() if ultra_narrow else StagingSkinType.company_hud_plate_style(),
+	)
+	_settings_icon.custom_minimum_size = Vector2(26.0, 26.0) if ultra_narrow else (Vector2(32.0, 32.0) if narrow else (Vector2(36.0, 36.0) if compact else Vector2(44.0, 44.0)))
+	_exit_icon.custom_minimum_size = _settings_icon.custom_minimum_size
+	for utility_button: Button in [_settings_button, _back]:
+		var utility_margin := utility_button.get_child(0) as MarginContainer
+		utility_margin.add_theme_constant_override(&"margin_left", 6 if ultra_narrow else (8 if narrow else (10 if compact else 22)))
+		utility_margin.add_theme_constant_override(&"margin_right", 6 if ultra_narrow else (8 if narrow else (10 if compact else 22)))
 	_top_status_chip.custom_minimum_size = Vector2(300.0, 104.0) if compact else Vector2(354.0, 112.0)
-	StagingSkinType.apply_display_type(_exit_label, 18 if compact else 22, MUTED, 600)
+	StagingSkinType.apply_display_type(_exit_label, 16 if compact else 22, MUTED, 600)
+	StagingSkinType.apply_display_type(_settings_label, 16 if compact else 22, MUTED, 600)
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
 	var single_column := (_portrait and viewport_size.x <= 720.0)
+	var ultra_narrow := viewport_size.x < 480.0
 	var hide_preview := _compact_landscape
 	var short_wide := not _portrait and not _compact_landscape and viewport_size.y < 850.0
 	_command_content.add_theme_constant_override(&"separation", 8 if short_wide else INTRA_GROUP_GAP)
@@ -1049,6 +1401,17 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_mission_body_grid.columns = 1 if single_column or hide_preview else 2
 	_mission_grid.add_theme_constant_override(&"v_separation", 8 if short_wide else 12)
 	_mission_body_grid.add_theme_constant_override(&"h_separation", 20 if short_wide else 24)
+	_campaign_progress_text.visible = not ultra_narrow
+	var deck_style := StagingSkinType.command_deck_style()
+	if ultra_narrow:
+		deck_style.content_margin_left = 18.0
+		deck_style.content_margin_right = 18.0
+	_portrait_sheet.add_theme_stylebox_override(&"panel", deck_style)
+	var mission_style := StagingSkinType.mission_card_style()
+	if ultra_narrow:
+		mission_style.content_margin_left = 18.0
+		mission_style.content_margin_right = 18.0
+	_mission_card.add_theme_stylebox_override(&"panel", mission_style)
 	_mission_card.custom_minimum_size.y = (
 		320.0 if single_column else (0.0 if hide_preview else NEXT_MISSION_CARD_MIN_HEIGHT)
 	)
@@ -1064,7 +1427,7 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 		150.0 if _compact_landscape
 		else (164.0 if single_column or _portrait else (168.0 if short_wide else 180.0))
 	)
-	_mission_action_label.offset_left = 56.0 if single_column else (96.0 if _portrait or _compact_landscape else 132.0)
+	_mission_action_label.offset_left = 30.0 if ultra_narrow else (56.0 if single_column else (96.0 if _portrait or _compact_landscape else 132.0))
 	_mission_action_label.offset_right = -_mission_action_label.offset_left
 	_mission_action_label.offset_top = MISSION_ACTION_VERTICAL_PADDING
 	_mission_action_label.offset_bottom = -_mission_action_label.offset_top
@@ -1078,12 +1441,13 @@ func _apply_company_typography() -> void:
 	var compact := _compact_landscape
 	var rail_mode := not _portrait and not _compact_landscape
 	var short_wide := rail_mode and get_viewport_rect().size.y < 850.0
-	StagingSkinType.apply_display_type(_command_heading, 22 if compact else 24, GOLD, 560)
+	var ultra_narrow := get_viewport_rect().size.x < 480.0
+	StagingSkinType.apply_display_type(_command_heading, 20 if ultra_narrow else (22 if compact else 24), GOLD, 560)
 	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
-	StagingSkinType.apply_display_type(_mission_title, 24 if compact or _portrait or short_wide else 26, IVORY, 560)
-	_mission_objective.add_theme_font_size_override(&"font_size", 22 if compact or short_wide else 24)
-	StagingSkinType.apply_display_type(_mission_action_label, 36 if compact or _portrait else 42, IVORY, 620)
+	StagingSkinType.apply_display_type(_mission_title, 20 if ultra_narrow else (24 if compact or _portrait or short_wide else 26), IVORY, 560)
+	_mission_objective.add_theme_font_size_override(&"font_size", 18 if ultra_narrow else (22 if compact or short_wide else 24))
+	StagingSkinType.apply_display_type(_mission_action_label, 30 if ultra_narrow else (36 if compact or _portrait else 42), IVORY, 620)
 	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
 
 
@@ -1119,6 +1483,10 @@ func _refresh_locale_copy() -> void:
 	_campaign_progress_text.text = _campaign_summary_text()
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
+	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings")
+	_settings_button.tooltip_text = _settings_button.text
+	_settings_button.accessibility_name = _settings_button.text
+	_settings_label.text = _settings_button.text.to_upper()
 	_command_heading.text = UiCopyType.text(&"ui.staging.command_heading", "COMPANY COMMAND")
 	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
 	_mission_title.text = _next_operation_title()

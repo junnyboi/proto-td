@@ -13,7 +13,7 @@ func _run() -> void:
 	var output_path := String(args.get("output", ""))
 	var mode := StringName(args.get("mode", "mission"))
 	var locale_id := StringName(args.get("locale", "en-US"))
-	if output_path.is_empty() or mode not in [&"mission", &"resonance", &"operation_focus", &"mission_control"]:
+	if output_path.is_empty() or mode not in [&"mission", &"resonance", &"operation_focus", &"mission_control", &"command_settings_button", &"command_settings_modal"]:
 		push_error("valid visual output path and mode are required")
 		get_tree().quit(1)
 		return
@@ -21,7 +21,7 @@ func _run() -> void:
 	VIEW_PREFERENCES.set_locale(locale_id, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_title_music_enabled(false, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_reduced_motion(true, PREFERENCES_PATH)
-	if mode in [&"operation_focus", &"mission_control"]:
+	if mode in [&"operation_focus", &"mission_control", &"command_settings_button", &"command_settings_modal"]:
 		VIEW_PREFERENCES.mark_command_tutorial_seen(PREFERENCES_PATH)
 	I18n.set_locale(locale_id)
 	Game.set_run_seed(82417)
@@ -45,6 +45,13 @@ func _run() -> void:
 	elif mode == &"operation_focus":
 		(staging.find_child("NextOperationAction", true, false) as Button).grab_focus()
 		await get_tree().process_frame
+	elif mode == &"command_settings_button":
+		(staging.find_child("CommandSettingsButton", true, false) as Button).grab_focus()
+		await get_tree().process_frame
+	elif mode == &"command_settings_modal":
+		(staging.find_child("CommandSettingsButton", true, false) as Button).pressed.emit()
+		for _frame: int in range(6):
+			await get_tree().process_frame
 	elif mode == &"mission_control":
 		(staging.find_child("NextOperationAction", true, false) as Button).pressed.emit()
 		for _frame: int in range(12):

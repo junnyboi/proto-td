@@ -35,6 +35,7 @@ capture() {
 
 capture ultrawide-title 2560 1080 false
 capture ultrawide-settings 2560 1080 true
+capture managed-tall-landscape-title 1280 1100 false
 capture short-landscape-title 1024 576 false
 capture short-landscape-settings 1024 576 true
 capture portrait-title 720 1280 false
