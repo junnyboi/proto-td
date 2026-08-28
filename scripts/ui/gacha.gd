@@ -1156,10 +1156,12 @@ func _fit_browse_backdrop() -> void:
 
 
 func _hero_grid_available_width() -> float:
-	if _hero_stage != null and _hero_stage.size.x > 0.0:
-		return _hero_stage.size.x
+	# Measure the clipping viewport, never the child stage whose prior minimum
+	# can inflate itself and create circular breakpoints.
 	if _hero_scroll != null and _hero_scroll.size.x > 0.0:
 		return _hero_scroll.size.x
+	if _hero_stage != null and _hero_stage.size.x > 0.0:
+		return _hero_stage.size.x
 	return maxf(0.0, get_viewport_rect().size.x - 48.0)
 
 
@@ -1196,13 +1198,19 @@ func _apply_hero_card_layout(columns: int) -> void:
 	var short_wide := columns == 3 and viewport_size.y < 840.0
 	var card_height := 420.0 if short_wide else BROWSE_CARD_SIZE.y
 	var portrait_height := 190.0 if short_wide else BROWSE_PORTRAIT_HEIGHT
+	var available_width := _hero_grid_available_width()
 	var card_width := RosterGridLayoutType.fitted_item_width(
-		_hero_grid_available_width(),
+		available_width,
 		columns,
 		BROWSE_GRID_GAP,
 		BROWSE_CARD_MIN_WIDTH,
 		BROWSE_CARD_SIZE.x,
 	)
+	var contained_width := maxf(
+		1.0,
+		(available_width - BROWSE_GRID_GAP * float(columns - 1)) / float(columns),
+	)
+	card_width = minf(card_width, contained_width)
 	if (
 		columns == _last_hero_grid_columns
 		and is_equal_approx(card_width, _last_hero_card_width)
