@@ -66,6 +66,9 @@ const ROSTER_SCROLL_EXTRA := 24.0
 const ROSTER_MAX_COLUMNS := 2
 const ROSTER_INSPECTOR_MIN_WIDTH := 570.0
 const ROSTER_LANDSCAPE_SEPARATION := 64.0
+const INSPECTOR_TWO_COLUMN_MIN_WIDTH := 1240.0
+const INSPECTOR_COLUMN_SEPARATION := 48
+const INSPECTOR_FIELD_RECORD_MIN_WIDTH := 520.0
 const INSPECTOR_GOLD := Color("d9b96e")
 const IDENTITY_INPUT_FONT_SIZE := 34
 const ERROR_KEYS := {
@@ -605,6 +608,27 @@ func _build_inspector() -> AetheriaPanelType:
 	inspector_eyebrow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector_header.add_child(inspector_eyebrow)
 	column.add_child(inspector_header)
+	var inspector_content := BoxContainer.new()
+	inspector_content.name = "InspectorContentColumns"
+	inspector_content.vertical = true
+	inspector_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inspector_content.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	inspector_content.add_theme_constant_override(&"separation", 12)
+	column.add_child(inspector_content)
+	var operator_column := VBoxContainer.new()
+	operator_column.name = "InspectorOperatorColumn"
+	operator_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	operator_column.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	operator_column.size_flags_stretch_ratio = 1.1
+	operator_column.add_theme_constant_override(&"separation", 12)
+	inspector_content.add_child(operator_column)
+	var field_record_column := VBoxContainer.new()
+	field_record_column.name = "InspectorFieldRecordColumn"
+	field_record_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	field_record_column.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	field_record_column.size_flags_stretch_ratio = 1.0
+	field_record_column.add_theme_constant_override(&"separation", 12)
+	inspector_content.add_child(field_record_column)
 	var selected := _summary_by_id(_selected_hero_id)
 	if not selected.is_empty():
 		panel.tooltip_text = _operator_stats_tooltip(selected)
@@ -708,12 +732,12 @@ func _build_inspector() -> AetheriaPanelType:
 			0,
 			_motion_reduced(),
 		)
-		column.add_child(dossier)
-		column.add_child(_build_rename_panel(selected))
-	column.add_child(_label(
+		operator_column.add_child(dossier)
+		operator_column.add_child(_build_rename_panel(selected))
+	field_record_column.add_child(_label(
 		"FieldRecordHeading", _t(&"ui.training.field_record", "FIELD RECORD"), &"heading",
 	))
-	column.add_child(_label(
+	field_record_column.add_child(_label(
 		"TrainingExplainer",
 		_t(
 			&"ui.training.training_explainer",
@@ -722,7 +746,7 @@ func _build_inspector() -> AetheriaPanelType:
 		&"detail",
 	))
 	if not selected.is_empty():
-		column.add_child(_label(
+		field_record_column.add_child(_label(
 			"SelectedRecruitStatus", _eligibility_text(selected).to_upper(), &"metric",
 		))
 		if bool(selected.get("can_promote", false)):
@@ -747,8 +771,8 @@ func _build_inspector() -> AetheriaPanelType:
 			)
 			_apply_button_insets(choose_promotion, 24.0, 12.0)
 			choose_promotion.pressed.connect(_on_choose_promotion)
-			column.add_child(choose_promotion)
-	column.add_child(_label(
+			field_record_column.add_child(choose_promotion)
+	field_record_column.add_child(_label(
 		"PermanenceNote",
 		_t(&"ui.training.permanent_warning", "THIS CHOICE IS PERMANENT."),
 		&"eyebrow",
@@ -1872,11 +1896,41 @@ func _apply_roster_layout() -> void:
 	) as TextureRect
 	if header_symbol != null:
 		header_symbol.visible = not narrow_portrait
-	var dossier := _page.get_node_or_null(
-		"TrainingRosterBody/TrainingInspector/TrainingInspectorScroll/InspectorColumn/SelectedOperatorDossier",
-	) as BoxContainer
+	var dossier := _page.find_child("SelectedOperatorDossier", true, false) as BoxContainer
 	if dossier != null:
 		dossier.vertical = large_text or not multi_column_roster
+	var inspector_panel := body.get_node_or_null("TrainingInspector") as Control
+	var inspector_columns := _page.find_child(
+		"InspectorContentColumns", true, false,
+	) as BoxContainer
+	var field_record_column := _page.find_child(
+		"InspectorFieldRecordColumn", true, false,
+	) as VBoxContainer
+	if inspector_columns != null:
+		var roster_rail_width := (
+			0.0 if stacked or scroll == null else scroll.custom_minimum_size.x
+		)
+		var estimated_inspector_width := (
+			body.size.x
+			- float(body.get_theme_constant(&"separation"))
+			- roster_rail_width
+		)
+		var inspector_width := (
+			estimated_inspector_width
+			if estimated_inspector_width > 0.0
+			else (inspector_panel.size.x if inspector_panel != null else 0.0)
+		)
+		var split_inspector := (
+			not stacked and inspector_width >= INSPECTOR_TWO_COLUMN_MIN_WIDTH
+		)
+		inspector_columns.vertical = not split_inspector
+		inspector_columns.add_theme_constant_override(
+			&"separation", INSPECTOR_COLUMN_SEPARATION if split_inspector else 12,
+		)
+		if field_record_column != null:
+			field_record_column.custom_minimum_size.x = (
+				INSPECTOR_FIELD_RECORD_MIN_WIDTH if split_inspector else 0.0
+			)
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
 		identity_heading.vertical = large_text

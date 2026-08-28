@@ -5,6 +5,9 @@ extends RefCounted
 ## and BattleView preserves the incumbent legacy body projection.
 
 const OperatorAnimationDefType := preload("res://data/presentation/operator_animation_def.gd")
+const OperatorPortraitCatalogType := preload(
+	"res://data/presentation/operator_portrait_catalog.gd"
+)
 const DEFINITIONS: Dictionary = {
 	&"archive_caster": preload("res://data/presentation/operator_visuals/archive_caster.tres"),
 	&"banner_guard_female": preload("res://data/presentation/operator_visuals/banner_guard_female.tres"),
@@ -79,9 +82,14 @@ static func template_for_unit(
 		return premium_template
 	var advanced_class: Variant = class_id if ADVANCED_CLASS_IDS.has(class_id) else null
 	if typeof(advanced_class) == TYPE_STRING_NAME:
+		var identity_gender := OperatorPortraitCatalogType.explicit_identity_variant(
+			portrait_asset_id,
+		)
+		if identity_gender == &"":
+			identity_gender = deterministic_identity_gender(hero_id, portrait_asset_id, unit_id)
 		return StringName(
 			"%s_%s"
-			% [advanced_class, deterministic_identity_gender(hero_id, portrait_asset_id, unit_id)]
+			% [advanced_class, identity_gender]
 		)
 	if op_id != &"recruit":
 		return op_id

@@ -206,6 +206,10 @@ func _run() -> void:
 			await _frames(2)
 			_check(rename.get_theme_font_size("font_size") >= 34, "callsign input typography shrank after editing")
 			_check(rename_title.get_theme_font_size("font_size") >= 34, "title input typography shrank after callsign editing")
+		edit_identity = screen.find_child("EditIdentity", true, false) as Button
+		if edit_identity != null:
+			edit_identity.pressed.emit()
+			await _frames(3)
 	var row_margin := screen.find_child("RosterRowMargin", true, false) as MarginContainer
 	_check(row_margin != null and row_margin.get_theme_constant("margin_left") == 48, "Training roster row horizontal padding is not 48px")
 	_check(row_margin != null and row_margin.get_theme_constant("margin_top") == 24, "Training roster row vertical padding is not 24px")
@@ -332,6 +336,26 @@ func _run() -> void:
 		if roster_cards.size() >= 2:
 			_check(_near(roster_cards[0].custom_minimum_size.x, 560.0, 1.0) and _near(roster_cards[1].custom_minimum_size.x, 560.0, 1.0), "wide roster cards lost their fixed 560px width")
 			_check(_near(roster_cards[0].global_position.y, roster_cards[1].global_position.y, 1.0), "first two operators are not rendered in one row")
+
+	root.size = Vector2i(3074, 1204)
+	await _frames(4)
+	var inspector_columns := screen.find_child("InspectorContentColumns", true, false) as BoxContainer
+	var operator_column := screen.find_child("InspectorOperatorColumn", true, false) as VBoxContainer
+	var field_record_column := screen.find_child("InspectorFieldRecordColumn", true, false) as VBoxContainer
+	var field_record_heading := screen.find_child("FieldRecordHeading", true, false) as Label
+	var training_explainer := screen.find_child("TrainingExplainer", true, false) as Label
+	var permanence_note := screen.find_child("PermanenceNote", true, false) as Label
+	inspector_scroll = screen.find_child("TrainingInspectorScroll", true, false) as ScrollContainer
+	choose_promotion = screen.find_child("ChoosePromotion", true, false) as Button
+	selected_status = screen.find_child("SelectedRecruitStatus", true, false) as Label
+	_check(inspector_columns != null and not inspector_columns.vertical, "ultrawide selected-operator information does not split into two columns")
+	_check(operator_column != null and field_record_column != null and field_record_column.global_position.x > operator_column.global_position.x, "Field Record column is not positioned to the right of operator identity")
+	_check(field_record_heading != null and field_record_heading.get_parent() == field_record_column, "Field Record heading did not move to the second column")
+	_check(training_explainer != null and training_explainer.get_parent() == field_record_column, "Field Record explanation did not move to the second column")
+	_check(selected_status != null and selected_status.get_parent() == field_record_column, "promotion status did not move to the second column")
+	_check(choose_promotion != null and choose_promotion.get_parent() == field_record_column, "Choose Promotion did not move to the second column")
+	_check(permanence_note != null and permanence_note.get_parent() == field_record_column, "permanence warning did not move to the second column")
+	_check(inspector_scroll != null and not inspector_scroll.get_v_scroll_bar().visible, "ultrawide selected-operator inspector still requires vertical scrolling")
 	var ready_hero_id := ""
 	var roster_rows: Array = screen.get("_roster_rows")
 	for summary: Dictionary in roster_rows:

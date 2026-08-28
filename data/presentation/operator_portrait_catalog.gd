@@ -38,7 +38,23 @@ const SPECIALIZATION_CLASS_IDS: Array[StringName] = [
 
 
 static func identity_variant(portrait_asset_id: StringName) -> StringName:
-	return StringName(IDENTITY_VARIANT_BY_PORTRAIT.get(portrait_asset_id, FEMALE))
+	var explicit_variant := explicit_identity_variant(portrait_asset_id)
+	return explicit_variant if explicit_variant != &"" else FEMALE
+
+
+static func explicit_identity_variant(portrait_asset_id: StringName) -> StringName:
+	var identity_variant_value: Variant = IDENTITY_VARIANT_BY_PORTRAIT.get(
+		portrait_asset_id,
+	)
+	if typeof(identity_variant_value) == TYPE_STRING_NAME:
+		return identity_variant_value
+	var portrait_text := String(portrait_asset_id)
+	if portrait_text.begins_with("portrait_specialization_"):
+		if portrait_text.ends_with("_female"):
+			return FEMALE
+		if portrait_text.ends_with("_male"):
+			return MALE
+	return &""
 
 
 static func specialization_asset_id(
