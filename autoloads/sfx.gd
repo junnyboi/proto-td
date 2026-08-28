@@ -273,6 +273,7 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 		if all_valid:
 			for player: AudioStreamPlayer in _players:
 				player.bus = BUS_NAME
+				player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 			return _players
 	_players.clear()
 	for index: int in VOICE_COUNT:
@@ -282,6 +283,7 @@ func _ensure_players() -> Array[AudioStreamPlayer]:
 			player.name = "%s%d" % [PLAYER_PREFIX, index]
 			add_child(player)
 		player.bus = BUS_NAME
+		player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		_players.append(player)
 	return _players
 
