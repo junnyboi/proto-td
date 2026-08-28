@@ -165,12 +165,23 @@ func _verify_insufficient_balance(game: Node) -> void:
 	var action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
 	var cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
 	var cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
+	var tooltip_hotspot := _mission.find_child("HireRecruitTooltipHotspot", true, false) as Control
 	_check(_hire != null and _hire.disabled, "insufficient balance does not gray out Hire Recruit")
 	_check(_hire != null and _hire.focus_mode == Control.FOCUS_NONE, "disabled Hire Recruit remains keyboard focusable")
 	_check(action_label != null and action_label.text == "HIRE RECRUIT", "disabled Hire Recruit changed its simplified label")
 	_check(cost_icon != null and cost_label != null and cost_label.text == "5", "disabled Hire Recruit lost its gem price")
 	_check(cost_icon != null and not cost_icon.self_modulate.is_equal_approx(Color.WHITE), "insufficient balance does not dim the gem icon")
 	_check(_mission.find_child("BasicRecruitStatus", true, false) == null, "insufficient balance still creates visible status copy")
+	_check(_hire != null and _hire.tooltip_text == "Insufficient funds — 5 Marks required.", "disabled Hire Recruit tooltip is not compact or explicit")
+	_check(tooltip_hotspot != null and tooltip_hotspot.visible and tooltip_hotspot.mouse_filter == Control.MOUSE_FILTER_STOP, "disabled Hire Recruit lacks a live tooltip carrier")
+	_check(tooltip_hotspot != null and tooltip_hotspot.tooltip_text == "Insufficient funds — 5 Marks required.", "disabled tooltip carrier uses the wrong explanation")
+	var i18n := root.get_node_or_null("I18n")
+	if i18n != null:
+		_check(bool(i18n.call("set_locale", &"zh-CN")), "low-funds fixture could not activate Chinese")
+		await process_frame
+		_check(tooltip_hotspot != null and tooltip_hotspot.tooltip_text == "资金不足——需要5枚印记。", "disabled Hire Recruit tooltip did not localize to Chinese")
+		_check(bool(i18n.call("set_locale", &"en-US")), "low-funds fixture could not restore English")
+		await process_frame
 	var before: Dictionary = game.call("campaign_projection")
 	if _hire != null:
 		_hire.pressed.emit()

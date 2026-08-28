@@ -415,6 +415,7 @@
     "ui.campaign.basic_hire_campaign_inactive": "No active campaign is available.",
     "ui.campaign.basic_hire_command_pending": "Resolve the pending Company command before hiring personnel.",
     "ui.campaign.basic_hire_insufficient": "INSUFFICIENT BALANCE",
+    "ui.campaign.basic_hire_insufficient_tooltip": "Insufficient funds — 5 Marks required.",
     "ui.campaign.basic_hire_marks": "{count}",
     "ui.campaign.basic_hire_ready": "BASIC RECRUIT CONTRACT AVAILABLE",
     "ui.campaign.basic_hire_roster": "{count} PERSONNEL READY",

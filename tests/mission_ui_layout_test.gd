@@ -74,17 +74,17 @@ func _verify_managed_order_rail(game: Node) -> void:
 
 func _verify_live_grid_reflow() -> void:
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
-	_check(operator_grid != null and operator_grid.columns == 1, "regular Field Team grid is not a single fixed-width rail")
+	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "regular Field Team cards are not one horizontal rail")
 	root.size = Vector2i(1920, 900)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(operator_grid != null and operator_grid.columns == 1, "wide Field Team resize changed the fixed-width rail")
+	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "wide Field Team resize changed the horizontal rail")
 	root.size = Vector2i(1280, 720)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(operator_grid != null and operator_grid.columns == 1, "regular Field Team resize changed the fixed-width rail")
+	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "regular Field Team resize changed the horizontal rail")
 
 
 func _verify_layout(label: String, viewport: Vector2i) -> void:
@@ -102,6 +102,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var hire_cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
 	var hire_cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
 	var hire_action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
+	var hire_tooltip_hotspot := _mission.find_child("HireRecruitTooltipHotspot", true, false) as Control
 	var launch_status := _mission.find_child("ReadinessCopy", true, false) as Label
 	_check(shell != null and bool(shell.get("full_safe_area")), "%s mission shell is not full-safe-area" % label)
 	_check(workspace != null and workspace.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s retained the decorative outer mission frame" % label)
@@ -153,6 +154,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(hire_button.icon == null and hire_cost_icon != null and hire_cost_icon.texture != null, "%s recruit action lacks its explicit shard sprite" % label)
 		_check(hire_action_label != null and hire_action_label.text == "HIRE RECRUIT", "%s recruit action contains copy other than HIRE RECRUIT" % label)
 		_check(hire_cost_label != null and hire_cost_label.text == "5" and hire_action_label.get_index() + 1 == hire_cost_icon.get_index() and hire_cost_icon.get_index() + 1 == hire_cost_label.get_index(), "%s recruit label, shard sprite, and exact cost are not in the requested order" % label)
+		_check(hire_tooltip_hotspot != null and not hire_tooltip_hotspot.visible and hire_tooltip_hotspot.mouse_filter == Control.MOUSE_FILTER_IGNORE, "%s enabled Hire Recruit tooltip carrier intercepts input" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
 	if actions != null:
 		var expected_action_columns := 1 if viewport.y > viewport.x or viewport.x < 1280 else 3
@@ -198,6 +200,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var order_rail := _mission.find_child("SelectedSquadOrder", true, false) as HBoxContainer
 	var order_empty := _mission.find_child("SelectedSquadOrderEmpty", true, false) as Label
 	var roster_scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
+	var rail_inset := _mission.find_child("OperatorRailInset", true, false) as MarginContainer
+	var snap_timer := _mission.find_child("OperatorSnapTimer", true, false) as Timer
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
 	var expected_sort_width := minf(300.0, maxf(220.0, viewport.x - 128.0)) if viewport.y > viewport.x else 300.0
@@ -232,9 +236,13 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(faction != null, "%s %s is missing" % [label, faction_name])
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
-		_check(operator_grid.columns == 1, "%s operator cards are not a single fixed-width rail" % label)
+		_check(operator_grid.columns == operator_grid.get_child_count(), "%s operator cards are not one horizontal rail" % label)
+		var row_y := -1.0
 		for child: Node in operator_grid.get_children():
 			if child is Button:
+				if row_y < 0.0:
+					row_y = (child as Button).position.y
+				_check(absf((child as Button).position.y - row_y) <= EPSILON, "%s operator card escaped the horizontal row" % label)
 				_check(absf((child as Button).size.x - 520.0) <= EPSILON, "%s operator card is not the fixed doubled 520px width" % label)
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
 				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
@@ -263,6 +271,11 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if roster_scroll != null:
 		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s fixed operator rail cannot scroll horizontally when narrower than 520px" % label)
+		_check(roster_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s operator carousel still scrolls vertically" % label)
+		_check(bool(roster_scroll.get_meta(&"operator_snap_enabled", false)), "%s operator carousel lacks snap telemetry" % label)
+		_check(is_equal_approx(float(roster_scroll.get_meta(&"operator_snap_stride", 0.0)), 532.0), "%s operator carousel snap stride does not match fixed card geometry" % label)
+	_check(rail_inset != null and int(rail_inset.get_theme_constant(&"margin_left")) >= 8 and int(rail_inset.get_theme_constant(&"margin_right")) >= 8, "%s operator carousel lacks centered edge insets" % label)
+	_check(snap_timer != null and snap_timer.one_shot and is_equal_approx(snap_timer.wait_time, 0.14), "%s operator carousel lacks bounded idle snapping" % label)
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
 		var footer := _mission.find_child("MissionActionDock", true, false) as BoxContainer
