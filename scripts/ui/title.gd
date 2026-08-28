@@ -749,6 +749,7 @@ func _apply_responsive_layout() -> void:
 		return
 	_backdrop.fit_top_cover(viewport_size)
 	var portrait := viewport_size.y > viewport_size.x
+	var tall_landscape := not portrait and viewport_size.y >= viewport_size.x * 0.75
 	var narrow := viewport_size.x <= 520.0
 	var short := viewport_size.y <= 600.0
 	var horizontal_margin := 16 if narrow else (24 if portrait or short else 36)
@@ -756,7 +757,11 @@ func _apply_responsive_layout() -> void:
 	var entry_drop_ratio := (
 		SHORT_ENTRY_DROP_RATIO
 		if short
-		else (PORTRAIT_ENTRY_DROP_RATIO if portrait else LANDSCAPE_ENTRY_DROP_RATIO)
+		else (
+			PORTRAIT_ENTRY_DROP_RATIO
+			if portrait or tall_landscape
+			else LANDSCAPE_ENTRY_DROP_RATIO
+		)
 	)
 	var entry_drop := roundi(viewport_size.y * entry_drop_ratio)
 	if not portrait and _text_scale > 1.0:
@@ -772,12 +777,13 @@ func _apply_responsive_layout() -> void:
 	var entry_width := maxf(0.0, viewport_size.x - float(horizontal_margin * 2))
 	_entry_host.custom_minimum_size = Vector2(viewport_size.x, viewport_size.y)
 	_entry_stack.add_theme_constant_override(&"separation", 8)
-	var wordmark_size := 26 if narrow else (18 if short else (46 if portrait else 60))
+	var wordmark_size := 26 if narrow else (18 if short else (46 if portrait else (42 if tall_landscape else 60)))
 	var chinese := I18n.locale() == &"zh-CN"
 	if chinese:
 		wordmark_size = 16 if narrow else (18 if short else (22 if portrait else 26))
-	_wordmark.autowrap_mode = TextServer.AUTOWRAP_OFF if chinese else TextServer.AUTOWRAP_WORD_SMART
-	_wordmark.max_lines_visible = 1 if chinese else 2
+	var single_line_wordmark := chinese or tall_landscape
+	_wordmark.autowrap_mode = TextServer.AUTOWRAP_OFF if single_line_wordmark else TextServer.AUTOWRAP_WORD_SMART
+	_wordmark.max_lines_visible = 1 if single_line_wordmark else 2
 	var wordmark_default := _title_font_size(wordmark_size)
 	var wordmark_visual := float(wordmark_default)
 	if _text_scale > 1.0:
