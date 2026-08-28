@@ -69,6 +69,7 @@ const ROSTER_LANDSCAPE_SEPARATION := 64.0
 const INSPECTOR_TWO_COLUMN_MIN_WIDTH := 1240.0
 const INSPECTOR_COLUMN_SEPARATION := 48
 const INSPECTOR_FIELD_RECORD_MIN_WIDTH := 520.0
+const INSPECTOR_DOSSIER_HORIZONTAL_MIN_WIDTH := 650.0
 const INSPECTOR_GOLD := Color("d9b96e")
 const IDENTITY_INPUT_FONT_SIZE := 34
 const ERROR_KEYS := {
@@ -648,9 +649,35 @@ func _build_inspector() -> AetheriaPanelType:
 		identity_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		identity_copy.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		identity_copy.add_theme_constant_override(&"separation", 4)
-		identity_copy.add_child(_label(
+		var callsign_row := BoxContainer.new()
+		callsign_row.name = "SelectedCallsignRow"
+		callsign_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		callsign_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		callsign_row.add_theme_constant_override(&"separation", 8)
+		var selected_callsign := _label(
 			"SelectedCallsign", String(selected["callsign"]).to_upper(), &"heading",
-		))
+		)
+		selected_callsign.autowrap_mode = TextServer.AUTOWRAP_OFF
+		selected_callsign.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		callsign_row.add_child(selected_callsign)
+		var edit_text := _t(
+			&"ui.rename.close_short" if _identity_editor_open else &"ui.rename.edit_short",
+			"Close" if _identity_editor_open else "Edit",
+		)
+		var edit_identity := _button(
+			"EditIdentity", edit_text, true, &"secondary", _inspector_scroll,
+		)
+		edit_identity.custom_minimum_size = Vector2(140.0, 84.0)
+		edit_identity.size_flags_horizontal = Control.SIZE_SHRINK_END
+		edit_identity.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		edit_identity.accessibility_name = edit_identity.text
+		edit_identity.accessibility_description = _t(
+			&"ui.rename.edit_identity_description",
+			"Show or hide the selected operator identity editor.",
+		)
+		edit_identity.pressed.connect(_on_edit_identity_requested)
+		callsign_row.add_child(edit_identity)
+		identity_copy.add_child(callsign_row)
 		var selected_title := String(
 			selected.get("custom_title", "")
 			if selected.get("custom_title") != null
@@ -664,23 +691,6 @@ func _build_inspector() -> AetheriaPanelType:
 			&"eyebrow",
 		))
 		identity_heading.add_child(identity_copy)
-		var edit_text := _t(
-			&"ui.rename.close_short" if _identity_editor_open else &"ui.rename.edit_short",
-			"Close" if _identity_editor_open else "Edit",
-		)
-		var edit_identity := _button(
-			"EditIdentity", edit_text, true, &"secondary", _inspector_scroll,
-		)
-		edit_identity.custom_minimum_size = Vector2(140.0, 84.0)
-		edit_identity.size_flags_horizontal = Control.SIZE_SHRINK_END
-		edit_identity.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		edit_identity.accessibility_name = edit_identity.text
-		edit_identity.accessibility_description = _t(
-			&"ui.rename.edit_identity_description",
-			"Show or hide the selected operator identity editor.",
-		)
-		edit_identity.pressed.connect(_on_edit_identity_requested)
-		inspector_header.add_child(edit_identity)
 		identity.add_child(identity_heading)
 		identity.add_child(_label(
 			"SelectedClass", class_label(String(selected["current_class_id"])).to_upper(),
@@ -1896,10 +1906,27 @@ func _apply_roster_layout() -> void:
 	) as TextureRect
 	if header_symbol != null:
 		header_symbol.visible = not narrow_portrait
+	var inspector_panel := body.get_node_or_null("TrainingInspector") as Control
+	var roster_rail_width := (
+		0.0 if stacked or scroll == null else scroll.custom_minimum_size.x
+	)
+	var estimated_inspector_width := (
+		body.size.x
+		- float(body.get_theme_constant(&"separation"))
+		- roster_rail_width
+	)
+	var inspector_width := (
+		estimated_inspector_width
+		if estimated_inspector_width > 0.0
+		else (inspector_panel.size.x if inspector_panel != null else 0.0)
+	)
 	var dossier := _page.find_child("SelectedOperatorDossier", true, false) as BoxContainer
 	if dossier != null:
-		dossier.vertical = large_text or not multi_column_roster
-	var inspector_panel := body.get_node_or_null("TrainingInspector") as Control
+		dossier.vertical = (
+			large_text
+			or not multi_column_roster
+			or inspector_width < INSPECTOR_DOSSIER_HORIZONTAL_MIN_WIDTH
+		)
 	var inspector_columns := _page.find_child(
 		"InspectorContentColumns", true, false,
 	) as BoxContainer
@@ -1907,19 +1934,6 @@ func _apply_roster_layout() -> void:
 		"InspectorFieldRecordColumn", true, false,
 	) as VBoxContainer
 	if inspector_columns != null:
-		var roster_rail_width := (
-			0.0 if stacked or scroll == null else scroll.custom_minimum_size.x
-		)
-		var estimated_inspector_width := (
-			body.size.x
-			- float(body.get_theme_constant(&"separation"))
-			- roster_rail_width
-		)
-		var inspector_width := (
-			estimated_inspector_width
-			if estimated_inspector_width > 0.0
-			else (inspector_panel.size.x if inspector_panel != null else 0.0)
-		)
 		var split_inspector := (
 			not stacked and inspector_width >= INSPECTOR_TWO_COLUMN_MIN_WIDTH
 		)
@@ -1934,13 +1948,18 @@ func _apply_roster_layout() -> void:
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
 		identity_heading.vertical = large_text
+	var callsign_row := _page.find_child("SelectedCallsignRow", true, false) as BoxContainer
+	if callsign_row != null:
+		callsign_row.vertical = large_text
 	var inspector_header := _page.find_child("SelectedOperatorHeader", true, false) as BoxContainer
 	if inspector_header != null:
 		inspector_header.vertical = large_text
 	var edit_identity := _page.find_child("EditIdentity", true, false) as Button
-	if edit_identity != null and large_text:
-		edit_identity.custom_minimum_size.x = 260.0
-		edit_identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if edit_identity != null:
+		edit_identity.custom_minimum_size.x = 260.0 if large_text else 140.0
+		edit_identity.size_flags_horizontal = (
+			Control.SIZE_EXPAND_FILL if large_text else Control.SIZE_SHRINK_END
+		)
 	var choose_promotion := _page.find_child("ChoosePromotion", true, false) as Button
 	if choose_promotion != null:
 		choose_promotion.custom_minimum_size.x = 260.0 if stacked else 360.0

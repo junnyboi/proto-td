@@ -183,10 +183,18 @@ func _run() -> void:
 	var rename_panel := screen.find_child("RenameUnitPanel", true, false) as PanelContainer
 	var dossier := screen.find_child("SelectedOperatorDossier", true, false) as Control
 	var edit_identity := screen.find_child("EditIdentity", true, false) as Button
+	var selected_callsign := screen.find_child("SelectedCallsign", true, false) as Label
+	var callsign_row := screen.find_child("SelectedCallsignRow", true, false) as BoxContainer
+	var inspector_header := screen.find_child("SelectedOperatorHeader", true, false) as BoxContainer
 	_check(rename_panel != null and not rename_panel.visible, "Field Identity editor is visible before Edit Identity is requested")
 	_check(rename != null and not rename.is_visible_in_tree(), "identity input is exposed before Edit Identity is requested")
 	_check(dossier != null and rename_panel != null and dossier.get_index() < rename_panel.get_index(), "operator information does not precede Field Identity")
 	_check(edit_identity != null and edit_identity.is_visible_in_tree(), "selected operator identity lacks an Edit control")
+	_check(callsign_row != null and callsign_row.get_theme_constant(&"separation") == 8, "selected operator callsign and Edit control do not use an exact 8px gap")
+	_check(selected_callsign != null and edit_identity != null and selected_callsign.get_parent() == callsign_row and edit_identity.get_parent() == callsign_row, "Edit control is not grouped beside the selected operator name")
+	_check(selected_callsign != null and edit_identity != null and edit_identity.get_index() == selected_callsign.get_index() + 1, "Edit control does not immediately follow the selected operator name")
+	_check(selected_callsign != null and edit_identity != null and _near(edit_identity.global_position.x - selected_callsign.get_global_rect().end.x, 8.0, 1.0), "selected operator name and Edit control do not render 8px apart")
+	_check(inspector_header != null and edit_identity != null and not inspector_header.is_ancestor_of(edit_identity), "Edit control remains in the selected-operator panel header")
 	if edit_identity != null:
 		var edit_presentation := edit_identity.find_child("PresentationLabel", true, false) as Label
 		_check(edit_identity.text == "Edit" and edit_presentation != null and edit_presentation.text == "Edit", "selected operator action is not presented as Edit")
@@ -253,10 +261,12 @@ func _run() -> void:
 	body = screen.find_child("TrainingRosterBody", true, false) as BoxContainer
 	sort_select = screen.find_child("TrainingNameSort", true, false) as OptionButton
 	var large_text_actions := screen.find_child("RosterActions", true, false) as BoxContainer
+	callsign_row = screen.find_child("SelectedCallsignRow", true, false) as BoxContainer
 	_check(outer != null and outer.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "150% landscape Training is not scroll-owned")
 	_check(body != null and body.vertical, "150% landscape Training did not stack roster and inspector")
 	_check(sort_select != null and sort_select.custom_minimum_size.x >= 320.0, "150% Recruitment Order selector remains too narrow")
 	_check(large_text_actions != null and large_text_actions.vertical, "150% Training actions did not stack")
+	_check(callsign_row != null and callsign_row.vertical, "150% selected operator name and Edit control do not stack safely")
 	if large_text_actions != null:
 		for child: Node in large_text_actions.get_children():
 			if child is Button:
