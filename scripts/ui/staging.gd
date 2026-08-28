@@ -1404,13 +1404,13 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_campaign_progress_text.visible = not ultra_narrow
 	var deck_style := StagingSkinType.command_deck_style()
 	if ultra_narrow:
-		deck_style.content_margin_left = 18.0
-		deck_style.content_margin_right = 18.0
+		deck_style.content_margin_left = 24.0
+		deck_style.content_margin_right = 24.0
 	_portrait_sheet.add_theme_stylebox_override(&"panel", deck_style)
 	var mission_style := StagingSkinType.mission_card_style()
 	if ultra_narrow:
-		mission_style.content_margin_left = 18.0
-		mission_style.content_margin_right = 18.0
+		mission_style.content_margin_left = 24.0
+		mission_style.content_margin_right = 24.0
 	_mission_card.add_theme_stylebox_override(&"panel", mission_style)
 	_mission_card.custom_minimum_size.y = (
 		320.0 if single_column else (0.0 if hide_preview else NEXT_MISSION_CARD_MIN_HEIGHT)
