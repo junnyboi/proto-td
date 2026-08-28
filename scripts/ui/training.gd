@@ -1935,15 +1935,15 @@ func _apply_roster_layout() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 0.0
 	body.add_theme_constant_override(
-		&"separation", 16 if stacked else 64,
+		&"separation", 16 if stacked else int(ROSTER_LANDSCAPE_SEPARATION),
 	)
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
-	var two_column_roster := (
-		_layout_mode == &"regular_landscape"
-		and not large_text
-		and get_viewport_rect().size.x >= ROSTER_TWO_COLUMN_MIN_VIEWPORT
+	var roster_columns := _training_roster_columns(body, stacked)
+	var multi_column_roster := roster_columns > 1
+	var roster_width := (
+		ROSTER_CARD_WIDTH * float(roster_columns)
+		+ ROSTER_GRID_GAP * float(maxi(0, roster_columns - 1))
 	)
-	var roster_width := ROSTER_DOUBLE_WIDTH if two_column_roster else ROSTER_CARD_WIDTH
 	if _layout_mode == &"compact_landscape":
 		roster_width = 500.0
 	elif _layout_mode == &"portrait":
@@ -1966,7 +1966,7 @@ func _apply_roster_layout() -> void:
 			else Control.SIZE_SHRINK_BEGIN
 		)
 	if _roster_list != null:
-		_roster_list.columns = 2 if two_column_roster else 1
+		_roster_list.columns = roster_columns
 		_roster_list.custom_minimum_size.x = (
 			0.0 if stacked else roster_width
 		)
@@ -1976,14 +1976,14 @@ func _apply_roster_layout() -> void:
 		)
 	if _filter_bar != null:
 		_filter_bar.set_compact(_layout_mode != &"portrait")
-		_filter_bar.set_inline(two_column_roster)
+		_filter_bar.set_inline(multi_column_roster)
 		_filter_bar.set_auxiliary_stacked(large_text or _layout_mode != &"regular_landscape")
 	if _roster_controls != null:
 		_roster_controls.vertical = large_text
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(
 			large_text or _layout_mode != &"regular_landscape",
-			ROSTER_CARD_WIDTH if two_column_roster else roster_width,
+			ROSTER_CARD_WIDTH if multi_column_roster else roster_width,
 		)
 	if _filter_toolbar != null:
 		_filter_toolbar.vertical = stacked
@@ -2026,7 +2026,7 @@ func _apply_roster_layout() -> void:
 		"TrainingRosterBody/TrainingInspector/TrainingInspectorScroll/InspectorColumn/SelectedOperatorDossier",
 	) as BoxContainer
 	if dossier != null:
-		dossier.vertical = large_text or not two_column_roster
+		dossier.vertical = large_text or not multi_column_roster
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
 		identity_heading.vertical = large_text
@@ -2040,6 +2040,9 @@ func _apply_roster_layout() -> void:
 	var choose_promotion := _page.find_child("ChoosePromotion", true, false) as Button
 	if choose_promotion != null:
 		choose_promotion.custom_minimum_size.x = 260.0 if stacked else 360.0
+	if not _roster_buttons.is_empty():
+		_wire_focus(_focusable_controls(), false)
+		_wire_roster_grid_focus(roster_columns)
 
 
 func _apply_paths_layout() -> void:
