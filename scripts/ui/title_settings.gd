@@ -417,7 +417,7 @@ func _refresh_copy() -> void:
 	var background_enabled := bool(_draft.get(&"background_downloads_enabled", true))
 	_background_downloads_button.set_pressed_no_signal(background_enabled)
 	_background_downloads_button.text = UiCopyType.format_text(
-		&"ui.title.background_download_state", "Background Downloads  //  {state}",
+		&"ui.title.background_download_state", "Background Downloads\n{state}",
 		{&"state": UiCopyType.text(&"ui.common.on" if background_enabled else &"ui.common.off", "On" if background_enabled else "Off")},
 	).to_upper()
 	_background_downloads_hint.text = UiCopyType.text(
