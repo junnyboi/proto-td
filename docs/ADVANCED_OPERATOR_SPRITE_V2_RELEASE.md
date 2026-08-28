@@ -51,7 +51,7 @@ High-resolution reference boards, raw and normalized GPT Image 2 keyframes, gene
 
 ## Web release implications
 
-The browser build continues to keep advanced classes in eleven deferred Godot content packs rather than inflating the base pack. Final release must restage every pack from the exact pushed source, validate manifest SHA-256 identities and HTTP byte ranges, and overlay only those mappings on the newest forward-only `proto-td-web` host. Existing loader architecture, mission and premium cinematics, zero-chrome fullscreen iframe behavior, and concurrent host improvements must remain intact.
+The browser build keeps advanced classes in eleven deferred Godot content packs rather than inflating the base pack. Runtime source `b608116677fba89088bfdf664579c93b533d26b6` produced a 236,443,592-byte core and eleven class packs totaling 353,463,580 bytes. Direct and managed HTTP length, MIME, byte-range, and SHA-256 checks passed. The newest forward-only `proto-td-web` host retained its loader architecture, predictive prefetch, sixteen mission films, six character films, zero-chrome fullscreen iframe, and concurrent improvements; the verified result was saved as WebDev checkpoint `74499b92`.
 
 ## References
 
