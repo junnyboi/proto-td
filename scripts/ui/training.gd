@@ -759,6 +759,14 @@ func _build_inspector() -> AetheriaPanelType:
 		&"eyebrow",
 	))
 	_apply_inspector_typography(panel)
+	var edit_action := panel.find_child("EditIdentity", true, false) as AetheriaButtonType
+	var edit_presentation := (
+		edit_action.get_node_or_null("PresentationLabel") as AetheriaLabelType
+		if edit_action != null
+		else null
+	)
+	if edit_presentation != null:
+		edit_presentation.add_theme_font_size_override(&"font_size", 30)
 	var promotion_presentation := panel.find_child(
 		"ChoosePromotionLabel", true, false,
 	) as Label
