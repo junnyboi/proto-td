@@ -1846,6 +1846,73 @@ func _refresh_viewport_layout() -> void:
 	_on_layout_mode_changed(_shell.layout_mode())
 
 
+func _on_roster_body_resized() -> void:
+	if _mode == &"roster":
+		_on_viewport_resized()
+
+
+func _on_text_scale_changed(_value: float) -> void:
+	_on_viewport_resized()
+
+
+func _training_roster_available_width(body: Control = null) -> float:
+	var roster_body := body
+	if roster_body == null and _page != null:
+		roster_body = _page.get_node_or_null("TrainingRosterBody") as Control
+	var body_width := (
+		roster_body.size.x
+		if roster_body != null and roster_body.size.x > 0.0
+		else get_viewport_rect().size.x - 140.0
+	)
+	var separation := (
+		float((roster_body as BoxContainer).get_theme_constant(&"separation"))
+		if roster_body is BoxContainer
+		else ROSTER_LANDSCAPE_SEPARATION
+	)
+	return maxf(0.0, body_width - separation - ROSTER_INSPECTOR_MIN_WIDTH)
+
+
+func _training_roster_columns(body: Control = null, stacked := false) -> int:
+	return RosterGridLayoutType.fitting_columns(
+		_training_roster_available_width(body),
+		ROSTER_CARD_WIDTH,
+		ROSTER_GRID_GAP,
+		ROSTER_MAX_COLUMNS,
+		_roster_buttons.size(),
+		stacked or _layout_mode != &"regular_landscape" or _large_text_layout(),
+	)
+
+
+func _wire_roster_grid_focus(columns: int) -> void:
+	var safe_columns := maxi(1, columns)
+	for index: int in _roster_buttons.size():
+		var current := _roster_buttons[index]
+		if current == null or not is_instance_valid(current):
+			continue
+		var self_path := current.get_path_to(current)
+		current.focus_neighbor_left = (
+			current.get_path_to(_roster_buttons[index - 1])
+			if safe_columns > 1 and index % safe_columns > 0
+			else self_path
+		)
+		current.focus_neighbor_right = (
+			current.get_path_to(_roster_buttons[index + 1])
+			if safe_columns > 1 and index % safe_columns < safe_columns - 1
+			and index + 1 < _roster_buttons.size()
+			else self_path
+		)
+		current.focus_neighbor_top = (
+			current.get_path_to(_roster_buttons[index - safe_columns])
+			if index >= safe_columns
+			else self_path
+		)
+		current.focus_neighbor_bottom = (
+			current.get_path_to(_roster_buttons[index + safe_columns])
+			if index + safe_columns < _roster_buttons.size()
+			else self_path
+		)
+
+
 func _shell_size_for(mode_value: StringName) -> Vector2:
 	if mode_value == &"portrait":
 		var viewport_size := get_viewport_rect().size
