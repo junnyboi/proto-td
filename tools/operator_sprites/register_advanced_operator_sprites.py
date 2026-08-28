@@ -22,6 +22,25 @@ ACTION_ORDER = ("idle", "attack")
 DIRECTION_ORDER = ("ne", "nw", "se", "sw")
 GENERATED_DIRECTION_ORDER = ("ne", "se")
 MIRROR_SOURCE = {"nw": "ne", "sw": "se"}
+DIRECTION_TRANSFORMS = {
+    "identity": {"ne": "ne", "nw": "nw", "se": "se", "sw": "sw"},
+    "horizontal": {"ne": "nw", "nw": "ne", "se": "sw", "sw": "se"},
+    "vertical": {"ne": "se", "nw": "sw", "se": "ne", "sw": "nw"},
+    "opposite": {"ne": "sw", "nw": "se", "se": "nw", "sw": "ne"},
+}
+# Visual review found a mixture of class-wide, gender-scoped, and action-scoped
+# source-label errors. These presentation-only transforms map an intended logical
+# facing to the atlas whose pixels actually face that direction.
+DIRECTION_OVERRIDE_SCOPES = (
+    ("gunner", GENDER_ORDER, ACTION_ORDER, "opposite"),
+    ("mage_apprentice", GENDER_ORDER, ACTION_ORDER, "vertical"),
+    ("shock_trooper", GENDER_ORDER, ACTION_ORDER, "vertical"),
+    ("swordmaster", ("female",), ACTION_ORDER, "vertical"),
+    ("sniper", ("male",), ACTION_ORDER, "horizontal"),
+    ("banner_guard", ("female",), ACTION_ORDER, "horizontal"),
+    ("sword_saint", GENDER_ORDER, ("idle",), "vertical"),
+    ("sword_saint", GENDER_ORDER, ("attack",), "opposite"),
+)
 FRAME_COUNTS = {"idle": 24, "attack": 13}
 ROWS = {"idle": 3, "attack": 2}
 SOURCE_MANIFEST_ID = "advanced_operator_sprites_v2"
@@ -49,6 +68,20 @@ def atlas_path(repository: Path, class_id: str, gender: str, action: str, direct
 
 def logical_id(class_id: str, gender: str, action: str, direction: str) -> str:
     return f"op_anim_{class_id}_{gender}_{action}_{direction}"
+
+
+def source_direction_for(
+    class_id: str,
+    gender: str,
+    action: str,
+    logical_direction: str,
+) -> str:
+    transform_name = "identity"
+    for scope_class, scope_genders, scope_actions, scope_transform in DIRECTION_OVERRIDE_SCOPES:
+        if class_id == scope_class and gender in scope_genders and action in scope_actions:
+            transform_name = scope_transform
+            break
+    return DIRECTION_TRANSFORMS[transform_name][logical_direction]
 
 
 def validation_path(source_root: Path, class_id: str, gender: str, action: str, direction: str) -> Path:
@@ -110,12 +143,12 @@ def write_resources(repository: Path) -> list[Path]:
             template_id = f"{class_id}_{gender}"
             normalized_body_height_px = calibrations[template_id]
             direction_map_idle = "\n".join(
-                f'&"{direction}": &"{logical_id(class_id, gender, "idle", direction)}"'
+                f'&"{direction}": &"{logical_id(class_id, gender, "idle", source_direction_for(class_id, gender, "idle", direction))}"'
                 + ("," if index < len(DIRECTION_ORDER) - 1 else "")
                 for index, direction in enumerate(DIRECTION_ORDER)
             )
             direction_map_attack = "\n".join(
-                f'&"{direction}": &"{logical_id(class_id, gender, "attack", direction)}"'
+                f'&"{direction}": &"{logical_id(class_id, gender, "attack", source_direction_for(class_id, gender, "attack", direction))}"'
                 + ("," if index < len(DIRECTION_ORDER) - 1 else "")
                 for index, direction in enumerate(DIRECTION_ORDER)
             )
@@ -386,9 +419,20 @@ def write_archive_docs(repository: Path, source_root: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", type=Path, required=True)
-    parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--source-root", type=Path)
+    parser.add_argument(
+        "--resources-only",
+        action="store_true",
+        help="Regenerate presentation resources without rewriting immutable source provenance.",
+    )
     args = parser.parse_args()
     repository = args.repository.resolve()
+    if args.resources_only:
+        resources = write_resources(repository)
+        print(json.dumps({"resources": len(resources)}, sort_keys=True))
+        return 0
+    if args.source_root is None:
+        parser.error("--source-root is required unless --resources-only is used")
     source_root = args.source_root.resolve()
     ensure_complete(repository, source_root)
     resources = write_resources(repository)

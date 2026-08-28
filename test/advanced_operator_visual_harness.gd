@@ -1,5 +1,7 @@
 extends SceneTree
 
+const Catalog := preload("res://data/presentation/operator_visual_catalog.gd")
+
 const CLASS_IDS := [
 	"defender", "gunner", "mage_apprentice", "shock_trooper", "swordmaster",
 	"immovable", "sniper", "sorcerer", "witch_doctor", "banner_guard", "sword_saint",
@@ -98,7 +100,9 @@ func _cell(class_id: String, gender: String, action: String, direction: String) 
 	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	var frame := 12 if action == "idle" else 6
-	var logical_id := StringName("op_anim_%s_%s_%s_%s" % [class_id, gender, action, direction])
+	var animation := Catalog.get_animation(StringName("%s_%s" % [class_id, gender]))
+	var mapping: Dictionary = animation.idle_by_direction if action == "idle" else animation.attack_by_direction
+	var logical_id := StringName(mapping.get(StringName(direction), &""))
 	sprite.texture = Art.texture(logical_id, frame)
 	row.add_child(sprite)
 	var facts := VBoxContainer.new()

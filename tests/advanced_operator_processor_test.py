@@ -79,6 +79,53 @@ class WebImportBudgetTests(unittest.TestCase):
                 msg=row["template_id"],
             )
 
+    def test_audited_direction_overrides_are_exact_and_scoped(self) -> None:
+        expected = {
+            ("gunner", "female", "idle"): "opposite",
+            ("gunner", "male", "attack"): "opposite",
+            ("mage_apprentice", "female", "attack"): "vertical",
+            ("shock_trooper", "male", "idle"): "vertical",
+            ("swordmaster", "female", "idle"): "vertical",
+            ("sniper", "male", "attack"): "horizontal",
+            ("banner_guard", "female", "attack"): "horizontal",
+            ("sword_saint", "female", "idle"): "vertical",
+            ("sword_saint", "male", "attack"): "opposite",
+        }
+        for scope, transform_name in expected.items():
+            class_id, gender, action = scope
+            for direction in registrar.DIRECTION_ORDER:
+                self.assertEqual(
+                    registrar.DIRECTION_TRANSFORMS[transform_name][direction],
+                    registrar.source_direction_for(class_id, gender, action, direction),
+                    f"{scope}:{direction}",
+                )
+
+        for scope in (
+            ("defender", "female", "idle"),
+            ("immovable", "male", "attack"),
+            ("sorcerer", "female", "attack"),
+            ("witch_doctor", "male", "idle"),
+            ("swordmaster", "male", "attack"),
+            ("sniper", "female", "idle"),
+            ("banner_guard", "male", "attack"),
+        ):
+            class_id, gender, action = scope
+            for direction in registrar.DIRECTION_ORDER:
+                self.assertEqual(
+                    direction,
+                    registrar.source_direction_for(class_id, gender, action, direction),
+                    f"clean control changed: {scope}:{direction}",
+                )
+
+        remapped_rows = sum(
+            registrar.source_direction_for(class_id, gender, action, direction) != direction
+            for class_id in registrar.CLASS_ORDER
+            for gender in registrar.GENDER_ORDER
+            for action in registrar.ACTION_ORDER
+            for direction in registrar.DIRECTION_ORDER
+        )
+        self.assertEqual(88, remapped_rows)
+
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()

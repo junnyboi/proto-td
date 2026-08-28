@@ -415,6 +415,7 @@
     "ui.campaign.basic_hire_campaign_inactive": "当前没有可用的战役。",
     "ui.campaign.basic_hire_command_pending": "请先完成待处理的连队指令，再招募人员。",
     "ui.campaign.basic_hire_insufficient": "余额不足",
+    "ui.campaign.basic_hire_insufficient_tooltip": "资金不足——需要5枚印记。",
     "ui.campaign.basic_hire_marks": "{count}",
     "ui.campaign.basic_hire_ready": "基础新兵合约可用",
     "ui.campaign.basic_hire_roster": "待命人员：{count}",

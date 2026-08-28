@@ -42,6 +42,8 @@ for locale in en-US zh-CN; do
   capture "$locale" player s16 720 1280 portrait
   capture "$locale" skip s1 1280 720 landscape
   capture "$locale" skip s1 720 1280 portrait
+  capture "$locale" replay s1 1280 720 landscape
+  capture "$locale" replay s1 720 1280 portrait
 done
 
 sha256sum "$OUT"/*.png > "$OUT/SHA256SUMS"

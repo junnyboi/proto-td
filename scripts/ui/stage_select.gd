@@ -7,6 +7,7 @@ const SHELL_SCENE := preload("res://scenes/ui/components/aetheria_screen_shell.t
 const AetheriaButtonType := preload("res://scripts/ui/components/aetheria_button.gd")
 const AetheriaLabelType := preload("res://scripts/ui/components/aetheria_label.gd")
 const AetheriaScreenShellType := preload("res://scripts/ui/components/aetheria_screen_shell.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const ActionHoverFeedbackType := preload("res://scripts/ui/components/action_hover_feedback.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
@@ -353,6 +354,7 @@ func _populate_route() -> void:
 		presentation.offset_bottom = -STAGE_ROW_PADDING
 		presentation.clip_text = false
 		presentation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		presentation.add_theme_font_size_override(&"font_size", GameTypographyType.STATUS)
 		if not unlocked:
 			var locked_gray := Color(Style.MUTED, 0.64)
 			presentation.add_theme_color_override(&"font_color", locked_gray)
@@ -370,13 +372,13 @@ func _populate_route() -> void:
 				&"ui.campaign.next_highlight_description",
 				"Recommended next operation, highlighted with a glow and sparkles.",
 			)
-			if not unlocked:
-				row.focus_mode = Control.FOCUS_NONE
-			else:
-				enabled_rows.append(row)
-				_wire_route_card_feedback(row)
-				row.focus_entered.connect(_show_dossier.bind(stage_id))
-				row.mouse_entered.connect(_show_dossier.bind(stage_id))
+		if not unlocked:
+			row.focus_mode = Control.FOCUS_NONE
+		else:
+			enabled_rows.append(row)
+			_wire_route_card_feedback(row)
+			row.focus_entered.connect(_show_dossier.bind(stage_id))
+			row.mouse_entered.connect(_show_dossier.bind(stage_id))
 			row.pressed.connect(_on_route_stage_selected.bind(stage_id))
 		_rows.add_child(row)
 

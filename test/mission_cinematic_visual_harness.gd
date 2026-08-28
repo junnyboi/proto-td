@@ -1,6 +1,8 @@
 extends Node
 
 const PlayerType := preload("res://scripts/ui/components/mission_cinematic_player.gd")
+const CampaignFixture := preload("res://test/support/authoritative_campaign_fixture.gd")
+const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
 var _mode := "player"
 var _output_path := "/tmp/proto-td-mission-cinematic.png"
@@ -37,6 +39,8 @@ func _run() -> void:
 		await _show_direct_player()
 	elif _mode == "gate" or _mode == "skip":
 		await _show_stage_gate(_mode == "skip")
+	elif _mode == "replay":
+		await _show_replay_selection()
 	else:
 		_fail("Unknown mission cinematic visual mode: %s" % _mode)
 		return
@@ -87,6 +91,13 @@ func _show_stage_gate(skip_after_start: bool) -> void:
 		_fail("Stage Select is missing the S1 route")
 		return
 	row.pressed.emit()
+	for _frame: int in range(4):
+		await get_tree().process_frame
+	var start_mission := campaign.find_child("StartMission", true, false) as Button
+	if start_mission == null or start_mission.disabled:
+		_fail("Stage Select did not enable Start Mission after selecting S1")
+		return
+	start_mission.pressed.emit()
 	await get_tree().create_timer(1.25).timeout
 	for _frame: int in range(4):
 		await get_tree().process_frame
@@ -109,6 +120,52 @@ func _show_stage_gate(skip_after_start: bool) -> void:
 		_fail("Skip did not route to Field Team")
 		return
 	_capture_root = content
+
+
+func _show_replay_selection() -> void:
+	var game := get_tree().root.get_node_or_null("Game")
+	if game == null:
+		_fail("Game autoload is unavailable")
+		return
+	game.call("set_run_seed", 73421)
+	if not bool(game.call("start_campaign", false, true)):
+		_fail("Could not create replay-selection visual campaign")
+		return
+	var clear_fixture := CampaignFixture.clear_stage(
+		game, &"s1", "mission-cinematic-visual-replay",
+	)
+	if not clear_fixture.get("accepted", false):
+		_fail(
+			"Could not commit replay-selection clear fixture: %s" % clear_fixture.get(
+				"error_code", &"unknown",
+			),
+		)
+		return
+	var campaign := load("res://scenes/stage_select.tscn").instantiate() as Control
+	get_tree().root.add_child(campaign)
+	_capture_root = campaign
+	for _frame: int in range(4):
+		await get_tree().process_frame
+	var row := campaign.find_child("Stage_s1", true, false) as Button
+	if row == null or row.disabled:
+		_fail("Cleared First Stand route is unavailable for replay")
+		return
+	row.pressed.emit()
+	for _frame: int in range(4):
+		await get_tree().process_frame
+	var status := campaign.find_child("DossierStatus", true, false) as Label
+	var start_mission := campaign.find_child("StartMission", true, false) as Button
+	if campaign.get("_dossier_stage_id") != &"s1":
+		_fail("Cleared First Stand route did not update the selected dossier")
+		return
+	var expected_status := UiCopyType.text(
+		&"ui.campaign.status_cleared", "Cleared · Replay available",
+	)
+	if status == null or status.text != expected_status:
+		_fail("Cleared First Stand dossier does not expose replay availability")
+		return
+	if start_mission == null or start_mission.disabled or not start_mission.has_focus():
+		_fail("Cleared First Stand dossier did not focus an enabled Start Mission action")
 
 
 func _verify_playing_overlay(player: Control) -> void:

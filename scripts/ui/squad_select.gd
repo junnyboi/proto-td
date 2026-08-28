@@ -27,6 +27,9 @@ const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
 const OPERATOR_GRID_GAP := 12.0
+const OPERATOR_RAIL_EDGE_INSET := 8
+const OPERATOR_SNAP_IDLE_SECONDS := 0.14
+const OPERATOR_SNAP_SECONDS := 0.18
 const OPERATOR_CARD_HEIGHT := 252.0
 const OPERATOR_CARD_TALL_HEIGHT := 330.0
 const LOADOUT_TOP_PADDING := 24
@@ -48,15 +51,15 @@ const DEPLOY_TEXT_OUTLINE := Color("09070d")
 const REGULAR_BACK_ACTION_WIDTH := 180.0
 const REGULAR_TRAINING_ACTION_WIDTH := 220.0
 const REGULAR_DEPLOY_ACTION_WIDTH := 400.0
-const OPERATOR_HOVER_SCALE := Vector2(1.025, 1.025)
-const OPERATOR_SELECTED_SCALE := Vector2(1.018, 1.018)
-const OPERATOR_SELECTION_PEAK_SCALE := Vector2(1.055, 1.055)
+const OPERATOR_HOVER_SCALE := Vector2(1.018, 1.018)
+const OPERATOR_SELECTED_SCALE := Vector2(1.010, 1.010)
+const OPERATOR_SELECTION_PEAK_SCALE := Vector2(1.035, 1.035)
 const OPERATOR_HOVER_SECONDS := 0.14
 const OPERATOR_SELECTION_OUT_SECONDS := 0.10
 const OPERATOR_SELECTION_SETTLE_SECONDS := 0.17
-const OPERATOR_GLOW_ALPHA := 0.82
-const OPERATOR_GLOW_EXPAND := 5.0
-const OPERATOR_GLOW_SHADOW_SIZE := 10
+const OPERATOR_GLOW_ALPHA := 0.62
+const OPERATOR_GLOW_EXPAND := 4.0
+const OPERATOR_GLOW_SHADOW_SIZE := 8
 const HIRE_RECRUIT_HOVER_SCALE := Vector2(1.022, 1.022)
 const HIRE_RECRUIT_FOCUS_SCALE := Vector2(1.012, 1.012)
 const HIRE_RECRUIT_HOVER_TINT := Color("fff8df")
@@ -94,6 +97,11 @@ var _grid: GridContainer = null
 var _body: GridContainer = null
 var _command_scroll: ScrollContainer = null
 var _roster_scroll: ScrollContainer = null
+var _operator_rail_inset: MarginContainer = null
+var _operator_snap_timer: Timer = null
+var _operator_snap_tween: Tween = null
+var _operator_snap_in_progress := false
+var _operator_scroll_dragging := false
 var _intel_scroll: ScrollContainer = null
 var _roster_panel: PanelContainer = null
 var _intel_panel: PanelContainer = null
@@ -109,6 +117,7 @@ var _all_roster_rows: Array[Dictionary] = []
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _hire_recruit: AetheriaButtonType = null
+var _hire_tooltip_hotspot: Control = null
 var _hire_action_label: Label = null
 var _hire_cost_label: Label = null
 var _deploy_pulse_tween: Tween = null
@@ -276,16 +285,34 @@ func _build_body() -> GridContainer:
 	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_roster_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_roster_scroll.resized.connect(_update_operator_rail_insets)
+	_roster_scroll.gui_input.connect(_on_operator_rail_input)
+	var horizontal_bar := _roster_scroll.get_h_scroll_bar()
+	horizontal_bar.value_changed.connect(_on_operator_scroll_value_changed)
+	horizontal_bar.gui_input.connect(_on_operator_scrollbar_input)
 	roster_column.add_child(_roster_scroll)
+	_operator_snap_timer = Timer.new()
+	_operator_snap_timer.name = "OperatorSnapTimer"
+	_operator_snap_timer.one_shot = true
+	_operator_snap_timer.wait_time = OPERATOR_SNAP_IDLE_SECONDS
+	_operator_snap_timer.timeout.connect(_snap_operator_rail)
+	roster_column.add_child(_operator_snap_timer)
+	_operator_rail_inset = MarginContainer.new()
+	_operator_rail_inset.name = "OperatorRailInset"
+	_operator_rail_inset.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_operator_rail_inset.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_roster_scroll.add_child(_operator_rail_inset)
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
-	_grid.columns = 2
-	_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_grid.columns = 1
+	_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_grid.add_theme_constant_override(&"h_separation", 12)
+	_grid.add_theme_constant_override(&"h_separation", OPERATOR_GRID_GAP)
 	_grid.add_theme_constant_override(&"v_separation", 10)
-	_roster_scroll.add_child(_grid)
+	_operator_rail_inset.add_child(_grid)
 	_rebuild_operator_cards()
+	_update_operator_rail_insets.call_deferred()
 	_body.add_child(roster_panel)
 
 	var briefing_panel := PanelContainer.new()
@@ -438,6 +465,12 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_cost_label.add_theme_color_override(&"font_color", LunarisOpsType.GOLD)
 	_hire_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hire_content.add_child(_hire_cost_label)
+	_hire_tooltip_hotspot = Control.new()
+	_hire_tooltip_hotspot.name = "HireRecruitTooltipHotspot"
+	_hire_tooltip_hotspot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_hire_tooltip_hotspot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hire_tooltip_hotspot.mouse_force_pass_scroll_events = false
+	_hire_recruit.add_child(_hire_tooltip_hotspot)
 
 
 func _campaign_roster_rows() -> Array[Dictionary]:
@@ -623,8 +656,9 @@ func _rebuild_operator_cards() -> void:
 		_roster_empty.visible = visible_rows.is_empty()
 	if visible_rows.is_empty():
 		_grid.columns = 1
+		_update_operator_rail_insets.call_deferred()
 		return
-	_grid.columns = _operator_grid_columns(_shell.layout_mode())
+	_grid.columns = 1
 	for visible_index: int in visible_rows.size():
 		var hero := visible_rows[visible_index] as Dictionary
 		var hero_id := StringName(hero["hero_id"])
@@ -695,6 +729,9 @@ func _rebuild_operator_cards() -> void:
 		else:
 			LunarisOpsType.apply_button(pick, &"disabled")
 			_apply_operator_card_text_style(pick)
+	_grid.columns = _operator_grid_columns(_shell.layout_mode())
+	_update_operator_rail_insets.call_deferred()
+	_snap_operator_rail.call_deferred()
 
 
 func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
@@ -742,7 +779,7 @@ func _build_operator_hover_glow() -> Panel:
 	style.border_color = Color(LunarisOpsType.CYAN, OPERATOR_GLOW_ALPHA)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(6)
-	style.shadow_color = Color(LunarisOpsType.CYAN, 0.46)
+	style.shadow_color = Color(LunarisOpsType.CYAN, 0.32)
 	style.shadow_size = OPERATOR_GLOW_SHADOW_SIZE
 	glow.add_theme_stylebox_override(&"panel", style)
 	return glow
@@ -961,7 +998,117 @@ func _wide_action_width(node_name: String) -> float:
 
 
 func _operator_grid_columns(_mode: StringName) -> int:
-	return 1
+	return maxi(1, _grid.get_child_count() if _grid != null else 1)
+
+
+func _operator_snap_stride() -> float:
+	return OPERATOR_CARD_WIDTH + OPERATOR_GRID_GAP
+
+
+func _update_operator_rail_insets() -> void:
+	if _operator_rail_inset == null or _roster_scroll == null:
+		return
+	var centered_inset := floorf(maxf(
+		float(OPERATOR_RAIL_EDGE_INSET),
+		(_roster_scroll.size.x - OPERATOR_CARD_WIDTH) * 0.5,
+	))
+	_operator_rail_inset.add_theme_constant_override(&"margin_left", int(centered_inset))
+	_operator_rail_inset.add_theme_constant_override(&"margin_right", int(centered_inset))
+	_operator_rail_inset.set_meta(&"operator_snap_edge_inset", centered_inset)
+	_roster_scroll.set_meta(&"operator_snap_enabled", true)
+	_roster_scroll.set_meta(&"operator_snap_stride", _operator_snap_stride())
+
+
+func _on_operator_rail_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index in [
+			MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN,
+			MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT,
+		]:
+			_cancel_operator_snap()
+			_schedule_operator_snap.call_deferred()
+	elif event is InputEventPanGesture:
+		_cancel_operator_snap()
+		_schedule_operator_snap.call_deferred()
+
+
+func _on_operator_scroll_value_changed(_value: float) -> void:
+	if not _operator_snap_in_progress and not _operator_scroll_dragging:
+		_schedule_operator_snap()
+
+
+func _on_operator_scrollbar_input(event: InputEvent) -> void:
+	if event is not InputEventMouseButton:
+		return
+	var mouse_event := event as InputEventMouseButton
+	if mouse_event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	_operator_scroll_dragging = mouse_event.pressed
+	if _operator_scroll_dragging:
+		_cancel_operator_snap()
+	else:
+		_schedule_operator_snap()
+
+
+func _schedule_operator_snap() -> void:
+	if _operator_snap_timer == null or _operator_snap_in_progress:
+		return
+	_operator_snap_timer.start(OPERATOR_SNAP_IDLE_SECONDS)
+
+
+func _cancel_operator_snap() -> void:
+	if _operator_snap_tween != null and _operator_snap_tween.is_valid():
+		_operator_snap_tween.kill()
+	_operator_snap_tween = null
+	_operator_snap_in_progress = false
+
+
+func _snap_operator_rail() -> void:
+	if _roster_scroll == null or _grid == null or _grid.get_child_count() <= 0:
+		return
+	if _operator_snap_timer != null:
+		_operator_snap_timer.stop()
+	if _operator_snap_tween != null and _operator_snap_tween.is_valid():
+		_operator_snap_tween.kill()
+	var stride := _operator_snap_stride()
+	var target_index := clampi(
+		int(round(float(_roster_scroll.scroll_horizontal) / stride)),
+		0,
+		_grid.get_child_count() - 1,
+	)
+	var target := int(round(float(target_index) * stride))
+	var bar := _roster_scroll.get_h_scroll_bar()
+	var maximum := maxi(0, int(floorf(bar.max_value - bar.page)))
+	target = mini(target, maximum)
+	_roster_scroll.set_meta(&"operator_snap_target_index", target_index)
+	_roster_scroll.set_meta(&"operator_snap_target", target)
+	if target == _roster_scroll.scroll_horizontal:
+		return
+	_operator_snap_in_progress = true
+	if _reduced_motion():
+		_roster_scroll.scroll_horizontal = target
+		_operator_snap_in_progress = false
+		return
+	_operator_snap_tween = create_tween()
+	_operator_snap_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_operator_snap_tween.tween_method(
+		_set_operator_scroll_position,
+		float(_roster_scroll.scroll_horizontal),
+		float(target),
+		OPERATOR_SNAP_SECONDS,
+	)
+	_operator_snap_tween.finished.connect(_on_operator_snap_finished)
+
+
+func _set_operator_scroll_position(value: float) -> void:
+	if _roster_scroll != null:
+		_roster_scroll.scroll_horizontal = int(round(value))
+
+
+func _on_operator_snap_finished() -> void:
+	_operator_snap_in_progress = false
+	_operator_snap_tween = null
 
 
 func _operator_card_width(_mode: StringName) -> float:
@@ -1057,6 +1204,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _exit_tree() -> void:
 	_stop_deploy_ready_pulse()
+	_cancel_operator_snap()
 	for tween: Tween in _operator_feedback_tweens.values():
 		if tween != null and tween.is_valid():
 			tween.kill()
@@ -1169,6 +1317,7 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		or bool(projection.get("attempt_pending", false))
 		or roster_count >= 1024
 	)
+	var insufficient_funds := not projection.is_empty() and marks < cost
 	_hire_recruit.disabled = unavailable
 	_hire_recruit.focus_mode = Control.FOCUS_NONE if unavailable else Control.FOCUS_ALL
 	_hire_recruit.apply_role(&"disabled" if unavailable else &"primary")
@@ -1200,8 +1349,26 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	_hire_recruit.accessibility_live = (
 		AccessibilityServer.LIVE_ASSERTIVE if error else AccessibilityServer.LIVE_POLITE
 	)
-	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, message, &"marks")
+	var compact_insufficient_tooltip := UiCopyType.text(
+		&"ui.campaign.basic_hire_insufficient_tooltip",
+		"Insufficient funds — 5 Marks required.",
+	)
+	if insufficient_funds:
+		_hire_recruit.tooltip_text = compact_insufficient_tooltip
+	elif unavailable:
+		_hire_recruit.tooltip_text = message
+	else:
+		ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, message, &"marks")
 	_hire_recruit.accessibility_description = message
+	if _hire_tooltip_hotspot != null:
+		_hire_tooltip_hotspot.visible = insufficient_funds
+		_hire_tooltip_hotspot.mouse_filter = (
+			Control.MOUSE_FILTER_STOP if insufficient_funds else Control.MOUSE_FILTER_IGNORE
+		)
+		_hire_tooltip_hotspot.tooltip_text = compact_insufficient_tooltip if insufficient_funds else ""
+		_hire_tooltip_hotspot.accessibility_name = (
+			compact_insufficient_tooltip if insufficient_funds else ""
+		)
 	var label_color := LunarisOpsType.MUTED if unavailable else LunarisOpsType.IVORY
 	var cost_color := LunarisOpsType.MUTED if unavailable else LunarisOpsType.GOLD
 	_hire_action_label.add_theme_color_override(&"font_color", label_color)
@@ -1753,6 +1920,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_command_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if _roster_scroll != null:
 		_roster_scroll.custom_minimum_size.y = 240.0 if mode == &"portrait" else 260.0
+		_update_operator_rail_insets.call_deferred()
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
 	if _grid != null:

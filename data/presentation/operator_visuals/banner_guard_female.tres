@@ -7,16 +7,16 @@ script = ExtResource("1_def")
 schema_version = 2
 visual_id = &"operator_banner_guard_female"
 idle_by_direction = {
-&"ne": &"op_anim_banner_guard_female_idle_ne",
-&"nw": &"op_anim_banner_guard_female_idle_nw",
-&"se": &"op_anim_banner_guard_female_idle_se",
-&"sw": &"op_anim_banner_guard_female_idle_sw"
+&"ne": &"op_anim_banner_guard_female_idle_nw",
+&"nw": &"op_anim_banner_guard_female_idle_ne",
+&"se": &"op_anim_banner_guard_female_idle_sw",
+&"sw": &"op_anim_banner_guard_female_idle_se"
 }
 attack_by_direction = {
-&"ne": &"op_anim_banner_guard_female_attack_ne",
-&"nw": &"op_anim_banner_guard_female_attack_nw",
-&"se": &"op_anim_banner_guard_female_attack_se",
-&"sw": &"op_anim_banner_guard_female_attack_sw"
+&"ne": &"op_anim_banner_guard_female_attack_nw",
+&"nw": &"op_anim_banner_guard_female_attack_ne",
+&"se": &"op_anim_banner_guard_female_attack_sw",
+&"sw": &"op_anim_banner_guard_female_attack_se"
 }
 idle_frame_count = 24
 attack_frame_count = 13
