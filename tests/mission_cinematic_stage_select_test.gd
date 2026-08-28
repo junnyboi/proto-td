@@ -1,5 +1,7 @@
 extends SceneTree
 
+const CampaignFixture := preload("res://test/support/authoritative_campaign_fixture.gd")
+
 var _failures: Array[String] = []
 
 
@@ -15,6 +17,16 @@ func _run() -> void:
 		return
 	game.call("set_run_seed", 94117)
 	_check(bool(game.call("start_campaign", false, true)), "mission cinematic gate fixture failed")
+	var clear_fixture := CampaignFixture.clear_stage(
+		game, &"s1", "mission-cinematic-stage-select",
+	)
+	_check(
+		clear_fixture.get("accepted", false),
+		"authoritative S1 clear fixture failed: %s" % clear_fixture.get("error_code", &"unknown"),
+	)
+	if not clear_fixture.get("accepted", false):
+		_finish()
+		return
 	var state := game.get("campaign") as CampaignStateV3
 	var before_data := state.data_copy()
 	var before_strategic := state.strategic_hash()
@@ -28,19 +40,38 @@ func _run() -> void:
 		var row := campaign.find_child("Stage_s%d" % index, true, false) as Button
 		_check(row != null, "Stage Select is missing mission row s%d" % index)
 		if row != null:
-			_check(row.disabled == (index > 1), "Stage Select lock state changed for s%d" % index)
-	var unlocked := campaign.find_child("Stage_s1", true, false) as Button
-	var locked := campaign.find_child("Stage_s2", true, false) as Button
+			_check(row.disabled == (index > 2), "Stage Select lock state changed for s%d" % index)
+	var cleared := campaign.find_child("Stage_s1", true, false) as Button
+	var next := campaign.find_child("Stage_s2", true, false) as Button
+	var locked := campaign.find_child("Stage_s3", true, false) as Button
 	var start_mission := campaign.find_child("StartMission", true, false) as Button
+	var dossier_status := campaign.find_child("DossierStatus", true, false) as Label
+	var enabled_rows: Array = campaign.get("_enabled_rows")
+	var cleared_hover := cleared.get_node_or_null("RouteHoverBackground") as ColorRect if cleared != null else null
+	_check(cleared != null and not cleared.disabled and cleared.focus_mode == Control.FOCUS_ALL, "cleared mission row is not replayable by keyboard")
+	_check(cleared_hover != null, "cleared mission row lacks pointer interaction feedback")
+	_check(next != null and not next.disabled, "next mission row is not available after the prior clear")
+	_check(enabled_rows.size() == 2 and enabled_rows.has(cleared) and enabled_rows.has(next), "cleared and next mission rows are not both in the enabled focus set")
+	_check(cleared != null and next != null and cleared.get_node_or_null(cleared.focus_neighbor_bottom) == next, "cleared mission row does not focus the next available operation")
+	_check(cleared != null and next != null and next.get_node_or_null(next.focus_neighbor_top) == cleared, "next operation does not focus back to the cleared mission row")
 	locked.pressed.emit()
 	await process_frame
 	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "locked mission row opened a cinematic")
-	unlocked.pressed.emit()
+	cleared.mouse_entered.emit()
+	await create_timer(0.22).timeout
+	_check(campaign.get("_dossier_stage_id") == &"s1", "hovering a cleared route did not preview its dossier")
+	_check(cleared_hover != null and cleared_hover.color.a >= 0.38 and cleared.scale.x >= 1.024, "cleared route hover feedback did not activate")
+	cleared.mouse_exited.emit()
+	await create_timer(0.22).timeout
+	campaign.call("_show_dossier", &"s2")
+	await process_frame
+	cleared.pressed.emit()
 	await process_frame
 	await process_frame
-	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "selecting an unlocked route card bypassed Start Mission")
-	_check(campaign.get("_dossier_stage_id") == &"s1", "unlocked route card did not select its exact operation")
-	_check(start_mission != null and not start_mission.disabled and start_mission.has_focus(), "selection did not hand focus to Start Mission")
+	_check(campaign.find_child("MissionCinematicOverlay", true, false) == null, "selecting a cleared route card bypassed Start Mission")
+	_check(campaign.get("_dossier_stage_id") == &"s1", "cleared route card did not select its exact operation")
+	_check(dossier_status != null and dossier_status.text.contains("Replay available"), "cleared route selection did not expose replay status")
+	_check(start_mission != null and not start_mission.disabled and start_mission.has_focus(), "cleared route selection did not hand focus to Start Mission")
 	if start_mission != null:
 		start_mission.pressed.emit()
 	await process_frame
@@ -48,7 +79,7 @@ func _run() -> void:
 	_check(overlay != null, "Start Mission did not open the cinematic overlay")
 	_check(bool(campaign.call("cinematic_gate_active")), "Stage Select route input did not lock during the overlay")
 	_check(game.get("selected_stage_id") == &"", "Stage Select routed before the terminal signal")
-	_check(not unlocked.disabled and unlocked.focus_mode == Control.FOCUS_NONE, "route input was not disabled behind the overlay")
+	_check(not cleared.disabled and cleared.focus_mode == Control.FOCUS_NONE, "route input was not disabled behind the overlay")
 	_check(state.save_revision() == before_revision and state.data_copy() == before_data, "opening the mission cinematic mutated campaign save data")
 	_check(state.strategic_hash() == before_strategic, "opening the mission cinematic changed the strategic hash")
 	_check(state.core_hash() == before_core, "opening the mission cinematic changed the core hash")

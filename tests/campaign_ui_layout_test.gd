@@ -3,8 +3,10 @@ extends SceneTree
 const TEST_TIMEOUT_SECONDS := 30.0
 const STATE_WAIT_SECONDS := 2.0
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
 const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
+const CampaignFixture := preload("res://test/support/authoritative_campaign_fixture.gd")
 const PREFS := preload("res://scripts/view/view_preferences.gd")
 const STAGING_PREFERENCES_PATH := "user://campaign_ui_layout_staging.cfg"
 
@@ -28,9 +30,13 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	game.call("set_run_seed", 1701)
 	_check(bool(game.call("start_campaign", false, true)), "campaign layout fixture failed")
-	var campaign_state := game.get("campaign") as CampaignStateV3
-	var campaign_data := campaign_state.get("_data") as Dictionary
-	campaign_data["stage_stars"] = [{"stage_id": "s1", "stars": 3}]
+	var clear_fixture := CampaignFixture.clear_stage(game, &"s1", "campaign-ui-layout")
+	_check(
+		clear_fixture.get("accepted", false),
+		"authoritative Campaign layout clear fixture failed: %s" % clear_fixture.get(
+			"error_code", &"unknown",
+		),
+	)
 	game.set("selected_stage_id", &"s2")
 	if FileAccess.file_exists(STAGING_PREFERENCES_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(STAGING_PREFERENCES_PATH))
@@ -116,6 +122,7 @@ func _run() -> void:
 	_check(route_note != null and route_note.text == "Select an available operation, or replay a cleared one.", "Campaign route guidance copy is not the requested concise sentence")
 	_check(route_note != null and route_note.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route guidance is not center aligned")
 	_check(stage_label != null and is_equal_approx(stage_label.offset_left, 24.0) and is_equal_approx(stage_label.offset_top, 24.0) and is_equal_approx(stage_label.offset_right, -24.0) and is_equal_approx(stage_label.offset_bottom, -24.0), "Campaign list item does not retain exact 24px padding on all sides")
+	_check(stage_label != null and stage_label.get_theme_font_size(&"font_size") == GameTypographyType.STATUS, "Campaign route label does not use the fixed-rail status type size")
 	_check(next_stage != null and next_stage.custom_minimum_size.y >= 104.0, "Campaign list item height does not contain its doubled vertical padding")
 	_check(route_hover_background != null, "Campaign operation card lacks its animated hover background")
 	if next_stage != null and route_hover_background != null:
