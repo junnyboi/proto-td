@@ -433,7 +433,7 @@
     "ui.campaign.progress": "已完成 {cleared} / {total}",
     "ui.campaign.record_only": "仅记录",
     "ui.campaign.route_heading": "{stage} · 行动路线",
-    "ui.campaign.route_note": "选择可用行动。已完成的行动仍可重复挑战。",
+    "ui.campaign.route_note": "选择可用行动，或重玩已完成的行动。",
     "ui.campaign.row": "{index}. {title}{status}",
     "ui.campaign.row_available": "可用",
     "ui.campaign.row_cleared": "已完成",
