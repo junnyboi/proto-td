@@ -7,16 +7,16 @@ script = ExtResource("1_def")
 schema_version = 2
 visual_id = &"operator_gunner_female"
 idle_by_direction = {
-&"ne": &"op_anim_gunner_female_idle_ne",
-&"nw": &"op_anim_gunner_female_idle_nw",
-&"se": &"op_anim_gunner_female_idle_se",
-&"sw": &"op_anim_gunner_female_idle_sw"
+&"ne": &"op_anim_gunner_female_idle_sw",
+&"nw": &"op_anim_gunner_female_idle_se",
+&"se": &"op_anim_gunner_female_idle_nw",
+&"sw": &"op_anim_gunner_female_idle_ne"
 }
 attack_by_direction = {
-&"ne": &"op_anim_gunner_female_attack_ne",
-&"nw": &"op_anim_gunner_female_attack_nw",
-&"se": &"op_anim_gunner_female_attack_se",
-&"sw": &"op_anim_gunner_female_attack_sw"
+&"ne": &"op_anim_gunner_female_attack_sw",
+&"nw": &"op_anim_gunner_female_attack_se",
+&"se": &"op_anim_gunner_female_attack_nw",
+&"sw": &"op_anim_gunner_female_attack_ne"
 }
 idle_frame_count = 24
 attack_frame_count = 13
