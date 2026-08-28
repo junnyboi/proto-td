@@ -29,6 +29,8 @@ const DOSSIER_HORIZONTAL_INSET := 80
 const DOSSIER_VERTICAL_INSET := 36
 const STAGE_ROW_PADDING := 24.0
 const STAGE_ROW_MIN_HEIGHT := 104.0
+const STAGE_ROW_STAR_SIZE := 24.0
+const STAGE_ROW_STAR_SEPARATION := 2
 const READY_STATUS_GOLD := Color("8c6a1f")
 const READY_STATUS_EDGE := Color("f0d89a")
 const ROUTE_HOVER_BACKGROUND := Color("2f7f9188")
@@ -339,13 +341,12 @@ func _populate_route() -> void:
 			_next_stage_id = stage_id
 		var row := AetheriaButtonType.new()
 		row.name = "Stage_%s" % stage_id
-		row.text = _row_text(stage, unlocked)
 		row.custom_minimum_size = Vector2(44.0, STAGE_ROW_MIN_HEIGHT)
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.disabled = not unlocked
 		var is_next := unlocked and not stage_stars.has(stage_id) and _next_stage_id == stage_id
 		row.apply_role(&"selected" if is_next else (&"secondary" if unlocked else &"disabled"))
-		row.set_presentation_text(row.text, _row_presentation_text(stage, unlocked, is_next))
+		_apply_route_row_presentation(row, stage, unlocked, is_next)
 		row.apply_compact_action_layout()
 		var presentation := row.get_node("PresentationLabel") as Label
 		presentation.offset_left = STAGE_ROW_PADDING
@@ -514,6 +515,86 @@ func _row_presentation_text(stage: StageDef, unlocked: bool, is_next: bool) -> S
 	]
 
 
+func _row_identity_text(stage: StageDef) -> String:
+	return "%s  %02d  %s" % [
+		_act_short(stage), stage.campaign_index, UiCopyType.stage_title(stage),
+	]
+
+
+func _apply_route_row_presentation(
+	row: AetheriaButtonType,
+	stage: StageDef,
+	unlocked: bool,
+	is_next: bool,
+) -> void:
+	if row == null or stage == null:
+		return
+	var stars := int(Game.campaign_projection().get("stage_stars", {}).get(stage.id, 0))
+	var logical_text := _row_presentation_text(stage, unlocked, is_next)
+	var identity_text := _row_identity_text(stage)
+	row.set_presentation_text(
+		logical_text,
+		identity_text if stars > 0 else logical_text,
+	)
+	row.tooltip_text = logical_text
+	row.accessibility_name = logical_text
+	var presentation := row.get_node_or_null("PresentationLabel") as Label
+	var content := row.get_node_or_null("StageRowContent") as HBoxContainer
+	if stars <= 0:
+		if presentation != null:
+			presentation.visible = true
+		if content != null:
+			row.remove_child(content)
+			content.queue_free()
+		return
+	if presentation != null:
+		presentation.visible = false
+	if content == null:
+		content = HBoxContainer.new()
+		content.name = "StageRowContent"
+		content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		content.offset_left = STAGE_ROW_PADDING
+		content.offset_top = STAGE_ROW_PADDING
+		content.offset_right = -STAGE_ROW_PADDING
+		content.offset_bottom = -STAGE_ROW_PADDING
+		content.alignment = BoxContainer.ALIGNMENT_CENTER
+		content.add_theme_constant_override(&"separation", 8)
+		content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(content)
+		var identity := AetheriaLabelType.new()
+		identity.name = "StageRowIdentity"
+		identity.apply_role(&"body")
+		identity.autowrap_mode = TextServer.AUTOWRAP_OFF
+		identity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		identity.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		identity.add_theme_font_size_override(&"font_size", GameTypographyType.STATUS)
+		content.add_child(identity)
+		var star_row := HBoxContainer.new()
+		star_row.name = "StageRowStars"
+		star_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		star_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		star_row.add_theme_constant_override(&"separation", STAGE_ROW_STAR_SEPARATION)
+		star_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.add_child(star_row)
+	var identity_label := content.get_node_or_null("StageRowIdentity") as Label
+	if identity_label != null:
+		identity_label.text = "%s  ·" % identity_text
+	var star_row := content.get_node_or_null("StageRowStars") as HBoxContainer
+	if star_row == null:
+		return
+	for child: Node in star_row.get_children():
+		star_row.remove_child(child)
+		child.queue_free()
+	for index: int in stars:
+		var star := ResonanceStarType.new()
+		star.name = "StageRowStar_%d" % (index + 1)
+		star.custom_minimum_size = Vector2.ONE * STAGE_ROW_STAR_SIZE
+		star.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		star.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		star.set_state(Style.GOLD, true)
+		star_row.add_child(star)
+
+
 func _act_short(stage: StageDef) -> String:
 	return UiCopyType.text(
 		&"ui.campaign.act_2_short" if stage.campaign_index >= 9 else &"ui.campaign.act_1_short",
@@ -667,9 +748,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 			continue
 		var unlocked := Game.is_stage_unlocked(stage_id)
 		var is_next := unlocked and _next_stage_id == stage_id
-		row.text = _row_text(stage, unlocked)
-		row.set_presentation_text(row.text, _row_presentation_text(stage, unlocked, is_next))
-		row.tooltip_text = row.text
+		_apply_route_row_presentation(row, stage, unlocked, is_next)
 	if not _dossier_stage_id.is_empty():
 		_show_dossier(_dossier_stage_id)
 

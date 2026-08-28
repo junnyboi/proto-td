@@ -6,6 +6,7 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
 const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
+const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CampaignFixture := preload("res://test/support/authoritative_campaign_fixture.gd")
 const PREFS := preload("res://scripts/view/view_preferences.gd")
 const STAGING_PREFERENCES_PATH := "user://campaign_ui_layout_staging.cfg"
@@ -93,6 +94,8 @@ func _run() -> void:
 	var route_note := campaign.find_child("RouteNote", true, false) as Label
 	var start_mission := campaign.find_child("StartMission", true, false) as Button
 	var cleared_label := cleared_stage.get_node_or_null("PresentationLabel") as Label if cleared_stage != null else null
+	var cleared_identity := cleared_stage.get_node_or_null("StageRowContent/StageRowIdentity") as Label if cleared_stage != null else null
+	var cleared_stars := cleared_stage.get_node_or_null("StageRowContent/StageRowStars") as HBoxContainer if cleared_stage != null else null
 	var stage_label := next_stage.get_node_or_null("PresentationLabel") as Label if next_stage != null else null
 	var act_two_label := act_two_stage.get_node_or_null("PresentationLabel") as Label if act_two_stage != null else null
 	var next_sparkles := next_stage.get_node_or_null("NextOperationSparkles") as Control if next_stage != null else null
@@ -133,7 +136,17 @@ func _run() -> void:
 		next_stage.mouse_exited.emit()
 		await create_timer(0.22).timeout
 		_check(next_stage.scale.x <= 1.011 and next_stage.scale.y <= 1.011, "Campaign operation card did not leave its hover scale")
-	_check(cleared_label != null and cleared_label.text.to_upper().contains("3 STARS") and not cleared_label.text.to_upper().contains("CLEARED"), "cleared Campaign row does not replace Cleared with its maximum star count")
+	_check(cleared_label != null and not cleared_label.visible, "cleared Campaign row still renders its text star count")
+	_check(cleared_identity != null and not cleared_identity.text.to_upper().contains("STAR"), "cleared Campaign row identity still contains visible star copy")
+	_check(cleared_stars != null and cleared_stars.get_child_count() == 3, "cleared Campaign row does not render one icon per earned star")
+	if cleared_stars != null:
+		for child: Node in cleared_stars.get_children():
+			var row_star := child as ResonanceStarType
+			_check(row_star != null and row_star.custom_minimum_size == Vector2(24.0, 24.0), "Campaign row star is not scaled to the list-item treatment")
+			_check(row_star != null and row_star.size == Vector2(24.0, 24.0), "Campaign row star expands beyond its compact 24px render size")
+			_check(row_star != null and _inside(cleared_stage, row_star), "Campaign row star escapes its list-item container")
+			_check(row_star != null and row_star.uses_generated_art(), "Campaign row star does not reuse premium resonance art")
+	_check(cleared_stage != null and cleared_stage.text.to_upper().contains("3 STARS") and cleared_stage.accessibility_name.to_upper().contains("3 STARS"), "cleared Campaign row lost its accessible star count")
 	var locked_gray := Color(Style.MUTED, 0.64)
 	_check(act_two_label != null and act_two_label.get_theme_color(&"font_color").is_equal_approx(locked_gray), "locked Campaign row font is not explicitly gray")
 	_check(next_sparkles != null and int(next_sparkles.call("sparkle_count")) == 8, "next Campaign row lacks the special glow and sparkle field")
@@ -164,8 +177,12 @@ func _run() -> void:
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Campaign could not activate Chinese")
 	await process_frame
 	var start_presentation := start_mission.get_node_or_null("PresentationLabel") as Label if start_mission != null else null
+	cleared_identity = cleared_stage.get_node_or_null("StageRowContent/StageRowIdentity") as Label if cleared_stage != null else null
+	cleared_stars = cleared_stage.get_node_or_null("StageRowContent/StageRowStars") as HBoxContainer if cleared_stage != null else null
 	_check(start_presentation != null and start_presentation.text == "开始任务", "Campaign Start Mission did not refresh in Chinese")
 	_check(route_note != null and route_note.text == "选择可用行动，或重玩已完成的行动。" and route_note.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route guidance did not refresh to centered Simplified Chinese")
+	_check(cleared_identity != null and not cleared_identity.text.contains("星"), "Chinese Campaign row returned to a visible text star count")
+	_check(cleared_stars != null and cleared_stars.get_child_count() == 3, "Campaign row star icons did not survive localization refresh")
 	_check(bool(i18n.call("set_locale", &"en-US")), "Campaign could not restore English")
 	await process_frame
 	root.size = Vector2i(1280, 720)
