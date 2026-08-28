@@ -46,9 +46,9 @@ func _capture() -> void:
 		for _frame: int in range(4):
 			await get_tree().process_frame
 		if mode == "paused":
-			controls_probe._on_speed_pressed()
-			controls_probe._on_speed_pressed()
-			controls_probe._on_speed_pressed()
+			controls_probe._input(_key_event(KEY_Q))
+			controls_probe._input(_key_event(KEY_E))
+			controls_probe._input(_key_event(KEY_Q))
 			controls_probe._process(0.0)
 			var speed := controls_probe.find_child("SpeedButton", true, false) as Button
 			var pause := controls_probe.find_child("PauseButton", true, false) as Button
@@ -75,3 +75,10 @@ func _capture() -> void:
 		return
 	print("BATTLE_ANNOTATION_VISUAL_OK mode=%s path=%s" % [mode, output])
 	get_tree().quit(0)
+
+
+func _key_event(key: Key) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = key
+	event.pressed = true
+	return event
