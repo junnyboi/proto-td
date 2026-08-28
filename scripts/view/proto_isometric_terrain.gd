@@ -6,6 +6,9 @@ extends Node2D
 ## cells with the source project's textured, multi-pass isometric treatment.
 
 const TEXTURE_ROOT := "res://assets/terrain/proto_isometric/"
+const ELEVATED_PLATFORM_OCCLUDER_SCRIPT := preload(
+	"res://scripts/view/elevated_platform_occluder.gd"
+)
 const TERRAIN_TEXTURE_PERIOD_CELLS := 4.0
 const TERRAIN_UV_VARIATION := 0.035
 const OUTER_RING := 3
@@ -119,6 +122,7 @@ func configure(stage: StageDef) -> bool:
 			_path_cells[cell] = true
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	_rebuild_elevated_platform_occluders()
 	queue_redraw()
 	return true
 
@@ -207,32 +211,20 @@ func _draw_outer_field() -> void:
 func _draw_tile(cell: Vector2i) -> void:
 	var tile := _stage.tile_at(cell)
 	var lifted := _is_obstacle_cell(cell)
+	# Raised cells render through depth-sorted occluders instead of the shared
+	# background pass. This lets their front walls cover characters behind.
+	if lifted:
+		return
 	var points := IsoProjection.cell_polygon(cell, lifted)
 	var terrain_id := terrain_id_at(cell)
 	var color := COLORS.get(terrain_id, Color.WHITE) as Color
 	if tile == StageDef.Tile.VOID:
 		color *= VOID_TINT
-	if lifted:
-		_draw_tile_walls(points)
-		draw_colored_polygon(points, _profile[&"wall_top"] as Color)
-	else:
-		draw_colored_polygon(points, color)
+	draw_colored_polygon(points, color)
 	var texture := TEXTURES.get(terrain_id) as Texture2D
 	if texture != null:
 		var tint := VOID_TINT if tile == StageDef.Tile.VOID else Color.WHITE
 		draw_polygon(points, _terrain_tints(cell, tint), _terrain_uvs(cell), texture)
-
-
-func _draw_tile_walls(points: PackedVector2Array) -> void:
-	var drop := Vector2(0.0, IsoProjection.ELEV_LIFT_PX)
-	draw_colored_polygon(
-		PackedVector2Array([points[1], points[1] + drop, points[2] + drop, points[2]]),
-		_profile[&"wall_right"] as Color,
-	)
-	draw_colored_polygon(
-		PackedVector2Array([points[2], points[2] + drop, points[3] + drop, points[3]]),
-		_profile[&"wall_left"] as Color,
-	)
 
 
 func _draw_tile_transitions(cell: Vector2i) -> void:
@@ -257,6 +249,8 @@ func _draw_tile_transitions(cell: Vector2i) -> void:
 
 
 func _draw_tile_details(cell: Vector2i) -> void:
+	if _is_obstacle_cell(cell):
+		return
 	var points := IsoProjection.cell_polygon(cell, _is_obstacle_cell(cell))
 	var closed := points.duplicate()
 	closed.append(points[0])
@@ -277,6 +271,30 @@ func _draw_tile_details(cell: Vector2i) -> void:
 		)
 	elif terrain_id == &"lava":
 		draw_polyline(closed, Color(1.0, 0.76, 0.18, 0.58), 2.0, true)
+
+
+func _rebuild_elevated_platform_occluders() -> void:
+	for child: Node in get_children():
+		if child.get_script() == ELEVATED_PLATFORM_OCCLUDER_SCRIPT:
+			child.free()
+	for cell: Vector2i in _ordered_stage_cells():
+		if not _is_obstacle_cell(cell):
+			continue
+		var terrain_id := terrain_id_at(cell)
+		var occluder := ELEVATED_PLATFORM_OCCLUDER_SCRIPT.new() as Node2D
+		occluder.call(
+			"configure",
+			cell,
+			IsoProjection.cell_polygon(cell, true),
+			_profile[&"wall_top"] as Color,
+			_profile[&"wall_right"] as Color,
+			_profile[&"wall_left"] as Color,
+			TEXTURES.get(terrain_id) as Texture2D,
+			_terrain_tints(cell),
+			_terrain_uvs(cell),
+			GRID_LINE,
+		)
+		add_child(occluder)
 
 
 func _transition_descriptors_for(cell: Vector2i) -> Array[Dictionary]:

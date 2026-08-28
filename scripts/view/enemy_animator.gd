@@ -687,9 +687,8 @@ static func _activate_grunt_body(body: ColorRect, texture: Texture2D, aerial: bo
 		shadow.position = Vector2(
 			body.size.x * 0.5, body.size.y + (AERIAL_SHADOW_DROP if aerial else 0.0)
 		)
-	var hp_bar := body.get_node_or_null("HpBarBg") as ColorRect
-	if hp_bar != null:
-		hp_bar.size.x = body.size.x
+	# BattleView owns health-bar geometry and refreshes it immediately after
+	# animation-body changes.
 
 
 static func apply_blend(body: ColorRect, frames_left: int) -> void:

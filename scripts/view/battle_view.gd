@@ -4,6 +4,7 @@ const MAP_NAVIGATOR_SCRIPT: GDScript = preload("res://scripts/view/map_navigator
 const BATTLE_HUD_PRESENTER := preload("res://scripts/view/battle_hud_presenter.gd")
 const BattlePalette := preload("res://scripts/view/battle_palette.gd")
 const EnemyAnimator := preload("res://scripts/view/enemy_animator.gd")
+const BATTLE_HEALTH_BAR_SCRIPT := preload("res://scripts/view/battle_health_bar.gd")
 const ENEMY_DAMAGE_FEEDBACK_SCRIPT := preload("res://scripts/view/enemy_damage_feedback.gd")
 const SKILL_READY_FEEDBACK_SCRIPT := preload("res://scripts/view/skill_ready_feedback.gd")
 const OPERATOR_ANIMATOR_SCRIPT := preload("res://scripts/view/operator_animator.gd")
@@ -51,9 +52,7 @@ const SHADOW_FACE_SCALE := 0.3125
 const AERIAL_SHADOW_DROP := 10.0
 const TRACER_COLOR := Color("f4f4f4")
 const UNIT_PX := 64.0  # 32px art at the pinned 2x scale
-const HP_BAR_HEIGHT := 5.0
-const HP_BAR_BG := Color("3a2026")
-const HP_BAR_FILL := Color("a7f070")
+const SP_BAR_HEIGHT := 5.0
 const SP_BAR_BG := Color("20263a")
 const SP_BAR_FILL := Color("f4b41b")
 const TERMINAL_CONTINUE_WIDTH := 640.0
@@ -1178,7 +1177,7 @@ func _refresh_hud_copy() -> void:
 ## EnemyAnimator owns body art/state/direction/shadow; this view owns HP bars.
 func _make_enemy_rect(e: EnemyState) -> ColorRect:
 	var rect := EnemyAnimator.make_body(e, model, _enemy_defs)
-	_add_hp_bar(rect, rect.size.x)
+	_add_hp_bar(rect, rect.size.x, true)
 	_grid_root.add_child(rect)
 	return rect
 
@@ -1432,7 +1431,7 @@ func _activate_unit_animation_body(
 		shadow.position = Vector2(body.size.x * 0.5, body.size.y)
 	var hp_bar := body.get_node_or_null("HpBarBg") as ColorRect
 	if hp_bar != null:
-		hp_bar.size.x = body.size.x
+		BATTLE_HEALTH_BAR_SCRIPT.layout(body, body.size.x)
 	var sp_bar := body.get_node_or_null("SpBarBg") as ColorRect
 	if sp_bar != null:
 		sp_bar.size.x = body.size.x
@@ -1465,25 +1464,16 @@ func _detect_skill_trigger(u: UnitState) -> void:
 	_portrait_flash_frames = cfg.skill_flash_frames
 
 
-func _add_hp_bar(body: ColorRect, width: float) -> void:
-	var bg := ColorRect.new()
-	bg.name = "HpBarBg"
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.color = HP_BAR_BG
-	bg.size = Vector2(width, HP_BAR_HEIGHT)
-	bg.position = Vector2(0, -HP_BAR_HEIGHT - 3.0)
-	body.add_child(bg)
-	var fill := ColorRect.new()
-	fill.name = "HpBarFill"
-	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fill.color = HP_BAR_FILL
-	fill.size = Vector2(width, HP_BAR_HEIGHT)
-	bg.add_child(fill)
+func _add_hp_bar(
+	body: ColorRect,
+	width: float,
+	enemy: bool = false,
+) -> void:
+	BATTLE_HEALTH_BAR_SCRIPT.add_to(body, width, enemy)
 
 
 func _update_hp_bar(body: ColorRect, width: float, hp: int, hp_max: int) -> void:
-	var fill := body.get_node("HpBarBg/HpBarFill") as ColorRect
-	fill.size.x = width * clampf(float(hp) / float(maxi(hp_max, 1)), 0.0, 1.0)
+	BATTLE_HEALTH_BAR_SCRIPT.update(body, width, hp, hp_max)
 
 
 func _add_sp_bar(body: ColorRect) -> void:
@@ -1491,14 +1481,14 @@ func _add_sp_bar(body: ColorRect) -> void:
 	bg.name = "SpBarBg"
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.color = SP_BAR_BG
-	bg.size = Vector2(body.size.x, HP_BAR_HEIGHT)
+	bg.size = Vector2(body.size.x, SP_BAR_HEIGHT)
 	bg.position = Vector2(0, body.size.y + 3.0)
 	body.add_child(bg)
 	var fill := ColorRect.new()
 	fill.name = "SpBarFill"
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fill.color = SP_BAR_FILL
-	fill.size = Vector2(0, HP_BAR_HEIGHT)
+	fill.size = Vector2(0, SP_BAR_HEIGHT)
 	bg.add_child(fill)
 
 
