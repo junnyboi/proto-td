@@ -108,8 +108,16 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var progress_text := staging.find_child("CampaignProgressText", true, false) as Label
 	var next_label := staging.find_child("NextOperationLabel", true, false) as Label
 	var mission_card := staging.find_child("NextOperationCard", true, false) as PanelContainer
+	var mission_operation_block := staging.find_child("MissionOperationBlock", true, false) as VBoxContainer
 	var mission_title := staging.find_child("NextOperationTitle", true, false) as Label
 	var objective := staging.find_child("NextOperationObjective", true, false) as Label
+	var mission_details := staging.find_child("MissionDetails", true, false) as PanelContainer
+	var mission_brief := staging.find_child("MissionBriefHeading", true, false) as Label
+	var mission_description := staging.find_child("MissionDescription", true, false) as Label
+	var mission_difficulty := staging.find_child("MissionDifficulty", true, false) as Label
+	var mission_reward := staging.find_child("MissionReward", true, false) as Label
+	var mission_threat := staging.find_child("MissionThreat", true, false) as Label
+	var mission_facts := staging.find_child("MissionFacts", true, false) as Label
 	var mission_action := staging.find_child("MissionControlButton", true, false) as Button
 	var mission_action_label := mission_action.find_child("PresentationLabel", true, false) as Label
 	var mission_action_plate := mission_action.find_child("MissionControlPlate", true, false) as TextureRect
@@ -154,6 +162,14 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
 	_check(mission_title != null and _font_size(mission_title) >= (20 if ultra_narrow else 24), "%s: mission title below responsive floor" % context)
 	_check(objective != null and _font_size(objective) >= 18, "%s: mission body below 18px" % context)
+	_check(mission_operation_block != null and mission_operation_block.get_theme_constant(&"separation") == 24, "%s: mission details are not separated from the operation card by exactly 24px" % context)
+	_check(mission_details != null and mission_details.visible, "%s: mission-specific details are missing below the operation card" % context)
+	_check(mission_brief != null and mission_brief.text == ("任务简报" if locale_id == "zh-CN" else "MISSION BRIEF"), "%s: mission brief heading is not localized" % context)
+	_check(mission_description != null and mission_description.text.contains("水泵" if locale_id == "zh-CN" else "pumps"), "%s: mission-specific description is not bound to First Stand" % context)
+	_check(mission_difficulty != null and mission_difficulty.text.contains("1/5"), "%s: mission difficulty is missing" % context)
+	_check(mission_reward != null and mission_reward.text.contains("剑圣" if locale_id == "zh-CN" else "Sword Saint"), "%s: mission first-clear rewards are missing" % context)
+	_check(mission_threat != null and mission_threat.text.contains("标记者" if locale_id == "zh-CN" else "Taggers"), "%s: mission threat information is missing" % context)
+	_check(mission_facts != null and mission_facts.text.contains("3") and mission_facts.text.contains("2"), "%s: mission squad/wave/leak facts are missing" % context)
 	_check(mission_action != null and mission_action.custom_minimum_size.y >= 150.0, "%s: primary action below responsive 150px floor" % context)
 	_check(mission_action_label != null and is_equal_approx(mission_action_label.offset_top, 12.0) and is_equal_approx(mission_action_label.offset_bottom, -12.0), "%s: Mission Control action lacks exact 12px top/bottom padding" % context)
 	_check(mission_action_label != null and _font_size(mission_action_label) >= (30 if ultra_narrow else 36), "%s: primary action type below responsive floor" % context)
@@ -191,16 +207,33 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	if bool(viewport_case["portrait"]) and viewport_size.x <= 720:
 		_check(operation_grid != null and operation_grid.columns == 1, "%s: narrow portrait operations must use one no-wrap column" % context)
 	_check(operation_scroll != null and operation_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: operations do not own local overflow" % context)
-	_check(command_scroll != null and command_scroll.vertical_scroll_mode == (ScrollContainer.SCROLL_MODE_AUTO if ultra_narrow else ScrollContainer.SCROLL_MODE_DISABLED), "%s: command deck scrolling does not match responsive policy" % context)
+	var expects_document_scroll := (
+		bool(viewport_case["portrait"])
+		or ultra_narrow
+		or (bool(viewport_case["rail"]) and viewport_size.y < 850)
+	)
+	_check(command_scroll != null and command_scroll.vertical_scroll_mode == (ScrollContainer.SCROLL_MODE_AUTO if expects_document_scroll else ScrollContainer.SCROLL_MODE_DISABLED), "%s: command deck scrolling does not match responsive policy" % context)
 	_check(mission_card != null and _contains(mission_card, mission_title), "%s: mission title escaped its frame" % context)
 	_check(mission_card != null and _contains(mission_card, objective), "%s: mission objective escaped its frame" % context)
 	_check(objective.get_visible_line_count() == objective.get_line_count(), "%s: mission objective lines are clipped" % context)
+	_check(
+		mission_card != null and mission_details != null
+		and absf(mission_details.get_global_rect().position.y - mission_card.get_global_rect().end.y - 24.0) <= 1.0,
+		"%s: rendered mission-detail gap is not 24px" % context,
+	)
 
 	var deck_style := command_deck.get_theme_stylebox(&"panel") as StyleBoxTexture
 	var mission_style := mission_card.get_theme_stylebox(&"panel") as StyleBoxTexture
 	var sheet_style := command_sheet.get_theme_stylebox(&"panel") as StyleBoxTexture
 	_check(deck_style != null and deck_style.content_margin_left >= 48.0 and deck_style.content_margin_top >= 24.0, "%s: command-deck safe inset regressed" % context)
-	_check(mission_style != null and mission_style.content_margin_left >= (24.0 if ultra_narrow else 44.0) and mission_style.content_margin_top >= 32.0, "%s: mission-frame safe inset regressed" % context)
+	_check(
+		mission_style != null
+		and is_equal_approx(mission_style.content_margin_left, 24.0)
+		and is_equal_approx(mission_style.content_margin_top, 24.0)
+		and is_equal_approx(mission_style.content_margin_right, 24.0)
+		and is_equal_approx(mission_style.content_margin_bottom, 24.0),
+		"%s: operation card does not use exact 24px internal padding" % context,
+	)
 	if command_sheet.visible:
 		_check(
 			sheet_style != null
@@ -227,7 +260,8 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(_font_size(settings_label) >= 22 and _font_size(exit_label) >= 22, "%s: Settings/Exit type below 22px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
 		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 18 and _font_size(next_label) >= 18, "%s: command header typography below attachment-relative doubled size" % context)
-		_check(mission_card.custom_minimum_size.y >= 260.0 and mission_card.size.y >= 260.0, "%s: next-mission card lacks its doubled 260px minimum height" % context)
+		var expected_card_height := 0.0 if viewport_size.y < 850 else (220.0 if viewport_size.y < 1000 else 260.0)
+		_check(mission_card.custom_minimum_size.y >= expected_card_height and mission_card.size.y >= 176.0, "%s: next-mission card is below its responsive minimum height" % context)
 		var expected_action_height := 168.0 if viewport_size.y < 850 else 180.0
 		_check(mission_action.custom_minimum_size.y >= expected_action_height, "%s: ultrawide primary action below attachment-relative 1.5x height" % context)
 		_check(deck_style.content_margin_top >= (24.0 if viewport_size.y < 850 else 36.0), "%s: ultrawide deck lost its safe inset" % context)

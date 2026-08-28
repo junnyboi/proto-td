@@ -33,6 +33,11 @@ const MISSION_ART := preload("res://assets/world/act1/panorama.png")
 const MISSION_CONTROL_PLATE := preload(
 	"res://assets/ui/staging/frames/mission_control_plate.png"
 )
+const REWARD_DIRS := {
+	&"operator": "res://data/operators",
+	&"trap": "res://data/traps",
+	&"spell": "res://data/spells",
+}
 
 const GOLD := Color("d8b978")
 const BRIGHT_GOLD := Color("efcf8e")
@@ -96,6 +101,15 @@ var _next_operation_action: Button = null
 var _mission_grid: GridContainer = null
 var _mission_body_grid: GridContainer = null
 var _mission_preview: TextureRect = null
+var _mission_operation_block: VBoxContainer = null
+var _mission_details_panel: PanelContainer = null
+var _mission_details_grid: GridContainer = null
+var _mission_brief_heading: Label = null
+var _mission_description: Label = null
+var _mission_difficulty: Label = null
+var _mission_reward: Label = null
+var _mission_threat: Label = null
+var _mission_facts: Label = null
 var _operation_grid: GridContainer = null
 var _operation_scroll: ScrollContainer = null
 var _operation_list_margin: MarginContainer = null
@@ -561,7 +575,13 @@ func _build_command_content() -> VBoxContainer:
 	)
 	StagingSkinType.apply_display_type(_next_operation_label, 18, GOLD, 520)
 	content.add_child(_next_operation_label)
-	content.add_child(_build_mission_card())
+	_mission_operation_block = VBoxContainer.new()
+	_mission_operation_block.name = "MissionOperationBlock"
+	_mission_operation_block.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mission_operation_block.add_theme_constant_override(&"separation", 24)
+	_mission_operation_block.add_child(_build_mission_card())
+	_mission_operation_block.add_child(_build_mission_details())
+	content.add_child(_mission_operation_block)
 
 	if not _training_acknowledgement.is_empty():
 		content.add_child(_build_acknowledgement())
@@ -790,6 +810,81 @@ func _build_mission_card() -> PanelContainer:
 	_mission_card.add_child(_next_operation_action)
 	_refresh_next_operation_action()
 	return _mission_card
+
+
+func _build_mission_details() -> PanelContainer:
+	_mission_details_panel = PanelContainer.new()
+	_mission_details_panel.name = "MissionDetails"
+	_mission_details_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var details_style := _panel_style(
+		Color(DEEP_NAVY, 0.78), Color(GOLD, 0.26), 1, 4,
+	)
+	details_style.content_margin_left = 18.0
+	details_style.content_margin_top = 12.0
+	details_style.content_margin_right = 18.0
+	details_style.content_margin_bottom = 12.0
+	_mission_details_panel.add_theme_stylebox_override(&"panel", details_style)
+
+	var stack := VBoxContainer.new()
+	stack.name = "MissionDetailsContent"
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.add_theme_constant_override(&"separation", 8)
+	_mission_details_panel.add_child(stack)
+
+	_mission_brief_heading = _label(
+		"MissionBriefHeading",
+		UiCopyType.text(&"ui.staging.mission_brief", "MISSION BRIEF"),
+		16,
+		GOLD,
+	)
+	StagingSkinType.apply_display_type(_mission_brief_heading, 16, GOLD, 600)
+	stack.add_child(_mission_brief_heading)
+
+	_mission_description = _label(
+		"MissionDescription", _next_operation_description(), 17, IVORY,
+	)
+	_mission_description.max_lines_visible = -1
+	StagingSkinType.apply_body_type(_mission_description, 17, IVORY)
+	stack.add_child(_mission_description)
+
+	_mission_details_grid = GridContainer.new()
+	_mission_details_grid.name = "MissionMetadataGrid"
+	_mission_details_grid.columns = 2
+	_mission_details_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mission_details_grid.add_theme_constant_override(&"h_separation", 20)
+	_mission_details_grid.add_theme_constant_override(&"v_separation", 6)
+	stack.add_child(_mission_details_grid)
+
+	_mission_difficulty = _label(
+		"MissionDifficulty", _next_operation_difficulty_text(), 16, GOLD,
+	)
+	_mission_difficulty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	StagingSkinType.apply_display_type(_mission_difficulty, 16, GOLD, 580)
+	_mission_details_grid.add_child(_mission_difficulty)
+
+	_mission_reward = _label(
+		"MissionReward", _next_operation_reward_text(), 16, GOLD,
+	)
+	_mission_reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	StagingSkinType.apply_display_type(_mission_reward, 16, GOLD, 580)
+	_mission_details_grid.add_child(_mission_reward)
+
+	_mission_threat = _label(
+		"MissionThreat", _next_operation_threat_text(), 16, MUTED,
+	)
+	_mission_threat.max_lines_visible = -1
+	StagingSkinType.apply_body_type(_mission_threat, 16, MUTED)
+	stack.add_child(_mission_threat)
+
+	_mission_facts = _label(
+		"MissionFacts", _next_operation_facts_text(), 15, MUTED,
+	)
+	_mission_facts.max_lines_visible = -1
+	StagingSkinType.apply_display_type(_mission_facts, 15, MUTED, 520)
+	_mission_facts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mission_details_grid.add_child(_mission_facts)
+	_mission_details_panel.visible = _next_stage != null
+	return _mission_details_panel
 
 
 func _build_mission_button() -> AetheriaButtonType:
@@ -1225,6 +1320,7 @@ func _apply_responsive_layout() -> void:
 	var large_text := float(TextScale.value()) >= 1.20
 	var landscape_scroll := _landscape_deck.get_node_or_null("LandscapeCommandScroll") as ScrollContainer
 	var portrait_scroll := _portrait_sheet.get_node_or_null("PortraitCommandScroll") as ScrollContainer
+	var short_rail := not _portrait and not _compact_landscape and viewport_size.y < 850.0
 	for document_scroll: ScrollContainer in [landscape_scroll, portrait_scroll]:
 		if document_scroll != null:
 			var constrained_portrait := (
@@ -1233,7 +1329,10 @@ func _apply_responsive_layout() -> void:
 			)
 			document_scroll.vertical_scroll_mode = (
 				ScrollContainer.SCROLL_MODE_AUTO
-				if large_text or constrained_portrait
+				if large_text
+				or document_scroll == portrait_scroll
+				or (document_scroll == landscape_scroll and short_rail)
+				or constrained_portrait
 				else ScrollContainer.SCROLL_MODE_DISABLED
 			)
 	_landscape_layout.visible = not _portrait
@@ -1391,14 +1490,21 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
-	var single_column := (_portrait and viewport_size.x <= 720.0)
+	var single_column := (_portrait and viewport_size.x < 620.0)
 	var ultra_narrow := viewport_size.x < 480.0
 	var hide_preview := _compact_landscape
 	var short_wide := not _portrait and not _compact_landscape and viewport_size.y < 850.0
+	var concise_details := not _portrait
+	var low_landscape := not _portrait and viewport_size.y < 1000.0
 	_command_content.add_theme_constant_override(&"separation", 8 if short_wide else INTRA_GROUP_GAP)
-	_campaign_milestones.visible = not short_wide
+	_campaign_milestones.visible = not low_landscape
 	_mission_preview.visible = not hide_preview
 	_mission_body_grid.columns = 1 if single_column or hide_preview else 2
+	_mission_details_grid.columns = 1 if ultra_narrow else (2 if _portrait else 3)
+	_mission_brief_heading.visible = not concise_details
+	_mission_description.visible = not concise_details
+	_mission_threat.visible = not concise_details
+	_mission_facts.visible = not short_wide
 	_mission_grid.add_theme_constant_override(&"v_separation", 8 if short_wide else 12)
 	_mission_body_grid.add_theme_constant_override(&"h_separation", 20 if short_wide else 24)
 	_campaign_progress_text.visible = not ultra_narrow
@@ -1413,8 +1519,16 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 		mission_style.content_margin_right = 24.0
 	_mission_card.add_theme_stylebox_override(&"panel", mission_style)
 	_mission_card.custom_minimum_size.y = (
-		320.0 if single_column else (0.0 if hide_preview else NEXT_MISSION_CARD_MIN_HEIGHT)
+		320.0 if single_column
+		else 0.0 if hide_preview
+		else 0.0 if short_wide
+		else 220.0 if low_landscape
+		else NEXT_MISSION_CARD_MIN_HEIGHT
 	)
+	var details_style := _mission_details_panel.get_theme_stylebox(&"panel") as StyleBoxFlat
+	if details_style != null:
+		details_style.content_margin_top = 8.0 if short_wide else 12.0
+		details_style.content_margin_bottom = 8.0 if short_wide else 12.0
 	_mission_preview.custom_minimum_size = (
 		Vector2(0.0, 112.0) if single_column
 		else (Vector2(144.0, 84.0) if short_wide else Vector2(160.0, 128.0))
@@ -1447,6 +1561,12 @@ func _apply_company_typography() -> void:
 	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
 	StagingSkinType.apply_display_type(_mission_title, 20 if ultra_narrow else (24 if compact or _portrait or short_wide else 26), IVORY, 560)
 	_mission_objective.add_theme_font_size_override(&"font_size", 18 if ultra_narrow else (22 if compact or short_wide else 24))
+	StagingSkinType.apply_display_type(_mission_brief_heading, 15 if ultra_narrow else 16, GOLD, 600)
+	StagingSkinType.apply_body_type(_mission_description, 16 if ultra_narrow else 17, IVORY)
+	StagingSkinType.apply_display_type(_mission_difficulty, 15 if ultra_narrow else 16, GOLD, 580)
+	StagingSkinType.apply_display_type(_mission_reward, 15 if ultra_narrow else 16, GOLD, 580)
+	StagingSkinType.apply_body_type(_mission_threat, 15 if ultra_narrow else 16, MUTED)
+	StagingSkinType.apply_display_type(_mission_facts, 14 if ultra_narrow or short_wide else 15, MUTED, 520)
 	StagingSkinType.apply_display_type(_mission_action_label, 30 if ultra_narrow else (36 if compact or _portrait else 42), IVORY, 620)
 	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
 
@@ -1491,6 +1611,14 @@ func _refresh_locale_copy() -> void:
 	_next_operation_label.text = UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION")
 	_mission_title.text = _next_operation_title()
 	_mission_objective.text = _next_operation_objective()
+	_mission_brief_heading.text = UiCopyType.text(
+		&"ui.staging.mission_brief", "MISSION BRIEF",
+	)
+	_mission_description.text = _next_operation_description()
+	_mission_difficulty.text = _next_operation_difficulty_text()
+	_mission_reward.text = _next_operation_reward_text()
+	_mission_threat.text = _next_operation_threat_text()
+	_mission_facts.text = _next_operation_facts_text()
 	_refresh_next_operation_action()
 	_operations_label.text = UiCopyType.text(&"ui.staging.operations", "OPERATIONS")
 	var mission_copy := UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
@@ -1568,6 +1696,93 @@ func _next_operation_objective() -> String:
 			"PROTOS drains living captives in human farms and uses their souls to power a robot empire. Company Manus defends Hearthcross, rescues people and souls, and breaks the harvesting network.",
 		)
 	return UiCopyType.stage_narrative_text(_next_record, StageNarrativeDefType.Field.OBJECTIVE)
+
+
+func _next_operation_description() -> String:
+	if _next_record == null:
+		return UiCopyType.text(
+			&"ui.error.missing_stage_narrative",
+			"Mission record unavailable. Return to Mission Control.",
+		)
+	return UiCopyType.stage_narrative_text(
+		_next_record, StageNarrativeDefType.Field.HUMAN_REASON,
+	)
+
+
+func _next_operation_threat_text() -> String:
+	var threat := UiCopyType.text(
+		&"ui.error.missing_stage_narrative",
+		"Mission record unavailable. Return to Mission Control.",
+	)
+	if _next_record != null:
+		threat = UiCopyType.stage_narrative_text(
+			_next_record, StageNarrativeDefType.Field.THREAT,
+		)
+	return UiCopyType.format_text(
+		&"ui.campaign.threat", "THREAT — {text}", {&"text": threat},
+	)
+
+
+func _next_operation_difficulty_text() -> String:
+	var rank := 0
+	if _next_stage != null:
+		var total := maxi(Game.campaign_stage_ids().size(), _next_stage.campaign_index)
+		rank = clampi(ceili(float(_next_stage.campaign_index) * 5.0 / float(total)), 1, 5)
+	return UiCopyType.format_text(
+		&"ui.staging.difficulty", "DIFFICULTY — {rank}/5", {&"rank": rank},
+	)
+
+
+func _next_operation_reward_text() -> String:
+	var reward_names: Array[String] = []
+	if _next_stage != null:
+		for reward: Dictionary in _next_stage.rewards:
+			reward_names.append(_reward_name(reward))
+	var reward_copy := (
+		_localized_list(reward_names)
+		if not reward_names.is_empty()
+		else UiCopyType.text(&"ui.campaign.record_only", "RECORD ONLY")
+	)
+	return UiCopyType.format_text(
+		&"ui.campaign.first_clear_reward",
+		"FIRST CLEAR — {rewards}",
+		{&"rewards": reward_copy},
+	)
+
+
+func _next_operation_facts_text() -> String:
+	if _next_stage == null:
+		return ""
+	return UiCopyType.format_text(
+		&"ui.staging.mission_facts",
+		"SQUAD {squad} · WAVE WINDOWS {waves} · LEAK LIMIT {leak_limit}",
+		{
+			&"squad": _next_stage.squad_size,
+			&"waves": _next_stage.wave_starts.size(),
+			&"leak_limit": _next_stage.leak_limit,
+		},
+	)
+
+
+func _reward_name(reward: Dictionary) -> String:
+	var kind := StringName(reward.get("kind", &""))
+	var identifier := StringName(reward.get("id", &""))
+	if kind == &"currency" and identifier == &"marks":
+		return str(int(reward.get("amount", 0)))
+	if not REWARD_DIRS.has(kind):
+		return String(identifier).replace("_", " ").capitalize()
+	var definition: Resource = load("%s/%s.tres" % [REWARD_DIRS[kind], identifier])
+	if definition is OperatorDef:
+		return UiCopyType.operator_name(definition)
+	if definition is TrapDef:
+		return UiCopyType.trap_name(definition)
+	if definition is SpellDef:
+		return UiCopyType.spell_name(definition)
+	return String(identifier).replace("_", " ").capitalize()
+
+
+func _localized_list(values: Array[String]) -> String:
+	return ("、" if I18n.locale() == &"zh-CN" else ", ").join(values)
 
 
 func _refresh_next_operation_action() -> void:

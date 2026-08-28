@@ -21,6 +21,8 @@ const PLACEHOLDER_TYPES := {
 	&"ui.squad.card_ready": {&"cost": &"int", &"level": &"int", &"name": &"String", &"rarity": &"int"},
 	&"ui.squad.limit": {&"limit": &"int"},
 	&"ui.squad.mission_identity": {&"index": &"int", &"title": &"String"},
+	&"ui.staging.difficulty": {&"rank": &"int"},
+	&"ui.staging.mission_facts": {&"leak_limit": &"int", &"squad": &"int", &"waves": &"int"},
 	&"ui.title.a11y.slider_name": {&"label": &"String", &"value": &"int"},
 	&"ui.title.background_download_short_state": {&"state": &"String"},
 	&"ui.title.background_download_state": {&"state": &"String"},

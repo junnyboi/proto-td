@@ -220,6 +220,11 @@ const STATIC_FALLBACKS := {
 		+ "a robot empire. Company Manus defends Hearthcross, rescues people and souls, "
 		+ "and breaks the harvesting network."
 	),
+	&"ui.staging.difficulty": "DIFFICULTY — {rank}/5",
+	&"ui.staging.mission_brief": "MISSION BRIEF",
+	&"ui.staging.mission_facts": (
+		"SQUAD {squad} · WAVE WINDOWS {waves} · LEAK LIMIT {leak_limit}"
+	),
 	&"ui.staging.next_operation_title": "NEXT {index}: {title}",
 	&"ui.staging.next_operation_action": "Review {stage} in Mission Control",
 	&"ui.staging.next_operation_description": "Open Mission Control with this operation ready for selection.",
@@ -536,6 +541,10 @@ const PLACEHOLDER_TYPES := {
 	&"ui.title.text_scale": {&"value": &"int"},
 	&"ui.title.frame_value": {&"value": &"int"},
 	&"ui.staging.campaign_summary": {&"cleared": &"int", &"total": &"int"},
+	&"ui.staging.difficulty": {&"rank": &"int"},
+	&"ui.staging.mission_facts": {
+		&"leak_limit": &"int", &"squad": &"int", &"waves": &"int",
+	},
 	&"ui.staging.next_detail": {&"index": &"int", &"title": &"String"},
 	&"ui.staging.next_operation_title": {&"index": &"int", &"title": &"String"},
 	&"ui.staging.next_operation_action": {&"stage": &"String"},
