@@ -432,6 +432,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     source_root = args.source_root.resolve()
     if not carrier.is_file():
         raise FileNotFoundError(f"carrier does not exist: {carrier}")
+    if args.force_final_neutral and args.action != "attack":
+        raise ValueError("--force-final-neutral is only valid for attack sequences")
     carrier_before = sha256_file(carrier)
     metadata = probe_media(carrier)
     west_direction = {"ne": "nw", "se": "sw"}[args.direction]
@@ -484,6 +486,10 @@ def build(args: argparse.Namespace) -> dict[str, object]:
                 metrics["camera_compensation"] = stabilized_scale / scale
                 cells.append(cell)
                 frame_metrics.append(metrics)
+            if args.force_final_neutral:
+                cells[-1] = cells[0].copy()
+                frame_metrics[-1] = dict(frame_metrics[0])
+                frame_metrics[-1]["forced_from_output_frame"] = 0
             east = pack_atlas(cells, args.action)
             west = mirror_atlas_cells(east, len(cells))
             save_runtime_webp(east, east_path)
@@ -505,6 +511,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         "source_media": metadata.as_json(), "extracted_frame_count": len(extracted),
         "frame_indices": indices,
         "window": {"start": args.window_start, "end": args.window_end},
+        "force_final_neutral": args.force_final_neutral,
         "requested_chroma": args.chroma.upper(), "measured_chroma": "#%02X%02X%02X" % measured,
         "neutral_scale": scale, "endpoint_union_bbox": list(end_union),
         "repaired_frame_indices": {str(index): source for index, source in repaired_frames.items()},
@@ -534,6 +541,10 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--key-interior", action="store_true",
         help="remove enclosed chroma gaps as well as border-connected matte",
+    )
+    parser.add_argument(
+        "--force-final-neutral", action="store_true",
+        help="replace the final attack cell with the first approved neutral cell",
     )
     return parser
 

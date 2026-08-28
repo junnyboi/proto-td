@@ -74,6 +74,10 @@ func _test_complete_catalog() -> void:
 				_check(provenance is Dictionary, "%s provenance missing" % logical_id)
 				if provenance is Dictionary:
 					_check(String(provenance.get(&"atlas_sha256", "")).length() == 64, "%s atlas hash missing" % logical_id)
+					_check(
+						provenance.get(&"source_manifest_id") == "advanced_operator_sprites_v2",
+						"%s did not route to the V2 immutable source archive" % logical_id,
+					)
 					var expected_kind := "mirrored" if direction in [&"nw", &"sw"] else "generated"
 					_check(provenance.get(&"source_kind") == expected_kind, "%s provenance kind drifted" % logical_id)
 	_check(advanced_templates == 22, "expected 22 advanced class/gender templates, got %d" % advanced_templates)

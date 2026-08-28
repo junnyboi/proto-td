@@ -24,7 +24,7 @@ GENERATED_DIRECTION_ORDER = ("ne", "se")
 MIRROR_SOURCE = {"nw": "ne", "sw": "se"}
 FRAME_COUNTS = {"idle": 24, "attack": 13}
 ROWS = {"idle": 3, "attack": 2}
-SOURCE_MANIFEST_ID = "advanced_operator_sprites_v1"
+SOURCE_MANIFEST_ID = "advanced_operator_sprites_v2"
 BEGIN_MARKER = "; BEGIN GENERATED ADVANCED OPERATOR ANIMATIONS"
 END_MARKER = "; END GENERATED ADVANCED OPERATOR ANIMATIONS"
 LEGACY_BEGIN_MARKER = "# BEGIN GENERATED ADVANCED OPERATOR ANIMATIONS"
@@ -218,26 +218,30 @@ def build_source_manifest(repository: Path, source_root: Path) -> dict[str, Any]
     if not isinstance(references, list) or len(references) != 22:
         raise ValueError("source manifest must retain exactly 22 approved GPT Image 2 references")
 
-    keyframes: list[dict[str, Any]] = []
+    keyframes = existing.get("keyframes", [])
+    if not isinstance(keyframes, list) or len(keyframes) != 44:
+        raise ValueError("source manifest must retain exactly 44 approved V2 keyframes")
+    keyframe_by_id = {str(row.get("id", "")): row for row in keyframes}
     for class_id in CLASS_ORDER:
         for gender in GENDER_ORDER:
             for direction in GENERATED_DIRECTION_ORDER:
-                path = source_root / "keyframes" / class_id / gender / f"keyframe_{direction}.png"
+                identifier = f"keyframe:{class_id}:{gender}:{direction}"
+                row = keyframe_by_id.get(identifier)
+                if not isinstance(row, dict):
+                    raise ValueError(f"source manifest is missing {identifier}")
+                path = Path(str(row.get("normalized", row.get("path", ""))))
                 if not path.is_file():
                     raise FileNotFoundError(path)
-                keyframes.append({
-                    "id": f"keyframe:{class_id}:{gender}:{direction}",
-                    "class_id": class_id,
-                    "gender": gender,
-                    "direction": direction,
-                    "model": "gpt-image-2",
-                    "path": str(path),
-                    "sha256": sha256_file(path),
-                    "dimensions": image_geometry(path),
-                    "approved": True,
-                })
+                row["path"] = str(path)
+                row["sha256"] = sha256_file(path)
+                row["dimensions"] = image_geometry(path)
+                row["model"] = "gpt-image-2"
+                row["approved"] = True
 
-    carriers: list[dict[str, Any]] = []
+    carriers = existing.get("carriers", [])
+    if not isinstance(carriers, list) or len(carriers) != 88:
+        raise ValueError("source manifest must retain exactly 88 approved V2 carriers")
+    carrier_by_id = {str(row.get("id", "")): row for row in carriers}
     runtime_sequences: list[dict[str, Any]] = []
     for class_id in CLASS_ORDER:
         for gender in GENDER_ORDER:
@@ -246,18 +250,18 @@ def build_source_manifest(repository: Path, source_root: Path) -> dict[str, Any]
                     record_path = validation_path(source_root, class_id, gender, action, direction)
                     record = json.loads(record_path.read_text(encoding="utf-8"))
                     carrier_path = Path(record["carrier"])
-                    carriers.append({
-                        "id": f"carrier:{class_id}:{gender}:{action}:{direction}",
-                        "class_id": class_id,
-                        "gender": gender,
-                        "action": action,
-                        "direction": direction,
-                        "model": "veo-3.1-fast",
+                    identifier = f"carrier:{class_id}:{gender}:{action}:{direction}"
+                    row = carrier_by_id.get(identifier)
+                    if not isinstance(row, dict):
+                        raise ValueError(f"source manifest is missing {identifier}")
+                    row.update({
                         "path": str(carrier_path),
                         "sha256": sha256_file(carrier_path),
                         "source_media": record["source_media"],
                         "first_keyframe": f"keyframe:{class_id}:{gender}:{direction}",
-                        "last_keyframe": f"keyframe:{class_id}:{gender}:{direction}",
+                        "last_keyframe": (
+                            f"keyframe:{class_id}:{gender}:{direction}" if action == "idle" else ""
+                        ),
                         "approved": True,
                     })
                 for direction in DIRECTION_ORDER:
@@ -286,7 +290,8 @@ def build_source_manifest(repository: Path, source_root: Path) -> dict[str, Any]
                     })
 
     payload: dict[str, Any] = {
-        "schema_version": 1,
+        **existing,
+        "schema_version": 2,
         "id": SOURCE_MANIFEST_ID,
         "repository": str(repository),
         "reference_count": len(references),
@@ -321,12 +326,13 @@ def build_source_manifest(repository: Path, source_root: Path) -> dict[str, Any]
 def write_archive_docs(repository: Path, source_root: Path) -> None:
     readme = source_root / "README.md"
     readme.write_text(
-        "# Advanced Operator Sprite Source Archive\n\n"
+        "# Advanced Operator Sprite Source Archive V2\n\n"
         "Immutable GPT Image 2 reference boards and directional keyframes, 88 silent "
-        "four-second Veo 3.1 Fast carriers, validation records, and the exact 176-sequence "
+        "four-second image-conditioned video carriers, validation records, and the exact 176-sequence "
         "runtime projection for the eleven recruit-derived specializations. Runtime atlases "
         "use 640×640 cells with a 560–640px subject edge; in-game footprint is controlled "
-        "only by Godot presentation scale. `source_manifest.json` is canonical and "
+        "only by Godot presentation scale. The manifest records the exact Veo 3.1, Veo 3.1 "
+        "Fast, or Gemini Omni model used per carrier. `source_manifest.json` is canonical and "
         "`source_manifest.tsv` is its review projection.\n",
         encoding="utf-8",
     )

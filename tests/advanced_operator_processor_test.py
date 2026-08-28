@@ -292,6 +292,25 @@ class EndToEndProcessorTests(unittest.TestCase):
         ])
         self.assertEqual(13, json.loads(completed.stdout)["atlas"]["frame_count"])
 
+    def test_force_final_neutral_stabilizes_attack_recovery(self) -> None:
+        forced = json.loads(run(self.attack_command + ["--force-final-neutral"]).stdout)
+        record = json.loads(Path(forced["validation"]).read_text())
+        self.assertTrue(record["force_final_neutral"])
+        self.assertEqual(0, record["frames"][-1]["forced_from_output_frame"])
+        with Image.open(forced["atlas"]) as opened:
+            atlas = opened.convert("RGBA")
+        first = atlas_cell(atlas, 0)
+        final = atlas_cell(atlas, 12)
+        self.assertIsNone(
+            ImageChops.difference(first.getchannel("A"), final.getchannel("A")).getbbox()
+        )
+        rgb_difference = ImageChops.difference(first.convert("RGB"), final.convert("RGB"))
+        self.assertLessEqual(max(ImageStat.Stat(rgb_difference).mean), 3.0)
+
+        invalid_idle = run(self.idle_command + ["--force-final-neutral"], expect_success=False)
+        self.assertNotEqual(0, invalid_idle.returncode)
+        self.assertIn("only valid for attack", invalid_idle.stderr)
+
     def test_reproducible_output_and_source_never_overwritten(self) -> None:
         first_hashes = (sha256(Path(self.idle_result["atlas"])), sha256(Path(self.idle_result["mirror"])))
         rerun = json.loads(run(self.idle_command).stdout)
