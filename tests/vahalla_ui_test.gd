@@ -107,7 +107,7 @@ func _run() -> void:
 	root.add_child(memorial)
 	await process_frame
 	await process_frame
-	var memorial_grid := memorial.find_child("VahallaMemorialGrid", true, false) as GridContainer
+	var obituary_list := memorial.find_child("VahallaObituaryList", true, false) as VBoxContainer
 	var honor := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
 	var portrait := memorial.find_child("SelectedMemorialPortrait", true, false) as TextureRect
 	var ledger := memorial.find_child("ServiceLedger", true, false) as PanelContainer
@@ -117,7 +117,9 @@ func _run() -> void:
 	var memorial_row := memorial.find_child("Memorial_%s" % fallen_id, true, false) as Button
 	var row_margin := memorial_row.find_child("MemorialRowMargin", true, false) as MarginContainer if memorial_row != null else null
 	var row_class := memorial_row.find_child("MemorialRowClass", true, false) as Label if memorial_row != null else null
-	_check(memorial_grid != null and memorial_grid.get_child_count() == 1, "Vahalla memorial card missing")
+	var row_record := memorial_row.find_child("MemorialRowRecord", true, false) as Label if memorial_row != null else null
+	_check(obituary_list != null and obituary_list.get_child_count() == 1, "Vahalla obituary entry missing")
+	_check(obituary_list != null and obituary_list.get_theme_constant(&"separation") == 0, "Vahalla obituary entries still use card-grid gaps")
 	_check(honor != null and not honor.disabled, "Vahalla honor action unavailable")
 	_check(portrait != null and portrait.custom_minimum_size.y >= 380.0, "selected memorial identity is not visually dominant")
 	_check(
@@ -125,9 +127,13 @@ func _run() -> void:
 		"Vahalla did not preserve the promoted operator's gender-matched specialization portrait",
 	)
 	_check(ledger != null and ledger.custom_minimum_size.y >= 132.0, "terminal service ledger hierarchy is missing")
-	_check(memorial_row != null and memorial_row.custom_minimum_size.y >= 104.0, "memorial row has insufficient internal height")
+	_check(memorial_row != null and memorial_row.custom_minimum_size.y >= 88.0 and memorial_row.custom_minimum_size.y < 104.0, "memorial entry is not a compact obituary row")
 	_check(row_margin != null and row_margin.get_theme_constant(&"margin_left") >= 16, "memorial row padding is below 16px")
 	_check(row_class != null and row_class.get_theme_font_size(&"font_size") >= 16, "memorial metadata is below 16px")
+	_check(row_record != null and row_record.text.contains("FELL AT"), "obituary row omits the deceased service record")
+	if memorial_row != null:
+		var row_style := memorial_row.get_theme_stylebox(&"normal") as StyleBoxFlat
+		_check(row_style != null and row_style.border_width_bottom == 1, "obituary row is not separated by a ledger rule")
 	if roster_panel != null and dossier_panel != null:
 		var roster_style := roster_panel.get_theme_stylebox(&"panel")
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
@@ -143,10 +149,6 @@ func _run() -> void:
 		await process_frame
 		var restored_focus := root.gui_get_focus_owner()
 		_check(restored_focus != null and restored_focus.name == StringName("Memorial_%s" % fallen_id), "Vahalla selection rebuild did not restore memorial-row focus")
-	var original_visible_rows: Array = memorial.get("_visible_rows")
-	if memorial_scroll != null and not original_visible_rows.is_empty():
-		memorial_scroll.size.x = 620.0
-		_check(int(memorial.call("_memorial_grid_columns", 620.0, 3)) == 2, "Vahalla did not pack two readable memorial columns into a 620px client")
 	var text_scale_autoload := root.get_node("TextScale")
 	text_scale_autoload.call("set_scale", 1.5)
 	memorial.call("_apply_responsive_layout")
@@ -157,8 +159,7 @@ func _run() -> void:
 	_check(back != null and back.text == "Back", "150% Vahalla did not use its compact Back label")
 	_check(eyebrow == null or not eyebrow.visible, "150% Vahalla retained the redundant eyebrow")
 	_check(intro == null or not intro.visible, "150% Vahalla retained the redundant introduction")
-	if memorial_scroll != null and not original_visible_rows.is_empty():
-		_check(int(memorial.call("_memorial_grid_columns", 620.0, 3)) == 1, "150% Vahalla did not fall back to one readable memorial column")
+	_check(memorial.find_child("VahallaObituaryList", true, false) is VBoxContainer, "150% Vahalla stopped using its single obituary list")
 	text_scale_autoload.call("set_scale", 1.0)
 	memorial.call("_apply_responsive_layout")
 	await process_frame

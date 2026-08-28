@@ -7,19 +7,16 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
-const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const VAHALLA_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
-const MEMORIAL_CARD_MIN_WIDTH := 280.0
-const MEMORIAL_GRID_GAP := 12
-const MEMORIAL_ROW_MIN_HEIGHT := 104.0
+const OBITUARY_ROW_MIN_HEIGHT := 94.0
 
 var _screen_margin: MarginContainer
 var _header_grid: GridContainer
 var _body_grid: GridContainer
 var _roster_panel: PanelContainer
 var _dossier_panel: PanelContainer
-var _memorial_grid: GridContainer
+var _obituary_list: VBoxContainer
 var _memorial_scroll: ScrollContainer
 var _filter_bar: RosterFilterBarType
 var _status_label: Label
@@ -33,7 +30,6 @@ var _visible_rows: Array[Dictionary] = []
 var _memorial_by_hero := {}
 var _honored := {}
 var _selected_hero_id := ""
-var _memorial_grid_layout_queued := false
 
 
 func _ready() -> void:
@@ -150,20 +146,24 @@ func _build_screen() -> void:
 	_roster_panel.add_child(roster_stack)
 	_roster_heading = _label(UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY"), &"heading")
 	roster_stack.add_child(_roster_heading)
+	var roster_rule := ColorRect.new()
+	roster_rule.name = "ObituaryLedgerRule"
+	roster_rule.custom_minimum_size = Vector2(0, 1)
+	roster_rule.color = Color(Style.GOLD, 0.54)
+	roster_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	roster_stack.add_child(roster_rule)
 	var scroll := ScrollContainer.new()
 	scroll.name = "VahallaMemorialScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_memorial_scroll = scroll
-	scroll.resized.connect(_queue_memorial_grid_layout)
 	roster_stack.add_child(scroll)
-	_memorial_grid = GridContainer.new()
-	_memorial_grid.name = "VahallaMemorialGrid"
-	_memorial_grid.columns = 1
-	_memorial_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_memorial_grid.add_theme_constant_override(&"h_separation", MEMORIAL_GRID_GAP)
-	_memorial_grid.add_theme_constant_override(&"v_separation", MEMORIAL_GRID_GAP)
-	scroll.add_child(_memorial_grid)
+	_obituary_list = VBoxContainer.new()
+	_obituary_list.name = "VahallaObituaryList"
+	_obituary_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_obituary_list.add_theme_constant_override(&"separation", 0)
+	_obituary_list.accessibility_name = UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY")
+	scroll.add_child(_obituary_list)
 
 	_dossier_panel = PanelContainer.new()
 	_dossier_panel.name = "MemorialDossier"
@@ -177,8 +177,8 @@ func _build_screen() -> void:
 
 
 func _rebuild_memorial(restore_focus_id := "") -> void:
-	for child: Node in _memorial_grid.get_children():
-		_memorial_grid.remove_child(child)
+	for child: Node in _obituary_list.get_children():
+		_obituary_list.remove_child(child)
 		child.queue_free()
 	_visible_rows = RosterFilterType.filter_rows(_fallen_rows, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
 	_status_label.text = UiCopyType.text(&"ui.vahalla.fallen_count_format", "{count} FALLEN").replace("{count}", str(_visible_rows.size()))
@@ -189,9 +189,8 @@ func _rebuild_memorial(restore_focus_id := "") -> void:
 		empty.name = "VahallaEmptyState"
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_memorial_grid.add_child(empty)
+		_obituary_list.add_child(empty)
 		_rebuild_dossier()
-		_queue_memorial_grid_layout()
 		return
 	var selected_still_visible := false
 	for hero: Dictionary in _visible_rows:
@@ -200,31 +199,30 @@ func _rebuild_memorial(restore_focus_id := "") -> void:
 	if not selected_still_visible:
 		_selected_hero_id = String(_visible_rows[0]["hero_id"])
 	for hero: Dictionary in _visible_rows:
-		_memorial_grid.add_child(_memorial_row(hero))
+		_obituary_list.add_child(_memorial_row(hero))
 	_rebuild_dossier()
-	_queue_memorial_grid_layout()
 	if not restore_focus_id.is_empty():
 		_restore_memorial_focus.call_deferred(restore_focus_id)
 
 
 func _memorial_row(hero: Dictionary) -> Button:
 	var hero_id := String(hero["hero_id"])
+	var callsign_text := TrainingSupportType.callsign(hero).to_upper()
+	var class_text := _class_name(String(hero["current_class_id"])).to_upper()
+	var faction_text := FactionHeraldryType.display_name(StringName(hero["faction_id"])).to_upper()
+	var record_text := _death_record(hero)
 	var row := Button.new()
 	row.name = "Memorial_%s" % hero_id
-	row.custom_minimum_size = Vector2(0, MEMORIAL_ROW_MIN_HEIGHT)
+	row.custom_minimum_size = Vector2(0, OBITUARY_ROW_MIN_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.text = "%s\n%s · %s" % [
-		TrainingSupportType.callsign(hero).to_upper(),
-		_class_name(String(hero["current_class_id"])).to_upper(),
-		FactionHeraldryType.display_name(StringName(hero["faction_id"])).to_upper(),
-	]
+	row.text = "%s\n%s · %s\n%s" % [callsign_text, class_text, faction_text, record_text]
 	row.tooltip_text = row.text
-	row.accessibility_name = row.text
-	row.accessibility_description = row.text
+	row.accessibility_name = callsign_text
+	row.accessibility_description = "%s. %s. %s" % [class_text, faction_text, record_text]
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.pressed.connect(_on_memorial_selected.bind(hero_id))
 	row.focus_entered.connect(_ensure_memorial_visible.bind(row))
-	Style.apply_button(row, &"selected" if hero_id == _selected_hero_id else &"quiet")
+	_apply_obituary_row_style(row, hero_id == _selected_hero_id)
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
 		&"font_hover_pressed_color", &"font_focus_color", &"font_disabled_color",
@@ -234,24 +232,67 @@ func _memorial_row(hero: Dictionary) -> Button:
 	margin.name = "MemorialRowMargin"
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
-		margin.add_theme_constant_override(side, 16)
+	margin.add_theme_constant_override(&"margin_left", 16)
+	margin.add_theme_constant_override(&"margin_top", 9)
+	margin.add_theme_constant_override(&"margin_right", 16)
+	margin.add_theme_constant_override(&"margin_bottom", 9)
 	row.add_child(margin)
 	var copy := VBoxContainer.new()
-	copy.add_theme_constant_override(&"separation", 4)
+	copy.add_theme_constant_override(&"separation", 2)
 	copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(copy)
-	var callsign := _label(TrainingSupportType.callsign(hero).to_upper(), &"body")
+	var callsign := _label(callsign_text, &"body")
 	callsign.name = "MemorialRowCallsign"
-	callsign.add_theme_font_size_override(&"font_size", 29)
+	callsign.add_theme_font_size_override(&"font_size", 25)
 	copy.add_child(callsign)
-	var class_copy := _label(_class_name(String(hero["current_class_id"])).to_upper(), &"detail")
+	var class_copy := _label("%s · %s" % [class_text, faction_text], &"detail")
 	class_copy.name = "MemorialRowClass"
 	copy.add_child(class_copy)
-	var faction_copy := _label(FactionHeraldryType.display_name(StringName(hero["faction_id"])).to_upper(), &"detail")
-	faction_copy.name = "MemorialRowFaction"
-	copy.add_child(faction_copy)
+	var record_copy := _label(record_text, &"dense_detail")
+	record_copy.name = "MemorialRowRecord"
+	record_copy.add_theme_color_override(&"font_color", Style.DANGER)
+	copy.add_child(record_copy)
 	return row
+
+
+func _apply_obituary_row_style(row: Button, selected: bool) -> void:
+	row.add_theme_stylebox_override(
+		&"normal",
+		_obituary_row_box(
+			Color(Style.GLASS_SELECTED, 0.46) if selected else Color(Style.INK_DEEP, 0.18),
+			Style.CYAN if selected else Color(Style.GOLD, 0.34),
+			3 if selected else 0,
+		),
+	)
+	row.add_theme_stylebox_override(
+		&"hover", _obituary_row_box(Color(Style.GLASS_SOFT, 0.72), Style.CYAN, 2),
+	)
+	row.add_theme_stylebox_override(
+		&"pressed", _obituary_row_box(Color(Style.INK_DEEP, 0.84), Style.GOLD, 3),
+	)
+	row.add_theme_stylebox_override(
+		&"focus", _obituary_focus_box(),
+	)
+	row.add_theme_stylebox_override(
+		&"disabled", _obituary_row_box(Color(Style.INK_DEEP, 0.28), Color(Style.MUTED, 0.24), 0),
+	)
+
+
+func _obituary_row_box(background: Color, rule: Color, leading_width: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = rule
+	style.border_width_left = leading_width
+	style.border_width_bottom = 1
+	return style
+
+
+func _obituary_focus_box() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color.TRANSPARENT
+	style.border_color = Style.GOLD
+	style.set_border_width_all(1)
+	return style
 
 
 func _rebuild_dossier() -> void:
@@ -462,42 +503,10 @@ func _apply_responsive_layout() -> void:
 	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 360 if portrait else 0)
 	_body_grid.move_child(_dossier_panel, 0 if portrait else 1)
 	_rebuild_dossier()
-	_queue_memorial_grid_layout()
 
 
 func _on_text_scale_changed(_value: float) -> void:
 	_apply_responsive_layout()
-
-
-func _memorial_grid_available_width() -> float:
-	if _memorial_scroll != null and _memorial_scroll.size.x > 0.0:
-		return _memorial_scroll.size.x
-	return MEMORIAL_CARD_MIN_WIDTH
-
-
-func _memorial_grid_columns(available_width := -1.0, item_count := -1) -> int:
-	var text_scale := float(TextScale.value()) if TextScale != null else 1.0
-	var visible_count := _visible_rows.size() if item_count < 0 else item_count
-	return RosterGridLayoutType.fitting_columns(
-		available_width if available_width > 0.0 else _memorial_grid_available_width(),
-		MEMORIAL_CARD_MIN_WIDTH * maxf(1.0, text_scale),
-		float(MEMORIAL_GRID_GAP),
-		0,
-		visible_count,
-	)
-
-
-func _queue_memorial_grid_layout() -> void:
-	if _memorial_grid_layout_queued or not is_inside_tree():
-		return
-	_memorial_grid_layout_queued = true
-	_apply_queued_memorial_grid_layout.call_deferred()
-
-
-func _apply_queued_memorial_grid_layout() -> void:
-	_memorial_grid_layout_queued = false
-	if _memorial_grid != null:
-		_memorial_grid.columns = _memorial_grid_columns()
 
 
 func _ensure_memorial_visible(row: Control) -> void:
@@ -510,9 +519,9 @@ func _ensure_memorial_visible_deferred(row: Control) -> void:
 
 
 func _restore_memorial_focus(hero_id: String) -> void:
-	if hero_id.is_empty() or _memorial_grid == null:
+	if hero_id.is_empty() or _obituary_list == null:
 		return
-	var row := _memorial_grid.get_node_or_null("Memorial_%s" % hero_id) as Button
+	var row := _obituary_list.get_node_or_null("Memorial_%s" % hero_id) as Button
 	if row != null and not row.disabled:
 		row.grab_focus()
 		_ensure_memorial_visible(row)
