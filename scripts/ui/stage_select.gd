@@ -22,6 +22,8 @@ const ROUTE_CONTENT_INSET := 36
 const DOSSIER_HORIZONTAL_INSET := 80
 const DOSSIER_VERTICAL_INSET := 36
 const STAGE_ROW_PADDING := 12.0
+const READY_STATUS_GOLD := Color("8c6a1f")
+const READY_STATUS_EDGE := Color("f0d89a")
 const REWARD_DIRS := {
 	&"operator": "res://data/operators",
 	&"trap": "res://data/traps",
@@ -183,6 +185,7 @@ func _build_body(column: VBoxContainer) -> void:
 	_route_heading = AetheriaLabelType.new()
 	_route_heading.name = "RouteHeading"
 	_route_heading.apply_role(&"heading")
+	_route_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	route_header.add_child(_route_heading)
 	_route_note = AetheriaLabelType.new()
 	_route_note.name = "RouteNote"
@@ -378,6 +381,7 @@ func _show_dossier(stage_id: StringName) -> void:
 		_dossier_status.text = UiCopyType.text(
 			&"ui.campaign.status_next", "Next operation · Ready",
 		)
+	_apply_dossier_status_presentation(unlocked and stars == 0)
 	var narrative: StageNarrativeDefType = (NARRATIVE_CATALOG as StageNarrativeCatalogType).get_record(stage_id)
 	_dossier_objective.text = UiCopyType.format_text(&"ui.campaign.objective", "OBJECTIVE — {text}", {
 		&"text": UiCopyType.stage_narrative_text(narrative, StageNarrativeDefType.Field.OBJECTIVE),
@@ -415,6 +419,26 @@ func _show_dossier(stage_id: StringName) -> void:
 		star.name = "DossierStar_%d" % (index + 1)
 		star.set_state(Style.GOLD, index < stars)
 		_dossier_stars.add_child(star)
+
+
+func _apply_dossier_status_presentation(ready: bool) -> void:
+	if _dossier_status == null:
+		return
+	if not ready:
+		_dossier_status.remove_theme_stylebox_override(&"normal")
+		_dossier_status.remove_theme_color_override(&"font_color")
+		return
+	var ready_style := StyleBoxFlat.new()
+	ready_style.bg_color = READY_STATUS_GOLD
+	ready_style.border_color = READY_STATUS_EDGE
+	ready_style.set_border_width_all(1)
+	ready_style.set_corner_radius_all(2)
+	ready_style.content_margin_left = 9.0
+	ready_style.content_margin_top = 5.0
+	ready_style.content_margin_right = 9.0
+	ready_style.content_margin_bottom = 5.0
+	_dossier_status.add_theme_stylebox_override(&"normal", ready_style)
+	_dossier_status.add_theme_color_override(&"font_color", Color.WHITE)
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -63,6 +63,7 @@ func _run() -> void:
 	var dossier_inset := campaign.find_child("MissionDossierInset", true, false) as MarginContainer
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
 	var dossier_title := campaign.find_child("DossierTitle", true, false) as Label
+	var dossier_status := campaign.find_child("DossierStatus", true, false) as Label
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
 	var dossier_shard := campaign.find_child("DossierResonanceShard", true, false) as TextureRect
 	var cleared_stage := campaign.find_child("Stage_s1", true, false) as Button
@@ -96,6 +97,7 @@ func _run() -> void:
 		for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 			_check(route_content_inset.get_theme_constant(side) == 36, "Campaign route %s is not exactly 36px" % side)
 	_check(route_panel != null and route_heading != null and route_heading.global_position.x - route_panel.global_position.x >= 52.0, "Campaign route title does not clear the 36px inner inset and frame")
+	_check(route_heading != null and route_heading.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route title is not center justified")
 	_check(route_panel != null and route_note != null and route_note.global_position.x - route_panel.global_position.x >= 52.0, "Campaign route subtitle does not clear the 36px inner inset and frame")
 	_check(stage_label != null and is_equal_approx(stage_label.offset_left, 12.0) and is_equal_approx(stage_label.offset_top, 12.0) and is_equal_approx(stage_label.offset_right, -12.0) and is_equal_approx(stage_label.offset_bottom, -12.0), "Campaign list item does not retain exact 12px padding on all sides")
 	_check(next_stage != null and next_stage.custom_minimum_size.y >= 76.0, "Campaign list item height does not contain its vertical padding")
@@ -105,6 +107,12 @@ func _run() -> void:
 	_check(next_sparkles != null and int(next_sparkles.call("sparkle_count")) == 8, "next Campaign row lacks the special glow and sparkle field")
 	_check(next_sparkles != null and not bool(next_sparkles.call("motion_reduced")) and next_sparkles.is_processing(), "animated Campaign sparkles did not activate in normal motion mode")
 	_check(next_stage != null and next_stage.accessibility_description.contains("glow") and next_stage.accessibility_description.contains("sparkles"), "next Campaign row lacks an accessible highlight description")
+	campaign.call("_show_dossier", &"s2")
+	await process_frame
+	var ready_style := dossier_status.get_theme_stylebox(&"normal") as StyleBoxFlat if dossier_status != null else null
+	_check(dossier_status != null and dossier_status.text.to_upper().contains("NEXT OPERATION") and dossier_status.text.to_upper().contains("READY"), "Campaign ready status copy is incomplete")
+	_check(ready_style != null and ready_style.bg_color.is_equal_approx(Color("8c6a1f")) and ready_style.border_color.is_equal_approx(Color("f0d89a")), "Campaign ready status is not royal gold")
+	_check(dossier_status != null and dossier_status.get_theme_color(&"font_color").is_equal_approx(Color.WHITE), "Campaign ready status does not use white text")
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
 	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Company Reinforcements")
 	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
@@ -112,6 +120,7 @@ func _run() -> void:
 	await process_frame
 	_check(dossier_title != null and dossier_title.text.begins_with("ACT II"), "Act II dossier lacks chapter identity")
 	_check(dossier_objective != null and dossier_objective.text.contains("model city"), "Act II dossier did not load localized S9 Green Cage canon")
+	_check(dossier_status != null and not dossier_status.has_theme_stylebox_override(&"normal"), "locked Campaign operation retained the ready-only gold status override")
 	root.size = Vector2i(720, 1280)
 	await process_frame
 	await process_frame
