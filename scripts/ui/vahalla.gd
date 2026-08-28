@@ -176,7 +176,7 @@ func _build_screen() -> void:
 	_rebuild_memorial()
 
 
-func _rebuild_memorial() -> void:
+func _rebuild_memorial(restore_focus_id := "") -> void:
 	for child: Node in _memorial_grid.get_children():
 		_memorial_grid.remove_child(child)
 		child.queue_free()
@@ -191,6 +191,7 @@ func _rebuild_memorial() -> void:
 		empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_memorial_grid.add_child(empty)
 		_rebuild_dossier()
+		_queue_memorial_grid_layout()
 		return
 	var selected_still_visible := false
 	for hero: Dictionary in _visible_rows:
@@ -201,6 +202,9 @@ func _rebuild_memorial() -> void:
 	for hero: Dictionary in _visible_rows:
 		_memorial_grid.add_child(_memorial_row(hero))
 	_rebuild_dossier()
+	_queue_memorial_grid_layout()
+	if not restore_focus_id.is_empty():
+		_restore_memorial_focus.call_deferred(restore_focus_id)
 
 
 func _memorial_row(hero: Dictionary) -> Button:
@@ -413,9 +417,11 @@ func _on_filters_changed(_status: StringName, _faction_id: StringName) -> void:
 
 
 func _on_memorial_selected(hero_id: String) -> void:
+	var focus_owner := get_viewport().gui_get_focus_owner()
+	var restore_focus := hero_id if focus_owner != null and focus_owner.name == StringName("Memorial_%s" % hero_id) else ""
 	_selected_hero_id = hero_id
 	Sfx.play("ui_click")
-	_rebuild_memorial()
+	_rebuild_memorial(restore_focus)
 
 
 func _on_honor_pressed(hero_id: String) -> void:
