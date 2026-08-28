@@ -38,6 +38,29 @@ func _run() -> void:
 	_check(not preset_text.is_empty(), "Web export preset is unavailable")
 	for token: String in REQUIRED_UNLOCK_TOKENS:
 		_check(preset_text.contains(token), "Web Audio unlock token is missing: %s" % token)
+	_check(
+		int(ProjectSettings.get_setting("audio/general/default_playback_type", -1))
+			== AudioServer.PLAYBACK_TYPE_STREAM,
+		"project audio does not force the direct streaming mixer",
+	)
+	var music := root.get_node_or_null("Music")
+	var sfx := root.get_node_or_null("Sfx")
+	_check(music != null and sfx != null, "audio autoloads are unavailable")
+	if music != null:
+		for player_value: Variant in music.call("_ensure_players"):
+			var player := player_value as AudioStreamPlayer
+			_check(
+				player != null and player.playback_type == AudioServer.PLAYBACK_TYPE_STREAM,
+				"music player can fall back to the Web sample graph",
+			)
+	if sfx != null:
+		for child: Node in sfx.get_children():
+			if child is AudioStreamPlayer:
+				_check(
+					(child as AudioStreamPlayer).playback_type
+						== AudioServer.PLAYBACK_TYPE_STREAM,
+					"SFX voice can fall back to the Web sample graph",
+				)
 	var catalog := load(SFX_CATALOG_PATH) as Resource
 	_check(catalog != null, "SFX catalog is unavailable")
 	var aliases_value: Variant = catalog.get("aliases") if catalog != null else null
