@@ -442,6 +442,7 @@
     "ui.campaign.row_star": "{count} 星",
     "ui.campaign.row_stars": "{count} 星",
     "ui.campaign.selected_operation": "当前行动",
+    "ui.campaign.start_mission": "开始任务",
     "ui.campaign.status_cleared": "已完成 · 可重复挑战",
     "ui.campaign.status_next": "下一行动 · 准备就绪",
     "ui.campaign.status_sealed": "已封锁 · 请先完成上一行动",

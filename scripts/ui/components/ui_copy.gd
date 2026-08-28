@@ -326,6 +326,7 @@ const STATIC_FALLBACKS := {
 	&"ui.campaign.threat": "THREAT — {text}",
 	&"ui.campaign.first_clear_reward": "FIRST CLEAR — {rewards}",
 	&"ui.campaign.record_only": "RECORD ONLY",
+	&"ui.campaign.start_mission": "Start Mission",
 	&"ui.identity_sort.cost_asc": "Cost low–high",
 	&"ui.identity_sort.cost_desc": "Cost high–low",
 	&"ui.identity_sort.label": "Sort operators",

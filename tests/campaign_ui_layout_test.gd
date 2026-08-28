@@ -4,6 +4,7 @@ const TEST_TIMEOUT_SECONDS := 30.0
 const STATE_WAIT_SECONDS := 2.0
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
+const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
 
 var _failures: Array[String] = []
 var _finished := false
@@ -64,6 +65,7 @@ func _run() -> void:
 	var dossier_objective := campaign.find_child("DossierObjective", true, false) as Label
 	var dossier_title := campaign.find_child("DossierTitle", true, false) as Label
 	var dossier_status := campaign.find_child("DossierStatus", true, false) as Label
+	var dossier_shimmer := campaign.find_child("DossierReadyShimmer", true, false) as CampaignReadyShimmerType
 	var dossier_reward := campaign.find_child("DossierReward", true, false) as Label
 	var dossier_shard := campaign.find_child("DossierResonanceShard", true, false) as TextureRect
 	var cleared_stage := campaign.find_child("Stage_s1", true, false) as Button
@@ -73,10 +75,12 @@ func _run() -> void:
 	var route_content_inset := campaign.find_child("RouteContentInset", true, false) as MarginContainer
 	var route_heading := campaign.find_child("RouteHeading", true, false) as Label
 	var route_note := campaign.find_child("RouteNote", true, false) as Label
+	var start_mission := campaign.find_child("StartMission", true, false) as Button
 	var cleared_label := cleared_stage.get_node_or_null("PresentationLabel") as Label if cleared_stage != null else null
 	var stage_label := next_stage.get_node_or_null("PresentationLabel") as Label if next_stage != null else null
 	var act_two_label := act_two_stage.get_node_or_null("PresentationLabel") as Label if act_two_stage != null else null
 	var next_sparkles := next_stage.get_node_or_null("NextOperationSparkles") as Control if next_stage != null else null
+	var route_hover_background := next_stage.get_node_or_null("RouteHoverBackground") as ColorRect if next_stage != null else null
 	_check(campaign_shell != null and bool(campaign_shell.get("full_safe_area")), "Campaign did not use the full-safe-area shell")
 	_check(progress != null and progress.custom_minimum_size.x >= 190.0 and progress.autowrap_mode == TextServer.AUTOWRAP_OFF, "Campaign progress can collapse or wrap vertically")
 	_check(dossier != null and next_stage != null and not next_stage.disabled, "Campaign route or selected dossier is incomplete")
@@ -101,6 +105,15 @@ func _run() -> void:
 	_check(route_panel != null and route_note != null and route_note.global_position.x - route_panel.global_position.x >= 52.0, "Campaign route subtitle does not clear the 36px inner inset and frame")
 	_check(stage_label != null and is_equal_approx(stage_label.offset_left, 12.0) and is_equal_approx(stage_label.offset_top, 12.0) and is_equal_approx(stage_label.offset_right, -12.0) and is_equal_approx(stage_label.offset_bottom, -12.0), "Campaign list item does not retain exact 12px padding on all sides")
 	_check(next_stage != null and next_stage.custom_minimum_size.y >= 76.0, "Campaign list item height does not contain its vertical padding")
+	_check(route_hover_background != null, "Campaign operation card lacks its animated hover background")
+	if next_stage != null and route_hover_background != null:
+		next_stage.mouse_entered.emit()
+		await create_timer(0.22).timeout
+		_check(next_stage.scale.x >= 1.024 and next_stage.scale.y >= 1.024, "Campaign operation card did not scale slightly on hover")
+		_check(route_hover_background.color.a >= 0.38, "Campaign operation card hover did not change its background color")
+		next_stage.mouse_exited.emit()
+		await create_timer(0.22).timeout
+		_check(next_stage.scale.x <= 1.011 and next_stage.scale.y <= 1.011, "Campaign operation card did not leave its hover scale")
 	_check(cleared_label != null and cleared_label.text.to_upper().contains("3 STARS") and not cleared_label.text.to_upper().contains("CLEARED"), "cleared Campaign row does not replace Cleared with its maximum star count")
 	var locked_gray := Color(Style.MUTED, 0.64)
 	_check(act_two_label != null and act_two_label.get_theme_color(&"font_color").is_equal_approx(locked_gray), "locked Campaign row font is not explicitly gray")
@@ -113,6 +126,23 @@ func _run() -> void:
 	_check(dossier_status != null and dossier_status.text.to_upper().contains("NEXT OPERATION") and dossier_status.text.to_upper().contains("READY"), "Campaign ready status copy is incomplete")
 	_check(ready_style != null and ready_style.bg_color.is_equal_approx(Color("8c6a1f")) and ready_style.border_color.is_equal_approx(Color("f0d89a")), "Campaign ready status is not royal gold")
 	_check(dossier_status != null and dossier_status.get_theme_color(&"font_color").is_equal_approx(Color.WHITE), "Campaign ready status does not use white text")
+	_check(dossier_shimmer != null and dossier_shimmer.is_active() and dossier_shimmer.is_processing(), "Campaign ready status lacks its animated gold shimmer")
+	_check(start_mission != null and not start_mission.disabled and start_mission.custom_minimum_size == Vector2(280.0, 68.0), "Campaign dossier lacks its fixed royal-gold Start Mission action")
+	_check(start_mission != null and start_mission.get_parent() != null and dossier != null and dossier.is_ancestor_of(start_mission), "Start Mission is not contained by the selected-operation dossier")
+	if start_mission != null:
+		var start_style := start_mission.get_theme_stylebox(&"normal") as StyleBoxFlat
+		_check(start_style != null and start_style.bg_color.is_equal_approx(Style.GOLD), "Start Mission does not use the royal-gold action theme")
+		start_mission.mouse_entered.emit()
+		await create_timer(0.22).timeout
+		_check(start_mission.scale.x >= 1.039, "Start Mission does not animate on hover")
+		start_mission.mouse_exited.emit()
+		await create_timer(0.22).timeout
+	_check(bool(i18n.call("set_locale", &"zh-CN")), "Campaign could not activate Chinese")
+	await process_frame
+	var start_presentation := start_mission.get_node_or_null("PresentationLabel") as Label if start_mission != null else null
+	_check(start_presentation != null and start_presentation.text == "开始任务", "Campaign Start Mission did not refresh in Chinese")
+	_check(bool(i18n.call("set_locale", &"en-US")), "Campaign could not restore English")
+	await process_frame
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
 	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Hire Recruit")
 	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
@@ -121,6 +151,8 @@ func _run() -> void:
 	_check(dossier_title != null and dossier_title.text.begins_with("ACT II"), "Act II dossier lacks chapter identity")
 	_check(dossier_objective != null and dossier_objective.text.contains("model city"), "Act II dossier did not load localized S9 Green Cage canon")
 	_check(dossier_status != null and not dossier_status.has_theme_stylebox_override(&"normal"), "locked Campaign operation retained the ready-only gold status override")
+	_check(dossier_shimmer != null and not dossier_shimmer.is_active() and not dossier_shimmer.visible, "locked Campaign operation retained the ready-only shimmer")
+	_check(start_mission != null and start_mission.disabled and start_mission.focus_mode == Control.FOCUS_NONE, "locked Campaign operation left Start Mission enabled")
 	root.size = Vector2i(720, 1280)
 	await process_frame
 	await process_frame
@@ -136,9 +168,14 @@ func _run() -> void:
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	var reduced_sparkles := CampaignNextSparklesType.new()
 	root.add_child(reduced_sparkles)
+	var reduced_shimmer := CampaignReadyShimmerType.new()
+	root.add_child(reduced_shimmer)
+	reduced_shimmer.set_active(true)
 	await process_frame
 	_check(bool(reduced_sparkles.call("motion_reduced")) and not reduced_sparkles.is_processing(), "Reduced Motion did not freeze Campaign sparkles into a static highlight")
+	_check(reduced_shimmer.motion_reduced() and reduced_shimmer.is_active() and not reduced_shimmer.is_processing(), "Reduced Motion did not freeze the Campaign shimmer into a static highlight")
 	_dispose(reduced_sparkles)
+	_dispose(reduced_shimmer)
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 	var mission: Node = load("res://scenes/squad_select.tscn").instantiate()

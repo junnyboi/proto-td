@@ -442,6 +442,7 @@
     "ui.campaign.row_star": "{count} star",
     "ui.campaign.row_stars": "{count} stars",
     "ui.campaign.selected_operation": "Selected Operation",
+    "ui.campaign.start_mission": "Start Mission",
     "ui.campaign.status_cleared": "Cleared · Replay available",
     "ui.campaign.status_next": "Next operation · Ready",
     "ui.campaign.status_sealed": "Sealed · Complete the prior operation",
