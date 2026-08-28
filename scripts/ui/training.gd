@@ -62,9 +62,10 @@ const PATH_ACTION_PADDING_HORIZONTAL := 24.0
 const PATH_ACTION_PADDING_VERTICAL := 12.0
 const ROSTER_CARD_WIDTH := 560.0
 const ROSTER_GRID_GAP := 16
-const ROSTER_DOUBLE_WIDTH := ROSTER_CARD_WIDTH * 2.0 + ROSTER_GRID_GAP
 const ROSTER_SCROLL_EXTRA := 24.0
-const ROSTER_TWO_COLUMN_MIN_VIEWPORT := 1912.0
+const ROSTER_MAX_COLUMNS := 2
+const ROSTER_INSPECTOR_MIN_WIDTH := 580.0
+const ROSTER_LANDSCAPE_SEPARATION := 64.0
 const INSPECTOR_GOLD := Color("d9b96e")
 const IDENTITY_INPUT_FONT_SIZE := 34
 const ERROR_KEYS := {
@@ -227,6 +228,8 @@ func _ready() -> void:
 	_build_shell()
 	resized.connect(_on_viewport_resized)
 	I18n.locale_changed.connect(_on_locale_changed)
+	if TextScale != null and not TextScale.scale_changed.is_connected(_on_text_scale_changed):
+		TextScale.scale_changed.connect(_on_text_scale_changed)
 	_refresh_roster()
 	_show_roster(_roster_projection_error())
 
@@ -405,6 +408,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	body.add_theme_constant_override(
 		&"separation", 16 if _layout_mode == &"portrait" else 64,
 	)
+	body.resized.connect(_on_roster_body_resized)
 	_page.add_child(body)
 	body.add_child(_build_roster_list())
 	body.add_child(_build_inspector())
