@@ -71,23 +71,16 @@ func _run() -> void:
 		_finish()
 		return
 	var target_class_id := String(first_path.get("class_id"))
-	first_path.pressed.emit()
-	await process_frame
-	var promote := screen.find_child("ChoosePath", true, false) as Button
 	_check(
-		promote != null and promote.text == "Promote" and not promote.disabled,
-		"selected specialization did not expose direct Promote",
+		screen.find_child("ChoosePath", true, false) == null,
+		"specialization selection still requires a separate approval action",
 	)
 	_check(screen.find_child("ConfirmTraining", true, false) == null, "promotion still requires confirmation review")
-	if promote == null or promote.disabled:
-		_cleanup(game, screen)
-		_finish()
-		return
 
-	# The first activation commits synchronously and clears the selection before
-	# the retired button can dispatch again.
-	promote.pressed.emit()
-	promote.pressed.emit()
+	# The first card activation commits synchronously. A queued duplicate
+	# activation must not publish a second promotion.
+	first_path.pressed.emit()
+	first_path.pressed.emit()
 	await _frames(3)
 	state = game.get("campaign")
 	var after_data: Dictionary = state.data_copy()

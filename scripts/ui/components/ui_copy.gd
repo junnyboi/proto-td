@@ -405,9 +405,8 @@ const STATIC_FALLBACKS := {
 		"Choose an advanced specialization for the selected operator."
 	),
 	&"ui.training.choose_path": "Choose Path",
-	&"ui.training.promote": "Promote",
 	&"ui.training.retry_promotion": "Retry Promotion",
-	&"ui.training.not_now": "Not Now",
+	&"ui.training.not_now": "Return",
 	&"ui.training.choose_recruit": "Choose a recruit to train.",
 	&"ui.training.class.banner_guard": "Banner Guard",
 	&"ui.training.class.defender": "Defender",

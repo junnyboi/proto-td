@@ -237,6 +237,14 @@ func _run() -> void:
 	_check(promote_source.contains('Game.training_call(&"commit", [{'), "promotion selection does not immediately dispatch its operator")
 	_check(promote_source.contains('"hero_id": _selected_hero_id') and promote_source.contains('"to_class_id": _selected_choice_id'), "immediate promotion dispatch is not scoped to the selected operator and class")
 	_check(promote_source.contains("_refresh_roster()") and promote_source.contains("_show_roster()"), "successful promotion does not immediately publish the promoted roster")
+	var selection_start := training_source.find("func _on_path_selected(choice_id: String) -> void:")
+	var selection_end := training_source.find("\n\nfunc _prefetch_class_pack", selection_start)
+	var selection_source := (
+		training_source.substr(selection_start, selection_end - selection_start)
+		if selection_start >= 0 and selection_end > selection_start
+		else ""
+	)
+	_check(selection_source.contains("_commit_selected_promotion()"), "specialization card selection still waits for a separate approval action")
 	_check(not training_source.contains("ReviewPlan") and not training_source.contains("ConfirmTraining"), "Training still exposes the removed bulk promotion review flow")
 	var training: Node = load("res://scenes/training.tscn").instantiate()
 	root.add_child(training)
@@ -249,6 +257,7 @@ func _run() -> void:
 	var review_plan := training.find_child("ReviewPlan", true, false) as Button
 	_check(training_shell != null and bool(training_shell.get("full_safe_area")), "Training did not use the full-safe-area workspace")
 	_check(not_now != null, "Training safe exit action is missing")
+	_check(not_now != null and not_now.text == "Return", "Training safe exit action is not labeled Return")
 	_check(return_to_mission != null, "Training mission-return fixture is unavailable")
 	_check(review_plan == null, "Training roster still renders Review Plan")
 	_check(training_dock != null and not_now != null and not _has_scroll_ancestor(not_now), "Training actions remain trapped in document scrolling")
@@ -257,6 +266,17 @@ func _run() -> void:
 	var edit_identity := training.find_child("EditIdentity", true, false) as Button
 	_check(initial_rename_input != null and not initial_rename_input.is_visible_in_tree(), "Training identity inputs are visible before Edit Identity")
 	_check(edit_identity != null, "Training Edit Identity control is missing")
+	var edit_presentation := edit_identity.find_child("PresentationLabel", true, false) as Label if edit_identity != null else null
+	var return_presentation := not_now.find_child("PresentationLabel", true, false) as Label if not_now != null else null
+	_check(edit_identity != null and edit_identity.text == "Edit", "selected-operator action is not labeled Edit")
+	_check(edit_presentation != null and edit_presentation.text == "Edit", "selected-operator Edit presentation changes its requested casing")
+	_check(
+		edit_identity != null and not_now != null
+		and edit_identity.get_theme_stylebox(&"normal").get_class() == not_now.get_theme_stylebox(&"normal").get_class()
+		and edit_presentation != null and return_presentation != null
+		and edit_presentation.get_theme_font_size(&"font_size") == return_presentation.get_theme_font_size(&"font_size"),
+		"selected-operator Edit does not share the Return button treatment",
+	)
 	if edit_identity != null:
 		edit_identity.pressed.emit()
 		await process_frame

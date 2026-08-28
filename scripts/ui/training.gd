@@ -411,7 +411,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	body.add_child(_build_inspector())
 	var footer := _footer("RosterActions")
 	var back := _button(
-		"TrainingBack", _t(&"ui.training.not_now", "Not Now"), not retry_pending,
+		"TrainingBack", _t(&"ui.training.not_now", "Return"), not retry_pending,
 		&"secondary" if not retry_pending else &"disabled",
 	)
 	back.pressed.connect(_on_not_now)
@@ -640,44 +640,21 @@ func _build_inspector() -> AetheriaPanelType:
 			&"eyebrow",
 		))
 		identity_heading.add_child(identity_copy)
-		var edit_identity := Button.new()
-		edit_identity.name = "EditIdentity"
-		edit_identity.text = _t(
+		var edit_text := _t(
 			&"ui.rename.close_short" if _identity_editor_open else &"ui.rename.edit_short",
 			"Close" if _identity_editor_open else "Edit",
+		)
+		var edit_identity := _button(
+			"EditIdentity", edit_text, true, &"secondary", _inspector_scroll,
 		)
 		edit_identity.custom_minimum_size = Vector2(140.0, 84.0)
 		edit_identity.size_flags_horizontal = Control.SIZE_SHRINK_END
 		edit_identity.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		edit_identity.focus_mode = Control.FOCUS_ALL
 		edit_identity.accessibility_name = edit_identity.text
 		edit_identity.accessibility_description = _t(
 			&"ui.rename.edit_identity_description",
 			"Show or hide the selected operator identity editor.",
 		)
-		LunarisOpsType.apply_button(edit_identity, &"gold")
-		_apply_button_insets(edit_identity, 24.0, 12.0)
-		var edit_label := Label.new()
-		edit_label.name = "EditIdentityLabel"
-		edit_label.text = edit_identity.text.to_upper()
-		edit_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		edit_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		edit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		edit_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		LunarisOpsType.apply_label(edit_label, &"eyebrow")
-		edit_label.add_theme_font_size_override(&"font_size", 30)
-		edit_label.offset_left = 24.0
-		edit_label.offset_top = 12.0
-		edit_label.offset_right = -24.0
-		edit_label.offset_bottom = -12.0
-		edit_identity.add_child(edit_label)
-		var transparent := Color(0.0, 0.0, 0.0, 0.0)
-		for color_name: StringName in [
-			&"font_color", &"font_hover_color", &"font_pressed_color",
-			&"font_focus_color", &"font_disabled_color",
-		]:
-			edit_identity.add_theme_color_override(color_name, transparent)
-		_bind_focus_scroll(edit_identity, _inspector_scroll)
 		edit_identity.pressed.connect(_on_edit_identity_requested)
 		inspector_header.add_child(edit_identity)
 		identity.add_child(identity_heading)
@@ -1429,6 +1406,8 @@ func _show_paths(error_code: StringName = &"") -> void:
 		_show_roster(StringName(options.get("error_code", &"missing_catalog")))
 		return
 	var retry_pending := bool(Game.training_call(&"retry_pending"))
+	if not retry_pending:
+		_selected_choice_id = ""
 	_mode = &"paths"
 	_clear_page()
 	_apply_path_screen_gutters(true)
@@ -1537,19 +1516,18 @@ func _show_paths(error_code: StringName = &"") -> void:
 		&"secondary" if not retry_pending else &"disabled",
 	)
 	back.pressed.connect(_show_roster)
-	_choose_path = _button(
-		"ChoosePath",
-		_t(&"ui.training.retry_promotion", "Retry Promotion")
-		if retry_pending
-		else _t(&"ui.training.promote", "Promote"),
-		retry_pending or not _selected_choice_id.is_empty(),
-		&"primary" if retry_pending or not _selected_choice_id.is_empty() else &"disabled",
-	)
-	_choose_path.pressed.connect(_commit_selected_promotion)
 	footer.add_child(back)
-	footer.add_child(_choose_path)
 	_apply_path_action_style(back)
-	_apply_path_action_style(_choose_path)
+	if retry_pending:
+		_choose_path = _button(
+			"ChoosePath",
+			_t(&"ui.training.retry_promotion", "Retry Promotion"),
+			true,
+			&"primary",
+		)
+		_choose_path.pressed.connect(_commit_selected_promotion)
+		footer.add_child(_choose_path)
+		_apply_path_action_style(_choose_path)
 	action_bar.add_child(footer)
 	var action_safe := MarginContainer.new()
 	action_safe.name = "PathActionSafe"
@@ -1560,9 +1538,7 @@ func _show_paths(error_code: StringName = &"") -> void:
 	_apply_footer_layouts()
 	_reset_outer_scroll()
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
-	if not retry_pending and not _selected_choice_id.is_empty():
-		_on_path_selected(_selected_choice_id)
-	elif retry_pending:
+	if retry_pending:
 		for card: PromotionPathCardType in _path_cards:
 			card.set_selected(card.class_id == _selected_choice_id)
 	if retry_pending:
@@ -1630,8 +1606,9 @@ func _commit_selected_promotion() -> void:
 	):
 		return
 	_promotion_commit_in_flight = true
-	_choose_path.disabled = true
-	_choose_path.focus_mode = Control.FOCUS_NONE
+	if _choose_path != null:
+		_choose_path.disabled = true
+		_choose_path.focus_mode = Control.FOCUS_NONE
 	_promotion_dispatch_count += 1
 	Sfx.play("ui_confirm")
 	var committed: Dictionary = (
@@ -1648,6 +1625,7 @@ func _commit_selected_promotion() -> void:
 		if bool(Game.training_call(&"retry_pending")):
 			_show_paths(commit_error)
 		else:
+			_selected_choice_id = ""
 			_refresh_roster()
 			_show_roster(commit_error)
 		return
@@ -1675,10 +1653,7 @@ func _on_path_selected(choice_id: String) -> void:
 	_prefetch_class_pack(choice_id, true, false)
 	for card: PromotionPathCardType in _path_cards:
 		card.set_selected(card.class_id == choice_id)
-	_choose_path.disabled = false
-	_choose_path.focus_mode = Control.FOCUS_ALL
-	_apply_path_action_style(_choose_path)
-	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
+	_commit_selected_promotion()
 
 
 func _prefetch_class_pack(class_id: String, prioritize: bool, background: bool) -> void:
@@ -2096,7 +2071,11 @@ func _footer(node_name: String) -> BoxContainer:
 
 
 func _button(
-	node_name: String, button_text: String, enabled: bool, role: StringName,
+	node_name: String,
+	button_text: String,
+	enabled: bool,
+	role: StringName,
+	focus_scroll: ScrollContainer = null,
 ) -> AetheriaButtonType:
 	var button := AetheriaButtonType.new()
 	button.name = node_name
@@ -2108,7 +2087,7 @@ func _button(
 	button.set_presentation_text(button_text, button_text)
 	LunarisOpsType.apply_button(button, role)
 	_apply_button_insets(button, 24.0, 12.0)
-	_bind_focus_scroll(button, _dialog_scroll)
+	_bind_focus_scroll(button, focus_scroll if focus_scroll != null else _dialog_scroll)
 	var presentation := button.get_node("PresentationLabel") as AetheriaLabelType
 	LunarisOpsType.apply_label(presentation, &"body")
 	presentation.add_theme_font_size_override(&"font_size", 30)

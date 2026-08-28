@@ -188,6 +188,9 @@ func _run() -> void:
 	_check(dossier != null and rename_panel != null and dossier.get_index() < rename_panel.get_index(), "operator information does not precede Field Identity")
 	_check(edit_identity != null and edit_identity.is_visible_in_tree(), "selected operator identity lacks an Edit control")
 	if edit_identity != null:
+		var edit_presentation := edit_identity.find_child("PresentationLabel", true, false) as Label
+		_check(edit_identity.text == "Edit" and edit_presentation != null and edit_presentation.text == "Edit", "selected operator action is not presented as Edit")
+		_check(edit_identity.find_child("EditIdentityLabel", true, false) == null, "Edit still uses its retired bespoke presentation")
 		_check(_near(edit_identity.custom_minimum_size.x, 140.0, 1.0) and _near(edit_identity.custom_minimum_size.y, 84.0, 1.0), "Edit control lacks fixed padded geometry")
 		_check(_button_padding_at_least(edit_identity, 24.0, 12.0), "Edit control lacks 24x12 padding")
 		edit_identity.pressed.emit()
@@ -383,26 +386,18 @@ func _run() -> void:
 		_check(class_title != null and class_title.get_theme_font_size(&"font_size") >= 40, "specialization title typography was not doubled")
 		_check(detail != null and detail.get_theme_font_size(&"font_size") >= 26, "specialization body typography was not doubled")
 		_check(bool(first_card.call("uses_flat_color_states")), "specialization card still depends on ornamental selected-state graphics")
-		var normal_style := first_card.get_theme_stylebox(&"normal") as StyleBoxFlat
-		first_card.emit_signal("pressed")
-		await _frames(2)
-		var selected_style := first_card.get_theme_stylebox(&"normal") as StyleBoxFlat
-		_check(normal_style != null and selected_style != null and not normal_style.bg_color.is_equal_approx(selected_style.bg_color), "selected specialization does not use a background color change")
 		_check(first_card.get_theme_stylebox(&"hover") is StyleBoxFlat, "specialization hover state is not a scalable flat background")
-	if path_actions != null and path_back != null and choose_path != null:
-		_check(choose_path.text == "Promote" and not choose_path.disabled, "selected specialization does not expose its immediate Promote action")
+	_check(choose_path == null, "specialization screen still exposes a separate promotion approval action")
+	if path_actions != null and path_back != null:
 		_check(not path_actions.vertical and path_actions.alignment == BoxContainer.ALIGNMENT_END, "wide path actions are not a bottom-right row")
-		_check(_near(path_back.size.x, 260.0, 1.0) and _near(choose_path.size.x, 260.0, 1.0), "path actions do not share the enlarged 260px width")
-		_check(_near(path_back.size.y, 84.0, 1.0) and _near(choose_path.size.y, 84.0, 1.0), "path actions do not share the enlarged 84px height")
-		_check(path_back.theme_type_variation == choose_path.theme_type_variation, "Back and Promote do not share one visual treatment")
-		_check(choose_path.get_global_rect().end.x >= path_actions.get_global_rect().end.x - 2.0, "path actions are not flush to the bottom-right edge")
+		_check(_near(path_back.size.x, 260.0, 1.0) and _near(path_back.size.y, 84.0, 1.0), "Back action does not retain enlarged path geometry")
+		_check(path_back.get_global_rect().end.x >= path_actions.get_global_rect().end.x - 2.0, "path action is not flush to the bottom-right edge")
 		_check(path_action_safe != null and path_action_safe.get_theme_constant(&"margin_left") == 60 and path_action_safe.get_theme_constant(&"margin_right") == 60, "path action bar does not preserve 60px side padding")
-		for action: Button in [path_back, choose_path]:
-			var label := action.find_child("PresentationLabel", true, false) as Label
-			var style := action.get_theme_stylebox(&"normal")
-			_check(label != null and label.get_theme_font_size(&"font_size") >= 28 and not label.clip_text, "%s text is not enlarged and overflow-safe" % action.name)
-			_check(_near(label.offset_left, 24.0, 0.1) and _near(label.offset_top, 12.0, 0.1) and _near(label.offset_right, -24.0, 0.1) and _near(label.offset_bottom, -12.0, 0.1), "%s lacks 24x12 internal padding" % action.name)
-			_check(_near(style.content_margin_left, 24.0, 0.1) and _near(style.content_margin_top, 12.0, 0.1), "%s style does not retain requested internal padding" % action.name)
+		var label := path_back.find_child("PresentationLabel", true, false) as Label
+		var style := path_back.get_theme_stylebox(&"normal")
+		_check(label != null and label.get_theme_font_size(&"font_size") >= 28 and not label.clip_text, "Back text is not enlarged and overflow-safe")
+		_check(_near(label.offset_left, 24.0, 0.1) and _near(label.offset_top, 12.0, 0.1) and _near(label.offset_right, -24.0, 0.1) and _near(label.offset_bottom, -12.0, 0.1), "Back lacks 24x12 internal padding")
+		_check(_near(style.content_margin_left, 24.0, 0.1) and _near(style.content_margin_top, 12.0, 0.1), "Back style does not retain requested internal padding")
 	var initial_columns := path_grid.columns if path_grid != null else 0
 
 	root.size = Vector2i(720, 1280)
@@ -424,9 +419,9 @@ func _run() -> void:
 			if child is Control:
 				var card := child as Control
 				_check(_near(card.size.x, 600.0, 1.0) and _near(card.size.y, 450.0, 1.0), "portrait training option is not a doubled 600x450 card")
-	if path_actions != null and path_back != null and choose_path != null:
+	_check(choose_path == null, "portrait specialization screen exposes a separate approval action")
+	if path_actions != null and path_back != null:
 		_check(path_actions.alignment == BoxContainer.ALIGNMENT_END, "portrait path actions are not right-aligned")
-		_check(_near(path_back.size.x, choose_path.size.x, 1.0) and _near(path_back.size.y, choose_path.size.y, 1.0), "portrait path actions do not share identical geometry")
 	if page != null and outer != null:
 		_check(page.size.y > outer.size.y, "portrait Training does not expose vertical overflow for 1.5× content")
 		_check(page.get_global_rect().position.x >= outer.get_global_rect().position.x - 1.0 and page.get_global_rect().end.x <= outer.get_global_rect().end.x + 1.0, "portrait Training page overflows horizontally")
@@ -444,8 +439,9 @@ func _run() -> void:
 			if child is Control:
 				var card := child as Control
 				_check(_near(card.size.x, 680.0, 1.0) and _near(card.size.y, 450.0, 1.0), "wide doubled-card geometry changes after a resize cycle")
-	if path_back != null and choose_path != null:
-		_check(_near(path_back.size.x, 260.0, 1.0) and _near(choose_path.size.x, 260.0, 1.0), "path action width changes after a resize cycle")
+	_check(choose_path == null, "wide specialization screen exposes a separate approval action after resizing")
+	if path_back != null:
+		_check(_near(path_back.size.x, 260.0, 1.0), "path action width changes after a resize cycle")
 
 	_dispose(screen)
 	game.set("content", null)
