@@ -748,7 +748,9 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	card_label.offset_right = -12.0
 	card_label.offset_bottom = -12.0
 	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var narrow_card := _operator_card_width(_shell.layout_mode()) < 300.0
+	var mode := _shell.layout_mode()
+	var info_pane_width := _operator_card_width(mode) * _operator_info_split(mode) - 36.0
+	var narrow_card := info_pane_width < 280.0
 	card_label.clip_text = narrow_card
 	card_label.text_overrun_behavior = (
 		TextServer.OVERRUN_TRIM_ELLIPSIS if narrow_card else TextServer.OVERRUN_NO_TRIMMING
@@ -1064,6 +1066,8 @@ func _apply_operator_grid_reflow() -> void:
 		var portrait := button.get_node_or_null("OperatorPortrait") as TextureRect
 		if portrait != null:
 			portrait.anchor_left = _operator_info_split(mode)
+			portrait.offset_left = 6.0 if mode == &"portrait" else 12.0
+			portrait.offset_right = -6.0 if mode == &"portrait" else -24.0
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	_update_operator_rail_insets()
 	_operator_grid_reflow_running = false

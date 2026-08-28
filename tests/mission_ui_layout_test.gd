@@ -116,6 +116,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var hire_action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
 	var hire_tooltip_hotspot := _mission.find_child("HireRecruitTooltipHotspot", true, false) as Control
 	var launch_status := _mission.find_child("ReadinessCopy", true, false) as Label
+	var portrait := viewport.y > viewport.x
 	_check(shell != null and bool(shell.get("full_safe_area")), "%s mission shell is not full-safe-area" % label)
 	_check(workspace != null and workspace.get_theme_stylebox(&"panel") is StyleBoxEmpty, "%s retained the decorative outer mission frame" % label)
 	_check(
@@ -134,10 +135,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 				and panel_style.content_margin_top >= 24.0
 				and panel_style.content_margin_right >= 24.0
 				and panel_style.content_margin_bottom >= 24.0,
-				"%s %s custom background padding is below 24px" % [label, panel.name],
-			)
+					"%s %s custom background padding is below 24px" % [label, panel.name],
+				)
 	if body != null:
-		var portrait := viewport.y > viewport.x
 		_check(body.columns == (1 if portrait else 2), "%s mission body uses the wrong column count" % label)
 		if not portrait and field_panel != null and intel_panel != null:
 			var panel_width := field_panel.size.x + intel_panel.size.x
