@@ -2,6 +2,7 @@ class_name AetheriaTheme
 extends Theme
 
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const CJK_FONT_PATH := "res://assets/fonts/ProtosSansSC.otf"
 const CJK_FONT: FontFile = preload(CJK_FONT_PATH)
 const CINZEL := preload("res://assets/fonts/Cinzel-Variable.ttf")
@@ -70,7 +71,7 @@ func _load_cjk_font() -> FontFile:
 
 
 func _build_buttons() -> void:
-	set_stylebox(&"focus", &"Button", _focus_box())
+	set_stylebox(&"focus", &"Button", _button_focus_box())
 	_button(&"AuiPrimaryButton", &"primary", &"dark_ink", &"primary")
 	_button(&"AuiSecondaryButton", &"secondary", &"body", &"secondary")
 	_button(&"AuiSelectedButton", &"selected", &"dark_ink", &"selected")
@@ -114,7 +115,7 @@ func _button(
 		set_stylebox(&"normal", variation, _flat_box(COLORS[background], COLORS[&"destructive"], 1, 3, [18, 10, 18, 10]))
 		set_stylebox(&"hover", variation, _flat_box(COLORS[&"destructive_hover"], COLORS[&"primary"], 2, 3, [18, 10, 18, 10]))
 		set_stylebox(&"pressed", variation, _flat_box(COLORS[&"destructive_pressed"], COLORS[&"primary"], 2, 3, [18, 10, 18, 10]))
-	set_stylebox(&"focus", variation, _focus_box())
+	set_stylebox(&"focus", variation, _button_focus_box())
 	if role == &"disabled":
 		set_stylebox(&"disabled", variation, _texture_box(OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), Color(0.42, 0.48, 0.55, 0.56)))
 	else:
@@ -133,7 +134,7 @@ func _build_locale_list() -> void:
 	set_color(&"font_hovered_color", variation, COLORS[&"body"])
 	set_color(&"font_selected_color", variation, COLORS[&"dark_ink"])
 	set_color(&"font_hovered_selected_color", variation, COLORS[&"dark_ink"])
-	set_stylebox(&"panel", variation, _flat_box(COLORS[&"secondary"], COLORS[&"boundary"], 1, 3, [12, 8, 12, 8]))
+	set_stylebox(&"panel", variation, _flat_box(COLORS[&"secondary"], COLORS[&"boundary"], 1, 3, [24, 24, 24, 24]))
 	set_stylebox(&"focus", variation, _focus_box())
 	set_stylebox(&"hovered", variation, _flat_box(COLORS[&"secondary_hover"], COLORS[&"selected"], 1, 3, [8, 4, 8, 4]))
 	set_stylebox(&"selected", variation, _flat_box(Color(COLORS[&"selected"], 0.84), COLORS[&"selected"], 2, 3, [8, 4, 8, 4]))
@@ -147,10 +148,10 @@ func _build_locale_list() -> void:
 
 func _build_panels() -> void:
 	_panel_texture(&"AuiReadingPanel", COMMAND_DECK_FRAME, Vector4(68, 52, 68, 52), 28)
-	_panel_texture(&"AuiHudPanel", NAVBAR_FRAME, Vector4(68, 34, 68, 34), 14)
-	_panel_texture(&"AuiCardPanel", OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), 16)
+	_panel_texture(&"AuiHudPanel", NAVBAR_FRAME, Vector4(68, 34, 68, 34), 24)
+	_panel_texture(&"AuiCardPanel", OPERATION_TILE_FRAME, Vector4(56, 28, 56, 28), 24)
 	_panel_texture(&"AuiModalPanel", COMMAND_DECK_FRAME, Vector4(68, 52, 68, 52), 28)
-	_panel_texture(&"AuiInspectorPanel", MISSION_CARD_FRAME, Vector4(62, 42, 62, 42), 18)
+	_panel_texture(&"AuiInspectorPanel", MISSION_CARD_FRAME, Vector4(62, 42, 62, 42), 24)
 	_panel_texture(&"AuiRewardPanel", MISSION_CARD_FRAME, Vector4(62, 42, 62, 42), 24)
 	set_type_variation(&"AuiFocusRing", &"PanelContainer")
 	set_stylebox(&"panel", &"AuiFocusRing", _focus_box(3))
@@ -219,6 +220,10 @@ func _focus_box(corner_radius := 3) -> StyleBoxFlat:
 	var style := _flat_box(Color.TRANSPARENT, COLORS[&"primary_hover"], 2, corner_radius, [0, 0, 0, 0])
 	style.set_expand_margin_all(3.0)
 	return style
+
+
+func _button_focus_box(corner_radius := 3) -> StyleBoxFlat:
+	return StagingSkinType.golden_focus_tint_style(corner_radius)
 
 
 func _flat_box(

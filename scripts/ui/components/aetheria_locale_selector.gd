@@ -5,8 +5,8 @@ signal locale_selected(locale_id: StringName)
 
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const COMPACT_LABEL_MIN_HEIGHT := 72.0
-const COMPACT_LIST_HEIGHT := 84.0
-const REGULAR_LIST_HEIGHT := 96.0
+const COMPACT_LIST_HEIGHT := 104.0
+const REGULAR_LIST_HEIGHT := 104.0
 const COLUMN_INSET := 28.0
 
 var _draft_mode := false

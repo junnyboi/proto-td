@@ -131,6 +131,15 @@ func _run() -> void:
 	_check(back.get_global_rect().position.x < pull.get_global_rect().position.x and pull.get_global_rect().position.x < history_button.get_global_rect().position.x, "footer controls are not ordered left, center, right")
 	_check(not _tree_text(browse_content).contains("MARKS"), "retired Marks copy remains in Premium Resonance")
 	_check(history_layer != null and history_drawer != null and history_close != null, "Moon Archive drawer did not mount")
+	if history_drawer != null:
+		var drawer_style := history_drawer.get_theme_stylebox(&"panel")
+		_check(
+			drawer_style.content_margin_left >= 24.0
+			and drawer_style.content_margin_top >= 24.0
+			and drawer_style.content_margin_right >= 24.0
+			and drawer_style.content_margin_bottom >= 24.0,
+			"Moon Archive custom frame padding is below 24px",
+		)
 	_check(not history_layer.visible and history_rows != null and history_empty != null, "Moon Archive did not initialize hidden")
 	_check(Art.size(&"ui_gacha_moon_archive") == Vector2i(512, 512), "GPT Image 2 Moon Archive glyph is absent")
 	_check(Art.size(&"ui_gacha_reserve_life") == Vector2i(512, 512), "GPT Image 2 reserve-life sigil is absent")

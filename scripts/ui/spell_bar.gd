@@ -21,6 +21,8 @@ const UI_COPY := preload("res://scripts/ui/components/ui_copy.gd")
 
 const FONT_SIZE := GameTypographyType.BODY
 const SLOT_SIZE := Vector2(168.0, 70.0)
+const COMPACT_SLOT_SIZE := Vector2(54.0, 50.0)
+const COMPACT_BREAKPOINT := 1000.0
 const SWEEP_HEIGHT := 6.0
 const COOLDOWN_COLOR := Color(0.96, 0.71, 0.2, 0.9)
 const DURATION_COLOR := Color(0.34, 0.87, 0.91, 0.95)
@@ -79,9 +81,11 @@ func _build_buttons() -> void:
 	_deck.mouse_filter = Control.MOUSE_FILTER_PASS
 	Style.apply_panel(_deck, &"hud")
 	add_child(_deck)
-	var box := HBoxContainer.new()
+	var box := GridContainer.new()
 	box.name = "SpellBox"
-	box.add_theme_constant_override("separation", 10)
+	box.columns = maxi(1, _allowed.size())
+	box.add_theme_constant_override("h_separation", 10)
+	box.add_theme_constant_override("v_separation", 10)
 	_deck.add_child(box)
 	for spell_id: StringName in model.spell_book.ids:
 		if not _allowed.has(spell_id):
@@ -91,6 +95,8 @@ func _build_buttons() -> void:
 		slot.name = "Spell_%s" % spell_id
 		slot.text = UI_COPY.spell_name(def)
 		slot.tooltip_text = _tooltip_for(def)
+		slot.accessibility_name = UI_COPY.spell_name(def)
+		slot.accessibility_description = slot.tooltip_text
 		slot.custom_minimum_size = SLOT_SIZE
 		slot.icon = Art.texture(StringName("icon_%s" % spell_id))
 		slot.expand_icon = true
@@ -147,8 +153,17 @@ func _make_status_label(label_name: String) -> Label:
 ## battle_view._relayout() after the grid recompute (P14 ordering).
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
-	var box := get_node_or_null("SpellBox") as HBoxContainer
+	var box := _deck.get_node_or_null("SpellBox") as GridContainer if _deck != null else null
 	if box != null:
+		var compact := size.x < COMPACT_BREAKPOINT
+		set_meta(&"compact_layout_active", compact)
+		box.columns = maxi(1, box.get_child_count()) if compact else maxi(1, box.get_child_count())
+		for spell_id: StringName in _buttons:
+			var slot := _buttons[spell_id] as Button
+			var definition := model.spell_book.def_of(spell_id)
+			slot.custom_minimum_size = COMPACT_SLOT_SIZE if compact else SLOT_SIZE
+			slot.text = "" if compact else UI_COPY.spell_name(definition)
+			slot.add_theme_constant_override(&"icon_max_width", 36 if compact else 42)
 		box.reset_size()
 	if _deck != null:
 		_deck.reset_size()
@@ -265,6 +280,7 @@ func _process(_delta: float) -> void:
 
 
 func _refresh_buttons() -> void:
+	var compact := size.x < COMPACT_BREAKPOINT
 	for spell_id: StringName in _buttons:
 		var slot: Button = _buttons[spell_id]
 		var tutorial_blocked := not _tutorial_spell.is_empty() and spell_id != _tutorial_spell
@@ -314,10 +330,46 @@ func _refresh_buttons() -> void:
 
 		duration_sweep.position = Vector2(0.0, slot.size.y - SWEEP_HEIGHT * 2.0)
 		cooldown_sweep.position = Vector2(0.0, slot.size.y - SWEEP_HEIGHT)
-		duration_label.position = Vector2(52.0, 4.0)
-		duration_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
-		cooldown_label.position = Vector2(52.0, slot.size.y - 32.0)
-		cooldown_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
+		cooldown_label.visible = true
+		if compact:
+			if duration_remaining > 0:
+				duration_label.text = "F%s" % _seconds_text(duration_remaining)
+			if cooldown_remaining > 0:
+				cooldown_label.text = "CD%s" % _seconds_text(cooldown_remaining)
+			duration_label.add_theme_font_size_override(&"font_size", 11)
+			cooldown_label.add_theme_font_size_override(&"font_size", 11)
+			duration_label.position = Vector2(2.0, 2.0)
+			duration_label.size = Vector2(maxf(0.0, slot.size.x - 4.0), 16.0)
+			cooldown_label.position = Vector2(2.0, slot.size.y - 22.0)
+			cooldown_label.size = Vector2(maxf(0.0, slot.size.x - 4.0), 16.0)
+		else:
+			duration_label.add_theme_font_size_override(&"font_size", 21)
+			cooldown_label.add_theme_font_size_override(&"font_size", 21)
+			duration_label.position = Vector2(52.0, 4.0)
+			duration_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
+			cooldown_label.position = Vector2(52.0, slot.size.y - 32.0)
+			cooldown_label.size = Vector2(maxf(0.0, slot.size.x - 60.0), 20.0)
+		var final_accessibility_status: PackedStringArray = []
+		if duration_remaining > 0:
+			final_accessibility_status.append(UI_COPY.format_text(
+				&"ui.spell.field_duration",
+				"FIELD {seconds}s",
+				{&"seconds": _seconds_text(duration_remaining)},
+			))
+		final_accessibility_status.append(
+			UI_COPY.format_text(
+				&"ui.spell.cooldown",
+				"CD {seconds}s",
+				{&"seconds": _seconds_text(cooldown_remaining)},
+			)
+			if cooldown_remaining > 0
+			else cooldown_label.text
+		)
+		var final_accessibility_copy := "%s  %s" % [
+			_tooltip_for(def), " | ".join(final_accessibility_status),
+		]
+		slot.tooltip_text = final_accessibility_copy
+		slot.accessibility_description = final_accessibility_copy
 
 
 func _tooltip_for(def: SpellDef) -> String:
@@ -340,6 +392,9 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		var definition := model.spell_book.def_of(spell_id)
 		slot.text = UI_COPY.spell_name(definition)
 		slot.tooltip_text = _tooltip_for(definition)
+		slot.accessibility_name = UI_COPY.spell_name(definition)
+		slot.accessibility_description = slot.tooltip_text
+	relayout()
 	_refresh_buttons()
 
 

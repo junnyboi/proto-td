@@ -15,8 +15,8 @@ const MOON_CYAN := Color("91eaf1")
 const IVORY := Color("f5efe1")
 const VOID := Color("071019")
 const FOCUS_PULSE_SECONDS := 2.8
-const FOCUS_PULSE_MIN_ALPHA := 0.12
-const FOCUS_PULSE_MAX_ALPHA := 0.30
+const FOCUS_PULSE_MIN_ALPHA := 0.10
+const FOCUS_PULSE_MAX_ALPHA := 0.16
 const TITLE_UI_SCALE := 1.15
 const TITLE_FONT_SCALE := 3.0
 const ENTRY_FADE_SECONDS := 0.56
@@ -133,14 +133,14 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
-	var pulse := 0.20
+	var pulse := StagingSkinType.FOCUS_TINT_ALPHA
 	if not _reduced_motion:
 		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
 		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
 	for button in _focus_pulse_styles:
 		var style: StyleBoxFlat = _focus_pulse_styles[button]
 		var accent: Color = _focus_pulse_colors[button]
-		style.border_color = Color(accent, 0.56 + pulse)
+		style.bg_color = Color(accent, pulse)
 		(button as Button).queue_redraw()
 
 
@@ -315,7 +315,7 @@ func _entry_button(node_name: String, primary: bool) -> Button:
 
 
 func _register_focus_pulse(button: Button, accent: Color) -> void:
-	var style := StagingSkinType.transparent_focus_style(accent)
+	var style := StagingSkinType.golden_focus_tint_style(TITLE_BUTTON_CORNER_RADIUS)
 	style.set_corner_radius_all(TITLE_BUTTON_CORNER_RADIUS)
 	button.add_theme_stylebox_override(&"focus", style)
 	_focus_pulse_styles[button] = style

@@ -25,7 +25,7 @@ const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
-const OPERATOR_CARD_MIN_WIDTH := 320.0
+const OPERATOR_CARD_MIN_WIDTH := 300.0
 const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_CARD_HEIGHT := 252.0
 const OPERATOR_CARD_TALL_HEIGHT := 330.0
@@ -232,10 +232,10 @@ func _build_body() -> GridContainer:
 	roster_panel.size_flags_stretch_ratio = 3.0
 	roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var roster_style := LunarisOpsType.panel_style(&"workspace")
-	roster_style.content_margin_left = 8.0
-	roster_style.content_margin_top = 8.0
-	roster_style.content_margin_right = 8.0
-	roster_style.content_margin_bottom = 8.0
+	roster_style.content_margin_left = 24.0
+	roster_style.content_margin_top = 24.0
+	roster_style.content_margin_right = 24.0
+	roster_style.content_margin_bottom = 24.0
 	roster_panel.add_theme_stylebox_override(&"panel", roster_style)
 	var roster_column := VBoxContainer.new()
 	roster_column.add_theme_constant_override(&"separation", 6)
@@ -400,10 +400,10 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	LunarisOpsType.apply_panel(panel, &"selected")
 	_recruitment_panel = panel
 	var panel_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
-	panel_style.content_margin_left = 10.0
-	panel_style.content_margin_right = 10.0
-	panel_style.content_margin_top = 12.0
-	panel_style.content_margin_bottom = 12.0
+	panel_style.content_margin_left = 24.0
+	panel_style.content_margin_right = 24.0
+	panel_style.content_margin_top = 24.0
+	panel_style.content_margin_bottom = 24.0
 	panel.add_theme_stylebox_override(&"panel", panel_style)
 	desk_row.add_child(panel)
 	var stack := VBoxContainer.new()
@@ -762,7 +762,11 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	card_label.offset_right = -12.0
 	card_label.offset_bottom = -12.0
 	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	card_label.clip_text = false
+	var narrow_card := _operator_card_width(_shell.layout_mode()) < 300.0
+	card_label.clip_text = narrow_card
+	card_label.text_overrun_behavior = (
+		TextServer.OVERRUN_TRIM_ELLIPSIS if narrow_card else TextServer.OVERRUN_NO_TRIMMING
+	)
 	card_label.add_theme_font_size_override(&"font_size", 24)
 	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -818,11 +822,12 @@ func _on_operator_feedback_changed(button: AetheriaButtonType) -> void:
 	if button == null or not is_instance_valid(button):
 		return
 	var highlighted := button.is_hovered() or button.has_focus()
+	var glow_visible := button.is_hovered()
 	var target := OPERATOR_SELECTED_SCALE if button.button_pressed else Vector2.ONE
 	if highlighted:
 		target = OPERATOR_HOVER_SCALE
 	button.z_index = 2 if highlighted else 1 if button.button_pressed else 0
-	_animate_operator_card_scale(button, target, OPERATOR_HOVER_SECONDS, highlighted)
+	_animate_operator_card_scale(button, target, OPERATOR_HOVER_SECONDS, glow_visible)
 
 
 func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> void:
@@ -839,7 +844,7 @@ func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> 
 			if selected
 			else Vector2.ONE
 		)
-		_set_operator_hover_glow(button, highlighted)
+		_set_operator_hover_glow(button, button.is_hovered())
 		return
 	var peak := OPERATOR_SELECTION_PEAK_SCALE if selected else Vector2(0.985, 0.985)
 	var resting := (
@@ -857,7 +862,7 @@ func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> 
 	if glow != null:
 		tween.parallel().tween_property(
 			glow, "self_modulate",
-			Color(1.0, 1.0, 1.0, 1.0 if highlighted else 0.0),
+			Color(1.0, 1.0, 1.0, 1.0 if button.is_hovered() else 0.0),
 			OPERATOR_SELECTION_OUT_SECONDS,
 		)
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -866,12 +871,12 @@ func _animate_operator_selection(button: AetheriaButtonType, selected: bool) -> 
 
 
 func _animate_operator_card_scale(
-		button: AetheriaButtonType, target: Vector2, duration: float, highlighted: bool,
+		button: AetheriaButtonType, target: Vector2, duration: float, glow_visible: bool,
 	) -> void:
 	_kill_operator_feedback_tween(button)
 	if _reduced_motion():
 		button.scale = target
-		_set_operator_hover_glow(button, highlighted)
+		_set_operator_hover_glow(button, glow_visible)
 		return
 	var tween := create_tween()
 	_operator_feedback_tweens[button.get_instance_id()] = tween
@@ -881,7 +886,7 @@ func _animate_operator_card_scale(
 	if glow != null:
 		tween.parallel().tween_property(
 			glow, "self_modulate",
-			Color(1.0, 1.0, 1.0, 1.0 if highlighted else 0.0), duration,
+			Color(1.0, 1.0, 1.0, 1.0 if glow_visible else 0.0), duration,
 		)
 	tween.finished.connect(_clear_operator_feedback_tween.bind(button.get_instance_id()))
 
@@ -1035,8 +1040,8 @@ func _operator_card_width(mode: StringName) -> float:
 func _operator_grid_available_width(mode: StringName) -> float:
 	var viewport_width := get_viewport_rect().size.x
 	if mode == &"portrait":
-		return minf(640.0, maxf(240.0, viewport_width - 96.0))
-	return maxf(OPERATOR_CARD_MIN_WIDTH, viewport_width * FIELD_TEAM_WIDTH_RATIO - 96.0)
+		return minf(640.0, maxf(240.0, viewport_width - 128.0))
+	return maxf(OPERATOR_CARD_MIN_WIDTH, viewport_width * FIELD_TEAM_WIDTH_RATIO - 128.0)
 
 
 func _recruitment_desk_width(mode: StringName) -> float:
@@ -1050,8 +1055,8 @@ func _recruitment_desk_width(mode: StringName) -> float:
 
 func _operator_info_split(mode: StringName) -> float:
 	if mode == &"portrait":
-		return 0.54
-	return 0.59 if _operator_card_width(mode) < 400.0 else OPERATOR_INFO_SPLIT
+		return 0.50 if _operator_card_width(mode) < 300.0 else 0.54
+	return 0.58 if _operator_card_width(mode) < 400.0 else OPERATOR_INFO_SPLIT
 
 
 func _operator_card_height(hero: Dictionary, mode: StringName) -> float:
@@ -1794,6 +1799,12 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 			if mode == &"portrait"
 			else HORIZONTAL_ALIGNMENT_RIGHT
 		)
+	if _sort_select != null:
+		_sort_select.custom_minimum_size.x = (
+			minf(300.0, maxf(220.0, get_viewport_rect().size.x - 128.0))
+			if mode == &"portrait"
+			else 300.0
+		)
 	if _body != null:
 		_body.columns = 1 if mode == &"portrait" else 2
 		_body.custom_minimum_size.y = 0.0
@@ -1822,7 +1833,14 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		if mode == &"portrait":
 			status_width_scale = minf(
 				FIELD_TEAM_STATUS_WIDTH_SCALE,
-				maxf(1.0, (get_viewport_rect().size.x - 96.0) / 176.0),
+				maxf(1.0, (get_viewport_rect().size.x - 128.0) / 176.0),
+			)
+		elif get_viewport_rect().size.x >= 1500.0:
+			var body_width := maxf(760.0, get_viewport_rect().size.x - 112.0)
+			var field_content_width := (body_width - 16.0) * FIELD_TEAM_WIDTH_RATIO - 48.0
+			status_width_scale = minf(
+				FIELD_TEAM_STATUS_WIDTH_SCALE,
+				maxf(1.0, (field_content_width - 16.0) / (176.0 * 3.0)),
 			)
 		_filter_bar.set_status_button_width_scale(status_width_scale)
 		_filter_bar.set_dense_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)

@@ -694,7 +694,7 @@ static func _relayout_dialog(dialog: Dictionary) -> void:
 	var short_height := viewport_size.y <= 560.0
 	var full_viewport := int(dialog.get(&"presentation", Presentation.SHEET)) == Presentation.FULL_VIEWPORT
 	var panel_style := Style.panel_style(&"screen" if full_viewport else &"dialog")
-	var panel_content_margin := 4.0 if short_height else 22.0
+	var panel_content_margin := Style.MIN_CONTENT_PANEL_INSET
 	panel_style.content_margin_left = panel_content_margin
 	panel_style.content_margin_top = panel_content_margin
 	panel_style.content_margin_right = panel_content_margin

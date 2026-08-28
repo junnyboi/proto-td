@@ -70,12 +70,12 @@ func _run() -> void:
 		var hud_style := hud.get_theme_stylebox(&"normal")
 		_check(hud.size.y >= 100.0, "battle HUD did not receive doubled container height")
 		_check(hud.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and hud.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "battle HUD text is not centered")
-		_check(hud_style.content_margin_left >= 48.0, "battle HUD lacks the requested 48px left padding")
+		_check(hud_style.content_margin_left >= 48.0 and hud_style.content_margin_top >= 24.0 and hud_style.content_margin_right >= 24.0 and hud_style.content_margin_bottom >= 24.0, "battle HUD violates the 24px custom-frame padding floor")
 	_check(deployment_deck != null and deployment_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "deployment deck is not textured")
 	_check(deployment_deck != null and owned_spell_deck != null and not deployment_deck.get_global_rect().intersects(owned_spell_deck.get_global_rect()), "landscape deployment deck overlaps the spell deck")
 	if deployment_deck != null:
 		var deployment_style := deployment_deck.get_theme_stylebox(&"panel")
-		_check(deployment_style.content_margin_left >= 16.0 and deployment_style.content_margin_top >= 16.0, "deployment deck padding is below 16px")
+		_check(deployment_style.content_margin_left >= 24.0 and deployment_style.content_margin_top >= 24.0 and deployment_style.content_margin_right >= 24.0 and deployment_style.content_margin_bottom >= 24.0, "deployment deck padding is below 24px")
 		_check(deployment_deck.size.x >= 1240.0, "landscape recruit selector did not expand to the available near-double width")
 	_check(deployment_scroll != null and deployment_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "deployment roster is not locally scrollable")
 	_check(deployment_scroll != null and deployment_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "deployment roster permits horizontal scrolling")
@@ -117,7 +117,7 @@ func _run() -> void:
 		_check(tutorial_rect.size.x >= 900.0 and tutorial_rect.size.y >= 400.0, "tutorial card did not receive the 3× width / 2× height treatment")
 		_check(absf(tutorial_rect.position.x - 24.0) <= 2.0, "tutorial card is not left-aligned to the 24px viewport margin")
 		_check(tutorial_style.content_margin_top == 48.0 and tutorial_style.content_margin_bottom == 48.0, "tutorial card lacks exact 48px vertical content padding")
-		_check(tutorial_style.content_margin_left == 12.0 and tutorial_style.content_margin_right == 12.0, "tutorial card lacks exact 12px horizontal content padding")
+		_check(tutorial_style.content_margin_left == 24.0 and tutorial_style.content_margin_right == 24.0, "tutorial card lacks exact 24px horizontal content padding")
 	_check(tutorial_title != null and tutorial_title.get_theme_font_size(&"font_size") == 54, "tutorial title did not receive the reduced 54px landscape typography")
 	_check(tutorial_body != null and tutorial_body.get_theme_font_size(&"font_size") == 38, "tutorial body did not receive the reduced 38px landscape typography")
 	_check(tutorial_body != null and tutorial_body.text == "Enemies start from the portal and follow the lit path to your base crystal. This mission allows 3 leaks, the 4th leak will end the mission.", "tutorial route copy does not match the approved wording")
@@ -194,9 +194,12 @@ func _run() -> void:
 			% [dialogue.size, dialogue.get_combined_minimum_size()],
 		)
 	_check(dialogue_header != null and dialogue_header.get_theme_constant(&"margin_bottom") == 12, "LIVE TRANSMISSION header lacks 12px bottom padding")
+	if dialogue != null:
+		var dialogue_style := dialogue.get_theme_stylebox(&"panel")
+		_check(dialogue_style.content_margin_left >= 24.0 and dialogue_style.content_margin_top >= 24.0 and dialogue_style.content_margin_right >= 24.0 and dialogue_style.content_margin_bottom >= 24.0, "live transmission custom frame padding is below 24px")
 	_check(dialogue_portrait_frame != null and dialogue_portrait_frame.visible, "mission-start speaker portrait frame is missing")
 	_check(dialogue_portrait != null and dialogue_portrait.texture != null, "mission-start speaker portrait texture is missing")
-	_check(dialogue_portrait != null and dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(112.0, 112.0)), "speaker portrait did not receive fixed readable geometry")
+	_check(dialogue_portrait != null and dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(88.0, 88.0)), "speaker portrait did not receive fixed readable geometry")
 	_check(dialogue_portrait_frame != null and StringName(dialogue_portrait_frame.get_meta(&"speaker_portrait_asset_id", &"")) == &"portrait_archive_caster", "Archive Caster transmission resolved the wrong portrait")
 	_check(dialogue_portrait != null and dialogue_speaker != null and dialogue_portrait.get_global_rect().end.x <= dialogue_speaker.get_global_rect().position.x + 1.0, "speaker portrait is not placed left of the character name and line")
 	_check(owned_spell_deck != null and dialogue != null and not owned_spell_deck.get_global_rect().intersects(dialogue.get_global_rect()), "right-side transmission overlaps the owned spell deck")
@@ -211,9 +214,20 @@ func _run() -> void:
 	_check(absf(dialogue.get_global_rect().position.y - controls_deck.get_global_rect().end.y - 64.0) <= 2.0, "narrow portrait transmission lost the 64px control gap")
 	_check(not dialogue.get_global_rect().intersects(deployment_deck.get_global_rect()), "narrow portrait transmission overlaps the deployment deck")
 	_check(not dialogue.get_global_rect().intersects(controls_deck.get_global_rect()), "narrow portrait transmission overlaps gameplay controls")
-	_check(dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(88.0, 88.0)), "narrow portrait did not compact the speaker visual")
+	_check(dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(72.0, 72.0)), "narrow portrait did not compact the speaker visual")
 	var responsive_pan_hint := battle.find_child("MapPanHint", true, false) as Control
 	_check(responsive_pan_hint == null or not responsive_pan_hint.visible, "portrait map-pan hint overlaps the live transmission")
+	var compact_spell_box := owned_spell_bar.find_child("SpellBox", true, false) as GridContainer
+	_check(compact_spell_box != null and compact_spell_box.get_child_count() >= 2, "compact Spell deck lacks representative controls")
+	if compact_spell_box != null:
+		for child: Node in compact_spell_box.get_children():
+			var compact_slot := child as Button
+			_check(compact_slot != null, "compact Spell deck contains a non-Button control")
+			if compact_slot == null:
+				continue
+			_check(compact_slot.custom_minimum_size.is_equal_approx(Vector2(54.0, 50.0)), "%s compact footprint changed" % compact_slot.name)
+			_check(compact_slot.text.is_empty() and compact_slot.icon != null, "%s is not icon-first in compact mode" % compact_slot.name)
+			_check(not compact_slot.accessibility_name.is_empty() and not compact_slot.accessibility_description.is_empty(), "%s compact accessibility is incomplete" % compact_slot.name)
 	root.size = SHORT
 	for _frame: int in range(3):
 		await process_frame
@@ -224,6 +238,10 @@ func _run() -> void:
 	for _frame: int in range(3):
 		await process_frame
 	_check(dialogue.visible, "suppressed short-landscape transmission did not restore on returning to a legal lane")
+	if compact_spell_box != null:
+		for child: Node in compact_spell_box.get_children():
+			var restored_slot := child as Button
+			_check(restored_slot != null and not restored_slot.text.is_empty(), "%s did not restore its visible name after leaving compact mode" % child.name)
 	speed.grab_focus()
 	await process_frame
 	controls.call("_input", _space_key_event())

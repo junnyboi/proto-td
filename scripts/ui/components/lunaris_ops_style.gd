@@ -17,6 +17,7 @@ const GOLD := Color("d9b96e")
 const GOLD_DIM := Color("79683f")
 const VIOLET := Color("66577f")
 const DANGER := Color("d16f78")
+const MIN_CONTENT_PANEL_INSET := 24.0
 
 
 static func add_backdrop(root: Control, texture: Texture2D = null) -> void:
@@ -43,23 +44,40 @@ static func apply_panel(panel: PanelContainer, role: StringName) -> void:
 	panel.add_theme_stylebox_override(&"panel", panel_style(role))
 
 
+static func ensure_content_panel_insets(
+	panel: PanelContainer,
+	minimum: float = MIN_CONTENT_PANEL_INSET,
+) -> void:
+	if panel == null:
+		return
+	var source := panel.get_theme_stylebox(&"panel")
+	if source == null or source is StyleBoxEmpty:
+		return
+	var style := source.duplicate() as StyleBox
+	style.content_margin_left = maxf(style.content_margin_left, minimum)
+	style.content_margin_top = maxf(style.content_margin_top, minimum)
+	style.content_margin_right = maxf(style.content_margin_right, minimum)
+	style.content_margin_bottom = maxf(style.content_margin_bottom, minimum)
+	panel.add_theme_stylebox_override(&"panel", style)
+
+
 static func panel_style(role: StringName) -> StyleBox:
 	if role == &"screen" or role == &"dialog":
-		return _texture_margin(StagingSkinType.command_deck_style(), 22.0)
+		return _texture_margin(StagingSkinType.command_deck_style(), MIN_CONTENT_PANEL_INSET)
 	if role == &"hud":
-		return _texture_margin(StagingSkinType.command_deck_style(), 10.0)
+		return _texture_margin(StagingSkinType.command_deck_style(), MIN_CONTENT_PANEL_INSET)
 	if role == &"workspace":
-		return _flat_panel(Color(0.035, 0.075, 0.12, 0.94), Color(CYAN.r, CYAN.g, CYAN.b, 0.34), 1, 20.0)
+		return _flat_panel(Color(0.035, 0.075, 0.12, 0.94), Color(CYAN.r, CYAN.g, CYAN.b, 0.34), 1, MIN_CONTENT_PANEL_INSET)
 	if role == &"result" or role == &"memorial":
 		var tint := Color.WHITE if role == &"result" else Color(0.88, 0.78, 0.90, 1.0)
-		return _texture_margin(StagingSkinType.mission_card_style(tint), 18.0)
+		return _texture_margin(StagingSkinType.mission_card_style(tint), MIN_CONTENT_PANEL_INSET)
 	if role == &"selected":
-		return _flat_panel(GLASS_SELECTED, CYAN, 2, 16.0)
+		return _flat_panel(GLASS_SELECTED, CYAN, 2, MIN_CONTENT_PANEL_INSET)
 	if role == &"quiet":
-		return _texture_margin(StagingSkinType.operation_tile_style(Color(0.86, 0.93, 1.0, 0.92)), 16.0)
+		return _texture_margin(StagingSkinType.operation_tile_style(Color(0.86, 0.93, 1.0, 0.92)), MIN_CONTENT_PANEL_INSET)
 	if role == &"danger":
-		return _flat_panel(Color(0.18, 0.06, 0.09, 0.94), DANGER, 2, 16.0)
-	return _flat_panel(GLASS, Color(GOLD.r, GOLD.g, GOLD.b, 0.46), 1, 18.0)
+		return _flat_panel(Color(0.18, 0.06, 0.09, 0.94), DANGER, 2, MIN_CONTENT_PANEL_INSET)
+	return _flat_panel(GLASS, Color(GOLD.r, GOLD.g, GOLD.b, 0.46), 1, MIN_CONTENT_PANEL_INSET)
 
 
 static func apply_button(button: Button, role: StringName) -> void:
@@ -102,7 +120,7 @@ static func apply_button(button: Button, role: StringName) -> void:
 	button.add_theme_stylebox_override(&"normal", normal)
 	button.add_theme_stylebox_override(&"hover", hover)
 	button.add_theme_stylebox_override(&"pressed", pressed)
-	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(CYAN))
+	button.add_theme_stylebox_override(&"focus", StagingSkinType.golden_focus_tint_style())
 	button.add_theme_stylebox_override(&"disabled", disabled)
 	StagingSkinType.apply_display_type(button, 27, ink, 560)
 	var presentation := button.get_node_or_null("PresentationLabel") as Label
@@ -169,7 +187,9 @@ static func apply_compact_rounded_button(
 	button.add_theme_stylebox_override(&"normal", normal)
 	button.add_theme_stylebox_override(&"hover", hover)
 	button.add_theme_stylebox_override(&"pressed", pressed)
-	button.add_theme_stylebox_override(&"focus", StagingSkinType.transparent_focus_style(CYAN))
+	button.add_theme_stylebox_override(
+		&"focus", StagingSkinType.golden_focus_tint_style(corner_radius),
+	)
 	button.add_theme_stylebox_override(&"disabled", disabled)
 	StagingSkinType.apply_display_type(button, GameTypographyType.ACTION, ink, 560)
 	for item: StringName in [

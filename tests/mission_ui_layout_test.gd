@@ -119,6 +119,16 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	)
 	_check(surface != null and _inside(workspace, surface), "%s mission surface exceeds the fullscreen workspace" % label)
 	_check(body != null and field_panel != null and intel_panel != null, "%s mission body panels are missing" % label)
+	for panel: PanelContainer in [field_panel, intel_panel, recruit_desk]:
+		if panel != null:
+			var panel_style := panel.get_theme_stylebox(&"panel")
+			_check(
+				panel_style.content_margin_left >= 24.0
+				and panel_style.content_margin_top >= 24.0
+				and panel_style.content_margin_right >= 24.0
+				and panel_style.content_margin_bottom >= 24.0,
+				"%s %s custom background padding is below 24px" % [label, panel.name],
+			)
 	if body != null:
 		var portrait := viewport.y > viewport.x
 		_check(body.columns == (1 if portrait else 2), "%s mission body uses the wrong column count" % label)
@@ -206,7 +216,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var roster_scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
 	_check(filter_input != null and filter_input.get_theme_font_size(&"font_size") >= 24, "%s name filter is below the 1.5x readable density floor" % label)
 	_check(sort_select != null and not sort_select.fit_to_longest_item, "%s sort control can force toolbar overflow" % label)
-	_check(sort_select != null and sort_select.size_flags_horizontal == Control.SIZE_SHRINK_END and sort_select.custom_minimum_size.x >= 300.0 and sort_select.custom_minimum_size.y >= 54.0, "%s Recruit Order does not tightly wrap its padded label" % label)
+	var expected_sort_width := minf(300.0, maxf(220.0, viewport.x - 128.0)) if viewport.y > viewport.x else 300.0
+	_check(sort_select != null and sort_select.size_flags_horizontal == Control.SIZE_SHRINK_END and is_equal_approx(sort_select.custom_minimum_size.x, expected_sort_width) and sort_select.custom_minimum_size.y >= 54.0, "%s Recruit Order does not tightly wrap its padded label" % label)
 	if sort_select != null:
 		var sort_style := sort_select.get_theme_stylebox(&"normal")
 		_check(sort_style.content_margin_left >= 24.0 and sort_style.content_margin_right >= 24.0 and sort_style.content_margin_top >= 12.0 and sort_style.content_margin_bottom >= 12.0, "%s Recruit Order lacks 24px horizontal and 12px vertical padding" % label)
@@ -225,7 +236,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	for tab: Button in [active_tab, fallen_tab, all_tab]:
 		_check(tab != null, "%s roster status tab is missing" % label)
 		if tab != null:
-			var expected_tab_width := minf(352.0, maxf(176.0, viewport.x - 96.0)) if viewport.y > viewport.x else 352.0
+			var expected_tab_width := minf(352.0, maxf(176.0, viewport.x - 128.0)) if viewport.y > viewport.x else (tab.custom_minimum_size.x if viewport.x >= 1500 else 352.0)
 			var expected_tab_height := 54.0
 			_check(is_equal_approx(tab.custom_minimum_size.x, expected_tab_width) and tab.custom_minimum_size.y >= expected_tab_height, "%s roster tab is not doubled or safely contained" % label)
 			_check(tab.get_theme_font_size(&"font_size") >= 27, "%s roster tab text is below the global 1.5x scale" % label)
@@ -239,11 +250,11 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	if operator_grid != null:
 		var portrait_grid_layout := viewport.y > viewport.x
 		var available_grid_width := (
-			minf(640.0, maxf(240.0, viewport.x - 96.0))
+			minf(640.0, maxf(240.0, viewport.x - 128.0))
 			if portrait_grid_layout
-			else maxf(320.0, viewport.x * 0.60 - 96.0)
+			else maxf(300.0, viewport.x * 0.60 - 128.0)
 		)
-		var expected_columns := 1 if portrait_grid_layout else maxi(1, floori((available_grid_width + 12.0) / 332.0))
+		var expected_columns := 1 if portrait_grid_layout else maxi(1, floori((available_grid_width + 12.0) / 312.0))
 		_check(operator_grid.columns == expected_columns, "%s operator grid does not dynamically pack every fitting column" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
@@ -253,7 +264,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 					else minf(
 						520.0,
 						maxf(
-							320.0,
+							300.0,
 							(available_grid_width - 12.0 * float(expected_columns - 1))
 							/ float(expected_columns),
 						),

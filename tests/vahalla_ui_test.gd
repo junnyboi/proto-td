@@ -130,8 +130,11 @@ func _run() -> void:
 	if roster_panel != null and dossier_panel != null:
 		var roster_style := roster_panel.get_theme_stylebox(&"panel")
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
-		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
-		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+		_check(roster_style.content_margin_left >= 24.0 and roster_style.content_margin_top >= 24.0 and roster_style.content_margin_right >= 24.0 and roster_style.content_margin_bottom >= 24.0, "Vahalla roster custom frame padding is below 24px")
+		_check(dossier_style.content_margin_left >= 24.0 and dossier_style.content_margin_top >= 24.0 and dossier_style.content_margin_right >= 24.0 and dossier_style.content_margin_bottom >= 24.0, "Vahalla dossier custom frame padding is below 24px")
+	if ledger != null:
+		var ledger_style := ledger.get_theme_stylebox(&"panel")
+		_check(ledger_style.content_margin_left >= 24.0 and ledger_style.content_margin_top >= 24.0 and ledger_style.content_margin_right >= 24.0 and ledger_style.content_margin_bottom >= 24.0, "Vahalla service ledger custom frame padding is below 24px")
 	var text_scale_autoload := root.get_node("TextScale")
 	text_scale_autoload.call("set_scale", 1.5)
 	memorial.call("_apply_responsive_layout")

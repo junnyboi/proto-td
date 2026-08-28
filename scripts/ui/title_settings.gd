@@ -592,7 +592,7 @@ func _apply_responsive_layout() -> void:
 	var vertical_gutter := clampi(roundi(viewport.y * 0.028), 10 if short else 12, 32)
 	_set_margins(_safe_frame, horizontal_gutter, vertical_gutter)
 	var frame_style := StagingSkinType.command_deck_style()
-	var frame_content_margin := 4.0 if narrow or short else 28.0
+	var frame_content_margin := 24.0 if narrow or short else 28.0
 	frame_style.content_margin_left = frame_content_margin
 	frame_style.content_margin_top = frame_content_margin
 	frame_style.content_margin_right = frame_content_margin
@@ -600,7 +600,7 @@ func _apply_responsive_layout() -> void:
 	_command_frame.add_theme_stylebox_override(&"panel", frame_style)
 	var padding := 0 if narrow or short else 22
 	_set_margins(_frame_padding, padding, padding)
-	_set_margins(_body_margin, 10 if narrow else 18, 10 if narrow else 14)
+	_set_margins(_body_margin, 0 if narrow or short else 18, 0 if narrow or short else 14)
 	_state_layout.add_theme_constant_override(&"separation", 6 if short else 12)
 	_header.add_theme_constant_override(&"separation", 6 if narrow else 14)
 	_header_seal.visible = not narrow
@@ -616,13 +616,14 @@ func _apply_responsive_layout() -> void:
 		var section := _columns.get_node_or_null(section_name) as PanelContainer
 		if section != null:
 			var section_style := section.get_theme_stylebox(&"panel").duplicate() as StyleBox
-			section_style.content_margin_left = 18.0
-			section_style.content_margin_top = 14.0
-			section_style.content_margin_right = 18.0
+			section_style.content_margin_left = 24.0
+			section_style.content_margin_top = 24.0
+			section_style.content_margin_right = 24.0
+			section_style.content_margin_bottom = 24.0
 			section.add_theme_stylebox_override(&"panel", section_style)
 			var section_margin := section.get_node_or_null("SectionMargin") as MarginContainer
 			if section_margin != null:
-				_set_margins(section_margin, 14 if narrow else 26, 12 if narrow else 22)
+				_set_margins(section_margin, 0, 0)
 	_frame_option.custom_minimum_size.x = 0.0 if narrow or portrait else 180.0
 	if narrow:
 		for index: int in _frame_option.item_count:
@@ -630,7 +631,10 @@ func _apply_responsive_layout() -> void:
 	else:
 		_refresh_frame_items()
 	_action_dock.columns = 1
-	var available_apply_width := maxf(180.0, viewport.x - float(horizontal_gutter * 2 + padding * 2 + 24))
+	var available_apply_width := maxf(
+		180.0,
+		viewport.x - float(horizontal_gutter * 2 + padding * 2) - frame_content_margin * 2.0,
+	)
 	var apply_width := minf(_title_size(APPLY_BUTTON_WIDTH), available_apply_width)
 	_action_dock.custom_minimum_size.x = apply_width
 	_action_dock.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -671,7 +675,7 @@ func _apply_responsive_layout() -> void:
 		slider.custom_minimum_size.y = 48.0
 	_title_label.add_theme_font_size_override(
 		&"font_size",
-		_scaled_base_for_cap(_title_font_size(12 if narrow else (30 if portrait else 36)), 1.0),
+		_scaled_base_for_cap(_title_font_size(9 if narrow else (30 if portrait else 36)), 1.0),
 	)
 	var locale_heading := UiCopyType.text(&"ui.locale.label", "Language").to_upper()
 	_locale_label.text = locale_heading

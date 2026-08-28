@@ -295,7 +295,7 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	if cleared:
 		_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 	else:
-		_ensure_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
+		_ensure_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 24.0)
 	_body_grid.add_child(_consequence_panel)
 	var consequence_scroll := ScrollContainer.new()
 	consequence_scroll.name = "ConsequenceScroll"
@@ -470,7 +470,7 @@ func _apply_responsive_layout() -> void:
 			if _cleared_result:
 				_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
 			else:
-				_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 20.0)
+				_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 24.0)
 	if _headline != null:
 		var headline_size := 38 if large_text else ((38 if _cleared_result else 45) if mode == &"portrait" else 60)
 		_headline.add_theme_font_size_override(&"font_size", headline_size)
@@ -585,7 +585,7 @@ func _transmission_card(record: StageNarrativeDefType) -> PanelContainer:
 	card.name = "ClearTransmission"
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(card, &"selected")
-	_ensure_panel_padding(card, 22.0, 18.0, 22.0, 18.0)
+	_ensure_panel_padding(card, 24.0)
 	var stack := VBoxContainer.new()
 	stack.name = "TransmissionContent"
 	stack.add_theme_constant_override(&"separation", 5)
@@ -633,7 +633,7 @@ func _result_card(
 	else:
 		var panel := PanelContainer.new()
 		Style.apply_panel(panel, &"danger" if danger else &"quiet")
-		_ensure_panel_padding(panel, 20.0, 16.0, 20.0, 16.0)
+		_ensure_panel_padding(panel, 24.0)
 		card = panel
 	card.name = node_name
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1010,10 +1010,10 @@ func _apply_portrait_information_panel(panel: PanelContainer) -> void:
 	style.border_color = Color(Style.GOLD, 0.28)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(3)
-	style.content_margin_left = 12.0
-	style.content_margin_top = 8.0
-	style.content_margin_right = 12.0
-	style.content_margin_bottom = 8.0
+	style.content_margin_left = 24.0
+	style.content_margin_top = 24.0
+	style.content_margin_right = 24.0
+	style.content_margin_bottom = 24.0
 	panel.add_theme_stylebox_override(&"panel", style)
 
 

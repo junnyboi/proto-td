@@ -24,11 +24,12 @@ const HealingRulesScript := preload("res://sim/healing_rules.gd")
 const SELECTION_RING_SCRIPT := preload("res://scripts/view/selection_ring.gd")
 const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 
 const FONT_SIZE := GameTypographyType.DETAIL
 const BAR_HEIGHT := 124.0
 const SAFE_MARGIN := 16.0
-const DECK_PADDING := 16.0
+const DECK_PADDING := 24.0
 const SLOT_GAP := 12.0
 const SLOT_TARGET_WIDTH := 220.0
 const SLOT_TARGET_HEIGHT := 76.0
@@ -626,13 +627,9 @@ func _apply_facing_button_styles(button: Button) -> void:
 	var transparent := StyleBoxEmpty.new()
 	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
 		button.add_theme_stylebox_override(state, transparent)
-	var focus := StyleBoxFlat.new()
-	focus.bg_color = Color.TRANSPARENT
-	focus.border_color = Color(0.95, 0.78, 0.32, 0.96)
-	focus.set_border_width_all(2)
-	focus.set_corner_radius_all(10)
-	focus.set_expand_margin_all(2.0)
-	button.add_theme_stylebox_override(&"focus", focus)
+	button.add_theme_stylebox_override(
+		&"focus", StagingSkinType.golden_focus_tint_style(10),
+	)
 
 
 ## Footprints are origin-centered face diamonds (P12.2) sized by the live
@@ -780,7 +777,7 @@ func _refresh_facing_icon(facing: UnitState.Facing) -> void:
 	var icon := _facing_icons.get(facing) as TextureRect
 	if button == null or icon == null:
 		return
-	var use_blue := int(facing) == _facing_emphasis or button.is_hovered() or button.has_focus()
+	var use_blue := int(facing) == _facing_emphasis or button.is_hovered()
 	var textures := FACING_ARROW_TEXTURES[facing] as Dictionary
 	icon.texture = textures["blue" if use_blue else "gold"] as Texture2D
 

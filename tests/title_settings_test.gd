@@ -57,6 +57,30 @@ func _verify_transition_contract(game: Node) -> void:
 	_check(not locale.has_focus(), "Settings focus moved before normal entry settled")
 	await _wait_for_transition(state, &"ACTIVE")
 	_check(locale.has_focus(), "normal entry completion did not establish initial focus")
+	var command_frame := state.find_child("CommandFrame", true, false) as PanelContainer
+	var language_section := state.find_child("LanguageAudioSection", true, false) as PanelContainer
+	var graphics_section := state.find_child("GraphicsAccessibilitySection", true, false) as PanelContainer
+	_check_frame_padding(command_frame, "regular Settings")
+	_check_frame_padding(language_section, "regular Language/Audio section")
+	_check_frame_padding(graphics_section, "regular Graphics/Accessibility section")
+	_check_style_padding(locale.get_theme_stylebox(&"panel"), "regular locale list")
+	root.size = Vector2i(960, 420)
+	await process_frame
+	await process_frame
+	_check_frame_padding(command_frame, "short Settings")
+	_check_frame_padding(language_section, "short Language/Audio section")
+	_check_frame_padding(graphics_section, "short Graphics/Accessibility section")
+	_check_style_padding(locale.get_theme_stylebox(&"panel"), "short locale list")
+	root.size = Vector2i(390, 844)
+	await process_frame
+	await process_frame
+	_check_frame_padding(command_frame, "narrow Settings")
+	_check_frame_padding(language_section, "narrow Language/Audio section")
+	_check_frame_padding(graphics_section, "narrow Graphics/Accessibility section")
+	_check_style_padding(locale.get_theme_stylebox(&"panel"), "narrow locale list")
+	root.size = Vector2i(1280, 720)
+	await process_frame
+	await process_frame
 	title.call("_close_settings")
 	_check(StringName(state.call("transition_state_name")) == &"EXITING", "normal close did not expose EXITING")
 	_check(not settings_button.is_visible_in_tree() and not settings_button.has_focus(), "Title returned during Settings exit")
@@ -271,6 +295,26 @@ func _cleanup(game: Node, music: Node, sfx: Node) -> void:
 
 func _near(actual: float, expected: float) -> bool:
 	return absf(actual - expected) <= EPSILON
+
+
+func _check_frame_padding(panel: PanelContainer, context: String) -> void:
+	_check(panel != null, "%s frame is missing" % context)
+	if panel == null:
+		return
+	_check_style_padding(panel.get_theme_stylebox(&"panel"), context)
+
+
+func _check_style_padding(style: StyleBox, context: String) -> void:
+	_check(style != null, "%s style is missing" % context)
+	if style == null:
+		return
+	_check(
+		style.content_margin_left >= 24.0
+		and style.content_margin_top >= 24.0
+		and style.content_margin_right >= 24.0
+		and style.content_margin_bottom >= 24.0,
+		"%s custom frame padding is below 24px" % context,
+	)
 
 
 func _remove(path: String) -> void:

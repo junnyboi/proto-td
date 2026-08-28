@@ -44,8 +44,8 @@ const DEEP_NAVY := Color("0a1724")
 const GLASS := Color(0.012, 0.03, 0.048, 0.94)
 const CARD_GLASS := Color(0.018, 0.043, 0.065, 0.95)
 const FOCUS_PULSE_SECONDS := 2.8
-const FOCUS_PULSE_MIN_ALPHA := 0.12
-const FOCUS_PULSE_MAX_ALPHA := 0.28
+const FOCUS_PULSE_MIN_ALPHA := 0.10
+const FOCUS_PULSE_MAX_ALPHA := 0.16
 const TOP_HUD_HEIGHT := 156.0
 const LANDSCAPE_GUTTER := 24.0
 const LANDSCAPE_BOTTOM_GUTTER := 16.0
@@ -149,13 +149,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
-	var pulse := 0.20
+	var pulse := StagingSkinType.FOCUS_TINT_ALPHA
 	if not _reduced_motion:
 		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
 		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
 	for button in _focus_pulse_styles:
 		var style: StyleBoxFlat = _focus_pulse_styles[button]
-		style.border_color = Color(GOLD, 0.56 + pulse)
+		style.bg_color = Color(GOLD, pulse)
 		(button as Button).queue_redraw()
 
 
@@ -812,7 +812,8 @@ func _update_mission_plate_state() -> void:
 
 
 func _register_focus_pulse(button: Button, accent: Color) -> void:
-	var style := StagingSkinType.transparent_focus_style(accent)
+	var style := StagingSkinType.golden_focus_tint_style()
+	style.bg_color = Color(accent, StagingSkinType.FOCUS_TINT_ALPHA)
 	button.add_theme_stylebox_override(&"focus", style)
 	_focus_pulse_styles[button] = style
 
@@ -824,10 +825,10 @@ func _build_acknowledgement() -> PanelContainer:
 		Color(MOON_CYAN, 0.08), Color(MOON_CYAN, 0.46), 1, 3,
 	))
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override(&"margin_left", 12)
-	margin.add_theme_constant_override(&"margin_top", 8)
-	margin.add_theme_constant_override(&"margin_right", 12)
-	margin.add_theme_constant_override(&"margin_bottom", 8)
+	margin.add_theme_constant_override(&"margin_left", 24)
+	margin.add_theme_constant_override(&"margin_top", 24)
+	margin.add_theme_constant_override(&"margin_right", 24)
+	margin.add_theme_constant_override(&"margin_bottom", 24)
 	panel.add_child(margin)
 	margin.add_child(_label(
 		"TrainingAcknowledgementText", _training_acknowledgement_text(),
