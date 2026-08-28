@@ -165,6 +165,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(hire_button.custom_minimum_size.y >= 72.0, "%s recruit action cannot contain 12px vertical padding" % label)
 		_check(hire_button.icon == null and hire_cost_icon != null and hire_cost_icon.texture != null, "%s recruit action lacks its explicit shard sprite" % label)
 		_check(hire_action_label != null and hire_action_label.text == "HIRE RECRUIT", "%s recruit action contains copy other than HIRE RECRUIT" % label)
+		_check(hire_action_label != null and intel_heading != null and hire_action_label.get_theme_font_size(&"font_size") == intel_heading.get_theme_font_size(&"font_size"), "%s HIRE RECRUIT does not match Mission Intelligence heading size" % label)
 		_check(hire_cost_label != null and hire_cost_label.text == "5" and hire_action_label.get_index() + 1 == hire_cost_icon.get_index() and hire_cost_icon.get_index() + 1 == hire_cost_label.get_index(), "%s recruit label, shard sprite, and exact cost are not in the requested order" % label)
 		_check(hire_tooltip_hotspot != null and not hire_tooltip_hotspot.visible and hire_tooltip_hotspot.mouse_filter == Control.MOUSE_FILTER_IGNORE, "%s enabled Hire Recruit tooltip carrier intercepts input" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)

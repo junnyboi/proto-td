@@ -450,7 +450,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_action_label = Label.new()
 	_hire_action_label.name = "BasicRecruitActionLabel"
 	_hire_action_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hire_action_label.add_theme_font_size_override(&"font_size", 24)
+	_hire_action_label.add_theme_font_size_override(&"font_size", 33)
 	_hire_action_label.add_theme_color_override(&"font_color", LunarisOpsType.IVORY)
 	_hire_action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hire_content.add_child(_hire_action_label)
