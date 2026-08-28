@@ -1,5 +1,7 @@
 extends SceneTree
 
+const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
+const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
 const HOVER_SCALE := Vector2(1.022, 1.022)
 const FOCUS_SCALE := Vector2(1.012, 1.012)
 const HOVER_TINT := Color("fff8df")
@@ -42,6 +44,7 @@ func _run() -> void:
 	await _verify_profile_and_motion(sfx)
 	await _verify_hover_audio(sfx)
 	await _verify_authoritative_click(game, sfx, feedback)
+	await _verify_insufficient_balance(game)
 	_dispose(game, sfx)
 	_finish()
 
@@ -139,6 +142,40 @@ func _verify_authoritative_click(game: Node, sfx: Node, feedback: Node) -> void:
 	_check(int(sfx.call("audible_start_count")) == click_starts_before + 1, "Hire Recruit starts exactly one click voice")
 	_check(int(feedback.call("click_play_count")) == click_count_before + 1, "UiFeedback remains the sole Hire Recruit click owner")
 	_check(sfx.call("last_resolved_id") == &"ui_click", "Hire Recruit click resolves to ui_click")
+
+
+func _verify_insufficient_balance(game: Node) -> void:
+	if _mission != null and is_instance_valid(_mission):
+		_mission.queue_free()
+		await process_frame
+	var context: Dictionary = RuntimeContext.build().duplicate(true)
+	context["campaign"]["initial_marks"] = 4
+	var created: Dictionary = CampaignStateV3.create(404, 1, context)
+	_check(bool(created.get("accepted", false)), "low-balance Field Team fixture starts")
+	if not bool(created.get("accepted", false)):
+		return
+	game.set("campaign", created["value"])
+	game.set("campaign_active", true)
+	game.set("selected_stage_id", &"s1")
+	_mission = load("res://scenes/squad_select.tscn").instantiate() as Control
+	root.add_child(_mission)
+	for _frame: int in range(4):
+		await process_frame
+	_hire = _mission.find_child("HireBasicRecruit", true, false) as Button
+	var action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
+	var cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
+	var cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
+	_check(_hire != null and _hire.disabled, "insufficient balance does not gray out Hire Recruit")
+	_check(_hire != null and _hire.focus_mode == Control.FOCUS_NONE, "disabled Hire Recruit remains keyboard focusable")
+	_check(action_label != null and action_label.text == "HIRE RECRUIT", "disabled Hire Recruit changed its simplified label")
+	_check(cost_icon != null and cost_label != null and cost_label.text == "5", "disabled Hire Recruit lost its gem price")
+	_check(cost_icon != null and not cost_icon.self_modulate.is_equal_approx(Color.WHITE), "insufficient balance does not dim the gem icon")
+	_check(_mission.find_child("BasicRecruitStatus", true, false) == null, "insufficient balance still creates visible status copy")
+	var before: Dictionary = game.call("campaign_projection")
+	if _hire != null:
+		_hire.pressed.emit()
+	await process_frame
+	_check(game.call("campaign_projection") == before, "disabled Hire Recruit accepted a click or changed campaign state")
 
 
 func _dispose(game: Node, sfx: Node) -> void:

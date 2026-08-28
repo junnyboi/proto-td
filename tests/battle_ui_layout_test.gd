@@ -101,6 +101,8 @@ func _run() -> void:
 			"battle command deck lacks the requested 24px padding on every side",
 		)
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
+	_check(speed.tooltip_text.contains("Q: LOWER SPEED") and speed.tooltip_text.contains("E: RAISE SPEED"), "speed control does not disclose Q/E shortcuts")
+	_check(speed.accessibility_description == speed.tooltip_text, "speed shortcut help is not exposed to assistive technology")
 	for button: Button in [pause, speed, resign]:
 		var button_style := button.get_theme_stylebox(&"normal") as StyleBoxFlat
 		_check(button.custom_minimum_size.is_equal_approx(Vector2(112.0, 64.0)), "%s did not receive the compact 112×64 target" % button.name)
@@ -139,6 +141,7 @@ func _run() -> void:
 	_check(tutorial_primary.text == "下一步", "Chinese tutorial route action was not renamed to 下一步")
 	_check(hud.text.contains("核心") and hud.text.contains("歼灭"), "battle HUD did not refresh to Chinese")
 	_check(pause.text == "暂停" and resign.text == "撤出行动", "battle commands did not refresh to distinct Chinese actions")
+	_check(speed.tooltip_text.contains("Q：降低速度") and speed.tooltip_text.contains("E：提高速度"), "Chinese speed shortcut help did not refresh")
 	if slot_box != null:
 		for child: Node in slot_box.get_children():
 			var slot := child as Button
@@ -249,6 +252,22 @@ func _run() -> void:
 	_check(speed.has_focus(), "Space pause changed the focused battle command")
 	controls.call("_input", _space_key_event())
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Space did not resume the prior battle speed")
+	controls.call("_input", _key_event(KEY_Q))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Q did not reduce 1× to paused")
+	controls.call("_input", _key_event(KEY_Q))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "Q reduced speed below paused")
+	controls.call("_input", _key_event(KEY_E))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "E did not increase paused to 1×")
+	controls.call("_input", _key_event(KEY_E))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "E did not increase 1× to 2×")
+	controls.call("_input", _key_event(KEY_E))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 4.0), "E did not increase 2× to 4×")
+	controls.call("_input", _key_event(KEY_E))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 4.0), "E increased speed above the 4× maximum")
+	controls.call("_input", _key_event(KEY_Q))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "Q did not reduce 4× to 2×")
+	controls.call("_input", _key_event(KEY_Q))
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 1.0), "Q did not reduce 2× to 1×")
 
 	controls.call("_on_speed_pressed")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "speed selector did not cycle 1× → 2×")
@@ -274,6 +293,12 @@ func _run() -> void:
 	var exact_scale := 2.375
 	battle.set("ticks_per_frame_scale", exact_scale)
 	controls.call("_process", 0.0)
+	_check(bool(controls.call("_step_speed", -1)), "Q-step rejected a nonstandard running speed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 2.0), "Q did not floor a nonstandard running speed to 2×")
+	battle.set("ticks_per_frame_scale", exact_scale)
+	_check(bool(controls.call("_step_speed", 1)), "E-step rejected a nonstandard running speed")
+	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 4.0), "E did not ceil a nonstandard running speed to 4×")
+	battle.set("ticks_per_frame_scale", exact_scale)
 	_check(StringName(controls.call("confirmation_state_name")) == &"closed", "initial confirmation state is not CLOSED")
 	_check(bool(controls.call("request_resign_confirmation")), "resign confirmation did not open")
 	_check(StringName(controls.call("confirmation_state_name")) == &"entering", "confirmation did not publish ENTERING immediately")
@@ -304,6 +329,7 @@ func _run() -> void:
 	battle.call("_unhandled_input", blocked_wheel)
 	controls.call("_on_pause_pressed")
 	controls.call("_on_speed_pressed")
+	controls.call("_input", _key_event(KEY_E))
 	deploy_bar.call("_start_placement", StringName(deploy_bar.call("first_deployment_id")))
 	_check((battle.call("map_pan") as Vector2).is_equal_approx(blocked_pan), "confirmation allowed map wheel input")
 	_check(is_equal_approx(float(battle.get("ticks_per_frame_scale")), 0.0), "confirmation allowed pause/speed input")
@@ -483,8 +509,12 @@ func _action_event(action: StringName) -> InputEventAction:
 
 
 func _space_key_event() -> InputEventKey:
+	return _key_event(KEY_SPACE)
+
+
+func _key_event(key: Key) -> InputEventKey:
 	var event := InputEventKey.new()
-	event.physical_keycode = KEY_SPACE
+	event.physical_keycode = key
 	event.pressed = true
 	return event
 
