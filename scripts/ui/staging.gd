@@ -849,24 +849,24 @@ func _build_mission_details() -> PanelContainer:
 
 	_mission_details_grid = GridContainer.new()
 	_mission_details_grid.name = "MissionMetadataGrid"
-	_mission_details_grid.columns = 2
+	_mission_details_grid.columns = 1
 	_mission_details_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mission_details_grid.add_theme_constant_override(&"h_separation", 20)
 	_mission_details_grid.add_theme_constant_override(&"v_separation", 6)
 	stack.add_child(_mission_details_grid)
 
 	_mission_difficulty = _label(
-		"MissionDifficulty", _next_operation_difficulty_text(), 16, GOLD,
+		"MissionDifficulty", _next_operation_difficulty_text(), 24, GOLD,
 	)
 	_mission_difficulty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	StagingSkinType.apply_display_type(_mission_difficulty, 16, GOLD, 580)
+	StagingSkinType.apply_display_type(_mission_difficulty, 24, GOLD, 580)
 	_mission_details_grid.add_child(_mission_difficulty)
 
 	_mission_reward = _label(
-		"MissionReward", _next_operation_reward_text(), 16, GOLD,
+		"MissionReward", _next_operation_reward_text(), 24, GOLD,
 	)
 	_mission_reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	StagingSkinType.apply_display_type(_mission_reward, 16, GOLD, 580)
+	StagingSkinType.apply_display_type(_mission_reward, 24, GOLD, 580)
 	_mission_details_grid.add_child(_mission_reward)
 
 	_mission_threat = _label(
@@ -877,10 +877,10 @@ func _build_mission_details() -> PanelContainer:
 	stack.add_child(_mission_threat)
 
 	_mission_facts = _label(
-		"MissionFacts", _next_operation_facts_text(), 15, MUTED,
+		"MissionFacts", _next_operation_facts_text(), 23, MUTED,
 	)
 	_mission_facts.max_lines_visible = -1
-	StagingSkinType.apply_display_type(_mission_facts, 15, MUTED, 520)
+	StagingSkinType.apply_display_type(_mission_facts, 23, MUTED, 520)
 	_mission_facts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mission_details_grid.add_child(_mission_facts)
 	_mission_details_panel.visible = _next_stage != null
@@ -1320,7 +1320,7 @@ func _apply_responsive_layout() -> void:
 	var large_text := float(TextScale.value()) >= 1.20
 	var landscape_scroll := _landscape_deck.get_node_or_null("LandscapeCommandScroll") as ScrollContainer
 	var portrait_scroll := _portrait_sheet.get_node_or_null("PortraitCommandScroll") as ScrollContainer
-	var short_rail := not _portrait and not _compact_landscape and viewport_size.y < 850.0
+	var constrained_rail := not _portrait and not _compact_landscape and viewport_size.y < 1000.0
 	for document_scroll: ScrollContainer in [landscape_scroll, portrait_scroll]:
 		if document_scroll != null:
 			var constrained_portrait := (
@@ -1331,7 +1331,7 @@ func _apply_responsive_layout() -> void:
 				ScrollContainer.SCROLL_MODE_AUTO
 				if large_text
 				or document_scroll == portrait_scroll
-				or (document_scroll == landscape_scroll and short_rail)
+				or (document_scroll == landscape_scroll and constrained_rail)
 				or constrained_portrait
 				else ScrollContainer.SCROLL_MODE_DISABLED
 			)
@@ -1500,7 +1500,7 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_campaign_milestones.visible = not low_landscape
 	_mission_preview.visible = not hide_preview
 	_mission_body_grid.columns = 1 if single_column or hide_preview else 2
-	_mission_details_grid.columns = 1 if ultra_narrow else (2 if _portrait else 3)
+	_mission_details_grid.columns = 1
 	_mission_brief_heading.visible = not concise_details
 	_mission_description.visible = not concise_details
 	_mission_threat.visible = not concise_details
@@ -1514,9 +1514,6 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 		deck_style.content_margin_right = 24.0
 	_portrait_sheet.add_theme_stylebox_override(&"panel", deck_style)
 	var mission_style := StagingSkinType.mission_card_style()
-	if ultra_narrow:
-		mission_style.content_margin_left = 24.0
-		mission_style.content_margin_right = 24.0
 	_mission_card.add_theme_stylebox_override(&"panel", mission_style)
 	_mission_card.custom_minimum_size.y = (
 		320.0 if single_column
@@ -1563,10 +1560,10 @@ func _apply_company_typography() -> void:
 	_mission_objective.add_theme_font_size_override(&"font_size", 18 if ultra_narrow else (22 if compact or short_wide else 24))
 	StagingSkinType.apply_display_type(_mission_brief_heading, 15 if ultra_narrow else 16, GOLD, 600)
 	StagingSkinType.apply_body_type(_mission_description, 16 if ultra_narrow else 17, IVORY)
-	StagingSkinType.apply_display_type(_mission_difficulty, 15 if ultra_narrow else 16, GOLD, 580)
-	StagingSkinType.apply_display_type(_mission_reward, 15 if ultra_narrow else 16, GOLD, 580)
+	StagingSkinType.apply_display_type(_mission_difficulty, 24, GOLD, 580)
+	StagingSkinType.apply_display_type(_mission_reward, 24, GOLD, 580)
 	StagingSkinType.apply_body_type(_mission_threat, 15 if ultra_narrow else 16, MUTED)
-	StagingSkinType.apply_display_type(_mission_facts, 14 if ultra_narrow or short_wide else 15, MUTED, 520)
+	StagingSkinType.apply_display_type(_mission_facts, 23, MUTED, 520)
 	StagingSkinType.apply_display_type(_mission_action_label, 30 if ultra_narrow else (36 if compact or _portrait else 42), IVORY, 620)
 	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
 

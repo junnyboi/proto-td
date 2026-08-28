@@ -124,7 +124,7 @@ static func mission_card_style(modulate: Color = Color.WHITE) -> StyleBoxTexture
 	return _texture_style(
 		MISSION_CARD_FRAME,
 		Vector4(62.0, 42.0, 62.0, 42.0),
-		Vector4(24.0, 24.0, 24.0, 24.0),
+		Vector4(48.0, 48.0, 48.0, 48.0),
 		modulate,
 	)
 
