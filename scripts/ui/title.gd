@@ -55,6 +55,7 @@ var _music_volume := 1.0
 var _sfx_volume := 1.0
 var _frame_limit := 0
 var _text_scale := 1.0
+var _background_downloads_enabled := true
 var _preferences_path := ViewPreferencesType.DEFAULT_PATH
 var _focus_pulse_elapsed := 0.0
 var _focus_pulse_styles: Dictionary = {}
@@ -83,17 +84,25 @@ func _ready() -> void:
 	_sfx_volume = ViewPreferencesType.sfx_volume(_preferences_path)
 	_frame_limit = ViewPreferencesType.frame_limit(_preferences_path)
 	_text_scale = ViewPreferencesType.text_scale(_preferences_path)
+	_background_downloads_enabled = ViewPreferencesType.background_downloads_enabled(_preferences_path)
 	_apply_audio_settings()
 	_apply_graphics_settings()
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call("prefetch_from_title")
+		if not content_packs.background_policy_changed.is_connected(
+			_on_content_background_policy_changed,
+		):
+			content_packs.background_policy_changed.connect(
+				_on_content_background_policy_changed,
+			)
+	_apply_background_download_policy()
 	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
 	if cinematic_prefetch != null:
 		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
 	var mission_cinematic_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
 	if mission_cinematic_prefetch != null:
 		mission_cinematic_prefetch.call("prefetch_from_title")
-	var content_packs := get_node_or_null("/root/ContentPacks")
-	if content_packs != null:
-		content_packs.call("prefetch_from_title")
 	_build_screen()
 	move_child(_settings_state, get_child_count() - 1)
 	_settings_state.cancel_requested.connect(_cancel_settings)
@@ -504,14 +513,14 @@ func _apply_settings(draft: Dictionary) -> void:
 func _preview_settings(draft: Dictionary) -> void:
 	if _screen_state != ScreenState.SETTINGS:
 		return
-	_apply_preference_values(draft)
+	_apply_preference_values(draft, false)
 
 
 func _restore_snapshot(snapshot: Dictionary) -> void:
 	_apply_preference_values(snapshot)
 
 
-func _apply_preference_values(values: Dictionary) -> void:
+func _apply_preference_values(values: Dictionary, apply_background_policy := true) -> void:
 	var locale_id := StringName(values.get(&"locale", I18n.locale()))
 	if I18n.locale() != locale_id:
 		I18n.set_locale(locale_id)
@@ -522,12 +531,21 @@ func _apply_preference_values(values: Dictionary) -> void:
 	_music_volume = float(values.get(&"music_volume", _music_volume))
 	_sfx_volume = float(values.get(&"sfx_volume", _sfx_volume))
 	_text_scale = float(values.get(&"text_scale", _text_scale))
+	var previous_background_downloads := _background_downloads_enabled
+	if apply_background_policy:
+		_background_downloads_enabled = bool(
+			values.get(&"background_downloads_enabled", _background_downloads_enabled),
+		)
 	var previous_music_enabled := _title_music_enabled
 	_title_music_enabled = bool(values.get(&"title_music_enabled", _title_music_enabled))
 	_apply_graphics_settings()
 	_apply_audio_settings()
 	_backdrop.set_reduced_motion(_reduced_motion)
 	_settings_state.set_reduced_motion(_reduced_motion)
+	if apply_background_policy:
+		_apply_background_download_policy()
+		if _background_downloads_enabled and not previous_background_downloads:
+			_resume_background_prefetch()
 	Music.set_enabled(_title_music_enabled)
 	if _title_music_enabled and (not previous_music_enabled or Music.current_id() != &"title_lunaris"):
 		Music.play_cue(&"title_lunaris")
@@ -578,6 +596,7 @@ func _current_preferences() -> Dictionary:
 		&"frame_limit": _frame_limit,
 		&"reduced_motion": _reduced_motion,
 		&"text_scale": _text_scale,
+		&"background_downloads_enabled": _background_downloads_enabled,
 	}
 
 
@@ -629,8 +648,62 @@ func text_scale() -> float:
 	return _text_scale
 
 
+func background_downloads_enabled() -> bool:
+	return _background_downloads_enabled
+
+
 func settings_draft() -> Dictionary:
 	return _settings_state.draft()
+
+
+func _apply_background_download_policy() -> void:
+	var limits := {&"classes": 2, &"resonance": 1, &"missions": 2}
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.call(
+			"set_background_downloads_enabled", _background_downloads_enabled,
+		)
+		limits = content_packs.call("adaptive_prefetch_limits") as Dictionary
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call(
+			"set_background_download_policy",
+			_background_downloads_enabled,
+			int(limits.get(&"resonance", 0)),
+		)
+	var mission_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
+	if mission_prefetch != null:
+		mission_prefetch.call(
+			"set_background_download_policy",
+			_background_downloads_enabled,
+			int(limits.get(&"missions", 0)),
+		)
+
+
+func _resume_background_prefetch() -> void:
+	var cinematic_prefetch := get_node_or_null("/root/CinematicPrefetch")
+	if cinematic_prefetch != null:
+		cinematic_prefetch.call("prefetch_from_title", get_viewport_rect().size)
+	var mission_prefetch := get_node_or_null("/root/MissionCinematicPrefetch")
+	if mission_prefetch != null:
+		mission_prefetch.call("prefetch_from_title")
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null and Game.campaign_active:
+		content_packs.call(
+			"prefetch_roster",
+			Game.campaign_projection().get("ready_heroes", []),
+			Game.selected_squad,
+		)
+
+
+func _on_content_background_policy_changed(
+		_enabled: bool,
+		_network_profile: StringName,
+		_class_limit: int,
+	) -> void:
+	_apply_background_download_policy()
+	if _background_downloads_enabled:
+		_resume_background_prefetch()
 
 
 func _apply_audio_settings() -> void:

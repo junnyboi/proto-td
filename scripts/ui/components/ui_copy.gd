@@ -301,7 +301,7 @@ const STATIC_FALLBACKS := {
 	&"ui.common.exit": "Exit",
 	&"ui.common.back": "Back",
 	&"ui.campaign.heading": "Campaign",
-	&"ui.campaign.basic_hire_title": "Company Reinforcements",
+	&"ui.campaign.basic_hire_title": "Hire Recruit",
 	&"ui.campaign.basic_hire_body": "Hire one persistent basic Recruit. Training can specialize them later.",
 	&"ui.campaign.basic_hire_marks": "{count}",
 	&"ui.campaign.basic_hire_roster": "{count} PERSONNEL READY",

@@ -55,6 +55,7 @@ func _run() -> void:
 	var resign := battle.find_child("ResignButton", true, false) as Button
 	var tutorial := battle.find_child("FirstStandTutorial", true, false) as Node
 	var tutorial_card := battle.find_child("TutorialCard", true, false) as PanelContainer
+	var tutorial_title := battle.find_child("TutorialTitle", true, false) as Label
 	var tutorial_body := battle.find_child("TutorialBody", true, false) as Label
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	var dialogue := battle.find_child("BattleDialogue", true, false) as PanelContainer
@@ -112,17 +113,25 @@ func _run() -> void:
 	_check(dialogue != null and not dialogue.visible, "mission-start dialogue competed with the guided tutorial")
 	if tutorial_card != null:
 		var tutorial_rect := tutorial_card.get_global_rect()
+		var tutorial_style := tutorial_card.get_theme_stylebox(&"panel")
 		_check(tutorial_rect.size.x >= 900.0 and tutorial_rect.size.y >= 400.0, "tutorial card did not receive the 3× width / 2× height treatment")
 		_check(absf(tutorial_rect.position.x - 24.0) <= 2.0, "tutorial card is not left-aligned to the 24px viewport margin")
+		_check(tutorial_style.content_margin_top == 48.0 and tutorial_style.content_margin_bottom == 48.0, "tutorial card lacks exact 48px vertical content padding")
+		_check(tutorial_style.content_margin_left == 12.0 and tutorial_style.content_margin_right == 12.0, "tutorial card lacks exact 12px horizontal content padding")
+	_check(tutorial_title != null and tutorial_title.get_theme_font_size(&"font_size") == 54, "tutorial title did not receive the reduced 54px landscape typography")
+	_check(tutorial_body != null and tutorial_body.get_theme_font_size(&"font_size") == 38, "tutorial body did not receive the reduced 38px landscape typography")
 	_check(tutorial_body != null and tutorial_body.text == "Enemies start from the portal and follow the lit path to your base crystal. This mission allows 3 leaks, the 4th leak will end the mission.", "tutorial route copy does not match the approved wording")
 	_check(skip != null and tutorial_primary != null, "tutorial actions are missing")
 	if skip != null and tutorial_primary != null:
 		for button: Button in [skip, tutorial_primary]:
 			var normal_style := button.get_theme_stylebox(&"normal")
-			_check(button.custom_minimum_size.is_equal_approx(Vector2(220.0, 64.0)), "%s did not receive the compact 220×64 action target" % button.name)
 			_check(button.get_theme_font_size(&"font_size") == 27, "%s tutorial copy is not 27px" % button.name)
 			_check(normal_style.content_margin_left >= 12.0 and normal_style.content_margin_top >= 12.0 and normal_style.content_margin_right >= 12.0 and normal_style.content_margin_bottom >= 12.0, "%s lacks 12px internal padding" % button.name)
 			_check(tutorial_card.get_global_rect().encloses(button.get_global_rect()), "%s overflows the tutorial card" % button.name)
+		_check(skip.custom_minimum_size.is_equal_approx(Vector2(440.0, 64.0)), "Skip Tutorial did not double to a 440×64 action target")
+		_check(tutorial_primary.custom_minimum_size.is_equal_approx(Vector2(220.0, 64.0)), "NEXT did not retain its 220×64 action target")
+		_check(tutorial_primary.get_theme_stylebox(&"normal") is StyleBoxFlat, "NEXT still uses a textured frame that can cross its label")
+		_check(tutorial_primary.get_theme_color(&"font_color").is_equal_approx(Color("07111c")), "NEXT does not use readable dark ink on solid gold")
 		_check(tutorial_primary.text == "NEXT", "tutorial route action was not renamed to NEXT")
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese locale activation failed")
 	await process_frame

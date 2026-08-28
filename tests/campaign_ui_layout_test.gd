@@ -114,7 +114,7 @@ func _run() -> void:
 	_check(ready_style != null and ready_style.bg_color.is_equal_approx(Color("8c6a1f")) and ready_style.border_color.is_equal_approx(Color("f0d89a")), "Campaign ready status is not royal gold")
 	_check(dossier_status != null and dossier_status.get_theme_color(&"font_color").is_equal_approx(Color.WHITE), "Campaign ready status does not use white text")
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
-	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Company Reinforcements")
+	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Hire Recruit")
 	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
 	campaign.call("_show_dossier", &"s9")
 	await process_frame

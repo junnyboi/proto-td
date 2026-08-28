@@ -1492,10 +1492,10 @@ func _show_paths() -> void:
 			_on_path_selected.bind(String(choice["to_class_id"])),
 		)
 		card.mouse_entered.connect(
-			_prefetch_class_pack.bind(String(choice["to_class_id"]), true),
+			_prefetch_class_pack.bind(String(choice["to_class_id"]), true, true),
 		)
 		card.focus_entered.connect(
-			_prefetch_class_pack.bind(String(choice["to_class_id"]), true),
+			_prefetch_class_pack.bind(String(choice["to_class_id"]), true, true),
 		)
 		card.focus_entered.connect(_ensure_path_card_visible.bind(card))
 		cards.add_child(card)
@@ -1795,7 +1795,7 @@ func _on_choose_promotion() -> void:
 
 func _on_path_selected(choice_id: String) -> void:
 	_selected_choice_id = choice_id
-	_prefetch_class_pack(choice_id, true)
+	_prefetch_class_pack(choice_id, true, false)
 	for card: PromotionPathCardType in _path_cards:
 		card.set_selected(card.class_id == choice_id)
 	_choose_path.disabled = false
@@ -1804,10 +1804,10 @@ func _on_path_selected(choice_id: String) -> void:
 	_wire_focus(_focusable_controls(), _layout_mode != &"portrait")
 
 
-func _prefetch_class_pack(class_id: String, prioritize: bool) -> void:
+func _prefetch_class_pack(class_id: String, prioritize: bool, background: bool) -> void:
 	var content_packs := get_node_or_null("/root/ContentPacks")
 	if content_packs != null:
-		content_packs.call("request_class", class_id, prioritize)
+		content_packs.call("request_class", class_id, prioritize, background)
 
 
 func _on_layout_mode_changed(value: StringName) -> void:

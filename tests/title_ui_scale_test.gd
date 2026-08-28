@@ -153,6 +153,8 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	var music_button := state.find_child("MusicButton", true, false) as Button
 	var frame_option := state.find_child("FrameLimitOption", true, false) as OptionButton
 	var motion := state.find_child("MotionButton", true, false) as Button
+	var background_downloads := state.find_child("BackgroundDownloadsButton", true, false) as Button
+	var background_hint := state.find_child("BackgroundDownloadsHint", true, false) as Label
 	var text_scale_label := state.find_child("TextScaleLabel", true, false) as Label
 	var text_scale := state.find_child("TextScaleSlider", true, false) as HSlider
 	var error := state.find_child("SettingsError", true, false) as Label
@@ -176,13 +178,20 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(master.custom_minimum_size.y >= 48.0 and music.custom_minimum_size.y >= 48.0 and sfx.custom_minimum_size.y >= 48.0 and text_scale.custom_minimum_size.y >= 48.0, "%s sliders are below the 48 px hit target" % label)
 	_check(text_scale.min_value == 80.0 and text_scale.max_value == 150.0 and text_scale.step == 5.0, "%s text-scale slider has the wrong accessibility range" % label)
 	_check(text_scale_label.text.contains("100%") or text_scale_label.text.contains("100％"), "%s text-scale readout omits its percentage" % label)
-	_check(not back.clip_text and not music_button.clip_text and not motion.clip_text and not apply.clip_text, "%s translated actions still clip text" % label)
+	_check(not back.clip_text and not music_button.clip_text and not motion.clip_text and not background_downloads.clip_text and not apply.clip_text, "%s translated actions still clip text" % label)
+	_check(background_downloads.custom_minimum_size.y >= 82.0, "%s background-download toggle is not touch safe" % label)
+	_check(
+		motion.autowrap_mode != TextServer.AUTOWRAP_ARBITRARY
+		and background_downloads.autowrap_mode != TextServer.AUTOWRAP_ARBITRARY,
+		"%s compact Settings toggle can wrap into fragmented labels" % label,
+	)
+	_check(not background_hint.text.is_empty() and background_hint.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s metered-connection hint is missing or cannot wrap" % label)
 	_check(not state.accessibility_name.is_empty() and not state.accessibility_description.is_empty(), "%s Settings root lacks accessibility semantics" % label)
 	_check(not back.accessibility_name.is_empty() and not locale_list.accessibility_name.is_empty() and not apply.accessibility_name.is_empty(), "%s key actions lack accessibility names" % label)
 	_check(master.accessibility_name.contains("%") or master.accessibility_name.contains("percent") or master.accessibility_name.contains("百分"), "%s master slider name lacks its percentage" % label)
 	_check(text_scale.accessibility_name.contains("%") or text_scale.accessibility_name.contains("percent") or text_scale.accessibility_name.contains("百分"), "%s text-scale slider name lacks its percentage" % label)
 	_check(not text_scale.accessibility_description.is_empty(), "%s text-scale slider lacks an accessibility description" % label)
-	_check(not music_button.accessibility_description.is_empty() and not motion.accessibility_description.is_empty() and not frame_option.accessibility_description.is_empty(), "%s settings controls lack accessibility descriptions" % label)
+	_check(not music_button.accessibility_description.is_empty() and not motion.accessibility_description.is_empty() and not background_downloads.accessibility_description.is_empty() and not frame_option.accessibility_description.is_empty(), "%s settings controls lack accessibility descriptions" % label)
 	_check(error.accessibility_live == AccessibilityServer.LIVE_ASSERTIVE, "%s Settings error is not assertive live content" % label)
 	_check(locale_list.custom_minimum_size.x <= EPSILON, "%s locale selector retains a fixed width" % label)
 	_check(not locale_list.auto_height and locale_list.custom_minimum_size.y <= 96.0, "%s locale selector is not bounded to a compact row" % label)
@@ -224,7 +233,8 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 		_check(music_button.get_node_or_null(music_button.focus_neighbor_right) == text_scale, "%s wide music toggle does not move to text scale" % label)
 		_check(motion.get_node_or_null(motion.focus_neighbor_left) == music_button, "%s wide motion toggle does not return to music" % label)
 		_check(text_scale.get_node_or_null(text_scale.focus_neighbor_left) == music_button, "%s wide text scale does not return to the audio column" % label)
-		_check(motion.get_node_or_null(motion.focus_neighbor_bottom) == text_scale, "%s wide motion toggle does not move down to text scale" % label)
+		_check(motion.get_node_or_null(motion.focus_neighbor_bottom) == background_downloads, "%s wide motion toggle does not move down to background downloads" % label)
+		_check(background_downloads.get_node_or_null(background_downloads.focus_neighbor_bottom) == text_scale, "%s wide background downloads does not move down to text scale" % label)
 	if label == "short":
 		var body := state.find_child("SettingsColumns", true, false) as Control
 		_check(body.size.y > scroll.size.y, "short settings body does not expose vertical overflow")
@@ -268,9 +278,10 @@ func _focus_controls(state: Control) -> Array[Control]:
 		state.find_child("MusicVolumeSlider", true, false) as Control,
 		state.find_child("SfxVolumeSlider", true, false) as Control,
 		state.find_child("MusicButton", true, false) as Control,
-		state.find_child("FrameLimitOption", true, false) as Control,
-		state.find_child("MotionButton", true, false) as Control,
-		state.find_child("TextScaleSlider", true, false) as Control,
+			state.find_child("FrameLimitOption", true, false) as Control,
+			state.find_child("MotionButton", true, false) as Control,
+			state.find_child("BackgroundDownloadsButton", true, false) as Control,
+			state.find_child("TextScaleSlider", true, false) as Control,
 		state.find_child("SettingsApplyButton", true, false) as Control,
 	]
 

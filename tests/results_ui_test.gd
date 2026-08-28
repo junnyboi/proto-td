@@ -91,7 +91,7 @@ func _run() -> void:
 	var body := screen.find_child("ResultsBody", true, false) as GridContainer
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
 	var staging := screen.find_child("ReturnToStaging", true, false) as Button
-	var title := screen.find_child("BackToTitle", true, false) as Button
+	var back := screen.find_child("BackButton", true, false) as Button
 	_check(screen.find_child("DefeatAmbient", true, false) == null, "clear Results incorrectly shows defeat ambience")
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
 	_check(ceremony != null and ceremony.custom_minimum_size.y >= 132.0, "Results outcome ceremony is still claustrophobic")
@@ -169,7 +169,8 @@ func _run() -> void:
 	_check(rewards_scroll != null and consequence_scroll != null, "Results payload columns lack independent local scrolling")
 	_check(rewards_scroll != null and rewards_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Rewards scroll is not flexible")
 	_check(consequence_scroll != null and consequence_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Consequence scroll is not flexible")
-	_check(actions != null and staging != null and title != null, "persistent Results actions are incomplete")
+	_check(actions != null and staging != null and back != null, "persistent Results actions are incomplete")
+	_check(back != null and back.text == "Mission Control", "cleared Mission Debrief Back action does not identify Mission Control")
 	_check(actions != null and not _has_scroll_ancestor(actions), "Results actions remain buried inside scroll content")
 	if actions != null:
 		for child: Node in actions.get_children():
@@ -225,6 +226,7 @@ func _run() -> void:
 	var chinese_consequence := screen.find_child("ConsequenceHeading", true, false) as Label
 	var chinese_transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
 	var chinese_return := screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_back := screen.find_child("BackButton", true, false) as Button
 	var chinese_xp := screen.find_child("XpAward0", true, false) as Control
 	var chinese_xp_count := chinese_xp.find_child("Detail", true, false) as Label
 	_check(chinese_headline != null and chinese_headline.text == "第1关已通关" and chinese_headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese clear headline is incorrect or wrap-enabled")
@@ -241,12 +243,33 @@ func _run() -> void:
 	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
 	_check(chinese_transmission != null and _tree_text(chinese_transmission).contains("胜利传讯"), "clear transmission did not refresh to Chinese")
 	_check(chinese_return.text == "返回连队指挥部", "Results destination did not refresh to Chinese")
+	_check(chinese_back != null and chinese_back.text == "任务中心", "cleared Mission Debrief Back destination did not refresh to Chinese Mission Control")
 	_check(chinese_xp_count.text == "+100 经验值", "canonical survivor XP did not refresh to Chinese")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English Results locale restoration failed")
 	root.size = Vector2i(1280, 720)
 	await _frames(2)
-	root.remove_child(screen)
-	screen.free()
+	var campaign_before_back: Variant = game.get("campaign")
+	var english_back := screen.find_child("BackButton", true, false) as Button
+	_check(english_back != null and english_back.text == "Mission Control", "cleared Mission Debrief Back destination did not restore to English")
+	if english_back != null:
+		english_back.emit_signal(&"pressed")
+	await _frames(4)
+	var mission_control := game.get("content") as Node
+	_check(
+		mission_control != null
+		and mission_control.get_script().resource_path == "res://scripts/ui/stage_select.gd",
+		"cleared Mission Debrief Back did not return to Mission Control",
+	)
+	_check(
+		bool(game.get("campaign_active")) and game.get("campaign") == campaign_before_back,
+		"cleared Mission Debrief Back discarded the active campaign",
+	)
+	game.set("content", null)
+	if mission_control != null and is_instance_valid(mission_control):
+		var mission_control_parent := mission_control.get_parent()
+		if mission_control_parent != null:
+			mission_control_parent.remove_child(mission_control)
+		mission_control.free()
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	game.set("last_result", {
 		"stage_id": &"s1",

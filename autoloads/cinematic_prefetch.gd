@@ -9,6 +9,7 @@ signal stream_ready(stream_key: StringName, cache_path: String)
 signal stream_failed(stream_key: StringName, reason: String)
 
 const PlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
+const BackgroundDownloadStatusType := preload("res://scripts/view/background_download_status.gd")
 const CACHE_DIR := PlayerType.CACHE_DIR
 const COPY_CHUNK_BYTES := PlayerType.COPY_CHUNK_BYTES
 const DOWNLOAD_TIMEOUT_SECONDS := PlayerType.DOWNLOAD_TIMEOUT_SECONDS
@@ -17,6 +18,7 @@ const PROFILE_ORDER := ["lunaris_vessel", "reliquary_duelist", "archive_caster"]
 var _stream_urls: Dictionary = {}
 var _queue: Array[String] = []
 var _queued: Dictionary = {}
+var _background_queued: Dictionary = {}
 var _ready_paths: Dictionary = {}
 var _failed_reasons: Dictionary = {}
 var _request: HTTPRequest = null
@@ -25,10 +27,21 @@ var _active_temp_path := ""
 var _active_total := 0
 var _last_progress_bytes := 0
 var _title_entry_count := 0
+var _background_downloads_enabled := true
+var _background_limit := 6
+var _active_background := false
 
 
 func _ready() -> void:
 	set_process(true)
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.background_policy_changed.connect(_on_content_background_policy_changed)
+		_on_content_background_policy_changed(
+			bool(content_packs.call("background_downloads_enabled")),
+			StringName(content_packs.call("network_profile")),
+			int(content_packs.call("background_class_limit")),
+		)
 
 
 func prefetch_from_title(
@@ -39,11 +52,20 @@ func prefetch_from_title(
 	configure_streams(arguments)
 	if _stream_urls.is_empty():
 		return
+	if not _background_downloads_enabled or _background_limit <= 0:
+		return
 	var effective_viewport := viewport_size
 	if effective_viewport.x <= 0.0 or effective_viewport.y <= 0.0:
 		effective_viewport = get_viewport().get_visible_rect().size
+	var available := maxi(_background_limit - _background_pending_count(), 0)
+	if available <= 0:
+		return
+	var queued_count := 0
 	for stream_key: String in preferred_stream_order(effective_viewport):
-		_enqueue_stream(stream_key, false)
+		if queued_count >= available:
+			break
+		if _enqueue_stream(stream_key, false, true):
+			queued_count += 1
 	_pump_queue.call_deferred()
 
 
@@ -66,11 +88,13 @@ func request_stream(stream_key: String, url: String = "") -> bool:
 	_ready_paths.erase(stream_key)
 	_failed_reasons.erase(stream_key)
 	if _active_key == stream_key and _request != null:
+		_active_background = false
+		BackgroundDownloadStatusType.publish(&"resonance", StringName(stream_key), &"foreground")
 		stream_state_changed.emit.call_deferred(
 			StringName(stream_key), &"downloading", _last_progress_bytes, _active_total,
 		)
 		return false
-	_enqueue_stream(stream_key, true)
+	_enqueue_stream(stream_key, true, false)
 	_pump_queue.call_deferred()
 	return false
 
@@ -109,6 +133,40 @@ func completed_stream_count() -> int:
 	return _ready_paths.size()
 
 
+func set_background_download_policy(enabled: bool, limit: int) -> void:
+	_background_downloads_enabled = enabled
+	_background_limit = clampi(limit, 0, PlayerType.STREAMS.size())
+	if not enabled or _background_limit <= 0:
+		if _active_background:
+			_cancel_active_download(true)
+		_remove_background_queue()
+		BackgroundDownloadStatusType.publish(&"resonance", &"", &"disabled")
+		if _request == null and _active_key.is_empty() and not _queue.is_empty():
+			_pump_queue.call_deferred()
+		return
+	_trim_background_queue()
+
+
+func background_downloads_enabled() -> bool:
+	return _background_downloads_enabled
+
+
+func background_prefetch_limit() -> int:
+	return _background_limit
+
+
+func _on_content_background_policy_changed(
+		enabled: bool,
+		_network_profile: StringName,
+		_class_limit: int,
+	) -> void:
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	var limit := 0
+	if content_packs != null:
+		limit = int((content_packs.call("adaptive_prefetch_limits") as Dictionary).get(&"resonance", 0))
+	set_background_download_policy(enabled, limit)
+
+
 func cached_stream_path(stream_key: String) -> String:
 	return _validated_cache_path(stream_key)
 
@@ -117,10 +175,14 @@ func reset_for_tests() -> void:
 	_cancel_active_download(true)
 	_queue.clear()
 	_queued.clear()
+	_background_queued.clear()
 	_ready_paths.clear()
 	_failed_reasons.clear()
 	_stream_urls.clear()
 	_title_entry_count = 0
+	_background_downloads_enabled = true
+	_background_limit = 6
+	_active_background = false
 
 
 func _process(_delta: float) -> void:
@@ -134,27 +196,40 @@ func _process(_delta: float) -> void:
 		return
 	_last_progress_bytes = downloaded
 	stream_state_changed.emit(StringName(_active_key), &"downloading", downloaded, total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"resonance", StringName(_active_key), &"downloading", downloaded, total,
+		)
 
 
-func _enqueue_stream(stream_key: String, prioritize: bool) -> void:
+func _enqueue_stream(stream_key: String, prioritize: bool, background: bool) -> bool:
 	if not PlayerType.STREAMS.has(stream_key) or not _stream_urls.has(stream_key):
-		return
+		return false
 	if _active_key == stream_key:
-		return
+		return false
 	if _queued.has(stream_key):
+		if not background:
+			_background_queued[stream_key] = false
+			BackgroundDownloadStatusType.publish(&"resonance", StringName(stream_key), &"foreground")
 		if prioritize:
 			_queue.erase(stream_key)
 			_queue.push_front(stream_key)
-		return
+		return false
 	if prioritize:
 		_queue.push_front(stream_key)
 	else:
 		_queue.append(stream_key)
 	_queued[stream_key] = true
+	_background_queued[stream_key] = background
 	var spec: Dictionary = PlayerType.STREAMS.get(stream_key, {})
 	stream_state_changed.emit(
 		StringName(stream_key), &"queued", 0, int(spec.get("bytes", 0)),
 	)
+	if background:
+		BackgroundDownloadStatusType.publish(
+			&"resonance", StringName(stream_key), &"queued", 0, int(spec.get("bytes", 0)),
+		)
+	return true
 
 
 func _pump_queue() -> void:
@@ -163,6 +238,8 @@ func _pump_queue() -> void:
 	while not _queue.is_empty():
 		var stream_key: String = _queue.pop_front()
 		_queued.erase(stream_key)
+		_active_background = bool(_background_queued.get(stream_key, false))
+		_background_queued.erase(stream_key)
 		var cached_path := _existing_cache_path(stream_key)
 		if not cached_path.is_empty():
 			_mark_ready(stream_key, cached_path)
@@ -198,6 +275,10 @@ func _start_download(stream_key: String) -> void:
 	add_child(_request)
 	_last_progress_bytes = 0
 	stream_state_changed.emit(StringName(stream_key), &"downloading", 0, _active_total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"resonance", StringName(stream_key), &"downloading", 0, _active_total,
+		)
 	var error := _request.request(url)
 	if error != OK:
 		_fail_active("Request could not start (%s)." % error_string(error))
@@ -210,6 +291,7 @@ func _on_request_completed(
 		body: PackedByteArray,
 ) -> void:
 	var completed_key := _active_key
+	var completed_background := _active_background
 	var temp_path := _active_temp_path
 	var spec: Dictionary = PlayerType.STREAMS.get(completed_key, {})
 	var expected_bytes := int(spec.get("bytes", 0))
@@ -238,23 +320,38 @@ func _on_request_completed(
 	_mark_ready(completed_key, promoted_path)
 	stream_state_changed.emit(StringName(completed_key), &"ready", expected_bytes, expected_bytes)
 	stream_ready.emit(StringName(completed_key), promoted_path)
+	if completed_background:
+		BackgroundDownloadStatusType.publish(
+			&"resonance", StringName(completed_key), &"ready", expected_bytes, expected_bytes,
+		)
 	_pump_queue.call_deferred()
 
 
 func _finish_failed(stream_key: String, reason: String) -> void:
+	var failed_background := _active_background
 	_clear_active_state()
 	_failed_reasons[stream_key] = reason
 	push_warning("Cinematic prefetch '%s' failed: %s" % [stream_key, reason])
 	stream_state_changed.emit(StringName(stream_key), &"failed", 0, 0)
 	stream_failed.emit(StringName(stream_key), reason)
+	if failed_background:
+		BackgroundDownloadStatusType.publish(&"resonance", StringName(stream_key), &"failed")
 	_pump_queue.call_deferred()
 
 
 func _fail_active(reason: String) -> void:
 	var failed_key := _active_key
+	var failed_background := _active_background
 	_cancel_active_download(true)
-	if not failed_key.is_empty():
-		_finish_failed(failed_key, reason)
+	if failed_key.is_empty():
+		return
+	_failed_reasons[failed_key] = reason
+	push_warning("Cinematic prefetch '%s' failed: %s" % [failed_key, reason])
+	stream_state_changed.emit(StringName(failed_key), &"failed", 0, 0)
+	stream_failed.emit(StringName(failed_key), reason)
+	if failed_background:
+		BackgroundDownloadStatusType.publish(&"resonance", StringName(failed_key), &"failed")
+	_pump_queue.call_deferred()
 
 
 func _mark_ready(stream_key: String, cache_path: String) -> void:
@@ -366,6 +463,42 @@ func _clear_active_state() -> void:
 	_active_temp_path = ""
 	_active_total = 0
 	_last_progress_bytes = 0
+	_active_background = false
+
+
+func _remove_background_queue() -> void:
+	for index: int in range(_queue.size() - 1, -1, -1):
+		var stream_key := _queue[index]
+		if bool(_background_queued.get(stream_key, false)):
+			_queue.remove_at(index)
+			_queued.erase(stream_key)
+			_background_queued.erase(stream_key)
+
+
+func _trim_background_queue() -> void:
+	var allowance := maxi(_background_limit - (1 if _active_background else 0), 0)
+	var background_total := 0
+	for stream_key: String in _queue:
+		if bool(_background_queued.get(stream_key, false)):
+			background_total += 1
+	for index: int in range(_queue.size() - 1, -1, -1):
+		if background_total <= allowance:
+			break
+		var stream_key := _queue[index]
+		if not bool(_background_queued.get(stream_key, false)):
+			continue
+		_queue.remove_at(index)
+		_queued.erase(stream_key)
+		_background_queued.erase(stream_key)
+		background_total -= 1
+
+
+func _background_pending_count() -> int:
+	var count := 1 if _active_background else 0
+	for stream_key: String in _queue:
+		if bool(_background_queued.get(stream_key, false)):
+			count += 1
+	return count
 
 
 func _cleanup_file(path: String) -> void:

@@ -4,6 +4,7 @@ const Catalog := preload("res://data/presentation/operator_visual_catalog.gd")
 const AnimationDef := preload("res://data/presentation/operator_animation_def.gd")
 const Animator := preload("res://scripts/view/operator_animator.gd")
 const UnitStateType := preload("res://sim/unit_state.gd")
+const PROPORTION_CONFIG_PATH := "res://data/presentation/advanced_operator_proportions.json"
 
 const CLASS_BY_OPERATOR := {
 	&"caster_1": &"mage_apprentice",
@@ -38,6 +39,11 @@ func _init() -> void:
 
 
 func _test_complete_catalog() -> void:
+	var calibration := _load_proportion_config()
+	var target_height := int(calibration.get("target_runtime_body_height_px", 0))
+	var identities: Dictionary = calibration.get("identities", {}) as Dictionary
+	_check(target_height == 64, "advanced runtime body-height target must remain 64px")
+	_check(identities.size() == 22, "expected exact 22-identity proportion calibration matrix")
 	var advanced_templates := 0
 	var manifest_rows := 0
 	for template_id: StringName in Catalog.template_ids():
@@ -51,12 +57,22 @@ func _test_complete_catalog() -> void:
 		_check(animation != null, "%s definition missing" % template_id)
 		if animation == null:
 			continue
+		var proportion: Dictionary = identities.get(text, {}) as Dictionary
+		var expected_body_height := int(proportion.get("normalized_body_height_px", 0))
 		_check(animation.schema_version == 2, "%s must use generated schema 2" % template_id)
 		_check(animation.source_cell_px == 640, "%s must use 640px source cells" % template_id)
-		_check(animation.normalized_subject_height_px == 600, "%s subject calibration drifted" % template_id)
+		_check(
+			animation.normalized_subject_height_px == expected_body_height,
+			"%s body calibration drifted" % template_id,
+		)
 		_check(animation.pivot == Vector2(0.5, 1.0), "%s pivot must be bottom-center" % template_id)
 		_check(not animation.placeholder, "%s must not be placeholder art" % template_id)
-		_check(Animator.body_size(animation).is_equal_approx(Vector2.ONE * (640.0 * 64.0 / 600.0)), "%s display calibration drifted" % template_id)
+		_check(
+			Animator.body_size(animation).is_equal_approx(
+				Vector2.ONE * (640.0 * float(target_height) / float(expected_body_height))
+			),
+			"%s display calibration drifted" % template_id,
+		)
 		for family: StringName in [&"idle", &"attack"]:
 			var mapping: Dictionary = animation.idle_by_direction if family == &"idle" else animation.attack_by_direction
 			var frame_count := 24 if family == &"idle" else 13
@@ -84,6 +100,18 @@ func _test_complete_catalog() -> void:
 	_check(manifest_rows == 176, "expected 176 advanced manifest rows, got %d" % manifest_rows)
 	for error: String in Catalog.validate_all():
 		_failures.append("catalog: %s" % error)
+
+
+func _load_proportion_config() -> Dictionary:
+	var file := FileAccess.open(PROPORTION_CONFIG_PATH, FileAccess.READ)
+	if file == null:
+		_failures.append("missing advanced operator proportion config")
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is not Dictionary:
+		_failures.append("advanced operator proportion config must contain a JSON object")
+		return {}
+	return parsed as Dictionary
 
 
 func _test_identity_routing() -> void:

@@ -13,6 +13,7 @@ func _run() -> void:
 	_test_argument_contract()
 	_test_resource_routing()
 	_test_predictive_class_order()
+	_test_network_policy()
 	_test_export_boundary()
 	_test_autoload_contract()
 	if _failures.is_empty():
@@ -89,6 +90,29 @@ func _test_predictive_class_order() -> void:
 	)
 
 
+func _test_network_policy() -> void:
+	_check(
+		LoaderType.network_profile_from_arguments(PackedStringArray(["--network-profile=slow"])) == &"slow",
+		"valid slow network profile did not parse",
+	)
+	_check(
+		LoaderType.network_profile_from_arguments(PackedStringArray(["--network-profile=warp"])) == &"standard",
+		"unknown network profile did not fall back safely",
+	)
+	_check(
+		LoaderType.prefetch_limits_for_profile(&"constrained") == {
+			&"classes": 0, &"resonance": 0, &"missions": 0,
+		},
+		"constrained network did not suppress speculative downloads",
+	)
+	_check(
+		LoaderType.prefetch_limits_for_profile(&"slow")[&"classes"] == 1
+		and LoaderType.prefetch_limits_for_profile(&"standard")[&"classes"] == 2
+		and LoaderType.prefetch_limits_for_profile(&"fast")[&"classes"] == 3,
+		"adaptive class horizons are not monotonic",
+	)
+
+
 func _test_export_boundary() -> void:
 	var file := FileAccess.open("res://export_presets.cfg", FileAccess.READ)
 	_check(file != null, "export preset is unreadable")
@@ -111,8 +135,46 @@ func _test_autoload_contract() -> void:
 	_check(loader != null, "ContentPacks autoload is missing")
 	if loader == null:
 		return
-	loader.call("reset_for_tests")
 	var digest := "b".repeat(64)
+	loader.call("reset_for_tests")
+	loader.call("configure", PackedStringArray([
+		"--network-profile=slow",
+		"--content-pack=operator-swordmaster|https://cdn.example/swordmaster.zip|2048|%s" % digest,
+		"--content-pack=operator-defender|https://cdn.example/defender.zip|2048|%s" % digest,
+	]))
+	_check(loader.call("network_profile") == &"slow", "autoload did not retain the slow network profile")
+	_check(int(loader.call("background_class_limit")) == 1, "slow network did not cap class prefetch at one")
+	var resonance_prefetch := root.get_node_or_null("CinematicPrefetch")
+	var mission_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
+	_check(
+		resonance_prefetch != null and int(resonance_prefetch.call("background_prefetch_limit")) == 0,
+		"slow profile did not suppress speculative Resonance films",
+	)
+	_check(
+		mission_prefetch != null and int(mission_prefetch.call("background_prefetch_limit")) == 0,
+		"slow profile did not suppress speculative mission films",
+	)
+	loader.call("configure", PackedStringArray(["--network-profile=fast"]))
+	_check(
+		int(loader.call("background_class_limit")) == 3
+		and int(resonance_prefetch.call("background_prefetch_limit")) == 6
+		and int(mission_prefetch.call("background_prefetch_limit")) == 6,
+		"live fast profile did not expand all speculative horizons",
+	)
+	loader.call("configure", PackedStringArray(["--network-profile=slow"]))
+	var slow_requested: Array = loader.call(
+		"prefetch_class_ids", ["swordmaster", "defender"], false,
+	)
+	_check(slow_requested == ["operator-swordmaster"], "slow network queued more than one predicted class")
+	loader.call("set_background_downloads_enabled", false)
+	_check(loader.call("queued_pack_ids").is_empty(), "metered preference did not clear speculative class work")
+	_check(not bool(loader.call("request_class", "defender", true)), "disabled background policy accepted class prediction")
+	_check(
+		not bool(loader.call("request_class", "defender", true, false))
+		and loader.call("queued_pack_ids") == ["operator-defender"],
+		"foreground class request did not bypass the background preference",
+	)
+	loader.call("reset_for_tests")
 	loader.call("configure", PackedStringArray([
 		"--content-pack=operator-swordmaster|https://cdn.example/swordmaster.zip|2048|%s" % digest,
 		"--content-pack=operator-defender|https://cdn.example/defender.zip|2048|%s" % digest,
@@ -135,7 +197,7 @@ func _test_autoload_contract() -> void:
 	loader.call("request_class", "defender", true)
 	_check(
 		loader.call("queued_pack_ids") == ["operator-defender", "operator-swordmaster"],
-		"foreground class intent did not reprioritize the queued pack",
+		"prioritized speculative class intent did not reorder the queued pack",
 	)
 	loader.call("reset_for_tests")
 

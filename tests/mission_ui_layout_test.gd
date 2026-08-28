@@ -35,6 +35,7 @@ func _run() -> void:
 		await process_frame
 		_verify_layout(label, VIEWPORTS[label])
 		if label == "regular":
+			await _verify_live_grid_reflow()
 			await _verify_deploy_ready_pulse()
 			await _verify_recruitment_transaction(game)
 			await _verify_launch_retry_feedback(game)
@@ -71,6 +72,21 @@ func _verify_managed_order_rail(game: Node) -> void:
 	await process_frame
 
 
+func _verify_live_grid_reflow() -> void:
+	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
+	_check(operator_grid != null and operator_grid.columns == 2, "regular Field Team grid did not begin at two columns")
+	root.size = Vector2i(1920, 900)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(operator_grid != null and operator_grid.columns == 3, "wide Field Team resize did not add the third fitting column")
+	root.size = Vector2i(1280, 720)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(operator_grid != null and operator_grid.columns == 2, "regular Field Team resize did not restore two fitting columns")
+
+
 func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var shell := _mission.find_child("MissionCommandShell", true, false) as Control
 	var workspace := _mission.find_child("MissionFullscreenWorkspace", true, false) as PanelContainer
@@ -84,6 +100,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var recruit_grid := _mission.find_child("BasicRecruitGrid", true, false) as GridContainer
 	var recruit_header := _mission.find_child("BasicRecruitHeader", true, false) as BoxContainer
 	var recruit_title := _mission.find_child("BasicRecruitTitle", true, false) as Label
+	var intel_heading := _mission.find_child("MissionIntelHeading", true, false) as Label
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var recruit_marks := _mission.find_child("BasicRecruitMarks", true, false) as Label
 	var recruit_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
@@ -111,23 +128,29 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			var intel_ratio := intel_panel.size.x / maxf(1.0, panel_width)
 			_check(absf(field_ratio - 0.60) <= 0.035, "%s Field Team panel is not approximately 60 percent wide" % label)
 			_check(absf(intel_ratio - 0.40) <= 0.035, "%s Mission Intelligence panel is not approximately 40 percent wide" % label)
-	_check(recruit_desk != null and intel_panel != null and intel_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements is not inside Mission Intelligence" % label)
-	_check(recruit_desk != null and field_panel != null and not field_panel.is_ancestor_of(recruit_desk), "%s Company Reinforcements remained inside Field Team Selection" % label)
-	_check(recruit_grid != null and recruit_grid.columns == 1, "%s Company Reinforcements is not a stable single-column stack" % label)
-	_check(recruit_title != null and recruit_title.get_theme_font_size(&"font_size") >= 14, "%s Company Reinforcements title is below the compact readability floor" % label)
-	_check(recruit_body == null, "%s redundant Company Reinforcements body copy still exists" % label)
+	_check(recruit_desk != null and intel_panel != null and intel_panel.is_ancestor_of(recruit_desk), "%s Hire Recruit is not inside Mission Intelligence" % label)
+	_check(recruit_desk != null and field_panel != null and not field_panel.is_ancestor_of(recruit_desk), "%s Hire Recruit remained inside Field Team Selection" % label)
+	_check(recruit_grid != null and recruit_grid.columns == 1, "%s Hire Recruit is not a stable single-column stack" % label)
+	_check(recruit_title != null and recruit_title.text == "HIRE RECRUIT", "%s Hire Recruit title is incorrect" % label)
+	_check(recruit_title != null and intel_heading != null and recruit_title.get_theme_font_size(&"font_size") == intel_heading.get_theme_font_size(&"font_size"), "%s Hire Recruit does not match Mission Intelligence heading size" % label)
+	_check(recruit_body == null, "%s redundant Hire Recruit body copy still exists" % label)
 	_check(recruit_roster == null, "%s personnel-ready copy still exists" % label)
-	_check(recruit_header != null and recruit_title != null and recruit_marks != null and recruit_title.get_parent() == recruit_header and recruit_marks.get_parent() != null and recruit_marks.get_parent().get_parent() == recruit_header, "%s shard balance is not on the Company Reinforcements title row" % label)
-	_check(recruit_title != null and recruit_title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s Company Reinforcements title is not centered" % label)
+	_check(recruit_header != null and recruit_title != null and recruit_marks != null and recruit_title.get_parent() == recruit_header and recruit_marks.get_parent() != null and recruit_marks.get_parent().get_parent() == recruit_header, "%s shard balance is not on the Hire Recruit title row" % label)
+	_check(recruit_title != null and recruit_title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s Hire Recruit title is not centered" % label)
 	_check(recruit_marks != null and recruit_title != null and recruit_marks.get_global_rect().position.x >= recruit_title.get_global_rect().end.x - EPSILON, "%s shard balance is not top-right of the title" % label)
-	_check(recruit_desk_center != null and recruit_desk_center.get_index() == recruit_desk_center.get_parent().get_child_count() - 1, "%s Company Reinforcements is not the last Mission Intelligence section" % label)
+	_check(recruit_desk_center != null and recruit_desk_center.get_index() == recruit_desk_center.get_parent().get_child_count() - 1, "%s Hire Recruit is not the last Mission Intelligence section" % label)
 	_check(hire_button != null and hire_button.focus_mode == Control.FOCUS_ALL, "%s recruit action is not keyboard focusable" % label)
 	_check(hire_status != null and hire_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s recruit status is not a polite live region" % label)
 	_check(launch_status != null and launch_status.accessibility_live == AccessibilityServer.LIVE_POLITE, "%s launch status is not a polite live region" % label)
 	if recruit_desk != null and intel_panel != null:
-		_check(_inside_horizontally(intel_panel, recruit_desk), "%s Company Reinforcements exceeds Mission Intelligence horizontally" % label)
-		_check(is_equal_approx(recruit_desk.custom_minimum_size.x, 220.0), "%s Company Reinforcements does not use its compact fixed width" % label)
-		_check(absf(recruit_desk.get_global_rect().get_center().x - intel_panel.get_global_rect().get_center().x) <= 6.0, "%s Company Reinforcements is not horizontally centered in Mission Intelligence" % label)
+		_check(_inside_horizontally(intel_panel, recruit_desk), "%s Hire Recruit exceeds Mission Intelligence horizontally" % label)
+		var expected_recruit_width := (
+			minf(660.0, maxf(220.0, viewport.x - 128.0))
+			if viewport.y > viewport.x
+			else minf(660.0, maxf(220.0, ((maxf(760.0, viewport.x - 112.0) - 16.0) * 0.40) - 56.0))
+		)
+		_check(is_equal_approx(recruit_desk.custom_minimum_size.x, expected_recruit_width), "%s Hire Recruit does not use the responsive three-times-wide target" % label)
+		_check(absf(recruit_desk.get_global_rect().get_center().x - intel_panel.get_global_rect().get_center().x) <= 6.0, "%s Hire Recruit is not horizontally centered in Mission Intelligence" % label)
 	if hire_button != null:
 		var hire_content := hire_button.get_node_or_null("BasicRecruitActionContent") as HBoxContainer
 		_check(hire_content != null and _inside(hire_button, hire_content), "%s recruit action content overflows" % label)
@@ -165,7 +188,6 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(text_label.size.x > 0.0, "%s %s collapsed horizontally" % [label, label_name])
 			_check(text_label.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s %s cannot wrap safely" % [label, label_name])
 	_check(_mission.find_child("FIELDNOTELabel", true, false) == null and _mission.find_child("FIELDNOTEValue", true, false) == null, "%s Field Note was not removed" % label)
-	var intel_heading := _mission.find_child("MissionIntelHeading", true, false) as Label
 	var loadout_heading := _mission.find_child("LoadoutHeading", true, false) as Label
 	var loadout_inset := _mission.find_child("LoadoutHeadingInset", true, false) as MarginContainer
 	var selected_line := _mission.find_child("SelectedSquadLine", true, false) as Label
@@ -215,16 +237,27 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(faction != null, "%s %s is missing" % [label, faction_name])
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
-		var expected_columns := 1 if viewport.y > viewport.x or viewport.x < 1280 else 2
-		_check(operator_grid.columns == expected_columns, "%s operator grid does not use the requested responsive two-column layout" % label)
+		var portrait_grid_layout := viewport.y > viewport.x
+		var available_grid_width := (
+			minf(640.0, maxf(240.0, viewport.x - 96.0))
+			if portrait_grid_layout
+			else maxf(320.0, viewport.x * 0.60 - 96.0)
+		)
+		var expected_columns := 1 if portrait_grid_layout else maxi(1, floori((available_grid_width + 12.0) / 332.0))
+		_check(operator_grid.columns == expected_columns, "%s operator grid does not dynamically pack every fitting column" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
 				var expected_width := (
-					minf(640.0, maxf(240.0, viewport.x - 96.0))
-					if viewport.y > viewport.x
-					else minf(640.0, maxf(320.0, viewport.x * 0.60 - 96.0))
-					if viewport.x < 1280
-					else minf(520.0, maxf(240.0, (viewport.x * 0.60 - 108.0) * 0.5))
+					available_grid_width
+					if portrait_grid_layout
+					else minf(
+						520.0,
+						maxf(
+							320.0,
+							(available_grid_width - 12.0 * float(expected_columns - 1))
+							/ float(expected_columns),
+						),
+					)
 				)
 				_check(absf((child as Button).size.x - expected_width) <= EPSILON, "%s operator card does not fit the responsive grid target" % label)
 				var card_label := child.get_node_or_null("PresentationLabel") as Label
@@ -305,7 +338,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(bool(i18n.call("set_locale", &"zh-CN")), "Field Team could not activate Chinese")
 		await process_frame
 		await process_frame
-		_check(recruit_title != null and recruit_title.text == "连队增援", "Field Team recruitment title did not refresh to Chinese")
+		_check(recruit_title != null and recruit_title.text == "招募新兵", "Field Team Hire Recruit title did not refresh to Chinese")
 		_check(hire_button != null and hire_button.accessibility_name.contains("招募") and hire_button.accessibility_name.contains("5") and hire_action_label != null and hire_action_label.text == "招募" and hire_cost_icon != null and hire_cost_icon.texture != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
 		_check(hire_marks != null and hire_marks.text == "120", "Field Team shard amount changed during Chinese refresh")
 		_check(hire_currency.tooltip_text.contains("普通打捞物") and hire_button.tooltip_text.contains("不含anima或灵魂"), "Field Team ordinary-Marks tooltips did not refresh to Chinese")

@@ -25,13 +25,15 @@ const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
+const OPERATOR_CARD_MIN_WIDTH := 320.0
+const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_CARD_HEIGHT := 252.0
 const OPERATOR_CARD_TALL_HEIGHT := 330.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
 const FIELD_TEAM_STATUS_WIDTH_SCALE := 2.0
-const REINFORCEMENT_DESK_WIDTH := 220.0
+const REINFORCEMENT_DESK_WIDTH := 660.0
 const REINFORCEMENT_HIRE_WIDTH := 100.0
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
@@ -101,6 +103,7 @@ var _all_roster_rows: Array[Dictionary] = []
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
 var _recruitment_grid: GridContainer = null
+var _recruitment_panel: PanelContainer = null
 var _recruitment_header: BoxContainer = null
 var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
@@ -129,6 +132,7 @@ func _ready() -> void:
 	_shell.full_safe_area = true
 	add_child(_shell)
 	_shell.layout_mode_changed.connect(_on_layout_mode_changed)
+	get_viewport().size_changed.connect(_on_viewport_resized)
 	var reading_plate := _shell.reading_plate() as PanelContainer
 	reading_plate.name = "MissionFullscreenWorkspace"
 	reading_plate.add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
@@ -394,6 +398,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	panel.custom_minimum_size.x = REINFORCEMENT_DESK_WIDTH
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	LunarisOpsType.apply_panel(panel, &"selected")
+	_recruitment_panel = panel
 	var panel_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
 	panel_style.content_margin_left = 10.0
 	panel_style.content_margin_right = 10.0
@@ -418,10 +423,10 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_recruitment_grid.add_child(_recruitment_header)
 	_hire_title = AetheriaLabelType.new()
 	_hire_title.name = "BasicRecruitTitle"
-	_hire_title.apply_role(&"dense_heading")
-	_hire_title.add_theme_font_size_override(&"font_size", 14)
+	_hire_title.apply_role(&"heading")
+	LunarisOpsType.apply_label(_hire_title, &"heading")
 	_hire_title.text = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
+		&"ui.campaign.basic_hire_title", "Hire Recruit",
 	).to_upper()
 	_hire_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hire_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -483,7 +488,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hire_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hire_status.accessibility_name = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Company Reinforcements",
+		&"ui.campaign.basic_hire_title", "Hire Recruit",
 	)
 	_hire_status.accessibility_live = AccessibilityServer.LIVE_OFF
 	stack.add_child(_hire_status)
@@ -673,7 +678,7 @@ func _rebuild_operator_cards() -> void:
 	if visible_rows.is_empty():
 		_grid.columns = 1
 		return
-		_grid.columns = _operator_grid_columns(_shell.layout_mode())
+	_grid.columns = _operator_grid_columns(_shell.layout_mode())
 	for visible_index: int in visible_rows.size():
 		var hero := visible_rows[visible_index] as Dictionary
 		var hero_id := StringName(hero["hero_id"])
@@ -730,8 +735,8 @@ func _rebuild_operator_cards() -> void:
 		if not fallen:
 			pick.set_pressed_no_signal(_picked.has(hero_id))
 			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
-			pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
-			pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true))
+			pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
+			pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
 			pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
 			pick.focus_exited.connect(_on_operator_feedback_changed.bind(pick))
 		_grid.add_child(pick)
@@ -1005,16 +1010,42 @@ func _wide_action_width(node_name: String) -> float:
 
 
 func _operator_grid_columns(mode: StringName) -> int:
-	return 1 if mode == &"portrait" or get_viewport_rect().size.x < 1280.0 else 2
+	if mode == &"portrait":
+		return 1
+	var available_width := _operator_grid_available_width(mode)
+	return maxi(
+		1,
+		floori(
+			(available_width + OPERATOR_GRID_GAP)
+			/ (OPERATOR_CARD_MIN_WIDTH + OPERATOR_GRID_GAP)
+		),
+	)
 
 
 func _operator_card_width(mode: StringName) -> float:
+	var available_width := _operator_grid_available_width(mode)
 	if mode == &"portrait":
-		return minf(640.0, maxf(240.0, get_viewport_rect().size.x - 96.0))
-	var available_grid_width := get_viewport_rect().size.x * FIELD_TEAM_WIDTH_RATIO - 96.0
-	if _operator_grid_columns(mode) == 1:
-		return minf(640.0, maxf(320.0, available_grid_width))
-	return minf(OPERATOR_CARD_WIDTH, maxf(240.0, (available_grid_width - 12.0) * 0.5))
+		return minf(640.0, maxf(240.0, available_width))
+	var columns := _operator_grid_columns(mode)
+	var gaps := OPERATOR_GRID_GAP * float(maxi(0, columns - 1))
+	var fitted_width := (available_width - gaps) / float(columns)
+	return minf(OPERATOR_CARD_WIDTH, maxf(OPERATOR_CARD_MIN_WIDTH, fitted_width))
+
+
+func _operator_grid_available_width(mode: StringName) -> float:
+	var viewport_width := get_viewport_rect().size.x
+	if mode == &"portrait":
+		return minf(640.0, maxf(240.0, viewport_width - 96.0))
+	return maxf(OPERATOR_CARD_MIN_WIDTH, viewport_width * FIELD_TEAM_WIDTH_RATIO - 96.0)
+
+
+func _recruitment_desk_width(mode: StringName) -> float:
+	var viewport_width := get_viewport_rect().size.x
+	if mode == &"portrait":
+		return minf(REINFORCEMENT_DESK_WIDTH, maxf(220.0, viewport_width - 128.0))
+	var body_width := maxf(760.0, viewport_width - 112.0)
+	var intel_width := (body_width - 16.0) * INTEL_WIDTH_RATIO
+	return minf(REINFORCEMENT_DESK_WIDTH, maxf(220.0, intel_width - 56.0))
 
 
 func _operator_info_split(mode: StringName) -> float:
@@ -1280,21 +1311,21 @@ func _on_pick_toggled(pressed: bool, hero_id: StringName) -> void:
 			(_buttons[hero_id] as Button).set_pressed_no_signal(false)
 			return
 		_picked.append(hero_id)
-		_prefetch_hero_pack(hero_id, true)
+		_prefetch_hero_pack(hero_id, true, false)
 	else:
 		_picked.erase(hero_id)
 	_refresh()
 	_animate_operator_selection(_buttons.get(hero_id) as AetheriaButtonType, pressed)
 
 
-func _prefetch_hero_pack(hero_id: StringName, prioritize: bool) -> void:
+func _prefetch_hero_pack(hero_id: StringName, prioritize: bool, background: bool) -> void:
 	var hero := _hero_by_id(hero_id)
 	if hero.is_empty():
 		return
 	var content_packs := get_node_or_null("/root/ContentPacks")
 	if content_packs != null:
 		content_packs.call(
-			"request_class", String(hero.get("current_class_id", "")), prioritize,
+			"request_class", String(hero.get("current_class_id", "")), prioritize, background,
 		)
 
 
@@ -1579,15 +1610,15 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	if _hire_title != null:
 		_hire_title.text = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+			&"ui.campaign.basic_hire_title", "Hire Recruit",
 		).to_upper()
 	if _hire_recruit != null:
 		_hire_recruit.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+			&"ui.campaign.basic_hire_title", "Hire Recruit",
 		)
 	if _hire_status != null:
 		_hire_status.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Company Reinforcements",
+			&"ui.campaign.basic_hire_title", "Hire Recruit",
 		)
 	var copy_by_node := {
 		"MissionIndex": _format_copy(
@@ -1798,6 +1829,8 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_filter_bar.set_inline(mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0)
 	if _recruitment_grid != null:
 		_recruitment_grid.columns = 1
+	if _recruitment_panel != null:
+		_recruitment_panel.custom_minimum_size.x = _recruitment_desk_width(mode)
 	if _hire_recruit != null:
 		_hire_recruit.custom_minimum_size = Vector2(REINFORCEMENT_HIRE_WIDTH, 72.0)
 	for button: Button in _buttons.values():
@@ -1842,6 +1875,11 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 					target_width = minf(target_width, maxf(220.0, get_viewport_rect().size.x - 96.0))
 				(action as Button).custom_minimum_size.x = target_width
 	_update_deploy_pivot.call_deferred()
+
+
+func _on_viewport_resized() -> void:
+	if _shell != null:
+		_on_layout_mode_changed.call_deferred(_shell.layout_mode())
 
 
 func _on_training() -> void:
