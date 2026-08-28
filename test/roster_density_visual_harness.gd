@@ -81,6 +81,22 @@ func _mount_fixture() -> void:
 	if not output_path.is_empty():
 		for _frame: int in range(16):
 			await get_tree().process_frame
+		if screen_id == "mission" and OS.get_environment("PROTO_MISSION_INTEL_SCROLL_BOTTOM") == "1":
+			var intel_scroll := find_child("MissionIntelScroll", true, false) as ScrollContainer
+			if intel_scroll != null:
+				for _scroll_frame: int in range(12):
+					intel_scroll.scroll_vertical = ceili(intel_scroll.get_v_scroll_bar().max_value)
+					await get_tree().process_frame
+				var hire_desk := find_child("BasicRecruitDesk", true, false) as Control
+				print(
+					"ROSTER_DENSITY_INTEL_BOTTOM|value=%d|max=%.1f|page=%.1f|desk=%s"
+					% [
+						intel_scroll.scroll_vertical,
+						intel_scroll.get_v_scroll_bar().max_value,
+						intel_scroll.get_v_scroll_bar().page,
+						str(hire_desk.get_global_rect() if hire_desk != null else Rect2()),
+					],
+				)
 		if screen_id == "results" and OS.get_environment("PROTO_RESULTS_SCROLL_BOTTOM") == "1":
 			var consequence_scroll := find_child("ConsequenceScroll", true, false) as ScrollContainer
 			if consequence_scroll != null:

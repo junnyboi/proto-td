@@ -106,7 +106,7 @@ func _run() -> void:
 	_check(next_sparkles != null and not bool(next_sparkles.call("motion_reduced")) and next_sparkles.is_processing(), "animated Campaign sparkles did not activate in normal motion mode")
 	_check(next_stage != null and next_stage.accessibility_description.contains("glow") and next_stage.accessibility_description.contains("sparkles"), "next Campaign row lacks an accessible highlight description")
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
-	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Company Reinforcements")
+	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Hire Recruit")
 	_check(campaign.find_child("HireBasicRecruit", true, false) == null, "Campaign still exposes a duplicate recruit action")
 	campaign.call("_show_dossier", &"s9")
 	await process_frame

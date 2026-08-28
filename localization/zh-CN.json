@@ -420,7 +420,7 @@
     "ui.campaign.basic_hire_roster_limit": "人员名册已达容量上限。",
     "ui.campaign.basic_hire_save_failed": "本次招募无法保存。请再次执行以重试同一份合约。",
     "ui.campaign.basic_hire_success": "{callsign} • 已加入Manus连队 • 剩余{remaining}枚印记",
-    "ui.campaign.basic_hire_title": "连队增援",
+    "ui.campaign.basic_hire_title": "招募新兵",
     "ui.campaign.basic_hire_unknown": "招募未完成（{code}），且未产生变更。请检查任务指挥中心后重试。",
     "ui.campaign.cleared_suffix": "  {stars}",
     "ui.campaign.eyebrow": "露娜莉丝远征档案",

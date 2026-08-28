@@ -85,7 +85,7 @@ func _build_mission() -> bool:
 			push_error("Campaign route content is missing its 24px inset")
 			return false
 	if screen.find_child("MissionControlRecruitDesk", true, false) != null:
-		push_error("Campaign still contains Company Reinforcements")
+		push_error("Campaign still contains Hire Recruit")
 		return false
 	return true
 
