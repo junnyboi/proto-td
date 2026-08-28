@@ -24,7 +24,6 @@ const STAMINA_ICON := preload("res://assets/ui/staging/icons/resource_stamina.pn
 const COMMAND_DECK_FRAME := preload("res://assets/ui/staging/frames/command_deck.png")
 const MISSION_CARD_FRAME := preload("res://assets/ui/staging/frames/mission_card.png")
 const OPERATION_TILE_FRAME := preload("res://assets/ui/staging/frames/operation_tile.png")
-const PRIMARY_BUTTON_FRAME := preload("res://assets/ui/staging/frames/primary_button.png")
 const RESOURCE_CHIP_FRAME := preload("res://assets/ui/staging/frames/resource_chip.png")
 const NAVBAR_FRAME := preload("res://assets/ui/staging/frames/navbar.png")
 const COMPANY_HUD_PLATE_FRAME := preload(
@@ -137,13 +136,16 @@ static func operation_tile_style(modulate: Color = Color.WHITE) -> StyleBoxTextu
 	)
 
 
-static func primary_button_style(modulate: Color = Color.WHITE) -> StyleBoxTexture:
-	return _texture_style(
-		PRIMARY_BUTTON_FRAME,
-		Vector4(58.0, 30.0, 58.0, 30.0),
-		Vector4(34.0, 18.0, 34.0, 18.0),
-		modulate,
-	)
+static func primary_button_style(
+	fill: Color = GOLD,
+	edge: Color = BRIGHT_GOLD,
+) -> StyleBoxFlat:
+	var style := clean_button_style(fill, edge, 4)
+	style.content_margin_left = 12.0
+	style.content_margin_top = 12.0
+	style.content_margin_right = 12.0
+	style.content_margin_bottom = 12.0
+	return style
 
 
 static func clean_button_style(

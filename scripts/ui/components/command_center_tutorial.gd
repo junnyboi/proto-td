@@ -212,11 +212,6 @@ func _build() -> void:
 	_primary.apply_role(&"primary")
 	_primary.custom_minimum_size = Vector2(164.0, 56.0)
 	_primary.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
-	for color_name: StringName in [
-		&"font_color", &"font_hover_color", &"font_pressed_color",
-		&"font_hover_pressed_color", &"font_focus_color",
-	]:
-		_primary.add_theme_color_override(color_name, Color.WHITE)
 	_primary.pressed.connect(_on_primary_pressed)
 	actions.add_child(_primary)
 
