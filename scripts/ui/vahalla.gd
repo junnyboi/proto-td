@@ -143,7 +143,7 @@ func _build_screen() -> void:
 	_roster_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_roster_panel, &"quiet")
-	_ensure_panel_padding(_roster_panel, 18.0)
+	_ensure_panel_padding(_roster_panel, 24.0)
 	_body_grid.add_child(_roster_panel)
 	var roster_stack := VBoxContainer.new()
 	roster_stack.add_theme_constant_override(&"separation", 10)
@@ -171,7 +171,7 @@ func _build_screen() -> void:
 	_dossier_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_dossier_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_dossier_panel, &"memorial")
-	_ensure_panel_padding(_dossier_panel, 22.0)
+	_ensure_panel_padding(_dossier_panel, 24.0)
 	_body_grid.add_child(_dossier_panel)
 	_rebuild_memorial()
 
@@ -309,7 +309,7 @@ func _rebuild_dossier() -> void:
 	service_ledger.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	service_ledger.custom_minimum_size.y = 160.0
 	Style.apply_panel(service_ledger, &"quiet")
-	_ensure_panel_padding(service_ledger, 18.0)
+	_ensure_panel_padding(service_ledger, 24.0)
 	details.add_child(service_ledger)
 	var ledger_stack := VBoxContainer.new()
 	ledger_stack.add_theme_constant_override(&"separation", 8)

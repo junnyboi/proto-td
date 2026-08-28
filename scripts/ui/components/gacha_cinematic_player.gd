@@ -666,10 +666,10 @@ func _build_layers() -> void:
 	panel_style.corner_radius_top_right = 2
 	panel_style.corner_radius_bottom_left = 2
 	panel_style.corner_radius_bottom_right = 2
-	panel_style.content_margin_left = 16
-	panel_style.content_margin_top = 10
-	panel_style.content_margin_right = 16
-	panel_style.content_margin_bottom = 10
+	panel_style.content_margin_left = 24
+	panel_style.content_margin_top = 24
+	panel_style.content_margin_right = 24
+	panel_style.content_margin_bottom = 24
 	_status_panel.add_theme_stylebox_override(&"panel", panel_style)
 	add_child(_status_panel)
 	var status_box := VBoxContainer.new()

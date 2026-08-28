@@ -204,10 +204,10 @@ func _build_ui() -> void:
 	panel_style.border_color = Color(Style.GOLD, 0.58)
 	panel_style.set_border_width_all(1)
 	panel_style.set_corner_radius_all(8)
-	panel_style.content_margin_left = 18
-	panel_style.content_margin_top = 10
-	panel_style.content_margin_right = 18
-	panel_style.content_margin_bottom = 10
+	panel_style.content_margin_left = 24
+	panel_style.content_margin_top = 24
+	panel_style.content_margin_right = 24
+	panel_style.content_margin_bottom = 24
 	status_panel.add_theme_stylebox_override(&"panel", panel_style)
 	status_center.add_child(status_panel)
 	var status_box := VBoxContainer.new()

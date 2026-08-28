@@ -100,7 +100,7 @@ func _run() -> void:
 	var action := routed_staging.find_child("NextOperationAction", true, false) as Button
 	_check(action != null and not action.disabled and action.focus_mode == Control.FOCUS_ALL, "next operation card is not actionable")
 	_check(action != null and not action.accessibility_name.is_empty() and not action.accessibility_description.is_empty(), "next operation action lacks accessibility copy")
-	_check(_transparent_gold_focus(action), "next operation action focus is not a transparent gold outline")
+	_check(_gold_focus_tint(action), "next operation action focus is not a borderless golden tint")
 	game.set("selected_stage_id", &"")
 	action.pressed.emit()
 	for _frame: int in range(8):
@@ -204,22 +204,26 @@ func _verify_tutorial_step(staging: Control, tutorial: Control, step: StringName
 	_check(
 		primary != null
 		and skip != null
-		and primary.get_theme_stylebox(&"focus") is StyleBoxEmpty
-		and skip.get_theme_stylebox(&"focus") is StyleBoxEmpty,
-		"%s tutorial actions still show a focus border" % step,
+		and _gold_focus_tint(primary)
+		and _gold_focus_tint(skip),
+		"%s tutorial actions do not use borderless golden focus tint" % step,
 	)
 
 
-func _transparent_gold_focus(button: Button) -> bool:
+func _gold_focus_tint(button: Button) -> bool:
 	if button == null:
 		return false
 	var style := button.get_theme_stylebox(&"focus") as StyleBoxFlat
 	return (
 		style != null
-		and style.bg_color.a <= 0.01
-		and style.get_border_width(SIDE_LEFT) >= 2
-		and style.border_color.r > style.border_color.b
-		and style.border_color.a >= 0.5
+		and style.bg_color.a >= 0.08
+		and style.bg_color.a <= 0.18
+		and style.bg_color.r > style.bg_color.b
+		and style.get_border_width(SIDE_LEFT) == 0
+		and style.get_border_width(SIDE_TOP) == 0
+		and style.get_border_width(SIDE_RIGHT) == 0
+		and style.get_border_width(SIDE_BOTTOM) == 0
+		and style.border_color.a <= 0.01
 	)
 
 

@@ -198,8 +198,18 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 
 	var deck_style := command_deck.get_theme_stylebox(&"panel") as StyleBoxTexture
 	var mission_style := mission_card.get_theme_stylebox(&"panel") as StyleBoxTexture
+	var sheet_style := command_sheet.get_theme_stylebox(&"panel") as StyleBoxTexture
 	_check(deck_style != null and deck_style.content_margin_left >= 48.0 and deck_style.content_margin_top >= 24.0, "%s: command-deck safe inset regressed" % context)
-	_check(mission_style != null and mission_style.content_margin_left >= (18.0 if ultra_narrow else 44.0) and mission_style.content_margin_top >= 32.0, "%s: mission-frame safe inset regressed" % context)
+	_check(mission_style != null and mission_style.content_margin_left >= (24.0 if ultra_narrow else 44.0) and mission_style.content_margin_top >= 32.0, "%s: mission-frame safe inset regressed" % context)
+	if command_sheet.visible:
+		_check(
+			sheet_style != null
+			and sheet_style.content_margin_left >= 24.0
+			and sheet_style.content_margin_top >= 24.0
+			and sheet_style.content_margin_right >= 24.0
+			and sheet_style.content_margin_bottom >= 24.0,
+			"%s: portrait command sheet fell below 24px content padding" % context,
+		)
 
 	var expects_rail := bool(viewport_case["rail"])
 	_check(navigation != null and navigation.is_visible_in_tree() == expects_rail, "%s: navigation rail breakpoint mismatch" % context)

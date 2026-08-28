@@ -39,6 +39,7 @@ const MOON_CYAN := Color("91eaf1")
 const IVORY := Color("f5efe1")
 const MUTED := Color("aebfd0")
 const INK := Color("07111c")
+const FOCUS_TINT_ALPHA := 0.12
 
 static var _display_font: FontVariation = null
 static var _body_font: FontVariation = null
@@ -201,22 +202,28 @@ static func company_navigation_rail_style(
 	return _texture_style(
 		COMPANY_NAVIGATION_RAIL_FRAME,
 		Vector4(56.0, 72.0, 56.0, 72.0),
-		Vector4(18.0, 64.0, 18.0, 36.0),
+		Vector4(24.0, 64.0, 24.0, 36.0),
 		modulate,
 	)
 
 
-static func transparent_focus_style(_color: Color = MOON_CYAN) -> StyleBoxFlat:
+static func golden_focus_tint_style(
+	corner_radius: int = 4,
+	alpha: float = FOCUS_TINT_ALPHA,
+) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color.TRANSPARENT
-	style.border_color = Color(GOLD, 0.88)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	style.expand_margin_left = 3.0
-	style.expand_margin_top = 3.0
-	style.expand_margin_right = 3.0
-	style.expand_margin_bottom = 3.0
+	style.bg_color = Color(GOLD, clampf(alpha, 0.0, 1.0))
+	style.border_color = Color.TRANSPARENT
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(corner_radius)
+	style.set_expand_margin_all(0.0)
 	return style
+
+
+## Compatibility alias for existing callers. Focus is no longer transparent:
+## keyboard/controller focus is communicated by a restrained gold surface tint.
+static func transparent_focus_style(_color: Color = MOON_CYAN) -> StyleBoxFlat:
+	return golden_focus_tint_style()
 
 
 static func _texture_style(

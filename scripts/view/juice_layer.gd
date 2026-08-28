@@ -408,10 +408,10 @@ func _build_high_threat_panel(warning_id: StringName, heading: String, detail: S
 	style.border_color = HIGH_THREAT_COLORS[warning_id]
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(10)
-	style.content_margin_left = 18.0
-	style.content_margin_right = 22.0
-	style.content_margin_top = 12.0
-	style.content_margin_bottom = 12.0
+	style.content_margin_left = 24.0
+	style.content_margin_right = 24.0
+	style.content_margin_top = 24.0
+	style.content_margin_bottom = 24.0
 	panel.add_theme_stylebox_override(&"panel", style)
 	var row := HBoxContainer.new()
 	row.name = "Content"

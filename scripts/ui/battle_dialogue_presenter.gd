@@ -20,8 +20,8 @@ const EDGE_MARGIN := 16.0
 const LANDSCAPE_WIDTH := 620.0
 const PORTRAIT_WIDTH := 660.0
 const MAX_HEIGHT := 320.0
-const SPEAKER_PORTRAIT_SIZE := Vector2(112.0, 112.0)
-const NARROW_SPEAKER_PORTRAIT_SIZE := Vector2(88.0, 88.0)
+const SPEAKER_PORTRAIT_SIZE := Vector2(88.0, 88.0)
+const NARROW_SPEAKER_PORTRAIT_SIZE := Vector2(72.0, 72.0)
 const SPEAKER_PORTRAIT_IDS := {
 	"ARCHIVE CASTER": &"portrait_archive_caster",
 	"LUNARIS VESSEL": &"portrait_lunaris_vessel",
@@ -123,7 +123,7 @@ func _build_content() -> void:
 
 	_line = _label("DialogueLine", &"body")
 	_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_line.max_lines_visible = 3
+	_line.max_lines_visible = 2
 	_line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_line.add_theme_color_override(&"font_color", Style.IVORY)
 	copy.add_child(_line)

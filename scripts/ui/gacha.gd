@@ -1,6 +1,7 @@
 extends Control
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const ClassDefType := preload("res://data/class_def.gd")
 const ResonanceStarType := preload("res://scripts/ui/components/resonance_star.gd")
 const CinematicPlayerType := preload("res://scripts/ui/components/gacha_cinematic_player.gd")
@@ -678,7 +679,7 @@ func _apply_confirmation_action_style(button: Button, primary: bool) -> void:
 		&"pressed", _confirmation_action_box(pressed_background, Style.GOLD, 2),
 	)
 	button.add_theme_stylebox_override(
-		&"focus", _confirmation_action_box(normal_background, Style.CYAN, 3),
+		&"focus", StagingSkinType.golden_focus_tint_style(),
 	)
 	button.add_theme_stylebox_override(
 		&"disabled",
@@ -806,10 +807,10 @@ func _build_reveal_layer() -> void:
 	_conversion_panel.scale = Vector2(0.88, 0.88)
 	Style.apply_panel(_conversion_panel, &"selected")
 	var conversion_style := _conversion_panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
-	conversion_style.content_margin_left = 18.0
-	conversion_style.content_margin_top = 12.0
-	conversion_style.content_margin_right = 22.0
-	conversion_style.content_margin_bottom = 12.0
+	conversion_style.content_margin_left = 24.0
+	conversion_style.content_margin_top = 24.0
+	conversion_style.content_margin_right = 24.0
+	conversion_style.content_margin_bottom = 24.0
 	_conversion_panel.add_theme_stylebox_override(&"panel", conversion_style)
 	_reveal_title_stack.add_child(_conversion_panel)
 	var conversion_row := HBoxContainer.new()
@@ -2234,7 +2235,7 @@ func _apply_confirmation_layout(viewport_size: Vector2) -> void:
 	var short := viewport_size.y <= 560.0
 	var wide := viewport_size.x >= 1200.0 and aspect > 1.2 and not short
 	var frame_style := Style.panel_style(&"screen")
-	var frame_content_margin := 4.0 if narrow else 22.0
+	var frame_content_margin := Style.MIN_CONTENT_PANEL_INSET
 	frame_style.content_margin_left = frame_content_margin
 	frame_style.content_margin_top = frame_content_margin
 	frame_style.content_margin_right = frame_content_margin
@@ -2536,7 +2537,7 @@ func _apply_pull_button_style(disabled: bool) -> void:
 		&"pressed", _pull_button_box(Color("06111cff"), Style.GOLD, 3),
 	)
 	_pull_button.add_theme_stylebox_override(
-		&"focus", _pull_button_box(Color("102a3afa"), Style.CYAN, 3),
+		&"focus", StagingSkinType.golden_focus_tint_style(4),
 	)
 	_pull_button.add_theme_stylebox_override(
 		&"disabled", _pull_button_box(Color("0b1219db"), Color(Style.MUTED, 0.24)),

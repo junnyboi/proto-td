@@ -5,6 +5,7 @@ signal reorder_requested(source_hero_id: StringName, target_hero_id: StringName)
 signal move_requested(hero_id: StringName, direction: int)
 
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
+const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 
 var hero_id: StringName = &""
 var position_index := 0
@@ -87,7 +88,7 @@ func _apply_readable_style() -> void:
 	var pressed := _flat_style(Color(0.025, 0.08, 0.11, 1.0), Style.GOLD, 2)
 	add_theme_stylebox_override(&"normal", normal)
 	add_theme_stylebox_override(&"hover", hover)
-	add_theme_stylebox_override(&"focus", _flat_style(Color.TRANSPARENT, Style.GOLD, 2))
+	add_theme_stylebox_override(&"focus", StagingSkinType.golden_focus_tint_style(10))
 	add_theme_stylebox_override(&"pressed", pressed)
 	add_theme_stylebox_override(&"hover_pressed", pressed)
 	add_theme_font_size_override(&"font_size", 20)

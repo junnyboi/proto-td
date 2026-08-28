@@ -90,6 +90,7 @@ func _run() -> void:
 	var cooldown_label := spell_bar.find_child("CooldownLabel_slow_field", true, false) as Label
 	var duration_sweep := spell_bar.find_child("DurationSweep_slow_field", true, false) as ColorRect
 	var cooldown_sweep := spell_bar.find_child("CooldownSweep_slow_field", true, false) as ColorRect
+	var slow_slot := spell_bar.find_child("Spell_slow_field", true, false) as Button
 	_check(
 		duration_label != null and duration_label.visible and "8.0" in duration_label.text,
 		"active duration countdown is not explicit",
@@ -100,6 +101,12 @@ func _run() -> void:
 	)
 	_check(duration_sweep != null and duration_sweep.size.x > 0.0, "duration sweep is missing")
 	_check(cooldown_sweep != null and cooldown_sweep.size.x > 0.0, "cooldown sweep is missing")
+	_check(
+		slow_slot != null
+		and "8.0" in slow_slot.accessibility_description
+		and "20.0" in slow_slot.accessibility_description,
+		"Slow Field accessibility does not announce live duration and cooldown",
+	)
 
 	model.tick = 240
 	model.call("_expire_slow_fields")

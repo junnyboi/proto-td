@@ -19,6 +19,16 @@ func _run() -> void:
 	if primary_style != null:
 		_check(primary_style.bg_color.a >= 0.99, "Aetheria primary action is not solid")
 		_check(primary_style.content_margin_left >= 12.0 and primary_style.content_margin_top >= 12.0, "Aetheria primary action lacks 12px content padding")
+	for variation: StringName in [
+		&"AuiReadingPanel", &"AuiHudPanel", &"AuiCardPanel",
+		&"AuiModalPanel", &"AuiInspectorPanel", &"AuiRewardPanel",
+	]:
+		_check_panel_insets(theme.get_stylebox(&"panel", variation), 24.0, String(variation))
+	for role: StringName in [
+		&"screen", &"dialog", &"hud", &"workspace", &"result",
+		&"memorial", &"selected", &"quiet", &"danger", &"transmission",
+	]:
+		_check_panel_insets(LunarisStyleType.panel_style(role), 24.0, "Lunaris %s" % role)
 	var audited_gold := Button.new()
 	LunarisStyleType.apply_button(audited_gold, &"gold")
 	_check(audited_gold.get_theme_stylebox(&"normal") is StyleBoxFlat, "shared gold action still uses a textured frame")
@@ -54,7 +64,7 @@ func _run() -> void:
 	await process_frame
 	var locale_list := locale_selector.call("locale_list") as ItemList
 	_check(locale_list.custom_minimum_size.x == 0.0, "compact locale selector retained a fixed width")
-	_check(locale_list.custom_minimum_size.y == 84.0, "pre-ready scrollbar-free compact locale sizing was not retained")
+	_check(locale_list.custom_minimum_size.y == 104.0, "pre-ready scrollbar-free compact locale sizing was not retained")
 	_check(bool(locale_selector.call("select_locale", &"zh-CN")), "default locale selector could not activate Chinese")
 	_check(root.get_node("I18n").call("locale") == &"zh-CN", "default locale selector stopped committing its selection")
 	_check(bool(locale_selector.call("select_locale", &"en-US")), "default locale selector could not restore English")
@@ -76,6 +86,7 @@ func _run() -> void:
 	var panel := dialog[&"panel"] as PanelContainer
 	var placement := dialog[&"placement"] as VBoxContainer
 	var actions := dialog[&"actions"] as GridContainer
+	_check_panel_insets(panel.get_theme_stylebox(&"panel"), 24.0, "narrow dialog frame")
 	_check(overlay != null and not overlay.visible, "dialog should start hidden")
 	_check(confirm.custom_minimum_size.y >= 44.0 and cancel.custom_minimum_size.y >= 44.0, "dialog actions are not touch safe")
 	_check(panel.custom_minimum_size.x <= 516.0, "narrow dialog exceeds the 540px safe width")
@@ -159,6 +170,8 @@ func _run() -> void:
 	var full_cancel := full_dialog[&"cancel"] as Button
 	var full_confirm := full_dialog[&"confirm"] as Button
 	var full_status := full_dialog[&"status"] as Label
+	_check_panel_insets(full_panel.get_theme_stylebox(&"panel"), 24.0, "full dialog frame")
+	_check_panel_insets(full_dock.get_theme_stylebox(&"panel"), 24.0, "full dialog action dock")
 	_check(full_overlay.mouse_filter == Control.MOUSE_FILTER_STOP, "full dialog root does not stop pointer input")
 	_check((full_dialog[&"backdrop"] as ColorRect).color.a >= 0.99, "full dialog background is not opaque")
 	_check(full_panel.size_flags_horizontal == Control.SIZE_EXPAND_FILL, "full dialog frame does not fill safe width")
@@ -192,6 +205,8 @@ func _run() -> void:
 	full_confirm.grab_focus()
 	root.size = Vector2i(960, 420)
 	await process_frame
+	_check_panel_insets(full_panel.get_theme_stylebox(&"panel"), 24.0, "short dialog frame")
+	_check_panel_insets(full_dock.get_theme_stylebox(&"panel"), 24.0, "short dialog action dock")
 	_check(full_actions.columns == 2, "short regular-width full dialog actions should remain horizontal")
 	_check(full_confirm.has_focus(), "full dialog lost logical focus across live resize")
 	_check(full_header.get_global_rect().end.y <= full_body_scroll.get_global_rect().position.y + 1.0, "short dialog header overlaps scrolling body")
@@ -227,6 +242,22 @@ func _send_button_action(action: StringName) -> void:
 	release.action = action
 	release.pressed = false
 	Input.parse_input_event(release)
+
+
+func _check_panel_insets(style: StyleBox, minimum: float, context: String) -> void:
+	_check(style != null and not (style is StyleBoxEmpty), "%s lacks a painted panel style" % context)
+	if style == null or style is StyleBoxEmpty:
+		return
+	_check(
+		style.content_margin_left >= minimum
+		and style.content_margin_top >= minimum
+		and style.content_margin_right >= minimum
+		and style.content_margin_bottom >= minimum,
+		"%s content padding is below %.0fpx: %.1f/%.1f/%.1f/%.1f" % [
+			context, minimum, style.content_margin_left, style.content_margin_top,
+			style.content_margin_right, style.content_margin_bottom,
+		],
+	)
 
 
 func _check(condition: bool, message: String) -> void:

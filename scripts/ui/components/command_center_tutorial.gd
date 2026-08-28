@@ -203,7 +203,7 @@ func _build() -> void:
 	_skip.name = "TutorialSkip"
 	_skip.apply_role(&"secondary")
 	_skip.custom_minimum_size = Vector2(164.0, 56.0)
-	_skip.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	_skip.add_theme_stylebox_override(&"focus", StagingSkinType.golden_focus_tint_style())
 	_skip.pressed.connect(_on_skip_pressed)
 	actions.add_child(_skip)
 
@@ -211,7 +211,7 @@ func _build() -> void:
 	_primary.name = "TutorialPrimary"
 	_primary.apply_role(&"primary")
 	_primary.custom_minimum_size = Vector2(164.0, 56.0)
-	_primary.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	_primary.add_theme_stylebox_override(&"focus", StagingSkinType.golden_focus_tint_style())
 	_primary.pressed.connect(_on_primary_pressed)
 	actions.add_child(_primary)
 

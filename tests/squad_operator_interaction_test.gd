@@ -195,7 +195,7 @@ func _verify_selection_feedback_and_reorder() -> void:
 		_check(hover_glow != null, "operator card hover glow is missing")
 		if hover_glow != null:
 			var glow_style := hover_glow.get_theme_stylebox(&"panel") as StyleBoxFlat
-			_check(hover_glow.self_modulate.a >= 0.75, "operator focus does not reveal the hover glow")
+			_check(hover_glow.self_modulate.a <= 0.05, "operator keyboard focus still reveals an outline glow")
 			_check(glow_style != null and glow_style.border_width_left >= 2 and glow_style.shadow_size >= 8, "operator glow lacks a luminous border")
 		animated_card.button_pressed = false
 		await process_frame

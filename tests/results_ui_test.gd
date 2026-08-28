@@ -242,6 +242,9 @@ func _run() -> void:
 			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows Chinese wide portrait" % action.name)
 	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
 	_check(chinese_transmission != null and _tree_text(chinese_transmission).contains("胜利传讯"), "clear transmission did not refresh to Chinese")
+	if chinese_transmission != null:
+		var transmission_style := chinese_transmission.get_theme_stylebox(&"panel")
+		_check(transmission_style.content_margin_left >= 24.0 and transmission_style.content_margin_top >= 24.0 and transmission_style.content_margin_right >= 24.0 and transmission_style.content_margin_bottom >= 24.0, "clear transmission custom frame padding is below 24px")
 	_check(chinese_return.text == "返回连队指挥部", "Results destination did not refresh to Chinese")
 	_check(chinese_back != null and chinese_back.text == "任务中心", "cleared Mission Debrief Back destination did not refresh to Chinese Mission Control")
 	_check(chinese_xp_count.text == "+100 经验值", "canonical survivor XP did not refresh to Chinese")
@@ -327,6 +330,20 @@ func _run() -> void:
 	if defeat_rewards != null:
 		var defeat_rewards_style := defeat_rewards.get_theme_stylebox(&"panel")
 		_check(defeat_rewards_style.content_margin_left >= 48.0 and defeat_rewards_style.content_margin_right >= 48.0 and defeat_rewards_style.content_margin_top >= 24.0 and defeat_rewards_style.content_margin_bottom >= 24.0, "defeat Mission Yield lacks 48px horizontal / 24px vertical padding")
+	if defeat_consequence != null:
+		var defeat_consequence_style := defeat_consequence.get_theme_stylebox(&"panel")
+		_check(
+			defeat_consequence_style.content_margin_left >= 24.0
+			and defeat_consequence_style.content_margin_top >= 24.0
+			and defeat_consequence_style.content_margin_right >= 24.0
+			and defeat_consequence_style.content_margin_bottom >= 24.0,
+			"defeat Consequence custom background padding is below 24px: %.1f/%.1f/%.1f/%.1f" % [
+				defeat_consequence_style.content_margin_left,
+				defeat_consequence_style.content_margin_top,
+				defeat_consequence_style.content_margin_right,
+				defeat_consequence_style.content_margin_bottom,
+			],
+		)
 	_check(defeat_company_intact != null, "defeat Company Intact state is missing")
 	if defeat_company_intact != null:
 		var intact_style := defeat_company_intact.get_theme_stylebox(&"panel")

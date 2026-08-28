@@ -7,7 +7,7 @@ extends RefCounted
 const HOVER_SCALE := Vector2(1.04, 1.04)
 const FOCUS_SCALE := Vector2(1.015, 1.015)
 const HOVER_TINT := Color("fff2c6")
-const FOCUS_TINT := Color("d6fbff")
+const FOCUS_TINT := Color("fff4d2")
 const IDLE_TINT := Color.WHITE
 const TRANSITION_SECONDS := 0.18
 

@@ -140,10 +140,10 @@ func _build() -> void:
 	_drawer.mouse_filter = Control.MOUSE_FILTER_STOP
 	Style.apply_panel(_drawer, &"screen")
 	var drawer_style := _drawer.get_theme_stylebox(&"panel").duplicate() as StyleBox
-	drawer_style.content_margin_left = 22.0
-	drawer_style.content_margin_top = 22.0
-	drawer_style.content_margin_right = 22.0
-	drawer_style.content_margin_bottom = 22.0
+	drawer_style.content_margin_left = 24.0
+	drawer_style.content_margin_top = 24.0
+	drawer_style.content_margin_right = 24.0
+	drawer_style.content_margin_bottom = 24.0
 	_drawer.add_theme_stylebox_override(&"panel", drawer_style)
 	add_child(_drawer)
 
@@ -172,10 +172,14 @@ func _build() -> void:
 	_header.add_child(_title_stack)
 	_title = _label(_copy(&"ui.gacha.history_title", "RESONANCE HISTORY"), &"heading")
 	_title.name = "MoonArchiveTitle"
+	_title.custom_minimum_size.x = 0.0
+	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_title.add_theme_font_size_override(&"font_size", 36)
 	_title_stack.add_child(_title)
 	_summary = _label("", &"detail")
 	_summary.name = "MoonArchiveSummary"
+	_summary.custom_minimum_size.x = 0.0
+	_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_summary.add_theme_font_size_override(&"font_size", 21)
 	_summary.accessibility_live = AccessibilityServer.LIVE_POLITE
 	_title_stack.add_child(_summary)
@@ -236,13 +240,16 @@ func _build() -> void:
 	empty_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_empty_state.add_child(empty_icon)
 	_empty_title = _label(_copy(&"ui.gacha.history_empty", "NO RESONANCE RECORDS"), &"heading")
+	_empty_title.custom_minimum_size.x = 0.0
 	_empty_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_empty_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_empty_title.add_theme_font_size_override(&"font_size", 27)
 	_empty_state.add_child(_empty_title)
 	_empty_detail = _label(
 		_copy(&"ui.gacha.history_empty_detail", "Completed soul-reconnection operations will appear here."),
 		&"detail",
 	)
+	_empty_detail.custom_minimum_size.x = 0.0
 	_empty_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_empty_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_empty_state.add_child(_empty_detail)
@@ -278,10 +285,10 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	panel.custom_minimum_size.y = 136.0
 	Style.apply_panel(panel, &"selected" if five_star else &"quiet")
 	var panel_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
-	panel_style.content_margin_left = 12.0
-	panel_style.content_margin_top = 12.0
-	panel_style.content_margin_right = 12.0
-	panel_style.content_margin_bottom = 20.0
+	panel_style.content_margin_left = 24.0
+	panel_style.content_margin_top = 24.0
+	panel_style.content_margin_right = 24.0
+	panel_style.content_margin_bottom = 24.0
 	panel.add_theme_stylebox_override(&"panel", panel_style)
 
 	var row := HBoxContainer.new()
@@ -412,7 +419,7 @@ func _apply_layout() -> void:
 	var compact_header := viewport_size.x < 520.0
 	var width := viewport_size.x if full_width else minf(MAX_DRAWER_WIDTH, viewport_size.x * 0.46)
 	var responsive_style := Style.panel_style(&"screen")
-	var content_margin := 14.0 if compact_header else 22.0
+	var content_margin := Style.MIN_CONTENT_PANEL_INSET
 	responsive_style.content_margin_left = content_margin
 	responsive_style.content_margin_top = content_margin
 	responsive_style.content_margin_right = content_margin

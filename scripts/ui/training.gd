@@ -804,7 +804,7 @@ func _build_rename_panel(summary: Dictionary) -> AetheriaPanelType:
 	panel.visible = _identity_editor_open
 	panel.apply_role(&"hud")
 	LunarisOpsType.apply_panel(panel, &"quiet")
-	_ensure_panel_padding(panel, 18.0)
+	_ensure_panel_padding(panel, 24.0)
 	var column := VBoxContainer.new()
 	column.name = "RenameUnitColumn"
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1560,7 +1560,7 @@ func _identity_strip(summary: Dictionary) -> AetheriaPanelType:
 	var panel := AetheriaPanelType.new()
 	panel.name = "IdentityContinuityStrip"
 	panel.apply_role(&"hud")
-	_ensure_panel_padding(panel, 16.0)
+	_ensure_panel_padding(panel, 24.0)
 	var text := _fmt(
 		&"ui.training.same_identity",
 		"SAME PERSON • SAME HERO ID • SAME CALLSIGN • SAME HISTORY",

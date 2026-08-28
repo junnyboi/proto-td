@@ -124,6 +124,8 @@ func _test_juice_presentation(reduced_motion: bool) -> void:
 	var panel := juice.get_node_or_null("HighThreatWarning") as Control
 	_check(panel != null, "high-threat panel node is missing")
 	if panel != null:
+		var panel_style := panel.get_theme_stylebox(&"panel")
+		_check(panel_style.content_margin_left >= 24.0 and panel_style.content_margin_top >= 24.0 and panel_style.content_margin_right >= 24.0 and panel_style.content_margin_bottom >= 24.0, "high-threat custom frame padding is below 24px")
 		var icon := panel.get_node_or_null("Content/ThreatIcon") as TextureRect
 		var heading := panel.get_node_or_null("Content/Copy/Heading") as Label
 		var detail := panel.get_node_or_null("Content/Copy/Detail") as Label

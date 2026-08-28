@@ -11,7 +11,7 @@ const IVORY := Color("f5efe1")
 const MUTED := Color("8d9aa3")
 const FOCUS_PULSE_SECONDS := 2.8
 const FOCUS_PULSE_MIN_ALPHA := 0.10
-const FOCUS_PULSE_MAX_ALPHA := 0.26
+const FOCUS_PULSE_MAX_ALPHA := 0.16
 const TILE_TITLE_FONT_SIZE := 24
 const TILE_STATE_FONT_SIZE := 24
 const RAIL_TITLE_FONT_SIZE := 49
@@ -34,18 +34,18 @@ func _init() -> void:
 	focus_mode = Control.FOCUS_ALL
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_reduced_motion = bool(ProjectSettings.get_setting("accessibility/reduced_motion", false))
-	_focus_style = StagingSkinType.transparent_focus_style(GOLD)
+	_focus_style = StagingSkinType.golden_focus_tint_style()
 	add_theme_stylebox_override(&"focus", _focus_style)
 	_build_content()
 
 
 func _process(delta: float) -> void:
 	_focus_pulse_elapsed = fmod(_focus_pulse_elapsed + delta, FOCUS_PULSE_SECONDS)
-	var pulse := 0.18
+	var pulse := StagingSkinType.FOCUS_TINT_ALPHA
 	if not _reduced_motion:
 		var wave := (sin((_focus_pulse_elapsed / FOCUS_PULSE_SECONDS) * TAU) + 1.0) * 0.5
 		pulse = lerpf(FOCUS_PULSE_MIN_ALPHA, FOCUS_PULSE_MAX_ALPHA, wave)
-	_focus_style.border_color = Color(GOLD, 0.56 + pulse)
+	_focus_style.bg_color = Color(GOLD, pulse)
 	queue_redraw()
 
 

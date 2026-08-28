@@ -131,18 +131,18 @@ func _run() -> void:
 	if roster_panel != null and dossier_panel != null:
 		var roster_style := roster_panel.get_theme_stylebox(&"panel")
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
-		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
-		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+		_check(roster_style.content_margin_left >= 24.0 and roster_style.content_margin_top >= 24.0 and roster_style.content_margin_right >= 24.0 and roster_style.content_margin_bottom >= 24.0, "Vahalla roster custom frame padding is below 24px")
+		_check(dossier_style.content_margin_left >= 24.0 and dossier_style.content_margin_top >= 24.0 and dossier_style.content_margin_right >= 24.0 and dossier_style.content_margin_bottom >= 24.0, "Vahalla dossier custom frame padding is below 24px")
+	if ledger != null:
+		var ledger_style := ledger.get_theme_stylebox(&"panel")
+		_check(ledger_style.content_margin_left >= 24.0 and ledger_style.content_margin_top >= 24.0 and ledger_style.content_margin_right >= 24.0 and ledger_style.content_margin_bottom >= 24.0, "Vahalla service ledger custom frame padding is below 24px")
 	if memorial_row != null:
 		memorial_row.grab_focus()
 		memorial_row.pressed.emit()
 		await process_frame
 		await process_frame
 		var restored_focus := root.gui_get_focus_owner()
-		_check(
-			restored_focus != null and restored_focus.name == StringName("Memorial_%s" % fallen_id),
-			"Vahalla selection rebuild did not restore memorial-row focus",
-		)
+		_check(restored_focus != null and restored_focus.name == StringName("Memorial_%s" % fallen_id), "Vahalla selection rebuild did not restore memorial-row focus")
 	var original_visible_rows: Array = memorial.get("_visible_rows")
 	if memorial_scroll != null and not original_visible_rows.is_empty():
 		memorial_scroll.size.x = 620.0
