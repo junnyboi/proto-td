@@ -1504,7 +1504,7 @@ func _apply_command_geometry(viewport_size: Vector2) -> void:
 	_mission_brief_heading.visible = not concise_details
 	_mission_description.visible = not concise_details
 	_mission_threat.visible = not concise_details
-	_mission_facts.visible = not short_wide
+	_mission_facts.visible = true
 	_mission_grid.add_theme_constant_override(&"v_separation", 8 if short_wide else 12)
 	_mission_body_grid.add_theme_constant_override(&"h_separation", 20 if short_wide else 24)
 	_campaign_progress_text.visible = not ultra_narrow

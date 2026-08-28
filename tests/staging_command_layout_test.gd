@@ -170,7 +170,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(mission_difficulty != null and mission_difficulty.text.contains("1/5"), "%s: mission difficulty is missing" % context)
 	_check(mission_reward != null and mission_reward.text.contains("剑圣" if locale_id == "zh-CN" else "Sword Saint"), "%s: mission first-clear rewards are missing" % context)
 	_check(mission_threat != null and mission_threat.text.contains("标记者" if locale_id == "zh-CN" else "Taggers"), "%s: mission threat information is missing" % context)
-	_check(mission_facts != null and mission_facts.text.contains("3") and mission_facts.text.contains("2"), "%s: mission squad/wave/leak facts are missing" % context)
+	_check(mission_facts != null and mission_facts.visible and mission_facts.text.contains("3") and mission_facts.text.contains("2"), "%s: mission squad/wave/leak facts row is missing" % context)
 	_check(mission_metadata_grid != null and mission_metadata_grid.columns == 1, "%s: operation metadata is not arranged in three rows" % context)
 	_check(mission_difficulty != null and _font_size(mission_difficulty) >= 24, "%s: mission difficulty type is below its 50-percent increase" % context)
 	_check(mission_reward != null and _font_size(mission_reward) >= 24, "%s: mission reward type is below its 50-percent increase" % context)
