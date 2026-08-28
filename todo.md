@@ -98,6 +98,7 @@
 - [x] Run the synchronized full 68-gate repository baseline, bounded boot, final error scans, and a 16-gate regression after the second forward reconciliation.
 - [x] Commit and push the reconciled release to `master` without rewriting shared history.
 - [x] Preserve every 560–640px source cell while configuring all 176 class/gender and 24 enemy-variant imports for quality-0.92 compressed storage plus mipmaps; reduce the reconciled Web PCK from 802,693,488 to 527,756,580 bytes and pass heavy-class plus S2/S3/S4 visual matrices.
+- [x] Audit the compressed advanced sprites in live combat: measure all 176 atlases against composited PSNR/RGB/alpha/edge guards; inspect 11 complete close-up matrices and 66 landscape/portrait BattleView idle/attack frames with full gender/facing coverage; adjudicate Gunner against source frames; approve quality 0.92 for every class; add reusable fidelity/routing/capture regressions; and pass all 79 repository gates.
 - [x] Export the optimized Godot revision, verify HTML/JS/WASM/PCK over HTTP and in Chromium, confirm WebGL 2 with 8192px textures, and reach Title plus Company Command without console, page, or request errors.
 - [x] Layer the release onto the newest `proto-td-web` host with the exact 202,817,120-byte core and eleven class-scoped packs; pass type/build, managed HTTP, WebGL, fullscreen geometry, native input, responsive visual, and clean-console gates; save the final managed checkpoint.
 
