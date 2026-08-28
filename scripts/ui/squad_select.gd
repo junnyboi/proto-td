@@ -15,6 +15,7 @@ const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const ActionHoverFeedbackType := preload("res://scripts/ui/components/action_hover_feedback.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -26,6 +27,8 @@ const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
+const OPERATOR_CARD_MIN_WIDTH := 300.0
+const OPERATOR_CARD_NARROW_MIN_WIDTH := 240.0
 const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_RAIL_EDGE_INSET := 8
 const OPERATOR_SNAP_IDLE_SECONDS := 0.14
@@ -102,6 +105,8 @@ var _operator_snap_timer: Timer = null
 var _operator_snap_tween: Tween = null
 var _operator_snap_in_progress := false
 var _operator_scroll_dragging := false
+var _operator_grid_reflow_queued := false
+var _operator_grid_reflow_running := false
 var _intel_scroll: ScrollContainer = null
 var _roster_panel: PanelContainer = null
 var _intel_panel: PanelContainer = null
@@ -284,9 +289,9 @@ func _build_body() -> GridContainer:
 	_roster_scroll.custom_minimum_size.y = 0.0
 	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	_roster_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_roster_scroll.resized.connect(_update_operator_rail_insets)
+	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_roster_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_roster_scroll.resized.connect(_queue_operator_grid_reflow)
 	_roster_scroll.gui_input.connect(_on_operator_rail_input)
 	var horizontal_bar := _roster_scroll.get_h_scroll_bar()
 	horizontal_bar.value_changed.connect(_on_operator_scroll_value_changed)
@@ -300,19 +305,19 @@ func _build_body() -> GridContainer:
 	roster_column.add_child(_operator_snap_timer)
 	_operator_rail_inset = MarginContainer.new()
 	_operator_rail_inset.name = "OperatorRailInset"
-	_operator_rail_inset.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_operator_rail_inset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_operator_rail_inset.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_roster_scroll.add_child(_operator_rail_inset)
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
 	_grid.columns = 1
-	_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_grid.add_theme_constant_override(&"h_separation", OPERATOR_GRID_GAP)
 	_grid.add_theme_constant_override(&"v_separation", 10)
 	_operator_rail_inset.add_child(_grid)
 	_rebuild_operator_cards()
-	_update_operator_rail_insets.call_deferred()
+	_queue_operator_grid_reflow()
 	_body.add_child(roster_panel)
 
 	var briefing_panel := PanelContainer.new()
@@ -656,7 +661,7 @@ func _rebuild_operator_cards() -> void:
 		_roster_empty.visible = visible_rows.is_empty()
 	if visible_rows.is_empty():
 		_grid.columns = 1
-		_update_operator_rail_insets.call_deferred()
+		_queue_operator_grid_reflow()
 		return
 	_grid.columns = 1
 	for visible_index: int in visible_rows.size():
@@ -729,9 +734,7 @@ func _rebuild_operator_cards() -> void:
 		else:
 			LunarisOpsType.apply_button(pick, &"disabled")
 			_apply_operator_card_text_style(pick)
-	_grid.columns = _operator_grid_columns(_shell.layout_mode())
-	_update_operator_rail_insets.call_deferred()
-	_snap_operator_rail.call_deferred()
+	_queue_operator_grid_reflow()
 
 
 func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
@@ -997,8 +1000,73 @@ func _wide_action_width(node_name: String) -> float:
 			return 238.0
 
 
-func _operator_grid_columns(_mode: StringName) -> int:
-	return maxi(1, _grid.get_child_count() if _grid != null else 1)
+func _operator_grid_available_width(mode: StringName) -> float:
+	var viewport_width := get_viewport_rect().size.x
+	var viewport_capacity := (
+		minf(640.0, maxf(OPERATOR_CARD_NARROW_MIN_WIDTH, viewport_width - 144.0))
+		if mode == &"portrait"
+		else maxf(OPERATOR_CARD_MIN_WIDTH, viewport_width * FIELD_TEAM_WIDTH_RATIO - 144.0)
+	)
+	if _roster_scroll == null or _roster_scroll.size.x <= 1.0:
+		return viewport_capacity
+	var measured := maxf(
+		OPERATOR_CARD_NARROW_MIN_WIDTH,
+		_roster_scroll.size.x - float(OPERATOR_RAIL_EDGE_INSET * 2),
+	)
+	return minf(viewport_capacity, measured)
+
+
+func _operator_grid_columns(mode: StringName) -> int:
+	return RosterGridLayoutType.fitting_columns(
+		_operator_grid_available_width(mode),
+		OPERATOR_CARD_MIN_WIDTH,
+		OPERATOR_GRID_GAP,
+		0,
+		_grid.get_child_count() if _grid != null else 0,
+		mode == &"portrait",
+	)
+
+
+func _operator_card_width(mode: StringName) -> float:
+	var minimum_width := (
+		OPERATOR_CARD_NARROW_MIN_WIDTH if mode == &"portrait" else OPERATOR_CARD_MIN_WIDTH
+	)
+	return RosterGridLayoutType.fitted_item_width(
+		_operator_grid_available_width(mode),
+		_operator_grid_columns(mode),
+		OPERATOR_GRID_GAP,
+		minimum_width,
+		OPERATOR_CARD_WIDTH,
+	)
+
+
+func _queue_operator_grid_reflow() -> void:
+	if _operator_grid_reflow_queued:
+		return
+	_operator_grid_reflow_queued = true
+	_apply_operator_grid_reflow.call_deferred()
+
+
+func _apply_operator_grid_reflow() -> void:
+	_operator_grid_reflow_queued = false
+	if _operator_grid_reflow_running or _shell == null or _grid == null:
+		return
+	_operator_grid_reflow_running = true
+	var mode := _shell.layout_mode()
+	_grid.columns = _operator_grid_columns(mode)
+	var card_width := _operator_card_width(mode)
+	for child: Node in _grid.get_children():
+		if child is not Button:
+			continue
+		var button := child as Button
+		var hero: Dictionary = button.get_meta(&"hero", {})
+		button.custom_minimum_size = Vector2(card_width, _operator_card_height(hero, mode))
+		var portrait := button.get_node_or_null("OperatorPortrait") as TextureRect
+		if portrait != null:
+			portrait.anchor_left = _operator_info_split(mode)
+		_apply_operator_card_text_style(button as AetheriaButtonType)
+	_update_operator_rail_insets()
+	_operator_grid_reflow_running = false
 
 
 func _operator_snap_stride() -> float:
@@ -1008,18 +1076,20 @@ func _operator_snap_stride() -> float:
 func _update_operator_rail_insets() -> void:
 	if _operator_rail_inset == null or _roster_scroll == null:
 		return
-	var centered_inset := floorf(maxf(
-		float(OPERATOR_RAIL_EDGE_INSET),
-		(_roster_scroll.size.x - OPERATOR_CARD_WIDTH) * 0.5,
-	))
-	_operator_rail_inset.add_theme_constant_override(&"margin_left", int(centered_inset))
-	_operator_rail_inset.add_theme_constant_override(&"margin_right", int(centered_inset))
-	_operator_rail_inset.set_meta(&"operator_snap_edge_inset", centered_inset)
-	_roster_scroll.set_meta(&"operator_snap_enabled", true)
+	_operator_rail_inset.add_theme_constant_override(&"margin_left", OPERATOR_RAIL_EDGE_INSET)
+	_operator_rail_inset.add_theme_constant_override(&"margin_right", OPERATOR_RAIL_EDGE_INSET)
+	_operator_rail_inset.set_meta(&"operator_snap_edge_inset", float(OPERATOR_RAIL_EDGE_INSET))
+	_roster_scroll.set_meta(&"operator_snap_enabled", false)
 	_roster_scroll.set_meta(&"operator_snap_stride", _operator_snap_stride())
 
 
+func _operator_snap_enabled() -> bool:
+	return _roster_scroll != null and bool(_roster_scroll.get_meta(&"operator_snap_enabled", false))
+
+
 func _on_operator_rail_input(event: InputEvent) -> void:
+	if not _operator_snap_enabled():
+		return
 	if event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.button_index in [
@@ -1034,11 +1104,15 @@ func _on_operator_rail_input(event: InputEvent) -> void:
 
 
 func _on_operator_scroll_value_changed(_value: float) -> void:
+	if not _operator_snap_enabled():
+		return
 	if not _operator_snap_in_progress and not _operator_scroll_dragging:
 		_schedule_operator_snap()
 
 
 func _on_operator_scrollbar_input(event: InputEvent) -> void:
+	if not _operator_snap_enabled():
+		return
 	if event is not InputEventMouseButton:
 		return
 	var mouse_event := event as InputEventMouseButton
@@ -1052,12 +1126,16 @@ func _on_operator_scrollbar_input(event: InputEvent) -> void:
 
 
 func _schedule_operator_snap() -> void:
+	if not _operator_snap_enabled():
+		return
 	if _operator_snap_timer == null or _operator_snap_in_progress:
 		return
 	_operator_snap_timer.start(OPERATOR_SNAP_IDLE_SECONDS)
 
 
 func _cancel_operator_snap() -> void:
+	if not _operator_snap_enabled():
+		return
 	if _operator_snap_tween != null and _operator_snap_tween.is_valid():
 		_operator_snap_tween.kill()
 	_operator_snap_tween = null
@@ -1065,7 +1143,9 @@ func _cancel_operator_snap() -> void:
 
 
 func _snap_operator_rail() -> void:
-	if _roster_scroll == null or _grid == null or _grid.get_child_count() <= 0:
+	if not _operator_snap_enabled():
+		return
+	if _grid == null or _grid.get_child_count() <= 0:
 		return
 	if _operator_snap_timer != null:
 		_operator_snap_timer.stop()
@@ -1109,10 +1189,6 @@ func _set_operator_scroll_position(value: float) -> void:
 func _on_operator_snap_finished() -> void:
 	_operator_snap_in_progress = false
 	_operator_snap_tween = null
-
-
-func _operator_card_width(_mode: StringName) -> float:
-	return OPERATOR_CARD_WIDTH
 
 
 func _hire_recruit_width(mode: StringName) -> float:
@@ -1920,11 +1996,9 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_command_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if _roster_scroll != null:
 		_roster_scroll.custom_minimum_size.y = 240.0 if mode == &"portrait" else 260.0
-		_update_operator_rail_insets.call_deferred()
+		_queue_operator_grid_reflow()
 	if _intel_scroll != null:
 		_intel_scroll.custom_minimum_size.y = 170.0 if mode == &"portrait" else 0.0
-	if _grid != null:
-		_grid.columns = _operator_grid_columns(mode)
 	if _filter_bar != null:
 		_filter_bar.set_compact(true)
 		_filter_bar.set_roomy(false)
@@ -1993,6 +2067,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 func _on_viewport_resized() -> void:
 	if _shell != null:
 		_on_layout_mode_changed.call_deferred(_shell.layout_mode())
+		_queue_operator_grid_reflow()
 
 
 func _on_training() -> void:

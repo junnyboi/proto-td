@@ -74,17 +74,29 @@ func _verify_managed_order_rail(game: Node) -> void:
 
 func _verify_live_grid_reflow() -> void:
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
-	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "regular Field Team cards are not one horizontal rail")
+	_check(operator_grid != null and operator_grid.columns >= 2, "regular Field Team does not use available columns")
+	if operator_grid == null:
+		return
+	var regular_columns := operator_grid.columns
+	var first_card := operator_grid.get_child(0) if operator_grid.get_child_count() > 0 else null
+	root.size = Vector2i(1440, 800)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(operator_grid.columns == regular_columns, "same-mode Field Team resize changed its fitted regular columns")
+	_check(operator_grid.get_child(0) == first_card, "same-mode responsive reflow rebuilt operator cards")
 	root.size = Vector2i(1920, 900)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "wide Field Team resize changed the horizontal rail")
+	_check(operator_grid.columns > regular_columns, "same-mode wide resize did not add a Field Team column")
+	_check(operator_grid.get_child(0) == first_card, "wide responsive reflow rebuilt operator cards")
 	root.size = Vector2i(1280, 720)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(operator_grid != null and operator_grid.columns == operator_grid.get_child_count(), "regular Field Team resize changed the horizontal rail")
+	_check(operator_grid.columns == regular_columns, "same-mode resize did not restore Field Team columns")
+	_check(operator_grid.get_child(0) == first_card, "restored responsive reflow rebuilt operator cards")
 
 
 func _verify_layout(label: String, viewport: Vector2i) -> void:
@@ -236,46 +248,52 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(faction != null, "%s %s is missing" % [label, faction_name])
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
 	if operator_grid != null:
-		_check(operator_grid.columns == operator_grid.get_child_count(), "%s operator cards are not one horizontal rail" % label)
-		var row_y := -1.0
+		var mode := StringName(shell.call("layout_mode")) if shell != null else &"portrait"
+		var expected_columns := int(_mission.call("_operator_grid_columns", mode))
+		var expected_card_width := float(_mission.call("_operator_card_width", mode))
+		_check(operator_grid.columns == expected_columns, "%s operator columns do not match measured capacity" % label)
+		if label == "wide":
+			_check(operator_grid.columns >= 3, "wide Field Team does not pack all readable columns")
+		if label == "regular":
+			_check(operator_grid.columns >= 2, "regular Field Team does not use at least two columns")
+		if portrait:
+			_check(operator_grid.columns == 1, "%s Field Team does not use a one-column fallback" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
-				if row_y < 0.0:
-					row_y = (child as Button).position.y
-				_check(absf((child as Button).position.y - row_y) <= EPSILON, "%s operator card escaped the horizontal row" % label)
-				_check(absf((child as Button).size.x - 520.0) <= EPSILON, "%s operator card is not the fixed doubled 520px width" % label)
-				var card_label := child.get_node_or_null("PresentationLabel") as Label
-				var portrait := child.get_node_or_null("OperatorPortrait") as TextureRect
-				var hover_glow := child.get_node_or_null("OperatorHoverGlow") as Panel
+				var button := child as Button
+				_check(absf(button.custom_minimum_size.x - expected_card_width) <= EPSILON, "%s operator card width does not fit the measured grid" % label)
+				_check(button.custom_minimum_size.x >= (240.0 if portrait else 300.0) and button.custom_minimum_size.x <= 520.0, "%s operator card escaped readable bounds" % label)
+				var card_label := button.get_node_or_null("PresentationLabel") as Label
+				var portrait_node := button.get_node_or_null("OperatorPortrait") as TextureRect
+				var hover_glow := button.get_node_or_null("OperatorHoverGlow") as Panel
 				_check(card_label != null and card_label.get_theme_font_size(&"font_size") >= 24, "%s operator-card copy is below the global 1.5x scale" % label)
-				_check(portrait != null, "%s operator-card portrait pane is missing" % label)
-				_check(bool((child as Button).get_meta(&"operator_feedback_enabled", false)), "%s operator-card feedback metadata is missing" % label)
-				_check(bool((child as Button).get_meta(&"operator_hover_glow_enabled", false)) and hover_glow != null, "%s operator-card luminous hover border is missing" % label)
-				var normal_style := (child as Button).get_theme_stylebox(&"normal")
-				var hover_style := (child as Button).get_theme_stylebox(&"hover")
+				_check(portrait_node != null, "%s operator-card portrait pane is missing" % label)
+				_check(bool(button.get_meta(&"operator_feedback_enabled", false)), "%s operator-card feedback metadata is missing" % label)
+				_check(bool(button.get_meta(&"operator_hover_glow_enabled", false)) and hover_glow != null, "%s operator-card luminous hover border is missing" % label)
+				var normal_style := button.get_theme_stylebox(&"normal")
+				var hover_style := button.get_theme_stylebox(&"hover")
 				if normal_style is StyleBoxTexture and hover_style is StyleBoxTexture:
 					_check((normal_style as StyleBoxTexture).modulate_color.is_equal_approx((hover_style as StyleBoxTexture).modulate_color), "%s operator hover washes out the entire card instead of using its glow border" % label)
 				if hover_glow != null:
 					var glow_style := hover_glow.get_theme_stylebox(&"panel") as StyleBoxFlat
 					_check(glow_style != null and glow_style.border_width_left >= 2 and glow_style.shadow_size >= 8, "%s operator-card hover border is not luminous" % label)
 				if card_label != null:
-					_check(_inside(child as Control, card_label), "%s %s operator-card information pane overflows" % [label, child.name])
+					_check(_inside(button, card_label), "%s %s operator-card information pane overflows" % [label, child.name])
 					_check(card_label.offset_left >= 24.0, "%s operator-card horizontal padding is below 24px" % label)
 					_check(card_label.offset_top >= 12.0 and -card_label.offset_bottom >= 12.0, "%s operator-card vertical padding is below 12px" % label)
 					_check(card_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and card_label.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "%s operator information is not centered in its pane" % label)
-				if portrait != null:
-					_check(_inside(child as Control, portrait), "%s operator portrait pane overflows" % label)
-					var expected_portrait_width := minf(180.0, maxf(90.0, (child as Control).size.x * 0.30))
-					_check(portrait.size.x >= expected_portrait_width and portrait.size.y >= (child as Control).size.y - 24.0, "%s operator portrait is not enlarged with the doubled card" % label)
-					_check(card_label == null or card_label.get_global_rect().end.x <= portrait.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
+				if portrait_node != null:
+					_check(_inside(button, portrait_node), "%s operator portrait pane overflows" % label)
+					var expected_portrait_width := minf(180.0, maxf(90.0, button.size.x * 0.30))
+					_check(portrait_node.size.x >= expected_portrait_width and portrait_node.size.y >= button.size.y - 24.0, "%s operator portrait is not enlarged with the readable card" % label)
+					_check(card_label == null or card_label.get_global_rect().end.x <= portrait_node.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if roster_scroll != null:
-		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s fixed operator rail cannot scroll horizontally when narrower than 520px" % label)
-		_check(roster_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s operator carousel still scrolls vertically" % label)
-		_check(bool(roster_scroll.get_meta(&"operator_snap_enabled", false)), "%s operator carousel lacks snap telemetry" % label)
-		_check(is_equal_approx(float(roster_scroll.get_meta(&"operator_snap_stride", 0.0)), 532.0), "%s operator carousel snap stride does not match fixed card geometry" % label)
-	_check(rail_inset != null and int(rail_inset.get_theme_constant(&"margin_left")) >= 8 and int(rail_inset.get_theme_constant(&"margin_right")) >= 8, "%s operator carousel lacks centered edge insets" % label)
-	_check(snap_timer != null and snap_timer.one_shot and is_equal_approx(snap_timer.wait_time, 0.14), "%s operator carousel lacks bounded idle snapping" % label)
+		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s responsive operator grid still scrolls horizontally" % label)
+		_check(roster_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s responsive operator grid cannot scroll vertically" % label)
+		_check(not bool(roster_scroll.get_meta(&"operator_snap_enabled", true)), "%s obsolete carousel snapping remains active" % label)
+	_check(rail_inset != null and int(rail_inset.get_theme_constant(&"margin_left")) >= 8 and int(rail_inset.get_theme_constant(&"margin_right")) >= 8, "%s responsive operator grid lacks safe edge insets" % label)
+	_check(snap_timer != null and snap_timer.one_shot, "%s retained snap timer contract is malformed" % label)
 	if label == "regular" and command_scroll != null:
 		_check(command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "regular mission cannot scroll its expanded Field Team workspace")
 		var footer := _mission.find_child("MissionActionDock", true, false) as BoxContainer

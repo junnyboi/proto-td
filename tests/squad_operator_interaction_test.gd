@@ -30,7 +30,7 @@ func _run() -> void:
 	await process_frame
 	_verify_promoted_portraits()
 	await _verify_sorting()
-	await _verify_horizontal_snap()
+	await _verify_responsive_grid()
 	await _verify_selection_feedback_and_reorder()
 	_dispose(game)
 	await process_frame
@@ -223,7 +223,7 @@ func _verify_selection_feedback_and_reorder() -> void:
 		)
 		await create_timer(0.20).timeout
 		_check(animated_card.scale.x >= 1.015 and animated_card.scale.x <= 1.021, "operator hover scale is missing or excessive")
-		_check(animated_card.size.is_equal_approx(card_size), "operator hover animation changed carousel layout geometry")
+		_check(animated_card.size.is_equal_approx(card_size), "operator hover animation changed responsive grid geometry")
 		_check(hover_glow == null or hover_glow.self_modulate.a >= 0.95, "operator hover lacks its subtle luminous response")
 		_mission.call(
 			"_animate_operator_card_scale",
@@ -237,35 +237,39 @@ func _verify_selection_feedback_and_reorder() -> void:
 		animated_card.set_pressed_no_signal(true)
 
 
-func _verify_horizontal_snap() -> void:
+func _verify_responsive_grid() -> void:
 	var scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
 	var grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
-	_check(scroll != null and grid != null and grid.get_child_count() >= 3, "horizontal snap fixture lacks a populated carousel")
+	_check(scroll != null and grid != null and grid.get_child_count() >= 3, "responsive grid fixture lacks populated cards")
 	if scroll == null or grid == null or grid.get_child_count() < 3:
 		return
-	_check(grid.columns == grid.get_child_count(), "operator cards are not arranged in one horizontal row")
-	_check(is_equal_approx(float(scroll.get_meta(&"operator_snap_stride", 0.0)), 532.0), "operator carousel does not publish its fixed snap stride")
-	var drag_press := InputEventMouseButton.new()
-	drag_press.button_index = MOUSE_BUTTON_LEFT
-	drag_press.pressed = true
-	_mission.call("_on_operator_scrollbar_input", drag_press)
+	var regular_columns := grid.columns
+	var first_card := grid.get_child(0)
+	_check(regular_columns >= 2 and regular_columns < grid.get_child_count(), "regular Field Team does not pack a bounded grid")
+	_check(scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "responsive grid owns the wrong scroll axis")
+	_check(not bool(scroll.get_meta(&"operator_snap_enabled", true)), "obsolete carousel snapping remains enabled")
 	scroll.scroll_horizontal = 730
-	await create_timer(0.20).timeout
-	_check(scroll.scroll_horizontal == 730, "operator carousel snapped while the scrollbar was still being dragged")
-	var drag_release := InputEventMouseButton.new()
-	drag_release.button_index = MOUSE_BUTTON_LEFT
-	drag_release.pressed = false
-	_mission.call("_on_operator_scrollbar_input", drag_release)
-	await create_timer(0.38).timeout
-	_check(abs(scroll.scroll_horizontal - 532) <= 1, "operator carousel did not snap to the nearest card boundary: %d" % scroll.scroll_horizontal)
-	_check(int(scroll.get_meta(&"operator_snap_target_index", -1)) == 1, "operator carousel reported the wrong snapped card")
-	ProjectSettings.set_setting("accessibility/reduced_motion", true)
-	scroll.scroll_horizontal = 880
-	await process_frame
 	_mission.call("_snap_operator_rail")
 	await process_frame
-	_check(abs(scroll.scroll_horizontal - 1064) <= 1, "reduced motion did not preserve immediate exact card snapping: %d" % scroll.scroll_horizontal)
-	ProjectSettings.set_setting("accessibility/reduced_motion", false)
+	_check(scroll.scroll_horizontal == 0, "disabled responsive grid accepted horizontal carousel movement")
+	root.size = Vector2i(1440, 800)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(grid.columns == regular_columns, "same-mode responsive grid changed regular fitted columns")
+	_check(grid.get_child(0) == first_card, "same-mode responsive grid rebuilt operator cards")
+	root.size = Vector2i(1920, 900)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(grid.columns > regular_columns, "wide responsive grid did not add an operator column")
+	_check(grid.get_child(0) == first_card, "wide responsive grid rebuilt operator cards")
+	root.size = Vector2i(1280, 720)
+	await process_frame
+	await process_frame
+	await process_frame
+	_check(grid.columns == regular_columns, "responsive grid did not restore regular columns")
+	_check(grid.get_child(0) == first_card, "restored responsive grid rebuilt operator cards")
 
 
 func _feedback_tween_active(card: Control) -> bool:
