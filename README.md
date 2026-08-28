@@ -75,13 +75,19 @@ presentation resources but cannot replace core code or data. Failed or in-flight
 packs preserve incumbent operator visuals and can never turn enemies into
 fallback squares.
 
-As soon as Title opens, the Premium Resonance service downloads all six cinematic
-streams sequentially—current orientation first—and a dedicated mission service
-queues configured S1–S16 prologues in campaign order. Both remain nonblocking;
-selected missions are promoted and each finalized mapping verifies exact
-size and SHA-256, and caches them under `user://`. A pull joins or prioritizes
-the shared transfer instead of duplicating it, then plays the verified file
-through `VideoStreamTheora`; the final identity plate remains a safe fallback. See
+As soon as Title opens, the host supplies a conservative `--network-profile`
+derived from the browser's Network Information API. Constrained/save-data links
+queue no speculative assets; slow links queue one predicted operator class;
+standard links queue two classes, one Premium Resonance film, and two mission
+prologues; fast links may queue three classes and six films from each cinematic
+family. Downloads remain sequential within each service and foreground requests
+for a selected operator, pull, or mission always bypass the speculative limit.
+Settings persists a **Background Downloads** preference that can cancel and clear
+all speculative class, Premium Resonance, and mission-prologue work for metered
+connections without disabling required on-demand transfers. Each finalized
+mapping verifies exact size and SHA-256 and caches under `user://`. A pull joins
+or prioritizes the shared transfer instead of duplicating it, then plays the
+verified file through `VideoStreamTheora`; the final identity plate remains a safe fallback. See
 [`docs/CINEMATIC_STREAMING.md`](docs/CINEMATIC_STREAMING.md) for deployment
 arguments, the stream manifest, and release checks.
 

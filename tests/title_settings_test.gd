@@ -22,6 +22,7 @@ func _run() -> void:
 	_capture_buses()
 	_check(PREFS.locale(PATH) == &"en-US", "locale default is not English")
 	_check(not PREFS.master_muted(PATH), "missing Master mute preference did not default to unmuted")
+	_check(PREFS.background_downloads_enabled(PATH), "background downloads did not default to enabled")
 	_check(PREFS.mark_pan_hint_seen(PATH), "unrelated navigation preference was not created")
 	_check(not PREFS.has_seen_command_tutorial(PATH), "command tutorial should be unseen by default")
 	_check(PREFS.mark_command_tutorial_seen(PATH), "command tutorial completion was not created")
@@ -111,12 +112,18 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(_bus_near(&"Master", 0.35), "master-volume edit did not preview")
 	_check(not bool(title.call("title_music_enabled")), "music edit did not preview")
 	_check(bool(title.call("reduced_motion")) and bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)), "reduced-motion edit did not preview")
+	_check(bool(title.call("background_downloads_enabled")), "background-download draft changed runtime policy before Apply")
+	_check(
+		bool(root.get_node("ContentPacks").call("background_downloads_enabled")),
+		"background-download draft cancelled content-pack work before Apply",
+	)
 	_check(_near(float(title.call("text_scale")), 1.35) and _near(float(root.get_node("TextScale").call("value")), 1.35), "text-scale edit did not preview globally")
 	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == roundi(project_body_base * 1.35), "Title/Settings shared theme compounded during preview")
 	_check(PREFS.frame_limit(PATH) == 0, "draft frame limit persisted before Apply")
 	_check(_near(PREFS.master_volume(PATH), 1.0), "draft volume persisted before Apply")
 	_check(not PREFS.master_muted(PATH), "draft Master mute state persisted before Apply")
 	_check(PREFS.locale(PATH) == &"en-US", "draft locale persisted before Apply")
+	_check(PREFS.background_downloads_enabled(PATH), "draft background-download state persisted before Apply")
 	title.call("_close_settings")
 	await _wait_for_transition(state_root, &"CLOSED")
 	_check(StringName(title.call("screen_state")) == &"TITLE", "Cancel did not restore TITLE state")
@@ -124,6 +131,8 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(_bus_near(&"Master", 1.0), "Cancel did not restore master volume")
 	_check(bool(title.call("title_music_enabled")), "Cancel did not restore music preference")
 	_check(not bool(title.call("reduced_motion")) and not bool(ProjectSettings.get_setting("accessibility/reduced_motion", false)), "Cancel did not restore reduced motion")
+	_check(bool(title.call("background_downloads_enabled")), "Cancel did not restore background downloads")
+	_check(bool(root.get_node("ContentPacks").call("background_downloads_enabled")), "Cancel did not restore the content-pack background policy")
 	_check(_near(float(title.call("text_scale")), 1.0) and _near(float(root.get_node("TextScale").call("value")), 1.0), "Cancel did not restore global text scale")
 	_check(project_theme.get_font_size(&"font_size", &"AuiBodyLabel") == project_body_base, "Cancel did not restore the shared project theme baseline")
 	_check(music.call("current_id") == &"title_lunaris", "Cancel did not restore title cue")
@@ -149,6 +158,8 @@ func _verify_apply(game: Node, music: Node) -> void:
 	_check(_near(PREFS.text_scale(PATH), 1.35), "text-scale batch was not saved")
 	_check(PREFS.locale(PATH) == &"zh-CN", "locale batch was not saved")
 	_check(not PREFS.title_music_enabled(PATH), "music preference batch was not saved")
+	_check(not PREFS.background_downloads_enabled(PATH), "background-download preference batch was not saved")
+	_check(not bool(root.get_node("ContentPacks").call("background_downloads_enabled")), "Apply did not disable content-pack background work")
 	_check(PREFS.has_seen_pan_hint(PATH), "batch save removed unrelated navigation preference")
 	_check(PREFS.has_seen_command_tutorial(PATH), "batch save removed tutorial completion")
 	await _release(first, game)
@@ -157,6 +168,7 @@ func _verify_apply(game: Node, music: Node) -> void:
 	_check(_near(float(second.call("master_volume")), 0.35), "committed master volume was not restored")
 	_check(int(second.call("frame_limit")) == 60 and bool(second.call("reduced_motion")), "committed graphics were not restored")
 	_check(_near(float(second.call("text_scale")), 1.35) and _near(float(root.get_node("TextScale").call("value")), 1.35), "committed text scale was not restored")
+	_check(not bool(second.call("background_downloads_enabled")), "committed background-download preference was not restored")
 	_check(StringName(music.call("current_id")).is_empty(), "disabled committed title music did not stay silent")
 	await _release(second, game)
 
@@ -186,6 +198,7 @@ func _edit_draft(title: Control) -> void:
 	(title.find_child("LocaleSelector", true, false) as Node).call("select_locale", &"zh-CN")
 	(title.find_child("MusicButton", true, false) as Button).pressed.emit()
 	(title.find_child("MotionButton", true, false) as Button).pressed.emit()
+	(title.find_child("BackgroundDownloadsButton", true, false) as Button).pressed.emit()
 	(title.find_child("TextScaleSlider", true, false) as HSlider).value = 135.0
 
 

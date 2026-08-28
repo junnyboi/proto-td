@@ -12,6 +12,7 @@ func _run() -> void:
 	var args := _parse_user_args()
 	var output_path := String(args.get("output", ""))
 	var show_settings := String(args.get("settings", "false")).to_lower() == "true"
+	var settings_focus := String(args.get("settings-focus", ""))
 	var locale_id := StringName(args.get("locale", "en-US"))
 	if output_path.is_empty():
 		push_error("visual output path missing")
@@ -33,7 +34,13 @@ func _run() -> void:
 		var scroll := title.find_child("SettingsScroll", true, false) as ScrollContainer
 		if scroll != null:
 			scroll.follow_focus = false
-			scroll.scroll_vertical = 0
+			if settings_focus == "background-downloads":
+				var target := title.find_child("BackgroundDownloadsButton", true, false) as Control
+				if target != null:
+					target.grab_focus()
+					scroll.ensure_control_visible(target)
+			else:
+				scroll.scroll_vertical = 0
 			await get_tree().process_frame
 	var image := get_viewport().get_texture().get_image()
 	var save_error := image.save_png(output_path)

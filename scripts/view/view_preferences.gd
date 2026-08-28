@@ -16,6 +16,8 @@ const MASTER_VOLUME_KEY := "master_volume"
 const MASTER_MUTED_KEY := "master_muted"
 const MUSIC_VOLUME_KEY := "music_volume"
 const SFX_VOLUME_KEY := "sfx_volume"
+const NETWORK_SECTION := "network"
+const BACKGROUND_DOWNLOADS_ENABLED_KEY := "background_downloads_enabled"
 const GRAPHICS_SECTION := "graphics"
 const REDUCED_MOTION_KEY := "reduced_motion"
 const FRAME_LIMIT_KEY := "frame_limit"
@@ -29,6 +31,7 @@ const VALID_LOCALES: Array[StringName] = [&"en-US", &"zh-CN"]
 const BATCH_KEYS: Array[StringName] = [
 		&"locale", &"title_music_enabled", &"master_volume", &"master_muted", &"music_volume",
 		&"sfx_volume", &"frame_limit", &"reduced_motion", &"text_scale",
+		&"background_downloads_enabled",
 	]
 
 
@@ -119,6 +122,17 @@ static func set_sfx_volume(value: float, path: String = DEFAULT_PATH) -> bool:
 	return _set_value(AUDIO_SECTION, SFX_VOLUME_KEY, clampf(value, 0.0, 1.0), path)
 
 
+static func background_downloads_enabled(path: String = DEFAULT_PATH) -> bool:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return true
+	return bool(config.get_value(NETWORK_SECTION, BACKGROUND_DOWNLOADS_ENABLED_KEY, true))
+
+
+static func set_background_downloads_enabled(enabled: bool, path: String = DEFAULT_PATH) -> bool:
+	return _set_value(NETWORK_SECTION, BACKGROUND_DOWNLOADS_ENABLED_KEY, enabled, path)
+
+
 static func reduced_motion(path: String = DEFAULT_PATH) -> bool:
 	var config := ConfigFile.new()
 	if config.load(path) != OK:
@@ -171,6 +185,11 @@ static func save_batch(values: Dictionary, path: String = DEFAULT_PATH) -> bool:
 	config.set_value(AUDIO_SECTION, MASTER_MUTED_KEY, bool(values[&"master_muted"]))
 	config.set_value(AUDIO_SECTION, MUSIC_VOLUME_KEY, float(values[&"music_volume"]))
 	config.set_value(AUDIO_SECTION, SFX_VOLUME_KEY, float(values[&"sfx_volume"]))
+	config.set_value(
+		NETWORK_SECTION,
+		BACKGROUND_DOWNLOADS_ENABLED_KEY,
+		bool(values[&"background_downloads_enabled"]),
+	)
 	config.set_value(GRAPHICS_SECTION, FRAME_LIMIT_KEY, int(values[&"frame_limit"]))
 	config.set_value(GRAPHICS_SECTION, REDUCED_MOTION_KEY, bool(values[&"reduced_motion"]))
 	config.set_value(ACCESSIBILITY_SECTION, TEXT_SCALE_KEY, float(values[&"text_scale"]))
@@ -204,6 +223,8 @@ static func _valid_batch(values: Dictionary) -> bool:
 	if typeof(values[&"master_muted"]) != TYPE_BOOL:
 		return false
 	if typeof(values[&"reduced_motion"]) != TYPE_BOOL:
+		return false
+	if typeof(values[&"background_downloads_enabled"]) != TYPE_BOOL:
 		return false
 	for key: StringName in [&"master_volume", &"music_volume", &"sfx_volume"]:
 		var value: Variant = values[key]

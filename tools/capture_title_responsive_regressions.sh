@@ -11,18 +11,20 @@ mkdir -p "$OUT_DIR" "$USER_DATA"
 
 capture() {
   local label=$1
-  local width=$2
-  local height=$3
-  local settings=$4
+	local width=$2
+	local height=$3
+	local settings=$4
+	local settings_focus=${5:-}
   local output="$OUT_DIR/$label.png"
   local log="$OUT_DIR/$label.log"
 
-  xvfb-run -a -s "-screen 0 ${width}x${height}x24 -ac +extension GLX +render -noreset" \
+	timeout 180 xvfb-run -a -s "-screen 0 ${width}x${height}x24 -ac +extension GLX +render -noreset" \
     env XDG_DATA_HOME="$USER_DATA/$label" GODOT_SILENCE_ROOT_WARNING=1 \
     "$GODOT_BIN" --path "$ROOT" --display-driver x11 --audio-driver Dummy \
       --rendering-method gl_compatibility --resolution "${width}x${height}" \
-      res://test/title_responsive_visual_harness.tscn -- \
-      "--output=$output" "--settings=$settings" >"$log" 2>&1
+	      res://test/title_responsive_visual_harness.tscn -- \
+	      "--output=$output" "--settings=$settings" \
+	      "--settings-focus=$settings_focus" >"$log" 2>&1
 
   grep -q "TITLE_RESPONSIVE_VISUAL_OK|$output|${width}x${height}|settings=$settings" "$log"
   identify -format '%wx%h' "$output" | grep -qx "${width}x${height}"
@@ -36,6 +38,7 @@ capture ultrawide-settings 2560 1080 true
 capture short-landscape-title 1024 576 false
 capture short-landscape-settings 1024 576 true
 capture portrait-title 720 1280 false
+capture portrait-settings-network 720 1280 true background-downloads
 
 sha256sum "$OUT_DIR"/*.png >"$OUT_DIR/SHA256SUMS"
 printf '%s\n' 'TITLE_RESPONSIVE_SCREENSHOT_REGRESSIONS_OK'

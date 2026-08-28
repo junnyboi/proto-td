@@ -7,13 +7,17 @@ extends Node
 signal pack_state_changed(pack_id: StringName, state: StringName, current: int, total: int)
 signal pack_ready(pack_id: StringName)
 signal pack_failed(pack_id: StringName, reason: String)
+signal background_policy_changed(enabled: bool, network_profile: StringName, class_limit: int)
 
+const BackgroundDownloadStatusType := preload("res://scripts/view/background_download_status.gd")
 const ARG_PREFIX := "--content-pack="
+const NETWORK_PROFILE_ARG_PREFIX := "--network-profile="
 const CACHE_DIR := "user://content-packs"
 const COPY_CHUNK_BYTES := 256 * 1024
 const DOWNLOAD_TIMEOUT_SECONDS := 180.0
 const MAX_PACK_BYTES := 64 * 1024 * 1024
 const MAX_PREDICTIVE_CLASSES := 3
+const NETWORK_REFRESH_SECONDS := 5.0
 const ADVANCED_CLASSES := [
 	"banner_guard",
 	"defender",
@@ -31,19 +35,32 @@ const ADVANCED_CLASSES := [
 var _specs: Dictionary = {}
 var _queue: Array[String] = []
 var _queued: Dictionary = {}
+var _background_requests: Dictionary = {}
 var _loaded: Dictionary = {}
 var _failed: Dictionary = {}
 var _request: HTTPRequest = null
 var _active_id := ""
 var _active_total := 0
 var _last_progress := 0
+var _active_background := false
+var _background_downloads_enabled := true
+var _network_profile: StringName = &"standard"
+var _background_class_limit := 2
 
 
 func _ready() -> void:
 	set_process(false)
+	if OS.has_feature("web"):
+		var network_timer := Timer.new()
+		network_timer.name = "NetworkProfileRefresh"
+		network_timer.wait_time = NETWORK_REFRESH_SECONDS
+		network_timer.autostart = true
+		network_timer.timeout.connect(_refresh_web_network_profile)
+		add_child(network_timer)
 
 
 func configure(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> void:
+	_apply_network_profile(network_profile_from_arguments(arguments))
 	for argument: String in arguments:
 		if not argument.begins_with(ARG_PREFIX):
 			continue
@@ -51,6 +68,9 @@ func configure(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> voi
 		if spec.is_empty():
 			continue
 		_specs[String(spec[&"id"])] = spec
+	background_policy_changed.emit(
+		_background_downloads_enabled, _network_profile, _background_class_limit,
+	)
 
 
 func prefetch_from_title(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> void:
@@ -67,7 +87,7 @@ func request_resource(path: String) -> bool:
 	return FileAccess.file_exists(path)
 
 
-func request_pack(pack_id: String, prioritize := true) -> bool:
+func request_pack(pack_id: String, prioritize := true, background := false) -> bool:
 	if _loaded.has(pack_id):
 		return true
 	if not _specs.has(pack_id):
@@ -77,8 +97,14 @@ func request_pack(pack_id: String, prioritize := true) -> bool:
 	if _failed.has(pack_id):
 		return false
 	if _active_id == pack_id:
+		if not background:
+			_active_background = false
+			BackgroundDownloadStatusType.publish(&"operator", StringName(pack_id), &"foreground")
 		return false
 	if _queued.has(pack_id):
+		if not background:
+			_background_requests[pack_id] = false
+			BackgroundDownloadStatusType.publish(&"operator", StringName(pack_id), &"foreground")
 		if prioritize:
 			_queue.erase(pack_id)
 			_queue.push_front(pack_id)
@@ -88,17 +114,24 @@ func request_pack(pack_id: String, prioritize := true) -> bool:
 	else:
 		_queue.append(pack_id)
 	_queued[pack_id] = true
+	_background_requests[pack_id] = background
 	var spec: Dictionary = _specs[pack_id]
 	pack_state_changed.emit(StringName(pack_id), &"queued", 0, int(spec[&"bytes"]))
+	if background:
+		BackgroundDownloadStatusType.publish(
+			&"operator", StringName(pack_id), &"queued", 0, int(spec[&"bytes"]),
+		)
 	_pump_queue.call_deferred()
 	return false
 
 
-func request_class(class_id: String, prioritize := true) -> bool:
+func request_class(class_id: String, prioritize := true, background := true) -> bool:
 	var pack_id := pack_id_for_class(class_id)
 	if pack_id.is_empty():
 		return false
-	return request_pack(pack_id, prioritize)
+	if background:
+		return _request_background_pack(pack_id, prioritize)
+	return request_pack(pack_id, prioritize, false)
 
 
 func prefetch_class_ids(
@@ -107,20 +140,25 @@ func prefetch_class_ids(
 		limit := 0,
 	) -> Array[String]:
 	var requested: Array[String] = []
+	if not _background_downloads_enabled or _background_class_limit <= 0:
+		return requested
+	var effective_limit := _background_class_limit
+	if limit > 0:
+		effective_limit = mini(effective_limit, limit)
 	for value: Variant in class_ids:
 		var class_id := String(value)
 		var pack_id := pack_id_for_class(class_id)
 		if pack_id.is_empty() or requested.has(pack_id):
 			continue
 		requested.append(pack_id)
-		if limit > 0 and requested.size() >= limit:
+		if requested.size() >= effective_limit:
 			break
 	if prioritize:
 		for index: int in range(requested.size() - 1, -1, -1):
-			request_pack(requested[index], true)
+			_request_background_pack(requested[index], true)
 	else:
 		for pack_id: String in requested:
-			request_pack(pack_id, false)
+			_request_background_pack(pack_id, false)
 	return requested
 
 
@@ -135,6 +173,32 @@ func prefetch_roster(
 
 func configured_pack_count() -> int:
 	return _specs.size()
+
+
+func set_background_downloads_enabled(enabled: bool) -> void:
+	if _background_downloads_enabled == enabled:
+		return
+	_background_downloads_enabled = enabled
+	if not enabled:
+		_enforce_background_limit(0)
+		BackgroundDownloadStatusType.publish(&"operator", &"", &"disabled")
+	background_policy_changed.emit(enabled, _network_profile, _background_class_limit)
+
+
+func background_downloads_enabled() -> bool:
+	return _background_downloads_enabled
+
+
+func network_profile() -> StringName:
+	return _network_profile
+
+
+func background_class_limit() -> int:
+	return _background_class_limit
+
+
+func adaptive_prefetch_limits() -> Dictionary:
+	return prefetch_limits_for_profile(_network_profile)
 
 
 func is_pack_ready(pack_id: String) -> bool:
@@ -154,8 +218,12 @@ func reset_for_tests() -> void:
 	_specs.clear()
 	_queue.clear()
 	_queued.clear()
+	_background_requests.clear()
 	_loaded.clear()
 	_failed.clear()
+	_background_downloads_enabled = true
+	_network_profile = &"standard"
+	_background_class_limit = 2
 
 
 func _process(_delta: float) -> void:
@@ -169,6 +237,10 @@ func _process(_delta: float) -> void:
 		return
 	_last_progress = downloaded
 	pack_state_changed.emit(StringName(_active_id), &"downloading", downloaded, total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"operator", StringName(_active_id), &"downloading", downloaded, total,
+		)
 
 
 func _pump_queue() -> void:
@@ -177,9 +249,17 @@ func _pump_queue() -> void:
 	while not _queue.is_empty():
 		var pack_id: String = _queue.pop_front()
 		_queued.erase(pack_id)
+		_active_background = bool(_background_requests.get(pack_id, false))
+		_background_requests.erase(pack_id)
 		if _loaded.has(pack_id):
 			continue
 		if _mount_cached(pack_id):
+			if _active_background:
+				var bytes := int((_specs.get(pack_id, {}) as Dictionary).get(&"bytes", 0))
+				BackgroundDownloadStatusType.publish(
+					&"operator", StringName(pack_id), &"ready", bytes, bytes,
+				)
+			_active_background = false
 			continue
 		_start_download(pack_id)
 		return
@@ -203,6 +283,10 @@ func _start_download(pack_id: String) -> void:
 	add_child(_request)
 	set_process(true)
 	pack_state_changed.emit(StringName(pack_id), &"downloading", 0, _active_total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"operator", StringName(pack_id), &"downloading", 0, _active_total,
+		)
 	var error := _request.request(String(spec[&"url"]))
 	if error != OK:
 		_finish_failed(pack_id, "Request could not start (%s)." % error_string(error))
@@ -215,6 +299,7 @@ func _on_request_completed(
 		body: PackedByteArray,
 ) -> void:
 	var pack_id := _active_id
+	var completed_background := _active_background
 	var spec: Dictionary = _specs.get(pack_id, {})
 	_dispose_request()
 	if result != HTTPRequest.RESULT_SUCCESS or response_code < 200 or response_code >= 300:
@@ -240,6 +325,11 @@ func _on_request_completed(
 		_cleanup_file(path)
 		_finish_failed(pack_id, "Verified content pack could not be mounted.")
 		return
+	if completed_background:
+		BackgroundDownloadStatusType.publish(
+			&"operator", StringName(pack_id), &"ready",
+			int(spec.get(&"bytes", 0)), int(spec.get(&"bytes", 0)),
+		)
 	_pump_queue.call_deferred()
 
 
@@ -267,11 +357,14 @@ func _mount_pack(pack_id: String, path: String) -> bool:
 
 
 func _finish_failed(pack_id: String, reason: String) -> void:
+	var failed_background := _active_background
 	_dispose_request()
 	_clear_active()
 	_failed[pack_id] = reason
 	push_warning("Content pack '%s' failed: %s" % [pack_id, reason])
 	pack_state_changed.emit(StringName(pack_id), &"failed", 0, 0)
+	if failed_background:
+		BackgroundDownloadStatusType.publish(&"operator", StringName(pack_id), &"failed")
 	pack_failed.emit(StringName(pack_id), reason)
 	_pump_queue.call_deferred()
 
@@ -296,6 +389,7 @@ func _clear_active() -> void:
 	_active_id = ""
 	_active_total = 0
 	_last_progress = 0
+	_active_background = false
 	set_process(false)
 
 
@@ -363,6 +457,108 @@ static func pack_id_for_class(class_id: String) -> String:
 	if not ADVANCED_CLASSES.has(class_id):
 		return ""
 	return "operator-%s" % class_id.replace("_", "-")
+
+
+func _request_background_pack(pack_id: String, prioritize: bool) -> bool:
+	if not _background_downloads_enabled or _background_class_limit <= 0:
+		return false
+	if _loaded.has(pack_id) or _active_id == pack_id or _queued.has(pack_id):
+		return request_pack(pack_id, prioritize, true)
+	var pending := _background_pending_count()
+	if pending >= _background_class_limit:
+		if not prioritize:
+			return false
+		var displaced := _last_queued_background_pack()
+		if displaced.is_empty():
+			return false
+		_queue.erase(displaced)
+		_queued.erase(displaced)
+		_background_requests.erase(displaced)
+	return request_pack(pack_id, prioritize, true)
+
+
+func _background_pending_count() -> int:
+	var count := 1 if _active_background else 0
+	for pack_id: String in _queue:
+		if bool(_background_requests.get(pack_id, false)):
+			count += 1
+	return count
+
+
+func _last_queued_background_pack() -> String:
+	for index: int in range(_queue.size() - 1, -1, -1):
+		var pack_id := _queue[index]
+		if bool(_background_requests.get(pack_id, false)):
+			return pack_id
+	return ""
+
+
+func _enforce_background_limit(limit: int) -> void:
+	var allowance := maxi(limit - (1 if _active_background else 0), 0)
+	if limit <= 0 and _active_background:
+		_cancel_active()
+		allowance = 0
+	var background_total := 0
+	for pack_id: String in _queue:
+		if bool(_background_requests.get(pack_id, false)):
+			background_total += 1
+	for index: int in range(_queue.size() - 1, -1, -1):
+		if background_total <= allowance:
+			break
+		var queued_id := _queue[index]
+		if not bool(_background_requests.get(queued_id, false)):
+			continue
+		_queue.remove_at(index)
+		_queued.erase(queued_id)
+		_background_requests.erase(queued_id)
+		background_total -= 1
+	if _request == null and _active_id.is_empty() and not _queue.is_empty():
+		_pump_queue.call_deferred()
+
+
+func _refresh_web_network_profile() -> void:
+	if not OS.has_feature("web"):
+		return
+	var value: Variant = JavaScriptBridge.eval(
+		"String(window.__protosNetworkProfile || 'standard')", true,
+	)
+	var profile := StringName(String(value))
+	if profile not in [&"constrained", &"slow", &"standard", &"fast"]:
+		profile = &"standard"
+	if profile == _network_profile:
+		return
+	_apply_network_profile(profile)
+	background_policy_changed.emit(
+		_background_downloads_enabled, _network_profile, _background_class_limit,
+	)
+
+
+func _apply_network_profile(profile: StringName) -> void:
+	_network_profile = profile
+	_background_class_limit = int(prefetch_limits_for_profile(profile)[&"classes"])
+	_enforce_background_limit(_background_class_limit if _background_downloads_enabled else 0)
+
+
+static func network_profile_from_arguments(arguments: PackedStringArray) -> StringName:
+	for argument: String in arguments:
+		if not argument.begins_with(NETWORK_PROFILE_ARG_PREFIX):
+			continue
+		var profile := StringName(argument.substr(NETWORK_PROFILE_ARG_PREFIX.length()))
+		if profile in [&"constrained", &"slow", &"standard", &"fast"]:
+			return profile
+	return &"standard"
+
+
+static func prefetch_limits_for_profile(profile: StringName) -> Dictionary:
+	match profile:
+		&"constrained":
+			return {&"classes": 0, &"resonance": 0, &"missions": 0}
+		&"slow":
+			return {&"classes": 1, &"resonance": 0, &"missions": 0}
+		&"fast":
+			return {&"classes": 3, &"resonance": 6, &"missions": 6}
+		_:
+			return {&"classes": 2, &"resonance": 1, &"missions": 2}
 
 
 static func predictive_class_order(

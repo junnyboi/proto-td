@@ -8,6 +8,7 @@ signal stage_progress(stage_id: StringName, state: StringName, current: int, tot
 signal stage_error(stage_id: StringName, reason: String)
 
 const CatalogType := preload("res://data/presentation/cinematics/mission_cinematic_catalog.gd")
+const BackgroundDownloadStatusType := preload("res://scripts/view/background_download_status.gd")
 const STREAM_ARG_PREFIX := "--mission-cinematic-stream="
 const CACHE_DIR := "user://mission-cinematic-streams"
 const DOWNLOAD_TIMEOUT_SECONDS := 75.0
@@ -17,6 +18,7 @@ const MAX_DOWNLOAD_BYTES := 256 * 1024 * 1024
 var _stream_urls: Dictionary = {}
 var _queue: Array[StringName] = []
 var _queued: Dictionary = {}
+var _background_queued: Dictionary = {}
 var _ready_paths: Dictionary = {}
 var _failed_reasons: Dictionary = {}
 var _request: HTTPRequest = null
@@ -25,18 +27,38 @@ var _active_temp_path := ""
 var _active_total := 0
 var _last_progress_bytes := -1
 var _title_entry_count := 0
+var _background_downloads_enabled := true
+var _background_limit := 16
+var _active_background := false
 
 
 func _ready() -> void:
 	set_process(true)
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	if content_packs != null:
+		content_packs.background_policy_changed.connect(_on_content_background_policy_changed)
+		_on_content_background_policy_changed(
+			bool(content_packs.call("background_downloads_enabled")),
+			StringName(content_packs.call("network_profile")),
+			int(content_packs.call("background_class_limit")),
+		)
 
 
 func prefetch_from_title(arguments: PackedStringArray = OS.get_cmdline_user_args()) -> void:
 	_title_entry_count += 1
 	configure_streams(arguments)
+	if not _background_downloads_enabled or _background_limit <= 0:
+		return
+	var available := maxi(_background_limit - _background_pending_count(), 0)
+	if available <= 0:
+		return
+	var queued_count := 0
 	for stage_id: StringName in CatalogType.stage_ids():
+		if queued_count >= available:
+			break
 		if _stream_urls.has(stage_id):
-			_enqueue(stage_id, false)
+			if _enqueue(stage_id, false, true):
+				queued_count += 1
 	_pump_queue.call_deferred()
 
 
@@ -81,7 +103,10 @@ func request_stage(stage_id: StringName, prioritize: bool = true) -> bool:
 		stage_error.emit.call_deferred(stage_id, String(_failed_reasons[stage_id]))
 		return false
 	_failed_reasons.erase(stage_id)
-	_enqueue(stage_id, prioritize)
+	if _active_stage_id == stage_id:
+		_active_background = false
+		BackgroundDownloadStatusType.publish(&"mission", stage_id, &"foreground")
+	_enqueue(stage_id, prioritize, false)
 	_pump_queue.call_deferred()
 	return false
 
@@ -107,6 +132,40 @@ func title_entry_count() -> int:
 	return _title_entry_count
 
 
+func set_background_download_policy(enabled: bool, limit: int) -> void:
+	_background_downloads_enabled = enabled
+	_background_limit = clampi(limit, 0, CatalogType.stage_ids().size())
+	if not enabled or _background_limit <= 0:
+		if _active_background:
+			_cancel_active(true)
+		_remove_background_queue()
+		BackgroundDownloadStatusType.publish(&"mission", &"", &"disabled")
+		if _request == null and _active_stage_id.is_empty() and not _queue.is_empty():
+			_pump_queue.call_deferred()
+		return
+	_trim_background_queue()
+
+
+func background_downloads_enabled() -> bool:
+	return _background_downloads_enabled
+
+
+func background_prefetch_limit() -> int:
+	return _background_limit
+
+
+func _on_content_background_policy_changed(
+		enabled: bool,
+		_network_profile: StringName,
+		_class_limit: int,
+	) -> void:
+	var content_packs := get_node_or_null("/root/ContentPacks")
+	var limit := 0
+	if content_packs != null:
+		limit = int((content_packs.call("adaptive_prefetch_limits") as Dictionary).get(&"missions", 0))
+	set_background_download_policy(enabled, limit)
+
+
 func active_stage_id() -> StringName:
 	return _active_stage_id
 
@@ -119,10 +178,14 @@ func reset_for_tests() -> void:
 	_cancel_active(true)
 	_queue.clear()
 	_queued.clear()
+	_background_queued.clear()
 	_ready_paths.clear()
 	_failed_reasons.clear()
 	_stream_urls.clear()
 	_title_entry_count = 0
+	_background_downloads_enabled = true
+	_background_limit = 16
+	_active_background = false
 
 
 static func verify_file(path: String, expected_bytes: int, expected_sha256: String) -> bool:
@@ -151,23 +214,36 @@ func _process(_delta: float) -> void:
 		return
 	_last_progress_bytes = downloaded
 	stage_progress.emit(_active_stage_id, &"downloading", downloaded, total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"mission", _active_stage_id, &"downloading", downloaded, total,
+		)
 
 
-func _enqueue(stage_id: StringName, prioritize: bool) -> void:
+func _enqueue(stage_id: StringName, prioritize: bool, background: bool) -> bool:
 	if _active_stage_id == stage_id:
-		return
+		return false
 	if _queued.has(stage_id):
+		if not background:
+			_background_queued[stage_id] = false
+			BackgroundDownloadStatusType.publish(&"mission", stage_id, &"foreground")
 		if prioritize:
 			_queue.erase(stage_id)
 			_queue.push_front(stage_id)
-		return
+		return false
 	if prioritize:
 		_queue.push_front(stage_id)
 	else:
 		_queue.append(stage_id)
 	_queued[stage_id] = true
+	_background_queued[stage_id] = background
 	var record := CatalogType.record_for(stage_id)
 	stage_progress.emit(stage_id, &"queued", 0, record.video.bytes if record != null else 0)
+	if background:
+		BackgroundDownloadStatusType.publish(
+			&"mission", stage_id, &"queued", 0, record.video.bytes if record != null else 0,
+		)
+	return true
 
 
 func _pump_queue() -> void:
@@ -176,6 +252,8 @@ func _pump_queue() -> void:
 	while not _queue.is_empty():
 		var stage_id: StringName = _queue.pop_front()
 		_queued.erase(stage_id)
+		_active_background = bool(_background_queued.get(stage_id, false))
+		_background_queued.erase(stage_id)
 		var cached := _validated_cache_path(stage_id)
 		if not cached.is_empty():
 			_ready_paths[stage_id] = cached
@@ -210,6 +288,10 @@ func _start_download(stage_id: StringName) -> void:
 	add_child(_request)
 	_last_progress_bytes = 0
 	stage_progress.emit(stage_id, &"downloading", 0, _active_total)
+	if _active_background:
+		BackgroundDownloadStatusType.publish(
+			&"mission", stage_id, &"downloading", 0, _active_total,
+		)
 	var request_error := _request.request(url)
 	if request_error != OK:
 		_finish_failed(stage_id, "Mission cinematic request could not start (%s)." % error_string(request_error))
@@ -217,6 +299,7 @@ func _start_download(stage_id: StringName) -> void:
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	var stage_id := _active_stage_id
+	var completed_background := _active_background
 	var temp_path := _active_temp_path
 	var record := CatalogType.record_for(stage_id)
 	_dispose_request()
@@ -244,6 +327,10 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 	_ready_paths[stage_id] = playable
 	stage_progress.emit(stage_id, &"ready", record.video.bytes, record.video.bytes)
 	stage_ready.emit(stage_id, playable)
+	if completed_background:
+		BackgroundDownloadStatusType.publish(
+			&"mission", stage_id, &"ready", record.video.bytes, record.video.bytes,
+		)
 	_pump_queue.call_deferred()
 
 
@@ -259,11 +346,14 @@ func _validated_cache_path(stage_id: StringName) -> String:
 
 
 func _finish_failed(stage_id: StringName, reason: String) -> void:
+	var failed_background := _active_background
 	if stage_id == _active_stage_id:
 		_cancel_active(true)
 	_failed_reasons[stage_id] = reason
 	stage_progress.emit(stage_id, &"failed", 0, 0)
 	stage_error.emit(stage_id, reason)
+	if failed_background:
+		BackgroundDownloadStatusType.publish(&"mission", stage_id, &"failed")
 	_pump_queue.call_deferred()
 
 
@@ -316,6 +406,42 @@ func _clear_active() -> void:
 	_active_temp_path = ""
 	_active_total = 0
 	_last_progress_bytes = -1
+	_active_background = false
+
+
+func _remove_background_queue() -> void:
+	for index: int in range(_queue.size() - 1, -1, -1):
+		var stage_id := _queue[index]
+		if bool(_background_queued.get(stage_id, false)):
+			_queue.remove_at(index)
+			_queued.erase(stage_id)
+			_background_queued.erase(stage_id)
+
+
+func _trim_background_queue() -> void:
+	var allowance := maxi(_background_limit - (1 if _active_background else 0), 0)
+	var background_total := 0
+	for stage_id: StringName in _queue:
+		if bool(_background_queued.get(stage_id, false)):
+			background_total += 1
+	for index: int in range(_queue.size() - 1, -1, -1):
+		if background_total <= allowance:
+			break
+		var stage_id := _queue[index]
+		if not bool(_background_queued.get(stage_id, false)):
+			continue
+		_queue.remove_at(index)
+		_queued.erase(stage_id)
+		_background_queued.erase(stage_id)
+		background_total -= 1
+
+
+func _background_pending_count() -> int:
+	var count := 1 if _active_background else 0
+	for stage_id: StringName in _queue:
+		if bool(_background_queued.get(stage_id, false)):
+			count += 1
+	return count
 
 
 func _cleanup_file(path: String) -> void:

@@ -52,6 +52,14 @@ The Web base export excludes `assets/cinematics/missions/video/*.ogv`; fallback 
 
 The catalog's OGV/OGG byte sizes and SHA-256 fields are pinned to the accepted `assets/cinematics/missions/media-manifest.json` outputs. Nonzero byte fields and nonempty digests are independently enforced by runtime verification, and no generated MP4 is loaded at runtime.
 
+## Adaptive background transfer extension
+
+The 2026-08 network extension preserves the Phase 4 foreground mission gate while bounding speculative work from Title. The Web host supplies `--network-profile=constrained|slow|standard|fast` from the browser Network Information API. Constrained/save-data and slow profiles queue no mission films, standard queues S1–S2, and fast may queue S1–S6. A selected stage always promotes or starts its required film regardless of that background horizon.
+
+Title Settings now persists a **Background Downloads** preference outside campaign state. The draft is staged until Apply so Cancel cannot discard partial cache progress; applying Off cancels an active speculative mission transfer and clears the speculative queue. Foreground selected-stage requests remain eligible. `MissionCinematicPrefetch` publishes allow-listed stage IDs and byte progress through a Web-only presentation bridge so the zero-chrome loader can show a pointer-transparent current-asset chip without exposing URLs, cache paths, or campaign data.
+
+The extension is covered by mission runtime, Title Settings, localization, responsive-layout, and complete native regression suites. Web export, managed runtime inspection, checkpointing, and publishing remain part of Phase 6.
+
 ## Phase delivery record
 
 Phases 1–2 established the proposal and sixteen GPT Image 2 anchors. Phase 3 was pushed in `b64301cbda53a9b01f38d87758565a99e6e7ac2f` after reconciling concurrent advanced-operator work. Phase 4 was pushed in `74e1757b37fb6d27185fe843541bf901c4a13a28` after preserving concurrent balance, enemy-effect, and retreat-cooldown work.

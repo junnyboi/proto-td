@@ -60,8 +60,13 @@ func _verify_catalog_and_prefetch() -> void:
 			"--mission-cinematic-stream=s1|https://example.invalid/s1.ogv",
 		]))
 		_check(int(service.call("configured_stream_count")) == 2, "mission prefetch did not retain two valid mappings")
+		service.call("set_background_download_policy", true, 1)
 		service.call("prefetch_from_title", PackedStringArray())
 		_check(int(service.call("title_entry_count")) == 1, "mission title startup telemetry did not increment")
+		_check(service.call("queued_stage_ids").size() <= 1, "slow-network policy queued more than one mission prologue")
+		service.call("set_background_download_policy", false, 0)
+		_check(service.call("queued_stage_ids").is_empty(), "metered preference did not clear mission background work")
+		_check(not bool(service.call("background_downloads_enabled")), "mission prefetch did not retain the disabled policy")
 		var selected_ready := bool(service.call("request_stage", &"s2", true))
 		var queue: Array = service.call("queued_stage_ids")
 		var selected_local := String(service.call("cached_stage_path", &"s2")).ends_with("/s2.ogv")
