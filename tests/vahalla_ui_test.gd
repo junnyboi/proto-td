@@ -113,6 +113,7 @@ func _run() -> void:
 	var ledger := memorial.find_child("ServiceLedger", true, false) as PanelContainer
 	var roster_panel := memorial.find_child("MemorialRosterPanel", true, false) as PanelContainer
 	var dossier_panel := memorial.find_child("MemorialDossier", true, false) as PanelContainer
+	var memorial_scroll := memorial.find_child("VahallaMemorialScroll", true, false) as ScrollContainer
 	var memorial_row := memorial.find_child("Memorial_%s" % fallen_id, true, false) as Button
 	var row_margin := memorial_row.find_child("MemorialRowMargin", true, false) as MarginContainer if memorial_row != null else null
 	var row_class := memorial_row.find_child("MemorialRowClass", true, false) as Label if memorial_row != null else null
@@ -132,6 +133,21 @@ func _run() -> void:
 		var dossier_style := dossier_panel.get_theme_stylebox(&"panel")
 		_check(roster_style.content_margin_left >= 18.0, "Vahalla roster padding is below 18px")
 		_check(dossier_style.content_margin_left >= 22.0, "Vahalla dossier padding is below 22px")
+	if memorial_row != null:
+		memorial_row.grab_focus()
+		memorial_row.pressed.emit()
+		await process_frame
+		await process_frame
+		var restored_focus := root.gui_get_focus_owner()
+		_check(
+			restored_focus != null and restored_focus.name == StringName("Memorial_%s" % fallen_id),
+			"Vahalla selection rebuild did not restore memorial-row focus",
+		)
+	var original_visible_rows: Array = memorial.get("_visible_rows")
+	if memorial_scroll != null and not original_visible_rows.is_empty():
+		memorial_scroll.size.x = 620.0
+		memorial.set("_visible_rows", [original_visible_rows[0], original_visible_rows[0], original_visible_rows[0]])
+		_check(int(memorial.call("_memorial_grid_columns")) == 2, "Vahalla did not pack two readable memorial columns into a 620px client")
 	var text_scale_autoload := root.get_node("TextScale")
 	text_scale_autoload.call("set_scale", 1.5)
 	memorial.call("_apply_responsive_layout")
@@ -142,6 +158,9 @@ func _run() -> void:
 	_check(back != null and back.text == "Back", "150% Vahalla did not use its compact Back label")
 	_check(eyebrow == null or not eyebrow.visible, "150% Vahalla retained the redundant eyebrow")
 	_check(intro == null or not intro.visible, "150% Vahalla retained the redundant introduction")
+	if memorial_scroll != null and not original_visible_rows.is_empty():
+		_check(int(memorial.call("_memorial_grid_columns")) == 1, "150% Vahalla did not fall back to one readable memorial column")
+		memorial.set("_visible_rows", original_visible_rows)
 	text_scale_autoload.call("set_scale", 1.0)
 	memorial.call("_apply_responsive_layout")
 	await process_frame
