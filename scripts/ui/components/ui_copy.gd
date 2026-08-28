@@ -319,6 +319,7 @@ const STATIC_FALLBACKS := {
 	&"ui.campaign.locked_suffix": "  LOCKED",
 	&"ui.campaign.cleared_suffix": "  {stars}",
 	&"ui.campaign.next_highlight_description": "Recommended next operation, highlighted with a glow and sparkles.",
+	&"ui.campaign.route_note": "Select an available operation, or replay a cleared one.",
 	&"ui.campaign.row_star": "{count} star",
 	&"ui.campaign.row_stars": "{count} stars",
 	&"ui.campaign.back_to_staging": "Back to Staging",

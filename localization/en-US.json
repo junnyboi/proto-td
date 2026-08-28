@@ -433,7 +433,7 @@
     "ui.campaign.progress": "{cleared} / {total} cleared",
     "ui.campaign.record_only": "RECORD ONLY",
     "ui.campaign.route_heading": "{stage} · Operation Route",
-    "ui.campaign.route_note": "Select an available operation. Cleared operations remain replayable.",
+    "ui.campaign.route_note": "Select an available operation, or replay a cleared one.",
     "ui.campaign.row": "{index}. {title}{status}",
     "ui.campaign.row_available": "Available",
     "ui.campaign.row_cleared": "Cleared",

@@ -25,6 +25,7 @@ func _run() -> void:
 	if game == null:
 		_finish()
 		return
+	root.size = Vector2i(1280, 720)
 	game.call("set_run_seed", 1701)
 	_check(bool(game.call("start_campaign", false, true)), "campaign layout fixture failed")
 	var campaign_state := game.get("campaign") as CampaignStateV3
@@ -112,8 +113,10 @@ func _run() -> void:
 	_check(route_panel != null and route_heading != null and route_heading.global_position.x - route_panel.global_position.x >= 52.0, "Campaign route title does not clear the 36px inner inset and frame")
 	_check(route_heading != null and route_heading.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route title is not center justified")
 	_check(route_panel != null and route_note != null and route_note.global_position.x - route_panel.global_position.x >= 52.0, "Campaign route subtitle does not clear the 36px inner inset and frame")
-	_check(stage_label != null and is_equal_approx(stage_label.offset_left, 12.0) and is_equal_approx(stage_label.offset_top, 12.0) and is_equal_approx(stage_label.offset_right, -12.0) and is_equal_approx(stage_label.offset_bottom, -12.0), "Campaign list item does not retain exact 12px padding on all sides")
-	_check(next_stage != null and next_stage.custom_minimum_size.y >= 76.0, "Campaign list item height does not contain its vertical padding")
+	_check(route_note != null and route_note.text == "Select an available operation, or replay a cleared one.", "Campaign route guidance copy is not the requested concise sentence")
+	_check(route_note != null and route_note.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route guidance is not center aligned")
+	_check(stage_label != null and is_equal_approx(stage_label.offset_left, 24.0) and is_equal_approx(stage_label.offset_top, 24.0) and is_equal_approx(stage_label.offset_right, -24.0) and is_equal_approx(stage_label.offset_bottom, -24.0), "Campaign list item does not retain exact 24px padding on all sides")
+	_check(next_stage != null and next_stage.custom_minimum_size.y >= 104.0, "Campaign list item height does not contain its doubled vertical padding")
 	_check(route_hover_background != null, "Campaign operation card lacks its animated hover background")
 	if next_stage != null and route_hover_background != null:
 		next_stage.mouse_entered.emit()
@@ -146,11 +149,20 @@ func _run() -> void:
 		_check(start_mission.scale.x >= 1.039, "Start Mission does not animate on hover")
 		start_mission.mouse_exited.emit()
 		await create_timer(0.22).timeout
+	root.size = Vector2i(1913, 766)
+	await process_frame
+	await process_frame
+	_check(route_panel != null and is_equal_approx(route_panel.size.x, 832.0), "annotated-width Campaign route rail does not fit the doubled row contract")
+	_check(next_stage != null and is_equal_approx(next_stage.size.x, 704.0), "annotated-width Campaign operation row is not exactly double its former 352px width")
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Campaign could not activate Chinese")
 	await process_frame
 	var start_presentation := start_mission.get_node_or_null("PresentationLabel") as Label if start_mission != null else null
 	_check(start_presentation != null and start_presentation.text == "开始任务", "Campaign Start Mission did not refresh in Chinese")
+	_check(route_note != null and route_note.text == "选择可用行动，或重玩已完成的行动。" and route_note.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Campaign route guidance did not refresh to centered Simplified Chinese")
 	_check(bool(i18n.call("set_locale", &"en-US")), "Campaign could not restore English")
+	await process_frame
+	root.size = Vector2i(1280, 720)
+	await process_frame
 	await process_frame
 	_check(campaign.find_child("BasicRecruitDesk", true, false) == null, "full Field Team reinforcement desk returned to Mission Control")
 	_check(campaign.find_child("MissionControlRecruitDesk", true, false) == null, "Campaign still contains Hire Recruit")
