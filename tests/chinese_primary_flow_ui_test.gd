@@ -17,7 +17,7 @@ func _run() -> void:
 			"ui.squad.mission_identity", "ui.squad.card_ready", "ui.squad.card_premium",
 			"ui.squad.card_fallen", "ui.error.missing_stage_narrative",
 			"ui.squad.awaiting_selection", "ui.campaign.basic_hire_title",
-			"ui.campaign.basic_hire_action", "ui.campaign.basic_hire_success",
+			"ui.campaign.basic_hire_success",
 		],
 		"res://scripts/ui/spell_bar.gd": ["ui.spell.slow_field.tooltip"],
 		"res://scripts/view/battle_view.gd": ["ui.battle.wave", "ui.battle.stamp_clear", "ui.battle.stamp_defeat"],
