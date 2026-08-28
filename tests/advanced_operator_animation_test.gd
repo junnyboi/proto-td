@@ -20,6 +20,25 @@ const CLASS_BY_OPERATOR := {
 	&"witch_doctor_1": &"witch_doctor",
 }
 const DIRECTIONS: Array[StringName] = [&"ne", &"nw", &"se", &"sw"]
+const DIRECTION_TRANSFORMS := {
+	&"identity": {&"ne": &"ne", &"nw": &"nw", &"se": &"se", &"sw": &"sw"},
+	&"horizontal": {&"ne": &"nw", &"nw": &"ne", &"se": &"sw", &"sw": &"se"},
+	&"vertical": {&"ne": &"se", &"nw": &"sw", &"se": &"ne", &"sw": &"nw"},
+	&"opposite": {&"ne": &"sw", &"nw": &"se", &"se": &"nw", &"sw": &"ne"},
+}
+const EXPECTED_DIRECTION_TRANSFORMS := {
+	&"gunner_female": {&"idle": &"opposite", &"attack": &"opposite"},
+	&"gunner_male": {&"idle": &"opposite", &"attack": &"opposite"},
+	&"mage_apprentice_female": {&"idle": &"vertical", &"attack": &"vertical"},
+	&"mage_apprentice_male": {&"idle": &"vertical", &"attack": &"vertical"},
+	&"shock_trooper_female": {&"idle": &"vertical", &"attack": &"vertical"},
+	&"shock_trooper_male": {&"idle": &"vertical", &"attack": &"vertical"},
+	&"swordmaster_female": {&"idle": &"vertical", &"attack": &"vertical"},
+	&"sniper_male": {&"idle": &"horizontal", &"attack": &"horizontal"},
+	&"banner_guard_female": {&"idle": &"horizontal", &"attack": &"horizontal"},
+	&"sword_saint_female": {&"idle": &"vertical", &"attack": &"opposite"},
+	&"sword_saint_male": {&"idle": &"vertical", &"attack": &"opposite"},
+}
 
 var _failures: Array[String] = []
 
@@ -46,6 +65,7 @@ func _test_complete_catalog() -> void:
 	_check(identities.size() == 22, "expected exact 22-identity proportion calibration matrix")
 	var advanced_templates := 0
 	var manifest_rows := 0
+	var remapped_rows := 0
 	for template_id: StringName in Catalog.template_ids():
 		var text := String(template_id)
 		if not (text.ends_with("_female") or text.ends_with("_male")):
@@ -78,6 +98,21 @@ func _test_complete_catalog() -> void:
 			var frame_count := 24 if family == &"idle" else 13
 			for direction: StringName in DIRECTIONS:
 				var logical_id := StringName(mapping.get(direction, &""))
+				var transform_by_family := EXPECTED_DIRECTION_TRANSFORMS.get(template_id, {}) as Dictionary
+				var transform_name := StringName(transform_by_family.get(family, &"identity"))
+				var transform := DIRECTION_TRANSFORMS[transform_name] as Dictionary
+				var source_direction := StringName(transform[direction])
+				var expected_logical_id := StringName(
+					"op_anim_%s_%s_%s" % [text, family, source_direction]
+				)
+				_check(
+					logical_id == expected_logical_id,
+					"%s %s %s should select visually-correct source %s" % [
+						template_id, family, direction, expected_logical_id,
+					],
+				)
+				if source_direction != direction:
+					remapped_rows += 1
 				var metadata := Art.metadata(logical_id)
 				manifest_rows += 1
 				_check(not metadata.is_empty(), "%s missing manifest row" % logical_id)
@@ -94,10 +129,11 @@ func _test_complete_catalog() -> void:
 						provenance.get(&"source_manifest_id") == "advanced_operator_sprites_v2",
 						"%s did not route to the V2 immutable source archive" % logical_id,
 					)
-					var expected_kind := "mirrored" if direction in [&"nw", &"sw"] else "generated"
+					var expected_kind := "mirrored" if source_direction in [&"nw", &"sw"] else "generated"
 					_check(provenance.get(&"source_kind") == expected_kind, "%s provenance kind drifted" % logical_id)
 	_check(advanced_templates == 22, "expected 22 advanced class/gender templates, got %d" % advanced_templates)
 	_check(manifest_rows == 176, "expected 176 advanced manifest rows, got %d" % manifest_rows)
+	_check(remapped_rows == 88, "expected 88 visually corrected direction rows, got %d" % remapped_rows)
 	for error: String in Catalog.validate_all():
 		_failures.append("catalog: %s" % error)
 

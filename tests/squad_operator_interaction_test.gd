@@ -30,6 +30,7 @@ func _run() -> void:
 	await process_frame
 	_verify_promoted_portraits()
 	await _verify_sorting()
+	await _verify_horizontal_snap()
 	await _verify_selection_feedback_and_reorder()
 	_dispose(game)
 	await process_frame
@@ -189,7 +190,7 @@ func _verify_selection_feedback_and_reorder() -> void:
 	if animated_card != null:
 		animated_card.grab_focus()
 		await create_timer(0.18).timeout
-		_check(animated_card.scale.x >= 1.02, "operator focus feedback does not reach its emphasized scale")
+		_check(animated_card.scale.x >= 1.015 and animated_card.scale.x <= 1.021, "operator focus feedback is not subtle and bounded")
 		var hover_glow := animated_card.find_child("OperatorHoverGlow", true, false) as Panel
 		_check(bool(animated_card.get_meta(&"operator_hover_glow_enabled", false)), "operator card lacks hover-glow telemetry")
 		_check(hover_glow != null, "operator card hover glow is missing")
@@ -201,16 +202,70 @@ func _verify_selection_feedback_and_reorder() -> void:
 		await process_frame
 		_check(_feedback_tween_active(animated_card), "operator deselection did not schedule release feedback")
 		await create_timer(0.30).timeout
-		_check(animated_card.scale.x >= 1.02, "deselected focused operator did not return to its focus scale")
+		_check(animated_card.scale.x >= 1.015, "deselected focused operator did not return to its focus scale")
 		animated_card.button_pressed = true
 		await process_frame
 		_check(_feedback_tween_active(animated_card), "operator selection did not schedule confirmation feedback")
 		await create_timer(0.30).timeout
-		_check(animated_card.scale.x >= 1.02, "selected focused operator did not return to its focus scale")
+		_check(animated_card.scale.x >= 1.015, "selected focused operator did not return to its focus scale")
 		if sort_select != null:
 			sort_select.grab_focus()
 			await create_timer(0.20).timeout
 			_check(hover_glow == null or hover_glow.self_modulate.a <= 0.05, "operator glow remains visible after focus exits")
+		animated_card.set_pressed_no_signal(false)
+		var card_size := animated_card.size
+		_mission.call(
+			"_animate_operator_card_scale",
+			animated_card,
+			Vector2(1.018, 1.018),
+			0.14,
+			true,
+		)
+		await create_timer(0.20).timeout
+		_check(animated_card.scale.x >= 1.015 and animated_card.scale.x <= 1.021, "operator hover scale is missing or excessive")
+		_check(animated_card.size.is_equal_approx(card_size), "operator hover animation changed carousel layout geometry")
+		_check(hover_glow == null or hover_glow.self_modulate.a >= 0.95, "operator hover lacks its subtle luminous response")
+		_mission.call(
+			"_animate_operator_card_scale",
+			animated_card,
+			Vector2.ONE,
+			0.14,
+			false,
+		)
+		await create_timer(0.20).timeout
+		_check(animated_card.scale.is_equal_approx(Vector2.ONE), "operator hover did not settle to rest")
+		animated_card.set_pressed_no_signal(true)
+
+
+func _verify_horizontal_snap() -> void:
+	var scroll := _mission.find_child("OperatorRosterScroll", true, false) as ScrollContainer
+	var grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
+	_check(scroll != null and grid != null and grid.get_child_count() >= 3, "horizontal snap fixture lacks a populated carousel")
+	if scroll == null or grid == null or grid.get_child_count() < 3:
+		return
+	_check(grid.columns == grid.get_child_count(), "operator cards are not arranged in one horizontal row")
+	_check(is_equal_approx(float(scroll.get_meta(&"operator_snap_stride", 0.0)), 532.0), "operator carousel does not publish its fixed snap stride")
+	var drag_press := InputEventMouseButton.new()
+	drag_press.button_index = MOUSE_BUTTON_LEFT
+	drag_press.pressed = true
+	_mission.call("_on_operator_scrollbar_input", drag_press)
+	scroll.scroll_horizontal = 730
+	await create_timer(0.20).timeout
+	_check(scroll.scroll_horizontal == 730, "operator carousel snapped while the scrollbar was still being dragged")
+	var drag_release := InputEventMouseButton.new()
+	drag_release.button_index = MOUSE_BUTTON_LEFT
+	drag_release.pressed = false
+	_mission.call("_on_operator_scrollbar_input", drag_release)
+	await create_timer(0.38).timeout
+	_check(abs(scroll.scroll_horizontal - 532) <= 1, "operator carousel did not snap to the nearest card boundary: %d" % scroll.scroll_horizontal)
+	_check(int(scroll.get_meta(&"operator_snap_target_index", -1)) == 1, "operator carousel reported the wrong snapped card")
+	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	scroll.scroll_horizontal = 880
+	await process_frame
+	_mission.call("_snap_operator_rail")
+	await process_frame
+	_check(abs(scroll.scroll_horizontal - 1064) <= 1, "reduced motion did not preserve immediate exact card snapping: %d" % scroll.scroll_horizontal)
+	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 
 func _feedback_tween_active(card: Control) -> bool:
