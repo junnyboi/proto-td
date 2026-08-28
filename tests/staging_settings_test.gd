@@ -69,8 +69,17 @@ func _verify_placement_and_focus(staging: Control) -> void:
 	_check(settings_button.get_node_or_null(settings_button.focus_next) == exit_button, "Settings does not advance directly to Exit")
 	_check(exit_button.get_node_or_null(exit_button.focus_previous) == settings_button, "Exit does not reverse directly to Settings")
 	var focus_style := settings_button.get_theme_stylebox(&"focus") as StyleBoxFlat
-	_check(focus_style != null and focus_style.bg_color.a <= 0.01, "Settings focus state reintroduced a filled highlight")
-	_check(focus_style != null and focus_style.border_color.r > focus_style.border_color.b, "Settings focus outline is not warm gold")
+	_check(
+		focus_style != null
+		and focus_style.bg_color.a >= 0.05
+		and focus_style.bg_color.a <= 0.20
+		and focus_style.bg_color.r > focus_style.bg_color.b,
+		"Settings focus state is not a slight golden tint",
+	)
+	if focus_style != null:
+		for side: int in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			_check(focus_style.get_border_width(side) == 0, "Settings focus retained a border")
+			_check(is_zero_approx(focus_style.get_expand_margin(side)), "Settings focus retained an outline expansion")
 	settings_button.grab_focus()
 	await process_frame
 	_check(settings_button.has_focus(), "Settings could not receive keyboard focus")
