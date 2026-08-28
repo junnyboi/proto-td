@@ -3,7 +3,8 @@ extends Resource
 
 ## Stage layout + schedule (all balance is data — architecture rule 4).
 ## grid_rows: one string per row, one char per tile (hand-authorable):
-##   . VOID   G GROUND   E ELEVATED   S SPAWN   B BASE   X BLOCKED
+##   . VOID   G GROUND   E ELEVATED   S SPAWN   B BASE
+##   X legacy raised-platform alias (enum name BLOCKED is serialization-only)
 ## paths: flat Vector2 lists (converted to cells via path_cells());
 ## squad_size activate in later phases.
 ## wave_starts: wave-window boundary ticks for ONCE_PER_WAVE spells
@@ -111,6 +112,13 @@ func is_enemy_walkable(cell: Vector2i) -> bool:
 	return tile_at(cell) in [Tile.GROUND, Tile.SPAWN, Tile.BASE]
 
 
+## Both E and the legacy X authoring glyph render as empty raised platforms.
+## Keep their serialized topology stable while exposing one honest placement
+## domain to simulation, ticketed battles, hit testing, and presentation.
+func is_elevated_platform(cell: Vector2i) -> bool:
+	return tile_at(cell) in [Tile.ELEVATED, Tile.BLOCKED]
+
+
 func path_cells(idx: int) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	if idx < 0 or idx >= paths.size():
@@ -123,7 +131,7 @@ func path_cells(idx: int) -> Array[Vector2i]:
 func operator_cell_in_domain(operator_def: OperatorDef, cell: Vector2i) -> bool:
 	if operator_def.placement == OperatorDef.Placement.GROUND:
 		return tile_at(cell) == Tile.GROUND
-	return tile_at(cell) == Tile.ELEVATED
+	return is_elevated_platform(cell)
 
 
 func trap_cell_in_domain(cell: Vector2i) -> bool:

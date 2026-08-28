@@ -123,7 +123,7 @@ static func terrain_box(stage: StageDef) -> Rect2:
 	for y: int in grid_size.y:
 		for x: int in grid_size.x:
 			var cell := Vector2i(x, y)
-			var lifted := stage.tile_at(cell) == StageDef.Tile.ELEVATED
+			var lifted := stage.is_elevated_platform(cell)
 			var top := cell_polygon(cell, lifted)[0]
 			var height := TILE_H + (ELEV_LIFT_PX if lifted else 0.0)
 			var tile_box := Rect2(top.x - TILE_W * 0.5, top.y, TILE_W, height)

@@ -4,12 +4,12 @@ const WATCHDOG_SECONDS := 20.0
 const TARGET_TICKS := {&"s2": 520, &"s3": 650, &"s4": 830}
 const PLANS := {
 	&"s2": {
-		"queue": [&"vanguard_1", &"guard_1", &"caster_1", &"defender_1"],
+		"queue": [&"vanguard_1", &"guard_1", &"sniper_1", &"caster_1"],
 		"placements": {
 			&"vanguard_1": [Vector2i(3, 1), UnitState.Facing.RIGHT],
 			&"guard_1": [Vector2i(4, 1), UnitState.Facing.RIGHT],
-			&"defender_1": [Vector2i(4, 3), UnitState.Facing.LEFT],
-			&"caster_1": [Vector2i(2, 0), UnitState.Facing.DOWN],
+			&"sniper_1": [Vector2i(3, 2), UnitState.Facing.DOWN],
+			&"caster_1": [Vector2i(5, 2), UnitState.Facing.DOWN],
 		},
 		"traps": [],
 	},
@@ -64,7 +64,7 @@ func _ready() -> void:
 	_spell_defs = _load_catalog("res://data/spells", "SpellDef")
 	model = BattleModel.create(
 		_stage,
-		_stage.recovery_roster,
+		(PLANS[stage_id]["queue"] as Array).duplicate(),
 		16000 + int(_stage.campaign_index),
 		config,
 		_enemy_defs,
