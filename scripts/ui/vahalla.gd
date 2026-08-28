@@ -155,12 +155,14 @@ func _build_screen() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_memorial_scroll = scroll
+	scroll.resized.connect(_queue_memorial_grid_layout)
 	roster_stack.add_child(scroll)
 	_memorial_grid = GridContainer.new()
 	_memorial_grid.name = "VahallaMemorialGrid"
 	_memorial_grid.columns = 1
 	_memorial_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_memorial_grid.add_theme_constant_override(&"v_separation", 8)
+	_memorial_grid.add_theme_constant_override(&"h_separation", MEMORIAL_GRID_GAP)
+	_memorial_grid.add_theme_constant_override(&"v_separation", MEMORIAL_GRID_GAP)
 	scroll.add_child(_memorial_grid)
 
 	_dossier_panel = PanelContainer.new()
@@ -205,7 +207,7 @@ func _memorial_row(hero: Dictionary) -> Button:
 	var hero_id := String(hero["hero_id"])
 	var row := Button.new()
 	row.name = "Memorial_%s" % hero_id
-	row.custom_minimum_size = Vector2(0, 104)
+	row.custom_minimum_size = Vector2(0, MEMORIAL_ROW_MIN_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.text = "%s\n%s · %s" % [
 		TrainingSupportType.callsign(hero).to_upper(),
@@ -217,6 +219,7 @@ func _memorial_row(hero: Dictionary) -> Button:
 	row.accessibility_description = row.text
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.pressed.connect(_on_memorial_selected.bind(hero_id))
+	row.focus_entered.connect(_ensure_memorial_visible.bind(row))
 	Style.apply_button(row, &"selected" if hero_id == _selected_hero_id else &"quiet")
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
