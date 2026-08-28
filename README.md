@@ -23,11 +23,13 @@ Battlefields use an endpoint-aware isometric projection with bounded portrait pa
 For runtime changes, verify the final candidate with a direct import and bounded boot:
 
 ```bash
-godot --headless --path . --import
-godot --headless --fixed-fps 60 --path . --quit-after 120
+tools/run_godot_isolated.sh --headless --import
+tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120
 ```
 
 Documentation-only changes do not require an engine check. Run focused tests or manual previews when they are useful for the code being changed. Web export and browser checks are release-only.
+
+Run SceneTree tests through `tools/run_godot_test.sh`. Each invocation receives a unique disposable `user://` directory and log, so tests can never replace a campaign belonging to the editor or playable game. Direct `godot --script` launches for files under `tests/` or `test/` fail closed.
 
 ## Slow Field balance telemetry
 
@@ -36,7 +38,7 @@ Run deterministic paired telemetry against the authored S7 and S8 waves with:
 ```bash
 SLOW_FIELD_TELEMETRY_JSON=/tmp/slow-field-telemetry.json \
 SLOW_FIELD_TELEMETRY_CSV=/tmp/slow-field-telemetry.csv \
-godot --headless --path . --script tests/slow_field_balance_telemetry_test.gd
+tools/run_godot_test.sh tests/slow_field_balance_telemetry_test.gd
 ```
 
 The baseline and Slow Field scenarios use identical authored waves with no combatants. Leak limits and base HP are raised only so every wave resolves. The Slow Field policy casts at the median shared-path cell when the spell is ready and at least two live ground enemies occupy its 3×3 footprint. This isolates route-control impact; it is not a player win-rate simulation.

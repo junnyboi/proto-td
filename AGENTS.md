@@ -18,6 +18,8 @@ If upstream advances again, repeat the same process automatically. Ask for direc
 
 Every Godot test invocation must run with a unique, isolated `user://` directory. This applies to focused tests, full-suite runs, parallel workers, visual captures, and any test that calls `Game.start_campaign`, creates a production `CampaignSaveStore`, or writes preferences, logs, caches, or save data. Never run tests against the shared native `Protos` application-data directory used by an editor or playable game, and never allow two test processes to share one test user-data directory.
 
+Use `tools/run_godot_test.sh tests/<name>.gd` for SceneTree tests and `tools/run_godot_isolated.sh <godot arguments...>` for visual harnesses or bounded runtime checks. Direct repository test launches are guarded and intentionally fail before production save authority is granted.
+
 Tests that intentionally exercise the production campaign slot must still use an isolated test directory. Preserve every pre-existing slot artifact (`campaign_v1.json`, `.bak`, `.tmp`, and all `.invalid` variants), perform the test in the isolated slot, and restore preserved bytes during cleanup on success, failure, or timeout. Do not rely on clearing only in-memory `Game` state: `start_campaign(..., true)` writes durable bytes and can invalidate a concurrently open campaign through the save store's compare-and-swap guard.
 
 Before handing off validation, confirm that the playable campaign slot was not modified by tests. If it was touched, stop the affected test flow, protect the current bytes, and rerun the validation with isolated user data rather than retrying against the shared slot.

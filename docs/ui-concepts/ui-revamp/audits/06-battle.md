@@ -288,12 +288,12 @@ Existing tests cover map orientation/gesture behavior and terrain placement effe
 
 | Target | Command | Contract |
 |---|---|---|
-| `test/map_navigation_overlay_smoke.gd` | `godot --headless --path . --script res://test/map_navigation_overlay_smoke.gd` | First portrait overflow hint, persistence after real pan, landscape suppression, recenter enablement, button and `R` emission |
-| `test/map_navigator_orientation_smoke.gd` | `godot --headless --path . --script res://test/map_navigator_orientation_smoke.gd` | Exact portrait height-fill, base-side boot, overflow, rubber-band limit/snapback, drag consumption, click suppression, recenter, landscape touch preservation |
-| `test/placement_feedback_smoke.gd` | `godot --headless --path . --script res://test/placement_feedback_smoke.gd` | `deploy` alias, ground/elevated audio length and routing, emitter counts, elevated ring and beam |
+| `test/map_navigation_overlay_smoke.gd` | `tools/run_godot_test.sh test/map_navigation_overlay_smoke.gd` | First portrait overflow hint, persistence after real pan, landscape suppression, recenter enablement, button and `R` emission |
+| `test/map_navigator_orientation_smoke.gd` | `tools/run_godot_test.sh test/map_navigator_orientation_smoke.gd` | Exact portrait height-fill, base-side boot, overflow, rubber-band limit/snapback, drag consumption, click suppression, recenter, landscape touch preservation |
+| `test/placement_feedback_smoke.gd` | `tools/run_godot_test.sh test/placement_feedback_smoke.gd` | `deploy` alias, ground/elevated audio length and routing, emitter counts, elevated ring and beam |
 | `test/placement_feedback_visual_harness.tscn` | Windowed captures with `PLACEMENT_PROFILE=ground` and `PLACEMENT_PROFILE=elevated` | Production-renderer confirmation of both terrain profiles and map anchoring |
-| `test/stage_orientation_smoke.gd` | `godot --headless --path . --script res://test/stage_orientation_smoke.gd` | Stage copy/orientation behavior survives UI safe-area work |
-| `test/stage_redesign_smoke.gd` | `godot --headless --path . --script res://test/stage_redesign_smoke.gd` | Redesigned stage data remains valid under battle UI projection |
+| `test/stage_orientation_smoke.gd` | `tools/run_godot_test.sh test/stage_orientation_smoke.gd` | Stage copy/orientation behavior survives UI safe-area work |
+| `test/stage_redesign_smoke.gd` | `tools/run_godot_test.sh test/stage_redesign_smoke.gd` | Redesigned stage data remains valid under battle UI projection |
 
 ### New focused contract targets
 
@@ -321,8 +321,8 @@ Existing tests cover map orientation/gesture behavior and terrain placement effe
 After implementation, run the focused tests above, then the repository baseline:
 
 ```bash
-godot --headless --path . --import
-godot --headless --fixed-fps 60 --path . --quit-after 120
+tools/run_godot_isolated.sh --headless --import
+tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120
 ```
 
 ## Acceptance criteria

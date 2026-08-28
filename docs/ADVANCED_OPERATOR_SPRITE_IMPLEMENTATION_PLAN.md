@@ -357,8 +357,8 @@ The native review checks adult identity, class silhouette, gender parity, premiu
 On the final candidate, run focused tests once, then the repository regression inventory, followed by the documented engine checks:
 
 ```bash
-godot --headless --path . --import
-godot --headless --fixed-fps 60 --path . --quit-after 120
+tools/run_godot_isolated.sh --headless --import
+tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120
 ```
 
 Run the visual harness under Xvfb with the compatibility renderer and dummy audio at both target sizes. Re-fetch `origin/master` before final validation; if reconciliation changes runtime behavior, rerun affected gates. Preserve concurrent compatible work as required by `AGENTS.md`.

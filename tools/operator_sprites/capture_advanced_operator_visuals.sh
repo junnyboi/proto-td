@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPOSITORY="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 OUTPUT="${2:-/tmp/proto-td-advanced-operator-visuals}"
+GODOT_BIN=${GODOT_BIN:-godot}
 mkdir -p "$OUTPUT"
 classes=(
   defender gunner mage_apprentice shock_trooper swordmaster immovable
@@ -10,8 +11,9 @@ classes=(
 )
 for class_id in "${classes[@]}"; do
 	  xvfb-run -a -s '-screen 0 1920x1080x24' env \
-	    GODOT_SILENCE_ROOT_WARNING=1 \
-	    godot --path "$REPOSITORY" --audio-driver Dummy \
+	    GODOT_BIN="$GODOT_BIN" GODOT_SILENCE_ROOT_WARNING=1 \
+	    PROTO_TD_TEST_ARTIFACT_DIR="$OUTPUT/${class_id}-user-data" \
+	    "$REPOSITORY/tools/run_godot_isolated.sh" --audio-driver Dummy \
     --script test/advanced_operator_visual_harness.gd \
     -- --class "$class_id" --output "$OUTPUT/${class_id}.png" \
     > "$OUTPUT/${class_id}.log" 2>&1

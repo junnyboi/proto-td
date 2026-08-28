@@ -21,8 +21,9 @@ capture() {
   local log="$OUT/$label.log"
 
   timeout 120s xvfb-run -a -s "-screen 0 ${width}x${height}x24 -ac +extension GLX +render -noreset" \
-    env XDG_DATA_HOME="$USER_DATA/$label" GODOT_SILENCE_ROOT_WARNING=1 \
-    "$GODOT_BIN" --path "$ROOT" --display-driver x11 --audio-driver Dummy \
+    env GODOT_BIN="$GODOT_BIN" PROTO_TD_TEST_ARTIFACT_DIR="$USER_DATA/$label" \
+    GODOT_SILENCE_ROOT_WARNING=1 "$ROOT/tools/run_godot_isolated.sh" \
+      --display-driver x11 --audio-driver Dummy \
       --rendering-method gl_compatibility --resolution "${width}x${height}" \
       res://test/battle_dialogue_visual_harness.tscn -- \
       "--mode=$mode" "--out=$output" "--locale=$LOCALE" \

@@ -125,17 +125,13 @@ The deterministic verification commands are:
 python3 tools/refresh_chinese_font.py \
   --source /usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf
 
-godot --headless --fixed-fps 60 --path . \
-  --script tests/localization_ui_parity_test.gd
+tools/run_godot_test.sh tests/localization_ui_parity_test.gd --fixed-fps 60
 
-godot --headless --fixed-fps 60 --path . \
-  --script tests/chinese_primary_flow_ui_test.gd
+tools/run_godot_test.sh tests/chinese_primary_flow_ui_test.gd --fixed-fps 60
 
-godot --headless --fixed-fps 60 --path . \
-  --script tests/chinese_training_ui_test.gd
+tools/run_godot_test.sh tests/chinese_training_ui_test.gd --fixed-fps 60
 
-godot --headless --fixed-fps 60 --path . \
-  --script tests/chinese_confirmation_layout_test.gd
+tools/run_godot_test.sh tests/chinese_confirmation_layout_test.gd --fixed-fps 60
 ```
 
 ## Conclusion

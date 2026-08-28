@@ -21,6 +21,7 @@ boot_splash/use_filter=true
 
 [autoload]
 
+TestRunGuard="*res://autoloads/test_run_guard.gd"
 I18n="*res://autoloads/i18n.gd"
 Music="*res://autoloads/music.gd"
 TextScale="*res://autoloads/text_scale.gd"

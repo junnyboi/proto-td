@@ -225,7 +225,7 @@ Write `docs/audio/ANIMA_ARCHIVE_VOICEOVER.md` as the production source and creat
 
 **Runtime/test files.** Update `scripts/ui/narrative_archive.gd`, `scripts/ui/components/archive_audio_log_player.gd`, `scripts/ui/components/narrative_archive_unlocks.gd` if needed, `localization/en-US.json`, `localization/zh-CN.json`, `data/presentation/narrative/canon_contract.json`, `tests/archive_audio_log_test.gd`, and `tests/narrative_canon_test.gd` together.
 
-**Phase tests and acceptance.** Run `godot --headless --path . --import`, then the archive/canon/localization tests. Require four stable IDs, gates `0/3/6/7`, four new art bindings, eight importable nontrivial streams, exact transcript/hash checks, locale selection/fallback, play/pause/restart/seek/completion, focus/touch/accessibility, and volume routing. Prove no preload, manifest, PCK candidate, or test points to `mercy-archive` or `mercy-equation`. Commit and push Phase 6.
+**Phase tests and acceptance.** Run `tools/run_godot_isolated.sh --headless --import`, then the archive/canon/localization tests. Require four stable IDs, gates `0/3/6/7`, four new art bindings, eight importable nontrivial streams, exact transcript/hash checks, locale selection/fallback, play/pause/restart/seek/completion, focus/touch/accessibility, and volume routing. Prove no preload, manifest, PCK candidate, or test points to `mercy-archive` or `mercy-equation`. Commit and push Phase 6.
 
 ## Phase 7 — Complete visual, loading/title, and music-direction migration
 
@@ -271,8 +271,8 @@ Require Godot `4.7.2.stable` and a clean tree. Run import and bounded boot with 
 
 ```bash
 set -o pipefail
-GODOT_SILENCE_ROOT_WARNING=1 godot --headless --path . --import 2>&1 | tee /tmp/anima-war-import.log
-GODOT_SILENCE_ROOT_WARNING=1 godot --headless --fixed-fps 60 --path . --quit-after 120 2>&1 | tee /tmp/anima-war-boot.log
+GODOT_SILENCE_ROOT_WARNING=1 tools/run_godot_isolated.sh --headless --import 2>&1 | tee /tmp/anima-war-import.log
+GODOT_SILENCE_ROOT_WARNING=1 tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120 2>&1 | tee /tmp/anima-war-boot.log
 ! rg -n -i 'SCRIPT ERROR|ERROR:|FATAL|CRASH|missing resource|failed to load' /tmp/anima-war-import.log /tmp/anima-war-boot.log
 ```
 
@@ -283,7 +283,7 @@ set -euo pipefail
 mkdir -p /tmp/anima-war-full-tests
 for test_file in tests/*.gd test/*_smoke.gd; do
   name=$(basename "$test_file" .gd)
-  timeout 300s godot --headless --path . --script "res://$test_file" \
+  timeout 300s tools/run_godot_test.sh "$test_file" \
     >"/tmp/anima-war-full-tests/$name.log" 2>&1
   if rg -n -i 'SCRIPT ERROR|ERROR:|FATAL|CRASH|missing resource|failed to load' \
       "/tmp/anima-war-full-tests/$name.log"; then

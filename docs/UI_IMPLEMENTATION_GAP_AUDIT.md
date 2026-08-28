@@ -124,7 +124,7 @@ Every phase must satisfy all applicable gates below before visual sign-off.
 Run focused SceneTree tests using the repository convention:
 
 ```bash
-godot --headless --path . --script res://tests/<test_name>.gd
+tools/run_godot_test.sh tests/<test_name>.gd
 ```
 
 Before final acceptance, also run import/startup gates and the affected existing suites: `lunaris_ui_foundation_test.gd`, `campaign_ui_layout_test.gd`, `custom_naming_roster_test.gd`, `faction_roster_filter_test.gd`, `premium_gacha_ui_test.gd`, `premium_gacha_pity_economy_test.gd`, `gacha_cinematic_resources_test.gd`, `vahalla_ui_test.gd`, `results_ui_test.gd`, `battle_ui_layout_test.gd`, `slow_field_spell_test.gd`, `slow_field_tutorial_ui_test.gd`, `localization_ui_parity_test.gd`, and `ui_audio_direction_test.gd`.

@@ -288,17 +288,17 @@ The following are exact presentation-layer targets; authoritative gameplay behav
 Suggested focused commands, following the repository’s SceneTree-script convention, are:
 
 ```bash
-godot --headless --path . --script res://tests/vahalla_ui_test.gd
-godot --headless --path . --script res://tests/faction_roster_filter_test.gd
-godot --headless --path . --script res://tests/premium_hero_system_test.gd
-godot --headless --path . --script res://tests/custom_naming_roster_test.gd
+tools/run_godot_test.sh tests/vahalla_ui_test.gd
+tools/run_godot_test.sh tests/faction_roster_filter_test.gd
+tools/run_godot_test.sh tests/premium_hero_system_test.gd
+tools/run_godot_test.sh tests/custom_naming_roster_test.gd
 ```
 
 After implementation, run the proposed focused tests plus the repository checks from `README.md`:
 
 ```bash
-godot --headless --path . --import
-godot --headless --fixed-fps 60 --path . --quit-after 120
+tools/run_godot_isolated.sh --headless --import
+tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120
 ```
 
 Visual acceptance must include native captures at exactly `1280×720` and `720×1280` for populated, filtered-empty, long-identity, ordinary-death, premium-life-remaining, premium-final-life, honored, resign-confirm, and Simplified Chinese states.

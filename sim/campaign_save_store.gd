@@ -17,6 +17,7 @@ const QUARANTINE_SUFFIX := ".invalid"
 const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
 const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const FILE_OPS_SCRIPT := preload("res://sim/campaign_file_ops.gd")
+const TEST_RUN_GUARD_SCRIPT := preload("res://autoloads/test_run_guard.gd")
 
 static var _authority_store_ref: WeakRef
 
@@ -49,6 +50,15 @@ static func create(
 
 
 static func create_production(state: Variant) -> Dictionary:
+	if (
+		TEST_RUN_GUARD_SCRIPT.is_test_invocation()
+		and not TEST_RUN_GUARD_SCRIPT.isolated_test_user_data_active()
+	):
+		return {
+			"accepted": false,
+			"error_code": &"test_user_data_not_isolated",
+			"value": null,
+		}
 	if state == null or not state.has_method("_authority_restore_factory"):
 		return {"accepted": false, "error_code": &"invalid_store_config", "value": null}
 	var created := create(

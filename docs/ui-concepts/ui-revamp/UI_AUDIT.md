@@ -463,7 +463,7 @@ The family audits contain detailed file-level test targets. At program level, ac
 | **Accessibility** | Initial focus, cyclic order, disabled skipping, modal trap/restore, visible focus, non-color-only states, `44×44`, logical labels, touch alternatives |
 | **Motion** | Normal/reduced-motion equivalence; preference survives scene transitions; critical information remains static; hidden/inactive processing stops |
 | **Visual** | Adult 21+ art review; face/weapon/costume crop safety; material/type consistency; stage-specific art; rarity and consequence differentiation |
-| **Runtime** | `godot --headless --path . --import` and `godot --headless --fixed-fps 60 --path . --quit-after 120`, then every focused SceneTree test |
+| **Runtime** | `tools/run_godot_isolated.sh --headless --import` and `tools/run_godot_isolated.sh --headless --fixed-fps 60 --quit-after 120`, then every focused SceneTree test through `tools/run_godot_test.sh` |
 
 ## Critical patterns requiring program-level ownership
 

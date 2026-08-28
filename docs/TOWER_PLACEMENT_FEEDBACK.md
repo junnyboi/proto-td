@@ -20,7 +20,7 @@ The embedded tracks were extracted as 48 kHz stereo PCM, trimmed around their pl
 Run the focused contract test with:
 
 ```bash
-godot --headless --path . --script res://test/placement_feedback_smoke.gd
+tools/run_godot_test.sh test/placement_feedback_smoke.gd
 ```
 
 The test validates catalog resolution, legacy aliasing, audio loading and duration, BattleView routing, ground particle count, and the elevated shards/ring/beam composition. The deterministic visual scene `res://test/placement_feedback_visual_harness.tscn` accepts `PLACEMENT_PROFILE=ground` or `PLACEMENT_PROFILE=elevated` for production-renderer captures.
