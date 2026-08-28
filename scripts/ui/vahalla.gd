@@ -475,10 +475,10 @@ func _memorial_grid_available_width() -> float:
 	return MEMORIAL_CARD_MIN_WIDTH
 
 
-func _memorial_grid_columns() -> int:
+func _memorial_grid_columns(available_width := -1.0) -> int:
 	var text_scale := float(TextScale.value()) if TextScale != null else 1.0
 	return RosterGridLayoutType.fitting_columns(
-		_memorial_grid_available_width(),
+		available_width if available_width > 0.0 else _memorial_grid_available_width(),
 		MEMORIAL_CARD_MIN_WIDTH * maxf(1.0, text_scale),
 		float(MEMORIAL_GRID_GAP),
 		0,
@@ -500,7 +500,7 @@ func _apply_queued_memorial_grid_layout() -> void:
 
 
 func _ensure_memorial_visible(row: Control) -> void:
-	if _memorial_scroll != null and row != null and is_instance_valid(row):
+	if _memorial_scroll != null and row != null and is_instance_valid(row) and _memorial_scroll.is_ancestor_of(row):
 		_memorial_scroll.ensure_control_visible.call_deferred(row)
 
 

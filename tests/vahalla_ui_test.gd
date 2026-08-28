@@ -147,7 +147,7 @@ func _run() -> void:
 	if memorial_scroll != null and not original_visible_rows.is_empty():
 		memorial_scroll.size.x = 620.0
 		memorial.set("_visible_rows", [original_visible_rows[0], original_visible_rows[0], original_visible_rows[0]])
-		_check(int(memorial.call("_memorial_grid_columns")) == 2, "Vahalla did not pack two readable memorial columns into a 620px client")
+		_check(int(memorial.call("_memorial_grid_columns", 620.0)) == 2, "Vahalla did not pack two readable memorial columns into a 620px client")
 	var text_scale_autoload := root.get_node("TextScale")
 	text_scale_autoload.call("set_scale", 1.5)
 	memorial.call("_apply_responsive_layout")
@@ -159,7 +159,7 @@ func _run() -> void:
 	_check(eyebrow == null or not eyebrow.visible, "150% Vahalla retained the redundant eyebrow")
 	_check(intro == null or not intro.visible, "150% Vahalla retained the redundant introduction")
 	if memorial_scroll != null and not original_visible_rows.is_empty():
-		_check(int(memorial.call("_memorial_grid_columns")) == 1, "150% Vahalla did not fall back to one readable memorial column")
+		_check(int(memorial.call("_memorial_grid_columns", 620.0)) == 1, "150% Vahalla did not fall back to one readable memorial column")
 		memorial.set("_visible_rows", original_visible_rows)
 	text_scale_autoload.call("set_scale", 1.0)
 	memorial.call("_apply_responsive_layout")
