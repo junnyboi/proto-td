@@ -8,6 +8,7 @@ const HistoryDrawerType := preload("res://scripts/ui/components/gacha_history_dr
 const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const HARD_PITY_WINDOW := 10
@@ -40,6 +41,8 @@ const CONFIRM_CARD_MIN_HEIGHT := 264.0
 const BROWSE_PULL_WIDTH := 800.0
 const BROWSE_PULL_HEIGHT := 112.0
 const BROWSE_CARD_SIZE := Vector2(480.0, 645.0)
+const BROWSE_CARD_MIN_WIDTH := 320.0
+const BROWSE_GRID_GAP := 16.0
 const BROWSE_PORTRAIT_HEIGHT := 420.0
 const BROWSE_PORTRAIT_ZOOM := 1.03
 const BROWSE_CARD_PADDING := 24.0
@@ -86,6 +89,10 @@ var _status_label: Label
 var _hero_grid: GridContainer
 var _hero_scroll: ScrollContainer
 var _hero_stage: CenterContainer
+var _hero_candidate_count := 0
+var _hero_grid_layout_queued := false
+var _last_hero_grid_columns := -1
+var _last_hero_card_width := -1.0
 var _header_grid: GridContainer
 var _action_grid: GridContainer
 var _marks_safe: MarginContainer
@@ -359,13 +366,14 @@ func _build_screen() -> void:
 	hero_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hero_stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_hero_stage = hero_stage
+	hero_stage.resized.connect(_queue_hero_grid_layout)
 	scroll.add_child(hero_stage)
 	_hero_grid = GridContainer.new()
 	_hero_grid.name = "PremiumHeroGrid"
 	_hero_grid.columns = 3
 	_hero_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_hero_grid.add_theme_constant_override(&"h_separation", 16)
-	_hero_grid.add_theme_constant_override(&"v_separation", 16)
+	_hero_grid.add_theme_constant_override(&"h_separation", int(BROWSE_GRID_GAP))
+	_hero_grid.add_theme_constant_override(&"v_separation", int(BROWSE_GRID_GAP))
 	hero_stage.add_child(_hero_grid)
 
 	_action_grid = GridContainer.new()
@@ -928,12 +936,15 @@ func _refresh() -> void:
 
 
 func _rebuild_cards(projection: Dictionary) -> void:
+	_last_hero_grid_columns = -1
+	_last_hero_card_width = -1.0
 	for child: Node in _hero_grid.get_children():
 		child.queue_free()
 	var owned := {}
 	for hero: Dictionary in projection["premium_heroes"]:
 		owned[String(hero["premium_id"])] = hero
 	var pool: Array = projection["premium_pool"].duplicate(true)
+	_hero_candidate_count = pool.size()
 	pool.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a.get("rarity", 4)) > int(b.get("rarity", 4))
 	)
@@ -942,7 +953,7 @@ func _rebuild_cards(projection: Dictionary) -> void:
 		_hero_grid.add_child(_hero_card(
 			row, owned.get(String(row["premium_id"]), {}), index,
 		))
-	_apply_hero_card_layout(_hero_grid.columns)
+	_queue_hero_grid_layout()
 
 
 func _hero_card(catalog: Dictionary, hero: Dictionary, entrance_index: int = 0) -> Control:
@@ -1044,7 +1055,6 @@ func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
 	var compact_landscape := not portrait and viewport_size.x < 1600.0
-	_hero_grid.columns = 1 if portrait else (2 if compact_landscape else 3)
 	_header_grid.columns = 1 if portrait else 2
 	_action_grid.columns = 1 if (portrait or compact_landscape) else 3
 	_header_tools.vertical = false
@@ -1088,7 +1098,8 @@ func _apply_responsive_layout() -> void:
 			26.0 if portrait else (42.0 if compact_landscape else 58.0),
 			12.0,
 		)
-	_apply_hero_card_layout(_hero_grid.columns)
+	_apply_hero_card_layout(_hero_grid_columns())
+	_queue_hero_grid_layout()
 	_refresh_pull_pivot()
 	_apply_confirmation_layout(viewport_size)
 	if _reveal_title_stack != null:
