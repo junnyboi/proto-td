@@ -27,13 +27,26 @@ entries = {
 &"gacha_star_bloom": {"path": "res://assets/sfx/gacha/gacha_star_bloom.wav"}
 }
 aliases = {
+&"bastion_slam": &"ability_ready",
 &"bolt": &"ability_ready",
 &"charm": &"ability_ready",
+&"conflagration": &"ability_ready",
+&"deadeye": &"ability_ready",
 &"deploy": &"deploy_ground",
+&"flurry": &"ability_ready",
+&"hold_the_line": &"ability_ready",
+&"kill": &"operator_select",
 &"leak": &"base_breach",
+&"mend": &"ability_ready",
 &"slow_field": &"slow_field_cast",
+&"overpower": &"ability_ready",
+&"rally": &"ability_ready",
+&"rapid_volley": &"ability_ready",
+&"tempest": &"ability_ready",
 &"trap_snap": &"trap_trigger",
 &"ui_select": &"ui_click",
 &"ui_accept": &"ui_confirm",
-&"menu_transition": &"menu_open"
+&"menu_transition": &"menu_open",
+&"war_banner": &"ability_ready",
+&"wave": &"placement_ready"
 }

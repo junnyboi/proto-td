@@ -11,6 +11,21 @@ const GACHA_REVEAL_IDS := [
 	&"gacha_identity_reveal",
 	&"gacha_star_bloom",
 ]
+const BATTLE_SEMANTIC_ALIASES := {
+	&"kill": &"operator_select",
+	&"wave": &"placement_ready",
+	&"bastion_slam": &"ability_ready",
+	&"conflagration": &"ability_ready",
+	&"deadeye": &"ability_ready",
+	&"flurry": &"ability_ready",
+	&"hold_the_line": &"ability_ready",
+	&"mend": &"ability_ready",
+	&"overpower": &"ability_ready",
+	&"rally": &"ability_ready",
+	&"rapid_volley": &"ability_ready",
+	&"tempest": &"ability_ready",
+	&"war_banner": &"ability_ready",
+}
 
 var _failures: Array[String] = []
 
@@ -72,6 +87,17 @@ func _run() -> void:
 			sfx.call("resolved_id_for", &"slow_field_expire") == &"slow_field_expire",
 			"Slow Field expiration cue resolves directly",
 		)
+		for semantic_id: StringName in BATTLE_SEMANTIC_ALIASES:
+			var resolved_id: StringName = BATTLE_SEMANTIC_ALIASES[semantic_id]
+			_check(
+				sfx.call("resolved_id_for", semantic_id) == resolved_id,
+				"%s semantic SFX does not resolve to %s" % [semantic_id, resolved_id],
+			)
+			_check(
+				bool(sfx.call("play", String(semantic_id))),
+				"%s semantic SFX does not start a voice" % semantic_id,
+			)
+			await process_frame
 		for cue_id: StringName in [&"slow_field_cast", &"slow_field_expire"]:
 			var stream := load("res://assets/sfx/combat/%s.wav" % cue_id) as AudioStream
 			_check(stream != null, "%s stream loads" % cue_id)
