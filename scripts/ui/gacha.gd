@@ -1156,13 +1156,18 @@ func _fit_browse_backdrop() -> void:
 
 
 func _hero_grid_available_width() -> float:
-	# Measure the clipping viewport, never the child stage whose prior minimum
-	# can inflate itself and create circular breakpoints.
+	# Bound the measured clipping viewport by its safe screen allocation. The
+	# grid's previous minimum may temporarily inflate both scroll and stage.
+	var viewport_size := get_viewport_rect().size
+	var portrait := viewport_size.x < 900.0 or viewport_size.y > viewport_size.x * 1.15
+	var compact_landscape := not portrait and viewport_size.x < 1600.0
+	var side_margin := 24.0 if portrait else (40.0 if compact_landscape else 64.0)
+	var safe_client_width := maxf(1.0, viewport_size.x - side_margin * 2.0)
 	if _hero_scroll != null and _hero_scroll.size.x > 0.0:
-		return _hero_scroll.size.x
+		return minf(_hero_scroll.size.x, safe_client_width)
 	if _hero_stage != null and _hero_stage.size.x > 0.0:
-		return _hero_stage.size.x
-	return maxf(0.0, get_viewport_rect().size.x - 48.0)
+		return minf(_hero_stage.size.x, safe_client_width)
+	return safe_client_width
 
 
 func _hero_grid_columns() -> int:
