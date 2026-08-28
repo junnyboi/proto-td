@@ -16,8 +16,7 @@ const FONT_SIZE := GameTypographyType.DETAIL
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0, 0.0]
 const PAUSED_LABEL_MIN_WIDTH := 0.0
 const COMMAND_TARGET_SIZE := Vector2(112.0, 64.0)
-const DECK_PADDING := 16.0
-const FIRST_ACTION_LEFT_INSET := 12.0
+const DECK_PADDING := 24.0
 const ACTION_GAP := 12
 
 enum ConfirmationState {
@@ -68,6 +67,10 @@ func interaction_enabled() -> bool:
 	return _interaction_enabled
 
 
+func command_deck_rect() -> Rect2:
+	return _controls_deck.get_global_rect() if _controls_deck != null else Rect2()
+
+
 func relayout() -> void:
 	size = get_viewport().get_visible_rect().size
 	if not _confirm_dialog.is_empty():
@@ -110,11 +113,7 @@ func _build_row() -> void:
 	_controls_box = box
 	_pause_button = _make_button("PauseButton", _copy(&"ui.battle.pause", "PAUSE"), &"secondary")
 	_pause_button.pressed.connect(_on_pause_pressed)
-	var first_action := MarginContainer.new()
-	first_action.name = "FirstActionInset"
-	first_action.add_theme_constant_override(&"margin_left", int(FIRST_ACTION_LEFT_INSET))
-	first_action.add_child(_pause_button)
-	box.add_child(first_action)
+	box.add_child(_pause_button)
 	_speed_button = _make_button("SpeedButton", "1×", &"secondary")
 	_speed_button.pressed.connect(_on_speed_pressed)
 	box.add_child(_speed_button)

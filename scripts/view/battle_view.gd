@@ -242,6 +242,7 @@ func _ready() -> void:
 	_start_stage_tutorial()
 	if _battle_dialogue != null and _tutorial == null:
 		_battle_dialogue.show_mission_start.call_deferred()
+	_relayout()
 	_refresh_map_navigation_overlay()
 	# the view is the ONE resize owner: it recomputes the grid scale first,
 	# then drives the bars (self-owned listeners raced the recompute — P14)
@@ -272,7 +273,28 @@ func _build_battle_dialogue(stage_id: StringName) -> void:
 		return
 	_battle_dialogue = BATTLE_DIALOGUE_PRESENTER_SCRIPT.new() as BattleDialoguePresenter
 	add_child(_battle_dialogue)
-	_battle_dialogue.setup(record, get_viewport_rect().size)
+	var controls_rect := _controls.command_deck_rect() if _controls != null else Rect2()
+	var deployment_rect := _deploy_bar.command_deck_rect() if _deploy_bar != null else Rect2()
+	_battle_dialogue.setup(record, get_viewport_rect().size, controls_rect, deployment_rect)
+	_battle_dialogue.layout_changed.connect(_resolve_hud_overlay_collisions)
+
+
+func _resolve_hud_overlay_collisions() -> void:
+	if _map_navigation_overlay != null:
+		_map_navigation_overlay.set_temporarily_suppressed(
+			_battle_dialogue != null and _battle_dialogue.visible
+		)
+	if _spell_bar == null:
+		return
+	_spell_bar.relayout()
+	var blocked_rects: Array[Rect2] = []
+	if _controls != null:
+		blocked_rects.append(_controls.command_deck_rect())
+	if _deploy_bar != null:
+		blocked_rects.append(_deploy_bar.command_deck_rect())
+	if _battle_dialogue != null and _battle_dialogue.visible:
+		blocked_rects.append(_battle_dialogue.get_global_rect())
+	_spell_bar.avoid_rects(blocked_rects)
 
 
 func _connect_tutorial() -> void:
@@ -1079,13 +1101,18 @@ func _relayout() -> void:
 		_deploy_bar.relayout()
 	if _spell_bar != null:
 		_spell_bar.relayout()
+		if _deploy_bar != null:
+			_spell_bar.avoid_rect(_deploy_bar.command_deck_rect())
 	if _controls != null:
 		_controls.relayout()
 	if _map_navigation_overlay != null:
 		_map_navigation_overlay.relayout()
 		_refresh_map_navigation_overlay()
 	if _battle_dialogue != null:
-		_battle_dialogue.relayout(viewport)
+		var controls_rect := _controls.command_deck_rect() if _controls != null else Rect2()
+		var deployment_rect := _deploy_bar.command_deck_rect() if _deploy_bar != null else Rect2()
+		_battle_dialogue.relayout(viewport, controls_rect, deployment_rect)
+	_resolve_hud_overlay_collisions()
 	if _tutorial != null and is_instance_valid(_tutorial):
 		_tutorial.call("relayout")
 	if _juice != null:

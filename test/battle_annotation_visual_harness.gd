@@ -37,13 +37,14 @@ func _capture() -> void:
 		var tutorial_probe := get_tree().root.find_child("FirstStandTutorial", true, false) as Control
 		var controls_probe := get_tree().root.find_child("BattleControls", true, false) as BattleControls
 		var deployment_probe := get_tree().root.find_child("DeployBar", true, false) as DeployBar
-		if tutorial_probe == null or controls_probe == null or deployment_probe == null:
+		var skip_probe := get_tree().root.find_child("SkipTutorial", true, false) as Button
+		if tutorial_probe == null or controls_probe == null or deployment_probe == null or skip_probe == null:
 			push_error("battle annotation visual harness could not compose live probe state")
 			get_tree().quit(1)
 			return
-		tutorial_probe.visible = false
-		controls_probe.set_interaction_enabled(true)
-		deployment_probe.set_operator_interaction_enabled(true)
+		skip_probe.pressed.emit()
+		for _frame: int in range(4):
+			await get_tree().process_frame
 		if mode == "paused":
 			controls_probe._on_speed_pressed()
 			controls_probe._on_speed_pressed()

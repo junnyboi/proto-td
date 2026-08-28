@@ -19,6 +19,7 @@ var _hint_elapsed := 0.0
 var _portrait := false
 var _can_pan := false
 var _hint_allowed := false
+var _temporarily_suppressed := false
 
 var _hint_panel: PanelContainer = null
 var _hint_direction: Control = null
@@ -112,6 +113,13 @@ func hint_visible() -> bool:
 	return _hint_panel != null and _hint_panel.visible
 
 
+func set_temporarily_suppressed(suppressed: bool) -> void:
+	if _temporarily_suppressed == suppressed:
+		return
+	_temporarily_suppressed = suppressed
+	_refresh_visibility()
+
+
 func _process(delta: float) -> void:
 	if _hint_panel == null or not _hint_panel.visible:
 		return
@@ -196,8 +204,9 @@ func _refresh_visibility() -> void:
 		_hint_panel.visible = (
 			_portrait
 			and _can_pan
-			and _hint_allowed
-			and not _hint_complete
+				and _hint_allowed
+				and not _temporarily_suppressed
+				and not _hint_complete
 			and not _hint_expired
 		)
 

@@ -1,6 +1,7 @@
 extends SceneTree
 
 const LANDSCAPE := Vector2i(1280, 720)
+const ANNOTATED_WIDE := Vector2i(1912, 761)
 const PORTRAIT := Vector2i(720, 1280)
 const NARROW := Vector2i(540, 960)
 const SHORT := Vector2i(960, 420)
@@ -57,6 +58,9 @@ func _run() -> void:
 	var tutorial_body := battle.find_child("TutorialBody", true, false) as Label
 	var skip := battle.find_child("SkipTutorial", true, false) as Button
 	var dialogue := battle.find_child("BattleDialogue", true, false) as PanelContainer
+	var dialogue_header := battle.find_child("DialogueHeaderInset", true, false) as MarginContainer
+	var dialogue_portrait_frame := battle.find_child("DialoguePortraitFrame", true, false) as PanelContainer
+	var dialogue_portrait := battle.find_child("DialoguePortrait", true, false) as TextureRect
 	var dialogue_speaker := battle.find_child("DialogueSpeaker", true, false) as Label
 	var dialogue_line := battle.find_child("DialogueLine", true, false) as Label
 	var tutorial_primary := battle.find_child("TutorialPrimary", true, false) as Button
@@ -71,6 +75,7 @@ func _run() -> void:
 	if deployment_deck != null:
 		var deployment_style := deployment_deck.get_theme_stylebox(&"panel")
 		_check(deployment_style.content_margin_left >= 16.0 and deployment_style.content_margin_top >= 16.0, "deployment deck padding is below 16px")
+		_check(deployment_deck.size.x >= 1240.0, "landscape recruit selector did not expand to the available near-double width")
 	_check(deployment_scroll != null and deployment_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "deployment roster is not locally scrollable")
 	_check(deployment_scroll != null and deployment_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "deployment roster permits horizontal scrolling")
 	_check(slot_box != null and slot_box.get_child_count() >= 3, "deployment slots are missing")
@@ -87,7 +92,13 @@ func _run() -> void:
 	_check(controls_deck != null and controls_deck.get_theme_stylebox(&"panel") is StyleBoxTexture, "battle command deck is not textured")
 	if controls_deck != null:
 		var controls_style := controls_deck.get_theme_stylebox(&"panel")
-		_check(controls_style.content_margin_left >= 16.0 and controls_style.content_margin_top >= 16.0, "battle command deck padding is below 16px")
+		_check(
+			controls_style.content_margin_left >= 24.0
+			and controls_style.content_margin_top >= 24.0
+			and controls_style.content_margin_right >= 24.0
+			and controls_style.content_margin_bottom >= 24.0,
+			"battle command deck lacks the requested 24px padding on every side",
+		)
 	_check(pause != null and speed != null and resign != null and pause.focus_mode == Control.FOCUS_ALL, "battle commands are not controller focusable")
 	for button: Button in [pause, speed, resign]:
 		var button_style := button.get_theme_stylebox(&"normal") as StyleBoxFlat
@@ -95,8 +106,7 @@ func _run() -> void:
 		_check(button.get_theme_font_size(&"font_size") == 24, "%s did not receive 24px compact typography" % button.name)
 		_check(button_style != null and button_style.get_corner_radius(CORNER_TOP_LEFT) >= 8, "%s lacks rounded borders" % button.name)
 		_check(controls_deck.get_global_rect().encloses(button.get_global_rect()), "%s overflows the battle command deck" % button.name)
-	var first_action_inset := battle.find_child("FirstActionInset", true, false) as MarginContainer
-	_check(first_action_inset != null and first_action_inset.get_theme_constant(&"margin_left") >= 12, "Pause lacks the requested left inset")
+	_check(battle.find_child("FirstActionInset", true, false) == null, "obsolete one-off Pause inset survived the 24px parent padding")
 	_check(battle.find_child("RecenterMap", true, false) == null, "removed CENTER feature is still present")
 	_check(tutorial_card != null and tutorial_card.get_theme_stylebox(&"panel") is StyleBoxTexture, "tutorial card did not inherit the Lunaris modal frame")
 	_check(dialogue != null and not dialogue.visible, "mission-start dialogue competed with the guided tutorial")
@@ -167,11 +177,44 @@ func _run() -> void:
 	_check(dialogue_line != null and not dialogue_line.text.is_empty(), "mission-start dialogue line is missing")
 	if dialogue != null:
 		_check(dialogue.get_global_rect().end.x <= LANDSCAPE.x + 1.0, "mission-start dialogue exceeds landscape width")
+		_check(absf(dialogue.get_global_rect().end.x - controls_deck.get_global_rect().end.x) <= 2.0, "mission-start dialogue is not right-aligned below the gameplay controls")
+		_check(absf(dialogue.position.y - controls_deck.get_global_rect().end.y - 64.0) <= 2.0, "mission-start dialogue does not preserve the requested 64px control gap")
 		_check(
-			dialogue.get_global_rect().size.y <= 240.0,
+			dialogue.get_global_rect().size.y <= 280.0,
 			"mission-start dialogue expanded beyond its compact tactical height: size=%s minimum=%s"
 			% [dialogue.size, dialogue.get_combined_minimum_size()],
 		)
+	_check(dialogue_header != null and dialogue_header.get_theme_constant(&"margin_bottom") == 12, "LIVE TRANSMISSION header lacks 12px bottom padding")
+	_check(dialogue_portrait_frame != null and dialogue_portrait_frame.visible, "mission-start speaker portrait frame is missing")
+	_check(dialogue_portrait != null and dialogue_portrait.texture != null, "mission-start speaker portrait texture is missing")
+	_check(dialogue_portrait != null and dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(112.0, 112.0)), "speaker portrait did not receive fixed readable geometry")
+	_check(dialogue_portrait_frame != null and StringName(dialogue_portrait_frame.get_meta(&"speaker_portrait_asset_id", &"")) == &"portrait_archive_caster", "Archive Caster transmission resolved the wrong portrait")
+	_check(dialogue_portrait != null and dialogue_speaker != null and dialogue_portrait.get_global_rect().end.x <= dialogue_speaker.get_global_rect().position.x + 1.0, "speaker portrait is not placed left of the character name and line")
+	_check(owned_spell_deck != null and dialogue != null and not owned_spell_deck.get_global_rect().intersects(dialogue.get_global_rect()), "right-side transmission overlaps the owned spell deck")
+	root.size = ANNOTATED_WIDE
+	await process_frame
+	_check(absf(deployment_deck.size.x - 1360.0) <= 2.0, "annotated-width recruit selector is not exactly double the former 680px fixed width")
+	_check(absf(dialogue.get_global_rect().end.x - controls_deck.get_global_rect().end.x) <= 2.0, "wide transmission lost right-side control alignment")
+	root.size = NARROW
+	for _frame: int in range(3):
+		await process_frame
+	_check(dialogue.visible, "narrow portrait unexpectedly suppressed a transmission despite having a legal lane")
+	_check(absf(dialogue.get_global_rect().position.y - controls_deck.get_global_rect().end.y - 64.0) <= 2.0, "narrow portrait transmission lost the 64px control gap")
+	_check(not dialogue.get_global_rect().intersects(deployment_deck.get_global_rect()), "narrow portrait transmission overlaps the deployment deck")
+	_check(not dialogue.get_global_rect().intersects(controls_deck.get_global_rect()), "narrow portrait transmission overlaps gameplay controls")
+	_check(dialogue_portrait.custom_minimum_size.is_equal_approx(Vector2(88.0, 88.0)), "narrow portrait did not compact the speaker visual")
+	var responsive_pan_hint := battle.find_child("MapPanHint", true, false) as Control
+	_check(responsive_pan_hint == null or not responsive_pan_hint.visible, "portrait map-pan hint overlaps the live transmission")
+	root.size = SHORT
+	for _frame: int in range(3):
+		await process_frame
+	_check(not dialogue.visible, "short landscape did not suppress a transmission when no legal controls-to-deployment lane exists")
+	_check(not owned_spell_deck.get_global_rect().intersects(controls_deck.get_global_rect()), "short-landscape spell deck overlaps gameplay controls")
+	_check(not owned_spell_deck.get_global_rect().intersects(deployment_deck.get_global_rect()), "short-landscape spell deck overlaps the deployment deck")
+	root.size = LANDSCAPE
+	for _frame: int in range(3):
+		await process_frame
+	_check(dialogue.visible, "suppressed short-landscape transmission did not restore on returning to a legal lane")
 	speed.grab_focus()
 	await process_frame
 	controls.call("_input", _space_key_event())

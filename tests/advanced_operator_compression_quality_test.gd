@@ -99,7 +99,8 @@ func _run() -> void:
 			file.store_string(JSON.stringify(report, "  ", false) + "\n")
 			file.close()
 	if _failures.is_empty():
-		print("ADVANCED_OPERATOR_COMPRESSION_QUALITY_OK assets=%d min_psnr=%.2f max_rgb_mae=%.5f max_alpha_mae=%.6f edge_ratio=%.3f" % [
+		print("ADVANCED_OPERATOR_COMPRESSION_QUALITY_OK")
+		print("assets=%d min_psnr=%.2f max_rgb_mae=%.5f max_alpha_mae=%.6f edge_ratio=%.3f" % [
 			_rows.size(), float(worst_psnr.psnr_db), float(worst_mae.rgb_mae), float(worst_alpha.alpha_mae), float(worst_edge.edge_ratio),
 		])
 		quit(0)

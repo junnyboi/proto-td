@@ -32,6 +32,8 @@ const DECK_PADDING := 16.0
 const SLOT_GAP := 12.0
 const SLOT_TARGET_WIDTH := 220.0
 const SLOT_TARGET_HEIGHT := 76.0
+const LANDSCAPE_DECK_MAX_WIDTH := 1360.0
+const SHORT_LANDSCAPE_DECK_MAX_WIDTH := 1240.0
 const FIRST_SLOT_CONTENT_INSET := 12.0
 const VALID_COLOR := Color(0.2, 0.9, 0.4, 0.4)
 const INVALID_COLOR := Color(0.9, 0.2, 0.2, 0.5)
@@ -206,6 +208,10 @@ func first_deployment_id() -> StringName:
 func slot_screen_rect(deployment_id: StringName) -> Rect2:
 	var slot := _slots.get(deployment_id) as Button
 	return slot.get_global_rect() if slot != null else Rect2()
+
+
+func command_deck_rect() -> Rect2:
+	return _slot_deck.get_global_rect() if _slot_deck != null else Rect2()
 
 
 func is_facing_pending() -> bool:
@@ -434,11 +440,11 @@ func _layout_slot_box() -> void:
 		return
 	var short_landscape := size.x > size.y and size.y < 480.0
 	var deck_width := (
-		minf(size.x * 0.62, 620.0)
+		minf(size.x - SAFE_MARGIN * 2.0, SHORT_LANDSCAPE_DECK_MAX_WIDTH)
 		if short_landscape
 		else size.x - SAFE_MARGIN * 2.0
 		if size.y > size.x
-		else minf(size.x * 0.53, 680.0)
+		else minf(size.x - SAFE_MARGIN * 2.0, LANDSCAPE_DECK_MAX_WIDTH)
 	)
 	deck_width = maxf(deck_width, 328.0)
 	var inner_width := maxf(SLOT_TARGET_WIDTH, deck_width - DECK_PADDING * 2.0)
@@ -446,7 +452,7 @@ func _layout_slot_box() -> void:
 		floori((inner_width + SLOT_GAP) / (SLOT_TARGET_WIDTH + SLOT_GAP)), 1, 4,
 	)
 	for child: Node in _slot_box.get_children():
-		(child as Control).custom_minimum_size.x = 0.0
+		(child as Control).custom_minimum_size.x = SLOT_TARGET_WIDTH
 	_slot_box.reset_size()
 	var content_height := _slot_box.get_combined_minimum_size().y + DECK_PADDING * 2.0
 	# The global 1.5× type scale increases each two-line slot's rendered

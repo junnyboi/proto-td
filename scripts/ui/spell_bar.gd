@@ -160,6 +160,48 @@ func relayout() -> void:
 		)
 
 
+func avoid_rect(blocked_rect: Rect2, gap := 16.0) -> bool:
+	return avoid_rects([blocked_rect] as Array[Rect2], gap)
+
+
+func avoid_rects(blocked_rects: Array[Rect2], gap := 16.0) -> bool:
+	if _deck == null or not _deck.visible:
+		return true
+	var blockers: Array[Rect2] = []
+	for blocked_rect: Rect2 in blocked_rects:
+		if blocked_rect.has_area():
+			blockers.append(blocked_rect)
+	var own_rect := _deck.get_global_rect()
+	if not _intersects_any(own_rect, blockers):
+		return true
+	var safe_rect := Rect2(Vector2.ONE * 16.0, get_viewport_rect().size - Vector2.ONE * 32.0)
+	var x_candidates: Array[float] = [own_rect.position.x, safe_rect.position.x, safe_rect.end.x - _deck.size.x]
+	var y_candidates: Array[float] = [own_rect.position.y, safe_rect.position.y, safe_rect.end.y - _deck.size.y]
+	for blocked_rect: Rect2 in blockers:
+		x_candidates.append(blocked_rect.position.x - _deck.size.x - gap)
+		x_candidates.append(blocked_rect.end.x + gap)
+		y_candidates.append(blocked_rect.position.y - _deck.size.y - gap)
+		y_candidates.append(blocked_rect.end.y + gap)
+	var candidates: Array[Vector2] = []
+	for candidate_x: float in x_candidates:
+		for candidate_y: float in y_candidates:
+			candidates.append(Vector2(candidate_x, candidate_y))
+	candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_squared_to(own_rect.position) < b.distance_squared_to(own_rect.position))
+	for candidate: Vector2 in candidates:
+		var candidate_rect := Rect2(candidate, _deck.size)
+		if safe_rect.encloses(candidate_rect) and not _intersects_any(candidate_rect, blockers):
+			_deck.global_position = candidate
+			return true
+	return false
+
+
+func _intersects_any(candidate_rect: Rect2, blocked_rects: Array[Rect2]) -> bool:
+	for blocked_rect: Rect2 in blocked_rects:
+		if candidate_rect.intersects(blocked_rect):
+			return true
+	return false
+
+
 func set_tutorial_spell(spell_id: StringName) -> void:
 	_tutorial_spell = spell_id
 	_refresh_buttons()

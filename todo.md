@@ -34,6 +34,7 @@
 - [x] Forfeit all survivor XP on voluntary resignation while preserving ordinary clear/leak/base survivor awards; add Space pause/resume before GUI dispatch and cycle the top-right speed selector through 1×, 2×, 4×, and paused (`0×`) with responsive Xvfb verification.
 - [x] Implement early enemy variety with an armored S2 Shieldbearer, two-block S3 Breacher, durable S4 Interceptor, real Caster Arts attacks, GPT Image 2/video-to-sprites production assets, deterministic paired balance telemetry, and native landscape/portrait battle acceptance.
 - [x] Playtest S2–S4 with guided, two-second slow-polling, and counter-blind policies; keep S2/S3 unchanged, make each S4 Interceptor lead its Drone escort, and regression-lock the resulting 3★→2★→2★ guided difficulty curve with native landscape/portrait acceptance.
+- [x] Refit the annotated battle HUD: move live transmissions to the right beneath gameplay controls with a 64px gap, add localized 112×112 speaker visuals and 12px header spacing, double the landscape recruit selector to 1,360px, give the command deck 24px all-around padding, coordinate spell/pan-hint/deployment collisions, and safely suppress impossible short-landscape transmission layouts.
 
 # Premium Resonance Cinematic Completion
 
