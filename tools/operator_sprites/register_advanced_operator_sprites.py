@@ -25,6 +25,7 @@ MIRROR_SOURCE = {"nw": "ne", "sw": "se"}
 FRAME_COUNTS = {"idle": 24, "attack": 13}
 ROWS = {"idle": 3, "attack": 2}
 SOURCE_MANIFEST_ID = "advanced_operator_sprites_v2"
+PROPORTION_CONFIG = Path("data/presentation/advanced_operator_proportions.json")
 BEGIN_MARKER = "; BEGIN GENERATED ADVANCED OPERATOR ANIMATIONS"
 END_MARKER = "; END GENERATED ADVANCED OPERATOR ANIMATIONS"
 LEGACY_BEGIN_MARKER = "# BEGIN GENERATED ADVANCED OPERATOR ANIMATIONS"
@@ -71,12 +72,43 @@ def ensure_complete(repository: Path, source_root: Path) -> None:
         raise FileNotFoundError("incomplete advanced-operator matrix:\n" + "\n".join(missing))
 
 
+def load_proportion_calibrations(repository: Path) -> tuple[int, dict[str, int]]:
+    path = repository / PROPORTION_CONFIG
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError(f"{path}: expected proportion schema version 1")
+    target = int(payload.get("target_runtime_body_height_px", 0))
+    if target <= 0:
+        raise ValueError(f"{path}: target runtime body height must be positive")
+    raw_identities = payload.get("identities")
+    if not isinstance(raw_identities, dict):
+        raise ValueError(f"{path}: identities must be a dictionary")
+    expected = {
+        f"{class_id}_{gender}"
+        for class_id in CLASS_ORDER
+        for gender in GENDER_ORDER
+    }
+    if set(raw_identities) != expected:
+        raise ValueError(f"{path}: expected exact {len(expected)}-identity calibration matrix")
+    calibrations: dict[str, int] = {}
+    for template_id, record in raw_identities.items():
+        if not isinstance(record, dict):
+            raise ValueError(f"{path}: {template_id} calibration must be a dictionary")
+        measured = int(record.get("normalized_body_height_px", 0))
+        if measured < 480 or measured > 640:
+            raise ValueError(f"{path}: {template_id} body height must be 480..640")
+        calibrations[template_id] = measured
+    return target, calibrations
+
+
 def write_resources(repository: Path) -> list[Path]:
     target = repository / "data/presentation/operator_visuals"
     created: list[Path] = []
+    display_height_px, calibrations = load_proportion_calibrations(repository)
     for class_id in CLASS_ORDER:
         for gender in GENDER_ORDER:
             template_id = f"{class_id}_{gender}"
+            normalized_body_height_px = calibrations[template_id]
             direction_map_idle = "\n".join(
                 f'&"{direction}": &"{logical_id(class_id, gender, "idle", direction)}"'
                 + ("," if index < len(DIRECTION_ORDER) - 1 else "")
@@ -106,8 +138,8 @@ attack_frame_count = 13
 fps = 12.0
 pivot = Vector2(0.5, 1)
 source_cell_px = 640
-display_height_px = 64
-normalized_subject_height_px = 600
+display_height_px = {display_height_px}
+normalized_subject_height_px = {normalized_body_height_px}
 placeholder = false
 '''
             path = target / f"{template_id}.tres"

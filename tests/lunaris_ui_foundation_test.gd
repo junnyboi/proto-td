@@ -3,6 +3,7 @@ extends SceneTree
 const ThemeType := preload("res://scripts/ui/components/aetheria_theme.gd")
 const ShellScene := preload("res://scenes/ui/components/aetheria_screen_shell.tscn")
 const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
+const LunarisStyleType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 
 var _failures: Array[String] = []
 
@@ -13,7 +14,16 @@ func _init() -> void:
 
 func _run() -> void:
 	var theme := ThemeType.new()
-	_check(theme.get_stylebox(&"normal", &"AuiPrimaryButton") is StyleBoxTexture, "primary action does not use the Lunaris frame")
+	var primary_style := theme.get_stylebox(&"normal", &"AuiPrimaryButton") as StyleBoxFlat
+	_check(primary_style != null, "Aetheria primary action is not a solid style")
+	if primary_style != null:
+		_check(primary_style.bg_color.a >= 0.99, "Aetheria primary action is not solid")
+		_check(primary_style.content_margin_left >= 12.0 and primary_style.content_margin_top >= 12.0, "Aetheria primary action lacks 12px content padding")
+	var audited_gold := Button.new()
+	LunarisStyleType.apply_button(audited_gold, &"gold")
+	_check(audited_gold.get_theme_stylebox(&"normal") is StyleBoxFlat, "shared gold action still uses a textured frame")
+	_check(audited_gold.get_theme_color(&"font_color").is_equal_approx(Color("040a12")), "shared gold action lacks high-contrast dark ink")
+	audited_gold.free()
 	_check(theme.get_stylebox(&"panel", &"AuiReadingPanel") is StyleBoxTexture, "reading panel does not use the command-deck frame")
 	_check(theme.get_font(&"font", &"AuiTitleLabel") != null, "display typography is missing")
 

@@ -27,6 +27,9 @@ REGISTRAR_PATH = REPOSITORY / "tools/operator_sprites/register_advanced_operator
 IMPORT_CONFIGURATOR_PATH = (
     REPOSITORY / "tools/operator_sprites/configure_advanced_operator_imports.py"
 )
+PROPORTION_AUDITOR_PATH = (
+    REPOSITORY / "tools/operator_sprites/audit_operator_proportions.py"
+)
 CELL = 640
 
 
@@ -42,6 +45,7 @@ def load_module(name: str, path: Path) -> ModuleType:
 builder = load_module("advanced_sprite_builder", BUILDER_PATH)
 validator = load_module("advanced_sprite_validator", VALIDATOR_PATH)
 registrar = load_module("advanced_sprite_registrar", REGISTRAR_PATH)
+proportion_auditor = load_module("advanced_proportion_auditor", PROPORTION_AUDITOR_PATH)
 
 
 class WebImportBudgetTests(unittest.TestCase):
@@ -62,6 +66,18 @@ class WebImportBudgetTests(unittest.TestCase):
 
         completed = run([sys.executable, str(IMPORT_CONFIGURATOR_PATH)])
         self.assertIn("configured=176 changed=0", completed.stdout)
+
+    def test_all_advanced_identities_project_to_one_body_height(self) -> None:
+        payload = proportion_auditor.audit(REPOSITORY)
+        self.assertEqual(22, payload["identity_count"])
+        self.assertEqual([], payload["failures"])
+        for row in payload["rows"]:
+            self.assertAlmostEqual(
+                64.0,
+                row["projected_runtime_body_height_px"],
+                delta=2.0,
+                msg=row["template_id"],
+            )
 
 
 def sha256(path: Path) -> str:

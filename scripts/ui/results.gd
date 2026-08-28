@@ -376,10 +376,20 @@ func _build_actions(layout: VBoxContainer) -> void:
 		next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
-	var title := _button("BackToTitle", UiCopyType.text(&"ui.common.back_to_title", "Back to Title"), UiCopyType.text(&"ui.common.back", "Back"), &"secondary" if not focusable.is_empty() else &"primary")
-	title.pressed.connect(_on_back_to_title)
-	_actions.add_child(title)
-	focusable.append(title)
+	var returns_to_mission_control := (
+		_cleared_result and Game.campaign_active and Game.campaign != null
+	)
+	var back := _button(
+		"BackButton",
+		UiCopyType.text(&"ui.staging.mission_control", "Mission Control")
+		if returns_to_mission_control
+		else UiCopyType.text(&"ui.common.back_to_title", "Back to Title"),
+		UiCopyType.text(&"ui.common.back", "Back"),
+		&"secondary" if not focusable.is_empty() else &"primary",
+	)
+	back.pressed.connect(_on_back)
+	_actions.add_child(back)
+	focusable.append(back)
 	_wire_focus(focusable)
 
 
@@ -389,7 +399,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if Game.campaign_active and Game.campaign != null:
 			_on_return_to_staging()
 		else:
-			_on_back_to_title()
+			_on_back()
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
@@ -900,9 +910,12 @@ func _on_retry() -> void:
 	Game.open_squad_select()
 
 
-func _on_back_to_title() -> void:
+func _on_back() -> void:
 	Sfx.play("ui_click")
-	Game.open_title()
+	if _cleared_result and Game.campaign_active and Game.campaign != null:
+		Game.open_stage_select()
+	else:
+		Game.open_title()
 
 
 func _label(label_name: String, label_text: String, role: StringName) -> AetheriaLabelType:

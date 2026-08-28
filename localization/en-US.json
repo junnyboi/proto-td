@@ -420,7 +420,7 @@
     "ui.campaign.basic_hire_roster_limit": "The personnel registry has reached capacity.",
     "ui.campaign.basic_hire_save_failed": "The hire could not be saved. Activate again to retry the exact contract.",
     "ui.campaign.basic_hire_success": "{callsign} • JOINED COMPANY MANUS • {remaining} MARKS REMAIN",
-    "ui.campaign.basic_hire_title": "Company Reinforcements",
+    "ui.campaign.basic_hire_title": "Hire Recruit",
     "ui.campaign.basic_hire_unknown": "Hiring failed safely ({code}). Review Mission Control and try again.",
     "ui.campaign.cleared_suffix": "  {stars}",
     "ui.campaign.eyebrow": "Lunaris Expedition Archive",
