@@ -95,6 +95,18 @@ The affected classes retain these class anchors:
 
 The deterministic audit JSON files live under `docs/operator-proportions/`. Generated reference boards, keyframes, carriers, raw extracted frames, and processor validation records are stored under `/home/ubuntu/projects/proto-td-5e1ec8e7/advanced-operator-proportion-normalization/`. Git receives the plan, metrics, prompt/provenance manifest, optimized runtime atlases, tests, tools, and final visual evidence—not the high-resolution generation archive.
 
+## 9. Execution record
+
+| Phase | Status | Evidence |
+|---|---|---|
+| 0 — Audit and contract | Complete | Twenty-two deterministic body measurements, eleven independent class reviews, and the exact thirteen-regenerate/nine-preserve scope are committed on `master`. |
+| 1 — Metadata normalization | Complete | Every current V2 identity projects to 64px ±2px through per-identity calibration; the runtime atlases remain untouched and the production BattleView baseline is archived. |
+| 2 — Selective reference regeneration | In progress | Eight paired GPT Image 2 boards and twenty-six direction-specific chroma keyframes are being produced for the thirteen unsalvageable identities. |
+| 3 — Video-to-sprites regeneration | Pending | — |
+| 4 — Runtime integration | Pending | — |
+| 5 — Native and visual acceptance | Pending | — |
+| 6 — Forward-only release | Pending | — |
+
 ## References
 
 [1]: https://github.com/junnyboi/proto-td/blob/master/docs/ADVANCED_OPERATOR_SPRITE_REGENERATION_V2_PLAN.md "Advanced Specialization Animated Sprite Regeneration V2 — Implementation Plan"
