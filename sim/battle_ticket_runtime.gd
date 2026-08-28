@@ -177,7 +177,7 @@ static func cell_in_domain(row: Dictionary, stage: StageDef, cell: Vector2i) -> 
 	if placement == OperatorDef.Placement.GROUND:
 		return stage.tile_at(cell) == StageDef.Tile.GROUND
 	if placement == OperatorDef.Placement.ELEVATED:
-		return stage.tile_at(cell) == StageDef.Tile.ELEVATED
+		return stage.is_elevated_platform(cell)
 	return false
 
 

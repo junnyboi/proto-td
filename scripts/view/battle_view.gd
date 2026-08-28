@@ -474,7 +474,7 @@ func _map_navigation_blocked() -> bool:
 
 
 func _is_lifted_cell(cell: Vector2i) -> bool:
-	return _stage != null and _stage.tile_at(cell) == StageDef.Tile.ELEVATED
+	return _stage != null and _stage.is_elevated_platform(cell)
 
 
 func _physics_process(delta: float) -> void:

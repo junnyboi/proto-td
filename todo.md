@@ -129,3 +129,14 @@
 - [x] Add 11-class × two-gender routing, second-stage continuity, idempotency, real promotion/save restoration/receipt, Field Team texture, premium, and fallen-operator regression coverage.
 - [x] Pass focused affected tests, the full Godot 4.7.2 baseline with zero failures, and representative landscape/portrait Xvfb visual acceptance.
 - [x] Reconcile and push shared master, export source `16e8586` into the exact 231,526,672-byte core, pass local and managed HTTP/WebGL/geometry/input/console gates, advance the newest forward-only `proto-td-web` host, and save the final checkpoint.
+
+# Elevated Platform Accessibility
+
+- [x] Reproduce the user-reported rejection and trace it to 61 empty `BLOCKED` cells rendered identically to the 64 deployable elevated cells.
+- [x] Audit S1–S16 and unify all 125 visible raised faces into one elevated placement and hit-test domain, including 61 historical `X` cells.
+- [x] Preserve serialized stage topology, deterministic fingerprints, save/replay ancestry, ground-only placement, paths, and accepted balance heuristics.
+- [x] Add landscape/portrait hit-testing plus StageDef, ticket, and BattleModel coverage for Mage Apprentice, Sorcerer, Gunner, Sniper, and Witch Doctor on every platform.
+- [x] Capture a real S2 battle with Gunner and Mage Apprentice deployed on the two formerly blocked center platforms in landscape and rotated portrait orientation.
+- [x] Pass the authoritative full baseline with zero failures and an independent code audit with no confirmed runtime defect.
+- [x] Reconcile with concurrent campaign, facing-map, speed-control, and Field Team work; regress once and push shared master without rewriting history.
+- [ ] Export/browser-test the exact Web release, layer it onto the newest `proto-td-web` host, and save a new checkpoint.

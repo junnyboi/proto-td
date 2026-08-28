@@ -13,7 +13,7 @@ The battle map uses the textured multi-pass terrain approach from [`junnyboi/pro
 | Frozen | Tundra snow | Blue ice | Iron rock | Clear |
 | Lava | Lava basalt | Volcanic ash | Iron rock | Clear |
 
-`StageDef.Tile.ELEVATED` and `StageDef.Tile.BLOCKED` both retain raised wall geometry, but **every raised face is intentionally empty**. The renderer no longer preloads or draws boulders, trees, stumps, crates, walls, chimneys, obsidian clusters, or procedural rock blobs on any platform. This keeps deployment silhouettes unambiguous and removes visual clutter from blocked architecture across S1–S8.
+Every raised wall-and-top face in S1–S16 accepts every elevated operator class. The stage resources retain both `E` and historical `X` glyphs so deterministic topology fingerprints and save/replay ancestry do not change, but `StageDef.is_elevated_platform()` deliberately maps both glyphs into the same deployment and hit-test domain because the renderer presents both as empty raised platforms. The renderer does not draw boulders, trees, stumps, crates, walls, chimneys, obsidian clusters, or procedural rock blobs on these faces, keeping deployment silhouettes and hit targets unambiguous.
 
 ## Animated endpoints
 
@@ -27,7 +27,7 @@ The implementation removes the previous generic `assets/sprites/tile_*` set, obs
 
 ## Validation
 
-`tests/battle_endpoint_landmark_test.gd` verifies the 600px source-frame ceiling, independent one-tile display size, mipmapped linear filtering, row-major terminal-frame regions, 4096px atlas-dimension ceiling, frame count, FPS, frame advance, and reduced-motion freezing. `test/agent4_isometric_renderer_smoke.gd` loads every stage from S1 through S8, verifies the biome cycle and terrain textures, rejects any remaining platform-top prop renderer, and requires one animated landmark for every SPAWN and BASE tile. `test/map_navigator_orientation_smoke.gd` protects endpoint-aware height fitting in portrait and landscape. `test/agent4_isometric_visual_harness.tscn` launches any stage selected by `AGENT4_STAGE` for repeatable visual captures.
+`tests/elevated_platform_accessibility_test.gd` audits every S1–S16 raised face in landscape and rotated portrait orientation, rejects visually raised `BLOCKED` cells, verifies center and interior hit-testing, and proves every elevated operator definition passes both StageDef and BattleModel deployment validation. `tests/battle_endpoint_landmark_test.gd` verifies the 600px source-frame ceiling, independent one-tile display size, mipmapped linear filtering, row-major terminal-frame regions, 4096px atlas-dimension ceiling, frame count, FPS, frame advance, and reduced-motion freezing. `test/agent4_isometric_renderer_smoke.gd` loads every stage from S1 through S8, verifies the biome cycle and terrain textures, rejects any remaining platform-top prop renderer, and requires one animated landmark for every SPAWN and BASE tile. `test/map_navigator_orientation_smoke.gd` protects endpoint-aware height fitting in portrait and landscape. `test/agent4_isometric_visual_harness.tscn` launches any stage selected by `AGENT4_STAGE` for repeatable visual captures.
 
 ## Landscape and portrait maps
 
