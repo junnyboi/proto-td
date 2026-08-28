@@ -44,7 +44,6 @@ var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
 var _orbit_rule: HBoxContainer = null
 var _start_button: Button = null
-var _settings_button: Button = null
 var _footer_settings_dock: MarginContainer = null
 var _footer_settings_button: Button = null
 var _title_music_enabled := true
@@ -216,11 +215,7 @@ func _build_screen() -> void:
 	_start_button = _entry_button("StartButton", true)
 	_start_button.pressed.connect(_on_start_pressed)
 	_entry_stack.add_child(_start_button)
-	_settings_button = _entry_button("SettingsButton", false)
-	_settings_button.pressed.connect(_open_settings)
-	_entry_stack.add_child(_settings_button)
 	_wire_title_action_feedback(_start_button)
-	_wire_title_action_feedback(_settings_button)
 	_build_footer_settings()
 	_wire_entry_focus()
 
@@ -323,7 +318,7 @@ func _register_focus_pulse(button: Button, accent: Color) -> void:
 
 
 func _wire_entry_focus() -> void:
-	var actions: Array[Control] = [_start_button, _settings_button, _footer_settings_button]
+	var actions: Array[Control] = [_start_button, _footer_settings_button]
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -346,7 +341,7 @@ func _on_title_action_focused(action: Control) -> void:
 
 func _begin_title_reveal() -> void:
 	var reveal_nodes: Array[CanvasItem] = [
-		_wordmark, _orbit_rule, _start_button, _settings_button, _footer_settings_dock,
+		_wordmark, _orbit_rule, _start_button, _footer_settings_dock,
 	]
 	_interaction_feedback_ready = false
 	_title_focus_scroll_ready = false
@@ -365,7 +360,7 @@ func _begin_title_reveal() -> void:
 
 
 func _finish_title_reveal() -> void:
-	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _settings_button, _footer_settings_dock]:
+	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _footer_settings_dock]:
 		if item != null:
 			item.modulate.a = 1.0
 	_reset_title_scroll.call_deferred()
@@ -460,14 +455,8 @@ func _open_settings() -> void:
 	if _screen_state != ScreenState.TITLE:
 		return
 	var return_focus := get_viewport().gui_get_focus_owner()
-	if (
-		return_focus == null
-		or (
-			not _entry_host.is_ancestor_of(return_focus)
-			and return_focus != _footer_settings_button
-		)
-	):
-		return_focus = _settings_button
+	if return_focus != _footer_settings_button:
+		return_focus = _footer_settings_button
 	_settings_snapshot = _current_preferences()
 	_settings_snapshot[&"return_focus"] = return_focus
 	_screen_state = ScreenState.SETTINGS
@@ -571,17 +560,15 @@ func _leave_settings(return_focus: Control) -> void:
 	_set_title_interaction_enabled(true)
 	var target := return_focus
 	if target == null or not is_instance_valid(target) or not target.is_visible_in_tree() or target.focus_mode == Control.FOCUS_NONE:
-		target = _settings_button
+		target = _footer_settings_button
 	target.grab_focus()
 
 
 func _set_title_interaction_enabled(enabled: bool) -> void:
 	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
 	_start_button.disabled = not enabled or _start_pending
-	_settings_button.disabled = not enabled
 	_footer_settings_button.disabled = not enabled
 	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
-	_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	_footer_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
@@ -747,9 +734,8 @@ func _refresh_copy() -> void:
 		if _start_failed
 		else ""
 	)
-	_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
-	_footer_settings_button.text = _settings_button.text
-	_footer_settings_button.tooltip_text = _settings_button.text
+	_footer_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
+	_footer_settings_button.tooltip_text = _footer_settings_button.text
 	_footer_settings_button.accessibility_name = UiCopyType.text(
 		&"ui.title.footer_settings_a11y", "Open Settings",
 	)
@@ -800,9 +786,7 @@ func _apply_responsive_layout() -> void:
 		wordmark_visual = lerpf(float(wordmark_default), minf(float(wordmark_default), fit_cap), fit_weight)
 	var wordmark_base := maxi(1, roundi(wordmark_visual / maxf(_text_scale, 0.01)))
 	_wordmark.add_theme_font_size_override(&"font_size", wordmark_base)
-	_settings_button.visible = _text_scale <= 1.20
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
-	_settings_button.custom_minimum_size = Vector2(minf(entry_width * 0.88, _title_size(460.0)), _title_size(72.0 if not portrait else 68.0))
 	_footer_settings_dock.offset_top = -FOOTER_DOCK_HEIGHT
 	_footer_settings_button.custom_minimum_size.x = minf(
 		maxf(220.0, viewport_size.x - float(horizontal_margin * 2)), 320.0,

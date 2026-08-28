@@ -45,10 +45,10 @@ func _run() -> void:
 
 func _verify_transition_contract(game: Node) -> void:
 	var title := await _create_title(PATH)
-	var settings_button := title.find_child("SettingsButton", true, false) as Button
 	var footer_button := title.find_child("FooterSettingsButton", true, false) as Button
-	_check(footer_button != null, "fixed footer Settings action is missing")
-	settings_button.grab_focus()
+	_check(title.find_child("SettingsButton", true, false) == null, "removed duplicate main-stack Settings action returned")
+	_check(footer_button != null, "sole fixed footer Settings action is missing")
+	footer_button.grab_focus()
 	title.call("_open_settings")
 	var state := title.get_node("TitleSettings") as Control
 	var locale := state.find_child("LocaleList", true, false) as ItemList
@@ -59,22 +59,15 @@ func _verify_transition_contract(game: Node) -> void:
 	_check(locale.has_focus(), "normal entry completion did not establish initial focus")
 	title.call("_close_settings")
 	_check(StringName(state.call("transition_state_name")) == &"EXITING", "normal close did not expose EXITING")
-	_check(not settings_button.is_visible_in_tree() and not settings_button.has_focus(), "Title returned during Settings exit")
+	_check(not footer_button.is_visible_in_tree() and not footer_button.has_focus(), "Title returned during Settings exit")
 	await _wait_for_transition(state, &"CLOSED")
-	_check(StringName(title.call("screen_state")) == &"TITLE" and settings_button.has_focus(), "normal close did not restore Title focus after exit")
-	footer_button.grab_focus()
-	title.call("_open_settings")
-	await _wait_for_transition(state, &"ACTIVE")
-	_check(not footer_button.is_visible_in_tree() and footer_button.disabled, "footer Settings remained interactive behind the modal")
-	title.call("_close_settings")
-	await _wait_for_transition(state, &"CLOSED")
-	_check(footer_button.has_focus(), "footer Settings did not receive exact return focus")
+	_check(StringName(title.call("screen_state")) == &"TITLE" and footer_button.has_focus(), "normal close did not restore the sole Settings action")
 	await _release(title, game)
 
 	_remove(REDUCED_PATH)
 	_check(PREFS.set_reduced_motion(true, REDUCED_PATH), "reduced-motion fixture was not written")
 	var reduced_title := await _create_title(REDUCED_PATH)
-	var reduced_button := reduced_title.find_child("SettingsButton", true, false) as Button
+	var reduced_button := reduced_title.find_child("FooterSettingsButton", true, false) as Button
 	reduced_button.grab_focus()
 	reduced_title.call("_open_settings")
 	var reduced_state := reduced_title.get_node("TitleSettings") as Control
@@ -90,7 +83,7 @@ func _verify_transition_contract(game: Node) -> void:
 
 func _verify_cancel(game: Node, music: Node) -> void:
 	var title := await _create_title(PATH)
-	var settings_button := title.find_child("SettingsButton", true, false) as Button
+	var settings_button := title.find_child("FooterSettingsButton", true, false) as Button
 	settings_button.grab_focus()
 	title.call("_open_settings")
 	await _wait_for_transition(title.get_node("TitleSettings") as Control, &"ACTIVE")
@@ -98,7 +91,7 @@ func _verify_cancel(game: Node, music: Node) -> void:
 	_check(StringName(title.call("screen_state")) == &"SETTINGS", "explicit SETTINGS state was not entered")
 	_check(state_root.visible and state_root.mouse_filter == Control.MOUSE_FILTER_STOP, "full-rect STOP state is not active")
 	_check(title.find_child("SettingsPanel", true, false) == null, "legacy centered panel remains")
-	_check(not settings_button.is_visible_in_tree() and settings_button.disabled, "underlying title input remains active")
+	_check(not settings_button.is_visible_in_tree() and settings_button.disabled, "underlying footer Settings input remains active")
 	var content_before: Node = game.get("content") as Node
 	var project_theme := ThemeDB.get_project_theme()
 	var project_body_base := project_theme.get_font_size(&"font_size", &"AuiBodyLabel")

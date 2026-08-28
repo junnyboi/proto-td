@@ -52,6 +52,12 @@ func motion_reduced() -> bool:
 	return _reduced_motion
 
 
+func set_reduced_motion(enabled: bool) -> void:
+	_reduced_motion = enabled
+	set_process(not _reduced_motion)
+	_update_particle_field()
+
+
 func texture_ready() -> bool:
 	return SPARKLE_TEXTURE != null and not SPARKLE_TEXTURE.resource_path.is_empty()
 

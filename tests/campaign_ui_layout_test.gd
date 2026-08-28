@@ -5,6 +5,8 @@ const STATE_WAIT_SECONDS := 2.0
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const CampaignNextSparklesType := preload("res://scripts/ui/components/campaign_next_sparkles.gd")
 const CampaignReadyShimmerType := preload("res://scripts/ui/components/campaign_ready_shimmer.gd")
+const PREFS := preload("res://scripts/view/view_preferences.gd")
+const STAGING_PREFERENCES_PATH := "user://campaign_ui_layout_staging.cfg"
 
 var _failures: Array[String] = []
 var _finished := false
@@ -29,6 +31,10 @@ func _run() -> void:
 	var campaign_data := campaign_state.get("_data") as Dictionary
 	campaign_data["stage_stars"] = [{"stage_id": "s1", "stars": 3}]
 	game.set("selected_stage_id", &"s2")
+	if FileAccess.file_exists(STAGING_PREFERENCES_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(STAGING_PREFERENCES_PATH))
+	_check(PREFS.set_reduced_motion(true, STAGING_PREFERENCES_PATH), "staging reduced-motion preference fixture failed")
+	game.call("set_view_preferences_path", STAGING_PREFERENCES_PATH)
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	var staging: Node = load("res://scenes/staging.tscn").instantiate()
 	root.add_child(staging)
@@ -50,6 +56,9 @@ func _run() -> void:
 	_check(resonance_sparkles != null and int(resonance_sparkles.call("visible_particle_count")) == 3, "Reduced Motion did not preserve Resonance's static glints")
 	_dispose(staging)
 	game.set("content", null)
+	game.call("set_view_preferences_path", PREFS.DEFAULT_PATH)
+	if FileAccess.file_exists(STAGING_PREFERENCES_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(STAGING_PREFERENCES_PATH))
 	ProjectSettings.set_setting("accessibility/reduced_motion", false)
 
 	var campaign: Node = load("res://scenes/stage_select.tscn").instantiate()

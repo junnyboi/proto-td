@@ -40,7 +40,8 @@ func _run() -> void:
 func _verify_animated_reveal_and_hover() -> void:
 	var title := await _create_title(PREFERENCES_PATH)
 	var wordmark := title.find_child("Wordmark", true, false) as Label
-	var settings := title.find_child("SettingsButton", true, false) as Button
+	var settings := title.find_child("FooterSettingsButton", true, false) as Button
+	var settings_dock := title.find_child("FooterSettingsDock", true, false) as MarginContainer
 	var sfx := root.get_node_or_null("Sfx")
 	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
 	var mission_cinematic_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
@@ -48,10 +49,11 @@ func _verify_animated_reveal_and_hover() -> void:
 	_check(cinematic_prefetch != null and int(cinematic_prefetch.call("title_entry_count")) == 1, "animated title entry did not start cinematic prefetch immediately")
 	_check(wordmark != null and wordmark.modulate.a < 1.0, "wordmark did not begin inside the fade-in window")
 	_check(title.find_child("CanonSynopsis", true, false) == null, "removed canon synopsis returned to the title reveal")
-	_check(settings != null and settings.modulate.a < 1.0, "Settings did not begin inside its staggered fade window")
+	_check(title.find_child("SettingsButton", true, false) == null, "removed duplicate Settings action returned to the title reveal")
+	_check(settings_dock != null and settings_dock.modulate.a < 1.0, "Settings did not begin inside its staggered fade window")
 	await create_timer(1.1).timeout
 	_check(wordmark != null and _near(wordmark.modulate.a, 1.0), "wordmark fade-in did not settle opaque")
-	_check(settings != null and _near(settings.modulate.a, 1.0), "Settings fade-in did not settle opaque")
+	_check(settings_dock != null and _near(settings_dock.modulate.a, 1.0), "Settings fade-in did not settle opaque")
 	if settings != null and sfx != null:
 		var starts_before := int(sfx.call("audible_start_count"))
 		title.call("_on_title_action_hover_changed", settings, true)
@@ -81,7 +83,7 @@ func _verify_reduced_motion() -> void:
 	_check(VIEW_PREFERENCES.set_reduced_motion(true, REDUCED_PREFERENCES_PATH), "reduced-motion preference was not written")
 	var title := await _create_title(REDUCED_PREFERENCES_PATH)
 	var wordmark := title.find_child("Wordmark", true, false) as Label
-	var settings := title.find_child("SettingsButton", true, false) as Button
+	var settings := title.find_child("FooterSettingsButton", true, false) as Button
 	var cinematic_prefetch := root.get_node_or_null("CinematicPrefetch")
 	var mission_cinematic_prefetch := root.get_node_or_null("MissionCinematicPrefetch")
 	_check(mission_cinematic_prefetch != null and int(mission_cinematic_prefetch.call("title_entry_count")) == 2, "reduced-motion title entry did not preserve mission background prefetch")
