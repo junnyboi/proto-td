@@ -662,11 +662,6 @@ func _build_inspector() -> AetheriaPanelType:
 			"SelectedClass", class_label(String(selected["current_class_id"])).to_upper(),
 			&"heading",
 		))
-		identity.add_child(_label(
-			"SelectedContinuity",
-			_t(&"ui.training.same_recruit_new_job", "Same person. New training and equipment."),
-			&"eyebrow",
-		))
 		if bool(selected.get("is_premium", false)):
 			identity.add_child(_label(
 				"SelectedPremiumStatus",

@@ -466,7 +466,6 @@ const STATIC_FALLBACKS := {
 	&"ui.training.role.damage_control": "Damage / Control",
 	&"ui.training.role.healer_support": "Healer / Support",
 	&"ui.training.same_identity": "SAME PERSON • SAME HERO ID • SAME CALLSIGN • SAME HISTORY",
-	&"ui.training.same_recruit_new_job": "Same person. New training and equipment.",
 	&"ui.training.skill.mend": "Mend — Heal one living ally for {amount} HP",
 	&"ui.training.skill.tempest": "Tempest — Wide-range pressure attack",
 	&"ui.training.state_after_confirmation": "State changes only after confirmation.",

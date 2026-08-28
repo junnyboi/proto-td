@@ -898,7 +898,6 @@
     "ui.training.role.healer_support": "治疗 / 支援",
     "ui.training.roster_row_accessibility_name": "训练新兵",
     "ui.training.same_identity": "同一个人 • 同一英雄编号 • 同一代号 • 同一履历",
-    "ui.training.same_recruit_new_job": "仍是同一个人，接受新的训练和装备。",
     "ui.training.skill.mend": "治疗 — 为一名存活友军恢复 {amount} 点生命值",
     "ui.training.skill.none": "无",
     "ui.training.skill.tempest": "风暴 — 大范围压制攻击",

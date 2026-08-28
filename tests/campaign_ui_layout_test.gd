@@ -264,8 +264,10 @@ func _run() -> void:
 	_check(not String(training.get("accessibility_name")).is_empty() and not String(training.get("accessibility_description")).is_empty(), "Training root lacks accessibility metadata")
 	var initial_rename_input := training.find_child("RenameUnitInput", true, false) as LineEdit
 	var edit_identity := training.find_child("EditIdentity", true, false) as Button
+	var selected_continuity := training.find_child("SelectedContinuity", true, false)
 	_check(initial_rename_input != null and not initial_rename_input.is_visible_in_tree(), "Training identity inputs are visible before Edit Identity")
 	_check(edit_identity != null, "Training Edit Identity control is missing")
+	_check(selected_continuity == null, "selected-operator continuity caption is still rendered")
 	var edit_presentation := edit_identity.find_child("PresentationLabel", true, false) as Label if edit_identity != null else null
 	var return_presentation := not_now.find_child("PresentationLabel", true, false) as Label if not_now != null else null
 	_check(edit_identity != null and edit_identity.text == "Edit", "selected-operator action is not labeled Edit")
