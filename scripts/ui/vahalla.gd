@@ -7,8 +7,12 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const VAHALLA_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
+const MEMORIAL_CARD_MIN_WIDTH := 280.0
+const MEMORIAL_GRID_GAP := 12
+const MEMORIAL_ROW_MIN_HEIGHT := 104.0
 
 var _screen_margin: MarginContainer
 var _header_grid: GridContainer
@@ -29,6 +33,7 @@ var _visible_rows: Array[Dictionary] = []
 var _memorial_by_hero := {}
 var _honored := {}
 var _selected_hero_id := ""
+var _memorial_grid_layout_queued := false
 
 
 func _ready() -> void:
@@ -39,6 +44,8 @@ func _ready() -> void:
 	_refresh_projection()
 	_build_screen()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
+	if TextScale != null and not TextScale.scale_changed.is_connected(_on_text_scale_changed):
+		TextScale.scale_changed.connect(_on_text_scale_changed)
 	_apply_responsive_layout()
 
 
