@@ -70,10 +70,16 @@ static func apply_button(button: Button, role: StringName) -> void:
 	var disabled: StyleBox
 	match role:
 		&"primary", &"gold":
-			normal = _texture_margin(StagingSkinType.primary_button_style(), 10.0)
-			hover = _texture_margin(StagingSkinType.primary_button_style(Color("fff2c6")), 10.0)
-			pressed = _texture_margin(StagingSkinType.primary_button_style(GOLD), 10.0)
-			ink = INK_DEEP if role == &"primary" else IVORY
+			normal = _texture_margin(
+				StagingSkinType.primary_button_style(GOLD, Color("f0d89a")), 12.0,
+			)
+			hover = _texture_margin(
+				StagingSkinType.primary_button_style(Color("f0d89a"), Color("fff8df")), 12.0,
+			)
+			pressed = _texture_margin(
+				StagingSkinType.primary_button_style(Color("b58e46"), GOLD), 12.0,
+			)
+			ink = INK_DEEP
 		&"selected":
 			normal = _texture_margin(StagingSkinType.operation_tile_style(Color("b9f8fb")), 10.0)
 			hover = _texture_margin(StagingSkinType.operation_tile_style(Color.WHITE), 10.0)
@@ -229,7 +235,7 @@ static func apply_progress(progress: ProgressBar) -> void:
 	progress.add_theme_stylebox_override(&"fill", _progress_box(CYAN))
 
 
-static func _texture_margin(style: StyleBoxTexture, margin: float) -> StyleBoxTexture:
+static func _texture_margin(style: StyleBox, margin: float) -> StyleBox:
 	style.content_margin_left = margin
 	style.content_margin_top = margin
 	style.content_margin_right = margin
