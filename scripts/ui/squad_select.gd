@@ -26,7 +26,6 @@ const OPERATOR_INFO_SPLIT := 0.56
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
 const OPERATOR_CARD_WIDTH := 520.0
-const OPERATOR_CARD_MIN_WIDTH := 300.0
 const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_CARD_HEIGHT := 252.0
 const OPERATOR_CARD_TALL_HEIGHT := 330.0
@@ -34,8 +33,8 @@ const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
 const FIELD_TEAM_STATUS_WIDTH_SCALE := 2.0
-const REINFORCEMENT_DESK_WIDTH := 660.0
-const REINFORCEMENT_HIRE_WIDTH := 100.0
+const HIRE_RECRUIT_WIDTH := 300.0
+const HIRE_RECRUIT_NARROW_MIN_WIDTH := 220.0
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
@@ -109,16 +108,9 @@ var _roster_empty: Label = null
 var _all_roster_rows: Array[Dictionary] = []
 var _filter_status: StringName = RosterFilterType.STATUS_ACTIVE
 var _filter_faction: StringName = RosterFilterType.FACTION_ALL
-var _recruitment_grid: GridContainer = null
-var _recruitment_panel: PanelContainer = null
-var _recruitment_header: BoxContainer = null
-var _hire_title: AetheriaLabelType = null
 var _hire_recruit: AetheriaButtonType = null
-var _hire_currency_display: ResonanceCurrencyDisplay = null
-var _hire_marks: Label = null
 var _hire_action_label: Label = null
 var _hire_cost_label: Label = null
-var _hire_status: AetheriaLabelType = null
 var _deploy_pulse_tween: Tween = null
 var _deploy_ready_pulsing := false
 var _operator_feedback_tweens: Dictionary = {}
@@ -283,7 +275,7 @@ func _build_body() -> GridContainer:
 	_roster_scroll.custom_minimum_size.y = 0.0
 	_roster_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_roster_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	roster_column.add_child(_roster_scroll)
 	_grid = GridContainer.new()
 	_grid.name = "OperatorGrid"
@@ -395,64 +387,9 @@ func _selected_squad_empty_label() -> Label:
 
 
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
-	var desk_row := HBoxContainer.new()
-	desk_row.name = "BasicRecruitDeskCenter"
-	desk_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	desk_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	parent.add_child(desk_row)
-	var panel := PanelContainer.new()
-	panel.name = "BasicRecruitDesk"
-	panel.custom_minimum_size.x = REINFORCEMENT_DESK_WIDTH
-	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	LunarisOpsType.apply_panel(panel, &"selected")
-	_recruitment_panel = panel
-	var panel_style := panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
-	panel_style.content_margin_left = 24.0
-	panel_style.content_margin_right = 24.0
-	panel_style.content_margin_top = 24.0
-	panel_style.content_margin_bottom = 24.0
-	panel.add_theme_stylebox_override(&"panel", panel_style)
-	desk_row.add_child(panel)
-	var stack := VBoxContainer.new()
-	stack.name = "BasicRecruitStack"
-	stack.add_theme_constant_override(&"separation", 10)
-	panel.add_child(stack)
-	_recruitment_grid = GridContainer.new()
-	_recruitment_grid.name = "BasicRecruitGrid"
-	_recruitment_grid.columns = 1
-	_recruitment_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recruitment_grid.add_theme_constant_override(&"v_separation", 10)
-	stack.add_child(_recruitment_grid)
-	_recruitment_header = BoxContainer.new()
-	_recruitment_header.name = "BasicRecruitHeader"
-	_recruitment_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recruitment_header.add_theme_constant_override(&"separation", 6)
-	_recruitment_grid.add_child(_recruitment_header)
-	_hire_title = AetheriaLabelType.new()
-	_hire_title.name = "BasicRecruitTitle"
-	_hire_title.apply_role(&"heading")
-	LunarisOpsType.apply_label(_hire_title, &"heading")
-	_hire_title.text = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Hire Recruit",
-	).to_upper()
-	_hire_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hire_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hire_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hire_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recruitment_header.add_child(_hire_title)
-	_hire_currency_display = ResonanceCurrencyDisplayType.new()
-	_hire_currency_display.name = "BasicRecruitCurrency"
-	_hire_currency_display.configure("0", 18, 24.0, "", &"marks")
-	_hire_currency_display.size_flags_horizontal = Control.SIZE_SHRINK_END
-	_hire_currency_display.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_hire_currency_display.alignment = BoxContainer.ALIGNMENT_END
-	_hire_currency_display.add_theme_constant_override(&"separation", 4)
-	_hire_marks = _hire_currency_display.amount_label
-	_hire_marks.name = "BasicRecruitMarks"
-	_recruitment_header.add_child(_hire_currency_display)
 	_hire_recruit = AetheriaButtonType.new()
 	_hire_recruit.name = "HireBasicRecruit"
-	_hire_recruit.custom_minimum_size = Vector2(REINFORCEMENT_HIRE_WIDTH, 72.0)
+	_hire_recruit.custom_minimum_size = Vector2(HIRE_RECRUIT_WIDTH, 72.0)
 	_hire_recruit.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.apply_role(&"primary")
@@ -469,6 +406,8 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_recruit.mouse_entered.connect(_on_hire_recruit_hovered)
 	_hire_recruit.mouse_exited.connect(_on_hire_recruit_hover_exited)
 	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
+	_hire_recruit.accessibility_live = AccessibilityServer.LIVE_POLITE
+	parent.add_child(_hire_recruit)
 	var hire_content := HBoxContainer.new()
 	hire_content.name = "BasicRecruitActionContent"
 	hire_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -479,7 +418,7 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_action_label = Label.new()
 	_hire_action_label.name = "BasicRecruitActionLabel"
 	_hire_action_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hire_action_label.add_theme_font_size_override(&"font_size", 18)
+	_hire_action_label.add_theme_font_size_override(&"font_size", 24)
 	_hire_action_label.add_theme_color_override(&"font_color", LunarisOpsType.IVORY)
 	_hire_action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hire_content.add_child(_hire_action_label)
@@ -495,21 +434,10 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_cost_label = Label.new()
 	_hire_cost_label.name = "BasicRecruitCostLabel"
 	_hire_cost_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hire_cost_label.add_theme_font_size_override(&"font_size", 18)
+	_hire_cost_label.add_theme_font_size_override(&"font_size", 24)
 	_hire_cost_label.add_theme_color_override(&"font_color", LunarisOpsType.GOLD)
 	_hire_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hire_content.add_child(_hire_cost_label)
-	_recruitment_grid.add_child(_hire_recruit)
-	_hire_status = AetheriaLabelType.new()
-	_hire_status.name = "BasicRecruitStatus"
-	_hire_status.apply_role(&"dense_detail")
-	_hire_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hire_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hire_status.accessibility_name = UiCopyType.text(
-		&"ui.campaign.basic_hire_title", "Hire Recruit",
-	)
-	_hire_status.accessibility_live = AccessibilityServer.LIVE_OFF
-	stack.add_child(_hire_status)
 
 
 func _campaign_roster_rows() -> Array[Dictionary]:
@@ -1032,49 +960,27 @@ func _wide_action_width(node_name: String) -> float:
 			return 238.0
 
 
-func _operator_grid_columns(mode: StringName) -> int:
+func _operator_grid_columns(_mode: StringName) -> int:
+	return 1
+
+
+func _operator_card_width(_mode: StringName) -> float:
+	return OPERATOR_CARD_WIDTH
+
+
+func _hire_recruit_width(mode: StringName) -> float:
 	if mode == &"portrait":
-		return 1
-	var available_width := _operator_grid_available_width(mode)
-	return maxi(
-		1,
-		floori(
-			(available_width + OPERATOR_GRID_GAP)
-			/ (OPERATOR_CARD_MIN_WIDTH + OPERATOR_GRID_GAP)
-		),
-	)
-
-
-func _operator_card_width(mode: StringName) -> float:
-	var available_width := _operator_grid_available_width(mode)
-	if mode == &"portrait":
-		return minf(640.0, maxf(240.0, available_width))
-	var columns := _operator_grid_columns(mode)
-	var gaps := OPERATOR_GRID_GAP * float(maxi(0, columns - 1))
-	var fitted_width := (available_width - gaps) / float(columns)
-	return minf(OPERATOR_CARD_WIDTH, maxf(OPERATOR_CARD_MIN_WIDTH, fitted_width))
-
-
-func _operator_grid_available_width(mode: StringName) -> float:
-	var viewport_width := get_viewport_rect().size.x
-	if mode == &"portrait":
-		return minf(640.0, maxf(240.0, viewport_width - 128.0))
-	return maxf(OPERATOR_CARD_MIN_WIDTH, viewport_width * FIELD_TEAM_WIDTH_RATIO - 128.0)
-
-
-func _recruitment_desk_width(mode: StringName) -> float:
-	var viewport_width := get_viewport_rect().size.x
-	if mode == &"portrait":
-		return minf(REINFORCEMENT_DESK_WIDTH, maxf(220.0, viewport_width - 128.0))
-	var body_width := maxf(760.0, viewport_width - 112.0)
-	var intel_width := (body_width - 16.0) * INTEL_WIDTH_RATIO
-	return minf(REINFORCEMENT_DESK_WIDTH, maxf(220.0, intel_width - 56.0))
+		return minf(
+			HIRE_RECRUIT_WIDTH,
+			maxf(HIRE_RECRUIT_NARROW_MIN_WIDTH, get_viewport_rect().size.x - 128.0),
+		)
+	return HIRE_RECRUIT_WIDTH
 
 
 func _operator_info_split(mode: StringName) -> float:
 	if mode == &"portrait":
-		return 0.50 if _operator_card_width(mode) < 300.0 else 0.54
-	return 0.58 if _operator_card_width(mode) < 400.0 else OPERATOR_INFO_SPLIT
+		return 0.54
+	return OPERATOR_INFO_SPLIT
 
 
 func _operator_card_height(hero: Dictionary, mode: StringName) -> float:
@@ -1246,20 +1152,17 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		(projection.get("ready_heroes", []) as Array).size()
 		+ (projection.get("fallen_heroes", []) as Array).size()
 	)
-	_hire_currency_display.set_amount(str(marks))
-	var action_text := UiCopyType.format_text(
-		&"ui.campaign.basic_hire_action", "HIRE • {cost}", {&"cost": cost},
-	)
-	var action_parts := action_text.split("•", true, 1)
-	_hire_action_label.text = action_parts[0].strip_edges()
+	var action_text := UiCopyType.text(
+		&"ui.campaign.basic_hire_title", "Hire Recruit",
+	).to_upper()
+	_hire_action_label.text = action_text
 	_hire_cost_label.text = str(cost)
 	_hire_recruit.text = ""
 	_hire_recruit.icon = null
-	_hire_recruit.accessibility_name = "%s, %s" % [
-		action_text,
+	_hire_recruit.accessibility_name = "%s, %s %s" % [
+		action_text, cost,
 		ResonanceCurrencyDisplayType.currency_name_for(&"marks"),
 	]
-	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, action_text, &"marks")
 	var unavailable := (
 		projection.is_empty()
 		or marks < cost
@@ -1267,7 +1170,10 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		or roster_count >= 1024
 	)
 	_hire_recruit.disabled = unavailable
+	_hire_recruit.focus_mode = Control.FOCUS_NONE if unavailable else Control.FOCUS_ALL
 	_hire_recruit.apply_role(&"disabled" if unavailable else &"primary")
+	if not unavailable:
+		_apply_clean_training_style(_hire_recruit)
 	if message.is_empty():
 		if projection.is_empty():
 			message = UiCopyType.text(
@@ -1291,14 +1197,20 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 			message = UiCopyType.text(
 				&"ui.campaign.basic_hire_ready", "BASIC RECRUIT CONTRACT AVAILABLE",
 			)
-	_hire_status.text = message
-	_hire_status.accessibility_description = message
-	_hire_status.accessibility_live = (
+	_hire_recruit.accessibility_live = (
 		AccessibilityServer.LIVE_ASSERTIVE if error else AccessibilityServer.LIVE_POLITE
 	)
-	_hire_status.add_theme_color_override(
-		&"font_color", LunarisOpsType.DANGER if error else LunarisOpsType.CYAN,
-	)
+	ResonanceCurrencyDisplayType.apply_tooltip(_hire_recruit, message, &"marks")
+	_hire_recruit.accessibility_description = message
+	var label_color := LunarisOpsType.MUTED if unavailable else LunarisOpsType.IVORY
+	var cost_color := LunarisOpsType.MUTED if unavailable else LunarisOpsType.GOLD
+	_hire_action_label.add_theme_color_override(&"font_color", label_color)
+	_hire_cost_label.add_theme_color_override(&"font_color", cost_color)
+	var cost_icon := _hire_recruit.get_node_or_null(
+		"BasicRecruitActionContent/BasicRecruitCostIcon",
+	) as TextureRect
+	if cost_icon != null:
+		cost_icon.self_modulate = Color(0.52, 0.55, 0.58, 0.72) if unavailable else Color.WHITE
 
 
 func _hire_error_text(code: StringName) -> String:
@@ -1644,18 +1556,6 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
-	if _hire_title != null:
-		_hire_title.text = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Hire Recruit",
-		).to_upper()
-	if _hire_recruit != null:
-		_hire_recruit.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Hire Recruit",
-		)
-	if _hire_status != null:
-		_hire_status.accessibility_name = UiCopyType.text(
-			&"ui.campaign.basic_hire_title", "Hire Recruit",
-		)
 	var copy_by_node := {
 		"MissionIndex": _format_copy(
 			&"ui.squad.mission_identity", "Mission {index} / {title}",
@@ -1876,12 +1776,8 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_filter_bar.set_status_button_width_scale(status_width_scale)
 		_filter_bar.set_dense_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)
 		_filter_bar.set_inline(mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0)
-	if _recruitment_grid != null:
-		_recruitment_grid.columns = 1
-	if _recruitment_panel != null:
-		_recruitment_panel.custom_minimum_size.x = _recruitment_desk_width(mode)
 	if _hire_recruit != null:
-		_hire_recruit.custom_minimum_size = Vector2(REINFORCEMENT_HIRE_WIDTH, 72.0)
+		_hire_recruit.custom_minimum_size = Vector2(_hire_recruit_width(mode), 72.0)
 	for button: Button in _buttons.values():
 		var hero: Dictionary = button.get_meta(&"hero", {})
 		button.custom_minimum_size = Vector2(

@@ -8,12 +8,13 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 
-## Pause/resume, speed cycle 1x/2x/4x, and resign. Every write remains on
+## Pause/resume, speed cycle 1x/2x/4x, Q/E directional stepping, and resign. Every write remains on
 ## ticks_per_frame_scale or model.apply_action([&"resign"]); presentation never
 ## enters deterministic state.
 
 const FONT_SIZE := GameTypographyType.DETAIL
 const SPEED_CYCLE: Array[float] = [1.0, 2.0, 4.0, 0.0]
+const SPEED_STEPS: Array[float] = [0.0, 1.0, 2.0, 4.0]
 const PAUSED_LABEL_MIN_WIDTH := 0.0
 const COMMAND_TARGET_SIZE := Vector2(112.0, 64.0)
 const DECK_PADDING := 24.0
@@ -115,6 +116,7 @@ func _build_row() -> void:
 	_pause_button.pressed.connect(_on_pause_pressed)
 	box.add_child(_pause_button)
 	_speed_button = _make_button("SpeedButton", "1×", &"secondary")
+	_apply_speed_shortcut_help()
 	_speed_button.pressed.connect(_on_speed_pressed)
 	box.add_child(_speed_button)
 	_resign_button = _make_button("ResignButton", _copy(&"ui.battle.resign", "RESIGN"), &"danger")
@@ -208,8 +210,12 @@ func _process(_delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	# Battle pause owns Space before GUI dispatch so a focused Pause, Speed, or
-	# Resign button cannot also activate through Space's ui_accept binding.
-	if not event.is_action_pressed(&"battle_pause"):
+	# Resign button cannot also activate through Space's ui_accept binding. Speed
+	# shortcuts are owned here for the same reason and never leak into map/UI input.
+	var pause_pressed := event.is_action_pressed(&"battle_pause")
+	var speed_down_pressed := event.is_action_pressed(&"battle_speed_down")
+	var speed_up_pressed := event.is_action_pressed(&"battle_speed_up")
+	if not pause_pressed and not speed_down_pressed and not speed_up_pressed:
 		return
 	if (
 		_interaction_enabled
@@ -217,7 +223,12 @@ func _input(event: InputEvent) -> void:
 		and model != null
 		and model.result == BattleModel.Result.RUNNING
 	):
-		_on_pause_pressed()
+		if pause_pressed:
+			_on_pause_pressed()
+		elif speed_down_pressed:
+			_step_speed(-1)
+		else:
+			_step_speed(1)
 	get_viewport().set_input_as_handled()
 
 
@@ -252,6 +263,37 @@ func _on_speed_pressed() -> void:
 	if next > 0.0:
 		_resume_scale = next
 	_set_scale(next)
+
+
+func _step_speed(direction: int) -> bool:
+	if (
+		direction == 0
+		or not _interaction_enabled
+		or _confirmation_state != ConfirmationState.CLOSED
+		or model == null
+		or view == null
+		or model.result != BattleModel.Result.RUNNING
+	):
+		return false
+	var current := _current_scale()
+	var target: float = SPEED_STEPS.front() if direction < 0 else SPEED_STEPS.back()
+	if direction < 0:
+		for step: float in SPEED_STEPS:
+			if step >= current - 0.0001:
+				break
+			target = step
+	else:
+		for step: float in SPEED_STEPS:
+			if step > current + 0.0001:
+				target = step
+				break
+	if is_equal_approx(target, current):
+		return false
+	Sfx.play("ui_click")
+	if target > 0.0:
+		_resume_scale = target
+	_set_scale(target)
+	return true
 
 
 func _on_resign_pressed() -> void:
@@ -429,7 +471,16 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 			"Close the withdrawal confirmation and resume the prior battle speed.",
 		)
 	_pause_button.text = _copy(&"ui.battle.resume", "RESUME") if _current_scale() == 0.0 else _copy(&"ui.battle.pause", "PAUSE")
+	_apply_speed_shortcut_help()
 	_resign_button.text = _copy(&"ui.battle.resign", "RESIGN")
+
+
+func _apply_speed_shortcut_help() -> void:
+	if _speed_button == null:
+		return
+	var help := _copy(&"ui.battle.speed_shortcuts", "Q: LOWER SPEED  •  E: RAISE SPEED")
+	_speed_button.tooltip_text = help
+	_speed_button.accessibility_description = help
 
 
 func _copy(key: StringName, fallback: String) -> String:

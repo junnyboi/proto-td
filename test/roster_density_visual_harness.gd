@@ -87,7 +87,7 @@ func _mount_fixture() -> void:
 				for _scroll_frame: int in range(12):
 					intel_scroll.scroll_vertical = ceili(intel_scroll.get_v_scroll_bar().max_value)
 					await get_tree().process_frame
-				var hire_desk := find_child("BasicRecruitDesk", true, false) as Control
+					var hire_desk := find_child("HireBasicRecruit", true, false) as Control
 				print(
 					"ROSTER_DENSITY_INTEL_BOTTOM|value=%d|max=%.1f|page=%.1f|desk=%s"
 					% [

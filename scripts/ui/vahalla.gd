@@ -7,8 +7,12 @@ const FactionHeraldryType := preload("res://scripts/ui/components/faction_herald
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const VAHALLA_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
+const MEMORIAL_CARD_MIN_WIDTH := 280.0
+const MEMORIAL_GRID_GAP := 12
+const MEMORIAL_ROW_MIN_HEIGHT := 104.0
 
 var _screen_margin: MarginContainer
 var _header_grid: GridContainer
@@ -29,6 +33,7 @@ var _visible_rows: Array[Dictionary] = []
 var _memorial_by_hero := {}
 var _honored := {}
 var _selected_hero_id := ""
+var _memorial_grid_layout_queued := false
 
 
 func _ready() -> void:
@@ -39,6 +44,8 @@ func _ready() -> void:
 	_refresh_projection()
 	_build_screen()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
+	if TextScale != null and not TextScale.scale_changed.is_connected(_on_text_scale_changed):
+		TextScale.scale_changed.connect(_on_text_scale_changed)
 	_apply_responsive_layout()
 
 
@@ -148,12 +155,14 @@ func _build_screen() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_memorial_scroll = scroll
+	scroll.resized.connect(_queue_memorial_grid_layout)
 	roster_stack.add_child(scroll)
 	_memorial_grid = GridContainer.new()
 	_memorial_grid.name = "VahallaMemorialGrid"
 	_memorial_grid.columns = 1
 	_memorial_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_memorial_grid.add_theme_constant_override(&"v_separation", 8)
+	_memorial_grid.add_theme_constant_override(&"h_separation", MEMORIAL_GRID_GAP)
+	_memorial_grid.add_theme_constant_override(&"v_separation", MEMORIAL_GRID_GAP)
 	scroll.add_child(_memorial_grid)
 
 	_dossier_panel = PanelContainer.new()
@@ -167,7 +176,7 @@ func _build_screen() -> void:
 	_rebuild_memorial()
 
 
-func _rebuild_memorial() -> void:
+func _rebuild_memorial(restore_focus_id := "") -> void:
 	for child: Node in _memorial_grid.get_children():
 		_memorial_grid.remove_child(child)
 		child.queue_free()
@@ -182,6 +191,7 @@ func _rebuild_memorial() -> void:
 		empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_memorial_grid.add_child(empty)
 		_rebuild_dossier()
+		_queue_memorial_grid_layout()
 		return
 	var selected_still_visible := false
 	for hero: Dictionary in _visible_rows:
@@ -192,13 +202,16 @@ func _rebuild_memorial() -> void:
 	for hero: Dictionary in _visible_rows:
 		_memorial_grid.add_child(_memorial_row(hero))
 	_rebuild_dossier()
+	_queue_memorial_grid_layout()
+	if not restore_focus_id.is_empty():
+		_restore_memorial_focus.call_deferred(restore_focus_id)
 
 
 func _memorial_row(hero: Dictionary) -> Button:
 	var hero_id := String(hero["hero_id"])
 	var row := Button.new()
 	row.name = "Memorial_%s" % hero_id
-	row.custom_minimum_size = Vector2(0, 104)
+	row.custom_minimum_size = Vector2(0, MEMORIAL_ROW_MIN_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.text = "%s\n%s · %s" % [
 		TrainingSupportType.callsign(hero).to_upper(),
@@ -210,6 +223,7 @@ func _memorial_row(hero: Dictionary) -> Button:
 	row.accessibility_description = row.text
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.pressed.connect(_on_memorial_selected.bind(hero_id))
+	row.focus_entered.connect(_ensure_memorial_visible.bind(row))
 	Style.apply_button(row, &"selected" if hero_id == _selected_hero_id else &"quiet")
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color",
@@ -403,9 +417,11 @@ func _on_filters_changed(_status: StringName, _faction_id: StringName) -> void:
 
 
 func _on_memorial_selected(hero_id: String) -> void:
+	var focus_owner := get_viewport().gui_get_focus_owner()
+	var restore_focus := hero_id if focus_owner != null and focus_owner.name == StringName("Memorial_%s" % hero_id) else ""
 	_selected_hero_id = hero_id
 	Sfx.play("ui_click")
-	_rebuild_memorial()
+	_rebuild_memorial(restore_focus)
 
 
 func _on_honor_pressed(hero_id: String) -> void:
@@ -446,6 +462,60 @@ func _apply_responsive_layout() -> void:
 	_dossier_panel.custom_minimum_size = Vector2(0 if portrait else 680, 360 if portrait else 0)
 	_body_grid.move_child(_dossier_panel, 0 if portrait else 1)
 	_rebuild_dossier()
+	_queue_memorial_grid_layout()
+
+
+func _on_text_scale_changed(_value: float) -> void:
+	_apply_responsive_layout()
+
+
+func _memorial_grid_available_width() -> float:
+	if _memorial_scroll != null and _memorial_scroll.size.x > 0.0:
+		return _memorial_scroll.size.x
+	return MEMORIAL_CARD_MIN_WIDTH
+
+
+func _memorial_grid_columns(available_width := -1.0, item_count := -1) -> int:
+	var text_scale := float(TextScale.value()) if TextScale != null else 1.0
+	var visible_count := _visible_rows.size() if item_count < 0 else item_count
+	return RosterGridLayoutType.fitting_columns(
+		available_width if available_width > 0.0 else _memorial_grid_available_width(),
+		MEMORIAL_CARD_MIN_WIDTH * maxf(1.0, text_scale),
+		float(MEMORIAL_GRID_GAP),
+		0,
+		visible_count,
+	)
+
+
+func _queue_memorial_grid_layout() -> void:
+	if _memorial_grid_layout_queued or not is_inside_tree():
+		return
+	_memorial_grid_layout_queued = true
+	_apply_queued_memorial_grid_layout.call_deferred()
+
+
+func _apply_queued_memorial_grid_layout() -> void:
+	_memorial_grid_layout_queued = false
+	if _memorial_grid != null:
+		_memorial_grid.columns = _memorial_grid_columns()
+
+
+func _ensure_memorial_visible(row: Control) -> void:
+	_ensure_memorial_visible_deferred.call_deferred(row)
+
+
+func _ensure_memorial_visible_deferred(row: Control) -> void:
+	if _memorial_scroll != null and row != null and is_instance_valid(row) and _memorial_scroll.is_ancestor_of(row):
+		_memorial_scroll.ensure_control_visible(row)
+
+
+func _restore_memorial_focus(hero_id: String) -> void:
+	if hero_id.is_empty() or _memorial_grid == null:
+		return
+	var row := _memorial_grid.get_node_or_null("Memorial_%s" % hero_id) as Button
+	if row != null and not row.disabled:
+		row.grab_focus()
+		_ensure_memorial_visible(row)
 
 
 func _label(text: String, role: StringName) -> Label:

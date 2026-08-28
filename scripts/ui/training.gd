@@ -19,6 +19,7 @@ const LunarisOpsType := preload("res://scripts/ui/components/lunaris_ops_style.g
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
 const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
+const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 enum RenameConfirmationState {
@@ -61,9 +62,10 @@ const PATH_ACTION_PADDING_HORIZONTAL := 24.0
 const PATH_ACTION_PADDING_VERTICAL := 12.0
 const ROSTER_CARD_WIDTH := 560.0
 const ROSTER_GRID_GAP := 16
-const ROSTER_DOUBLE_WIDTH := ROSTER_CARD_WIDTH * 2.0 + ROSTER_GRID_GAP
 const ROSTER_SCROLL_EXTRA := 24.0
-const ROSTER_TWO_COLUMN_MIN_VIEWPORT := 1912.0
+const ROSTER_MAX_COLUMNS := 2
+const ROSTER_INSPECTOR_MIN_WIDTH := 570.0
+const ROSTER_LANDSCAPE_SEPARATION := 64.0
 const INSPECTOR_GOLD := Color("d9b96e")
 const IDENTITY_INPUT_FONT_SIZE := 34
 const ERROR_KEYS := {
@@ -226,6 +228,8 @@ func _ready() -> void:
 	_build_shell()
 	resized.connect(_on_viewport_resized)
 	I18n.locale_changed.connect(_on_locale_changed)
+	if TextScale != null and not TextScale.scale_changed.is_connected(_on_text_scale_changed):
+		TextScale.scale_changed.connect(_on_text_scale_changed)
 	_refresh_roster()
 	_show_roster(_roster_projection_error())
 
@@ -404,6 +408,7 @@ func _show_roster(error_code: StringName = &"") -> void:
 	body.add_theme_constant_override(
 		&"separation", 16 if _layout_mode == &"portrait" else 64,
 	)
+	body.resized.connect(_on_roster_body_resized)
 	_page.add_child(body)
 	body.add_child(_build_roster_list())
 	body.add_child(_build_inspector())
@@ -1841,6 +1846,73 @@ func _refresh_viewport_layout() -> void:
 	_on_layout_mode_changed(_shell.layout_mode())
 
 
+func _on_roster_body_resized() -> void:
+	if _mode == &"roster":
+		_on_viewport_resized()
+
+
+func _on_text_scale_changed(_value: float) -> void:
+	_on_viewport_resized()
+
+
+func _training_roster_available_width(body: Control = null) -> float:
+	var roster_body := body
+	if roster_body == null and _page != null:
+		roster_body = _page.get_node_or_null("TrainingRosterBody") as Control
+	var body_width := (
+		roster_body.size.x
+		if roster_body != null and roster_body.size.x > 0.0
+		else get_viewport_rect().size.x - 140.0
+	)
+	var separation := (
+		float((roster_body as BoxContainer).get_theme_constant(&"separation"))
+		if roster_body is BoxContainer
+		else ROSTER_LANDSCAPE_SEPARATION
+	)
+	return maxf(0.0, body_width - separation - ROSTER_INSPECTOR_MIN_WIDTH)
+
+
+func _training_roster_columns(body: Control = null, stacked := false) -> int:
+	return RosterGridLayoutType.fitting_columns(
+		_training_roster_available_width(body),
+		ROSTER_CARD_WIDTH,
+		ROSTER_GRID_GAP,
+		ROSTER_MAX_COLUMNS,
+		_roster_buttons.size(),
+		stacked or _layout_mode != &"regular_landscape" or _large_text_layout(),
+	)
+
+
+func _wire_roster_grid_focus(columns: int) -> void:
+	var safe_columns := maxi(1, columns)
+	for index: int in _roster_buttons.size():
+		var current := _roster_buttons[index]
+		if current == null or not is_instance_valid(current):
+			continue
+		var self_path := current.get_path_to(current)
+		current.focus_neighbor_left = (
+			current.get_path_to(_roster_buttons[index - 1])
+			if safe_columns > 1 and index % safe_columns > 0
+			else self_path
+		)
+		current.focus_neighbor_right = (
+			current.get_path_to(_roster_buttons[index + 1])
+			if safe_columns > 1 and index % safe_columns < safe_columns - 1
+			and index + 1 < _roster_buttons.size()
+			else self_path
+		)
+		current.focus_neighbor_top = (
+			current.get_path_to(_roster_buttons[index - safe_columns])
+			if index >= safe_columns
+			else self_path
+		)
+		current.focus_neighbor_bottom = (
+			current.get_path_to(_roster_buttons[index + safe_columns])
+			if index + safe_columns < _roster_buttons.size()
+			else self_path
+		)
+
+
 func _shell_size_for(mode_value: StringName) -> Vector2:
 	if mode_value == &"portrait":
 		var viewport_size := get_viewport_rect().size
@@ -1863,15 +1935,15 @@ func _apply_roster_layout() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 0.0
 	body.add_theme_constant_override(
-		&"separation", 16 if stacked else 64,
+		&"separation", 16 if stacked else int(ROSTER_LANDSCAPE_SEPARATION),
 	)
 	var scroll := body.get_node_or_null("TrainingRosterScroll") as ScrollContainer
-	var two_column_roster := (
-		_layout_mode == &"regular_landscape"
-		and not large_text
-		and get_viewport_rect().size.x >= ROSTER_TWO_COLUMN_MIN_VIEWPORT
+	var roster_columns := _training_roster_columns(body, stacked)
+	var multi_column_roster := roster_columns > 1
+	var roster_width := (
+		ROSTER_CARD_WIDTH * float(roster_columns)
+		+ ROSTER_GRID_GAP * float(maxi(0, roster_columns - 1))
 	)
-	var roster_width := ROSTER_DOUBLE_WIDTH if two_column_roster else ROSTER_CARD_WIDTH
 	if _layout_mode == &"compact_landscape":
 		roster_width = 500.0
 	elif _layout_mode == &"portrait":
@@ -1894,7 +1966,7 @@ func _apply_roster_layout() -> void:
 			else Control.SIZE_SHRINK_BEGIN
 		)
 	if _roster_list != null:
-		_roster_list.columns = 2 if two_column_roster else 1
+		_roster_list.columns = roster_columns
 		_roster_list.custom_minimum_size.x = (
 			0.0 if stacked else roster_width
 		)
@@ -1904,14 +1976,14 @@ func _apply_roster_layout() -> void:
 		)
 	if _filter_bar != null:
 		_filter_bar.set_compact(_layout_mode != &"portrait")
-		_filter_bar.set_inline(two_column_roster)
+		_filter_bar.set_inline(multi_column_roster)
 		_filter_bar.set_auxiliary_stacked(large_text or _layout_mode != &"regular_landscape")
 	if _roster_controls != null:
 		_roster_controls.vertical = large_text
 	for row: TrainingRosterRowType in _roster_buttons:
 		row.set_compact(
 			large_text or _layout_mode != &"regular_landscape",
-			ROSTER_CARD_WIDTH if two_column_roster else roster_width,
+			ROSTER_CARD_WIDTH if multi_column_roster else roster_width,
 		)
 	if _filter_toolbar != null:
 		_filter_toolbar.vertical = stacked
@@ -1954,7 +2026,7 @@ func _apply_roster_layout() -> void:
 		"TrainingRosterBody/TrainingInspector/TrainingInspectorScroll/InspectorColumn/SelectedOperatorDossier",
 	) as BoxContainer
 	if dossier != null:
-		dossier.vertical = large_text or not two_column_roster
+		dossier.vertical = large_text or not multi_column_roster
 	var identity_heading := _page.find_child("SelectedOperatorIdentity", true, false) as BoxContainer
 	if identity_heading != null:
 		identity_heading.vertical = large_text
@@ -1968,6 +2040,9 @@ func _apply_roster_layout() -> void:
 	var choose_promotion := _page.find_child("ChoosePromotion", true, false) as Button
 	if choose_promotion != null:
 		choose_promotion.custom_minimum_size.x = 260.0 if stacked else 360.0
+	if not _roster_buttons.is_empty():
+		_wire_focus(_focusable_controls(), false)
+		_wire_roster_grid_focus(roster_columns)
 
 
 func _apply_paths_layout() -> void:
