@@ -394,6 +394,7 @@
     "ui.battle.retreat": "撤回干员",
     "ui.battle.return": "返回战场",
     "ui.battle.return_description": "关闭撤退确认，并恢复此前的战斗速度。",
+    "ui.battle.speed_shortcuts": "Q：降低速度  •  E：提高速度",
     "ui.battle.stamp_clear": "胜利",
     "ui.battle.stamp_defeat": "失败",
     "ui.battle.state_active": "交战中",

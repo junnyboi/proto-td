@@ -394,6 +394,7 @@
     "ui.battle.retreat": "Retreat",
     "ui.battle.return": "RETURN TO BATTLE",
     "ui.battle.return_description": "Close the withdrawal confirmation and resume the prior battle speed.",
+    "ui.battle.speed_shortcuts": "Q: LOWER SPEED  •  E: RAISE SPEED",
     "ui.battle.stamp_clear": "Victory",
     "ui.battle.stamp_defeat": "Defeat",
     "ui.battle.state_active": "ACTIVE",

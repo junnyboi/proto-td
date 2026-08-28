@@ -110,6 +110,7 @@ const STATIC_FALLBACKS := {
 	&"ui.battle.pause": "PAUSE",
 	&"ui.battle.resume": "RESUME",
 	&"ui.battle.paused": "PAUSED",
+	&"ui.battle.speed_shortcuts": "Q: LOWER SPEED  •  E: RAISE SPEED",
 	&"ui.battle.resign": "RESIGN",
 	&"ui.battle.withdraw_title": "WITHDRAW FROM OPERATION?",
 	&"ui.battle.withdraw_body": "Withdrawal immediately seals this attempt as a defeat. Current deployment progress is not preserved.",
