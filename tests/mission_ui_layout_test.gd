@@ -111,6 +111,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var recruit_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
+	var hire_inset := _mission.find_child("HireRecruitInset", true, false) as MarginContainer
 	var hire_cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
 	var hire_cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
 	var hire_action_label := _mission.find_child("BasicRecruitActionLabel", true, false) as Label
@@ -146,6 +147,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(absf(field_ratio - 0.60) <= 0.035, "%s Field Team panel is not approximately 60 percent wide" % label)
 			_check(absf(intel_ratio - 0.40) <= 0.035, "%s Mission Intelligence panel is not approximately 40 percent wide" % label)
 	_check(hire_button != null and intel_panel != null and intel_panel.is_ancestor_of(hire_button), "%s Hire Recruit is not inside Mission Intelligence" % label)
+	_check(hire_inset != null and hire_inset.get_theme_constant(&"margin_top") == 48, "%s Hire Recruit does not have the requested 48px top margin" % label)
 	_check(hire_button != null and field_panel != null and not field_panel.is_ancestor_of(hire_button), "%s Hire Recruit moved back into the Field Team roster panel" % label)
 	_check(_mission.find_child("BasicRecruitDesk", true, false) == null, "%s Hire Recruit still has a parent panel" % label)
 	_check(_mission.find_child("BasicRecruitTitle", true, false) == null, "%s separate Hire Recruit title still exists" % label)
@@ -160,7 +162,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	if hire_button != null:
 		var hire_content := hire_button.get_node_or_null("BasicRecruitActionContent") as HBoxContainer
 		_check(hire_content != null and _inside(hire_button, hire_content), "%s recruit action content overflows" % label)
-		var expected_hire_width := minf(300.0, maxf(220.0, viewport.x - 128.0)) if viewport.y > viewport.x else 300.0
+		_check(hire_content != null and hire_content.get_theme_constant(&"separation") == 8, "%s recruit label and shard icon do not use the requested 8px gap" % label)
+		var expected_hire_width := minf(300.0, maxf(220.0, viewport.x - 120.0)) if viewport.y > viewport.x else 300.0
 		_check(is_equal_approx(hire_button.custom_minimum_size.x, expected_hire_width), "%s recruit action does not use its contained fixed width" % label)
 		_check(hire_button.custom_minimum_size.y >= 72.0, "%s recruit action cannot contain 12px vertical padding" % label)
 		_check(hire_button.icon == null and hire_cost_icon != null and hire_cost_icon.texture != null, "%s recruit action lacks its explicit shard sprite" % label)
@@ -313,6 +316,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(deploy_copy != null and deploy_copy.get_theme_color(&"font_color").is_equal_approx(Color("fff8e7")), "%s Deploy Squad does not use the high-contrast ivory label" % label)
 		_check(deploy_copy != null and deploy_copy.get_theme_constant(&"outline_size") >= 5, "%s Deploy Squad lacks its dark readability outline" % label)
 		_check(deploy_copy != null and deploy_copy.get_theme_color(&"font_outline_color").get_luminance() < 0.05, "%s Deploy Squad outline is not dark enough against gold" % label)
+		var deploy_style := deploy.get_theme_stylebox(&"normal") as StyleBoxTexture
+		_check(deploy_style != null and deploy_style.texture != null and deploy_style.texture.resource_path.ends_with("/primary_button.png"), "%s Deploy Squad does not use the ornate golden button art" % label)
 		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
 		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
 	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect

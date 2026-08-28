@@ -41,6 +41,9 @@ const SORT_VERTICAL_PADDING := 12.0
 const FIELD_TEAM_STATUS_WIDTH_SCALE := 2.0
 const HIRE_RECRUIT_WIDTH := 300.0
 const HIRE_RECRUIT_NARROW_MIN_WIDTH := 220.0
+const HIRE_RECRUIT_NARROW_HORIZONTAL_INSET := 120.0
+const HIRE_RECRUIT_TOP_MARGIN := 48
+const HIRE_RECRUIT_CONTENT_GAP := 8
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
@@ -419,6 +422,11 @@ func _selected_squad_empty_label() -> Label:
 
 
 func _build_recruitment_desk(parent: VBoxContainer) -> void:
+	var hire_inset := MarginContainer.new()
+	hire_inset.name = "HireRecruitInset"
+	hire_inset.add_theme_constant_override(&"margin_top", HIRE_RECRUIT_TOP_MARGIN)
+	hire_inset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(hire_inset)
 	_hire_recruit = AetheriaButtonType.new()
 	_hire_recruit.name = "HireBasicRecruit"
 	_hire_recruit.custom_minimum_size = Vector2(HIRE_RECRUIT_WIDTH, 72.0)
@@ -439,12 +447,12 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_recruit.mouse_exited.connect(_on_hire_recruit_hover_exited)
 	_hire_recruit.pressed.connect(_on_hire_basic_recruit)
 	_hire_recruit.accessibility_live = AccessibilityServer.LIVE_POLITE
-	parent.add_child(_hire_recruit)
+	hire_inset.add_child(_hire_recruit)
 	var hire_content := HBoxContainer.new()
 	hire_content.name = "BasicRecruitActionContent"
 	hire_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hire_content.alignment = BoxContainer.ALIGNMENT_CENTER
-	hire_content.add_theme_constant_override(&"separation", 4)
+	hire_content.add_theme_constant_override(&"separation", HIRE_RECRUIT_CONTENT_GAP)
 	hire_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hire_recruit.add_child(hire_content)
 	_hire_action_label = Label.new()
@@ -965,8 +973,27 @@ func _action(node_name: String, text_value: String, role: StringName) -> Aetheri
 	presentation.clip_text = false
 	presentation.add_theme_font_size_override(&"font_size", 26)
 	if node_name == "StartBattle":
+		_apply_deploy_button_style(button)
 		_apply_deploy_text_contrast(button)
 	return button
+
+
+func _apply_deploy_button_style(button: AetheriaButtonType = _start) -> void:
+	if button == null:
+		return
+	button.add_theme_stylebox_override(
+		&"normal", StagingSkinType.ornate_primary_button_style(),
+	)
+	button.add_theme_stylebox_override(
+		&"hover", StagingSkinType.ornate_primary_button_style(Color("fff8df")),
+	)
+	button.add_theme_stylebox_override(
+		&"pressed", StagingSkinType.ornate_primary_button_style(Color("d9b96e")),
+	)
+	button.add_theme_stylebox_override(
+		&"disabled",
+		StagingSkinType.ornate_primary_button_style(Color(0.42, 0.48, 0.55, 0.56)),
+	)
 
 
 func _apply_deploy_text_contrast(button: AetheriaButtonType = _start) -> void:
@@ -1199,7 +1226,10 @@ func _hire_recruit_width(mode: StringName) -> float:
 	if mode == &"portrait":
 		return minf(
 			HIRE_RECRUIT_WIDTH,
-			maxf(HIRE_RECRUIT_NARROW_MIN_WIDTH, get_viewport_rect().size.x - 128.0),
+			maxf(
+				HIRE_RECRUIT_NARROW_MIN_WIDTH,
+				get_viewport_rect().size.x - HIRE_RECRUIT_NARROW_HORIZONTAL_INSET,
+			),
 		)
 	return HIRE_RECRUIT_WIDTH
 
@@ -1630,6 +1660,7 @@ func _refresh() -> void:
 	if not _training.disabled:
 		_apply_clean_training_style(_training)
 	_refresh_launch_status()
+	_apply_deploy_button_style()
 	_apply_deploy_text_contrast()
 	_sync_deploy_ready_pulse()
 	_wire_focus()
