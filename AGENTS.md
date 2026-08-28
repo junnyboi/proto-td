@@ -13,3 +13,13 @@ Once validation passes, commit the reconciled result, push it to `master`, expor
 If upstream advances again, repeat the same process automatically. Ask for direction only when a conflict is genuinely irreconcilable, destructive, security-sensitive, or would materially change intended product behavior.
 
 > Standing rule: **keep both features, regress once, push, and deploy.**
+
+## Isolate test user data from playable campaigns
+
+Every Godot test invocation must run with a unique, isolated `user://` directory. This applies to focused tests, full-suite runs, parallel workers, visual captures, and any test that calls `Game.start_campaign`, creates a production `CampaignSaveStore`, or writes preferences, logs, caches, or save data. Never run tests against the shared native `Protos` application-data directory used by an editor or playable game, and never allow two test processes to share one test user-data directory.
+
+Tests that intentionally exercise the production campaign slot must still use an isolated test directory. Preserve every pre-existing slot artifact (`campaign_v1.json`, `.bak`, `.tmp`, and all `.invalid` variants), perform the test in the isolated slot, and restore preserved bytes during cleanup on success, failure, or timeout. Do not rely on clearing only in-memory `Game` state: `start_campaign(..., true)` writes durable bytes and can invalidate a concurrently open campaign through the save store's compare-and-swap guard.
+
+Before handing off validation, confirm that the playable campaign slot was not modified by tests. If it was touched, stop the affected test flow, protect the current bytes, and rerun the validation with isolated user data rather than retrying against the shared slot.
+
+> Standing rule: **one test process, one disposable `user://`; never overwrite the player's campaign.**
