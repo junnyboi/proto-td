@@ -190,6 +190,7 @@ var _name_filter := ""
 var _name_sort: StringName = &"recruitment"
 var _path_cards: Array[PromotionPathCardType] = []
 var _path_cards_scroll: ScrollContainer = null
+var _promotion_status: AetheriaLabelType = null
 var _selected_hero_id := ""
 var _selected_choice_id := ""
 var _choose_path: AetheriaButtonType
@@ -217,6 +218,9 @@ var _rename_dispatch_count := 0
 var _promotion_commit_in_flight := false
 var _promotion_dispatch_count := 0
 var _viewport_layout_refresh_queued := false
+var _cached_roster_page_nodes: Array[Node] = []
+var _cached_roster_action_nodes: Array[Node] = []
+var _cached_roster_refs: Dictionary = {}
 
 
 func _ready() -> void:
@@ -236,6 +240,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_kill_rename_presentation_transition(false)
+	_discard_cached_roster_page()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -367,6 +372,11 @@ func _refresh_roster() -> void:
 
 
 func _show_roster(error_code: StringName = &"") -> void:
+	if String(error_code).is_empty() and _mode == &"paths" and _restore_cached_roster_page():
+		var back := find_child("TrainingBack", true, false) as Control
+		_focus_selected_row_or.call_deferred(back, _rename_presentation_generation)
+		return
+	_discard_cached_roster_page()
 	var retry_pending := bool(Game.training_call(&"retry_pending"))
 	_mode = &"roster"
 	_selected_choice_id = ""
@@ -1445,6 +1455,8 @@ func _show_paths(error_code: StringName = &"") -> void:
 	var retry_pending := bool(Game.training_call(&"retry_pending"))
 	if not retry_pending:
 		_selected_choice_id = ""
+	if _mode == &"roster":
+		_stash_roster_page()
 	_mode = &"paths"
 	_clear_page()
 	_apply_path_screen_gutters(true)
@@ -1539,6 +1551,10 @@ func _show_paths(error_code: StringName = &"") -> void:
 	warning.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	warning.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	action_bar.add_child(warning)
+	_promotion_status = _label("PromotionCommitStatus", "", &"dense_heading")
+	_promotion_status.visible = false
+	_promotion_status.accessibility_live = AccessibilityServer.LIVE_POLITE
+	action_bar.add_child(_promotion_status)
 	if not String(error_code).is_empty():
 		var promotion_error := _label(
 			"PromotionCommitError", _error_text(error_code), &"dense_detail",
@@ -1642,22 +1658,27 @@ func _commit_selected_promotion() -> void:
 		or (not retry_pending and _selected_choice().is_empty())
 	):
 		return
+	var promoted_hero_id := _selected_hero_id
+	var promoted_choice_id := _selected_choice_id
 	_promotion_commit_in_flight = true
-	if _choose_path != null:
-		_choose_path.disabled = true
-		_choose_path.focus_mode = Control.FOCUS_NONE
+	_set_promotion_pending(true)
 	_promotion_dispatch_count += 1
 	Sfx.play("ui_confirm")
+	# Let the player see acknowledgement before the durable commit begins.
+	await get_tree().process_frame
+	if not is_inside_tree():
+		_promotion_commit_in_flight = false
+		return
 	var committed: Dictionary = (
 		Game.training_call(&"retry")
 		if retry_pending
 		else Game.training_call(&"commit", [{
-			"hero_id": _selected_hero_id,
-			"to_class_id": _selected_choice_id,
+			"hero_id": promoted_hero_id,
+			"to_class_id": promoted_choice_id,
 		}])
 	)
 	_promotion_commit_in_flight = false
-	if not committed["accepted"]:
+	if not bool(committed.get("accepted", false)):
 		var commit_error := StringName(committed.get("error_code", &"unknown_error"))
 		if bool(Game.training_call(&"retry_pending")):
 			_show_paths(commit_error)
@@ -1667,8 +1688,144 @@ func _commit_selected_promotion() -> void:
 			_show_roster(commit_error)
 		return
 	_selected_choice_id = ""
-	_refresh_roster()
-	_show_roster()
+	_publish_promoted_roster(promoted_hero_id)
+
+
+func _set_promotion_pending(active: bool) -> void:
+	var summary := _summary_by_id(_selected_hero_id)
+	var callsign := String(summary.get("callsign", _selected_hero_id))
+	if _promotion_status != null:
+		_promotion_status.visible = active
+		_promotion_status.text = (
+			_t(&"ui.training.promotion_committing", "PROMOTING…") if active else ""
+		)
+		_promotion_status.accessibility_description = (
+			_fmt(
+				&"ui.training.promotion_committing_description",
+				"Saving {callsign}'s specialization.",
+				{&"callsign": callsign},
+			)
+			if active else ""
+		)
+	for card: PromotionPathCardType in _path_cards:
+		card.disabled = active or bool(Game.training_call(&"retry_pending"))
+		card.focus_mode = Control.FOCUS_NONE if card.disabled else Control.FOCUS_ALL
+	var back := find_child("PathBack", true, false) as BaseButton
+	if back != null:
+		back.disabled = active or bool(Game.training_call(&"retry_pending"))
+		back.focus_mode = Control.FOCUS_NONE if back.disabled else Control.FOCUS_ALL
+	if _choose_path != null:
+		_choose_path.disabled = active
+		_choose_path.focus_mode = Control.FOCUS_NONE if active else Control.FOCUS_ALL
+
+
+func _publish_promoted_roster(hero_id: String) -> void:
+	_campaign = Game.campaign
+	var updated := TrainingSupportType.summary_by_id(_campaign, hero_id)
+	if updated.is_empty():
+		_discard_cached_roster_page()
+		_refresh_roster()
+		_show_roster()
+		return
+	updated = RosterFilterType.annotate(updated)
+	var replaced := false
+	for index: int in _roster_rows.size():
+		if String(_roster_rows[index].get("hero_id", "")) == hero_id:
+			_roster_rows[index] = updated
+			replaced = true
+			break
+	if not replaced:
+		_discard_cached_roster_page()
+		_refresh_roster()
+		_show_roster()
+		return
+	if not _restore_cached_roster_page():
+		_refresh_roster()
+		_show_roster()
+		return
+	if _filter_bar != null:
+		_filter_bar.set_rows(_roster_rows)
+	var visible_rows := _visible_roster_rows()
+	if _filter_summary != null:
+		_filter_summary.text = _fmt(
+			&"ui.identity_filter.summary", "{shown} / {total} shown",
+			{&"shown": visible_rows.size(), &"total": _roster_rows.size()},
+		)
+	var updated_visible_index := -1
+	for index: int in visible_rows.size():
+		if String(visible_rows[index].get("hero_id", "")) == hero_id:
+			updated_visible_index = index
+			break
+	var promoted_row: TrainingRosterRowType = null
+	for row: TrainingRosterRowType in _roster_buttons:
+		if row.hero_id == hero_id:
+			promoted_row = row
+			break
+	if promoted_row == null and updated_visible_index >= 0:
+		_refresh_roster()
+		_show_roster()
+		return
+	if promoted_row != null and updated_visible_index >= 0:
+		promoted_row.configure(
+			updated,
+			class_label(String(updated["current_class_id"])),
+			_status_text(updated),
+			_progress_text(updated),
+			_eligibility_text(updated),
+			_operator_stats_tooltip(updated),
+			updated_visible_index,
+		)
+		if _roster_list != null:
+			_roster_list.move_child(promoted_row, updated_visible_index)
+		_roster_buttons.erase(promoted_row)
+		_roster_buttons.insert(updated_visible_index, promoted_row)
+	elif promoted_row != null:
+		_roster_buttons.erase(promoted_row)
+		if promoted_row.get_parent() != null:
+			promoted_row.get_parent().remove_child(promoted_row)
+		promoted_row.queue_free()
+		_select_first_visible()
+		if visible_rows.is_empty() and _roster_list != null:
+			var empty := _label(
+				"TrainingRosterEmpty",
+				_t(
+					&"ui.identity_filter.empty"
+					if not _name_filter.strip_edges().is_empty()
+					else &"ui.roster.empty",
+					"No units match the current filters.",
+				),
+				&"dense_detail",
+			)
+			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			_roster_list.add_child(empty)
+	for row: TrainingRosterRowType in _roster_buttons:
+		row.set_selected(row.hero_id == _selected_hero_id)
+	_rebuild_roster_inspector()
+	_apply_roster_layout()
+	_apply_footer_layouts()
+	_wire_focus(_focusable_controls(), false)
+	var focus_target := promoted_row as Control
+	if focus_target == null or updated_visible_index < 0:
+		focus_target = find_child("TrainingBack", true, false) as Control
+	if focus_target != null:
+		_focus_roster_control_guarded.call_deferred(
+			focus_target, _rename_presentation_generation,
+		)
+
+
+func _rebuild_roster_inspector() -> void:
+	var body := _page.get_node_or_null("TrainingRosterBody") as BoxContainer
+	if body == null:
+		return
+	var previous := body.get_node_or_null("TrainingInspector") as Control
+	var inspector_index := body.get_child_count()
+	if previous != null:
+		inspector_index = previous.get_index()
+		body.remove_child(previous)
+		previous.queue_free()
+	var inspector := _build_inspector()
+	body.add_child(inspector)
+	body.move_child(inspector, mini(inspector_index, body.get_child_count() - 1))
 
 
 func _on_not_now() -> void:
@@ -2198,6 +2355,98 @@ func _label(
 	return label
 
 
+func _stash_roster_page() -> void:
+	if (
+		_page == null
+		or _action_dock == null
+		or not _cached_roster_page_nodes.is_empty()
+		or _page.get_node_or_null("TrainingRosterBody") == null
+	):
+		return
+	_cached_roster_refs = {
+		&"roster_buttons": _roster_buttons.duplicate(),
+		&"filter_bar": _filter_bar,
+		&"roster_list": _roster_list,
+		&"roster_scroll": _roster_scroll,
+		&"inspector_scroll": _inspector_scroll,
+		&"roster_controls": _roster_controls,
+		&"filter_toolbar": _filter_toolbar,
+		&"filter_input": _filter_input,
+		&"sort_select": _sort_select,
+		&"filter_summary": _filter_summary,
+		&"rename_row": _rename_row,
+		&"rename_input": _rename_input,
+		&"rename_title_input": _rename_title_input,
+		&"rename_action": _rename_action,
+		&"rename_error": _rename_error,
+		&"return_mission": _return_mission,
+	}
+	for child: Node in _page.get_children():
+		_page.remove_child(child)
+		_cached_roster_page_nodes.append(child)
+	for child: Node in _action_dock.get_children():
+		_action_dock.remove_child(child)
+		_cached_roster_action_nodes.append(child)
+
+
+func _restore_cached_roster_page() -> bool:
+	if _cached_roster_page_nodes.is_empty() or _page == null or _action_dock == null:
+		return false
+	_clear_page()
+	_mode = &"roster"
+	_selected_choice_id = ""
+	_set_persistent_header(null)
+	for child: Node in _cached_roster_page_nodes:
+		_page.add_child(child)
+	for child: Node in _cached_roster_action_nodes:
+		_action_dock.add_child(child)
+	_cached_roster_page_nodes.clear()
+	_cached_roster_action_nodes.clear()
+	_roster_buttons.clear()
+	for value: Variant in _cached_roster_refs.get(&"roster_buttons", []):
+		var row := value as TrainingRosterRowType
+		if row != null and is_instance_valid(row):
+			_roster_buttons.append(row)
+	_filter_bar = _cached_roster_refs.get(&"filter_bar") as RosterFilterBarType
+	_roster_list = _cached_roster_refs.get(&"roster_list") as GridContainer
+	_roster_scroll = _cached_roster_refs.get(&"roster_scroll") as ScrollContainer
+	_inspector_scroll = _cached_roster_refs.get(&"inspector_scroll") as ScrollContainer
+	_roster_controls = _cached_roster_refs.get(&"roster_controls") as BoxContainer
+	_filter_toolbar = _cached_roster_refs.get(&"filter_toolbar") as BoxContainer
+	_filter_input = _cached_roster_refs.get(&"filter_input") as LineEdit
+	_sort_select = _cached_roster_refs.get(&"sort_select") as OptionButton
+	_filter_summary = _cached_roster_refs.get(&"filter_summary") as AetheriaLabelType
+	_rename_row = _cached_roster_refs.get(&"rename_row") as BoxContainer
+	_rename_input = _cached_roster_refs.get(&"rename_input") as LineEdit
+	_rename_title_input = _cached_roster_refs.get(&"rename_title_input") as LineEdit
+	_rename_action = _cached_roster_refs.get(&"rename_action") as AetheriaButtonType
+	_rename_error = _cached_roster_refs.get(&"rename_error") as AetheriaLabelType
+	_return_mission = _cached_roster_refs.get(&"return_mission") as AetheriaButtonType
+	_cached_roster_refs.clear()
+	_apply_roster_layout()
+	_apply_footer_layouts()
+	if _dialog_scroll != null:
+		_dialog_scroll.vertical_scroll_mode = (
+			ScrollContainer.SCROLL_MODE_DISABLED
+			if _roster_uses_fixed_workspace()
+			else ScrollContainer.SCROLL_MODE_AUTO
+		)
+	_wire_focus(_focusable_controls(), false)
+	return true
+
+
+func _discard_cached_roster_page() -> void:
+	for child: Node in _cached_roster_page_nodes:
+		if is_instance_valid(child):
+			child.free()
+	for child: Node in _cached_roster_action_nodes:
+		if is_instance_valid(child):
+			child.free()
+	_cached_roster_page_nodes.clear()
+	_cached_roster_action_nodes.clear()
+	_cached_roster_refs.clear()
+
+
 func _clear_page(kill_transition: bool = true) -> void:
 	_apply_path_screen_gutters(false)
 	if kill_transition and _rename_presentation_state != RenamePresentationState.IDLE:
@@ -2212,6 +2461,7 @@ func _clear_page(kill_transition: bool = true) -> void:
 	_roster_buttons.clear()
 	_path_cards.clear()
 	_path_cards_scroll = null
+	_promotion_status = null
 	_choose_path = null
 	_return_mission = null
 	_filter_bar = null
@@ -2779,6 +3029,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 	if _mode == &"rename_confirmation":
 		_render_rename_confirmation(focused_name)
 	elif _mode == &"paths":
+		_discard_cached_roster_page()
 		_show_paths()
 	else:
 		_show_roster()

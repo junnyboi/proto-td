@@ -81,13 +81,15 @@ static func presentation_portrait_asset_id(hero: Dictionary) -> StringName:
 	)
 
 
-static func roster(value: Variant) -> Array[Dictionary]:
+static func roster(value: Variant, only_hero_id: String = "") -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	if not supports_campaign(value):
 		return rows
 	var data: Dictionary = value.call("data_copy")
 	for hero: Dictionary in data.get("heroes", []):
 		var hero_id := String(hero.get("hero_id", ""))
+		if not only_hero_id.is_empty() and hero_id != only_hero_id:
+			continue
 		var current_class_id := String(hero.get("current_class_id", ""))
 		var definition := class_definition(current_class_id)
 		var is_premium := String(hero.get("hero_kind", "recruit")) == "premium"
@@ -226,7 +228,7 @@ static func eligible_count(value: Variant) -> int:
 
 
 static func summary_by_id(value: Variant, hero_id: String) -> Dictionary:
-	for row: Dictionary in roster(value):
+	for row: Dictionary in roster(value, hero_id):
 		if String(row["hero_id"]) == hero_id:
 			return row
 	return {}

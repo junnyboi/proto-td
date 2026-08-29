@@ -21,6 +21,11 @@ static func of_data(value: Variant, context: Dictionary) -> Dictionary:
 	return _hash_encoded(bytes["bytes"])
 
 
+## Internal companion to CampaignV3Codec._encode_normalized_save().
+static func _of_normalized_data(value: Dictionary) -> Dictionary:
+	return _hash_encoded(_bytes_of_normalized(value)["bytes"])
+
+
 static func of_core(value: Variant, context: Dictionary) -> Dictionary:
 	var normalized: Dictionary = load(CODEC_PATH).call("normalize_core", value, context)
 	if not normalized["accepted"]:

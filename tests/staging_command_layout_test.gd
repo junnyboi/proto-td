@@ -215,6 +215,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	var expects_document_scroll := (
 		bool(viewport_case["portrait"])
 		or ultra_narrow
+		or (not bool(viewport_case["portrait"]) and not bool(viewport_case["rail"]))
 		or (bool(viewport_case["rail"]) and viewport_size.y < 1000)
 	)
 	_check(command_scroll != null and command_scroll.vertical_scroll_mode == (ScrollContainer.SCROLL_MODE_AUTO if expects_document_scroll else ScrollContainer.SCROLL_MODE_DISABLED), "%s: command deck scrolling does not match responsive policy" % context)

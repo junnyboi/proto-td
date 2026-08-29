@@ -391,6 +391,19 @@ static func encode_save(value: Variant, context: Dictionary) -> Dictionary:
 	})
 
 
+## Internal certified-state seam. The caller has already validated the exact
+## canonical data transition and must not replay the complete command ledger
+## again merely to serialize it.
+static func _encode_normalized_save(value: Dictionary) -> Dictionary:
+	var encoded_data := _encoded(value)
+	return _encoded({
+		"schema": SAVE_SCHEMA,
+		"version": SAVE_VERSION,
+		"checksum": encoded_data["sha256"],
+		"data": encoded_data["value"],
+	})
+
+
 static func decode_save(source: String, context: Dictionary) -> Dictionary:
 	if not source.ends_with("\n") or source.ends_with("\n\n") or source.contains("\r"):
 		return _reject(&"noncanonical_save")

@@ -193,7 +193,10 @@ func _ready() -> void:
 	TextScale.scale_changed.connect(_on_text_scale_changed)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
-	if not _maybe_mount_command_tutorial():
+	var tutorial_mounted := _maybe_mount_command_tutorial()
+	if not tutorial_mounted:
+		tutorial_mounted = _maybe_mount_post_mission_tutorial()
+	if not tutorial_mounted:
 		(_back if _mission.disabled else _mission).grab_focus.call_deferred()
 	if not _training_acknowledgement.is_empty():
 		Game.training_call(&"consume_acknowledgement")
@@ -1331,6 +1334,7 @@ func _apply_responsive_layout() -> void:
 				ScrollContainer.SCROLL_MODE_AUTO
 				if large_text
 				or document_scroll == portrait_scroll
+				or (document_scroll == landscape_scroll and _compact_landscape)
 				or (document_scroll == landscape_scroll and constrained_rail)
 				or constrained_portrait
 				else ScrollContainer.SCROLL_MODE_DISABLED
@@ -1838,6 +1842,77 @@ func _on_command_tutorial_finished(_skipped: bool, persisted: bool) -> void:
 	_tutorial = null
 	if not persisted:
 		push_warning("Command Center tutorial completion could not be persisted")
+	if _maybe_mount_post_mission_tutorial():
+		return
+	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
+
+
+func _maybe_mount_post_mission_tutorial() -> bool:
+	var requested := Game.consume_post_mission_tutorial_request()
+	if not requested and not _first_mission_completed():
+		return false
+	if ViewPreferencesType.has_seen_post_mission_tutorial(_preferences_path):
+		return false
+	var targets: Array[Control] = [_training, _vahalla]
+	var steps: Array[Dictionary] = [
+		{
+			"id": &"training",
+			"avoid_target": true,
+			"step_key": &"ui.onboarding.post_mission.training.step",
+			"step_fallback": "1 / 2  TRAINING",
+			"title_key": &"ui.onboarding.post_mission.training.title",
+			"title_fallback": "Promote experienced soldiers",
+			"body_key": &"ui.onboarding.post_mission.training.body",
+			"body_fallback": "Soldiers gain XP in missions. When they have enough, use Training to promote them into new specializations.",
+			"action_key": &"ui.onboarding.command.next",
+			"action_fallback": "NEXT",
+		},
+		{
+			"id": &"valhalla",
+			"avoid_target": true,
+			"step_key": &"ui.onboarding.post_mission.valhalla.step",
+			"step_fallback": "2 / 2  VALHALLA",
+			"title_key": &"ui.onboarding.post_mission.valhalla.title",
+			"title_fallback": "Honor the fallen",
+			"body_key": &"ui.onboarding.post_mission.valhalla.body",
+			"body_fallback": "Death is permanent. Soldiers who have fallen can be remembered and honored in Valhalla.",
+			"action_key": &"ui.onboarding.command.done",
+			"action_fallback": "DONE",
+		},
+	]
+	var tutorial := CommandCenterTutorialType.new()
+	add_child(tutorial)
+	if not tutorial.setup_custom(
+		"PostMissionTutorial",
+		targets,
+		steps,
+		StringName(ViewPreferencesType.POST_MISSION_TUTORIAL_KEY),
+		&"ui.onboarding.post_mission.a11y",
+		"Post-mission tutorial",
+		_preferences_path,
+		_reduced_motion,
+	):
+		tutorial.queue_free()
+		return false
+	_tutorial = tutorial
+	_tutorial.finished.connect(_on_post_mission_tutorial_finished)
+	return true
+
+
+func _first_mission_completed() -> bool:
+	if Game.campaign == null:
+		return false
+	var stage_order := Game.campaign_stage_ids()
+	return (
+		not stage_order.is_empty()
+		and int(_stage_stars().get(stage_order[0], 0)) > 0
+	)
+
+
+func _on_post_mission_tutorial_finished(_skipped: bool, persisted: bool) -> void:
+	_tutorial = null
+	if not persisted:
+		push_warning("Post-mission tutorial completion could not be persisted")
 	(_back if _mission.disabled else _mission).grab_focus.call_deferred()
 
 

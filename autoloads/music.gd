@@ -33,6 +33,7 @@ var _enabled := true
 var _start_count := 0
 var _stop_count := 0
 var _last_transition_fade_seconds := 0.0
+var _prepared_streams: Dictionary = {}
 
 
 func _ready() -> void:
@@ -225,6 +226,24 @@ func play_result(clear: bool) -> bool:
 	return true
 
 
+func prepare_results(profile_id: StringName = &"lunaris") -> bool:
+	var profile := _profile_for(profile_id)
+	if profile == null:
+		return false
+	var prepared := true
+	for cue_id: StringName in [profile.victory_cue_id, profile.defeat_cue_id]:
+		var cue := _cue_for(cue_id)
+		if cue == null or not cue.is_valid():
+			prepared = false
+			continue
+		var stream := load(cue.stream_path) as AudioStream
+		if stream == null:
+			prepared = false
+			continue
+		_prepared_streams[cue.stream_path] = stream
+	return prepared
+
+
 func stop() -> bool:
 	_clear_pending()
 	if _current_id.is_empty() and not _any_player_active():
@@ -316,7 +335,9 @@ func _transition_to(
 	var cue := _cue_for(cue_id)
 	if cue == null or not cue.is_valid():
 		return false
-	var stream := load(cue.stream_path) as AudioStream
+	var stream := _prepared_streams.get(cue.stream_path) as AudioStream
+	if stream == null:
+		stream = load(cue.stream_path) as AudioStream
 	if stream == null:
 		return false
 	stream.set("loop", cue.loop)

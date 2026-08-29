@@ -35,6 +35,7 @@ var _last_hovered_control: Control = null
 var _last_hover_play_msec := -HOVER_DEBOUNCE_MSEC
 var _hover_binding_count := 0
 var _hover_play_count := 0
+var _prepared_streams: Dictionary = {}
 
 
 func _ready() -> void:
@@ -119,7 +120,9 @@ func play(id: String) -> bool:
 	# SceneTree test quits. Preserve semantic playback counters/path assertions
 	# without allocating a voice in that non-audible verification environment.
 	if AudioServer.get_driver_name() != "Dummy":
-		var stream := load(stream_path) as AudioStream
+		var stream := _prepared_streams.get(stream_path) as AudioStream
+		if stream == null:
+			stream = load(stream_path) as AudioStream
 		if stream == null:
 			return false
 		var players := _ensure_players()
@@ -135,6 +138,22 @@ func play(id: String) -> bool:
 	_last_stream_path = stream_path
 	_last_started_frame_by_id[resolved_id] = frame
 	return true
+
+
+func prepare_cues(ids: Array[StringName]) -> bool:
+	var prepared := true
+	for raw_id: StringName in ids:
+		var resolved_id := resolved_id_for(raw_id)
+		var stream_path := _stream_path_for(resolved_id)
+		if stream_path.is_empty():
+			prepared = false
+			continue
+		var stream := load(stream_path) as AudioStream
+		if stream == null:
+			prepared = false
+			continue
+		_prepared_streams[stream_path] = stream
+	return prepared
 
 
 func _stream_path_for(resolved_id: StringName) -> String:

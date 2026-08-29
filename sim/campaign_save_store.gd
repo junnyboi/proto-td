@@ -12,6 +12,7 @@ const NONE := &"none"
 const COMMITTED := &"committed"
 const RETRYABLE := &"retryable"
 const INDETERMINATE := &"indeterminate"
+const FALLBACK := &"fallback"
 const PRODUCTION_SLOT := "user://campaign_v1.json"
 const QUARANTINE_SUFFIX := ".invalid"
 const CAMPAIGN_CODEC_SCRIPT := preload("res://sim/campaign_codec.gd")
@@ -98,6 +99,25 @@ func save(expected_pre_text: String, prospective_state: Variant) -> Dictionary:
 	if prospective_state == null:
 		return _save_result(INDETERMINATE, &"store_integrity_failure", revision)
 	var prospective: String = prospective_state._validated_save_text()
+	var prospective_bytes := prospective.to_utf8_buffer()
+	var fast := _fast_precondition(expected_pre_text, prospective_bytes)
+	if fast["status"] == INDETERMINATE:
+		return _save_result(INDETERMINATE, fast["error_code"], revision)
+	if fast["status"] == COMMITTED:
+		_committed_authority = _authority_from_certified(prospective_state, prospective)
+		if not _is_authority_store() or not _committed_authority.is_empty():
+			return _save_result(COMMITTED, &"", revision)
+	if fast["status"] == &"proceed":
+		return _perform_save(
+			expected_pre_text,
+			prospective,
+			prospective_bytes,
+			prospective_state,
+			revision,
+			fast["preimage_bytes"],
+		)
+	# Recovery artifacts, a mismatched preimage, or an unavailable certified
+	# copy retain the exhaustive semantic winner-selection path.
 	var inspected := _inspect_all()
 	if not inspected["accepted"]:
 		return _save_result(INDETERMINATE, &"store_integrity_failure", revision)
@@ -113,7 +133,7 @@ func save(expected_pre_text: String, prospective_state: Variant) -> Dictionary:
 	if winner["accepted"]:
 		preimage_bytes = (winner["bytes"] as PackedByteArray).duplicate()
 	return _perform_save(
-		expected_pre_text, prospective, prospective.to_utf8_buffer(), revision,
+		expected_pre_text, prospective, prospective_bytes, prospective_state, revision,
 		preimage_bytes,
 	)
 
@@ -159,14 +179,66 @@ func _is_authority_store() -> bool:
 	)
 
 
+## Clean in-session commits have no recovery artifacts. Compare the durable
+## preimage bytes directly and reserve semantic parsing/replay for load,
+## recovery, conflicts, and migrations.
+func _fast_precondition(
+	expected: String,
+	prospective_bytes: PackedByteArray,
+) -> Dictionary:
+	if _ops.file_exists(_bak_path) or _ops.file_exists(_tmp_path):
+		return {"status": FALLBACK, "error_code": &"", "preimage_bytes": PackedByteArray()}
+	if not _ops.file_exists(_main_path):
+		return {
+			"status": &"proceed" if expected.is_empty() else FALLBACK,
+			"error_code": &"",
+			"preimage_bytes": PackedByteArray(),
+		}
+	var current := _read_exact_bytes(_main_path)
+	if not current["accepted"]:
+		return {
+			"status": INDETERMINATE,
+			"error_code": &"store_integrity_failure",
+			"preimage_bytes": PackedByteArray(),
+		}
+	var current_bytes: PackedByteArray = current["bytes"]
+	if current_bytes == prospective_bytes:
+		return {
+			"status": COMMITTED,
+			"error_code": &"",
+			"preimage_bytes": current_bytes.duplicate(),
+		}
+	if not expected.is_empty() and current_bytes == expected.to_utf8_buffer():
+		return {
+			"status": &"proceed",
+			"error_code": &"",
+			"preimage_bytes": current_bytes.duplicate(),
+		}
+	return {"status": FALLBACK, "error_code": &"", "preimage_bytes": PackedByteArray()}
+
+
+func _read_exact_bytes(path: String) -> Dictionary:
+	if not _ops.file_exists(path):
+		return {"accepted": false, "error_code": &"file_missing", "bytes": PackedByteArray()}
+	var read: Dictionary = _ops.read_bytes(path)
+	if not read.get("accepted", false) or not (read.get("bytes") is PackedByteArray):
+		return {"accepted": false, "error_code": &"file_read_failed", "bytes": PackedByteArray()}
+	return {
+		"accepted": true,
+		"error_code": &"",
+		"bytes": (read["bytes"] as PackedByteArray).duplicate(),
+	}
+
+
 func _perform_save(
 	expected: String,
 	prospective: String,
 	prospective_bytes: PackedByteArray,
+	prospective_state: Variant,
 	revision: int,
 	preimage_bytes: PackedByteArray,
 ) -> Dictionary:
-	var staged := _write_validated_tmp(prospective, prospective_bytes)
+	var staged := _write_validated_tmp(prospective_bytes)
 	if not staged["accepted"]:
 		return _failed_save(
 			staged["error_code"], expected, prospective, revision, false, preimage_bytes,
@@ -177,7 +249,9 @@ func _perform_save(
 			promoted["error_code"], expected, prospective, revision,
 			promoted["rollback_failed"], preimage_bytes,
 		)
-	var committed := _validate_committed_main(prospective)
+	var committed := _validate_committed_main(
+		prospective, prospective_bytes, prospective_state,
+	)
 	var main_error: StringName = committed["error_code"]
 	if not main_error.is_empty():
 		var rollback_failed := _rollback_main(promoted["had_main"])
@@ -190,16 +264,15 @@ func _perform_save(
 
 
 func _write_validated_tmp(
-	prospective: String,
 	prospective_bytes: PackedByteArray,
 ) -> Dictionary:
 	var write: Dictionary = _ops.write_bytes(_tmp_path, prospective_bytes)
 	if not write["accepted"]:
 		return _stage_reject(&"store_write_failed")
-	var tmp := _read_candidate(_tmp_path, TMP)
-	if tmp["read_error"]:
+	var tmp := _read_exact_bytes(_tmp_path)
+	if not tmp["accepted"]:
 		return _stage_reject(&"store_read_failed")
-	if not tmp["valid"] or tmp["text"] != prospective:
+	if tmp["bytes"] != prospective_bytes:
 		return _stage_reject(&"store_validate_failed")
 	return {"accepted": true, "error_code": &""}
 
@@ -227,15 +300,22 @@ func _promote_tmp() -> Dictionary:
 	}
 
 
-func _validate_committed_main(prospective: String) -> Dictionary:
-	var main := _read_candidate(_main_path, MAIN)
-	if main["read_error"]:
+func _validate_committed_main(
+	prospective: String,
+	prospective_bytes: PackedByteArray,
+	prospective_state: Variant,
+) -> Dictionary:
+	var main := _read_exact_bytes(_main_path)
+	if not main["accepted"]:
 		return {"error_code": &"store_read_failed", "state": null}
-	if not main["valid"] or main["text"] != prospective:
+	if main["bytes"] != prospective_bytes:
 		return {"error_code": &"store_validate_failed", "state": null}
+	var authority := _authority_from_certified(prospective_state, prospective)
+	if _is_authority_store() and authority.is_empty():
+		return {"error_code": &"store_integrity_failure", "state": null}
 	return {
-		"error_code": &"", "state": main["state"],
-		"pending_issue": main["pending_issue"],
+		"error_code": &"", "state": authority.get("state"),
+		"pending_issue": authority.get("pending_issue", Callable()),
 	}
 
 
@@ -398,6 +478,17 @@ func _authority_from(candidate: Dictionary) -> Dictionary:
 		"state": candidate["state"],
 		"pending_issue": candidate.get("pending_issue", Callable()),
 	}
+
+
+func _authority_from_certified(state: Variant, source: String) -> Dictionary:
+	if not _is_authority_store() or state == null:
+		return {}
+	if not state.has_method("_certified_committed_copy"):
+		return {}
+	var copied: Dictionary = state._certified_committed_copy(source)
+	if not copied.get("accepted", false) or not _is_authority_state(copied.get("value")):
+		return {}
+	return {"state": copied["value"], "pending_issue": Callable()}
 
 
 func _select_winner(candidates: Dictionary) -> Dictionary:

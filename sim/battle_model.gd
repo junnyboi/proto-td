@@ -570,6 +570,15 @@ func snapshot() -> Dictionary:
 	return BattleSnapshot.of(self)
 
 
+## Return the immutable result document already sealed by the terminal tick.
+## Campaign persistence must not build a full tactical snapshot merely to read
+## this small strategic handoff.
+func terminal_outcome() -> Dictionary:
+	if result == Result.RUNNING or not _is_ticketed() or _outcome.is_empty():
+		return {}
+	return _outcome.duplicate(true)
+
+
 ## this sub-step), (2) advance unblocked enemies + block assignment + leaks,
 ## (3) authored restoration lattices repair eligible hostile ground enemies,
 ## unless covered by Slow Field, (4) combat — units strike first, then charmed

@@ -113,6 +113,7 @@ func _run() -> void:
 	await _dispose_content(mission_control, game)
 
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
+	_check(PREFS.set_reduced_motion(true, DONE_PATH), "reduced-motion tutorial fixture was not persisted")
 	game.call("request_command_tutorial")
 	var completion_staging := await _create_staging(DONE_PATH)
 	var completion := completion_staging.find_child("CommandCenterTutorial", true, false) as Control

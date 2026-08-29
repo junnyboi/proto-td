@@ -18,6 +18,7 @@ const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd"
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const ClassDefScript := preload("res://data/class_def.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
+const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
 
 
 static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
@@ -50,6 +51,47 @@ static func validate(data: Dictionary, context: Dictionary) -> Dictionary:
 	if replay != data:
 		return _reject(&"command_history_state_mismatch")
 	return _accept(null)
+
+
+## Validate one in-process append against an already certified state. Cold
+## restore still uses validate() and replays from genesis; runtime mutations
+## need only prove that their single new receipt produces the exact next state.
+static func validate_append(
+	certified: Dictionary,
+	prospective: Dictionary,
+	context: Dictionary,
+) -> Dictionary:
+	if not certified.has("command_receipts") or not prospective.has("command_receipts"):
+		return _reject(&"invalid_command_history")
+	var before: Array = certified["command_receipts"]
+	var after: Array = prospective["command_receipts"]
+	if after.size() != before.size() + 1:
+		return _reject(&"command_history_append_mismatch")
+	for index: int in before.size():
+		if after[index] != before[index]:
+			return _reject(&"command_history_append_mismatch")
+	var raw_record: Variant = after[-1]
+	if typeof(raw_record) != TYPE_DICTIONARY:
+		return _reject(&"invalid_command_receipt")
+	var record: Dictionary = raw_record
+	for existing: Dictionary in before:
+		if existing["command_id"] == record.get("command_id"):
+			return _reject(&"command_id_conflict")
+	var normalized := CommandCodecScript.normalize_records([record], prospective, context)
+	if not normalized["accepted"] or normalized["value"] != [record]:
+		return _reject(
+			normalized.get("error_code", &"invalid_command_receipt")
+			if not normalized["accepted"]
+			else &"invalid_command_receipt"
+		)
+	if int(record["expected_save_revision"]) != int(certified["save_revision"]):
+		return _reject(&"command_history_revision_mismatch")
+	var replay := _replay_record(certified.duplicate(true), context, record)
+	if not replay["accepted"]:
+		return replay
+	if replay["value"] != prospective:
+		return _reject(&"command_history_state_mismatch")
+	return _accept(prospective.duplicate(true))
 
 
 static func can_append(data: Dictionary, context: Dictionary) -> bool:

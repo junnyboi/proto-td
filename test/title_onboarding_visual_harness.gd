@@ -13,7 +13,12 @@ func _run() -> void:
 	var output_path := String(args.get("output", ""))
 	var mode := StringName(args.get("mode", "mission"))
 	var locale_id := StringName(args.get("locale", "en-US"))
-	if output_path.is_empty() or mode not in [&"mission", &"resonance", &"operation_focus", &"mission_control", &"command_settings_button", &"command_settings_modal"]:
+	if output_path.is_empty() or mode not in [
+		&"mission", &"resonance", &"operation_focus", &"mission_control",
+		&"command_settings_button", &"command_settings_modal",
+		&"field_squad", &"field_hire", &"field_deploy",
+		&"post_training", &"post_valhalla",
+	]:
 		push_error("valid visual output path and mode are required")
 		get_tree().quit(1)
 		return
@@ -21,9 +26,10 @@ func _run() -> void:
 	VIEW_PREFERENCES.set_locale(locale_id, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_title_music_enabled(false, PREFERENCES_PATH)
 	VIEW_PREFERENCES.set_reduced_motion(true, PREFERENCES_PATH)
-	if mode in [&"operation_focus", &"mission_control", &"command_settings_button", &"command_settings_modal"]:
+	if mode not in [&"mission", &"resonance"]:
 		VIEW_PREFERENCES.mark_command_tutorial_seen(PREFERENCES_PATH)
 	I18n.set_locale(locale_id)
+	Game.set_view_preferences_path(PREFERENCES_PATH)
 	Game.set_run_seed(82417)
 	if not Game.start_campaign(false, true):
 		push_error("visual campaign fixture failed")
@@ -31,8 +37,19 @@ func _run() -> void:
 		return
 	if mode in [&"mission", &"resonance"]:
 		Game.request_command_tutorial()
-	var staging := load("res://scenes/staging.tscn").instantiate() as Control
-	staging.call("set_preferences_path", PREFERENCES_PATH)
+	elif mode in [&"field_squad", &"field_hire", &"field_deploy"]:
+		Game.selected_stage_id = &"s1"
+		Game.request_field_team_tutorial()
+	elif mode in [&"post_training", &"post_valhalla"]:
+		Game.request_post_mission_tutorial()
+	var screen_path := (
+		"res://scenes/squad_select.tscn"
+		if mode in [&"field_squad", &"field_hire", &"field_deploy"]
+		else "res://scenes/staging.tscn"
+	)
+	var staging := load(screen_path).instantiate() as Control
+	if staging.has_method("set_preferences_path"):
+		staging.call("set_preferences_path", PREFERENCES_PATH)
 	add_child(staging)
 	for _frame: int in range(12):
 		await get_tree().process_frame
@@ -41,6 +58,20 @@ func _run() -> void:
 		if tutorial != null:
 			tutorial.call("advance")
 		for _frame: int in range(6):
+			await get_tree().process_frame
+	elif mode in [&"field_hire", &"field_deploy"]:
+		var field_tutorial := staging.find_child("FieldTeamTutorial", true, false) as Control
+		if field_tutorial != null:
+			field_tutorial.call("advance")
+			if mode == &"field_deploy":
+				field_tutorial.call("advance")
+		for _frame: int in range(8):
+			await get_tree().process_frame
+	elif mode == &"post_valhalla":
+		var post_tutorial := staging.find_child("PostMissionTutorial", true, false) as Control
+		if post_tutorial != null:
+			post_tutorial.call("advance")
+		for _frame: int in range(8):
 			await get_tree().process_frame
 	elif mode == &"operation_focus":
 		(staging.find_child("NextOperationAction", true, false) as Button).grab_focus()

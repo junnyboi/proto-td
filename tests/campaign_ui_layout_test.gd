@@ -279,8 +279,9 @@ func _run() -> void:
 		else ""
 	)
 	_check(promote_source.contains('Game.training_call(&"commit", [{'), "promotion selection does not immediately dispatch its operator")
-	_check(promote_source.contains('"hero_id": _selected_hero_id') and promote_source.contains('"to_class_id": _selected_choice_id'), "immediate promotion dispatch is not scoped to the selected operator and class")
-	_check(promote_source.contains("_refresh_roster()") and promote_source.contains("_show_roster()"), "successful promotion does not immediately publish the promoted roster")
+	_check(promote_source.contains('"hero_id": promoted_hero_id') and promote_source.contains('"to_class_id": promoted_choice_id'), "immediate promotion dispatch is not scoped to the selected operator and class")
+	_check(promote_source.contains("await get_tree().process_frame"), "promotion does not yield one frame for immediate acknowledgement")
+	_check(promote_source.contains("_publish_promoted_roster(promoted_hero_id)"), "successful promotion does not incrementally publish the promoted roster")
 	var selection_start := training_source.find("func _on_path_selected(choice_id: String) -> void:")
 	var selection_end := training_source.find("\n\nfunc _prefetch_class_pack", selection_start)
 	var selection_source := (

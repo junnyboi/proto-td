@@ -448,7 +448,12 @@ func _run() -> void:
 	_check(not bool(controls.call("commit_resign_confirmation")) and int(controls.call("resign_dispatch_count")) == dispatch_count, "terminal confirmation dispatched twice")
 	battle.call("_detect_result_stamp")
 	var continue_during_exit := battle.find_child("ContinueButton", true, false) as Button
+	var immediate_stamp := battle.find_child("ResultStampLabel", true, false) as Label
 	_check(continue_during_exit != null and not continue_during_exit.has_focus(), "terminal Continue focused before confirmation exit closed")
+	_check(immediate_stamp != null, "terminal feedback waited for campaign persistence")
+	_check(continue_during_exit != null and continue_during_exit.disabled, "terminal debrief was actionable before campaign persistence")
+	await process_frame
+	_check(continue_during_exit != null and continue_during_exit.disabled, "result preparation and durable commit were not split across frames")
 	await _wait_for_confirmation_state(controls, &"closed")
 	_check(confirmation_trace == [&"entering", &"active", &"committing", &"exiting", &"closed"], "terminal exit did not finalize CLOSED")
 	await process_frame

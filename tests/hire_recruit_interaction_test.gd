@@ -123,9 +123,24 @@ func _verify_hover_audio(sfx: Node) -> void:
 
 func _verify_authoritative_click(game: Node, sfx: Node, feedback: Node) -> void:
 	var before: Dictionary = game.call("campaign_projection")
+	var first_hero: Dictionary = (before.get("ready_heroes", []) as Array)[0]
+	var existing_card := _mission.find_child(
+		"Pick_%s" % first_hero.get("hero_id", ""), true, false,
+	)
+	var action_label := _mission.find_child(
+		"BasicRecruitActionLabel", true, false,
+	) as Label
 	var click_starts_before := int(sfx.call("audible_start_count"))
 	var click_count_before := int(feedback.call("click_play_count"))
 	_hire.pressed.emit()
+	_check(
+		action_label != null and action_label.text == "HIRING…",
+		"Hire Recruit does not paint its pending state before persistence",
+	)
+	_check(
+		game.call("campaign_projection") == before,
+		"Hire Recruit mutated campaign data before the pending frame was visible",
+	)
 	await process_frame
 	await process_frame
 	var after: Dictionary = game.call("campaign_projection")
@@ -142,6 +157,13 @@ func _verify_authoritative_click(game: Node, sfx: Node, feedback: Node) -> void:
 	_check(int(sfx.call("audible_start_count")) == click_starts_before + 1, "Hire Recruit starts exactly one click voice")
 	_check(int(feedback.call("click_play_count")) == click_count_before + 1, "UiFeedback remains the sole Hire Recruit click owner")
 	_check(sfx.call("last_resolved_id") == &"ui_click", "Hire Recruit click resolves to ui_click")
+	_check(
+		existing_card != null
+		and existing_card == _mission.find_child(
+			"Pick_%s" % first_hero.get("hero_id", ""), true, false,
+		),
+		"Hire Recruit rebuilt unchanged operator cards instead of inserting one card",
+	)
 
 
 func _verify_insufficient_balance(game: Node) -> void:

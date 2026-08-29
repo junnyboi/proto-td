@@ -16,6 +16,7 @@ const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
 const HonorScript := preload("res://sim/campaign_v3_honor.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
+const CommandHistoryScript := preload("res://sim/campaign_v3_command_history.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
 const PREMIUM_PULL_HISTORY_LIMIT := 10
 
@@ -329,7 +330,28 @@ func _certified_data_unchanged() -> bool:
 
 
 func _prospective_state(data: Dictionary) -> Dictionary:
-	return restore(data, _context)
+	if not _certified_data_unchanged():
+		return _reject(&"invalid_campaign_state")
+	var appended := CommandHistoryScript.validate_append(_data, data, _context)
+	if not appended["accepted"]:
+		return _reject(appended["error_code"])
+	return _from_certified_append(appended["value"], _context)
+
+
+## Produce a distinct runtime authority after the store has echoed the exact
+## certified bytes from disk. This avoids reparsing and replaying the same
+## document while retaining immutable state ownership across the commit seam.
+func _certified_committed_copy(source: String) -> Dictionary:
+	if source != _validated_save_text() or not _certified_data_unchanged():
+		return _reject(&"invalid_campaign_state")
+	var state: Variant = (load("res://sim/campaign_state_v3.gd") as GDScript).new()
+	state._data = _data.duplicate(true)
+	state._context = _context.duplicate(true)
+	state._encoded_save_cache = _copy_encoded(_encoded_save_cache)
+	state._strategic_hash_cache = _copy_encoded(_strategic_hash_cache)
+	state._core_hash_cache = _copy_encoded(_core_hash_cache)
+	state._data_checksum = _data_checksum
+	return {"accepted": true, "error_code": &"", "value": state}
 
 
 func _command_record(command_id: String) -> Dictionary:
@@ -352,6 +374,25 @@ static func _from_normalized_result(result: Dictionary, context: Dictionary) -> 
 	var core_hash: Dictionary = HashScript.of_core(core, context)
 	if not core_hash["accepted"] and _read_only_legacy_rules(data):
 		core_hash = HashScript._of_normalized_core(core)
+	if not encoded["accepted"] or not full_hash["accepted"] or not core_hash["accepted"]:
+		return _reject(&"invalid_campaign_state")
+	var state: Variant = (load("res://sim/campaign_state_v3.gd") as GDScript).new()
+	state._data = data.duplicate(true)
+	state._context = context.duplicate(true)
+	state._encoded_save_cache = encoded
+	state._strategic_hash_cache = full_hash
+	state._core_hash_cache = core_hash
+	state._data_checksum = CanonicalJsonScript.sha256_hex(state._data)
+	return {"accepted": true, "error_code": &"", "value": state}
+
+
+static func _from_certified_append(data: Dictionary, context: Dictionary) -> Dictionary:
+	var encoded: Dictionary = CampaignV3CodecScript._encode_normalized_save(data)
+	var full_hash: Dictionary = HashScript._of_normalized_data(data)
+	var core := {}
+	for key: String in CampaignV3CodecScript.CORE_KEYS:
+		core[key] = data[key]
+	var core_hash: Dictionary = HashScript.of_core(core, context)
 	if not encoded["accepted"] or not full_hash["accepted"] or not core_hash["accepted"]:
 		return _reject(&"invalid_campaign_state")
 	var state: Variant = (load("res://sim/campaign_state_v3.gd") as GDScript).new()

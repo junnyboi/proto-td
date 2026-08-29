@@ -126,6 +126,8 @@ var _leaked_seen := 0
 var _banner_seen_wave := -1
 var _pending_high_threat_dialogue_wave := -1
 var _stamp_shown := false
+var _result_finalize_running := false
+var _result_finalized := false
 var _snaps_seen := 0
 var _trap_trigger_seen: Dictionary = {}
 var _charm_seen: Dictionary = {}
@@ -190,6 +192,8 @@ func _ready() -> void:
 		push_error("battle_view: model factory failed")
 		return
 	_stage = stage
+	Music.prepare_results(_stage.music_profile_id)
+	Sfx.prepare_cues([&"victory", &"defeat"])
 	if not _build_grid(stage):
 		return
 	cfg = load("res://data/juice_config.tres") as JuiceConfig
@@ -380,7 +384,11 @@ func _refresh_battle_interaction_gates() -> void:
 
 
 func _focus_terminal_continue() -> void:
-	if _continue_btn != null and is_instance_valid(_continue_btn):
+	if (
+		_continue_btn != null
+		and is_instance_valid(_continue_btn)
+		and not _continue_btn.disabled
+	):
 		_continue_btn.grab_focus.call_deferred()
 
 
@@ -751,8 +759,6 @@ func _detect_result_stamp() -> void:
 	if _battle_dialogue != null:
 		_battle_dialogue.dismiss()
 	_refresh_battle_interaction_gates()
-	if not Game.record_result(model.result, model.stars):
-		return
 	_stamp_shown = true
 	if model.result == BattleModel.Result.CLEAR:
 		_juice.stamp(UiCopyType.text(&"ui.battle.stamp_clear", "Victory"), model.stars)
@@ -772,7 +778,8 @@ func _detect_result_stamp() -> void:
 	var next := Button.new()
 	next.name = "ContinueButton"
 	_continue_btn = next
-	next.text = UiCopyType.text(&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF")
+	next.text = UiCopyType.text(&"ui.battle.finalizing_debrief", "FINALIZING DEBRIEF…")
+	next.disabled = true
 	# (and Space, once terminal) also proceeds — the "what do I click now"
 	var viewport := get_viewport_rect().size
 	next.custom_minimum_size = _terminal_continue_size(viewport)
@@ -785,10 +792,46 @@ func _detect_result_stamp() -> void:
 		(viewport.x - next.get_combined_minimum_size().x) * 0.5, viewport.y * 0.5 + 120.0
 	)
 	next.pressed.connect(_on_continue_pressed)
-	# A terminal confirmation retains exclusive focus until its exit callback
-	# clears the gate; set_battle_confirmation_active(false) focuses Continue.
+	_finalize_terminal_result()
+
+
+func _finalize_terminal_result() -> void:
+	if _result_finalize_running or _result_finalized or model == null:
+		return
+	_result_finalize_running = true
+	if _continue_btn != null:
+		_continue_btn.disabled = true
+		_continue_btn.text = UiCopyType.text(
+			&"ui.battle.finalizing_debrief", "FINALIZING DEBRIEF…",
+		)
+	# Guarantee the result stamp and audio reach one rendered frame before any
+	# remaining persistence work begins, even on the non-threaded Web build.
+	await get_tree().process_frame
+	if not is_inside_tree() or model == null:
+		_result_finalize_running = false
+		return
+	var prepared := Game.prepare_result(model.result, model.stars)
+	if prepared:
+		await get_tree().process_frame
+		if not is_inside_tree() or model == null:
+			_result_finalize_running = false
+			return
+	var recorded := prepared and Game.commit_prepared_result()
+	_result_finalize_running = false
+	if _continue_btn == null or not is_instance_valid(_continue_btn):
+		return
+	if recorded:
+		_result_finalized = true
+		_continue_btn.text = UiCopyType.text(
+			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
+		)
+	else:
+		_continue_btn.text = UiCopyType.text(
+			&"ui.battle.retry_finalization", "RETRY FINALIZATION",
+		)
+	_continue_btn.disabled = false
 	if not _battle_confirmation_active:
-		next.grab_focus()
+		_focus_terminal_continue()
 
 
 func _show_defeat_ambient() -> void:
@@ -806,9 +849,18 @@ func _show_defeat_ambient() -> void:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	_refresh_hud_copy()
 	if _continue_btn != null:
-		_continue_btn.text = UiCopyType.text(
-			&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
-		)
+		if _result_finalized:
+			_continue_btn.text = UiCopyType.text(
+				&"ui.battle.continue_debrief", "CONTINUE TO DEBRIEF",
+			)
+		elif _result_finalize_running:
+			_continue_btn.text = UiCopyType.text(
+				&"ui.battle.finalizing_debrief", "FINALIZING DEBRIEF…",
+			)
+		else:
+			_continue_btn.text = UiCopyType.text(
+				&"ui.battle.retry_finalization", "RETRY FINALIZATION",
+			)
 	var wave_label := find_child("WaveBanner", true, false) as Label
 	if wave_label != null and _banner_seen_wave >= 0:
 		wave_label.text = _format_copy(
@@ -889,6 +941,9 @@ func _format_copy(key: StringName, fallback: String, args: Dictionary) -> String
 
 
 func _on_continue_pressed() -> void:
+	if not _result_finalized:
+		_finalize_terminal_result()
+		return
 	Sfx.play("ui_confirm")
 	if _is_act2_stage() and not _act2_exit_active:
 		_play_act2_exit_transition()

@@ -24,12 +24,14 @@ const ACTION_PADDING := 12
 const ARROW_HEAD_LENGTH := 18.0
 const ARROW_HEAD_HALF_WIDTH := 8.0
 
-enum Step { MISSION_CONTROL, RESONANCE }
-
 var _targets: Array[Control] = []
+var _steps: Array[Dictionary] = []
 var _preferences_path := ViewPreferencesType.DEFAULT_PATH
+var _completion_key := StringName(ViewPreferencesType.COMMAND_TUTORIAL_KEY)
+var _accessibility_key := &"ui.onboarding.command.a11y"
+var _accessibility_fallback := "Command Center tutorial"
 var _reduced_motion := false
-var _step := Step.MISSION_CONTROL
+var _step_index := 0
 var _finished := false
 var _entry_tween: Tween = null
 
@@ -51,27 +53,87 @@ func setup(
 	preferences_path: String = ViewPreferencesType.DEFAULT_PATH,
 	reduced_motion: bool = false,
 ) -> bool:
-	if mission_control == null or resonance == null or preferences_path.is_empty():
+	return setup_custom(
+		"CommandCenterTutorial",
+		[mission_control, resonance],
+		[
+			{
+				"id": &"mission_control",
+				"step_key": &"ui.onboarding.command.mission.step",
+				"step_fallback": "1 / 2  MISSION CONTROL",
+				"title_key": &"ui.onboarding.command.mission.title",
+				"title_fallback": "Choose an operation",
+				"body_key": &"ui.onboarding.command.mission.body",
+				"body_fallback": "Mission Control lists every available operation. Select one to prepare its Field Team and begin the mission.",
+				"action_key": &"ui.onboarding.command.next",
+				"action_fallback": "NEXT",
+			},
+			{
+				"id": &"resonance",
+				"step_key": &"ui.onboarding.command.resonance.step",
+				"step_fallback": "2 / 2  RESONANCE",
+				"title_key": &"ui.onboarding.command.resonance.title",
+				"title_fallback": "Summon special heroes",
+				"body_key": &"ui.onboarding.command.resonance.body",
+				"body_fallback": "Premium Resonance spends Resonance Shards to summon fixed-kit special heroes. Try your luck whenever your balance allows.",
+				"action_key": &"ui.onboarding.command.done",
+				"action_fallback": "DONE",
+			},
+		],
+		StringName(ViewPreferencesType.COMMAND_TUTORIAL_KEY),
+		&"ui.onboarding.command.a11y",
+		"Command Center tutorial",
+		preferences_path,
+		reduced_motion,
+	)
+
+
+func setup_custom(
+	tutorial_name: String,
+	targets: Array[Control],
+	steps: Array[Dictionary],
+	completion_key: StringName,
+	accessibility_key: StringName,
+	accessibility_fallback: String,
+	preferences_path: String = ViewPreferencesType.DEFAULT_PATH,
+	reduced_motion: bool = false,
+) -> bool:
+	if (
+		tutorial_name.is_empty()
+		or targets.is_empty()
+		or targets.size() != steps.size()
+		or preferences_path.is_empty()
+	):
 		return false
-	_targets = [mission_control, resonance]
+	for target: Control in targets:
+		if target == null:
+			return false
+	for step: Dictionary in steps:
+		if not _valid_step(step):
+			return false
+	_targets = targets.duplicate()
+	_steps = steps.duplicate(true)
+	_completion_key = completion_key
+	_accessibility_key = accessibility_key
+	_accessibility_fallback = accessibility_fallback
 	_preferences_path = preferences_path
 	_reduced_motion = reduced_motion
-	name = "CommandCenterTutorial"
+	name = tutorial_name
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = CARD_Z
 	accessibility_name = UiCopyType.text(
-		&"ui.onboarding.command.a11y", "Command Center tutorial",
+		_accessibility_key, _accessibility_fallback,
 	)
 	_build()
 	I18n.locale_changed.connect(_on_locale_changed)
 	get_viewport().size_changed.connect(relayout)
-	_set_step(Step.MISSION_CONTROL)
+	_set_step(0)
 	return true
 
 
 func current_step_name() -> StringName:
-	return &"mission_control" if _step == Step.MISSION_CONTROL else &"resonance"
+	return StringName(_current_step().get("id", &""))
 
 
 func current_target_name() -> StringName:
@@ -115,6 +177,8 @@ func _process(_delta: float) -> void:
 		return
 	var target := _current_target()
 	if target != null:
+		if not get_global_rect().grow(1.0).encloses(target.get_global_rect()):
+			_ensure_current_target_visible()
 		var expected_rect := target.get_global_rect().grow(TARGET_GROW)
 		if not _target_ring.get_global_rect().is_equal_approx(expected_rect):
 			relayout()
@@ -225,11 +289,12 @@ func _build() -> void:
 	_skip.focus_neighbor_left = _skip.get_path_to(_primary)
 
 
-func _set_step(value: Step) -> void:
+func _set_step(value: int) -> void:
 	if _finished:
 		return
-	_step = value
+	_step_index = clampi(value, 0, _steps.size() - 1)
 	_refresh_copy()
+	_ensure_current_target_visible.call_deferred()
 	relayout.call_deferred()
 	_animate_card.call_deferred()
 	_primary.grab_focus.call_deferred()
@@ -239,33 +304,14 @@ func _refresh_copy() -> void:
 	if _step_label == null:
 		return
 	accessibility_name = UiCopyType.text(
-		&"ui.onboarding.command.a11y", "Command Center tutorial",
+		_accessibility_key, _accessibility_fallback,
 	)
 	_skip.text = UiCopyType.text(&"ui.onboarding.command.skip", "SKIP")
-	if _step == Step.MISSION_CONTROL:
-		_step_label.text = UiCopyType.text(
-			&"ui.onboarding.command.mission.step", "1 / 2  MISSION CONTROL",
-		)
-		_title.text = UiCopyType.text(
-			&"ui.onboarding.command.mission.title", "Choose an operation",
-		)
-		_body.text = UiCopyType.text(
-			&"ui.onboarding.command.mission.body",
-			"Mission Control lists every available operation. Select one to prepare its Field Team and begin the mission.",
-		)
-		_primary.text = UiCopyType.text(&"ui.onboarding.command.next", "NEXT")
-	else:
-		_step_label.text = UiCopyType.text(
-			&"ui.onboarding.command.resonance.step", "2 / 2  RESONANCE",
-		)
-		_title.text = UiCopyType.text(
-			&"ui.onboarding.command.resonance.title", "Summon special heroes",
-		)
-		_body.text = UiCopyType.text(
-			&"ui.onboarding.command.resonance.body",
-			"Premium Resonance spends Resonance Shards to summon fixed-kit special heroes. Try your luck whenever your balance allows.",
-		)
-		_primary.text = UiCopyType.text(&"ui.onboarding.command.done", "DONE")
+	var step := _current_step()
+	_step_label.text = UiCopyType.text(step["step_key"], step["step_fallback"])
+	_title.text = UiCopyType.text(step["title_key"], step["title_fallback"])
+	_body.text = UiCopyType.text(step["body_key"], step["body_fallback"])
+	_primary.text = UiCopyType.text(step["action_key"], step["action_fallback"])
 	_card.reset_size()
 
 
@@ -288,6 +334,12 @@ func relayout() -> void:
 	_card.size = Vector2(card_width, card_height)
 	_card.pivot_offset = _card.size * 0.5
 	var position := (viewport_size - Vector2(card_width, card_height)) * 0.5
+	if bool(_current_step().get("avoid_target", false)):
+		position.y = (
+			VIEWPORT_MARGIN
+			if target_rect.get_center().y >= viewport_size.y * 0.5
+			else viewport_size.y - card_height - VIEWPORT_MARGIN
+		)
 	position.x = clampf(position.x, VIEWPORT_MARGIN, viewport_size.x - card_width - VIEWPORT_MARGIN)
 	position.y = clampf(position.y, VIEWPORT_MARGIN, viewport_size.y - card_height - VIEWPORT_MARGIN)
 	_card.position = position
@@ -356,15 +408,43 @@ func _animate_card() -> void:
 
 
 func _current_target() -> Control:
-	if _targets.size() != 2:
+	if _step_index < 0 or _step_index >= _targets.size():
 		return null
-	return _targets[int(_step)]
+	return _targets[_step_index]
+
+
+func _current_step() -> Dictionary:
+	if _step_index < 0 or _step_index >= _steps.size():
+		return {}
+	return _steps[_step_index]
+
+
+func _ensure_current_target_visible() -> void:
+	var target := _current_target()
+	if target == null or not target.is_inside_tree():
+		return
+	var ancestor := target.get_parent()
+	while ancestor != null and ancestor != self:
+		if ancestor is ScrollContainer:
+			(ancestor as ScrollContainer).ensure_control_visible(target)
+		ancestor = ancestor.get_parent()
+	relayout.call_deferred()
+
+
+func _valid_step(step: Dictionary) -> bool:
+	for key: String in [
+		"id", "step_key", "step_fallback", "title_key", "title_fallback",
+		"body_key", "body_fallback", "action_key", "action_fallback",
+	]:
+		if not step.has(key):
+			return false
+	return not String(step["id"]).is_empty()
 
 
 func _on_primary_pressed() -> void:
 	Sfx.play("ui_click")
-	if _step == Step.MISSION_CONTROL:
-		_set_step(Step.RESONANCE)
+	if _step_index + 1 < _steps.size():
+		_set_step(_step_index + 1)
 	else:
 		_finish(false)
 
@@ -378,7 +458,9 @@ func _finish(skipped: bool) -> void:
 	if _finished:
 		return
 	_finished = true
-	var persisted := ViewPreferencesType.mark_command_tutorial_seen(_preferences_path)
+	var persisted := ViewPreferencesType.mark_tutorial_seen(
+		_completion_key, _preferences_path,
+	)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	finished.emit(skipped, persisted)

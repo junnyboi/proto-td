@@ -46,7 +46,10 @@ var _pending_honor_hero_id := ""
 var _pending_launch_mutation: Variant = null
 var _pending_launch_open_battle := true
 var _campaign_battle_active := false
+var _prepared_battle_result: Dictionary = {}
 var _command_tutorial_requested := false
+var _field_team_tutorial_requested := false
+var _post_mission_tutorial_requested := false
 var _view_preferences_path := DEFAULT_VIEW_PREFERENCES_PATH
 
 
@@ -88,6 +91,9 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_launch_mutation = null
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false
+	_prepared_battle_result = {}
+	_field_team_tutorial_requested = false
+	_post_mission_tutorial_requested = false
 	_restore_pending_attempt()
 	_prefetch_campaign_operator_packs()
 	if open_campaign_ui:
@@ -261,17 +267,29 @@ func loadout_spell_ids() -> Array[StringName]:
 ## result edge; rewards, XP, deaths, stars, and Memorial facts come from the
 ## resolved strategic receipt.
 func record_result(result: int, stars: int) -> bool:
+	return prepare_result(result, stars) and commit_prepared_result()
+
+
+## Build and validate the one-command strategic transition without touching
+## durable authority. BattleView schedules commit on the following frame so
+## non-threaded Web never pays both phases in one render frame.
+func prepare_result(result: int, stars: int) -> bool:
 	if current_battle == null:
 		return false
+	if not _prepared_battle_result.is_empty():
+		return (
+			int(_prepared_battle_result.get("result", -1)) == result
+			and int(_prepared_battle_result.get("stars", -1)) == stars
+		)
 	var stage := current_battle.stage
 	if not _campaign_battle_active:
-		last_result = {
+		_prepared_battle_result = {
+			"direct": true,
 			"stage_id": stage.id,
 			"result": result,
 			"stars": stars,
 			"leaks": current_battle.leaked,
 			"kills": current_battle.killed,
-			"rewards_granted": [],
 		}
 		return true
 	if (
@@ -284,27 +302,60 @@ func record_result(result: int, stars: int) -> bool:
 	):
 		last_campaign_error = &"strategic_mutation_pending"
 		return false
-	var artifacts := current_battle.snapshot()
-	var outcome: Dictionary = artifacts.get("outcome", {})
+	var outcome: Dictionary = current_battle.terminal_outcome()
 	if outcome.is_empty():
 		return false
-	var committed: Dictionary
 	if _pending_campaign_mutation != null:
-		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
-			_pending_campaign_mutation, campaign_store,
-		)
+		_prepared_battle_result = {
+			"direct": false,
+			"retry": true,
+			"result": result,
+			"stars": stars,
+		}
 	else:
 		var attempt_id := int(_pending_battle_ticket["attempt_id"])
 		var command_id := "runtime:resolve:%s:%d" % [campaign.campaign_uid(), attempt_id]
-		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(
-			campaign.resolve_attempt(
-				command_id,
-				attempt_id,
-				outcome,
-				int(_pending_battle_ticket["expected_save_revision"]),
-			),
-			campaign_store,
+		var command: Dictionary = campaign.resolve_attempt(
+			command_id,
+			attempt_id,
+			outcome,
+			int(_pending_battle_ticket["expected_save_revision"]),
 		)
+		if not command.get("accepted", false):
+			last_campaign_error = command.get("error_code", &"invalid_command")
+			return false
+		_prepared_battle_result = {
+			"direct": false,
+			"retry": false,
+			"command": command,
+			"result": result,
+			"stars": stars,
+		}
+	return true
+
+
+func commit_prepared_result() -> bool:
+	if _prepared_battle_result.is_empty():
+		return false
+	var prepared := _prepared_battle_result
+	_prepared_battle_result = {}
+	if bool(prepared.get("direct", false)):
+		last_result = {
+			"stage_id": prepared["stage_id"],
+			"result": prepared["result"],
+			"stars": prepared["stars"],
+			"leaks": prepared["leaks"],
+			"kills": prepared["kills"],
+			"rewards_granted": [],
+		}
+		return true
+	var committed: Dictionary = (
+		CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+			_pending_campaign_mutation, campaign_store,
+		)
+		if bool(prepared.get("retry", false))
+		else CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(prepared["command"], campaign_store)
+	)
 	if not committed["accepted"]:
 		last_campaign_error = committed["error_code"]
 		_pending_campaign_mutation = committed.get("mutation")
@@ -335,6 +386,7 @@ func record_result(result: int, stars: int) -> bool:
 		"dead_hero_ids": resolution["dead_hero_ids"].duplicate(),
 		"premium_life_losses": resolution["premium_life_losses"].duplicate(true),
 	}
+	_arm_post_mission_tutorial(canonical_result, resolution)
 	_pending_battle_ticket = {}
 	_campaign_battle_active = false
 	return true
@@ -566,7 +618,7 @@ func _publish_promotion_commit(committed: Dictionary) -> void:
 		promoted_classes.append(String(row.get("to_class_id", "")))
 	var content_packs := get_node_or_null("/root/ContentPacks")
 	if content_packs != null:
-		content_packs.call("prefetch_class_ids", promoted_classes, true)
+		content_packs.call_deferred("prefetch_class_ids", promoted_classes, true)
 	if not bool(committed["result"].get("fresh", true)):
 		return
 	training_acknowledgement.clear()
@@ -608,6 +660,37 @@ func consume_command_tutorial_request() -> bool:
 	return requested
 
 
+func request_field_team_tutorial() -> void:
+	_field_team_tutorial_requested = true
+
+
+func consume_field_team_tutorial_request() -> bool:
+	var requested := _field_team_tutorial_requested
+	_field_team_tutorial_requested = false
+	return requested
+
+
+func request_post_mission_tutorial() -> void:
+	_post_mission_tutorial_requested = true
+
+
+func consume_post_mission_tutorial_request() -> bool:
+	var requested := _post_mission_tutorial_requested
+	_post_mission_tutorial_requested = false
+	return requested
+
+
+func _arm_post_mission_tutorial(result: int, resolution: Dictionary) -> void:
+	var stage_order := campaign_stage_ids()
+	if (
+		result == BattleModel.Result.CLEAR
+		and int(resolution.get("stars_before", 0)) == 0
+		and not stage_order.is_empty()
+		and StringName(resolution.get("stage_id", &"")) == stage_order[0]
+	):
+		_post_mission_tutorial_requested = true
+
+
 func set_view_preferences_path(path: String) -> void:
 	_view_preferences_path = path if not path.is_empty() else DEFAULT_VIEW_PREFERENCES_PATH
 
@@ -638,7 +721,10 @@ func open_title() -> void:
 	_pending_launch_mutation = null
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false
+	_prepared_battle_result = {}
 	_command_tutorial_requested = false
+	_field_team_tutorial_requested = false
+	_post_mission_tutorial_requested = false
 	_swap_content.call_deferred(TITLE_SCENE_PATH)
 
 
@@ -691,6 +777,7 @@ func open_field_team_for_stage(stage_id: StringName) -> bool:
 	if not ResourceLoader.exists(stage_path):
 		return false
 	selected_stage_id = stage_id
+	request_field_team_tutorial()
 	open_squad_select()
 	return true
 

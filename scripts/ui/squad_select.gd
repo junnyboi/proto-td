@@ -16,6 +16,10 @@ const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/reson
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const ActionHoverFeedbackType := preload("res://scripts/ui/components/action_hover_feedback.gd")
 const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
+const CommandCenterTutorialType := preload(
+	"res://scripts/ui/components/command_center_tutorial.gd"
+)
+const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
 const HeroIdentityScript := preload("res://sim/hero_identity.gd")
 const HeroNamesScript := preload("res://sim/hero_names.gd")
 const NARRATIVE_CATALOG := preload("res://data/presentation/narrative/stage_narrative_catalog.tres")
@@ -132,9 +136,11 @@ var _hire_recruit: AetheriaButtonType = null
 var _hire_tooltip_hotspot: Control = null
 var _hire_action_label: Label = null
 var _hire_cost_label: Label = null
+var _hire_commit_in_flight := false
 var _deploy_pulse_tween: Tween = null
 var _deploy_ready_pulsing := false
 var _operator_feedback_tweens: Dictionary = {}
+var _tutorial: CommandCenterTutorialType = null
 
 
 func _ready() -> void:
@@ -186,6 +192,80 @@ func _ready() -> void:
 	_on_layout_mode_changed(_shell.layout_mode())
 	if not I18n.locale_changed.is_connected(_on_locale_changed):
 		I18n.locale_changed.connect(_on_locale_changed)
+	_maybe_mount_field_team_tutorial()
+
+
+func _maybe_mount_field_team_tutorial() -> bool:
+	if not Game.consume_field_team_tutorial_request():
+		return false
+	var preferences_path := Game.view_preferences_path()
+	if ViewPreferencesType.has_seen_field_team_tutorial(preferences_path):
+		return false
+	var targets: Array[Control] = [_counter, _hire_recruit, _start]
+	var steps: Array[Dictionary] = [
+		{
+			"id": &"build_squad",
+			"avoid_target": true,
+			"step_key": &"ui.onboarding.field_team.squad.step",
+			"step_fallback": "1 / 3  BUILD YOUR SQUAD",
+			"title_key": &"ui.onboarding.field_team.squad.title",
+			"title_fallback": "Fill the field team",
+			"body_key": &"ui.onboarding.field_team.squad.body",
+			"body_fallback": "Check the selected counter for this mission's squad limit, then click operator cards to build your field team.",
+			"action_key": &"ui.onboarding.command.next",
+			"action_fallback": "NEXT",
+		},
+		{
+			"id": &"hire_recruits",
+			"avoid_target": true,
+			"step_key": &"ui.onboarding.field_team.hire.step",
+			"step_fallback": "2 / 3  REINFORCE",
+			"title_key": &"ui.onboarding.field_team.hire.title",
+			"title_fallback": "Hire more recruits",
+			"body_key": &"ui.onboarding.field_team.hire.body",
+			"body_fallback": "Need another squad member? Hire a persistent Recruit here for 5 Marks.",
+			"action_key": &"ui.onboarding.command.next",
+			"action_fallback": "NEXT",
+		},
+		{
+			"id": &"deploy_squad",
+			"avoid_target": true,
+			"step_key": &"ui.onboarding.field_team.deploy.step",
+			"step_fallback": "3 / 3  DEPLOY",
+			"title_key": &"ui.onboarding.field_team.deploy.title",
+			"title_fallback": "Start the mission",
+			"body_key": &"ui.onboarding.field_team.deploy.body",
+			"body_fallback": "When your field team is ready, deploy the squad to start the mission.",
+			"action_key": &"ui.onboarding.command.done",
+			"action_fallback": "DONE",
+		},
+	]
+	var tutorial := CommandCenterTutorialType.new()
+	add_child(tutorial)
+	if not tutorial.setup_custom(
+		"FieldTeamTutorial",
+		targets,
+		steps,
+		StringName(ViewPreferencesType.FIELD_TEAM_TUTORIAL_KEY),
+		&"ui.onboarding.field_team.a11y",
+		"Field Team tutorial",
+		preferences_path,
+		_reduced_motion(),
+	):
+		tutorial.queue_free()
+		return false
+	_tutorial = tutorial
+	_tutorial.finished.connect(_on_field_team_tutorial_finished)
+	return true
+
+
+func _on_field_team_tutorial_finished(_skipped: bool, persisted: bool) -> void:
+	_tutorial = null
+	if not persisted:
+		push_warning("Field Team tutorial completion could not be persisted")
+	var focus_target := _buttons.values().front() as Control if not _buttons.is_empty() else _back
+	if focus_target != null:
+		focus_target.grab_focus.call_deferred()
 
 func _build_header() -> BoxContainer:
 	_header = BoxContainer.new()
@@ -518,8 +598,10 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	_hire_recruit.add_child(_hire_tooltip_hotspot)
 
 
-func _campaign_roster_rows() -> Array[Dictionary]:
-	var projection: Dictionary = Game.campaign_projection()
+func _campaign_roster_rows(projection_override: Dictionary = {}) -> Array[Dictionary]:
+	var projection: Dictionary = (
+		projection_override if not projection_override.is_empty() else Game.campaign_projection()
+	)
 	var rows: Array = []
 	rows.append_array(projection.get("ready_heroes", []))
 	rows.append_array(projection.get("fallen_heroes", []))
@@ -686,6 +768,25 @@ func _rebuild_operator_cards() -> void:
 		child.queue_free()
 	_buttons.clear()
 	_hero_order.clear()
+	var visible_rows := _visible_operator_rows()
+	if visible_rows.is_empty():
+		_grid.columns = 1
+		_queue_operator_grid_reflow()
+		return
+	_grid.columns = 1
+	for visible_index: int in visible_rows.size():
+		var hero := visible_rows[visible_index] as Dictionary
+		var pick := _create_operator_card(hero, visible_index)
+		_grid.add_child(pick)
+		_center_operator_card_pivot(pick)
+		if not bool(hero.get("fallen", false)):
+			var hero_id := StringName(hero["hero_id"])
+			_buttons[hero_id] = pick
+	_sync_hero_order_from_grid()
+	_queue_operator_grid_reflow()
+
+
+func _visible_operator_rows() -> Array[Dictionary]:
 	var status_rows := RosterFilterType.filter_rows(
 		_all_roster_rows, _filter_status, _filter_faction,
 	)
@@ -699,80 +800,109 @@ func _rebuild_operator_cards() -> void:
 		)
 	if _roster_empty != null:
 		_roster_empty.visible = visible_rows.is_empty()
-	if visible_rows.is_empty():
-		_grid.columns = 1
-		_queue_operator_grid_reflow()
+	return visible_rows
+
+
+func _create_operator_card(hero: Dictionary, visible_index: int) -> AetheriaButtonType:
+	var hero_id := StringName(hero["hero_id"])
+	var op_id := StringName(hero["operator_def_id"])
+	var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
+	var pick := AetheriaButtonType.new()
+	pick.name = "Pick_%s" % hero_id
+	pick.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var fallen := bool(hero.get("fallen", false))
+	pick.toggle_mode = not fallen
+	var card_text := _operator_card_text(hero, definition)
+	pick.set_meta(&"hero", hero)
+	pick.set_meta(&"operator_def", definition)
+	pick.set_meta(&"operator_feedback_enabled", true)
+	pick.set_meta(&"operator_hover_seconds", OPERATOR_HOVER_SECONDS)
+	pick.set_meta(&"operator_selection_seconds", OPERATOR_SELECTION_SETTLE_SECONDS)
+	pick.text = card_text
+	pick.tooltip_text = card_text.replace("\n", " — ")
+	pick.custom_minimum_size = Vector2(
+		_operator_card_width(_shell.layout_mode()),
+		_operator_card_height(hero, _shell.layout_mode()),
+	)
+	pick.set_presentation_text(card_text, card_text)
+	var hover_glow := _build_operator_hover_glow()
+	pick.add_child(hover_glow)
+	pick.set_meta(&"operator_hover_glow_enabled", true)
+	var portrait := TextureRect.new()
+	portrait.name = "OperatorPortrait"
+	portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
+	portrait.anchor_top = 0.0
+	portrait.anchor_right = 1.0
+	portrait.anchor_bottom = 1.0
+	portrait.offset_top = 12.0
+	portrait.offset_bottom = -12.0
+	_apply_operator_portrait_layout(portrait, _shell.layout_mode())
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pick.add_child(portrait)
+	PremiumPortraitEntranceType.apply(
+		portrait,
+		StringName(hero["portrait_asset_id"]),
+		visible_index,
+		_reduced_motion(),
+	)
+	var disabled := fallen or _launch_locked or Game.mission_launch_retry_pending()
+	pick.disabled = disabled
+	pick.focus_mode = Control.FOCUS_NONE if disabled else Control.FOCUS_ALL
+	_apply_operator_card_text_style(pick)
+	pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
+	pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
+	pick.resized.connect(_center_operator_card_pivot.bind(pick))
+	if not fallen:
+		pick.set_pressed_no_signal(_picked.has(hero_id))
+		pick.toggled.connect(_on_pick_toggled.bind(hero_id))
+		pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
+		pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
+		pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
+		pick.focus_exited.connect(_on_operator_feedback_changed.bind(pick))
+		if _roster_scroll != null:
+			pick.focus_entered.connect(_roster_scroll.ensure_control_visible.bind(pick))
+		_apply_operator_card_role(pick, _picked.has(hero_id))
+	else:
+		LunarisOpsType.apply_button(pick, &"disabled")
+		_apply_operator_card_text_style(pick)
+	return pick
+
+
+func _insert_operator_card(hero_id: StringName) -> void:
+	if _grid == null or hero_id.is_empty():
 		return
-	_grid.columns = 1
+	var visible_rows := _visible_operator_rows()
 	for visible_index: int in visible_rows.size():
 		var hero := visible_rows[visible_index] as Dictionary
-		var hero_id := StringName(hero["hero_id"])
-		var op_id := StringName(hero["operator_def_id"])
-		var definition := load("res://data/operators/%s.tres" % op_id) as OperatorDef
-		var pick := AetheriaButtonType.new()
-		pick.name = "Pick_%s" % hero_id
-		pick.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var fallen := bool(hero.get("fallen", false))
-		pick.toggle_mode = not fallen
-		var card_text := _operator_card_text(hero, definition)
-		pick.set_meta(&"hero", hero)
-		pick.set_meta(&"operator_def", definition)
-		pick.set_meta(&"operator_feedback_enabled", true)
-		pick.set_meta(&"operator_hover_seconds", OPERATOR_HOVER_SECONDS)
-		pick.set_meta(&"operator_selection_seconds", OPERATOR_SELECTION_SETTLE_SECONDS)
-		pick.text = card_text
-		pick.tooltip_text = card_text.replace("\n", " — ")
-		pick.custom_minimum_size = Vector2(
-			_operator_card_width(_shell.layout_mode()), _operator_card_height(hero, _shell.layout_mode()),
-		)
-		pick.set_presentation_text(card_text, card_text)
-		var hover_glow := _build_operator_hover_glow()
-		pick.add_child(hover_glow)
-		pick.set_meta(&"operator_hover_glow_enabled", true)
-		var portrait := TextureRect.new()
-		portrait.name = "OperatorPortrait"
-		portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
-		portrait.anchor_top = 0.0
-		portrait.anchor_right = 1.0
-		portrait.anchor_bottom = 1.0
-		portrait.offset_top = 12.0
-		portrait.offset_bottom = -12.0
-		_apply_operator_portrait_layout(portrait, _shell.layout_mode())
-		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		pick.add_child(portrait)
-		PremiumPortraitEntranceType.apply(
-			portrait,
-			StringName(hero["portrait_asset_id"]),
-			visible_index,
-			_reduced_motion(),
-		)
-		pick.disabled = fallen
-		pick.focus_mode = Control.FOCUS_NONE if fallen else Control.FOCUS_ALL
-		_apply_operator_card_text_style(pick)
-		pick.mouse_entered.connect(_on_operator_feedback_changed.bind(pick))
-		pick.mouse_exited.connect(_on_operator_feedback_changed.bind(pick))
-		pick.resized.connect(_center_operator_card_pivot.bind(pick))
-		if not fallen:
-			pick.set_pressed_no_signal(_picked.has(hero_id))
-			pick.toggled.connect(_on_pick_toggled.bind(hero_id))
-			pick.mouse_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
-			pick.focus_entered.connect(_prefetch_hero_pack.bind(hero_id, true, true))
-			pick.focus_entered.connect(_on_operator_feedback_changed.bind(pick))
-			pick.focus_exited.connect(_on_operator_feedback_changed.bind(pick))
+		if StringName(hero.get("hero_id", &"")) != hero_id:
+			continue
+		if _grid.get_node_or_null("Pick_%s" % hero_id) != null:
+			return
+		var pick := _create_operator_card(hero, visible_index)
 		_grid.add_child(pick)
+		_grid.move_child(pick, visible_index)
 		_center_operator_card_pivot(pick)
-		if not fallen:
-			pick.focus_entered.connect(_roster_scroll.ensure_control_visible.bind(pick))
-		if not fallen:
+		if not bool(hero.get("fallen", false)):
 			_buttons[hero_id] = pick
+		_sync_hero_order_from_grid()
+		_queue_operator_grid_reflow()
+		return
+
+
+func _sync_hero_order_from_grid() -> void:
+	_hero_order.clear()
+	if _grid == null:
+		return
+	for child: Node in _grid.get_children():
+		if not child is Button:
+			continue
+		var hero: Dictionary = child.get_meta(&"hero", {})
+		var hero_id := StringName(hero.get("hero_id", &""))
+		if not hero_id.is_empty() and _buttons.has(hero_id):
 			_hero_order.append(hero_id)
-		else:
-			LunarisOpsType.apply_button(pick, &"disabled")
-			_apply_operator_card_text_style(pick)
-	_queue_operator_grid_reflow()
 
 
 func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
@@ -1103,7 +1233,12 @@ func _queue_operator_grid_reflow() -> void:
 
 func _apply_operator_grid_reflow() -> void:
 	_operator_grid_reflow_queued = false
-	if _operator_grid_reflow_running or _shell == null or _grid == null:
+	if (
+		not is_inside_tree()
+		or _operator_grid_reflow_running
+		or _shell == null
+		or _grid == null
+	):
 		return
 	_operator_grid_reflow_running = true
 	var mode := _shell.layout_mode()
@@ -1392,10 +1527,28 @@ func _on_hire_recruit_hover_exited() -> void:
 
 
 func _on_hire_basic_recruit() -> void:
-	if _hire_recruit == null or _hire_recruit.disabled:
+	if _hire_recruit == null or _hire_recruit.disabled or _hire_commit_in_flight:
+		return
+	_hire_commit_in_flight = true
+	var pending_text := UiCopyType.text(
+		&"ui.campaign.basic_hire_committing", "HIRING…",
+	)
+	_hire_action_label.text = pending_text
+	_hire_recruit.accessibility_name = pending_text
+	_hire_recruit.accessibility_description = UiCopyType.text(
+		&"ui.campaign.basic_hire_committing_description",
+		"Saving the recruit contract.",
+	)
+	_hire_recruit.accessibility_live = AccessibilityServer.LIVE_POLITE
+	# Let the pending state reach the display before durable work starts.
+	await get_tree().process_frame
+	if not is_inside_tree() or _hire_recruit == null:
+		_hire_commit_in_flight = false
 		return
 	_hire_recruit.disabled = true
+	_hire_recruit.focus_mode = Control.FOCUS_NONE
 	var committed: Dictionary = Game.hire_basic_recruit()
+	_hire_commit_in_flight = false
 	if not committed.get("accepted", false):
 		_refresh_recruitment_desk(
 			_hire_error_text(StringName(committed.get("error_code", &"unknown"))),
@@ -1413,10 +1566,10 @@ func _on_hire_basic_recruit() -> void:
 			callsign = String(hero.get("callsign", callsign))
 			break
 	_ready_heroes = _identity_rows(projection.get("ready_heroes", []))
-	_all_roster_rows = _campaign_roster_rows()
+	_all_roster_rows = _campaign_roster_rows(projection)
 	if _filter_bar != null:
 		_filter_bar.set_rows(_all_roster_rows)
-	_rebuild_operator_cards()
+	_insert_operator_card(StringName(recruited.get("hero_id", "")))
 	_refresh_recruitment_desk(
 		UiCopyType.format_text(
 			&"ui.campaign.basic_hire_success",
@@ -1424,15 +1577,21 @@ func _on_hire_basic_recruit() -> void:
 			{&"callsign": callsign, &"remaining": int(projection.get("marks", 0))},
 		),
 		false,
+		projection,
 	)
-	_refresh()
 	_hire_recruit.grab_focus.call_deferred()
 
 
-func _refresh_recruitment_desk(message: String = "", error: bool = false) -> void:
+func _refresh_recruitment_desk(
+	message: String = "",
+	error: bool = false,
+	projection_override: Dictionary = {},
+	) -> void:
 	if _hire_recruit == null:
 		return
-	var projection := Game.campaign_projection()
+	var projection := (
+		projection_override if not projection_override.is_empty() else Game.campaign_projection()
+	)
 	var marks := int(projection.get("marks", 0))
 	if _marks_display != null:
 		_marks_display.set_amount(str(marks))

@@ -55,6 +55,7 @@ func _run() -> void:
 	await _frames(2)
 	_check(screen.find_child("ReviewPlan", true, false) == null, "roster still exposes Review Plan")
 	var choose_promotion := screen.find_child("ChoosePromotion", true, false) as Button
+	var existing_row := screen.find_child("Recruit_%s" % hero_id, true, false)
 	_check(choose_promotion != null and not choose_promotion.disabled, "eligible operator lacks Choose Promotion")
 	if choose_promotion == null or choose_promotion.disabled:
 		_cleanup(game, screen)
@@ -77,9 +78,22 @@ func _run() -> void:
 	)
 	_check(screen.find_child("ConfirmTraining", true, false) == null, "promotion still requires confirmation review")
 
-	# The first card activation commits synchronously. A queued duplicate
-	# activation must not publish a second promotion.
+	# The first activation paints acknowledgement for one frame, then commits.
+	# A duplicate activation during that frame must not publish twice.
 	first_path.pressed.emit()
+	var pending_status := screen.find_child(
+		"PromotionCommitStatus", true, false,
+	) as Label
+	_check(
+		pending_status != null and pending_status.visible
+		and pending_status.text == "PROMOTING…",
+		"promotion does not paint its pending state before persistence",
+	)
+	var pending_state: Variant = game.get("campaign")
+	_check(
+		pending_state.save_revision() == before_revision,
+		"promotion mutated campaign data before the pending frame was visible",
+	)
 	first_path.pressed.emit()
 	await _frames(3)
 	state = game.get("campaign")
@@ -91,6 +105,11 @@ func _run() -> void:
 	_check(state.save_revision() == before_revision + 1, "immediate promotion did not publish exactly one save revision")
 	_check(after_receipts == before_receipts + 1, "double activation dispatched more than one promotion")
 	_check(StringName(screen.call("mode")) == &"roster", "successful promotion did not refresh the roster in place")
+	_check(
+		existing_row != null
+		and existing_row == screen.find_child("Recruit_%s" % hero_id, true, false),
+		"successful promotion rebuilt the selected roster row instead of updating it",
+	)
 	_check(screen.find_child("ReviewPlan", true, false) == null, "review action returned after promotion")
 	_check(screen.find_child("ConfirmTraining", true, false) == null, "confirmation action returned after promotion")
 	var acknowledgement := game.call("training_call", &"peek_acknowledgement") as Array
