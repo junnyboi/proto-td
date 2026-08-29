@@ -109,6 +109,9 @@ func _check_reviewed_chinese(entries: Dictionary) -> void:
 	_check(entries["ui.battle.resign"] == "撤出行动", "operation resignation term is ambiguous")
 	_check(entries["ui.battle.retreat"] == "撤回干员", "unit retreat term is ambiguous")
 	_check(entries["ui.battle.resign"] != entries["ui.battle.retreat"], "resign and retreat must remain distinct")
+	_check(entries["ui.battle.recall"] == "撤回", "operator Recall action is not concise or distinct")
+	_check(entries["ui.battle.skill_state_ready"] == "技能就绪", "operator skill readiness is mistranslated")
+	_check(String(entries["ui.battle.skill_targeting_instruction"]).contains("受伤的友方干员"), "Mend targeting instruction lost its ally constraint")
 	_check(String(entries["ui.squad.launch_retryable_error"]).contains("完全相同"), "deployment retry lost exact-order requirement")
 	for key: String in ["ui.gacha.receipt_new", "ui.gacha.receipt_restored", "ui.gacha.receipt_duplicate"]:
 		_check(String(entries[key]).contains("内必得五星"), "gacha guarantee is not expressed as an upper bound: %s" % key)

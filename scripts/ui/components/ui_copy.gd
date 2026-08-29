@@ -127,8 +127,25 @@ const STATIC_FALLBACKS := {
 	&"ui.battle.hud_wide": "CORE  {core}    DP  {dp}    ELIMINATIONS  {eliminations}    {state}",
 	&"ui.battle.continue_debrief": "CONTINUE TO DEBRIEF",
 	&"ui.battle.finalizing_debrief": "FINALIZING DEBRIEF…",
+	&"ui.battle.operator_actions": "Operator actions",
+	&"ui.battle.operator_actions_description": "{operator}. {skill}. {current} of {cost} SP.",
+	&"ui.battle.recall": "RECALL",
+	&"ui.battle.recall_description": "Recall {operator} and begin their redeployment cooldown.",
 	&"ui.battle.retry_finalization": "RETRY FINALIZATION",
 	&"ui.battle.retreat": "Retreat",
+	&"ui.battle.skill_activate": "ACTIVATE — {skill}",
+	&"ui.battle.skill_activate_description": "Activate {skill}.",
+	&"ui.battle.skill_cancel_targeting": "CANCEL TARGETING",
+	&"ui.battle.skill_charging": "CHARGING {current} / {cost}",
+	&"ui.battle.skill_charging_description": "{skill} is charging: {current} of {cost} SP.",
+	&"ui.battle.skill_none": "NO ACTIVE SKILL",
+	&"ui.battle.skill_progress": "{skill}  //  SP {current} / {cost}",
+	&"ui.battle.skill_state_charging": "CHARGING",
+	&"ui.battle.skill_state_none": "NO SKILL",
+	&"ui.battle.skill_state_ready": "SKILL READY",
+	&"ui.battle.skill_state_targeting": "SELECT TARGET",
+	&"ui.battle.skill_targeting_description": "Choose a wounded ally in range for {skill}.",
+	&"ui.battle.skill_targeting_instruction": "Select a wounded ally in range. Right-click or press Escape to cancel.",
 	&"ui.battle.dialogue.mission_start": "MISSION START // LIVE TRANSMISSION",
 	&"ui.battle.dialogue.wave": "WAVE {wave} // LIVE TRANSMISSION",
 	&"ui.spell.cooldown": "CD {seconds}s",
@@ -544,6 +561,20 @@ const PLACEHOLDER_TYPES := {
 	&"ui.battle.hud_compact": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
 	&"ui.battle.hud_wide": {&"core": &"int", &"dp": &"int", &"eliminations": &"int", &"state": &"String"},
 	&"ui.battle.dialogue.wave": {&"wave": &"int"},
+	&"ui.battle.operator_actions_description": {
+		&"operator": &"String", &"skill": &"String", &"current": &"int", &"cost": &"int",
+	},
+	&"ui.battle.recall_description": {&"operator": &"String"},
+	&"ui.battle.skill_activate": {&"skill": &"String"},
+	&"ui.battle.skill_activate_description": {&"skill": &"String"},
+	&"ui.battle.skill_charging": {&"current": &"int", &"cost": &"int"},
+	&"ui.battle.skill_charging_description": {
+		&"skill": &"String", &"current": &"int", &"cost": &"int",
+	},
+	&"ui.battle.skill_progress": {
+		&"skill": &"String", &"current": &"int", &"cost": &"int",
+	},
+	&"ui.battle.skill_targeting_description": {&"skill": &"String"},
 	&"ui.battle.deploy_operator_cooldown": {
 		&"name": &"String", &"slot": &"String", &"seconds": &"int",
 	},
@@ -674,6 +705,26 @@ static func operator_name(definition: OperatorDef) -> String:
 	return text(
 		StringName("data.operator.%s.name" % definition.id), definition.display_name,
 	)
+
+
+static func skill_name(skill_id: StringName) -> String:
+	var fallbacks := {
+		&"bastion_slam": "Bastion Slam",
+		&"conflagration": "Conflagration",
+		&"deadeye": "Deadeye",
+		&"flurry": "Flurry",
+		&"hold_the_line": "Hold the Line",
+		&"mend": "Mend",
+		&"overpower": "Overpower",
+		&"rally": "Rally",
+		&"rapid_volley": "Rapid Volley",
+		&"tempest": "Tempest",
+		&"war_banner": "War Banner",
+	}
+	var fallback := String(
+		fallbacks.get(skill_id, String(skill_id).replace("_", " ").capitalize()),
+	)
+	return text(StringName("ui.training.skill_name.%s" % skill_id), fallback)
 
 
 static func trap_name(definition: TrapDef) -> String:

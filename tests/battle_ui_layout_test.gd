@@ -364,33 +364,121 @@ func _run() -> void:
 	var deploy_cell := _first_valid_deploy_cell(model, deployment_id)
 	_check(deploy_cell.x >= 0 and model.apply_action([&"deploy", deployment_id, deploy_cell, int(UnitState.Facing.RIGHT)]), "retreat fixture could not deploy")
 	if deploy_cell.x >= 0:
+		var deployed_unit := model.alive_unit_at(deploy_cell)
+		deployed_unit.skill_id = &"rally"
+		deployed_unit.sp_cost = 15
+		deployed_unit.sp = 7
+		deployed_unit.skill_effect = SkillDef.Effect.DP_BURST
+		deployed_unit.skill_params = {"amount": 3}
+		var skills_before_selection := model.skills_fired
 		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
-		_check(bool(deploy_bar.call("transient_intent_active")), "retreat/selection intent did not start")
+		await process_frame
+		var action_panel := battle.find_child("OperatorActionPanel", true, false) as PanelContainer
+		var action_state := battle.find_child("OperatorActionState", true, false) as Label
+		var action_detail := battle.find_child("OperatorActionDetail", true, false) as Label
+		var action_buttons := battle.find_child("OperatorActionButtons", true, false) as GridContainer
+		var skill_action := battle.find_child("ActivateOperatorSkill", true, false) as Button
+		var recall_action := battle.find_child("RecallOperator", true, false) as Button
+		var skill_progress := battle.find_child("OperatorSkillProgress", true, false) as ProgressBar
+		_check(bool(deploy_bar.call("transient_intent_active")), "operator selection intent did not start")
 		_check(is_equal_approx(Engine.time_scale, 0.75), "selected field operator did not slow battle time by 25%")
+		_check(action_panel != null and action_panel.visible, "selected operator did not expose the action panel")
+		_check(skill_action != null and skill_action.disabled and skill_action.text == "CHARGING 7 / 15", "unready skill does not expose explicit charging state")
+		_check(recall_action != null and not recall_action.disabled and recall_action.text == "RECALL", "Recall is not independently available while a skill charges")
+		_check(skill_progress != null and is_equal_approx(skill_progress.value, 7.0) and is_equal_approx(skill_progress.max_value, 15.0), "operator action panel does not project authoritative SP")
+		_check(model.skills_fired == skills_before_selection and deployed_unit.sp == 7, "selecting an operator implicitly fired its skill")
+		_check(recall_action.has_focus(), "disabled Skill did not choose Recall as the safe focus target")
+		_check(action_panel.accessibility_labeled_by_nodes.has(action_panel.get_path_to(battle.find_child("OperatorActionName", true, false))), "operator action panel is not labeled by the operator name")
+		_check(not skill_action.accessibility_description.is_empty() and not recall_action.accessibility_description.is_empty(), "operator actions lack accessibility descriptions")
+
+		_check(bool(i18n.call("set_locale", &"zh-CN")), "operator action fixture could not switch to Chinese")
+		await process_frame
+		_check(recall_action.text == "撤回" and action_state.text == "充能中", "operator actions did not refresh to Chinese")
+		_check(action_detail.text.contains("集结") and action_detail.text.contains("技力"), "Chinese skill name or SP state is missing")
+		_check(bool(i18n.call("set_locale", &"en-US")), "operator action fixture could not restore English")
+		await process_frame
+
+		root.size = NARROW
+		for _frame: int in range(3):
+			await process_frame
+		_check(action_buttons.columns == 1, "narrow operator actions did not stack")
+		_check(Rect2(Vector2.ZERO, Vector2(NARROW)).encloses(action_panel.get_global_rect()), "narrow operator action panel escaped the viewport")
+		_check(not action_panel.get_global_rect().intersects(deployment_deck.get_global_rect()), "narrow operator action panel overlaps the deployment deck")
+		root.size = LANDSCAPE
+		for _frame: int in range(3):
+			await process_frame
+		_check(action_buttons.columns == 2, "landscape operator actions did not restore the two-action row")
+		_check(not action_panel.get_global_rect().intersects(hud.get_global_rect()), "operator actions overlap the battle HUD when a clear landscape lane exists")
+		_check(not dialogue.visible or not action_panel.get_global_rect().intersects(dialogue.get_global_rect()), "operator actions overlap the live transmission when a clear landscape lane exists")
+
+		deployed_unit.sp = deployed_unit.sp_cost
+		deploy_bar.call("_process", 0.0)
+		_check(not skill_action.disabled and skill_action.text.contains("ACTIVATE") and skill_action.text.to_upper().contains("RALLY"), "ready skill did not expose an explicit activation action")
+		_check(not recall_action.disabled, "Recall disappeared when the selected skill became ready")
+		await _capture_operator_actions_if_requested()
+		var skills_before_activation := model.skills_fired
+		skill_action.pressed.emit()
+		await process_frame
+		_check(model.skills_fired == skills_before_activation + 1 and deployed_unit.sp == 0, "Skill action did not route through the authoritative trigger_skill verb")
+		_check(not action_panel.visible and not bool(deploy_bar.call("transient_intent_active")), "successful skill activation did not clear selection")
+		_check(is_equal_approx(Engine.time_scale, 1.0), "successful skill activation left tactical slowdown active")
+
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
+		await process_frame
 		bool(controls.call("request_resign_confirmation"))
 		await _wait_for_confirmation_state(controls, &"active")
-		_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel retreat/selection intent")
+		_check(not bool(deploy_bar.call("transient_intent_active")), "confirmation did not cancel operator actions")
 		_check(is_equal_approx(Engine.time_scale, 1.0), "selection slowdown survived selection cancellation")
 		bool(controls.call("cancel_resign_confirmation"))
 		await _wait_for_confirmation_state(controls, &"closed")
-		var deployed_unit := model.alive_unit_at(deploy_cell)
-		deploy_bar.call("_begin_heal_targeting", deployed_unit)
-		_check(bool(deploy_bar.call("is_mend_targeting")), "mend targeting fixture did not start")
-		bool(controls.call("request_resign_confirmation"))
-		await _wait_for_confirmation_state(controls, &"active")
-		_check(not bool(deploy_bar.call("is_mend_targeting")), "confirmation did not cancel mend targeting")
-		bool(controls.call("cancel_resign_confirmation"))
-		await _wait_for_confirmation_state(controls, &"closed")
+
+		deployed_unit.skill_id = &"mend"
+		deployed_unit.sp_cost = 10
+		deployed_unit.sp = 10
+		deployed_unit.skill_effect = SkillDef.Effect.HEAL_TARGET
+		deployed_unit.skill_params = {"amount": 20, "range_cells": 99}
 		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
-		_check(is_equal_approx(Engine.time_scale, 0.75), "retreat selection did not restore tactical slowdown")
-		deploy_bar.call("_confirm_retreat")
+		await process_frame
+		skill_action.pressed.emit()
+		await process_frame
+		_check(bool(deploy_bar.call("is_mend_targeting")), "Mend action did not enter ally targeting")
+		_check(skill_action.text == "CANCEL TARGETING" and recall_action.disabled, "Mend targeting does not expose a clear cancellable state")
+		deploy_bar.call("_input", _action_event(&"ui_cancel"))
+		await process_frame
+		_check(not bool(deploy_bar.call("is_mend_targeting")) and action_panel.visible, "first Escape did not return Mend targeting to operator actions")
+		_check(not skill_action.disabled and not recall_action.disabled, "cancelling Mend targeting did not restore actions")
+		deploy_bar.call("_input", _action_event(&"ui_cancel"))
+		await process_frame
+		_check(not action_panel.visible and is_equal_approx(Engine.time_scale, 1.0), "second Escape did not dismiss operator actions and restore time")
+
+		var target_deployment_id := _other_deployment_id(model, deployment_id)
+		model.dp = model.config.dp_cap
+		var target_cell := _first_valid_deploy_cell(model, target_deployment_id)
+		_check(target_deployment_id != &"" and target_cell.x >= 0 and model.apply_action([&"deploy", target_deployment_id, target_cell, int(UnitState.Facing.RIGHT)]), "Mend target fixture could not deploy")
+		var heal_target := model.alive_unit_at(target_cell)
+		if heal_target != null:
+			heal_target.hp = maxi(1, heal_target.hp_max - 30)
+		var hp_before_mend := heal_target.hp if heal_target != null else -1
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
+		await process_frame
+		skill_action.pressed.emit()
+		await process_frame
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", target_cell))
+		await process_frame
+		_check(heal_target != null and heal_target.hp > hp_before_mend and deployed_unit.sp == 0, "valid Mend target did not receive healing through the mend verb")
+		_check(not action_panel.visible and is_equal_approx(Engine.time_scale, 1.0), "successful Mend did not clear selection and slowdown")
+
+		deploy_bar.call("_handle_grid_click", battle.call("cell_center", deploy_cell))
+		await process_frame
+		_check(not recall_action.disabled, "Recall is unavailable after skill use")
+		recall_action.pressed.emit()
 		deploy_bar.call("_process", 0.0)
 		var cooldown_slot := battle.find_child("Slot_%s" % deployment_id, true, false) as Button
-		_check(deployed_unit != null and not deployed_unit.alive, "retreat action did not remove the selected operator")
-		_check(model.is_redeploy_cooling_down(deployment_id), "retreat did not start an authoritative redeploy cooldown")
-		_check(cooldown_slot != null and cooldown_slot.text.contains("COOLDOWN"), "deploy card does not expose the retreat cooldown")
+		_check(deployed_unit != null and not deployed_unit.alive, "Recall action did not remove the selected operator")
+		_check(model.is_redeploy_cooling_down(deployment_id), "Recall did not start an authoritative redeploy cooldown")
+		_check(cooldown_slot != null and cooldown_slot.text.contains("COOLDOWN"), "deploy card does not expose the Recall cooldown")
 		_check(cooldown_slot != null and cooldown_slot.disabled, "cooling-down deploy card remains actionable")
-		_check(is_equal_approx(Engine.time_scale, 1.0), "retreat did not clear tactical selection slowdown")
+		_check(is_equal_approx(Engine.time_scale, 1.0), "Recall did not clear tactical selection slowdown")
 
 	bool(controls.call("request_resign_confirmation"))
 	await _wait_for_confirmation_state(controls, &"active")
@@ -531,6 +619,28 @@ func _first_valid_deploy_cell(model: BattleModel, deployment_id: StringName) -> 
 			if model.can_deploy_at(deployment_id, cell):
 				return cell
 	return Vector2i(-1, -1)
+
+
+func _other_deployment_id(model: BattleModel, excluded: StringName) -> StringName:
+	var deployment_ids: Array[StringName] = (
+		model.battle_squad if not model.battle_squad.is_empty() else model.squad
+	)
+	for deployment_id: StringName in deployment_ids:
+		if deployment_id != excluded and model.is_deployable(deployment_id):
+			return deployment_id
+	return &""
+
+
+func _capture_operator_actions_if_requested() -> void:
+	var output_path := OS.get_environment("PROTO_TD_OPERATOR_ACTION_CAPTURE")
+	if output_path.is_empty():
+		return
+	await RenderingServer.frame_post_draw
+	var image := root.get_viewport().get_texture().get_image()
+	var error := image.save_png(output_path)
+	_check(error == OK, "operator action visual capture could not be saved")
+	if error == OK:
+		print("OPERATOR_ACTION_VISUAL_OK path=%s" % output_path)
 
 
 func _rect_matches(actual: Rect2, expected: Rect2, tolerance := 1.5) -> bool:

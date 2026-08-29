@@ -14,8 +14,9 @@ signal deployment_committed(deployment_id: StringName, cell: Vector2i, facing: i
 ## highlights -> release on a cell -> facing chooser (4 arrows) -> click one
 ## -> deploy verb fires. Trap slots share the drag but place on release
 ## directly (traps have no facing) under AMBER highlights, distinct from the
-## ui_cancel/right-click cancels. Clicking an alive unit opens a chip with a
-## Retreat button. Enabled state of every slot reads model.is_deployable /
+## ui_cancel/right-click cancels. Clicking an alive unit selects it and opens
+## an explicit action panel whose Skill and Recall buttons remain visible in
+## every SP state. Enabled state of every slot reads model.is_deployable /
 ## model.is_trap_placeable (single source of truth); highlight queries read
 ## model.can_deploy_at / model.can_place_trap_at (the verb's own validation,
 ## never a copy).
@@ -49,6 +50,15 @@ const FACING_ICON_INSET := 6.0
 const FACING_BOUNCE_AMPLITUDE := 4.5
 const FACING_PULSE_AMPLITUDE := 0.04
 const FACING_ANIMATION_PERIOD := 0.9
+const OPERATOR_ACTION_PANEL_WIDTH := 600.0
+const OPERATOR_ACTION_PANEL_NARROW_BREAKPOINT := 640.0
+const OPERATOR_ACTION_PANEL_MARGIN := 16.0
+const OPERATOR_ACTION_PANEL_UNIT_GAP := 88.0
+const OPERATOR_ACTION_PANEL_DECK_GAP := 12.0
+const OPERATOR_ACTION_SKILL_WIDTH := 360.0
+const OPERATOR_ACTION_RECALL_WIDTH := 180.0
+const OPERATOR_ACTION_BUTTON_HEIGHT := 64.0
+const OPERATOR_ACTION_Z := 30
 
 const FACING_BUTTONS := {
 	UnitState.Facing.RIGHT: {"name": "FacingRight", "slot": Vector2i(1, 1)},
@@ -126,8 +136,15 @@ var _facing_buttons: Dictionary = {}
 var _facing_icons: Dictionary = {}
 var _facing_icon_origins: Dictionary = {}
 var _facing_emphasis: int = -1
-var _retreat_chip: Button = null
-var _retreat_unit_id: int = -1
+var _operator_action_panel: PanelContainer = null
+var _operator_action_name: Label = null
+var _operator_action_state: Label = null
+var _operator_action_progress: ProgressBar = null
+var _operator_action_detail: Label = null
+var _operator_action_buttons: GridContainer = null
+var _skill_action_button: Button = null
+var _recall_action_button: Button = null
+var _operator_action_signature := ""
 var _heal_source_unit_id: int = -1
 var _heal_cursor: Polygon2D = null
 var _selected_unit_id: int = -1
@@ -166,6 +183,8 @@ func is_mend_targeting() -> bool:
 
 func set_operator_interaction_enabled(enabled: bool) -> void:
 	_operator_interaction_enabled = enabled
+	if not enabled:
+		cancel_transient_intent()
 
 
 func operator_interaction_enabled() -> bool:
@@ -188,7 +207,6 @@ func transient_intent_active() -> bool:
 		or _placement_trap != &""
 		or _pending_cell.x >= 0
 		or _heal_source_unit_id >= 0
-		or _retreat_unit_id >= 0
 		or _selected_unit_id >= 0
 	)
 
@@ -197,7 +215,6 @@ func cancel_transient_intent() -> void:
 	if _placement_op != &"" or _placement_trap != &"" or _pending_cell.x >= 0:
 		_cancel_placement()
 	_cancel_heal_targeting()
-	_hide_retreat_chip()
 	_select_unit(-1)
 
 
@@ -255,17 +272,13 @@ func relayout() -> void:
 	if _heal_source_unit_id >= 0:
 		_show_heal_highlights()
 	_update_selection_ring()
+	_layout_operator_action_panel()
 
 
 func _process(_delta: float) -> void:
 	if model == null:
 		return
 	_animate_facing_icons()
-	if Input.is_action_just_pressed("ui_cancel"):
-		if is_mend_targeting():
-			_cancel_heal_targeting()
-		elif _placement_op != &"" or _placement_trap != &"":
-			_cancel_placement()
 	# changes so granted operators get slots
 	if _slots.size() != _deployment_ids().size():
 		_rebuild_slots()
@@ -277,21 +290,37 @@ func _process(_delta: float) -> void:
 	for trap_id: StringName in _trap_slots:
 		var slot: Button = _trap_slots[trap_id]
 		slot.disabled = not _interaction_enabled or not _operator_interaction_enabled or not model.is_trap_placeable(trap_id)
+	_refresh_operator_actions()
+	_layout_operator_action_panel()
 
 
 func _input(event: InputEvent) -> void:
 	if not _interaction_enabled:
 		return
+	if event.is_action_pressed("ui_cancel"):
+		if _heal_source_unit_id >= 0:
+			_cancel_heal_targeting()
+			_refresh_operator_actions(true)
+		elif _placement_op != &"" or _placement_trap != &"":
+			_cancel_placement()
+		elif _selected_unit_id >= 0:
+			_select_unit(-1)
+		return
+	if event is InputEventMouseButton:
+		var cancel_button := event as InputEventMouseButton
+		if cancel_button.button_index == MOUSE_BUTTON_RIGHT and not cancel_button.pressed:
+			if _heal_source_unit_id >= 0:
+				_cancel_heal_targeting()
+				_refresh_operator_actions(true)
+			elif _placement_op != &"" or _placement_trap != &"":
+				_cancel_placement()
+			elif _selected_unit_id >= 0:
+				_select_unit(-1)
+			return
 	if _heal_source_unit_id >= 0:
 		if event is InputEventMouseMotion:
 			_pointer = (event as InputEventMouseMotion).position
 			_update_heal_hover()
-		elif event is InputEventMouseButton:
-			var heal_button := event as InputEventMouseButton
-			if heal_button.button_index == MOUSE_BUTTON_RIGHT and not heal_button.pressed:
-				_cancel_heal_targeting()
-		elif event.is_action_pressed("ui_cancel"):
-			_cancel_heal_targeting()
 		return
 	# Placement drag: track the pointer from motion events (injected motion
 	# never moves get_mouse_position) and end placement on left release.
@@ -307,15 +336,18 @@ func _input(event: InputEvent) -> void:
 			_end_placement_drag()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and not mb.pressed:
 			_cancel_placement()
-	elif event.is_action_pressed("ui_cancel"):
-		_cancel_placement()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _interaction_enabled:
 		return
-	# Idle-state grid clicks: select an alive unit -> retreat chip.
-	if _placement_op != &"" or _placement_trap != &"" or model == null:
+	# Idle-state grid clicks select an alive unit and expose explicit actions.
+	if (
+		_placement_op != &""
+		or _placement_trap != &""
+		or model == null
+		or not _operator_interaction_enabled
+	):
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -517,19 +549,100 @@ func _build_overlays() -> void:
 		_facing_icons[facing] = icon
 		_layout_facing_icon(facing, FACING_BUTTON_SIZE)
 		_refresh_facing_icon(facing)
-	_retreat_chip = Button.new()
-	_retreat_chip.name = "RetreatChip"
-	_retreat_chip.text = UI_COPY.text(&"ui.battle.retreat", "Retreat")
-	_retreat_chip.custom_minimum_size = Vector2(88.0, 52.0)
-	Style.apply_button(_retreat_chip, &"danger")
-	_retreat_chip.visible = false
-	_retreat_chip.pressed.connect(_confirm_retreat)
-	add_child(_retreat_chip)
+	_build_operator_action_panel()
 	_selection_ring = SELECTION_RING_SCRIPT.new()
 	_selection_ring.name = "SelectionRing"
 	_selection_ring.visible = false
 	_selection_ring.z_index = -1
 	add_child(_selection_ring)
+
+
+func _build_operator_action_panel() -> void:
+	_operator_action_panel = PanelContainer.new()
+	_operator_action_panel.name = "OperatorActionPanel"
+	_operator_action_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_operator_action_panel.z_index = OPERATOR_ACTION_Z
+	_operator_action_panel.visible = false
+	Style.apply_panel(_operator_action_panel, &"selected")
+	var panel_style := _operator_action_panel.get_theme_stylebox(&"panel").duplicate() as StyleBox
+	panel_style.content_margin_left = 16.0
+	panel_style.content_margin_top = 14.0
+	panel_style.content_margin_right = 16.0
+	panel_style.content_margin_bottom = 16.0
+	_operator_action_panel.add_theme_stylebox_override(&"panel", panel_style)
+	add_child(_operator_action_panel)
+
+	var content := VBoxContainer.new()
+	content.name = "OperatorActionContent"
+	content.add_theme_constant_override(&"separation", 10)
+	_operator_action_panel.add_child(content)
+
+	var header := HBoxContainer.new()
+	header.name = "OperatorActionHeader"
+	header.add_theme_constant_override(&"separation", 12)
+	content.add_child(header)
+	_operator_action_name = Label.new()
+	_operator_action_name.name = "OperatorActionName"
+	_operator_action_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_operator_action_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	Style.apply_label(_operator_action_name, &"heading")
+	header.add_child(_operator_action_name)
+	_operator_action_state = Label.new()
+	_operator_action_state.name = "OperatorActionState"
+	_operator_action_state.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_operator_action_state.accessibility_live = AccessibilityServer.LIVE_POLITE
+	Style.apply_label(_operator_action_state, &"eyebrow")
+	header.add_child(_operator_action_state)
+
+	_operator_action_detail = Label.new()
+	_operator_action_detail.name = "OperatorActionDetail"
+	_operator_action_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	Style.apply_label(_operator_action_detail, &"detail")
+	content.add_child(_operator_action_detail)
+
+	_operator_action_progress = ProgressBar.new()
+	_operator_action_progress.name = "OperatorSkillProgress"
+	_operator_action_progress.custom_minimum_size.y = 8.0
+	_operator_action_progress.show_percentage = false
+	_operator_action_progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	Style.apply_progress(_operator_action_progress)
+	content.add_child(_operator_action_progress)
+
+	_operator_action_buttons = GridContainer.new()
+	_operator_action_buttons.name = "OperatorActionButtons"
+	_operator_action_buttons.columns = 2
+	_operator_action_buttons.add_theme_constant_override(&"h_separation", 12)
+	_operator_action_buttons.add_theme_constant_override(&"v_separation", 10)
+	content.add_child(_operator_action_buttons)
+
+	_skill_action_button = Button.new()
+	_skill_action_button.name = "ActivateOperatorSkill"
+	_skill_action_button.custom_minimum_size = Vector2(
+		OPERATOR_ACTION_SKILL_WIDTH, OPERATOR_ACTION_BUTTON_HEIGHT,
+	)
+	_skill_action_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_skill_action_button.focus_mode = Control.FOCUS_ALL
+	_skill_action_button.pressed.connect(_on_skill_action_pressed)
+	_operator_action_buttons.add_child(_skill_action_button)
+
+	_recall_action_button = Button.new()
+	_recall_action_button.name = "RecallOperator"
+	_recall_action_button.custom_minimum_size = Vector2(
+		OPERATOR_ACTION_RECALL_WIDTH, OPERATOR_ACTION_BUTTON_HEIGHT,
+	)
+	_recall_action_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recall_action_button.focus_mode = Control.FOCUS_ALL
+	Style.apply_button(_recall_action_button, &"danger")
+	_recall_action_button.pressed.connect(_confirm_retreat)
+	_operator_action_buttons.add_child(_recall_action_button)
+	_configure_operator_action_focus()
+	_operator_action_panel.accessibility_labeled_by_nodes = [
+		_operator_action_panel.get_path_to(_operator_action_name),
+	]
+	_operator_action_panel.accessibility_described_by_nodes = [
+		_operator_action_panel.get_path_to(_operator_action_detail),
+		_operator_action_panel.get_path_to(_operator_action_state),
+	]
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
@@ -544,8 +657,8 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 			continue
 		slot.text = _trap_card_text(definition)
 		slot.tooltip_text = slot.text.replace("\n", " — ")
-	if _retreat_chip != null:
-		_retreat_chip.text = UI_COPY.text(&"ui.battle.retreat", "Retreat")
+	_operator_action_signature = ""
+	_refresh_operator_actions(true)
 	for facing: UnitState.Facing in _facing_buttons:
 		_apply_facing_accessibility(_facing_buttons[facing] as Button, facing)
 
@@ -646,7 +759,7 @@ func _start_placement(op_id: StringName) -> void:
 	if not _interaction_enabled or not _operator_interaction_enabled:
 		return
 	_cancel_heal_targeting()
-	_hide_retreat_chip()
+	_select_unit(-1)
 	_placement_op = op_id
 	_pending_cell = Vector2i(-1, -1)
 	Sfx.play("operator_select")
@@ -659,7 +772,7 @@ func _start_trap_placement(trap_id: StringName) -> void:
 	if not _interaction_enabled or not _operator_interaction_enabled:
 		return
 	_cancel_heal_targeting()
-	_hide_retreat_chip()
+	_select_unit(-1)
 	_placement_trap = trap_id
 	_pending_cell = Vector2i(-1, -1)
 	_show_valid_highlights()
@@ -842,47 +955,60 @@ func _handle_grid_click(screen_pos: Vector2) -> void:
 	if _heal_source_unit_id >= 0:
 		if unit == null or not HealingRulesScript.is_valid(model, _heal_source_unit_id, unit.id):
 			return
-		model.apply_action([&"mend", _heal_source_unit_id, unit.id])
-		_cancel_heal_targeting()
-		_hide_retreat_chip()
+		if model.apply_action([&"mend", _heal_source_unit_id, unit.id]):
+			_cancel_heal_targeting()
+			_select_unit(-1)
 		return
 	if unit == null:
 		_select_unit(-1)
-		_hide_retreat_chip()
 		return
 	_select_unit(unit.id)
-	# its skill; the retreat chip only opens while the skill is not ready.
-	# Readiness comes from the verb's own validator (rule 7, P14).
-	if unit.is_skill_ready():
-		if unit.skill_effect == SkillDef.Effect.HEAL_TARGET:
-			_begin_heal_targeting(unit)
-		else:
-			model.apply_action([&"trigger_skill", unit.id])
-		_hide_retreat_chip()
+
+
+func _on_skill_action_pressed() -> void:
+	if not _interaction_enabled or not _operator_interaction_enabled:
 		return
-	_retreat_unit_id = unit.id
-	var center: Vector2 = view.call("cell_center", cell)
-	_retreat_chip.position = (
-		center + Vector2(-_retreat_chip.get_combined_minimum_size().x * 0.5, -96)
-	)
-	_retreat_chip.visible = true
+	if _heal_source_unit_id >= 0:
+		_cancel_heal_targeting()
+		_refresh_operator_actions(true)
+		return
+	var unit := model.unit_by_id(_selected_unit_id) if model != null else null
+	if unit == null or not unit.alive or not unit.is_skill_ready():
+		_refresh_operator_actions(true)
+		return
+	if unit.skill_effect == SkillDef.Effect.HEAL_TARGET:
+		_begin_heal_targeting(unit)
+		_refresh_operator_actions(true)
+		return
+	if model.apply_action([&"trigger_skill", unit.id]):
+		_select_unit(-1)
+	else:
+		_refresh_operator_actions(true)
 
 
 func _confirm_retreat() -> void:
-	if not _interaction_enabled:
+	if not _interaction_enabled or not _operator_interaction_enabled:
 		return
-	if _retreat_unit_id >= 0:
-		model.apply_action([&"retreat", _retreat_unit_id])
+	if _selected_unit_id >= 0 and model.apply_action([&"retreat", _selected_unit_id]):
 		_select_unit(-1)
-	_hide_retreat_chip()
+	else:
+		_refresh_operator_actions(true)
 
 
 func _select_unit(unit_id: int) -> void:
 	if _selected_unit_id == unit_id:
+		if unit_id >= 0:
+			_show_operator_actions()
 		return
+	if _heal_source_unit_id >= 0:
+		_cancel_heal_targeting()
 	_selected_unit_id = unit_id
 	if view != null and view.has_method("operator_selection_changed"):
 		view.call("operator_selection_changed", unit_id >= 0)
+	if unit_id >= 0:
+		_show_operator_actions()
+	else:
+		_hide_operator_actions()
 	_update_selection_ring()
 
 
@@ -901,18 +1027,356 @@ func _update_selection_ring() -> void:
 	_selection_ring.visible = true
 
 
-func _hide_retreat_chip() -> void:
-	_retreat_unit_id = -1
-	_retreat_chip.visible = false
+func _show_operator_actions() -> void:
+	if _operator_action_panel == null or _selected_unit_id < 0:
+		return
+	_operator_action_panel.visible = true
+	_operator_action_signature = ""
+	_refresh_operator_actions(true)
+	_layout_operator_action_panel()
+	_focus_operator_actions.call_deferred()
+
+
+func _hide_operator_actions() -> void:
+	_operator_action_signature = ""
+	if _operator_action_panel != null:
+		_operator_action_panel.visible = false
+	if _skill_action_button != null:
+		_skill_action_button.release_focus()
+	if _recall_action_button != null:
+		_recall_action_button.release_focus()
+
+
+func _focus_operator_actions() -> void:
+	if _operator_action_panel == null or not _operator_action_panel.visible:
+		return
+	if _skill_action_button != null and not _skill_action_button.disabled:
+		_skill_action_button.grab_focus()
+	elif _recall_action_button != null and not _recall_action_button.disabled:
+		_recall_action_button.grab_focus()
+
+
+func _refresh_operator_actions(force: bool = false) -> void:
+	if (
+		_operator_action_panel == null
+		or not _operator_action_panel.visible
+		or model == null
+		or _selected_unit_id < 0
+	):
+		return
+	var unit := model.unit_by_id(_selected_unit_id)
+	if unit == null or not unit.alive:
+		_select_unit(-1)
+		return
+	var targeting := _heal_source_unit_id == unit.id
+	var signature := "%d:%d:%d:%s:%s" % [
+		unit.id, unit.sp, unit.sp_cost, str(targeting), String(I18n.locale()),
+	]
+	if not force and signature == _operator_action_signature:
+		return
+	_operator_action_signature = signature
+	var definition := _op_defs.get(unit.op_id) as OperatorDef
+	var operator_name := (
+		UI_COPY.operator_name(definition)
+		if definition != null
+		else String(unit.op_id).replace("_", " ").capitalize()
+	)
+	var has_skill := unit.sp_cost > 0 and not unit.skill_id.is_empty()
+	var skill_name := (
+		UI_COPY.skill_name(unit.skill_id)
+		if has_skill
+		else UI_COPY.text(&"ui.battle.skill_none", "NO ACTIVE SKILL")
+	)
+	_set_label_text(_operator_action_name, operator_name.to_upper())
+	_operator_action_progress.max_value = maxf(1.0, float(unit.sp_cost))
+	_operator_action_progress.value = float(unit.sp)
+	_recall_action_button.text = UI_COPY.text(&"ui.battle.recall", "RECALL")
+	_recall_action_button.accessibility_name = _recall_action_button.text
+	_recall_action_button.accessibility_description = UI_COPY.format_text(
+		&"ui.battle.recall_description",
+		"Recall {operator} and begin their redeployment cooldown.",
+		{&"operator": operator_name},
+	)
+	_recall_action_button.tooltip_text = _recall_action_button.accessibility_description
+	_recall_action_button.disabled = targeting
+	if targeting:
+		_set_label_text(
+			_operator_action_state,
+			UI_COPY.text(&"ui.battle.skill_state_targeting", "SELECT TARGET"),
+		)
+		_set_label_text(
+			_operator_action_detail,
+			UI_COPY.text(
+				&"ui.battle.skill_targeting_instruction",
+				"Select a wounded ally in range. Right-click or press Escape to cancel.",
+			),
+		)
+		_skill_action_button.text = UI_COPY.text(
+			&"ui.battle.skill_cancel_targeting", "CANCEL TARGETING",
+		)
+		_skill_action_button.disabled = false
+		_skill_action_button.accessibility_name = _skill_action_button.text
+		_skill_action_button.accessibility_description = UI_COPY.format_text(
+			&"ui.battle.skill_targeting_description",
+			"Choose a wounded ally in range for {skill}.",
+			{&"skill": skill_name},
+		)
+		Style.apply_button(_skill_action_button, &"selected")
+	elif not has_skill:
+		_set_label_text(
+			_operator_action_state,
+			UI_COPY.text(&"ui.battle.skill_state_none", "NO SKILL"),
+		)
+		_set_label_text(_operator_action_detail, skill_name)
+		_skill_action_button.text = skill_name
+		_skill_action_button.disabled = true
+		_skill_action_button.accessibility_name = skill_name
+		_skill_action_button.accessibility_description = skill_name
+		Style.apply_button(_skill_action_button, &"disabled")
+	elif unit.is_skill_ready():
+		_set_label_text(
+			_operator_action_state,
+			UI_COPY.text(&"ui.battle.skill_state_ready", "SKILL READY"),
+		)
+		_set_label_text(
+			_operator_action_detail,
+			UI_COPY.format_text(
+				&"ui.battle.skill_progress",
+				"{skill}  //  SP {current} / {cost}",
+				{&"skill": skill_name, &"current": unit.sp, &"cost": unit.sp_cost},
+			),
+		)
+		_skill_action_button.text = UI_COPY.format_text(
+			&"ui.battle.skill_activate",
+			"ACTIVATE — {skill}",
+			{&"skill": skill_name},
+		)
+		_skill_action_button.disabled = false
+		_skill_action_button.accessibility_name = _skill_action_button.text
+		_skill_action_button.accessibility_description = UI_COPY.format_text(
+			&"ui.battle.skill_activate_description",
+			"Activate {skill}.",
+			{&"skill": skill_name},
+		)
+		Style.apply_button(_skill_action_button, &"gold")
+	else:
+		_set_label_text(
+			_operator_action_state,
+			UI_COPY.text(&"ui.battle.skill_state_charging", "CHARGING"),
+		)
+		_set_label_text(
+			_operator_action_detail,
+			UI_COPY.format_text(
+				&"ui.battle.skill_progress",
+				"{skill}  //  SP {current} / {cost}",
+				{&"skill": skill_name, &"current": unit.sp, &"cost": unit.sp_cost},
+			),
+		)
+		_skill_action_button.text = UI_COPY.format_text(
+			&"ui.battle.skill_charging",
+			"CHARGING {current} / {cost}",
+			{&"current": unit.sp, &"cost": unit.sp_cost},
+		)
+		_skill_action_button.disabled = true
+		_skill_action_button.accessibility_name = _skill_action_button.text
+		_skill_action_button.accessibility_description = UI_COPY.format_text(
+			&"ui.battle.skill_charging_description",
+			"{skill} is charging: {current} of {cost} SP.",
+			{&"skill": skill_name, &"current": unit.sp, &"cost": unit.sp_cost},
+		)
+		Style.apply_button(_skill_action_button, &"disabled")
+	_skill_action_button.tooltip_text = _skill_action_button.accessibility_description
+	_operator_action_panel.accessibility_name = UI_COPY.text(
+		&"ui.battle.operator_actions", "Operator actions",
+	)
+	_operator_action_panel.accessibility_description = UI_COPY.format_text(
+		&"ui.battle.operator_actions_description",
+		"{operator}. {skill}. {current} of {cost} SP.",
+		{
+			&"operator": operator_name,
+			&"skill": skill_name,
+			&"current": unit.sp,
+			&"cost": unit.sp_cost,
+		},
+	)
+	_configure_operator_action_focus()
+
+
+func _set_label_text(label: Label, value: String) -> void:
+	if label != null and label.text != value:
+		label.text = value
+
+
+func _configure_operator_action_focus() -> void:
+	if _skill_action_button == null or _recall_action_button == null:
+		return
+	var stacked := _operator_action_buttons != null and _operator_action_buttons.columns == 1
+	_skill_action_button.focus_neighbor_left = _skill_action_button.get_path_to(
+		_skill_action_button,
+	)
+	_skill_action_button.focus_neighbor_right = _skill_action_button.get_path_to(
+		_recall_action_button if not stacked else _skill_action_button,
+	)
+	_skill_action_button.focus_neighbor_top = _skill_action_button.get_path_to(
+		_skill_action_button,
+	)
+	_skill_action_button.focus_neighbor_bottom = _skill_action_button.get_path_to(
+		_recall_action_button if stacked else _skill_action_button,
+	)
+	_skill_action_button.focus_next = _skill_action_button.get_path_to(_recall_action_button)
+	_recall_action_button.focus_neighbor_left = _recall_action_button.get_path_to(
+		_skill_action_button if not stacked else _recall_action_button,
+	)
+	_recall_action_button.focus_neighbor_right = _recall_action_button.get_path_to(
+		_recall_action_button,
+	)
+	_recall_action_button.focus_neighbor_top = _recall_action_button.get_path_to(
+		_skill_action_button if stacked else _recall_action_button,
+	)
+	_recall_action_button.focus_neighbor_bottom = _recall_action_button.get_path_to(
+		_recall_action_button,
+	)
+	_recall_action_button.focus_previous = _recall_action_button.get_path_to(
+		_skill_action_button,
+	)
+
+
+func _layout_operator_action_panel() -> void:
+	if (
+		_operator_action_panel == null
+		or not _operator_action_panel.visible
+		or model == null
+		or view == null
+		or _selected_unit_id < 0
+	):
+		return
+	var unit := model.unit_by_id(_selected_unit_id)
+	if unit == null or not unit.alive:
+		return
+	var stacked := size.x < OPERATOR_ACTION_PANEL_NARROW_BREAKPOINT
+	_operator_action_buttons.columns = 1 if stacked else 2
+	_skill_action_button.custom_minimum_size.x = 0.0 if stacked else OPERATOR_ACTION_SKILL_WIDTH
+	_recall_action_button.custom_minimum_size.x = 0.0 if stacked else OPERATOR_ACTION_RECALL_WIDTH
+	_configure_operator_action_focus()
+	var panel_width := minf(
+		OPERATOR_ACTION_PANEL_WIDTH,
+		maxf(280.0, size.x - OPERATOR_ACTION_PANEL_MARGIN * 2.0),
+	)
+	_operator_action_panel.custom_minimum_size.x = panel_width
+	_operator_action_panel.reset_size()
+	var panel_size := _operator_action_panel.get_combined_minimum_size()
+	_operator_action_panel.size = Vector2(panel_width, panel_size.y)
+	var center: Vector2 = view.call("cell_center", unit.cell)
+	var safe_bottom := size.y - OPERATOR_ACTION_PANEL_MARGIN
+	if _slot_deck != null:
+		safe_bottom = minf(
+			safe_bottom,
+			_slot_deck.position.y - OPERATOR_ACTION_PANEL_DECK_GAP,
+		)
+	var max_x := maxf(
+		OPERATOR_ACTION_PANEL_MARGIN,
+		size.x - panel_size.x - OPERATOR_ACTION_PANEL_MARGIN,
+	)
+	var x := clampf(
+		center.x - panel_size.x * 0.5,
+		OPERATOR_ACTION_PANEL_MARGIN,
+		max_x,
+	)
+	var max_y := maxf(OPERATOR_ACTION_PANEL_MARGIN, safe_bottom - panel_size.y)
+	var y := center.y - panel_size.y - OPERATOR_ACTION_PANEL_UNIT_GAP
+	if y < OPERATOR_ACTION_PANEL_MARGIN:
+		var below := center.y + OPERATOR_ACTION_PANEL_UNIT_GAP
+		y = below if below <= max_y else max_y
+	_operator_action_panel.position = Vector2(
+		x,
+		clampf(y, OPERATOR_ACTION_PANEL_MARGIN, max_y),
+	)
+	_avoid_operator_action_blockers(safe_bottom)
+
+
+func _avoid_operator_action_blockers(safe_bottom: float) -> bool:
+	var blockers: Array[Rect2] = []
+	for node_name: String in [
+		"BattleHud", "BattleDialogue", "BattleCommandDeck", "SpellCommandDeck",
+	]:
+		var blocker := view.find_child(node_name, true, false) as Control
+		if blocker != null and blocker.visible:
+			var blocker_rect := blocker.get_global_rect()
+			if blocker_rect.has_area():
+				blockers.append(blocker_rect)
+	var own_rect := _operator_action_panel.get_global_rect()
+	if not _intersects_any_operator_blocker(own_rect, blockers):
+		return true
+	var safe_rect := Rect2(
+		global_position + Vector2.ONE * OPERATOR_ACTION_PANEL_MARGIN,
+		Vector2(
+			size.x - OPERATOR_ACTION_PANEL_MARGIN * 2.0,
+			safe_bottom - OPERATOR_ACTION_PANEL_MARGIN,
+		),
+	)
+	var x_candidates: Array[float] = [
+		own_rect.position.x,
+		safe_rect.position.x,
+		safe_rect.end.x - own_rect.size.x,
+	]
+	var y_candidates: Array[float] = [
+		own_rect.position.y,
+		safe_rect.position.y,
+		safe_rect.end.y - own_rect.size.y,
+	]
+	for blocker_rect: Rect2 in blockers:
+		x_candidates.append(
+			blocker_rect.position.x - own_rect.size.x - OPERATOR_ACTION_PANEL_DECK_GAP,
+		)
+		x_candidates.append(blocker_rect.end.x + OPERATOR_ACTION_PANEL_DECK_GAP)
+		y_candidates.append(
+			blocker_rect.position.y - own_rect.size.y - OPERATOR_ACTION_PANEL_DECK_GAP,
+		)
+		y_candidates.append(blocker_rect.end.y + OPERATOR_ACTION_PANEL_DECK_GAP)
+	var candidates: Array[Vector2] = []
+	for candidate_x: float in x_candidates:
+		for candidate_y: float in y_candidates:
+			candidates.append(Vector2(candidate_x, candidate_y))
+	candidates.sort_custom(
+		func(a: Vector2, b: Vector2) -> bool:
+			return (
+				a.distance_squared_to(own_rect.position)
+				< b.distance_squared_to(own_rect.position)
+			)
+	)
+	for candidate: Vector2 in candidates:
+		var candidate_rect := Rect2(candidate, own_rect.size)
+		if (
+			safe_rect.encloses(candidate_rect)
+			and not _intersects_any_operator_blocker(candidate_rect, blockers)
+		):
+			_operator_action_panel.global_position = candidate
+			return true
+	return false
+
+
+func _intersects_any_operator_blocker(candidate: Rect2, blockers: Array[Rect2]) -> bool:
+	for blocker: Rect2 in blockers:
+		if candidate.intersects(blocker):
+			return true
+	return false
 
 
 func _begin_heal_targeting(healer: UnitState) -> void:
+	if (
+		healer == null
+		or not healer.is_skill_ready()
+		or healer.skill_effect != SkillDef.Effect.HEAL_TARGET
+	):
+		return
 	_heal_source_unit_id = healer.id
 	_pointer = view.call("cell_center", healer.cell)
 	_heal_cursor.position = _pointer
 	_heal_cursor.color = HEAL_VALID_COLOR
 	_heal_cursor.visible = true
 	_show_heal_highlights()
+	_refresh_operator_actions(true)
+	_layout_operator_action_panel()
 
 
 func _show_heal_highlights() -> void:
