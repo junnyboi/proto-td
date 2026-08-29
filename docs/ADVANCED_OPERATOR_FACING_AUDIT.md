@@ -17,7 +17,8 @@ The correction is deliberately presentation-only. No atlas pixels, immutable GPT
 | Defender | None | Retain authored mapping |
 | Gunner | Female and male; idle and attack | 180°: `NE↔SW`, `NW↔SE` |
 | Mage Apprentice | Female and male; idle and attack | Vertical: `NE↔SE`, `NW↔SW` |
-| Shock Trooper | Female and male; idle and attack | Vertical: `NE↔SE`, `NW↔SW` |
+| Shock Trooper | Female; idle and attack | Source correction: `NE→SE`, `NW→SW`, `SE→NW`, `SW→NE` |
+| Shock Trooper | Male; idle and attack | 180°: `NE↔SW`, `NW↔SE` |
 | Swordmaster | Female; idle and attack | Vertical: `NE↔SE`, `NW↔SW` |
 | Immovable | None | Retain authored mapping |
 | Sniper | Male; idle and attack | Horizontal: `NE↔NW`, `SE↔SW` |
@@ -26,11 +27,11 @@ The correction is deliberately presentation-only. No atlas pixels, immutable GPT
 | Banner Guard | Female; idle and attack | Horizontal: `NE↔NW`, `SE↔SW` |
 | Sword Saint | Female and male | Idle vertical; attack 180° |
 
-The resulting change affects **88 of 176 logical mapping rows** across **11 of 22 class/gender identities**. This is why a roster-wide `flip_h`, a global 180-degree rotation, or a change to `OperatorAnimator.direction_for_facing()` would be incorrect: each would regress the clean controls and the unaffected gender/action subsets.
+The resulting change affects **88 of 176 logical mapping rows** across **11 of 22 class/gender identities**. A follow-up live-battle review found that the Shock Trooper's female and male source labels require distinct corrections: the female quadrants use a source-specific permutation, while the male quadrants require a 180° remap. This is why a roster-wide `flip_h`, a global 180-degree rotation, or a change to `OperatorAnimator.direction_for_facing()` would be incorrect: each would regress the clean controls and the unaffected gender/action subsets.
 
 ## Implementation
 
-The deterministic registrar now owns four named direction transforms—identity, horizontal, vertical, and opposite—and a narrowly scoped override table.[3] Resource generation applies the table when writing each class/gender `idle_by_direction` and `attack_by_direction` map. A new `--resources-only` mode regenerates the presentation resources without requiring or rewriting the external immutable source archive.
+The deterministic registrar owns the reusable identity, horizontal, vertical, and opposite transforms plus one narrowly scoped female Shock Trooper source correction.[3] Resource generation applies the override table when writing each class/gender `idle_by_direction` and `attack_by_direction` map. A new `--resources-only` mode regenerates the presentation resources without requiring or rewriting the external immutable source archive.
 
 The runtime visual harness now resolves frames through `OperatorVisualCatalog` and each generated `OperatorAnimationDef` rather than bypassing the resource mapping with constructed asset IDs.[4] Consequently, its post-fix matrices exercise the same route used by live battles.
 
