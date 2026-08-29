@@ -100,15 +100,27 @@ func _verify_live_grid_reflow() -> void:
 
 
 func _verify_layout(label: String, viewport: Vector2i) -> void:
+	var game := root.get_node_or_null("Game")
+	var current_marks := int(game.call("campaign_projection").get("marks", 0)) if game != null else -1
+	var selected_stage := load("res://data/stages/%s.tres" % game.get("selected_stage_id")) as StageDef if game != null else null
+	var squad_limit_value := selected_stage.squad_size if selected_stage != null else -1
 	var shell := _mission.find_child("MissionCommandShell", true, false) as Control
 	var workspace := _mission.find_child("MissionFullscreenWorkspace", true, false) as PanelContainer
 	var surface := _mission.find_child("MissionCommandSurface", true, false) as Control
 	var body := _mission.find_child("MissionBody", true, false) as GridContainer
 	var actions := _mission.find_child("MissionActions", true, false) as GridContainer
+	var header := _mission.find_child("MissionHeader", true, false) as BoxContainer
+	var header_status := _mission.find_child("MissionStatus", true, false) as VBoxContainer
+	var header_threat := _mission.find_child("ThreatLabel", true, false) as Label
+	var marks_heading := _mission.find_child("MarksHeaderLabel", true, false) as Label
+	var marks_display := _mission.find_child("FieldTeamMarks", true, false) as Control
+	var marks_amount := _mission.find_child("FieldTeamMarksAmount", true, false) as Label
+	var marks_icon := _mission.find_child("FieldTeamMarksIcon", true, false) as TextureRect
 	var field_panel := _mission.find_child("FieldTeamPanel", true, false) as PanelContainer
 	var intel_panel := _mission.find_child("MissionIntelligencePanel", true, false) as PanelContainer
 	var intel_heading := _mission.find_child("MissionIntelHeading", true, false) as Label
 	var intel_heading_inset := _mission.find_child("MissionIntelHeadingInset", true, false) as MarginContainer
+	var squad_limit := _mission.find_child("SquadLimit", true, false) as Label
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var recruit_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
@@ -129,6 +141,14 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	)
 	_check(surface != null and _inside(workspace, surface), "%s mission surface exceeds the fullscreen workspace" % label)
 	_check(body != null and field_panel != null and intel_panel != null, "%s mission body panels are missing" % label)
+	_check(header_threat == null, "%s Field Team header still displays Threat" % label)
+	_check(marks_heading != null and marks_heading.text == "Marks", "%s Field Team header lacks the localized Marks heading" % label)
+	_check(marks_display != null and header_status != null and header_status.is_ancestor_of(marks_display), "%s current Marks are not in the header status" % label)
+	_check(marks_amount != null and marks_amount.text == str(current_marks) and marks_icon != null and marks_icon.texture != null, "%s Field Team header does not show the authoritative current Marks" % label)
+	_check(marks_display != null and marks_display.tooltip_text.contains("ordinary salvage") and marks_display.accessibility_name.contains("%d Marks" % current_marks), "%s Field Team Marks balance lacks its accessible economy explanation" % label)
+	_check(header != null and marks_display != null and absf(marks_display.get_global_rect().end.x - header.get_global_rect().end.x) <= EPSILON, "%s Field Team Marks are not aligned to the top right" % label)
+	_check(squad_limit != null and squad_limit.text == "Squad limit %d" % squad_limit_value and intel_panel != null and intel_panel.is_ancestor_of(squad_limit), "%s Squad Limit is not inside Mission Intelligence" % label)
+	_check(header == null or squad_limit == null or not header.is_ancestor_of(squad_limit), "%s Squad Limit remains in the top-right header" % label)
 	for panel: PanelContainer in [field_panel, intel_panel]:
 		if panel != null:
 			var panel_style := panel.get_theme_stylebox(&"panel")
@@ -345,10 +365,15 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var hire_cost_icon := _mission.find_child("BasicRecruitCostIcon", true, false) as TextureRect
 	var hire_cost_label := _mission.find_child("BasicRecruitCostLabel", true, false) as Label
 	var sort_select := _mission.find_child("DeploymentNameSort", true, false) as OptionButton
+	var marks_heading := _mission.find_child("MarksHeaderLabel", true, false) as Label
+	var marks_display := _mission.find_child("FieldTeamMarks", true, false) as Control
+	var marks_amount := _mission.find_child("FieldTeamMarksAmount", true, false) as Label
+	var squad_limit := _mission.find_child("SquadLimit", true, false) as Label
 	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
 	_check(hire_button != null and hire_button.icon == null and hire_button.text.is_empty() and hire_button.accessibility_name.contains("5"), "Field Team recruit action does not expose its accessible exact cost")
 	_check(hire_action_label != null and hire_action_label.text == "HIRE RECRUIT" and hire_cost_icon != null and hire_cost_icon.texture != null and hire_cost_label != null and hire_cost_label.text == "5", "Field Team recruit action does not contain only its label and sprite-backed exact price")
-	_check(_mission.find_child("BasicRecruitMarks", true, false) == null and _mission.find_child("BasicRecruitCurrency", true, false) == null, "Field Team still displays the current balance outside the recruit action")
+	_check(_mission.find_child("BasicRecruitMarks", true, false) == null and _mission.find_child("BasicRecruitCurrency", true, false) == null, "Field Team still duplicates the current balance beside the recruit action")
+	_check(marks_amount != null and marks_amount.text == "120", "Field Team Marks header does not begin at the authoritative balance")
 	_check(hire_button != null and hire_button.tooltip_text.contains("ordinary salvage") and hire_button.tooltip_text.contains("no anima or souls"), "Field Team recruit action lacks its ordinary Marks explanation")
 	_check(recruit_body == null, "Field Team still creates redundant recruitment body copy")
 	_check(_mission.find_child("BasicRecruitRoster", true, false) == null, "Field Team still creates personnel-ready copy")
@@ -357,6 +382,8 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		_check(bool(i18n.call("set_locale", &"zh-CN")), "Field Team could not activate Chinese")
 		await process_frame
 		await process_frame
+		_check(marks_heading != null and marks_heading.text == "印记" and marks_display != null and marks_display.accessibility_name.contains("120 印记"), "Field Team Marks header did not refresh to Chinese")
+		_check(squad_limit != null and squad_limit.text == "小队上限 3", "Mission Intelligence Squad Limit did not refresh to Chinese")
 		_check(hire_button != null and hire_button.accessibility_name.contains("招募新兵") and hire_button.accessibility_name.contains("5") and hire_action_label != null and hire_action_label.text == "招募新兵" and hire_cost_icon != null and hire_cost_icon.texture != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
 		_check(hire_button.tooltip_text.contains("普通打捞物") and hire_button.tooltip_text.contains("不含anima或灵魂"), "Field Team ordinary-Marks tooltip did not refresh to Chinese")
 		_check(sort_select != null and sort_select.accessibility_name == "干员排序" and _sort_item_text(sort_select, &"cost_asc") == "部署费用从低到高", "Field Team cost sorting did not refresh to Chinese")
@@ -371,6 +398,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		await process_frame
 	var projection_after: Dictionary = game.call("campaign_projection")
 	_check(int(projection_after.get("marks", 0)) == int(projection_before.get("marks", 0)) - 5, "Field Team hire charged the wrong amount")
+	_check(marks_amount != null and marks_amount.text == "115" and marks_display != null and marks_display.accessibility_name.contains("115 Marks"), "Field Team Marks header did not refresh after the hire receipt")
 	_check((projection_after.get("ready_heroes", []) as Array).size() == (projection_before.get("ready_heroes", []) as Array).size() + 1, "Field Team hire did not add exactly one Recruit")
 	var newest: Dictionary = (projection_after.get("ready_heroes", []) as Array)[-1]
 	_check(newest.get("recruit_source") == "basic_hire" and newest.get("source_id") == "mission_control", "Field Team hire bypassed the authoritative source contract")

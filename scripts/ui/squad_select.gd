@@ -119,6 +119,7 @@ var _footer: BoxContainer = null
 var _header: BoxContainer = null
 var _header_identity: BoxContainer = null
 var _header_status: VBoxContainer = null
+var _marks_display: ResonanceCurrencyDisplay = null
 var _roster_heading: BoxContainer = null
 var _actions: GridContainer = null
 var _filter_bar: RosterFilterBarType = null
@@ -215,20 +216,27 @@ func _build_header() -> BoxContainer:
 	_header_status = VBoxContainer.new()
 	_header_status.name = "MissionStatus"
 	_header_status.custom_minimum_size.x = 280.0
+	_header_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_header_status.alignment = BoxContainer.ALIGNMENT_CENTER
-	var threat := _label(
-		"ThreatLabel", UiCopyType.text(&"ui.squad.briefing.threat", "Threat"), &"eyebrow",
+	var marks_heading := _label(
+		"MarksHeaderLabel",
+		ResonanceCurrencyDisplayType.currency_name_for(&"marks"),
+		&"eyebrow",
 	)
-	threat.autowrap_mode = TextServer.AUTOWRAP_OFF
-	threat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_header_status.add_child(threat)
-	var limit := _label(
-		"SquadLimit",
-		_format_copy(&"ui.squad.limit", "Squad limit {limit}", {&"limit": _stage.squad_size}),
-		&"metric",
+	marks_heading.autowrap_mode = TextServer.AUTOWRAP_OFF
+	marks_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_header_status.add_child(marks_heading)
+	_marks_display = ResonanceCurrencyDisplayType.new()
+	_marks_display.name = "FieldTeamMarks"
+	_marks_display.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_marks_display.alignment = BoxContainer.ALIGNMENT_END
+	_marks_display.configure(
+		str(int(Game.campaign_projection().get("marks", 0))), 30, 38.0, "", &"marks",
 	)
-	limit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_header_status.add_child(limit)
+	_marks_display.amount_label.name = "FieldTeamMarksAmount"
+	_marks_display.amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_marks_display.icon.name = "FieldTeamMarksIcon"
+	_header_status.add_child(_marks_display)
 	_header.add_child(_header_status)
 	return _header
 
@@ -355,6 +363,11 @@ func _build_body() -> GridContainer:
 		&"heading",
 	))
 	intel.add_child(intel_heading_inset)
+	intel.add_child(_label(
+		"SquadLimit",
+		_format_copy(&"ui.squad.limit", "Squad limit {limit}", {&"limit": _stage.squad_size}),
+		&"metric",
+	))
 	_add_intel_item(intel, "OBJECTIVE", &"ui.squad.briefing.objective", "Objective", StageNarrativeDefType.Field.OBJECTIVE)
 	_add_intel_item(intel, "THREAT", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
 	_add_intel_item(intel, "WHYITMATTERS", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
@@ -1417,6 +1430,8 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 		return
 	var projection := Game.campaign_projection()
 	var marks := int(projection.get("marks", 0))
+	if _marks_display != null:
+		_marks_display.set_amount(str(marks))
 	var cost := int(projection.get("basic_recruit_cost", 5))
 	var roster_count := (
 		(projection.get("ready_heroes", []) as Array).size()
@@ -1870,7 +1885,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 			{&"index": "%02d" % _stage.campaign_index, &"title": UiCopyType.stage_title(_stage)},
 		),
 		"MissionTitle": UiCopyType.stage_title(_stage),
-		"ThreatLabel": UiCopyType.text(&"ui.squad.briefing.threat", "Threat"),
+		"MarksHeaderLabel": ResonanceCurrencyDisplayType.currency_name_for(&"marks"),
 		"SquadLimit": _format_copy(&"ui.squad.limit", "Squad limit {limit}", {&"limit": _stage.squad_size}),
 		"FieldTeamHeading": UiCopyType.text(&"ui.squad.field_team", "Field Team"),
 		"MissionIntelHeading": UiCopyType.text(&"ui.squad.mission_intelligence", "Mission Intelligence"),
@@ -2018,11 +2033,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_header_status.custom_minimum_size.x = 0.0 if mode == &"portrait" else 280.0
 		for child: Node in _header_status.get_children():
 			if child is Label:
-				(child as Label).horizontal_alignment = (
-					HORIZONTAL_ALIGNMENT_LEFT
-					if mode == &"portrait"
-					else HORIZONTAL_ALIGNMENT_RIGHT
-				)
+				(child as Label).horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if _roster_heading != null:
 		_roster_heading.vertical = mode != &"regular_landscape"
 	if _counter != null:
