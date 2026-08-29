@@ -245,7 +245,7 @@ func _verify_responsive_grid() -> void:
 		return
 	var regular_columns := grid.columns
 	var first_card := grid.get_child(0)
-	_check(regular_columns >= 2 and regular_columns < grid.get_child_count(), "regular Field Team does not pack a bounded grid")
+	_check(regular_columns == 1 and regular_columns < grid.get_child_count(), "regular Field Team does not preserve the doubled row-card width")
 	_check(scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "responsive grid owns the wrong scroll axis")
 	_check(not bool(scroll.get_meta(&"operator_snap_enabled", true)), "obsolete carousel snapping remains enabled")
 	scroll.scroll_horizontal = 730
@@ -258,11 +258,11 @@ func _verify_responsive_grid() -> void:
 	await process_frame
 	_check(grid.columns == regular_columns, "same-mode responsive grid changed regular fitted columns")
 	_check(grid.get_child(0) == first_card, "same-mode responsive grid rebuilt operator cards")
-	root.size = Vector2i(1920, 900)
+	root.size = Vector2i(3840, 1080)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(grid.columns > regular_columns, "wide responsive grid did not add an operator column")
+	_check(grid.columns > regular_columns, "ultra-wide responsive grid did not add an operator column")
 	_check(grid.get_child(0) == first_card, "wide responsive grid rebuilt operator cards")
 	root.size = Vector2i(1280, 720)
 	await process_frame

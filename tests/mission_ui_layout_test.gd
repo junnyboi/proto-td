@@ -74,7 +74,7 @@ func _verify_managed_order_rail(game: Node) -> void:
 
 func _verify_live_grid_reflow() -> void:
 	var operator_grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
-	_check(operator_grid != null and operator_grid.columns >= 2, "regular Field Team does not use available columns")
+	_check(operator_grid != null and operator_grid.columns == 1, "regular Field Team does not preserve the doubled row-card width")
 	if operator_grid == null:
 		return
 	var regular_columns := operator_grid.columns
@@ -85,11 +85,11 @@ func _verify_live_grid_reflow() -> void:
 	await process_frame
 	_check(operator_grid.columns == regular_columns, "same-mode Field Team resize changed its fitted regular columns")
 	_check(operator_grid.get_child(0) == first_card, "same-mode responsive reflow rebuilt operator cards")
-	root.size = Vector2i(1920, 900)
+	root.size = Vector2i(3840, 1080)
 	await process_frame
 	await process_frame
 	await process_frame
-	_check(operator_grid.columns > regular_columns, "same-mode wide resize did not add a Field Team column")
+	_check(operator_grid.columns > regular_columns, "same-mode ultra-wide resize did not add a Field Team column")
 	_check(operator_grid.get_child(0) == first_card, "wide responsive reflow rebuilt operator cards")
 	root.size = Vector2i(1280, 720)
 	await process_frame
@@ -108,6 +108,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 	var field_panel := _mission.find_child("FieldTeamPanel", true, false) as PanelContainer
 	var intel_panel := _mission.find_child("MissionIntelligencePanel", true, false) as PanelContainer
 	var intel_heading := _mission.find_child("MissionIntelHeading", true, false) as Label
+	var intel_heading_inset := _mission.find_child("MissionIntelHeadingInset", true, false) as MarginContainer
 	var recruit_body := _mission.find_child("BasicRecruitBody", true, false) as Label
 	var recruit_roster := _mission.find_child("BasicRecruitRoster", true, false) as Label
 	var hire_button := _mission.find_child("HireBasicRecruit", true, false) as Button
@@ -148,6 +149,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(absf(intel_ratio - 0.40) <= 0.035, "%s Mission Intelligence panel is not approximately 40 percent wide" % label)
 	_check(hire_button != null and intel_panel != null and intel_panel.is_ancestor_of(hire_button), "%s Hire Recruit is not inside Mission Intelligence" % label)
 	_check(hire_inset != null and hire_inset.get_theme_constant(&"margin_top") == 48, "%s Hire Recruit does not have the requested 48px top margin" % label)
+	_check(intel_heading_inset != null and intel_heading_inset.get_theme_constant(&"margin_bottom") == 8, "%s Mission Intelligence heading lacks the requested 8px bottom padding" % label)
 	_check(hire_button != null and field_panel != null and not field_panel.is_ancestor_of(hire_button), "%s Hire Recruit moved back into the Field Team roster panel" % label)
 	_check(_mission.find_child("BasicRecruitDesk", true, false) == null, "%s Hire Recruit still has a parent panel" % label)
 	_check(_mission.find_child("BasicRecruitTitle", true, false) == null, "%s separate Hire Recruit title still exists" % label)
@@ -163,12 +165,22 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		var hire_content := hire_button.get_node_or_null("BasicRecruitActionContent") as HBoxContainer
 		_check(hire_content != null and _inside(hire_button, hire_content), "%s recruit action content overflows" % label)
 		_check(hire_content != null and hire_content.get_theme_constant(&"separation") == 8, "%s recruit label and shard icon do not use the requested 8px gap" % label)
-		var expected_hire_width := minf(300.0, maxf(220.0, viewport.x - 120.0)) if viewport.y > viewport.x else 300.0
+		var expected_hire_width := 400.0
+		if viewport.y > viewport.x:
+			expected_hire_width = minf(400.0, maxf(220.0, viewport.x - 120.0))
+		elif viewport.x < 1280:
+			var body_width := maxf(760.0, viewport.x - 112.0)
+			expected_hire_width = minf(400.0, maxf(220.0, (body_width - 16.0) * 0.40 - 48.0))
 		_check(is_equal_approx(hire_button.custom_minimum_size.x, expected_hire_width), "%s recruit action does not use its contained fixed width" % label)
-		_check(hire_button.custom_minimum_size.y >= 72.0, "%s recruit action cannot contain 12px vertical padding" % label)
+		_check(is_equal_approx(hire_button.custom_minimum_size.y, 96.0), "%s recruit action does not use its enlarged fixed height" % label)
+		for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+			var hire_style := hire_button.get_theme_stylebox(state)
+			_check(hire_style.content_margin_left >= 12.0 and hire_style.content_margin_top >= 12.0 and hire_style.content_margin_right >= 12.0 and hire_style.content_margin_bottom >= 12.0, "%s recruit action %s state lacks 12px internal padding" % [label, state])
+		_check(hire_content != null and hire_content.offset_left == 12.0 and hire_content.offset_top == 12.0 and hire_content.offset_right == -12.0 and hire_content.offset_bottom == -12.0, "%s recruit action content does not respect its 12px inset" % label)
 		_check(hire_button.icon == null and hire_cost_icon != null and hire_cost_icon.texture != null, "%s recruit action lacks its explicit shard sprite" % label)
 		_check(hire_action_label != null and hire_action_label.text == "HIRE RECRUIT", "%s recruit action contains copy other than HIRE RECRUIT" % label)
-		_check(hire_action_label != null and intel_heading != null and hire_action_label.get_theme_font_size(&"font_size") == intel_heading.get_theme_font_size(&"font_size"), "%s HIRE RECRUIT does not match Mission Intelligence heading size" % label)
+		var expected_hire_font_size := 24 if expected_hire_width < 360.0 else intel_heading.get_theme_font_size(&"font_size")
+		_check(hire_action_label != null and intel_heading != null and hire_action_label.get_theme_font_size(&"font_size") == expected_hire_font_size, "%s HIRE RECRUIT does not use its contained heading size" % label)
 		_check(hire_cost_label != null and hire_cost_label.text == "5" and hire_action_label.get_index() + 1 == hire_cost_icon.get_index() and hire_cost_icon.get_index() + 1 == hire_cost_label.get_index(), "%s recruit label, shard sprite, and exact cost are not in the requested order" % label)
 		_check(hire_tooltip_hotspot != null and not hire_tooltip_hotspot.visible and hire_tooltip_hotspot.mouse_filter == Control.MOUSE_FILTER_IGNORE, "%s enabled Hire Recruit tooltip carrier intercepts input" % label)
 	_check(actions != null and not _has_scroll_ancestor(actions), "%s mission actions are trapped in body scrolling" % label)
@@ -257,16 +269,15 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		var expected_card_width := float(_mission.call("_operator_card_width", mode))
 		_check(operator_grid.columns == expected_columns, "%s operator columns do not match measured capacity" % label)
 		if label == "wide":
-			_check(operator_grid.columns >= 3, "wide Field Team does not pack all readable columns")
-		if label == "regular":
-			_check(operator_grid.columns >= 2, "regular Field Team does not use at least two columns")
+			_check(expected_card_width > 520.0, "wide Field Team cards did not double their prior preferred width")
 		if portrait:
 			_check(operator_grid.columns == 1, "%s Field Team does not use a one-column fallback" % label)
 		for child: Node in operator_grid.get_children():
 			if child is Button:
 				var button := child as Button
 				_check(absf(button.custom_minimum_size.x - expected_card_width) <= EPSILON, "%s operator card width does not fit the measured grid" % label)
-				_check(button.custom_minimum_size.x >= (240.0 if portrait else 300.0) and button.custom_minimum_size.x <= 520.0, "%s operator card escaped readable bounds" % label)
+				_check(button.custom_minimum_size.x >= (240.0 if portrait else 300.0) and button.custom_minimum_size.x <= 1040.0, "%s operator card escaped readable bounds" % label)
+				_check(is_equal_approx(button.custom_minimum_size.y, 100.0), "%s operator card does not use the fixed 100px height" % label)
 				var card_label := button.get_node_or_null("PresentationLabel") as Label
 				var portrait_node := button.get_node_or_null("OperatorPortrait") as TextureRect
 				var hover_glow := button.get_node_or_null("OperatorHoverGlow") as Panel
@@ -288,8 +299,7 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 					_check(card_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and card_label.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "%s operator information is not centered in its pane" % label)
 				if portrait_node != null:
 					_check(_inside(button, portrait_node), "%s operator portrait pane overflows" % label)
-					var expected_portrait_width := minf(180.0, maxf(90.0, button.size.x * 0.30))
-					_check(portrait_node.size.x >= expected_portrait_width and portrait_node.size.y >= button.size.y - 24.0, "%s operator portrait is not enlarged with the readable card" % label)
+					_check(portrait_node.size.x >= 48.0 and portrait_node.size.y >= button.size.y - 24.0, "%s operator portrait does not fit the standardized row card" % label)
 					_check(card_label == null or card_label.get_global_rect().end.x <= portrait_node.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if roster_scroll != null:

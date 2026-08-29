@@ -23,27 +23,29 @@ const StageNarrativeDefType := preload("res://data/presentation/narrative/stage_
 const StageNarrativeCatalogType := preload("res://data/presentation/narrative/stage_narrative_catalog.gd")
 const BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const ACTION_SAFE_INSET := 12.0
-const OPERATOR_INFO_SPLIT := 0.56
+const OPERATOR_INFO_SPLIT := 0.80
 const FIELD_TEAM_WIDTH_RATIO := 0.60
 const INTEL_WIDTH_RATIO := 0.40
-const OPERATOR_CARD_WIDTH := 520.0
+const OPERATOR_CARD_WIDTH := 1040.0
 const OPERATOR_CARD_MIN_WIDTH := 300.0
 const OPERATOR_CARD_NARROW_MIN_WIDTH := 240.0
 const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_RAIL_EDGE_INSET := 8
 const OPERATOR_SNAP_IDLE_SECONDS := 0.14
 const OPERATOR_SNAP_SECONDS := 0.18
-const OPERATOR_CARD_HEIGHT := 252.0
-const OPERATOR_CARD_TALL_HEIGHT := 330.0
+const OPERATOR_CARD_HEIGHT := 100.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
 const FIELD_TEAM_STATUS_WIDTH_SCALE := 2.0
-const HIRE_RECRUIT_WIDTH := 300.0
+const HIRE_RECRUIT_WIDTH := 400.0
+const HIRE_RECRUIT_HEIGHT := 96.0
 const HIRE_RECRUIT_NARROW_MIN_WIDTH := 220.0
 const HIRE_RECRUIT_NARROW_HORIZONTAL_INSET := 120.0
 const HIRE_RECRUIT_TOP_MARGIN := 48
 const HIRE_RECRUIT_CONTENT_GAP := 8
+const HIRE_RECRUIT_CONTENT_PADDING := 12.0
+const MISSION_INTEL_HEADING_BOTTOM_PADDING := 8
 const ACTION_HORIZONTAL_GAP := 28
 const ACTION_VERTICAL_GAP := 24
 const DEPLOY_SQUAD_ACTION_WIDTH := 588.0
@@ -342,11 +344,17 @@ func _build_body() -> GridContainer:
 	intel.add_theme_constant_override(&"separation", 9)
 	intel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_intel_scroll.add_child(intel)
-	intel.add_child(_label(
+	var intel_heading_inset := MarginContainer.new()
+	intel_heading_inset.name = "MissionIntelHeadingInset"
+	intel_heading_inset.add_theme_constant_override(
+		&"margin_bottom", MISSION_INTEL_HEADING_BOTTOM_PADDING,
+	)
+	intel_heading_inset.add_child(_label(
 		"MissionIntelHeading",
 		UiCopyType.text(&"ui.squad.mission_intelligence", "Mission Intelligence"),
 		&"heading",
 	))
+	intel.add_child(intel_heading_inset)
 	_add_intel_item(intel, "OBJECTIVE", &"ui.squad.briefing.objective", "Objective", StageNarrativeDefType.Field.OBJECTIVE)
 	_add_intel_item(intel, "THREAT", &"ui.squad.briefing.threat", "Threat", StageNarrativeDefType.Field.THREAT)
 	_add_intel_item(intel, "WHYITMATTERS", &"ui.squad.briefing.human_reason", "Why it matters", StageNarrativeDefType.Field.HUMAN_REASON)
@@ -429,11 +437,17 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	parent.add_child(hire_inset)
 	_hire_recruit = AetheriaButtonType.new()
 	_hire_recruit.name = "HireBasicRecruit"
-	_hire_recruit.custom_minimum_size = Vector2(HIRE_RECRUIT_WIDTH, 72.0)
+	_hire_recruit.custom_minimum_size = Vector2(HIRE_RECRUIT_WIDTH, HIRE_RECRUIT_HEIGHT)
 	_hire_recruit.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_hire_recruit.apply_role(&"primary")
 	_apply_clean_training_style(_hire_recruit)
+	_apply_control_padding(
+		_hire_recruit,
+		HIRE_RECRUIT_CONTENT_PADDING,
+		HIRE_RECRUIT_CONTENT_PADDING,
+		[&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"],
+	)
 	ActionHoverFeedbackType.wire(
 		self,
 		_hire_recruit,
@@ -451,6 +465,10 @@ func _build_recruitment_desk(parent: VBoxContainer) -> void:
 	var hire_content := HBoxContainer.new()
 	hire_content.name = "BasicRecruitActionContent"
 	hire_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hire_content.offset_left = HIRE_RECRUIT_CONTENT_PADDING
+	hire_content.offset_top = HIRE_RECRUIT_CONTENT_PADDING
+	hire_content.offset_right = -HIRE_RECRUIT_CONTENT_PADDING
+	hire_content.offset_bottom = -HIRE_RECRUIT_CONTENT_PADDING
 	hire_content.alignment = BoxContainer.ALIGNMENT_CENTER
 	hire_content.add_theme_constant_override(&"separation", HIRE_RECRUIT_CONTENT_GAP)
 	hire_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -707,7 +725,7 @@ func _rebuild_operator_cards() -> void:
 		portrait.anchor_bottom = 1.0
 		portrait.offset_left = 12.0
 		portrait.offset_top = 12.0
-		portrait.offset_right = -24.0
+		portrait.offset_right = -12.0
 		portrait.offset_bottom = -12.0
 		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -756,13 +774,8 @@ func _apply_operator_card_text_style(button: AetheriaButtonType) -> void:
 	card_label.offset_right = -12.0
 	card_label.offset_bottom = -12.0
 	card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var mode := _shell.layout_mode()
-	var info_pane_width := _operator_card_width(mode) * _operator_info_split(mode) - 36.0
-	var narrow_card := info_pane_width < 280.0
-	card_label.clip_text = narrow_card
-	card_label.text_overrun_behavior = (
-		TextServer.OVERRUN_TRIM_ELLIPSIS if narrow_card else TextServer.OVERRUN_NO_TRIMMING
-	)
+	card_label.clip_text = true
+	card_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	card_label.add_theme_font_size_override(&"font_size", 24)
 	card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1048,7 +1061,7 @@ func _operator_grid_available_width(mode: StringName) -> float:
 func _operator_grid_columns(mode: StringName) -> int:
 	return RosterGridLayoutType.fitting_columns(
 		_operator_grid_available_width(mode),
-		OPERATOR_CARD_MIN_WIDTH,
+		OPERATOR_CARD_WIDTH,
 		OPERATOR_GRID_GAP,
 		0,
 		_grid.get_child_count() if _grid != null else 0,
@@ -1094,7 +1107,7 @@ func _apply_operator_grid_reflow() -> void:
 		if portrait != null:
 			portrait.anchor_left = _operator_info_split(mode)
 			portrait.offset_left = 6.0 if mode == &"portrait" else 12.0
-			portrait.offset_right = -6.0 if mode == &"portrait" else -24.0
+			portrait.offset_right = -6.0 if mode == &"portrait" else -12.0
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	_update_operator_rail_insets()
 	_operator_grid_reflow_running = false
@@ -1231,22 +1244,21 @@ func _hire_recruit_width(mode: StringName) -> float:
 				get_viewport_rect().size.x - HIRE_RECRUIT_NARROW_HORIZONTAL_INSET,
 			),
 		)
+	if get_viewport_rect().size.x < 1280.0:
+		var body_width := maxf(760.0, get_viewport_rect().size.x - 112.0)
+		var intel_content_width := (body_width - 16.0) * INTEL_WIDTH_RATIO - 48.0
+		return minf(HIRE_RECRUIT_WIDTH, maxf(HIRE_RECRUIT_NARROW_MIN_WIDTH, intel_content_width))
 	return HIRE_RECRUIT_WIDTH
 
 
 func _operator_info_split(mode: StringName) -> float:
 	if mode == &"portrait":
-		return 0.54
+		return 0.72
 	return OPERATOR_INFO_SPLIT
 
 
-func _operator_card_height(hero: Dictionary, mode: StringName) -> float:
-	var custom_title := String(hero.get("custom_title", "") if hero.get("custom_title") != null else "")
-	return (
-		OPERATOR_CARD_TALL_HEIGHT
-		if mode == &"portrait" or hero.get("hero_kind", "recruit") == "premium" or not custom_title.is_empty()
-		else OPERATOR_CARD_HEIGHT
-	)
+func _operator_card_height(_hero: Dictionary, _mode: StringName) -> float:
+	return OPERATOR_CARD_HEIGHT
 
 
 func _apply_control_padding(
@@ -1433,6 +1445,12 @@ func _refresh_recruitment_desk(message: String = "", error: bool = false) -> voi
 	_hire_recruit.apply_role(&"disabled" if unavailable else &"primary")
 	if not unavailable:
 		_apply_clean_training_style(_hire_recruit)
+	_apply_control_padding(
+		_hire_recruit,
+		HIRE_RECRUIT_CONTENT_PADDING,
+		HIRE_RECRUIT_CONTENT_PADDING,
+		[&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"],
+	)
 	if message.is_empty():
 		if projection.is_empty():
 			message = UiCopyType.text(
@@ -1823,14 +1841,14 @@ func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
 	if bool(hero.get("fallen", false)):
 		return _format_copy(
 			&"ui.squad.card_fallen", "{name}\n{rarity}★ · LV {level}\nFallen · Vahalla", args,
-		)
+		).replace("\n", " · ")
 	if hero.get("hero_kind", "recruit") == "premium":
 		return _format_copy(
 			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} prepared bodies", args,
-		)
+		).replace("\n", " · ")
 	return _format_copy(
 		&"ui.squad.card_ready", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Ready", args,
-	)
+	).replace("\n", " · ")
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
@@ -2054,7 +2072,22 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		_filter_bar.set_dense_inline(mode == &"regular_landscape" and get_viewport_rect().size.x < 1500.0)
 		_filter_bar.set_inline(mode == &"regular_landscape" and get_viewport_rect().size.x >= 1500.0)
 	if _hire_recruit != null:
-		_hire_recruit.custom_minimum_size = Vector2(_hire_recruit_width(mode), 72.0)
+		var hire_width := _hire_recruit_width(mode)
+		_hire_recruit.custom_minimum_size = Vector2(hire_width, HIRE_RECRUIT_HEIGHT)
+		var compact_hire := hire_width < 360.0
+		_hire_action_label.add_theme_font_size_override(
+			&"font_size", 24 if compact_hire else 33,
+		)
+		_hire_cost_label.add_theme_font_size_override(
+			&"font_size", 20 if compact_hire else 24,
+		)
+		var hire_cost_icon := _hire_recruit.get_node_or_null(
+			"BasicRecruitActionContent/BasicRecruitCostIcon",
+		) as TextureRect
+		if hire_cost_icon != null:
+			hire_cost_icon.custom_minimum_size = (
+				Vector2(18.0, 18.0) if compact_hire else Vector2(20.0, 20.0)
+			)
 	for button: Button in _buttons.values():
 		var hero: Dictionary = button.get_meta(&"hero", {})
 		button.custom_minimum_size = Vector2(
