@@ -69,6 +69,11 @@ func _run() -> void:
 	)
 	_check(first_clear.get("accepted", false), "first mission clear fixture was rejected")
 	_check(bool(game.call("has_cleared_first_mission")), "committed first clear did not unlock post-mission onboarding")
+	game.call("_arm_post_mission_tutorial", BattleModel.Result.CLEAR, {"stage_id": &"s1", "stars_before": 0})
+	_check(
+		bool(game.call("consume_post_mission_tutorial_request")),
+		"the committed first clear did not arm post-mission onboarding",
+	)
 
 	root.size = Vector2i(1280, 720)
 	game.call("request_post_mission_tutorial")
