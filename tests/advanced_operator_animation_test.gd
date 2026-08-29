@@ -25,14 +25,13 @@ const DIRECTION_TRANSFORMS := {
 	&"horizontal": {&"ne": &"nw", &"nw": &"ne", &"se": &"sw", &"sw": &"se"},
 	&"vertical": {&"ne": &"se", &"nw": &"sw", &"se": &"ne", &"sw": &"nw"},
 	&"opposite": {&"ne": &"sw", &"nw": &"se", &"se": &"nw", &"sw": &"ne"},
-	&"shock_trooper_female": {&"ne": &"se", &"nw": &"sw", &"se": &"nw", &"sw": &"ne"},
 }
 const EXPECTED_DIRECTION_TRANSFORMS := {
 	&"gunner_female": {&"idle": &"opposite", &"attack": &"opposite"},
 	&"gunner_male": {&"idle": &"opposite", &"attack": &"opposite"},
 	&"mage_apprentice_female": {&"idle": &"vertical", &"attack": &"vertical"},
 	&"mage_apprentice_male": {&"idle": &"vertical", &"attack": &"vertical"},
-	&"shock_trooper_female": {&"idle": &"shock_trooper_female", &"attack": &"shock_trooper_female"},
+	&"shock_trooper_female": {&"idle": &"opposite", &"attack": &"opposite"},
 	&"shock_trooper_male": {&"idle": &"opposite", &"attack": &"opposite"},
 	&"swordmaster_female": {&"idle": &"vertical", &"attack": &"vertical"},
 	&"sniper_male": {&"idle": &"horizontal", &"attack": &"horizontal"},

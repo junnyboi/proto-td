@@ -84,7 +84,7 @@ class WebImportBudgetTests(unittest.TestCase):
             ("gunner", "female", "idle"): "opposite",
             ("gunner", "male", "attack"): "opposite",
             ("mage_apprentice", "female", "attack"): "vertical",
-            ("shock_trooper", "female", "attack"): "shock_trooper_female",
+            ("shock_trooper", "female", "attack"): "opposite",
             ("shock_trooper", "male", "idle"): "opposite",
             ("swordmaster", "female", "idle"): "vertical",
             ("sniper", "male", "attack"): "horizontal",

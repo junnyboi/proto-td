@@ -27,7 +27,6 @@ DIRECTION_TRANSFORMS = {
     "horizontal": {"ne": "nw", "nw": "ne", "se": "sw", "sw": "se"},
     "vertical": {"ne": "se", "nw": "sw", "se": "ne", "sw": "nw"},
     "opposite": {"ne": "sw", "nw": "se", "se": "nw", "sw": "ne"},
-    "shock_trooper_female": {"ne": "se", "nw": "sw", "se": "nw", "sw": "ne"},
 }
 # Visual review found a mixture of class-wide, gender-scoped, and action-scoped
 # source-label errors. These presentation-only transforms map an intended logical
@@ -35,8 +34,7 @@ DIRECTION_TRANSFORMS = {
 DIRECTION_OVERRIDE_SCOPES = (
     ("gunner", GENDER_ORDER, ACTION_ORDER, "opposite"),
     ("mage_apprentice", GENDER_ORDER, ACTION_ORDER, "vertical"),
-    ("shock_trooper", ("female",), ACTION_ORDER, "shock_trooper_female"),
-    ("shock_trooper", ("male",), ACTION_ORDER, "opposite"),
+    ("shock_trooper", GENDER_ORDER, ACTION_ORDER, "opposite"),
     ("swordmaster", ("female",), ACTION_ORDER, "vertical"),
     ("sniper", ("male",), ACTION_ORDER, "horizontal"),
     ("banner_guard", ("female",), ACTION_ORDER, "horizontal"),

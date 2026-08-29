@@ -7,14 +7,14 @@ script = ExtResource("1_def")
 schema_version = 2
 visual_id = &"operator_shock_trooper_female"
 idle_by_direction = {
-&"ne": &"op_anim_shock_trooper_female_idle_se",
-&"nw": &"op_anim_shock_trooper_female_idle_sw",
+&"ne": &"op_anim_shock_trooper_female_idle_sw",
+&"nw": &"op_anim_shock_trooper_female_idle_se",
 &"se": &"op_anim_shock_trooper_female_idle_nw",
 &"sw": &"op_anim_shock_trooper_female_idle_ne"
 }
 attack_by_direction = {
-&"ne": &"op_anim_shock_trooper_female_attack_se",
-&"nw": &"op_anim_shock_trooper_female_attack_sw",
+&"ne": &"op_anim_shock_trooper_female_attack_sw",
+&"nw": &"op_anim_shock_trooper_female_attack_se",
 &"se": &"op_anim_shock_trooper_female_attack_nw",
 &"sw": &"op_anim_shock_trooper_female_attack_ne"
 }
