@@ -277,7 +277,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 				var button := child as Button
 				_check(absf(button.custom_minimum_size.x - expected_card_width) <= EPSILON, "%s operator card width does not fit the measured grid" % label)
 				_check(button.custom_minimum_size.x >= (240.0 if portrait else 300.0) and button.custom_minimum_size.x <= 1040.0, "%s operator card escaped readable bounds" % label)
-				_check(is_equal_approx(button.custom_minimum_size.y, 100.0), "%s operator card does not use the fixed 100px height" % label)
+				_check(is_equal_approx(button.custom_minimum_size.y, 300.0), "%s operator card does not use the fixed 300px height" % label)
+				_check(is_equal_approx(button.size.y, 300.0), "%s operator card expands beyond its fixed height" % label)
 				var card_label := button.get_node_or_null("PresentationLabel") as Label
 				var portrait_node := button.get_node_or_null("OperatorPortrait") as TextureRect
 				var hover_glow := button.get_node_or_null("OperatorHoverGlow") as Panel

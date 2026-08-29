@@ -29,6 +29,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_verify_promoted_portraits()
+	_verify_operator_card_copy()
 	await _verify_sorting()
 	await _verify_responsive_grid()
 	await _verify_selection_feedback_and_reorder()
@@ -65,6 +66,7 @@ func _prepare_portrait_fixtures(game: Node) -> void:
 		if not premium_assigned:
 			hero["hero_kind"] = "premium"
 			hero["premium_id"] = "archive_caster"
+			hero["premium_lives"] = 3
 			hero["current_class_id"] = "mage_apprentice"
 			hero["operator_def_id"] = "caster_1"
 			hero["portrait_asset_id"] = "portrait_archive_caster"
@@ -90,6 +92,43 @@ func _verify_promoted_portraits() -> void:
 			portrait != null and portrait.texture == ArtType.texture(expected_id),
 			"Field Team card did not bind the expected portrait texture for %s" % hero_id,
 		)
+
+
+func _verify_operator_card_copy() -> void:
+	var grid := _mission.find_child("OperatorGrid", true, false) as GridContainer
+	_check(grid != null, "Field Team operator grid missing for card-copy verification")
+	if grid == null:
+		return
+	var regular_card: Button = null
+	var premium_card: Button = null
+	for child: Node in grid.get_children():
+		if not (child is Button):
+			continue
+		var card := child as Button
+		var hero: Dictionary = card.get_meta(&"hero", {})
+		_check(is_equal_approx(card.custom_minimum_size.y, 300.0), "Field Team card minimum height is not fixed at three times the former height")
+		_check(is_equal_approx(card.size.y, 300.0), "Field Team card rendered height escaped the fixed 300px contract")
+		var lines := card.text.split("\n")
+		_check(lines.size() == 3, "Field Team card copy is not exactly three deliberate lines")
+		if lines.size() == 3:
+			_check(not lines[0].contains("LV "), "Field Team card does not break after the operator name")
+			_check(lines[1].contains("LV "), "Field Team card does not keep the operator level on the second line")
+			_check(lines[2].contains("DP"), "Field Team card does not break after the operator level")
+		_check(not card.text.to_upper().contains("READY"), "Field Team card still displays READY")
+		_check(not card.text.to_upper().contains("PREPARED BODIES"), "Field Team card still displays PREPARED BODIES")
+		if hero.get("hero_kind", "recruit") == "premium":
+			premium_card = card
+		elif not bool(hero.get("fallen", false)):
+			regular_card = card
+	_check(regular_card != null, "Field Team card-copy fixture lacks a regular operator")
+	_check(premium_card != null, "Field Team card-copy fixture lacks a premium operator")
+	if premium_card != null:
+		_check(premium_card.text.ends_with("3 LIVES"), "premium Field Team card does not use the plural LIVES label")
+		var one_life_hero: Dictionary = (premium_card.get_meta(&"hero", {}) as Dictionary).duplicate(true)
+		one_life_hero["premium_lives"] = 1
+		var definition := premium_card.get_meta(&"operator_def") as OperatorDef
+		var singular_copy := String(_mission.call("_operator_card_text", one_life_hero, definition))
+		_check(singular_copy.ends_with("1 LIFE"), "premium Field Team card does not use the singular LIFE label")
 
 
 func _verify_sorting() -> void:

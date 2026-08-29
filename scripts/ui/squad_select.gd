@@ -33,7 +33,7 @@ const OPERATOR_GRID_GAP := 12.0
 const OPERATOR_RAIL_EDGE_INSET := 8
 const OPERATOR_SNAP_IDLE_SECONDS := 0.14
 const OPERATOR_SNAP_SECONDS := 0.18
-const OPERATOR_CARD_HEIGHT := 100.0
+const OPERATOR_CARD_HEIGHT := 300.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
@@ -1831,24 +1831,36 @@ func _launch_error_text(code: StringName) -> String:
 
 
 func _operator_card_text(hero: Dictionary, definition: OperatorDef) -> String:
+	var lives := int(hero.get("premium_lives", 0))
 	var args := {
 		&"name": _hero_label(hero),
+		&"class_name": _hero_class_label(hero),
 		&"cost": definition.dp_cost,
-		&"lives": int(hero.get("premium_lives", 0)),
+		&"lives": lives,
+		&"life_unit": UiCopyType.text(
+			&"ui.squad.life_singular" if lives == 1 else &"ui.squad.life_plural",
+			"LIFE" if lives == 1 else "LIVES",
+		),
 		&"rarity": int(hero.get("rarity", definition.rarity)),
 		&"level": int(hero.get("level", 1)),
 	}
 	if bool(hero.get("fallen", false)):
 		return _format_copy(
-			&"ui.squad.card_fallen", "{name}\n{rarity}★ · LV {level}\nFallen · Vahalla", args,
-		).replace("\n", " · ")
+			&"ui.squad.card_fallen",
+			"{name}\n{class_name} · {rarity}★ · LV {level}\nFallen · Vahalla",
+			args,
+		)
 	if hero.get("hero_kind", "recruit") == "premium":
 		return _format_copy(
-			&"ui.squad.card_premium", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} prepared bodies", args,
-		).replace("\n", " · ")
+			&"ui.squad.card_premium",
+			"{name}\n{class_name} · {rarity}★ · LV {level}\n{cost} DP · Premium hero · {lives} {life_unit}",
+			args,
+		)
 	return _format_copy(
-		&"ui.squad.card_ready", "{name}\n{rarity}★ · LV {level}\n{cost} DP · Ready", args,
-	).replace("\n", " · ")
+		&"ui.squad.card_ready",
+		"{name}\n{class_name} · {rarity}★ · LV {level}\n{cost} DP",
+		args,
+	)
 
 
 func _on_locale_changed(_locale_id: StringName) -> void:
@@ -1979,10 +1991,6 @@ func _hero_callsign(hero: Dictionary) -> String:
 
 
 func _hero_label(hero: Dictionary) -> String:
-	var class_id := String(hero["current_class_id"])
-	var class_label := UiCopyType.text(
-		StringName("ui.training.class.%s" % class_id), class_id.replace("_", " ").capitalize(),
-	)
 	var identity := "%s #%d" % [
 		_hero_callsign(hero).to_upper(), int(hero["recruitment_index"]) + 1,
 	]
@@ -1990,8 +1998,15 @@ func _hero_label(hero: Dictionary) -> String:
 		hero.get("custom_title", "") if hero.get("custom_title") != null else "",
 	)
 	if not title.is_empty():
-		identity += "\n%s" % title.to_upper()
-	return "%s\n%s" % [identity, class_label.to_upper()]
+		identity += " · %s" % title.to_upper()
+	return identity
+
+
+func _hero_class_label(hero: Dictionary) -> String:
+	var class_id := String(hero["current_class_id"])
+	return UiCopyType.text(
+		StringName("ui.training.class.%s" % class_id), class_id.replace("_", " ").capitalize(),
+	).to_upper()
 
 
 func _on_layout_mode_changed(mode: StringName) -> void:
