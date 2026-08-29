@@ -75,7 +75,13 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 14
 
-[node name="SettingsBackButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/Header"]
+[node name="BackButtonPadding" type="MarginContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/Header"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+
+[node name="SettingsBackButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/Header/BackButtonPadding"]
 custom_minimum_size = Vector2(128, 62.1)
 layout_mode = 2
 focus_mode = 2
@@ -232,9 +238,17 @@ max_value = 100.0
 step = 5.0
 value = 100.0
 
-[node name="MusicButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection"]
+[node name="MusicButtonContainer" type="MarginContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_right = 48
+
+[node name="MusicButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicButtonContainer"]
 custom_minimum_size = Vector2(0, 62.1)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiSecondaryButton"
@@ -285,9 +299,17 @@ size_flags_horizontal = 3
 focus_mode = 2
 mouse_default_cursor_shape = 2
 
-[node name="MotionButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+[node name="MotionButtonContainer" type="MarginContainer" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_right = 48
+
+[node name="MotionButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/MotionButtonContainer"]
 custom_minimum_size = Vector2(0, 62.1)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 2
 mouse_default_cursor_shape = 2
 theme_type_variation = &"AuiSecondaryButton"

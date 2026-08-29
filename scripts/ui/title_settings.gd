@@ -24,6 +24,12 @@ const ENTRY_SECONDS := 0.22
 const EXIT_SECONDS := 0.16
 const FRAME_TRAVEL := 12.0
 const APPLY_BUTTON_WIDTH := 420.0
+const BACK_BUTTON_HORIZONTAL_PADDING := 24
+const COMPACT_BACK_BUTTON_HORIZONTAL_PADDING := 0
+const SETTINGS_SECTION_PADDING := 48.0
+const COMPACT_SECTION_PADDING := 24.0
+const SETTINGS_TOGGLE_HORIZONTAL_MARGIN := 48
+const COMPACT_TOGGLE_HORIZONTAL_MARGIN := 16
 
 enum TransitionState {
 	CLOSED,
@@ -50,7 +56,8 @@ var _clear_data_dialog: Dictionary = {}
 @onready var _frame_padding: MarginContainer = $SafeFrame/CommandFrame/FramePadding
 @onready var _state_layout: VBoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout
 @onready var _header: HBoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header
-@onready var _back_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/SettingsBackButton
+@onready var _back_button_padding: MarginContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/BackButtonPadding
+@onready var _back_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/BackButtonPadding/SettingsBackButton
 @onready var _title_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/SettingsTitle
 @onready var _header_seal: TextureRect = $SafeFrame/CommandFrame/FramePadding/StateLayout/Header/LunarisSeal
 @onready var _body_scroll: ScrollContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll
@@ -68,12 +75,14 @@ var _clear_data_dialog: Dictionary = {}
 @onready var _music_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicVolumeRow/MusicVolumeSlider
 @onready var _sfx_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/SfxVolumeRow/SfxVolumeLabel
 @onready var _sfx_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/SfxVolumeRow/SfxVolumeSlider
-@onready var _music_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicButton
+@onready var _music_button_container: MarginContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicButtonContainer
+@onready var _music_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/LanguageAudioSection/SectionMargin/LeftSection/MusicButtonContainer/MusicButton
 @onready var _graphics_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/GraphicsHeading
 @onready var _frame_row: BoxContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/FrameLimitRow
 @onready var _frame_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/FrameLimitRow/FrameLimitLabel
 @onready var _frame_option: OptionButton = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/FrameLimitRow/FrameLimitOption
-@onready var _motion_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/MotionButton
+@onready var _motion_button_container: MarginContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/MotionButtonContainer
+@onready var _motion_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/MotionButtonContainer/MotionButton
 @onready var _network_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/NetworkHeading
 @onready var _background_downloads_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/BackgroundDownloadsButton
 @onready var _background_downloads_hint: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/BackgroundDownloadsHint
@@ -136,6 +145,7 @@ func _ready() -> void:
 	_refresh_frame_items()
 	_refresh_copy()
 	_apply_responsive_layout()
+	_apply_ornate_apply_style()
 	_set_interaction_enabled(false)
 	visible = false
 
@@ -585,6 +595,22 @@ func _configure_readable_actions() -> void:
 		action.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 
 
+func _apply_ornate_apply_style() -> void:
+	_apply_button.add_theme_stylebox_override(
+		&"normal", StagingSkinType.ornate_primary_button_style(),
+	)
+	_apply_button.add_theme_stylebox_override(
+		&"hover", StagingSkinType.ornate_primary_button_style(Color("fff8df")),
+	)
+	_apply_button.add_theme_stylebox_override(
+		&"pressed", StagingSkinType.ornate_primary_button_style(Color("d9b96e")),
+	)
+	_apply_button.add_theme_stylebox_override(
+		&"disabled",
+		StagingSkinType.ornate_primary_button_style(Color(0.42, 0.48, 0.55, 0.56)),
+	)
+
+
 func _configure_accessibility_relationships() -> void:
 	_error_label.accessibility_live = AccessibilityServer.LIVE_ASSERTIVE
 	_locale_list.accessibility_labeled_by_nodes = [_locale_list.get_path_to(_locale_label)]
@@ -715,6 +741,12 @@ func _apply_responsive_layout() -> void:
 	_set_margins(_body_margin, 0 if narrow or short else 18, 0 if narrow or short else 14)
 	_state_layout.add_theme_constant_override(&"separation", 6 if short else 12)
 	_header.add_theme_constant_override(&"separation", 6 if narrow else 14)
+	var back_button_padding := (
+		BACK_BUTTON_HORIZONTAL_PADDING
+		if viewport.x >= 1200.0 and not portrait and not narrow and not short
+		else COMPACT_BACK_BUTTON_HORIZONTAL_PADDING
+	)
+	_set_margins(_back_button_padding, back_button_padding, 0)
 	_header_seal.visible = not narrow
 	_header.custom_minimum_size.y = 72.0 if narrow or short else 96.0
 	_columns.columns = 2 if two_columns else 1
@@ -724,18 +756,25 @@ func _apply_responsive_layout() -> void:
 	_locale_selector.set_compact_mode(narrow or short)
 	_master_controls.vertical = narrow
 	_frame_row.vertical = true
+	var section_padding := SETTINGS_SECTION_PADDING if two_columns else COMPACT_SECTION_PADDING
 	for section_name: String in ["LanguageAudioSection", "GraphicsAccessibilitySection"]:
 		var section := _columns.get_node_or_null(section_name) as PanelContainer
 		if section != null:
 			var section_style := section.get_theme_stylebox(&"panel").duplicate() as StyleBox
-			section_style.content_margin_left = 24.0
-			section_style.content_margin_top = 24.0
-			section_style.content_margin_right = 24.0
-			section_style.content_margin_bottom = 24.0
+			section_style.content_margin_left = section_padding
+			section_style.content_margin_top = section_padding
+			section_style.content_margin_right = section_padding
+			section_style.content_margin_bottom = section_padding
 			section.add_theme_stylebox_override(&"panel", section_style)
 			var section_margin := section.get_node_or_null("SectionMargin") as MarginContainer
 			if section_margin != null:
 				_set_margins(section_margin, 0, 0)
+	var toggle_margin := (
+		SETTINGS_TOGGLE_HORIZONTAL_MARGIN if two_columns
+		else COMPACT_TOGGLE_HORIZONTAL_MARGIN
+	)
+	_set_margins(_music_button_container, toggle_margin, 0)
+	_set_margins(_motion_button_container, toggle_margin, 0)
 	_frame_option.custom_minimum_size.x = 0.0 if narrow or portrait else 180.0
 	if narrow:
 		for index: int in _frame_option.item_count:

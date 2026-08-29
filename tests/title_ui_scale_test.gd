@@ -149,10 +149,14 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	var dock := state.find_child("ActionDock", true, false) as Control
 	var apply := state.find_child("SettingsApplyButton", true, false) as Button
 	var back := state.find_child("SettingsBackButton", true, false) as Button
+	var back_padding := state.find_child("BackButtonPadding", true, false) as MarginContainer
 	var locale_selector := state.find_child("LocaleSelector", true, false) as BoxContainer
 	var locale_list := state.find_child("LocaleList", true, false) as ItemList
 	var locale_label := state.find_child("LocaleLabel", true, false) as Label
 	var language_section := state.find_child("LanguageAudioSection", true, false) as PanelContainer
+	var graphics_section := state.find_child("GraphicsAccessibilitySection", true, false) as PanelContainer
+	var music_button_container := state.find_child("MusicButtonContainer", true, false) as MarginContainer
+	var motion_button_container := state.find_child("MotionButtonContainer", true, false) as MarginContainer
 	var frame_row := state.find_child("FrameLimitRow", true, false) as BoxContainer
 	var focus_owner := root.gui_get_focus_owner()
 	var master_label := state.find_child("MasterVolumeLabel", true, false) as Label
@@ -180,14 +184,45 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(_inside(frame, header) and _inside(frame, scroll) and _inside(frame, dock), "%s command-frame content overflows" % label)
 	_check(body_margin.get_theme_constant(&"margin_left") >= 0 and body_margin.get_theme_constant(&"margin_top") >= 0, "%s settings body margins are invalid" % label)
 	var language_style := language_section.get_theme_stylebox(&"panel") if language_section != null else null
+	var graphics_style := graphics_section.get_theme_stylebox(&"panel") if graphics_section != null else null
+	var expected_section_padding := 48.0 if columns.columns == 2 else 24.0
 	_check(
 		language_style != null
-		and language_style.content_margin_left >= 24.0
-		and language_style.content_margin_top >= 24.0
-		and language_style.content_margin_right >= 24.0
-		and language_style.content_margin_bottom >= 24.0,
-		"%s language/audio custom surface lacks 24px padding" % label,
+		and is_equal_approx(language_style.content_margin_left, expected_section_padding)
+		and is_equal_approx(language_style.content_margin_top, expected_section_padding)
+		and is_equal_approx(language_style.content_margin_right, expected_section_padding)
+		and is_equal_approx(language_style.content_margin_bottom, expected_section_padding),
+		"%s language/audio custom surface has the wrong responsive padding" % label,
 	)
+	_check(
+		graphics_style != null
+		and is_equal_approx(graphics_style.content_margin_left, expected_section_padding)
+		and is_equal_approx(graphics_style.content_margin_top, expected_section_padding)
+		and is_equal_approx(graphics_style.content_margin_right, expected_section_padding)
+		and is_equal_approx(graphics_style.content_margin_bottom, expected_section_padding),
+		"%s graphics/accessibility custom surface has the wrong responsive padding" % label,
+	)
+	var expected_back_padding := (
+		24
+		if viewport.x >= 1200
+		and viewport.y > 560
+		and float(viewport.x) / maxf(float(viewport.y), 1.0) > 1.2
+		else 0
+	)
+	_check(
+		back_padding != null
+		and back_padding.get_theme_constant(&"margin_left") == expected_back_padding
+		and back_padding.get_theme_constant(&"margin_right") == expected_back_padding,
+		"%s Back container has the wrong responsive horizontal padding" % label,
+	)
+	var expected_toggle_margin := 48 if columns.columns == 2 else 16
+	for toggle_container: MarginContainer in [music_button_container, motion_button_container]:
+		_check(
+			toggle_container != null
+			and toggle_container.get_theme_constant(&"margin_left") == expected_toggle_margin
+			and toggle_container.get_theme_constant(&"margin_right") == expected_toggle_margin,
+			"%s %s has the wrong responsive horizontal margin" % [label, toggle_container.name if toggle_container != null else "toggle container"],
+		)
 	_check(scroll.size.y > 0.0 and scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s body scroll is invalid" % label)
 	_check(header.get_global_rect().end.y <= scroll.get_global_rect().position.y + EPSILON, "%s header entered body scroll" % label)
 	_check(scroll.get_global_rect().end.y <= dock.get_global_rect().position.y + EPSILON, "%s dock entered body scroll" % label)
@@ -196,6 +231,21 @@ func _verify_settings(label: String, viewport: Vector2i) -> void:
 	_check(dock.size_flags_horizontal == Control.SIZE_SHRINK_CENTER and absf(dock.custom_minimum_size.x - apply.custom_minimum_size.x) <= EPSILON, "%s Apply dock is not centered at its fixed width" % label)
 	for color_name: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color"]:
 		_check(apply.get_theme_color(color_name).is_equal_approx(Color.WHITE), "%s Apply %s is not white" % [label, color_name])
+	var apply_style := apply.get_theme_stylebox(&"normal") as StyleBoxTexture
+	_check(
+		apply_style != null
+		and apply_style.texture != null
+		and apply_style.texture.resource_path.ends_with("/primary_button.png"),
+		"%s Apply does not use the shared ornate golden button art" % label,
+	)
+	_check(
+		apply_style != null
+		and apply_style.content_margin_left >= 28.0
+		and apply_style.content_margin_top >= 18.0
+		and apply_style.content_margin_right >= 28.0
+		and apply_style.content_margin_bottom >= 18.0,
+		"%s Apply does not retain the shared ornate action padding" % label,
+	)
 	_check(not apply.clip_text and not back.clip_text, "%s title actions clip doubled copy" % label)
 	_check(apply.autowrap_mode != TextServer.AUTOWRAP_OFF, "%s Apply action does not wrap doubled copy" % label)
 	_check(back.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s Back action is not constrained to one line" % label)
