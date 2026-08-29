@@ -196,6 +196,17 @@ func _verify_selection_feedback_and_reorder() -> void:
 		await process_frame
 		_check(cards[index].scale.x > 1.0, "selected operator card lacks immediate reduced-motion feedback")
 		_check(bool(cards[index].get_meta(&"operator_feedback_enabled", false)), "operator card feedback contract missing")
+		var selected_border := cards[index].find_child("OperatorSelectedBorder", true, false) as Panel
+		_check(selected_border != null and selected_border.visible, "selected operator card lacks its bright green border")
+		if selected_border != null:
+			var border_style := selected_border.get_theme_stylebox(&"panel") as StyleBoxTexture
+			_check(border_style != null and not border_style.draw_center, "selected operator border still fills the card interior")
+			_check(
+				border_style != null
+				and border_style.modulate_color.g >= 0.98
+				and border_style.modulate_color.r <= 0.40,
+				"selected operator border is not a saturated bright green",
+			)
 	var initial: Array[StringName] = _mission.call("selected_squad_order")
 	_check(initial.size() == 3, "selected squad order does not contain three operators")
 	var rail := _mission.find_child("SelectedSquadOrder", true, false) as HBoxContainer
@@ -239,11 +250,14 @@ func _verify_selection_feedback_and_reorder() -> void:
 			_check(glow_style != null and glow_style.border_width_left >= 2 and glow_style.shadow_size >= 8, "operator glow lacks a luminous border")
 		animated_card.button_pressed = false
 		await process_frame
+		var selected_border := animated_card.find_child("OperatorSelectedBorder", true, false) as Panel
+		_check(selected_border == null or not selected_border.visible, "deselected operator retained the bright green border")
 		_check(_feedback_tween_active(animated_card), "operator deselection did not schedule release feedback")
 		await create_timer(0.30).timeout
 		_check(animated_card.scale.x >= 1.015, "deselected focused operator did not return to its focus scale")
 		animated_card.button_pressed = true
 		await process_frame
+		_check(selected_border != null and selected_border.visible, "reselected operator did not restore the bright green border")
 		_check(_feedback_tween_active(animated_card), "operator selection did not schedule confirmation feedback")
 		await create_timer(0.30).timeout
 		_check(animated_card.scale.x >= 1.015, "selected focused operator did not return to its focus scale")

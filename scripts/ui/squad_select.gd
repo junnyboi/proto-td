@@ -73,6 +73,7 @@ const OPERATOR_SELECTION_SETTLE_SECONDS := 0.17
 const OPERATOR_GLOW_ALPHA := 0.62
 const OPERATOR_GLOW_EXPAND := 4.0
 const OPERATOR_GLOW_SHADOW_SIZE := 8
+const OPERATOR_SELECTED_BORDER_COLOR := Color("58ff7a")
 const HIRE_RECRUIT_HOVER_SCALE := Vector2(1.022, 1.022)
 const HIRE_RECRUIT_FOCUS_SCALE := Vector2(1.012, 1.012)
 const HIRE_RECRUIT_HOVER_TINT := Color("fff8df")
@@ -848,6 +849,7 @@ func _create_operator_card(hero: Dictionary, visible_index: int) -> AetheriaButt
 		visible_index,
 		_reduced_motion(),
 	)
+	pick.add_child(_build_operator_selected_border())
 	var disabled := fallen or _launch_locked or Game.mission_launch_retry_pending()
 	pick.disabled = disabled
 	pick.focus_mode = Control.FOCUS_NONE if disabled else Control.FOCUS_ALL
@@ -928,6 +930,22 @@ func _apply_operator_card_role(button: AetheriaButtonType, selected: bool) -> vo
 	var resting_style := button.get_theme_stylebox(&"normal").duplicate() as StyleBox
 	button.add_theme_stylebox_override(&"hover", resting_style)
 	button.add_theme_stylebox_override(&"hover_pressed", resting_style)
+	var selected_border := button.get_node_or_null("OperatorSelectedBorder") as Panel
+	if selected_border != null:
+		selected_border.visible = selected
+
+
+func _build_operator_selected_border() -> Panel:
+	var border := Panel.new()
+	border.name = "OperatorSelectedBorder"
+	border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	border.z_index = 5
+	border.visible = false
+	var style := StagingSkinType.operation_tile_style(OPERATOR_SELECTED_BORDER_COLOR)
+	style.draw_center = false
+	border.add_theme_stylebox_override(&"panel", style)
+	return border
 
 
 func _build_operator_hover_glow() -> Panel:

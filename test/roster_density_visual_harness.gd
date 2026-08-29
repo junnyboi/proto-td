@@ -81,6 +81,20 @@ func _mount_fixture() -> void:
 	if not output_path.is_empty():
 		for _frame: int in range(16):
 			await get_tree().process_frame
+		if screen_id == "mission":
+			var requested_selection := maxi(
+				0, int(OS.get_environment("PROTO_FIELD_TEAM_SELECT_COUNT")),
+			)
+			var operator_grid := find_child("OperatorGrid", true, false) as GridContainer
+			if operator_grid != null:
+				for child: Node in operator_grid.get_children():
+					if requested_selection <= 0:
+						break
+					if child is Button and not (child as Button).disabled:
+						(child as Button).button_pressed = true
+						requested_selection -= 1
+			for _selection_frame: int in range(6):
+				await get_tree().process_frame
 			if screen_id == "mission" and OS.get_environment("PROTO_MISSION_INTEL_SCROLL_BOTTOM") == "1":
 				var intel_scroll := find_child("MissionIntelScroll", true, false) as ScrollContainer
 				if intel_scroll != null:
