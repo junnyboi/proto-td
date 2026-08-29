@@ -1864,8 +1864,8 @@ func _on_command_tutorial_finished(_skipped: bool, persisted: bool) -> void:
 
 
 func _maybe_mount_post_mission_tutorial() -> bool:
-	var requested := Game.consume_post_mission_tutorial_request()
-	if not requested and not _first_mission_completed():
+	Game.consume_post_mission_tutorial_request()
+	if not Game.has_cleared_first_mission():
 		return false
 	if ViewPreferencesType.has_seen_post_mission_tutorial(_preferences_path):
 		return false
@@ -1913,17 +1913,6 @@ func _maybe_mount_post_mission_tutorial() -> bool:
 	_tutorial = tutorial
 	_tutorial.finished.connect(_on_post_mission_tutorial_finished)
 	return true
-
-
-func _first_mission_completed() -> bool:
-	if Game.campaign == null:
-		return false
-	var stage_order := Game.campaign_stage_ids()
-	return (
-		not stage_order.is_empty()
-		and int(_stage_stars().get(stage_order[0], 0)) > 0
-	)
-
 
 func _on_post_mission_tutorial_finished(_skipped: bool, persisted: bool) -> void:
 	_tutorial = null

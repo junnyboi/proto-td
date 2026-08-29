@@ -1,6 +1,7 @@
 extends SceneTree
 
 const PREFS := preload("res://scripts/view/view_preferences.gd")
+const AuthoritativeCampaignFixtureType := preload("res://test/support/authoritative_campaign_fixture.gd")
 const PATH := "user://strategic_onboarding_test.cfg"
 
 var _failures: Array[String] = []
@@ -31,7 +32,19 @@ func _run() -> void:
 	game.call("_arm_post_mission_tutorial", BattleModel.Result.CLEAR, {"stage_id": &"s1", "stars_before": 1})
 	_check(not bool(game.call("consume_post_mission_tutorial_request")), "a first-mission replay armed post-mission onboarding")
 	game.call("_arm_post_mission_tutorial", BattleModel.Result.CLEAR, {"stage_id": &"s1", "stars_before": 0})
-	_check(bool(game.call("consume_post_mission_tutorial_request")), "the first clear of the first mission did not arm post-mission onboarding")
+	_check(
+		not bool(game.call("consume_post_mission_tutorial_request")),
+		"uncommitted first-clear metadata bypassed campaign tutorial eligibility",
+	)
+	game.call("request_post_mission_tutorial")
+	game.call("open_staging")
+	var pre_clear_staging := await _wait_for_content(game, "res://scripts/ui/staging.gd")
+	_check(pre_clear_staging != null, "pre-clear Company Command did not open")
+	_check(
+		pre_clear_staging == null
+		or pre_clear_staging.find_child("PostMissionTutorial", true, false) == null,
+		"Training and Valhalla tutorial mounted before the first mission clear",
+	)
 	root.size = Vector2i(720, 1280)
 	_check(bool(game.call("open_field_team_for_stage", &"s1")), "Mission Control route rejected the first Field Team entry")
 	var field_team := await _wait_for_content(game, "res://scripts/ui/squad_select.gd")
@@ -50,6 +63,12 @@ func _run() -> void:
 		replay == null or replay.find_child("FieldTeamTutorial", true, false) == null,
 		"completed Field Team tutorial mounted again",
 	)
+
+	var first_clear := AuthoritativeCampaignFixtureType.clear_stage(
+		game, &"s1", "strategic-onboarding-first-clear",
+	)
+	_check(first_clear.get("accepted", false), "first mission clear fixture was rejected")
+	_check(bool(game.call("has_cleared_first_mission")), "committed first clear did not unlock post-mission onboarding")
 
 	root.size = Vector2i(1280, 720)
 	game.call("request_post_mission_tutorial")

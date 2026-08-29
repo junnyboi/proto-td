@@ -244,6 +244,15 @@ func campaign_projection() -> Dictionary:
 	return campaign.runtime_projection()
 
 
+func has_cleared_first_mission() -> bool:
+	var projection := campaign_projection()
+	var stage_order: Array = projection.get("stage_ids", [])
+	if stage_order.is_empty():
+		return false
+	var stage_stars: Dictionary = projection.get("stage_stars", {})
+	return int(stage_stars.get(stage_order[0], 0)) > 0
+
+
 ## Loadout sets for the UI: unlocked sets during a campaign, full catalogs
 ## for direct battles.
 func loadout_operator_ids() -> Array[StringName]:
@@ -672,13 +681,14 @@ func consume_field_team_tutorial_request() -> bool:
 
 
 func request_post_mission_tutorial() -> void:
-	_post_mission_tutorial_requested = true
+	if has_cleared_first_mission():
+		_post_mission_tutorial_requested = true
 
 
 func consume_post_mission_tutorial_request() -> bool:
 	var requested := _post_mission_tutorial_requested
 	_post_mission_tutorial_requested = false
-	return requested
+	return requested and has_cleared_first_mission()
 
 
 func _arm_post_mission_tutorial(result: int, resolution: Dictionary) -> void:
@@ -689,7 +699,7 @@ func _arm_post_mission_tutorial(result: int, resolution: Dictionary) -> void:
 		and not stage_order.is_empty()
 		and StringName(resolution.get("stage_id", &"")) == stage_order[0]
 	):
-		_post_mission_tutorial_requested = true
+		request_post_mission_tutorial()
 
 
 func set_view_preferences_path(path: String) -> void:
