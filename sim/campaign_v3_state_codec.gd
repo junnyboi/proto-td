@@ -89,7 +89,7 @@ static func normalize_core(
 		"campaign_seed", "campaign_generation", "save_revision", "next_recruitment_index",
 		"next_attempt_id", "next_resolution_index", "next_premium_pull_index",
 		"premium_pity_started_at_pull", "premium_pity_streak",
-		"premium_marks_started_at_resolution", "marks",
+		"premium_marks_started_at_resolution", "replay_marks_started_at_resolution", "marks",
 	]:
 		if typeof(value[key]) != TYPE_INT:
 			return _reject(&"invalid_integer")
@@ -123,6 +123,8 @@ static func normalize_core(
 		return _reject(&"invalid_counter")
 	if int(value["premium_marks_started_at_resolution"]) > int(value["next_resolution_index"]):
 		return _reject(&"invalid_marks_activation")
+	if not _in_range(value["replay_marks_started_at_resolution"], 1, U63_MAX):
+		return _reject(&"invalid_counter")
 	if not _in_range(value["marks"], 0, MARKS_MAX):
 		return _reject(&"invalid_counter")
 	var stage_stars := _normalize_stage_stars(value["stage_stars"], context)
@@ -181,6 +183,7 @@ static func normalize_core(
 		"premium_pity_started_at_pull": int(value["premium_pity_started_at_pull"]),
 		"premium_pity_streak": int(value["premium_pity_streak"]),
 		"premium_marks_started_at_resolution": int(value["premium_marks_started_at_resolution"]),
+		"replay_marks_started_at_resolution": int(value["replay_marks_started_at_resolution"]),
 		"marks": int(value["marks"]),
 		"stage_stars": stage_stars["value"],
 		"unlocked_traps": traps["value"],

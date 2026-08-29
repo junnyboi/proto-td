@@ -76,7 +76,7 @@ const PREPITY_CORE_KEYS := [
 	"unlocked_spells", "class_entitlements", "offers", "heroes",
 	"promotion_receipts", "promotion_proofs", "tickets", "memorial",
 ]
-const DATA_KEYS := [
+const PREREPLAY_MARKS_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
@@ -85,7 +85,7 @@ const DATA_KEYS := [
 	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
 	"command_receipts",
 ]
-const PRECOMMAND_DATA_KEYS := [
+const PREREPLAY_MARKS_PRECOMMAND_DATA_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
@@ -93,11 +93,39 @@ const PRECOMMAND_DATA_KEYS := [
 	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
 	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
 ]
-const CORE_KEYS := [
+const PREREPLAY_MARKS_CORE_KEYS := [
 	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
 	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
 	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
 	"premium_marks_started_at_resolution", "marks", "stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial",
+]
+const DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "replay_marks_started_at_resolution", "marks",
+	"stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
+	"command_receipts",
+]
+const PRECOMMAND_DATA_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "replay_marks_started_at_resolution", "marks",
+	"stage_stars", "unlocked_traps",
+	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
+	"promotion_proofs", "tickets", "memorial", "resolution_anchor", "last_resolution",
+]
+const CORE_KEYS := [
+	"campaign_uid", "campaign_seed", "campaign_generation", "save_revision",
+	"next_recruitment_index", "next_attempt_id", "next_resolution_index",
+	"next_premium_pull_index", "premium_pity_started_at_pull", "premium_pity_streak",
+	"premium_marks_started_at_resolution", "replay_marks_started_at_resolution", "marks",
+	"stage_stars", "unlocked_traps",
 	"unlocked_spells", "class_entitlements", "offers", "heroes", "promotion_receipts",
 	"promotion_proofs", "tickets", "memorial",
 ]
@@ -288,6 +316,7 @@ static func create_fresh(seed_value: int, generation: int, context: Dictionary) 
 		"premium_pity_started_at_pull": 0,
 		"premium_pity_streak": 0,
 		"premium_marks_started_at_resolution": 1,
+		"replay_marks_started_at_resolution": 1,
 		"marks": int(campaign["initial_marks"]),
 		"stage_stars": [],
 		"unlocked_traps": [],
@@ -317,6 +346,8 @@ static func normalize_data(value: Variant, context: Dictionary) -> Dictionary:
 		data = _upgrade_premium_data(source)
 	elif source.keys() == PREPITY_DATA_KEYS:
 		data = _upgrade_pity_data(source)
+	elif source.keys() == PREREPLAY_MARKS_DATA_KEYS:
+		data = _upgrade_replay_marks_data(source)
 	if not _exact_keys(data, DATA_KEYS):
 		return _reject(&"invalid_data_schema")
 	if typeof(data["heroes"]) != TYPE_ARRAY or (data["heroes"] as Array).is_empty():
@@ -384,8 +415,9 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 		return _reject(&"invalid_checksum")
 	var source_data: Variant = parsed["data"]
 	if typeof(source_data) == TYPE_DICTIONARY and (source_data as Dictionary).keys() in [
-		PRECOMMAND_DATA_KEYS, PREPITY_DATA_KEYS, PREPITY_PRECOMMAND_DATA_KEYS,
-		LEGACY_PRECOMMAND_DATA_KEYS, LEGACY_DATA_KEYS,
+		PRECOMMAND_DATA_KEYS, PREREPLAY_MARKS_DATA_KEYS,
+		PREREPLAY_MARKS_PRECOMMAND_DATA_KEYS, PREPITY_DATA_KEYS,
+		PREPITY_PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS, LEGACY_DATA_KEYS,
 	]:
 		if checksum != CanonicalJsonScript.sha256_hex(source_data):
 			return _reject(&"checksum_mismatch")
@@ -393,7 +425,8 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 			return _reject(&"noncanonical_save")
 		var upgrade_source: Dictionary = (source_data as Dictionary).duplicate(true)
 		if upgrade_source.keys() in [
-			PRECOMMAND_DATA_KEYS, PREPITY_PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS,
+			PRECOMMAND_DATA_KEYS, PREREPLAY_MARKS_PRECOMMAND_DATA_KEYS,
+			PREPITY_PRECOMMAND_DATA_KEYS, LEGACY_PRECOMMAND_DATA_KEYS,
 		]:
 			upgrade_source["command_receipts"] = []
 		var upgraded: Dictionary = upgrade_source
@@ -401,6 +434,8 @@ static func decode_parsed(parsed: Variant, source: String, context: Dictionary) 
 			upgraded = _upgrade_premium_data(upgrade_source)
 		elif upgrade_source.keys() == PREPITY_DATA_KEYS:
 			upgraded = _upgrade_pity_data(upgrade_source)
+		elif upgrade_source.keys() == PREREPLAY_MARKS_DATA_KEYS:
+			upgraded = _upgrade_replay_marks_data(upgrade_source)
 		var upgraded_save := encode_save(upgraded, context)
 		if not upgraded_save["accepted"]:
 			return upgraded_save
@@ -532,6 +567,8 @@ static func _upgrade_premium_data(value: Dictionary) -> Dictionary:
 				result[key] = 0
 			"premium_marks_started_at_resolution":
 				result[key] = int(value["next_resolution_index"])
+			"replay_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"heroes":
 				result[key] = _upgrade_premium_heroes(value[key])
 			"resolution_anchor":
@@ -558,6 +595,8 @@ static func _upgrade_pity_data(value: Dictionary) -> Dictionary:
 				result[key] = 0
 			"premium_marks_started_at_resolution":
 				result[key] = activation_resolution
+			"replay_marks_started_at_resolution":
+				result[key] = activation_resolution
 			"resolution_anchor":
 				result[key] = _upgrade_pity_anchor(
 					value[key], activation_pull, activation_resolution,
@@ -566,6 +605,23 @@ static func _upgrade_pity_data(value: Dictionary) -> Dictionary:
 				result[key] = _upgrade_pity_resolution(value[key], activation_pull)
 			"command_receipts":
 				result[key] = _upgrade_pity_command_records(value[key])
+			_:
+				result[key] = value[key].duplicate(true) \
+					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
+static func _upgrade_replay_marks_data(value: Dictionary) -> Dictionary:
+	var activation_resolution := int(value["next_resolution_index"])
+	var result := {}
+	for key: String in DATA_KEYS:
+		match key:
+			"replay_marks_started_at_resolution":
+				result[key] = activation_resolution
+			"resolution_anchor":
+				result[key] = _upgrade_replay_marks_anchor(
+					value[key], activation_resolution,
+				)
 			_:
 				result[key] = value[key].duplicate(true) \
 					if value[key] is Array or value[key] is Dictionary else value[key]
@@ -581,6 +637,8 @@ static func _upgrade_premium_core(value: Dictionary) -> Dictionary:
 			"premium_pity_started_at_pull", "premium_pity_streak":
 				result[key] = 0
 			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
+			"replay_marks_started_at_resolution":
 				result[key] = int(value["next_resolution_index"])
 			"heroes":
 				result[key] = _upgrade_premium_heroes(value[key])
@@ -604,9 +662,25 @@ static func _upgrade_pity_core(
 				result[key] = 0
 			"premium_marks_started_at_resolution":
 				result[key] = activation_resolution
+			"replay_marks_started_at_resolution":
+				result[key] = activation_resolution
 			_:
 				result[key] = value[key].duplicate(true) \
 					if value[key] is Array or value[key] is Dictionary else value[key]
+	return result
+
+
+static func _upgrade_replay_marks_core(
+	value: Dictionary,
+	activation_resolution: int,
+) -> Dictionary:
+	var result := {}
+	for key: String in CORE_KEYS:
+		if key == "replay_marks_started_at_resolution":
+			result[key] = activation_resolution
+		else:
+			result[key] = value[key].duplicate(true) \
+				if value[key] is Array or value[key] is Dictionary else value[key]
 	return result
 
 
@@ -647,6 +721,22 @@ static func _upgrade_pity_anchor(
 	)
 	result["after_core"] = _upgrade_pity_core(
 		value["after_core"], activation_pull, activation_resolution,
+	)
+	return result
+
+
+static func _upgrade_replay_marks_anchor(
+	value: Variant,
+	activation_resolution: int,
+) -> Variant:
+	if value == null:
+		return null
+	var result: Dictionary = value.duplicate(true)
+	result["before_core"] = _upgrade_replay_marks_core(
+		value["before_core"], activation_resolution,
+	)
+	result["after_core"] = _upgrade_replay_marks_core(
+		value["after_core"], activation_resolution,
 	)
 	return result
 
@@ -732,6 +822,8 @@ static func _migrate_data(value: Dictionary, context: Dictionary) -> Dictionary:
 				result[key] = 0
 			"premium_marks_started_at_resolution":
 				result[key] = int(value["next_resolution_index"])
+			"replay_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
 			"last_resolution":
 				result[key] = _upgrade_premium_resolution(value[key])
 			"class_entitlements":
@@ -759,6 +851,8 @@ static func _migrate_core(value: Dictionary, context: Dictionary) -> Dictionary:
 			"premium_pity_started_at_pull", "premium_pity_streak":
 				result[key] = 0
 			"premium_marks_started_at_resolution":
+				result[key] = int(value["next_resolution_index"])
+			"replay_marks_started_at_resolution":
 				result[key] = int(value["next_resolution_index"])
 			"class_entitlements":
 				result[key] = _entitlements_for_stars(value["stage_stars"], context)

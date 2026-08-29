@@ -30,6 +30,7 @@ const PREMIUM_LOSS_KEYS := [
 const STATE_CODEC_PATH := "res://sim/campaign_v3_state_codec.gd"
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
 const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
+const EconomyScript := preload("res://sim/campaign_v3_economy.gd")
 
 
 static func normalize(
@@ -242,7 +243,8 @@ static func _validate_transition(
 	for key: String in [
 		"campaign_uid", "campaign_seed", "campaign_generation", "next_recruitment_index",
 		"next_attempt_id", "next_premium_pull_index", "premium_pity_started_at_pull",
-		"premium_pity_streak", "premium_marks_started_at_resolution", "offers",
+		"premium_pity_streak", "premium_marks_started_at_resolution",
+		"replay_marks_started_at_resolution", "offers",
 		"promotion_receipts", "promotion_proofs", "tickets",
 	]:
 		if before[key] != after[key]:
@@ -254,13 +256,13 @@ static func _validate_transition(
 	var star_transition := _validate_stars(before, after, receipt)
 	if not star_transition["accepted"]:
 		return star_transition
-	var first_clear: bool = receipt["result"] == "clear" and receipt["stars_before"] == 0
-	var expected_rewards: Array = _stage_rewards(receipt["stage_id"], context) \
-		if first_clear else []
-	if int(before["next_resolution_index"]) < int(before["premium_marks_started_at_resolution"]):
-		expected_rewards = expected_rewards.filter(func(reward: Dictionary) -> bool:
-			return reward["kind"] != "currency"
-		)
+	var expected_rewards: Array[Dictionary] = EconomyScript.resolution_rewards(
+		before,
+		String(receipt["stage_id"]),
+		String(receipt["result"]),
+		int(receipt["stars_before"]),
+		context,
+	)
 	if receipt["rewards_granted"] != expected_rewards:
 		return _reject(&"receipt_rewards_mismatch")
 	var expected_marks_after := int(receipt["marks_before"])
@@ -641,7 +643,9 @@ static func _normalize_rewards(value: Variant) -> Dictionary:
 				raw.keys() != CURRENCY_REWARD_KEYS
 				or String(raw["id"]) != "marks"
 				or typeof(raw["amount"]) != TYPE_INT
-				or int(raw["amount"]) != 40
+				or int(raw["amount"]) not in [
+					EconomyScript.REPLAY_CLEAR_MARKS, 40,
+				]
 			):
 				return _reject(&"invalid_resolution_rows")
 		elif raw.keys() != CONTENT_REWARD_KEYS or kind not in ["trap", "spell"]:
@@ -737,13 +741,6 @@ static func _normalize_xp_awards(value: Variant) -> Dictionary:
 		previous = hero_id
 		out.append({"hero_id": hero_id, "delta": int(raw["delta"])})
 	return _accept(out)
-
-
-static func _stage_rewards(stage_id: String, context: Dictionary) -> Array:
-	for row: Dictionary in context["campaign"]["v3_stage_rewards"]:
-		if row["stage_id"] == stage_id:
-			return row["rewards"].duplicate(true)
-	return []
 
 
 static func _find_ticket(tickets: Array, attempt_id: int) -> Dictionary:

@@ -55,6 +55,17 @@ static func _core_hash_payload(value: Dictionary) -> Dictionary:
 			for key: String in codec.PREPITY_CORE_KEYS:
 				prepity[key] = value[key]
 			return prepity
+		# Saves created before replay stipends authenticate their existing
+		# tickets and resolution anchors over the prior core shape. Activation
+		# is set to their next unresolved resolution during migration.
+		if (
+			int(value.get("replay_marks_started_at_resolution", 0))
+			>= int(value.get("next_resolution_index", 1))
+		):
+			var prereplay_marks := {}
+			for key: String in codec.PREREPLAY_MARKS_CORE_KEYS:
+				prereplay_marks[key] = value[key]
+			return prereplay_marks
 		return value
 	var legacy := {}
 	for key: String in codec.LEGACY_CORE_KEYS:

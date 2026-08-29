@@ -37,7 +37,7 @@ Duplicate-command reconstruction, canonical receipts, events, projections, and c
 
 ## Marks pacing
 
-The pull price remains **40 Marks** and starting funds remain **120 Marks**, preserving three opening pulls. Every campaign stage grants **40 Marks on first clear only**. Existing first-clear gating prevents reward farming on replay.[3]
+The pull price remains **40 Marks** and starting funds remain **120 Marks**, preserving three opening pulls. Every campaign stage grants **40 Marks on first clear**. Every successful clear of an already-completed mission grants a **20-Mark replay stipend**; defeats and withdrawals grant none.[3]
 
 | Progress | Lifetime Marks available | Lifetime pulls funded | Pacing purpose |
 |---|---:|---:|---|
@@ -47,7 +47,7 @@ The pull price remains **40 Marks** and starting funds remain **120 Marks**, pre
 | After Stage 7 | 400 | 10 | Guarantee a 5-star before the final operation if all earned Marks are spent |
 | After Stage 8 | 440 | 11 | Provide one post-campaign reserve life |
 
-Currency rewards use `{ "kind": "currency", "id": "marks", "amount": 40 }` in `v3_stage_rewards`. Resolution receipts continue to record `marks_before` and `marks_after`; history validation proves that their delta equals the first-clear currency rewards and remains zero on repeat clears.
+First-clear currency rewards use `{ "kind": "currency", "id": "marks", "amount": 40 }` in `v3_stage_rewards`. Successful replay receipts use the same canonical currency shape with `amount: 20`. Resolution receipts continue to record `marks_before` and `marks_after`; history validation proves the exact 40/20/0 delta for first clear, successful replay, or unsuccessful resolution.
 
 ## Reveal sequence
 
@@ -70,11 +70,11 @@ The gacha screen displays `5-star base rate 5% • guaranteed within 10 pulls`, 
 
 ## Acceptance gates
 
-The implementation is complete only when deterministic tests prove natural 5-star reset, forced tenth-pull selection, migration activation boundaries, command replay, duplicate-command idempotency, exactly 40 first-clear Marks per stage, zero Marks on repeat clear, reveal input locking, skip finalization, and reduced-motion finalization. Native visual checks must pass at 1280×720 and 720×1280, followed by a matching Godot 4.7.2 Web export with clean browser network and console logs.
+The implementation is complete only when deterministic tests prove natural 5-star reset, forced tenth-pull selection, migration activation boundaries, command replay, duplicate-command idempotency, exactly 40 first-clear Marks per stage, exactly 20 Marks on a successful replay, zero replay Marks on defeat, reveal input locking, skip finalization, and reduced-motion finalization. Native visual checks must pass at 1280×720 and 720×1280, followed by a matching Godot 4.7.2 Web export with clean browser network and console logs.
 
 ## Implementation record
 
-The delivered simulation extends the canonical campaign core, save migration, strategic hash compatibility, command receipt grammar, command replay, premium selection, battle resolution, and presentation projection. `premium_marks_started_at_resolution` activates the new first-clear currency rewards at the migration boundary so historical resolutions remain byte-compatible while all future first clears receive the tuned payout.
+The delivered simulation extends the canonical campaign core, save migration, strategic hash compatibility, command receipt grammar, command replay, premium selection, battle resolution, and presentation projection. `premium_marks_started_at_resolution` activates first-clear currency rewards at their migration boundary. `replay_marks_started_at_resolution` independently preserves historical replay receipts while activating the 20-Mark stipend for future successful replays.
 
 | Validation | Result |
 |---|---|
@@ -91,10 +91,10 @@ The delivered simulation extends the canonical campaign core, save migration, st
 | Web console/network | Pass: final PCK and WASM HTTP 200; no post-load console errors |
 | Published preview | Checkpoint `ab19a0a3` |
 
-The automated pity suite verifies the authored 2/40 five-star weight, a forced five-star on the tenth eligible pull after nine misses, natural five-star reset, pre-pity migration activation, 320 total first-clear Marks, 440 lifetime Marks including starting funds, exactly 11 funded pulls, and zero repeat-clear currency rewards. The reveal suite verifies the ten-segment meter, rarity cards, input lock, visible skip action, final result copy, and reduced-motion final state.
+The automated pity suite verifies the authored 2/40 five-star weight, a forced five-star on the tenth eligible pull after nine misses, natural five-star reset, pre-pity and pre-replay migration activation, 640 total first-clear Marks, 760 baseline Marks including starting funds, exactly 19 baseline funded pulls, and a 20-Mark successful replay receipt. The reveal suite verifies the ten-segment meter, rarity cards, input lock, visible skip action, final result copy, and reduced-motion final state.
 
 ## References
 
 [1]: ../sim/campaign_v3_gacha.gd "Current premium pull and life-grant authority"
 [2]: ../sim/campaign_v3_command_codec.gd "Canonical command receipt contract"
-[3]: ../sim/campaign_v3_attempts.gd "First-clear reward authority and replay-farming prevention"
+[3]: ../sim/campaign_v3_economy.gd "First-clear and successful-replay reward authority"

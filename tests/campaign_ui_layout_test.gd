@@ -31,13 +31,33 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	game.call("set_run_seed", 1701)
 	_check(bool(game.call("start_campaign", false, true)), "campaign layout fixture failed")
-	var clear_fixture := CampaignFixture.clear_stage(game, &"s1", "campaign-ui-layout")
+	var clear_fixture := CampaignFixture.clear_stage(game, &"s1", "campaign-ui-layout", 1)
 	_check(
 		clear_fixture.get("accepted", false),
 		"authoritative Campaign layout clear fixture failed: %s" % clear_fixture.get(
 			"error_code", &"unknown",
 		),
 	)
+	var replay_fixture := CampaignFixture.clear_stage(
+		game, &"s1", "campaign-ui-layout-replay", 3,
+	)
+	_check(
+		replay_fixture.get("accepted", false),
+		"authoritative Campaign replay fixture failed: %s" % replay_fixture.get(
+			"error_code", &"unknown",
+		),
+	)
+	if replay_fixture.get("accepted", false):
+		var replay_resolution: Dictionary = replay_fixture["resolution"]
+		_check(
+			replay_resolution["stars_before"] == 1
+			and replay_resolution["stars_after"] == 3,
+			"Campaign replay did not durably improve the mission from one to three stars",
+		)
+		_check(
+			replay_resolution["marks_after"] - replay_resolution["marks_before"] == 20,
+			"Campaign replay did not grant exactly 20 Marks",
+		)
 	game.set("selected_stage_id", &"s2")
 	if FileAccess.file_exists(STAGING_PREFERENCES_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(STAGING_PREFERENCES_PATH))

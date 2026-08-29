@@ -5,6 +5,7 @@ const XP_PER_OPERATION := CampaignProgressionScript.XP_PER_OPERATION
 const U63_MAX := 9_223_372_036_854_775_807
 const CODEC_PATH := "res://sim/campaign_v3_codec.gd"
 const CampaignProgressionScript := preload("res://sim/campaign_progression.gd")
+const EconomyScript := preload("res://sim/campaign_v3_economy.gd")
 const CommandsScript := preload("res://sim/campaign_v3_commands.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
 const StateCodecScript := preload("res://sim/campaign_v3_state_codec.gd")
@@ -256,11 +257,9 @@ static func _derive_resolution(
 	var stage_id := String(ticket["stage_id"])
 	var stars_before := _stars_for(before["stage_stars"], stage_id)
 	var stars_after := stars_before
-	var first_clear := false
 	if outcome["result"] == "clear":
 		stars_after = maxi(stars_before, int(outcome["stars"]))
 		if stars_before == 0:
-			first_clear = true
 			after["stage_stars"] = (after["stage_stars"] as Array).duplicate(true)
 			(
 				after["stage_stars"]
@@ -275,17 +274,25 @@ static func _derive_resolution(
 				)
 			)
 		elif stars_after != stars_before:
-			for row: Dictionary in after["stage_stars"]:
+			var upgraded := false
+			var stage_rows := after["stage_stars"] as Array
+			for index: int in stage_rows.size():
+				var row := stage_rows[index] as Dictionary
 				if row["stage_id"] == stage_id:
-					row["stars"] = stars_after
+					var upgraded_row := row.duplicate(true)
+					upgraded_row["stars"] = stars_after
+					stage_rows[index] = upgraded_row
+					upgraded = true
 					break
-	var rewards: Array[Dictionary] = []
-	if first_clear:
-		rewards = _stage_rewards(stage_id, context)
-		if int(before["next_resolution_index"]) < int(before["premium_marks_started_at_resolution"]):
-			rewards = rewards.filter(func(reward: Dictionary) -> bool:
-				return reward["kind"] != "currency"
-			)
+			if not upgraded:
+				return _reject(&"invalid_campaign_state")
+	var rewards: Array[Dictionary] = EconomyScript.resolution_rewards(
+		before,
+		stage_id,
+		String(outcome["result"]),
+		stars_before,
+		context,
+	)
 	after["unlocked_traps"] = (after["unlocked_traps"] as Array).duplicate()
 	after["unlocked_spells"] = (after["unlocked_spells"] as Array).duplicate()
 	for reward: Dictionary in rewards:
@@ -551,13 +558,6 @@ static func _stars_for(rows: Array, stage_id: String) -> int:
 		if row["stage_id"] == stage_id:
 			return int(row["stars"])
 	return 0
-
-
-static func _stage_rewards(stage_id: String, context: Dictionary) -> Array[Dictionary]:
-	for row: Dictionary in context["campaign"]["v3_stage_rewards"]:
-		if row["stage_id"] == stage_id:
-			return (row["rewards"] as Array).duplicate(true)
-	return []
 
 
 static func _entitlements_for_stars(stage_rows: Array, context: Dictionary) -> Array[String]:

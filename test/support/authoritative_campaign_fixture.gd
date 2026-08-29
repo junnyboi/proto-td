@@ -9,6 +9,7 @@ static func clear_stage(
 	game: Node,
 	stage_id: StringName,
 	command_prefix: String = "campaign-fixture",
+	stars: int = 3,
 ) -> Dictionary:
 	if game == null or not bool(game.get("campaign_active")):
 		return _reject(&"campaign_inactive")
@@ -50,7 +51,7 @@ static func clear_stage(
 		"result": "clear",
 		"terminal_reason": "clear",
 		"terminal_tick": 120,
-		"stars": 3,
+		"stars": stars,
 		"leaks": 0,
 		"kills": 12,
 		"rows": [{

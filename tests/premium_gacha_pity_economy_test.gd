@@ -4,6 +4,7 @@ const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
 const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
 const CampaignV3Codec := preload("res://sim/campaign_v3_codec.gd")
 const CampaignV3Gacha := preload("res://sim/campaign_v3_gacha.gd")
+const CampaignV3Hash := preload("res://sim/campaign_v3_hash.gd")
 const CanonicalJson := preload("res://sim/canonical_json.gd")
 const BattleOutcomeV3 := preload("res://sim/battle_outcome_v3.gd")
 
@@ -14,7 +15,8 @@ func _init() -> void:
 	_test_pool_contract()
 	_test_hard_pity_and_natural_reset()
 	_test_prepity_save_activation()
-	_test_marks_pacing_and_antifarm()
+	_test_prereplay_save_activation()
+	_test_marks_pacing_and_replay_stipend()
 	if _failures.is_empty():
 		print("PREMIUM_GACHA_PITY_ECONOMY_TEST_OK")
 		quit(0)
@@ -48,7 +50,7 @@ func _test_pool_contract() -> void:
 		_check(stage_marks == 40, "%s does not grant exactly 40 Marks" % stage["stage_id"])
 		marks_sum += stage_marks
 	_check(marks_sum == 640, "campaign first-clear Marks total is not 640")
-	_check((120 + marks_sum) / 40 == 19, "campaign does not fund exactly 19 lifetime pulls")
+	_check((120 + marks_sum) / 40 == 19, "campaign baseline does not fund exactly 19 pulls")
 
 
 func _test_hard_pity_and_natural_reset() -> void:
@@ -160,7 +162,7 @@ func _test_prepity_save_activation() -> void:
 		_check(receipt["pity_before"] == 0, "post-migration pity did not start at zero")
 
 
-func _test_marks_pacing_and_antifarm() -> void:
+func _test_marks_pacing_and_replay_stipend() -> void:
 	var context := RuntimeContext.build()
 	var created: Dictionary = CampaignStateV3.create(808, 1, context)
 	_check(created.get("accepted", false), "Marks fixture creation failed")
@@ -168,7 +170,7 @@ func _test_marks_pacing_and_antifarm() -> void:
 		return
 	var state = created["value"]
 	var hero_id := String(state.data_copy()["heroes"][0]["hero_id"])
-	var first := _clear_stage(state, context, hero_id, 1)
+	var first := _clear_stage(state, context, hero_id, 1, 1)
 	if first.is_empty():
 		return
 	state = first["state"]
@@ -176,13 +178,98 @@ func _test_marks_pacing_and_antifarm() -> void:
 	_check(first_receipt["marks_before"] == 120, "first clear Marks-before changed")
 	_check(first_receipt["marks_after"] == 160, "first clear did not grant 40 Marks")
 	_check(_currency_total(first_receipt["rewards_granted"]) == 40, "first-clear currency receipt missing")
-	var replay := _clear_stage(state, context, hero_id, 2)
+	var replay := _clear_stage(state, context, hero_id, 2, 3)
 	if replay.is_empty():
 		return
 	var replay_receipt: Dictionary = replay["receipt"]
 	_check(replay_receipt["marks_before"] == 160, "repeat clear Marks-before changed")
-	_check(replay_receipt["marks_after"] == 160, "repeat clear farmed Marks")
-	_check(_currency_total(replay_receipt["rewards_granted"]) == 0, "repeat clear retained currency reward")
+	_check(replay_receipt["stars_before"] == 1, "repeat clear did not read prior star record")
+	_check(replay_receipt["stars_after"] == 3, "repeat clear did not improve the star record")
+	_check(
+		int(replay["state"].runtime_projection()["stage_stars"].get(&"s1", 0)) == 3,
+		"restored Campaign projection did not retain the improved star record",
+	)
+	_check(replay_receipt["marks_after"] == 180, "repeat clear did not grant 20 Marks")
+	_check(_currency_total(replay_receipt["rewards_granted"]) == 20, "repeat-clear currency receipt missing")
+	var defeat := _clear_stage(replay["state"], context, hero_id, 3, 0, false)
+	if defeat.is_empty():
+		return
+	_check(defeat["receipt"]["marks_before"] == 180, "replay defeat Marks-before changed")
+	_check(defeat["receipt"]["marks_after"] == 180, "replay defeat granted Marks")
+	_check(defeat["receipt"]["rewards_granted"].is_empty(), "replay defeat retained a reward")
+	_check(defeat["receipt"]["stars_after"] == 3, "replay defeat reduced the best star record")
+
+
+func _test_prereplay_save_activation() -> void:
+	var context := RuntimeContext.build()
+	var created: Dictionary = CampaignStateV3.create(809, 1, context)
+	_check(created.get("accepted", false), "pre-replay-economy fixture creation failed")
+	if not created.get("accepted", false):
+		return
+	var state = created["value"]
+	var hero_id := String(state.data_copy()["heroes"][0]["hero_id"])
+	var first := _clear_stage(state, context, hero_id, 1, 1)
+	if first.is_empty():
+		return
+	state = first["state"]
+	var old_replay := _clear_stage(state, context, hero_id, 2, 3)
+	if old_replay.is_empty():
+		return
+	state = old_replay["state"]
+	_check(old_replay["receipt"]["marks_after"] == 180, "current replay fixture did not gain Marks")
+
+	var prereplay_data: Dictionary = state.data_copy()
+	prereplay_data["marks"] = 160
+	var old_after_core: Dictionary = prereplay_data["resolution_anchor"]["after_core"]
+	old_after_core["marks"] = 160
+	old_after_core["replay_marks_started_at_resolution"] = 3
+	var old_after_hash: Dictionary = CampaignV3Hash.of_core(old_after_core, context)
+	_check(old_after_hash.get("accepted", false), "legacy replay after-core hash fixture failed")
+	if not old_after_hash.get("accepted", false):
+		return
+	prereplay_data["resolution_anchor"]["strategic_body_hash_after"] = old_after_hash["hex"]
+	for receipt: Dictionary in [
+		prereplay_data["last_resolution"],
+		prereplay_data["command_receipts"][-1]["receipt"]["resolution"],
+	]:
+		receipt["rewards_granted"] = []
+		receipt["marks_after"] = 160
+		receipt["strategic_body_hash_after"] = old_after_hash["hex"]
+	prereplay_data.erase("replay_marks_started_at_resolution")
+	for core_key: String in ["before_core", "after_core"]:
+		prereplay_data["resolution_anchor"][core_key].erase(
+			"replay_marks_started_at_resolution",
+		)
+	var prereplay_document := {
+		"schema": CampaignV3Codec.SAVE_SCHEMA,
+		"version": CampaignV3Codec.SAVE_VERSION,
+		"checksum": CanonicalJson.sha256_hex(prereplay_data),
+		"data": prereplay_data,
+	}
+	var migrated: Dictionary = CampaignStateV3.restore_source(
+		CanonicalJson.text(prereplay_document), context,
+	)
+	_check(
+		migrated.get("accepted", false),
+		"pre-replay-economy save did not migrate: %s" % migrated.get("error_code", &"unknown"),
+	)
+	if not migrated.get("accepted", false):
+		return
+	state = migrated["value"]
+	var migrated_data: Dictionary = state.data_copy()
+	_check(
+		migrated_data["replay_marks_started_at_resolution"] == 3,
+		"replay Marks activated retroactively during migration",
+	)
+	_check(
+		int(state.runtime_projection()["stage_stars"].get(&"s1", 0)) == 3,
+		"pre-replay-economy migration lost the improved star record",
+	)
+	var new_replay := _clear_stage(state, context, hero_id, 3, 3)
+	if new_replay.is_empty():
+		return
+	_check(new_replay["receipt"]["marks_before"] == 160, "migrated replay Marks-before changed")
+	_check(new_replay["receipt"]["marks_after"] == 180, "first post-migration replay did not grant 20 Marks")
 
 
 func _pull(state: Variant, context: Dictionary, command_id: String) -> Dictionary:
@@ -200,11 +287,21 @@ func _pull(state: Variant, context: Dictionary, command_id: String) -> Dictionar
 	} if restored != null else {}
 
 
-func _clear_stage(state: Variant, context: Dictionary, hero_id: String, ordinal: int) -> Dictionary:
+func _clear_stage(
+	state: Variant,
+	context: Dictionary,
+	hero_id: String,
+	ordinal: int,
+	stars: int = 3,
+	cleared: bool = true,
+) -> Dictionary:
 	var begin: Dictionary = state.begin_attempt(
 		"marks:begin:%d" % ordinal, "s1", [hero_id], 900 + ordinal, state.save_revision(),
 	)
-	_check(begin.get("accepted", false), "Marks begin %d failed" % ordinal)
+	_check(
+		begin.get("accepted", false),
+		"Marks begin %d failed: %s" % [ordinal, begin.get("error_code", &"unknown")],
+	)
 	if not begin.get("accepted", false):
 		return {}
 	state = _restore(begin, context)
@@ -216,11 +313,11 @@ func _clear_stage(state: Variant, context: Dictionary, hero_id: String, ordinal:
 		"schema_version": BattleOutcomeV3.SCHEMA_VERSION,
 		"attempt_id": ticket["attempt_id"],
 		"ticket_hash": ticket["ticket_hash"],
-		"result": "clear",
-		"terminal_reason": "clear",
+		"result": "clear" if cleared else "defeat",
+		"terminal_reason": "clear" if cleared else "leak_defeat",
 		"terminal_tick": 120,
-		"stars": 3,
-		"leaks": 0,
+		"stars": stars if cleared else 0,
+		"leaks": 0 if cleared else 1,
 		"kills": 12,
 		"rows": [{
 			"slot_index": frozen["slot_index"],
@@ -237,17 +334,35 @@ func _clear_stage(state: Variant, context: Dictionary, hero_id: String, ordinal:
 	_check(outcome.get("accepted", false), "Marks outcome %d failed" % ordinal)
 	if not outcome.get("accepted", false):
 		return {}
+	var resolve_command_id := "marks:resolve:%d" % ordinal
+	var resolve_revision: int = state.save_revision()
 	var resolved: Dictionary = state.resolve_attempt(
-		"marks:resolve:%d" % ordinal,
+		resolve_command_id,
 		ticket["attempt_id"],
 		outcome["value"],
-		state.save_revision(),
+		resolve_revision,
 	)
-	_check(resolved.get("accepted", false), "Marks resolution %d failed" % ordinal)
+	_check(
+		resolved.get("accepted", false),
+		"Marks resolution %d failed: %s" % [ordinal, resolved.get("error_code", &"unknown")],
+	)
 	if not resolved.get("accepted", false):
 		return {}
 	var restored: Variant = _restore(resolved, context)
 	var receipt: Dictionary = restored.data_copy()["last_resolution"] if restored != null else {}
+	if restored != null:
+		var duplicate: Dictionary = restored.resolve_attempt(
+			resolve_command_id,
+			ticket["attempt_id"],
+			outcome["value"],
+			resolve_revision,
+		)
+		_check(duplicate.get("accepted", false), "duplicate Marks resolution was rejected")
+		_check(not duplicate.get("payload", {}).has("mutation"), "duplicate Marks resolution created a mutation")
+		_check(
+			duplicate.get("payload", {}).get("resolution", {}) == receipt,
+			"duplicate Marks resolution changed its receipt",
+		)
 	return {
 		"state": restored,
 		"receipt": receipt.duplicate(true),
