@@ -214,16 +214,20 @@ func queued_pack_ids() -> Array[String]:
 
 
 func reset_for_tests() -> void:
-	_cancel_active()
+	prepare_for_player_data_clear()
 	_specs.clear()
-	_queue.clear()
-	_queued.clear()
-	_background_requests.clear()
 	_loaded.clear()
-	_failed.clear()
 	_background_downloads_enabled = true
 	_network_profile = &"standard"
 	_background_class_limit = 2
+
+
+func prepare_for_player_data_clear() -> void:
+	_cancel_active()
+	_queue.clear()
+	_queued.clear()
+	_background_requests.clear()
+	_failed.clear()
 
 
 func _process(_delta: float) -> void:

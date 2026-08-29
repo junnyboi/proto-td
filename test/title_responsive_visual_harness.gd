@@ -34,8 +34,13 @@ func _run() -> void:
 		var scroll := title.find_child("SettingsScroll", true, false) as ScrollContainer
 		if scroll != null:
 			scroll.follow_focus = false
-			if settings_focus == "background-downloads":
-				var target := title.find_child("BackgroundDownloadsButton", true, false) as Control
+			if settings_focus in ["background-downloads", "clear-player-data"]:
+				var target_name := (
+					"ClearPlayerDataButton"
+					if settings_focus == "clear-player-data"
+					else "BackgroundDownloadsButton"
+				)
+				var target := title.find_child(target_name, true, false) as Control
 				if target != null:
 					target.grab_focus()
 					scroll.ensure_control_visible(target)

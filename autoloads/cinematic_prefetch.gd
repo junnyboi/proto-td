@@ -172,17 +172,21 @@ func cached_stream_path(stream_key: String) -> String:
 
 
 func reset_for_tests() -> void:
+	prepare_for_player_data_clear()
+	_stream_urls.clear()
+	_title_entry_count = 0
+	_background_downloads_enabled = true
+	_background_limit = 6
+	_active_background = false
+
+
+func prepare_for_player_data_clear() -> void:
 	_cancel_active_download(true)
 	_queue.clear()
 	_queued.clear()
 	_background_queued.clear()
 	_ready_paths.clear()
 	_failed_reasons.clear()
-	_stream_urls.clear()
-	_title_entry_count = 0
-	_background_downloads_enabled = true
-	_background_limit = 6
-	_active_background = false
 
 
 func _process(_delta: float) -> void:

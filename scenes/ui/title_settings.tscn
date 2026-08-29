@@ -341,6 +341,27 @@ max_value = 150.0
 step = 5.0
 value = 100.0
 
+[node name="PlayerDataHeading" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+layout_mode = 2
+text = ""
+
+[node name="PlayerDataHint" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+layout_mode = 2
+theme_type_variation = &"AuiDetailLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="ClearPlayerDataButton" type="Button" parent="SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection"]
+custom_minimum_size = Vector2(0, 82)
+layout_mode = 2
+focus_mode = 2
+mouse_default_cursor_shape = 2
+theme_type_variation = &"AuiSecondaryButton"
+text = ""
+clip_text = false
+autowrap_mode = 2
+text_overrun_behavior = 0
+
 [node name="SettingsError" type="Label" parent="SafeFrame/CommandFrame/FramePadding/StateLayout"]
 visible = false
 layout_mode = 2

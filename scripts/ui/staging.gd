@@ -161,6 +161,7 @@ var _sfx_volume := 1.0
 var _frame_limit := 0
 var _text_scale := 1.0
 var _background_downloads_enabled := true
+var _player_data_clear_pending := false
 
 @onready var _settings_state: TitleSettings = $TitleSettings
 
@@ -183,6 +184,7 @@ func _ready() -> void:
 	_settings_state.cancel_requested.connect(_cancel_settings)
 	_settings_state.apply_requested.connect(_apply_settings)
 	_settings_state.preview_requested.connect(_preview_settings)
+	_settings_state.clear_player_data_requested.connect(_clear_player_data)
 	_settings_state.close_completed.connect(_on_settings_close_completed)
 	var content_packs := get_node_or_null("/root/ContentPacks")
 	if content_packs != null and not content_packs.background_policy_changed.is_connected(
@@ -1137,6 +1139,18 @@ func _preview_settings(draft: Dictionary) -> void:
 	_apply_preference_values(draft, false)
 
 
+func _clear_player_data() -> void:
+	if _screen_state != ScreenState.SETTINGS:
+		return
+	_player_data_clear_pending = true
+	var result: Dictionary = Game.clear_player_data()
+	if bool(result.get(&"accepted", false)):
+		Sfx.play("ui_confirm")
+		return
+	_player_data_clear_pending = false
+	_settings_state.show_player_data_clear_failure()
+
+
 func _on_settings_close_completed() -> void:
 	if _screen_state != ScreenState.SETTINGS:
 		return
@@ -1248,6 +1262,8 @@ func _on_content_background_policy_changed(
 		_network_profile: StringName,
 		_class_limit: int,
 	) -> void:
+	if _player_data_clear_pending:
+		return
 	_apply_background_download_policy()
 	if _background_downloads_enabled:
 		_resume_background_prefetch()

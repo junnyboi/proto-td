@@ -18,6 +18,7 @@ const CAMPAIGN_RUNTIME_CONTEXT_SCRIPT := preload("res://sim/campaign_runtime_con
 const CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT := preload("res://sim/campaign_runtime_authority.gd")
 const CANONICAL_JSON_SCRIPT := preload("res://sim/canonical_json.gd")
 const TRAINING_SUPPORT_SCRIPT := preload("res://scripts/ui/components/training_support.gd")
+const PLAYER_DATA_RESET_SCRIPT := preload("res://scripts/player_data_reset.gd")
 
 var run_seed: int = 42
 var default_stage_id: StringName = &"s1"
@@ -697,6 +698,31 @@ func set_view_preferences_path(path: String) -> void:
 
 func view_preferences_path() -> String:
 	return _view_preferences_path
+
+
+## Stops persistent writers, removes the complete user:// tree, clears live
+## campaign authority, and returns to a newly instantiated start screen.
+func clear_player_data() -> Dictionary:
+	for service_path: NodePath in [
+		NodePath("/root/ContentPacks"),
+		NodePath("/root/CinematicPrefetch"),
+		NodePath("/root/MissionCinematicPrefetch"),
+	]:
+		var service := get_node_or_null(service_path)
+		if service != null and service.has_method("prepare_for_player_data_clear"):
+			service.call("prepare_for_player_data_clear")
+	var cleared: Dictionary = PLAYER_DATA_RESET_SCRIPT.clear_all()
+	if not bool(cleared.get(&"accepted", false)):
+		push_error(
+			"Game.clear_player_data: %s (%s)" % [
+				String(cleared.get(&"error_code", &"player_data_clear_failed")),
+				cleared.get(&"failures", []),
+			],
+		)
+		return cleared
+	_view_preferences_path = DEFAULT_VIEW_PREFERENCES_PATH
+	open_title()
+	return cleared
 
 
 ## next Start always creates a fresh campaign with no stale selection.

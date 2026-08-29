@@ -175,17 +175,21 @@ func queued_stage_ids() -> Array[StringName]:
 
 
 func reset_for_tests() -> void:
+	prepare_for_player_data_clear()
+	_stream_urls.clear()
+	_title_entry_count = 0
+	_background_downloads_enabled = true
+	_background_limit = 16
+	_active_background = false
+
+
+func prepare_for_player_data_clear() -> void:
 	_cancel_active(true)
 	_queue.clear()
 	_queued.clear()
 	_background_queued.clear()
 	_ready_paths.clear()
 	_failed_reasons.clear()
-	_stream_urls.clear()
-	_title_entry_count = 0
-	_background_downloads_enabled = true
-	_background_limit = 16
-	_active_background = false
 
 
 static func verify_file(path: String, expected_bytes: int, expected_sha256: String) -> bool:

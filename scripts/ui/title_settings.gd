@@ -4,12 +4,15 @@ extends Control
 signal cancel_requested
 signal apply_requested(draft: Dictionary)
 signal preview_requested(draft: Dictionary)
+signal clear_player_data_requested
 signal transition_state_changed(state: StringName)
 signal entry_completed
 signal close_completed
 
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
+const DialogType := preload("res://scripts/ui/components/lunaris_dialog_sheet.gd")
+const LunarisOpsStyleType := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const FRAME_LIMITS := [0, 30, 60, 120]
 const TITLE_UI_SCALE := 1.15
 const TITLE_FONT_SCALE := 3.0
@@ -40,6 +43,7 @@ var _transition_tween: Tween = null
 var _frame_rest_position := Vector2.ZERO
 var _last_valid_focus: Control = null
 var _redirect_pending := false
+var _clear_data_dialog: Dictionary = {}
 
 @onready var _safe_frame: MarginContainer = $SafeFrame
 @onready var _command_frame: PanelContainer = $SafeFrame/CommandFrame
@@ -76,6 +80,9 @@ var _redirect_pending := false
 @onready var _accessibility_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/AccessibilityHeading
 @onready var _text_scale_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow/TextScaleLabel
 @onready var _text_scale_slider: HSlider = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/TextScaleRow/TextScaleSlider
+@onready var _player_data_heading: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/PlayerDataHeading
+@onready var _clear_data_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/ClearPlayerDataButton
+@onready var _player_data_hint: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsScroll/BodyMargin/SettingsColumns/GraphicsAccessibilitySection/SectionMargin/RightSection/PlayerDataHint
 @onready var _error_label: Label = $SafeFrame/CommandFrame/FramePadding/StateLayout/SettingsError
 @onready var _action_dock: GridContainer = $SafeFrame/CommandFrame/FramePadding/StateLayout/ActionDock
 @onready var _apply_button: Button = $SafeFrame/CommandFrame/FramePadding/StateLayout/ActionDock/SettingsApplyButton
@@ -99,6 +106,21 @@ func _ready() -> void:
 	_motion_button.pressed.connect(_toggle_motion)
 	_background_downloads_button.pressed.connect(_toggle_background_downloads)
 	_text_scale_slider.value_changed.connect(_on_text_scale_changed)
+	_clear_data_button.pressed.connect(_request_clear_player_data)
+	_clear_data_dialog = DialogType.create(
+		self,
+		"ClearPlayerDataConfirmation",
+		UiCopyType.text(&"ui.title.clear_player_data_confirm_title", "Clear all player data?"),
+		UiCopyType.text(
+			&"ui.title.clear_player_data_confirm_body",
+			"This permanently deletes campaign progress, roster, currency, settings, tutorials, and downloaded data. This cannot be undone.",
+		),
+		UiCopyType.text(&"ui.title.clear_player_data_confirm", "Clear Everything"),
+		UiCopyType.text(&"ui.common.cancel", "Cancel"),
+		true,
+	)
+	(_clear_data_dialog[&"cancel"] as Button).pressed.connect(_cancel_clear_player_data)
+	(_clear_data_dialog[&"confirm"] as Button).pressed.connect(_confirm_clear_player_data)
 	_locale_selector.alignment = BoxContainer.ALIGNMENT_CENTER
 	_apply_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	for color_name: StringName in [
@@ -248,6 +270,11 @@ func exit_duration() -> float:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _clear_data_dialog.is_empty() and DialogType.transition_state_name(_clear_data_dialog) != &"closed":
+		if event.is_action_pressed("ui_cancel") and not DialogType.is_pending(_clear_data_dialog):
+			get_viewport().set_input_as_handled()
+			_cancel_clear_player_data()
+		return
 	if _transition_state != TransitionState.ACTIVE:
 		return
 	if event.is_action_pressed("ui_cancel"):
@@ -264,6 +291,56 @@ func _request_apply() -> void:
 	if _transition_state == TransitionState.ACTIVE:
 		_clear_error()
 		apply_requested.emit(_draft.duplicate(true))
+
+
+func _request_clear_player_data() -> void:
+	if _transition_state != TransitionState.ACTIVE or _clear_data_dialog.is_empty():
+		return
+	_clear_error()
+	DialogType.set_pending(_clear_data_dialog, false)
+	DialogType.set_status(_clear_data_dialog, "")
+	DialogType.show_dialog(_clear_data_dialog, _clear_data_button)
+	Sfx.play("menu_open")
+
+
+func _cancel_clear_player_data() -> void:
+	if _clear_data_dialog.is_empty() or DialogType.is_pending(_clear_data_dialog):
+		return
+	DialogType.hide_dialog(_clear_data_dialog)
+	Sfx.play("menu_close")
+
+
+func _confirm_clear_player_data() -> void:
+	if (
+		_clear_data_dialog.is_empty()
+		or DialogType.transition_state_name(_clear_data_dialog) != &"open"
+		or DialogType.is_pending(_clear_data_dialog)
+	):
+		return
+	DialogType.set_status(_clear_data_dialog, "")
+	DialogType.set_pending(
+		_clear_data_dialog,
+		true,
+		UiCopyType.text(&"ui.title.clear_player_data_pending", "Clearing…").to_upper(),
+	)
+	clear_player_data_requested.emit()
+
+
+func show_player_data_clear_failure() -> void:
+	if _clear_data_dialog.is_empty():
+		return
+	DialogType.set_pending(_clear_data_dialog, false)
+	DialogType.set_status(
+		_clear_data_dialog,
+		UiCopyType.text(
+			&"ui.title.clear_player_data_failed",
+			"Player data could not be completely cleared. Try again.",
+		),
+		DialogType.StatusLive.ASSERTIVE,
+	)
+	var confirm := _clear_data_dialog.get(&"confirm") as Button
+	if confirm != null:
+		confirm.grab_focus.call_deferred()
 
 
 func _on_locale_selected(locale_id: StringName) -> void:
@@ -350,6 +427,7 @@ func _on_text_scale_changed(value: float) -> void:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	var focus_owner := get_viewport().gui_get_focus_owner()
 	_refresh_copy()
+	_refresh_clear_data_dialog_copy()
 	_locale_selector.set_selected_locale(StringName(_draft.get(&"locale", I18n.locale())))
 	_apply_responsive_layout()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):
@@ -381,6 +459,14 @@ func _refresh_copy() -> void:
 	_graphics_heading.text = UiCopyType.text(&"ui.title.graphics", "Graphics").to_upper()
 	_network_heading.text = UiCopyType.text(&"ui.title.network", "Network").to_upper()
 	_accessibility_heading.text = UiCopyType.text(&"ui.title.accessibility", "Accessibility").to_upper()
+	_player_data_heading.text = UiCopyType.text(&"ui.title.player_data", "Player Data").to_upper()
+	_clear_data_button.text = UiCopyType.text(
+		&"ui.title.clear_player_data", "Clear Player Data",
+	).to_upper()
+	_player_data_hint.text = UiCopyType.text(
+		&"ui.title.clear_player_data_hint",
+		"Permanently erase campaign progress, settings, and downloaded data.",
+	)
 	_master_label.text = UiCopyType.format_text(
 		&"ui.title.master_volume", "Master Volume  //  {value}%",
 		{&"value": roundi(float(_draft.get(&"master_volume", 1.0)) * 100.0)},
@@ -429,6 +515,23 @@ func _refresh_copy() -> void:
 	_refresh_frame_items()
 	_locale_selector.refresh()
 	_refresh_accessibility()
+	_refresh_clear_data_dialog_copy()
+
+
+func _refresh_clear_data_dialog_copy() -> void:
+	if _clear_data_dialog.is_empty():
+		return
+	DialogType.set_copy(
+		_clear_data_dialog,
+		UiCopyType.text(&"ui.title.clear_player_data_confirm_title", "Clear all player data?"),
+		UiCopyType.text(
+			&"ui.title.clear_player_data_confirm_body",
+			"This permanently deletes campaign progress, roster, currency, settings, tutorials, and downloaded data. This cannot be undone.",
+		),
+		UiCopyType.text(&"ui.title.clear_player_data_confirm", "Clear Everything").to_upper(),
+		UiCopyType.text(&"ui.common.cancel", "Cancel").to_upper(),
+		UiCopyType.text(&"ui.title.clear_player_data_pending", "Clearing…").to_upper(),
+	)
 
 
 func _refresh_frame_items() -> void:
@@ -454,12 +557,14 @@ func _refresh_frame_items() -> void:
 
 func _apply_type() -> void:
 	StagingSkinType.apply_display_type(_title_label, _title_font_size(36), IVORY, 620)
-	for heading: Label in [_audio_heading, _graphics_heading, _network_heading, _accessibility_heading]:
+	for heading: Label in [_audio_heading, _graphics_heading, _network_heading, _accessibility_heading, _player_data_heading]:
 		StagingSkinType.apply_display_type(heading, _title_font_size(18), GOLD, 620)
 	for label: Label in [_master_label, _music_label, _sfx_label, _frame_label, _text_scale_label]:
 		StagingSkinType.apply_display_type(label, _title_font_size(15), MUTED, 560)
 	StagingSkinType.apply_display_type(_background_downloads_hint, _title_font_size(13), MUTED, 520)
-	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _apply_button]:
+	StagingSkinType.apply_display_type(_player_data_hint, _title_font_size(13), MUTED, 520)
+	LunarisOpsStyleType.apply_button(_clear_data_button, &"danger")
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _clear_data_button, _apply_button]:
 		StagingSkinType.apply_display_type(action, _title_font_size(17), IVORY, 560)
 	for color_name: StringName in [
 		&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
@@ -474,7 +579,7 @@ func _apply_type() -> void:
 
 
 func _configure_readable_actions() -> void:
-	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _apply_button]:
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _clear_data_button, _apply_button]:
 		action.clip_text = false
 		action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		action.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
@@ -552,6 +657,13 @@ func _refresh_accessibility() -> void:
 	_background_downloads_button.accessibility_description = _copy(
 		&"ui.title.a11y.background_download_description",
 		"Allow optional operator and cinematic assets to download in the background. Required selected assets can still download when this is off.",
+	)
+	_clear_data_button.accessibility_name = UiCopyType.text(
+		&"ui.title.clear_player_data", "Clear Player Data",
+	)
+	_clear_data_button.accessibility_description = _copy(
+		&"ui.title.a11y.clear_player_data_description",
+		"Open a confirmation before permanently deleting all saved player data.",
 	)
 	_apply_button.accessibility_name = UiCopyType.text(&"ui.common.apply", "Apply")
 	_apply_button.accessibility_description = _copy(
@@ -650,6 +762,7 @@ func _apply_responsive_layout() -> void:
 	_master_mute_button.custom_minimum_size = Vector2(0.0 if narrow else 228.0, 64.0 if narrow else 48.0)
 	_motion_button.custom_minimum_size.y = 82.0
 	_background_downloads_button.custom_minimum_size.y = 82.0
+	_clear_data_button.custom_minimum_size.y = 82.0
 	var motion_reduced := bool(_draft.get(&"reduced_motion", false))
 	var motion_state := UiCopyType.text(
 		&"ui.common.off" if motion_reduced else &"ui.common.on",
@@ -685,7 +798,7 @@ func _apply_responsive_layout() -> void:
 	_locale_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_locale_label.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 14))
 	_locale_list.add_theme_font_size_override(&"font_size", _title_font_size(8 if narrow else 10))
-	for heading: Label in [_audio_heading, _graphics_heading, _network_heading, _accessibility_heading]:
+	for heading: Label in [_audio_heading, _graphics_heading, _network_heading, _accessibility_heading, _player_data_heading]:
 		heading.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(18), 1.20))
 		heading.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
@@ -702,8 +815,16 @@ func _apply_responsive_layout() -> void:
 		&"font_size",
 		_scaled_base_for_cap(_title_font_size(8 if narrow else 12), 1.15),
 	)
+	_player_data_hint.add_theme_font_size_override(
+		&"font_size",
+		_scaled_base_for_cap(_title_font_size(8 if narrow else 12), 1.15),
+	)
+	_clear_data_button.add_theme_font_size_override(
+		&"font_size",
+		_scaled_base_for_cap(_title_font_size(8 if narrow else 13), 1.15),
+	)
 	_apply_button.add_theme_font_size_override(&"font_size", _scaled_base_for_cap(_title_font_size(15 if narrow else 17), 1.15))
-	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _apply_button]:
+	for action: Button in [_back_button, _master_mute_button, _music_button, _motion_button, _background_downloads_button, _clear_data_button, _apply_button]:
 		action.autowrap_mode = (
 			TextServer.AUTOWRAP_ARBITRARY if narrow else TextServer.AUTOWRAP_WORD_SMART
 		)
@@ -716,6 +837,8 @@ func _apply_responsive_layout() -> void:
 	_background_downloads_button.autowrap_mode = (
 		TextServer.AUTOWRAP_OFF if narrow else TextServer.AUTOWRAP_WORD_SMART
 	)
+	_clear_data_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	DialogType.relayout(_clear_data_dialog)
 	_rebuild_focus_graph()
 	if _transition_state == TransitionState.ACTIVE and _is_valid_settings_focus(focus_owner):
 		_last_valid_focus = focus_owner
@@ -760,7 +883,9 @@ func _rebuild_focus_graph() -> void:
 	_background_downloads_button.focus_neighbor_top = _background_downloads_button.get_path_to(_motion_button)
 	_background_downloads_button.focus_neighbor_bottom = _background_downloads_button.get_path_to(_text_scale_slider)
 	_text_scale_slider.focus_neighbor_top = _text_scale_slider.get_path_to(_background_downloads_button)
-	_text_scale_slider.focus_neighbor_bottom = _text_scale_slider.get_path_to(_apply_button)
+	_text_scale_slider.focus_neighbor_bottom = _text_scale_slider.get_path_to(_clear_data_button)
+	_clear_data_button.focus_neighbor_top = _clear_data_button.get_path_to(_text_scale_slider)
+	_clear_data_button.focus_neighbor_bottom = _clear_data_button.get_path_to(_apply_button)
 	_locale_list.focus_neighbor_right = _locale_list.get_path_to(_frame_option)
 	_master_slider.focus_neighbor_right = _master_slider.get_path_to(_frame_option)
 	_master_mute_button.focus_neighbor_right = _master_mute_button.get_path_to(_frame_option)
@@ -771,6 +896,7 @@ func _rebuild_focus_graph() -> void:
 	_motion_button.focus_neighbor_left = _motion_button.get_path_to(_music_button)
 	_background_downloads_button.focus_neighbor_left = _background_downloads_button.get_path_to(_music_button)
 	_text_scale_slider.focus_neighbor_left = _text_scale_slider.get_path_to(_music_button)
+	_clear_data_button.focus_neighbor_left = _clear_data_button.get_path_to(_music_button)
 
 
 func _focus_controls() -> Array[Control]:
@@ -786,6 +912,7 @@ func _focus_controls() -> Array[Control]:
 		_motion_button,
 		_background_downloads_button,
 		_text_scale_slider,
+		_clear_data_button,
 		_apply_button,
 	]
 
@@ -802,6 +929,8 @@ func _set_interaction_enabled(enabled: bool) -> void:
 
 func _on_gui_focus_changed(focused: Control) -> void:
 	if _transition_state != TransitionState.ACTIVE:
+		return
+	if not _clear_data_dialog.is_empty() and DialogType.transition_state_name(_clear_data_dialog) != &"closed":
 		return
 	if _option_popup_active():
 		return
@@ -821,7 +950,15 @@ func _queue_focus_redirect() -> void:
 
 func _redirect_focus(token: int) -> void:
 	_redirect_pending = false
-	if token != _transition_token or _transition_state != TransitionState.ACTIVE or _option_popup_active():
+	if (
+		token != _transition_token
+		or _transition_state != TransitionState.ACTIVE
+		or _option_popup_active()
+		or (
+			not _clear_data_dialog.is_empty()
+			and DialogType.transition_state_name(_clear_data_dialog) != &"closed"
+		)
+	):
 		return
 	var target := _last_valid_focus
 	if not _is_valid_settings_focus(target):
