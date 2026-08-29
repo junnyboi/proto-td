@@ -159,7 +159,7 @@ func _run() -> void:
 	_check(ready_style != null and ready_style.bg_color.is_equal_approx(Color("8c6a1f")) and ready_style.border_color.is_equal_approx(Color("f0d89a")), "Campaign ready status is not royal gold")
 	_check(dossier_status != null and dossier_status.get_theme_color(&"font_color").is_equal_approx(Color.WHITE), "Campaign ready status does not use white text")
 	_check(dossier_shimmer != null and dossier_shimmer.is_active() and dossier_shimmer.is_processing(), "Campaign ready status lacks its animated gold shimmer")
-	_check(start_mission != null and not start_mission.disabled and start_mission.custom_minimum_size == Vector2(320.0, 88.0), "Campaign dossier lacks its legible ornate Start Mission action")
+	_check(start_mission != null and not start_mission.disabled and start_mission.custom_minimum_size == Vector2(320.0, 98.0), "Campaign dossier lacks its legible ornate Start Mission action")
 	_check(start_mission != null and start_mission.get_parent() != null and dossier != null and dossier.is_ancestor_of(start_mission), "Start Mission is not contained by the selected-operation dossier")
 	if start_mission != null:
 		var start_style := start_mission.get_theme_stylebox(&"normal") as StyleBoxTexture
