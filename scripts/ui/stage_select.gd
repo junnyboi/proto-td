@@ -322,7 +322,9 @@ func _build_body(column: VBoxContainer) -> void:
 	dossier_stack.add_child(_dossier_hint)
 	_start_mission = AetheriaButtonType.new()
 	_start_mission.name = "StartMission"
-	_start_mission.custom_minimum_size = Vector2(280.0, 68.0)
+	# The ornate frame needs enough vertical center stretch to keep its top and
+	# bottom rails clear of the action copy.
+	_start_mission.custom_minimum_size = Vector2(320.0, 88.0)
 	_start_mission.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_mission.set_presentation_text(
 		UiCopyType.text(&"ui.campaign.start_mission", "Start Mission"),
