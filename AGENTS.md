@@ -1,29 +1,32 @@
 # Repository Agent Instructions
 
-## Constructive concurrent reconciliation and release handoff
+## Fast synchronization and constructive reconciliation
 
-When `master`, another working branch, the shared WebDev branch, or either working copy advances during active work, **do not pause for routine direction or acceptance prompts**. Protect uncommitted changes, fetch the latest remote state, and fast-forward when possible. If a merge is required, reconcile forward immediately.
+At task start, protect uncommitted work, then run one `git fetch --prune` and `git pull --ff-only` on the active branch. Never rewrite shared history. Preserve compatible concurrent features and resolve conflicts constructively.
 
-Preserve both sides of every compatible fast-forward or merge conflict. Resolve the result into one coherent implementation that retains both agents' functional intent, tests, assets, accessibility behavior, host architecture, loader/runtime mappings, and release records. Never discard newer compatible work, restore an older host snapshot over a newer base, rewrite shared history, or choose one feature merely because it landed first.
+Do not create repeated “final lock” loops. Perform at most one additional fetch near finalization when the task ran long or concurrent activity is known. If upstream advances again after validation, inspect only that delta: reuse existing evidence and artifacts when it is documentation-only or exports byte-identically; rerun only the affected check when behavior changed. Do not restart the complete release pipeline for unrelated commits.
 
-After every reconciliation, run one focused regression pass for the touched systems and scan its logs for parse, runtime, resource, and test errors. Escalate to the full repository suite only when the focused pass exposes broader risk or another repository instruction requires it. Do not repeat visual acceptance loops for compatible merges unless the changed area requires a visual check.
+## Risk-based verification
 
-Once validation passes, commit the reconciled result, push it to `master`, and export and locally verify the latest Godot Web build when runtime content changed. Record the exact source revision, artifact sizes, and checksums needed for a human release handoff.
+Use the smallest gate that matches the change:
 
-Codex agents must **never perform Manus WebDev deployments**. Do not upload artifacts to Manus, mutate a Manus WebDev project or host, restart its preview, create, save, restore, or publish a checkpoint, attempt Manus authentication, or ask the user to authenticate so Codex can deploy. Leave the existing Manus deployment untouched and hand the verified release artifacts and evidence to a human operator.
+- **Instructions, documentation, audit reports, or release metadata only:** run formatting/diff checks only. Do not launch Godot, capture screenshots, export, or browser-test unless explicitly requested.
+- **Routine `git pull, export web bundle and redeploy`:** run one isolated bounded boot **or** one focused regression, export artifact/count/hash checks, and one browser smoke test on the final managed host. Do not test both local and managed browsers unless the managed host fails or the loader/export changed.
+- **Localized runtime or UI changes:** run direct import plus one to three focused tests for the touched system. Add one representative visual capture only when pixels/layout changed.
+- **High-risk changes**—save/persistence, economy authority, migrations, destructive data actions, engine/export settings, loader/WASM, audio routing, security, or content-pack integrity—run the focused tests needed for that risk. Expand scope only when a focused check fails or exposes broader coupling.
 
-If upstream advances again, repeat the same process automatically. Ask for direction only when a conflict is genuinely irreconcilable, destructive, security-sensitive, or would materially change intended product behavior.
+Never run the full suite by default. Do not repeat already-passing tests after compatible merges unless their code changed. Do not capture both landscape and portrait unless responsive behavior changed. Do not probe every unchanged managed film or pack on every deployment; verify only new/changed objects plus one final runtime load. If a regenerated artifact is byte-identical to the deployed object, reuse it and update release metadata without re-uploading.
 
-> Standing rule: **keep both features, regress once, push, export, and hand off; never deploy through Manus.**
+## Web export and deployment handoff
 
-## Isolate test user data from playable campaigns
+A release export must contain non-empty HTML, JavaScript, WASM, and PCK artifacts. Preserve the six Resonance streams, sixteen mission streams, and eleven optional operator packs, but do not revalidate unchanged payloads exhaustively. One HTTP or managed-preview smoke proving the final core loads, accepts representative input, and has no runtime errors is sufficient for routine redeploys.
 
-Every Godot test invocation must run with a unique, isolated `user://` directory. This applies to focused tests, full-suite runs, parallel workers, visual captures, and any test that calls `Game.start_campaign`, creates a production `CampaignSaveStore`, or writes preferences, logs, caches, or save data. Never run tests against the shared native `Protos` application-data directory used by an editor or playable game, and never allow two test processes to share one test user-data directory.
+Manus agents may update the existing `proto-td-web` project and checkpoint it. Codex agents must not mutate Manus WebDev; they should export and hand off artifacts instead. Preserve the zero-chrome fullscreen iframe and forward-only host architecture.
 
-Use `tools/run_godot_test.sh tests/<name>.gd` for SceneTree tests and `tools/run_godot_isolated.sh <godot arguments...>` for visual harnesses or bounded runtime checks. Direct repository test launches are guarded and intentionally fail before production save authority is granted.
+## Isolate test user data
 
-Tests that intentionally exercise the production campaign slot must still use an isolated test directory. Preserve every pre-existing slot artifact (`campaign_v1.json`, `.bak`, `.tmp`, and all `.invalid` variants), perform the test in the isolated slot, and restore preserved bytes during cleanup on success, failure, or timeout. Do not rely on clearing only in-memory `Game` state: `start_campaign(..., true)` writes durable bytes and can invalidate a concurrently open campaign through the save store's compare-and-swap guard.
+Every Godot test or visual harness must use a unique disposable `user://` directory. Use `tools/run_godot_test.sh tests/<name>.gd` for SceneTree tests and `tools/run_godot_isolated.sh <godot arguments...>` for boot or visual checks. Never run repository tests directly against the playable `Protos` application-data directory.
 
-Before handing off validation, confirm that the playable campaign slot was not modified by tests. If it was touched, stop the affected test flow, protect the current bytes, and rerun the validation with isolated user data rather than retrying against the shared slot.
+Tests that exercise campaign slots must preserve and restore every slot artifact during cleanup. If shared player data may have been touched, stop and rerun only in isolation.
 
-> Standing rule: **one test process, one disposable `user://`; never overwrite the player's campaign.**
+> Standing rule: **sync once, assess risk, run the minimum relevant gate, export once, and deploy—no ceremonial verification marathons.**
