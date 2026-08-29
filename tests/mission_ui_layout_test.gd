@@ -217,7 +217,8 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 			_check(_inside(button, presentation), "%s %s label overflows its button" % [label, button_name])
 			_check(not presentation.clip_text, "%s %s clips its presentation label" % [label, button_name])
 			if button_name == "TrainingButton":
-				_check(presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s %s does not use its explicit two-line layout" % [label, button_name])
+				_check(button.text == "TRAIN" and presentation.text == "TRAIN", "%s training action was not renamed to Train" % label)
+				_check(not presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s Train action is not a stable single-line label" % label)
 			elif button_name == "StartBattle":
 				_check(presentation.text == "DEPLOY SQUAD", "%s Deploy Squad is not rendered on one line" % label)
 				_check(not presentation.text.contains("\n") and presentation.autowrap_mode == TextServer.AUTOWRAP_OFF, "%s Deploy Squad can wrap" % label)
@@ -339,8 +340,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		var expected_training_width := 220.0 if label == "regular" else (minf(336.0, viewport.x - 96.0) if viewport.y > viewport.x else 336.0)
 		var expected_back_width := 180.0 if label == "regular" else 238.0
 		var expected_deploy_width := 400.0 if label == "regular" else (minf(588.0, maxf(220.0, viewport.x - 96.0)) if viewport.y > viewport.x else 588.0)
-		_check(is_equal_approx(training.custom_minimum_size.x, expected_training_width), "%s Train Operators does not match its contained responsive width" % label)
+		_check(is_equal_approx(training.custom_minimum_size.x, expected_training_width), "%s Train does not match its contained responsive width" % label)
 		_check(is_equal_approx(back.custom_minimum_size.x, expected_back_width), "%s Back does not match its contained responsive width" % label)
+		_check(training.custom_minimum_size.x > back.custom_minimum_size.x, "%s Train is not wider than Back" % label)
 		_check(is_equal_approx(deploy.custom_minimum_size.x, expected_deploy_width), "%s Deploy Squad is not exactly twice its prior width" % label)
 		for action: Button in [back, training, deploy]:
 			_check(is_equal_approx(action.custom_minimum_size.y, 112.0), "%s %s does not share the 112px deployment action height" % [label, action.name])
@@ -351,7 +353,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 		_check(deploy_copy != null and deploy_copy.get_theme_color(&"font_outline_color").get_luminance() < 0.05, "%s Deploy Squad outline is not dark enough against gold" % label)
 		var deploy_style := deploy.get_theme_stylebox(&"normal") as StyleBoxTexture
 		_check(deploy_style != null and deploy_style.texture != null and deploy_style.texture.resource_path.ends_with("/primary_button.png"), "%s Deploy Squad does not use the ornate golden button art" % label)
-		_check(training.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s Train Operators still uses the strike-through ornament" % label)
+		var back_style := back.get_theme_stylebox(&"normal") as StyleBoxTexture
+		var training_style := training.get_theme_stylebox(&"normal") as StyleBoxTexture
+		_check(back_style != null and training_style != null and back_style.texture != null and training_style.texture == back_style.texture, "%s Train does not share Back's ornate secondary button styling" % label)
 		_check(actions.get_theme_constant(&"h_separation") >= 28, "%s action gap remains claustrophobic" % label)
 	var faction_symbol := _mission.find_child("LunarisReliquarySymbol", true, false) as TextureRect
 	_check(faction_symbol != null, "%s First Stand faction symbol is missing" % label)
@@ -371,6 +375,8 @@ func _verify_recruitment_transaction(game: Node) -> void:
 	var marks_display := _mission.find_child("FieldTeamMarks", true, false) as Control
 	var marks_amount := _mission.find_child("FieldTeamMarksAmount", true, false) as Label
 	var squad_limit := _mission.find_child("SquadLimit", true, false) as Label
+	var training := _mission.find_child("TrainingButton", true, false) as Button
+	var training_presentation := training.get_node_or_null("PresentationLabel") as Label if training != null else null
 	_check(hire_button != null and not hire_button.disabled, "Field Team five-shard recruit action is unavailable")
 	_check(hire_button != null and hire_button.icon == null and hire_button.text.is_empty() and hire_button.accessibility_name.contains("5"), "Field Team recruit action does not expose its accessible exact cost")
 	_check(hire_action_label != null and hire_action_label.text == "HIRE RECRUIT" and hire_cost_icon != null and hire_cost_icon.texture != null and hire_cost_label != null and hire_cost_label.text == "5", "Field Team recruit action does not contain only its label and sprite-backed exact price")
@@ -386,6 +392,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		await process_frame
 		_check(marks_heading != null and marks_heading.text == "印记" and marks_display != null and marks_display.accessibility_name.contains("120 印记"), "Field Team Marks header did not refresh to Chinese")
 		_check(squad_limit != null and squad_limit.text == "小队上限 3", "Mission Intelligence Squad Limit did not refresh to Chinese")
+		_check(training != null and training.text == "训练" and training_presentation != null and training_presentation.text == "训练", "Field Team Train action did not refresh to Chinese")
 		_check(hire_button != null and hire_button.accessibility_name.contains("招募新兵") and hire_button.accessibility_name.contains("5") and hire_action_label != null and hire_action_label.text == "招募新兵" and hire_cost_icon != null and hire_cost_icon.texture != null, "Field Team icon-backed recruitment action did not refresh to Chinese")
 		_check(hire_button.tooltip_text.contains("普通打捞物") and hire_button.tooltip_text.contains("不含anima或灵魂"), "Field Team ordinary-Marks tooltip did not refresh to Chinese")
 		_check(sort_select != null and sort_select.accessibility_name == "干员排序" and _sort_item_text(sort_select, &"cost_asc") == "部署费用从低到高", "Field Team cost sorting did not refresh to Chinese")
@@ -393,6 +400,7 @@ func _verify_recruitment_transaction(game: Node) -> void:
 		await process_frame
 		await process_frame
 		_check(sort_select != null and sort_select.accessibility_name == "Sort operators" and _sort_item_text(sort_select, &"cost_desc") == "Cost high–low", "Field Team cost sorting did not restore English")
+		_check(training != null and training.text == "TRAIN" and training_presentation != null and training_presentation.text == "TRAIN", "Field Team Train action did not restore English")
 	var projection_before: Dictionary = game.call("campaign_projection")
 	if hire_button != null:
 		hire_button.pressed.emit()

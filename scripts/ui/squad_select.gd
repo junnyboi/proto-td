@@ -1095,9 +1095,10 @@ func _build_footer() -> BoxContainer:
 	_back.pressed.connect(_on_back)
 	_actions.add_child(_back)
 	_training = _action(
-		"TrainingButton", UiCopyType.text(&"ui.staging.training", "Training"), &"gold",
+		"TrainingButton",
+		UiCopyType.text(&"ui.squad.training_presentation", "TRAIN"),
+		&"secondary",
 	)
-	_apply_clean_training_style(_training)
 	_training.pressed.connect(_on_training)
 	_actions.add_child(_training)
 	_start = _action(
@@ -1168,7 +1169,7 @@ func _apply_deploy_text_contrast(button: AetheriaButtonType = _start) -> void:
 
 func _action_presentation_text(node_name: String, text_value: String) -> String:
 	if node_name == "TrainingButton":
-		return UiCopyType.text(&"ui.squad.training_presentation", "TRAIN\nOPERATORS")
+		return UiCopyType.text(&"ui.squad.training_presentation", "TRAIN")
 	if node_name == "StartBattle":
 		return UiCopyType.text(&"ui.squad.deploy_presentation", "DEPLOY SQUAD")
 	return text_value
@@ -1852,9 +1853,7 @@ func _refresh() -> void:
 	LunarisOpsType.apply_button(_start, &"disabled" if _start.disabled else &"primary")
 	_training.disabled = _launch_locked or retry_pending
 	_training.focus_mode = Control.FOCUS_NONE if _training.disabled else Control.FOCUS_ALL
-	LunarisOpsType.apply_button(_training, &"disabled" if _training.disabled else &"gold")
-	if not _training.disabled:
-		_apply_clean_training_style(_training)
+	LunarisOpsType.apply_button(_training, &"disabled" if _training.disabled else &"secondary")
 	_refresh_launch_status()
 	_apply_deploy_button_style()
 	_apply_deploy_text_contrast()
@@ -2092,7 +2091,7 @@ func _on_locale_changed(_locale_id: StringName) -> void:
 		button.tooltip_text = card_text.replace("\n", " — ")
 	_back.text = UiCopyType.text(&"ui.common.back", "Back")
 	_back.set_presentation_text(_back.text, _action_presentation_text(_back.name, _back.text))
-	_training.text = UiCopyType.text(&"ui.staging.training", "Training")
+	_training.text = UiCopyType.text(&"ui.squad.training_presentation", "TRAIN")
 	_training.set_presentation_text(
 		_training.text, _action_presentation_text(_training.name, _training.text),
 	)
