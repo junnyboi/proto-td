@@ -303,11 +303,9 @@ func _connect_tutorial() -> void:
 
 
 func _should_show_first_stand_tutorial() -> bool:
-	if _stage == null or _stage.id != &"s1" or not Game.campaign_active:
-		return false
-	var projection: Dictionary = Game.campaign_projection()
-	var stars := projection.get("stage_stars", {}) as Dictionary
-	return not stars.has(&"s1") and not stars.has("s1")
+	# Mission 1 is the guided mission on every playthrough, including replays.
+	# Campaign completion history must never suppress its field tutorial.
+	return _stage != null and _stage.id == &"s1" and Game.campaign_active
 
 
 func _should_show_slow_field_tutorial() -> bool:
