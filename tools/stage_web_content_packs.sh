@@ -10,6 +10,22 @@ find "$OUT" -maxdepth 1 -type f \( -name '*.pck' -o -name '*.zip' -o -name 'mani
 manifest="$OUT/manifest.tsv"
 printf 'key\tfile\tbytes\tsha256\tresources\n' > "$manifest"
 
+file_size() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    stat -f %z "$1"
+  else
+    stat -c %s "$1"
+  fi
+}
+
+file_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
+
 stage_pack() {
   local key="$1"
   local expected_count="$2"
@@ -33,8 +49,8 @@ stage_pack() {
   )"
   printf '%s\n' "$output" | grep -q "CONTENT_PACK_BUILD_OK|$target|resources=$expected_count"
   local bytes sha
-  bytes="$(stat -c %s "$target")"
-  sha="$(sha256sum "$target" | cut -d' ' -f1)"
+  bytes="$(file_size "$target")"
+  sha="$(file_sha256 "$target")"
   printf '%s\t%s\t%s\t%s\t%s\n' "$key" "$(basename "$target")" "$bytes" "$sha" "$expected_count" >> "$manifest"
 }
 
@@ -43,8 +59,12 @@ classes=(
   sniper sorcerer sword_saint swordmaster witch_doctor
 )
 for class_id in "${classes[@]}"; do
-  mapfile -t class_files < <(
-    cd "$ROOT" && find "assets/sprites/operators/animated/${class_id}" -mindepth 2 -maxdepth 2 -type f -name '*.webp' -printf '%p\n' | sort
+  class_files=()
+  while IFS= read -r class_file; do
+    class_files+=("${class_file#${ROOT}/}")
+  done < <(
+    find "$ROOT/assets/sprites/operators/animated/${class_id}" \
+      -mindepth 2 -maxdepth 2 -type f -name '*.webp' -print | sort
   )
   key="operator-${class_id//_/-}"
   stage_pack "$key" 16 "${class_files[@]}"

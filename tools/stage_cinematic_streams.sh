@@ -8,6 +8,22 @@ mkdir -p "$OUT"
 manifest="$OUT/manifest.tsv"
 printf 'key\tfile\tbytes\tsha256\n' > "$manifest"
 
+file_size() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    stat -f %z "$1"
+  else
+    stat -c %s "$1"
+  fi
+}
+
+file_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
+
 stage() {
   local key="$1"
   local bytes="$2"
@@ -15,8 +31,8 @@ stage() {
   local source="$ROOT/assets/cinematics/gacha/video/${key}.ogv"
   local target="$OUT/${key}.ogv"
   test -f "$source"
-  test "$(stat -c %s "$source")" = "$bytes"
-  test "$(sha256sum "$source" | cut -d' ' -f1)" = "$sha"
+  test "$(file_size "$source")" = "$bytes"
+  test "$(file_sha256 "$source")" = "$sha"
   cp "$source" "$target"
   printf '%s\t%s\t%s\t%s\n' "$key" "$(basename "$target")" "$bytes" "$sha" >> "$manifest"
 }

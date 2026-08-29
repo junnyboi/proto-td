@@ -12,8 +12,7 @@ POSTER_POLICY="${MISSION_CINEMATIC_POSTER_POLICY:-core}"
 
 command -v "$FFPROBE" >/dev/null
 [[ "$POSTER_POLICY" == "core" || "$POSTER_POLICY" == "stage" ]]
-mapfile -t videos < <(find "$VIDEO_DIR" -maxdepth 1 -type f -name 's*.ogv' -printf '%f\n' 2>/dev/null | sort -V)
-[[ ${#videos[@]} -eq 16 ]]
+[[ "$(find "$VIDEO_DIR" -maxdepth 1 -type f -name 's*.ogv' | wc -l | tr -d ' ')" -eq 16 ]]
 mkdir -p "$OUT/video"
 rm -f "$OUT/video"/*.ogv
 if [[ "$POSTER_POLICY" == "stage" ]]; then
@@ -26,6 +25,22 @@ JSON_ROWS="$OUT/.manifest.rows"
 printf 'stage_id\tvideo_file\tvideo_bytes\tvideo_sha256\tduration_seconds\taudio_file\taudio_bytes\taudio_sha256\tposter_policy\n' > "$TSV"
 : > "$JSON_ROWS"
 
+file_size() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    stat -f %z "$1"
+  else
+    stat -c %s "$1"
+  fi
+}
+
+file_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
+
 for index in $(seq 1 16); do
   stage="s${index}"
   video="$VIDEO_DIR/${stage}.ogv"
@@ -36,8 +51,8 @@ for index in $(seq 1 16); do
   [[ -f "$poster" ]]
   duration="$($FFPROBE -v error -show_entries format=duration -of default=nk=1:nw=1 "$video")"
   awk -v duration="$duration" 'BEGIN { exit !(duration > 0 && duration <= 8.05) }'
-  video_bytes="$(stat -c %s "$video")"
-  video_sha="$(sha256sum "$video" | cut -d' ' -f1)"
+  video_bytes="$(file_size "$video")"
+  video_sha="$(file_sha256 "$video")"
   audio_file=""
   audio_bytes=0
   audio_sha=""
@@ -45,8 +60,8 @@ for index in $(seq 1 16); do
     audio_duration="$($FFPROBE -v error -show_entries format=duration -of default=nk=1:nw=1 "$audio")"
     awk -v duration="$audio_duration" 'BEGIN { exit !(duration > 0 && duration <= 8.05) }'
     audio_file="${stage}.ogg"
-    audio_bytes="$(stat -c %s "$audio")"
-    audio_sha="$(sha256sum "$audio" | cut -d' ' -f1)"
+    audio_bytes="$(file_size "$audio")"
+    audio_sha="$(file_sha256 "$audio")"
     mkdir -p "$OUT/audio"
     cp -f "$audio" "$OUT/audio/${stage}.ogg"
   fi
