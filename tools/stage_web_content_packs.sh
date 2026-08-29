@@ -3,8 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="${1:-${ROOT}/build/web/content-packs}"
-GODOT_BIN="${GODOT_BIN:-godot}"
+GODOT_RUNNER="${GODOT_RUNNER:-${ROOT}/tools/run_godot_isolated.sh}"
 mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
 find "$OUT" -maxdepth 1 -type f \( -name '*.pck' -o -name '*.zip' -o -name 'manifest.tsv' \) -delete
 
 manifest="$OUT/manifest.tsv"
@@ -43,8 +44,8 @@ stage_pack() {
   done
   local output
   output="$(
-    GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --audio-driver Dummy \
-      --path "$ROOT" --script res://tools/build_web_content_pack.gd -- \
+    GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_RUNNER" --headless --audio-driver Dummy \
+      --script res://tools/build_web_content_pack.gd -- \
       "$target" "${resource_paths[@]}"
   )"
   printf '%s\n' "$output" | grep -q "CONTENT_PACK_BUILD_OK|$target|resources=$expected_count"
