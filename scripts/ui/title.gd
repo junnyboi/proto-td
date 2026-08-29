@@ -44,6 +44,7 @@ var _entry_stack: VBoxContainer = null
 var _wordmark: Label = null
 var _orbit_rule: HBoxContainer = null
 var _start_button: Button = null
+var _language_toggle: Button = null
 var _footer_settings_dock: MarginContainer = null
 var _footer_settings_button: Button = null
 var _title_music_enabled := true
@@ -218,6 +219,17 @@ func _build_screen() -> void:
 	_start_button.pressed.connect(_on_start_pressed)
 	_entry_stack.add_child(_start_button)
 	_wire_title_action_feedback(_start_button)
+
+	_language_toggle = _entry_button("LanguageToggle", false)
+	_language_toggle.toggle_mode = true
+	_language_toggle.set_pressed_no_signal(I18n.locale() == &"zh-CN")
+	_language_toggle.custom_minimum_size = Vector2(_title_size(184.0), _title_size(42.0))
+	StagingSkinType.apply_display_type(
+		_language_toggle, _title_font_size(11), IVORY, 600,
+	)
+	_language_toggle.toggled.connect(_on_language_toggled)
+	_entry_stack.add_child(_language_toggle)
+	_wire_title_action_feedback(_language_toggle)
 	_build_footer_settings()
 	_wire_entry_focus()
 
@@ -320,7 +332,9 @@ func _register_focus_pulse(button: Button, accent: Color) -> void:
 
 
 func _wire_entry_focus() -> void:
-	var actions: Array[Control] = [_start_button, _footer_settings_button]
+	var actions: Array[Control] = [
+		_start_button, _language_toggle, _footer_settings_button,
+	]
 	for index: int in actions.size():
 		var current := actions[index]
 		var previous := actions[(index - 1 + actions.size()) % actions.size()]
@@ -343,7 +357,8 @@ func _on_title_action_focused(action: Control) -> void:
 
 func _begin_title_reveal() -> void:
 	var reveal_nodes: Array[CanvasItem] = [
-		_wordmark, _orbit_rule, _start_button, _footer_settings_dock,
+		_wordmark, _orbit_rule, _start_button, _language_toggle,
+		_footer_settings_dock,
 	]
 	_interaction_feedback_ready = false
 	_title_focus_scroll_ready = false
@@ -362,7 +377,10 @@ func _begin_title_reveal() -> void:
 
 
 func _finish_title_reveal() -> void:
-	for item: CanvasItem in [_wordmark, _orbit_rule, _start_button, _footer_settings_dock]:
+	for item: CanvasItem in [
+		_wordmark, _orbit_rule, _start_button, _language_toggle,
+		_footer_settings_dock,
+	]:
 		if item != null:
 			item.modulate.a = 1.0
 	_reset_title_scroll.call_deferred()
@@ -451,6 +469,24 @@ func _on_start_pressed() -> void:
 	_start_button.disabled = false
 	_refresh_copy()
 	_start_button.grab_focus.call_deferred()
+
+
+func _on_language_toggled(chinese: bool) -> void:
+	if _screen_state != ScreenState.TITLE:
+		_language_toggle.set_pressed_no_signal(I18n.locale() == &"zh-CN")
+		return
+	var next_locale := &"zh-CN" if chinese else &"en-US"
+	var previous_locale := I18n.locale()
+	if next_locale == previous_locale:
+		return
+	if not ViewPreferencesType.set_locale(next_locale, _preferences_path):
+		_language_toggle.set_pressed_no_signal(previous_locale == &"zh-CN")
+		return
+	if not I18n.set_locale(next_locale):
+		ViewPreferencesType.set_locale(previous_locale, _preferences_path)
+		_language_toggle.set_pressed_no_signal(previous_locale == &"zh-CN")
+		return
+	Sfx.play("ui_confirm")
 
 
 func _open_settings() -> void:
@@ -581,8 +617,10 @@ func _leave_settings(return_focus: Control) -> void:
 func _set_title_interaction_enabled(enabled: bool) -> void:
 	_entry_host.mouse_filter = Control.MOUSE_FILTER_PASS if enabled else Control.MOUSE_FILTER_IGNORE
 	_start_button.disabled = not enabled or _start_pending
+	_language_toggle.disabled = not enabled
 	_footer_settings_button.disabled = not enabled
 	_start_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	_language_toggle.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 	_footer_settings_button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
@@ -750,6 +788,23 @@ func _refresh_copy() -> void:
 		if _start_failed
 		else ""
 	)
+	_language_toggle.text = UiCopyType.text(
+		&"ui.title.quick_language", "EN / 中文",
+	)
+	_language_toggle.set_pressed_no_signal(I18n.locale() == &"zh-CN")
+	_language_toggle.accessibility_name = UiCopyType.text(
+		(
+			&"ui.title.a11y.quick_language_to_english"
+			if I18n.locale() == &"zh-CN"
+			else &"ui.title.a11y.quick_language_to_chinese"
+		),
+		(
+			"Switch language to English"
+			if I18n.locale() == &"zh-CN"
+			else "Switch language to Simplified Chinese"
+		),
+	)
+	_language_toggle.tooltip_text = _language_toggle.accessibility_name
 	_footer_settings_button.text = UiCopyType.text(&"ui.title.settings", "Settings").to_upper()
 	_footer_settings_button.tooltip_text = _footer_settings_button.text
 	_footer_settings_button.accessibility_name = UiCopyType.text(
@@ -809,6 +864,9 @@ func _apply_responsive_layout() -> void:
 	var wordmark_base := maxi(1, roundi(wordmark_visual / maxf(_text_scale, 0.01)))
 	_wordmark.add_theme_font_size_override(&"font_size", wordmark_base)
 	_start_button.custom_minimum_size = Vector2(minf(entry_width, _title_size(520.0)), _title_size(82.0 if not portrait else 76.0))
+	_language_toggle.custom_minimum_size = Vector2(
+		minf(entry_width, _title_size(184.0)), _title_size(42.0),
+	)
 	_footer_settings_dock.offset_top = -FOOTER_DOCK_HEIGHT
 	_footer_settings_button.custom_minimum_size.x = minf(
 		maxf(220.0, viewport_size.x - float(horizontal_margin * 2)), 320.0,

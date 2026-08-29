@@ -52,6 +52,7 @@ func _verify_title_scale() -> void:
 	var entry_host := _title.find_child("EntryControls", true, false) as Control
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
+	var language := _title.find_child("LanguageToggle", true, false) as Button
 	var footer_dock := _title.find_child("FooterSettingsDock", true, false) as MarginContainer
 	var footer_settings := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_theme_font_size(&"font_size") == 207, "landscape wordmark is not 1.5×")
@@ -61,13 +62,18 @@ func _verify_title_scale() -> void:
 	_check(start.get_combined_minimum_size().y >= 141.0, "Start container did not grow with 1.5× typography")
 	var expected_top_margin := 16 + roundi(float(VIEWPORTS["regular"].y) * 0.24) + 64
 	_check(entry_host.get_theme_constant(&"margin_top") == expected_top_margin, "title and action stack did not move down by exactly 64px")
-	for action: Button in [start]:
+	for action: Button in [start, language]:
 		for style_name: StringName in [&"normal", &"hover", &"pressed"]:
 			var style := action.get_theme_stylebox(style_name) as StyleBoxFlat
 			_check(style != null and style.get_corner_radius(CORNER_TOP_LEFT) >= 20, "%s lacks rounded %s borders" % [action.name, style_name])
 	_check(entry_scroll != null and entry_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "title entry is not scroll-safe")
 	_check(_inside(entry_host, wordmark), "1.5× wordmark overflows title content")
 	_check(_inside(entry_host, start), "1.5× Start action overflows title content")
+	_check(_inside(entry_host, language), "quick language toggle overflows title content")
+	_check(
+		language.get_global_rect().position.y >= start.get_global_rect().end.y,
+		"quick language toggle is not below Start",
+	)
 	_check(entry_scroll != null and entry_scroll.scroll_vertical == 0, "title does not open at the top of its enlarged content")
 	_check(entry_scroll != null and entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "title wordmark is not visible in the initial viewport")
 	_check(footer_dock != null and footer_settings != null, "fixed footer Settings control is missing")
@@ -79,11 +85,12 @@ func _verify_tall_landscape_title() -> void:
 	var entry_scroll := _title.find_child("EntryScroll", true, false) as ScrollContainer
 	var wordmark := _title.find_child("Wordmark", true, false) as Label
 	var start := _title.find_child("StartButton", true, false) as Button
+	var language := _title.find_child("LanguageToggle", true, false) as Button
 	var footer := _title.find_child("FooterSettingsButton", true, false) as Button
 	_check(wordmark.get_line_count() == 1, "managed tall-landscape wordmark wrapped")
 	_check(entry_scroll.get_global_rect().intersects(wordmark.get_global_rect()), "managed tall-landscape wordmark is not initially visible")
 	_check(entry_scroll.get_global_rect().intersects(start.get_global_rect()), "managed tall-landscape Start is not initially visible")
-	_check(start.get_global_rect().end.y + 8.0 <= footer.get_global_rect().position.y, "managed tall-landscape Start overlaps the fixed Settings footer")
+	_check(language.get_global_rect().end.y + 8.0 <= footer.get_global_rect().position.y, "managed tall-landscape language toggle overlaps the fixed Settings footer")
 
 
 func _verify_chinese_title_portrait() -> void:
