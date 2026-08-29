@@ -17,7 +17,7 @@ const RECORD_KEYS := [
 const CHOICE_KEYS := ["hero_id", "to_class_id"]
 const VERBS := [
 	"begin_attempt", "resolve_attempt", "confirm_promotions", "pull_premium_hero",
-	"recruit_person", "rename_hero",
+	"recruit_person", "rename_hero", "honor_fallen",
 ]
 const PREMIUM_PULL_KEYS := [
 	"premium_id", "hero_id", "pull_index", "new_hero", "revived", "lives_before",
@@ -178,6 +178,15 @@ static func normalize_payload(verb: String, value: Variant, data: Dictionary) ->
 			if not HeroCodecScript.valid_title(title):
 				return _reject(&"invalid_title")
 			return _accept({"hero_id": hero_id, "callsign": callsign, "title": title})
+		"honor_fallen":
+			if value.keys() != ["hero_id"]:
+				return _reject(&"invalid_command_payload")
+			if typeof(value["hero_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]:
+				return _reject(&"invalid_command_payload")
+			var hero_id := String(value["hero_id"])
+			if not _is_hex(hero_id, 16):
+				return _reject(&"invalid_command_payload")
+			return _accept({"hero_id": hero_id})
 	return _reject(&"invalid_command_payload")
 
 
@@ -449,6 +458,27 @@ static func _normalize_receipt(
 			):
 				return _reject(&"invalid_command_receipt")
 			return _accept({"rename": rename.duplicate(true)})
+		"honor_fallen":
+			if value.keys() != ["honor"] or typeof(value["honor"]) != TYPE_DICTIONARY:
+				return _reject(&"invalid_command_receipt")
+			var honor: Dictionary = value["honor"]
+			if honor.keys() != ["hero_id", "marks_before", "marks_after", "save_revision"]:
+				return _reject(&"invalid_command_receipt")
+			var persisted := _hero_by_id(data["heroes"], String(honor["hero_id"]))
+			if (
+				typeof(honor["hero_id"]) not in [TYPE_STRING, TYPE_STRING_NAME]
+				or typeof(honor["marks_before"]) != TYPE_INT
+				or typeof(honor["marks_after"]) != TYPE_INT
+				or typeof(honor["save_revision"]) != TYPE_INT
+				or honor["hero_id"] != payload["hero_id"]
+				or honor["save_revision"] != save_revision
+				or not _in_range(honor["marks_before"], 0, 1_000_000_000 - 5)
+				or int(honor["marks_after"]) != int(honor["marks_before"]) + 5
+				or persisted.is_empty()
+				or persisted.get("life_status") != "dead"
+			):
+				return _reject(&"command_receipt_mismatch")
+			return _accept({"honor": honor.duplicate(true)})
 	return _reject(&"invalid_command_receipt")
 
 

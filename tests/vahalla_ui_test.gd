@@ -3,6 +3,7 @@ extends SceneTree
 const RuntimeContext := preload("res://sim/campaign_runtime_context.gd")
 const CampaignStateV3 := preload("res://sim/campaign_state_v3.gd")
 const BattleOutcomeV3 := preload("res://sim/battle_outcome_v3.gd")
+const CampaignSaveStore := preload("res://sim/campaign_save_store.gd")
 const ArtType := preload("res://scripts/view/art.gd")
 const PortraitCatalogType := preload("res://data/presentation/operator_portrait_catalog.gd")
 
@@ -56,7 +57,25 @@ func _run() -> void:
 		_finish()
 		return
 	_check(bool(i18n.call("set_locale", &"en-US")), "English Vahalla locale activation failed")
+	var store_result: Dictionary = CampaignSaveStore.create_production(state)
+	_check(store_result.get("accepted", false), "Vahalla isolated save store failed")
+	if not store_result.get("accepted", false):
+		_finish()
+		return
+	var store: Variant = store_result["value"]
+	var saved: Dictionary = store.save("", state)
+	_check(saved.get("status") == CampaignSaveStore.COMMITTED, "Vahalla fixture was not durably seeded")
+	if saved.get("status") != CampaignSaveStore.COMMITTED:
+		_finish()
+		return
+	var seeded_authority: Dictionary = store._consume_commit_authority()
+	state = seeded_authority.get("state")
+	_check(state != null, "Vahalla fixture store did not publish authority")
+	if state == null:
+		_finish()
+		return
 	game.set("campaign", state)
+	game.set("campaign_store", store)
 	game.set("campaign_active", true)
 	game.set("selected_stage_id", &"s1")
 
@@ -115,10 +134,14 @@ func _run() -> void:
 	var dossier_panel := memorial.find_child("MemorialDossier", true, false) as PanelContainer
 	var memorial_scroll := memorial.find_child("VahallaMemorialScroll", true, false) as ScrollContainer
 	var memorial_row := memorial.find_child("Memorial_%s" % fallen_id, true, false) as Button
+	var back := memorial.find_child("BackToCommand", true, false) as Button
 	var row_margin := memorial_row.find_child("MemorialRowMargin", true, false) as MarginContainer if memorial_row != null else null
 	var row_class := memorial_row.find_child("MemorialRowClass", true, false) as Label if memorial_row != null else null
 	var row_record := memorial_row.find_child("MemorialRowRecord", true, false) as Label if memorial_row != null else null
 	_check(obituary_list != null and obituary_list.get_child_count() == 1, "Vahalla obituary entry missing")
+	_check(back != null and back.text == "RETURN", "Vahalla return action was not shortened to RETURN")
+	_check(not _tree_text(memorial).contains("HALL OF THE FALLEN"), "Vahalla retained the removed Reliquary eyebrow")
+	_check(memorial.find_child("AllFactionFilter", true, false) == null, "Vahalla retained the removed faction filters")
 	_check(obituary_list != null and obituary_list.get_theme_constant(&"separation") == 0, "Vahalla obituary entries still use card-grid gaps")
 	_check(honor != null and not honor.disabled, "Vahalla honor action unavailable")
 	_check(portrait != null and portrait.custom_minimum_size.y >= 380.0, "selected memorial identity is not visually dominant")
@@ -153,11 +176,8 @@ func _run() -> void:
 	text_scale_autoload.call("set_scale", 1.5)
 	memorial.call("_apply_responsive_layout")
 	await process_frame
-	var back := memorial.find_child("BackToCommand", true, false) as Button
-	var eyebrow := memorial.get("_eyebrow_label") as Label
 	var intro := memorial.get("_intro_label") as Label
-	_check(back != null and back.text == "Back", "150% Vahalla did not use its compact Back label")
-	_check(eyebrow == null or not eyebrow.visible, "150% Vahalla retained the redundant eyebrow")
+	_check(back != null and back.text == "RETURN", "150% Vahalla changed the RETURN label")
 	_check(intro == null or not intro.visible, "150% Vahalla retained the redundant introduction")
 	_check(memorial.find_child("VahallaObituaryList", true, false) is VBoxContainer, "150% Vahalla stopped using its single obituary list")
 	text_scale_autoload.call("set_scale", 1.0)
@@ -170,14 +190,53 @@ func _run() -> void:
 	_check(chinese_memorial.contains("英灵殿"), "Vahalla title did not refresh to Chinese")
 	_check(chinese_memorial.contains("失踪或被俘时可能获救") and chinese_memorial.contains("被消耗或粉碎则永久失去"), "Valhalla soul-status distinctions lost their reviewed Chinese meaning")
 	_check(chinese_memorial.contains("第20刻"), "Vahalla service record did not localize its battle tick")
+	var marks_before := int(game.call("campaign_projection").get("marks", 0))
+	var revision_before := int(game.call("campaign_projection").get("save_revision", 0))
+	honor = memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
 	if honor != null:
 		honor.pressed.emit()
 		await process_frame
+		await process_frame
 		var honored := memorial.find_child("Honor_%s" % fallen_id, true, false) as Button
-		_check(honored != null and honored.disabled, "honor action did not become visit-local honored state")
+		var honored_projection: Dictionary = game.call("campaign_projection")
+		_check(int(honored_projection.get("marks", 0)) == marks_before + 5, "Honor did not grant exactly 5 Marks")
+		_check(int(honored_projection.get("save_revision", 0)) == revision_before + 1, "Honor did not commit one save revision")
+		_check((honored_projection.get("honored_fallen_hero_ids", []) as Array).has(fallen_id), "Honor was not projected as durable one-time state")
+		_check(honored != null and honored.disabled, "honor action did not become permanently honored state")
 		_check(honored != null and honored.text == "已致敬", "Chinese honor action copy did not update")
+		var repeat: Dictionary = game.call("honor_fallen_hero", fallen_id)
+		_check(not repeat.get("accepted", false) and repeat.get("error_code") == &"already_honored", "a second Honor command was not rejected")
+		_check(int(game.call("campaign_projection").get("marks", 0)) == marks_before + 5, "repeated Honor paid Marks twice")
+	var reloaded: Dictionary = store.load()
+	_check(reloaded.get("accepted", false), "honored Vahalla save did not reload")
+	if reloaded.get("accepted", false):
+		var durable_state: Variant = reloaded["state"]
+		var durable_data: Dictionary = durable_state.data_copy()
+		var honor_record: Dictionary = durable_data["command_receipts"][-1]
+		var duplicate: Dictionary = durable_state.honor_fallen(
+			honor_record["command_id"],
+			honor_record["expected_save_revision"],
+			fallen_id,
+		)
+		_check(duplicate.get("accepted", false), "an exact Honor command retry was rejected")
+		_check(not duplicate.get("payload", {}).get("fresh", true), "an exact Honor retry was treated as a new reward")
+		var tampered: Dictionary = durable_data.duplicate(true)
+		tampered["command_receipts"].pop_back()
+		var tamper_restore: Dictionary = CampaignStateV3.restore(tampered, context)
+		_check(not tamper_restore.get("accepted", false), "removing the Honor ledger entry left its five Marks valid")
 	_dispose(memorial)
 	game.set("content", null)
+	if reloaded.get("accepted", false):
+		game.set("campaign", reloaded["state"])
+		var reopened: Node = load("res://scenes/vahalla.tscn").instantiate()
+		root.add_child(reopened)
+		await process_frame
+		await process_frame
+		var persisted_honor := reopened.find_child("Honor_%s" % fallen_id, true, false) as Button
+		_check(persisted_honor != null and persisted_honor.disabled, "Honor did not remain disabled after save reload")
+		_check(int(game.call("campaign_projection").get("marks", 0)) == marks_before + 5, "save reload changed the Honor reward")
+		_dispose(reopened)
+		game.set("content", null)
 	var music := root.get_node_or_null("Music")
 	if music != null and music.has_method("stop"):
 		music.call("stop")
@@ -186,6 +245,7 @@ func _run() -> void:
 		sfx.call("stop_all")
 	game.set("campaign_active", false)
 	game.set("campaign", null)
+	game.set("campaign_store", null)
 	await process_frame
 	await create_timer(0.1).timeout
 	_finish()

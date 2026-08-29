@@ -11,6 +11,7 @@ const HASH_PATH := "res://sim/campaign_v3_hash.gd"
 const RECRUITMENT_RULES_PATH := "res://sim/campaign_v3_recruitment.gd"
 const GACHA_RULES_PATH := "res://sim/campaign_v3_gacha.gd"
 const RENAMING_RULES_PATH := "res://sim/campaign_v3_renaming.gd"
+const HONOR_RULES_PATH := "res://sim/campaign_v3_honor.gd"
 const BattleTicketScript := preload("res://sim/battle_ticket.gd")
 const BattleOutcomeScript := preload("res://sim/battle_outcome_v3.gd")
 const PromotionRulesScript := preload("res://sim/campaign_v3_promotion_rules.gd")
@@ -80,6 +81,8 @@ static func _replay_record(
 			return _replay_recruitment(data, context, record)
 		"rename_hero":
 			return _replay_rename(data, record)
+		"honor_fallen":
+			return _replay_honor(data, record)
 	return _reject(&"invalid_command_history")
 
 
@@ -297,6 +300,22 @@ static func _replay_rename(data: Dictionary, record: Dictionary) -> Dictionary:
 	var receipt: Dictionary = derived["receipt"]
 	receipt["save_revision"] = working["save_revision"]
 	if record["receipt"] != {"rename": receipt}:
+		return _reject(&"command_history_receipt_mismatch")
+	_append_record(working, record)
+	return _accept(working)
+
+
+static func _replay_honor(data: Dictionary, record: Dictionary) -> Dictionary:
+	var derived: Dictionary = load(HONOR_RULES_PATH).call(
+		"_derive", data, record["payload"],
+	)
+	if not derived["accepted"]:
+		return _reject(&"command_history_transition_mismatch")
+	var working: Dictionary = derived["data"]
+	working["save_revision"] = int(data["save_revision"]) + 1
+	var receipt: Dictionary = derived["receipt"]
+	receipt["save_revision"] = working["save_revision"]
+	if record["receipt"] != {"honor": receipt}:
 		return _reject(&"command_history_receipt_mismatch")
 	_append_record(working, record)
 	return _accept(working)

@@ -13,6 +13,7 @@ const AttemptsScript := preload("res://sim/campaign_v3_attempts.gd")
 const RecruitmentScript := preload("res://sim/campaign_v3_recruitment.gd")
 const RenamingScript := preload("res://sim/campaign_v3_renaming.gd")
 const GachaScript := preload("res://sim/campaign_v3_gacha.gd")
+const HonorScript := preload("res://sim/campaign_v3_honor.gd")
 const CanonicalJsonScript := preload("res://sim/canonical_json.gd")
 const CommandCodecScript := preload("res://sim/campaign_v3_command_codec.gd")
 const HashScript := preload("res://sim/campaign_v3_hash.gd")
@@ -119,6 +120,7 @@ func runtime_projection() -> Dictionary:
 		if hero["hero_kind"] == "premium":
 			premium_heroes.append(hero.duplicate(true))
 	var premium_history := _premium_pull_history()
+	var honored_fallen_hero_ids := HonorScript.honored_hero_ids(_data)
 	var operators: Array[StringName] = []
 	for hero: Dictionary in heroes:
 		var operator_id := StringName(hero["operator_def_id"])
@@ -152,6 +154,7 @@ func runtime_projection() -> Dictionary:
 		"stage_ids": stage_ids,
 		"ready_heroes": heroes,
 		"fallen_heroes": fallen_heroes,
+		"honored_fallen_hero_ids": honored_fallen_hero_ids,
 		"memorial": (_data["memorial"] as Array).duplicate(true),
 		"unlocked_operators": operators,
 		"unlocked_traps": traps,
@@ -285,6 +288,14 @@ func rename_hero(
 	return RenamingScript.execute(
 		self, command_id, expected_save_revision, hero_id, callsign, title,
 	)
+
+
+func honor_fallen(
+	command_id: Variant,
+	expected_save_revision: Variant,
+	hero_id: Variant,
+) -> Dictionary:
+	return HonorScript.execute(self, command_id, expected_save_revision, hero_id)
 
 
 func restore_factory() -> Callable:

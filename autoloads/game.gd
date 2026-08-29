@@ -41,6 +41,8 @@ var _pending_battle_ticket: Dictionary = {}
 var _pending_campaign_mutation: Variant = null
 var _pending_promotion_mutation: Variant = null
 var _pending_recruitment_mutation: Variant = null
+var _pending_honor_mutation: Variant = null
+var _pending_honor_hero_id := ""
 var _pending_launch_mutation: Variant = null
 var _pending_launch_open_battle := true
 var _campaign_battle_active := false
@@ -81,6 +83,8 @@ func start_campaign(open_campaign_ui: bool = true, fresh: bool = false) -> bool:
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
 	_pending_recruitment_mutation = null
+	_pending_honor_mutation = null
+	_pending_honor_hero_id = ""
 	_pending_launch_mutation = null
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false
@@ -128,6 +132,7 @@ func start_stage(
 		_pending_campaign_mutation != null
 		or _pending_promotion_mutation != null
 		or _pending_recruitment_mutation != null
+		or _pending_honor_mutation != null
 	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary
@@ -271,7 +276,11 @@ func record_result(result: int, stars: int) -> bool:
 		return true
 	if (
 		_pending_campaign_mutation == null
-		and (_pending_promotion_mutation != null or _pending_recruitment_mutation != null)
+		and (
+			_pending_promotion_mutation != null
+			or _pending_recruitment_mutation != null
+			or _pending_honor_mutation != null
+		)
 	):
 		last_campaign_error = &"strategic_mutation_pending"
 		return false
@@ -370,6 +379,7 @@ func hire_basic_recruit() -> Dictionary:
 		_pending_campaign_mutation != null
 		or _pending_promotion_mutation != null
 		or _pending_launch_mutation != null
+		or _pending_honor_mutation != null
 	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
 	var committed: Dictionary
@@ -393,6 +403,39 @@ func hire_basic_recruit() -> Dictionary:
 		)
 		return committed
 	_pending_recruitment_mutation = null
+	campaign = committed["state"]
+	return committed
+
+
+## Honor is a durable, replay-validated one-time action. A retryable store
+## failure retains the exact mutation so the five-Mark stipend cannot double-pay.
+func honor_fallen_hero(hero_id: String) -> Dictionary:
+	if not campaign_active or campaign == null or campaign_store == null:
+		return {"accepted": false, "error_code": &"campaign_inactive"}
+	if _pending_honor_mutation != null and _pending_honor_hero_id != hero_id:
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
+	if _pending_honor_mutation == null and strategic_mutation_pending():
+		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
+	var committed: Dictionary
+	if _pending_honor_mutation != null:
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.retry(
+			_pending_honor_mutation, campaign_store,
+		)
+	else:
+		var revision: int = campaign.save_revision()
+		var command_id := "runtime:honor:%s:%d:%s" % [
+			campaign.campaign_uid(), revision, hero_id,
+		]
+		var command: Dictionary = campaign.honor_fallen(command_id, revision, hero_id)
+		committed = CAMPAIGN_RUNTIME_AUTHORITY_SCRIPT.commit(command, campaign_store)
+	if not committed["accepted"]:
+		_pending_honor_mutation = (
+			committed.get("mutation") if committed.get("retryable", false) else null
+		)
+		_pending_honor_hero_id = hero_id if _pending_honor_mutation != null else ""
+		return committed
+	_pending_honor_mutation = null
+	_pending_honor_hero_id = ""
 	campaign = committed["state"]
 	return committed
 
@@ -456,6 +499,7 @@ func _commit_promotions(choices: Array) -> Dictionary:
 	if (
 		_pending_campaign_mutation != null
 		or _pending_recruitment_mutation != null
+		or _pending_honor_mutation != null
 		or _pending_launch_mutation != null
 	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
@@ -499,6 +543,7 @@ func _retry_promotions() -> Dictionary:
 	if (
 		_pending_campaign_mutation != null
 		or _pending_recruitment_mutation != null
+		or _pending_honor_mutation != null
 		or _pending_launch_mutation != null
 	):
 		return {"accepted": false, "error_code": &"strategic_mutation_pending"}
@@ -546,6 +591,7 @@ func strategic_mutation_pending() -> bool:
 		_pending_campaign_mutation != null
 		or _pending_promotion_mutation != null
 		or _pending_recruitment_mutation != null
+		or _pending_honor_mutation != null
 		or _pending_launch_mutation != null
 	)
 
@@ -587,6 +633,8 @@ func open_title() -> void:
 	_pending_campaign_mutation = null
 	_pending_promotion_mutation = null
 	_pending_recruitment_mutation = null
+	_pending_honor_mutation = null
+	_pending_honor_hero_id = ""
 	_pending_launch_mutation = null
 	_pending_launch_open_battle = true
 	_campaign_battle_active = false

@@ -5,7 +5,6 @@ const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const FactionHeraldryType := preload("res://scripts/ui/components/faction_heraldry.gd")
 const RosterFilterType := preload("res://scripts/ui/components/roster_filter.gd")
-const RosterFilterBarType := preload("res://scripts/ui/components/roster_filter_bar.gd")
 const TrainingSupportType := preload("res://scripts/ui/components/training_support.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 const VAHALLA_THEME := preload("res://data/presentation/ui/threshold_theme.tres")
@@ -18,10 +17,8 @@ var _roster_panel: PanelContainer
 var _dossier_panel: PanelContainer
 var _obituary_list: VBoxContainer
 var _memorial_scroll: ScrollContainer
-var _filter_bar: RosterFilterBarType
 var _status_label: Label
 var _back_button: Button
-var _eyebrow_label: Label
 var _title_label: Label
 var _intro_label: Label
 var _roster_heading: Label
@@ -58,6 +55,9 @@ func _refresh_projection() -> void:
 	if projection.is_empty():
 		return
 	_fallen_rows = RosterFilterType.annotate_all(projection.get("fallen_heroes", []))
+	_honored.clear()
+	for hero_id: String in projection.get("honored_fallen_hero_ids", []):
+		_honored[hero_id] = true
 	for record: Dictionary in projection.get("memorial", []):
 		_memorial_by_hero[String(record.get("hero_id", ""))] = record.duplicate(true)
 
@@ -86,7 +86,7 @@ func _build_screen() -> void:
 	content.add_child(_header_grid)
 	_back_button = Button.new()
 	_back_button.name = "BackToCommand"
-	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return").to_upper()
 	_back_button.tooltip_text = _back_button.text
 	_back_button.accessibility_name = _back_button.text
 	_back_button.custom_minimum_size = Vector2(210, 56)
@@ -97,13 +97,9 @@ func _build_screen() -> void:
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	identity.add_theme_constant_override(&"separation", 12)
 	identity.add_child(FactionHeraldryType.make_symbol(FactionHeraldryType.ACTIVE_FACTION, 52.0))
-	var titles := VBoxContainer.new()
-	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_eyebrow_label = _label(UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN"), &"eyebrow")
-	titles.add_child(_eyebrow_label)
 	_title_label = _label(UiCopyType.text(&"ui.vahalla.title_display", "Valhalla").to_upper(), &"title")
-	titles.add_child(_title_label)
-	identity.add_child(titles)
+	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	identity.add_child(_title_label)
 	_header_grid.add_child(identity)
 	_status_label = _label("", &"metric")
 	_status_label.name = "FallenCount"
@@ -116,13 +112,6 @@ func _build_screen() -> void:
 	)
 	_intro_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(_intro_label)
-
-	_filter_bar = RosterFilterBarType.new()
-	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, RosterFilterType.FACTION_ALL)
-	_refresh_filter_accessibility()
-	_filter_bar.set_compact(true)
-	_filter_bar.filters_changed.connect(_on_filters_changed)
-	content.add_child(_filter_bar)
 
 	_body_grid = GridContainer.new()
 	_body_grid.name = "MemorialBody"
@@ -180,12 +169,12 @@ func _rebuild_memorial(restore_focus_id := "") -> void:
 	for child: Node in _obituary_list.get_children():
 		_obituary_list.remove_child(child)
 		child.queue_free()
-	_visible_rows = RosterFilterType.filter_rows(_fallen_rows, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
+	_visible_rows = _fallen_rows.duplicate(true)
 	_status_label.text = UiCopyType.text(&"ui.vahalla.fallen_count_format", "{count} FALLEN").replace("{count}", str(_visible_rows.size()))
 	_status_label.accessibility_name = _status_label.text
 	if _visible_rows.is_empty():
 		_selected_hero_id = ""
-		var empty := _label(UiCopyType.text(&"ui.vahalla.empty", "No fallen soldiers are recorded for this faction."), &"body")
+		var empty := _label(UiCopyType.text(&"ui.vahalla.empty", "No fallen soldiers are recorded."), &"body")
 		empty.name = "VahallaEmptyState"
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -373,6 +362,11 @@ func _rebuild_dossier() -> void:
 	).to_upper()
 	honor.custom_minimum_size = Vector2(0, 58)
 	honor.disabled = _honored.has(_selected_hero_id)
+	honor.tooltip_text = UiCopyType.text(
+		&"ui.vahalla.honor_tooltip",
+		"Honor this fallen operator once to receive 5 Marks.",
+	)
+	honor.accessibility_description = honor.tooltip_text
 	honor.pressed.connect(_on_honor_pressed.bind(_selected_hero_id))
 	Style.apply_button(honor, &"selected" if honor.disabled else &"gold")
 	details.add_child(honor)
@@ -427,34 +421,14 @@ func _terminal_reason(reason: StringName) -> String:
 func _on_locale_changed(_locale_id: StringName) -> void:
 	if _back_button == null:
 		return
-	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return").to_upper()
 	_back_button.tooltip_text = _back_button.text
 	_back_button.accessibility_name = _back_button.text
-	_eyebrow_label.text = UiCopyType.text(&"ui.vahalla.eyebrow", "LUNARIS RELIQUARY • HALL OF THE FALLEN")
 	_title_label.text = UiCopyType.text(&"ui.vahalla.title_display", "Valhalla").to_upper()
 	_intro_label.text = UiCopyType.text(&"ui.vahalla.intro", "Valhalla records Company Manus personnel whose souls are missing, captured, or permanently lost. Recoverable souls remain rescue targets; consumed or shattered souls cannot return.")
 	_roster_heading.text = UiCopyType.text(&"ui.vahalla.roster_heading", "FALLEN COMPANY")
-	_filter_bar.configure(_fallen_rows, false, RosterFilterType.STATUS_FALLEN, _filter_bar.faction_id)
-	_refresh_filter_accessibility()
 	_rebuild_memorial()
 	_apply_responsive_layout()
-
-
-func _refresh_filter_accessibility() -> void:
-	var all_button := _filter_bar.find_child("AllFactionFilter", true, false) as Button
-	if all_button != null:
-		all_button.tooltip_text = UiCopyType.text(&"ui.roster.filter.all_factions", "All factions")
-		all_button.accessibility_name = all_button.tooltip_text
-	for faction_id: StringName in FactionHeraldryType.ORDER:
-		var button := _filter_bar.find_child("%sFactionFilter" % String(faction_id).to_pascal_case(), true, false) as Button
-		if button != null:
-			button.tooltip_text = FactionHeraldryType.display_name(faction_id)
-			button.accessibility_name = button.tooltip_text
-			button.accessibility_description = FactionHeraldryType.specialization(faction_id)
-
-
-func _on_filters_changed(_status: StringName, _faction_id: StringName) -> void:
-	_rebuild_memorial()
 
 
 func _on_memorial_selected(hero_id: String) -> void:
@@ -466,8 +440,14 @@ func _on_memorial_selected(hero_id: String) -> void:
 
 
 func _on_honor_pressed(hero_id: String) -> void:
-	_honored[hero_id] = true
-	Sfx.play("ui_click")
+	var result: Dictionary = Game.honor_fallen_hero(hero_id)
+	if not result.get("accepted", false):
+		push_warning("Vahalla honor rejected: %s" % result.get("error_code", &"unknown"))
+		_rebuild_dossier()
+		return
+	_refresh_projection()
+	_selected_hero_id = hero_id
+	Sfx.play("ui_confirm")
 	_rebuild_dossier()
 
 
@@ -483,18 +463,11 @@ func _apply_responsive_layout() -> void:
 	var large_text := TextScale != null and float(TextScale.value()) > 1.20
 	_header_grid.columns = 1 if portrait else 3
 	_body_grid.columns = 1 if portrait else 2
-	_back_button.text = (
-		UiCopyType.text(&"ui.common.back", "Back")
-		if large_text
-		else UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
-	)
-	_back_button.tooltip_text = UiCopyType.text(&"ui.vahalla.back", "Return to Company Command")
+	_back_button.text = UiCopyType.text(&"ui.vahalla.back", "Return").to_upper()
+	_back_button.tooltip_text = _back_button.text
 	_back_button.accessibility_name = _back_button.tooltip_text
-	_eyebrow_label.visible = not large_text
 	_intro_label.visible = not large_text
 	Style.apply_label(_title_label, &"heading" if large_text else &"title")
-	_filter_bar.set_compact(true)
-	_filter_bar.set_inline(not portrait)
 	var margin := 16 if portrait else 28
 	for side: StringName in [&"margin_left", &"margin_top", &"margin_right", &"margin_bottom"]:
 		_screen_margin.add_theme_constant_override(side, margin)
