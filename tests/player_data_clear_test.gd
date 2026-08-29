@@ -92,6 +92,8 @@ func _run() -> void:
 	var restarted := game.get("content") as Control
 	_check(restarted != null and restarted != title and restarted.find_child("StartButton", true, false) != null, "clear did not return to a fresh start screen")
 	_check(ViewPreferencesType.locale() == &"en-US" and ViewPreferencesType.background_downloads_enabled(), "clear did not restore default preferences")
+	if is_instance_valid(title):
+		title.queue_free()
 	if restarted != null:
 		game.set("content", null)
 		restarted.queue_free()
@@ -132,8 +134,9 @@ func _finish(music: Node, sfx: Node) -> void:
 		music.call("stop")
 	if sfx != null:
 		sfx.call("stop_all")
-	for _frame: int in range(8):
+	for _frame: int in range(16):
 		await process_frame
+	await create_timer(0.5).timeout
 	if _failures.is_empty():
 		print("PLAYER_DATA_CLEAR_TEST_OK")
 		quit(0)
