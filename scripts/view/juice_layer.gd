@@ -574,20 +574,24 @@ func sprung(trap_rect: ColorRect, adopt: bool) -> void:
 	var core := trap_rect.get_child(0) as ColorRect
 	if core != null:
 		core.color = SPRUNG_COLOR
-	trap_rect.color = SPRUNG_COLOR.darkened(0.25)
+	# The parent is only a positioning container for manifest-backed trap art.
+	# Tinting it creates a solid rectangular plate behind the transparent PNG.
+	trap_rect.color = Color.TRANSPARENT
 	_transients.append({
 		"node": trap_rect, "left": cfg.trap_sprung_frames, "total": cfg.trap_sprung_frames,
 		"kind": "sprung_adopted" if adopt else "sprung",
 	})
-	# the triggering enemy's 40px rect draws over the 24px plate at exactly
-	# the trigger moment — flash an overlay in this layer (above enemies) so
-	# the sprung frame is actually visible (and probe-able)
-	var flash := _make_map_rect(SPRUNG_COLOR, Vector2(28, 28), "MapTransientSprung")
+	# The triggering enemy draws over the plate at the trigger moment. Keep the
+	# cue visible above enemies with an unfilled diamond instead of another
+	# solid rectangle behind the transparent trap art.
+	var flash := _make_placement_ring(SPRUNG_COLOR)
+	flash.name = "MapTransientSprung"
+	flash.width = 3.0
 	var local_center := _grid_root.to_local(trap_rect.get_global_rect().get_center())
-	flash.position = local_center - Vector2(14, 14) / _grid_root.scale.x
+	flash.position = local_center
 	_transients.append({
 		"node": flash, "left": cfg.trap_sprung_frames, "total": cfg.trap_sprung_frames,
-		"map_anchor": local_center, "offset_screen": Vector2(-14, -14),
+		"map_anchor": local_center, "offset_screen": Vector2.ZERO,
 		"travel_screen": Vector2.ZERO, "kind": "dust",
 	})
 
@@ -777,7 +781,7 @@ func _expire_transient(tr: Dictionary, kind: String) -> void:
 		"sprung":
 			var rect := tr["node"] as ColorRect
 			if is_instance_valid(rect):
-				rect.color = Color("f4b41b")
+				rect.color = Color.TRANSPARENT
 				var core := rect.get_child(0) as ColorRect
 				if core != null:
 					core.color = Color("1a1c2c")
