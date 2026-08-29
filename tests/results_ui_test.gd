@@ -1,5 +1,7 @@
 extends SceneTree
 
+const CampaignFixture := preload("res://test/support/authoritative_campaign_fixture.gd")
+
 var _failures: Array[String] = []
 
 
@@ -90,12 +92,12 @@ func _run() -> void:
 	var header := screen.find_child("ResultsHeader", true, false) as GridContainer
 	var body := screen.find_child("ResultsBody", true, false) as GridContainer
 	var actions := screen.find_child("ActionRow", true, false) as GridContainer
-	var staging := screen.find_child("ReturnToStaging", true, false) as Button
+	var next_mission := screen.find_child("NextMission", true, false) as Button
 	var back := screen.find_child("BackButton", true, false) as Button
 	_check(screen.find_child("DefeatAmbient", true, false) == null, "clear Results incorrectly shows defeat ambience")
 	_check(shell != null and bool(shell.get("full_safe_area")), "Results did not opt into full-safe-area shell")
 	_check(ceremony != null and ceremony.custom_minimum_size.y >= 132.0, "Results outcome ceremony is still claustrophobic")
-	_check(ceremony != null and _has_uniform_margin(ceremony.get_theme_stylebox(&"panel"), 24.0), "clear ceremony does not have uniform 24px inner padding")
+	_check(ceremony != null and _has_margins(ceremony.get_theme_stylebox(&"panel"), 48.0, 24.0, 48.0, 24.0), "clear ceremony does not have 48px horizontal / 24px vertical inner padding")
 	_check(headline != null and headline.text == "STAGE 1 CLEARED", "stage-number clear headline is incorrect")
 	_check(headline != null and headline.get_theme_font_size(&"font_size") >= 40 and headline.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "Results outcome headline is not dominant or vertically centered")
 	_check(headline != null and headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "clear headline can still wrap across lines")
@@ -109,10 +111,10 @@ func _run() -> void:
 			_check((star as Control).custom_minimum_size == Vector2(58.0, 58.0), "%s does not match Premium Resonance reveal sizing" % star.name)
 	_check(tally != null and tally.get_theme_font_size(&"font_size") >= 28 and tally.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT, "result tally is not enlarged and right aligned")
 	var tally_inset := tally.get_parent() as MarginContainer if tally != null else null
-	_check(tally_inset != null and tally_inset.name == "TallyInset" and tally_inset.get_theme_constant(&"margin_right") == 24, "result LEAKS tally lacks its 24px right inset")
+	_check(tally_inset != null and tally_inset.name == "TallyInset" and tally_inset.get_theme_constant(&"margin_right") == 0, "clear result LEAKS tally retained a nested inset on top of the 48px ceremony padding")
 	if ceremony != null and ceremony_spacer != null and stars != null and tally != null:
 		_check(ceremony_spacer.size.x > 1.0 and stars.get_global_rect().position.x >= headline.get_global_rect().end.x, "Premium Resonance stars were not pushed right of the clear title")
-		_check(ceremony.get_global_rect().end.x - tally.get_global_rect().end.x >= 47.0, "rendered LEAKS tally is not inset by 24px inside the padded ceremony")
+		_check(ceremony.get_global_rect().end.x - tally.get_global_rect().end.x >= 47.0, "rendered LEAKS tally is not inset by 48px inside the ceremony")
 	_check(reward != null and entitlement != null and xp != null and second_xp != null, "typed result payload cards are incomplete")
 	_check(reward is MarginContainer and entitlement is MarginContainer and xp is MarginContainer and second_xp is MarginContainer, "Mission Yield rows retained inner panel styling")
 	_check(reward_count != null and reward_icon != null and reward_icon.texture != null and int(reward_count.get_meta(&"reward_reveal_count", -1)) == 40, "Shard reward was not registered with its icon for count reveal")
@@ -140,7 +142,7 @@ func _run() -> void:
 			_check(row_title != null and row_title.get_theme_font_size(&"font_size") >= 24, "%s title was not enlarged" % row.name)
 			_check(row_detail != null and row_detail.get_theme_font_size(&"font_size") >= 20, "%s detail was not enlarged" % row.name)
 	_check(no_casualties != null, "no-casualty state is missing")
-	_check(no_casualties != null and _has_uniform_margin(no_casualties.get_theme_stylebox(&"panel"), 24.0), "clear Company Intact card lacks uniform 24px inner padding")
+	_check(no_casualties != null and _has_margins(no_casualties.get_theme_stylebox(&"panel"), 48.0, 24.0, 48.0, 24.0), "clear Company Intact card lacks 48px horizontal / 24px vertical inner padding")
 	_check(transmission != null, "clear result omitted its canon transmission")
 	_check(transmission_speaker != null and transmission_speaker.text == "ARCHIVE CASTER", "clear transmission speaker is incorrect")
 	_check(
@@ -162,14 +164,15 @@ func _run() -> void:
 	_check(consequence_line != null and consequence_line.get_theme_font_size(&"font_size") >= 20, "Consequence body was not enlarged")
 	if rewards_panel != null:
 		var rewards_style := rewards_panel.get_theme_stylebox(&"panel")
-		_check(_has_uniform_margin(rewards_style, 24.0), "clear Mission Yield does not have uniform 24px inner padding")
+		_check(_has_margins(rewards_style, 48.0, 24.0, 24.0, 24.0), "clear Mission Yield does not have 48px left / 24px remaining inner padding")
 	if consequence_panel != null:
 		var consequence_style := consequence_panel.get_theme_stylebox(&"panel")
-		_check(_has_uniform_margin(consequence_style, 24.0), "clear Consequence does not have uniform 24px inner padding")
+		_check(_has_margins(consequence_style, 48.0, 24.0, 48.0, 24.0), "clear Consequence does not have 48px horizontal / 24px vertical inner padding")
 	_check(rewards_scroll != null and consequence_scroll != null, "Results payload columns lack independent local scrolling")
 	_check(rewards_scroll != null and rewards_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Rewards scroll is not flexible")
 	_check(consequence_scroll != null and consequence_scroll.size_flags_vertical == Control.SIZE_EXPAND_FILL, "Consequence scroll is not flexible")
-	_check(actions != null and staging != null and back != null, "persistent Results actions are incomplete")
+	_check(actions != null and next_mission != null and back != null, "persistent Results actions are incomplete")
+	_check(next_mission != null and next_mission.text == "Next Mission", "cleared Results primary route is not Next Mission")
 	_check(back != null and back.text == "Mission Control", "cleared Mission Debrief Back action does not identify Mission Control")
 	_check(actions != null and not _has_scroll_ancestor(actions), "Results actions remain buried inside scroll content")
 	if actions != null:
@@ -177,14 +180,14 @@ func _run() -> void:
 			if child is Button:
 				var action := child as Button
 				var presentation := action.find_child("PresentationLabel", true, false) as Label
-				var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
+				var expected_width := 400.0 if action.name == "NextMission" else 260.0
 				_check(action.custom_minimum_size == Vector2(expected_width, 96), "%s lost its annotated fixed width" % action.name)
 				_check(action.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "%s still expands horizontally" % action.name)
 				_check(action.get_theme_stylebox(&"normal") is StyleBoxFlat, "%s retained a struck texture frame" % action.name)
 				_check(presentation != null and presentation.get_theme_font_size(&"font_size") >= 36, "%s typography was not doubled" % action.name)
 				var action_style := action.get_theme_stylebox(&"normal")
 				_check(action_style.content_margin_top >= 18.0 and action_style.content_margin_bottom >= 18.0, "%s lacks vertical inner padding" % action.name)
-		_check(staging.get_combined_minimum_size().x <= staging.size.x + 1.0, "clear Company Command text overflows its wider action")
+		_check(next_mission.get_combined_minimum_size().x <= next_mission.size.x + 1.0, "Next Mission text overflows its wider action")
 
 	_check(header != null and header.columns == 1 and body != null and body.columns == 2, "regular landscape Results hierarchy changed")
 	root.size = Vector2i(1024, 576)
@@ -196,7 +199,7 @@ func _run() -> void:
 	_check(outcome_summary.vertical, "portrait outcome summary did not stack")
 	_check(outcome_meta.vertical, "portrait stars and tally did not stack beneath the headline")
 	_check(headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "portrait clear headline can still wrap")
-	_check(staging.custom_minimum_size.x == 260.0, "clear Command did not clamp safely on narrow portrait")
+	_check(next_mission.custom_minimum_size.x == 260.0, "Next Mission did not clamp safely on narrow portrait")
 	for star: Node in stars.get_children():
 		_check((star as Control).custom_minimum_size == Vector2(46.0, 46.0), "%s does not match portrait Premium Resonance star sizing" % star.name)
 	for child: Node in actions.get_children():
@@ -204,14 +207,19 @@ func _run() -> void:
 			var action := child as Button
 			var bounds := action.get_global_rect()
 			_check(action.custom_minimum_size.x == 260.0, "%s is not 260px wide at the narrow portrait breakpoint" % action.name)
-			_check(bounds.position.x >= -0.5 and bounds.end.x <= 390.5, "%s overflows portrait width" % child.name)
+			_check(
+				bounds.position.x >= -0.5 and bounds.end.x <= 390.5,
+				"%s overflows portrait width at x %.1f..%.1f" % [
+					child.name, bounds.position.x, bounds.end.x,
+				],
+			)
 	root.size = Vector2i(720, 1280)
 	await _frames(2)
-	_check(staging.custom_minimum_size.x == 400.0, "clear Command lacks comfortable width above the narrow portrait breakpoint")
+	_check(next_mission.custom_minimum_size.x == 400.0, "Next Mission lacks comfortable width above the narrow portrait breakpoint")
 	for child: Node in actions.get_children():
 		if child is Button:
 			var action := child as Button
-			var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
+			var expected_width := 400.0 if action.name == "NextMission" else 260.0
 			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong wide-portrait width" % action.name)
 			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows wide portrait" % action.name)
 	_check(bool(i18n.call("set_locale", &"zh-CN")), "Chinese Results locale activation failed")
@@ -225,19 +233,19 @@ func _run() -> void:
 	var chinese_rewards := screen.find_child("RewardsHeading", true, false) as Label
 	var chinese_consequence := screen.find_child("ConsequenceHeading", true, false) as Label
 	var chinese_transmission := screen.find_child("ClearTransmission", true, false) as PanelContainer
-	var chinese_return := screen.find_child("ReturnToStaging", true, false) as Button
+	var chinese_next := screen.find_child("NextMission", true, false) as Button
 	var chinese_back := screen.find_child("BackButton", true, false) as Button
 	var chinese_xp := screen.find_child("XpAward0", true, false) as Control
 	var chinese_xp_count := chinese_xp.find_child("Detail", true, false) as Label
 	_check(chinese_headline != null and chinese_headline.text == "第1关已通关" and chinese_headline.autowrap_mode == TextServer.AUTOWRAP_OFF, "Chinese clear headline is incorrect or wrap-enabled")
 	_check(chinese_headline != null and chinese_headline.get_visible_line_count() == 1 and chinese_headline.get_combined_minimum_size().x <= chinese_headline.size.x + 1.0, "Chinese clear headline is clipped in portrait")
-	_check(chinese_ceremony != null and chinese_tally != null and chinese_ceremony.get_global_rect().end.x - chinese_tally.get_global_rect().end.x >= 47.0, "Chinese LEAKS tally lost its rendered 24px right inset")
+	_check(chinese_ceremony != null and chinese_tally != null and chinese_ceremony.get_global_rect().end.x - chinese_tally.get_global_rect().end.x >= 47.0, "Chinese LEAKS tally lost its rendered 48px right inset")
 	for star: Node in chinese_stars.get_children():
 		_check((star as Control).custom_minimum_size == Vector2(46.0, 46.0), "%s lost Chinese portrait reveal-star sizing" % star.name)
 	for child: Node in chinese_actions.get_children():
 		if child is Button:
 			var action := child as Button
-			var expected_width := 400.0 if action.name == "ReturnToStaging" else 260.0
+			var expected_width := 400.0 if action.name == "NextMission" else 260.0
 			_check(action.custom_minimum_size.x == expected_width, "%s has the wrong Chinese wide-portrait width" % action.name)
 			_check(action.get_global_rect().position.x >= -0.5 and action.get_global_rect().end.x <= 720.5, "%s overflows Chinese wide portrait" % action.name)
 	_check(chinese_rewards.text == "行动收益" and chinese_consequence.text == "行动后果", "Results headings did not refresh to reviewed Chinese")
@@ -245,7 +253,7 @@ func _run() -> void:
 	if chinese_transmission != null:
 		var transmission_style := chinese_transmission.get_theme_stylebox(&"panel")
 		_check(transmission_style.content_margin_left >= 24.0 and transmission_style.content_margin_top >= 24.0 and transmission_style.content_margin_right >= 24.0 and transmission_style.content_margin_bottom >= 24.0, "clear transmission custom frame padding is below 24px")
-	_check(chinese_return.text == "返回连队指挥部", "Results destination did not refresh to Chinese")
+	_check(chinese_next.text == "下一任务", "Next Mission destination did not refresh to Chinese")
 	_check(chinese_back != null and chinese_back.text == "任务中心", "cleared Mission Debrief Back destination did not refresh to Chinese Mission Control")
 	_check(chinese_xp_count.text == "+100 经验值", "canonical survivor XP did not refresh to Chinese")
 	_check(bool(i18n.call("set_locale", &"en-US")), "English Results locale restoration failed")
@@ -273,6 +281,46 @@ func _run() -> void:
 		if mission_control_parent != null:
 			mission_control_parent.remove_child(mission_control)
 		mission_control.free()
+	var clear_fixture := CampaignFixture.clear_stage(game, &"s1", "results-ui-route")
+	_check(
+		bool(clear_fixture.get("accepted", false)),
+		"results S1 route fixture failed: %s" % clear_fixture.get("error_code", &"unknown"),
+	)
+	var campaign_before_next: Variant = game.get("campaign")
+	var revision_before_next: int = campaign_before_next.save_revision()
+	var next_route_screen: Node = load("res://scenes/results.tscn").instantiate()
+	root.add_child(next_route_screen)
+	await _frames(2)
+	var next_route := next_route_screen.find_child("NextMission", true, false) as Button
+	_check(next_route != null and next_route.text == "Next Mission", "clear route probe did not expose Next Mission")
+	if next_route != null:
+		next_route.emit_signal(&"pressed")
+	await _frames(4)
+	var field_team := game.get("content") as Node
+	_check(
+		field_team != null
+		and field_team.get_script().resource_path == "res://scripts/ui/squad_select.gd",
+		"Next Mission did not open the next Field Team",
+	)
+	_check(game.get("selected_stage_id") == &"s2", "Next Mission did not select the stage after the cleared mission")
+	_check(
+		game.get("campaign") == campaign_before_next
+		and campaign_before_next.save_revision() == revision_before_next,
+		"Next Mission routing mutated campaign authority",
+	)
+	game.set("content", null)
+	if field_team != null and is_instance_valid(field_team):
+		var field_team_parent := field_team.get_parent()
+		if field_team_parent != null:
+			field_team_parent.remove_child(field_team)
+		field_team.free()
+	_check(
+		bool(game.call("start_campaign", false, true)),
+		"fresh defeat results campaign fixture failed",
+	)
+	var defeat_projection: Dictionary = game.call("campaign_projection")
+	var defeat_ready_heroes: Array = defeat_projection.get("ready_heroes", [])
+	var defeat_hero_id := String(defeat_ready_heroes[0].get("hero_id", ""))
 	ProjectSettings.set_setting("accessibility/reduced_motion", true)
 	game.set("last_result", {
 		"stage_id": &"s1",
@@ -282,7 +330,7 @@ func _run() -> void:
 		"leaks": 12,
 		"rewards_granted": [{"kind": "currency", "id": "marks", "amount": 7}],
 		"class_entitlements_granted": [],
-		"xp_awards": [{"hero_id": hero_id, "delta": 50}],
+		"xp_awards": [{"hero_id": defeat_hero_id, "delta": 50}],
 		"dead_hero_ids": [],
 		"premium_life_losses": [],
 	})
@@ -460,6 +508,22 @@ func _has_uniform_margin(style: StyleBox, expected: float) -> bool:
 		and is_equal_approx(style.content_margin_top, expected)
 		and is_equal_approx(style.content_margin_right, expected)
 		and is_equal_approx(style.content_margin_bottom, expected)
+	)
+
+
+func _has_margins(
+	style: StyleBox,
+	left: float,
+	top: float,
+	right: float,
+	bottom: float,
+) -> bool:
+	return (
+		style != null
+		and is_equal_approx(style.content_margin_left, left)
+		and is_equal_approx(style.content_margin_top, top)
+		and is_equal_approx(style.content_margin_right, right)
+		and is_equal_approx(style.content_margin_bottom, bottom)
 	)
 
 

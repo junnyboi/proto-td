@@ -645,6 +645,7 @@
     "ui.results.fallen_record": "FALLEN · MEMORIAL RECORD SEALED",
     "ui.results.final_life_spent": "FINAL BODY LOST · SOUL ANCHORED · PREPARE ANOTHER BODY TO DEPLOY",
     "ui.results.marks_reward": "+{count}",
+    "ui.results.next_mission": "Next Mission",
     "ui.results.no_losses": "No terminal losses recorded.",
     "ui.results.no_rewards": "NO NEW MATERIAL REWARDS",
     "ui.results.premium_fund": "Ordinary salvage and payment",

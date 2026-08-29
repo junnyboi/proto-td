@@ -38,6 +38,8 @@ const RESULT_ACTION_HORIZONTAL_PADDING := 28.0
 const RESULT_ACTION_VERTICAL_PADDING := 18.0
 const RESULT_HEADER_HEIGHT := 132.0
 const RESULT_PANEL_PADDING := 24.0
+const RESULT_CLEAR_HORIZONTAL_PADDING := 48.0
+const RESULT_CLEAR_VERTICAL_PADDING := 24.0
 const RESULT_DEFEAT_YIELD_PADDING := 64.0
 const RESULT_RESONANCE_STAR_SIZE := 58.0
 const RESULT_RESONANCE_STAR_PORTRAIT_SIZE := 46.0
@@ -122,6 +124,8 @@ func _exit_tree() -> void:
 		viewport.size_changed.disconnect(_apply_responsive_layout)
 	var command := find_child("ReturnToStaging", true, false) as Button
 	ActionHoverFeedbackType.reset(command)
+	var next_mission := find_child("NextMission", true, false) as Button
+	ActionHoverFeedbackType.reset(next_mission)
 	_kill_reward_reveal_tween()
 
 
@@ -132,7 +136,13 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	_outcome_plate.custom_minimum_size.y = RESULT_HEADER_HEIGHT
 	if cleared:
 		Style.apply_panel(_outcome_plate, &"result")
-		_set_panel_padding(_outcome_plate, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+		_set_panel_padding(
+			_outcome_plate,
+			RESULT_CLEAR_HORIZONTAL_PADDING,
+			RESULT_CLEAR_VERTICAL_PADDING,
+			RESULT_CLEAR_HORIZONTAL_PADDING,
+			RESULT_CLEAR_VERTICAL_PADDING,
+		)
 	else:
 		_apply_borderless_defeat_header(_outcome_plate)
 	layout.add_child(_outcome_plate)
@@ -204,7 +214,11 @@ func _build_header(layout: VBoxContainer, result: Dictionary, cleared: bool) -> 
 	var tally_inset := MarginContainer.new()
 	tally_inset.name = "TallyInset"
 	tally_inset.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	tally_inset.add_theme_constant_override(&"margin_right", int(RESULT_PANEL_PADDING))
+	# The clear ceremony itself owns the requested 48px right inset. Defeat keeps
+	# its existing nested tally inset because its borderless header is unchanged.
+	tally_inset.add_theme_constant_override(
+		&"margin_right", 0 if cleared else int(RESULT_PANEL_PADDING),
+	)
 	tally_inset.add_child(_tally)
 	_result_meta.add_child(tally_inset)
 
@@ -225,7 +239,13 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	_rewards_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_rewards_panel, &"result")
 	if cleared:
-		_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+		_set_panel_padding(
+			_rewards_panel,
+			RESULT_CLEAR_HORIZONTAL_PADDING,
+			RESULT_CLEAR_VERTICAL_PADDING,
+			RESULT_PANEL_PADDING,
+			RESULT_PANEL_PADDING,
+		)
 	else:
 		_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 	_body_grid.add_child(_rewards_panel)
@@ -297,7 +317,13 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 	_consequence_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	Style.apply_panel(_consequence_panel, &"danger" if not cleared else &"quiet")
 	if cleared:
-		_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+		_set_panel_padding(
+			_consequence_panel,
+			RESULT_CLEAR_HORIZONTAL_PADDING,
+			RESULT_CLEAR_VERTICAL_PADDING,
+			RESULT_CLEAR_HORIZONTAL_PADDING,
+			RESULT_CLEAR_VERTICAL_PADDING,
+		)
 	else:
 		_ensure_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 24.0)
 	_body_grid.add_child(_consequence_panel)
@@ -339,7 +365,13 @@ func _build_body(layout: VBoxContainer, result: Dictionary, cleared: bool) -> vo
 		var intact_card := _result_card("NoCasualties", UiCopyType.text(&"ui.results.company_intact", "COMPANY INTACT"), UiCopyType.text(&"ui.results.no_losses", "No terminal losses recorded."))
 		if intact_card is PanelContainer:
 			if cleared:
-				_set_panel_padding(intact_card as PanelContainer, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+				_set_panel_padding(
+					intact_card as PanelContainer,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+				)
 			else:
 				_set_panel_padding(intact_card as PanelContainer, 48.0, 24.0, 48.0, 24.0)
 		consequences.add_child(intact_card)
@@ -373,11 +405,30 @@ func _build_actions(layout: VBoxContainer) -> void:
 		retry.pressed.connect(_on_retry)
 		_actions.add_child(retry)
 		focusable.append(retry)
-		var next := _button("ReturnToStaging", UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"), UiCopyType.text(&"ui.results.return_to_staging_short", "Command"), &"primary" if not training_available else &"secondary")
+		var next_stage_id := _next_mission_id()
+		var has_next_mission := _cleared_result and not next_stage_id.is_empty()
+		var next := (
+			_button(
+				"NextMission",
+				UiCopyType.text(&"ui.results.next_mission", "Next Mission"),
+				UiCopyType.text(&"ui.results.next_mission", "Next Mission"),
+				&"primary" if not training_available else &"secondary",
+			)
+			if has_next_mission
+			else _button(
+				"ReturnToStaging",
+				UiCopyType.text(&"ui.results.return_to_staging", "Return to Staging"),
+				UiCopyType.text(&"ui.results.return_to_staging_short", "Command"),
+				&"primary" if not training_available else &"secondary",
+			)
+		)
 		next.custom_minimum_size.x = RESULT_COMMAND_ACTION_WIDTH if not _cleared_result else RESULT_CLEAR_COMMAND_ACTION_WIDTH
 		if not _cleared_result:
 			ActionHoverFeedbackType.wire(self, next)
-		next.pressed.connect(_on_return_to_staging)
+		if has_next_mission:
+			next.pressed.connect(_on_next_mission.bind(next_stage_id))
+		else:
+			next.pressed.connect(_on_return_to_staging)
 		_actions.add_child(next)
 		focusable.append(next)
 	var returns_to_mission_control := (
@@ -430,7 +481,13 @@ func _apply_responsive_layout() -> void:
 		if not _cleared_result:
 			_apply_borderless_defeat_header(_outcome_plate)
 		if _cleared_result:
-			_set_panel_padding(_outcome_plate, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+			_set_panel_padding(
+				_outcome_plate,
+				RESULT_CLEAR_HORIZONTAL_PADDING,
+				RESULT_CLEAR_VERTICAL_PADDING,
+				RESULT_CLEAR_HORIZONTAL_PADDING,
+				RESULT_CLEAR_VERTICAL_PADDING,
+			)
 		else:
 			_set_panel_padding(
 				_outcome_plate,
@@ -455,28 +512,52 @@ func _apply_responsive_layout() -> void:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_rewards_panel)
 			if _cleared_result:
-				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+				_set_panel_padding(
+					_rewards_panel,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+					RESULT_PANEL_PADDING,
+					RESULT_PANEL_PADDING,
+				)
 			else:
 				_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 		else:
 			Style.apply_panel(_rewards_panel, &"result")
 			if _cleared_result:
-				_set_panel_padding(_rewards_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+				_set_panel_padding(
+					_rewards_panel,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+					RESULT_PANEL_PADDING,
+					RESULT_PANEL_PADDING,
+				)
 			else:
 				_set_panel_padding(_rewards_panel, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING, RESULT_DEFEAT_YIELD_PADDING)
 	if _consequence_panel != null:
 		if mode == &"portrait":
 			_apply_portrait_information_panel(_consequence_panel)
 			if _cleared_result:
-				_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+				_set_panel_padding(
+					_consequence_panel,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+				)
 		else:
 			Style.apply_panel(_consequence_panel, &"quiet" if _cleared_result else &"danger")
 			if _cleared_result:
-				_set_panel_padding(_consequence_panel, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING, RESULT_PANEL_PADDING)
+				_set_panel_padding(
+					_consequence_panel,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+					RESULT_CLEAR_HORIZONTAL_PADDING,
+					RESULT_CLEAR_VERTICAL_PADDING,
+				)
 			else:
 				_set_panel_padding(_consequence_panel, 30.0, 26.0, 30.0, 24.0)
 	if _headline != null:
-		var headline_size := 38 if large_text else ((38 if _cleared_result else 45) if mode == &"portrait" else 60)
+		var headline_size := 34 if large_text else ((34 if _cleared_result else 45) if mode == &"portrait" else 60)
 		_headline.add_theme_font_size_override(&"font_size", headline_size)
 		_headline.autowrap_mode = (
 			TextServer.AUTOWRAP_OFF
@@ -513,7 +594,9 @@ func _apply_responsive_layout() -> void:
 			var presentation := action.find_child("PresentationLabel", true, false) as Label
 			if presentation != null:
 				presentation.add_theme_font_size_override(&"font_size", 32)
-	var command := find_child("ReturnToStaging", true, false) as Button
+	var command := find_child(
+		"NextMission" if _cleared_result else "ReturnToStaging", true, false,
+	) as Button
 	if command != null:
 		var command_target := RESULT_CLEAR_COMMAND_ACTION_WIDTH if _cleared_result else RESULT_COMMAND_ACTION_WIDTH
 		if mode == &"portrait":
@@ -906,9 +989,28 @@ func _focus_control_if_inside(control: Control) -> void:
 		control.grab_focus()
 
 
+func _next_mission_id() -> StringName:
+	if not _cleared_result or not Game.campaign_active or Game.campaign == null:
+		return &""
+	var current_stage_id := StringName(Game.last_result.get("stage_id", &""))
+	var stage_ids := Game.campaign_stage_ids()
+	var current_index := stage_ids.find(current_stage_id)
+	if current_index < 0 or current_index + 1 >= stage_ids.size():
+		return &""
+	return stage_ids[current_index + 1]
+
+
 func _on_return_to_staging() -> void:
 	Sfx.play("ui_click")
 	Game.open_staging()
+
+
+func _on_next_mission(stage_id: StringName) -> void:
+	Sfx.play("ui_click")
+	if not Game.open_field_team_for_stage(stage_id):
+		# If campaign authority changed after the debrief mounted, keep the player
+		# on a safe mission-selection route instead of opening a stale operation.
+		Game.open_stage_select()
 
 
 func _on_train_recruits() -> void:

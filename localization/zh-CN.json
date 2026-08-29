@@ -645,6 +645,7 @@
     "ui.results.fallen_record": "阵亡 · 纪念记录已封存",
     "ui.results.final_life_spent": "最后一具身体已损失 • 灵魂仍在锚中 • 准备另一具身体后可部署",
     "ui.results.marks_reward": "+{count}",
+    "ui.results.next_mission": "下一任务",
     "ui.results.no_losses": "没有记录到永久损失。",
     "ui.results.no_rewards": "没有新的物资奖励",
     "ui.results.premium_fund": "普通打捞物与报酬",

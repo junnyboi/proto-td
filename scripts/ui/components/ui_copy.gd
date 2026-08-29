@@ -393,6 +393,7 @@ const STATIC_FALLBACKS := {
 	&"ui.results.consequence": "Consequence",
 	&"ui.results.transmission": "CLEAR TRANSMISSION",
 	&"ui.error.missing_stage_narrative": "Mission record unavailable. Return to Mission Control.",
+	&"ui.results.next_mission": "Next Mission",
 	&"ui.results.return_to_staging": "Return to Staging",
 	&"ui.results.training_available": "{count} recruits ready for training.",
 	&"ui.results.train_recruits": "Train Recruits",
