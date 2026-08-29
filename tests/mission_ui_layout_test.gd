@@ -321,7 +321,9 @@ func _verify_layout(label: String, viewport: Vector2i) -> void:
 				if portrait_node != null:
 					_check(_inside(button, portrait_node), "%s operator portrait pane overflows" % label)
 					_check(portrait_node.size.x >= 48.0 and portrait_node.size.y >= button.size.y - 24.0, "%s operator portrait does not fit the standardized row card" % label)
-					_check(card_label == null or card_label.get_global_rect().end.x <= portrait_node.get_global_rect().position.x + EPSILON, "%s operator information overlaps the portrait pane" % label)
+					var portrait_edge_inset := 6.0 if portrait else 12.0
+					_check(is_equal_approx(portrait_node.offset_left, portrait_edge_inset - 48.0) and is_equal_approx(portrait_node.offset_right, -portrait_edge_inset - 48.0), "%s operator portrait is not shifted left by exactly 48px" % label)
+					_check(card_label == null or card_label.get_global_rect().end.x <= portrait_node.get_global_rect().position.x + 48.0 + EPSILON, "%s operator information extends past the portrait pane's original boundary" % label)
 	var command_scroll := _mission.find_child("MissionCommandScroll", true, false) as ScrollContainer
 	if roster_scroll != null:
 		_check(roster_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "%s responsive operator grid still scrolls horizontally" % label)

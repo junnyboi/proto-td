@@ -34,6 +34,7 @@ const OPERATOR_RAIL_EDGE_INSET := 8
 const OPERATOR_SNAP_IDLE_SECONDS := 0.14
 const OPERATOR_SNAP_SECONDS := 0.18
 const OPERATOR_CARD_HEIGHT := 300.0
+const OPERATOR_PORTRAIT_LEFT_SHIFT := 48.0
 const LOADOUT_TOP_PADDING := 24
 const SORT_HORIZONTAL_PADDING := 24.0
 const SORT_VERTICAL_PADDING := 12.0
@@ -732,14 +733,12 @@ func _rebuild_operator_cards() -> void:
 		var portrait := TextureRect.new()
 		portrait.name = "OperatorPortrait"
 		portrait.texture = Art.texture(StringName(hero["portrait_asset_id"]))
-		portrait.anchor_left = _operator_info_split(_shell.layout_mode())
 		portrait.anchor_top = 0.0
 		portrait.anchor_right = 1.0
 		portrait.anchor_bottom = 1.0
-		portrait.offset_left = 12.0
 		portrait.offset_top = 12.0
-		portrait.offset_right = -12.0
 		portrait.offset_bottom = -12.0
+		_apply_operator_portrait_layout(portrait, _shell.layout_mode())
 		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1118,9 +1117,7 @@ func _apply_operator_grid_reflow() -> void:
 		button.custom_minimum_size = Vector2(card_width, _operator_card_height(hero, mode))
 		var portrait := button.get_node_or_null("OperatorPortrait") as TextureRect
 		if portrait != null:
-			portrait.anchor_left = _operator_info_split(mode)
-			portrait.offset_left = 6.0 if mode == &"portrait" else 12.0
-			portrait.offset_right = -6.0 if mode == &"portrait" else -12.0
+			_apply_operator_portrait_layout(portrait, mode)
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	_update_operator_rail_insets()
 	_operator_grid_reflow_running = false
@@ -1268,6 +1265,13 @@ func _operator_info_split(mode: StringName) -> float:
 	if mode == &"portrait":
 		return 0.72
 	return OPERATOR_INFO_SPLIT
+
+
+func _apply_operator_portrait_layout(portrait: TextureRect, mode: StringName) -> void:
+	var edge_inset := 6.0 if mode == &"portrait" else 12.0
+	portrait.anchor_left = _operator_info_split(mode)
+	portrait.offset_left = edge_inset - OPERATOR_PORTRAIT_LEFT_SHIFT
+	portrait.offset_right = -edge_inset - OPERATOR_PORTRAIT_LEFT_SHIFT
 
 
 func _operator_card_height(_hero: Dictionary, _mode: StringName) -> float:
@@ -2122,7 +2126,7 @@ func _on_layout_mode_changed(mode: StringName) -> void:
 		)
 		var portrait := button.get_node_or_null("OperatorPortrait") as TextureRect
 		if portrait != null:
-			portrait.anchor_left = _operator_info_split(mode)
+			_apply_operator_portrait_layout(portrait, mode)
 		_apply_operator_card_text_style(button as AetheriaButtonType)
 	if _footer != null:
 		_footer.vertical = mode != &"regular_landscape"
