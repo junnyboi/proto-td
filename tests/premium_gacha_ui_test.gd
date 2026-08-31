@@ -141,6 +141,24 @@ func _run() -> void:
 			"Moon Archive custom frame padding is below 24px",
 		)
 	_check(not history_layer.visible and history_rows != null and history_empty != null, "Moon Archive did not initialize hidden")
+	var history_type_probe := history_layer.call("_history_row", {
+		"premium_id": "archive_caster",
+		"pull_index": 0,
+		"rarity": 4,
+		"new_hero": true,
+		"revived": false,
+		"lives_before": 0,
+		"lives_after": 1,
+		"guarantee_in_after": 9,
+		"pity_forced": true,
+	}, 0) as Control
+	var history_ordinal := history_type_probe.find_child("HistoryPullOrdinal", true, false) as Label
+	var history_badge := history_type_probe.find_child("HistoryResultBadge", true, false) as Label
+	var history_detail := history_type_probe.find_child("HistoryReceiptDetail", true, false) as Label
+	_check(history_ordinal != null and history_ordinal.get_theme_font_size(&"font_size") == 22, "Moon Archive ordinal missed the 20-percent small-text increase")
+	_check(history_badge != null and history_badge.get_theme_font_size(&"font_size") == 22, "Moon Archive badge missed the 20-percent small-text increase")
+	_check(history_detail != null and history_detail.get_theme_font_size(&"font_size") == 22, "Moon Archive detail missed the 20-percent small-text increase")
+	history_type_probe.free()
 	_check(Art.size(&"ui_gacha_moon_archive") == Vector2i(512, 512), "GPT Image 2 Moon Archive glyph is absent")
 	_check(Art.size(&"ui_gacha_reserve_life") == Vector2i(512, 512), "GPT Image 2 reserve-life sigil is absent")
 	history_button.grab_focus()
@@ -219,6 +237,7 @@ func _run() -> void:
 	root.size = Vector2i(390, 844)
 	await _frames(2)
 	_check(grid.columns == 1 and browse_header.columns == 1 and guarantee.vertical, "portrait browse did not stack")
+	_check(pity_label.get_theme_font_size(&"font_size") == 22, "portrait guarantee telemetry missed the 20-percent small-text increase")
 	_check(back.custom_minimum_size.x <= 366.0 and pull.custom_minimum_size.x <= 366.0, "portrait browse action exceeds its safe width")
 	_check(history_button.custom_minimum_size.x <= 342.0, "portrait History action exceeds its safe width")
 	for card: Control in grid.get_children():

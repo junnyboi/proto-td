@@ -554,7 +554,9 @@ func _build_command_content() -> VBoxContainer:
 		"CampaignProgressText", _campaign_summary_text(), GameTypographyType.STATUS, IVORY,
 	)
 	_campaign_progress_text.custom_minimum_size.x = 144.0
-	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
+	StagingSkinType.apply_display_type(
+		_campaign_progress_text, GameTypographyType.raised_small_text(18), IVORY, 520,
+	)
 	_campaign_progress_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_campaign_progress_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_campaign_progress_text.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -576,9 +578,11 @@ func _build_command_content() -> VBoxContainer:
 
 	_next_operation_label = _label(
 		"NextOperationLabel", UiCopyType.text(&"ui.staging.next_label", "NEXT OPERATION"),
-		18, GOLD,
+		GameTypographyType.raised_small_text(18), GOLD,
 	)
-	StagingSkinType.apply_display_type(_next_operation_label, 18, GOLD, 520)
+	StagingSkinType.apply_display_type(
+		_next_operation_label, GameTypographyType.raised_small_text(18), GOLD, 520,
+	)
 	content.add_child(_next_operation_label)
 	_mission_operation_block = VBoxContainer.new()
 	_mission_operation_block.name = "MissionOperationBlock"
@@ -614,11 +618,13 @@ func _build_navigation_content() -> VBoxContainer:
 	content.add_child(operation_heading)
 	_operations_label = _label(
 		"OperationsLabel", UiCopyType.text(&"ui.staging.operations", "OPERATIONS"),
-		18, GOLD,
+		GameTypographyType.raised_small_text(18), GOLD,
 	)
 	_operations_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_operations_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	StagingSkinType.apply_display_type(_operations_label, 18, GOLD, 560)
+	StagingSkinType.apply_display_type(
+		_operations_label, GameTypographyType.raised_small_text(18), GOLD, 560,
+	)
 	operation_heading.add_child(_operations_label)
 
 	_operation_grid = GridContainer.new()
@@ -839,17 +845,22 @@ func _build_mission_details() -> PanelContainer:
 	_mission_brief_heading = _label(
 		"MissionBriefHeading",
 		UiCopyType.text(&"ui.staging.mission_brief", "MISSION BRIEF"),
-		16,
+		GameTypographyType.raised_small_text(16),
 		GOLD,
 	)
-	StagingSkinType.apply_display_type(_mission_brief_heading, 16, GOLD, 600)
+	StagingSkinType.apply_display_type(
+		_mission_brief_heading, GameTypographyType.raised_small_text(16), GOLD, 600,
+	)
 	stack.add_child(_mission_brief_heading)
 
 	_mission_description = _label(
-		"MissionDescription", _next_operation_description(), 17, IVORY,
+		"MissionDescription", _next_operation_description(),
+		GameTypographyType.raised_small_text(17), IVORY,
 	)
 	_mission_description.max_lines_visible = -1
-	StagingSkinType.apply_body_type(_mission_description, 17, IVORY)
+	StagingSkinType.apply_body_type(
+		_mission_description, GameTypographyType.raised_small_text(17), IVORY,
+	)
 	stack.add_child(_mission_description)
 
 	_mission_details_grid = GridContainer.new()
@@ -875,10 +886,13 @@ func _build_mission_details() -> PanelContainer:
 	_mission_details_grid.add_child(_mission_reward)
 
 	_mission_threat = _label(
-		"MissionThreat", _next_operation_threat_text(), 16, MUTED,
+		"MissionThreat", _next_operation_threat_text(),
+		GameTypographyType.raised_small_text(16), MUTED,
 	)
 	_mission_threat.max_lines_visible = -1
-	StagingSkinType.apply_body_type(_mission_threat, 16, MUTED)
+	StagingSkinType.apply_body_type(
+		_mission_threat, GameTypographyType.raised_small_text(16), MUTED,
+	)
 	stack.add_child(_mission_threat)
 
 	_mission_facts = _label(
@@ -1475,7 +1489,12 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 		else Vector2(32.0, 32.0) if narrow
 		else (Vector2(44.0, 44.0) if compact else Vector2(58.0, 58.0))
 	)
-	StagingSkinType.apply_display_type(_top_identity, 16 if narrow else (22 if compact else 28), IVORY, 620)
+	StagingSkinType.apply_display_type(
+		_top_identity,
+		GameTypographyType.raised_small_text(16) if narrow else (22 if compact else 28),
+		IVORY,
+		620,
+	)
 	StagingSkinType.apply_display_type(_top_summary, 20 if compact else 24, IVORY, 560)
 	_back.text = UiCopyType.text(&"ui.common.exit", "Exit")
 	_exit_label.text = _back.text.to_upper()
@@ -1505,8 +1524,12 @@ func _apply_top_hud_layout(viewport_size: Vector2, safe_insets: Vector4) -> void
 		utility_margin.add_theme_constant_override(&"margin_left", 6 if ultra_narrow else (8 if narrow else (10 if compact else 22)))
 		utility_margin.add_theme_constant_override(&"margin_right", 6 if ultra_narrow else (8 if narrow else (10 if compact else 22)))
 	_top_status_chip.custom_minimum_size = Vector2(300.0, 104.0) if compact else Vector2(354.0, 112.0)
-	StagingSkinType.apply_display_type(_exit_label, 16 if compact else 22, MUTED, 600)
-	StagingSkinType.apply_display_type(_settings_label, 16 if compact else 22, MUTED, 600)
+	StagingSkinType.apply_display_type(
+		_exit_label, GameTypographyType.raised_small_text(16) if compact else 22, MUTED, 600,
+	)
+	StagingSkinType.apply_display_type(
+		_settings_label, GameTypographyType.raised_small_text(16) if compact else 22, MUTED, 600,
+	)
 
 
 func _apply_command_geometry(viewport_size: Vector2) -> void:
@@ -1574,18 +1597,46 @@ func _apply_company_typography() -> void:
 	var short_wide := rail_mode and get_viewport_rect().size.y < 850.0
 	var ultra_narrow := get_viewport_rect().size.x < 480.0
 	StagingSkinType.apply_display_type(_command_heading, 20 if ultra_narrow else (22 if compact else 24), GOLD, 560)
-	StagingSkinType.apply_display_type(_campaign_progress_text, 18, IVORY, 520)
-	StagingSkinType.apply_display_type(_next_operation_label, 17 if compact else 18, GOLD, 520)
+	StagingSkinType.apply_display_type(
+		_campaign_progress_text, GameTypographyType.raised_small_text(18), IVORY, 520,
+	)
+	StagingSkinType.apply_display_type(
+		_next_operation_label,
+		GameTypographyType.raised_small_text(17 if compact else 18),
+		GOLD,
+		520,
+	)
 	StagingSkinType.apply_display_type(_mission_title, 20 if ultra_narrow else (24 if compact or _portrait or short_wide else 26), IVORY, 560)
-	_mission_objective.add_theme_font_size_override(&"font_size", 18 if ultra_narrow else (22 if compact or short_wide else 24))
-	StagingSkinType.apply_display_type(_mission_brief_heading, 15 if ultra_narrow else 16, GOLD, 600)
-	StagingSkinType.apply_body_type(_mission_description, 16 if ultra_narrow else 17, IVORY)
+	_mission_objective.add_theme_font_size_override(
+		&"font_size",
+		GameTypographyType.raised_small_text(18) if ultra_narrow else (22 if compact or short_wide else 24),
+	)
+	StagingSkinType.apply_display_type(
+		_mission_brief_heading,
+		GameTypographyType.raised_small_text(15 if ultra_narrow else 16),
+		GOLD,
+		600,
+	)
+	StagingSkinType.apply_body_type(
+		_mission_description,
+		GameTypographyType.raised_small_text(16 if ultra_narrow else 17),
+		IVORY,
+	)
 	StagingSkinType.apply_display_type(_mission_difficulty, 24, GOLD, 580)
 	StagingSkinType.apply_display_type(_mission_reward, 24, GOLD, 580)
-	StagingSkinType.apply_body_type(_mission_threat, 15 if ultra_narrow else 16, MUTED)
+	StagingSkinType.apply_body_type(
+		_mission_threat,
+		GameTypographyType.raised_small_text(15 if ultra_narrow else 16),
+		MUTED,
+	)
 	StagingSkinType.apply_display_type(_mission_facts, 23, MUTED, 520)
 	StagingSkinType.apply_display_type(_mission_action_label, 30 if ultra_narrow else (36 if compact or _portrait else 42), IVORY, 620)
-	StagingSkinType.apply_display_type(_operations_label, 32 if rail_mode else 18, GOLD, 560)
+	StagingSkinType.apply_display_type(
+		_operations_label,
+		32 if rail_mode else GameTypographyType.raised_small_text(18),
+		GOLD,
+		560,
+	)
 
 
 func _display_safe_insets(viewport_size: Vector2) -> Vector4:

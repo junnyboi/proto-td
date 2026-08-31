@@ -342,8 +342,12 @@ func _refresh_buttons() -> void:
 					&"ui.spell.cooldown_compact", "CD{seconds}",
 					{&"seconds": _seconds_text(cooldown_remaining)},
 				)
-			duration_label.add_theme_font_size_override(&"font_size", 11)
-			cooldown_label.add_theme_font_size_override(&"font_size", 11)
+			duration_label.add_theme_font_size_override(
+				&"font_size", GameTypographyType.raised_small_text(11),
+			)
+			cooldown_label.add_theme_font_size_override(
+				&"font_size", GameTypographyType.raised_small_text(11),
+			)
 			duration_label.position = Vector2(2.0, 2.0)
 			duration_label.size = Vector2(maxf(0.0, slot.size.x - 4.0), 16.0)
 			cooldown_label.position = Vector2(2.0, slot.size.y - 22.0)

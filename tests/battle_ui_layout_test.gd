@@ -231,6 +231,10 @@ func _run() -> void:
 			_check(compact_slot.custom_minimum_size.is_equal_approx(Vector2(54.0, 50.0)), "%s compact footprint changed" % compact_slot.name)
 			_check(compact_slot.text.is_empty() and compact_slot.icon != null, "%s is not icon-first in compact mode" % compact_slot.name)
 			_check(not compact_slot.accessibility_name.is_empty() and not compact_slot.accessibility_description.is_empty(), "%s compact accessibility is incomplete" % compact_slot.name)
+			var duration_label := compact_slot.find_child("DurationLabel_*", false, false) as Label
+			var cooldown_label := compact_slot.find_child("CooldownLabel_*", false, false) as Label
+			_check(duration_label != null and duration_label.get_theme_font_size(&"font_size") == 13, "%s duration copy did not receive the 20-percent small-text increase" % compact_slot.name)
+			_check(cooldown_label != null and cooldown_label.get_theme_font_size(&"font_size") == 13, "%s cooldown copy did not receive the 20-percent small-text increase" % compact_slot.name)
 	root.size = SHORT
 	for _frame: int in range(3):
 		await process_frame

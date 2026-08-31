@@ -8,6 +8,7 @@ const AetheriaPanelType := preload("res://scripts/ui/components/aetheria_panel.g
 const StagingSkinType := preload("res://scripts/ui/components/staging_skin.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ViewPreferencesType := preload("res://scripts/view/view_preferences.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 
 const GOLD := Color("d8b978")
 const BRIGHT_GOLD := Color("f0d89a")
@@ -366,7 +367,12 @@ func relayout() -> void:
 	_layout_arrow_head(card_edge, target_edge)
 
 	var narrow := viewport_size.x <= 560.0
-	StagingSkinType.apply_display_type(_step_label, 16 if narrow else 18, GOLD, 560)
+	StagingSkinType.apply_display_type(
+		_step_label,
+		GameTypographyType.raised_small_text(16 if narrow else 18),
+		GOLD,
+		560,
+	)
 	StagingSkinType.apply_display_type(_title, 24 if narrow else 28, IVORY, 600)
 	StagingSkinType.apply_body_type(_body, 20 if narrow else 22, MUTED)
 	_skip.custom_minimum_size = Vector2(132.0 if narrow else 164.0, 54.0)

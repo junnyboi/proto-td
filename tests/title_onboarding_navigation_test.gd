@@ -155,6 +155,11 @@ func _verify_tutorial_step(staging: Control, tutorial: Control, step: StringName
 		"%s tutorial ring %s does not enclose target %s" % [step, ring_rect, target.get_global_rect() if target != null else Rect2()],
 	)
 	var card := tutorial.find_child("TutorialCallout", true, false) as Control
+	var step_label := tutorial.find_child("TutorialStep", true, false) as Label
+	_check(
+		step_label != null and step_label.get_theme_font_size(&"font_size") == 22,
+		"%s tutorial step label missed the 20-percent small-text increase" % step,
+	)
 	_check(
 		card != null and _contains(tutorial, card),
 		"%s tutorial card %s escapes viewport %s" % [step, card.get_global_rect() if card != null else Rect2(), tutorial.get_global_rect()],

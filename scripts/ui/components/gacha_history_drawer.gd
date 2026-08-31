@@ -7,6 +7,7 @@ signal closed
 const Style := preload("res://scripts/ui/components/lunaris_ops_style.gd")
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premium_portrait_entrance.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const ASTRAL_STAR := preload("res://assets/ui/gacha/astral_star.png")
 const HISTORY_ICON_ID := &"ui_gacha_moon_archive"
 const MAX_DRAWER_WIDTH := 430.0
@@ -333,7 +334,9 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 		&"detail",
 	)
 	ordinal.name = "HistoryPullOrdinal"
-	ordinal.add_theme_font_size_override(&"font_size", 18)
+	ordinal.add_theme_font_size_override(
+		&"font_size", GameTypographyType.raised_small_text(18),
+	)
 	title_row.add_child(ordinal)
 
 	var stars := HBoxContainer.new()
@@ -352,7 +355,9 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 
 	var badge := _label(_history_badge(receipt), &"eyebrow")
 	badge.name = "HistoryResultBadge"
-	badge.add_theme_font_size_override(&"font_size", 18)
+	badge.add_theme_font_size_override(
+		&"font_size", GameTypographyType.raised_small_text(18),
+	)
 	badge.add_theme_color_override(
 		&"font_color", Style.GOLD if five_star or bool(receipt.get("revived", false)) else Style.CYAN,
 	)
@@ -371,14 +376,18 @@ func _history_row(receipt: Dictionary, entrance_index: int = 0) -> Control:
 	)
 	detail.name = "HistoryReceiptDetail"
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail.add_theme_font_size_override(&"font_size", 18)
+	detail.add_theme_font_size_override(
+		&"font_size", GameTypographyType.raised_small_text(18),
+	)
 	copy_stack.add_child(detail)
 	if bool(receipt.get("pity_forced", false)):
 		var guarantee := _label(
 			_copy(&"ui.gacha.history_badge_guarantee", "GUARANTEE"), &"eyebrow",
 		)
 		guarantee.name = "HistoryGuaranteeBadge"
-		guarantee.add_theme_font_size_override(&"font_size", 16)
+		guarantee.add_theme_font_size_override(
+			&"font_size", GameTypographyType.raised_small_text(16),
+		)
 		guarantee.add_theme_color_override(&"font_color", Style.GOLD)
 		copy_stack.add_child(guarantee)
 
@@ -441,11 +450,15 @@ func _apply_layout() -> void:
 	_header_icon.custom_minimum_size = Vector2(54, 54) if compact_header else Vector2(48, 48)
 	_close_button.custom_minimum_size = Vector2(0, 52) if compact_header else Vector2(82, 52)
 	_close_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL if compact_header else Control.SIZE_SHRINK_END
-	_close_button.add_theme_font_size_override(&"font_size", 20 if compact_header else 18)
+	_close_button.add_theme_font_size_override(
+		&"font_size", 20 if compact_header else GameTypographyType.raised_small_text(18),
+	)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if compact_header else HORIZONTAL_ALIGNMENT_LEFT
 	_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if compact_header else HORIZONTAL_ALIGNMENT_LEFT
 	_title.add_theme_font_size_override(&"font_size", 30 if compact_header else 27)
-	_summary.add_theme_font_size_override(&"font_size", 19 if compact_header else 17)
+	_summary.add_theme_font_size_override(
+		&"font_size", 19 if compact_header else GameTypographyType.raised_small_text(17),
+	)
 
 
 func _drawer_transition_distance() -> float:

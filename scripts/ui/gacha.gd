@@ -10,6 +10,7 @@ const PremiumPortraitEntranceType := preload("res://scripts/ui/components/premiu
 const UiCopyType := preload("res://scripts/ui/components/ui_copy.gd")
 const ResonanceCurrencyDisplayType := preload("res://scripts/ui/components/resonance_currency_display.gd")
 const RosterGridLayoutType := preload("res://scripts/ui/components/roster_grid_layout.gd")
+const GameTypographyType := preload("res://scripts/ui/game_typography.gd")
 const LUNARIS_BACKDROP := preload("res://assets/loading/lunaris_reliquary_loading.png")
 
 const HARD_PITY_WINDOW := 10
@@ -1093,7 +1094,9 @@ func _apply_responsive_layout() -> void:
 	_pull_button.custom_minimum_size.x = minf(BROWSE_PULL_WIDTH, viewport_size.x - float(side_margin * 2))
 	_pity_layout.vertical = portrait
 	_pity_label.custom_minimum_size.x = 0.0 if portrait else 460.0
-	_pity_label.add_theme_font_size_override(&"font_size", 18 if portrait else 30)
+	_pity_label.add_theme_font_size_override(
+		&"font_size", GameTypographyType.raised_small_text(18) if portrait else 30,
+	)
 	for child: Node in _pity_segments.get_children():
 		(child as Control).custom_minimum_size = Vector2(
 			26.0 if portrait else (42.0 if compact_landscape else 58.0),
@@ -1123,9 +1126,13 @@ func _apply_responsive_layout() -> void:
 			minf(620.0, viewport_size.x - 48.0), 102.0 if portrait else 112.0,
 		)
 		_conversion_icon.custom_minimum_size = Vector2(64, 64) if portrait else Vector2(82, 82)
-		_conversion_title.add_theme_font_size_override(&"font_size", 18 if portrait else 24)
+		_conversion_title.add_theme_font_size_override(
+			&"font_size", GameTypographyType.raised_small_text(18) if portrait else 24,
+		)
 		_conversion_outcome.add_theme_font_size_override(&"font_size", 24 if portrait else 30)
-		_conversion_detail.add_theme_font_size_override(&"font_size", 18 if portrait else 21)
+		_conversion_detail.add_theme_font_size_override(
+			&"font_size", GameTypographyType.raised_small_text(18) if portrait else 21,
+		)
 	if _skip_button != null:
 		_skip_button.custom_minimum_size = Vector2(300 if portrait else 340, 92)
 		_skip_button.add_theme_font_size_override(&"font_size", 54)

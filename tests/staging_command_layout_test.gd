@@ -159,17 +159,20 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 	_check(command_heading != null and command_heading.text == ("连队指挥部" if locale_id == "zh-CN" else "COMPANY COMMAND"), "%s: Company Command heading copy is incorrect" % context)
 	var ultra_narrow := viewport_size.x < 480
 	_check(command_heading != null and _font_size(command_heading) >= (20 if ultra_narrow else 22), "%s: command heading below responsive floor" % context)
-	_check(progress_text != null and _font_size(progress_text) >= 18, "%s: campaign progress below responsive 18px floor" % context)
-	_check(next_label != null and _font_size(next_label) >= 17, "%s: next-operation heading below responsive 17px floor" % context)
+	_check(progress_text != null and _font_size(progress_text) >= 22, "%s: campaign progress below raised 22px floor" % context)
+	_check(next_label != null and _font_size(next_label) >= 20, "%s: next-operation heading below raised compact floor" % context)
 	_check(mission_title != null and _font_size(mission_title) >= (20 if ultra_narrow else 24), "%s: mission title below responsive floor" % context)
-	_check(objective != null and _font_size(objective) >= 18, "%s: mission body below 18px" % context)
+	_check(objective != null and _font_size(objective) >= 22, "%s: mission body below raised 22px floor" % context)
 	_check(mission_operation_block != null and mission_operation_block.get_theme_constant(&"separation") == 24, "%s: mission details are not separated from the operation card by exactly 24px" % context)
 	_check(mission_details != null and mission_details.visible, "%s: mission-specific details are missing below the operation card" % context)
 	_check(mission_brief != null and mission_brief.text == ("任务简报" if locale_id == "zh-CN" else "MISSION BRIEF"), "%s: mission brief heading is not localized" % context)
 	_check(mission_description != null and mission_description.text.contains("水泵" if locale_id == "zh-CN" else "pumps"), "%s: mission-specific description is not bound to First Stand" % context)
+	_check(mission_brief != null and _font_size(mission_brief) >= 18, "%s: mission brief is below the raised small-text floor" % context)
+	_check(mission_description != null and _font_size(mission_description) >= 19, "%s: mission description is below the raised small-text floor" % context)
 	_check(mission_difficulty != null and mission_difficulty.text.contains("1/5"), "%s: mission difficulty is missing" % context)
 	_check(mission_reward != null and mission_reward.text.contains("剑圣" if locale_id == "zh-CN" else "Sword Saint"), "%s: mission first-clear rewards are missing" % context)
 	_check(mission_threat != null and mission_threat.text.contains("标记者" if locale_id == "zh-CN" else "Taggers"), "%s: mission threat information is missing" % context)
+	_check(mission_threat != null and _font_size(mission_threat) >= 18, "%s: mission threat is below the raised small-text floor" % context)
 	_check(mission_facts != null and mission_facts.visible and mission_facts.text.contains("3") and mission_facts.text.contains("2"), "%s: mission squad/wave/leak facts row is missing" % context)
 	_check(mission_metadata_grid != null and mission_metadata_grid.columns == 1, "%s: operation metadata is not arranged in three rows" % context)
 	_check(mission_difficulty != null and _font_size(mission_difficulty) >= 24, "%s: mission difficulty type is below its 50-percent increase" % context)
@@ -207,7 +210,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		await create_timer(0.22).timeout
 		_check(mission_action_plate.scale.is_equal_approx(Vector2.ONE), "%s: mission hover plate did not reset" % context)
 		_check(mission_action_label.get_theme_color(&"font_shadow_color").a <= 0.01, "%s: mission hover text glow did not reset" % context)
-	_check(operation_label != null and _font_size(operation_label) >= 18, "%s: operations heading below responsive 18px floor" % context)
+	_check(operation_label != null and _font_size(operation_label) >= 22, "%s: operations heading below raised 22px floor" % context)
 	_check(operation_list_margin != null and operation_list_margin.get_theme_constant(&"margin_left") >= 20 and operation_list_margin.get_theme_constant(&"margin_right") >= 20, "%s: operation list lacks 20px side margins" % context)
 	if bool(viewport_case["portrait"]) and viewport_size.x <= 720:
 		_check(operation_grid != null and operation_grid.columns == 1, "%s: narrow portrait operations must use one no-wrap column" % context)
@@ -265,7 +268,7 @@ func _verify_case(game: Node, viewport_case: Dictionary, locale_id: String) -> v
 		_check(_font_size(identity_label) >= 28, "%s: PROTOS DEFENSE identity type below attachment-relative doubled size" % context)
 		_check(_font_size(settings_label) >= 22 and _font_size(exit_label) >= 22, "%s: Settings/Exit type below 22px" % context)
 		_check(command_deck.size.x >= 620.0, "%s: standard command deck below 620px" % context)
-		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 18 and _font_size(next_label) >= 18, "%s: command header typography below attachment-relative doubled size" % context)
+		_check(_font_size(command_heading) >= 24 and _font_size(progress_text) >= 22 and _font_size(next_label) >= 22, "%s: command header typography below the raised readable floor" % context)
 		var expected_card_height := 0.0 if viewport_size.y < 850 else (220.0 if viewport_size.y < 1000 else 260.0)
 		_check(mission_card.custom_minimum_size.y >= expected_card_height and mission_card.size.y >= 176.0, "%s: next-mission card is below its responsive minimum height" % context)
 		var expected_action_height := 168.0 if viewport_size.y < 850 else 180.0
@@ -331,7 +334,7 @@ func _verify_large_text_overflow(game: Node, viewport_size: Vector2i, context: S
 	var settings_plate := staging.find_child("SettingsUtilityPlate", true, false) as PanelContainer
 	var exit_plate := staging.find_child("UtilityPlate", true, false) as PanelContainer
 	_check(command_scroll != null and command_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "%s: command deck did not enable large-text overflow" % context)
-	var expected_base_size := 18.0 if viewport_size.x < 480 else 22.0
+	var expected_base_size := 22.0
 	var expected_objective_size := roundi(expected_base_size * float(root.get_node("TextScale").call("value")))
 	_check(objective != null and _font_size(objective) >= expected_objective_size, "%s: mission body did not receive the global text scale" % context)
 	_check(_contains(staging, settings_plate) and _contains(staging, exit_plate), "%s: Settings/Exit escaped the viewport" % context)

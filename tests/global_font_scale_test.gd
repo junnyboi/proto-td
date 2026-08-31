@@ -20,8 +20,8 @@ func _init() -> void:
 
 func _check_typography_constants() -> void:
 	var expected := {
-		"CAPTION": 17,
-		"MICRO_LABEL": 18,
+		"CAPTION": 20,
+		"MICRO_LABEL": 22,
 		"STATUS": 20,
 		"BADGE": 21,
 		"DETAIL": 24,
@@ -35,7 +35,14 @@ func _check_typography_constants() -> void:
 	}
 	var constants: Dictionary = (GameTypographyType as Script).get_script_constant_map()
 	for key: String in expected:
-		_check(int(constants.get(key, -1)) == int(expected[key]), "%s is not at the exact 1.5x scale" % key)
+		_check(int(constants.get(key, -1)) == int(expected[key]), "%s typography tier changed" % key)
+	_check(GameTypographyType.raised_small_text(11) == 13, "11px compact copy did not increase by 20 percent")
+	_check(GameTypographyType.raised_small_text(15) == 18, "15px small copy did not increase by 20 percent")
+	_check(GameTypographyType.raised_small_text(16) == 19, "16px small copy did not increase by 20 percent")
+	_check(GameTypographyType.raised_small_text(17) == 20, "17px small copy did not increase by 20 percent")
+	_check(GameTypographyType.raised_small_text(18) == 22, "18px small copy did not increase by 20 percent")
+	_check(GameTypographyType.raised_small_text(19) == 19, "19px body-adjacent copy should stay unchanged")
+	_check(GameTypographyType.raised_small_text(24) == 24, "detail hierarchy should stay unchanged")
 
 
 func _check_aetheria_theme() -> void:
